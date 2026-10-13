@@ -1,0 +1,128 @@
+{
+  "schema_version": "lf-independent-review-subject-contract/v3",
+  "capability_code": "INDEPENDENT_ASSURANCE",
+  "owner_scope": "SUPER_ADMIN",
+  "semantic_role": "INDEPENDENT_REVIEW",
+  "extension_class": "GENERALIZE_EXISTING_CAPABILITY_WITHOUT_PARALLEL_STACK",
+  "design_rule": "SUBJECT_TYPE_IS_DATA_NOT_CORE_BRANCHING",
+  "execution": {
+    "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+    "operation_type": "INDEPENDENT_REVIEW",
+    "reuse_existing_operation": true,
+    "reuse_existing_step_judges": true,
+    "reuse_existing_evidence_store": true,
+    "new_operation_allowed": false,
+    "new_router_action_allowed": false,
+    "new_judge_engine_allowed": false,
+    "new_judge_codes_allowed": false,
+    "new_evidence_store_allowed": false
+  },
+  "entry": {
+    "generic_entrypoint": "ORCHESTRATOR_EXECUTION_GUARD_V1 + public.fn_lf_capability_bind_from_orchestrator_v1",
+    "capability_registry_required": true,
+    "current_pointer_required": true,
+    "subject_type_policy": "OPAQUE_NONEMPTY_IDENTIFIER",
+    "subject_type_whitelist_forbidden": true,
+    "domain_name_branching_in_generic_core_forbidden": true,
+    "legacy_strategy_wrapper": {
+      "preserved": true,
+      "action_code": "STRATEGY_INDEPENDENT_REVIEW",
+      "mode": "BACKWARD_COMPATIBLE_SPECIALIZATION_ONLY"
+    }
+  },
+  "subject_contract": {
+    "mode": "CONTRACT_DRIVEN_ANY_SUBJECT",
+    "required_fields": [
+      "subject_type",
+      "subject_ref",
+      "subject_sha256",
+      "source_head_sha",
+      "subject_receipt_id",
+      "producer_execution_id",
+      "reviewer_execution_id",
+      "review_required",
+      "required_dimensions"
+    ],
+    "required_invariants": {
+      "subject_type": "NONEMPTY_OPAQUE_IDENTIFIER",
+      "subject_ref": "NONEMPTY",
+      "subject_sha256": "HEX64",
+      "source_head_sha": "HEX40",
+      "subject_receipt_id": "VERIFIED_EVIDENCE_LEDGER_RECEIPT",
+      "receipt_exact_binding": [
+        "subject_type",
+        "subject_ref",
+        "subject_sha256",
+        "source_head_sha"
+      ],
+      "authority_ref": "NONEMPTY_PROVIDER_BOUND_AUTHORITY",
+      "producer_reviewer": "MUST_DIFFER",
+      "review_required": true,
+      "required_dimensions": "NONEMPTY_ARRAY_PROVIDED_BY_CALLER_CONTRACT",
+      "runtime_activation": false,
+      "production_activation": false,
+      "business_effect_allowed": false
+    },
+    "resolution_rule": "DO_NOT_BRANCH_ON_SUBJECT_TYPE_NAME",
+    "fail_closed_codes": [
+      "SUBJECT_TYPE_MISSING",
+      "SUBJECT_IDENTITY_INVALID",
+      "SUBJECT_RECEIPT_ID_INVALID",
+      "SUBJECT_PROVIDER_BOUND_RECEIPT_INVALID",
+      "EXECUTION_IDENTITY_MISSING",
+      "BUILDER_REVIEWER_NOT_INDEPENDENT",
+      "REVIEW_NOT_REQUIRED",
+      "REQUIRED_DIMENSIONS_MISSING",
+      "INDEPENDENT_ASSURANCE_NOT_CURRENT"
+    ]
+  },
+  "semantic_review": {
+    "required_dimensions_source": "BOUND_SUBJECT_MANIFEST",
+    "reviewer_must_cover_exact_dimension_set": true,
+    "verdicts": [
+      "PASS",
+      "FAIL"
+    ],
+    "review_types": [
+      "INDEPENDENT_REVIEW",
+      "INDEPENDENT_HOLDOUT"
+    ],
+    "review_context": "INDEPENDENT_OPERATION_CONTEXT",
+    "evidence_refs_required": true,
+    "self_issue_review_receipt_forbidden": true
+  },
+  "durable_outputs": [
+    "verdict",
+    "review_receipt",
+    "evidence_refs",
+    "authority_readback",
+    "next_gate"
+  ],
+  "compatibility": {
+    "strategy_behavior_must_regress_zero": true,
+    "any_future_subject_may_consume_if_contract_satisfied": true,
+    "qualification_framework_remains_separate_owner": true,
+    "assurance_evaluator_is_not_independent_review_owner": true,
+    "v2_whitelist_model": "SUPERSEDED_BEFORE_LIVE_CUTOVER"
+  },
+  "forbidden": [
+    "SUBJECT_TYPE_WHITELIST_IN_GENERIC_CORE",
+    "DOMAIN_NAME_BRANCH_IN_GENERIC_CORE",
+    "CREATE_SECOND_INDEPENDENT_REVIEW_OPERATION",
+    "CREATE_SECOND_INDEPENDENT_REVIEW_ROUTE",
+    "CREATE_PARALLEL_JUDGE_SET",
+    "CREATE_PARALLEL_REVIEW_RECEIPT_STORE",
+    "MAP_GENERIC_SUBJECT_TO_STRATEGY",
+    "SELF_ISSUE_REVIEW_RECEIPT",
+    "STRUCTURAL_PASS_AS_CLOSURE"
+  ],
+  "qualification": {
+    "positive_subject_types_required_minimum": 2,
+    "negative_cases_required": [
+      "RECEIPT_SUBJECT_MISMATCH",
+      "PRODUCER_EQUALS_REVIEWER",
+      "EMPTY_REQUIRED_DIMENSIONS"
+    ],
+    "rollback_probe_required": true
+  }
+}

@@ -51,4 +51,15 @@ The planner is read-only. It returns `BLOCKED_LEARNING_PREFLIGHT` unless the liv
 
 `write_allowed=true` requires both a PASS Learning Preflight and a repairable structural delta. The baseline evaluator discovers target callables statically with AST and never imports or executes target profile code.
 
-Post-write closure requires a fresh 10/10 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
+Post-write closure requires a fresh 13/13 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
+
+
+## Profile Evolution Orchestrator candidate
+
+`ACTUALIZACION_PERFIL_LF` remains the compatibility operation code. Its next architecture is defined by `contracts/profile_evolution_orchestrator_v1.json` and implemented pre-write by `validators/plan_profile_evolution.py`.
+
+The S26 baseline remains a 13-dimension structural floor. A legacy `NO_UPDATE_REQUIRED` result from the S26 evaluator must be interpreted as `STRUCTURALLY_COMPATIBLE`; it is not proof that the profile is specialized, adaptive, expert, or evidence-optimized.
+
+Evolution modes are `NO_CHANGE | PATCH | SPECIALIZE | ADAPT | REARCHITECT | OPTIMIZE`. Minimal patch is mandatory only for `PATCH`. Every other change still requires a bounded evidence-justified delta.
+
+Candidate variants are reversible and non-authoritative until benchmark, challenge/assurance and admission pass. No profile source write, runtime activation, production activation, or automatic promotion is authorized by assessment or selection alone.

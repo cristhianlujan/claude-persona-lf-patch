@@ -1,0 +1,46 @@
+{
+  "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+  "profile_code": "PERFIL-QUALITY-PACK",
+  "profile_slug": "quality_pack",
+  "baseline_revision": "920b99f745c8c2ad63436a39130d20dd452cfd5a",
+  "evolution_mode": "SPECIALIZE",
+  "authority_state": "NON_AUTHORITY_CANDIDATE",
+  "reversible": true,
+  "profile_source_write_authorized": false,
+  "runtime_activation": false,
+  "production_activation": false,
+  "evidence_map": [
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/skills/profile_creator/evals/profile_evolution_benchmark_cases_v1.json#PEB2-004",
+      "supports": [
+        "architecture_fit=PASS",
+        "domain_task_uplift=FAIL",
+        "strategy_routing=FAIL",
+        "expert_holdout=FAIL",
+        "repeated_optimization=FAIL",
+        "optimization_opportunity=FAIL"
+      ]
+    },
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/profiles/quality_pack/SKILL.md",
+      "supports": [
+        "preserve existing Quality Pack gate responsibilities",
+        "preserve resolver-backed fail-closed evidence boundary"
+      ]
+    }
+  ],
+  "preservation_constraints": [
+    "Preserve all existing Quality Pack activation, blocking, resolver-backed evidence, semantic-review and downstream-authority rules.",
+    "Do not reinterpret deterministic intake as semantic approval.",
+    "Do not grant profile-source write, runtime activation, production activation, admission or cutover authority.",
+    "New specialization contract remains inert unless explicitly consumed by a future admitted profile update."
+  ],
+  "changes": [
+    {
+      "path": "contracts/profile_evolution_specialization_candidate.md",
+      "operation": "UPSERT",
+      "before_sha256": null,
+      "content": "# Profile Evolution Candidate Review Specialization\\n\\nStatus: NON_AUTHORITY_CANDIDATE / INERT UNTIL ADMISSION\\n\\n## Purpose\\nWhen Quality Pack is asked to independently review a Profile Evolution candidate, evaluate whether the claimed specialization or adaptation is supported by exact evidence rather than by structural compatibility alone.\\n\\n## Required candidate evidence\\n- exact baseline profile revision and target identity;\\n- evolution mode and evidence-bound PROFILE_ASSESSMENT result;\\n- explicit evidence map for each claimed capability gap or uplift;\\n- preservation constraints for existing profile responsibilities;\\n- reversible candidate/materialization receipt;\\n- benchmark/holdout evidence when capability uplift is claimed;\\n- independent assurance evidence before any admission claim.\\n\\n## Fail-closed rules\\nReturn the candidate for repair or additional evidence when maturity is inferred from UNKNOWN evidence, structural compatibility is presented as capability maturity, benchmark or holdout evidence is missing for an uplift claim, preservation constraints are absent, or the candidate attempts to self-authorize write/runtime/production impact.\\n\\n## Boundary\\nThis specialization does not admit, merge, promote, activate or write a profile. It only extends Quality Pack review criteria for Profile Evolution candidates after the normal resolver-backed evidence boundary has been satisfied.\\n"
+    }
+  ]
+}

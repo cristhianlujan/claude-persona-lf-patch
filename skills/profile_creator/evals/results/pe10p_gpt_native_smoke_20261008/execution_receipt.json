@@ -1,0 +1,40 @@
+{
+  "downstream_authorized": false,
+  "execution_contract_sha256": "49c66f1c69858b4b03b4f499d9e0383840435b4882174bb57a20fca4aab12f95",
+  "execution_id": "CHATGPT-NATIVE-PE10P-SMOKE-20261008-001",
+  "execution_origin": "MODEL_RUNTIME",
+  "executor_mode": "GPT_NATIVE",
+  "input_sha256": "085d4bc88fe752f64fea405ee5c3b021699eb9c04ec03ed916bda1c5149774df",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_code": "PROFILE_CREATOR",
+  "profile_slug": "profile_creator",
+  "profile_source_refs": [
+    "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/profiles/quality_pack/SKILL.md",
+    "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/skills/profile_creator/SKILL.md",
+    "github://cristhianlujan/claude-persona-lf-patch@920b99f745c8c2ad63436a39130d20dd452cfd5a/skills/profile_creator/contracts/profile_evolution_candidate_materialization_v1.json"
+  ],
+  "profile_source_sha256": "d77f1bcba0b684f0b44f2d92f56198cc0e9865c31db78eb978f3291846b30d8c",
+  "raw_output_captured": true,
+  "raw_output_sha256": "26dfbd9a14a94d00dd22c23abe753653ddd5ec57e6e43e5aa509b89e09e17ec9",
+  "receipt_sha256": "9b54a21e64d4673699a832eb3776fce226de99c8af3ca003a96fef80518acb3b",
+  "receipt_type": "PROFILE_EXECUTION_RECEIPT_V1",
+  "runtime_attestation": {
+    "adapter_id": "chatgpt-native-current-context-v1",
+    "artifact_byte_sha256": "b56e7d02adc3ee21bb07f754f896b5f106688db5edeb23fb808892055fd284d2",
+    "attestation_boundary": "GitHub readback verifies persisted RAW bytes and exact contract/source/input bindings; model internals and exact token telemetry are not independently observable.",
+    "attestation_evidence_sha256": "67331a12afa14cd3a1e01672a529080928533753c74692258f22b0640d6f2fe0",
+    "attestation_verifier": "GITHUB_MATERIALIZATION_READBACK_V1",
+    "attested_at": "2026-10-09T01:37:26Z",
+    "context_fingerprint": "dc72fb7ceb2dfe4819d1aadc7ed8ed9be441df49ee9328a99266ad40c76b630d",
+    "execution_contract_sha256": "49c66f1c69858b4b03b4f499d9e0383840435b4882174bb57a20fca4aab12f95",
+    "execution_mode": "GPT_NATIVE",
+    "executor_mode": "GPT_NATIVE",
+    "materialization_commit_sha": "23cc7b18d5fc6fa81bb606b7e51222eb2cf2feb4",
+    "materialization_path": "skills/profile_creator/evals/results/pe10p_gpt_native_smoke_20261008/raw_output.json",
+    "model_id": "GPT-5.6 Sol",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "run_id": "CHATGPT-NATIVE-PE10P-SMOKE-20261008-001",
+    "verified_request_sha256": "453dd440a2b00619f43a36cc3cb9ec5194a015bfe4f2e9ba336aa9e21bac62b8",
+    "verified_response_sha256": "e348578ef942911d3ac7db1b4d3eef2422673e5b065121127f2e27f24525745e"
+  }
+}

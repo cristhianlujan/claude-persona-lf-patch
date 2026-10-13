@@ -1,0 +1,32 @@
+{
+  "schema": "PROFILE_LEARNING_ADMISSION_V1",
+  "flow": [
+    "EXECUTION_OBSERVATION",
+    "CANDIDATE_LESSON",
+    "REPEATED_EVIDENCE",
+    "CROSS_CASE_VALIDATION",
+    "HOLDOUT",
+    "ADMISSION",
+    "REUSABLE_PATTERN"
+  ],
+  "auto_promote": false,
+  "required_evidence": [
+    "observation_refs",
+    "candidate_lesson",
+    "repeat_count",
+    "cross_case_refs",
+    "holdout_ref",
+    "admission_ref"
+  ],
+  "forbidden": [
+    "SINGLE_EXECUTION_TO_RULE",
+    "SELF_REFLECTION_AS_AUTHORITY",
+    "CANDIDATE_LESSON_MUTATES_POLICY",
+    "HOLDOUT_CONTAMINATION"
+  ],
+  "output_states": [
+    "ADMIT_REUSABLE_PATTERN",
+    "REJECT",
+    "NEEDS_MORE_EVIDENCE"
+  ]
+}

@@ -1,0 +1,2340 @@
+{
+  "schema": "PROFILE_EVOLUTION_FULL_BEHAVIOR_GENERATION_INPUTS_V1",
+  "generation_id": "PEB-FB1-20261008",
+  "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR",
+  "repository_profile_snapshot_sha": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "baseline_arm": "UPDATER_V0_1_EXACT_SOURCE",
+  "candidate_arm": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+  "executor_mode": "GPT_NATIVE",
+  "adapter_id": "chatgpt-native-current-context-v1",
+  "case_count": 21,
+  "holdout_labels_excluded_from_generation": true,
+  "oracle_access": false,
+  "cases": [
+    {
+      "case_id": "PEB2-004",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-QUALITY-PACK",
+        "profile_slug": "quality_pack"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-004/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-004/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-004/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-004/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-004/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-004/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "GENERIC",
+        "evolution_mode": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-005",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-005/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-005/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-005/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-005/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-005/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-005/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "GENERIC",
+        "evolution_mode": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-006",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-006/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-006/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-006/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-006/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-006/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-006/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "GENERIC",
+        "evolution_mode": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-007",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-007/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "HIGH",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "UNDETERMINED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-008",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-008/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "HIGH",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "UNDETERMINED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-009",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-009/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "HIGH",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "UNDETERMINED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-010",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-010/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-010/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-010/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-010/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-010/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-010/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "MEDIUM",
+          "causal_requirement": "REQUIRED",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "ADAPTIVE",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-011",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-011/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-011/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-011/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-011/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-011/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-011/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "MEDIUM",
+          "causal_requirement": "REQUIRED",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "ADAPTIVE",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-012",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-012/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-012/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-012/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-012/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-012/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-012/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "MEDIUM",
+          "uncertainty": "MEDIUM",
+          "causal_requirement": "REQUIRED",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "ADAPTIVE",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-013",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-013/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-013/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-013/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-013/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-013/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-013/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "HIGH",
+          "risk": "CRITICAL",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-014",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-014/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-014/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-014/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-014/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-014/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-014/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "HIGH",
+          "risk": "CRITICAL",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-015",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-015/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-015/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-015/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-015/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-015/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-015/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "HIGH",
+          "risk": "CRITICAL",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "CAUSAL_ANALYSIS",
+            "preconditions": [
+              "evidence_sufficiency!=NONE"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-016",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-016/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-016/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-016/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-016/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-016/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-016/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": true,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-017",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-017/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-017/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-017/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-017/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-017/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-017/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": true,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-018",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-018/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-018/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-018/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-018/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-018/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-018/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "MEDIUM",
+          "repeated_pattern": true,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "REQUIRED",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EXPERT",
+        "evolution_mode": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 5,
+            "method_id": "EVALUATOR_OPTIMIZER",
+            "preconditions": [
+              "benchmark_exists",
+              "uplift_target_defined"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-019",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-019/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-019/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "MEDIUM",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "SPECIALIZED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-020",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-020/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-020/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "MEDIUM",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "SPECIALIZED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-021",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_slug": "systemic_root_cause_repair_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-021/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "expert_holdout": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "repeated_optimization": {
+            "status": "UNKNOWN",
+            "refs": []
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-021/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "UNKNOWN",
+            "refs": []
+          }
+        },
+        "signals": {
+          "complexity": "HIGH",
+          "novelty": "HIGH",
+          "uncertainty": "HIGH",
+          "causal_requirement": "MEDIUM",
+          "risk": "HIGH",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "INSUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "NEEDS_MORE_EVIDENCE",
+        "maturity": "SPECIALIZED",
+        "evolution_mode": null,
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 3,
+            "method_id": "HOSTILE_CHALLENGE",
+            "preconditions": [
+              "candidate_exists"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 4,
+            "method_id": "DEEP_RESEARCH",
+            "preconditions": [
+              "decision_can_change_with_external_evidence"
+            ],
+            "within_budget": true
+          },
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": false
+          },
+          {
+            "cost_points": 3,
+            "method_id": "VERIFIER_GUIDED_SEARCH",
+            "preconditions": [
+              "deterministic_verifier_exists"
+            ],
+            "within_budget": false
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 7
+        },
+        "blocking_codes": [
+          "PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE"
+        ]
+      }
+    },
+    {
+      "case_id": "PEB2-022",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-022/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-022/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-022/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-022/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-022/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-022/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "LOW",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EVIDENCE_OPTIMIZED",
+        "evolution_mode": "NO_CHANGE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-023",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_slug": "systemic_root_cause_repair_lf"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-023/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-023/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-023/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-023/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-023/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-023/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "LOW",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EVIDENCE_OPTIMIZED",
+        "evolution_mode": "NO_CHANGE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    },
+    {
+      "case_id": "PEB2-024",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-QUALITY-PACK",
+        "profile_slug": "quality_pack"
+      },
+      "structural_fixture": "S26_VALID",
+      "case_input": {
+        "evidence": {
+          "domain_task_uplift": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-024/domain_task_uplift"
+            ]
+          },
+          "strategy_routing": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-024/strategy_routing"
+            ]
+          },
+          "expert_holdout": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-024/expert_holdout"
+            ]
+          },
+          "repeated_optimization": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-024/repeated_optimization"
+            ]
+          },
+          "architecture_fit": {
+            "status": "PASS",
+            "refs": [
+              "evidence://PEB2-024/architecture_fit"
+            ]
+          },
+          "optimization_opportunity": {
+            "status": "FAIL",
+            "refs": [
+              "evidence://PEB2-024/optimization_opportunity"
+            ]
+          }
+        },
+        "signals": {
+          "complexity": "MEDIUM",
+          "novelty": "LOW",
+          "uncertainty": "LOW",
+          "causal_requirement": "LOW",
+          "risk": "LOW",
+          "repeated_pattern": false,
+          "evidence_sufficiency": "SUFFICIENT",
+          "optimization_need": "NONE",
+          "task_family": "PROFILE_EVOLUTION_BENCHMARK"
+        },
+        "budget": {
+          "max_method_cost_points": 8
+        }
+      },
+      "frozen_decision": {
+        "assessment_status": "EVIDENCE_SUFFICIENT",
+        "maturity": "EVIDENCE_OPTIMIZED",
+        "evolution_mode": "NO_CHANGE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_requirements": [
+          {
+            "cost_points": 2,
+            "method_id": "SELF_REFINE",
+            "preconditions": [
+              "candidate_exists",
+              "grader_available"
+            ],
+            "within_budget": true
+          }
+        ],
+        "estimated_cost": {
+          "budget_limit": 8,
+          "method_cost_points": 2
+        },
+        "blocking_codes": []
+      }
+    }
+  ]
+}

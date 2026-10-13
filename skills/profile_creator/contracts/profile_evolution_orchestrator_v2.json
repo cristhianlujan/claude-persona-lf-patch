@@ -1,0 +1,124 @@
+{
+  "schema": "PROFILE_EVOLUTION_ORCHESTRATOR_V2",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "conceptual_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
+  "compatibility": {
+    "v1_operation_identity_preserved": true,
+    "v1_components_remain_readable": true,
+    "cutover_requires_new_gates": true
+  },
+  "objective": "Produce measurable task/domain capability uplift while preserving governance, general ability, reversibility and transfer.",
+  "maturity_model": {
+    "source": "skills/profile_creator/contracts/profile_competency_vector_v1.json",
+    "rule": "MATURITY_IS_DERIVED_FROM_VERIFIED_COMPETENCY_VECTOR",
+    "labels": [
+      "UNDETERMINED",
+      "GENERIC",
+      "SPECIALIZED",
+      "ADAPTIVE",
+      "EXPERT",
+      "EVIDENCE_OPTIMIZED"
+    ],
+    "structural_compatibility_is_not_maturity": true
+  },
+  "required_flow": [
+    "init_execution",
+    "router",
+    "profile_resolve",
+    "S26_structural_baseline",
+    "freeze_task_baseline",
+    "execute_original_profile_on_baseline_tasks",
+    "competency_assessment_v2",
+    "evolution_mode_selection",
+    "method_capability_selection_v3",
+    "verify_method_preconditions",
+    "adaptive_evolution_loop",
+    "candidate_materialization",
+    "execute_candidate_profile_on_matched_tasks",
+    "expert_behavior_benchmark_A_B_C_D",
+    "independent_assurance",
+    "safe_change_admission",
+    "regression_plan",
+    "pre_write_execution_binding_gate",
+    "github_write",
+    "github_readback",
+    "deterministic_validation",
+    "semantic_judge",
+    "regression_after",
+    "post_merge_reconcile",
+    "evolution_state_record_v2",
+    "learning_admission_v2",
+    "close",
+    "report_output"
+  ],
+  "adaptive_evolution_loop": {
+    "cycle": [
+      "SELECT",
+      "VERIFY_PRECONDITIONS",
+      "EXECUTE_METHOD_OR_CAPABILITY",
+      "OBSERVE",
+      "EVALUATE",
+      "REPLAN_OR_STOP"
+    ],
+    "replan_triggers": [
+      "NEW_EVIDENCE",
+      "METHOD_FAILED",
+      "QUALITY_PLATEAU",
+      "VERIFIER_REJECTED",
+      "RISK_CHANGED",
+      "BUDGET_CHANGED",
+      "STOP_CONDITION_MET"
+    ],
+    "persistent_learning_during_run": false,
+    "max_iterations_required_by_execution_budget": true
+  },
+  "benchmark_policy": {
+    "architecture_control_refs": [
+      "skills/profile_creator/contracts/profile_evolution_benchmark_v1.json",
+      "skills/profile_creator/evals/results/profile_evolution_full_behavior_score_fb1.json"
+    ],
+    "architecture_controls_cutover_eligible": false,
+    "expertise_benchmark_ref": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json",
+    "expertise_scope_required": "EXPERT_TASK_PERFORMANCE_E2E",
+    "four_arms_required": [
+      "A_ORIGINAL",
+      "B_UPDATER_V01",
+      "C_EVOLUTION_CURRENT",
+      "D_EVOLUTION_TARGET"
+    ]
+  },
+  "method_policy": {
+    "registry_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+    "selector_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v3.py",
+    "experimental_methods_auto_select": false,
+    "method_preconditions_must_be_verified": true,
+    "observed_cost_preferred": true,
+    "token_estimation_forbidden": true
+  },
+  "learning_policy": {
+    "ref": "skills/profile_creator/contracts/profile_learning_admission_v2.json",
+    "causal_attribution_required": true,
+    "transfer_validation_required": true,
+    "failures_retained": true,
+    "auto_promote": false
+  },
+  "candidate_boundary": {
+    "before_admission": "REVERSIBLE_NON_AUTHORITY_CANDIDATE_ONLY",
+    "profile_source_write_before_admission": false,
+    "candidate_must_be_executed_for_expertise_claim": true
+  },
+  "admission": {
+    "authority": "SAFE_CHANGE_ADMISSION_PLUS_INDEPENDENT_ASSURANCE",
+    "optimizer_is_authority": false,
+    "expertise_benchmark_pass_required": true,
+    "architecture_score_alone_never_sufficient": true
+  },
+  "execution_routes": [
+    "GPT_NATIVE",
+    "CLAUDE_NATIVE",
+    "REMOTE_API"
+  ],
+  "silent_route_substitution": false,
+  "runtime_activation": false,
+  "automatic_production_activation": false
+}

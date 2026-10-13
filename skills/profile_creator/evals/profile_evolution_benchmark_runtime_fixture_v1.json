@@ -1,0 +1,117 @@
+{
+  "schema": "PROFILE_EVOLUTION_DECISION_BENCHMARK_RUNTIME_FIXTURE_V1",
+  "benchmark_scope": "DECISION_POLICY_AND_COMPOSITION",
+  "frozen_before_oracle_open": true,
+  "structural_fixtures": {
+    "S26_VALID": {
+      "schema": "S26_PROFILE_BASELINE_EVALUATION_V1",
+      "decision": "NO_UPDATE_REQUIRED",
+      "score": 13,
+      "required": 13,
+      "dimensions": {},
+      "repair_actions": [],
+      "blocking_codes": [],
+      "automatic_impact_authorized": false,
+      "runtime_activation_authorized": false,
+      "target_code_execution_performed": false
+    },
+    "S26_MISSING_PACK_VALIDATOR": {
+      "schema": "S26_PROFILE_BASELINE_EVALUATION_V1",
+      "decision": "UPDATE_REQUIRED",
+      "score": 12,
+      "required": 13,
+      "dimensions": {
+        "B07_CI_PACK_VALIDATOR": {
+          "pass": false,
+          "code": "PROFILE_CI_VALIDATOR_NOT_DISCOVERABLE",
+          "evidence": null
+        }
+      },
+      "repair_actions": [
+        {
+          "action": "MATERIALIZE_GENERIC_PROFILE_PACK_ENTRYPOINT",
+          "dimension": "B07_CI_PACK_VALIDATOR",
+          "authority_required": false
+        }
+      ],
+      "blocking_codes": [],
+      "automatic_impact_authorized": false,
+      "runtime_activation_authorized": false,
+      "target_code_execution_performed": false
+    }
+  },
+  "learning_preflight_result": {
+    "schema": "S26_PROFILE_UPDATE_LEARNING_PREFLIGHT_RESULT_V1",
+    "status": "PASS",
+    "benchmark_fixture": true,
+    "write_authorized": false
+  },
+  "capability_catalog": [
+    {
+      "capability_code": "TARGETED_EVIDENCE_ACQUISITION",
+      "signal_type": "evidence_sufficiency",
+      "accepted_values": [
+        "INSUFFICIENT"
+      ],
+      "rank": 50,
+      "state": "AVAILABLE"
+    },
+    {
+      "capability_code": "CAUSAL_EFFECT_LINEAGE",
+      "signal_type": "causal_requirement",
+      "accepted_values": [
+        "HIGH",
+        "REQUIRED"
+      ],
+      "rank": 45,
+      "state": "AVAILABLE"
+    },
+    {
+      "capability_code": "INDEPENDENT_ASSURANCE",
+      "signal_type": "risk",
+      "accepted_values": [
+        "HIGH",
+        "CRITICAL"
+      ],
+      "rank": 40,
+      "state": "AVAILABLE"
+    },
+    {
+      "capability_code": "EVIDENCE_LEDGER",
+      "signal_type": "repeated_pattern",
+      "accepted_values": [
+        true
+      ],
+      "rank": 35,
+      "state": "AVAILABLE"
+    },
+    {
+      "capability_code": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+      "signal_type": "optimization_need",
+      "accepted_values": [
+        "REQUIRED",
+        "ADVANCED"
+      ],
+      "rank": 30,
+      "state": "AVAILABLE"
+    },
+    {
+      "capability_code": "CURRENTNESS_AUTHORITY",
+      "signal_type": "novelty",
+      "accepted_values": [
+        "HIGH"
+      ],
+      "rank": 25,
+      "state": "AVAILABLE"
+    }
+  ],
+  "capability_policy": {
+    "fallback_capabilities": []
+  },
+  "authority_boundary": {
+    "profile_source_write": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "oracle_access": false
+  }
+}

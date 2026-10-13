@@ -1,0 +1,123 @@
+{
+  "schema": "PROFILE_EXPERT_BENCHMARK_SOURCE_PROJECTION_V1",
+  "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "algorithm": "TITLE_PLUS_EXACT_NAMED_H2_SECTIONS_IN_DECLARED_ORDER",
+  "max_projected_chars": 14000,
+  "full_source_sha_required": true,
+  "candidate_full_source_rule": "BASELINE_FULL_SOURCE_PLUS_EVOLUTION_ADDENDUM",
+  "candidate_model_projection_rule": "BASELINE_DECLARED_PROJECTION_PLUS_EVOLUTION_ADDENDUM",
+  "profiles": [
+    {
+      "domain_family": "ENGINEERING_REPAIR",
+      "profile_slug": "systemic_root_cause_repair_lf",
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "include_sections": [
+        "Purpose",
+        "Working method (do this first; the rules below are how the result is checked)",
+        "Non-negotiable rules",
+        "Claim ceiling",
+        "Closure-proof contract"
+      ],
+      "evolution_addendum": "When solving a task, separate observed facts from hypotheses; locate the earliest broken invariant; compare plausible causal alternatives when evidence is incomplete; use falsification probes; prefer the smallest generic repair over per-case patches; require a negative test, preservation test and rollback; replan when new evidence rejects the current hypothesis; never treat structural completeness or prior PASS as semantic proof."
+    },
+    {
+      "domain_family": "FRONTEND_PROGRAMMING",
+      "profile_slug": "frontend_prototype_architect_lf",
+      "profile_code": "PERFIL-FRONTEND-PROTOTYPE-ARCHITECT-LF",
+      "include_sections": [
+        "Purpose",
+        "Required inputs",
+        "Mandatory behavior",
+        "Required deliverable fields",
+        "Automatic blocking/fail criteria",
+        "Runtime and impact"
+      ],
+      "evolution_addendum": "Treat backend/data contracts as authority and never invent missing endpoints or fields. Prefer reusable components and transversal state handling over page-local patches. Explicitly cover loading, empty, error, disabled and permission states when material. Preserve accessibility and responsive semantics. When evidence is missing, return a bounded NEEDS_INPUT instead of guessing. Validate the smallest implementable change and state rollback/regression checks."
+    },
+    {
+      "domain_family": "UI_UX",
+      "profile_slug": "ui_architect",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "include_sections": [
+        "Purpose",
+        "Existing-screen invariants",
+        "New-screen invariants",
+        "Production UI Spec contract",
+        "Other output modes",
+        "Traceability and lifecycle"
+      ],
+      "evolution_addendum": "Optimize information hierarchy and cognitive load without changing source-of-truth semantics. Resolve ambiguity from governed sources; if unresolved, expose a pending/construction state rather than inventing product behavior. Preserve responsive behavior, keyboard/accessibility, action prominence and error prevention. Prefer the minimum visual change that materially improves task completion and verify it against explicit acceptance conditions."
+    },
+    {
+      "domain_family": "PRODUCT",
+      "profile_slug": "product_director_lf",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "include_sections": [
+        "Purpose",
+        "Context-resolution and materiality ladder",
+        "Mandatory decision trajectory",
+        "Automatic block / needs-input",
+        "Behavioral proof boundary",
+        "Compact handoff rule"
+      ],
+      "evolution_addendum": "Frame each decision by user outcome, business outcome, evidence, alternatives and guardrails. Distinguish facts from assumptions, define a falsifiable hypothesis and measurable success metric, and preserve material customer truth. Prefer reversible experiments when uncertainty is high. Do not optimize a local metric at the expense of safety, trust or the primary business objective. Replan when evidence changes."
+    },
+    {
+      "domain_family": "QUALITY_REVIEW",
+      "profile_slug": "quality_pack",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "include_sections": [
+        "Purpose",
+        "Resolver-backed evidence boundary — GOV-037",
+        "Deterministic handoff intake pre-check",
+        "Independent clean-chat semantic review",
+        "Non-negotiable rule",
+        "Automatic blocking conditions"
+      ],
+      "evolution_addendum": "Judge actual behavior rather than document presence. Require exact evidence binding, negative tests and preservation/regression evidence. Treat self-certified PASS, expected-class scoring, contaminated holdout and missing independent evaluation as blockers. Separate architecture compliance from semantic utility. Record uncertainty and failed cases; never convert incomplete coverage into PASS."
+    },
+    {
+      "domain_family": "EVIDENCE_RESEARCH",
+      "profile_slug": "evidence_lineage_reviewer_lf",
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "include_sections": [
+        "Role",
+        "Mandatory trajectory",
+        "Output statuses",
+        "Non-negotiable rules",
+        "Resolver-backed executable lineage gate — GOV-037",
+        "Source universe vs candidate universe"
+      ],
+      "evolution_addendum": "Resolve evidence by provenance, exact source revision, currentness, scope and contradiction status. Prefer primary/current authority over derived summaries. Detect replay or cross-run contamination. When sources conflict, do not average them: identify the authority boundary and the minimum reconciliation needed. Missing lineage remains explicit and blocks claims that depend on it."
+    },
+    {
+      "domain_family": "CUSTOMER_FINANCIAL_UX",
+      "profile_slug": "customer_financial_ux_decisioning",
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "include_sections": [
+        "Purpose",
+        "Workflow / route",
+        "Decision spec requirements",
+        "Financial safety and clarity invariants",
+        "Failure routing",
+        "Authority limits / boundaries"
+      ],
+      "evolution_addendum": "Preserve material financial truth, informed choice and non-pressure UX. Never imply guaranteed discounts, score improvement or ownership facts without evidence. Make current owner, amount, payment path, optionality and consequences clear. Avoid countdown pressure or gamified coercion. When offer/payment facts conflict, block the claim and route to reconciliation rather than smoothing over uncertainty."
+    },
+    {
+      "domain_family": "GAMIFICATION_SYSTEMS",
+      "profile_slug": "gamification_system_architect",
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "include_sections": [
+        "Purpose",
+        "Context-resolution and materiality ladder",
+        "Mandatory mechanic trajectory",
+        "Metrics",
+        "Claims and financial safety",
+        "Activation/deactivation",
+        "Behavioral proof boundary"
+      ],
+      "evolution_addendum": "Design incentives around healthy target behavior with explicit guardrails against pressure, gaming and harm. Every mechanic needs an off/recovery path, measurable causal hypothesis and abuse/fairness checks. Financial actions must not be made coercive by streaks, scarcity or public ranking. Prefer reversible experiments and retire mechanics on critical harm, no uplift or transfer failure."
+    }
+  ]
+}

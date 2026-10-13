@@ -1,0 +1,368 @@
+{
+  "schema": "PROFILE_EVOLUTION_VALIDATOR_REGISTRY_V1",
+  "policy": {
+    "title_inference_forbidden": true,
+    "previous_pass_reuse_forbidden": true,
+    "fresh_validation_required_per_checkpoint": true,
+    "validator_logic_must_be_versioned_in_github": true,
+    "reuse_generic_or_transversal_before_new_validator": true,
+    "missing_validator_action": "CREATE_AND_QUALIFY_VALIDATOR_BEFORE_CHECKPOINT_EXECUTION",
+    "validator_may_not_grant_write_authority": true
+  },
+  "validators": [
+    {
+      "validator_code": "GITHUB_FILE_TEXT_ASSERT_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "ACTIVE_PROVEN",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "execution_handler": "GITHUB_FILE_TEXT_ASSERT_V1",
+      "qualification_refs": [
+        "lf_test_runs:2bd5b1c1-81f6-4e8d-a3a5-83bb97b329bc",
+        "lf_test_runs:f1bd339e-bb7e-4685-88b0-fdc7dd4b29e0"
+      ],
+      "input_contract": [
+        "repository",
+        "ref",
+        "path",
+        "must_contain?",
+        "must_not_contain?",
+        "ordered_contains?",
+        "exact_count?"
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
+    },
+    {
+      "validator_code": "GITHUB_FILE_SHA256_ASSERT_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "ACTIVE_PROVEN",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "execution_handler": "GITHUB_FILE_SHA256_ASSERT_V1",
+      "qualification_refs": [
+        "lf_test_runs:ffc40106-8825-44e6-882f-e3fca7288e2b",
+        "lf_test_runs:8d773299-7c71-4a87-a2d9-e9ad72cd74b6"
+      ],
+      "input_contract": [
+        "repository",
+        "ref",
+        "path",
+        "expected_sha256"
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
+    },
+    {
+      "validator_code": "SUPABASE_CATALOG_ASSERT_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "ACTIVE_PROVEN",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@b8adfa611d9af25d50497584ad002c49e0c82495/docs/programming/PROGRAMMING_VALIDATORS_AND_RESOLVERS_GUIDE_V1.md",
+      "execution_handler": "SUPABASE_CATALOG_ASSERT_V1",
+      "qualification_refs": [
+        "lf_test_runs:fb6646bb-eef5-4e5f-8beb-5b5a580c7367",
+        "lf_test_runs:0a6699b3-7d12-4524-8e84-b9d62426f105"
+      ],
+      "input_contract": [
+        "assertions"
+      ],
+      "source_identity": "IMMUTABLE_GITHUB_COMMIT_REF"
+    },
+    {
+      "validator_code": "S26_PROFILE_BASELINE_V1",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED",
+      "source_ref": "skills/profile_creator/validators/evaluate_s26_profile_baseline.py",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "profile_slug",
+        "repo_root"
+      ],
+      "pass_contract": "decision in {NO_UPDATE_REQUIRED,UPDATE_REQUIRED}; required=13; no target code execution"
+    },
+    {
+      "validator_code": "PROFILE_ASSESSMENT_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_REQUIRES_FRESH_REQUALIFICATION",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_assessment_v1.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_assessment_v1.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "evidence",
+        "signals"
+      ],
+      "pass_contract": "evidence-bound maturity/mode; UNKNOWN never becomes GENERIC/SPECIALIZE; write_authorized=false"
+    },
+    {
+      "validator_code": "METHOD_PACK_REGISTRY_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v1.json",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/test_method_pack_registry_v1.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "registry_ref"
+      ],
+      "pass_contract": "unique typed methods; preconditions/cost/risk/stop/escalation; no auto promote"
+    },
+    {
+      "validator_code": "CAPABILITY_SELECTOR_V2",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v2.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/test_capability_selector_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "context",
+        "catalog",
+        "policy",
+        "method_registry"
+      ],
+      "pass_contract": "v1 compatibility; typed composition; budget bound; no execution authority"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_PLAN_BUILDER_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED",
+      "source_ref": "skills/profile_creator/validators/plan_profile_evolution.py",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "profile_slug",
+        "learning_preflight",
+        "assessment",
+        "capability_catalog",
+        "capability_policy",
+        "method_registry"
+      ],
+      "pass_contract": "candidate blocked when assessment evidence insufficient; write=false before admission"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_SHADOW_RESULT_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "NEW_IMPLEMENTED_NEEDS_QUALIFICATION",
+      "source_ref": "skills/profile_creator/validators/validate_profile_evolution_shadow_result.py",
+      "qualification_ref": "skills/profile_creator/validators/validate_profile_evolution_shadow_result.py --self-test",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "shadow_result",
+        "target_manifest"
+      ],
+      "pass_contract": "exact frozen target set; writes=0; no capability maturity inferred from UNKNOWN"
+    },
+    {
+      "validator_code": "PROFILE_LEARNING_ADMISSION_V1",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED",
+      "source_ref": "skills/profile_creator/validators/validate_profile_learning_admission.py",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "observation_refs",
+        "candidate_lesson",
+        "repeat_count",
+        "cross_case_refs",
+        "holdout_ref",
+        "admission_ref",
+        "admission_verdict"
+      ],
+      "pass_contract": "repeat_count>=2 and admitted evidence; auto_promoted=false"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_BENCHMARK_ADMISSION_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED",
+      "source_ref": "skills/profile_creator/validators/evaluate_profile_evolution_benchmark.py",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "benchmark_summary"
+      ],
+      "pass_contract": "20+ cases; primary UP; holdout UP; 0 critical regressions; false PASS protected; behavior preserved; budget; assurance PASS"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_STEP_GATE_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_SQL_DRY_RUN_TESTED",
+      "source_ref": "skills/profile_creator/contracts/profile_evolution_step_gate_v1.sql",
+      "execution_handler": "SQL_DRY_RUN_OR_INSTALLED_TRIGGER",
+      "input_contract": [
+        "operation_version",
+        "step",
+        "evidence_payload"
+      ],
+      "pass_contract": "step evidence satisfies v0.2 semantic gate"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_CUTOVER_GATE_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_NEGATIVE_GATE_TESTED",
+      "source_ref": "sandbox/lf_contract_gate_test/profile_evolution/candidate_migrations/profile_evolution_orchestrator_cutover_v1.sql",
+      "execution_handler": "SQL_TRANSACTIONAL_GATE",
+      "input_contract": [
+        "admission_event",
+        "open_v01_execution_count",
+        "current_capability_versions"
+      ],
+      "pass_contract": "cutover only with admitted benchmark, no open v0.1 executions and required current capabilities"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_ENGINEERING_PLAN_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "NEW_IMPLEMENTED_NEEDS_QUALIFICATION",
+      "source_ref": "skills/profile_creator/validators/validate_profile_evolution_engineering_plan.py",
+      "qualification_ref": "skills/profile_creator/validators/validate_profile_evolution_engineering_plan.py <plan> <registry> <repo_root>",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "plan",
+        "validator_registry",
+        "repo_root"
+      ],
+      "pass_contract": "acyclic atomic plan; every required checkpoint has explicit executable validator binding; no title inference"
+    },
+    {
+      "validator_code": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/test_profile_candidate_materializer_v1.py",
+      "execution_handler": "PYTHON_TEST_OR_FILE",
+      "input_contract": [
+        "candidate_overlay",
+        "repo_root",
+        "output_root",
+        "expected_baseline_revision"
+      ],
+      "pass_contract": "reversible non-authority overlay; exact before hashes; path confinement; source unchanged; no runtime/production activation"
+    },
+    {
+      "validator_code": "PROFILE_EXECUTION_RECEIPT_V1",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "ACTIVE_PROVEN_NATIVE_AND_REMOTE",
+      "source_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py",
+      "execution_handler": "PYTHON_FILE",
+      "input_contract": [
+        "receipt",
+        "expected_profile_code",
+        "expected_input",
+        "expected_raw_output",
+        "expected_profile_source_sha256"
+      ],
+      "pass_contract": "canonical PROFILE_EXECUTION_RECEIPT_V1 binds exact profile source, input, RAW and runtime attestation; native and remote execution remain mode-bound"
+    },
+    {
+      "validator_code": "PROFILE_ASSESSMENT_V2",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/profile_assessment_v2.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment/test_profile_assessment_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "competency_observations",
+        "structural_status",
+        "architecture_status",
+        "assessment_policy?",
+        "causal_attribution?"
+      ],
+      "pass_contract": "maturity derived from verified task-execution competency vector; structural-only cannot elevate; expert requires transfer/preservation; no write authority"
+    },
+    {
+      "validator_code": "METHOD_PACK_REGISTRY_V2",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v2.json",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/test_method_pack_registry_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "registry_ref"
+      ],
+      "pass_contract": "typed verified preconditions; observed cost preferred; causal effectiveness/transfer/retirement contracts; experiments not auto-selected"
+    },
+    {
+      "validator_code": "CAPABILITY_SELECTOR_V3",
+      "scope": "TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v3.py",
+      "qualification_ref": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/test_capability_selector_v3.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "context",
+        "catalog",
+        "policy",
+        "method_registry_v2",
+        "precondition_state",
+        "execution_observation?"
+      ],
+      "pass_contract": "verified preconditions required; dynamic evidence-bound replanning; experimental methods gated; no persistent learning authority"
+    },
+    {
+      "validator_code": "PROFILE_EVOLUTION_PLAN_BUILDER_V2",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/validators/plan_profile_evolution_v2.py",
+      "qualification_ref": "skills/profile_creator/validators/test_plan_profile_evolution_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "structural_baseline",
+        "learning_preflight",
+        "assessment_v2",
+        "capability_catalog",
+        "capability_policy",
+        "method_registry_v2",
+        "precondition_state"
+      ],
+      "pass_contract": "competency-grounded plan; adaptive loop; candidate execution and expert benchmark mandatory; no write authority"
+    },
+    {
+      "validator_code": "PROFILE_LEARNING_ADMISSION_V2",
+      "scope": "PROFILE_TRANSVERSAL",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/validators/validate_profile_learning_admission_v2.py",
+      "qualification_ref": "skills/profile_creator/validators/test_profile_learning_admission_v2.py",
+      "execution_handler": "PYTHON_TEST",
+      "input_contract": [
+        "observations",
+        "hypothesis",
+        "method_ids",
+        "causal_attribution",
+        "replication",
+        "transfer_validation",
+        "holdout",
+        "cost_effectiveness",
+        "negative_outcomes",
+        "admission",
+        "lifecycle"
+      ],
+      "pass_contract": "positive causally attributable effect; replication; transfer; failures retained; independent admission; lifecycle bounded; no auto-promotion"
+    },
+    {
+      "validator_code": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+      "scope": "PROFILE_EVOLUTION",
+      "deterministic": true,
+      "state": "IMPLEMENTED_TESTED_CANDIDATE",
+      "source_ref": "skills/profile_creator/evals/score_profile_expert_behavior_v1.py",
+      "qualification_ref": "skills/profile_creator/evals/test_score_profile_expert_behavior_v1.py",
+      "execution_handler": "PYTHON_TEST_OR_FILE",
+      "input_contract": [
+        "four_arm_raw",
+        "holdout_manifest",
+        "benchmark_protocol"
+      ],
+      "pass_contract": "actual profile execution receipts for A/B/C/D; blind independent evaluator; >=15% D-vs-A target; positive paired/holdout CIs; zero critical regressions; preservation>=98%; observed resource budget"
+    }
+  ]
+}

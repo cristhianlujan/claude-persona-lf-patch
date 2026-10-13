@@ -1,0 +1,101 @@
+{
+  "schema": "PROFILE_COMPETENCY_VECTOR_V1",
+  "purpose": "Measure effective profile capability from verified task executions; maturity labels are derived views, never direct claims.",
+  "required_dimensions": [
+    "domain_quality",
+    "max_difficulty_solved",
+    "robustness",
+    "adaptation",
+    "transfer",
+    "preservation",
+    "efficiency",
+    "longitudinal_evidence"
+  ],
+  "observation_contract": {
+    "required": [
+      "task_ref",
+      "task_family",
+      "difficulty",
+      "score",
+      "verification_state",
+      "output_receipt_ref",
+      "evaluator_receipt_ref",
+      "evidence_refs"
+    ],
+    "difficulty_range": [
+      1,
+      5
+    ],
+    "score_range": [
+      0,
+      1
+    ],
+    "verification_state_required": "VERIFIED",
+    "receipt_refs_must_be_nonempty": true,
+    "flags": [
+      "critical",
+      "transfer_case",
+      "adaptation_case",
+      "preservation_case",
+      "repeat_group"
+    ],
+    "optional": [
+      "cost_budget_ratio",
+      "generation",
+      "method_ids",
+      "baseline_score"
+    ]
+  },
+  "derivation": {
+    "domain_quality": "difficulty_weighted_mean(score)",
+    "max_difficulty_solved": "highest difficulty with >= min_cases_at_difficulty and score >= solved_threshold",
+    "robustness": "mean score across repeat groups with >=2 verified executions",
+    "adaptation": "mean score on adaptation_case=true",
+    "transfer": "mean score on transfer_case=true",
+    "preservation": "mean score on preservation_case=true",
+    "efficiency": "mean max(0,1-cost_budget_ratio) where observed; NOT_OBSERVED otherwise",
+    "longitudinal_evidence": "distinct verified generations with benchmark/assurance refs"
+  },
+  "default_policy": {
+    "solved_threshold": 0.8,
+    "min_cases_at_difficulty": 2,
+    "min_verified_observations": 6,
+    "generic": {
+      "domain_quality_max_exclusive": 0.7
+    },
+    "specialized": {
+      "domain_quality_min": 0.7,
+      "max_difficulty_min": 2,
+      "preservation_min": 0.95
+    },
+    "adaptive": {
+      "domain_quality_min": 0.75,
+      "max_difficulty_min": 3,
+      "robustness_min": 0.7,
+      "adaptation_min": 0.7,
+      "preservation_min": 0.97
+    },
+    "expert": {
+      "domain_quality_min": 0.85,
+      "max_difficulty_min": 4,
+      "robustness_min": 0.8,
+      "adaptation_min": 0.8,
+      "transfer_min": 0.75,
+      "preservation_min": 0.98,
+      "critical_failures_max": 0
+    },
+    "evidence_optimized": {
+      "expert_required": true,
+      "min_generations": 3,
+      "causal_confidence_min": 0.75
+    }
+  },
+  "invariants": [
+    "STRUCTURAL_COMPATIBILITY_NEVER_ELEVATES_MATURITY",
+    "UNVERIFIED_OBSERVATIONS_NEVER_SCORE",
+    "MISSING_REQUIRED_DIMENSION_BLOCKS_UPWARD_MATURITY",
+    "EXPERT_REQUIRES_TRANSFER_AND_PRESERVATION",
+    "EVIDENCE_OPTIMIZED_REQUIRES_LONGITUDINAL_AND_CAUSAL_EVIDENCE",
+    "ASSESSMENT_NEVER_GRANTS_WRITE_AUTHORITY"
+  ]
+}

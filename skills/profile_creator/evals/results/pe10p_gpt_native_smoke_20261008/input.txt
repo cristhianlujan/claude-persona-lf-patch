@@ -1,0 +1,16 @@
+PE10P GPT_NATIVE smoke for Profile Evolution.
+
+Target profile: PERFIL-QUALITY-PACK (profiles/quality_pack)
+Baseline revision: 920b99f745c8c2ad63436a39130d20dd452cfd5a
+Benchmark case basis: PEB2-004 / STRUCTURALLY_COMPATIBLE_GENERIC.
+
+Evidence supplied by the frozen benchmark case:
+- architecture_fit = PASS
+- domain_task_uplift = FAIL
+- strategy_routing = FAIL
+- expert_holdout = FAIL
+- repeated_optimization = FAIL
+- optimization_opportunity = FAIL
+
+Task:
+Using the existing LF Profile Creator and Profile Evolution contracts, author one reversible NON_AUTHORITY_CANDIDATE overlay for SPECIALIZE mode. Do not modify profile authority. Do not activate runtime or production. Preserve existing Quality Pack responsibilities and fail-closed behavior. The candidate may add one new contract file only. Return the candidate overlay JSON only.

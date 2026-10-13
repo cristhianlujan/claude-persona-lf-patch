@@ -1,0 +1,95 @@
+{
+  "schema": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "conceptual_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
+  "separates": {
+    "evolution_intelligence": "decides what should improve",
+    "update_execution": "applies only an admitted governed change"
+  },
+  "evolution_modes": [
+    "NO_CHANGE",
+    "PATCH",
+    "SPECIALIZE",
+    "ADAPT",
+    "REARCHITECT",
+    "OPTIMIZE"
+  ],
+  "structural_floor": {
+    "contract": "S26_PROFILE_BASELINE_V1",
+    "dimensions": 13,
+    "pass_semantics": "STRUCTURALLY_COMPATIBLE_NOT_SEMANTIC_EXCELLENCE"
+  },
+  "required_flow": [
+    "init_execution",
+    "router",
+    "profile_resolve",
+    "baseline_read",
+    "profile_assessment",
+    "evolution_mode_selection",
+    "method_capability_composition",
+    "evolution_plan",
+    "candidate_materialization",
+    "benchmark_eval",
+    "challenge_assurance",
+    "admission",
+    "regression_plan",
+    "pre_write_execution_binding_gate",
+    "github_write",
+    "github_readback",
+    "deterministic_validation",
+    "semantic_judge",
+    "regression_after",
+    "post_merge_reconcile",
+    "evolution_state_record",
+    "close",
+    "report_output"
+  ],
+  "conditional_methods": {
+    "research": "ONLY_WHEN_EVIDENCE_CAN_CHANGE_DECISION",
+    "challenger": "HIGH_RISK_OR_HIGH_UNCERTAINTY_OR_COMPETING_HYPOTHESES_OR_LARGE_BLAST_RADIUS",
+    "evaluator_optimizer": "BENCHMARK_AND_UPLIFT_JUSTIFY",
+    "advanced_search": "E8_ADMITTED_AND_HOLDOUT_PROTECTED"
+  },
+  "candidate_boundary": {
+    "before_admission": "REVERSIBLE_NON_AUTHORITY_CANDIDATE_ONLY",
+    "profile_source_write_before_admission": false
+  },
+  "patch_policy": {
+    "universal": false,
+    "required_when_mode": "PATCH",
+    "other_modes": "BOUNDED_EVIDENCE_JUSTIFIED_DELTA"
+  },
+  "preserved_gates": [
+    "exact_head",
+    "execution_binding",
+    "github_readback",
+    "deterministic_validation",
+    "semantic_judge",
+    "regression",
+    "post_merge_reconciliation",
+    "no_runtime_auto_promotion"
+  ],
+  "admission": {
+    "authority": "SAFE_CHANGE_ADMISSION_PLUS_INDEPENDENT_ASSURANCE",
+    "optimizer_is_authority": false
+  },
+  "runtime_activation": false,
+  "automatic_production_activation": false,
+  "implementation_plan_ref": "skills/profile_creator/contracts/profile_updater_evolution_plan_v1.json",
+  "plan_completion_rule": "E10_ADMIT_CUTOVER_PLUS_GOVERNED_V02_AUTHORITY_READBACK",
+  "atomic_execution_plan_ref": "skills/profile_creator/contracts/profile_evolution_engineering_plan_v1.json",
+  "validator_registry_ref": "skills/profile_creator/contracts/profile_evolution_validator_registry_v1.json",
+  "checkpoint_validation_model": "FRESH_DETERMINISTIC_VALIDATOR_WITH_EXPLICIT_INPUT",
+  "validator_missing_behavior": "BLOCK_CREATE_QUALIFY_THEN_RETRY",
+  "programming_specific_runtime_tables_reused": false,
+  "candidate_materialization": {
+    "contract_ref": "skills/profile_creator/contracts/profile_evolution_candidate_materialization_v1.json",
+    "semantic_producer": "PROFILE_CREATOR",
+    "semantic_producer_parallel_engine": false,
+    "deterministic_materializer": "PROFILE_CANDIDATE_MATERIALIZER",
+    "materializer_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+    "output_authority_state": "NON_AUTHORITY_CANDIDATE",
+    "source_write_authorized": false,
+    "admission_required_before_profile_source_write": true
+  }
+}

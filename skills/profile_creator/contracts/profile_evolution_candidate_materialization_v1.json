@@ -1,0 +1,75 @@
+{
+  "schema": "PROFILE_EVOLUTION_CANDIDATE_MATERIALIZATION_V1",
+  "purpose": "Bind existing Profile Creator semantic production to a reversible, non-authority overlay for an existing governed profile.",
+  "semantic_producer": {
+    "capability": "PROFILE_CREATOR",
+    "source_ref": "skills/profile_creator/SKILL.md",
+    "creates_parallel_creator": false,
+    "responsibility": "AUTHOR_EVIDENCE_BOUND_CHANGED_FILE_CONTENT_ONLY"
+  },
+  "deterministic_materializer": {
+    "capability": "PROFILE_CANDIDATE_MATERIALIZER",
+    "source_ref": "sandbox/lf_contract_gate_test/transversal_assets/profile_candidate_materializer/profile_candidate_materializer_v1.py",
+    "responsibility": "VERIFY_SCOPE_BASELINE_HASHES_AND_MATERIALIZE_OVERLAY_ONLY",
+    "may_author_content": false,
+    "may_write_authority": false
+  },
+  "input_schema": {
+    "required": [
+      "schema",
+      "profile_code",
+      "profile_slug",
+      "baseline_revision",
+      "evolution_mode",
+      "authority_state",
+      "reversible",
+      "profile_source_write_authorized",
+      "runtime_activation",
+      "production_activation",
+      "evidence_map",
+      "preservation_constraints",
+      "changes"
+    ],
+    "candidate_schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+    "authority_state": "NON_AUTHORITY_CANDIDATE",
+    "reversible": true,
+    "profile_source_write_authorized": false,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "change_contract": {
+    "allowed_operations": [
+      "UPSERT",
+      "DELETE"
+    ],
+    "path_scope": "RELATIVE_TO_PROFILES_SLUG_NO_ESCAPE",
+    "existing_file_requires_before_sha256": true,
+    "new_file_requires_before_sha256_null": true,
+    "delete_requires_before_sha256_and_no_content": true,
+    "upsert_requires_content": true
+  },
+  "output_receipt": {
+    "schema": "PROFILE_CANDIDATE_MATERIALIZATION_RECEIPT_V1",
+    "required": [
+      "candidate_sha256",
+      "baseline_revision",
+      "profile_slug",
+      "output_root",
+      "changed_paths",
+      "deleted_paths",
+      "file_sha256s",
+      "source_unchanged",
+      "authority_state"
+    ]
+  },
+  "invariants": [
+    "PROFILE_CREATOR_AUTHORS_SEMANTIC_DELTA",
+    "MATERIALIZER_NEVER_AUTHORS_SEMANTICS",
+    "OUTPUT_ROOT_MUST_BE_OUTSIDE_REPOSITORY_ROOT",
+    "OFFICIAL_PROFILE_SOURCE_REMAINS_UNCHANGED",
+    "EVERY_EXISTING_CHANGE_BINDS_BEFORE_SHA256",
+    "PATH_ESCAPE_FORBIDDEN",
+    "RUNTIME_AND_PRODUCTION_ACTIVATION_FORBIDDEN",
+    "MATERIALIZED_OVERLAY_IS_NOT_ADMISSION_OR_WRITE_AUTHORITY"
+  ]
+}

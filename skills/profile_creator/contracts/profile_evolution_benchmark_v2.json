@@ -1,0 +1,34 @@
+{
+  "schema": "PROFILE_EVOLUTION_BENCHMARK_V2",
+  "separation_rule": "ARCHITECTURE_CONTROL_IS_NOT_EXPERTISE_EVIDENCE",
+  "layers": {
+    "architecture_control": {
+      "refs": [
+        "skills/profile_creator/contracts/profile_evolution_benchmark_v1.json",
+        "skills/profile_creator/evals/results/profile_evolution_full_behavior_score_fb1.json"
+      ],
+      "purpose": "Validate decision policy, evidence handling, composition, authority boundaries and reversible candidate production.",
+      "cutover_eligible": false,
+      "expertise_claim_allowed": false
+    },
+    "expert_task_performance": {
+      "ref": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json",
+      "scope": "EXPERT_TASK_PERFORMANCE_E2E",
+      "purpose": "Execute original and evolved profiles on matched unseen tasks and measure actual task quality, difficulty, transfer, adaptation, preservation and resource use.",
+      "cutover_eligible_after_assurance": true
+    }
+  },
+  "final_cutover_requires": [
+    "EXPERT_TASK_PERFORMANCE_E2E_BENCHMARK_PASS",
+    "INDEPENDENT_ASSURANCE_PASS",
+    "SAFE_CHANGE_ADMISSION_PASS",
+    "ZERO_OPEN_LEGACY_EXECUTIONS",
+    "AUTHORITY_CURRENTNESS_AND_READBACK"
+  ],
+  "forbidden": [
+    "ARCHITECTURE_CONTROL_SCORE_AS_EXPERTISE",
+    "DOCUMENT_ONLY_TRANSFORMATION_AS_BEHAVIORAL_UPLIFT",
+    "EXPECTED_CLASS_AS_BASELINE_SCORE",
+    "POST_RESULT_THRESHOLD_TUNING"
+  ]
+}

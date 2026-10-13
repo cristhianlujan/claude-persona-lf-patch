@@ -1,0 +1,55 @@
+{
+  "schema": "PROFILE_EVOLUTION_SHADOW_TARGETS_V1",
+  "mode": "READ_ONLY_NO_PROFILE_WRITE",
+  "targets": [
+    {
+      "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+      "profile_slug": "systemic_root_cause_repair_lf"
+    },
+    {
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "profile_slug": "quality_pack"
+    },
+    {
+      "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+      "profile_slug": "evidence_lineage_reviewer_lf"
+    },
+    {
+      "profile_code": "ACT-0051",
+      "profile_slug": "frontend_prototype_architect_lf"
+    },
+    {
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "profile_slug": "product_director_lf"
+    },
+    {
+      "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+      "profile_slug": "customer_financial_ux_decisioning"
+    },
+    {
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "profile_slug": "ui_architect"
+    },
+    {
+      "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+      "profile_slug": "gamification_system_architect"
+    }
+  ],
+  "repository_snapshot_sha": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "snapshot_policy": "TARGET_PROFILE_BYTES_FROM_FROZEN_MAIN_SHA; CANDIDATE_EVALUATOR_BYTES_FROM_PROFILE_EVOLUTION_BRANCH",
+  "retired_non_profile_targets": [
+    {
+      "profile_code": "PERFIL-CX-TRUST-EXPERIENCE-ARCHITECT-LF-20260531",
+      "prior_profile_slug": "cx_trust_experience_architect_lf",
+      "current_disposition": "ADAPTER_ONLY_NOT_PROFILE",
+      "current_ref": "adapters/marketplace_lf_cx_trust/ADAPTER.md"
+    },
+    {
+      "profile_code": "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "prior_profile_slug": "ux_product_experience_architect_lf",
+      "current_disposition": "ADAPTER_ONLY_NOT_PROFILE",
+      "current_ref": "adapters/marketplace_lf_ux/ADAPTER.md"
+    }
+  ],
+  "target_count": 8
+}

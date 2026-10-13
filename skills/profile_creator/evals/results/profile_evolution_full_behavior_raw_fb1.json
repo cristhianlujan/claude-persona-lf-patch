@@ -1,0 +1,2271 @@
+{
+  "schema": "PROFILE_EVOLUTION_FULL_BEHAVIOR_RAW_V1",
+  "generation_id": "PEB-FB1-20261008",
+  "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR",
+  "repository_profile_snapshot_sha": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "case_count": 21,
+  "raw_frozen": true,
+  "scoring_opened_before_raw": false,
+  "oracle_opened": false,
+  "semantic_raw_ref": "github://cristhianlujan/claude-persona-lf-patch@8a7f2b04904430c0547483fe13d0fc6ba265ee50/skills/profile_creator/evals/results/profile_evolution_full_behavior_semantic_raw_fb1.json",
+  "semantic_raw_blob": "2ef6d7c46ab7d641a0eeab80cf6b7c0da0811f37",
+  "protocol_ref": "github://cristhianlujan/claude-persona-lf-patch@21d6bb4f00670b3c4b2f0fce36072c216b8c55ef/skills/profile_creator/evals/profile_evolution_full_behavior_protocol_v1.json",
+  "scoring_source_ref": "github://cristhianlujan/claude-persona-lf-patch@e078ab5167bbceeb54280375d7daa72605c06192/skills/profile_creator/evals/score_profile_evolution_full_behavior_v1.py",
+  "execution_metrics": {
+    "executor_mode": "GPT_NATIVE",
+    "adapter_id": "chatgpt-native-current-context-v1",
+    "provider": "OPENAI_CHATGPT_NATIVE",
+    "model_id": "GPT-5.6 Sol",
+    "remote_api_calls": 0,
+    "token_usage_status": "NOT_OBSERVED",
+    "token_estimated": false,
+    "latency_metric": "E2E_PERSISTENCE_WINDOW_MS",
+    "latency_claim_scope": "OBSERVABLE_UPPER_BOUND_FROM_PROTOCOL_FREEZE_TO_SEMANTIC_RAW_PERSISTENCE_NOT_MODEL_INFERENCE_LATENCY",
+    "execution_started_at": "2026-10-09T01:48:28Z",
+    "raw_materialized_at": "2026-10-09T01:49:19Z",
+    "e2e_persistence_window_ms": 51000
+  },
+  "rows": [
+    {
+      "case_id": "PEB2-004",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-QUALITY-PACK",
+        "profile_slug": "quality_pack"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-QUALITY-PACK",
+          "profile_slug": "quality_pack",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "SPECIALIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-004/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-004/strategy_routing",
+              "supports": [
+                "strategy_routing=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-004/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-004/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-004/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-004/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=FAIL"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of quality_pack: independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_004.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-004\n\nStatus: NON_AUTHORITY_CANDIDATE / SPECIALIZE\nTarget: quality_pack\n\n## Objective\nEvolve quality_pack toward independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion while preserving its existing governed responsibilities.\n\n## Specialization target\nindependent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion\n\n## Capability composition\n- none beyond governed core\n\n## Evidence refs\n- evidence://PEB2-004/domain_task_uplift\n- evidence://PEB2-004/strategy_routing\n- evidence://PEB2-004/expert_holdout\n- evidence://PEB2-004/repeated_optimization\n- evidence://PEB2-004/architecture_fit\n- evidence://PEB2-004/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of quality_pack: independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "SPECIALIZE",
+          "target_profile": "PERFIL-QUALITY-PACK",
+          "objective": "Evolve quality_pack toward independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion while preserving its existing governed responsibilities.",
+          "capabilities_applied": [],
+          "evidence_refs": [
+            "evidence://PEB2-004/domain_task_uplift",
+            "evidence://PEB2-004/strategy_routing",
+            "evidence://PEB2-004/expert_holdout",
+            "evidence://PEB2-004/repeated_optimization",
+            "evidence://PEB2-004/architecture_fit",
+            "evidence://PEB2-004/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of quality_pack: independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "specialization_target": "independent evidence-bound quality review that distinguishes structural readiness from semantic capability and blocks unsupported promotion"
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "0d6732ee612be8231bf525f4fdc6f5e32002cbbd7355319a30592df94766d2ed",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_004.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "c42c3a825b94542f64298344aae59088d87ead5802abe1af725a1a44b72c2261",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-005",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-UI-ARCHITECT",
+          "profile_slug": "ui_architect",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "SPECIALIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-005/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-005/strategy_routing",
+              "supports": [
+                "strategy_routing=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-005/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-005/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-005/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-005/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=FAIL"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of ui_architect: implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_005.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-005\n\nStatus: NON_AUTHORITY_CANDIDATE / SPECIALIZE\nTarget: ui_architect\n\n## Objective\nEvolve ui_architect toward implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable while preserving its existing governed responsibilities.\n\n## Specialization target\nimplementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable\n\n## Capability composition\n- none beyond governed core\n\n## Evidence refs\n- evidence://PEB2-005/domain_task_uplift\n- evidence://PEB2-005/strategy_routing\n- evidence://PEB2-005/expert_holdout\n- evidence://PEB2-005/repeated_optimization\n- evidence://PEB2-005/architecture_fit\n- evidence://PEB2-005/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of ui_architect: implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "SPECIALIZE",
+          "target_profile": "PERFIL-UI-ARCHITECT",
+          "objective": "Evolve ui_architect toward implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable while preserving its existing governed responsibilities.",
+          "capabilities_applied": [],
+          "evidence_refs": [
+            "evidence://PEB2-005/domain_task_uplift",
+            "evidence://PEB2-005/strategy_routing",
+            "evidence://PEB2-005/expert_holdout",
+            "evidence://PEB2-005/repeated_optimization",
+            "evidence://PEB2-005/architecture_fit",
+            "evidence://PEB2-005/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of ui_architect: implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "specialization_target": "implementation-ready UI decisions that preserve semantic authority, resolve ambiguity safely, and make acceptance conditions observable"
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "1951c546604ef87de007c939bb1c7e0451f6c2a3bfe2810cd7f02490f0527bb7",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_005.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "62b2ade4123f470bd1e7fa281e73bb5b24bd42632bff0c17ea44b6ad1defdb9b",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-006",
+      "stratum": "STRUCTURALLY_COMPATIBLE_GENERIC",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "SPECIALIZE",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+          "profile_slug": "product_director_lf",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "SPECIALIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-006/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-006/strategy_routing",
+              "supports": [
+                "strategy_routing=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-006/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-006/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-006/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-006/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=FAIL"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_006.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-006\n\nStatus: NON_AUTHORITY_CANDIDATE / SPECIALIZE\nTarget: product_director_lf\n\n## Objective\nEvolve product_director_lf toward evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints while preserving its existing governed responsibilities.\n\n## Specialization target\nevidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints\n\n## Capability composition\n- none beyond governed core\n\n## Evidence refs\n- evidence://PEB2-006/domain_task_uplift\n- evidence://PEB2-006/strategy_routing\n- evidence://PEB2-006/expert_holdout\n- evidence://PEB2-006/repeated_optimization\n- evidence://PEB2-006/architecture_fit\n- evidence://PEB2-006/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "SPECIALIZE",
+          "target_profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+          "objective": "Evolve product_director_lf toward evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints while preserving its existing governed responsibilities.",
+          "capabilities_applied": [],
+          "evidence_refs": [
+            "evidence://PEB2-006/domain_task_uplift",
+            "evidence://PEB2-006/strategy_routing",
+            "evidence://PEB2-006/expert_holdout",
+            "evidence://PEB2-006/repeated_optimization",
+            "evidence://PEB2-006/architecture_fit",
+            "evidence://PEB2-006/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "specialization_target": "evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints"
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "65e380eba6d9e9bc6195ed13a8446f2cca644237a60eab9eb49e409facb5d53b",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_006.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "18ba3fe032aa1a3bf893bb25dcbfd5fd807aaf25b12d424e2d2d367e88c98d9f",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-007",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-UI-ARCHITECT",
+        "profile_slug": "ui_architect"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "domain_task_uplift",
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-008",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "domain_task_uplift",
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-009",
+      "stratum": "AMBIGUOUS",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "domain_task_uplift",
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-010",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+        "profile_slug": "product_director_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+          "profile_slug": "product_director_lf",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-010/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-010/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-010/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-010/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-010/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-010/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_010.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-010\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: product_director_lf\n\n## Objective\nEvolve product_director_lf toward evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-010/domain_task_uplift\n- evidence://PEB2-010/strategy_routing\n- evidence://PEB2-010/expert_holdout\n- evidence://PEB2-010/repeated_optimization\n- evidence://PEB2-010/architecture_fit\n- evidence://PEB2-010/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "PERFIL-PRODUCT-DIRECTOR-LF",
+          "objective": "Evolve product_director_lf toward evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-010/domain_task_uplift",
+            "evidence://PEB2-010/strategy_routing",
+            "evidence://PEB2-010/expert_holdout",
+            "evidence://PEB2-010/repeated_optimization",
+            "evidence://PEB2-010/architecture_fit",
+            "evidence://PEB2-010/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "7a487881c326182419e9ea601fda4a545f85331068fabe470f6eaa6002f2f34b",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_010.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "e0735ad6d81e8fa5022df2a5d8c34b15a31cd67347734fe85711358f85e8acf7",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-011",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+          "profile_slug": "customer_financial_ux_decisioning",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-011/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-011/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-011/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-011/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-011/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-011/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_011.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-011\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: customer_financial_ux_decisioning\n\n## Objective\nEvolve customer_financial_ux_decisioning toward financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-011/domain_task_uplift\n- evidence://PEB2-011/strategy_routing\n- evidence://PEB2-011/expert_holdout\n- evidence://PEB2-011/repeated_optimization\n- evidence://PEB2-011/architecture_fit\n- evidence://PEB2-011/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+          "objective": "Evolve customer_financial_ux_decisioning toward financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-011/domain_task_uplift",
+            "evidence://PEB2-011/strategy_routing",
+            "evidence://PEB2-011/expert_holdout",
+            "evidence://PEB2-011/repeated_optimization",
+            "evidence://PEB2-011/architecture_fit",
+            "evidence://PEB2-011/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "1e1d357eb480527e0ed52a9741768a3faa00928072f57b8e1fb154d2b78d2863",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_011.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "9324e5c903f5ce63414a8674bfeb1d8eacc15d6e8f3128d2ec53a8210b91118e",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-012",
+      "stratum": "CAUSAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "profile_slug": "gamification_system_architect",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-012/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-012/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-012/expert_holdout",
+              "supports": [
+                "expert_holdout=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-012/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-012/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-012/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_012.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-012\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: gamification_system_architect\n\n## Objective\nEvolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-012/domain_task_uplift\n- evidence://PEB2-012/strategy_routing\n- evidence://PEB2-012/expert_holdout\n- evidence://PEB2-012/repeated_optimization\n- evidence://PEB2-012/architecture_fit\n- evidence://PEB2-012/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "objective": "Evolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-012/domain_task_uplift",
+            "evidence://PEB2-012/strategy_routing",
+            "evidence://PEB2-012/expert_holdout",
+            "evidence://PEB2-012/repeated_optimization",
+            "evidence://PEB2-012/architecture_fit",
+            "evidence://PEB2-012/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "7bca5188cabf199c07583dd1317ff88260f16ab3ac58c8e06b66589a138f97ff",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_012.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "0ef6b8ff44893b047a1b18368121081ab471bb97f22b091ce3035ed0a11bfed6",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-013",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+        "profile_slug": "customer_financial_ux_decisioning"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+          "profile_slug": "customer_financial_ux_decisioning",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "REARCHITECT",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-013/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-013/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-013/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-013/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-013/architecture_fit",
+              "supports": [
+                "architecture_fit=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-013/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_013.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-013\n\nStatus: NON_AUTHORITY_CANDIDATE / REARCHITECT\nTarget: customer_financial_ux_decisioning\n\n## Objective\nEvolve customer_financial_ux_decisioning toward financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes while preserving its existing governed responsibilities.\n\n## Architecture delta\n- Objective: Add a bounded candidate-only capability layer for financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes without replacing canonical profile authority.\n- Interfaces changed: candidate execution composition only; candidate-only evolution contract\n- Preserved interfaces: existing profile identity; existing output contract; existing routing and authority boundaries\n- Rollback: remove the candidate-only layer and return to the unchanged canonical profile\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n- CURRENTNESS_AUTHORITY\n\n## Evidence refs\n- evidence://PEB2-013/domain_task_uplift\n- evidence://PEB2-013/strategy_routing\n- evidence://PEB2-013/expert_holdout\n- evidence://PEB2-013/repeated_optimization\n- evidence://PEB2-013/architecture_fit\n- evidence://PEB2-013/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "REARCHITECT",
+          "target_profile": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+          "objective": "Evolve customer_financial_ux_decisioning toward financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+            "CURRENTNESS_AUTHORITY"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-013/domain_task_uplift",
+            "evidence://PEB2-013/strategy_routing",
+            "evidence://PEB2-013/expert_holdout",
+            "evidence://PEB2-013/repeated_optimization",
+            "evidence://PEB2-013/architecture_fit",
+            "evidence://PEB2-013/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of customer_financial_ux_decisioning: financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "architecture_delta": {
+            "objective": "Add a bounded candidate-only capability layer for financial UX decisioning that preserves trust, non-pressure safety, material truth, and evidence-bound customer outcomes without replacing canonical profile authority.",
+            "interfaces_changed": [
+              "candidate execution composition only",
+              "candidate-only evolution contract"
+            ],
+            "preserved_interfaces": [
+              "existing profile identity",
+              "existing output contract",
+              "existing routing and authority boundaries"
+            ],
+            "rollback": "remove the candidate-only layer and return to the unchanged canonical profile"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "0d53c6c239b3af17c4d6ced867d98934bf81b6623148704c718ec7a02bb5b1e8",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_013.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "2ac02a12015411ca0c0bcebd81ea4abed59c20f4d167ea35e8782ef11b6005f5",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-014",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "profile_slug": "gamification_system_architect",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "REARCHITECT",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-014/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-014/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-014/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-014/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-014/architecture_fit",
+              "supports": [
+                "architecture_fit=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-014/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_014.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-014\n\nStatus: NON_AUTHORITY_CANDIDATE / REARCHITECT\nTarget: gamification_system_architect\n\n## Objective\nEvolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.\n\n## Architecture delta\n- Objective: Add a bounded candidate-only capability layer for safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives without replacing canonical profile authority.\n- Interfaces changed: candidate execution composition only; candidate-only evolution contract\n- Preserved interfaces: existing profile identity; existing output contract; existing routing and authority boundaries\n- Rollback: remove the candidate-only layer and return to the unchanged canonical profile\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n- CURRENTNESS_AUTHORITY\n\n## Evidence refs\n- evidence://PEB2-014/domain_task_uplift\n- evidence://PEB2-014/strategy_routing\n- evidence://PEB2-014/expert_holdout\n- evidence://PEB2-014/repeated_optimization\n- evidence://PEB2-014/architecture_fit\n- evidence://PEB2-014/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "REARCHITECT",
+          "target_profile": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "objective": "Evolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+            "CURRENTNESS_AUTHORITY"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-014/domain_task_uplift",
+            "evidence://PEB2-014/strategy_routing",
+            "evidence://PEB2-014/expert_holdout",
+            "evidence://PEB2-014/repeated_optimization",
+            "evidence://PEB2-014/architecture_fit",
+            "evidence://PEB2-014/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "architecture_delta": {
+            "objective": "Add a bounded candidate-only capability layer for safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives without replacing canonical profile authority.",
+            "interfaces_changed": [
+              "candidate execution composition only",
+              "candidate-only evolution contract"
+            ],
+            "preserved_interfaces": [
+              "existing profile identity",
+              "existing output contract",
+              "existing routing and authority boundaries"
+            ],
+            "rollback": "remove the candidate-only layer and return to the unchanged canonical profile"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "eca15d0669a531a96b727baa87da34389b49e64b6f156a606b247b5dcb0d9fb9",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_014.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "59eb9a2ddaf1564cc274282853def905be3bf6b34657be7a70eeb9b8cbc8c78c",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-015",
+      "stratum": "CRITICAL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "REARCHITECT",
+        "selected_capabilities": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "CAUSAL_EFFECT_LINEAGE",
+          "INDEPENDENT_ASSURANCE",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "CURRENTNESS_AUTHORITY",
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+          "profile_slug": "evidence_lineage_reviewer_lf",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "REARCHITECT",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-015/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-015/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-015/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-015/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-015/architecture_fit",
+              "supports": [
+                "architecture_fit=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-015/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_015.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-015\n\nStatus: NON_AUTHORITY_CANDIDATE / REARCHITECT\nTarget: evidence_lineage_reviewer_lf\n\n## Objective\nEvolve evidence_lineage_reviewer_lf toward resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support while preserving its existing governed responsibilities.\n\n## Architecture delta\n- Objective: Add a bounded candidate-only capability layer for resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support without replacing canonical profile authority.\n- Interfaces changed: candidate execution composition only; candidate-only evolution contract\n- Preserved interfaces: existing profile identity; existing output contract; existing routing and authority boundaries\n- Rollback: remove the candidate-only layer and return to the unchanged canonical profile\n\n## Capability composition\n- CAUSAL_EFFECT_LINEAGE\n- INDEPENDENT_ASSURANCE\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n- CURRENTNESS_AUTHORITY\n\n## Evidence refs\n- evidence://PEB2-015/domain_task_uplift\n- evidence://PEB2-015/strategy_routing\n- evidence://PEB2-015/expert_holdout\n- evidence://PEB2-015/repeated_optimization\n- evidence://PEB2-015/architecture_fit\n- evidence://PEB2-015/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "REARCHITECT",
+          "target_profile": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+          "objective": "Evolve evidence_lineage_reviewer_lf toward resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "CAUSAL_EFFECT_LINEAGE",
+            "INDEPENDENT_ASSURANCE",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+            "CURRENTNESS_AUTHORITY"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-015/domain_task_uplift",
+            "evidence://PEB2-015/strategy_routing",
+            "evidence://PEB2-015/expert_holdout",
+            "evidence://PEB2-015/repeated_optimization",
+            "evidence://PEB2-015/architecture_fit",
+            "evidence://PEB2-015/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "architecture_delta": {
+            "objective": "Add a bounded candidate-only capability layer for resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support without replacing canonical profile authority.",
+            "interfaces_changed": [
+              "candidate execution composition only",
+              "candidate-only evolution contract"
+            ],
+            "preserved_interfaces": [
+              "existing profile identity",
+              "existing output contract",
+              "existing routing and authority boundaries"
+            ],
+            "rollback": "remove the candidate-only layer and return to the unchanged canonical profile"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "f9e3ebf298fc2b3fa27acbce69943993d155e8e8ff97af24c42e03c2ed1f2250",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_015.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "1dbbe535810cf7c5e0203a1b753e5a6ce56a8cf01a8b44dfceaa6d37aa83d16a",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-016",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+        "profile_slug": "gamification_system_architect"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "profile_slug": "gamification_system_architect",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-016/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-016/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-016/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-016/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-016/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-016/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_016.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-016\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: gamification_system_architect\n\n## Objective\nEvolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- EVIDENCE_LEDGER\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-016/domain_task_uplift\n- evidence://PEB2-016/strategy_routing\n- evidence://PEB2-016/expert_holdout\n- evidence://PEB2-016/repeated_optimization\n- evidence://PEB2-016/architecture_fit\n- evidence://PEB2-016/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "PERFIL-GAMIFICATION-SYSTEM-ARCHITECT",
+          "objective": "Evolve gamification_system_architect toward safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "EVIDENCE_LEDGER",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-016/domain_task_uplift",
+            "evidence://PEB2-016/strategy_routing",
+            "evidence://PEB2-016/expert_holdout",
+            "evidence://PEB2-016/repeated_optimization",
+            "evidence://PEB2-016/architecture_fit",
+            "evidence://PEB2-016/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of gamification_system_architect: safe gamification mechanisms with recovery/off conditions, measurable behavior outcomes, and no financial pressure or harmful incentives."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "a537b25714e192e3716c065f421b8ee9ef537eae69428d12220e1ec393234b6e",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_016.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "06b8edb9d028b840da7704a94ea0790830c8582f20ceb150916fd98b81d5e331",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-017",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+          "profile_slug": "evidence_lineage_reviewer_lf",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-017/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-017/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-017/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-017/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-017/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-017/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_017.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-017\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: evidence_lineage_reviewer_lf\n\n## Objective\nEvolve evidence_lineage_reviewer_lf toward resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- EVIDENCE_LEDGER\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-017/domain_task_uplift\n- evidence://PEB2-017/strategy_routing\n- evidence://PEB2-017/expert_holdout\n- evidence://PEB2-017/repeated_optimization\n- evidence://PEB2-017/architecture_fit\n- evidence://PEB2-017/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+          "objective": "Evolve evidence_lineage_reviewer_lf toward resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "EVIDENCE_LEDGER",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-017/domain_task_uplift",
+            "evidence://PEB2-017/strategy_routing",
+            "evidence://PEB2-017/expert_holdout",
+            "evidence://PEB2-017/repeated_optimization",
+            "evidence://PEB2-017/architecture_fit",
+            "evidence://PEB2-017/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of evidence_lineage_reviewer_lf: resolver-backed evidence lineage with currentness, provenance, contradiction handling, replay protection, and independent semantic support."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "8b0fae8a17e33446b82198afbf956253e8165f588059e6b1c314c9c5c0068db1",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_017.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "a68cf404ecaacdef8fc5eb52c553d8ad696376108499f1ce1da03bf4de50181a",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-018",
+      "stratum": "REPEATED_PATTERN",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "OPTIMIZE",
+        "selected_capabilities": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+        ],
+        "composition_order": [
+          "EVIDENCE_LEDGER",
+          "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+          "PACK_VALIDATION_HARNESS",
+          "REVERSIBLE_CANDIDATE_VERIFICATION"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": {
+          "schema": "PROFILE_EVOLUTION_CANDIDATE_OVERLAY_V1",
+          "profile_code": "ACT-0051",
+          "profile_slug": "frontend_prototype_architect_lf",
+          "baseline_revision": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+          "evolution_mode": "OPTIMIZE",
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "reversible": true,
+          "profile_source_write_authorized": false,
+          "runtime_activation": false,
+          "production_activation": false,
+          "evidence_map": [
+            {
+              "source_ref": "evidence://PEB2-018/domain_task_uplift",
+              "supports": [
+                "domain_task_uplift=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-018/strategy_routing",
+              "supports": [
+                "strategy_routing=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-018/expert_holdout",
+              "supports": [
+                "expert_holdout=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-018/repeated_optimization",
+              "supports": [
+                "repeated_optimization=FAIL"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-018/architecture_fit",
+              "supports": [
+                "architecture_fit=PASS"
+              ]
+            },
+            {
+              "source_ref": "evidence://PEB2-018/optimization_opportunity",
+              "supports": [
+                "optimization_opportunity=PASS"
+              ]
+            }
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of frontend_prototype_architect_lf: fresh governed frontend prototype decisions that consume current UI authority, preserve prior resolved context, and avoid backend invention."
+          ],
+          "changes": [
+            {
+              "path": "contracts/profile_evolution_peb2_018.md",
+              "operation": "UPSERT",
+              "before_sha256": null,
+              "content": "# Profile Evolution Candidate Contract — PEB2-018\n\nStatus: NON_AUTHORITY_CANDIDATE / OPTIMIZE\nTarget: frontend_prototype_architect_lf\n\n## Objective\nEvolve frontend_prototype_architect_lf toward fresh governed frontend prototype decisions that consume current UI authority, preserve prior resolved context, and avoid backend invention while preserving its existing governed responsibilities.\n\n## Optimization loop\n- Baseline: exact-source current profile behavior on frozen cases\n- Signal: paired capability score, false-pass rate, preservation and holdout delta\n- Compare: same GPT_NATIVE route for baseline and candidate with fixed paired scorer\n- Stop: no positive holdout delta, any critical regression, insufficient evidence, or method budget breach\n\n## Capability composition\n- EVIDENCE_LEDGER\n- PERFORMANCE_EXACT_SOURCE_BENCHMARK\n\n## Evidence refs\n- evidence://PEB2-018/domain_task_uplift\n- evidence://PEB2-018/strategy_routing\n- evidence://PEB2-018/expert_holdout\n- evidence://PEB2-018/repeated_optimization\n- evidence://PEB2-018/architecture_fit\n- evidence://PEB2-018/optimization_opportunity\n\n## Preservation constraints\n- Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.\n- Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.\n- Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.\n- Preserve the domain responsibility of frontend_prototype_architect_lf: fresh governed frontend prototype decisions that consume current UI authority, preserve prior resolved context, and avoid backend invention.\n\n## Validation plan\n- Materialize outside the authority repository and prove source_unchanged=true.\n- Run existing deterministic/profile-local validation on the candidate overlay where applicable.\n- Compare baseline and candidate behavior on frozen profile-domain cases.\n- Require holdout improvement with zero critical regressions before admission.\n\n## Stop conditions\n- Stop and request evidence when a material capability claim is unsupported.\n- Stop on any authority, provenance, safety, or preservation regression.\n- Stop optimization when holdout fails to improve or cost exceeds the frozen method budget.\n\n## Rollback\nDiscard the reversible overlay; canonical profile source remains byte-identical.\n\n## Authority boundary\nThis candidate does not write profile authority, activate runtime, activate production, admit itself, merge itself, or replace independent assurance.\n"
+            }
+          ]
+        },
+        "evolution_contract": {
+          "mode": "OPTIMIZE",
+          "target_profile": "ACT-0051",
+          "objective": "Evolve frontend_prototype_architect_lf toward fresh governed frontend prototype decisions that consume current UI authority, preserve prior resolved context, and avoid backend invention while preserving its existing governed responsibilities.",
+          "capabilities_applied": [
+            "EVIDENCE_LEDGER",
+            "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+          ],
+          "evidence_refs": [
+            "evidence://PEB2-018/domain_task_uplift",
+            "evidence://PEB2-018/strategy_routing",
+            "evidence://PEB2-018/expert_holdout",
+            "evidence://PEB2-018/repeated_optimization",
+            "evidence://PEB2-018/architecture_fit",
+            "evidence://PEB2-018/optimization_opportunity"
+          ],
+          "preservation_constraints": [
+            "Preserve existing profile identity, output semantics, fail-closed rules, and authority boundaries.",
+            "Do not weaken existing validators, evidence requirements, safety constraints, or routing rules.",
+            "Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.",
+            "Preserve the domain responsibility of frontend_prototype_architect_lf: fresh governed frontend prototype decisions that consume current UI authority, preserve prior resolved context, and avoid backend invention."
+          ],
+          "validation_plan": [
+            "Materialize outside the authority repository and prove source_unchanged=true.",
+            "Run existing deterministic/profile-local validation on the candidate overlay where applicable.",
+            "Compare baseline and candidate behavior on frozen profile-domain cases.",
+            "Require holdout improvement with zero critical regressions before admission."
+          ],
+          "stop_conditions": [
+            "Stop and request evidence when a material capability claim is unsupported.",
+            "Stop on any authority, provenance, safety, or preservation regression.",
+            "Stop optimization when holdout fails to improve or cost exceeds the frozen method budget."
+          ],
+          "rollback": "Discard the reversible overlay; canonical profile source remains byte-identical.",
+          "optimization_loop": {
+            "baseline": "exact-source current profile behavior on frozen cases",
+            "signal": "paired capability score, false-pass rate, preservation and holdout delta",
+            "compare": "same GPT_NATIVE route for baseline and candidate with fixed paired scorer",
+            "stop": "no positive holdout delta, any critical regression, insufficient evidence, or method budget breach"
+          }
+        },
+        "materialization": {
+          "authority_state": "NON_AUTHORITY_CANDIDATE",
+          "candidate_sha256": "6087375c149eaf9bccf48f9cc0c8c236d283c8f84804f75f297bab20c73f32af",
+          "changed_paths": [
+            "contracts/profile_evolution_peb2_018.md"
+          ],
+          "deleted_paths": [],
+          "production_activation": false,
+          "profile_source_write_authorized": false,
+          "receipt_sha256": "623afdd6bb7a618b566cd53797511d7a67a1c6d52526e00d392bf69c8a908c9c",
+          "runtime_activation": false,
+          "source_unchanged": true,
+          "status": "PASS"
+        },
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-019",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "profile_slug": "evidence_lineage_reviewer_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-020",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-021",
+      "stratum": "NOVEL",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_slug": "systemic_root_cause_repair_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NEEDS_MORE_EVIDENCE",
+        "evidence_needed": [
+          "strategy_routing",
+          "expert_holdout",
+          "repeated_optimization",
+          "optimization_opportunity"
+        ],
+        "next_action": "TARGETED_EVIDENCE_ACQUISITION",
+        "selected_capabilities": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "composition_order": [
+          "TARGETED_EVIDENCE_ACQUISITION",
+          "INDEPENDENT_ASSURANCE",
+          "CURRENTNESS_AUTHORITY"
+        ],
+        "method_cost_points": 7,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-022",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "ACT-0051",
+        "profile_slug": "frontend_prototype_architect_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NO_CHANGE",
+        "preservation_reason": "Evidence already supports EVIDENCE_OPTIMIZED maturity; changing the profile would add unproven complexity.",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-023",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+        "profile_slug": "systemic_root_cause_repair_lf"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NO_CHANGE",
+        "preservation_reason": "Evidence already supports EVIDENCE_OPTIMIZED maturity; changing the profile would add unproven complexity.",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    },
+    {
+      "case_id": "PEB2-024",
+      "stratum": "EXCELLENT_NO_CHANGE",
+      "source_profile_archetype": {
+        "profile_code": "PERFIL-QUALITY-PACK",
+        "profile_slug": "quality_pack"
+      },
+      "baseline": {
+        "action": "NO_UPDATE_REQUIRED",
+        "reason": "S26_VALID structural baseline; updater v0.1 stops at structural compatibility.",
+        "changes": [],
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      },
+      "candidate": {
+        "action": "NO_CHANGE",
+        "preservation_reason": "Evidence already supports EVIDENCE_OPTIMIZED maturity; changing the profile would add unproven complexity.",
+        "selected_capabilities": [],
+        "composition_order": [
+          "PACK_VALIDATION_HARNESS"
+        ],
+        "method_cost_points": 2,
+        "method_budget": 8,
+        "overlay": null,
+        "evolution_contract": null,
+        "materialization": null,
+        "profile_source_write_authorized": false,
+        "runtime_activation": false,
+        "production_activation": false,
+        "executor_mode": "GPT_NATIVE"
+      }
+    }
+  ]
+}

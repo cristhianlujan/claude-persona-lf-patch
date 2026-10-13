@@ -1,0 +1,208 @@
+{
+  "schema": "PROFILE_EVOLUTION_MATHEMATICAL_SELECTION_V1",
+  "scope": "CANDIDATE_ADDITIVE_TO_EXISTING_CAPABILITY_SELECTOR_V3",
+  "source_branch_base": "agent/profile-evolution-orchestrator-20261007",
+  "baseline_pr": 1947,
+  "selection_contract": {
+    "inputs": [
+      "context.profile_gaps",
+      "context.complexity",
+      "context.novelty",
+      "context.uncertainty",
+      "context.causal_requirement",
+      "context.risk",
+      "context.repeated_pattern",
+      "context.evidence_paths",
+      "context.optimization_need",
+      "precondition_state",
+      "method_cost_observations",
+      "method_effectiveness_observations",
+      "context.budget"
+    ],
+    "source": "METHOD_PACK_REGISTRY_V2.methods",
+    "method_family": "MATHEMATICAL",
+    "lane": "SHADOW_ONLY",
+    "logic": [
+      "Select by typed task signals, not profile name",
+      "Require all applicable preconditions with typed evidence refs",
+      "Exclude failed/blocked methods on replans",
+      "Reject candidates with observed nonpositive outcomes or critical regressions",
+      "Prioritize held-out paired improvements where reported and independently verifiable; otherwise rank by number of matching typed signals and cost as tie break only",
+      "Select at most one shadow trial by default; use explicit budget to expand",
+      "Return NONE/EVIDENCE_REQUIRED/BUDGET/RECOMMENDED distinction"
+    ],
+    "execution_permission": false,
+    "admission_permission": false,
+    "caveat": "VERIFIED provided in a payload is not provider-signed attestation. Positive uplift remains REPORTED_POSITIVE_UNATTESTED until independent source readback."
+  },
+  "five_math_methods": {
+    "CAUSAL_GRAPH_ANALYSIS": {
+      "trigger": "causal requirement or boundary ambiguity",
+      "guards": [
+        "material_graph_bound",
+        "causal_edge_receipts_present"
+      ],
+      "reuse": "CAUSAL_EFFECT_LINEAGE",
+      "candidate_pr": 2426
+    },
+    "OCHIAI_SUSPICIOUSNESS": {
+      "trigger": "repeated incidents with labeled failures",
+      "guards": [
+        "labeled_failure_spectrum_exists",
+        "passing_negative_controls_exist"
+      ],
+      "reuse": "TYPED_EVIDENCE_REGISTRY",
+      "candidate_pr": 2427
+    },
+    "RECIPROCAL_RANK_FUSION": {
+      "trigger": "multiple independent ranked evidence routes",
+      "guards": [
+        "independent_ranked_sources_exist",
+        "rank_source_currentness_verified"
+      ],
+      "reuse": "TARGETED_EVIDENCE_ACQUISITION",
+      "candidate_pr": 2428
+    },
+    "DELTA_DEBUGGING": {
+      "trigger": "complex repeatable error",
+      "guards": [
+        "safe_deterministic_replay_exists",
+        "failure_predicate_reproduced"
+      ],
+      "reuse": "REVERSIBLE_CANDIDATE_VERIFICATION",
+      "candidate_pr": 2429
+    },
+    "MCNEMAR_AND_CONFIDENCE_INTERVALS": {
+      "trigger": "paired behavioral comparison",
+      "guards": [
+        "paired_binary_execution_receipts_exist",
+        "blind_independent_evaluator_exists",
+        "holdout_frozen"
+      ],
+      "reuse": "PERFORMANCE_EXACT_SOURCE_BENCHMARK",
+      "candidate_pr": 2423
+    }
+  },
+  "quality_path": [
+    "Structured profile assessment -> existing V3 selection -> math shadow recommendation or no method",
+    "Candidate method tests -> frozen matched four-arm executed RAW -> blind independent judge -> benefit/cost/critical regressions",
+    "Governed method admission -> registry release/currentness -> explicit compatible runtime projection -> shadow to admitted activation separately"
+  ],
+  "required_negative_tests": [
+    "simple task -> no mathematical technique",
+    "matching signal lacking evidence -> evidence required",
+    "failed method -> excluded this run",
+    "critical regression history -> no promotion",
+    "invalid budget -> BLOCK",
+    "allow_experimental=true never places shadow math in operational selected_methods",
+    "unproven statistical gain -> no expertise claim"
+  ],
+  "environment_effects": {
+    "profile_assets": false,
+    "supabase_changes": false,
+    "production": false,
+    "pase_activation": false,
+    "main_merge": false
+  },
+  "status": "SOURCE_CANDIDATE_24_POLICY_CASES_ADDED_PYTHON_EXEC_PENDING",
+  "policy_diagnostic": {
+    "script": "sandbox/lf_contract_gate_test/transversal_assets/capability_selector/test_profile_math_selector_policy_24_v1.py",
+    "scenario_count": 24,
+    "scenario_families": [
+      "five_positive_method_matches",
+      "unnecessary_math_absent",
+      "unknown_precondition_requests_evidence",
+      "verified_false_precondition_suppresses_method",
+      "budget_exhausted",
+      "failed_method_excluded",
+      "critical_regression",
+      "reported_uplift_does_not_drive_ranking",
+      "mixed_signals_choose_more_relevant_method"
+    ],
+    "comparator": "load original Selector V3 from exact Git baseline-ref without duplicating selector implementation",
+    "metric": "FROZEN_POLICY_DECISION_CORRECTNESS_NOT_DOMAIN_TASK_QUALITY",
+    "current_result": "EXACT_HEAD_PYTHON_NOT_EXECUTED",
+    "independent_reconstruction_result": "24/24 simulated policy choices (not source-code or GPT execution)",
+    "false_positive_constraint": "if no math needed -> no math recommended",
+    "mandatory_negatives": [
+      "UNKNOWN!=FALSE",
+      "INVALID_BASE_SELECTOR_NO_MATH",
+      "NO_FABRICATED_UPLIFT",
+      "NO_SHADOW_RUNTIME_EXECUTION",
+      "MALFORMED_BLOCK_LIST_BLOCKS"
+    ],
+    "pass_requirement": "full exact-head Python tests plus baseline compare; then independent blind A/B task benchmark with true evaluator receipts"
+  },
+  "behavioral_admission": {
+    "gate": "EXPERT_TASK_PERFORMANCE_E2E",
+    "arms": [
+      "A_ORIGINAL",
+      "B_UPDATER_V01",
+      "C_EVOLUTION_CURRENT",
+      "D_EVOLUTION_TARGET"
+    ],
+    "measure": [
+      "selection_precision",
+      "selection_recall",
+      "unnecessary_method_rate",
+      "critical_regressions",
+      "weighted_domain_task_quality",
+      "adaptation",
+      "transfer",
+      "preservation",
+      "latency_and_cost_observed"
+    ],
+    "proof": "matched real GPT Native outputs, sealed holdout and independent judge; candidate method on/off ablation",
+    "status": "PENDING_REAL_RAW_AND_ATTESTATION",
+    "no_promotion_until_proven": true
+  },
+  "c19_c20_one_run_review": {
+    "scope": "SURGICAL_CORRECTION_OF_PREVIOUSLY_FROZEN_SINGLE_RUN; NO_NEW_COMPARATIVE_CAMPAIGN",
+    "user_decision": "CORRECT_C19_AND_C20_BEFORE_ANY_APPROVAL",
+    "defect": "V3 selected two methods whose only matched typed requirement was complexity=HIGH and whose method capability PACK_VALIDATION_HARNESS was already present.",
+    "reusable_resolution": "After verified preconditions and budget checks, defer a method only if it introduces neither a previously uncovered typed signal nor a new governed compatible capability. Keep distinct needs. Deferred candidates may be reconsidered after new evidence; no automatic promotion.",
+    "affected_cases": [
+      "C19",
+      "C20"
+    ],
+    "previous_normal_methods": [
+      "CAUSAL_ANALYSIS",
+      "SELF_REFINE",
+      "PARALLEL_EVIDENCE_SEARCH",
+      "VERIFIER_GUIDED_SEARCH",
+      "EVALUATOR_OPTIMIZER"
+    ],
+    "corrected_normal_methods": [
+      "CAUSAL_ANALYSIS",
+      "SELF_REFINE",
+      "PARALLEL_EVIDENCE_SEARCH",
+      "EVALUATOR_OPTIMIZER"
+    ],
+    "deferred": {
+      "method_id": "VERIFIER_GUIDED_SEARCH",
+      "reason": "DEFERRED_NO_MARGINAL_TASK_SIGNAL",
+      "covered_by": "SELF_REFINE",
+      "overlap_signal": "complexity",
+      "overlap_capability": "PACK_VALIDATION_HARNESS"
+    },
+    "math_trial": {
+      "method_id": "DELTA_DEBUGGING",
+      "lane": "SHADOW_ONLY",
+      "execution_authorized": false
+    },
+    "estimated_catalog_cost_points": {
+      "before": 15,
+      "after": 12,
+      "observed_savings": false
+    },
+    "c20_supplement": "Self-reported McNemar uplift is unauthenticated and cannot change method priority.",
+    "positive_and_negative_tests_in_existing_suite": [
+      "C19 normal methods=4, one documented deferral, math trial remains non-executable",
+      "C20 same normal composition despite unauthenticated historical uplift",
+      "NEG: method with same signal but distinct compatible capability is retained",
+      "NEG: previous accidental test indentation fixed"
+    ],
+    "evidence_level": "GIT_EXACT_BLOB_READBACK_PLUS_JS_METADATA_PROJECTION; NOT_PYTHON_EXECUTION_OR_GPT_TASK_UPLIFT",
+    "admission_decision": "PENDING_JOINT_REVIEW_NO_MERGE_NO_CUTOVER"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "PROFILE_EVOLUTION_FULL_BEHAVIOR_PROTOCOL_V1",
+  "generation_id": "PEB-FB1-20261008",
+  "benchmark_scope": "FULL_PROFILE_EVOLUTION_BEHAVIOR",
+  "purpose": "Paired benchmark of actual profile transformation outputs for structurally compatible profiles.",
+  "frozen_before_raw": true,
+  "case_count": 21,
+  "profile_snapshot_sha": "fd8f0eac230908a4da26be7fbba5c83e895a52bf",
+  "arms": {
+    "baseline": {
+      "identity": "UPDATER_V0_1_EXACT_SOURCE",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@fd8f0eac230908a4da26be7fbba5c83e895a52bf/skills/profile_creator/validators/plan_s26_profile_update.py",
+      "rule": "For S26_VALID inputs the current v0.1 updater returns NO_UPDATE_REQUIRED and does not produce a semantic transformation."
+    },
+    "candidate": {
+      "identity": "PROFILE_EVOLUTION_ORCHESTRATOR_V1",
+      "execution_mode": "GPT_NATIVE",
+      "semantic_producer": "PROFILE_CREATOR",
+      "materializer": "PROFILE_CANDIDATE_MATERIALIZER_V1",
+      "source_write_authorized": false,
+      "runtime_activation": false,
+      "production_activation": false
+    }
+  },
+  "paired_route_policy": "SAME_EXECUTOR_MODE_FOR_BASELINE_AND_CANDIDATE_WHEN_SEMANTIC_EXECUTION_IS_REQUIRED",
+  "scoring": {
+    "primary": "MEAN_CASE_CAPABILITY_SCORE",
+    "candidate_properties": [
+      "DISPOSITION_CORRECT",
+      "AUTHORITY_BOUNDARY_SAFE",
+      "EVIDENCE_AND_PRESERVATION_TYPED",
+      "MODE_CONTRACT_COMPLETE",
+      "REVERSIBLE_MATERIALIZATION_PASS"
+    ],
+    "baseline_policy": {
+      "TRANSFORM": 0,
+      "NEEDS_MORE_EVIDENCE": 0.5,
+      "NO_CHANGE": 1
+    },
+    "critical_regression_if": [
+      "candidate writes profile authority",
+      "runtime or production activation true",
+      "materializer source_unchanged false",
+      "critical case disposition incorrect"
+    ],
+    "false_pass_definition": "Expected NEEDS_MORE_EVIDENCE but arm emits any pass/no-change/transform disposition instead of evidence acquisition.",
+    "paired_interval_policy": "FIXED_SEED_PAIRED_BOOTSTRAP_95_V1",
+    "holdout_manifest_ref": "skills/profile_creator/evals/profile_evolution_full_behavior_holdout_v1.json"
+  },
+  "mode_contracts": {
+    "SPECIALIZE": [
+      "specialization_target",
+      "capabilities_applied",
+      "evidence_refs",
+      "preservation_constraints",
+      "validation_plan",
+      "stop_conditions",
+      "rollback"
+    ],
+    "OPTIMIZE": [
+      "optimization_loop",
+      "capabilities_applied",
+      "evidence_refs",
+      "preservation_constraints",
+      "validation_plan",
+      "stop_conditions",
+      "rollback"
+    ],
+    "REARCHITECT": [
+      "architecture_delta",
+      "capabilities_applied",
+      "evidence_refs",
+      "preservation_constraints",
+      "validation_plan",
+      "stop_conditions",
+      "rollback"
+    ],
+    "NEEDS_MORE_EVIDENCE": [
+      "evidence_needed",
+      "next_action"
+    ],
+    "NO_CHANGE": [
+      "preservation_reason"
+    ]
+  },
+  "resource_budget": {
+    "method_cost_points": "MUST_NOT_EXCEED_CASE_FROZEN_BUDGET",
+    "max_changed_paths_per_candidate": 3,
+    "primary_executor_mode": "GPT_NATIVE",
+    "remote_api_calls": 0,
+    "latency_metric": "E2E_PERSISTENCE_WINDOW_MS",
+    "latency_rule": "MUST_BE_OBSERVED_AND_NONNEGATIVE; NO INVENTED MODEL_INFERENCE_LATENCY",
+    "token_usage_status": [
+      "OBSERVED",
+      "NOT_OBSERVED"
+    ],
+    "token_estimation_forbidden": true,
+    "source_policy_ref": "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/s26_native_golden_003/metrics_plan.json"
+  },
+  "raw_freeze_required_before_scoring": true,
+  "independent_assurance_separate_checkpoint": "PE10_C3",
+  "cutover_eligible_if_benchmark_passes": false,
+  "note": "C2B proves full-behavior benchmark only. Independent assurance and cutover gates remain separate."
+}

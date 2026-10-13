@@ -1,0 +1,29 @@
+{
+  "schema": "PROFILE_EXPERT_BEHAVIOR_POWER_ANALYSIS_REMOTE_V2",
+  "campaign_id": "PEXP-R2-20261008",
+  "frozen_before_raw": true,
+  "design": "PAIRED_FOUR_ARM_TASK_EXECUTION",
+  "primary_pairwise_tests": [
+    "D_EVOLUTION_TARGET_MINUS_A_ORIGINAL",
+    "D_EVOLUTION_TARGET_MINUS_C_EVOLUTION_CURRENT"
+  ],
+  "alpha_two_sided": 0.05,
+  "target_power": 0.8,
+  "assumptions": {
+    "planned_n": 120,
+    "full_campaign_min_standardized_paired_effect": 0.26,
+    "holdout_n": 60,
+    "thresholds_not_tuned_after_raw": true,
+    "route_specific_campaign": true
+  },
+  "admission_thresholds": {
+    "relative_uplift_D_vs_A_min": 0.15,
+    "paired_ci_lower_D_vs_A_gt": 0,
+    "paired_ci_lower_D_vs_C_gt": 0,
+    "holdout_ci_lower_D_vs_A_gt": 0,
+    "holdout_ci_lower_D_vs_C_gt": 0,
+    "critical_regressions_max": 0,
+    "preservation_ratio_min": 0.98
+  },
+  "status": "FROZEN"
+}
