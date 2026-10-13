@@ -23,6 +23,74 @@ BEGIN
   END IF;
 END $guard$;
 
+-- Register classification and a *pending* decision route only.
+-- Never materialize an authority policy or decision receipt from this migration.
+DO $decision_preflight$
+BEGIN
+ IF NOT EXISTS (
+   SELECT 1 FROM private.lf_human_decision_classes_v1
+   WHERE decision_class='DATA_OPERATIONS'
+     AND authority_domain='LF_DATA_OPERATIONS' AND status='ACTIVE'
+ ) THEN
+   RAISE EXCEPTION 'OPERATIONAL_DECISION_CLASS_DOMAIN_NOT_CANONICAL';
+ END IF;
+ IF EXISTS(
+   SELECT 1 FROM private.lf_human_decision_classification_rules_v1
+   WHERE producer_code='LF_OPERATION_EXECUTOR' AND subject_type='OPERATIONAL_EXECUTION'
+ ) OR EXISTS (
+   SELECT 1 FROM private.lf_human_decision_route_policies_v1
+   WHERE producer_code='LF_OPERATION_EXECUTOR' AND subject_type='OPERATIONAL_EXECUTION'
+ ) THEN
+   RAISE EXCEPTION 'OPERATIONAL_DECISION_CATALOGUE_COLLISION_REQUIRES_RECONCILIATION';
+ END IF;
+END $decision_preflight$;
+
+INSERT INTO private.lf_human_decision_classification_rules_v1 (
+ rule_code,producer_code,subject_type,attribute_name,attribute_value,
+ decision_class,priority,status,rule_sha256,created_by_execution_id
+)
+SELECT
+ 'HDR_RULE_LF_OPERATION_EXECUTOR_ALL','LF_OPERATION_EXECUTOR',
+ 'OPERATIONAL_EXECUTION','ANY',NULL,'DATA_OPERATIONS',100,'ACTIVE',
+ private.fn_lf_human_decision_rule_sha_v1(
+   'HDR_RULE_LF_OPERATION_EXECUTOR_ALL','LF_OPERATION_EXECUTOR',
+   'OPERATIONAL_EXECUTION','ANY',NULL,'DATA_OPERATIONS',100,'ACTIVE'
+ ),
+ 'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1';
+
+INSERT INTO private.lf_human_decision_route_policies_v1 (
+ policy_code,decision_class,producer_code,subject_type,authority_domain,
+ required_authority_ref,reviewer_role_mode,required_reviewer_role,
+ allowed_actions_mode,static_allowed_actions,status,policy_sha256,
+ metadata,created_by_execution_id
+)
+SELECT
+ 'HDR_ROUTE_LF_OPERATION_EXECUTOR_DATA_OPERATIONS','DATA_OPERATIONS',
+ 'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION','LF_DATA_OPERATIONS',
+ NULL,'STATIC',NULL,'STATIC','["APPROVE","REJECT"]'::jsonb,
+ 'PENDING_AUTHORITY',
+ private.fn_lf_human_decision_route_policy_sha_v1(
+   'HDR_ROUTE_LF_OPERATION_EXECUTOR_DATA_OPERATIONS','DATA_OPERATIONS',
+   'LF_OPERATION_EXECUTOR','OPERATIONAL_EXECUTION','LF_DATA_OPERATIONS',
+   NULL,'STATIC',NULL,'STATIC','["APPROVE","REJECT"]'::jsonb,
+   'PENDING_AUTHORITY',
+   '{"blocker":"LF_DATA_OPERATIONS_AUTHORITY_NOT_MATERIALIZED"}'::jsonb
+ ),
+ '{"blocker":"LF_DATA_OPERATIONS_AUTHORITY_NOT_MATERIALIZED"}'::jsonb,
+ 'EXEC-TRAIN-OPERATIONAL-BOOTSTRAP-V1';
+
+-- Even after this migration, the route MUST remain pending human authority.
+DO $decision_pending$
+BEGIN
+ IF NOT EXISTS(
+   SELECT 1 FROM private.lf_human_decision_route_policies_v1
+   WHERE producer_code='LF_OPERATION_EXECUTOR' AND subject_type='OPERATIONAL_EXECUTION'
+     AND status='PENDING_AUTHORITY' AND required_authority_ref IS NULL
+ ) THEN
+   RAISE EXCEPTION 'OPERATIONAL_DECISION_PENDING_AUTHORITY_INVARIANT_VIOLATED';
+ END IF;
+END $decision_pending$;
+
 INSERT INTO public.lf_operation_registry (
   operation_code,version,status,source_model,source_repo,source_paths,notes,
   operation_family,operation_domain,operation_type,applies_to_asset_type,
