@@ -43,6 +43,50 @@ def prepare(source):
     packet["packet_sha256"] = digest(packet)
     return packet
 
+def semantic_behavior_basis(reply, evidence_refs):
+    """Check a reviewer-declared paired RAW basis, not whether the claims are true.
+
+    Real independence, source authenticity and model provenance MUST be checked by
+    LF server authority. This deliberately cannot admit an independent verdict.
+    """
+    if reply.get("verdict") != "PASS":
+        return "NOT_REQUIRED_FOR_NEGATIVE_VERDICT"
+    basis = reply.get("semantic_behavior_basis")
+    guard(isinstance(basis, dict), "SEMANTIC_BEHAVIOR_BASIS_MISSING")
+    guard(basis.get("schema") == "PE10_C3_MATCHED_BEHAVIOR_BASIS_V1",
+          "SEMANTIC_BEHAVIOR_BASIS_SCHEMA_INVALID")
+    guard(basis.get("critical_regressions") == 0
+          and type(basis.get("critical_regressions")) is int,
+          "SEMANTIC_CRITICAL_REGRESSIONS_UNRESOLVED")
+    pairs = basis.get("matched_pairs")
+    guard(isinstance(pairs, list) and len(pairs) > 0,
+          "SEMANTIC_MATCHED_PAIRS_MISSING")
+    seen = set()
+    gain = False
+    for pair in pairs:
+        guard(isinstance(pair, dict), "SEMANTIC_PAIR_INVALID")
+        cid = pair.get("case_id")
+        guard(isinstance(cid, str) and bool(cid.strip()) and cid not in seen,
+              "SEMANTIC_CASE_ID_DUPLICATE_OR_MISSING")
+        seen.add(cid)
+        for field in ("baseline_raw_ref", "candidate_raw_ref", "review_evidence_ref"):
+            ref = pair.get(field)
+            guard(isinstance(ref, str) and ref in evidence_refs,
+                  "SEMANTIC_PAIR_REF_UNBOUND:" + field)
+        guard(pair["baseline_raw_ref"] != pair["candidate_raw_ref"],
+              "SEMANTIC_PAIR_ARMS_NOT_DISTINCT")
+        outcome = pair.get("outcome")
+        guard(outcome in ("IMPROVED", "PRESERVED", "REGRESSION"),
+              "SEMANTIC_PAIR_OUTCOME_INVALID")
+        guard(pair.get("critical") in (True, False)
+              and type(pair.get("critical")) is bool,
+              "SEMANTIC_PAIR_CRITICAL_FLAG_INVALID")
+        guard(not (pair["critical"] and outcome == "REGRESSION"),
+              "SEMANTIC_CRITICAL_REGRESSION_FOUND")
+        gain |= outcome == "IMPROVED"
+    guard(gain, "SEMANTIC_NO_OBSERVED_IMPROVEMENT")
+    return "REVIEWER_CLAIM_PAIRED_BASIS_PRESENT_UNATTESTED"
+
 def intake(packet, reply):
     guard(packet.get("schema") == SCHEMA, "PACKET_SCHEMA_INVALID")
     original = packet.get("packet_sha256")
@@ -60,11 +104,13 @@ def intake(packet, reply):
     guard(measure.get("state") == "INDEPENDENT", "INDEPENDENCE_UNPROVEN")
     for d in DIMS:
         guard(measure.get(d+"_dimension",{}).get("state") == "INDEPENDENT", "INDEPENDENCE_"+d.upper()+"_UNPROVEN")
+    semantic_basis_state = semantic_behavior_basis(reply, refs)
     # Claimed provider evidence, even if shaped correctly, is NOT authenticated here.
     # Require LF to independently check server/provider receipts before governed RPC.
     return dict(status="CANDIDATE_REQUIRES_SERVER_SIDE_PROVENANCE_VERIFICATION",
         subject_sha256=packet["subject_sha256"], review_execution_id=REVIEW,
-        verdict_claim=reply["verdict"], db_write_authorized=False,
+        verdict_claim=reply["verdict"], semantic_basis_state=semantic_basis_state,
+        db_write_authorized=False,
         independent_assurance_admitted=False, operational_cutover_allowed=False)
 
 def main():
