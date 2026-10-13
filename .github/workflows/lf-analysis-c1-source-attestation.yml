@@ -1,0 +1,40 @@
+name: LF Analysis C1 Source Attestation
+
+# Manual, read-only run: executes the A1Q..A14Q C1 source attestation on the exact commit it
+# was started on and prints the observed facts. No secrets, no database, no transition.
+on:
+  workflow_dispatch:
+    inputs:
+      units:
+        description: 'Comma separated units (default A1..A14)'
+        required: false
+        default: 'A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14'
+
+permissions:
+  contents: read
+
+jobs:
+  analysis-c1-source-attestation:
+    name: analysis-c1-source-attestation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact commit without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Execute deterministic C1 source attestation
+        env:
+          UNITS: ${{ inputs.units }}
+        run: |
+          python3 -I sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_qualification_c1_ci_attest_v1.py --units "$UNITS" --output "$RUNNER_TEMP/c1-attestation.json" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload attestation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-c1-source-attestation
+          path: ${{ runner.temp }}/c1-attestation.json
