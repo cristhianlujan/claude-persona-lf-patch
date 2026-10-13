@@ -402,7 +402,8 @@ jobs:
           echo "already_applied_exact=false" >> "$GITHUB_OUTPUT"
 
           assign_out="$(python3 sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py \
-            "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" --dry-run)"
+            "$SOURCE_FILE" --main-max "$main_max" --ledger-max "$ledger_max" \
+            --utc-now "$(date -u +%Y%m%d%H%M%S)" --dry-run)"
           echo "$assign_out"
           version="$(printf '%s' "$assign_out" | sed -nE 's/.* version=([0-9]{14}) .*/\1/p')"
           [ -n "$version" ] || { echo "FAIL_TRAIN_ASSIGN_VERSION_PARSE"; exit 2; }
