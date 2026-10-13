@@ -174,6 +174,12 @@ BEGIN
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'verification_queries'],jsonb_build_array(q),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'expected'],to_jsonb('13 genuine vNext runs with independent release binding, source currentness, verified Edge identities/receipts, classified assessments; observation count reported, not silently green'::text),true);
  m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','queries'],jsonb_build_array(q),true);
+ m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],
+ coalesce(m#>ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
+ coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_queries'],jsonb_build_array(q),true);
  n:=n+1;
 
@@ -184,7 +190,7 @@ BEGIN
  SELECT s.suite_run_id,s.commit_sha,s.metadata,s.tests_total,s.tests_passed
  FROM public.lf_test_suite_runs s
  WHERE s.suite_code='INPUT_GOVERNANCE_REGRESSION' AND s.status='PASSED'
-  AND s.commit_sha ~ '^[0-9a-f]{40}$' AND s.tests_total>0
+  AND s.commit_sha ~ '^[0-9a-f]{40}$' AND s.tests_total>=(SELECT count(*) FROM cohort)
   AND s.tests_total=s.tests_passed AND s.tests_failed=0 AND s.tests_blocked=0
   AND s.metadata->>'full_catalog_evaluated'='true'
   AND s.metadata->>'source_manifest_sha256'=(SELECT max(release_manifest_sha256) FROM cohort)
@@ -197,6 +203,7 @@ BEGIN
  (SELECT count(*) FROM cohort v WHERE NOT EXISTS(
   SELECT 1 FROM public.lf_test_runs t
   WHERE t.suite_run_id=s.suite_run_id AND t.input_payload->>'run_id'=v.run_id::text
+   AND EXISTS(SELECT 1 FROM jsonb_array_elements_text(s.metadata->'run_ids') rid(value) WHERE rid.value=v.run_id::text)
    AND t.status='PASSED'
    AND EXISTS (SELECT 1 FROM public.lf_test_assertion_results a
     WHERE a.test_run_id=t.test_run_id AND a.status='PASS' AND a.assertion_code ILIKE '%APPLICAB%')
@@ -221,6 +228,12 @@ SELECT CASE WHEN (SELECT count(*) FROM cohort)=13
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'verification_queries'],jsonb_build_array(q),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'expected'],to_jsonb('M7 full regression on exact 13 current run IDs + commit/release manifest, independent per-screen applicability and findings assertions; observations classified, never silently PASS'::text),true);
  m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','queries'],jsonb_build_array(q),true);
+ m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],
+ coalesce(m#>ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
+ coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
  
  n:=n+1;
 
@@ -231,6 +244,7 @@ qualified AS (SELECT validator_elapsed_ms FROM cohort
  AND validator_elapsed_ms IS NOT NULL)
 SELECT CASE WHEN (SELECT count(*) FROM cohort)=13 AND (SELECT count(*) FROM qualified)=13
  AND (SELECT percentile_cont(0.95) WITHIN GROUP(ORDER BY validator_elapsed_ms) FROM qualified)<=150000
+ AND EXISTS(SELECT 1 FROM programacion.fn_ig_performance_timing_metrics_v1() m WHERE m.scope='SUMMARY' AND m.status='PUBLISHED' AND m.sample_count>0)
  THEN 'PASS' ELSE 'FAIL' END verdict,
  (SELECT count(*) FROM cohort) cohort_count,
  (SELECT count(*) FROM qualified) verified_validator_receipts,
@@ -241,6 +255,12 @@ SELECT CASE WHEN (SELECT count(*) FROM cohort)=13 AND (SELECT count(*) FROM qual
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'verification_queries'],jsonb_build_array(q),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'expected'],to_jsonb('13 exact-run independently verified VALIDATOR phase timing receipts, only after authenticated vNext Edge; cohort p95<=150000 ms'::text),true);
  m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','queries'],jsonb_build_array(q),true);
+ m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],
+ coalesce(m#>ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
+ coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
  
  n:=n+1;
 
@@ -259,6 +279,12 @@ FROM e$cpquery_3$;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'verification_queries'],jsonb_build_array(q),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'expected'],to_jsonb('Observe stale/legacy examples for the bounded adversarial executable test; readback observations are not themselves PASS'::text),true);
  m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','queries'],jsonb_build_array(q),true);
+ m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],
+ coalesce(m#>ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
+ coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'test_execution_contract','declared_queries'],jsonb_build_array(q),true);
  n:=n+1;
 
@@ -294,6 +320,12 @@ FROM aggregate a$cpquery_4$;
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'verification_queries'],jsonb_build_array(q),true);
  m:=jsonb_set(m,ARRAY['action_specs_v1',c,'expected'],to_jsonb('13 exact latest run IDs and typed provenance, classified family observations, all CP2..CP5 genuinely DONE; no synthetic cutover'::text),true);
  m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','queries'],jsonb_build_array(q),true);
+ m:=jsonb_set(m,ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],
+ coalesce(m#>ARRAY['source_pack_v1','checkpoint_inputs',c,'inputs','db_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
+ m:=jsonb_set(m,ARRAY['action_specs_v1',c,'target','declared_objects'],
+ coalesce(m#>ARRAY['action_specs_v1',c,'target','declared_objects'],'[]'::jsonb)
+ || jsonb_build_array('programacion.v_ig_m105_cohort_evidence_v1'),true);
  
  n:=n+1;
 
@@ -313,9 +345,28 @@ FROM aggregate a$cpquery_4$;
  exit_criterion='13 current post-cutover vNext Edge runs with authenticated provenance, M7 cohort-bound semantic suite, M8 exact-run p95, stale negative and terminal readback; findings classified without automatic conflation'
  WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M10.5' AND work_item_id=wd;
  UPDATE programacion.engineering_work_items SET expected_result=
- '13 authentic post-cutover Edge runs; M7 exact-cohort functional assurance, M8 exact-cohort timing, adversarial stale rejection and terminal reconciliation; observations recorded not automatic gate'
+ '13 authentic post-cutover Edge runs; M7 exact-cohort functional assurance, M8 exact-cohort timing, adversarial stale rejection and terminal reconciliation; observations recorded not automatic gate',
+ acceptance_criteria=jsonb_build_array(
+ '13 genuine post-cutover run IDs current and release-attested by independent receipt on exact vNext manifest',
+ 'M7: full regression bound to exact run IDs and governed applicability/finding assertions for each screen',
+ 'M8: independently measured VALIDATOR timing per run, cohort p95 in budget and M8 published summary',
+ 'Negative stale or legacy run rejected by executable adversarial test',
+ 'Terminal readback reconciles the same 13 run IDs; classify observations without automatic blocking')
  WHERE id=wd;
  IF (SELECT unit_metadata#>>'{m105_validation_contract_v3,schema_version}'
  FROM programacion.engineering_plan_units WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND unit_code='M10.5')
  IS DISTINCT FROM 'M105_COHORT_EVIDENCE_V3' THEN RAISE EXCEPTION 'M105_V3_READBACK_FAILED'; END IF;
 END $m105v3$;
+
+INSERT INTO transversal.error_knowledge
+(codigo,categoria,titulo,descripcion,causa_raiz,prevencion,validacion,evidencia,source_ref,lote_origen,estado,lifecycle_phase,consumer_role)
+SELECT 'IG-M105-COHORT-VALIDATION-DRIFT-004','INPUT_GOVERNANCE',
+'M10.5 CP2-CP6 unbound suite, global timing and invalid release scope',
+'CP2 counted validators but not findings; CP3 accepted a global suite without 13-run linkage; CP4 global M8; CP5/6 read release from a JSON source receipt array.',
+'Contracts and validators were not tied to the exact same versioned cohort; observation status was conflated with the execution gate.',
+'Read-only shared M10.5 cohort view; genuine release+Edge receipts, per-screen M7 applicability and finding assertions, exact-run M8 timing, bounded stale adversarial and final reconciliation. Report observations without accidental PASS or blanket BLOCK.',
+'Before Train: live read-only projections 13 cohort, 0 authentic vNext, 0 M7 qualified, 0 vNext validator timing, CP6 FAIL. Production unchanged.',
+'github://cristhianlujan/claude-persona-lf-patch/pull/2486',
+'programacion.engineering_plan_units/IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5',
+'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5','ACTIVO','CONTRACT_PREFLIGHT',ARRAY['Architect','Builder','Judge','Auditor']::text[]
+WHERE NOT EXISTS (SELECT 1 FROM transversal.error_knowledge WHERE codigo='IG-M105-COHORT-VALIDATION-DRIFT-004');
