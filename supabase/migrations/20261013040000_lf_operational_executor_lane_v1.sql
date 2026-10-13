@@ -30,7 +30,9 @@ INSERT INTO public.lf_operation_registry (
 ) VALUES (
   'EJECUCION_OPERATIVA_LF','v1.0.0','SANDBOX_ACTIVE','GIT_FIRST_SQL',
   'cristhianlujan/claude-persona-lf-patch',
-  '["supabase/migrations/20261013040000_lf_operational_executor_lane_v1.sql",
+  '["public.lf_operational_executor_begin_v1",
+    "public.lf_operational_executor_finish_v1",
+    "public.lf_close_operational_execution_v1",
     "sandbox/lf_contract_gate_test/operational_executor/operation_lane_contract_candidate_v1.json"]'::jsonb,
   'Bounded operational handler dispatcher; no migrations, no caller-provided SQL or broad DML.',
   'OPERATIONAL_EXECUTION','OPERATIONAL_DATA','EXECUTION_PROTOCOL',
