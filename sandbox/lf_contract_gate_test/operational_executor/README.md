@@ -61,6 +61,12 @@ Consulta a `pg_proc` / `aclexplode`: 298 funciones SECURITY DEFINER en esquemas 
 
 El rol NOLOGIN definido en el PR #2372 no es una credencial y no se debe utilizar para conexión directa. La activación comprueba también `runtime_role_grant_audit_passed` y `public_security_definer_exposure_reviewed`; ambos parten de BLOCK hasta contar con evidencia independiente.
 
+## Comprobación del acceso al resolvedor privado de LF
+
+El catálogo existente demuestra que las funciones canónicas de decisión están instaladas. La conexión Supabase READ_ONLY **no** puede invocar `private.fn_lf_human_decision_resolve_policy_v1` (error `42501 permission denied`), y no se debe elevar esa conexión por ello.
+
+La autoridad del futuro runtime es distinta y aún no está instalada. Antes de activarlo se exige una prueba positiva bajo **su identidad real** de las llamadas privadas transitivas usadas por las fachadas SECURITY DEFINER (sin conceder EXECUTE sobre la función privada al cliente READ_ONLY). `activation_readback_v1` bloqueará hasta que `private_decision_function_execute_proven=true` esté respaldado por un recibo de sandbox. La comprobación de un rol simulado no satisface ese gate.
+
 ## Estado y próximos gates
 
 CODE-ONLY / NO CONECTADO / NO DESPLEGADO / SIN HANDLERS REGISTRADOS.
