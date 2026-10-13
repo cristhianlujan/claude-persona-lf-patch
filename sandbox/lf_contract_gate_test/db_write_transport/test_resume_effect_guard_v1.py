@@ -30,6 +30,15 @@ class ResumeEffectGuardTests(unittest.TestCase):
         with patch.object(r,"call",side_effect=fake),patch.object(r,"_effect_readback",return_value={"dispatch_key":r.identity("2362","20261013010000","100")["dispatch_key"]}),patch.object(r,"_record_step_if_needed",return_value={"status":r.CLEAN}),patch.object(r,"_ledger_readback",return_value=ledger):
             return r.begin(ctx())
 
+    def test_workflow_uses_resume_effect_decision_and_fatal_close(self):
+        from pathlib import Path
+        wf=(Path(__file__).resolve().parents[3]/".github/workflows/lf-migration-merge-train.yml").read_text()
+        self.assertIn("steps.train_exec.outputs.apply_required == 'true'",wf)
+        self.assertIn("Enforce governed execution receipt before merge",wf)
+        for marker in ("Router execution patch step (Train-managed, post-apply)",
+                       "Router execution verify and close (Train-managed, post-merge)"):
+            self.assertNotIn("continue-on-error: true",wf[wf.index(marker):wf.index(marker)+300])
+
     def test_first_effect_requires_apply_once(self):
         state=self.invoke({"result":"EFFECT_RESERVED_NEW"},{})
         self.assertTrue(state["apply_required"])
