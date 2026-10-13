@@ -67,18 +67,18 @@ BEGIN
 
   IF EXISTS (
     WITH req AS (
-      SELECT e.execution_id,x.step_id
+      SELECT e.execution_id,x.step_id,x.ord
       FROM public.lf_operation_execution e
       CROSS JOIN LATERAL jsonb_array_elements_text(
         e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}'
-      ) x(step_id)
+      ) WITH ORDINALITY x(step_id,ord)
       WHERE e.execution_id=ANY(v_ids)
     ), agg AS (
       SELECT r.execution_id,
              count(*)::int required_count,
              count(s.step_id) FILTER (WHERE s.status='STEP_PASS_WITH_EVIDENCE')::int passed,
              count(s.step_id) FILTER (WHERE s.step_id IS NOT NULL AND s.status<>'STEP_PASS_WITH_EVIDENCE')::int nonpass,
-             coalesce(array_agg(r.step_id) FILTER (WHERE s.step_id IS NULL),array[]::text[]) missing
+             coalesce(array_agg(r.step_id ORDER BY r.ord) FILTER (WHERE s.step_id IS NULL),array[]::text[]) missing
       FROM req r
       LEFT JOIN public.lf_operation_execution_steps s
         ON s.execution_id=r.execution_id AND s.step_id=r.step_id
