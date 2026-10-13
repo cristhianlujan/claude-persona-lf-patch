@@ -198,9 +198,73 @@ jobs:
             printf '%s\n' "current_main=$current_main"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Resolve RECOVER governed request
+        id: recover_mode
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re
+          fields={}
+          for raw in os.environ.get("PR_BODY","").splitlines():
+              if ":" in raw:
+                  k,v=raw.split(":",1)
+                  fields[k.strip().upper()]=v.strip()
+          mode=(fields.get("LF_MIGRATION_MODE") or "NORMAL").upper()
+          if mode not in ("NORMAL","RECOVER"):
+              raise SystemExit("FAIL_RECOVER_OPERATION_UNSUPPORTED:"+mode)
+          result={"operation_mode":mode}
+          if mode=="RECOVER":
+              path=fields.get("LF_RECOVER_PATH","")
+              blob=fields.get("LF_RECOVER_BLOB","").lower()
+              issue=fields.get("LF_RECOVER_ISSUE","")
+              if re.fullmatch(r"supabase/migrations/[0-9]{14}_[A-Za-z0-9][A-Za-z0-9_]*[.]sql",path) is None:
+                  raise SystemExit("FAIL_RECOVER_SOURCE_PATH_INVALID")
+              if re.fullmatch(r"[0-9a-f]{40}",blob) is None or not issue.isdigit():
+                  raise SystemExit("FAIL_RECOVER_BLOB_OR_ISSUE_INVALID")
+              result.update(recover_path=path,recover_blob=blob,recover_issue=issue)
+          with open(os.environ["GITHUB_OUTPUT"],"a") as output:
+              for k,v in result.items():
+                  print(k+"="+v,file=output)
+          PY
+
+      - name: Require Super Admin approval and downstream conflict review
+        if: steps.recover_mode.outputs.operation_mode == 'RECOVER'
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          REPO: ${{ steps.admission.outputs.repository }}
+          PR: ${{ steps.admission.outputs.pr_number }}
+          ISSUE: ${{ steps.recover_mode.outputs.recover_issue }}
+          TARGET: ${{ steps.recover_mode.outputs.recover_path }}
+          BLOB: ${{ steps.recover_mode.outputs.recover_blob }}
+          SUPER_ADMIN_ACTORS: ${{ vars.LF_MIGRATION_TRAIN_SUPER_ADMIN_ACTORS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$SUPER_ADMIN_ACTORS" ] || { echo "FAIL_RECOVER_SUPER_ADMIN_REGISTRY_MISSING"; exit 2; }
+          mkdir -p .lf_train
+          gh api --paginate --slurp "repos/$REPO/issues/$ISSUE/comments?per_page=100" > .lf_train/recover-approvals.json
+          python3 - <<'PY'
+          import json,os
+          rows=json.load(open(".lf_train/recover-approvals.json"))
+          comments=[comment for page in rows for comment in page]
+          authorized=set(os.environ["SUPER_ADMIN_ACTORS"].replace(" ",",").split(","))
+          authorized.discard("")
+          token="APPROVE_MIGRATION_RECOVER repo={repo} pr={pr} path={path} blob={blob} CONFLICT_REVIEW_PASS".format(
+              repo=os.environ["REPO"],pr=os.environ["PR"],path=os.environ["TARGET"],blob=os.environ["BLOB"])
+          approved=[comment for comment in comments if
+              (comment.get("user") or {}).get("login") in authorized and
+              token in str(comment.get("body") or "")]
+          if not approved:
+              raise SystemExit("FAIL_RECOVER_OWNER_OR_CONFLICT_REVIEW_APPROVAL_MISSING")
+          print("PASS_RECOVER_SUPER_ADMIN_REVIEW",approved[-1]["id"])
+          PY
+
       - name: Sync PR branch with current main in REAL mode
         id: sync
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.recover_mode.outputs.operation_mode != 'RECOVER'
         env:
           GH_TOKEN: ${{ steps.app_token.outputs.token }}
           REPO: ${{ steps.admission.outputs.repository }}
