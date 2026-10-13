@@ -64,15 +64,32 @@ def compose_capabilities_v3(
     shadow_math = prioritize_mathematical_methods(
         context, signals, methods if isinstance(methods, list) else [],
         precondition_state, verify_method_preconditions, _method_cost)
+    # Rank normal methods by evidence-relevant typed signal specificity before
+    # spending a shared budget. Catalog declaration order carries no priority.
+    # Observed resource telemetry wins cost-confidence ties; estimates are still
+    # explicitly tagged, never represented as measurements.
+    eligible = []
+    for method in methods if isinstance(methods, list) else []:
+        # Gated math candidates are evaluated by the same selector in shadow
+        # but NEVER enter executable method composition.
+        if not isinstance(method, dict) or method.get("selection_lane") == "SHADOW_ONLY":
+            continue
+        if not _method_matches(method, signals):
+            continue
+        matching = sorted({rule.get("type") for rule in method.get("signals", [])
+                           if isinstance(rule, dict) and isinstance(rule.get("type"), str)
+                           and isinstance(rule.get("accepted_values"), list)
+                           and any(sg.get("type") == rule["type"]
+                                   and sg.get("value") in rule["accepted_values"]
+                                   and sg.get("status", "OK") == "OK"
+                                   for sg in signals)})
+        observed_cost, cost_state = _method_cost(method, context)
+        eligible.append((method, matching, observed_cost, cost_state))
+    eligible.sort(key=lambda item: (-len(item[1]),
+                                    item[3] != "OBSERVED",
+                                    item[2], str(item[0].get("method_id", ""))))
     selected=[]; rejected=[]; total=0.0
-    for method in methods if isinstance(methods,list) else []:
-        # Gated math candidates are evaluated by the existing selector in shadow
-        # but may NEVER appear in operational selected_methods, even if a caller
-        # asks for allow_experimental_methods=True.
-        if isinstance(method, dict) and method.get("selection_lane") == "SHADOW_ONLY":
-            continue
-        if not isinstance(method,dict) or not _method_matches(method,signals):
-            continue
+    for method, matching, _, _ in eligible:
         mid=method.get("method_id")
         if mid in blocked:
             rejected.append({"method_id":mid,"reason":"BLOCKED_FOR_CURRENT_RUN"})
@@ -93,6 +110,7 @@ def compose_capabilities_v3(
             continue
         selected.append({
             "method_id":mid,"cost_points":cost,"cost_status":cost_status,
+            "matched_signal_types":matching,
             "precondition_receipt":pre,
             "stop_conditions":method.get("stop_conditions",[]),
             "validation_method":method.get("validation_method"),
