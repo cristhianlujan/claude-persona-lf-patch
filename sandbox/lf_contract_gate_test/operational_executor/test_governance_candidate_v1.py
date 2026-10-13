@@ -43,6 +43,14 @@ def verify(source: str) -> list[str]:
       "lf_operational_admission_authority",
       "OPERATIONAL_AUTHORITY_ROLE_PRIVILEGES_UNSAFE",
       "OPERATIONAL_AUTHORITY_ROLE_CROSS_MEMBERSHIP_FORBIDDEN",
+      "fn_lf_human_decision_consume_v1",
+      "fn_lf_human_decision_resolve_policy_v1",
+      "fn_lf_human_decision_assert_authority_receipt_v1",
+      "OPERATIONAL_ADMISSION_DURABLE_DECISION_REF_REQUIRED",
+      "OPERATIONAL_ADMISSION_VERIFIED_DECISION_NOT_CURRENT",
+      "OPERATIONAL_ADMISSION_DECISION_SCOPE_OR_EXPIRY_INVALID",
+      "OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE",
+      "OPERATIONAL_ADMISSION_AUTHORITY_RECEIPT_INVALID",
       "OPERATIONAL_ADMISSION_EXTERNAL_DECISION_NOT_EXACT",
       "OPERATIONAL_ADMISSION_REPLAY_OR_EXECUTION_MISMATCH",
       "OPERATIONAL_BEGIN_INDEPENDENT_ADMISSION_PROVENANCE_MISSING",
@@ -107,6 +115,28 @@ class GovernedCandidateStaticTests(unittest.TestCase):
         self.assertNotIn("COMMIT;",source[a:b])
         self.assertIn("p_payload_sha",source[a:b])
         self.assertEqual(source.count("REVOKE ALL ON FUNCTION public.lf_operational_executor_admit_v1"),1)
+
+    def test_durable_verified_decision_required(self):
+        source=SQL.read_text(encoding="utf-8")
+        start=source.index("CREATE OR REPLACE FUNCTION public.lf_operational_executor_admit_v1(")
+        end=source.index("END $admit$;",start)
+        admission=source[start:end]
+        for item in ("private.fn_lf_human_decision_consume_v1",
+                     "private.fn_lf_human_decision_resolve_policy_v1",
+                     "private.fn_lf_human_decision_assert_authority_receipt_v1",
+                     "request_status' IS DISTINCT FROM 'DECIDED'",
+                     "v_subject->>'handler_code' IS DISTINCT FROM p_handler_code",
+                     "v_subject->>'payload_sha256' IS DISTINCT FROM p_payload_sha",
+                     "v_subject->>'effect_scope' IS DISTINCT FROM p_effect_scope",
+                     "v_subject->>'idempotency_key' IS DISTINCT FROM p_idempotency_key",
+                     "v_policy->>'state' IS DISTINCT FROM 'ACTIVE'"):
+            self.assertIn(item,admission)
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_ADMISSION_VERIFIED_DECISION_NOT_CURRENT",
+            "UNVERIFIED_CALLER_DECISION")))
+        self.assertTrue(verify(source.replace(
+            "OPERATIONAL_ADMISSION_AUTHORITY_POLICY_NOT_ACTIVE",
+            "POLICY_BYPASSED")))
 
     def test_mutated_admission_body_is_rejected(self):
         source=SQL.read_text(encoding="utf-8")
