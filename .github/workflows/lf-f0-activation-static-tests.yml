@@ -5,6 +5,7 @@ on:
       - '.github/workflows/**'
       - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
       - 'sandbox/lf_contract_gate_test/db_write_transport/**'
+      - 'sandbox/lf_contract_gate_test/transversal_assets/execution_continuity/**'
 permissions:
   contents: read
 jobs:
@@ -26,3 +27,4 @@ jobs:
           python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py
           python3 sandbox/lf_contract_gate_test/db_write_transport/test_train_execution_recorder.py
           python3 sandbox/lf_contract_gate_test/db_write_transport/test_migration_recover_reconcile_resume.py
+          python3 sandbox/lf_contract_gate_test/transversal_assets/execution_continuity/test_continuity_core_v1.py
