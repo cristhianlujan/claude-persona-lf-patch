@@ -38,13 +38,19 @@ BEGIN
     RETURN EXISTS (
         SELECT 1
           FROM private.lf_evidence_ledger_v1 l
+          JOIN private.lf_evidence_resolver_registry_v1 rr
+            ON rr.resolver_id=l.resolver_id
+           AND rr.active IS TRUE
+           AND rr.trust_level='TRUSTED_PROVIDER_BOUND'
+           AND rr.provider=l.provider
+           AND rr.verification_method=l.verification_method
          WHERE l.receipt_id = v_id
            AND l.subject_type = p_subject_type
            AND l.subject_ref = p_subject_ref
            AND l.subject_sha256 = p_subject_sha256
            AND l.source_head_sha = p_source_head_sha
            AND l.verification_state = 'VERIFIED'
-           AND NULLIF(btrim(l.resolver_id),'') IS NOT NULL
+           AND l.resolver_id IN ('LF_GITHUB_SOURCE_READBACK_V1','LF_SUPABASE_READBACK_V1')
            AND NULLIF(btrim(l.provider_ref),'') IS NOT NULL
            AND l.receipt_sha256 ~ '^[0-9a-f]{64}$'
            AND l.verified_at IS NOT NULL
@@ -57,7 +63,7 @@ REVOKE ALL ON FUNCTION public.lf_profile_update_verified_receipt_v1(text,text,te
 GRANT EXECUTE ON FUNCTION public.lf_profile_update_verified_receipt_v1(text,text,text,text,text) TO service_role;
 
 -- Do NOT apply this source by itself. Admission requires:
--- (1) check the deployment principal owns private lf_evidence_ledger_v1;
+-- (1) check the deployment principal may read the private ledger AND resolver registry;
 -- (2) prove positive/negative exact-receipt resolution under ROLLBACK;
 -- (3) cross-bind receipt to actual profile target/source and method version;
 -- (4) preserve 22 frozen historic execution requirements;
