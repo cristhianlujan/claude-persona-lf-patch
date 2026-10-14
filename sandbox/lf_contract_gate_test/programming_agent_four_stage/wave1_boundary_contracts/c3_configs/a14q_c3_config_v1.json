@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "NO_CRITICAL_ERRORS",
+   "statement": "Ningún caso queda READY o PARTIAL_READY cuando las reglas y los datos del caso exigen BLOCKED (paridad del handoff en BLOCK, proyección con pérdida o especialista faltante que bloquea), y ninguna lista de scopes contradice el veredicto."
+  },
+  {
+   "code": "CLASSIFICATION_MATCHES_RULES",
+   "statement": "Al menos el 95% de las respuestas (depth_level, verdict, blocked_scope_ids y ready_scope_ids) coincide con aplicar las reglas suministradas a los datos del caso."
+  },
+  {
+   "code": "USABLE_COMPLETE",
+   "statement": "Hay una respuesta por cada uno de los 12 casos con exactamente las claves pedidas y rationale suficiente, y answers_statement dice que las respuestas se produjeron aplicando las reglas, sin ejecutar ni medir nada."
+  }
+ ],
+ "criterion": "Juez independiente exige 0 críticos, >=95% clasificación y usabilidad",
+ "decoy_must_fail_checks": [
+  "NO_CRITICAL_ERRORS",
+  "CLASSIFICATION_MATCHES_RULES"
+ ],
+ "replacements": [
+  [
+   "\"lossy_projection_detected\": true,\n      \"verdict\": \"BLOCKED\"",
+   "\"lossy_projection_detected\": false,\n      \"verdict\": \"READY\""
+  ],
+  [
+   "\"case_id\": \"A14-FRESH-008\",\n      \"depth_level\": \"L3\"",
+   "\"case_id\": \"A14-FRESH-008\",\n      \"depth_level\": \"L1\""
+  ],
+  [
+   "aplicando únicamente las reglas y los datos suministrados.",
+   "ejecutando el pipeline real y midiendo costos y latencia."
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Responde CADA caso aplicando"
+}
