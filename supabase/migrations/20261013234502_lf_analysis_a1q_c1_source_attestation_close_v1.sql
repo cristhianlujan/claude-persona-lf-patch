@@ -20,10 +20,12 @@ DECLARE
  v_state jsonb; v_m jsonb; v_old jsonb; v_spec jsonb; v_art jsonb; v_ready jsonb;
  v_out jsonb; v_receipt jsonb; v_evidence text;
 BEGIN
- v_state:=programacion.fn_engineering_unit_bootstrap_v3(v_plan,v_unit);
- IF v_state->>'terminal_action'<>'CONTINUE_CURRENT_CHECKPOINT'
-    OR v_state#>>'{current_checkpoint,checkpoint_code}'<>v_cp
- THEN RAISE EXCEPTION 'A1Q_C1_NOT_CURRENT:%',v_state->>'terminal_action'; END IF;
+ -- Current checkpoint = first not DONE/NOT_APPLICABLE by sequence (same rule as the assertion recorder).
+ -- The bootstrap cannot be required here: while the spec is BLOCK it answers STOP_ACTION_SPEC_INCOMPLETE.
+ IF (SELECT c.checkpoint_code FROM programacion.engineering_work_checkpoints c
+      WHERE c.work_item_id=v_wi AND c.status NOT IN ('DONE','NOT_APPLICABLE')
+      ORDER BY c.sequence_no LIMIT 1) IS DISTINCT FROM v_cp
+ THEN RAISE EXCEPTION 'A1Q_C1_NOT_CURRENT'; END IF;
 
  SELECT unit_metadata INTO v_m FROM programacion.engineering_plan_units
  WHERE plan_code=v_plan AND unit_code=v_unit AND work_item_id=v_wi FOR UPDATE;
@@ -60,6 +62,10 @@ BEGIN
  UPDATE programacion.engineering_plan_units SET unit_metadata=v_m
  WHERE plan_code=v_plan AND unit_code=v_unit AND work_item_id=v_wi;
 
+ v_state:=programacion.fn_engineering_unit_bootstrap_v3(v_plan,v_unit);
+ IF v_state->>'terminal_action'<>'CONTINUE_CURRENT_CHECKPOINT'
+    OR v_state#>>'{current_checkpoint,checkpoint_code}'<>v_cp
+ THEN RAISE EXCEPTION 'A1Q_C1_BOOTSTRAP_NOT_CONTINUE:%',v_state->>'terminal_action'; END IF;
  v_ready:=programacion.fn_engineering_checkpoint_execution_readiness_v1(v_plan,v_unit,v_cp);
  IF v_ready->>'status'<>'READY' OR v_ready->>'execution_ready'<>'true'
  THEN RAISE EXCEPTION 'A1Q_C1_READINESS_FAILED:%',v_ready; END IF;
