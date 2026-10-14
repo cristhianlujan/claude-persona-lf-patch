@@ -1,5 +1,6 @@
 -- LF engineering plan follow-up, approved 2026-10-14.
--- Tracking only: two distinct work items under Paulo's existing workstream.
+-- Tracking only: 2 domain items and 3 independent, measurable Migration deliverables.
+-- Delivery progress is the completion of NEW, REMOVE, RECOVERY, not general CP count.
 -- Only historical use or explicit user request with real consumer admits development.
 -- Never repair unrequested dormant operations just because a catalog gap exists.
 -- No modification of Migration/Operation functionality, PASE or POST-PASE.
@@ -36,7 +37,7 @@ BEGIN
     ('PAULO-MIGRATION-001',v_stream_id,
      'Migration: ampliar LF Migration Merge Train por casos de cambio',
      'Cubrir Migration solo para uso historico o pedido expreso: nuevas migraciones retiro source-only y recovery. Evitar variantes no solicitadas y motores paralelos.',
-     'Train existente admite y rechaza correctamente cada naturaleza aplicable con tests y recibos Git=ledger=DB; no modifica PASE/POST-PASE.',
+     'Migration medido por 3 entregables: NEW, REMOVE y RECOVERY. Cada entrega cerrada con resultado util y readback; CP internos solo para seguimiento de detalle.',
      'DATABASE','P1','BACKLOG','MIXED','PAULO',
      'cristhianlujan/claude-persona-lf-patch','LF_MIGRATION',
      'LF_MIGRATION_MERGE_TRAIN',
@@ -62,16 +63,70 @@ BEGIN
      'PAULO_SCOPE_TRACKING_20261014')
   RETURNING id INTO v_operation_id;
 
+  -- Each Migration deliverable is an independently observable backlog row.
+  -- NEW is already supported for one added SQL file: validate existing function,
+  -- and extend only if a documented real case demonstrates a gap.
+  -- REMOVE handles DROP of a DB object via NEW versioned migration and
+  -- source-only retirement of an obsolete unapplied Git source as DIFFERENT paths.
+  -- RECOVERY handles a concrete main/ledger/DB discrepancy without false apply.
+  INSERT INTO programacion.engineering_work_items
+    (work_code,workstream_id,parent_work_item_id,title,objective,expected_result,
+     work_type,priority,status,assignee_type,assignee_ref,target_repo,target_domain,
+     target_component,source_ref,acceptance_criteria,created_by_execution_id)
+  SELECT d.code,v_stream_id,v_migration_id,d.title,d.objective,d.expected_result,
+         'DATABASE','P1','BACKLOG','MIXED','PAULO',
+         'cristhianlujan/claude-persona-lf-patch','LF_MIGRATION',
+         'LF_MIGRATION_MERGE_TRAIN',
+         'https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2644',
+         d.acceptance_criteria,'PAULO_SCOPE_TRACKING_20261014'
+    FROM (VALUES
+      ('PAULO-MIGRATION-NEW',
+       'NEW — migracion nueva versionada',
+       'Comprobar que LF Train procesa una migracion SQL nueva added con version y scope exactos; no reimplementar un soporte que ya funciona.',
+       'Caso real NEW verificado: archivo versionado, pruebas, apply/ledger y readback de Git/DB; mejora de codigo solo si el caso muestra una brecha.',
+       jsonb_build_array('Existe uso/pedido concreto','NEW no se reconstruye si ya funciona','Prueba positiva y negativa por caso real','Readback git ledger DB')),
+      ('PAULO-MIGRATION-REMOVE',
+       'REMOVE — retiro controlado de objeto o fuente',
+       'Atender retiro solicitado separando DROP de objeto SQL mediante nueva migracion versus REMOVE source-only de fuente historica obsoleta/no aplicada.',
+       'REMOVE solicitado queda cubierto con ruta correcta por naturaleza, bloqueo de historicos inseguros, pruebas y evidencia; sin hard delete de ledger.',
+       jsonb_build_array('Pedido explicito de REMOVE','DROP SQL y retiro source-only tienen contratos distintos','No tocar SQL historico ya aplicado','Positivo/negativo y rollback cuando aplica','Readback exacto')),
+      ('PAULO-MIGRATION-RECOVERY',
+       'RECOVERY — recuperar migracion o paridad inconsistente',
+       'Atender incidentes reales de fuente fusionada no aplicada y desviacion Git/ledger/DB, sin replay ni fingir apply.',
+       'Un caso real RECOVERY termina con resultado y conciliacion exacta, o rechazo seguro demostrado con motivo y evidencia.',
+       jsonb_build_array('Incidente historico identificado','Version blob y fuente exactos','No replay ni ledger artificial','Prueba y readback real'))
+    ) AS d(code,title,objective,expected_result,acceptance_criteria);
+
+  -- Internal checkpoints are the drill-down; delivery rows are the primary metric.
+  INSERT INTO programacion.engineering_work_checkpoints
+    (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
+  SELECT child.id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING',
+         'PAULO_SCOPE_TRACKING_20261014'
+    FROM (VALUES
+      ('PAULO-MIGRATION-NEW','NEW-C1','Caso NEW real y baseline exacta',1),
+      ('PAULO-MIGRATION-NEW','NEW-C2','Validar alcance/contrato existente, ampliar solo si hace falta',2),
+      ('PAULO-MIGRATION-NEW','NEW-C3','Prueba positiva y negativa bajo ruta admitida',3),
+      ('PAULO-MIGRATION-NEW','NEW-C4','Entrega verificada con Git ledger DB y evidencia',4),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C1','Caso REMOVE clasificado: DROP SQL o retiro de fuente',1),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C2','Ruta de retiro segura por naturaleza y gobierno',2),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C3','Positivo negativo y rollback donde aplica',3),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C4','Entrega REMOVE demostrada con recibo y readback',4),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C1','Incidente concreto y fuente/ledger version exactos',1),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C2','Ruta admitida y guard anti-replay',2),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C3','Prueba acotada con negativos',3),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C4','Entrega RECOVERY con readback de paridad',4)
+    ) AS cp(work_code,checkpoint_code,title,sequence_no)
+    JOIN programacion.engineering_work_items child ON child.work_code=cp.work_code
+   WHERE child.parent_work_item_id=v_migration_id
+     AND child.workstream_id=v_stream_id;
+
   INSERT INTO programacion.engineering_work_checkpoints
  (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
  SELECT v_migration_id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
  FROM (VALUES
-  ('MIG-CP1', 'Diagnosticar Train para casos reales o pedidos; descartar variantes de cambios de fuente sin uso ni demanda', 1),
-  ('MIG-CP2', 'Contratar solo casos de nuevas migraciones retiro source-only y recovery sustentados en demanda', 2),
-  ('MIG-CP3', 'Extender Train existente con cambios aislados y gobierno vigente, sin motor paralelo', 3),
-  ('MIG-CP4', 'Probar positivos/negativos y ROLLBACK aplicable; no replay ni alteración histórica indebida', 4),
-  ('MIG-CP5', 'Verificar ejecución Train, source, ledger, DB, parity y readback exactos', 5),
-  ('MIG-CP6', 'Registrar resultados, EKB y cierre solo con evidencia real por caso', 6)
+   ('MIG-DEL-NEW','Entregable NEW: cerrado solo si PAULO-MIGRATION-NEW esta DONE con evidencia',1),
+   ('MIG-DEL-REMOVE','Entregable REMOVE: cerrado solo si PAULO-MIGRATION-REMOVE esta DONE con evidencia',2),
+   ('MIG-DEL-RECOVERY','Entregable RECOVERY: cerrado solo si PAULO-MIGRATION-RECOVERY esta DONE con evidencia',3)
  ) AS cp(checkpoint_code,title,sequence_no);
 
   INSERT INTO programacion.engineering_work_checkpoints
@@ -87,10 +142,19 @@ BEGIN
  ) AS cp(checkpoint_code,title,sequence_no);
 
   IF (SELECT count(*) FROM programacion.engineering_work_checkpoints
-      WHERE work_item_id = v_migration_id) <> 6
+      WHERE work_item_id = v_migration_id) <> 3
      OR (SELECT count(*) FROM programacion.engineering_work_checkpoints
       WHERE work_item_id = v_operation_id) <> 6 THEN
       RAISE EXCEPTION 'PAULO_TRACKING_CHECKPOINTS_INCOMPLETE';
+  END IF;
+  IF (SELECT count(*) FROM programacion.engineering_work_items
+       WHERE parent_work_item_id = v_migration_id
+         AND workstream_id = v_stream_id
+         AND work_code IN ('PAULO-MIGRATION-NEW','PAULO-MIGRATION-REMOVE','PAULO-MIGRATION-RECOVERY')) <> 3
+     OR (SELECT count(*) FROM programacion.engineering_work_checkpoints c
+           JOIN programacion.engineering_work_items w ON w.id=c.work_item_id
+          WHERE w.parent_work_item_id=v_migration_id) <> 12 THEN
+    RAISE EXCEPTION 'PAULO_MIGRATION_DELIVERABLES_INCOMPLETE';
   END IF;
 END;
 $paulo_tracking$;
