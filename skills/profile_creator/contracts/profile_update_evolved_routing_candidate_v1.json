@@ -1,0 +1,226 @@
+{
+  "schema": "LF_PROFILE_UPDATE_EVOLVED_ROUTING_CANDIDATE_V1",
+  "lifecycle": "CANDIDATE_ONLY_NOT_ACTIVATED",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "proposed_operation_version": "v0.2",
+  "supersedes_for_new_executions_only": "CONTRACT-ACTUALIZACION-PERFIL-LF-v0.1",
+  "authority": "SUPABASE_OPERATION_POLICY_SNAPSHOT",
+  "selector_source": "CAPABILITY_SELECTOR_COMPOSITION_V2",
+  "method_catalog_source": "METHOD_PACK_REGISTRY",
+  "new_steps": [
+    {
+      "step_id": "method_selection",
+      "execution_order": 35,
+      "after": "baseline_read",
+      "before": "evolution_decision",
+      "judge_role": "METHOD_SELECTION_ELIGIBILITY_AND_EVIDENCE",
+      "judge_behavior": "DETERMINISTIC_FAIL_CLOSED",
+      "requires_actual_selection": false,
+      "selection_may_be_empty_only_if": "NO_ADDITIONAL_METHOD_NEEDED_WITH_EVIDENCE"
+    },
+    {
+      "step_id": "evolution_decision",
+      "execution_order": 37,
+      "after": "method_selection",
+      "before": "change_scope",
+      "judge_role": "EVOLUTION_DECISION_AND_ROUTE",
+      "judge_behavior": "DETERMINISTIC_FAIL_CLOSED",
+      "allowed_results": [
+        "UPDATE",
+        "NO_CHANGE",
+        "NEEDS_MORE_EVIDENCE"
+      ]
+    }
+  ],
+  "common_prefix": [
+    "init_execution",
+    "router",
+    "profile_resolve",
+    "baseline_read",
+    "method_selection",
+    "evolution_decision"
+  ],
+  "immutable_policy_contract": {
+    "snapshot_attached_before_steps": true,
+    "route_lists_frozen_in_snapshot": true,
+    "historical_execution_snapshot_immutable": true,
+    "historical_step_availability": "ONLY_FROZEN_REQUIRED_STEPS",
+    "route_decision_source": "RECORDED_EVOLUTION_DECISION_STEP_WITH_CURRENT_BOUND_JUDGE_PASS",
+    "route_decision_must_be_recorded_before_branch": true,
+    "no_model_supplied_route_claims": true,
+    "no_backfill_of_new_steps_into_existing_runs": true,
+    "required_steps_before_decision": [
+      "init_execution",
+      "router",
+      "profile_resolve",
+      "baseline_read",
+      "method_selection",
+      "evolution_decision"
+    ],
+    "required_steps_by_outcome": {
+      "UPDATE": [
+        "init_execution",
+        "router",
+        "profile_resolve",
+        "baseline_read",
+        "method_selection",
+        "evolution_decision",
+        "change_scope",
+        "regression_plan",
+        "pre_write_execution_binding_gate",
+        "github_write",
+        "github_readback",
+        "deterministic_validation",
+        "semantic_judge",
+        "regression_after",
+        "post_merge_reconcile",
+        "close",
+        "report_output"
+      ],
+      "NO_CHANGE": [
+        "init_execution",
+        "router",
+        "profile_resolve",
+        "baseline_read",
+        "method_selection",
+        "evolution_decision",
+        "deterministic_validation",
+        "semantic_judge",
+        "close",
+        "report_output"
+      ]
+    },
+    "required_steps": [
+      "init_execution",
+      "router",
+      "profile_resolve",
+      "baseline_read",
+      "method_selection",
+      "evolution_decision",
+      "change_scope",
+      "regression_plan",
+      "pre_write_execution_binding_gate",
+      "github_write",
+      "github_readback",
+      "deterministic_validation",
+      "semantic_judge",
+      "regression_after",
+      "post_merge_reconcile",
+      "close",
+      "report_output"
+    ],
+    "route_resolution_reader_candidate": "public.lf_profile_update_effective_route_v1",
+    "route_resolution_source": "skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql"
+  },
+  "required_steps_by_outcome": {
+    "UPDATE": [
+      "init_execution",
+      "router",
+      "profile_resolve",
+      "baseline_read",
+      "method_selection",
+      "evolution_decision",
+      "change_scope",
+      "regression_plan",
+      "pre_write_execution_binding_gate",
+      "github_write",
+      "github_readback",
+      "deterministic_validation",
+      "semantic_judge",
+      "regression_after",
+      "post_merge_reconcile",
+      "close",
+      "report_output"
+    ],
+    "NO_CHANGE": [
+      "init_execution",
+      "router",
+      "profile_resolve",
+      "baseline_read",
+      "method_selection",
+      "evolution_decision",
+      "deterministic_validation",
+      "semantic_judge",
+      "close",
+      "report_output"
+    ]
+  },
+  "pending_outcome": {
+    "code": "NEEDS_MORE_EVIDENCE",
+    "state": "IN_PROGRESS_NEEDS_EVIDENCE",
+    "permitted_next_step": "TARGETED_EVIDENCE_ACQUISITION_OR_RESUME",
+    "terminal_completion": false,
+    "github_write_allowed": false,
+    "no_change_assertion_allowed": false
+  },
+  "route_validation": {
+    "no_change_qualified_assessment_required": true,
+    "no_change_verifiable_evidence_required": true,
+    "update_requires_prewrite_binding": true,
+    "no_change_skips_profile_write": true,
+    "update_requires_exact_pr_merge_readback": true,
+    "missing_gpt_native_provider_attestation_never_passes_semantic_gate": true,
+    "missing_method_qualification_may_not_execute_method": true,
+    "independent_assurance_reuses": "INDEPENDENT_ASSURANCE@2.0.1",
+    "no_runtime_activation": true
+  },
+  "consumer_preconditions": [
+    "SUPABASE_NEW_OPERATION_CONTRACT_AND_PASS_POLICY_ADMITTED",
+    "PROFILE_STEP_JUDGE_READER_AND_RECORDER_USE_SAME_FROZEN_ROUTES",
+    "OIDC_GOVERNED_CALLER_DISPATCHES_EXISTING_PROFILE_UPDATER",
+    "EXACT_PROFILE_SOURCE_AND_CURRENTNESS_BOUND",
+    "TRAIN_ROLLBACK_NEGATIVE_POSITIVE_TESTS_AND_POST_APPLY_READBACK"
+  ],
+  "provisional_judge_specs": {
+    "method_selection": {
+      "input": [
+        "profile_assessment_ref",
+        "selector_version",
+        "method_portfolio_version",
+        "selected_methods",
+        "method_qualification_receipts",
+        "fallback_state"
+      ],
+      "negative": [
+        "unqualified_method_executed",
+        "stale_catalog",
+        "budget_violation",
+        "missing_evidence",
+        "unjustified_empty_composition"
+      ],
+      "result": "STEP_PASS_WITH_EVIDENCE",
+      "positive_requires": [
+        "verified_PROFILE_ASSESSMENT_exact_subject_sha_revision",
+        "eligible_METHOD_QUALIFICATION_exact_id_version_receipts",
+        "justified_empty_method_selection_when_applicable"
+      ]
+    },
+    "evolution_decision": {
+      "input": [
+        "profile_assessment_ref",
+        "method_selection_receipt",
+        "mode",
+        "decision",
+        "evidence_refs",
+        "decision_digest"
+      ],
+      "negative": [
+        "change_without_evidence",
+        "no_change_with_unknown_assessment",
+        "method_execution_unauthorized",
+        "route_mismatch",
+        "model_claim_without_source_readback"
+      ],
+      "result": "STEP_PASS_WITH_EVIDENCE",
+      "positive_requires": [
+        "clean_method_selection_receipt",
+        "matching_assessment_receipt",
+        "decision_mode_cross_consistency",
+        "route_source_is_frozen_policy"
+      ]
+    },
+    "receipt_verifier": "public.lf_profile_update_verified_receipt_v1",
+    "receipt_verifier_source": "skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql"
+  },
+  "activation_boundary": "NOT_READY: no step registration, no active policy, no authentic GPT_NATIVE dispatcher, no qualified methods, no rollback Train"
+}
