@@ -129,6 +129,18 @@ The deterministic intake runner uses its separate `intake_status`; it is not a s
 ## Non-negotiable rule
 Quality Pack cannot accept a worker PASS if independently resolved evidence is missing. Claims without resolver-backed evidence count as unproven.
 
+## Conditional relational-association audit — profile evolution candidate PE10
+
+Apply this method **only** when the reviewed evidence shows a multi-table association anomaly, a non-unique external identifier, a joined-record mismatch, or inconsistent totals requiring relational tracing. Do not add exploratory queries or new blocking gates to an already verified clean artifact.
+
+1. Preserve the producer's business identity and track lineage through authoritative foreign keys (for example: provider event → payment → offer → obligation). A repeated display/external reference is not a unique obligation identity. Before extending scope beyond the reported period, show a concrete shared-key or dependency signal and separately report discovered records outside that period.
+2. A left join that yields no child row is **not** evidence of an incorrect association. Classify three distinct states: **missing association** (no matched right-side record), **correct association** (both identities observed and equal), **crossed association** (both identities observed and unequal). If the business object is missing upstream, report that additional state explicitly. Never let SQL three-valued `NULL` behavior silently turn missing rows into `CROSSED`.
+3. Distinguish payment or job eligibility from relational mismatch: rejected events do not contribute to confirmed totals; an absent gateway or reconciliation may require separate investigation without being a false crossed-record finding. Expose case-by-case identifiers and classification, not only aggregate counts.
+4. Compare source and target IDs; check relevant approval, deactivation, status, reference and period hypotheses **when the supplied evidence makes them plausible**. Run executable read-only queries on an available frozen fixture; otherwise label the query **PROPOSED_NOT_EXECUTED**, with no invented result. Distinguish a reproduced defective lookup from the historical cause of an unobserved production write.
+5. Correct only the proven mapping, preserve unaffected rows and authorized scopes, and test at least: true mismatch, correct association, missing matched row, and event not eligible for the aggregate. Do not substitute a candidate fixture test for live system evidence. Preserve the existing independent-quality verdict, resolver-backed proof, safety and routing rules.
+
+This is a **candidate behavioral refinement**, not a general mandatory query quota, semantic review approval, new selector, method qualification, source promotion or runtime authorization. A verified clean case may pass without these extra checks.
+
 ## Focused UI Decision validation
 When the user asked for a concrete UI decision, definition or one selected visual treatment, Quality Pack must validate that the upstream output contains concrete selected values, not a vague concept or ingredient list.
 

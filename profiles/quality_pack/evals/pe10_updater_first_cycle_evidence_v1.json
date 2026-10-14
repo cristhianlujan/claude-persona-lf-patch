@@ -1,0 +1,44 @@
+{
+  "schema": "PE10_UPDATER_PROFILE_CANDIDATE_CYCLE_V1",
+  "profile_slug": "quality_pack",
+  "change_kind": "REPARACION_DE_COMPORTAMIENTO",
+  "baseline_profile_blob": "de455eaba3fa7e4bbca01a368a506c8764ebc75d",
+  "case_id": "PESC3-V2-201",
+  "case_source_commit": "3a365c0d027a881826e7b5566048b561fae37f74",
+  "baseline_output_source": "prior GPT Native ORIGINAL lote1 archived (not in this PR)",
+  "baseline_predicate": "CASE WHEN co.obligacion_id=o.obligacion_id THEN 'OK' ELSE 'ERROR_ASOCIACION' END",
+  "baseline_sql_execution_reference": "archived case201 ORIGINAL q2_recorrido_causal",
+  "baseline_flagged": [
+    "P2",
+    "P3",
+    "P4"
+  ],
+  "baseline_error": "P4 has no gateway/conciliation but appears as ERROR_ASOCIACION",
+  "candidate_decision": "USE_TRISTATE_ONLY_FOR_RELATIONAL_ANOMALIES",
+  "candidate_true_crosses": [
+    "P2",
+    "P3"
+  ],
+  "candidate_missing_non_crossed": [
+    "P4"
+  ],
+  "candidate_unaffected": [
+    "P1"
+  ],
+  "candidate_query_test": "profiles/quality_pack/evals/test_relational_association_evolution_v1.py",
+  "local_replay": {
+    "engine": "sqlite3",
+    "assertions_passed": 12,
+    "assertions_total": 12,
+    "mutation": "P5 confirmed, gateway present, missing conciliation; classified SIN_CONCILIACION"
+  },
+  "evidence_scope": "SYNTHETIC_FROZEN_CASE_REPLAY_ONLY",
+  "delta": "1 baseline false positive avoided without losing 2 true crossed records",
+  "independent_semantic_judge": "NOT_EXECUTED",
+  "profile_runtime_delivery": "NOT_VERIFIED",
+  "source_update_scope": "branch-only",
+  "production_activation": false,
+  "method_qualification": false,
+  "profile_promotion": false,
+  "next_gate": "QUALITY_PACK_EXISTING_VALIDATORS_THEN_INDEPENDENT_SEMANTIC_PROFILE_REVIEW_AND_RUNTIME_SOURCE_PROJECTION"
+}
