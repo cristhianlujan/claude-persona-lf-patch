@@ -1,5 +1,6 @@
 -- LF engineering plan follow-up, approved 2026-10-14.
--- Tracking only: 2 domain items and 2 pending Migration deliverables.
+-- Tracking only: 2 domain parents, 2 conditional Migration deliveries,
+-- and 1 evidenced Operation delivery with separate readiness of access.
 -- Baseline verified: NEW via PR #2355/#2400 and ledger;
 -- REMOVE source-only via RECONCILE PR #2412; ledger -> source via PR #2420;
 -- only unmet, explicitly needed variants are valid new Paulo deliverables.
@@ -58,7 +59,7 @@ BEGIN
     ('PAULO-OPERATION-001',v_stream_id,
      'Operation: ampliar cobertura gobernada de operaciones LF',
      'Extender lf_operation_* solo si existe uso historico documentado o solicitud expresa con consumidor real. No perfeccionar operaciones nunca usadas/no pedidas; preservar autoria de Cristhian.',
-     'Inventario focalizado en casos usados o pedidos; contratos, jueces y readback solo donde apliquen; integracion con Migration unicamente ante un caso compartido real.',
+     'Operation measured by one current concrete delivered capability: governed operational DB execution; the code-only PR 2367 already exists but Router admission and safe closeout are not installed. MCP HTTPS access is later and conditional.',
      'BACKEND','P1','BACKLOG','MIXED','PAULO',
      'cristhianlujan/claude-persona-lf-patch','LF_OPERATION',
      'LF_OPERATION_FRAMEWORK',
@@ -123,22 +124,57 @@ BEGIN
    ('MIG-DEL-RECOVERY','RECOVERY solo si PAULO-MIGRATION-RECOVERY esta DONE con evidencia',2)
  ) AS cp(checkpoint_code,title,sequence_no);
 
+  -- Operation: only a concrete existing-demand gap (#2371, code-only PR #2367).
+  -- No implementation or activation of arbitrary non-requested catalog operations.
+  INSERT INTO programacion.engineering_work_items
+    (work_code,workstream_id,parent_work_item_id,title,objective,expected_result,
+     work_type,priority,status,assignee_type,assignee_ref,target_repo,target_domain,
+     target_component,source_ref,acceptance_criteria,created_by_execution_id)
+  VALUES
+    ('PAULO-OPERATION-DB-EXECUTE',v_stream_id,v_operation_id,
+     'OPERATIONAL_DB - ejecucion transaccional gobernada',
+     'Reutilizar el executor candidato PR 2367, completar solo su ruta real solicitada en issue 2371, sin DML SQL arbitrario, sin duplicar Migration ni las operaciones existentes.',
+     'Un caso operacional real autorizado ejecuta y cierra con Router, permisos minimos, effect guard, lease/fence, evidencia y readback positivo/negativo. El despliegue MCP HTTPS es posterior condicional, no forma parte de este DONE.',
+     'BACKEND','P1','BACKLOG','MIXED','PAULO',
+     'cristhianlujan/claude-persona-lf-patch','LF_OPERATION',
+     'EJECUCION_OPERATIVA_LF',
+     'https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2371',
+     jsonb_build_array('Demanda concreta issue 2371; reusar PR 2367',
+       'Router OPERATIONAL_DB admitido y bound sin afectar DB UPDATE',
+       'DML restringido por handler, identidad y rol minimo, nunca SQL arbitrario',
+       'Cierre atomico canonical fail-closed; no DONE sin judge y efecto',
+       'E2E sandbox, pruebas positivas y negativas, ROLLBACK y readback',
+       'Sin despliegue ni activacion MCP automatica'),
+     'PAULO_SCOPE_TRACKING_20261014');
+
+  INSERT INTO programacion.engineering_work_checkpoints
+    (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
+  SELECT child.id, cp.checkpoint_code, cp.title, cp.sequence_no,
+         1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
+    FROM (VALUES
+      ('OPDB-C1','Reutilizar PR 2367, calificar necesidad real y Router OPERATIONAL_DB',1),
+      ('OPDB-C2','Contratos, step judges, DML minimo y cierre atomico autorizados',2),
+      ('OPDB-C3','Ensayo transaccional ROLLBACK, positivos/negativos y E2E acotado',3),
+      ('OPDB-C4','Resultado de operacion real, receipt, readback y EKB; sin despliegue automatico',4)
+    ) AS cp(checkpoint_code,title,sequence_no)
+    JOIN programacion.engineering_work_items child
+      ON child.work_code='PAULO-OPERATION-DB-EXECUTE'
+     AND child.parent_work_item_id=v_operation_id
+     AND child.workstream_id=v_stream_id;
+
+  -- Parent progress is a delivery decision, NOT a count of technical CP.
   INSERT INTO programacion.engineering_work_checkpoints
  (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
- SELECT v_operation_id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
+ SELECT v_operation_id, cp.checkpoint_code, cp.title, cp.sequence_no,
+        1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
  FROM (VALUES
-  ('OP-CP1', 'Seleccionar solo operaciones con uso previo documentado o pedido expreso y consumidor; descartar inventario sin demanda', 1),
-  ('OP-CP2', 'REUSE/EXTEND solo en operaciones con uso probado o pedido expreso; no reparar huecos de operaciones ociosas', 2),
-  ('OP-CP3', 'Verificar steps contratos mini-jueces Router y effect guard solo para casos admitidos con demanda', 3),
-  ('OP-CP4', 'Probar solo rutas realmente usadas o solicitadas; evitar pruebas hipoteticas por familia', 4),
-  ('OP-CP5', 'Probar integracion con Migration si existe un caso compartido real; si no NOT_APPLICABLE', 5),
-  ('OP-CP6', 'Recibos, readback, EKB y cierre basado en evidencia, conservando autoría histórica', 6)
+   ('OP-DEL-EXECUTE','Entregable: OPERATIONAL_DB solo DONE tras evidencia del hijo y readback',1)
  ) AS cp(checkpoint_code,title,sequence_no);
 
   IF (SELECT count(*) FROM programacion.engineering_work_checkpoints
       WHERE work_item_id = v_migration_id) <> 2
      OR (SELECT count(*) FROM programacion.engineering_work_checkpoints
-      WHERE work_item_id = v_operation_id) <> 6 THEN
+      WHERE work_item_id = v_operation_id) <> 1 THEN
       RAISE EXCEPTION 'PAULO_TRACKING_CHECKPOINTS_INCOMPLETE';
   END IF;
   IF (SELECT count(*) FROM programacion.engineering_work_items
@@ -149,6 +185,15 @@ BEGIN
            JOIN programacion.engineering_work_items w ON w.id=c.work_item_id
           WHERE w.parent_work_item_id=v_migration_id) <> 8 THEN
     RAISE EXCEPTION 'PAULO_MIGRATION_DELIVERABLES_INCOMPLETE';
+  END IF;
+  IF (SELECT count(*) FROM programacion.engineering_work_items
+       WHERE parent_work_item_id = v_operation_id
+         AND workstream_id = v_stream_id
+         AND work_code='PAULO-OPERATION-DB-EXECUTE') <> 1
+     OR (SELECT count(*) FROM programacion.engineering_work_checkpoints c
+           JOIN programacion.engineering_work_items w ON w.id=c.work_item_id
+          WHERE w.parent_work_item_id=v_operation_id) <> 4 THEN
+    RAISE EXCEPTION 'PAULO_OPERATION_DELIVERABLE_INCOMPLETE';
   END IF;
 END;
 $paulo_tracking$;
