@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "NO_UNLICENSED_HOW",
+   "statement": "Los requisitos expresan QUÉ se exige, sin indicar CÓMO implementarlo: nada de tecnología, almacenamiento, interfaces técnicas ni diseño."
+  },
+  {
+   "code": "NO_INVENTED_CONSTRAINTS",
+   "statement": "No se inventan permisos, estados, errores, efectos colaterales ni cifras: las dimensiones permissions, state, errors y side_effects quedan BLOCKED_UNDETERMINED con blocked_by no vacío."
+  },
+  {
+   "code": "REQUIREMENTS_PROVISIONAL",
+   "statement": "Todo requisito es provisional (PROVISIONAL_PENDING_DECISION), depende de decisiones pendientes de la entrada y ninguna decisión pendiente queda sin cubrir ni se da por confirmada."
+  }
+ ],
+ "criterion": "Juicio independiente no encuentra obligación material omitida ni HOW impuesto",
+ "decoy_must_fail_checks": [
+  "NO_UNLICENSED_HOW",
+  "REQUIREMENTS_PROVISIONAL"
+ ],
+ "replacements": [
+  [
+   "La información del ahorro deberá corresponder a una definición y una base de comparación autorizadas, todavía pendientes de determinar.",
+   "La información del ahorro deberá almacenarse en una tabla de la base de datos y exponerse mediante un endpoint API."
+  ],
+  [
+   "\"permissions\": {\n      \"status\": \"BLOCKED_UNDETERMINED\",",
+   "\"permissions\": {\n      \"status\": \"PROVISIONAL_PENDING_DECISION\","
+  ],
+  [
+   "\"status\": \"PROVISIONAL_PENDING_DECISION\",\n      \"depends_on_decisions\": [\n        \"A5-DEC-004\",\n        \"A5-DEC-005\"",
+   "\"status\": \"CONFIRMED\",\n      \"depends_on_decisions\": [\n        \"A5-DEC-004\",\n        \"A5-DEC-005\""
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Expresa QUÉ debe cumplir"
+}
