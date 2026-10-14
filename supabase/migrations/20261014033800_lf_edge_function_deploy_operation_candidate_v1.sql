@@ -39,7 +39,8 @@ BEGIN
      v_actor,'VULNERABILITY_COVERAGE_REPAIR_LF','OPERATION_PROTOCOL_REPAIR',
      v_op,'IN_PROGRESS',
      jsonb_build_object('mode','EDGE_OPERATION_GOVERNANCE_BOOTSTRAP',
-       'governance_bootstrap',true,'candidate_only',true,
+       'governance_bootstrap',true,'bootstrap_operation_code',v_op,
+       'bootstrap_status_ceiling','SANDBOX_ACTIVE','candidate_only',true,
        'production_allowed',false,'edge_deploy_executed',false,
        'no_release_promotion',true,'source_contract_sha256',v_sha),
      v_actor,v_actor
