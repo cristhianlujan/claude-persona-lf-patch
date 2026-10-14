@@ -1,0 +1,60 @@
+{
+  "before_version": {
+    "contract": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "logic_head": "19a81a20d827cf1c0a0122d6610d587cdea3e6f4"
+  },
+  "findings": [
+    {
+      "ref": "lf_eventos://20527",
+      "result": "30_CASES_0_CRITICAL_OMISSIONS",
+      "unit": "A10"
+    },
+    {
+      "ref": "lf_eventos://20532",
+      "result": "11_ADVERSARIAL_TYPES_0_CRITICAL_FALSE_READY",
+      "unit": "A11"
+    },
+    {
+      "ref": "lf_eventos://20534",
+      "result": "CANDIDATE_0_CRITICAL_FALSE_NEGATIVES_IN_CONTRACT_REPLAY",
+      "unit": "A12"
+    },
+    {
+      "ref": "ekb://PROGRAMMING-ANALYSIS-DEPTH-POLICY-UNDEFINED-001",
+      "result": "DEPTH_CLASSIFICATION_SEMANTICS_UNDEFINED",
+      "unit": "A14_PREFLIGHT"
+    }
+  ],
+  "method_description": "Método no especializado vigente: el paquete de análisis clasifica la profundidad de cada cambio con un vocabulario de señales gobernadas, sin una política explícita que defina qué significa cada nivel de profundidad. Un cambio de método válido debe ser general (aplicable a cualquier familia de cambios), no un parche para un caso, y debe indicar qué versión cambia, a cuál pasa y cuál es el hallazgo raíz exacto.",
+  "model_components": [
+    {
+      "component": "change_classification_contract",
+      "governs": "clasifica la profundidad del análisis de un cambio en niveles L1, L2 y L3"
+    },
+    {
+      "component": "handoff_contract",
+      "governs": "define el traspaso de artefactos entre etapas"
+    },
+    {
+      "component": "impact_model",
+      "governs": "determina qué elementos impacta un cambio"
+    },
+    {
+      "component": "specialist_selection",
+      "governs": "decide qué especialistas participan en el análisis"
+    },
+    {
+      "component": "stop_rule",
+      "governs": "decide cuándo el análisis debe detenerse por falta de evidencia o decisión"
+    }
+  ],
+  "root_finding_candidates": [
+    {
+      "code": "ANALYSIS_DEPTH_CLASSIFICATION_SEMANTICS_UNDEFINED",
+      "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/commit/a2fe50496653ae66246cde726c0613ef895fdef2",
+      "generalizable": true,
+      "severity": "HIGH"
+    }
+  ],
+  "schema_version": "A13_INPUT_FINDINGS_V1"
+}
