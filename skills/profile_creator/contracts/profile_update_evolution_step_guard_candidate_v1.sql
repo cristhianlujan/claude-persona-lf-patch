@@ -47,7 +47,7 @@ BEGIN
       SELECT version FROM public.lf_capability_current
        WHERE capability_code='CAPABILITY_SELECTOR'
     ) THEN RETURN 'EVOLUTION_SELECTOR_VERSION_STALE'; END IF;
-    SELECT v.manifest#>'{qualified_method_portfolio}' INTO portfolio
+    SELECT v.manifest#>'{contract,qualified_method_portfolio}' INTO portfolio
       FROM public.lf_capability_current c
       JOIN public.lf_capability_version_registry v
         ON v.capability_code=c.capability_code AND v.version=c.version
