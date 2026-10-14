@@ -32,6 +32,10 @@ def postgres_sqlstate(message: str) -> str | None:
     return next((part for part in (match.groups() if match else ()) if part), None)
 
 
+def _transport_command(argv: list[str]) -> bool:
+    return bool(argv) and Path(argv[0]).name == "supabase" and "--help" not in argv
+
+
 @dataclass(frozen=True)
 class ApplyReceipt:
     schema_version: str
@@ -76,7 +80,7 @@ def _run(argv: list[str], *, cwd: Path, input_text: str | None = None) -> subpro
     size += len(proc.stdout.encode("utf-8")) + len(proc.stderr.encode("utf-8"))
     if argv and Path(argv[0]).name == "psql":
         _TELEMETRY_QUERIES.add(elapsed, size)
-    else:
+    elif _transport_command(argv):
         _TELEMETRY_TRANSPORT.add(elapsed, size)
     return proc
 
