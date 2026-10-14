@@ -46,10 +46,10 @@ class StageCandidate(unittest.TestCase):
         self.assertIn("current_setting('lf.pe10_governed_actor_execution_id',true)", self.sql)
 
     def test_no_activation_or_durable_migration(self):
-        self.assertEqual(len(re.findall(r"\\bBEGIN;", self.sql)), 1)
-        self.assertEqual(len(re.findall(r"\\bROLLBACK;", self.sql)), 1)
-        self.assertNotRegex(self.sql, r"\\bCOMMIT\\s*;")
-        self.assertNotRegex(self.sql, r"(?i)\\bUPDATE\\s+public\\.lf_operation_registry\\b")
+        self.assertEqual(len(re.findall(r"\bBEGIN;", self.sql)), 1)
+        self.assertEqual(len(re.findall(r"\bROLLBACK;", self.sql)), 1)
+        self.assertNotRegex(self.sql, r"\bCOMMIT\s*;")
+        self.assertNotRegex(self.sql, r"(?i)\bUPDATE\s+public\.lf_operation_registry\b")
         self.assertIn("true,false", self.sql)
         self.assertIn("'CANDIDATO_READ_ONLY'", self.sql)
         self.assertIn("'CANDIDATE'", self.sql)
