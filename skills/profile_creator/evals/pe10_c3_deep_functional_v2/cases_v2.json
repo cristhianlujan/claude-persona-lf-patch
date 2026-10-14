@@ -1,0 +1,128 @@
+{
+  "schema": "PE10_C3_DEEP_FUNCTIONAL_CASES_V2",
+  "status": "EXPERIMENT_DESIGN_NOT_EXECUTED",
+  "purpose": "Paired expert deliverables with discovery value beyond baseline; no artificial WOW requirement",
+  "candidate_count": 12,
+  "original_scope": "same case inputs, same tool access, same budget",
+  "authoritative_profiles": [
+    "quality_pack",
+    "ui_architect",
+    "product_director_lf"
+  ],
+  "cases": [
+    {
+      "case_id": "PESC3-V2-201",
+      "profile_slug": "quality_pack",
+      "dimension": "INVESTIGACION_MULTITABLA",
+      "prompt": "Una liquidación LF de OCTUBRE 2026 muestra S/ 200 en pagos CONFIRMED y S/ 120 liquidados. Investiga usando exclusivamente el fixture SQLite sintético fixtures/case_201_seed.sql de este paquete; el procedimiento de lookup que originó las asociaciones está disponible también dentro de la carpeta fixtures. Necesitamos causa comprobada, conjunto exacto de registros afectados, consulta(s) SQL realmente ejecutadas con resultados, corrección mínima y pruebas de regresión. Comprueba hipótesis alternativas (aprobación, baja, estado de pago, referencia, periodo) según las señales que vayas encontrando. No modifiques datos, ni des por ejecutada una consulta que no corriste. Si no puedes ejecutar SQL, entrega consultas reproducibles y marca los resultados como pendientes, nunca como observados.",
+      "fixture_files": [
+        "fixtures/case_201_seed.sql",
+        "fixtures/case_201_buggy_lookup.sql"
+      ],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-202",
+      "profile_slug": "quality_pack",
+      "dimension": "SEGURIDAD_ASINCRONA",
+      "prompt": "Actúas como auditor de calidad de una exportación de cartera. El usuario sin rol EXPORTAR reporta que pudo descargar campos sensibles después de revocarle el permiso. La UI no muestra Descargar. Evidencias del mismo tenant y export_job J-7: 09:00 usuario tenía permiso, 09:01 se creó export_job, 09:02 se revocó el permiso, 09:03 el job produjo archivo A-7 y URL firmada válida 60 minutos, 09:04 la UI devuelve DENIED, 09:05 GET directo a URL firmada devuelve 200 con campos sensibles. Prueba positiva de exportación con permisos sigue pasando. Decide el bloqueo, ubica la frontera de autorización que falla, diseña corrección mínima verificable y amplía la búsqueda solo hacia rutas realmente expuestas. Diferencia evidencia de inferencias; no afirmes acceso a otros tenants sin prueba.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-203",
+      "profile_slug": "quality_pack",
+      "dimension": "DEDUPLICACION_CAUSAL",
+      "prompt": "Un webhook del proveedor envía evento E-14 (pago P-8, 50 soles) a las 12:00:01 y lo reintenta a las 12:00:05 por timeout. La tabla eventos guarda dos filas (event_id E-14, receipt R1/R2). El ledger financiero conserva una sola fila por P-8 gracias a UNIQUE(pago_id). Pero `notificaciones` tiene dos filas para P-8, `bono_ejecutivo` dos créditos y `liquidaciones` una fila de S/50. El productor afirma que no hubo duplicación monetaria y propone PASS. Decide si la conclusión es suficiente; identifica causas plausibles, pruebas discriminantes y corrección transversal de efectos secundarios sin duplicar dinero ni deshacer efectos legítimos. No confundir receipt del webhook con ID de evento del proveedor.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-204",
+      "profile_slug": "quality_pack",
+      "dimension": "CONTROL_SIN_FALSO_POSITIVO",
+      "prompt": "Revisa un bundle simulado de entrega de pantalla. Existe un artefacto materializado v4 con SHA verificable, captura de la misma revisión, fuente y procedencia autenticadas, 3 pruebas positivas ejecutadas, negativa de autorización ejecutada y superada, revisión semántica independiente válida, y sin vulneraciones conocidas. Todos los recibos se consideran verificados para este ejercicio. Solo se te pide decidir si pasa el alcance descrito y qué afirmaciones no deben extenderse. No agregues requisitos que el contrato no exige ni bloquees por amenazas hipotéticas sin señal observable. Mantén la decisión acotada a la evidencia realmente declarada.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-205",
+      "profile_slug": "ui_architect",
+      "dimension": "RACE_CONDICION_UI",
+      "prompt": "Corrige la pantalla EXISTENTE de aprobación. `useEffect(() => { fetch('/api/load/'+id).then(r=>r.json()).then(setLoad); },[id])` y `useEffect(() => { fetch('/api/role').then(r=>r.json()).then(setRole); },[id])`. Al cambiar de carga L1 a L2, llega tarde la respuesta de L1 y se muestra L1 sobre el título L2. El botón Aprobar usa `role.canApprove && load.state==='READY'` y abre confirmación. El servidor revalida RBAC, pero la UI confunde al usuario. Produce parche implementable en React/TS o pseudocódigo preciso, secuencia de estados, preservación de autorización, loading y cancelación, y pruebas con respuestas fuera de orden. Investiga si el guard actual presenta otros estados inconsistentes y explica solo los que puedas demostrar.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-206",
+      "profile_slug": "ui_architect",
+      "dimension": "ACCESIBILIDAD_Y_ERROR",
+      "prompt": "Diseña la corrección de un diálogo de Rechazar oferta existente. El código hace `open=true; document.querySelector('#confirm').focus()`, no devuelve el foco al cerrar, permite doble envío por pulsaciones rápidas y anuncia `Rechazo exitoso` al salir del modal, aunque la respuesta del servidor sigue pendiente. En móvil el botón Cancelar no es visible si el teclado virtual ocupa parte de la pantalla. El negocio exige rechazo voluntario, cancelación sin efecto, resultado solo desde servidor y teclado/lector de pantalla. Entrega remediación implementable y prueba observacional de estados y orden de foco, incluyendo fallo y timeout. Considera posibles efectos no deseados sin inventar acciones legales.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-207",
+      "profile_slug": "ui_architect",
+      "dimension": "FUENTE_DINAMICA_REGRESIONES",
+      "prompt": "Corrige pantalla EXISTENTE de aprobación de cargas. El color visible normal sale del token `action/approve`; sin embargo CSS usa `.approve:disabled{background:#00AA44}`. Soporte muestra `support_contact` al cargar, pero un fallback literal de teléfono se activa después de un error de configuración y el cambio posterior de configuración nunca se refleja hasta nuevo build. La UI debe mantener acción Aprobar, token `surface/primary`, estados y permisos. Propón cambios mínimos y pruebas de mutación/e2e que detecten tanto defectos evidentes como efectos no obvios entre estados. No inventes valores de color ni teléfono.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-208",
+      "profile_slug": "ui_architect",
+      "dimension": "COHERENCIA_ENTRE_CANAL",
+      "prompt": "Se presenta una pantalla NUEVA de detalle de oferta LF; en ella los campos `creditor_original=X` y `current_owner=Y` se muestran correctamente. Sin embargo, la misma plantilla compartida produce una vista de impresión donde el encabezado dice `Titular: X` porque reutiliza `creditor_original`; el detalle web permite Rechazar y la vista estrecha oculta esa opción por CSS. Diseña especificación de reparación mínima que preserve titular actual, acreedor original, importe y moneda solo verificables, vigencia condicionada, cuotas si existen, opción Rechazar y mensajes de error. No supongas que imprimir equivale a un documento jurídico ni inventes términos. Explica impactos en otras superficies sólo si la dependencia está respaldada.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-209",
+      "profile_slug": "product_director_lf",
+      "dimension": "PARADOJA_DE_SEGMENTOS",
+      "prompt": "Decide si desplegamos estrategia B al ver que su conversión global parece mejor que A. Segmento alto: A 9 conversiones / 10 elegibles, B 80/100. Segmento bajo: A 20/100, B 1/10. No son muestras aleatorizadas con mezcla equivalente. Objetivo: mayor recaudación neta sostenible, sin presión ni promesas. Entrega decisión, cálculos de tasas globales y por segmento, evaluación causal, una comparación ajustada transparente con pesos 50/50 como escenario y diseño mínimo de experimento seguro. Investiga una explicación no obvia del aparente buen resultado global.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-210",
+      "profile_slug": "product_director_lf",
+      "dimension": "INCERTIDUMBRE_GUARDRAIL",
+      "prompt": "El producto propone ampliar piloto A: 5 reclamos en 1,000 sesiones elegibles (0.5% observado); el guardrail de reclamos aprobado es máximo 1%. El productor dice «ya estamos al 50% del límite, ampliar». Un segundo piloto B tiene 2 reclamos en 500 sesiones y promete mayor conversión sin reportar ingresos ni pagos netos. Decide sin fingir causalidad: distingue tasa puntual, incertidumbre, riesgos por muestra pequeña y umbral de decisión. Puedes calcular intervalo Wilson 95% o posterior Beta(1,1) declarando supuestos y sensibilidad. Indica qué nueva información cambiaría la decisión y evita bloqueos arbitrarios que no deriven de la regla real.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-211",
+      "profile_slug": "product_director_lf",
+      "dimension": "RECAUDACION_NETA_RESTRICCIONES",
+      "prompt": "Analiza dos campañas sobre el mismo universo elegible, con parámetros prospectivos por usuario: A pago neto si convierte S/120, probabilidad de conversión 0.40, costo operativo fijo S/3, reclamos 0.005, costo por reclamo S/40; B S/120, probabilidad 0.50, costo fijo S/6, reclamos 0.03, mismo costo de reclamo. Guardrail aprobado <=1% reclamos. No hay piloto controlado para B. Se pide cuál da mayor valor esperado y si debemos lanzar B. Calcula economía transparente, decisión bajo guardrail, sensibilidad y medición causal mínima. Explica si una campaña con mayor valor económico esperado puede seguir siendo inadmisible.",
+      "fixture_files": [],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    },
+    {
+      "case_id": "PESC3-V2-212",
+      "profile_slug": "product_director_lf",
+      "dimension": "ADAPTACION_REAL_MULTITURNO",
+      "prompt": "Este caso NO se ejecuta en una sola solicitud: utiliza las tres etapas del archivo stages_case_212_v2.json. Debes mantener el estado de decisión del mismo chat y responder cada etapa solo después de recibir la siguiente, sin anticipar evidencia aún no suministrada. Entrega decisión concreta y cambios exactos respecto de la respuesta anterior, preservando obligaciones no afectadas. No simules los turnos como ya ejecutados.",
+      "fixture_files": [
+        "stages_case_212_v2.json"
+      ],
+      "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
+      "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
+    }
+  ],
+  "producer_visibility": "Only this case corpus, case fixtures and applicable original/shadow profile context; never hidden oracle."
+}
