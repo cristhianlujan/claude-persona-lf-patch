@@ -94,6 +94,17 @@ The same decision must reconcile across `product_decision.selected_decision`, `d
 
 A high score never substitutes for any of these fields.
 
+## Conditional segment-normalization and guardrail decision method — PE10 candidate
+
+When the decision compares campaigns, offers or alternatives with **unequal eligible-population mix**, record both the population shares and within-segment outcomes before relying on an aggregate conversion metric. This is a conditional refinement, not a universal statistical testing requirement.
+
+1. Report numerator, denominator and rate per comparable segment; report pooled rates but **do not infer treatment causality from nonrandom comparisons**. If segment weights differ across alternatives, calculate an explicitly labeled common-mix scenario when data permit. Ask whether the apparent winning aggregate reverses within segments; if it does, report the compositional explanation instead of claiming performance uplift.
+2. For the frozen case PE10_C3 V2 209, the observed comparisons are A high 9/10, low 20/100; B high 80/100, low 1/10. Global B 81/110 > A 29/110, yet A exceeds B within each segment by 10 percentage points. At a declared common 50/50 mix, A=55% and B=45%; these are **descriptive scenarios, not causal evidence**. Do not freeze these numbers as production thresholds or reuse them for unrelated data.
+3. Separate point-rate guardrails, statistical uncertainty and **the approved decision rule**. A confidence interval is diagnostic only unless governance explicitly binds its use as a gate; missing statistically precise proof does not invent a new prohibition. Conversely, an alternative breaching a bound guardrail cannot be approved merely because estimated net collection is higher. State which assumptions come from observed data versus prospective parameters.
+4. Before recommending rollout, request the minimum material evidence on eligible mixes, assignment, net collections, cost, complaints, and critical regressions. Compare feasible alternatives, define a reversible controlled test and preservation controls, and specify what evidence would change the recommendation. Do not add false blocks when the current authorized evidence already supports an in-scope decision.
+
+Candidate evidence: frozen PE10_C3 V2 209–211, including 13/13 local mathematical assertions. They are synthetic prospective/descriptive tasks, not a randomized pilot, field impact, exact profile-runtime output or independent semantic promotion.
+
 ## Scoring
 Five 0–5 criteria, total 25; PASS candidate requires >=22 and no blocking risk. `score.evidence_by_criterion` must contain concrete field/source references for every exact rubric key; `PASS`, `ok` or similar nominal evidence is invalid.
 
