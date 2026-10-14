@@ -81,7 +81,7 @@ class RollbackRehearsalTests(unittest.TestCase):
 
     def test_modified_entrypoint_rejected(self):
         with self.assertRaisesRegex(CanaryBlocked, "R17_INDEX_ENTRYPOINT_DRIFT"):
-            rehearse({**NEW, "index.ts": b'import "new";'}, OLD)
+            rehearse({**NEW, "index.ts": NEW["index.ts"] + b"// unexpected change\n"}, OLD)
 
     def test_missing_bridge_import_rejected(self):
         with self.assertRaisesRegex(CanaryBlocked, "R17_BRIDGE_IMPORT_MISSING"):
