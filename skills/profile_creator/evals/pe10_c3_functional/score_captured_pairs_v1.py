@@ -5,7 +5,10 @@ No model execution or provider attestation is invented by this program.
 from __future__ import annotations
 import argparse, hashlib, json, random
 from pathlib import Path
-from build_shadow_v1 import sha
+try:
+    from .build_shadow_v1 import sha
+except ImportError:
+    from build_shadow_v1 import sha
 
 HERE=Path(__file__).resolve().parent
 
