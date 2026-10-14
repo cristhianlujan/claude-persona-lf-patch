@@ -165,13 +165,28 @@ class AuthorityReadbackRegression(unittest.TestCase):
             return {"status": "VERIFIED_CURRENT",
                 "registry_sha256": reg, "assessment_sha256": assess,
                 "registry_version": "test-fixture", "authority_ref": "fixture://trusted-mock",
-                "method_catalog_released": True, "assessment_evidence_verified": True}
+                "method_catalog_released": True, "assessment_evidence_verified": True,
+                "qualified_method_ids": []}
         result = self._plan(reader=fake_reader)
         self.assertEqual(result["source_readback"]["status"], "VERIFIED_CURRENT")
         self.assertTrue(result["candidate_materialization_allowed"])
         self.assertFalse(result["profile_source_write_allowed"])
         self.assertFalse(result["automatic_runtime_activation"])
         self.assertFalse(result["automatic_production_activation"])
+
+    def test_selected_unqualified_method_blocks_candidacy(self):
+        data = {"precondition_evidence": {"candidate_exists": "fixture://candidate"},
+                "method_evidence": {"candidate_ref": "fixture://candidate",
+                                    "challenge_criteria": "fixture://rubric"}}
+        def fake_reader(slug, reg, assess):
+            return {"status": "VERIFIED_CURRENT",
+                    "registry_sha256": reg, "assessment_sha256": assess,
+                    "registry_version": "test", "authority_ref": "fixture://readback",
+                    "method_catalog_released": True, "assessment_evidence_verified": True,
+                    "qualified_method_ids": []}
+        result = self._plan(reader=fake_reader, mutate_data=data)
+        self.assertIn("METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED", result["blocking_codes"])
+        self.assertFalse(result["candidate_materialization_allowed"])
 
 
 if __name__ == "__main__":
