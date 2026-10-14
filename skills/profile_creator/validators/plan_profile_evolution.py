@@ -11,7 +11,8 @@ import hashlib
 ROOT = Path(__file__).resolve().parents[3]
 ASSESS_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment"
 SELECT_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/capability_selector"
-for p in (ASSESS_DIR, SELECT_DIR):
+VALIDATOR_DIR = ROOT / "skills/profile_creator/validators"
+for p in (ASSESS_DIR, SELECT_DIR, VALIDATOR_DIR):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
@@ -171,6 +172,54 @@ def build_evolution_plan(
     }
 
 
+
+def make_readonly_authority_binding_from_environment():
+    """Resolve trusted source evidence only from an explicitly enabled reader.
+
+    No implicit use of write-capable database secrets, untrusted CLI JSON
+    receipt, or direct authority mutation. Connection privilege is owned by
+    the invoking runtime. Absence/unavailability preserves the fail-closed
+    planner behavior.
+    """
+    import os
+    if os.environ.get("LF_PROFILE_READBACK_MODE", "").strip() != "SUPABASE_READ_ONLY":
+        return None
+    dsn = os.environ.get("LF_PROFILE_READ_ONLY_DATABASE_URL", "").strip()
+    if not dsn:
+        return None
+    try:
+        import psycopg
+        from profile_evolution_trusted_readback_v1 import (
+            make_postgres_trusted_readback,
+            METHOD_CURRENT_SQL,
+            PROFILE_ASSESSMENT_RECEIPT_SQL,
+            METHOD_QUALIFICATION_RECEIPT_SQL,
+        )
+    except ImportError:
+        return None
+
+    allowed_queries = frozenset({
+        METHOD_CURRENT_SQL, PROFILE_ASSESSMENT_RECEIPT_SQL,
+        METHOD_QUALIFICATION_RECEIPT_SQL,
+    })
+
+    def fetch_rows(query: str, params: tuple[str, ...]) -> list[dict[str, Any]]:
+        if query not in allowed_queries or not isinstance(params, tuple):
+            raise ValueError("READ_ONLY_AUTHORITY_QUERY_NOT_ALLOWED")
+        # PostgreSQL enforces read-only mode for the entire session.
+        # The DSN must have SELECT-only privileges assigned by the host.
+        with psycopg.connect(
+            dsn, connect_timeout=8,
+            options="-c default_transaction_read_only=on",
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, params)
+                names = [column.name for column in cur.description]
+                return [dict(zip(names, values)) for values in cur.fetchall()]
+
+    return make_postgres_trusted_readback(fetch_rows)
+
+
 def main() -> int:
     if len(sys.argv) != 7:
         print(
@@ -181,7 +230,10 @@ def main() -> int:
         return 2
     slug = sys.argv[1]
     payloads = [json.loads(Path(p).read_text(encoding="utf-8")) for p in sys.argv[2:]]
-    result = build_evolution_plan(ROOT, slug, *payloads)
+    result = build_evolution_plan(
+        ROOT, slug, *payloads,
+        trusted_source_readback=make_readonly_authority_binding_from_environment(),
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if not result["blocking_codes"] else 3
 
