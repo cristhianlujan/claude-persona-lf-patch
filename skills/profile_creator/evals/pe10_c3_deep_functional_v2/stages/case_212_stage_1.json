@@ -1,0 +1,9 @@
+{
+  "schema": "PE10_C3_SEQUENTIAL_STAGE_V2",
+  "case_id": "PESC3-V2-212",
+  "stage": 1,
+  "turn_id": "PESC3-V2-212-T1",
+  "input": "Para la obligación D1, la carga V1 verificada acredita X como acreedor original y titular actual; la oferta OX1 v1 está aprobada por X, el cliente está emparejado y su vigencia contractual está comprobada. Para D2 hay una oferta independiente válida de otra cartera que no está involucrada. Decide qué se puede mostrar para D1, incluyendo restricciones de voluntariedad, y qué preservar de D2. Es un ejercicio de decisión; no cambies producción.",
+  "observed_new_evidence": "initial",
+  "prior_turn_required": false
+}
