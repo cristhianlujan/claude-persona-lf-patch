@@ -146,7 +146,7 @@ for marker in (
     'REQUIRED_CHECKS = (',
     '"lf-independent-change-admission"',
     '"ig-runtime-candidate-judge"',
-    'row.get("head_sha") != expected_head',
+    'observed_head != expected_head',
     'conclusion != "success"',
     "FAIL_TRAIN_REQUIRED_CHECK_MISSING",
     "FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS",
