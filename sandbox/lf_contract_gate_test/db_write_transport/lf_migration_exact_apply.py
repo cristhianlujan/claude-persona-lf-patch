@@ -60,7 +60,7 @@ _KNOWN_DRY_RUN_NOISE = (
 )
 
 
-def sanitize_dry_run_output(text: str, *, limit: int = 4096) -> str:
+def sanitize_dry_run_output(text: str, *, limit: int = 800) -> str:
     lines = [line.strip() for line in (text or "").splitlines() if line.strip()]
     lines = [line for line in lines if not any(rule.match(line) for rule in _KNOWN_DRY_RUN_NOISE)]
     important = [line for line in lines if re.search(r"error|remote migration|failed|exit code|return code", line, re.I)]
@@ -86,6 +86,8 @@ class ApplyReceipt:
     migration_name: str
     ledger_version: str
     ledger_name: str
+    dry_run_exit_code: int | None = None
+    dry_run_tail: str = NOT_OBSERVED
 
 
 def _load_transport():
@@ -214,11 +216,12 @@ def _primary_cli(
     project_root: Path,
     db_url: str,
     version: str,
-) -> tuple[bool, str, int | None]:
+) -> tuple[bool, str, int | None, str]:
     dry = _run(["supabase", "db", "push", "--db-url", db_url, "--dry-run"], cwd=project_root)
     dry_text = dry.stdout + "\n" + dry.stderr
+    dry_tail = sanitize_dry_run_output(dry_text)
     if dry.returncode != 0:
-        return False, f"DRY_RUN_FAILED:exit_code={dry.returncode}:{sanitize_dry_run_output(dry_text)}", dry.returncode
+        return False, f"DRY_RUN_FAILED:exit_code={dry.returncode}:{dry_tail}", dry.returncode, dry_tail
     pending = pending_versions_from_dry_run(dry_text)
     if pending != [version]:
         raise RuntimeError(f"EXACT_APPLY_PENDING_SET_MISMATCH:expected={[version]} observed={pending}")
@@ -231,7 +234,7 @@ def _primary_cli(
     else:
         input_text = "y\n"
     pushed = _run(argv, cwd=project_root, input_text=input_text)
-    return pushed.returncode == 0, (pushed.stdout + "\n" + pushed.stderr).strip(), None
+    return pushed.returncode == 0, (pushed.stdout + "\n" + pushed.stderr).strip(), dry.returncode, dry_tail
 
 
 def _dollar_tag(source: str) -> str:
@@ -332,14 +335,14 @@ def apply_exact(
         return ApplyReceipt(
             "lf-migration-exact-apply/v1", "PASS", "ALREADY_APPLIED_EXACT",
             existing_created_by or "UNKNOWN", False, version, name,
-            existing_version, existing_name,
+            existing_version, existing_name, None, NOT_OBSERVED,
         )
 
     floor_before = read_ledger_max(db_url, cwd=project_root)
     if version <= floor_before:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
 
-    primary_ok, primary_detail, dry_run_exit_code = _primary_cli(
+    primary_ok, primary_detail, dry_run_exit_code, dry_run_tail = _primary_cli(
         project_root=project_root,
         db_url=db_url,
         version=version,
@@ -354,7 +357,7 @@ def apply_exact(
         return ApplyReceipt(
             "lf-migration-exact-apply/v1", "PASS", "PRIMARY_APPLIED_EXACT",
             "SUPABASE_CLI_DB_PUSH_LINKED", False, version, name,
-            ledger_version, ledger_name,
+            ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
         )
 
     # A failed CLI may have committed before returning non-zero. Never replay blindly.
@@ -363,7 +366,7 @@ def apply_exact(
             return ApplyReceipt(
                 "lf-migration-exact-apply/v1", "PASS", "PRIMARY_NONZERO_BUT_LEDGER_EXACT",
                 "SUPABASE_CLI_DB_PUSH_LINKED", False, version, name,
-                ledger_version, ledger_name,
+                ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
             )
         raise RuntimeError(f"EXACT_APPLY_PRIMARY_PARTIAL_IDENTITY:{ledger_version}/{ledger_name}")
 
@@ -390,7 +393,7 @@ def apply_exact(
     return ApplyReceipt(
         "lf-migration-exact-apply/v1", "PASS", "FALLBACK_APPLIED_EXACT",
         "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML", True, version, name,
-        ledger_version, ledger_name,
+        ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
     )
 
 
@@ -435,6 +438,9 @@ def main() -> int:
               "evidence_locator": "github-run:exact-apply-receipt"}
         if dry_run_match:
             failure["dry_run_exit_code"] = int(dry_run_match.group(1))
+            detail_match = re.search(r"dry_run_exit_code=-?\d+:(.*)", str(exc), re.S)
+            if detail_match:
+                failure["dry_run_tail"] = sanitize_dry_run_output(detail_match.group(1))
         print(json.dumps({"status": "FAILURE", "failure": failure,
               "pase_f09_015_metrics": telemetry_snapshot()}, sort_keys=True, separators=(",", ":")))
         return 1
