@@ -45,6 +45,20 @@ class StageCandidate(unittest.TestCase):
         self.assertIn("PE10_V02_GOVERNED_ACTOR_REQUIRED", self.sql)
         self.assertIn("current_setting('lf.pe10_governed_actor_execution_id',true)", self.sql)
 
+    def test_super_admin_authority_is_distinct_from_execution_provenance(self):
+        # Named owner is a governance role, never proof from a caller string.
+        for field in (
+            "'governance_owner_role','SUPER_ADMIN'",
+            "'governance_authority_domain','LF_GOVERNANCE'",
+            "'governance_reviewer_role','SUPER_ADMIN_GOVERNANCE'",
+            "'governance_authority_ref','contract://LF_GOVERNANCE_SUPER_ADMIN_V1'",
+            "'governance_authority_receipt_state','PENDING_VERIFIED_RECEIPT'",
+            "'proposed_operation_version','v0.2','activation_authorized',false",
+        ):
+            self.assertIn(field, self.sql)
+        self.assertIn("created_by_execution_id is technical provenance", self.sql)
+        self.assertIn("Do not use the product B2B_ADMIN_LF", self.sql)
+
     def test_no_activation_or_durable_migration(self):
         self.assertEqual(len(re.findall(r"\bBEGIN;", self.sql)), 1)
         self.assertEqual(len(re.findall(r"\bROLLBACK;", self.sql)), 1)
