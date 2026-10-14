@@ -116,9 +116,9 @@
       "case_id": "PESC3-V2-212",
       "profile_slug": "product_director_lf",
       "dimension": "ADAPTACION_REAL_MULTITURNO",
-      "prompt": "Este caso NO se ejecuta en una sola solicitud: utiliza las tres etapas del archivo stages_case_212_v2.json. Debes mantener el estado de decisión del mismo chat y responder cada etapa solo después de recibir la siguiente, sin anticipar evidencia aún no suministrada. Entrega decisión concreta y cambios exactos respecto de la respuesta anterior, preservando obligaciones no afectadas. No simules los turnos como ya ejecutados.",
+      "prompt": "Realiza una evaluación secuencial y conserva decisiones previas en el MISMO chat. Comienza únicamente con `stages/case_212_stage_1.json`, sin consultar etapas futuras; el coordinador te entregará las siguientes evidencias por separado una vez que respondas el turno anterior. Tras cada nueva etapa actualiza la decisión exactamente para el alcance afectado, preservando los hechos válidos; no simules turnos futuros ni cambies producción.",
       "fixture_files": [
-        "stages_case_212_v2.json"
+        "stages/case_212_stage_1.json"
       ],
       "output_requested": "ENTREGABLE_FINAL_ACCIONABLE",
       "tool_evidence_policy": "No equiparar consultas o tests propuestos a ejecutados."
