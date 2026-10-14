@@ -155,7 +155,7 @@ for marker in (
     checks += 1
 assert "guard_args+=(--final)" in wf
 assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
-assert "conclusion!=null and (.conclusion!="success" and .conclusion!="skipped"" not in wf
+assert 'conclusion!="skipped"' not in wf
 checks += 1
 
 print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/{checks}")
