@@ -1,0 +1,91 @@
+{
+  "schema_version": "A8_RESEARCH_DECISION_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "research_decision": "REQUIRES_DECISION",
+  "stop_criteria": {
+    "decision_stable": false,
+    "front_accounting_complete": true,
+    "decision_changing_questions_open": true
+  },
+  "front_trace": [
+    {
+      "front_id": "A7-FRONT-001",
+      "blockers": [
+        "A5-DEC-001",
+        "A5-DEC-003"
+      ],
+      "effect_on_decision": "BLOCKED. El alcance funcional del piloto, los destinatarios, los permisos aplicables y las condiciones previas a la aceptación no están determinados. Estas definiciones pueden modificar el alcance y los requisitos, por lo que impiden estabilizar la decisión de investigación."
+    },
+    {
+      "front_id": "A7-FRONT-002",
+      "blockers": [
+        "A5-DEC-002",
+        "A5-DEC-004"
+      ],
+      "effect_on_decision": "BLOCKED. La definición del ahorro, su base de comparación y su distinción respecto de la cuota carecen de autoridad confirmada. Resolver estas cuestiones puede cambiar materialmente los requisitos económicos y funcionales."
+    },
+    {
+      "front_id": "A7-FRONT-003",
+      "blockers": [
+        "A5-DEC-003"
+      ],
+      "effect_on_decision": "BLOCKED. No están acreditados los estados de la oferta ni las condiciones que permiten comunicar el ahorro antes de aceptar. Esta incertidumbre impide establecer límites funcionales estables."
+    },
+    {
+      "front_id": "A7-FRONT-004",
+      "blockers": [
+        "A5-DEC-002",
+        "A5-DEC-003",
+        "A5-DEC-004"
+      ],
+      "effect_on_decision": "BLOCKED. No existe evidencia suficiente para determinar los comportamientos ante información económica indeterminada, no disponible o incompatible con la oferta, ni sus posibles efectos colaterales. No pueden establecerse obligaciones definitivas ni descartarse impactos."
+    },
+    {
+      "front_id": "A7-FRONT-005",
+      "blockers": [
+        "A5-DEC-004",
+        "A5-DEC-005"
+      ],
+      "effect_on_decision": "BLOCKED. Los criterios para comprobar que el cliente comprende el ahorro y lo distingue de la cuota siguen pendientes. Sin criterios autorizados, no puede establecerse una condición verificable de aceptación."
+    }
+  ],
+  "owner_decisions_required": [
+    "A5-DEC-001",
+    "A5-DEC-002",
+    "A5-DEC-003",
+    "A5-DEC-004",
+    "A5-DEC-005"
+  ],
+  "evidence_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843",
+    "gap:TARGET_AUTHORITY_NOT_SUPPLIED",
+    "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+    "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+    "gap:INSTALLMENT_DISTINCTION_UNRESOLVED",
+    "gap:ACCEPTANCE_EVIDENCE_MISSING",
+    "A6-REQ-001",
+    "A6-REQ-002",
+    "A6-REQ-003",
+    "A6-REQ-004",
+    "A6-REQ-005",
+    "dimension:functional",
+    "dimension:data",
+    "dimension:permissions",
+    "dimension:state",
+    "dimension:errors",
+    "dimension:side_effects",
+    "decision:A5-DEC-001",
+    "decision:A5-DEC-002",
+    "decision:A5-DEC-003",
+    "decision:A5-DEC-004",
+    "decision:A5-DEC-005",
+    "front:A7-FRONT-001",
+    "front:A7-FRONT-002",
+    "front:A7-FRONT-003",
+    "front:A7-FRONT-004",
+    "front:A7-FRONT-005"
+  ],
+  "no_ready_claim": true,
+  "decision_statement": "La investigación no puede detenerse con STOP. La contabilidad de los elementos suministrados por A6 está completa dentro del alcance documentado: cinco requisitos y seis dimensiones están vinculados a cinco frentes materiales. Sin embargo, los cinco frentes permanecen BLOCKED, la decisión no es estable y existen preguntas materiales abiertas capaces de modificar el resultado. Se selecciona REQUIRES_DECISION porque los cinco identificadores A5 pendientes afectan al menos un frente y requieren resolución mediante autoridad legítima. Esta clasificación no implica que deban generarse cinco nuevas aprobaciones humanas: primero corresponde verificar si existen reglas o decisiones vigentes que resuelvan las cuestiones; solo las alternativas materiales todavía no resueltas deben elevarse al propietario. También faltan evidencia de autoridad actual, identificación de implementación y línea base AS-IS. La cobertura completa de la entrada no demuestra cobertura completa del sistema real. No se han aprobado decisiones, declarado READY, cerrado frentes, inferido soluciones técnicas ni autorizado la implementación."
+}

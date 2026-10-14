@@ -1,0 +1,84 @@
+{
+  "schema_version": "A4_IMPACT_MAP_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "direct_impacts": [],
+  "indirect_impacts": [],
+  "consumers": [],
+  "dependency_paths": [],
+  "evidence_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843",
+    "gap:TARGET_IDENTITY_UNRESOLVED",
+    "gap:TARGET_AUTHORITY_NOT_SUPPLIED",
+    "gap:IMPLEMENTATION_STATE_UNVERIFIED",
+    "gap:AS_IS_BASELINE_MISSING",
+    "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+    "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+    "gap:INSTALLMENT_DISTINCTION_UNRESOLVED",
+    "gap:ACCEPTANCE_EVIDENCE_MISSING"
+  ],
+  "unresolved_material_impacts": [
+    {
+      "impact_id": "A4-DIRECT-001",
+      "category": "DIRECT",
+      "statement": "Se desconoce qué capacidad funcional, pantalla, canal o segmento exacto recibiría el cambio. No es posible identificar los objetos directamente afectados.",
+      "gap_ref": "TARGET_IDENTITY_UNRESOLVED"
+    },
+    {
+      "impact_id": "A4-DIRECT-002",
+      "category": "DIRECT",
+      "statement": "No está definida la semántica autorizada del ahorro ni su base de comparación. Se desconoce qué información económica concreta debería verse afectada.",
+      "gap_ref": "SAVINGS_SEMANTICS_UNRESOLVED"
+    },
+    {
+      "impact_id": "A4-DIRECT-003",
+      "category": "DIRECT",
+      "statement": "No se conoce el comportamiento actual ni su diferencia respecto de la necesidad solicitada. No puede establecerse qué comportamiento cambiaría realmente.",
+      "gap_ref": "AS_IS_BASELINE_MISSING"
+    },
+    {
+      "impact_id": "A4-INDIRECT-001",
+      "category": "INDIRECT",
+      "statement": "Se desconoce si la interpretación del ahorro y su distinción respecto de las cuotas afecta otros comportamientos funcionales o información económica. No existe evidencia para afirmar ni descartar esos efectos.",
+      "gap_ref": "INSTALLMENT_DISTINCTION_UNRESOLVED"
+    },
+    {
+      "impact_id": "A4-INDIRECT-002",
+      "category": "INDIRECT",
+      "statement": "No se dispone de evidencia suficiente para determinar si el cambio produciría efectos indirectos sobre comprensión, abandono o aceptación de ofertas, ni cómo se verificarían.",
+      "gap_ref": "ACCEPTANCE_EVIDENCE_MISSING"
+    },
+    {
+      "impact_id": "A4-CONSUMER-001",
+      "category": "CONSUMER",
+      "statement": "La solicitud menciona clientes del marketplace como destinatarios previstos, pero no identifica segmentos, canales ni consumidores funcionales concretos que deban recibir o utilizar la información.",
+      "gap_ref": "TARGET_IDENTITY_UNRESOLVED"
+    },
+    {
+      "impact_id": "A4-CONSUMER-002",
+      "category": "CONSUMER",
+      "statement": "No se identifican consumidores posteriores de información relacionada con la oferta o su aceptación. La ausencia de esa identificación no demuestra que dichos consumidores no existan.",
+      "gap_ref": "OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED"
+    },
+    {
+      "impact_id": "A4-DEPENDENCY-001",
+      "category": "DEPENDENCY",
+      "statement": "No se conocen las reglas, contratos o decisiones de autoridad que gobiernan el ahorro y su comunicación. Por tanto, no pueden identificarse dependencias normativas o funcionales verificadas.",
+      "gap_ref": "TARGET_AUTHORITY_NOT_SUPPLIED"
+    },
+    {
+      "impact_id": "A4-DEPENDENCY-002",
+      "category": "DEPENDENCY",
+      "statement": "No se conoce si existe una implementación de la capacidad solicitada. No es posible reconstruir dependencias entre elementos implementados ni demostrar su inexistencia.",
+      "gap_ref": "IMPLEMENTATION_STATE_UNVERIFIED"
+    },
+    {
+      "impact_id": "A4-DEPENDENCY-003",
+      "category": "DEPENDENCY",
+      "statement": "No está acreditado el límite funcional entre una oferta disponible y su aceptación. Se desconoce si existen dependencias materiales asociadas a esas transiciones.",
+      "gap_ref": "OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED"
+    }
+  ],
+  "impact_statement": "La evidencia disponible consiste en un paquete congelado de solicitud y su evento de traspaso, con coincidencia de hashes verificada por A3. Esas fuentes respaldan la trazabilidad del contexto, pero no acreditan el mapa de impacto de la funcionalidad solicitada. A3 declaró UNKNOWN para autoridad e implementación, NONE_SUPPLIED para línea base y NEED_MORE_EVIDENCE para suficiencia. Por ello no se pueden afirmar efectos directos o indirectos concretos, identificar consumidores funcionales reales, reconstruir rutas de dependencia ni concluir que alguna categoría carezca de impactos. La solicitud identifica una necesidad de los clientes, pero esa intención no demuestra efectos observados ni vínculos implementados. Las diez incógnitas registradas delimitan lo que falta investigar sin inventar una solución técnica.",
+  "no_absence_claimed": true
+}
