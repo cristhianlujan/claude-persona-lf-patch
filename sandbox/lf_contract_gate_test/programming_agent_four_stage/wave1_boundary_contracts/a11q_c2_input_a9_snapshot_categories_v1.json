@@ -1,0 +1,444 @@
+{
+  "a9_snapshot": {
+    "candidate_only": true,
+    "material_front_coverage": {
+      "all_material_fronts_accounted": true,
+      "coverage_fingerprint_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "currentness_refs": [],
+      "front_candidate_refs": [
+        "A7-FRONT-001",
+        "A7-FRONT-002",
+        "A7-FRONT-003",
+        "A7-FRONT-004",
+        "A7-FRONT-005"
+      ],
+      "material_fronts": [
+        {
+          "authority_refs": [],
+          "blockers": [
+            "A5-DEC-001",
+            "A5-DEC-003"
+          ],
+          "closure": "BLOCKED",
+          "currentness_refs": [],
+          "evidence_refs": [
+            "A6-REQ-001",
+            "dimension:functional",
+            "dimension:permissions",
+            "decision:A5-DEC-001",
+            "decision:A5-DEC-003"
+          ],
+          "front_id": "A7-FRONT-001",
+          "front_kind": "ALCANCE_Y_PERMISOS",
+          "reason": "El alcance funcional del piloto, los destinatarios, las condiciones previas a la aceptación y los permisos aplicables carecen de definición y autoridad verificadas. Las decisiones A5-DEC-001 y A5-DEC-003 permanecen pendientes. No existe evidencia que autorice cerrar este frente.",
+          "scope_refs": [
+            "A6-REQ-001",
+            "dimension:functional",
+            "dimension:permissions"
+          ],
+          "source_signal_refs": [
+            "A6-REQ-001",
+            "dimension:functional",
+            "dimension:permissions",
+            "decision:A5-DEC-001",
+            "decision:A5-DEC-003",
+            "gap:TARGET_AUTHORITY_NOT_SUPPLIED"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "authority_refs": [],
+          "blockers": [
+            "A5-DEC-002",
+            "A5-DEC-004"
+          ],
+          "closure": "BLOCKED",
+          "currentness_refs": [],
+          "evidence_refs": [
+            "A6-REQ-002",
+            "A6-REQ-004",
+            "dimension:data",
+            "decision:A5-DEC-002",
+            "decision:A5-DEC-004",
+            "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+            "gap:INSTALLMENT_DISTINCTION_UNRESOLVED"
+          ],
+          "front_id": "A7-FRONT-002",
+          "front_kind": "SEMANTICA_ECONOMICA",
+          "reason": "La definición del ahorro, su base de comparación y su distinción respecto del monto de la cuota no están autorizadas. Las decisiones A5-DEC-002 y A5-DEC-004 permanecen pendientes. No se pueden establecer valores, reglas económicas definitivas ni cierre del frente.",
+          "scope_refs": [
+            "A6-REQ-002",
+            "A6-REQ-004",
+            "dimension:data"
+          ],
+          "source_signal_refs": [
+            "A6-REQ-002",
+            "A6-REQ-004",
+            "dimension:data",
+            "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+            "gap:INSTALLMENT_DISTINCTION_UNRESOLVED"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "authority_refs": [],
+          "blockers": [
+            "A5-DEC-003"
+          ],
+          "closure": "BLOCKED",
+          "currentness_refs": [],
+          "evidence_refs": [
+            "A6-REQ-003",
+            "dimension:state",
+            "decision:A5-DEC-003",
+            "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED"
+          ],
+          "front_id": "A7-FRONT-003",
+          "front_kind": "MOMENTO_Y_ESTADO_OFERTA",
+          "reason": "No están acreditados los estados de la oferta, sus transiciones ni las condiciones para comunicar el ahorro antes de la aceptación. A5-DEC-003 permanece pendiente y no se pueden inferir estados o transiciones.",
+          "scope_refs": [
+            "A6-REQ-003",
+            "dimension:state"
+          ],
+          "source_signal_refs": [
+            "A6-REQ-003",
+            "dimension:state",
+            "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "authority_refs": [],
+          "blockers": [
+            "A5-DEC-002",
+            "A5-DEC-003",
+            "A5-DEC-004"
+          ],
+          "closure": "BLOCKED",
+          "currentness_refs": [],
+          "evidence_refs": [
+            "dimension:errors",
+            "dimension:side_effects",
+            "decision:A5-DEC-002",
+            "decision:A5-DEC-003",
+            "decision:A5-DEC-004"
+          ],
+          "front_id": "A7-FRONT-004",
+          "front_kind": "ERRORES_Y_EFECTOS",
+          "reason": "Los comportamientos ante información económica no disponible, indeterminada o incompatible con una oferta, así como los posibles efectos colaterales, permanecen sin determinación autorizada. No se afirma su existencia ni su ausencia. Las tres decisiones relacionadas siguen pendientes.",
+          "scope_refs": [
+            "dimension:errors",
+            "dimension:side_effects"
+          ],
+          "source_signal_refs": [
+            "dimension:errors",
+            "dimension:side_effects",
+            "decision:A5-DEC-002",
+            "decision:A5-DEC-003",
+            "decision:A5-DEC-004"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "authority_refs": [],
+          "blockers": [
+            "A5-DEC-004",
+            "A5-DEC-005"
+          ],
+          "closure": "BLOCKED",
+          "currentness_refs": [],
+          "evidence_refs": [
+            "A6-REQ-005",
+            "decision:A5-DEC-004",
+            "decision:A5-DEC-005",
+            "gap:ACCEPTANCE_EVIDENCE_MISSING"
+          ],
+          "front_id": "A7-FRONT-005",
+          "front_kind": "CRITERIOS_COMPRENSION",
+          "reason": "Faltan criterios autorizados para verificar que los clientes comprenden el ahorro y lo distinguen de la cuota durante el piloto. No existen umbrales o resultados verificables suministrados. Las decisiones A5-DEC-004 y A5-DEC-005 permanecen pendientes.",
+          "scope_refs": [
+            "A6-REQ-005"
+          ],
+          "source_signal_refs": [
+            "A6-REQ-005",
+            "gap:ACCEPTANCE_EVIDENCE_MISSING",
+            "decision:A5-DEC-004",
+            "decision:A5-DEC-005"
+          ],
+          "status": "REQUIRED"
+        }
+      ],
+      "source_refs": [
+        "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+        "supabase://public.lf_eventos/20843"
+      ],
+      "unmapped_material_signals": []
+    },
+    "no_ready_claim": true,
+    "package_readiness": "BLOCKED",
+    "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+    "research_decision": "REQUIRES_DECISION",
+    "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+    "scope_front_matrix": [
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-001",
+        "front_status": "REQUIRED",
+        "scope_id": "A6-REQ-001"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-001",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:functional"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-001",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:permissions"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-002",
+        "front_status": "REQUIRED",
+        "scope_id": "A6-REQ-002"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-002",
+        "front_status": "REQUIRED",
+        "scope_id": "A6-REQ-004"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-002",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:data"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-003",
+        "front_status": "REQUIRED",
+        "scope_id": "A6-REQ-003"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-003",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:state"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-004",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:errors"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-004",
+        "front_status": "REQUIRED",
+        "scope_id": "dimension:side_effects"
+      },
+      {
+        "effect_on_scope": "BLOCKS",
+        "front_closure": "BLOCKED",
+        "front_id": "A7-FRONT-005",
+        "front_status": "REQUIRED",
+        "scope_id": "A6-REQ-005"
+      }
+    ],
+    "scope_readiness": [
+      {
+        "blockers": [
+          "A5-DEC-001",
+          "A5-DEC-003"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-001"
+        ],
+        "scope_id": "A6-REQ-001",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-002",
+          "A5-DEC-004"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-002"
+        ],
+        "scope_id": "A6-REQ-002",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-003"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-003"
+        ],
+        "scope_id": "A6-REQ-003",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-002",
+          "A5-DEC-004"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-002"
+        ],
+        "scope_id": "A6-REQ-004",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-004",
+          "A5-DEC-005"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-005"
+        ],
+        "scope_id": "A6-REQ-005",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-001",
+          "A5-DEC-003"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-001"
+        ],
+        "scope_id": "dimension:functional",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-002",
+          "A5-DEC-004"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-002"
+        ],
+        "scope_id": "dimension:data",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-001",
+          "A5-DEC-003"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-001"
+        ],
+        "scope_id": "dimension:permissions",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-003"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-003"
+        ],
+        "scope_id": "dimension:state",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-002",
+          "A5-DEC-003",
+          "A5-DEC-004"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-004"
+        ],
+        "scope_id": "dimension:errors",
+        "status": "BLOCKED"
+      },
+      {
+        "blockers": [
+          "A5-DEC-002",
+          "A5-DEC-003",
+          "A5-DEC-004"
+        ],
+        "depends_on_scope_ids": [],
+        "material_front_refs": [
+          "A7-FRONT-004"
+        ],
+        "scope_id": "dimension:side_effects",
+        "status": "BLOCKED"
+      }
+    ],
+    "snapshot_statement": "Snapshot exclusivamente candidato, construido a partir de las salidas A7 y A8 suministradas. Contiene once scopes: cinco requisitos provisionales y seis dimensiones, vinculados mediante once relaciones a cinco frentes materiales. La contabilidad de los elementos recibidos está completa, pero los cinco frentes permanecen REQUIRED y BLOCKED. Cada scope tiene al menos un frente bloqueante, por lo que ninguno puede declararse READY. La investigación conserva REQUIRES_DECISION según A8, mientras que el paquete permanece BLOCKED por decisiones materiales pendientes, ausencia de autoridad positiva, falta de evidencia de vigencia, implementación desconocida y línea base AS-IS no suministrada. Los cinco identificadores A5 deben contrastarse primero con decisiones y reglas vigentes; solo las cuestiones materialmente no resueltas corresponderían al propietario humano. La cobertura de la entrada no demuestra cobertura completa del sistema real. No se creó una huella de cobertura auténtica: los 64 ceros son únicamente el marcador solicitado por el arnés. No se ha persistido, atestiguado, aprobado ni admitido el snapshot para programación. Tampoco se ha declarado READY, seleccionado una solución técnica o autorizado implementación."
+  },
+  "categories": [
+    {
+      "category": "STALE_AUTHORITY",
+      "definition": "una autoridad citada ya no está vigente"
+    },
+    {
+      "category": "HIDDEN_INDIRECT_IMPACT",
+      "definition": "un impacto indirecto no aparece declarado"
+    },
+    {
+      "category": "INCOMPLETE_CONTEXT",
+      "definition": "falta contexto necesario para decidir"
+    },
+    {
+      "category": "CONTRADICTORY_CONTEXT",
+      "definition": "dos piezas del contexto se contradicen"
+    },
+    {
+      "category": "OMITTED_MATERIAL_FRONT",
+      "definition": "se omite un frente material"
+    },
+    {
+      "category": "READY_SCOPE_WITH_BLOCKING_FRONT",
+      "definition": "un scope aparece READY pese a tener un frente bloqueante"
+    },
+    {
+      "category": "HANDOFF_SCHEMA_DRIFT",
+      "definition": "el esquema del traspaso cambia respecto del acordado"
+    },
+    {
+      "category": "LOSSY_WORKER_PROJECTION",
+      "definition": "la proyección hacia el worker pierde información material"
+    },
+    {
+      "category": "CURRENTNESS_FALSE_INVALIDATION",
+      "definition": "se invalida como vencido algo que sigue vigente"
+    },
+    {
+      "category": "CURRENTNESS_FALSE_REUSE",
+      "definition": "se reutiliza como vigente algo vencido"
+    },
+    {
+      "category": "SECOND_ORDER_CONSUMER_FAILURE",
+      "definition": "falla un consumidor de segundo orden del resultado"
+    }
+  ],
+  "schema_version": "A11_ADVERSARIAL_INPUT_V1"
+}
