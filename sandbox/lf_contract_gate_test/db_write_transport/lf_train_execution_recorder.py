@@ -73,6 +73,22 @@ DIFF_SYNC_ONLY = "SYNC_AND_RETIMESTAMP_ONLY"
 DIFF_UNEXPECTED = "UNEXPECTED_CHANGES"
 DIFF_NOT_EVALUATED = "NOT_EVALUATED"
 
+SQLSTATE_VALUE_RE = re.compile(r"^[0-9A-Z]{5}$")
+
+
+def normalized_sqlstate(value: object) -> str:
+    candidate = sanitize_message(value, 8) or ""
+    return candidate if SQLSTATE_VALUE_RE.fullmatch(candidate) else "NOT_OBSERVED"
+
+
+def failure_receipt_summary(failure: dict, fallback_summary: str) -> str:
+    sqlstate = normalized_sqlstate(failure.get("sqlstate"))
+    message = sanitize_message(failure.get("message"), 700) or "NOT_OBSERVED"
+    summary = f"SQLSTATE={sqlstate}; message={message}"
+    if fallback_summary and message == "NOT_OBSERVED":
+        summary += f"; summary={sanitize_message(fallback_summary, 200) or 'NOT_OBSERVED'}"
+    return summary[:1000]
+
 _TELEMETRY_STAGE = None
 _TELEMETRY_STARTED_AT = None
 _TELEMETRY_METRICS = StageMetrics()
@@ -529,7 +545,7 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
         _TELEMETRY_STARTED_AT = state.get("patch_started_at") or utc_now()
         _TELEMETRY_METRICS = StageMetrics()
         safe_error = {"code": sanitize_message(original_error.get("code"), 96) or "TRAIN_STEP_FAILED",
-                      "sqlstate": sanitize_message(original_error.get("sqlstate"), 32) or "NOT_OBSERVED",
+                      "sqlstate": normalized_sqlstate(original_error.get("sqlstate")),
                       "message": sanitize_message(original_error.get("message")) or "NOT_OBSERVED",
                       "evidence_locator": sanitize_message(original_error.get("evidence_locator"), 256) or
                                           f"github-run:{run_id}:step:{failed_step}"}
@@ -546,7 +562,7 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
     evidence = {
         "train_run_id": str(run_id),
         "failed_step": " ".join(str(failed_step).split())[:160],
-        "error_summary": " ".join(str(error_summary).split())[:1000],
+        "error_summary": failure_receipt_summary(original_error, error_summary),
         "original_error": {"code": sanitize_message(original_error.get("code"), 96) or "NOT_OBSERVED",
                            "sqlstate": sanitize_message(original_error.get("sqlstate"), 32) or "NOT_OBSERVED",
                            "message": sanitize_message(original_error.get("message")) or "NOT_OBSERVED"},
