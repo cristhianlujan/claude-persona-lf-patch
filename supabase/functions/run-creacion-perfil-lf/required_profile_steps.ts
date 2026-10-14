@@ -75,9 +75,10 @@ export function resolveProfileRequiredSteps(
     const decisionIdx = update.indexOf("evolution_decision");
     const selectionIdx = update.indexOf("method_selection");
     const actualPrefix = update.slice(0, decisionIdx + 1);
-    if (selectionIdx < 0 || decisionIdx !== selectionIdx + 1 ||
-        decisionIdx < 1 || update[decisionIdx + 1] !== "change_scope" ||
-        !valid(frozenPrefix) || frozenPrefix.length !== actualPrefix.length ||
+    if (selectionIdx !== 4 || decisionIdx !== 5 ||
+        update[decisionIdx + 1] !== "change_scope" ||
+        !valid(frozenPrefix) || frozenPrefix.length !== 6 ||
+        frozenPrefix.length !== actualPrefix.length ||
         frozenPrefix.some((v, i) => v !== actualPrefix[i]) ||
         noChange.slice(0, decisionIdx + 1).join("|") !==
           actualPrefix.join("|")) {
