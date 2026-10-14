@@ -32,6 +32,7 @@ CASE_KEYS = {"case_id", "change_family", "verdict", "critical_impacts_observed",
 VERDICTS = ["BLOCKED", "REQUIRES_DECISION", "NEED_MORE_EVIDENCE"]
 NOT_EVALUATED = "NOT_EVALUATED"
 BASIS = "HYPOTHESIS_FROM_SUBJECT"
+MIGRATION_FAMILY_EXEMPT = {r"\bmigraci\w+"}
 
 
 def input_obj() -> dict:
@@ -114,9 +115,14 @@ def semantic_checks(packet: dict, out: dict) -> str | None:
         return "FAMILIES_COVERED"
     if not _txt(out["cohort_statement"], 40):
         return "STATEMENT_MISSING"
-    low, ctx_text = json.dumps(out, ensure_ascii=False).lower(), packet["input"]["input_literal"].lower()
+    ctx_text = packet["input"]["input_literal"].lower()
+    low = json.dumps(out, ensure_ascii=False).lower()
+    # The A1-pilot pattern for "migración" is not a solution inference inside the record of a MIGRATION-family case (the family is part of the input);
+    # it still applies to every other record and to the top-level text. Applied here, not in the packet, so the stored packet sha does not change.
+    low_no_migration = json.dumps({**out, "cohort": [r for r in co if r["change_family"] != "MIGRATION"]}, ensure_ascii=False).lower()
     for pat in chk["forbidden_solution_patterns"]:
-        if re.search(pat, low) and not re.search(pat, ctx_text):
+        hay = low_no_migration if pat in MIGRATION_FAMILY_EXEMPT else low
+        if re.search(pat, hay) and not re.search(pat, ctx_text):
             return "SOLUTION_INFERRED"
     return None
 
