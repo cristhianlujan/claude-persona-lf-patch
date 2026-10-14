@@ -27,7 +27,7 @@ COMMIT_RE = re.compile(r"(?m)^COMMIT;\s*$")
 
 def validate_source(sql: str) -> dict[str, object]:
     starts, ends = list(BEGIN_RE.finditer(sql)), list(COMMIT_RE.finditer(sql))
-    if len(starts) != 1 or len(ends) != 1 or ends[0].end() != len(sql.rstrip()):
+    if len(starts) != 1 or len(ends) != 1 or sql[ends[0].end():].strip():
         raise ValueError("PE10_ROLLBACK_SOURCE_TRANSACTION_BOUNDARY_INVALID")
     if starts[0].start() >= ends[0].start():
         raise ValueError("PE10_ROLLBACK_SOURCE_ORDER_INVALID")
