@@ -511,7 +511,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for _ in $(seq 1 90); do
+          for attempt in $(seq 1 90); do
             # A retimestamp can advance the Git ref before the PR API readback catches up.
             # Accept only the known previous head briefly, never an unrelated revision.
             for propagation_attempt in $(seq 1 10); do

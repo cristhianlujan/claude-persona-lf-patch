@@ -153,6 +153,8 @@ for marker in (
 ):
     assert marker in guard, marker
     checks += 1
+assert 'for attempt in $(seq 1 90); do' in wf
+assert 'if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi' in wf
 assert "guard_args+=(--final)" in wf
 assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
 assert 'conclusion!="skipped"' not in wf
