@@ -1,5 +1,7 @@
 -- LF engineering plan follow-up, approved 2026-10-14.
 -- Tracking only: two distinct work items under Paulo's existing workstream.
+-- Only historical use or explicit user request with real consumer admits development.
+-- Never repair unrequested dormant operations just because a catalog gap exists.
 -- No modification of Migration/Operation functionality, PASE or POST-PASE.
 -- Existing Operation implementation is primarily Cristhian's work; Paulo owns the extension only.
 -- SOURCE_FIRST: Git branch -> PR -> LF Migration Merge Train -> ledger -> readback.
@@ -33,7 +35,7 @@ BEGIN
   VALUES
     ('PAULO-MIGRATION-001',v_stream_id,
      'Migration: ampliar LF Migration Merge Train por casos de cambio',
-     'Cubrir brechas verificadas de clasificación de fuente, retiro source-only y recuperación; conservar nueva migración SQL para cambios de objetos y no crear un segundo motor.',
+     'Cubrir Migration solo para uso historico o pedido expreso: nuevas migraciones retiro source-only y recovery. Evitar variantes no solicitadas y motores paralelos.',
      'Train existente admite y rechaza correctamente cada naturaleza aplicable con tests y recibos Git=ledger=DB; no modifica PASE/POST-PASE.',
      'DATABASE','P1','BACKLOG','MIXED','PAULO',
      'cristhianlujan/claude-persona-lf-patch','LF_MIGRATION',
@@ -50,8 +52,8 @@ BEGIN
   VALUES
     ('PAULO-OPERATION-001',v_stream_id,
      'Operation: ampliar cobertura gobernada de operaciones LF',
-     'Extender el framework existente lf_operation_* por necesidades reales no cubiertas, sin reemplazar Migration ni atribuir a Paulo el trabajo previo de Cristhian.',
-     'Inventario de cobertura por naturaleza, contratos/steps/judges/materialización, casos positivos/negativos, cierre y readback; integración con Migration como consumidor, no transporte paralelo.',
+     'Extender lf_operation_* solo si existe uso historico documentado o solicitud expresa con consumidor real. No perfeccionar operaciones nunca usadas/no pedidas; preservar autoria de Cristhian.',
+     'Inventario focalizado en casos usados o pedidos; contratos, jueces y readback solo donde apliquen; integracion con Migration unicamente ante un caso compartido real.',
      'BACKEND','P1','BACKLOG','MIXED','PAULO',
      'cristhianlujan/claude-persona-lf-patch','LF_OPERATION',
      'LF_OPERATION_FRAMEWORK',
@@ -64,8 +66,8 @@ BEGIN
  (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
  SELECT v_migration_id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
  FROM (VALUES
-  ('MIG-CP1', 'Inventariar Train y clasificar CREATE/ALTER/REPLACE/RENAME/DROP de objetos, y added/modified/removed/renamed de fuentes', 1),
-  ('MIG-CP2', 'Definir contrato por naturaleza: nuevas migraciones, retiro source-only, recuperación exacta y control de riesgos', 2),
+  ('MIG-CP1', 'Diagnosticar Train para casos reales o pedidos; descartar variantes de cambios de fuente sin uso ni demanda', 1),
+  ('MIG-CP2', 'Contratar solo casos de nuevas migraciones retiro source-only y recovery sustentados en demanda', 2),
   ('MIG-CP3', 'Extender Train existente con cambios aislados y gobierno vigente, sin motor paralelo', 3),
   ('MIG-CP4', 'Probar positivos/negativos y ROLLBACK aplicable; no replay ni alteración histórica indebida', 4),
   ('MIG-CP5', 'Verificar ejecución Train, source, ledger, DB, parity y readback exactos', 5),
@@ -76,11 +78,11 @@ BEGIN
  (work_item_id, checkpoint_code, title, sequence_no, weight, required, status, created_by_execution_id)
  SELECT v_operation_id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
  FROM (VALUES
-  ('OP-CP1', 'Inventario de operaciones y necesidades reales por familia/naturaleza; separar cobertura declarada de probada', 1),
-  ('OP-CP2', 'Actualizar contratos/gobierno mediante REUSE/EXTEND solo para necesidades operativas previamente demostradas', 2),
-  ('OP-CP3', 'Asegurar cobertura de steps, contratos, mini-jueces, bindings, Router y effect guard', 3),
-  ('OP-CP4', 'Validar positivos, negativos, idempotencia, dependencias, lifecycle y cierre fail-closed', 4),
-  ('OP-CP5', 'Probar integración con Migration por Router/ACTUALIZACION_DB_LF sin duplicar transporte', 5),
+  ('OP-CP1', 'Seleccionar solo operaciones con uso previo documentado o pedido expreso y consumidor; descartar inventario sin demanda', 1),
+  ('OP-CP2', 'REUSE/EXTEND solo en operaciones con uso probado o pedido expreso; no reparar huecos de operaciones ociosas', 2),
+  ('OP-CP3', 'Verificar steps contratos mini-jueces Router y effect guard solo para casos admitidos con demanda', 3),
+  ('OP-CP4', 'Probar solo rutas realmente usadas o solicitadas; evitar pruebas hipoteticas por familia', 4),
+  ('OP-CP5', 'Probar integracion con Migration si existe un caso compartido real; si no NOT_APPLICABLE', 5),
   ('OP-CP6', 'Recibos, readback, EKB y cierre basado en evidencia, conservando autoría histórica', 6)
  ) AS cp(checkpoint_code,title,sequence_no);
 
