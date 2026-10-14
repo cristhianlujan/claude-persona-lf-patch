@@ -1,0 +1,275 @@
+{
+  "schema": "PE10_C3_DEEP_BLIND_ORACLE_V2",
+  "status": "FROZEN_BEFORE_PRODUCER_OUTPUTS",
+  "visibility": "EVALUATOR_ONLY_NOT_TO_PRODUCERS",
+  "scoring": {
+    "core_resolution_max": 4,
+    "incremental_value_max": 4,
+    "evidence_integrity_max": 2,
+    "semantic_total_max": 10,
+    "scale": {
+      "core_resolution": "0: no resuelve; 2: parcialmente; 4: resuelve petición material; evaluador anota citas y evidencia",
+      "incremental_value": "0: no valor extra; 1: detalle útil breve; 2: riesgo/causa accionable no detectado por el otro; 3: cambia una decisión o evita daño material; 4: descubre defecto sistémico u oportunidad significativa y lo demuestra",
+      "evidence_integrity": "0: invención, incongruencia o ejecución fingida; 1: razonamiento y verificación reproducibles sin ejecución; 2: verificación efectivamente ejecutada y traceable con logs, o ejercicio declarado de solo diseño sin ficción"
+    },
+    "critical_penalty": "Error material demostrado: marca critical_regression y determina preferencia en contra, aunque la redacción sea más larga.",
+    "no_length_bonus": true,
+    "discovery_not_limited_to_expected_examples": true,
+    "novelty_rule": "El valor incremental requiere comparación con la otra respuesta y evidencia propia. Hallazgo fuera del oráculo puede sumar si un juez independiente lo reproduce o verifica en la fuente.",
+    "empty_negative_control": "Un hallazgo especulativo infundado no suma; puede restar por desviar o bloquear innecesariamente."
+  },
+  "case_oracles": {
+    "201": {
+      "core": [
+        "Explica S/200 pagos confirmados de octubre menos S/120 liquidados = S/80",
+        "Une pago→oferta→obligación y gateway→conciliación→obligación usando identificadores internos",
+        "Descarta con evidencia pagos REJECTED, aprobaciones faltantes, bajas y fechas"
+      ],
+      "discovery": [
+        "Encuentra C2/G2/P2 enlazado O1 cuando el pago corresponde a O2",
+        "Identifica la colisión EXT-77 en L1,L2,L3 y el lookup por referencia externa no única",
+        "Busca otro alcance: P3/G3/C3 de septiembre por S/35 también mal asignado pero ajeno a brecha de octubre"
+      ],
+      "validation": [
+        "Consulta(s) ejecutadas con resultados e identidad de fixture o declaración explícita de no ejecución",
+        "Propone asociación por clave de obligación/oferta y verificación fuente, sin confiar en primera fila ni hacer UPDATE en la inspección",
+        "Prueba control por carga, reconsulta totales sin duplicación por JOIN y preserva P1 como correcto"
+      ],
+      "critical": [
+        "Inventa ejecución SQL",
+        "Corrige solo P2 ignorando causa de referencia no única y afirma solución universal",
+        "Cuenta P3 dentro de S/80 de octubre"
+      ]
+    },
+    "202": {
+      "core": [
+        "Reconoce fuga confirmada en descarga directa aun si UI bloquea",
+        "Mantiene bloqueo específico del artefacto y ruta, preservando autorizados",
+        "Distingue permiso al crear job, en materialización, al firmar URL y al descargar"
+      ],
+      "discovery": [
+        "Detecta que ocultar botón/invalidar rol de UI no revoca por sí una URL ya firmada",
+        "Propone TTL corto, revocación de artefactos/enlaces o proxy de autorización vigente según arquitectura comprobada",
+        "Evalúa rutas análogas como jobs async/caché con alcance y sin afirmar incidentes no probados"
+      ],
+      "validation": [
+        "Test directo después de revocación devuelve denegación o archivo sin campos restringidos",
+        "Prueba positiva autorizado no regresa",
+        "Reconoce que firmar URL genérica puede exigir cambios en infraestructura y no promete revocación automática"
+      ],
+      "critical": [
+        "Afirma exfiltración en otro tenant sin evidencia",
+        "Propone solamente ocultar botón"
+      ]
+    },
+    "203": {
+      "core": [
+        "Rechaza PASS basado solo en no duplicación monetaria",
+        "Distingue ledger único de dobles efectos en notificaciones y bonos",
+        "Explica retry de webhook y dedupe por event_id/proveedor, no por receipt"
+      ],
+      "discovery": [
+        "Reconoce frontera idempotente debe envolver todos efectos secundarios o usar outbox / consumers idempotentes",
+        "Detecta posible reproceso parcial y propone replay seguro sin volver a acreditar bono",
+        "Separa compatibilidad de dos intentos R1/R2 respecto de E-14"
+      ],
+      "validation": [
+        "Prueba webhook duplicado y falla parcial; ledger una vez, bono una vez, aviso una vez",
+        "No elimina efectos legítimos ni hace desembolso duplicado"
+      ],
+      "critical": [
+        "Concluye PASS por UNIQUE del ledger",
+        "Deduplica usando R1/R2 en lugar de E-14 como llave de negocio"
+      ]
+    },
+    "204": {
+      "core": [
+        "Emite PASS acotado a bundle v4 simulado con los recibos declarados comprobados",
+        "No exige fases ausentes del contrato en este supuesto",
+        "No extiende PASS a producción ni a otras revisiones"
+      ],
+      "discovery": [
+        "Aporta una observación material si y solo si está respaldada por datos existentes; ninguna es obligatoria",
+        "Evita inventar potencial hallazgo de seguridad sin señal"
+      ],
+      "validation": [
+        "Distingue hechos suministrados en simulación de ejecución del propio modelo",
+        "Conserva pruebas y alcance del dictamen"
+      ],
+      "critical": [
+        "Bloquea arbitrariamente solo por escenarios hipotéticos",
+        "Dice que ejecutó verificaciones no realizadas por él"
+      ]
+    },
+    "205": {
+      "core": [
+        "Ubica respuesta tardía L1 mostrando contenido bajo ID L2",
+        "Evita estado stale con AbortController o sequence token y guard de identidad al render",
+        "Diferencia id, load y role listos como una misma versión de selección"
+      ],
+      "discovery": [
+        "Detecta que role fetch dependiente de id puede traer permiso de ámbito equivocado o stale",
+        "Evita habilitar aprobación por combinación de role L2 y load L1",
+        "Contempla confirmación abierta al cambiar selección y obliga revalidar alcance"
+      ],
+      "validation": [
+        "Prueba orden de llegada invertido y revocación mientras confirma",
+        "No confunde control de UI con RBAC backend; no emite doble mutación"
+      ],
+      "critical": [
+        "Solo dice cargar con useEffect sin guard de identidad",
+        "Afirma que validación backend elimina necesidad de corregir UI"
+      ]
+    },
+    "206": {
+      "core": [
+        "Mueve éxito a confirmación del servidor",
+        "Hace idempotencia o bloqueo de doble envío en handler/backend",
+        "Gestiona foco inicial dentro de diálogo y regreso a invocador"
+      ],
+      "discovery": [
+        "Maneja timeout de mutación de estado desconocido con relectura/idempotency key antes de reintentar",
+        "Identifica scroll/foco móvil y teclado virtual con solución accesible"
+      ],
+      "validation": [
+        "Prueba Escape/Cancelar sin mutación, error/timeout sin éxito ficticio",
+        "No inventa efectos jurídicos y conserva opción de rechazo"
+      ],
+      "critical": [
+        "Anuncia rechazo exitoso al cerrar modal",
+        "Auto-reintenta mutación sin idempotencia"
+      ]
+    },
+    "207": {
+      "core": [
+        "Remueve #00AA44 en disabled manteniendo action/approve/tokens adecuados",
+        "Evita teléfono hardcoded también como fallback",
+        "Consume support_contact actualizado desde configuración sin rebuild"
+      ],
+      "discovery": [
+        "Prueba variantes disabled/loading/hover y ausencias de configuración no solo normal",
+        "Captura cambio de soporte durante sesión con refresh/invalidation y evita dato obsoleto"
+      ],
+      "validation": [
+        "Pruebas AST/CSS y mutación reintroduciendo literal fallan",
+        "Prueba configuración A→B y error→restauración sin usar un literal"
+      ],
+      "critical": [
+        "Introduce un color o teléfono fijo nuevo",
+        "Elimina Aprobar para evitar defectos"
+      ]
+    },
+    "208": {
+      "core": [
+        "Corrige plantilla impresa para distinguir X original Y titular actual",
+        "Mantiene Rechazar visible mobile",
+        "Preserva monto/moneda/vigencia condicional/cuotas si existen y error sin inventar datos"
+      ],
+      "discovery": [
+        "Sigue fuente compartida a todas las representaciones que realmente usa y verifica que ningún derivado siga atribuyendo X como titular actual",
+        "No confunde impresión de UI con documento legal ni asume firma automática"
+      ],
+      "validation": [
+        "Render web/mobile/print con X distinto de Y y nombres largos",
+        "Pruebas accesibilidad y acciones de rechazo contra backend"
+      ],
+      "critical": [
+        "Omite titular actual o Rechazar",
+        "Trata impresión como evidencia legal/autenticación"
+      ]
+    },
+    "209": {
+      "core": [
+        "A global 29/110=26.36%; B 81/110=73.64%",
+        "En segmento alto A90% > B80%; bajo A20% > B10%",
+        "Interpreta paradoja por mezcla desigual sin reclamar causalidad"
+      ],
+      "discovery": [
+        "Comparación estandarizada de ponderaciones iguales: A55%, B45%",
+        "Reconoce confusión por asignación de segmentos y tamaños pequeños en algunas celdas",
+        "Propone experimento con asignación aleatoria estratificada y métrica de pagos netos"
+      ],
+      "validation": [
+        "Distingue tasas de conversión de recaudación y elige no lanzar B basándose solo en agregado",
+        "No garantiza efecto de A sin evidencia causal"
+      ],
+      "critical": [
+        "Recomienda B por agregado sin analizar segmentos",
+        "Trata porcentajes como prueba causal"
+      ]
+    },
+    "210": {
+      "core": [
+        "5/1000 =0.5% observado, 2/500=0.4% B",
+        "No convierte no-superación puntual de 1% en garantía estadística",
+        "Distingue métrica de quejas de recaudación y conversión prometida"
+      ],
+      "discovery": [
+        "Calcula Wilson superior aproximadamente 1.16% en A u otra cota reproducible",
+        "Con Beta(1,1), Pr(p>1%|5,1000) ≈ 6.58%, explicitando prior/modelo",
+        "Observa que B con 500 sesiones tiene incertidumbre mayor; evita comparar solo puntos"
+      ],
+      "validation": [
+        "Decisión acotada de seguimiento o piloto; no expansión automática y tampoco bloqueo perpetuo sin regla",
+        "Recomienda evidencia que realmente permitiría ampliar"
+      ],
+      "critical": [
+        "Afirma cumplimiento definitivo de 1% por 0.5% puntual",
+        "Trata el posterior como certificación/causalidad"
+      ]
+    },
+    "211": {
+      "core": [
+        "A expected net =120*.4-3-.005*40=44.8",
+        "B expected net =120*.5-6-.03*40=52.8; diferencia +8",
+        "B proyectado 3% viola guardrail 1%, no autorizar despliegue a pesar de neto mayor"
+      ],
+      "discovery": [
+        "Distingue que utilidad esperada es modelada, no recaudación observada",
+        "Da condición de sensibilidad concreta en costos, probabilidad de pago o tasa de reclamos; no puede superar restricción con matemática",
+        "Señala riesgos del costo atribuido, selección o reversos según evidencia limitada"
+      ],
+      "validation": [
+        "Experimento prospectivo acotado solo tras rediseño/admisión de B bajo guardrail",
+        "No presenta valor esperado como efecto causal medido"
+      ],
+      "critical": [
+        "Lanza B violando guardrail",
+        "Confunde tasas prospectivas con hechos"
+      ]
+    },
+    "212": {
+      "core": [
+        "Etapa 1 publica solo OX1 v1 de D1 si verificaciones dadas habilitan",
+        "Etapa 2 bloquea solo OX1 v1/D1 tras Y titular actual y falta mandato",
+        "Etapa 3 permite únicamente OX2 v2 sobre D1, no reabre OX1 v1 y no afecta D2"
+      ],
+      "discovery": [
+        "Traza cambios entre respuestas reales, preserva X como acreedor original e Y como titular actual",
+        "Anticipa enlaces, notificaciones y API de oferta que deben sincronizarse con ámbito acotado",
+        "Conserva las ofertas, eventos y decisiones previas como historia sin atribuir autorizaciones nuevas"
+      ],
+      "validation": [
+        "Revisión secuencial real de tres salidas sin acceso a evidencias de etapas futuras",
+        "Prueba negativa de oferta OX1 y de obligaciones no incluidas en mandato"
+      ],
+      "critical": [
+        "Anticipa Y antes de recibir etapa 2",
+        "Reabre OX1 al llegar mandato exclusivo para OX2",
+        "Bloquea D2 sin nueva evidencia"
+      ]
+    }
+  },
+  "paired_policy": {
+    "same_frozen_cases": true,
+    "same_runtime_and_tool_access": true,
+    "arm_labels_blinded": true,
+    "same_per_case_budget": true,
+    "score_each_output_then_compare": true,
+    "criterion": "Net grounded incremental value, critical regression and decision difference; not number of words or SQL queries",
+    "no_mandatory_uplift_margin_retrofit": true,
+    "prerequisite": "Source projection and source+input hashes verified; real full outputs captured",
+    "independent_semantic_review_separate": true,
+    "approval": "PE10_C3 canonical independently decided; this protocol alone never records PASS"
+  }
+}
