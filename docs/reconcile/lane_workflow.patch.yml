@@ -20,12 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: lf-merge-train
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-      actions: write
-      statuses: write
     steps:
       - name: Create Train App token
         id: app-token
