@@ -104,7 +104,7 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_update_verified_receipt_v1(text,text
 --     policy and both consumer/recorder effective-required-step logic;
 -- (6) retain NO_CHANGE without write, no autonomous GPT Native claims.
 
--- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 305d447dbdf991f02f9c18eef87a738343ec5bf2
+-- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 98009d0ee6d10bc713ebee1db526ce12b694b04c
 -- Profile Updater v0.2 route resolver, CANDIDATE SOURCE ONLY (not deployed).
 -- This is a read-only derivation; no editing execution manifest or policies.
 -- MUST be wired into BOTH the existing Profile step recorder and the Edge
@@ -195,6 +195,14 @@ BEGIN
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements(no_change_steps) a(value)
          WHERE jsonb_typeof(a.value) <> 'string'
+       )
+       -- NO_CHANGE must be the same ordered subsequence of frozen UPDATE;
+       -- never let the recorder and cursor interpret different step orders.
+       OR no_change_steps IS DISTINCT FROM (
+            SELECT jsonb_agg(a.value ORDER BY a.ordinality)
+              FROM jsonb_array_elements_text(update_steps)
+                   WITH ORDINALITY a(value,ordinality)
+             WHERE no_change_steps ? a.value
        )
        OR no_change_steps ? 'github_write'
        OR no_change_steps ? 'github_readback'
