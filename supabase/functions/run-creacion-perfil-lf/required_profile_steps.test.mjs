@@ -27,7 +27,12 @@ const full=['init_execution','router','profile_resolve','baseline_read','method_
 const noChange=['init_execution','router','profile_resolve','baseline_read','method_selection','evolution_decision','deterministic_validation','semantic_judge','close','report_output'];
 const evolved=full.map((step_id,i)=>({step_id,required:true,execution_order:i*10}));
 const routes=(update=full,unchanged=noChange)=>({operation_policy_snapshots:{PASS_POLICY:{policy_payload:{required_steps:update,required_steps_by_outcome:{UPDATE:update,NO_CHANGE:unchanged}}}}});
-const decision=(name,status='STEP_PASS_WITH_EVIDENCE')=>[{step_id:'evolution_decision',status,evidence_payload:{decision:name}}];
+const decision=(name,status='STEP_PASS_WITH_EVIDENCE')=>[{step_id:'evolution_decision',status,evidence_payload:{
+ decision:name,
+ evolution_mode:name==='NO_CHANGE'?'NO_CHANGE':'PATCH',
+ recorded_by_rpc:'lf_record_profile_operation_step_v1',
+ mini_judge_result:'STEP_PASS_WITH_EVIDENCE'
+}}];
 test('before clean decision only common prefix is exposed',()=>assert.deepEqual(ids(select('ACTUALIZACION_PERFIL_LF',evolved,routes())),full.slice(0,6)));
 test('frozen conditional UPDATE follows full protected path',()=>assert.deepEqual(ids(select('ACTUALIZACION_PERFIL_LF',evolved,routes(),decision('UPDATE'))),full));
 test('frozen conditional NO_CHANGE skips all profile mutations',()=>assert.deepEqual(ids(select('ACTUALIZACION_PERFIL_LF',evolved,routes(),decision('NO_CHANGE'))),noChange));
@@ -39,3 +44,24 @@ test('conditional no-change cannot include github_write',()=>assert.throws(()=>s
 test('conditional no-change cannot include merge',()=>assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,[...noChange,'post_merge_reconcile'])),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/));
 test('conditional source order cannot change',()=>assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes([...full].reverse(),noChange)),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/));
 test('old frozen v0.1 ignores new steps even when currently active',()=>assert.deepEqual(ids(select('ACTUALIZACION_PERFIL_LF',evolved,snap(['init_execution','router','profile_resolve','baseline_read','change_scope','regression_plan','pre_write_execution_binding_gate','github_write','github_readback','deterministic_validation','semantic_judge','regression_after','post_merge_reconcile','close','report_output']))),full.filter(x=>!['method_selection','evolution_decision'].includes(x))));
+
+test('conditional route rejects producer-originated pass',()=>{
+ const recorded=decision('NO_CHANGE');
+ recorded[0].evidence_payload.recorded_by_rpc='producer_claim';
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(),recorded),/PROFILE_EVOLUTION_ROUTE_RECORDER_UNVERIFIED/);
+});
+test('conditional route rejects missing mini-judge proof',()=>{
+ const recorded=decision('UPDATE');
+ delete recorded[0].evidence_payload.mini_judge_result;
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(),recorded),/PROFILE_EVOLUTION_ROUTE_RECORDER_UNVERIFIED/);
+});
+test('conditional route rejects NO_CHANGE with PATCH mode',()=>{
+ const recorded=decision('NO_CHANGE');
+ recorded[0].evidence_payload.evolution_mode='PATCH';
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(),recorded),/PROFILE_EVOLUTION_DECISION_MODE_MISMATCH/);
+});
+test('conditional route rejects UPDATE with NO_CHANGE mode',()=>{
+ const recorded=decision('UPDATE');
+ recorded[0].evidence_payload.evolution_mode='NO_CHANGE';
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(),recorded),/PROFILE_EVOLUTION_DECISION_MODE_MISMATCH/);
+});
