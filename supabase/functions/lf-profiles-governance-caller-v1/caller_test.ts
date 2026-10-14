@@ -359,3 +359,21 @@ Deno.test("parity v7: B2B 402 response keeps MANUAL consumer", async () => {
   assertEquals(payload.result.consumer, "MANUAL");
   assertEquals(h.calls[0].body, { pantalla_id: 43, consumer: "MANUAL" });
 });
+
+Deno.test("CP2: legacy OIDC identity cannot invoke Edge preflight", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const { response, payload } = await invoke(h, {action:"ig_m105_cp2_edge_preflight_v1"});
+  assertEquals(response.status,403);
+  assertEquals(payload.code,"CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED");
+  assertEquals(h.calls.length,0);
+});
+
+Deno.test("CP2: reusable push OIDC identity cannot invoke Edge execution", async () => {
+  const h = harness({ claims: REUSABLE_PUSH_CLAIMS });
+  const { response, payload } = await invoke(h, {
+     action:"ig_m105_cp2_edge_screen_v1",pantalla_id:58
+  });
+  assertEquals(response.status,403);
+  assertEquals(payload.code,"CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED");
+  assertEquals(h.calls.length,0);
+});

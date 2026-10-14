@@ -15,6 +15,11 @@ on:
         required: false
         default: "1,2,3,5,43,51,52,53,54,55,56,57,58"
         type: string
+      cp2_edge_mode:
+        description: "M10.5 CP2 only: exact OIDC -> Edge. Requires authentic vNext and signed release authority."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -30,6 +35,7 @@ jobs:
     uses: ./.github/workflows/lf-input-governance-recurate.yml
     with:
       pantalla_ids: ${{ github.event_name == 'workflow_dispatch' && inputs.pantalla_ids || '3,4,5,6,11,18,19,21,24,25,27,28,30,33,34,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67' }}
+      cp2_mode: ${{ github.event_name == 'workflow_dispatch' && inputs.cp2_edge_mode || false }}
     permissions:
       contents: read
       id-token: write
