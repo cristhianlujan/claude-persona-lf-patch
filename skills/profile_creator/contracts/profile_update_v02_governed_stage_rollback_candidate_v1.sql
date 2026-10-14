@@ -6,11 +6,22 @@
 -- The session MUST bind an authorized ACTUALIZACION_PERFIL_LF IN_PROGRESS
 -- execution using: SELECT set_config('lf.pe10_governed_actor_execution_id',
 -- '<real actor execution id>', false);
--- Actor manifest must be created through the existing governed
--- lf_profile_update_begin_v1 route with these exact immutable attributes:
+-- IMPORTANT CURRENT BLOCKER: the live OIDC profile_update_init_v1 caller
+-- forwards only profile asset identity and research baseline. Its downstream
+-- initialize_profile_update_v1 builds the manifest without governance_scope,
+-- governance_target or governance_pr. Thus it CANNOT currently produce an
+-- eligible PE10 v0.2 governance author; do not trigger a bogus profile update.
+-- The runtime-update begin route is also hard-bound to EJECUCION_PERFIL_LF.
+-- No historical in-progress execution is automatically eligible.
+-- A separately admitted, scope-bound governance bootstrap must issue an
+-- ACTUALIZACION_PERFIL_LF operation execution with these immutable fields:
 -- governance_scope=PE10_V02_GOVERNED_REGISTRATION,
 -- governance_target=ACTUALIZACION_PERFIL_LF, governance_pr=2619.
--- No historical in-progress execution is automatically eligible.
+-- Reuse the canonical operation reservation/bootstrap under Train authority;
+-- do NOT synthesize the actor through session GUC or a manual INSERT.
+-- The GUC below merely selects an already-authorized row for rehearsal.
+-- Until a trusted bootstrap receipt exists, this file is NOT executable
+-- against real LF authority and must remain candidate/rollback-only.
 BEGIN;
 DO $pe10_stage$
 DECLARE
