@@ -31,7 +31,26 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 from urllib.parse import quote
+
+try:
+    from pase_f09_015_telemetry import (
+        CANONICAL_STEPS, MAX_ENVELOPE_BYTES, StageMetrics, make_envelope,
+        record_failure_once, sanitize_message, serialize_envelope, utc_now,
+    )
+except ImportError:  # The Train copies this trusted recorder by itself.
+    import importlib.util
+    helper = Path.cwd() / "sandbox/lf_contract_gate_test/db_write_transport/pase_f09_015_telemetry.py"
+    spec = importlib.util.spec_from_file_location("pase_f09_015_telemetry", helper)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("PASE_F09_015_TELEMETRY_HELPER_MISSING")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    CANONICAL_STEPS, MAX_ENVELOPE_BYTES, StageMetrics = module.CANONICAL_STEPS, module.MAX_ENVELOPE_BYTES, module.StageMetrics
+    make_envelope, record_failure_once = module.make_envelope, module.record_failure_once
+    sanitize_message, serialize_envelope, utc_now = module.sanitize_message, module.serialize_envelope, module.utc_now
 
 OPERATION = "ACTUALIZACION_DB_LF"
 CLEAN = "PASS_CLEAN"
@@ -53,6 +72,10 @@ DIFF_NO_CHANGE = "NO_CHANGE"
 DIFF_SYNC_ONLY = "SYNC_AND_RETIMESTAMP_ONLY"
 DIFF_UNEXPECTED = "UNEXPECTED_CHANGES"
 DIFF_NOT_EVALUATED = "NOT_EVALUATED"
+
+_TELEMETRY_STAGE = None
+_TELEMETRY_STARTED_AT = None
+_TELEMETRY_METRICS = StageMetrics()
 
 
 # ------------------------------------------------- provenance and rule D1
@@ -211,6 +234,7 @@ def patch_evidence(ctx: dict, ids: dict, decision: dict, apply_receipt: dict) ->
     return {
         "db_write_transport_decision": decision,
         "db_write_transport_receipt": apply_receipt,
+        "pase_f09_015_metrics": apply_receipt.get("pase_f09_015_metrics", "NOT_OBSERVED"),
         "minimal_diff": {
             "kind": "ONE_MIGRATION_FILE",
             "target_path": ctx["path"],
@@ -280,11 +304,16 @@ def db_url() -> str:
 
 def call(sql: str, **params: str) -> dict:
     """Run one SELECT returning jsonb; params are bound as psql variables."""
+    started = time.perf_counter_ns()
     argv = ["psql", db_url(), "-X", "-At", "-v", "ON_ERROR_STOP=1"]
     for key, value in params.items():
         argv += ["-v", f"{key}={value}"]
     argv += ["-f", "-"]
     proc = subprocess.run(argv, input=sql, text=True, capture_output=True, timeout=120, check=False)
+    elapsed_ms = (time.perf_counter_ns() - started) / 1_000_000
+    if _TELEMETRY_STAGE:
+        _TELEMETRY_METRICS.queries.add(elapsed_ms, len((sql + json.dumps(params, sort_keys=True)).encode("utf-8"))
+                                       + len(proc.stdout.encode("utf-8")) + len(proc.stderr.encode("utf-8")))
     if proc.returncode != 0:
         tail = " | ".join(proc.stderr.strip().splitlines()[-4:])
         raise RuntimeError(f"TRAIN_EXEC_SQL_FAILED:{tail}")
@@ -293,6 +322,7 @@ def call(sql: str, **params: str) -> dict:
 
 
 def record_step(ids: dict, step: str, evidence: dict) -> dict:
+    global _TELEMETRY_METRICS
     prior = call(
         "select coalesce((select jsonb_build_object('status', status)"
         " from public.lf_operation_execution_steps"
@@ -302,13 +332,46 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
     )
     if prior.get("status") == CLEAN:
         return {"outcome": "STEP_ALREADY_PASS_CLEAN", "status": CLEAN, "step_id": step}
+    if step not in CANONICAL_STEPS:
+        raise RuntimeError(f"PASE_F09_015_UNKNOWN_STEP:{step}")
+    apply_metrics = evidence.get("pase_f09_015_metrics") or {}
+    started_at = (apply_metrics.get("started_at") if step == "patch" else None) or _TELEMETRY_STARTED_AT or utc_now()
+    finished_at = utc_now()
+    stage_metrics = StageMetrics()
+    for family in ("queries", "transport"):
+        values = apply_metrics.get(family) or {}
+        count, duration, byte_count = values.get("count"), values.get("duration_ms"), values.get("bytes")
+        if isinstance(count, (int, float)) and isinstance(duration, (int, float)) and isinstance(byte_count, (int, float)):
+            counter = getattr(stage_metrics, family)
+            counter.add(duration, byte_count)
+            counter.count += max(0, int(count) - 1)
+        source = getattr(_TELEMETRY_METRICS, family)
+        counter = getattr(stage_metrics, family)
+        counter.count += source.count
+        counter.duration_ms += source.duration_ms
+        counter.bytes += source.bytes
+    envelope = make_envelope(
+        step=step, started_at=started_at, finished_at=finished_at,
+        execution_id=ids["execution_id"], control_id=ids.get("effect_scope", "NOT_OBSERVED"),
+        input_value=evidence.get("exact_target") or evidence.get("target_binding") or ids,
+        result_value=evidence.get("write_receipt") or evidence.get("db_write_transport_readback")
+                     or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified"),
+        metrics=stage_metrics,
+    )
+    if evidence.get("failure"):
+        envelope["failure"] = evidence["failure"]
+        envelope["evidence_locator"] = evidence["failure"].get("evidence_locator", "NOT_OBSERVED")
+    evidence = dict(evidence)
+    evidence["pase_f09_015_telemetry_v1"] = json.loads(serialize_envelope(envelope, MAX_ENVELOPE_BYTES))
     res = call(
         "select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', (:'payload')::jsonb, :'actor');",
         exec=ids["execution_id"], step=step, ref=f"{ids['actor']}:{step}",
         payload=json.dumps(evidence, sort_keys=True), actor=ids["actor"],
     )
-    if res.get("outcome") != "STEP_RECORDED" or res.get("status") not in (CLEAN, None):
+    allowed_statuses = (CLEAN, "BLOCKED_BY_ENFORCEMENT", "RETURN_TO_WORKER") if evidence.get("blocking_codes") else (CLEAN, None)
+    if res.get("outcome") != "STEP_RECORDED" or res.get("status") not in allowed_statuses:
         raise RuntimeError(f"TRAIN_EXEC_STEP_NOT_CLEAN:{step}:{json.dumps(res, sort_keys=True)[:600]}")
+    _TELEMETRY_METRICS = StageMetrics()
     return res
 
 
@@ -335,6 +398,10 @@ def record_receipt(state: dict) -> dict:
 
 
 def begin(ctx: dict) -> dict:
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    _TELEMETRY_STAGE = "preflight"
+    _TELEMETRY_STARTED_AT = utc_now()
+    _TELEMETRY_METRICS = StageMetrics()
     validate_context(ctx)
     provenance = capture_provenance(ctx)
     enforce_d1(provenance)
@@ -365,6 +432,7 @@ def begin(ctx: dict) -> dict:
     if capability.get("entry_guard_state") != "GUARDED":
         raise RuntimeError("TRAIN_EXEC_TRANSPORT_NOT_GUARDED")
     record_step(ids, "preflight", preflight_evidence(ctx, capability))
+    _TELEMETRY_STAGE = None
     effect = call(
         "select public.fn_lf_operation_reserve_effect_v1(:'exec', :'owner', :fence, :'scope', :'sha', :'dispatch', :'actor');",
         exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
@@ -373,7 +441,7 @@ def begin(ctx: dict) -> dict:
     if effect.get("dispatch_permitted") is not True:
         raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
     return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY", "effect_state": "RESERVED",
-            "provenance": provenance}
+            "provenance": provenance, "patch_started_at": utc_now()}
 
 
 def resume(ctx: dict) -> dict:
@@ -448,13 +516,42 @@ def resume(ctx: dict) -> dict:
     }
 
 
-def abort(state: dict, run_id: str, failed_step: str, error_summary: str) -> dict:
+def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
+          failure: dict | None = None) -> dict:
     """Record pre-apply failure; SQL independently rejects any version in the ledger."""
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    original_error = failure or {"code": "TRAIN_STEP_FAILED", "sqlstate": "NOT_OBSERVED",
+                                 "message": error_summary, "evidence_locator": "NOT_OBSERVED"}
+    rejected = {}
+    if failed_step == "Apply exact version and ledger readback":
+        _TELEMETRY_STAGE = "patch"
+        _TELEMETRY_STARTED_AT = state.get("patch_started_at") or utc_now()
+        _TELEMETRY_METRICS = StageMetrics()
+        safe_error = {"code": sanitize_message(original_error.get("code"), 96) or "TRAIN_STEP_FAILED",
+                      "sqlstate": sanitize_message(original_error.get("sqlstate"), 32) or "NOT_OBSERVED",
+                      "message": sanitize_message(original_error.get("message")) or "NOT_OBSERVED",
+                      "evidence_locator": sanitize_message(original_error.get("evidence_locator"), 256) or
+                                          f"github-run:{run_id}:step:{failed_step}"}
+        failed_evidence = patch_evidence(ctx, ids, {"route": "MIGRATION_VIA_MERGE_TRAIN"}, {
+            "status": "FAILURE", "executor": "lf-migration-merge-train", "code": safe_error["code"]})
+        failed_evidence.update({"blocking_codes": [safe_error["code"]], "failure": safe_error})
+        if original_error.get("pase_f09_015_metrics"):
+            failed_evidence["pase_f09_015_metrics"] = original_error["pase_f09_015_metrics"]
+        outcome = record_failure_once(
+            lambda _error: record_step(ids, "patch", failed_evidence),
+            lambda receipt: rejected.update(receipt), safe_error,
+        )
+        _TELEMETRY_STAGE = None
     evidence = {
         "train_run_id": str(run_id),
         "failed_step": " ".join(str(failed_step).split())[:160],
         "error_summary": " ".join(str(error_summary).split())[:1000],
+        "original_error": {"code": sanitize_message(original_error.get("code"), 96) or "NOT_OBSERVED",
+                           "sqlstate": sanitize_message(original_error.get("sqlstate"), 32) or "NOT_OBSERVED",
+                           "message": sanitize_message(original_error.get("message")) or "NOT_OBSERVED"},
+        "failure_row_outcome": outcome.get("outcome") if failed_step == "Apply exact version and ledger readback" else "NOT_OBSERVED",
+        "failure_row_rejection": rejected or "NOT_OBSERVED",
         "secrets_included": False,
     }
     result = call(
@@ -474,7 +571,11 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str) -> dic
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_STAGE = "patch"
+    _TELEMETRY_STARTED_AT = state.get("patch_started_at") or utc_now()
+    _TELEMETRY_METRICS = StageMetrics()
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
     if state.get("effect_state") != "SUCCEEDED":
         call(
@@ -484,11 +585,16 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
         )
         state["effect_state"] = "SUCCEEDED"
     record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
+    _TELEMETRY_STAGE = None
     return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
 
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_STAGE = "verify"
+    _TELEMETRY_STARTED_AT = utc_now()
+    _TELEMETRY_METRICS = StageMetrics()
     ledger = call(
         "select coalesce((select jsonb_build_object('version', version, 'name', name)"
         " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
@@ -497,6 +603,7 @@ def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
         raise RuntimeError(f"TRAIN_EXEC_LEDGER_READBACK_MISMATCH:{json.dumps(ledger)}")
     record_step(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
+    _TELEMETRY_STAGE = None
     evidence = {"train_run_id": ctx["run_id"], "pr": int(ctx["pr"]), "merge_sha": merge_sha,
                 "ledger": ledger, "parity": parity_status}
     res = call(
@@ -587,7 +694,16 @@ def main() -> int:
             return 0
     elif args.cmd == "abort":
         state = json.loads(Path(args.state).read_text())
-        state = abort(state, args.run_id, args.failed_step, args.error_summary)
+        failure = None
+        apply_receipt_path = Path(".lf_train/exact-apply-receipt.json")
+        if apply_receipt_path.is_file():
+            try:
+                failure = json.loads(apply_receipt_path.read_text()).get("failure")
+                if failure is not None:
+                    failure["pase_f09_015_metrics"] = json.loads(apply_receipt_path.read_text()).get("pase_f09_015_metrics")
+            except (OSError, ValueError):
+                failure = None
+        state = abort(state, args.run_id, args.failed_step, args.error_summary, failure)
     elif args.cmd == "commit":
         state = json.loads(Path(args.state).read_text())
         receipt = json.loads(Path(args.apply_receipt).read_text())
