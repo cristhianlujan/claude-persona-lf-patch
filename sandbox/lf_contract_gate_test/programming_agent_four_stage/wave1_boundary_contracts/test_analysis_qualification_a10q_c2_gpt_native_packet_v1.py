@@ -89,6 +89,17 @@ NEG = {
 }
 
 
+def test_migration_word_allowed_only_in_migration_family_record():
+    ok = mutate(lambda r: [x["critical_impacts_observed"][0].update(impact="Posible divergencia en una migración con consecuencias sobre datos afectados.")
+                           for x in r["cohort"] if x["change_family"] == "MIGRATION"])
+    assert run(ok)[0] == eq.PASS_C2
+    bad = mutate(lambda r: [x["critical_impacts_observed"][0].update(impact="Posible divergencia en una migración con consecuencias sobre datos afectados.")
+                            for x in r["cohort"] if x["change_family"] == "BUG"])
+    assert run(bad)[0] == "BLOCK:SOLUTION_INFERRED"
+    top = mutate(lambda r: r.update(cohort_statement="Resultado candidato: ningún caso es READY; se sugiere una migración para resolverlo todo, sin medir nada."))
+    assert run(top)[0] == "BLOCK:SOLUTION_INFERRED"
+
+
 def test_raw_negatives():
     for code, build in NEG.items():
         verdict, rec = run(build())
@@ -116,7 +127,7 @@ def main():
     for name, fn in sorted(globals().items()):
         if name.startswith("test_"):
             fn()
-    print("PASS_A10Q_C2_GPT_NATIVE_PACKET positives=1 raw_negatives=%d shape_garbage=5 packet_binding_negatives=5 packet_sha256=%s "
+    print("PASS_A10Q_C2_GPT_NATIVE_PACKET positives=1 raw_negatives=%d migration_exemption_scoped=1 shape_garbage=5 packet_binding_negatives=5 packet_sha256=%s "
           "api_calls=0 fixture_raw_is_not_evidence=true" % (len(NEG) + 0, PACKET["packet_sha256"][:16]))
 
 
