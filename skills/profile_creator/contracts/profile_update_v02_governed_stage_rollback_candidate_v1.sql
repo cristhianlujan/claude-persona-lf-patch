@@ -6,6 +6,11 @@
 -- The session MUST bind an authorized ACTUALIZACION_PERFIL_LF IN_PROGRESS
 -- execution using: SELECT set_config('lf.pe10_governed_actor_execution_id',
 -- '<real actor execution id>', false);
+-- Actor manifest must be created through the existing governed
+-- lf_profile_update_begin_v1 route with these exact immutable attributes:
+-- governance_scope=PE10_V02_GOVERNED_REGISTRATION,
+-- governance_target=ACTUALIZACION_PERFIL_LF, governance_pr=2619.
+-- No historical in-progress execution is automatically eligible.
 BEGIN;
 DO $pe10_stage$
 DECLARE
@@ -20,6 +25,9 @@ BEGIN
   IF v_actor IS NULL OR NOT EXISTS (
     SELECT 1 FROM public.lf_operation_execution
     WHERE execution_id=v_actor AND operation_code=v_op AND status='IN_PROGRESS'
+      AND manifest->>'governance_scope'='PE10_V02_GOVERNED_REGISTRATION'
+      AND manifest->>'governance_target'=v_op
+      AND manifest->>'governance_pr'='2619'
   ) THEN RAISE EXCEPTION 'PE10_V02_GOVERNED_ACTOR_REQUIRED'; END IF;
   IF (SELECT version FROM public.lf_operation_registry WHERE operation_code=v_op)
        IS DISTINCT FROM 'v0.1'
@@ -52,19 +60,24 @@ BEGIN
      'profile_slug; source_head_sha; profile_assessment_receipt_id; profile_assessment_sha256; decision; evolution_mode; decision_evidence_ref; github_write_permitted',
      'public.lf_operation_step_contracts/ACTUALIZACION_PERFIL_LF/evolution_decision',v_actor);
 
-  -- Candidate judge specs refer to the existing source. judge_sha remains
-  -- NULL intentionally until an exact Git source digest is attested in Train.
+  -- Exact UTF-8 source SHA-256 (verified from GitHub candidate source blob
+  -- 6565ce15ea00297dc54c80014bbcc3723d7dc646):
+  -- 7eb8ad1a5549c63a8f5c6de43b18cc966c9f62085313aaa57248a39eb3dfdeac
+  -- Train must independently reread and verify the exact candidate source.
+  -- One shared guard source, two distinct step-specific judge contracts.
   INSERT INTO public.lf_operation_judges
     (operation_code,judge_code,judge_path,judge_sha,pass_if,fail_if,result_values,status,created_by_execution_id)
   VALUES
     (v_op,'JUDGE-PE10-V02-METHOD-SELECTION',
-     'skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql',NULL,
+     'skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql',
+     '7eb8ad1a5549c63a8f5c6de43b18cc966c9f62085313aaa57248a39eb3dfdeac',
      '["verified_assessment","qualified_method_receipts_or_reasoned_empty","current_selector","method_execution_permitted_false"]'::jsonb,
      '["missing_receipt","stale_selector","unqualified_method","caller_method_execution"]'::jsonb,
      '{"pass":"STEP_PASS_WITH_EVIDENCE","blocked":"BLOCKED_STEP_NOT_CLEAN","return":"RETURN_TO_ROUTER"}'::jsonb,
      'CANDIDATO_READ_ONLY',v_actor),
     (v_op,'JUDGE-PE10-V02-EVOLUTION-DECISION',
-     'skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql',NULL,
+     'skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql',
+     '7eb8ad1a5549c63a8f5c6de43b18cc966c9f62085313aaa57248a39eb3dfdeac',
      '["verified_assessment","clean_method_selection","typed_decision_mode","frozen_route_consistency"]'::jsonb,
      '["unverified_source","unrecorded_method_selection","route_mismatch","unsupported_decision"]'::jsonb,
      '{"pass":"STEP_PASS_WITH_EVIDENCE","blocked":"BLOCKED_STEP_NOT_CLEAN","return":"RETURN_TO_ROUTER"}'::jsonb,
@@ -134,7 +147,8 @@ BEGIN
          AND step_id IN ('method_selection','evolution_decision'))<>2
      OR (SELECT count(*) FROM public.lf_operation_judges WHERE operation_code=v_op
          AND judge_code IN ('JUDGE-PE10-V02-METHOD-SELECTION','JUDGE-PE10-V02-EVOLUTION-DECISION')
-         AND status='CANDIDATO_READ_ONLY')<>2
+         AND status='CANDIDATO_READ_ONLY'
+         AND judge_sha='7eb8ad1a5549c63a8f5c6de43b18cc966c9f62085313aaa57248a39eb3dfdeac')<>2
      OR (SELECT count(*) FROM public.lf_operation_step_contracts WHERE operation_code=v_op
          AND step_id IN ('method_selection','evolution_decision') AND status='CANDIDATE')<>2
      OR (SELECT count(*) FROM public.lf_operation_step_judge_bindings WHERE operation_code=v_op
