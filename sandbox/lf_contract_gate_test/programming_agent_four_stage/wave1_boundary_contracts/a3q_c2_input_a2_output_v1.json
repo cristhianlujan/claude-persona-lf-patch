@@ -1,0 +1,70 @@
+{
+  "schema_version": "A2_CLASSIFICATION_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "classification": {
+    "target_granularity": "Capacidad funcional de comunicación y comprensión del ahorro en la negociación de deuda, antes de aceptar una oferta. Pantalla, canal, segmento y alcance exactos no identificados.",
+    "change_type": "Cambio funcional orientado a claridad de información económica previa a la aceptación de una oferta. No se determina si corresponde modificar una capacidad existente o introducir una nueva.",
+    "depth": "L3",
+    "authority_state": "UNKNOWN",
+    "implementation_state": "UNKNOWN"
+  },
+  "signals": {
+    "materiality_level": "HIGH",
+    "scope_bounded": "UNKNOWN",
+    "authority_state": "UNKNOWN",
+    "reversibility_state": "UNKNOWN",
+    "currentness_decision": "UNKNOWN_FAIL_CLOSED",
+    "material_contradiction": false,
+    "known_cross_scope_impact": "UNKNOWN",
+    "unresolved_material_signal_count": 5,
+    "required_specialist_count": 0
+  },
+  "signal_sources": [
+    {
+      "signal": "materiality_level",
+      "source_ref": "ambiguity:SAVINGS_MEANING_AND_BASIS"
+    },
+    {
+      "signal": "scope_bounded",
+      "source_ref": "ambiguity:CLIENT_CHANNEL_AND_SCOPE"
+    },
+    {
+      "signal": "authority_state",
+      "source_ref": "NO_SOURCE_SUPPLIED"
+    },
+    {
+      "signal": "reversibility_state",
+      "source_ref": "NO_SOURCE_SUPPLIED"
+    },
+    {
+      "signal": "currentness_decision",
+      "source_ref": "NO_SOURCE_SUPPLIED"
+    },
+    {
+      "signal": "material_contradiction",
+      "source_ref": "supabase://public.lf_eventos/20843"
+    },
+    {
+      "signal": "known_cross_scope_impact",
+      "source_ref": "ambiguity:CLIENT_CHANNEL_AND_SCOPE"
+    },
+    {
+      "signal": "unresolved_material_signal_count",
+      "source_ref": "supabase://public.lf_eventos/20843"
+    },
+    {
+      "signal": "required_specialist_count",
+      "source_ref": "NO_SOURCE_SUPPLIED"
+    }
+  ],
+  "depth_reason": "L3 por materialidad HIGH: la solicitud afecta la comprensión de importes económicos antes de aceptar una oferta de negociación de deuda. La definición del ahorro y su base de comparación son materialmente desconocidas, al igual que el significado de la cuota, el límite entre oferta y aceptación, el alcance del piloto y el criterio de comprensión. Existen cinco ambigüedades explícitamente clasificadas MATERIAL y OPEN. No se observa una contradicción factual explícita, pero tampoco existe evidencia suficiente para determinar alcance entre procesos, autoridad vigente, implementación existente, reversibilidad o actualidad de las fuentes. La cantidad 0 de especialistas refleja únicamente que ninguno está identificado expresamente en el contexto, no que se haya demostrado que no son necesarios. La regla de precedencia exige L3 por materialidad HIGH, independientemente de las demás señales. No se infiere una solución técnica.",
+  "evidence_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2.input.input_literal",
+    "supabase://public.lf_eventos/20843",
+    "ambiguity:SAVINGS_MEANING_AND_BASIS",
+    "ambiguity:OFFER_AND_ACCEPTANCE_BOUNDARY",
+    "ambiguity:CLIENT_CHANNEL_AND_SCOPE",
+    "ambiguity:INSTALLMENT_MEANING",
+    "ambiguity:COMPREHENSION_CRITERION"
+  ]
+}

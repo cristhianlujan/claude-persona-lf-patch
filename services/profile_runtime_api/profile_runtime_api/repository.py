@@ -167,6 +167,35 @@ class RepositoryBindings:
                 or projection["max_chars"] < 256
             ):
                 raise RepositoryError("PROFILE_RUNTIME_MODEL_CONTEXT_INVALID", profile_slug)
+            conditional = model_context.get("conditional_sections", [])
+            if not isinstance(conditional, list):
+                raise RepositoryError("PROFILE_RUNTIME_CONDITIONAL_SECTIONS_INVALID", profile_slug)
+            seen_refs: set[str] = set()
+            for rule in conditional:
+                if not isinstance(rule, dict) or set(rule) != {"when_source_ref", "include_sections"}:
+                    raise RepositoryError("PROFILE_RUNTIME_CONDITIONAL_SECTIONS_INVALID", profile_slug)
+                source_ref = rule["when_source_ref"]
+                sections = rule["include_sections"]
+                if (
+                    not isinstance(source_ref, str)
+                    or not source_ref.startswith(f"profiles/{profile_slug}/contracts/")
+                    or not source_ref.endswith(".md")
+                    or ".." in PurePosixPath(source_ref).parts
+                    or source_ref in seen_refs
+                    or not isinstance(sections, list)
+                    or not sections
+                ):
+                    raise RepositoryError("PROFILE_RUNTIME_CONDITIONAL_SECTIONS_INVALID", profile_slug)
+                if (
+                    any(not isinstance(name, str) or not name.strip() for name in sections)
+                    or len(sections) != len(set(sections))
+                ):
+                    raise RepositoryError("PROFILE_RUNTIME_CONDITIONAL_SECTIONS_INVALID", profile_slug)
+                candidate_path = (self.repo_root / source_ref).resolve()
+                self._within(candidate_path, profile_root, "PROFILE_RUNTIME_CONDITIONAL_SOURCE_ESCAPE")
+                if not candidate_path.is_file():
+                    raise RepositoryError("PROFILE_RUNTIME_CONDITIONAL_SOURCE_MISSING", source_ref)
+                seen_refs.add(source_ref)
         if execution_partition is not None:
             classes = execution_partition.get("field_classes") if isinstance(execution_partition, dict) else None
             materialization = execution_partition.get("deterministic_materialization") if isinstance(execution_partition, dict) else None
@@ -278,13 +307,19 @@ class RepositoryBindings:
             if extras:
                 raise RepositoryError("PROFILE_RUNTIME_ADDITIONAL_SOURCE_FORBIDDEN", ",".join(extras))
         projection = context_contract["source_projection"]
+        selected_sections = list(projection["include_sections"])
+        for rule in context_contract.get("conditional_sections", []):
+            if rule["when_source_ref"] in supplied_refs:
+                for name in rule["include_sections"]:
+                    if name not in selected_sections:
+                        selected_sections.append(name)
         out: list[dict[str, str]] = []
         total_chars = 0
         for item in canonical_sources:
             content = item["content"]
             if item["ref"].endswith("/SKILL.md"):
                 content = self._markdown_section_projection(
-                    content, list(projection["include_sections"])
+                    content, selected_sections
                 )
             total_chars += len(content)
             if total_chars > int(projection["max_chars"]):

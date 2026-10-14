@@ -126,7 +126,7 @@ def main() -> int:
     mig = [r for r in rows if str(r.get("filename") or "").startswith("supabase/migrations/")]
     if len(rows)!=len(mig):
         raise RuntimeError("RECONCILE_MIXED_SCOPE_FORBIDDEN")
-    if not 1 <= len(mig) <= 10:
+    if not 1 <= len(mig) <= 29:
         raise RuntimeError(f"RECONCILE_MIGRATION_COUNT_INVALID:{len(mig)}")
     url = args.db_url or db_url()
     validate_router(url,args.router_execution_id,args.repository,args.base_sha,args.head_sha)

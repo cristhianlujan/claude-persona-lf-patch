@@ -228,7 +228,7 @@ def _fallback_apply(
     try:
         proc = _run(["psql", db_url, "-X", "-v", "ON_ERROR_STOP=1", "-f", str(tmp)], cwd=project_root)
         if proc.returncode != 0:
-            detail = proc.stderr.strip().splitlines()[-1] if proc.stderr.strip() else f"rc={proc.returncode}"
+            detail = "\\n".join(proc.stderr.strip().splitlines()[-18:]) if proc.stderr.strip() else f"rc={proc.returncode}"
             raise RuntimeError(f"EXACT_APPLY_FALLBACK_FAILED:{detail}")
     finally:
         tmp.unlink(missing_ok=True)
