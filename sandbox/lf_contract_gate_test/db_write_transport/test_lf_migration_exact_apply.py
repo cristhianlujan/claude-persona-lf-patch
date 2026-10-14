@@ -30,6 +30,8 @@ def main() -> int:
     assert module.postgres_sqlstate("ERROR: PZ015: controlled failure") == "PZ015"
     assert module.postgres_sqlstate("EXACT_APPLY_PRIMARY_SQL_ERROR:PZ015: controlled failure") == "PZ015"
     assert module.postgres_sqlstate("network unreachable") is None
+    assert module._transport_command(["supabase", "db", "push", "--dry-run"])
+    assert not module._transport_command(["supabase", "db", "push", "--help"])
     checks += 1
 
     source = "begin;\nselect 1;\ncommit;\n"
