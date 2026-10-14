@@ -99,3 +99,59 @@ def make_trusted_profile_readback(
         }
 
     return readback
+
+
+# Queries use bind parameters provided by the trusted DB client.
+# These are read-only projections of existing Supabase authorities.
+METHOD_CURRENT_SQL = """
+SELECT r.capability_code, r.status AS registry_status,
+       v.version, v.release_state, v.manifest_sha256,
+       c.version AS current_version,
+       c.manifest_sha256 AS current_manifest_sha256, v.manifest
+FROM public.lf_capability_registry r
+JOIN public.lf_capability_version_registry v
+  ON v.capability_code = r.capability_code
+JOIN public.lf_capability_current c
+  ON c.capability_code = v.capability_code AND c.version = v.version
+WHERE r.capability_code = %s
+"""
+
+PROFILE_ASSESSMENT_RECEIPT_SQL = """
+SELECT l.receipt_id::text AS receipt_id,
+       l.subject_type, l.subject_ref, l.subject_sha256,
+       l.verification_state, l.resolver_id,
+       rr.active AS resolver_active,
+       rr.trust_level AS resolver_trust_level
+FROM private.lf_evidence_ledger_v1 l
+JOIN private.lf_evidence_resolver_registry_v1 rr
+  ON rr.resolver_id = l.resolver_id
+WHERE l.subject_type = 'PROFILE_ASSESSMENT'
+  AND l.subject_ref = %s
+  AND l.subject_sha256 = %s
+  AND l.verification_state = 'VERIFIED'
+ORDER BY l.verified_at DESC
+LIMIT 1
+"""
+
+
+def make_postgres_trusted_readback(
+    fetch_rows: Callable[[str, tuple[str, ...]], list[dict[str, Any]]],
+) -> Callable[[str, str, str], dict[str, Any]]:
+    """Wire to an already authorized read-only Supabase SQL transport.
+
+    The transport executes parameterized SELECTs and must not expose writable
+    SQL; it owns authentication, identity and audit. No credentials here.
+    """
+    if not callable(fetch_rows):
+        raise ValueError("READ_ONLY_DB_TRANSPORT_INVALID")
+
+    def one(query: str, params: tuple[str, ...]) -> dict[str, Any] | None:
+        rows = fetch_rows(query, params)
+        if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
+            return None
+        return rows[0]
+
+    return make_trusted_profile_readback(
+        lambda code: one(METHOD_CURRENT_SQL, (code,)),
+        lambda slug, digest: one(PROFILE_ASSESSMENT_RECEIPT_SQL, (slug, digest)),
+    )
