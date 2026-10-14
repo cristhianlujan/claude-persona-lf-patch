@@ -1,0 +1,9 @@
+{
+  "schema": "PE10_C3_SEQUENTIAL_STAGE_V2",
+  "case_id": "PESC3-V2-212",
+  "stage": 3,
+  "turn_id": "PESC3-V2-212-T3",
+  "input": "Llega un mandato firmado y validado por Y, limitado exclusivamente a la obligación D1 y a la oferta OX2 v2 con condiciones revisadas. NO autoriza OX1 v1 ni otras obligaciones. La oferta OX2 v2 tiene elegibilidad y vigencia verificadas. Decide qué puede reactivarse exactamente, qué sigue bloqueado, cómo conservar trazabilidad X original/Y actual, qué sucede con D2 y cómo probar que una autorización limitada no abre otras ofertas.",
+  "observed_new_evidence": "bounded_approval_only_ox2v2",
+  "prior_turn_required": true
+}
