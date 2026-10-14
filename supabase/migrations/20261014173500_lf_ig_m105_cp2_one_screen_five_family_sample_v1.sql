@@ -77,15 +77,15 @@ FROM aggregated a;
 
 DO $contract$
 DECLARE m jsonb; cp text;
-DECLARE cp2_query text :=
+cp2_query text :=
  'SELECT schema_version,sample_screen_id,sample_run_id,sampled_screen_count,sample_family_count,valid_family_count,semantic_observation_count,source_current,stale_negative_verified,sample_verdict,authorizes_production,sample_families FROM programacion.v_ig_m105_cp2_sample_readback_v1';
-DECLARE m7_query text :=
+m7_query text :=
  'SELECT CASE WHEN sample_verdict=''PASS_CP2_MUESTRA'' AND valid_family_count=5 AND jsonb_array_length(sample_families)=5 THEN ''PASS'' ELSE ''FAIL'' END AS verdict,sample_run_id,sample_families,semantic_observation_count FROM programacion.v_ig_m105_cp2_sample_readback_v1';
-DECLARE m8_query text :=
+m8_query text :=
  'SELECT CASE WHEN sample_verdict=''PASS_CP2_MUESTRA'' AND validator_elapsed_ms IS NOT NULL AND validator_elapsed_ms <= 150000 AND EXISTS (SELECT 1 FROM programacion.fn_ig_performance_timing_metrics_v1() t WHERE t.scope=''SUMMARY'' AND t.status=''PUBLISHED'' AND t.sample_count>0) THEN ''PASS'' ELSE ''FAIL'' END AS verdict,sample_run_id,validator_elapsed_ms,150000 AS budget_ms FROM programacion.v_ig_m105_cp2_sample_readback_v1';
-DECLARE negative_query text :=
+negative_query text :=
  'SELECT CASE WHEN stale_negative_verified AND source_current AND sample_verdict=''PASS_CP2_MUESTRA'' THEN ''PASS'' ELSE ''FAIL'' END AS verdict,sample_run_id,stale_negative_verified FROM programacion.v_ig_m105_cp2_sample_readback_v1';
-DECLARE terminal_query text :=
+terminal_query text :=
  'SELECT CASE WHEN s.sample_verdict=''PASS_CP2_MUESTRA'' AND (SELECT count(*) FROM programacion.engineering_work_checkpoints c WHERE c.work_item_id=477 AND c.checkpoint_code IN (''NEW_RUNS_VNEXT'',''SUITE_M7_GREEN'',''PERF_M8_GREEN'',''NEG_STALE_RUN'') AND c.status=''DONE'')=4 THEN ''PASS'' ELSE ''FAIL'' END AS verdict,s.sample_run_id,s.sample_family_count,s.valid_family_count,s.sample_verdict,s.authorizes_production FROM programacion.v_ig_m105_cp2_sample_readback_v1 s';
 BEGIN
  SELECT unit_metadata INTO STRICT m FROM programacion.engineering_plan_units
