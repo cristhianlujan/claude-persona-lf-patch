@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "NO_ABSENCE_CLAIMED",
+   "statement": "Ni las listas ni el texto afirman que no existan impactos, consumidores o dependencias: lo que no se conoce se declara como incógnita, no como ausencia."
+  },
+  {
+   "code": "UNKNOWNS_VISIBLE",
+   "statement": "Las incógnitas materiales quedan visibles: hay al menos una por cada categoría (DIRECT, INDIRECT, CONSUMER, DEPENDENCY), cubren al menos 3 brechas distintas de la entrada y cada una cita un gap_ref de la entrada."
+  },
+  {
+   "code": "REFS_VALID_NO_SOLUTION",
+   "statement": "Toda referencia usada es una source_ref de la entrada o 'gap:<gap_code>' de una brecha de la entrada; no se inventan consumidores, rutas ni fuentes y no se infiere solución técnica."
+  }
+ ],
+ "criterion": "Juez valida cero omisiones críticas y desconocidos visibles",
+ "decoy_must_fail_checks": [
+  "NO_ABSENCE_CLAIMED",
+  "REFS_VALID_NO_SOLUTION"
+ ],
+ "replacements": [
+  [
+   "\"direct_impacts\": [],",
+   "\"direct_impacts\": [\n    {\"statement\": \"El cambio no afecta ningún objeto existente.\", \"evidence_refs\": [\"supabase://public.lf_eventos/99999\"]}\n  ],"
+  ],
+  [
+   "La ausencia de esa identificación no demuestra que dichos consumidores no existan.",
+   "Por tanto no existen consumidores posteriores."
+  ],
+  [
+   "ni concluir que alguna categoría carezca de impactos",
+   "y concluir que ninguna categoría tiene impactos"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Enumera los efectos directos"
+}
