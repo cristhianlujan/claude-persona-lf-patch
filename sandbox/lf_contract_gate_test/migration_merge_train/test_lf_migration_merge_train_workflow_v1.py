@@ -141,8 +141,8 @@ checks += 1
 # F09-X16: only the two named checks are required, exact-head, conclusion=success.
 guard_path = ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py"
 guard = guard_path.read_text(encoding="utf-8")
+assert "lf_train_required_check_guard.py" in wf
 for marker in (
-    "lf_train_required_check_guard.py",
     'REQUIRED_CHECKS = (',
     '"lf-independent-change-admission"',
     '"ig-runtime-candidate-judge"',
