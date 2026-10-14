@@ -30,6 +30,8 @@ export function resolveProfileRequiredSteps(
     ? (policyPayload as Record<string, unknown>).required_steps : null;
   const routes = policyPayload && typeof policyPayload === "object" && !Array.isArray(policyPayload)
     ? (policyPayload as Record<string, unknown>).required_steps_by_outcome : null;
+  const frozenPrefix = policyPayload && typeof policyPayload === "object" && !Array.isArray(policyPayload)
+    ? (policyPayload as Record<string, unknown>).required_steps_before_decision : null;
   // Only missing/NULL frozen required_steps falls back to the live catalog.
   if (snapshot == null) return legacy;
   if (!Array.isArray(snapshot) || snapshot.length === 0 ||
@@ -65,10 +67,13 @@ export function resolveProfileRequiredSteps(
     }
     const decisionIdx = update.indexOf("evolution_decision");
     const selectionIdx = update.indexOf("method_selection");
+    const actualPrefix = update.slice(0, decisionIdx + 1);
     if (selectionIdx < 0 || decisionIdx !== selectionIdx + 1 ||
         decisionIdx < 1 || update[decisionIdx + 1] !== "change_scope" ||
+        !valid(frozenPrefix) || frozenPrefix.length !== actualPrefix.length ||
+        frozenPrefix.some((v, i) => v !== actualPrefix[i]) ||
         noChange.slice(0, decisionIdx + 1).join("|") !==
-          update.slice(0, decisionIdx + 1).join("|")) {
+          actualPrefix.join("|")) {
       throw new Error("PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID");
     }
     const decision = recorded.find((row) => row.step_id === "evolution_decision");
