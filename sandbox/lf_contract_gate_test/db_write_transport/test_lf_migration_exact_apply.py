@@ -5,6 +5,7 @@ import importlib.util
 import os
 from pathlib import Path
 import sys
+import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -37,6 +38,82 @@ def main() -> int:
     assert not module.fallback_allowed("ERROR:  42501: permission denied", allow_fallback=True)
     assert not module.fallback_allowed("ERROR: pipeline EKB writer failed", allow_fallback=True)
     assert not module.fallback_allowed("connection refused", allow_fallback=False)
+    assert module.fallback_allowed("DRY_RUN_FAILED:exit_code=1:Remote migration history mismatch", allow_fallback=True)
+    assert not module.fallback_allowed("DRY_RUN_FAILED:ERROR:  42501: denied", allow_fallback=True)
+    assert module.fallback_allowed("could not connect to server", allow_fallback=True)
+    checks += 1
+    noisy = "DRY RUN: migrations will *not* be pushed\nConnecting to remote database...\nSkipping migration 20261014174311_x.sql (file name must match pattern)\nERROR: Remote migration version mismatch"
+    clean = module.sanitize_dry_run_output(noisy)
+    assert "Skipping migration" not in clean and "DRY RUN:" not in clean and "Connecting to remote" not in clean
+    assert "ERROR: Remote migration version mismatch" in clean
+    assert module.sanitize_dry_run_output("x" * 40, limit=12).endswith("x" * 11)
+    checks += 1
+
+    version = "20261014174311"
+    name = "probe_v1"
+    decision = SimpleNamespace(executor="SUPABASE_CLI_DB_PUSH_LINKED",
+                               fallback_executor="SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML",
+                               migration_version=version, migration_name=name)
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        migration = root / f"{version}_{name}.sql"
+        migration.write_text("select 1;", encoding="utf-8")
+        base = "00000000000000"
+        # DRY_RUN_FAILED with an absent ledger proceeds to the exact fallback.
+        with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
+             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
+             patch.object(module, "read_ledger_max", side_effect=[base, base]), \
+             patch.object(module, "_primary_cli", return_value=(False, "DRY_RUN_FAILED:exit_code=1:Remote migration mismatch", 1)), \
+             patch.object(module, "_fallback_apply") as fallback:
+            result = module.apply_exact(project_root=root, migration_path=migration,
+                                        db_url="postgres://example", source_blob="a" * 40,
+                                        allow_fallback=True)
+            assert result.fallback_used and result.code == "FALLBACK_APPLIED_EXACT"
+            fallback.assert_called_once()
+        checks += 1
+
+        # A version already in the ledger is never replayed.
+        with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
+             patch.object(module, "read_ledger", return_value=(version, name, "writer")), \
+             patch.object(module, "_primary_cli") as primary, \
+             patch.object(module, "_fallback_apply") as fallback:
+            result = module.apply_exact(project_root=root, migration_path=migration,
+                                        db_url="postgres://example", source_blob="a" * 40,
+                                        allow_fallback=True)
+            assert result.code == "ALREADY_APPLIED_EXACT"
+            primary.assert_not_called()
+            fallback.assert_not_called()
+        checks += 1
+
+        # A Postgres ERROR during primary SQL execution blocks fallback.
+        with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
+             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None)]), \
+             patch.object(module, "read_ledger_max", return_value=base), \
+             patch.object(module, "_primary_cli", return_value=(False, "ERROR:  42501: denied", None)), \
+             patch.object(module, "_fallback_apply") as fallback:
+            try:
+                module.apply_exact(project_root=root, migration_path=migration,
+                                   db_url="postgres://example", source_blob="a" * 40,
+                                   allow_fallback=True)
+            except RuntimeError as exc:
+                assert "PRIMARY_FAILED_NO_FALLBACK" in str(exc)
+            else:
+                raise AssertionError("Postgres ERROR unexpectedly fell back")
+            fallback.assert_not_called()
+        checks += 1
+
+        # An explicitly listed connection failure still permits fallback.
+        with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
+             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
+             patch.object(module, "read_ledger_max", side_effect=[base, base]), \
+             patch.object(module, "_primary_cli", return_value=(False, "could not connect to server", None)), \
+             patch.object(module, "_fallback_apply") as fallback:
+            result = module.apply_exact(project_root=root, migration_path=migration,
+                                        db_url="postgres://example", source_blob="a" * 40,
+                                        allow_fallback=True)
+            assert result.fallback_used
+            fallback.assert_called_once()
+        checks += 1
     with patch.object(module, "_run", return_value=SimpleNamespace(returncode=0, stdout="ok", stderr="")) as run:
         assert module._psql("postgres://example", "select 1", cwd=Path(".").resolve()) == "ok"
         assert "VERBOSITY=verbose" in run.call_args.args[0]
@@ -93,7 +170,7 @@ def main() -> int:
     checks += 1
 
     checks += 1
-    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/8")
+    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/14")
     return 0
 
 
