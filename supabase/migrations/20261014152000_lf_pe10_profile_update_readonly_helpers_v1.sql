@@ -104,7 +104,7 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_update_verified_receipt_v1(text,text
 --     policy and both consumer/recorder effective-required-step logic;
 -- (6) retain NO_CHANGE without write, no autonomous GPT Native claims.
 
--- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 93f8db91b137520d783d23a4fdfe3b7789c7c2c0
+-- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 50ac250b11ffb61c7af91a50ab1271281402278a
 -- Profile Updater v0.2 route resolver, CANDIDATE SOURCE ONLY (not deployed).
 -- This is a read-only derivation; no editing execution manifest or policies.
 -- MUST be wired into BOTH the existing Profile step recorder and the Edge
@@ -211,11 +211,11 @@ BEGIN
     SELECT * INTO decision_row
       FROM public.lf_operation_execution_steps
      WHERE execution_id=p_execution_id AND step_id='evolution_decision';
-    IF NOT FOUND OR decision_row.status <> 'STEP_PASS_WITH_EVIDENCE' THEN
+    IF NOT FOUND OR decision_row.status IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
         RETURN jsonb_build_object('outcome','AWAITING_EVOLUTION_DECISION','effective_steps',prefix);
     END IF;
-    IF decision_row.evidence_payload->>'recorded_by_rpc' <> 'lf_record_profile_operation_step_v1'
-       OR decision_row.evidence_payload->>'mini_judge_result' <> 'STEP_PASS_WITH_EVIDENCE' THEN
+    IF decision_row.evidence_payload->>'recorded_by_rpc' IS DISTINCT FROM 'lf_record_profile_operation_step_v1'
+       OR decision_row.evidence_payload->>'mini_judge_result' IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
         RETURN jsonb_build_object('outcome','BLOCKED','code','EVOLUTION_DECISION_UNVERIFIED_RECORDER');
     END IF;
     outcome := decision_row.evidence_payload->>'decision';
@@ -242,7 +242,7 @@ $route$;
 -- malformed; stale/forged decision; historical 22 unmodified;
 -- missing method qualification/assessment fail-closed.
 
--- SOURCE skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql BLOB a9fc5de8af0169252595ce68a7b0963a1a5412a7
+-- SOURCE skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql BLOB 6565ce15ea00297dc54c80014bbcc3723d7dc646
 -- Candidate-only; designed for invocation INSIDE the existing
 -- public.lf_record_profile_operation_step_v1 substantive validation path.
 -- Never directly install/GRANT as a standalone UPDATE/NO_CHANGE authority.
@@ -340,9 +340,9 @@ BEGIN
 
   SELECT * INTO recorded FROM public.lf_operation_execution_steps
    WHERE execution_id=p_execution_id AND step_id='method_selection';
-  IF NOT FOUND OR recorded.status <> 'STEP_PASS_WITH_EVIDENCE'
-     OR recorded.evidence_payload->>'recorded_by_rpc'<>'lf_record_profile_operation_step_v1'
-     OR recorded.evidence_payload->>'mini_judge_result'<>'STEP_PASS_WITH_EVIDENCE'
+  IF NOT FOUND OR recorded.status IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE'
+     OR recorded.evidence_payload->>'recorded_by_rpc' IS DISTINCT FROM 'lf_record_profile_operation_step_v1'
+     OR recorded.evidence_payload->>'mini_judge_result' IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE'
   THEN RETURN 'EVOLUTION_SELECTION_STEP_NOT_CLEAN'; END IF;
   IF recorded.evidence_payload->>'profile_assessment_receipt_id'
      IS DISTINCT FROM p_payload->>'profile_assessment_receipt_id'
