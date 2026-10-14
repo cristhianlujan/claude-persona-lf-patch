@@ -68,9 +68,25 @@ BEGIN
   SELECT count(*) INTO v_correct FROM public.lf_operation_execution e
    WHERE e.operation_code='ACTUALIZACION_PERFIL_LF' AND e.status='IN_PROGRESS'
      AND e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}' IS NOT NULL
-     AND (public.lf_profile_update_effective_route_v1(e.execution_id)->>'outcome')='LEGACY_FROZEN';
+     AND (public.lf_profile_update_effective_route_v1(e.execution_id)->>'outcome')='LEGACY_FROZEN'
+     AND (public.lf_profile_update_effective_route_v1(e.execution_id)->'effective_steps')
+           = e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}';
   IF v_correct<>v_expected THEN
     RAISE EXCEPTION 'PE10_ROLLBACK_LEGACY_ROUTE_DRIFT %/%',v_correct,v_expected;
+  END IF;
+  -- Historical 14-step snapshots (without post_merge_reconcile) must be
+  -- preserved exactly; the current 15-step catalogue must not be imposed.
+  IF EXISTS(
+      SELECT 1 FROM public.lf_operation_execution e
+      WHERE e.operation_code='ACTUALIZACION_PERFIL_LF'
+        AND e.status='IN_PROGRESS'
+        AND jsonb_array_length(e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}')=14
+        AND (
+          public.lf_profile_update_effective_route_v1(e.execution_id)->'effective_steps'
+          IS DISTINCT FROM e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps}'
+        )
+    ) THEN
+    RAISE EXCEPTION 'PE10_ROLLBACK_14_STEP_HISTORICAL_DRIFT';
   END IF;
   IF NOT has_function_privilege('service_role',
         'public.lf_profile_update_verified_receipt_v1(text,text,text,text,text)','EXECUTE')
