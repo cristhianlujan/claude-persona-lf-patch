@@ -32,6 +32,7 @@ def freeze_event():
         "id": budget.EVENT_ID,
         "payload": {
             "acceptance_declared": False,
+            "occurred_at": "2026-10-14T23:09:31.769234Z",
             "frozen_caps": frozen,
             "acceptance_rule": {"sample_count": 10, "min_cold_samples": 2},
         },
@@ -162,6 +163,31 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
                             status="BLOCKED")
         report = budget.analyze(freeze_event(), [prior, c3, failed], [])
         self.assertEqual(report["evaluated_executions"], [])
+
+    def test_cutoff_comes_from_event_and_excludes_exact_fractional_boundary(self):
+        event = freeze_event()
+        cutoff = datetime.fromisoformat(event["payload"]["occurred_at"].replace("Z", "+00:00"))
+        prior_time = cutoff - timedelta(hours=1)
+        prior = execution("EXEC-DB-TRAIN-PR1-20261014220000-R1", prior_time, None)
+        prior["completed_at"] = prior_time
+        at_cutoff = execution("EXEC-DB-TRAIN-PR2-20261014230931-R2", cutoff, None)
+        after_cutoff = execution(
+            "EXEC-DB-TRAIN-PR3-20261014231451-R3",
+            cutoff + timedelta(minutes=5, seconds=20, microseconds=1), None,
+        )
+        report = budget.analyze(
+            event,
+            [prior, at_cutoff, after_cutoff],
+            steps_for(after_cutoff),
+        )
+        self.assertEqual(
+            report["cutoff_created_at_exclusive"], "2026-10-14T23:09:31.769234Z"
+        )
+        self.assertEqual(
+            [row["execution_id"] for row in report["evaluated_executions"]],
+            [after_cutoff["execution_id"]],
+        )
+        self.assertEqual(report["evaluated_executions"][0]["classification"], "hot")
 
     def test_wrong_freeze_event_fails_closed(self):
         event = freeze_event()
