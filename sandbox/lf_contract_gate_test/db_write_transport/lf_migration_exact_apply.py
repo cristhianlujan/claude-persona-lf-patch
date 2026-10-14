@@ -24,6 +24,12 @@ HERE = Path(__file__).resolve().parent
 TRANSPORT_PATH = HERE / "lf_db_write_transport.py"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 VERSION_TOKEN_RE = re.compile(r"(?<!\d)(20\d{12})(?!\d)")
+SQLSTATE_RE = re.compile(r"(?:SQLSTATE|SQL state)\s*[:=]?\s*([0-9A-Z]{5})|ERROR:\s*([0-9A-Z]{5})|EXACT_APPLY_PRIMARY_SQL_ERROR:([0-9A-Z]{5})", re.I)
+
+
+def postgres_sqlstate(message: str) -> str | None:
+    match = SQLSTATE_RE.search(message or "")
+    return next((part for part in (match.groups() if match else ()) if part), None)
 
 
 @dataclass(frozen=True)
@@ -325,6 +331,12 @@ def apply_exact(
         )
     if not allow_fallback:
         raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:{primary_detail}")
+    sqlstate = postgres_sqlstate(primary_detail)
+    if sqlstate:
+        # A server-side migration error is definitive. Replaying the same SQL
+        # through the fallback would hide the original attempt and double the
+        # measured failure path.
+        raise RuntimeError(f"EXACT_APPLY_PRIMARY_SQL_ERROR:{sqlstate}:{primary_detail}")
 
     _fallback_apply(
         project_root=project_root,
@@ -375,8 +387,7 @@ def main() -> int:
         )
     except Exception as exc:
         message = sanitize_message(exc, 512) or "EXACT_APPLY_FAILED"
-        sqlstate_match = re.search(r"(?:SQLSTATE|SQL state)\s*[:=]?\s*([0-9A-Z]{5})|\b([0-9A-Z]{5})\b", str(exc), re.I)
-        sqlstate = next((part for part in (sqlstate_match.groups() if sqlstate_match else ()) if part), None)
+        sqlstate = postgres_sqlstate(str(exc))
         code = str(exc).split(":", 1)[0][:96]
         print(json.dumps({"status": "FAILURE", "failure": {"code": code,
               "sqlstate": sqlstate or NOT_OBSERVED, "message": message,
