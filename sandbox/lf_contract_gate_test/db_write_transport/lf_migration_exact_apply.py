@@ -24,12 +24,51 @@ HERE = Path(__file__).resolve().parent
 TRANSPORT_PATH = HERE / "lf_db_write_transport.py"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 VERSION_TOKEN_RE = re.compile(r"(?<!\d)(20\d{12})(?!\d)")
-SQLSTATE_RE = re.compile(r"(?:SQLSTATE|SQL state)\s*[:=]?\s*([0-9A-Z]{5})|ERROR:\s*([0-9A-Z]{5})|EXACT_APPLY_PRIMARY_SQL_ERROR:([0-9A-Z]{5})", re.I)
+SQLSTATE_RE = re.compile(r"(?m)^ERROR:\s+([0-9A-Z]{5}):")
+POSTGRES_ERROR_RE = re.compile(r"(?m)(?:^|:)ERROR:")
+FALLBACK_TRANSPORT_PATTERNS = tuple(re.compile(pattern, re.I) for pattern in (
+    r"could not connect to server",
+    r"connection refused",
+    r"connection timed out",
+    r"timeout expired",
+    r"server closed the connection unexpectedly",
+    r"could not translate host name",
+    r"no route to host",
+    r"network is unreachable",
+))
 
 
 def postgres_sqlstate(message: str) -> str | None:
     match = SQLSTATE_RE.search(message or "")
-    return next((part for part in (match.groups() if match else ()) if part), None)
+    return match.group(1) if match else None
+
+
+def fallback_allowed(message: str, *, allow_fallback: bool) -> bool:
+    detail = message or ""
+    if not allow_fallback or POSTGRES_ERROR_RE.search(detail):
+        return False
+    # A failed dry-run is a preflight/CLI failure: Supabase has not executed SQL.
+    if detail.startswith("DRY_RUN_FAILED:"):
+        return True
+    return any(pattern.search(detail) for pattern in FALLBACK_TRANSPORT_PATTERNS)
+
+
+_KNOWN_DRY_RUN_NOISE = (
+    re.compile(r"^Skipping migration .*file name must match pattern.*$", re.I),
+    re.compile(r"^DRY RUN: migrations will \*not\* be pushed\.?$", re.I),
+    re.compile(r"^Connecting to remote database.*$", re.I),
+)
+
+
+def sanitize_dry_run_output(text: str, *, limit: int = 4096) -> str:
+    lines = [line.strip() for line in (text or "").splitlines() if line.strip()]
+    lines = [line for line in lines if not any(rule.match(line) for rule in _KNOWN_DRY_RUN_NOISE)]
+    important = [line for line in lines if re.search(r"error|remote migration|failed|exit code|return code", line, re.I)]
+    ordered = important + [line for line in lines if line not in important]
+    result = " | ".join(ordered) or "dry-run produced no diagnostic output"
+    if len(result) > limit:
+        result = "…" + result[-(limit - 1):]
+    return result
 
 
 def _transport_command(argv: list[str]) -> bool:
@@ -106,7 +145,7 @@ def build_db_url() -> str:
 
 def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
     proc = _run(
-        ["psql", db_url, "-X", "-v", "ON_ERROR_STOP=1", "-At", "-c", sql],
+        ["psql", db_url, "-X", "-v", "VERBOSITY=verbose", "-v", "ON_ERROR_STOP=1", "-At", "-c", sql],
         cwd=cwd,
     )
     if proc.returncode != 0:
@@ -175,11 +214,11 @@ def _primary_cli(
     project_root: Path,
     db_url: str,
     version: str,
-) -> tuple[bool, str]:
+) -> tuple[bool, str, int | None]:
     dry = _run(["supabase", "db", "push", "--db-url", db_url, "--dry-run"], cwd=project_root)
     dry_text = dry.stdout + "\n" + dry.stderr
     if dry.returncode != 0:
-        return False, f"DRY_RUN_FAILED:{dry_text.strip()}"
+        return False, f"DRY_RUN_FAILED:exit_code={dry.returncode}:{sanitize_dry_run_output(dry_text)}", dry.returncode
     pending = pending_versions_from_dry_run(dry_text)
     if pending != [version]:
         raise RuntimeError(f"EXACT_APPLY_PENDING_SET_MISMATCH:expected={[version]} observed={pending}")
@@ -192,7 +231,7 @@ def _primary_cli(
     else:
         input_text = "y\n"
     pushed = _run(argv, cwd=project_root, input_text=input_text)
-    return pushed.returncode == 0, (pushed.stdout + "\n" + pushed.stderr).strip()
+    return pushed.returncode == 0, (pushed.stdout + "\n" + pushed.stderr).strip(), None
 
 
 def _dollar_tag(source: str) -> str:
@@ -258,7 +297,7 @@ def _fallback_apply(
         handle.write(payload)
         tmp = Path(handle.name)
     try:
-        proc = _run(["psql", db_url, "-X", "-v", "ON_ERROR_STOP=1", "-f", str(tmp)], cwd=project_root)
+        proc = _run(["psql", db_url, "-X", "-v", "VERBOSITY=verbose", "-v", "ON_ERROR_STOP=1", "-f", str(tmp)], cwd=project_root)
         if proc.returncode != 0:
             detail = "\\n".join(proc.stderr.strip().splitlines()[-18:]) if proc.stderr.strip() else f"rc={proc.returncode}"
             raise RuntimeError(f"EXACT_APPLY_FALLBACK_FAILED:{detail}")
@@ -300,7 +339,7 @@ def apply_exact(
     if version <= floor_before:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
 
-    primary_ok, primary_detail = _primary_cli(
+    primary_ok, primary_detail, dry_run_exit_code = _primary_cli(
         project_root=project_root,
         db_url=db_url,
         version=version,
@@ -333,14 +372,9 @@ def apply_exact(
         raise RuntimeError(
             f"EXACT_APPLY_LEDGER_MOVED_AFTER_PRIMARY_FAILURE:before={floor_before} after={floor_after}"
         )
-    if not allow_fallback:
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:{primary_detail}")
-    sqlstate = postgres_sqlstate(primary_detail)
-    if sqlstate:
-        # A server-side migration error is definitive. Replaying the same SQL
-        # through the fallback would hide the original attempt and double the
-        # measured failure path.
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_SQL_ERROR:{sqlstate}:{primary_detail}")
+    if not fallback_allowed(primary_detail, allow_fallback=allow_fallback):
+        sqlstate = postgres_sqlstate(primary_detail) or NOT_OBSERVED
+        raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:sqlstate={sqlstate}:dry_run_exit_code={dry_run_exit_code}:{primary_detail}")
 
     _fallback_apply(
         project_root=project_root,
@@ -390,12 +424,18 @@ def main() -> int:
             allow_fallback=args.allow_fallback,
         )
     except Exception as exc:
-        message = sanitize_message(exc, 512) or "EXACT_APPLY_FAILED"
+        sanitized = sanitize_message(exc, 4096)
+        message = ("…" + sanitized[-511:]) if len(sanitized) > 512 else sanitized
+        message = message or "EXACT_APPLY_FAILED"
         sqlstate = postgres_sqlstate(str(exc))
         code = str(exc).split(":", 1)[0][:96]
-        print(json.dumps({"status": "FAILURE", "failure": {"code": code,
+        dry_run_match = re.search(r"dry_run_exit_code=(-?\d+)", str(exc))
+        failure = {"code": code,
               "sqlstate": sqlstate or NOT_OBSERVED, "message": message,
-              "evidence_locator": "github-run:exact-apply-receipt"},
+              "evidence_locator": "github-run:exact-apply-receipt"}
+        if dry_run_match:
+            failure["dry_run_exit_code"] = int(dry_run_match.group(1))
+        print(json.dumps({"status": "FAILURE", "failure": failure,
               "pase_f09_015_metrics": telemetry_snapshot()}, sort_keys=True, separators=(",", ":")))
         return 1
     output = asdict(receipt)
