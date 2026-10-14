@@ -11,7 +11,14 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from urllib.parse import quote
+
+from pase_f09_015_telemetry import Counters, NOT_OBSERVED, sanitize_message, utc_now
+
+_TELEMETRY_START = None
+_TELEMETRY_QUERIES = Counters()
+_TELEMETRY_TRANSPORT = Counters()
 
 HERE = Path(__file__).resolve().parent
 TRANSPORT_PATH = HERE / "lf_db_write_transport.py"
@@ -46,7 +53,8 @@ TRANSPORT = _load_transport()
 
 
 def _run(argv: list[str], *, cwd: Path, input_text: str | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    started = time.perf_counter_ns()
+    proc = subprocess.run(
         argv,
         cwd=cwd,
         text=True,
@@ -56,6 +64,20 @@ def _run(argv: list[str], *, cwd: Path, input_text: str | None = None) -> subpro
         check=False,
         timeout=300,
     )
+    elapsed = (time.perf_counter_ns() - started) / 1_000_000
+    size = sum(len(str(arg).encode("utf-8")) for arg in argv)
+    size += len((input_text or "").encode("utf-8"))
+    size += len(proc.stdout.encode("utf-8")) + len(proc.stderr.encode("utf-8"))
+    if argv and Path(argv[0]).name == "psql":
+        _TELEMETRY_QUERIES.add(elapsed, size)
+    else:
+        _TELEMETRY_TRANSPORT.add(elapsed, size)
+    return proc
+
+
+def telemetry_snapshot() -> dict:
+    return {"started_at": _TELEMETRY_START or NOT_OBSERVED, "finished_at": utc_now(),
+            "queries": _TELEMETRY_QUERIES.fields(), "transport": _TELEMETRY_TRANSPORT.fields()}
 
 
 def build_db_url() -> str:
@@ -323,6 +345,10 @@ def apply_exact(
 
 
 def main() -> int:
+    global _TELEMETRY_START, _TELEMETRY_QUERIES, _TELEMETRY_TRANSPORT
+    _TELEMETRY_START = utc_now()
+    _TELEMETRY_QUERIES = Counters()
+    _TELEMETRY_TRANSPORT = Counters()
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--migration-path", required=True)
@@ -339,14 +365,27 @@ def main() -> int:
         raise RuntimeError("EXACT_APPLY_MIGRATION_OUTSIDE_PROJECT_ROOT") from exc
     db_url = args.db_url or build_db_url()
 
-    receipt = apply_exact(
-        project_root=project_root,
-        migration_path=migration_path,
-        db_url=db_url,
-        source_blob=args.source_blob.lower(),
-        allow_fallback=args.allow_fallback,
-    )
-    print(json.dumps(asdict(receipt), sort_keys=True, separators=(",", ":")))
+    try:
+        receipt = apply_exact(
+            project_root=project_root,
+            migration_path=migration_path,
+            db_url=db_url,
+            source_blob=args.source_blob.lower(),
+            allow_fallback=args.allow_fallback,
+        )
+    except Exception as exc:
+        message = sanitize_message(exc, 512) or "EXACT_APPLY_FAILED"
+        sqlstate_match = re.search(r"(?:SQLSTATE|SQL state)\s*[:=]?\s*([0-9A-Z]{5})|\b([0-9A-Z]{5})\b", str(exc), re.I)
+        sqlstate = next((part for part in (sqlstate_match.groups() if sqlstate_match else ()) if part), None)
+        code = str(exc).split(":", 1)[0][:96]
+        print(json.dumps({"status": "FAILURE", "failure": {"code": code,
+              "sqlstate": sqlstate or NOT_OBSERVED, "message": message,
+              "evidence_locator": "github-run:exact-apply-receipt"},
+              "pase_f09_015_metrics": telemetry_snapshot()}, sort_keys=True, separators=(",", ":")))
+        return 1
+    output = asdict(receipt)
+    output["pase_f09_015_metrics"] = telemetry_snapshot()
+    print(json.dumps(output, sort_keys=True, separators=(",", ":")))
     return 0
 
 
