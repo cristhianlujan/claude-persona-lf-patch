@@ -7,6 +7,10 @@ import argparse, hashlib, json, subprocess
 from pathlib import Path
 
 HERE=Path(__file__).resolve().parent
+import sys
+RUNTIME_PATH=HERE.parents[3]/"sandbox/lf_contract_gate_test/profile_execution_runtime"
+if str(RUNTIME_PATH) not in sys.path:sys.path.insert(0,str(RUNTIME_PATH))
+from profile_runtime_runner import build_runtime_request
 MANIFEST=HERE/"shadow_manifest_v1.json"
 CASES=HERE/"cases_v1.json"
 
@@ -83,6 +87,7 @@ def compile_pair(repo:Path,revision:str,out:Path)->dict:
             (sub/(name+".md")).write_text(source,encoding="utf-8")
         records[slug]={
             "profile_ref":profile_ref,
+            "profile_code":p["profile_code"],
             "source_revision":revision,
             "target_section":p["target_section"],
             "baseline_full_sha256":sha(baseline),
@@ -100,12 +105,24 @@ def compile_pair(repo:Path,revision:str,out:Path)->dict:
         slug=case["profile_slug"]
         if slug not in records: raise ValueError("UNRESOLVED_PROFILE:"+slug)
         for arm in ("A_ORIGINAL","D_SHADOW"):
-            model_path=records[slug][("baseline" if arm=="A_ORIGINAL" else "candidate")+"_model_context_path"]
+            phase="baseline" if arm=="A_ORIGINAL" else "candidate"
+            model_path=records[slug][phase+"_model_context_path"]
+            full_path=out/slug/(phase+"_full.md")
+            request=build_runtime_request(
+                execution_id="PE10_C3_SOURCE_PREFLIGHT:"+case["case_id"]+":"+arm,
+                profile_code=records[slug]["profile_code"],profile_slug=slug,
+                profile_sources=[{"ref":records[slug]["profile_ref"],"content":full_path.read_text()}],
+                input_literal=case["prompt"])
+            if request["input_sha256"]!=sha(case["prompt"]):
+                raise ValueError("RUNTIME_REQUEST_INPUT_SHA_MISMATCH")
             pairings.append({
                 "case_id":case["case_id"],"arm":arm,"profile_slug":slug,
                 "prompt":case["prompt"],"input_sha256":sha(case["prompt"]),
                 "model_context_path":model_path,
                 "model_context_sha256":sha(Path(model_path).read_text()),
+                "runtime_binding_status":"REQUEST_PREVIEW_PASS",
+                "runtime_request_sha256":request["request_sha256"],
+                "runtime_profile_source_sha256":request["profile_source_sha256"],
                 "raw_response_status":"NOT_EXECUTED",
                 "model_provider_attested":False,
             })
