@@ -22,8 +22,10 @@ def ready():
     p = packet()
     p.update({
         "execute": True,
-        "r17": {"status": "PASS", "event_id": "R17-001",
-                "rollback_drill": "PASS", "idempotency": "PASS",
+        "r17": {"status": "READY_NO_PROVIDER_EFFECT", "event_id": "R17-001",
+                "offline_bundle_receipt": "BUNDLE-1",
+                "offline_rollback": "PASS", "offline_idempotency": "PASS",
+                "provider_deployment_executed": False,
                 "p50_ms": 10, "p90_ms": 20, "max_ms": 30},
         "operation_authority": "CURRENT_VERIFIED",
         "effect_guard": "RESERVED_EXACT",
@@ -64,6 +66,14 @@ class EdgeOperationGuardTests(unittest.TestCase):
     def test_no_r17_not_deployable(self):
         p = ready(); p["r17"]["status"] = "PENDING"
         self.assert_blocked(p, "R17_PREFLIGHT_NOT_PASSED")
+    def test_preflight_must_not_claim_provider_pass(self):
+        p = ready(); p["r17"]["status"] = "PASS"
+        self.assert_blocked(p, "R17_PREFLIGHT_NOT_PASSED")
+        p = ready(); p["r17"]["provider_deployment_executed"] = True
+        self.assert_blocked(p, "R17_PROVIDER_ALREADY_DEPLOYED")
+        p = ready(); p["r17"]["offline_idempotency"] = "PENDING"
+        self.assert_blocked(p, "R17_OFFLINE_IDEMPOTENCY_NOT_VERIFIED")
+
     def test_no_human_authorization(self):
         p = ready(); p["human_runtime_authorization"] = "PENDING"
         self.assert_blocked(p, "DEPLOY_NOT_AUTHORIZED")

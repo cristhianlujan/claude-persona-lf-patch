@@ -59,9 +59,13 @@ def validate_step(step: str, evidence: Mapping[str, Any], authority: Mapping[str
         check(authority.get("jwt_mode_preserved") is True, "JWT_MODE")
     elif step == "r17_preflight":
         check(_eq(evidence, "r17_event_id", authority.get("r17_event_id")) and bool(evidence.get("r17_event_id")), "EVENT")
-        check(_eq(evidence, "rollback_drill", "PASS") and authority.get("rollback_drill") == "PASS", "ROLLBACK_TEST")
-        check(_eq(evidence, "idempotency", "PASS") and authority.get("idempotency") == "PASS", "IDEMPOTENCY")
-        check(authority.get("r17_status") == "PASS", "STATUS")
+        # Only offline reversibility is possible before a provider deploy.
+        # Live provider rollback and replay must be verified after edge_deploy.
+        check(_eq(evidence, "offline_bundle_receipt", authority.get("offline_bundle_receipt")) and bool(evidence.get("offline_bundle_receipt")), "OFFLINE_RECEIPT")
+        check(_eq(evidence, "offline_rollback", "PASS") and authority.get("offline_rollback_verified") is True, "OFFLINE_ROLLBACK")
+        check(_eq(evidence, "offline_idempotency", "PASS") and authority.get("offline_idempotency_verified") is True, "OFFLINE_IDEMPOTENCY")
+        check(authority.get("r17_predeploy_state") == "READY_NO_PROVIDER_EFFECT"
+              and authority.get("provider_deployment_executed") is False, "PREFLIGHT_ONLY")
         measured = evidence.get("timing")
         check(isinstance(measured, Mapping), "TIMING_SHAPE")
         for field in ("p50_ms", "p90_ms", "max_ms"):
@@ -90,6 +94,14 @@ def validate_step(step: str, evidence: Mapping[str, Any], authority: Mapping[str
         check(_eq(evidence, "deployed_source", source_sha) and authority.get("deployed_source_sha") == source_sha, "SOURCE_MISMATCH")
         check(_eq(evidence, "oidc_probe", authority.get("oidc_probe_receipt")) and bool(evidence.get("oidc_probe")), "OIDC_PROBE")
         check(_eq(evidence, "rollback_state", authority.get("rollback_state")), "ROLLBACK_STATE")
+        check(_eq(evidence, "provider_rollback_receipt", authority.get("provider_rollback_receipt"))
+              and bool(evidence.get("provider_rollback_receipt"))
+              and authority.get("provider_rollback_drill_executed") is True, "PROVIDER_ROLLBACK")
+        check(_eq(evidence, "provider_idempotency_receipt", authority.get("provider_idempotency_receipt"))
+              and bool(evidence.get("provider_idempotency_receipt"))
+              and authority.get("provider_idempotency_drill_executed") is True, "PROVIDER_IDEMPOTENCY")
+        check(authority.get("provider_source_restored") is True
+              and authority.get("deployed_source_sha") == source_sha, "RESTORE_PARITY")
         check(authority.get("oidc_action_scope_mismatch") is False, "OIDC_SCOPE_MISMATCH")
         check(authority.get("deployed_verify_jwt") == authority.get("prior_verify_jwt"), "JWT_MODE_DRIFT")
         check(authority.get("cp2_jobs_started") == 0, "UNEXPECTED_CP2_RUNS")
