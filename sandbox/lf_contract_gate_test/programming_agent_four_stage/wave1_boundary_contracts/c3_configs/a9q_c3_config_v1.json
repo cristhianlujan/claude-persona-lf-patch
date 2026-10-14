@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "SNAPSHOT_MATCHES_INPUT",
+   "statement": "El snapshot conserva de la entrada: un scope por cada scope_id de A7, un frente por cada front de A7 con sus bloqueadores y su closure, y research_decision igual a la decisión de A8."
+  },
+  {
+   "code": "NO_READY_ALL_BLOCKED",
+   "statement": "Ningún scope ni el paquete es READY: todos los scopes están BLOCKED, REQUIRES_DECISION o NEED_MORE_EVIDENCE, package_readiness no es READY, candidate_only y no_ready_claim son true."
+  },
+  {
+   "code": "MATRIX_CONSISTENT",
+   "statement": "scope_front_matrix tiene una fila por cada par scope-frente de A7 con effect_on_scope='BLOCKS' y el estado y cierre del frente copiados de A7, coherente con scope_readiness."
+  }
+ ],
+ "criterion": "Revisor ciego verifica que el snapshot A9 es coherente con A7 y A8 de la entrada y que un snapshot con deriva se rechaza",
+ "decoy_must_fail_checks": [
+  "SNAPSHOT_MATCHES_INPUT",
+  "NO_READY_ALL_BLOCKED"
+ ],
+ "replacements": [
+  [
+   "\"research_decision\": \"REQUIRES_DECISION\"",
+   "\"research_decision\": \"STOP\""
+  ],
+  [
+   "\"scope_id\": \"A6-REQ-001\",\n      \"status\": \"BLOCKED\",",
+   "\"scope_id\": \"A6-REQ-001\",\n      \"status\": \"READY\","
+  ],
+  [
+   "\"package_readiness\": \"BLOCKED\"",
+   "\"package_readiness\": \"READY\""
+  ]
+ ],
+ "rules_end": "\n\nENTRADAS (JSON):",
+ "rules_start": "Arma un candidato PROGRAMMING_CONTEXT_SNAPSHOT_V1"
+}
