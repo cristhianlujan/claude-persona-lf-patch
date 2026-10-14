@@ -119,5 +119,60 @@ class CompositionRegression(unittest.TestCase):
         self.assertFalse(result["automatic_production_activation"])
 
 
+
+class AuthorityReadbackRegression(unittest.TestCase):
+    """Source-only test doubles; never a genuine Supabase authority receipt."""
+
+    def _plan(self, reader=None, mutate_data=None, mutate_registry=None):
+        proof = lambda status: {"status": status, "refs": ["fixture://evidence"]}
+        data = {"evidence": {"domain_task_uplift": proof("FAIL"),
+                             "architecture_fit": proof("PASS")},
+                "signals": {"risk": "HIGH", "complexity": "MEDIUM"}}
+        if mutate_data:
+            data.update(mutate_data)
+        registry = dict(REGISTRY)
+        if mutate_registry:
+            registry.update(mutate_registry)
+        with patch.object(planner, "evaluate_s26", return_value={"decision": "NO_UPDATE_REQUIRED", "blocking_codes": []}), patch.object(planner, "evaluate_learning_preflight", return_value={"status": "PASS"}):
+            return planner.build_evolution_plan(ROOT, "quality_pack", {}, data, CATALOG, POLICY, registry, trusted_source_readback=reader)
+
+    def test_missing_reader_fails_closed(self):
+        result = self._plan()
+        self.assertIn("METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED", result["blocking_codes"])
+        self.assertFalse(result["candidate_materialization_allowed"])
+        self.assertFalse(result["profile_source_write_allowed"])
+        self.assertEqual(result["source_readback"]["status"], "UNRESOLVED")
+
+    def test_caller_claims_do_not_grant_authority(self):
+        result = self._plan(mutate_data={"method_catalog_released": True}, mutate_registry={"provider_verified": True})
+        self.assertFalse(result["candidate_materialization_allowed"])
+
+    def test_stale_and_failing_readback_block(self):
+        stale = lambda slug, reg, assess: {"status": "VERIFIED_CURRENT",
+            "registry_sha256": reg, "assessment_sha256": "stale", "registry_version": "1.0.0",
+            "authority_ref": "fixture://not-real", "method_catalog_released": True,
+            "assessment_evidence_verified": True}
+        failure = lambda slug, reg, assess: (_ for _ in ()).throw(RuntimeError("offline"))
+        for reader in (stale, failure):
+            with self.subTest(reader=reader):
+                result = self._plan(reader=reader)
+                self.assertFalse(result["candidate_materialization_allowed"])
+                self.assertIn("METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED", result["blocking_codes"])
+
+    def test_matching_reader_enables_only_reversible_candidate(self):
+        # Synthetic trusted-reader test double; no claim about current Supabase.
+        def fake_reader(slug, reg, assess):
+            return {"status": "VERIFIED_CURRENT",
+                "registry_sha256": reg, "assessment_sha256": assess,
+                "registry_version": "test-fixture", "authority_ref": "fixture://trusted-mock",
+                "method_catalog_released": True, "assessment_evidence_verified": True}
+        result = self._plan(reader=fake_reader)
+        self.assertEqual(result["source_readback"]["status"], "VERIFIED_CURRENT")
+        self.assertTrue(result["candidate_materialization_allowed"])
+        self.assertFalse(result["profile_source_write_allowed"])
+        self.assertFalse(result["automatic_runtime_activation"])
+        self.assertFalse(result["automatic_production_activation"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
