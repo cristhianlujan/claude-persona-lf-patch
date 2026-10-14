@@ -104,7 +104,7 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_update_verified_receipt_v1(text,text
 --     policy and both consumer/recorder effective-required-step logic;
 -- (6) retain NO_CHANGE without write, no autonomous GPT Native claims.
 
--- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 50ac250b11ffb61c7af91a50ab1271281402278a
+-- SOURCE skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql BLOB 20000304d58456f46b9b811d1fa819bf6f674014
 -- Profile Updater v0.2 route resolver, CANDIDATE SOURCE ONLY (not deployed).
 -- This is a read-only derivation; no editing execution manifest or policies.
 -- MUST be wired into BOTH the existing Profile step recorder and the Edge
@@ -139,7 +139,10 @@ BEGIN
     IF frozen IS NULL THEN
         RETURN jsonb_build_object('outcome','LEGACY_NO_SNAPSHOT','effective_steps',null);
     END IF;
-    IF jsonb_typeof(frozen) <> 'array' OR jsonb_array_length(frozen)=0
+    IF coalesce(jsonb_typeof(frozen),'') <> 'array' THEN
+        RETURN jsonb_build_object('outcome','BLOCKED','code','FROZEN_REQUIRED_STEPS_INVALID');
+    END IF;
+    IF jsonb_array_length(frozen)=0
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements(frozen) a
           WHERE jsonb_typeof(a.value) <> 'string'
@@ -195,8 +198,13 @@ BEGIN
          WHERE jsonb_typeof(a.value) <> 'string'
        )
        OR no_change_steps ? 'github_write'
+       OR no_change_steps ? 'github_readback'
        OR no_change_steps ? 'pre_write_execution_binding_gate'
        OR no_change_steps ? 'post_merge_reconcile'
+       OR NOT (no_change_steps ?& ARRAY['deterministic_validation','semantic_judge','close','report_output'])
+       OR NOT (update_steps ?& ARRAY['change_scope','regression_plan','pre_write_execution_binding_gate',
+                                      'github_write','github_readback','deterministic_validation',
+                                      'semantic_judge','regression_after','post_merge_reconcile','close','report_output'])
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements_text(no_change_steps) b(value)
           WHERE NOT EXISTS (
