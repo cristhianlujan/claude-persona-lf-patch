@@ -1,0 +1,53 @@
+{
+  "schema": "PE10_C3_FREEFORM_TASK_CORPUS_V1",
+  "status": "FROZEN_BEFORE_REAL_RAW",
+  "purpose": "Evaluate final domain deliverables, not mode labels or multiple-choice answers",
+  "context_policy": "USE_EXACT_PROJECTED_SKILL_AND_IDENTICAL_TASK_LITERAL_PER_ARM",
+  "scoring_is_separate": true,
+  "production_activation": false,
+  "case_count": 6,
+  "cases": [
+    {
+      "case_id": "PESC3-101",
+      "profile_slug": "quality_pack",
+      "category": "SPECIALIZE",
+      "critical": true,
+      "prompt": "Revisa un handoff que pretende publicar una pantalla LF. El productor declara PASS, adjunta dos pruebas positivas y una captura de 2026-07. La versión actual del componente es de 2026-10. No existe prueba negativa ni comprobación de procedencia del screenshot. El contrato exige evidencia vigente, prueba negativa y aceptación semántica. Entrega un dictamen de calidad con afirmaciones trazables, fallos concretos, reparación mínima y prueba de cierre. No inventes recibos."
+    },
+    {
+      "case_id": "PESC3-102",
+      "profile_slug": "ui_architect",
+      "category": "SPECIALIZE",
+      "critical": false,
+      "prompt": "Debes corregir la pantalla EXISTENTE de aprobación de cargas. Ya existe un token canónico surface/primary y uno action/approve; un componente codifica #00AA44 en vez del token action/approve. El teléfono de soporte aparece literal aunque existe la configuración transversal support_contact. Requisitos originales: botón Aprobar, estado loading, denegación por rol, confirmación antes de impacto, vista estrecha y teclado. Mantén la acción y la fuente de verdad; define una remediación implementable con mapa de estados y pruebas que fallen si vuelve el hexadecimal o el teléfono en duro. No inventes un color alternativo."
+    },
+    {
+      "case_id": "PESC3-103",
+      "profile_slug": "product_director_lf",
+      "category": "SPECIALIZE",
+      "critical": true,
+      "prompt": "Decide entre dos estrategias de oferta LF sobre segmentos elegibles, conservando voluntariedad, exactitud y reclamaciones. Estrategia A: piloto reversible con conversión observada 12% y tasa de reclamos 0.5% en 1,000 sesiones; estrategia B: lanzamiento amplio propuesto con proyección de conversión 17%, reclamos 3%, sin experimento controlado. Guardrail aprobado: reclamos <=1%. No existe prueba causal de B. Objetivo es mayor recaudación neta sostenible, no solo clics. Entrega una decisión ejecutable, cálculo con datos suministrados, hipótesis, experimento medible, freno/rollback, aceptación y límite de afirmación. No afirmes que 17% es observado."
+    },
+    {
+      "case_id": "PESC3-104",
+      "profile_slug": "quality_pack",
+      "category": "ADAPT",
+      "critical": true,
+      "prompt": "En una revisión anterior un artefacto de descarga de cartera recibió decisión provisional REVIEWABLE porque cumplía tres pruebas positivas y la fuente Git estaba vigente. Hoy se adjunta nueva evidencia verificable: una prueba negativa falla, mostrando que un usuario sin permiso descarga campos restringidos. La prueba corresponde al mismo commit y ruta. Reevalúa la decisión ahora, señala qué hechos sobreviven, cuáles cambian y cuál es la corrección transversal mínima y la nueva verificación antes de cualquier PASS. No reescribas la evidencia positiva ni inventes despliegue."
+    },
+    {
+      "case_id": "PESC3-105",
+      "profile_slug": "product_director_lf",
+      "category": "ADAPT",
+      "critical": true,
+      "prompt": "Contexto inicial: la cartera mostraba a la entidad X como acreedor original y actual, y había una oferta propuesta pendiente de confirmación. Llega una carga verificada de fecha posterior que identifica a X solo como acreedor original y a Y como titular actual; la oferta de X no tiene prueba de aprobación por Y. Debes revisar una decisión previa que proponía mostrar la oferta a todos los clientes coincidentes. Decide el estado correcto, el alcance de bloqueo, qué información puede mostrarse y qué datos específicos deben confirmarse. No borres la distinción acreedor original / titular actual ni prometas descuentos."
+    },
+    {
+      "case_id": "PESC3-106",
+      "profile_slug": "ui_architect",
+      "category": "PRESERVATION",
+      "critical": true,
+      "prompt": "Se diseña una pantalla NUEVA de detalle de oferta, no se corrige ninguna pantalla existente. El contrato de producto exige mostrar acreedor original, titular actual, monto, moneda, vigencia condicionada, cuotas ofrecidas si existen, opción de rechazar y estado de error; no se suministran importe ni fecha reales. Diseño propuso omitir 'titular actual' y 'rechazar' para reducir densidad, y dibujar la tarjeta igual en móvil que en desktop. Produce una especificación de UI preservando todos los requisitos, sin inventar valores ni convertir condicionales en garantías, con estados relevantes, accesibilidad, diseño estrecho y aceptación falsable."
+    }
+  ]
+}
