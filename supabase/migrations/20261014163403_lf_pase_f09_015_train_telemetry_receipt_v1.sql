@@ -148,7 +148,8 @@ BEGIN
       'schema_version', 'pase_f09_015_telemetry_receipt_v1',
       'preflight', coalesce(s_pre->'pase_f09_015_telemetry_v1', '"NOT_OBSERVED"'::jsonb),
       'patch', coalesce(s_patch->'pase_f09_015_telemetry_v1', '"NOT_OBSERVED"'::jsonb),
-      'verify', coalesce(s_verify->'pase_f09_015_telemetry_v1', '"NOT_OBSERVED"'::jsonb)),
+      'verify', coalesce(s_verify->'pase_f09_015_telemetry_v1', '"NOT_OBSERVED"'::jsonb),
+      'run_summary', coalesce(p_provenance->'pase_f09_015_metrics', '"NOT_OBSERVED"'::jsonb)),
     'parity', CASE WHEN s_verify IS NOT NULL THEN jsonb_build_object(
       'migration_source_parity', s_verify#>>'{regression_or_parity,migration_source_parity}') END,
     'merge', CASE WHEN e.manifest ? 'closure_evidence' THEN jsonb_build_object(
