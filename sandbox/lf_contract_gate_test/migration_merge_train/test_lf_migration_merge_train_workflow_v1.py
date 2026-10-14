@@ -148,7 +148,7 @@ for marker in (
     '"ig-runtime-candidate-judge"',
     'observed_head != expected_head',
     'conclusion != "success"',
-    "FAIL_TRAIN_REQUIRED_CHECK_MISSING",
+    '"{code}_TRAIN_REQUIRED_CHECK_MISSING check={name}"',
     "FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS",
 ):
     assert marker in guard, marker
