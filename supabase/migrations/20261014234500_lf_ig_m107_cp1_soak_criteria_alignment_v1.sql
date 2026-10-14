@@ -133,7 +133,7 @@ BEGIN
     'Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción.',
     'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7',
     'VALIDATED_TESTED',v_evidence,now(),now(),'PREFLIGHT',
-    'CONTRACT_SEMANTIC_DRIFT','READBACK',
+    'R4_NO_CUESTIONA','PROCESS_DEPENDENT',
     'Supabase M9.11 receipt 38 and canonical action_spec M10.7 CP1',
     'supabase://programacion.provenance_receipts/38'
   );
