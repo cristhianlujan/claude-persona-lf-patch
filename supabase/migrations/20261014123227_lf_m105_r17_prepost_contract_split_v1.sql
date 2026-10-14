@@ -3,7 +3,8 @@
 DO $m105_r17$
 DECLARE
   v_op constant text := 'DEPLOY_SUPABASE_EDGE_FUNCTION_LF';
-  v_actor constant text := 'EXEC-IG-M105-R17-SEQUENCE-REPAIR-20261014-001';
+  -- Reuse the existing in-progress, scope-authorized candidate governance execution.
+  v_actor constant text := 'EXEC-BOOTSTRAP-EDGE-FUNCTION-OP-20261014-001';
   v_old_judge constant text := '319bfe3f34e0d86840c7c6d1ecd3a164c1dd4aa57017202b6635e1746ca21a3a';
   v_new_judge constant text := 'fa8cb9ab58d41092ef40e37dfc466de38452255cadefbebeda7287467b8c2337';
   v_old_guard constant text := '58995a9bc71074f0a0f1854ee0b4674d85112d910192747dcf2130174d739836';
@@ -14,6 +15,17 @@ DECLARE
   v_after jsonb := '["deployed_source","oidc_probe","rollback_state","provider_rollback_receipt","provider_idempotency_receipt"]'::jsonb;
   v_count integer;
 BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.lf_operation_execution e
+    WHERE e.execution_id=v_actor
+      AND e.operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+      AND e.status='IN_PROGRESS'
+      AND e.manifest->>'governance_bootstrap'='true'
+      AND e.manifest->>'bootstrap_operation_code'=v_op
+      AND e.manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE'
+  ) THEN
+    RAISE EXCEPTION 'M105_R17_EXISTING_GOVERNANCE_EXECUTION_REQUIRED';
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM public.lf_operation_registry
                  WHERE operation_code=v_op AND lifecycle_state_code='OP_CANDIDATE'
                    AND status='CANDIDATO_READ_ONLY')
