@@ -9,7 +9,7 @@ BEGIN;
 DO $preflight$
 BEGIN
  IF (SELECT version FROM public.lf_operation_registry
-     WHERE operation_code='ACTUALIZACION_PERFIL_LF') <> 'v0.1'
+     WHERE operation_code='ACTUALIZACION_PERFIL_LF') IS DISTINCT FROM 'v0.1'
  THEN RAISE EXCEPTION 'PE10_READONLY_HELPERS_OPERATION_DRIFT'; END IF;
  IF (SELECT count(*) FROM public.lf_operation_steps
      WHERE operation_code='ACTUALIZACION_PERFIL_LF' AND active) <> 15
