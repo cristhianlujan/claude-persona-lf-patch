@@ -52,7 +52,8 @@ class EdgeStepJudgesTests(unittest.TestCase):
         self.assertEqual(len(STEPS), 8)
         for step in STEPS:
             with self.subTest(step=step):
-                result = validate_step(step, e[step], a)
+                context = dict(a, effect_state="SUCCEEDED") if step == "close" else a
+                result = validate_step(step, e[step], context)
                 self.assertTrue(result["valid"])
                 self.assertEqual(result["server_assertions"], ["edge_" + step + "_verified"])
 
