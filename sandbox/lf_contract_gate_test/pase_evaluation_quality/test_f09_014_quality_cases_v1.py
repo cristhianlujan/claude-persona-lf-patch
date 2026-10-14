@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 MANIFEST_PATH = HERE / "f09_014_quality_cases_v1.json"
-BASE_SHA = "70b483e912901ac121054d4b6b5db8e41b32702e"
+BASE_SHA = "70e02ec0e82bdc7184ad004bd91eb3673f287e56"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 PROFILE_DIR = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles"
 SCENARIO_DIR = ROOT / "sandbox/lf_contract_gate_test/pase_scenario_qualification"
