@@ -43,12 +43,24 @@ other explicitly bounded commercial authorization.**
 - Resolve the authoritative original creditor and current debt owner independently
   and preserve both in the audit lineage; never let original-creditor identity
   override a different current owner's authority.
-- Evaluate the intersection of exact obligation identity, offer identity,
-  offer version, current owner, separately verified validity interval,
-  eligibility/matching/availability, active verified mandate and an exact
-  signed-terms SHA-256 (or a versioned authority-approved equivalent).
-  A missing or mismatched value blocks **that concrete commercial action**,
-  not unrelated obligations, historical records or a separate authorized offer.
+- Resolve the exact bounded authority first: obligation identity, offer
+  identity and version, current owner, effective validity, eligibility,
+  matching/availability, active verified mandate and its authorized terms.
+  **Do not demand a literal SHA-256 from the product requester** if a current
+  verified authority explicitly binds the reviewed terms to that exact offer
+  version; that existing source resolves the product-level mandate scope.
+  In that case, preserve a narrowly eligible product decision while marking
+  backend enforcement of exact terms as a required implementation invariant.
+  If the current authoritative source leaves terms/scope materially uncertain,
+  return an exact scoped blocker; never invent a signature or verified digest.
+- At the technical enforcement boundary (API, DB, publication/acceptance),
+  compare exact persisted terms digest or an independently verified
+  versioned authority-equivalent; a mismatched/missing **technical binding**
+  must prevent that concrete commercial action. This is what the pure
+  candidate helper checks when concrete digests are actually supplied.
+  Do not reinterpret its refusal of missing hash input as proof that the
+  business source or product decision is itself invalid. Unrelated
+  obligations, historical records and separately authorized offers survive.
 - Never infer permission for a prior offer version, altered terms, another
   obligation, another tenant or other channels from a bounded mandate.
   Preserve the voluntary action and current backend authorization check.
