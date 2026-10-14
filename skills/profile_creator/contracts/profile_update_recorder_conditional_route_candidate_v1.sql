@@ -130,6 +130,25 @@ begin
     v_block_code:=public.lf_profile_update_substantive_block_v1(p_execution_id,p_step_id,p_evidence_payload,v_execution.manifest);
     if v_block_code is not null then v_block_details:=jsonb_build_object('reason','Substantive Profile update/graduation evidence did not satisfy fail-closed contract','graduation_contract',v_execution.manifest->>'graduation_contract'); end if;
   end if;
+  -- v0.2 only: evidence marked UNPROVEN is not a substantive PASS.
+  -- Preserve v0.1 frozen executions; require actual successful validation
+  -- for both evolved outcomes before recording a clean judge step.
+  if v_block_code is null and v_has_evolved_route
+     and v_route_resolution->>'outcome' in ('NO_CHANGE','UPDATE') then
+    if p_step_id='deterministic_validation' then
+      if public.lf_profile_update_result_class_v1(p_evidence_payload->'validator_result') is distinct from 'PASS' then
+        v_block_code:='PROFILE_EVOLUTION_VALIDATOR_PASS_UNPROVEN';
+      elsif public.lf_profile_update_result_class_v1(p_evidence_payload->'malformed_input_result') is distinct from 'PASS' then
+        v_block_code:='PROFILE_EVOLUTION_MALFORMED_GATE_PASS_UNPROVEN';
+      end if;
+    elsif p_step_id='semantic_judge'
+      and public.lf_profile_update_result_class_v1(p_evidence_payload->'semantic_judge_result') is distinct from 'PASS' then
+      v_block_code:='PROFILE_EVOLUTION_SEMANTIC_PASS_UNPROVEN';
+    end if;
+    if v_block_code is not null then
+      v_block_details:=jsonb_build_object('reason','Evolved profile route requires substantive PASS from real validator, not UNPROVEN');
+    end if;
+  end if;
   if v_block_code is not null then
     v_payload:=p_evidence_payload; for v_key in select jsonb_array_elements_text(v_binding.required_evidence_keys) loop if not (v_payload ? v_key) then v_payload:=v_payload||jsonb_build_object(v_key,null); end if; end loop;
     v_attempt_history:=v_attempt_history||jsonb_build_array(jsonb_build_object('at',clock_timestamp(),'outcome','BLOCKED','code',v_block_code,'evidence_ref',p_evidence_ref,'details',v_block_details));
