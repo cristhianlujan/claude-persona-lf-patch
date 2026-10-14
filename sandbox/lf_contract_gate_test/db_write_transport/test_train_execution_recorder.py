@@ -87,6 +87,30 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         self.assertFalse(any("lf_record_db_operation_step_v1" in sql for sql in calls))
         self.assertTrue(any("lf_operation_execution_steps" in sql for sql in calls))
 
+    def test_query_and_persistence_calls_are_counted_once_in_separate_families(self) -> None:
+        from unittest.mock import patch
+        import lf_train_execution_recorder as recorder
+
+        recorder._TELEMETRY_STAGE = "preflight"
+        recorder._TELEMETRY_METRICS = recorder.StageMetrics()
+        with patch.object(recorder, "db_url", return_value="postgres://example"), \
+             patch.object(recorder.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "{}\n", "")):
+            recorder.call("select status from public.lf_operation_execution_steps where execution_id = :'exec';", exec="e")
+            recorder.call("select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', '{}'::jsonb, :'actor');", exec="e")
+        self.assertEqual(recorder._TELEMETRY_METRICS.queries.count, 1)
+        self.assertEqual(recorder._TELEMETRY_METRICS.evidence_persistence.count, 1)
+        self.assertEqual(recorder._TELEMETRY_METRICS.transport.count, 0)
+        recorder._TELEMETRY_STAGE = None
+
+    def test_pending_metrics_survive_state_handoff(self) -> None:
+        import lf_train_execution_recorder as recorder
+        original = recorder.StageMetrics()
+        original.queries.add(2.5, 17)
+        original.evidence_persistence.add(3.5, 19)
+        recovered = recorder.telemetry_metrics_from_state(recorder.telemetry_metrics_to_state(original))
+        self.assertEqual(recovered.queries.fields(), original.queries.fields())
+        self.assertEqual(recovered.evidence_persistence.fields(), original.evidence_persistence.fields())
+
     def test_failure_receipt_summary_contains_sqlstate_and_sanitized_message(self) -> None:
         import lf_train_execution_recorder as recorder
         summary = recorder.failure_receipt_summary(

@@ -11,7 +11,27 @@ from typing import Any, Callable
 ENVELOPE_VERSION = "pase_f09_015_telemetry_v1"
 MAX_ENVELOPE_BYTES = 2560
 CANONICAL_STEPS = ("preflight", "patch", "verify")
+TELEMETRY_STAGES = ("transport", "queries", "control_execution", "judges", "evidence_persistence", "total")
 NOT_OBSERVED = "NOT_OBSERVED"
+EXACT_HEAD_CHECKS_OUTSIDE_STAGE = {
+    "measurement": "OUTSIDE_STAGE",
+    "elapsed_ms": NOT_OBSERVED,
+    "reason": "GitHub exact-head checks complete before the Train recorder starts; they are not timed as control_execution or judges.",
+}
+PERSISTENCE_FUNCTIONS = (
+    "fn_lf_operation_reserve_execution_v1", "fn_lf_operation_acquire_lease_v1",
+    "lf_record_db_operation_step_v1", "fn_lf_operation_reserve_effect_v1",
+    "fn_lf_operation_mark_effect_succeeded_v1", "lf_close_db_operation_execution_v1",
+    "lf_fail_db_operation_execution_v1", "lf_record_migration_train_receipt_v1",
+)
+
+
+def sql_measurement_family(sql: str) -> str:
+    """Count each SQL round-trip once: write functions as persistence, other calls as reads."""
+    lowered = (sql or "").lower()
+    if any(re.search(rf"\b{re.escape(name)}\s*\(", lowered) for name in PERSISTENCE_FUNCTIONS):
+        return "evidence_persistence"
+    return "queries"
 
 
 def utc_now() -> str:
@@ -35,14 +55,20 @@ class Counters:
     count: int = 0
     duration_ms: float = 0.0
     bytes: int = 0
+    observed: bool = False
 
     def add(self, duration_ms: float, byte_count: int) -> None:
+        self.observed = True
         self.count += 1
         self.duration_ms += max(0.0, duration_ms)
         self.bytes += max(0, byte_count)
 
+    def mark_empty(self) -> None:
+        """Record a measured stage with no operations, distinct from missing measurement."""
+        self.observed = True
+
     def fields(self) -> dict[str, int | float | str]:
-        if not self.count:
+        if not self.observed:
             return {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED}
         return {"count": self.count, "duration_ms": round(self.duration_ms, 3), "bytes": self.bytes}
 
@@ -51,11 +77,16 @@ class Counters:
 class StageMetrics:
     queries: Counters = field(default_factory=Counters)
     transport: Counters = field(default_factory=Counters)
+    control_execution: Counters = field(default_factory=Counters)
+    judges: Counters = field(default_factory=Counters)
+    evidence_persistence: Counters = field(default_factory=Counters)
 
 
 def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id: str,
                   control_id: str, input_value: Any, result_value: Any,
-                  metrics: StageMetrics | None = None, derived_status_ref: str = "judge") -> dict:
+                  metrics: StageMetrics | None = None, derived_status_ref: str = "judge",
+                  run_identity: dict | None = None, observed_stages: dict | None = None,
+                  total_started_at: str | None = None) -> dict:
     if step not in CANONICAL_STEPS:
         raise ValueError(f"PASE_F09_015_UNKNOWN_STEP:{step}")
     metrics = metrics or StageMetrics()
@@ -65,9 +96,35 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         duration: int | float | str = round(max(0.0, (finish - start).total_seconds() * 1000), 3)
     except (TypeError, ValueError):
         duration = NOT_OBSERVED
+    try:
+        total_start = datetime.fromisoformat((total_started_at or started_at).replace("Z", "+00:00"))
+        total_finish = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+        total_duration: int | float | str = round(max(0.0, (total_finish - total_start).total_seconds() * 1000), 3)
+    except (TypeError, ValueError):
+        total_duration = NOT_OBSERVED
+    stages = {
+        "transport": metrics.transport.fields(),
+        "queries": metrics.queries.fields(),
+        "control_execution": metrics.control_execution.fields(),
+        "judges": metrics.judges.fields(),
+        "evidence_persistence": metrics.evidence_persistence.fields(),
+        "total": {"count": 1 if isinstance(total_duration, (int, float)) else NOT_OBSERVED,
+                  "duration_ms": total_duration, "bytes": NOT_OBSERVED},
+    }
+    for name, values in (observed_stages or {}).items():
+        if name not in TELEMETRY_STAGES:
+            raise ValueError(f"PASE_F09_015_UNKNOWN_STAGE:{name}")
+        if not isinstance(values, dict):
+            raise ValueError(f"PASE_F09_015_INVALID_STAGE:{name}")
+        stages[name] = {key: values.get(key, NOT_OBSERVED) for key in ("count", "duration_ms", "bytes")}
+    identity_fields = ("run_kind", "suite_id", "repository", "pr", "git_head_sha", "github_run_id",
+                       "github_run_attempt", "train_run_id", "execution_id", "migration_version",
+                       "source_blob", "source_sha256", "control_id")
+    identity = {key: (run_identity or {}).get(key, NOT_OBSERVED) for key in identity_fields}
     return {
         "schema": ENVELOPE_VERSION,
         "trace_id": execution_id,
+        "run_identity": identity,
         "step_id": step,
         "control_id": control_id,
         "started_at": started_at or NOT_OBSERVED,
@@ -75,6 +132,8 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         "duration_ms": duration,
         "queries": metrics.queries.fields(),
         "transport": metrics.transport.fields(),
+        "stages": stages,
+        "exact_head_checks": dict(EXACT_HEAD_CHECKS_OUTSIDE_STAGE),
         "recorder_write": {"count": 1, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
         "input_digest": digest_json(input_value) if input_value is not None else NOT_OBSERVED,
         "result_digest": digest_json(result_value) if result_value is not None else NOT_OBSERVED,
@@ -132,8 +191,44 @@ def verify_execution(execution: dict, canonical_steps: tuple[str, ...] = CANONIC
             raise ValueError(f"PASE_F09_015_ENVELOPE_IDENTITY_MISMATCH:{step}")
         if envelope.get("trace_id") != execution.get("execution_id"):
             raise ValueError(f"PASE_F09_015_TRACE_ID_MISMATCH:{step}")
+        identity = envelope.get("run_identity")
+        required_identity = ("run_kind", "suite_id", "repository", "pr", "git_head_sha", "github_run_id",
+                             "github_run_attempt", "train_run_id", "execution_id", "migration_version",
+                             "source_blob", "source_sha256", "control_id")
+        if not isinstance(identity, dict) or any(not str(identity.get(key, "")).strip() or identity.get(key) == NOT_OBSERVED for key in required_identity):
+            raise ValueError(f"PASE_F09_015_RUN_IDENTITY_INCOMPLETE:{step}")
+        if identity.get("execution_id") != execution.get("execution_id"):
+            raise ValueError(f"PASE_F09_015_RUN_IDENTITY_MISMATCH:{step}")
+        for field in ("repository", "pr", "git_head_sha", "github_run_id", "train_run_id", "migration_version", "source_blob", "source_sha256", "control_id"):
+            if execution.get(field) is not None and str(identity.get(field)) != str(execution.get(field)):
+                raise ValueError(f"PASE_F09_015_RUN_IDENTITY_MISMATCH:{step}:{field}")
+        stages = envelope.get("stages")
+        if not isinstance(stages, dict) or set(stages) != set(TELEMETRY_STAGES):
+            raise ValueError(f"PASE_F09_015_STAGE_SET_INVALID:{step}")
+        for stage in TELEMETRY_STAGES:
+            value = stages[stage]
+            duration_value = value.get("duration_ms") if isinstance(value, dict) else None
+            if duration_value == NOT_OBSERVED:
+                raise ValueError(f"PASE_F09_015_STAGE_NOT_OBSERVED:{step}:{stage}")
+            if isinstance(duration_value, bool) or not isinstance(duration_value, (int, float)) or duration_value < 0:
+                raise ValueError(f"PASE_F09_015_STAGE_DURATION_INVALID:{step}:{stage}")
+        external_checks = envelope.get("exact_head_checks")
+        if (not isinstance(external_checks, dict)
+                or external_checks.get("measurement") != "OUTSIDE_STAGE"
+                or external_checks.get("elapsed_ms") != NOT_OBSERVED
+                or not str(external_checks.get("reason", "")).strip()):
+            raise ValueError(f"PASE_F09_015_EXACT_HEAD_CHECKS_BOUNDARY_MISSING:{step}")
         if "verdict" in envelope:
             raise ValueError(f"PASE_F09_015_ENVELOPE_OWNS_VERDICT:{step}")
+        locator = envelope.get("evidence_locator")
+        if not isinstance(locator, str) or not locator.strip() or locator == NOT_OBSERVED:
+            raise ValueError(f"PASE_F09_015_EVIDENCE_LOCATOR_MISSING:{step}")
+        if row.get("status") not in ("PASS_CLEAN", "PASS"):
+            failure = envelope.get("failure")
+            if not isinstance(failure, dict) or not str(failure.get("code", "")).strip() or failure.get("code") == NOT_OBSERVED:
+                raise ValueError(f"PASE_F09_015_FAILURE_CODE_MISSING:{step}")
+            if failure.get("evidence_locator") in (None, "", NOT_OBSERVED):
+                raise ValueError(f"PASE_F09_015_FAILURE_EVIDENCE_LOCATOR_MISSING:{step}")
         if len(json.dumps(envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")) > MAX_ENVELOPE_BYTES:
             raise ValueError(f"PASE_F09_015_ENVELOPE_TOO_LARGE:{step}")
     failed_index = next((i for i, step in enumerate(canonical_steps)
@@ -142,6 +237,26 @@ def verify_execution(execution: dict, canonical_steps: tuple[str, ...] = CANONIC
     receipt_failed_step = receipt_failure.get("failed_step")
     failure_row_rejected = bool(receipt_failure.get("failure_row_rejection"))
     if failed_index is None and failure_row_rejected and receipt_failed_step in canonical_steps:
+        rejected_error = receipt_failure.get("original_error") or {}
+        failure_envelope = receipt_failure.get("failure_telemetry")
+        if (not isinstance(rejected_error, dict)
+                or rejected_error.get("code") in (None, "", NOT_OBSERVED)
+                or rejected_error.get("evidence_locator") in (None, "", NOT_OBSERVED)):
+            raise ValueError("PASE_F09_015_FAILURE_RECEIPT_EVIDENCE_MISSING")
+        if not isinstance(failure_envelope, dict):
+            raise ValueError("PASE_F09_015_FAILURE_TELEMETRY_MISSING")
+        if failure_envelope.get("schema") != ENVELOPE_VERSION or failure_envelope.get("step_id") != receipt_failed_step:
+            raise ValueError("PASE_F09_015_FAILURE_TELEMETRY_IDENTITY_MISMATCH")
+        if failure_envelope.get("trace_id") != execution.get("execution_id"):
+            raise ValueError("PASE_F09_015_FAILURE_TELEMETRY_TRACE_MISMATCH")
+        failure_stages = failure_envelope.get("stages")
+        if not isinstance(failure_stages, dict) or set(failure_stages) != set(TELEMETRY_STAGES):
+            raise ValueError("PASE_F09_015_FAILURE_TELEMETRY_STAGE_SET_INVALID")
+        for stage in TELEMETRY_STAGES:
+            value = failure_stages[stage]
+            duration = value.get("duration_ms") if isinstance(value, dict) else None
+            if isinstance(duration, bool) or not isinstance(duration, (int, float)) or duration < 0:
+                raise ValueError(f"PASE_F09_015_FAILURE_TELEMETRY_STAGE_NOT_OBSERVED:{stage}")
         failed_index = canonical_steps.index(receipt_failed_step)
     if failed_index is None:
         if absent:
@@ -172,6 +287,6 @@ def retry_chains(executions: list[dict]) -> list[dict]:
         ordered = sorted(items, key=lambda item: (str(item.get("created_at") or ""),
                                                   str(item.get("execution_id") or "")))
         result.append({"pr": pr, "migration_version": version,
-                       "attempts": [{"attempt_number": i, "execution_id": item.get("execution_id"),
-                                     "created_at": item.get("created_at")} for i, item in enumerate(ordered, 1)]})
+                       "executions": [{"execution_id": item.get("execution_id"),
+                                       "created_at": item.get("created_at")} for item in ordered]})
     return result
