@@ -13,6 +13,11 @@ on:
         required: false
         default: false
         type: boolean
+      cp2_pilot_screen_id:
+        description: "Exactly one screen in canonical CP2 cohort; default 1 (ONB_001), never a cohort fanout"
+        required: false
+        default: "1"
+        type: string
 
 permissions:
   contents: read
@@ -162,6 +167,10 @@ jobs:
     outputs:
       pantalla_ids_json: ${{ steps.authority.outputs.pantalla_ids_json }}
     steps:
+      - name: Checkout selector from exact main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Authenticate the exact existing OIDC dispatch identity
         uses: actions/github-script@v7
         id: oidc
@@ -176,6 +185,7 @@ jobs:
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
           IG_OIDC_GATEWAY_URL: ${{ vars.LF_IG_OIDC_CALLER_URL }}
+          CP2_PILOT_SCREEN_ID: ${{ inputs.cp2_pilot_screen_id }}
         run: |
           set -euo pipefail
           [ -n "${IG_OIDC_GATEWAY_URL:-}" ] || { echo 'CP2_OIDC_GATEWAY_URL_NOT_CONFIGURED'; exit 2; }
@@ -191,11 +201,18 @@ jobs:
           if os.environ["CP2_HTTP"]!="200" or value.get("outcome")!="READY":
               raise SystemExit("CP2_AUTHORITY_DENIED:"+str(value.get("code","UNKNOWN")))
           ids=value.get("pantalla_ids")
-          if not isinstance(ids,list) or len(ids)!=13 or len(set(ids))!=13 or any(type(i)!=int or i<1 for i in ids):
-              raise SystemExit("CP2_FROZEN_SCOPE_INVALID")
+          # Keep the canonical 13-screen authority; dispatch *only* one pilot.
+          import sys
+          sys.path.insert(0,"sandbox/lf_contract_gate_test/engineering_checkpoints/m10_5")
+          from dispatch_vnext_cohort import select_cp2_pilot_screen
+          try:
+              pilot=select_cp2_pilot_screen(ids,os.environ["CP2_PILOT_SCREEN_ID"])
+          except ValueError as exc:
+              raise SystemExit(str(exc))
           with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f:
-              f.write("pantalla_ids_json="+json.dumps(ids,separators=(",",":"))+"\n")
+              f.write("pantalla_ids_json="+json.dumps(pilot,separators=(",",":"))+"\n")
           print(json.dumps({"cp2_authority":"PASS","cohort_count":len(ids),
+                            "pilot_count":len(pilot),"pilot_screen":pilot[0],
                             "release_version":value.get("release_version")}))
           PY
 

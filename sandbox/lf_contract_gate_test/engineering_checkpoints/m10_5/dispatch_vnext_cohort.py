@@ -10,6 +10,29 @@ from urllib.error import HTTPError, URLError
 EXPECTED = "M105_SCOPE_SNAPSHOT_V1"
 COUNT = 13
 
+
+def select_cp2_pilot_screen(authorized_ids, raw_screen_id):
+    """Return one exact member of an already-verified frozen CP2 cohort.
+
+    Never expand to the full cohort. An authorized release and real OIDC
+    identity are required independently; selection is not authorization.
+    """
+    if (not isinstance(authorized_ids, list)
+        or len(authorized_ids) != COUNT
+        or any(type(x) is not int or x < 1 for x in authorized_ids)
+        or len(set(authorized_ids)) != COUNT):
+        raise ValueError("CP2_FROZEN_SCOPE_INVALID")
+    if (not isinstance(raw_screen_id, str)
+        or not raw_screen_id.isascii()
+        or not raw_screen_id.isdecimal()
+        or raw_screen_id.startswith("0")):
+        raise ValueError("CP2_ONE_SCREEN_ID_REQUIRED")
+    screen_id = int(raw_screen_id)
+    if screen_id not in authorized_ids:
+        raise ValueError("CP2_PILOT_OUTSIDE_FROZEN_COHORT")
+    return [screen_id]
+
+
 def check_scope(snapshot, release):
     ids = snapshot.get("screen_ids")
     if snapshot.get("schema_version") != EXPECTED or not isinstance(ids, list):
