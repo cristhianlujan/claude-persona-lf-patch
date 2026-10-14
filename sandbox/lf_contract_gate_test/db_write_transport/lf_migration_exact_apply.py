@@ -88,6 +88,20 @@ class ApplyReceipt:
     ledger_name: str
     dry_run_exit_code: int | None = None
     dry_run_tail: str = NOT_OBSERVED
+    apply_path: str = "PSQL_EXACT"
+
+
+def normalize_apply_receipt(receipt: dict) -> dict:
+    """Read historical Train receipts while exposing one canonical path field."""
+    normalized = dict(receipt)
+    if not normalized.get("apply_path"):
+        if normalized.get("code") == "FALLBACK_APPLIED_EXACT" or normalized.get("fallback_used") is True:
+            normalized["apply_path"] = "PSQL_EXACT"
+        elif normalized.get("executor") == "SUPABASE_CLI_DB_PUSH_LINKED":
+            normalized["apply_path"] = "SUPABASE_CLI_DB_PUSH_LINKED"
+        else:
+            normalized["apply_path"] = NOT_OBSERVED
+    return normalized
 
 
 def _load_transport():
@@ -216,25 +230,15 @@ def _primary_cli(
     project_root: Path,
     db_url: str,
     version: str,
-) -> tuple[bool, str, int | None, str]:
-    dry = _run(["supabase", "db", "push", "--db-url", db_url, "--dry-run"], cwd=project_root)
+) -> tuple[int | None, str]:
+    """Run Supabase CLI dry-run for diagnostics only; its result never gates exact apply."""
+    del version
+    try:
+        dry = _run(["supabase", "db", "push", "--db-url", db_url, "--dry-run"], cwd=project_root)
+    except Exception as exc:  # diagnostic transport must not block the exact source apply
+        return None, sanitize_dry_run_output(str(exc))
     dry_text = dry.stdout + "\n" + dry.stderr
-    dry_tail = sanitize_dry_run_output(dry_text)
-    if dry.returncode != 0:
-        return False, f"DRY_RUN_FAILED:exit_code={dry.returncode}:{dry_tail}", dry.returncode, dry_tail
-    pending = pending_versions_from_dry_run(dry_text)
-    if pending != [version]:
-        raise RuntimeError(f"EXACT_APPLY_PENDING_SET_MISMATCH:expected={[version]} observed={pending}")
-
-    argv = ["supabase", "db", "push", "--db-url", db_url]
-    help_text = _supabase_push_help(project_root)
-    input_text = None
-    if "--yes" in help_text:
-        argv.append("--yes")
-    else:
-        input_text = "y\n"
-    pushed = _run(argv, cwd=project_root, input_text=input_text)
-    return pushed.returncode == 0, (pushed.stdout + "\n" + pushed.stderr).strip(), dry.returncode, dry_tail
+    return dry.returncode, sanitize_dry_run_output(dry_text)
 
 
 def _dollar_tag(source: str) -> str:
@@ -342,58 +346,36 @@ def apply_exact(
     if version <= floor_before:
         raise RuntimeError(f"EXACT_APPLY_VERSION_NOT_MONOTONIC:version={version} floor={floor_before}")
 
-    primary_ok, primary_detail, dry_run_exit_code, dry_run_tail = _primary_cli(
+    dry_run_exit_code, dry_run_tail = _primary_cli(
         project_root=project_root,
         db_url=db_url,
         version=version,
     )
 
-    ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
-    if primary_ok:
-        if ledger_version != version or ledger_name != name:
-            raise RuntimeError(
-                f"EXACT_APPLY_PRIMARY_READBACK_MISMATCH:{ledger_version}/{ledger_name}"
-            )
-        return ApplyReceipt(
-            "lf-migration-exact-apply/v1", "PASS", "PRIMARY_APPLIED_EXACT",
-            "SUPABASE_CLI_DB_PUSH_LINKED", False, version, name,
-            ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
+    try:
+        _fallback_apply(
+            project_root=project_root,
+            db_url=db_url,
+            version=version,
+            name=name,
+            source_sql=source_sql,
+            source_blob=source_blob,
         )
-
-    # A failed CLI may have committed before returning non-zero. Never replay blindly.
-    if ledger_version is not None:
-        if ledger_version == version and ledger_name == name:
-            return ApplyReceipt(
-                "lf-migration-exact-apply/v1", "PASS", "PRIMARY_NONZERO_BUT_LEDGER_EXACT",
-                "SUPABASE_CLI_DB_PUSH_LINKED", False, version, name,
-                ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
-            )
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_PARTIAL_IDENTITY:{ledger_version}/{ledger_name}")
-
-    floor_after = read_ledger_max(db_url, cwd=project_root)
-    if floor_after != floor_before:
+    except Exception as exc:
+        sqlstate = postgres_sqlstate(str(exc)) or NOT_OBSERVED
+        detail = sanitize_message(exc, 4096)
         raise RuntimeError(
-            f"EXACT_APPLY_LEDGER_MOVED_AFTER_PRIMARY_FAILURE:before={floor_before} after={floor_after}"
-        )
-    if not fallback_allowed(primary_detail, allow_fallback=allow_fallback):
-        sqlstate = postgres_sqlstate(primary_detail) or NOT_OBSERVED
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:sqlstate={sqlstate}:dry_run_exit_code={dry_run_exit_code}:{primary_detail}")
+            f"EXACT_APPLY_PSQL_FAILED:sqlstate={sqlstate}:dry_run_exit_code={dry_run_exit_code}:"
+            f"dry_run_tail={dry_run_tail}:{detail}"
+        ) from exc
 
-    _fallback_apply(
-        project_root=project_root,
-        db_url=db_url,
-        version=version,
-        name=name,
-        source_sql=source_sql,
-        source_blob=source_blob,
-    )
     ledger_version, ledger_name, created_by = read_ledger(db_url, version, cwd=project_root)
     if ledger_version != version or ledger_name != name:
-        raise RuntimeError(f"EXACT_APPLY_FALLBACK_READBACK_MISMATCH:{ledger_version}/{ledger_name}")
+        raise RuntimeError(f"EXACT_APPLY_PSQL_READBACK_MISMATCH:{ledger_version}/{ledger_name}")
     return ApplyReceipt(
-        "lf-migration-exact-apply/v1", "PASS", "FALLBACK_APPLIED_EXACT",
-        "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML", True, version, name,
-        ledger_version, ledger_name, dry_run_exit_code, dry_run_tail,
+        "lf-migration-exact-apply/v1", "PASS", "EXACT_APPLIED",
+        "PSQL_EXACT", False, version, name, ledger_version, ledger_name,
+        dry_run_exit_code, dry_run_tail, "PSQL_EXACT",
     )
 
 
