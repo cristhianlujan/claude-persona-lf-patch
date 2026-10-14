@@ -1,0 +1,78 @@
+{
+  "arms": {
+    "baseline": "Método de dominios fijos: aplica a cada caso la lista completa de dominios obligatorios, independientemente de la evidencia del caso (salida histórica tipo STORY_PACK).",
+    "candidate": "Método de frentes activados por evidencia: solo registra los frentes materiales que una referencia del propio caso permita justificar (salida tipo paquete de análisis)."
+  },
+  "baseline_fixed_domains": [
+    "ALCANCE",
+    "DATOS",
+    "PERMISOS",
+    "ESTADOS",
+    "ERRORES",
+    "EFECTOS_COLATERALES"
+  ],
+  "cases": [
+    {
+      "case_id": "A10-HIST-001",
+      "change_family": "FEATURE",
+      "historical_subject": "PROGRAMMING_AGENT_TARGET_STATE_DESIGN_BINDING_REFINEMENT_V1",
+      "source_refs": [
+        "lf_eventos://20397",
+        "github://cristhianlujan/claude-persona-lf-patch/pull/1800"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-002",
+      "change_family": "MIGRATION",
+      "historical_subject": "PASE-ATOM-F09-S02",
+      "source_refs": [
+        "lf_eventos://20356"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-003",
+      "change_family": "RUNTIME",
+      "historical_subject": "PASE-ATOM-F09-S03",
+      "source_refs": [
+        "lf_eventos://20357"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-004",
+      "change_family": "CONCURRENCY_IDEMPOTENCY",
+      "historical_subject": "PAULO-148",
+      "source_refs": [
+        "lf_eventos://20268"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-005",
+      "change_family": "MODEL_OR_INTELLIGENCE",
+      "historical_subject": "PROGRAMMING_AGENT_WAVE2_SELECTION_METHOD_CANDIDATE_FREEZE_R2",
+      "source_refs": [
+        "lf_eventos://20373"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-006",
+      "change_family": "BUG",
+      "historical_subject": "INPUT_GOVERNANCE_NUMERIC_SCREEN_IDENTITY",
+      "source_refs": [
+        "supabase://programacion.fn_input_v58_assertion_template",
+        "supabase://programacion.fn_input_v512_assertion_template",
+        "supabase://programacion.fn_input_v58_build_assertions"
+      ]
+    },
+    {
+      "case_id": "A10-HIST-008",
+      "change_family": "GOVERNANCE",
+      "historical_subject": "STAGE_BOUND_PRIOR_ART_NOT_UPSTREAM_AUTHORITY",
+      "source_refs": [
+        "lf_eventos://20335",
+        "supabase://programacion.fn_agent_task_execution_bundle",
+        "supabase://programacion.fn_test_contract_generation_source"
+      ]
+    }
+  ],
+  "schema_version": "A12_ARMS_INPUT_V1"
+}
