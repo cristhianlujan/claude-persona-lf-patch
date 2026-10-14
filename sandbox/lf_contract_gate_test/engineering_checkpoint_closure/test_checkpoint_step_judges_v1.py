@@ -21,6 +21,8 @@ def fixture():
         "idempotency_key": "idem-1",
         "request_sha256": SHA,
         "runtime_authenticated": True,
+        "owner_role": "SUPER_ADMIN",
+        "release_promotion_requested": False,
         "operation_lifecycle": "OP_OPERATIONAL",
         "operation_status": "SANDBOX_ACTIVE",
         "route_write_allowed": True,
@@ -106,14 +108,12 @@ class CheckpointJudgesTests(unittest.TestCase):
                 ("route_write_allowed", False),
                 ("operation_lifecycle", "OP_CANDIDATE"),
                 ("runtime_authenticated", False),
+                ("owner_role", "OTHER_ROLE"),
+                ("release_promotion_requested", True),
             ):
                 with self.subTest(step=step, key=key):
                     b = copy.deepcopy(a)
                     b[key] = value
-                    # Authentication is explicitly checked by init_execution;
-                    # other steps depend on the authenticated runner's snapshot.
-                    if key == "runtime_authenticated" and step != "init_execution":
-                        continue
                     with self.assertRaises(ValueError):
                         validate_step(step, e[step], b)
 
