@@ -47,6 +47,7 @@ def main() -> int:
     assert "Skipping migration" not in clean and "DRY RUN:" not in clean and "Connecting to remote" not in clean
     assert "ERROR: Remote migration version mismatch" in clean
     assert module.sanitize_dry_run_output("x" * 40, limit=12).endswith("x" * 11)
+    assert len(module.sanitize_dry_run_output("z" * 1000)) == 800
     checks += 1
 
     version = "20261014174311"
@@ -63,12 +64,13 @@ def main() -> int:
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
              patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
              patch.object(module, "read_ledger_max", side_effect=[base, base]), \
-             patch.object(module, "_primary_cli", return_value=(False, "DRY_RUN_FAILED:exit_code=1:Remote migration mismatch", 1)), \
+             patch.object(module, "_primary_cli", return_value=(False, "DRY_RUN_FAILED:exit_code=1:Remote migration mismatch", 1, "Remote migration mismatch")), \
              patch.object(module, "_fallback_apply") as fallback:
             result = module.apply_exact(project_root=root, migration_path=migration,
                                         db_url="postgres://example", source_blob="a" * 40,
                                         allow_fallback=True)
             assert result.fallback_used and result.code == "FALLBACK_APPLIED_EXACT"
+            assert result.dry_run_exit_code == 1 and result.dry_run_tail == "Remote migration mismatch"
             fallback.assert_called_once()
         checks += 1
 
@@ -89,7 +91,7 @@ def main() -> int:
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
              patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None)]), \
              patch.object(module, "read_ledger_max", return_value=base), \
-             patch.object(module, "_primary_cli", return_value=(False, "ERROR:  42501: denied", None)), \
+             patch.object(module, "_primary_cli", return_value=(False, "ERROR:  42501: denied", 0, "dry-run ok")), \
              patch.object(module, "_fallback_apply") as fallback:
             try:
                 module.apply_exact(project_root=root, migration_path=migration,
@@ -106,12 +108,13 @@ def main() -> int:
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
              patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
              patch.object(module, "read_ledger_max", side_effect=[base, base]), \
-             patch.object(module, "_primary_cli", return_value=(False, "could not connect to server", None)), \
+             patch.object(module, "_primary_cli", return_value=(False, "could not connect to server", 0, "dry-run ok")), \
              patch.object(module, "_fallback_apply") as fallback:
             result = module.apply_exact(project_root=root, migration_path=migration,
                                         db_url="postgres://example", source_blob="a" * 40,
                                         allow_fallback=True)
             assert result.fallback_used
+            assert result.dry_run_exit_code == 0 and result.dry_run_tail == "dry-run ok"
             fallback.assert_called_once()
         checks += 1
     with patch.object(module, "_run", return_value=SimpleNamespace(returncode=0, stdout="ok", stderr="")) as run:

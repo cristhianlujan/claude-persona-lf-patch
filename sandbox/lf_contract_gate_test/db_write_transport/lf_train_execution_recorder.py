@@ -271,6 +271,8 @@ def patch_evidence(ctx: dict, ids: dict, decision: dict, apply_receipt: dict) ->
             "ledger_name": apply_receipt.get("ledger_name"),
             "executor": apply_receipt.get("executor"),
             "code": apply_receipt.get("code"),
+            "dry_run_exit_code": apply_receipt.get("dry_run_exit_code"),
+            "dry_run_tail": apply_receipt.get("dry_run_tail", "NOT_OBSERVED"),
         },
         "minimal_patch": True,
         "producer": "lf-migration-merge-train",
