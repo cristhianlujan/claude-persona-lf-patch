@@ -93,7 +93,13 @@ def build_evolution_plan(
                 and isinstance(receipt.get("authority_ref"), str)
                 and bool(receipt["authority_ref"].strip())
                 and receipt.get("method_catalog_released") is True
-                and receipt.get("assessment_evidence_verified") is True):
+                and receipt.get("assessment_evidence_verified") is True
+                and isinstance(receipt.get("qualified_method_ids"), list)
+                and all(isinstance(mid, str) and bool(mid.strip()) for mid in receipt["qualified_method_ids"])
+                and len(set(receipt["qualified_method_ids"])) == len(receipt["qualified_method_ids"])
+                and all(m["method_id"] in receipt["qualified_method_ids"]
+                        for m in composition.get("method_requirements", [])
+                        if m.get("eligible_for_composition") is True)) :
                 source_status = {"status": "VERIFIED_CURRENT",
                                  "authority_ref": receipt["authority_ref"],
                                  "registry_version": receipt["registry_version"],
