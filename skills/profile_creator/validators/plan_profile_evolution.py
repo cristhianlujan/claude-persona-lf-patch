@@ -11,7 +11,8 @@ import hashlib
 ROOT = Path(__file__).resolve().parents[3]
 ASSESS_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment"
 SELECT_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/capability_selector"
-for p in (ASSESS_DIR, SELECT_DIR):
+VALIDATOR_DIR = ROOT / "skills/profile_creator/validators"
+for p in (ASSESS_DIR, SELECT_DIR, VALIDATOR_DIR):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
@@ -188,7 +189,7 @@ def make_readonly_authority_binding_from_environment():
         return None
     try:
         import psycopg
-        from skills.profile_creator.validators.profile_evolution_trusted_readback_v1 import (
+        from profile_evolution_trusted_readback_v1 import (
             make_postgres_trusted_readback,
             METHOD_CURRENT_SQL,
             PROFILE_ASSESSMENT_RECEIPT_SQL,
