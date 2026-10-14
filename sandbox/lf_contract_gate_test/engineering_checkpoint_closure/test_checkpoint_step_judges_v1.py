@@ -183,5 +183,25 @@ class CheckpointJudgesTests(unittest.TestCase):
                     validate_step("independent_readback", e["independent_readback"], b)
 
 
+    def test_final_checkpoint_terminal_no_next_is_valid(self):
+        a, e = fixture()
+        a["next_checkpoint"] = None
+        a["unit_terminal"] = True
+        a["next_terminal_action"] = "STOP_TERMINAL_DONE"
+        e["independent_readback"]["next_checkpoint"] = None
+        result = validate_step("independent_readback", e["independent_readback"], a)
+        self.assertTrue(result["valid"])
+
+    def test_final_checkpoint_missing_terminal_receipt_is_rejected(self):
+        a, e = fixture()
+        a["next_checkpoint"] = None
+        a["unit_terminal"] = True
+        a["next_terminal_action"] = "CONTINUE_CURRENT_CHECKPOINT"
+        e["independent_readback"]["next_checkpoint"] = None
+        with self.assertRaisesRegex(ValueError, "TERMINAL_DONE"):
+            validate_step("independent_readback", e["independent_readback"], a)
+
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
