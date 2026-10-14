@@ -57,7 +57,8 @@ class StageMetrics:
 def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id: str,
                   control_id: str, input_value: Any, result_value: Any,
                   metrics: StageMetrics | None = None, derived_status_ref: str = "judge",
-                  run_identity: dict | None = None, observed_stages: dict | None = None) -> dict:
+                  run_identity: dict | None = None, observed_stages: dict | None = None,
+                  total_started_at: str | None = None) -> dict:
     if step not in CANONICAL_STEPS:
         raise ValueError(f"PASE_F09_015_UNKNOWN_STEP:{step}")
     metrics = metrics or StageMetrics()
@@ -67,6 +68,12 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         duration: int | float | str = round(max(0.0, (finish - start).total_seconds() * 1000), 3)
     except (TypeError, ValueError):
         duration = NOT_OBSERVED
+    try:
+        total_start = datetime.fromisoformat((total_started_at or started_at).replace("Z", "+00:00"))
+        finish = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+        total_duration: int | float | str = round(max(0.0, (finish - total_start).total_seconds() * 1000), 3)
+    except (TypeError, ValueError):
+        total_duration = NOT_OBSERVED
     observed_stages = observed_stages or {}
     stages = {
         "transport": metrics.transport.fields(),
@@ -74,8 +81,8 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         "control_execution": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
         "judges": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
         "evidence_persistence": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
-        "total": {"count": 1 if isinstance(duration, (int, float)) else NOT_OBSERVED,
-                  "duration_ms": duration, "bytes": NOT_OBSERVED},
+        "total": {"count": 1 if isinstance(total_duration, (int, float)) else NOT_OBSERVED,
+                  "duration_ms": total_duration, "bytes": NOT_OBSERVED},
     }
     for name, values in observed_stages.items():
         if name not in TELEMETRY_STAGES:
