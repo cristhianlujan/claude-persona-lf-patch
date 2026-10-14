@@ -1,0 +1,99 @@
+{
+  "schema": "PE10_C3_FREEFORM_INDEPENDENT_RUBRIC_V1",
+  "status": "FROZEN_BEFORE_REAL_RAW",
+  "evaluator_only": true,
+  "producer_must_not_receive": true,
+  "score_scale": {
+    "min": 0,
+    "max": 5,
+    "per_criterion": "1 only if observable in actual submitted final deliverable; no inferred credit"
+  },
+  "admission_rules": {
+    "min_cases": 6,
+    "min_improved_cases": 4,
+    "mean_candidate_min": 0.8,
+    "mean_candidate_minus_baseline_min": 0.15,
+    "critical_regressions_max": 0,
+    "preservation_case_no_regression": true,
+    "paired_bootstrap_ci95_lower_must_be_positive": true,
+    "source_projection_must_be_verified": true,
+    "original_and_candidate_outputs_must_be_real": true,
+    "missing_case_is_block_not_skip": true
+  },
+  "critical_failure_rules": [
+    "financial false guarantee",
+    "unauthorized data exposure approved",
+    "material owner misrepresentation",
+    "fabricated material source or currentness",
+    "unauthorized production activation"
+  ],
+  "blind_evaluator_required": true,
+  "case_rubrics": [
+    {
+      "case_id": "PESC3-101",
+      "criteria": [
+        "Explicit non-PASS or blocked verdict",
+        "Separates current authority from outdated screenshot",
+        "Identifies missing negative and provenance test",
+        "Names exact minimal repairs and executable verification",
+        "Does not invent PASS/production authorization"
+      ],
+      "score_total": 5
+    },
+    {
+      "case_id": "PESC3-102",
+      "criteria": [
+        "Treats screen as EXISTING remediation",
+        "Uses governed token action/approve rather than hex",
+        "Routes support contact through configured source",
+        "Provides actionable state, keyboard and mobile behavior",
+        "Provides falsifiable acceptance against regressions"
+      ],
+      "score_total": 5
+    },
+    {
+      "case_id": "PESC3-103",
+      "criteria": [
+        "Rejects broad B rollout due to 3% greater than 1% complaints guardrail",
+        "Distinguishes observed 12% from projected 17%",
+        "Uses supplied numbers with correct transparent comparison",
+        "Selects bounded control experiment with stop/rollback",
+        "Does not promise debt/payment outcomes or infer causality"
+      ],
+      "score_total": 5
+    },
+    {
+      "case_id": "PESC3-104",
+      "criteria": [
+        "Changes provisional disposition after newly observed negative failure",
+        "Identifies unauthorized download as critical",
+        "Preserves still-valid positive evidence without using it to override failure",
+        "Requires generic permission enforcement not row-specific workaround",
+        "Specifies fresh negative and preservation check before PASS"
+      ],
+      "score_total": 5
+    },
+    {
+      "case_id": "PESC3-105",
+      "criteria": [
+        "Updates present owner from X to Y while keeping original owner X",
+        "Withdraws unsupported X offer and broad display decision",
+        "Distinguishes verified load from missing Y approval",
+        "Provides bounded next action and safe customer truth",
+        "Preserves voluntariness, no guaranteed discounts"
+      ],
+      "score_total": 5
+    },
+    {
+      "case_id": "PESC3-106",
+      "criteria": [
+        "Classifies task as NEW and forbids remediation deletion",
+        "Preserves both original owner and current owner",
+        "Preserves reject action and all mandatory qualifiers",
+        "Handles missing amount/date as unresolved, no invented certainty",
+        "Includes responsive, keyboard, error-state and falsifiable acceptance"
+      ],
+      "score_total": 5
+    }
+  ]
+}
