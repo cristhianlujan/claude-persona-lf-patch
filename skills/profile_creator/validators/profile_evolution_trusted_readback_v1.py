@@ -15,13 +15,14 @@ _SHA = re.compile(r"^[a-f0-9]{64}$")
 def make_trusted_profile_readback(
     read_capability_snapshot: Callable[[str], dict[str, Any] | None],
     read_assessment_receipt: Callable[[str, str], dict[str, Any] | None],
+    read_method_receipt: Callable[[str, str, str], dict[str, Any] | None],
 ) -> Callable[[str, str, str], dict[str, Any]]:
     """Build the planner's injected readback from independently trusted readers.
 
     Caller must bind callbacks to Supabase read-only query implementations.
     Never bind them to user request JSON or model-generated text.
     """
-    if not callable(read_capability_snapshot) or not callable(read_assessment_receipt):
+    if not all(callable(x) for x in (read_capability_snapshot, read_assessment_receipt, read_method_receipt)):
         raise ValueError("TRUSTED_READBACK_READER_INVALID")
 
     def fail(code: str) -> dict[str, Any]:
@@ -73,6 +74,23 @@ def make_trusted_profile_readback(
                 return fail("METHOD_QUALIFICATION_INVALID")
             if mid in qualified:
                 return fail("METHOD_QUALIFICATION_DUPLICATE")
+            try:
+                method_receipt = read_method_receipt(mid, method["exact_version"],
+                                                     method["benchmark_receipt_ref"])
+            except Exception:
+                return fail("METHOD_RECEIPT_READBACK_FAILED")
+            if (not isinstance(method_receipt, dict)
+                or method_receipt.get("subject_type") != "METHOD_QUALIFICATION"
+                or method_receipt.get("subject_ref") != mid + "@" + method["exact_version"]
+                or method_receipt.get("provider_ref") != method["benchmark_receipt_ref"]
+                or method_receipt.get("verification_state") != "VERIFIED"
+                or method_receipt.get("resolver_active") is not True
+                or method_receipt.get("resolver_trust_level") != "TRUSTED_PROVIDER_BOUND"
+                or method_receipt.get("resolver_id") not in
+                   {"LF_SUPABASE_READBACK_V1", "LF_GITHUB_SOURCE_READBACK_V1"}
+                or not isinstance(method_receipt.get("receipt_id"), str)
+                or not method_receipt["receipt_id"]):
+                return fail("METHOD_QUALIFICATION_RECEIPT_UNVERIFIED")
             qualified.append(mid)
         if not isinstance(receipt, dict):
             return fail("ASSESSMENT_RECEIPT_MISSING")
@@ -134,6 +152,22 @@ LIMIT 1
 """
 
 
+METHOD_QUALIFICATION_RECEIPT_SQL = """
+SELECT l.receipt_id::text AS receipt_id, l.subject_type,
+       l.subject_ref, l.provider_ref, l.verification_state,
+       l.resolver_id, rr.active AS resolver_active,
+       rr.trust_level AS resolver_trust_level
+FROM private.lf_evidence_ledger_v1 l
+JOIN private.lf_evidence_resolver_registry_v1 rr
+  ON rr.resolver_id = l.resolver_id
+WHERE l.subject_type = 'METHOD_QUALIFICATION'
+  AND l.subject_ref = %s AND l.provider_ref = %s
+  AND l.verification_state = 'VERIFIED'
+ORDER BY l.verified_at DESC
+LIMIT 1
+"""
+
+
 def make_postgres_trusted_readback(
     fetch_rows: Callable[[str, tuple[str, ...]], list[dict[str, Any]]],
 ) -> Callable[[str, str, str], dict[str, Any]]:
@@ -154,4 +188,5 @@ def make_postgres_trusted_readback(
     return make_trusted_profile_readback(
         lambda code: one(METHOD_CURRENT_SQL, (code,)),
         lambda slug, digest: one(PROFILE_ASSESSMENT_RECEIPT_SQL, (slug, digest)),
+        lambda mid, version, benchmark: one(METHOD_QUALIFICATION_RECEIPT_SQL, (mid + "@" + version, benchmark)),
     )
