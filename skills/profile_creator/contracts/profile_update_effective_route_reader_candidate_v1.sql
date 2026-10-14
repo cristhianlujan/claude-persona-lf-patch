@@ -104,11 +104,11 @@ BEGIN
     SELECT * INTO decision_row
       FROM public.lf_operation_execution_steps
      WHERE execution_id=p_execution_id AND step_id='evolution_decision';
-    IF NOT FOUND OR decision_row.status <> 'STEP_PASS_WITH_EVIDENCE' THEN
+    IF NOT FOUND OR decision_row.status IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
         RETURN jsonb_build_object('outcome','AWAITING_EVOLUTION_DECISION','effective_steps',prefix);
     END IF;
-    IF decision_row.evidence_payload->>'recorded_by_rpc' <> 'lf_record_profile_operation_step_v1'
-       OR decision_row.evidence_payload->>'mini_judge_result' <> 'STEP_PASS_WITH_EVIDENCE' THEN
+    IF decision_row.evidence_payload->>'recorded_by_rpc' IS DISTINCT FROM 'lf_record_profile_operation_step_v1'
+       OR decision_row.evidence_payload->>'mini_judge_result' IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE' THEN
         RETURN jsonb_build_object('outcome','BLOCKED','code','EVOLUTION_DECISION_UNVERIFIED_RECORDER');
     END IF;
     outcome := decision_row.evidence_payload->>'decision';
