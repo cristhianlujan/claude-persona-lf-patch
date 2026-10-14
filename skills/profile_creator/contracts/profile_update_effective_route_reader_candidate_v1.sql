@@ -89,6 +89,14 @@ BEGIN
          SELECT 1 FROM jsonb_array_elements(no_change_steps) a(value)
          WHERE jsonb_typeof(a.value) <> 'string'
        )
+       -- NO_CHANGE must be the same ordered subsequence of frozen UPDATE;
+       -- never let the recorder and cursor interpret different step orders.
+       OR no_change_steps IS DISTINCT FROM (
+            SELECT jsonb_agg(a.value ORDER BY a.ordinality)
+              FROM jsonb_array_elements_text(update_steps)
+                   WITH ORDINALITY a(value,ordinality)
+             WHERE no_change_steps ? a.value
+       )
        OR no_change_steps ? 'github_write'
        OR no_change_steps ? 'github_readback'
        OR no_change_steps ? 'pre_write_execution_binding_gate'
