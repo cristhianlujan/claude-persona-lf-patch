@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import json
 import pathlib
 import sys
 
@@ -113,6 +114,71 @@ class PaseF09015TelemetryTest(unittest.TestCase):
     def test_total_stage_spans_train_start_through_terminal_step(self):
         envelope = self.envelope(step="verify", total_started_at="2026-10-14T09:59:00Z")
         self.assertEqual(envelope["stages"]["total"]["duration_ms"], 61000.0)
+
+    def test_six_stage_telemetry_covers_success_failure_and_retry(self):
+        success = self.execution()
+        self.assertEqual(verify_execution(success)["status"], "PASS")
+
+        failed = self.execution()
+        failed["steps"] = failed["steps"][:2]
+        failed["steps"][1]["status"] = "BLOCKED_BY_ENFORCEMENT"
+        self.assertEqual(verify_execution(failed)["status"], "FAILURE_PATH_RECONSTRUCTED")
+
+        retried = self.execution()
+        attempts = retry_chains([
+            {"pr": 12, "migration_version": "20261014000000", "execution_id": "EXEC-1",
+             "created_at": "2026-10-14T10:00:00Z"},
+            {"pr": 12, "migration_version": "20261014000000", "execution_id": "EXEC-2",
+             "created_at": "2026-10-14T10:01:00Z"},
+        ])
+        self.assertEqual([x["execution_id"] for x in attempts[0]["attempts"]], ["EXEC-1", "EXEC-2"])
+        for run in (success, failed, retried):
+            for row in run["steps"]:
+                envelope = row["evidence_payload"]["pase_f09_015_telemetry_v1"]
+                self.assertEqual(set(envelope["stages"]), set(TELEMETRY_STAGES))
+                for stage in TELEMETRY_STAGES:
+                    self.assertIsInstance(envelope["stages"][stage]["duration_ms"], (int, float), stage)
+
+    def test_recorder_emits_six_observed_stages_for_success_failure_and_retry(self):
+        original_call = train_recorder.call
+        original_metrics = train_recorder._TELEMETRY_METRICS
+        original_started = train_recorder._TELEMETRY_STARTED_AT
+        original_train_started = train_recorder._TELEMETRY_TRAIN_STARTED_AT
+        captured = []
+        def fake_call(sql, **params):
+            if "lf_record_db_operation_step_v1" in sql:
+                captured.append(json.loads(params["payload"]))
+                status = "BLOCKED_BY_ENFORCEMENT" if "blocking_codes" in params.get("payload", "") else "PASS_CLEAN"
+                return {"outcome": "STEP_RECORDED", "status": status}
+            return {}
+        try:
+            train_recorder.call = fake_call
+            for attempt, blocked in ((1, False), (2, True), (3, False)):
+                train_recorder._TELEMETRY_METRICS = StageMetrics()
+                train_recorder._TELEMETRY_METRICS.queries.add(0.2, 12)
+                train_recorder._TELEMETRY_METRICS.transport.add(0.3, 14)
+                train_recorder._TELEMETRY_STARTED_AT = "2026-10-14T10:00:00Z"
+                train_recorder._TELEMETRY_TRAIN_STARTED_AT = "2026-10-14T09:59:00Z"
+                ids = {"execution_id": f"EXEC-{attempt}", "effect_scope": "MIGRATION:20261014000000",
+                       "actor": "TRAIN-RUN-1"}
+                ctx = {"repo": "owner/repo", "pr": "12", "head_sha": "a" * 40,
+                       "run_id": str(345 + attempt), "version": "20261014000000",
+                       "source_blob": "b" * 40, "source_sha256": "c" * 64}
+                evidence = {"exact_target": {"head": "a" * 40}, "write_receipt": {"ok": True}}
+                if blocked:
+                    evidence.update({"blocking_codes": ["TEST_BLOCK"], "failure": {"code": "TEST_BLOCK"}})
+                result = train_recorder.record_step(ids, "patch", evidence, ctx=ctx)
+                self.assertEqual(result["outcome"], "STEP_RECORDED")
+                envelope = captured[-1]["pase_f09_015_telemetry_v1"]
+                self.assertEqual(set(envelope["stages"]), set(TELEMETRY_STAGES))
+                for stage in TELEMETRY_STAGES:
+                    self.assertIsInstance(envelope["stages"][stage]["duration_ms"], (int, float), stage)
+        finally:
+            train_recorder.call = original_call
+            train_recorder._TELEMETRY_METRICS = original_metrics
+            train_recorder._TELEMETRY_STARTED_AT = original_started
+            train_recorder._TELEMETRY_TRAIN_STARTED_AT = original_train_started
+        self.assertEqual(len(captured), 3)
 
     def test_unemitted_stage_is_not_observed_and_verifier_fails_closed(self):
         execution = self.execution(omit_stage="judges")

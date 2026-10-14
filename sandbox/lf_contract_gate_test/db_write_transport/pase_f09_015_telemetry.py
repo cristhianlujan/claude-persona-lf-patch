@@ -52,6 +52,9 @@ class Counters:
 class StageMetrics:
     queries: Counters = field(default_factory=Counters)
     transport: Counters = field(default_factory=Counters)
+    control_execution: Counters = field(default_factory=Counters)
+    judges: Counters = field(default_factory=Counters)
+    evidence_persistence: Counters = field(default_factory=Counters)
 
 
 def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id: str,
@@ -78,9 +81,9 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
     stages = {
         "transport": metrics.transport.fields(),
         "queries": metrics.queries.fields(),
-        "control_execution": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
-        "judges": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
-        "evidence_persistence": {"count": NOT_OBSERVED, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
+        "control_execution": metrics.control_execution.fields(),
+        "judges": metrics.judges.fields(),
+        "evidence_persistence": metrics.evidence_persistence.fields(),
         "total": {"count": 1 if isinstance(total_duration, (int, float)) else NOT_OBSERVED,
                   "duration_ms": total_duration, "bytes": NOT_OBSERVED},
     }

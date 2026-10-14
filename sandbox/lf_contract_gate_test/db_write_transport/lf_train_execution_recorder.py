@@ -370,12 +370,29 @@ def record_step(ids: dict, step: str, evidence: dict, *, ctx: dict | None = None
         counter.count += source.count
         counter.duration_ms += source.duration_ms
         counter.bytes += source.bytes
+    # Measure the local control construction, judge gate, and evidence packaging
+    # independently. The SQL round-trip remains in `queries`; it is not counted
+    # again as local evidence persistence.
+    import time as _time
+    control_started = _time.perf_counter_ns()
+    input_value = evidence.get("exact_target") or evidence.get("target_binding") or ids
+    result_value = evidence.get("write_receipt") or evidence.get("db_write_transport_readback") \
+                   or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified")
+    stage_metrics.control_execution.add((_time.perf_counter_ns() - control_started) / 1_000_000,
+                                        len(json.dumps(evidence, sort_keys=True).encode("utf-8")))
+    judge_started = _time.perf_counter_ns()
+    if step not in CANONICAL_STEPS:
+        raise RuntimeError(f"PASE_F09_015_UNKNOWN_STEP:{step}")
+    stage_metrics.judges.add((_time.perf_counter_ns() - judge_started) / 1_000_000, len(step.encode("utf-8")))
+    persistence_started = _time.perf_counter_ns()
+    persisted_payload_size = len(json.dumps(evidence, sort_keys=True).encode("utf-8"))
+    stage_metrics.evidence_persistence.add((_time.perf_counter_ns() - persistence_started) / 1_000_000,
+                                           persisted_payload_size)
     envelope = make_envelope(
         step=step, started_at=started_at, finished_at=finished_at,
         execution_id=ids["execution_id"], control_id=ids.get("effect_scope", "NOT_OBSERVED"),
-        input_value=evidence.get("exact_target") or evidence.get("target_binding") or ids,
-        result_value=evidence.get("write_receipt") or evidence.get("db_write_transport_readback")
-                     or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified"),
+        input_value=input_value,
+        result_value=result_value,
         metrics=stage_metrics,
         run_identity=telemetry_run_identity(ctx or {}, ids),
         total_started_at=_TELEMETRY_TRAIN_STARTED_AT,
@@ -384,7 +401,8 @@ def record_step(ids: dict, step: str, evidence: dict, *, ctx: dict | None = None
         envelope["failure"] = evidence["failure"]
         envelope["evidence_locator"] = evidence["failure"].get("evidence_locator", "NOT_OBSERVED")
     evidence = dict(evidence)
-    evidence["pase_f09_015_telemetry_v1"] = json.loads(serialize_envelope(envelope, MAX_ENVELOPE_BYTES))
+    serialized_envelope = serialize_envelope(envelope, MAX_ENVELOPE_BYTES)
+    evidence["pase_f09_015_telemetry_v1"] = json.loads(serialized_envelope)
     res = call(
         "select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', (:'payload')::jsonb, :'actor');",
         exec=ids["execution_id"], step=step, ref=f"{ids['actor']}:{step}",
