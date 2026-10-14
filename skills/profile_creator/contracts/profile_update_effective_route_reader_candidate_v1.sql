@@ -57,11 +57,16 @@ BEGIN
     prefix := e.manifest#>'{operation_policy_snapshots,PASS_POLICY,policy_payload,required_steps_before_decision}';
     update_steps := routes->'UPDATE';
     no_change_steps := routes->'NO_CHANGE';
-    IF jsonb_typeof(routes) <> 'object'
-       OR jsonb_typeof(prefix) <> 'array'
-       OR jsonb_typeof(update_steps) <> 'array'
-       OR jsonb_typeof(no_change_steps) <> 'array'
-       OR update_steps <> frozen
+    -- Type-check before array operations: malformed JSON must fail closed,
+    -- never yield a successful or ambiguous NULL boolean.
+    IF coalesce(jsonb_typeof(routes),'') <> 'object'
+       OR coalesce(jsonb_typeof(prefix),'') <> 'array'
+       OR coalesce(jsonb_typeof(update_steps),'') <> 'array'
+       OR coalesce(jsonb_typeof(no_change_steps),'') <> 'array'
+    THEN
+        RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID');
+    END IF;
+    IF update_steps <> frozen
        OR jsonb_array_length(prefix) <> 6
        OR jsonb_array_length(no_change_steps) < 6
        OR prefix <> (
