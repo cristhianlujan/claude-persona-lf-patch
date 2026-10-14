@@ -37,7 +37,8 @@ def build_evolution_plan(
 ) -> dict[str, Any]:
     structural = evaluate_s26(repo, slug)
     learning = evaluate_learning_preflight(
-        preflight_payload, slug, repo_root=repo, current_revision=current_revision
+        preflight_payload, slug, repo_root=repo, current_revision=current_revision,
+        assessment_only=True,
     )
     preflight_pass = learning["status"] == "PASS"
 
