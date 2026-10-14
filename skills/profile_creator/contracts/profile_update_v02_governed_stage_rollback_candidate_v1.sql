@@ -15,14 +15,16 @@
 -- The human governance owner for PE10 v0.2 is SUPER_ADMIN. In software
 -- governance the corresponding role is SUPER_ADMIN_GOVERNANCE, authority
 -- ref contract://LF_GOVERNANCE_SUPER_ADMIN_V1 (currently CANDIDATE_READ_ONLY).
--- This user-designated owner is NOT automatically an authenticated receipt.
+-- This owner designation is not a human decision request nor proof of
+-- authenticated execution. The trusted migration lane must still admit writes.
 -- created_by_execution_id is technical provenance, not the human author.
 -- Do not use the product B2B_ADMIN_LF role for software governance.
 -- No historical in-progress execution is automatically eligible.
 -- A separately admitted, scope-bound governance bootstrap must issue an
 -- ACTUALIZACION_PERFIL_LF operation execution with these immutable fields:
 -- governance_scope=PE10_V02_GOVERNED_REGISTRATION,
--- governance_target=ACTUALIZACION_PERFIL_LF, governance_pr=2619.
+-- governance_target=ACTUALIZACION_PERFIL_LF, governance_pr=2619,
+-- governance_owner_role=SUPER_ADMIN.
 -- Reuse the canonical operation reservation/bootstrap under Train authority;
 -- do NOT synthesize the actor through session GUC or a manual INSERT.
 -- The GUC below merely selects an already-authorized row for rehearsal.
@@ -45,6 +47,7 @@ BEGIN
       AND manifest->>'governance_scope'='PE10_V02_GOVERNED_REGISTRATION'
       AND manifest->>'governance_target'=v_op
       AND manifest->>'governance_pr'='2619'
+      AND manifest->>'governance_owner_role'='SUPER_ADMIN'
   ) THEN RAISE EXCEPTION 'PE10_V02_GOVERNED_ACTOR_REQUIRED'; END IF;
   IF (SELECT version FROM public.lf_operation_registry WHERE operation_code=v_op)
        IS DISTINCT FROM 'v0.1'
@@ -157,7 +160,7 @@ BEGIN
     'governance_authority_domain','LF_GOVERNANCE',
     'governance_reviewer_role','SUPER_ADMIN_GOVERNANCE',
     'governance_authority_ref','contract://LF_GOVERNANCE_SUPER_ADMIN_V1',
-    'governance_authority_receipt_state','PENDING_VERIFIED_RECEIPT');
+    'governance_authority_binding','OWNER_ROLE_ONLY_NOT_HUMAN_DECISION');
   v_digest:=encode(extensions.digest(convert_to(v_policy::text,'UTF8'),'sha256'),'hex');
   INSERT INTO public.lf_policy_versions
     (policy_code,policy_version,policy_payload,policy_sha,status,source_ref,created_by_execution_id)
