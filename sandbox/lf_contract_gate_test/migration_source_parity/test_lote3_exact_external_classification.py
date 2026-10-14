@@ -7,9 +7,9 @@ from lf_migration_source_parity_ci_context import classified
 
 
 NAMES = (
-    "ig_m8_2_per_family_resolver_hook_v1",
-    "ig_m8_2_per_family_resolver_facade_v1",
-    "ig_m8_6_batch_common_v1",
+    "20261008195346_ig_m8_2_per_family_resolver_hook_v1",
+    "20261008195353_ig_m8_2_per_family_resolver_facade_v1",
+    "20261008201658_ig_m8_6_batch_common_v1",
     "20261011040000_lf_d2_facade_request_plan_v1",
     "20261011041000_lf_d2_facade_receipt_readback_v1",
     "20261011042000_lf_d2_source_binding_candidate_v1",
@@ -36,7 +36,6 @@ NAMES = (
     "20261012040100_ig_m100_human_approval_semantics_v1",
     "20261012040200_ig_m100_ekb_contract_findings_v1",
     "20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1",
-
 )
 
 
