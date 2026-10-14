@@ -20,7 +20,6 @@ DECLARE
     decision_row public.lf_operation_execution_steps%rowtype;
     selected jsonb;
     outcome text;
-    x text;
 BEGIN
     SELECT * INTO e
       FROM public.lf_operation_execution
@@ -85,7 +84,7 @@ BEGIN
        OR prefix->>4 <> 'method_selection'
        OR prefix->>5 <> 'evolution_decision'
        OR (SELECT count(*) FROM jsonb_array_elements_text(no_change_steps))
-          <> (SELECT count(DISTINCT x) FROM jsonb_array_elements_text(no_change_steps) a(x))
+          <> (SELECT count(DISTINCT a.value) FROM jsonb_array_elements_text(no_change_steps) a(value))
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements(no_change_steps) a(value)
          WHERE jsonb_typeof(a.value) <> 'string'
