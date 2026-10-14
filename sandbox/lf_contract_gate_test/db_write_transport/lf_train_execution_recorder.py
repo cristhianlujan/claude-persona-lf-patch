@@ -75,6 +75,7 @@ DIFF_NOT_EVALUATED = "NOT_EVALUATED"
 
 _TELEMETRY_STAGE = None
 _TELEMETRY_STARTED_AT = None
+_TELEMETRY_TRAIN_STARTED_AT = None
 _TELEMETRY_METRICS = StageMetrics()
 
 
@@ -377,6 +378,7 @@ def record_step(ids: dict, step: str, evidence: dict, *, ctx: dict | None = None
                      or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified"),
         metrics=stage_metrics,
         run_identity=telemetry_run_identity(ctx or {}, ids),
+        total_started_at=_TELEMETRY_TRAIN_STARTED_AT,
     )
     if evidence.get("failure"):
         envelope["failure"] = evidence["failure"]
@@ -418,9 +420,10 @@ def record_receipt(state: dict) -> dict:
 
 
 def begin(ctx: dict) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     _TELEMETRY_STAGE = "preflight"
     _TELEMETRY_STARTED_AT = utc_now()
+    _TELEMETRY_TRAIN_STARTED_AT = _TELEMETRY_STARTED_AT
     _TELEMETRY_METRICS = StageMetrics()
     validate_context(ctx)
     provenance = capture_provenance(ctx)
@@ -461,12 +464,14 @@ def begin(ctx: dict) -> dict:
     if effect.get("dispatch_permitted") is not True:
         raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
     return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY", "effect_state": "RESERVED",
-            "provenance": provenance, "patch_started_at": utc_now()}
+            "provenance": provenance, "patch_started_at": utc_now(),
+            "telemetry_train_started_at": _TELEMETRY_TRAIN_STARTED_AT}
 
 
 def resume(ctx: dict) -> dict:
     """Resume one expired open execution only when its exact migration is in the ledger."""
     validate_context(ctx)
+    resumed_at = utc_now()
     provenance = capture_provenance(ctx)
     enforce_d1(provenance)
     ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
@@ -532,14 +537,16 @@ def resume(ctx: dict) -> dict:
     return {
         "context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_RESUMED",
         "effect_state": candidate["effect_state"], "ledger_receipt": ledger_receipt,
-        "provenance": provenance,
+        "provenance": provenance, "patch_started_at": resumed_at,
+        "telemetry_train_started_at": resumed_at,
     }
 
 
 def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
           failure: dict | None = None) -> dict:
     """Record pre-apply failure; SQL independently rejects any version in the ledger."""
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     ctx, ids = state["context"], state["ids"]
     original_error = failure or {"code": "TRAIN_STEP_FAILED", "sqlstate": "NOT_OBSERVED",
                                  "message": error_summary, "evidence_locator": "NOT_OBSERVED"}
@@ -591,8 +598,9 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     _TELEMETRY_STAGE = "patch"
     _TELEMETRY_STARTED_AT = state.get("patch_started_at") or utc_now()
     _TELEMETRY_METRICS = StageMetrics()
@@ -610,8 +618,9 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
 
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     _TELEMETRY_STAGE = "verify"
     _TELEMETRY_STARTED_AT = utc_now()
     _TELEMETRY_METRICS = StageMetrics()
