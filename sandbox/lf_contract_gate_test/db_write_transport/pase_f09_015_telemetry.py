@@ -13,6 +13,25 @@ MAX_ENVELOPE_BYTES = 2560
 CANONICAL_STEPS = ("preflight", "patch", "verify")
 TELEMETRY_STAGES = ("transport", "queries", "control_execution", "judges", "evidence_persistence", "total")
 NOT_OBSERVED = "NOT_OBSERVED"
+EXACT_HEAD_CHECKS_OUTSIDE_STAGE = {
+    "measurement": "OUTSIDE_STAGE",
+    "elapsed_ms": NOT_OBSERVED,
+    "reason": "GitHub exact-head check fan-in completes before the Train recorder starts; its wait/evaluation is not timed by control_execution or judges.",
+}
+PERSISTENCE_FUNCTIONS = (
+    "fn_lf_operation_reserve_execution_v1", "fn_lf_operation_acquire_lease_v1",
+    "lf_record_db_operation_step_v1", "fn_lf_operation_reserve_effect_v1",
+    "fn_lf_operation_mark_effect_succeeded_v1", "lf_close_db_operation_execution_v1",
+    "lf_fail_db_operation_execution_v1", "lf_record_migration_train_receipt_v1",
+)
+
+
+def sql_measurement_family(sql: str) -> str:
+    """Assign each psql round-trip to exactly one bucket."""
+    lowered = (sql or "").lower()
+    if any(re.search(rf"\b{re.escape(name)}\s*\(", lowered) for name in PERSISTENCE_FUNCTIONS):
+        return "evidence_persistence"
+    return "queries"
 
 
 def utc_now() -> str:
@@ -109,6 +128,7 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         "queries": metrics.queries.fields(),
         "transport": metrics.transport.fields(),
         "stages": stages,
+        "exact_head_checks": dict(EXACT_HEAD_CHECKS_OUTSIDE_STAGE),
         "recorder_write": {"count": 1, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
         "input_digest": digest_json(input_value) if input_value is not None else NOT_OBSERVED,
         "result_digest": digest_json(result_value) if result_value is not None else NOT_OBSERVED,
@@ -184,6 +204,12 @@ def verify_execution(execution: dict, canonical_steps: tuple[str, ...] = CANONIC
             duration_value = value.get("duration_ms")
             if isinstance(duration_value, bool) or not isinstance(duration_value, (int, float)) or duration_value < 0:
                 raise ValueError(f"PASE_F09_015_STAGE_DURATION_INVALID:{step}:{stage}")
+        external_checks = envelope.get("exact_head_checks")
+        if (not isinstance(external_checks, dict)
+                or external_checks.get("measurement") != "OUTSIDE_STAGE"
+                or external_checks.get("elapsed_ms") != NOT_OBSERVED
+                or not str(external_checks.get("reason", "")).strip()):
+            raise ValueError(f"PASE_F09_015_EXACT_HEAD_CHECKS_BOUNDARY_MISSING:{step}")
         if "verdict" in envelope:
             raise ValueError(f"PASE_F09_015_ENVELOPE_OWNS_VERDICT:{step}")
         if len(json.dumps(envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")) > MAX_ENVELOPE_BYTES:
