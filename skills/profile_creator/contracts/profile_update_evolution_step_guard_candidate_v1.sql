@@ -29,10 +29,10 @@ BEGIN
   THEN RETURN 'EVOLUTION_OPERATION_CONTEXT_INVALID'; END IF;
   IF jsonb_typeof(p_payload) <> 'object' THEN RETURN 'EVOLUTION_EVIDENCE_NOT_OBJECT'; END IF;
   slug:=split_part(e.target_path,'/',2);
-  IF NULLIF(slug,'') IS NULL OR p_payload->>'profile_slug'<>slug THEN
+  IF NULLIF(slug,'') IS NULL OR p_payload->>'profile_slug' IS DISTINCT FROM slug THEN
     RETURN 'EVOLUTION_PROFILE_IDENTITY_MISMATCH';
   END IF;
-  IF p_payload->>'source_head_sha'<>coalesce(e.manifest->>'initial_main_revision','')
+  IF p_payload->>'source_head_sha' IS DISTINCT FROM coalesce(e.manifest->>'initial_main_revision','')
      OR p_payload->>'source_head_sha' !~ '^[0-9a-f]{40}$'
   THEN RETURN 'EVOLUTION_SOURCE_REVISION_MISMATCH'; END IF;
   IF NOT public.lf_profile_update_verified_receipt_v1(
@@ -53,8 +53,8 @@ BEGIN
         ON v.capability_code=c.capability_code AND v.version=c.version
      WHERE c.capability_code='METHOD_PACK_REGISTRY'
        AND v.release_state='RELEASED';
-    IF jsonb_typeof(portfolio)<>'array'
-       OR jsonb_typeof(p_payload->'selected_methods')<>'array'
+    IF coalesce(jsonb_typeof(portfolio),'')<>'array'
+       OR coalesce(jsonb_typeof(p_payload->'selected_methods'),'')<>'array'
     THEN RETURN 'EVOLUTION_METHOD_PORTFOLIO_INVALID'; END IF;
 
     IF jsonb_array_length(p_payload->'selected_methods')=0 THEN
@@ -73,11 +73,11 @@ BEGIN
          nullif(btrim(r.item->>'exact_version'),'') IS NULL OR
          nullif(btrim(r.item->>'receipt_id'),'') IS NULL
       THEN RETURN 'EVOLUTION_METHOD_RECORD_INVALID'; END IF;
-      SELECT item INTO method_data
-        FROM jsonb_array_elements(portfolio) item
-       WHERE item->>'method_id'=r.item->>'method_id'
-         AND item->>'exact_version'=r.item->>'exact_version'
-         AND item->>'qualification_state'='QUALIFIED'
+      SELECT elem.value INTO method_data
+        FROM jsonb_array_elements(portfolio) AS elem(value)
+       WHERE elem.value->>'method_id'=r.item->>'method_id'
+         AND elem.value->>'exact_version'=r.item->>'exact_version'
+         AND elem.value->>'qualification_state'='QUALIFIED'
        LIMIT 1;
       IF method_data IS NULL THEN RETURN 'EVOLUTION_METHOD_NOT_QUALIFIED'; END IF;
       IF NOT public.lf_profile_update_verified_receipt_v1(
@@ -104,9 +104,9 @@ BEGIN
   THEN RETURN 'EVOLUTION_DECISION_ASSESSMENT_RECEIPT_MISMATCH'; END IF;
   decision:=p_payload->>'decision';
   mode:=p_payload->>'evolution_mode';
-  IF decision='NO_CHANGE' AND mode<>'NO_CHANGE' THEN
+  IF decision='NO_CHANGE' AND mode IS DISTINCT FROM 'NO_CHANGE' THEN
     RETURN 'EVOLUTION_NO_CHANGE_MODE_INVALID';
-  ELSIF decision='UPDATE' AND mode NOT IN ('PATCH','SPECIALIZE','ADAPT','REARCHITECT','OPTIMIZE')
+  ELSIF decision='UPDATE' AND (mode IS NULL OR mode NOT IN ('PATCH','SPECIALIZE','ADAPT','REARCHITECT','OPTIMIZE'))
   THEN RETURN 'EVOLUTION_UPDATE_MODE_INVALID';
   ELSIF decision IS NULL OR decision NOT IN ('NO_CHANGE','UPDATE')
   THEN RETURN 'EVOLUTION_DECISION_NOT_ADMITTED';
