@@ -7,11 +7,7 @@ on:
     types: [labeled]
 
 permissions:
-  contents: read
-  pull-requests: write
-  issues: write
   actions: write
-  statuses: write
 
 concurrency:
   group: lf-migrations
@@ -31,6 +27,19 @@ jobs:
       actions: write
       statuses: write
     steps:
+      - name: Create Train App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-statuses: write
+
       # Trusted verifier code is checked out from main. The PR checkout is only
       # read through Git objects; no PR code or SQL is executed.
       - name: Checkout trusted main
@@ -40,6 +49,7 @@ jobs:
           path: trusted
           fetch-depth: 0
           persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Checkout exact PR head
         uses: actions/checkout@v4
@@ -49,12 +59,12 @@ jobs:
           path: reconcile-head
           fetch-depth: 0
           persist-credentials: true
-          token: ${{ github.token }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Resolve current main and reject mixed labels
         id: preflight
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
@@ -149,7 +159,7 @@ jobs:
       - name: Comment verdict and receipt table
         if: always()
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           VERIFY_VERDICT: ${{ steps.verify.outputs.verdict }}
@@ -180,19 +190,6 @@ jobs:
           PY
           gh pr comment "$PR" --repo "$REPO" --body-file comment.md
 
-      - name: Create Train App token
-        id: app-token
-        if: (steps.verify.outputs.verdict == 'PASS' || steps.reject-preflight.outputs.verdict == 'PASS')
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
-          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-          permission-pull-requests: write
-          permission-statuses: write
-
       - name: Publish verified status and merge exact head
         if: steps.verify.outputs.verdict == 'PASS'
         env:
@@ -222,7 +219,7 @@ jobs:
       - name: Remove lane label after failure
         if: always() && (steps.verify.outputs.verdict != 'PASS' || failure())
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
         run: gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-reconcile" >/dev/null 2>&1 || true
