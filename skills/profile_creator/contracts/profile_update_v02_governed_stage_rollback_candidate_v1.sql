@@ -12,6 +12,12 @@
 -- governance_target or governance_pr. Thus it CANNOT currently produce an
 -- eligible PE10 v0.2 governance author; do not trigger a bogus profile update.
 -- The runtime-update begin route is also hard-bound to EJECUCION_PERFIL_LF.
+-- The human governance owner for PE10 v0.2 is SUPER_ADMIN. In software
+-- governance the corresponding role is SUPER_ADMIN_GOVERNANCE, authority
+-- ref contract://LF_GOVERNANCE_SUPER_ADMIN_V1 (currently CANDIDATE_READ_ONLY).
+-- This user-designated owner is NOT automatically an authenticated receipt.
+-- created_by_execution_id is technical provenance, not the human author.
+-- Do not use the product B2B_ADMIN_LF role for software governance.
 -- No historical in-progress execution is automatically eligible.
 -- A separately admitted, scope-bound governance bootstrap must issue an
 -- ACTUALIZACION_PERFIL_LF operation execution with these immutable fields:
@@ -146,7 +152,12 @@ BEGIN
     'required_steps',v_update,
     'required_steps_before_decision',v_prefix,
     'required_steps_by_outcome',jsonb_build_object('UPDATE',v_update,'NO_CHANGE',v_nochange),
-    'proposed_operation_version','v0.2','activation_authorized',false);
+    'proposed_operation_version','v0.2','activation_authorized',false,
+    'governance_owner_role','SUPER_ADMIN',
+    'governance_authority_domain','LF_GOVERNANCE',
+    'governance_reviewer_role','SUPER_ADMIN_GOVERNANCE',
+    'governance_authority_ref','contract://LF_GOVERNANCE_SUPER_ADMIN_V1',
+    'governance_authority_receipt_state','PENDING_VERIFIED_RECEIPT');
   v_digest:=encode(extensions.digest(convert_to(v_policy::text,'UTF8'),'sha256'),'hex');
   INSERT INTO public.lf_policy_versions
     (policy_code,policy_version,policy_payload,policy_sha,status,source_ref,created_by_execution_id)
