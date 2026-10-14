@@ -157,4 +157,4 @@ begin
   end if;
   return jsonb_build_object('outcome','STEP_RECORDED','replay',false,'execution_id',p_execution_id,'operation_code',v_execution.operation_code,'step_id',p_step_id,'step_order',v_step.step_order,'execution_order',v_step.execution_order,'status',v_binding.clean_result_value,'execution_status',case when v_execution.operation_code='ACTUALIZACION_PERFIL_LF' and p_step_id='report_output' then 'COMPLETED' else v_execution.status end,'mini_judge_code',v_binding.judge_code,'mini_judge_result',v_binding.clean_result_value,'next_gate',v_contract.next_if_pass,'resumed_from_blocked',v_existing_retryable,'prior_attempt_count',jsonb_array_length(v_attempt_history));
 end;
-$function$
+$function$;
