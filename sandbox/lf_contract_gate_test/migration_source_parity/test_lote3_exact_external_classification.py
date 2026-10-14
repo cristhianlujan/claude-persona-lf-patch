@@ -3,13 +3,14 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from lf_migration_source_parity_ci_context import classified
 
 
 NAMES = (
-    "20261008195346_ig_m8_2_per_family_resolver_hook_v1",
-    "20261008195353_ig_m8_2_per_family_resolver_facade_v1",
-    "20261008201658_ig_m8_6_batch_common_v1",
+    "ig_m8_2_per_family_resolver_hook_v1",
+    "ig_m8_2_per_family_resolver_facade_v1",
+    "ig_m8_6_batch_common_v1",
     "20261011040000_lf_d2_facade_request_plan_v1",
     "20261011041000_lf_d2_facade_receipt_readback_v1",
     "20261011042000_lf_d2_source_binding_candidate_v1",
@@ -50,6 +51,7 @@ class Lote3ExactExternalClassificationTests(unittest.TestCase):
         variants = (
             NAMES[0] + "_v2",
             "20261014000000_" + NAMES[0],
+            "20261008195346_ig_m8_2_per_family_resolver_hook_v1",
             "unregistered_lote3_migration_v1",
         )
         for name in variants:
