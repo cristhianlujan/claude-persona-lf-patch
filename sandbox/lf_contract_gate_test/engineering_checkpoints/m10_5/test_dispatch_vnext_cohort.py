@@ -32,6 +32,27 @@ class FakeTransport:
                  "cp2_verdict": self.cp2, "technical_verdict": "PASS_TECNICO"}]
 
 class DispatcherTests(unittest.TestCase):
+    def test_pilot_single_screen_from_frozen_scope(self):
+        self.assertEqual(mod.select_cp2_pilot_screen(SCOPE["screen_ids"], "1"), [1])
+        self.assertEqual(mod.select_cp2_pilot_screen(SCOPE["screen_ids"], "13"), [13])
+
+    def test_pilot_rejects_multi_screen_and_default_cohort(self):
+        for raw in ("1,2", "1,2,3,4,5,6,7,8,9,10,11,12,13", "", " 1", "1 ", "0", "01"):
+            with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "CP2_ONE_SCREEN_ID_REQUIRED"):
+                mod.select_cp2_pilot_screen(SCOPE["screen_ids"], raw)
+
+    def test_pilot_rejects_foreign_screen_and_injection(self):
+        with self.assertRaisesRegex(ValueError, "CP2_PILOT_OUTSIDE_FROZEN_COHORT"):
+            mod.select_cp2_pilot_screen(SCOPE["screen_ids"], "43")
+        for raw in ("1;echo test", "[1]", "1\\n2", "１", None, 1):
+            with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "CP2_ONE_SCREEN_ID_REQUIRED"):
+                mod.select_cp2_pilot_screen(SCOPE["screen_ids"], raw)
+
+    def test_pilot_requires_frozen_cohort_integrity(self):
+        for bad in ([1], [1]*13, list(range(0,13)), ["1"]*13):
+            with self.subTest(bad=bad), self.assertRaisesRegex(ValueError, "CP2_FROZEN_SCOPE_INVALID"):
+                mod.select_cp2_pilot_screen(bad, "1")
+
     def test_canonical_cohort(self):
         self.assertEqual(mod.check_scope(SCOPE, RELEASE), "READY_TO_DISPATCH")
     def test_no_vnext(self):
