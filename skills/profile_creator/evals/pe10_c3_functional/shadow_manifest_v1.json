@@ -1,0 +1,36 @@
+{
+  "schema": "PE10_C3_FUNCTIONAL_SHADOW_MANIFEST_V1",
+  "purpose": "E2E downstream behavior demonstration with honest source projection",
+  "authority_state": "NON_AUTHORITY_SHADOW",
+  "target_scope": "PROFILE_EVOLUTION_CUTOVER",
+  "method_delivery": "INJECT_INSIDE_EXACT_RUNTIME_H2_SECTION",
+  "projection_contract": "skills/profile_creator/evals/profile_expert_benchmark_source_projection_v1.json",
+  "source_policy": "IMMUTABLE_GIT_BASELINE_EQUALS_CANDIDATE_PARENT",
+  "runtime_activation": false,
+  "production_activation": false,
+  "profile_write": false,
+  "profiles": [
+    {
+      "slug": "quality_pack",
+      "profile_code": "PERFIL-QUALITY-PACK",
+      "target_section": "Independent clean-chat semantic review",
+      "method_file": "methods/quality_pack.md"
+    },
+    {
+      "slug": "ui_architect",
+      "profile_code": "PERFIL-UI-ARCHITECT",
+      "target_section": "Production UI Spec contract",
+      "method_file": "methods/ui_architect.md"
+    },
+    {
+      "slug": "product_director_lf",
+      "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+      "target_section": "Mandatory decision trajectory",
+      "method_file": "methods/product_director_lf.md"
+    }
+  ],
+  "paired_protocol": "cases_v1.json",
+  "score_protocol": "private_oracle_v1.json",
+  "minimum_demonstration": "PAIR_SOURCE_PROJECTION_AND_REAL_GPT_NATIVE_OUTPUTS",
+  "evidence_limit": "SOURCE_PROJECTION_PASS_IS_NOT_SEMANTIC_UPLIFT"
+}
