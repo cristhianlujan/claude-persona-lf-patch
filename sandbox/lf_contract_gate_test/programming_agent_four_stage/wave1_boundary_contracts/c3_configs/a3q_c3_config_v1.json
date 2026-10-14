@@ -1,0 +1,36 @@
+{
+ "checks": [
+  {
+   "code": "SOURCE_SCOPE_RESPECTED",
+   "statement": "Solo se reportan las fuentes suministradas en la entrada: ninguna fuente suministrada se omite, ninguna se inventa y no se lee ni se cita nada más (sin búsqueda extra)."
+  },
+  {
+   "code": "SUFFICIENCY_JUSTIFIED",
+   "statement": "El veredicto de suficiencia es coherente con la evidencia: no es SUFFICIENT mientras falte evidencia material del objetivo, y las brechas materiales no resueltas quedan listadas."
+  },
+  {
+   "code": "NO_INVENTED_STATE",
+   "statement": "No se afirma estado de autoridad ni de implementación del objetivo sin evidencia (UNKNOWN), y no se inventan línea base AS-IS, delta ni solución técnica."
+  }
+ ],
+ "criterion": "Revisor verifica suficiencia y ausencia de búsqueda/invención",
+ "decoy_must_fail_checks": [
+  "SUFFICIENCY_JUSTIFIED"
+ ],
+ "replacements": [
+  [
+   "\"sufficiency_verdict\": \"NEED_MORE_EVIDENCE\"",
+   "\"sufficiency_verdict\": \"SUFFICIENT\""
+  ],
+  [
+   "\"implementation_state\": \"UNKNOWN\",\n  \"target_resolution\": {",
+   "\"implementation_state\": \"EXISTING\",\n  \"target_resolution\": {"
+  ],
+  [
+   "\"kind\": \"NONE_SUPPLIED\",\n    \"refs\": []",
+   "\"kind\": \"AS_IS_BASELINE\",\n    \"refs\": [\n      \"supabase://public.lf_eventos/99999\"\n    ]"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Regla de investigación mínima:"
+}
