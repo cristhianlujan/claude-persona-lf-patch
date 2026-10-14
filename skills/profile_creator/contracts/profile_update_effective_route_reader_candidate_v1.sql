@@ -32,7 +32,10 @@ BEGIN
     IF frozen IS NULL THEN
         RETURN jsonb_build_object('outcome','LEGACY_NO_SNAPSHOT','effective_steps',null);
     END IF;
-    IF jsonb_typeof(frozen) <> 'array' OR jsonb_array_length(frozen)=0
+    IF coalesce(jsonb_typeof(frozen),'') <> 'array' THEN
+        RETURN jsonb_build_object('outcome','BLOCKED','code','FROZEN_REQUIRED_STEPS_INVALID');
+    END IF;
+    IF jsonb_array_length(frozen)=0
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements(frozen) a
           WHERE jsonb_typeof(a.value) <> 'string'
@@ -90,6 +93,10 @@ BEGIN
        OR no_change_steps ? 'github_write'
        OR no_change_steps ? 'pre_write_execution_binding_gate'
        OR no_change_steps ? 'post_merge_reconcile'
+       OR NOT (no_change_steps ?& ARRAY['deterministic_validation','semantic_judge','close','report_output'])
+       OR NOT (update_steps ?& ARRAY['change_scope','regression_plan','pre_write_execution_binding_gate',
+                                      'github_write','github_readback','deterministic_validation',
+                                      'semantic_judge','regression_after','post_merge_reconcile','close','report_output'])
        OR EXISTS (
          SELECT 1 FROM jsonb_array_elements_text(no_change_steps) b(value)
           WHERE NOT EXISTS (
