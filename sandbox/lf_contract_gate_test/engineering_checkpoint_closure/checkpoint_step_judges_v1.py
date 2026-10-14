@@ -141,8 +141,14 @@ def validate_step(
               and authority.get("checkpoint_status") == "DONE", "STATUS")
         check(_eq(evidence, "receipt_sha", authority.get("assertion_receipt_sha256"))
               and _sha(evidence.get("receipt_sha")), "ASSERTION_HASH")
-        check(_eq(evidence, "next_checkpoint", authority.get("next_checkpoint"))
-              and _is_nonempty(authority.get("next_checkpoint")), "NEXT")
+        next_code = authority.get("next_checkpoint")
+        if authority.get("unit_terminal") is True:
+            check(next_code is None and evidence.get("next_checkpoint") is None
+                  and authority.get("next_terminal_action") == "STOP_TERMINAL_DONE",
+                  "TERMINAL_DONE")
+        else:
+            check(_eq(evidence, "next_checkpoint", next_code)
+                  and _is_nonempty(next_code), "NEXT")
         check(authority.get("effect_state") == "SUCCEEDED", "EFFECT")
         check(authority.get("rollback_test_passed") is True, "ROLLBACK_UNVERIFIED")
         check(authority.get("unintended_effect_count") == 0, "UNINTENDED_EFFECTS")
