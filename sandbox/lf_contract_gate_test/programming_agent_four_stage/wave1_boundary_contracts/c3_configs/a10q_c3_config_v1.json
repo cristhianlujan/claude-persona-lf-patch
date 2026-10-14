@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "ALL_CASES_COVERED",
+   "statement": "Hay un registro por cada caso de la entrada, con case_id y change_family copiados exactamente, y families_covered lista las familias distintas presentes, ordenadas."
+  },
+  {
+   "code": "NO_SOURCE_CONTENT_INVENTED",
+   "statement": "El análisis parte solo del asunto: evidence_refs usa únicamente las source_refs del propio caso, los veredictos de paridad, alcance y vigencia son NOT_EVALUATED y los contadores de lectura y reintento son 0."
+  },
+  {
+   "code": "NO_CRITICAL_OMISSION_NO_READY",
+   "statement": "Cada caso trae impactos críticos y frentes materiales hipotéticos no vacíos, false_ready_count es 0 y no_ready_claim es true: nada se declara READY."
+  }
+ ],
+ "criterion": "Auditor independiente comprueba cero omisiones críticas",
+ "decoy_must_fail_checks": [
+  "NO_SOURCE_CONTENT_INVENTED",
+  "NO_CRITICAL_OMISSION_NO_READY"
+ ],
+ "replacements": [
+  [
+   "\"lf_eventos://20397\",\n        \"github://cristhianlujan/claude-persona-lf-patch/pull/1800\"",
+   "\"lf_eventos://20397\",\n        \"github://cristhianlujan/claude-persona-lf-patch/pull/1800\",\n        \"lf_eventos://99999\""
+  ],
+  [
+   "\"currentness_verdict\": \"NOT_EVALUATED\",\n      \"duplicate_read_count\": 0,\n      \"evidence_note\": \"Análisis hipotético basado exclusivamente en el asunto histórico y la familia FEATURE.",
+   "\"currentness_verdict\": \"CURRENT\",\n      \"duplicate_read_count\": 0,\n      \"evidence_note\": \"Análisis hipotético basado exclusivamente en el asunto histórico y la familia FEATURE."
+  ],
+  [
+   "\"no_ready_claim\": true",
+   "\"no_ready_claim\": false"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Analiza cada caso de forma candidata"
+}

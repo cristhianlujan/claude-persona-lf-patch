@@ -73,6 +73,22 @@ def should_publish_success(
     return True, "verified exact head has no migration paths"
 
 
+def reconciliation_label_decision(labels: list[dict[str, Any]] | list[str]) -> tuple[bool, str] | None:
+    """Keep the generic route guard from publishing status for reconcile PRs."""
+    names = {
+        item if isinstance(item, str) else item.get("name")
+        for item in labels
+        if isinstance(item, (str, dict))
+    }
+    has_train = "ready-to-merge" in names
+    has_reconcile = "ready-to-reconcile" in names
+    if has_train and has_reconcile:
+        return False, "conflicting ready-to-merge and ready-to-reconcile labels"
+    if has_reconcile:
+        return True, "ready-to-reconcile owns verification; route guard publishes no status"
+    return None
+
+
 class ApiError(RuntimeError):
     pass
 
@@ -156,6 +172,12 @@ def process_pull(repo: str, number: int, event_head: str | None, read_token: str
     if not isinstance(initial_head, str) or (event_head and event_head != initial_head):
         write_summary(prefix + "event head is stale or missing; no status published.")
         return True
+
+    reconcile_decision = reconciliation_label_decision(pull.get("labels", []))
+    if reconcile_decision is not None:
+        _ok, reason = reconcile_decision
+        write_summary(prefix + reason + f"; no {STATUS_CONTEXT} status published.")
+        return _ok
 
     files, complete = pull_files(repo, number, read_token)
     classification = classify_files(files, pagination_complete=complete)

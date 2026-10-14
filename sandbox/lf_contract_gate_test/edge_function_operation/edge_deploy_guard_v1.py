@@ -40,10 +40,14 @@ def preflight(p: dict) -> dict:
     proof = p.get("r17") or {}
     _check(isinstance(proof, dict), "R17_EVIDENCE_MISSING")
     if requested:
-        _check(proof.get("status") == "PASS", "R17_PREFLIGHT_NOT_PASSED")
+        # R17 predeploy must not claim a live provider drill that cannot
+        # exist until the authorized deployment has actually happened.
+        _check(proof.get("status") == "READY_NO_PROVIDER_EFFECT", "R17_PREFLIGHT_NOT_PASSED")
         _check(isinstance(proof.get("event_id"), (str, int)) and str(proof["event_id"]).strip(), "R17_EVENT_MISSING")
-        _check(proof.get("rollback_drill") == "PASS", "R17_ROLLBACK_NOT_VERIFIED")
-        _check(proof.get("idempotency") == "PASS", "R17_IDEMPOTENCY_NOT_VERIFIED")
+        _check(isinstance(proof.get("offline_bundle_receipt"), str) and bool(proof["offline_bundle_receipt"]), "R17_OFFLINE_RECEIPT_MISSING")
+        _check(proof.get("offline_rollback") == "PASS", "R17_OFFLINE_ROLLBACK_NOT_VERIFIED")
+        _check(proof.get("offline_idempotency") == "PASS", "R17_OFFLINE_IDEMPOTENCY_NOT_VERIFIED")
+        _check(proof.get("provider_deployment_executed") is False, "R17_PROVIDER_ALREADY_DEPLOYED")
         _check(all(isinstance(proof.get(k), (int, float)) and proof[k] >= 0 for k in ("p50_ms", "p90_ms", "max_ms")), "R17_TIMING_MISSING")
         _check(proof["p50_ms"] <= proof["p90_ms"] <= proof["max_ms"], "R17_TIMING_INCONSISTENT")
         _check(p.get("operation_authority") == "CURRENT_VERIFIED", "OPERATION_AUTHORITY_MISSING")

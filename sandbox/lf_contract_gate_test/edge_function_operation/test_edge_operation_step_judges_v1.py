@@ -15,8 +15,14 @@ def fixture():
         "main_sha": A, "execution_id": "EX-1", "operation_execution_state": "IN_PROGRESS",
         "deployed_rollback_git_sha": B, "rollback_bytes_equal_live": True,
         "only_target_changed": True, "jwt_mode_preserved": True,
-        "r17_event_id": "R17-1", "rollback_drill": "PASS", "idempotency": "PASS",
-        "r17_status": "PASS", "timing": {"p50_ms": 10, "p90_ms": 20, "max_ms": 30}, "time_budget_ms": 100,
+        "r17_event_id": "R17-1", "offline_bundle_receipt": "BUNDLE-1",
+        "offline_rollback_verified": True, "offline_idempotency_verified": True,
+        "r17_predeploy_state": "READY_NO_PROVIDER_EFFECT",
+        "provider_deployment_executed": False,
+        "provider_rollback_receipt": "REAL-ROLLBACK-1",
+        "provider_idempotency_receipt": "REAL-REPLAY-1",
+        "provider_rollback_drill_executed": True, "provider_idempotency_drill_executed": True,
+        "provider_source_restored": True, "timing": {"p50_ms": 10, "p90_ms": 20, "max_ms": 30}, "time_budget_ms": 100,
         "human_receipt_id": "SUPER-1", "human_role": "SUPER_ADMIN",
         "human_decision": "APPROVE_DEPLOY", "operation_lifecycle": "OP_OPERATIONAL",
         "authorized_target": "lf-profiles-governance-caller-v1",
@@ -36,12 +42,15 @@ def fixture():
         "init_execution": {"execution_id": "EX-1", "target_code": a["target"]},
         "source_baseline": {"exact_main_sha": A, "rollback_sha": B, "live_source_parity": True},
         "r17_preflight": {"r17_event_id": "R17-1", "timing": dict(a["timing"]),
-                           "rollback_drill": "PASS", "idempotency": "PASS"},
+                           "offline_bundle_receipt": "BUNDLE-1",
+                           "offline_rollback": "PASS", "offline_idempotency": "PASS"},
         "human_authority": {"signed_receipt": "SUPER-1", "operation_current": True, "scope_exact": True},
         "effect_guard": {"effect_scope": a["effect_scope"], "request_sha256": C,
                          "reservation_receipt": "RES-1"},
         "edge_deploy": {"deploy_execution_id": "D-1", "provider_receipt": "P-1", "source_sha": A},
-        "independent_readback": {"deployed_source": A, "oidc_probe": "OIDC-1", "rollback_state": "READY"},
+        "independent_readback": {"deployed_source": A, "oidc_probe": "OIDC-1", "rollback_state": "READY",
+                                 "provider_rollback_receipt": "REAL-ROLLBACK-1",
+                                 "provider_idempotency_receipt": "REAL-REPLAY-1"},
         "close": {"effect_guard_receipt": "E-1", "parity": "PASS", "open_blockers": []},
     }
     return a, e
@@ -109,6 +118,23 @@ class EdgeStepJudgesTests(unittest.TestCase):
         fake["timing"]["p90_ms"]=1
         with self.assertRaises(ValueError):
             validate_step("r17_preflight", fake, a)
+
+    def test_predeploy_rejects_false_provider_effect(self):
+        a,e = fixture()
+        with self.assertRaisesRegex(ValueError, "EDGE_R17_PREFLIGHT_PREFLIGHT_ONLY"):
+            validate_step("r17_preflight", e["r17_preflight"],
+                          dict(a, provider_deployment_executed=True))
+        for field in ("offline_rollback_verified", "offline_idempotency_verified"):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_step("r17_preflight", e["r17_preflight"], dict(a, **{field: False}))
+
+    def test_no_closure_without_live_provider_rollback_and_idempotency(self):
+        a,e = fixture()
+        for field in ("provider_rollback_drill_executed",
+                      "provider_idempotency_drill_executed", "provider_source_restored"):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_step("independent_readback", e["independent_readback"],
+                              dict(a, **{field: False}))
 
     def test_human_gate_and_candidate_route_block(self):
         a,e = fixture()
