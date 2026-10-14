@@ -81,7 +81,7 @@ BEGIN
         jsonb_build_object(
           'decision_id', 1,
           'topic', 'telemetry_envelope_bytes',
-          'status', 'ACCEPTED',
+          'owner_confirmation', 'OWNER_CONFIRMED',
           'decision', 'Exclude the telemetry envelope from the F09-013 byte growth ratio 1.0.',
           'envelope_max_bytes_per_step', 2560,
           'encoding', 'UTF-8',
@@ -91,14 +91,14 @@ BEGIN
         jsonb_build_object(
           'decision_id', 2,
           'topic', 'failed_step_row',
-          'status', 'ACCEPTED',
+          'owner_confirmation', 'OWNER_CONFIRMED',
           'decision', 'A failed step may emit its own row only on the failure path.',
           'f09_013_zero_delta_scope', 'SUCCESS_PATH'
         ),
         jsonb_build_object(
           'decision_id', 3,
           'topic', 'retry_reconstruction',
-          'status', 'ACCEPTED',
+          'owner_confirmation', 'OWNER_CONFIRMED',
           'decision', 'Reconstruct retry chains at read time by same PR and migration version, ordered by time; emitter does not calculate attempts or query prior runs.',
           'envelope_fields_removed', jsonb_build_array('attempt_number', 'retry_of_execution_id')
         ),
@@ -111,7 +111,7 @@ BEGIN
         jsonb_build_object(
           'decision_id', 5,
           'topic', 'router_read_only_connector',
-          'status', 'ACCEPTED',
+          'owner_confirmation', 'OWNER_CONFIRMED',
           'decision', 'Read-only connector reads are outside Router.'
         )
       ),
