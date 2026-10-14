@@ -1,28 +1,24 @@
-# PE10_C3 V2 — Lote 2: readback de vinculación operativa
+# PE10_C3 V2 — Reconciliación de autoridad y componentes
 
-Estado: `BLOCKED_AUTHORITY_SOURCE_NOT_RESOLVED` (solo integración automática, no el consumidor local).
+## Fuente verificada
 
-## Evidencia leída en solo lectura
+- Supabase `public.lf_capability_registry`: `CAPABILITY_SELECTOR` ACTIVE; `public.lf_capability_version_registry`: versión 1.0.0 RELEASED, provider `capability_selector_v1.py`. No se autorizó ningún cambio en la versión/release.
+- GitHub, PR #2579: se incluyeron `profile_assessment_v1.py`, `capability_selector_v2.py`, `method_pack_registry_v1.json`, `plan_profile_evolution.py` y sus pruebas, como fuentes candidatas.
+- El catálogo `method_pack_registry_v1.json` declara `SUPABASE_REGISTRY_WITH_REPOSITORY_SOURCE`, pero **no hay comprobación de que esté efectivamente materializado, registrado, versionado y enlazado como autoridad activa en Supabase**. No convertir una etiqueta JSON en recibo.
+- `PROFILE_ASSESSMENT` opera con evidencia/senales proporcionadas por quien invoca; no existe readback de extracción autónoma de lenguaje natural ni de fuentes de datos de producción.
 
-- `public.lf_capability_registry` contiene `CAPABILITY_SELECTOR` estado `ACTIVE`.
-- `public.lf_capability_version_registry` contiene `CAPABILITY_SELECTOR@1.0.0`, `RELEASED`, cuyo manifest señala el proveedor `sandbox/lf_contract_gate_test/transversal_assets/capability_selector/capability_selector_v1.py` y establece que selección no equivale a autorización de ejecución.
-- GitHub confirma blob SHA del proveedor `d0624beacb1ee68b349bfa23a274b52c92d1c9aa`.
-- No hay tablas/vistas encontradas por nombre de método/selector/assessment en `pg_class` en los esquemas accesibles, salvo `private.lf_event_contract_assessment_v3` y `programacion.input_family_assessments` (no se afirma que esas tablas sean fuentes del perfil).
-- `public.lf_capability_version_registry` no devuelve una capacidad `METHOD` ni `ASSESSMENT` bajo el filtro comprobado.
-- La búsqueda GitHub `METHOD_PACK_REGISTRY` devuelve un documento candidato que lo declara autoridad, pero no materializa su catálogo ni un resolver verificable.
-- EKB `PROFILE-RUNTIME-SOURCE-PROJECTION-METHOD-OMISSION-001` exige probar que la revisión proyecta físicamente el método; `LF-PROFILE-GPT-NATIVE-DISPATCH-MISSING-001` impide confundir adaptador con invocación real.
+## Contrato corregido
 
-## Resultado
+- Ruta única: `PROFILE_ASSESSMENT v1` → `CAPABILITY_SELECTOR v2` → `plan_profile_evolution.py`, con `CAPABILITY_SELECTOR v1` transversal reutilizado y sin modificar.
+- Retirados compositor v1 y prueba sintética redundantes. No hay dos selectores de métodos activos.
+- Reproducción local previa al arreglo: método `HOSTILE_CHALLENGE` y capacidad compatible se añadían pese a ausencia de `candidate_exists` y `candidate_ref`.
+- Arreglo: método elegible únicamente si están enlazadas las precondiciones y referencias requeridas y cabe en presupuesto. Referencias suministradas por el llamador no constituyen atestación independiente; selección no otorga escritura/ejecución/activación.
+- El planificador pasa las referencias `precondition_evidence` y `method_evidence` al selector en vez de descartarlas.
 
-Se conserva el adaptador candidato probado con entradas sintéticas; no se promueve a integración automática. `provider_verified=true` se trata como declaración del caller, no como atestación. No hay registro canónico comprobado del cual resolver métodos, ni un origen acreditado de señales `PROFILE_ASSESSMENT`. Sin esos datos, el consumidor debe permanecer fail-closed.
+## Ejecución y límites
 
-## Desbloqueo mínimo propuesto (sin crear autoridad paralela)
+- 10 tests locales de reconciliación + 3 de planificador: PASS. Copias locales del código fuente corresponden exactamente a los Git blobs `capability_selector_v1.py`, `capability_selector_v2.py`, `profile_assessment_v1.py` y `plan_profile_evolution.py` tras el arreglo.
+- `test_profile_evolution_reconciliation_v1.py` quedó en PR para replay de la integración sobre el catálogo candidato de repositorio; no atribuirle resultado de CI/Train hasta ver evidencia real.
+- Pendiente: resolver autoridad canónica del catálogo de métodos, fuente de señales, validación de referencias, replay del paquete con Train y source projection de runtime.
 
-1. Identificar en autoridad actual la fuente/versión y esquema real de métodos; si no existe materializada, tramitarla como trabajo nuevo de autoridad, no simularla.
-2. Vincular `PROFILE_ASSESSMENT` a señales tipadas con `evidence_ref`, revisión y procedencia independientes; distinguir ausencia de necesidad frente a ausencia de evidencia.
-3. Ejecutar regresiones con catálogo real: éxito, método no admitido, evidencia caducada, ref falsificado, conflicto y `NO_ADDITIONAL_CAPABILITY_NEEDED`.
-4. Demostrar la proyección física en runtime antes de admisión; Train y readback antes de cualquier merge o activación.
-
-## Alcance sin cambios
-
-PR borrador, sin migraciones, sin escrituras Supabase, sin merge, sin producción. No se presenta PE10_C3 como PASS formal.
+Estado de este lote: código reconciliado en PR borrador; SIN MERGE, SIN SUPABASE WRITE y SIN ACTIVACIÓN.
