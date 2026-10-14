@@ -81,3 +81,20 @@ test('reject missing prefix even after clean decision',()=>{
  snap.operation_policy_snapshots.PASS_POLICY.policy_payload.required_steps_before_decision=[];
  assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,snap,decision('NO_CHANGE')),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
 });
+
+test('reject NO_CHANGE that omits semantic review',()=>{
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,noChange.filter(v=>v!=='semantic_judge'))),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject NO_CHANGE that omits deterministic verification',()=>{
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,noChange.filter(v=>v!=='deterministic_validation'))),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject NO_CHANGE that omits closure',()=>{
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,noChange.filter(v=>v!=='close'))),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject NO_CHANGE containing GitHub readback without write',()=>{
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,[...noChange,'github_readback'])),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject UPDATE missing holdout',()=>{
+ const incomplete=full.filter(v=>v!=='regression_after');
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(incomplete,noChange)),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
