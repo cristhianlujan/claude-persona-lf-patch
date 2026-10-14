@@ -138,4 +138,24 @@ assert "if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'REAL'" in wf
 assert "if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'" in wf
 checks += 1
 
+# F09-X16: only the two named checks are required, exact-head, conclusion=success.
+guard_path = ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py"
+guard = guard_path.read_text(encoding="utf-8")
+for marker in (
+    "lf_train_required_check_guard.py",
+    'REQUIRED_CHECKS = (',
+    '"lf-independent-change-admission"',
+    '"ig-runtime-candidate-judge"',
+    'row.get("head_sha") != expected_head',
+    'conclusion != "success"',
+    "FAIL_TRAIN_REQUIRED_CHECK_MISSING",
+    "FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS",
+):
+    assert marker in guard, marker
+    checks += 1
+assert "guard_args+=(--final)" in wf
+assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
+assert "conclusion!=null and (.conclusion!="success" and .conclusion!="skipped"" not in wf
+checks += 1
+
 print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/{checks}")
