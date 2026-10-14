@@ -63,8 +63,9 @@ class EdgeStepJudgesTests(unittest.TestCase):
             with self.subTest(step=step):
                 evidence = dict(e[step])
                 evidence.pop(next(iter(evidence)))
-                with self.assertRaises(ValueError):
-                    validate_step(step, evidence, a)
+                context = dict(a, effect_state="SUCCEEDED") if step == "close" else a
+                with self.assertRaisesRegex(ValueError, "EDGE_" + step.upper()):
+                    validate_step(step, evidence, context)
 
     def test_wrong_authority_fails_every_step(self):
         a,e = fixture()
