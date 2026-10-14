@@ -40,6 +40,9 @@ class ShadowDeliveryTests(unittest.TestCase):
                 by_case.setdefault(row["case_id"],[]).append(row)
                 self.assertEqual(row["raw_response_status"],"NOT_EXECUTED")
                 self.assertIs(row["model_provider_attested"],False)
+                self.assertEqual(row["runtime_binding_status"],"REQUEST_PREVIEW_PASS")
+                self.assertEqual(len(row["runtime_request_sha256"]),64)
+                self.assertEqual(len(row["runtime_profile_source_sha256"]),64)
             self.assertEqual(len(by_case),6)
             for pair in by_case.values():
                 self.assertEqual(len(pair),2)
