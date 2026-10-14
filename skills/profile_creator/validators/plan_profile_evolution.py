@@ -5,7 +5,8 @@ import copy
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+import hashlib
 
 ROOT = Path(__file__).resolve().parents[3]
 ASSESS_DIR = ROOT / "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment"
@@ -30,6 +31,7 @@ def build_evolution_plan(
     method_registry: dict[str, Any],
     *,
     current_revision: str | None = None,
+    trusted_source_readback: Callable[[str, str, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     structural = evaluate_s26(repo, slug)
     learning = evaluate_learning_preflight(
@@ -69,6 +71,41 @@ def build_evolution_plan(
         method_registry,
     )
 
+    # The catalog and assessment must be verified by a trusted source reader,
+    # not by flags or references inside the caller-controlled input JSON.
+    # Without this binding the plan remains shadow-only.
+    registry_digest = hashlib.sha256(
+        json.dumps(method_registry, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    assessment_digest = hashlib.sha256(
+        json.dumps(normalized, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    source_status = {"status": "UNRESOLVED", "reason": "TRUSTED_SOURCE_READBACK_MISSING"}
+    if trusted_source_readback is not None:
+        try:
+            receipt = trusted_source_readback(slug, registry_digest, assessment_digest)
+            if (isinstance(receipt, dict)
+                and receipt.get("status") == "VERIFIED_CURRENT"
+                and receipt.get("registry_sha256") == registry_digest
+                and receipt.get("assessment_sha256") == assessment_digest
+                and isinstance(receipt.get("registry_version"), str)
+                and bool(receipt["registry_version"].strip())
+                and isinstance(receipt.get("authority_ref"), str)
+                and bool(receipt["authority_ref"].strip())
+                and receipt.get("method_catalog_released") is True
+                and receipt.get("assessment_evidence_verified") is True):
+                source_status = {"status": "VERIFIED_CURRENT",
+                                 "authority_ref": receipt["authority_ref"],
+                                 "registry_version": receipt["registry_version"],
+                                 "registry_sha256": registry_digest,
+                                 "assessment_sha256": assessment_digest}
+            else:
+                source_status = {"status": "UNRESOLVED",
+                                 "reason": "SOURCE_RECEIPT_INVALID_OR_STALE"}
+        except Exception:
+            source_status = {"status": "UNRESOLVED",
+                             "reason": "SOURCE_READBACK_FAILED"}
+
     blockers: list[str] = []
     if not preflight_pass:
         blockers.append("BLOCKED_LEARNING_PREFLIGHT")
@@ -79,6 +116,8 @@ def build_evolution_plan(
 
     if assessment.get("assessment_status") != "EVIDENCE_SUFFICIENT":
         blockers.append("PROFILE_ASSESSMENT_NEEDS_MORE_EVIDENCE")
+    if source_status["status"] != "VERIFIED_CURRENT":
+        blockers.append("METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED")
 
     mode = assessment["evolution_mode"]
     change_needed = mode is not None and mode != "NO_CHANGE"
@@ -104,6 +143,7 @@ def build_evolution_plan(
         "profile_assessment": assessment,
         "evolution_mode": mode,
         "selection": composition,
+        "source_readback": source_status,
         "candidate_materialization_allowed": candidate_allowed,
         "candidate_boundary": "REVERSIBLE_NON_AUTHORITY",
         "profile_source_write_allowed": False,
