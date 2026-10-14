@@ -30,9 +30,9 @@ BEGIN
        AND asset_type='ENGINEERING_CHECKPOINT') IS DISTINCT FROM false
  THEN RAISE EXCEPTION 'M105_EKB_AUTHORITY_PRECONDITION_NOT_MET'; END IF;
  IF (SELECT count(*) FROM jsonb_array_elements(v_batch)) <> 14
- OR (SELECT count(DISTINCT item->>'code') FROM jsonb_array_elements(v_batch) item) <> 14
+ OR (SELECT count(DISTINCT (item.value->>'code')) FROM jsonb_array_elements(v_batch) item) <> 14
  OR EXISTS(SELECT 1 FROM jsonb_array_elements(v_batch) item
-  JOIN public.lf_error_knowledge e ON e.codigo=item->>'code')
+  JOIN public.lf_error_knowledge e ON e.codigo=(item.value->>'code'))
  THEN RAISE EXCEPTION 'M105_EKB_DUPLICATE_OR_BATCH_DRIFT'; END IF;
  -- PostgreSQL rollback proof using the real target and a marker not kept.
  BEGIN
@@ -72,7 +72,7 @@ BEGIN
      v_item->>'source');
  END LOOP;
  SELECT count(*) INTO v_count FROM public.lf_error_knowledge e
- JOIN LATERAL jsonb_array_elements(v_batch) entry ON e.codigo=entry.value->>'code';
+ JOIN LATERAL jsonb_array_elements(v_batch) entry ON e.codigo=(entry.value->>'code');
  IF v_count<>14 OR
   (SELECT count(*) FROM public.lf_error_knowledge WHERE codigo=v_test)<>0
  THEN RAISE EXCEPTION 'M105_EKB_POSTWRITE_READBACK_FAILED:%',v_count; END IF;
