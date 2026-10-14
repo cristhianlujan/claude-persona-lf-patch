@@ -69,6 +69,10 @@ def validate_step(
           "OPERATION_NOT_ACTIVE")
     _need(authority.get("route_write_allowed") is True, "ROUTE_NOT_WRITABLE")
     _need(authority.get("router") == "ACT-0001", "WRONG_ROUTER")
+    _need(authority.get("runtime_authenticated") is True, "AUTHENTICATION")
+    _need(authority.get("owner_role") == "SUPER_ADMIN", "OWNER_ROLE")
+    _need(authority.get("release_promotion_requested") is False,
+          "UNAUTHORIZED_RELEASE_PROMOTION")
 
     def check(ok: bool, error: str) -> None:
         _need(ok, step.upper() + "_" + error)
