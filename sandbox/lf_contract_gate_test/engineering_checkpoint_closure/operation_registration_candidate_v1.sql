@@ -32,6 +32,24 @@ SELECT 'ENGINEERING_CHECKPOINT','CHECKPOINT_CLOSE',
 WHERE NOT EXISTS (SELECT 1 FROM public.lf_router_action_registry
  WHERE asset_type='ENGINEERING_CHECKPOINT' AND action_code='CHECKPOINT_CLOSE');
 
+
+-- EKB source will be recorded only by an approved initial installation.
+INSERT INTO transversal.error_knowledge
+(codigo,categoria,titulo,descripcion,causa_raiz,prevencion,validacion,
+ severidad,estado,lote_origen,source_context,source_ref)
+SELECT
+ 'ENGINEERING-CHECKPOINT-CLOSURE-OPERATION-MISSING-001','ENGINEERING_GOVERNANCE',
+ 'Resultado funcional de checkpoint sin operación administrativa de cierre',
+ 'Un readback aprobado no puede cambiar el ledger sin autoridad de escritura.',
+ 'Se usó una migración puntual de datos para persistir el cierre de un checkpoint.',
+ 'Separar evidencia de validación y operación de cierre, con Router + S30 + assertion receipt vinculante; no modificar Train ni llamar RPC directa.',
+ 'Cerrar un checkpoint con un ejecutor autorizado, prueba positiva real, negativos adversariales y readback DONE con hash.',
+ 'ALTA','ACTIVO','M10.5/CP2',
+ 'IG_CURATOR_VALIDATOR_REFACTOR_V2',
+ 'github://cristhianlujan/claude-persona-lf-patch/pull/2657'
+WHERE NOT EXISTS (SELECT 1 FROM transversal.error_knowledge
+ WHERE codigo='ENGINEERING-CHECKPOINT-CLOSURE-OPERATION-MISSING-001');
+
 DO $admission$
 BEGIN
  IF NOT EXISTS (SELECT 1 FROM public.lf_operation_registry
