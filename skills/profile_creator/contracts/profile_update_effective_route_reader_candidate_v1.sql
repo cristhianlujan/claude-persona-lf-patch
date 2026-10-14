@@ -91,6 +91,7 @@ BEGIN
          WHERE jsonb_typeof(a.value) <> 'string'
        )
        OR no_change_steps ? 'github_write'
+       OR no_change_steps ? 'github_readback'
        OR no_change_steps ? 'pre_write_execution_binding_gate'
        OR no_change_steps ? 'post_merge_reconcile'
        OR NOT (no_change_steps ?& ARRAY['deterministic_validation','semantic_judge','close','report_output'])
