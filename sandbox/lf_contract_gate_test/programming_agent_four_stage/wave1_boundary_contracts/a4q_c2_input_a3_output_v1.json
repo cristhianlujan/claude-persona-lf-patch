@@ -1,0 +1,84 @@
+{
+  "schema_version": "A3_TARGETED_EVIDENCE_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "evidence_items": [
+    {
+      "source_ref": "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+      "read_status": "READ",
+      "observed_fields": {
+        "packet_sha256": "1cbe8daa96f35a3a37b194659c690fcbd9437407c465d32987c956a5eef10b4a",
+        "request_sha256": "a136daa7486437dc62b8757993b5213b3b6b2575bb32cb08e2a5217c84df3071",
+        "input_sha256": "a1974eae630ef1eea450e6bd95248a73da785257de73b06e13fb727190e76987"
+      },
+      "currentness_basis": "READ_IN_THIS_RUN"
+    },
+    {
+      "source_ref": "supabase://public.lf_eventos/20843",
+      "read_status": "READ",
+      "observed_fields": {
+        "evento_tipo": "HANDOFF_DEEP_CONTEXT",
+        "created_by_execution_id": "ANALYSIS_QUAL_C2_GPT_HANDOFF_V1|A1Q_C2",
+        "payload_packet_sha256": "1cbe8daa96f35a3a37b194659c690fcbd9437407c465d32987c956a5eef10b4a"
+      },
+      "currentness_basis": "READ_IN_THIS_RUN"
+    }
+  ],
+  "source_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843"
+  ],
+  "currentness_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843"
+  ],
+  "target_granularity": "Capacidad funcional de comunicación y comprensión del ahorro en la negociación de deuda, antes de aceptar una oferta. Pantalla, canal, segmento y alcance exactos no identificados.",
+  "authority_state": "UNKNOWN",
+  "implementation_state": "UNKNOWN",
+  "target_resolution": {
+    "authority_state": "UNKNOWN",
+    "implementation_state": "UNKNOWN",
+    "resolved": false,
+    "reason": "Las dos fuentes fueron leídas y los hashes de paquete coinciden exactamente. Sin embargo, ambas describen el paquete de entrada y su evento de traspaso, no la autoridad funcional ni la implementación del objetivo. No existe evidencia suministrada que permita identificar el objeto funcional exacto, su autoridad vigente, su implementación actual o su inexistencia."
+  },
+  "authority_binding_refs": [],
+  "as_is_baseline_or_new_implementation_evidence": {
+    "kind": "NONE_SUPPLIED",
+    "refs": []
+  },
+  "unresolved_material_gaps": [
+    {
+      "gap_code": "TARGET_IDENTITY_UNRESOLVED",
+      "statement": "No se identifica la capacidad funcional canónica, pantalla, canal o segmento exacto afectado por la solicitud."
+    },
+    {
+      "gap_code": "TARGET_AUTHORITY_NOT_SUPPLIED",
+      "statement": "No se suministran reglas, contratos o decisiones vigentes que acrediten la autoridad funcional aplicable a la comunicación del ahorro."
+    },
+    {
+      "gap_code": "IMPLEMENTATION_STATE_UNVERIFIED",
+      "statement": "No se aporta evidencia que demuestre si la funcionalidad existe actualmente o si se trata de una implementación nueva."
+    },
+    {
+      "gap_code": "AS_IS_BASELINE_MISSING",
+      "statement": "No existe una línea base verificable del comportamiento actual ni evidencia que permita identificar el cambio respecto de ese comportamiento."
+    },
+    {
+      "gap_code": "SAVINGS_SEMANTICS_UNRESOLVED",
+      "statement": "No se define el significado del ahorro, su importe de comparación ni las condiciones bajo las cuales puede comunicarse."
+    },
+    {
+      "gap_code": "OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+      "statement": "No está acreditado el estado de la oferta ni el momento exacto anterior a la aceptación en el que corresponde informar el ahorro."
+    },
+    {
+      "gap_code": "INSTALLMENT_DISTINCTION_UNRESOLVED",
+      "statement": "No se dispone de una definición autorizada del monto de la cuota ni de su relación con el ahorro."
+    },
+    {
+      "gap_code": "ACCEPTANCE_EVIDENCE_MISSING",
+      "statement": "No se aportan criterios verificables que permitan determinar si los clientes comprenden la diferencia entre ahorro y cuota."
+    }
+  ],
+  "sufficiency_verdict": "NEED_MORE_EVIDENCE",
+  "stop_reason": "Se completó la investigación mínima autorizada: dos fuentes consultadas, dos lecturas satisfactorias y coincidencia exacta entre packet_sha256 y payload_packet_sha256. READ_IN_THIS_RUN acredita la consulta de esas fuentes, no la vigencia de la autoridad del objetivo. Ambas fuentes documentan el traspaso del pipeline de análisis y no resuelven las ocho brechas materiales identificadas. No corresponde declarar SUFFICIENT, inferir una solución técnica ni fabricar una línea base AS-IS. Se detiene la investigación al alcanzar el límite de las dos fuentes suministradas."
+}
