@@ -108,6 +108,7 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_tie_break_",
 )
 CLASSIFIED_EXTERNAL_NAMES = {
+    "independent_assurance_oracle_independence_measure_v1",
     "retire_b2b_auth005_legacy_totp_screen",
     "ig_1_serialize_input_readiness_run_pair_v1",
     "ig_m8_2_per_family_resolver_hook_v1",
