@@ -81,6 +81,12 @@ BEGIN
        )
        OR prefix->>4 <> 'method_selection'
        OR prefix->>5 <> 'evolution_decision'
+       OR (SELECT count(*) FROM jsonb_array_elements_text(no_change_steps))
+          <> (SELECT count(DISTINCT x) FROM jsonb_array_elements_text(no_change_steps) a(x))
+       OR EXISTS (
+         SELECT 1 FROM jsonb_array_elements(no_change_steps) a(value)
+         WHERE jsonb_typeof(a.value) <> 'string'
+       )
        OR no_change_steps ? 'github_write'
        OR no_change_steps ? 'pre_write_execution_binding_gate'
        OR no_change_steps ? 'post_merge_reconcile'
@@ -109,6 +115,13 @@ BEGIN
     IF outcome NOT IN ('UPDATE','NO_CHANGE') OR outcome IS NULL THEN
         RETURN jsonb_build_object('outcome','BLOCKED','code','EVOLUTION_DECISION_NOT_ADMITTED');
     END IF;
+    IF (outcome='NO_CHANGE' AND decision_row.evidence_payload->>'evolution_mode' IS DISTINCT FROM 'NO_CHANGE')
+       OR (outcome='UPDATE' AND (
+         decision_row.evidence_payload->>'evolution_mode' IS NULL
+         OR decision_row.evidence_payload->>'evolution_mode' NOT IN
+              ('PATCH','SPECIALIZE','ADAPT','REARCHITECT','OPTIMIZE')
+       ))
+    THEN RETURN jsonb_build_object('outcome','BLOCKED','code','EVOLUTION_DECISION_MODE_MISMATCH'); END IF;
     selected := routes->outcome;
     RETURN jsonb_build_object('outcome',outcome,'effective_steps',selected);
 END;
