@@ -1,0 +1,36 @@
+{
+ "checks": [
+  {
+   "code": "DEPTH_RULE_APPLIED",
+   "statement": "La profundidad (L1|L2|L3) resulta de aplicar la regla de precedencia de las REGLAS DE LA ETAPA a las señales declaradas, sin saltarla."
+  },
+  {
+   "code": "MATERIAL_UNKNOWN_NOT_L1",
+   "statement": "Lo desconocido material no se clasifica como L1, y el estado de autoridad y de implementación se mantiene UNKNOWN mientras no haya evidencia."
+  },
+  {
+   "code": "SOURCES_NOT_INVENTED",
+   "statement": "Cada fuente citada es una fuente válida del contexto (sus source_refs, 'ambiguity:<code>' o 'fact:<fact_code>') o NO_SOURCE_SUPPLIED; no se inventan fuentes ni se infiere solución técnica."
+  }
+ ],
+ "criterion": "Juicio independiente sobre clasificación y unknown material no L1",
+ "decoy_must_fail_checks": [
+  "MATERIAL_UNKNOWN_NOT_L1"
+ ],
+ "replacements": [
+  [
+   "\"depth\": \"L3\"",
+   "\"depth\": \"L1\""
+  ],
+  [
+   "\"implementation_state\": \"UNKNOWN\"",
+   "\"implementation_state\": \"EXISTING\""
+  ],
+  [
+   "\"signal\": \"authority_state\",\n      \"source_ref\": \"NO_SOURCE_SUPPLIED\"",
+   "\"signal\": \"authority_state\",\n      \"source_ref\": \"supabase://public.lf_eventos/99999\""
+  ]
+ ],
+ "rules_end": "\n\nCONTEXTO A1",
+ "rules_start": "Clasifica el cambio."
+}
