@@ -1,6 +1,8 @@
 -- LF engineering plan follow-up, approved 2026-10-14.
 -- Tracking only: 2 domain items and 2 pending Migration deliverables.
--- NEW already exists: PR #2355/#2400 merged, exact ledger versions verified.
+-- Baseline verified: NEW via PR #2355/#2400 and ledger;
+-- REMOVE source-only via RECONCILE PR #2412; ledger -> source via PR #2420;
+-- only unmet, explicitly needed variants are valid new Paulo deliverables.
 -- Do not credit historical NEW capability as Paulo's new delivered work.
 -- Delivery progress is 2 pending outputs: REMOVE and RECOVERY; technical CP in detail.
 -- Only historical use or explicit user request with real consumer admits development.
@@ -39,12 +41,12 @@ BEGIN
     ('PAULO-MIGRATION-001',v_stream_id,
      'Migration: ampliar LF Migration Merge Train por casos de cambio',
      'Cubrir Migration solo para uso historico o pedido expreso: nuevas migraciones retiro source-only y recovery. Evitar variantes no solicitadas y motores paralelos.',
-     'NEW es capacidad existente, sustentada por PR #2355 y #2400 y versiones ledger 20261013160002 y 20261013163000. Paulo solo tiene 2 entregables nuevos medibles: REMOVE y RECOVERY.',
+     'NEW existente (PR 2355/2400+ledger), REMOVE source-only realizado (PR 2412), RECOVERY source desde ledger realizado (PR 2420, 17 fuentes). Solo admitir y medir ampliaciones de Paulo para brechas restantes con consumidor real.',
      'DATABASE','P1','BACKLOG','MIXED','PAULO',
      'cristhianlujan/claude-persona-lf-patch','LF_MIGRATION',
      'LF_MIGRATION_MERGE_TRAIN',
      'https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2644',
-     jsonb_build_array('Unidades IG M excluidas','NEW existente verificado en PR 2355/2400 y ledger','Pendiente REMOVE source-only','Pendiente RECOVERY de caso especial','No adjudicar trabajo previo a Paulo','Distinguir DROP SQL vs REMOVE fuente','Sin replay de migraciones','Solo evidencia y readback'),
+     jsonb_build_array('Unidades IG M excluidas','NEW existente PR 2355/2400 ledger','REMOVE source-only existente PR 2412','RECOVERY fuente ledger existente PR 2420','Solo gap residual demostrado puede entrar a Paulo','No adjudicar trabajo previo a Paulo','Train strict para removed, RECONCILE es separado','No replay, evidencias y readback'),
      'PAULO_SCOPE_TRACKING_20261014')
   RETURNING id INTO v_migration_id;
 
@@ -67,9 +69,10 @@ BEGIN
 
   -- Only unsatisfied Migration deliverables become new Paulo backlog rows.
   -- NEW is already supported by the Train and actual merged+applied migrations.
-  -- REMOVE handles DROP of a DB object via NEW versioned migration and
-  -- source-only retirement of an obsolete unapplied Git source as DIFFERENT paths.
-  -- RECOVERY handles a concrete main/ledger/DB discrepancy without false apply.
+  -- REMOVE source-only is already possible via RECONCILE (#2412); DO NOT rebuild it.
+  -- An exact Train route for removed files is NOT shown and must be justified by use.
+  -- RECOVERY ledger->Git has run (#2420); premerged orphan case remains distinct.
+  -- Neither residual item authorizes generalized new development without need.
   INSERT INTO programacion.engineering_work_items
     (work_code,workstream_id,parent_work_item_id,title,objective,expected_result,
      work_type,priority,status,assignee_type,assignee_ref,target_repo,target_domain,
@@ -82,15 +85,15 @@ BEGIN
          d.acceptance_criteria,'PAULO_SCOPE_TRACKING_20261014'
     FROM (VALUES
       ('PAULO-MIGRATION-REMOVE',
-       'REMOVE — retiro controlado de objeto o fuente',
-       'Atender retiro solicitado separando DROP de objeto SQL mediante nueva migracion versus REMOVE source-only de fuente historica obsoleta/no aplicada.',
-       'REMOVE solicitado queda cubierto con ruta correcta por naturaleza, bloqueo de historicos inseguros, pruebas y evidencia; sin hard delete de ledger.',
-       jsonb_build_array('Pedido explicito de REMOVE','DROP SQL y retiro source-only tienen contratos distintos','No tocar SQL historico ya aplicado','Positivo/negativo y rollback cuando aplica','Readback exacto')),
+       'REMOVE — solo brecha no cubierta por RECONCILE',
+       'Retiro source-only ya demostrado por PR 2412 via RECONCILE y DROP SQL por nueva migracion: no reconstruir. Atender solo caso residual no cubierto con uso o pedido concreto, p.ej. integracion Train si es imprescindible.',
+       'Demostrar gap restante con caso concreto y entregar correccion minima; si lo existente resuelve el caso, cerrar sin nueva implementacion y referenciar PR 2412.',
+       jsonb_build_array('REMOVE ya existe via PR 2412 RECONCILE','Train strict removed no equivale a ausencia de retiro','Solo admitir gap de uso real','No tocar SQL aplicado ni ledger','Readback de la ruta existente o delta minimo')),
       ('PAULO-MIGRATION-RECOVERY',
-       'RECOVERY — recuperar migracion o paridad inconsistente',
-       'Atender incidentes reales de fuente fusionada no aplicada y desviacion Git/ledger/DB, sin replay ni fingir apply.',
-       'Un caso real RECOVERY termina con resultado y conciliacion exacta, o rechazo seguro demostrado con motivo y evidencia.',
-       jsonb_build_array('Incidente historico identificado','Version blob y fuente exactos','No replay ni ledger artificial','Prueba y readback real'))
+       'RECOVERY — solo casos no cubiertos por reconciliacion existente',
+       'Ya existe reconstruccion source-only desde ledger PR 2420 (17/17); admitir solo incidente nuevo o abierto no resuelto por esa ruta ni por version nueva gobernada.',
+       'Identificar caso excepcional aun sin ruta; si ya hay solucion material, conservar evidencia y no crear otro executor ni aplicar SQL innecesario.',
+       jsonb_build_array('RECOVERY ledger->Git existente PR 2420 17/17','Caso premerged especial debe ser actual y no resuelto','Version blob fuente exactos','No replay ni ledger artificial','Sin nuevas rutas sin demanda'))
     ) AS d(code,title,objective,expected_result,acceptance_criteria);
 
   -- Internal checkpoints are the drill-down; delivery rows are the primary metric.
@@ -99,14 +102,14 @@ BEGIN
   SELECT child.id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING',
          'PAULO_SCOPE_TRACKING_20261014'
     FROM (VALUES
-      ('PAULO-MIGRATION-REMOVE','REMOVE-C1','Caso REMOVE clasificado: DROP SQL o retiro de fuente',1),
-      ('PAULO-MIGRATION-REMOVE','REMOVE-C2','Ruta de retiro segura por naturaleza y gobierno',2),
-      ('PAULO-MIGRATION-REMOVE','REMOVE-C3','Positivo negativo y rollback donde aplica',3),
-      ('PAULO-MIGRATION-REMOVE','REMOVE-C4','Entrega REMOVE demostrada con recibo y readback',4),
-      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C1','Incidente concreto y fuente/ledger version exactos',1),
-      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C2','Ruta admitida y guard anti-replay',2),
-      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C3','Prueba acotada con negativos',3),
-      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C4','Entrega RECOVERY con readback de paridad',4)
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C1','Readback PR 2412 y caso REMOVE aun sin ruta real',1),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C2','Confirmar que RECONCILE y Train existentes no cubren ese caso',2),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C3','Delta minimo solo ante brecha aprobada y su prueba',3),
+      ('PAULO-MIGRATION-REMOVE','REMOVE-C4','Readback del resultado o cierre sin cambio si ya resuelto',4),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C1','Readback PR 2420 y caso aun no cubierto si existe',1),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C2','Evaluar rutas actuales y cerrar si ya cubren el caso',2),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C3','Delta minimo y negativos solo si hay necesidad real',3),
+      ('PAULO-MIGRATION-RECOVERY','RECOVERY-C4','Readback o cierre sin cambio si no hay brecha',4)
     ) AS cp(work_code,checkpoint_code,title,sequence_no)
     JOIN programacion.engineering_work_items child ON child.work_code=cp.work_code
    WHERE child.parent_work_item_id=v_migration_id
