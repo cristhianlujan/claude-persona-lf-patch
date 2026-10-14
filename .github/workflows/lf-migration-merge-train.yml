@@ -527,7 +527,7 @@ jobs:
               fi
               sleep 2
             done
-            checks="$(gh api --paginate "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
+            checks="$(gh api "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
             guard_args=(--head-sha "$EXPECTED_HEAD")
             if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi
             set +e

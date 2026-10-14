@@ -157,6 +157,7 @@ assert 'for attempt in $(seq 1 90); do' in wf
 assert 'if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi' in wf
 assert "guard_args+=(--final)" in wf
 assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
+assert 'checks="$(gh api "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"' in wf
 assert 'conclusion!="skipped"' not in wf
 checks += 1
 
