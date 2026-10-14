@@ -3,7 +3,7 @@ import pathlib
 import re
 import unittest
 
-ROOT=pathlib.Path(__file__).resolve().parents[4]
+ROOT=pathlib.Path(__file__).resolve().parents[3]
 M=ROOT/"supabase/migrations/20261014062500_lf_ig_m105_r17_event_type_governed_v1.sql"
 
 def check_migration(s:str)->bool:
