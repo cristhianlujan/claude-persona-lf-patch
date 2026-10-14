@@ -26,7 +26,7 @@ for(const [label,invalid] of [['empty',[]],['duplicate',['router','router']],['u
 const full=['init_execution','router','profile_resolve','baseline_read','method_selection','evolution_decision','change_scope','regression_plan','pre_write_execution_binding_gate','github_write','github_readback','deterministic_validation','semantic_judge','regression_after','post_merge_reconcile','close','report_output'];
 const noChange=['init_execution','router','profile_resolve','baseline_read','method_selection','evolution_decision','deterministic_validation','semantic_judge','close','report_output'];
 const evolved=full.map((step_id,i)=>({step_id,required:true,execution_order:i*10}));
-const routes=(update=full,unchanged=noChange)=>({operation_policy_snapshots:{PASS_POLICY:{policy_payload:{required_steps:update,required_steps_by_outcome:{UPDATE:update,NO_CHANGE:unchanged}}}}});
+const routes=(update=full,unchanged=noChange)=>({operation_policy_snapshots:{PASS_POLICY:{policy_payload:{required_steps:update,required_steps_by_outcome:{UPDATE:update,NO_CHANGE:unchanged},required_steps_before_decision:update.slice(0,6)}}}});
 const decision=(name,status='STEP_PASS_WITH_EVIDENCE')=>[{step_id:'evolution_decision',status,evidence_payload:{
  decision:name,
  evolution_mode:name==='NO_CHANGE'?'NO_CHANGE':'PATCH',
@@ -64,4 +64,20 @@ test('conditional route rejects UPDATE with NO_CHANGE mode',()=>{
  const recorded=decision('UPDATE');
  recorded[0].evidence_payload.evolution_mode='NO_CHANGE';
  assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(),recorded),/PROFILE_EVOLUTION_DECISION_MODE_MISMATCH/);
+});
+
+test('reject frozen prefix missing from conditional policy',()=>{
+ const snap=routes();
+ delete snap.operation_policy_snapshots.PASS_POLICY.policy_payload.required_steps_before_decision;
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,snap),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject frozen prefix tampered by caller',()=>{
+ const snap=routes();
+ snap.operation_policy_snapshots.PASS_POLICY.policy_payload.required_steps_before_decision[4]='change_scope';
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,snap),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
+test('reject missing prefix even after clean decision',()=>{
+ const snap=routes();
+ snap.operation_policy_snapshots.PASS_POLICY.policy_payload.required_steps_before_decision=[];
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,snap,decision('NO_CHANGE')),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
 });
