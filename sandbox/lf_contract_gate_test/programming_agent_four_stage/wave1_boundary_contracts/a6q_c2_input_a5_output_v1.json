@@ -1,0 +1,73 @@
+{
+  "schema_version": "A5_DECISIONS_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "current_decisions": [],
+  "current_decisions_basis": "La entrada A4 no contiene decisiones vigentes respaldadas por autoridad funcional. Sus referencias documentan el paquete de solicitud, el evento de traspaso y brechas no resueltas. No se puede considerar aprobada ninguna regla de producto a partir de estas fuentes.",
+  "pending_decisions": [
+    {
+      "decision_id": "A5-DEC-001",
+      "question": "¿Qué capacidad funcional, canales y segmentos de clientes deben quedar incluidos en el alcance del piloto para comunicar el ahorro antes de aceptar una oferta?",
+      "owner_role": "OWNER_HUMAN",
+      "blocking": true,
+      "gap_ref": "TARGET_IDENTITY_UNRESOLVED",
+      "impact_ref": "A4-DIRECT-001",
+      "status": "PENDING_OWNER_DECISION"
+    },
+    {
+      "decision_id": "A5-DEC-002",
+      "question": "¿Qué definición de ahorro y qué base de comparación deben utilizarse para comunicar al cliente el beneficio económico de negociar su deuda?",
+      "owner_role": "OWNER_HUMAN",
+      "blocking": true,
+      "gap_ref": "SAVINGS_SEMANTICS_UNRESOLVED",
+      "impact_ref": "A4-DIRECT-002",
+      "status": "PENDING_OWNER_DECISION"
+    },
+    {
+      "decision_id": "A5-DEC-003",
+      "question": "¿En qué estado de la oferta y bajo qué condiciones debe estar disponible la información del ahorro antes de que el cliente acepte?",
+      "owner_role": "OWNER_HUMAN",
+      "blocking": true,
+      "gap_ref": "OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+      "impact_ref": "A4-DEPENDENCY-003",
+      "status": "PENDING_OWNER_DECISION"
+    },
+    {
+      "decision_id": "A5-DEC-004",
+      "question": "¿Qué distinción funcional debe establecerse entre el ahorro de la negociación y el monto de la cuota para evitar que el cliente confunda ambos conceptos?",
+      "owner_role": "OWNER_HUMAN",
+      "blocking": true,
+      "gap_ref": "INSTALLMENT_DISTINCTION_UNRESOLVED",
+      "impact_ref": "A4-INDIRECT-001",
+      "status": "PENDING_OWNER_DECISION"
+    },
+    {
+      "decision_id": "A5-DEC-005",
+      "question": "¿Qué criterios de aceptación deben utilizarse para determinar que los clientes comprenden el ahorro y no lo confunden con la cuota durante el piloto?",
+      "owner_role": "OWNER_HUMAN",
+      "blocking": true,
+      "gap_ref": "ACCEPTANCE_EVIDENCE_MISSING",
+      "impact_ref": "A4-INDIRECT-002",
+      "status": "PENDING_OWNER_DECISION"
+    }
+  ],
+  "decisions_approved_by_agent": [],
+  "evidence_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843",
+    "gap:TARGET_IDENTITY_UNRESOLVED",
+    "gap:TARGET_AUTHORITY_NOT_SUPPLIED",
+    "gap:IMPLEMENTATION_STATE_UNVERIFIED",
+    "gap:AS_IS_BASELINE_MISSING",
+    "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+    "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+    "gap:INSTALLMENT_DISTINCTION_UNRESOLVED",
+    "gap:ACCEPTANCE_EVIDENCE_MISSING",
+    "impact:A4-DIRECT-001",
+    "impact:A4-DIRECT-002",
+    "impact:A4-DEPENDENCY-003",
+    "impact:A4-INDIRECT-001",
+    "impact:A4-INDIRECT-002"
+  ],
+  "decision_statement": "Se identifican cinco decisiones funcionales materiales pendientes sobre alcance del piloto, definición del ahorro, momento de comunicación, distinción respecto de la cuota y criterios de aceptación. Todas permanecen reservadas al propietario humano y ninguna ha sido aprobada por el agente. Antes de solicitar decisiones nuevas, corresponde contrastarlas con las reglas y decisiones vigentes, cuya autoridad no fue suministrada. La ausencia de fuentes no invalida decisiones existentes ni demuestra que todas requieran una nueva aprobación humana. La identificación de la implementación existente, la reconstrucción de la línea base AS-IS y la verificación de autoridad son actividades de investigación y no decisiones que deban trasladarse automáticamente al propietario. No se ha seleccionado ninguna alternativa funcional ni técnica, resuelto ningún ADR o autorizado implementación alguna.",
+  "no_self_approval": true
+}
