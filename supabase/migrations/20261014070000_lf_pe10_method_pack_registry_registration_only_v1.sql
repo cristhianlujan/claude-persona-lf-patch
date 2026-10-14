@@ -29,6 +29,42 @@ BEGIN
     RAISE EXCEPTION 'BLOCK_PE10_CANONICAL_SELECTOR_NOT_RELEASED';
   END IF;
 
+  -- Reversible canary inside Train's transaction. PL/pgSQL's nested
+  -- EXCEPTION block rolls back the test INSERT before the real write.
+  -- This is not an independent pre-Train database rehearsal.
+  BEGIN
+    INSERT INTO public.lf_capability_registry
+    (capability_code, capability_name, capability_kind, owner_scope, status,
+     description, created_by_execution_id, updated_by_execution_id,
+     entry_guard_required, entry_guard_code)
+    VALUES
+    ('METHOD_PACK_REGISTRY', 'Method Pack Registry rollback canary', 'TRANSVERSAL',
+     'SUPER_ADMIN', 'ACTIVE',
+     'ROLLBACK_CANARY_NOT_PERSISTENT',
+     'PE10_C3_V2_METHOD_REGISTRY_TRAIN_V1',
+     'PE10_C3_V2_METHOD_REGISTRY_TRAIN_V1',
+     true, 'ORCHESTRATOR_EXECUTION_GUARD_V1');
+    IF NOT EXISTS (
+      SELECT 1 FROM public.lf_capability_registry
+      WHERE capability_code='METHOD_PACK_REGISTRY'
+        AND description='ROLLBACK_CANARY_NOT_PERSISTENT'
+    ) THEN
+      RAISE EXCEPTION 'BLOCK_PE10_ROLLBACK_CANARY_INSERT_NOT_VISIBLE';
+    END IF;
+    RAISE EXCEPTION 'PE10_ROLLBACK_CANARY_EXPECTED';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'PE10_ROLLBACK_CANARY_EXPECTED' THEN
+      RAISE;
+    END IF;
+  END;
+
+  IF EXISTS (
+    SELECT 1 FROM public.lf_capability_registry
+    WHERE capability_code='METHOD_PACK_REGISTRY'
+  ) THEN
+    RAISE EXCEPTION 'BLOCK_PE10_ROLLBACK_CANARY_RESIDUE';
+  END IF;
+
   INSERT INTO public.lf_capability_registry
   (capability_code, capability_name, capability_kind, owner_scope, status,
    description, created_by_execution_id, updated_by_execution_id,
