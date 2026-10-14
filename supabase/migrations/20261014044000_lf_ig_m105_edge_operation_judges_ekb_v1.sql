@@ -46,7 +46,7 @@ BEGIN
     'GitHub #2568/#2576, workflow run 38511945025, supabase_migrations.schema_migrations:20261014043340, public.lf_operation_step_contracts/public.lf_operation_judges/public.lf_operation_step_judge_bindings',
     clock_timestamp(),clock_timestamp(),
     'OPERATION_QUALIFICATION',ARRAY['OPERATION_EXECUTOR','ENGINEERING_VALIDATOR']::text[],
-    'MISSING_STEP_VALIDATOR_BINDINGS','LIVE_REGISTRY_AND_LEDGER_READBACK',
+    'R5_EROSION_PROCESO','PROCESS_DEPENDENT',
     'M10.5/CP2; DEPLOY_SUPABASE_EDGE_FUNCTION_LF; operation candidate only',
     'https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2576'
   );
