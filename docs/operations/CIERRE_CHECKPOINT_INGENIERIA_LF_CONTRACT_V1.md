@@ -31,3 +31,21 @@
 
 ## Antecedentes y EKB
 PR #2642: contrato muestral aplicado. PR #2643: cierre SQL detenido antes de apply por Train; no reintentar ciegamente. EKB: ENGINEERING-MATERIAL-DONE-ASSERTION-BINDING-001, IG-M105-CP2-EXHAUSTIVE-SCOPE-UNNECESSARY-018, PROGRAMMING-E2E-ROUTER-PREWRITE-ORDER-001.
+
+## Candidato implementado en el PR
+
+- `operation_candidate_v1.sql`: función genérica `fn_engineering_checkpoint_close_governed_v1` y tabla de vínculos de proveedores. No conoce M10.5, ONB_001 ni familias de Input Governance; lee el proveedor desde un registro gobernado.
+- `ig_m105_cp2_provider_candidate_v1.sql`: adaptador de evidencia de una pantalla y cinco familias. Vinculación `CANDIDATE`, jamás `ACTIVE` por este cambio.
+- `operation_registration_candidate_v1.sql`: registra una operación `CANDIDATO_READ_ONLY` y una ruta Router `CANDIDATE` con `write_allowed=false`. Ninguno de estos SQL se ejecuta desde el PR.
+- `test_candidate_contract_v1.py`: controles offline de alcance y denegación. No confundir con pruebas transaccionales.
+
+### Admisión y activación inicial pendientes
+
+1. Validar por owner el contrato de operación, el paso de ejecución gobernada y los contratos/policies concretos del Router. Registrar `CIERRE_CHECKPOINT_INGENIERIA_LF` como consumidor del verificador transversal `ROUTER_DOWNSTREAM_AUTHORITY` sin modificar su implementación.
+2. Instalar **una sola vez** registro, vínculo, proveedor y función por una vía de escritura autorizada conforme a `ACTUALIZACION_DB_LF`. No usar el conector read-only como bypass. Con Train bloqueado, no se activa.
+3. Preparar un ejecutor autorizado con identidad del servicio y recibo de Router; exigir `lf_operation_execution` real `IN_PROGRESS` y efecto S30 `RESERVED` asociado al contrato vigente.
+4. Probar primero en transacción reversible con rollback: positivo vigente, negativos por stale, 4/5, sin identidad/Router, intento de promoción a producción, digest alterado, duplicado y error intermedio sin escrituras residuales. Inspeccionar trigger de `DONE` y readback.
+5. Sólo entonces aprobar `write_allowed=true`, binding `ACTIVE`, estado operativo autorizado y permiso explícito de invocación. Revalidar identidad justo antes de cada efecto.
+6. El primer cierre material de M10.5/CP2 será otra operación con su propio `execution_id`. Nunca reusar el PR fallido #2643 como justificante para declarar `DONE`.
+
+**Lo no demostrado:** compilación de SQL candidato en Supabase, transacción real con rollback, instalación, binding activo, OIDC de invocación, cierre CP2. Ninguno debe figurar PASS hasta ejecutarse de verdad.
