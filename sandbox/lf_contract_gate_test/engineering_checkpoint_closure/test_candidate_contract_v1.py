@@ -10,6 +10,7 @@ import unittest
 ROOT = Path(__file__).resolve().parent
 GENERIC = ROOT / "operation_candidate_v1.sql"
 PILOT = ROOT / "ig_m105_cp2_provider_candidate_v1.sql"
+REGISTRATION = ROOT / "operation_registration_candidate_v1.sql"
 FAMILIES = {
     "STATES", "SECURITY", "API_DATA_CONTRACT",
     "FRESHNESS_INVALIDATION", "ACCESSIBILITY",
@@ -21,6 +22,7 @@ class CandidateAdmissionTests(unittest.TestCase):
     def setUpClass(cls):
         cls.generic = GENERIC.read_text(encoding="utf8")
         cls.provider = PILOT.read_text(encoding="utf8")
+        cls.registration = REGISTRATION.read_text(encoding="utf8")
 
     def test_both_sources_outside_migrations_and_explicitly_candidate(self):
         self.assertNotIn("supabase/migrations", str(GENERIC))
@@ -106,6 +108,16 @@ class CandidateAdmissionTests(unittest.TestCase):
         self.assertIn("fn_input_run_is_source_current", self.provider)
         self.assertIn("a.validator_identity IS NOT NULL", self.provider)
         self.assertIn("a.validator_sha256 ~", self.provider)
+
+
+    def test_registration_cannot_activate_or_authorize_write(self):
+        self.assertIn("'CANDIDATO_READ_ONLY'", self.registration)
+        self.assertIn("'CANDIDATE'", self.registration)
+        self.assertIn("write_allowed,status", self.registration)
+        self.assertIn("false,false,false,'CANDIDATE'", self.registration)
+        self.assertNotIn("GRANT EXECUTE", self.registration)
+        self.assertNotIn("UPDATE public.lf_activos", self.registration)
+        self.assertNotIn("UPDATE public.lf_operation_registry", self.registration)
 
     def test_pilot_binding_not_active(self):
         self.assertIn("'CANDIDATE','M105_CP2_REPRESENTATIVE_SAMPLE_V1'", self.provider)
