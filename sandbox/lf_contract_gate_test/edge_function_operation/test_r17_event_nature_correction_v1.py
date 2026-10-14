@@ -3,8 +3,11 @@ from pathlib import Path
 import re
 import unittest
 
-S = (Path(__file__).resolve().parents[3] /
-     "supabase/migrations/20261014064000_lf_ig_m105_r17_event_nature_correction_v1.sql").read_text()
+MIGRATIONS = Path(__file__).resolve().parents[3] / "supabase/migrations"
+MATCHES = list(MIGRATIONS.glob("*_lf_ig_m105_r17_event_nature_correction_v1.sql"))
+if len(MATCHES) != 1:
+    raise RuntimeError("R17_NATURE_MIGRATION_MISSING_OR_AMBIGUOUS")
+S = MATCHES[0].read_text()
 
 def valid(text: str) -> bool:
     required=(
