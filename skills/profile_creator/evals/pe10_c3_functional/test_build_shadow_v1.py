@@ -45,6 +45,17 @@ class ShadowDeliveryTests(unittest.TestCase):
                 self.assertEqual(len(pair),2)
                 self.assertEqual({x["arm"] for x in pair},{"A_ORIGINAL","D_SHADOW"})
                 self.assertEqual(pair[0]["input_sha256"],pair[1]["input_sha256"])
+    def test_frozen_projection_snapshot_exact(self):
+        with tempfile.TemporaryDirectory(prefix="pe10c3-frozen-") as tmp:
+            repo=HERE.parents[3]
+            revision=runner.git(repo,"rev-parse","HEAD^{commit}")
+            result=runner.compile_pair(repo,revision,Path(tmp))
+            for slug,meta in result["profiles"].items():
+                for arm in ("baseline","candidate"):
+                    projected=Path(meta[arm+"_model_context_path"]).read_text()
+                    frozen=(HERE/"frozen_contexts"/(slug+"_"+arm+"_model_context.md")).read_text()
+                    self.assertEqual(projected,frozen)
+                    self.assertEqual(runner.sha(projected),meta[arm+"_context_sha256"])
     def test_bad_heading_rejected(self):
         with self.assertRaisesRegex(ValueError,"METHOD_HEADING_INVALID"):
             runner.inject("# Demo\n## Purpose\nabc\n","Purpose","## Not projected\n")
