@@ -73,5 +73,26 @@ class TestTrustedReadback(unittest.TestCase):
         self.assertEqual(self.make()("quality_pack", "BAD", D)["reason"], "SOURCE_SHA_INVALID")
 
 
+class TestSQLBinding(unittest.TestCase):
+    def test_parameterized_read_only_queries(self):
+        from skills.profile_creator.validators.profile_evolution_trusted_readback_v1 import make_postgres_trusted_readback
+        calls = []
+        def fetch(query, params):
+            calls.append((query, params))
+            return [REG] if len(params) == 1 else [RECEIPT]
+        result = make_postgres_trusted_readback(fetch)("quality_pack", D, D)
+        self.assertEqual(result["status"], "VERIFIED_CURRENT")
+        self.assertEqual([params for _, params in calls],
+                         [("METHOD_PACK_REGISTRY",), ("quality_pack", D)])
+        self.assertTrue(all("SELECT" in query and "INSERT" not in query and "DELETE" not in query
+                            for query, _ in calls))
+
+    def test_actual_missing_rows_fail_closed(self):
+        from skills.profile_creator.validators.profile_evolution_trusted_readback_v1 import make_postgres_trusted_readback
+        reader = make_postgres_trusted_readback(lambda query, params: [])
+        self.assertEqual(reader("quality_pack", D, D)["reason"],
+                         "METHOD_REGISTRY_NOT_REGISTERED")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
