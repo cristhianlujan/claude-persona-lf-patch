@@ -32,6 +32,51 @@ BEGIN
     RAISE EXCEPTION 'EDGE_OPERATION_BOOTSTRAP_CARRIER_MISSING';
   END IF;
 
+  -- EDGE_CANDIDATE_TRANSACTION_ROLLBACK_TEST
+  -- Runs ONLY inside the authorized Train apply transaction.
+  -- Simulates operation provenance and registration, and rolls both back
+  -- through a PostgreSQL exception subtransaction before any durable write.
+  BEGIN
+  INSERT INTO public.lf_operation_execution(
+     execution_id,operation_code,target_type,target_code,status,manifest,
+     created_by_execution_id,updated_by_execution_id
+  ) VALUES (
+     v_actor,'VULNERABILITY_COVERAGE_REPAIR_LF','OPERATION_PROTOCOL_REPAIR',
+     v_op,'IN_PROGRESS',
+     jsonb_build_object('mode','EDGE_OPERATION_GOVERNANCE_BOOTSTRAP',
+       'governance_bootstrap',true,'bootstrap_operation_code',v_op,
+       'bootstrap_status_ceiling','SANDBOX_ACTIVE','candidate_only',true,
+       'production_allowed',false,'edge_deploy_executed',false,
+       'no_release_promotion',true,'source_contract_sha256',v_sha),
+     v_actor,v_actor
+  );
+
+  INSERT INTO public.lf_operation_registry(
+    operation_code,version,status,source_model,source_repo,source_paths,notes,
+    operation_family,operation_domain,operation_type,applies_to_asset_type,
+    lifecycle_state_code,created_by_execution_id,updated_by_execution_id
+  ) VALUES (
+    v_op,'v1.0-candidate','CANDIDATO_READ_ONLY',
+    'SUPABASE_OPERATIONAL_AUTHORITY_WITH_GIT_MIRROR',
+    'cristhianlujan/claude-persona-lf-patch',
+    jsonb_build_array(v_path,'sandbox/lf_contract_gate_test/edge_function_operation/README.md'),
+    'Candidate-only generic single-function Edge deploy. R17, signed runtime authority, exact main+rollback, existing effect guard, independent readback. No automatic activation.',
+    'TRANSVERSAL_RUNTIME_OPERATIONS','SUPABASE_EDGE_FUNCTION',
+    'EDGE_FUNCTION_DEPLOY','SUPABASE_EDGE_FUNCTION',
+    'OP_CANDIDATE',v_actor,v_actor
+  );
+
+    RAISE EXCEPTION 'EDGE_CANDIDATE_REVERSIBLE_PROBE_SENTINEL' USING ERRCODE='PZ081';
+  EXCEPTION WHEN SQLSTATE 'PZ081' THEN
+    NULL; -- The subtransaction has rolled back all probe inserts.
+  END;
+
+  IF EXISTS (SELECT 1 FROM public.lf_operation_registry WHERE operation_code=v_op)
+     OR EXISTS (SELECT 1 FROM public.lf_operation_execution WHERE execution_id=v_actor)
+  THEN
+    RAISE EXCEPTION 'EDGE_CANDIDATE_ROLLBACK_LEFT_RESIDUE';
+  END IF;
+
   INSERT INTO public.lf_operation_execution(
      execution_id,operation_code,target_type,target_code,status,manifest,
      created_by_execution_id,updated_by_execution_id
