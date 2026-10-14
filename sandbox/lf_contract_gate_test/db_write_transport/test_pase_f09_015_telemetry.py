@@ -11,6 +11,7 @@ import lf_train_execution_recorder as train_recorder
 from pase_f09_015_telemetry import (
     MAX_ENVELOPE_BYTES, TELEMETRY_STAGES, NOT_OBSERVED, StageMetrics, make_envelope, record_failure_once,
     retry_chains, serialize_envelope, verify_execution,
+    sql_measurement_family,
 )
 
 
@@ -95,6 +96,31 @@ class PaseF09015TelemetryTest(unittest.TestCase):
         self.assertEqual(result["status"], "PASS")
         self.assertEqual(result["steps"], ["preflight", "patch", "verify"])
         self.assertEqual(set(self.envelope()["stages"]), set(TELEMETRY_STAGES))
+        self.assertEqual(self.envelope()["exact_head_checks"]["measurement"], "OUTSIDE_STAGE")
+
+    def test_sql_write_round_trip_is_evidence_persistence_not_query(self):
+        write = "select public.lf_record_db_operation_step_v1(:'exec', :'step');"
+        read = "select status from public.lf_operation_execution_steps where execution_id = :'exec';"
+        self.assertEqual(sql_measurement_family(write), "evidence_persistence")
+        self.assertEqual(sql_measurement_family(read), "queries")
+        # A call has one family only, so its measured duration cannot be added
+        # to both counters and inflate the combined budget.
+        self.assertNotEqual(sql_measurement_family(write), "queries")
+
+    def test_pending_round_trips_survive_train_state_handoff(self):
+        metrics = StageMetrics()
+        metrics.queries.add(1.25, 40)
+        metrics.evidence_persistence.add(2.5, 80)
+        state = train_recorder.telemetry_metrics_to_state(metrics)
+        restored = train_recorder.telemetry_metrics_from_state(state)
+        self.assertEqual(restored.queries.fields(), metrics.queries.fields())
+        self.assertEqual(restored.evidence_persistence.fields(), metrics.evidence_persistence.fields())
+
+    def test_exact_head_check_boundary_is_required(self):
+        execution = self.execution()
+        del execution["steps"][1]["evidence_payload"]["pase_f09_015_telemetry_v1"]["exact_head_checks"]
+        with self.assertRaisesRegex(ValueError, "EXACT_HEAD_CHECKS_BOUNDARY_MISSING:patch"):
+            verify_execution(execution)
 
     def test_train_identity_binds_run_attempt_head_and_migration_source(self):
         ctx = {"repo": "owner/repo", "pr": "12", "head_sha": "a" * 40,
@@ -148,6 +174,9 @@ class PaseF09015TelemetryTest(unittest.TestCase):
         def fake_call(sql, **params):
             if "lf_record_db_operation_step_v1" in sql:
                 captured.append(json.loads(params["payload"]))
+                # The real call() records this completed durable round-trip
+                # after the immutable envelope has been serialized.
+                train_recorder._TELEMETRY_METRICS.evidence_persistence.add(0.4, 24)
                 status = "BLOCKED_BY_ENFORCEMENT" if "blocking_codes" in params.get("payload", "") else "PASS_CLEAN"
                 return {"outcome": "STEP_RECORDED", "status": status}
             return {}
@@ -157,6 +186,7 @@ class PaseF09015TelemetryTest(unittest.TestCase):
                 train_recorder._TELEMETRY_METRICS = StageMetrics()
                 train_recorder._TELEMETRY_METRICS.queries.add(0.2, 12)
                 train_recorder._TELEMETRY_METRICS.transport.add(0.3, 14)
+                train_recorder._TELEMETRY_METRICS.evidence_persistence.add(0.1, 8)
                 train_recorder._TELEMETRY_STARTED_AT = "2026-10-14T10:00:00Z"
                 train_recorder._TELEMETRY_TRAIN_STARTED_AT = "2026-10-14T09:59:00Z"
                 ids = {"execution_id": f"EXEC-{attempt}", "effect_scope": "MIGRATION:20261014000000",
