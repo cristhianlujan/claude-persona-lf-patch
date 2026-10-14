@@ -91,6 +91,11 @@ test('reject NO_CHANGE that omits deterministic verification',()=>{
 test('reject NO_CHANGE that omits closure',()=>{
  assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,noChange.filter(v=>v!=='close'))),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
 });
+test('reject NO_CHANGE frozen suffix reordered relative to UPDATE',()=>{
+ const reordered=[...noChange];
+ [reordered[6],reordered[7]]=[reordered[7],reordered[6]];
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,reordered),decision('NO_CHANGE')),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
 test('reject NO_CHANGE containing GitHub readback without write',()=>{
  assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(full,[...noChange,'github_readback'])),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
 });
