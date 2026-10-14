@@ -1,0 +1,27 @@
+name: IG M10.5 CP2 OIDC Edge Bridge Tests
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/lf-profiles-governance-caller-v1/**"
+      - ".github/workflows/lf-input-governance-recurate.yml"
+      - ".github/workflows/lf-input-governance-recurate-dispatch.yml"
+      - ".github/workflows/ig-m105-cp2-oidc-bridge-tests.yml"
+permissions:
+  contents: read
+jobs:
+  cp2-oidc-positive-and-negative:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check exact OIDC caller and isolated Edge bridge types
+        run: |
+          deno check supabase/functions/lf-profiles-governance-caller-v1/caller.ts
+          deno check supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
+      - name: Execute all legacy caller and CP2 bridge tests
+        run: |
+          deno test supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
+          deno test supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
