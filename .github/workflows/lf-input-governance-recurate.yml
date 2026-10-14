@@ -8,6 +8,11 @@ on:
         required: false
         default: "1,2,3,5,43,51,52,53,54,55,56,57,58"
         type: string
+      cp2_mode:
+        description: "M10.5 CP2 Edge dispatch using signed current release authority"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -15,6 +20,7 @@ permissions:
 
 jobs:
   validate-screens:
+    if: ${{ !inputs.cp2_mode }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -50,6 +56,7 @@ jobs:
           PY
 
   recurate-input-readiness:
+    if: ${{ !inputs.cp2_mode }}
     needs: validate-screens
     runs-on: ubuntu-latest
     timeout-minutes: 7
@@ -147,3 +154,116 @@ jobs:
               'run_id':data.get('run_id'),
           },sort_keys=True))
           PY
+
+  cp2-authority-preflight:
+    if: ${{ inputs.cp2_mode }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      pantalla_ids_json: ${{ steps.authority.outputs.pantalla_ids_json }}
+    steps:
+      - name: Authenticate the exact existing OIDC dispatch identity
+        uses: actions/github-script@v7
+        id: oidc
+        with:
+          script: |
+            const token = await core.getIDToken('lf-profiles-governance-caller-v1');
+            core.setSecret(token);
+            core.setOutput('token', token);
+
+      - name: Refuse all Edge runs until canonical release is signed
+        id: authority
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          IG_OIDC_GATEWAY_URL: ${{ vars.LF_IG_OIDC_CALLER_URL }}
+        run: |
+          set -euo pipefail
+          [ -n "${IG_OIDC_GATEWAY_URL:-}" ] || { echo 'CP2_OIDC_GATEWAY_URL_NOT_CONFIGURED'; exit 2; }
+          code=$(curl -sS --max-time 35 -o cp2-authority.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${OIDC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary '{"action":"ig_m105_cp2_edge_preflight_v1"}' \
+            "${IG_OIDC_GATEWAY_URL}")
+          CP2_HTTP="${code}" python3 - <<'PY'
+          import json,os
+          try: value=json.load(open("cp2-authority.json",encoding="utf-8"))
+          except (ValueError,OSError): raise SystemExit("CP2_PREFLIGHT_INVALID_JSON")
+          if os.environ["CP2_HTTP"]!="200" or value.get("outcome")!="READY":
+              raise SystemExit("CP2_AUTHORITY_DENIED:"+str(value.get("code","UNKNOWN")))
+          ids=value.get("pantalla_ids")
+          if not isinstance(ids,list) or len(ids)!=13 or len(set(ids))!=13 or any(type(i)!=int or i<1 for i in ids):
+              raise SystemExit("CP2_FROZEN_SCOPE_INVALID")
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as f:
+              f.write("pantalla_ids_json="+json.dumps(ids,separators=(",",":"))+"\n")
+          print(json.dumps({"cp2_authority":"PASS","cohort_count":len(ids),
+                            "release_version":value.get("release_version")}))
+          PY
+
+  cp2-real-edge-cohort:
+    if: ${{ inputs.cp2_mode }}
+    needs: cp2-authority-preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        pantalla_id: ${{ fromJSON(needs.cp2-authority-preflight.outputs.pantalla_ids_json) }}
+    steps:
+      - name: Request per-screen fresh GitHub OIDC identity
+        uses: actions/github-script@v7
+        id: oidc
+        with:
+          script: |
+            const token = await core.getIDToken('lf-profiles-governance-caller-v1');
+            core.setSecret(token);
+            core.setOutput('token', token);
+
+      - name: Invoke real Edge and signed canonical per-screen readback
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          IG_OIDC_GATEWAY_URL: ${{ vars.LF_IG_OIDC_CALLER_URL }}
+          CP2_SCREEN: ${{ matrix.pantalla_id }}
+        run: |
+          set -euo pipefail
+          [ -n "${IG_OIDC_GATEWAY_URL:-}" ] || { echo 'CP2_OIDC_GATEWAY_URL_NOT_CONFIGURED'; exit 2; }
+          python3 - <<'PY'
+          import json,os
+          with open("cp2-screen.json","w",encoding="utf-8") as f:
+              json.dump({"action":"ig_m105_cp2_edge_screen_v1",
+                         "pantalla_id":int(os.environ["CP2_SCREEN"])},f)
+          PY
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            code=$(curl -sS --max-time 145 -o cp2-response.json -w '%{http_code}' \
+              -H "Authorization: Bearer ${OIDC_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data-binary @cp2-screen.json \
+              "${IG_OIDC_GATEWAY_URL}")
+            case "${code}" in
+              202) echo "CP2_VALIDATOR_CONTINUATION_SAME_SCREEN ${CP2_SCREEN} attempt=${attempt}"; sleep 3 ;;
+              200)
+                CP2_HTTP="${code}" python3 - <<'PY'
+          import json,os
+          v=json.load(open("cp2-response.json",encoding="utf-8"))
+          if v.get("outcome")!="VERIFIED_EDGE_RUN" or v.get("cp2_verdict")!="PASS_CP2" or type(v.get("signed_receipt_id"))!=int:
+              raise SystemExit("CP2_VERIFIED_EDGE_RECEIPT_REQUIRED")
+          if v.get("pantalla_id")!=int(os.environ["CP2_SCREEN"]):
+              raise SystemExit("CP2_RESPONSE_SCREEN_MISMATCH")
+          print(json.dumps({"screen":v["pantalla_id"],"run_id":v.get("run_id"),
+                            "receipt_id":v["signed_receipt_id"],"outcome":"VERIFIED_EDGE_RUN"}))
+          PY
+                exit 0 ;;
+              *)
+                CP2_HTTP="${code}" python3 - <<'PY'
+          import json,os
+          try: v=json.load(open("cp2-response.json",encoding="utf-8"))
+          except (ValueError,OSError): v={}
+          print(json.dumps({"screen":os.environ["CP2_SCREEN"],"http":os.environ["CP2_HTTP"],
+                            "code":v.get("code","CP2_PROVIDER_FAILED"),
+                            "cp2_verdict":v.get("cp2_verdict")}))
+          PY
+                exit 2 ;;
+            esac
+          done
+          echo "CP2_CONTINUATION_LIMIT_FOR_SCREEN ${CP2_SCREEN}"
+          exit 2
