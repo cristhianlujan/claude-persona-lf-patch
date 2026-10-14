@@ -77,7 +77,7 @@ BEGIN
  SELECT v_operation_id, cp.checkpoint_code, cp.title, cp.sequence_no, 1, true, 'PENDING', 'PAULO_SCOPE_TRACKING_20261014'
  FROM (VALUES
   ('OP-CP1', 'Inventario de operaciones y necesidades reales por familia/naturaleza; separar cobertura declarada de probada', 1),
-  ('OP-CP2', 'Actualizar contratos/gobierno con REUSE/EXTEND para CREATE/UPDATE/EXECUTE/RETIRE y necesidades evidenciadas', 2),
+  ('OP-CP2', 'Actualizar contratos/gobierno mediante REUSE/EXTEND solo para necesidades operativas previamente demostradas', 2),
   ('OP-CP3', 'Asegurar cobertura de steps, contratos, mini-jueces, bindings, Router y effect guard', 3),
   ('OP-CP4', 'Validar positivos, negativos, idempotencia, dependencias, lifecycle y cierre fail-closed', 4),
   ('OP-CP5', 'Probar integración con Migration por Router/ACTUALIZACION_DB_LF sin duplicar transporte', 5),
