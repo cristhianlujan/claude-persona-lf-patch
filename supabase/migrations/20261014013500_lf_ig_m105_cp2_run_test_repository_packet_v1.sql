@@ -228,3 +228,45 @@ SELECT 'IG-M105-CP2-RUN-TEST-EMPTY-CASE-ROUTE-009','INPUT_GOVERNANCE',
 'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5','ACTIVO','CONTRACT_PREFLIGHT',
 ARRAY['Architect','Builder','Judge','Auditor']::text[]
 WHERE NOT EXISTS(SELECT 1 FROM transversal.error_knowledge WHERE codigo='IG-M105-CP2-RUN-TEST-EMPTY-CASE-ROUTE-009');
+
+
+-- Transactional executable positive/negative verification against the actual
+-- compiled packet. Failure aborts the entire migration; no false READY remains.
+DO $cp2_assert$
+DECLARE v_spec jsonb;v_ok jsonb;v_bad jsonb;v_packet jsonb;
+BEGIN
+ v_spec:=programacion.fn_engineering_checkpoint_action_spec_v3(
+   'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.5','NEW_RUNS_VNEXT');
+ IF v_spec#>>'{test_execution_contract,router_mode}' IS DISTINCT FROM
+    'REPOSITORY_EDGE_DISPATCH_THEN_CANONICAL_READBACK_V1' THEN
+    RAISE EXCEPTION 'CP2_ROUTE_SPEC_NOT_COMPILED';
+ END IF;
+ v_ok:=programacion.fn_engineering_execution_packet_from_spec_v1(
+   'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.5','NEW_RUNS_VNEXT',v_spec,'{}'::jsonb);
+ IF v_ok->>'status' IS DISTINCT FROM 'READY'
+ OR v_ok#>>'{connector_plan,0,operation}' IS DISTINCT FROM 'RUN_TEST'
+ OR v_ok#>>'{connector_plan,0,mode}' IS DISTINCT FROM 'REPOSITORY_CAPABILITY'
+ OR v_ok#>>'{connector_plan,0,executor_contract,executor}'
+    IS DISTINCT FROM 'ENGINEERING_REPOSITORY_CAPABILITY_EXECUTOR_V1'
+ OR v_ok#>>'{connector_plan,0,executor_contract,manifest_sha256}'
+    IS DISTINCT FROM 'e7212a93e39d515b14bbe0789c20ab7ab0c8dae412bc89bfc02c71989d32a354'
+ OR v_ok#>>'{connector_plan,0,executor_contract,execution_input,argv,0}' IS DISTINCT FROM '--execute'
+ OR v_ok#>>'{connector_plan,1,operation}' IS DISTINCT FROM 'READ'
+ OR v_ok#>>'{connector_plan,1,mode}' IS DISTINCT FROM 'POST_EDGE_CANONICAL_VERDICT'
+ OR v_ok#>>'{connector_plan,2,operation}' IS DISTINCT FROM 'CHECKPOINT_TRANSITION'
+ OR v_ok#>>'{assertion_gate,status}' IS DISTINCT FROM 'PASS'
+ OR jsonb_array_length(v_ok->'connector_plan') <> 3
+ THEN RAISE EXCEPTION 'CP2_POSITIVE_ROUTE_READBACK_FAILED:%',v_ok; END IF;
+ v_bad:=programacion.fn_engineering_execution_packet_from_spec_v1(
+   'IG_CURATOR_VALIDATOR_REFACTOR_V2','M10.5','NEW_RUNS_VNEXT',
+   jsonb_set(v_spec,'{test_execution_contract,producer_sha256}',to_jsonb('invalid'::text),true),
+   '{}'::jsonb);
+ IF v_bad->>'status' IS DISTINCT FROM 'BLOCK_IG_M105_CP2_RUNTIME_ROUTING_CONTRACT_DRIFT'
+ OR jsonb_array_length(coalesce(v_bad->'connector_plan','[]'::jsonb))<>0 THEN
+   RAISE EXCEPTION 'CP2_NEGATIVE_ROUTING_FAIL_OPEN:%',v_bad; END IF;
+ IF EXISTS(SELECT 1 FROM programacion.engineering_work_checkpoints c
+   JOIN programacion.engineering_plan_units u ON u.work_item_id=c.work_item_id
+   WHERE u.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2' AND u.unit_code='M10.5'
+   AND c.checkpoint_code='NEW_RUNS_VNEXT' AND c.status='DONE')
+ THEN RAISE EXCEPTION 'CP2_CHECKPOINT_MUST_NOT_BE_AUTO_DONE'; END IF;
+END $cp2_assert$;
