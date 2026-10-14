@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "ZERO_FALSE_READY",
+   "statement": "Ningún caso ni el conjunto declara READY: no_ready_claim es true, expected_safe_behavior es BLOCK, REQUIRES_DECISION o NEED_MORE_EVIDENCE, false_ready_if_unblocked es true y nada aparece ejecutado (executed=false, observed_result=null)."
+  },
+  {
+   "code": "TRACEABLE_TARGETS",
+   "statement": "Cada target_ref de cada caso es un scope_id o front_id que existe en a9_snapshot de la entrada, sin repetidos, y cada mutation_description describe una mutación concreta de esos elementos."
+  },
+  {
+   "code": "ONE_CASE_PER_CATEGORY",
+   "statement": "Hay exactamente un caso por cada categoría de la entrada (11), con la categoría copiada tal cual y sin categorías omitidas, repetidas ni inventadas."
+  }
+ ],
+ "criterion": "Auditor verifica cero falsos READY críticos y trazabilidad",
+ "decoy_must_fail_checks": [
+  "ZERO_FALSE_READY",
+  "TRACEABLE_TARGETS"
+ ],
+ "replacements": [
+  [
+   "\"target_refs\": [\n        \"A7-FRONT-002\",\n        \"A6-REQ-002\"\n      ]",
+   "\"target_refs\": [\n        \"A7-FRONT-002\",\n        \"A6-REQ-002\",\n        \"A7-FRONT-099\"\n      ]"
+  ],
+  [
+   "\"expected_safe_behavior\": \"BLOCK\",\n      \"false_ready_if_unblocked\": true,\n      \"mutation_description\": \"Inyectar en A7-FRONT-002 una referencia de autoridad sintética",
+   "\"expected_safe_behavior\": \"READY\",\n      \"false_ready_if_unblocked\": false,\n      \"mutation_description\": \"Inyectar en A7-FRONT-002 una referencia de autoridad sintética"
+  ],
+  [
+   "\"no_ready_claim\": true",
+   "\"no_ready_claim\": false"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Produce UN caso adversarial por categoría"
+}
