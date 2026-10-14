@@ -61,6 +61,49 @@ class EvidenceScorerTests(unittest.TestCase):
         self.assertEqual(out["result"],"FUNCTIONAL_UPLIFT_NOT_ESTABLISHED")
         self.assertFalse(out["independent_assurance_admitted"])
         self.assertFalse(out["provider_attestation_verified"])
+    def test_positive_scoring_path_is_not_provider_attestation(self):
+        # Entirely synthetic fixture. Proves that the scoring code has a
+        # positive path, NOT that any GPT producer achieved this uplift.
+        for row in self.raw["responses"]:
+            if row["arm"]=="D_SHADOW":
+                row["output"]="SYNTHETIC_TEST_ONLY_NOT_A_REAL_LLM_OUTPUT: "+row["case_id"]+" | "+" ".join(
+                    "EVIDENCE_MARKER_"+str(i)+" " for i in range(5))
+                row["output_sha256"]=build.sha(row["output"])
+        rows=[]
+        for case in json.loads((HERE/"private_oracle_v1.json").read_text())["case_rubrics"]:
+            cid=case["case_id"]
+            for label,arm in score.blind_arms(cid).items():
+                n=len(case["criteria"])
+                is_candidate=(arm=="D_SHADOW")
+                rows.append({"case_id":cid,"blind_arm":label,
+                    "points":[1 if is_candidate else 0]*n,
+                    "evidence_quotes":["EVIDENCE_MARKER_"+str(i) if is_candidate else "" for i in range(n)]})
+        judge={"schema":"PE10_C3_BLIND_SEMANTIC_JUDGE_V1",
+            "reviewer_execution_id":"TEST-JUDGE-ISOLATED-FIXTURE",
+            "blind_to_arm_identity":True,"scores":rows}
+        out=score.evaluate(self.compiled,self.raw,judge)
+        self.assertEqual(out["result"],"FUNCTIONAL_UPLIFT_CANDIDATE")
+        self.assertEqual(out["paired_count"],6)
+        self.assertFalse(out["provider_attestation_verified"])
+        self.assertFalse(out["independent_assurance_admitted"])
+        self.assertFalse(out["cutover_eligible"])
+    def test_critical_regression_rejected(self):
+        rows=[]
+        for case in json.loads((HERE/"private_oracle_v1.json").read_text())["case_rubrics"]:
+            cid=case["case_id"];n=len(case["criteria"])
+            for label,arm in score.blind_arms(cid).items():
+                original=(arm=="A_ORIGINAL")
+                answer=next(x["output"] for x in self.raw["responses"] if x["case_id"]==cid and x["arm"]==arm)
+                quote="SYNTHETIC TEST STRING" if original else ""
+                rows.append({"case_id":cid,"blind_arm":label,
+                    "points":[1 if original else 0]*n,
+                    "evidence_quotes":[quote if original else ""]*n})
+        judge={"schema":"PE10_C3_BLIND_SEMANTIC_JUDGE_V1",
+            "reviewer_execution_id":"TEST-JUDGE-REGRESSION",
+            "blind_to_arm_identity":True,"scores":rows}
+        out=score.evaluate(self.compiled,self.raw,judge)
+        self.assertEqual(out["result"],"FUNCTIONAL_UPLIFT_NOT_ESTABLISHED")
+        self.assertGreater(out["critical_case_regressions"],0)
     def test_self_review_rejected(self):
         rubric=json.loads((HERE/"private_oracle_v1.json").read_text())
         j={"schema":"PE10_C3_BLIND_SEMANTIC_JUDGE_V1",
