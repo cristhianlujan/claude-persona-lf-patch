@@ -32,7 +32,7 @@ for marker in (
     "LF_MIGRATION_TRAIN_APP_ID",
     "LF_MIGRATION_TRAIN_APP_PRIVATE_KEY",
     "PASE-GLOBAL-04",
-    "LF_MIGRATION_TRAIN_MODE: DRY_RUN",
+    "LF_MIGRATION_TRAIN_MODE: REAL",
     "--paginate --slurp",
     "sleep 10",
     "GITHUB_STEP_SUMMARY",
