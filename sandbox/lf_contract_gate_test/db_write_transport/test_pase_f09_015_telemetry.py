@@ -23,7 +23,7 @@ class PaseF09015TelemetryTest(unittest.TestCase):
                 "source_blob": "b" * 40, "source_sha256": "c" * 64,
                 "control_id": "MIGRATION:20261014000000"}
 
-    def envelope(self, step="patch", execution_id="EXEC-1", omit_stage=None):
+    def envelope(self, step="patch", execution_id="EXEC-1", omit_stage=None, total_started_at=None):
         metrics = StageMetrics()
         metrics.queries.add(0.25, 16)
         metrics.transport.add(0.5, 32)
@@ -34,7 +34,7 @@ class PaseF09015TelemetryTest(unittest.TestCase):
                              finished_at="2026-10-14T10:00:01Z", execution_id=execution_id,
                              control_id="MIGRATION:1", input_value={"x": 1}, result_value={"ok": True},
                              metrics=metrics, run_identity=self.identity(execution_id),
-                             observed_stages=observed_stages)
+                             observed_stages=observed_stages, total_started_at=total_started_at)
 
     def execution(self, omit_stage=None):
         rows = []
@@ -109,6 +109,10 @@ class PaseF09015TelemetryTest(unittest.TestCase):
         self.assertEqual(value["train_run_id"], "345")
         self.assertEqual(value["git_head_sha"], "a" * 40)
         self.assertEqual(value["source_blob"], "b" * 40)
+
+    def test_total_stage_spans_train_start_through_terminal_step(self):
+        envelope = self.envelope(step="verify", total_started_at="2026-10-14T09:59:00Z")
+        self.assertEqual(envelope["stages"]["total"]["duration_ms"], 61000.0)
 
     def test_unemitted_stage_is_not_observed_and_verifier_fails_closed(self):
         execution = self.execution(omit_stage="judges")
