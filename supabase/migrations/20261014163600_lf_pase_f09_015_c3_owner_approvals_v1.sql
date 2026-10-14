@@ -89,7 +89,7 @@ BEGIN
           'approval_id', 2,
           'topic', 'merge_router_documentation_pr',
           'owner_confirmation', 'OWNER_CONFIRMED',
-          'pr', 2629,
+          'pr', 2629
         ),
         jsonb_build_object(
           'approval_id', 3,
@@ -111,7 +111,7 @@ BEGIN
           'approval_id', 5,
           'topic', 'ekb_runtime',
           'owner_confirmation', 'OWNER_CONFIRMED',
-          'runtime', 'public.lf_write_pipeline_ekb_v1',
+          'runtime', 'public.lf_write_pipeline_ekb_v1'
         )
       ),
       'execution_order', jsonb_build_array(
