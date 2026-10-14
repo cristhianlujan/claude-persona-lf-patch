@@ -27,6 +27,13 @@ def main() -> int:
     assert module.pending_versions_from_dry_run("No migrations to push") == []
     checks += 1
 
+    assert module.postgres_sqlstate("ERROR: PZ015: controlled failure") == "PZ015"
+    assert module.postgres_sqlstate("EXACT_APPLY_PRIMARY_SQL_ERROR:PZ015: controlled failure") == "PZ015"
+    assert module.postgres_sqlstate("network unreachable") is None
+    assert module._transport_command(["supabase", "db", "push", "--dry-run"])
+    assert not module._transport_command(["supabase", "db", "push", "--help"])
+    checks += 1
+
     source = "begin;\nselect 1;\ncommit;\n"
     sql = module.build_fallback_sql(
         version="20261005235959",
@@ -75,7 +82,7 @@ def main() -> int:
     assert decision.fallback_executor == "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML"
     checks += 1
 
-    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/6")
+    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/7")
     return 0
 
 
