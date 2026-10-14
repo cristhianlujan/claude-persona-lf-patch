@@ -1,0 +1,88 @@
+{
+  "schema_version": "IG_CP2_VNEXT_RELEASE_CANDIDATE_FILE_V1",
+  "lifecycle": "PROPOSED_NOT_REGISTERED",
+  "release_registration": "NOT_EXECUTED",
+  "deployment": "NOT_EXECUTED",
+  "signed_human_authority": "REQUIRED_NOT_ISSUED",
+  "checkpoint": "IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.5/NEW_RUNS_VNEXT",
+  "pilot_screen_code": "ONB_001",
+  "proposed_version": "1.0.1",
+  "previous_version": "1.0.0",
+  "manifest_sha256": "5e2f8fd090d6e578f46415617339d67a562df0b90d3c53a0b7bca66920a44a82",
+  "hash_derivation": "sha256(UTF8(PostgreSQL jsonb::text))",
+  "manifest": {
+    "usage": {
+      "entrypoint": "existing_canonical_operation",
+      "consumer_operation": "EJECUCION_INPUT_GOVERNANCE_LF",
+      "readiness_authority": "programacion.fn_input_readiness_run_is_current*",
+      "runtime_assets_authority": "public.lf_activos"
+    },
+    "version": "1.0.1",
+    "contract": {
+      "execution": "programacion.contratos/INPUT_GOVERNANCE_EXECUTION_CONTRACT",
+      "readiness": "programacion.contratos/INPUT_READINESS_CONTRACT",
+      "operation_code": "EJECUCION_INPUT_GOVERNANCE_LF",
+      "release_decision": "DEC-INPUT-GOV-M1.7-RELEASE-BINDING-001"
+    },
+    "delivery": {
+      "mode": "EXISTING_GOVERNED_OPERATION_POINTER_ONLY",
+      "operation_code": "EJECUCION_INPUT_GOVERNANCE_LF",
+      "runtime_inventory": "public.lf_activos"
+    },
+    "rollback": {
+      "mode": "CAPABILITY_CUTOVER_RESTORE_PREVIOUS",
+      "pointer_only": true,
+      "preserve_history": true
+    },
+    "cp2_vnext": {
+      "schema_version": "IG_CP2_VNEXT_RELEASE_BINDING_V1",
+      "pilot_selection": "ONE_SCREEN_FROM_AUTHENTICATED_FROZEN_COHORT",
+      "scope_authority": "programacion.engineering_plan_units/M10.5/m105_scope_v1",
+      "git_source_commit": "6d0b68f1dfb21cbdaed148d6eb93156e774001b9",
+      "baseline_bundle_sha256": "db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f",
+      "edge_caller_bridge_ref": "github://cristhianlujan/claude-persona-lf-patch@6d0b68f1dfb21cbdaed148d6eb93156e774001b9/supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge.ts",
+      "activation_out_of_scope": true,
+      "agent_index_git_blob_sha1": "326a5c492c84cceccb45ea8d6a0f39a1d5305637",
+      "baseline_bundle_receipt_id": 187,
+      "cutover_readiness_receipt_id": 1667,
+      "runtime_bridge_deploy_required": true,
+      "edge_caller_bridge_git_blob_sha1": "43b94b67cda67b46b4e4f37d317c9458fbce2ba8",
+      "signed_release_authority_required": "HUMAN_AUTHORITY_V1",
+      "runtime_release_promotion_required": true
+    },
+    "migration": {
+      "mode": "EXISTING_SERVICE_RELEASE_REGISTRATION_ONLY",
+      "work_code": "PAULO-089",
+      "runtime_mutation": false
+    },
+    "currentness": {
+      "authority_ref": "github://cristhianlujan/claude-persona-lf-patch@6d0b68f1dfb21cbdaed148d6eb93156e774001b9",
+      "runtime_change": false,
+      "source_revision_immutable": true
+    },
+    "dependencies": {
+      "governance": [
+        "LF_GOVERNANCE",
+        "ORCHESTRATOR_EXECUTION_GUARD_V1"
+      ],
+      "capabilities": [
+        "CAPABILITY_CUTOVER"
+      ]
+    },
+    "installation": {
+      "required": false,
+      "runtime_activation": false,
+      "production_activation": false
+    },
+    "compatibility": {
+      "no_new_function": true,
+      "unknown_version": "FAIL_CLOSED",
+      "no_local_current_pointer": true,
+      "no_domain_asset_inventory_duplication": true
+    },
+    "schema_version": "LF_CAPABILITY_MANIFEST_V1",
+    "capability_code": "INPUT_GOVERNANCE"
+  },
+  "acceptance": "Only real authenticated Edge ONB_001 run with independent release binding receipt and exact canonical PASS_CP2 readback",
+  "no_promotion_or_runtime_activation": true
+}
