@@ -186,3 +186,5 @@ begin
   return new;
 end
 $function$;
+
+SELECT 1;
