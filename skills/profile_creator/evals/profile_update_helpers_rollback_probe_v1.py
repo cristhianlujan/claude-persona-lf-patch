@@ -41,7 +41,7 @@ def verify_source_parity(sql: str) -> None:
         source_bytes = (ROOT / path).read_bytes()
         source_text = source_bytes.decode("utf-8").rstrip("\n")
         git_blob = hashlib.sha1(
-            f"blob {len(source_bytes)}\\0".encode("ascii") + source_bytes
+            f"blob {len(source_bytes)}".encode("ascii") + bytes([0]) + source_bytes
         ).hexdigest()
         marker = f"-- SOURCE {path} BLOB {git_blob}"
         if sql.count(marker) != 1:
