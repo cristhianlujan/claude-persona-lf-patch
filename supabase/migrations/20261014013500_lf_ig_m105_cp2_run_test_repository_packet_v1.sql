@@ -180,7 +180,7 @@ begin
     'mutation_policy','CAPABILITY_CONTRACT_ONLY'
   );
 end;
-$function$
+$function$;
 
 DO $cp2$
 DECLARE
