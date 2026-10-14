@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "GENERAL_NOT_CASE_PATCH",
+   "statement": "El cambio es general: case_specific_patch y hardcodes_case_family son false, la regla no depende de un caso o familia concretos y hay propiedades de generalización distintas."
+  },
+  {
+   "code": "SINGLE_COMPONENT_CHANGE",
+   "statement": "El cambio toca un solo componente (target_component) de los componentes del modelo de la entrada, el resto figura en unchanged_components y las versiones antes y después son coherentes con la entrada."
+  },
+  {
+   "code": "NOTHING_EXECUTED_NO_IMPROVEMENT_CLAIM",
+   "statement": "Nada se ejecutó ni se midió: regression_plan.executed es false y observed_result es null, el holdout no se usó para ajustar y el texto no afirma mejora, verificación ni READY."
+  }
+ ],
+ "criterion": "Revisor ciego verifica que el cambio de método propuesto es general, acotado a un componente y no afirma ejecución ni mejora medida",
+ "decoy_must_fail_checks": [
+  "GENERAL_NOT_CASE_PATCH",
+  "NOTHING_EXECUTED_NO_IMPROVEMENT_CLAIM"
+ ],
+ "replacements": [
+  [
+   "\"case_specific_patch\": false",
+   "\"case_specific_patch\": true"
+  ],
+  [
+   "\"executed\": false",
+   "\"executed\": true"
+  ],
+  [
+   "\"observed_result\": null",
+   "\"observed_result\": \"PASS\""
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "NO se re-ejecuta nada"
+}
