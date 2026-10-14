@@ -73,12 +73,12 @@ def validate_manifests(current: dict[str, bytes],
     if any(not isinstance(data, bytes) or not data for data in
            [*current.values(), *rollback.values()]):
         raise CanaryBlocked("R17_BUNDLE_INVALID_BYTES")
+    if current["caller.ts"] == rollback["caller.ts"]:
+        raise CanaryBlocked("R17_NO_NEW_CALLER_DELTA")
     if b'"./cp2_edge_bridge.ts"' not in current["caller.ts"]:
         raise CanaryBlocked("R17_BRIDGE_IMPORT_MISSING")
     if b'"./caller.ts"' not in current["index.ts"]:
         raise CanaryBlocked("R17_CALLER_IMPORT_MISSING")
-    if current["caller.ts"] == rollback["caller.ts"]:
-        raise CanaryBlocked("R17_NO_NEW_CALLER_DELTA")
     if current["index.ts"] != rollback["index.ts"]:
         # Any entrypoint delta needs separate, explicit deployment review.
         raise CanaryBlocked("R17_INDEX_ENTRYPOINT_DRIFT")
