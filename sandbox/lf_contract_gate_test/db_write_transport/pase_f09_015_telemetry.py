@@ -11,7 +11,27 @@ from typing import Any, Callable
 ENVELOPE_VERSION = "pase_f09_015_telemetry_v1"
 MAX_ENVELOPE_BYTES = 2560
 CANONICAL_STEPS = ("preflight", "patch", "verify")
+TELEMETRY_STAGES = ("transport", "queries", "control_execution", "judges", "evidence_persistence", "total")
 NOT_OBSERVED = "NOT_OBSERVED"
+EXACT_HEAD_CHECKS_OUTSIDE_STAGE = {
+    "measurement": "OUTSIDE_STAGE",
+    "elapsed_ms": NOT_OBSERVED,
+    "reason": "GitHub exact-head check fan-in completes before the Train recorder starts; its wait/evaluation is not timed by control_execution or judges.",
+}
+PERSISTENCE_FUNCTIONS = (
+    "fn_lf_operation_reserve_execution_v1", "fn_lf_operation_acquire_lease_v1",
+    "lf_record_db_operation_step_v1", "fn_lf_operation_reserve_effect_v1",
+    "fn_lf_operation_mark_effect_succeeded_v1", "lf_close_db_operation_execution_v1",
+    "lf_fail_db_operation_execution_v1", "lf_record_migration_train_receipt_v1",
+)
+
+
+def sql_measurement_family(sql: str) -> str:
+    """Assign each psql round-trip to exactly one bucket."""
+    lowered = (sql or "").lower()
+    if any(re.search(rf"\b{re.escape(name)}\s*\(", lowered) for name in PERSISTENCE_FUNCTIONS):
+        return "evidence_persistence"
+    return "queries"
 
 
 def utc_now() -> str:
@@ -51,11 +71,16 @@ class Counters:
 class StageMetrics:
     queries: Counters = field(default_factory=Counters)
     transport: Counters = field(default_factory=Counters)
+    control_execution: Counters = field(default_factory=Counters)
+    judges: Counters = field(default_factory=Counters)
+    evidence_persistence: Counters = field(default_factory=Counters)
 
 
 def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id: str,
                   control_id: str, input_value: Any, result_value: Any,
-                  metrics: StageMetrics | None = None, derived_status_ref: str = "judge") -> dict:
+                  metrics: StageMetrics | None = None, derived_status_ref: str = "judge",
+                  run_identity: dict | None = None, observed_stages: dict | None = None,
+                  total_started_at: str | None = None) -> dict:
     if step not in CANONICAL_STEPS:
         raise ValueError(f"PASE_F09_015_UNKNOWN_STEP:{step}")
     metrics = metrics or StageMetrics()
@@ -65,9 +90,36 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         duration: int | float | str = round(max(0.0, (finish - start).total_seconds() * 1000), 3)
     except (TypeError, ValueError):
         duration = NOT_OBSERVED
+    try:
+        total_start = datetime.fromisoformat((total_started_at or started_at).replace("Z", "+00:00"))
+        finish = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+        total_duration: int | float | str = round(max(0.0, (finish - total_start).total_seconds() * 1000), 3)
+    except (TypeError, ValueError):
+        total_duration = NOT_OBSERVED
+    observed_stages = observed_stages or {}
+    stages = {
+        "transport": metrics.transport.fields(),
+        "queries": metrics.queries.fields(),
+        "control_execution": metrics.control_execution.fields(),
+        "judges": metrics.judges.fields(),
+        "evidence_persistence": metrics.evidence_persistence.fields(),
+        "total": {"count": 1 if isinstance(total_duration, (int, float)) else NOT_OBSERVED,
+                  "duration_ms": total_duration, "bytes": NOT_OBSERVED},
+    }
+    for name, values in observed_stages.items():
+        if name not in TELEMETRY_STAGES:
+            raise ValueError(f"PASE_F09_015_UNKNOWN_STAGE:{name}")
+        if not isinstance(values, dict):
+            raise ValueError(f"PASE_F09_015_INVALID_STAGE:{name}")
+        stages[name] = {key: values.get(key, NOT_OBSERVED) for key in ("count", "duration_ms", "bytes")}
+    identity_fields = ("run_kind", "suite_id", "repository", "pr", "git_head_sha", "github_run_id",
+                       "github_run_attempt", "train_run_id", "execution_id", "migration_version",
+                       "source_blob", "source_sha256", "control_id")
+    identity = {key: (run_identity or {}).get(key, NOT_OBSERVED) for key in identity_fields}
     return {
         "schema": ENVELOPE_VERSION,
         "trace_id": execution_id,
+        "run_identity": identity,
         "step_id": step,
         "control_id": control_id,
         "started_at": started_at or NOT_OBSERVED,
@@ -75,6 +127,8 @@ def make_envelope(*, step: str, started_at: str, finished_at: str, execution_id:
         "duration_ms": duration,
         "queries": metrics.queries.fields(),
         "transport": metrics.transport.fields(),
+        "stages": stages,
+        "exact_head_checks": dict(EXACT_HEAD_CHECKS_OUTSIDE_STAGE),
         "recorder_write": {"count": 1, "duration_ms": NOT_OBSERVED, "bytes": NOT_OBSERVED},
         "input_digest": digest_json(input_value) if input_value is not None else NOT_OBSERVED,
         "result_digest": digest_json(result_value) if result_value is not None else NOT_OBSERVED,
@@ -132,6 +186,30 @@ def verify_execution(execution: dict, canonical_steps: tuple[str, ...] = CANONIC
             raise ValueError(f"PASE_F09_015_ENVELOPE_IDENTITY_MISMATCH:{step}")
         if envelope.get("trace_id") != execution.get("execution_id"):
             raise ValueError(f"PASE_F09_015_TRACE_ID_MISMATCH:{step}")
+        identity = envelope.get("run_identity")
+        required_identity = ("run_kind", "suite_id", "repository", "pr", "git_head_sha", "github_run_id",
+                             "github_run_attempt", "train_run_id", "execution_id", "migration_version",
+                             "source_blob", "source_sha256", "control_id")
+        if not isinstance(identity, dict) or any(not str(identity.get(key, "")).strip() for key in required_identity):
+            raise ValueError(f"PASE_F09_015_RUN_IDENTITY_INCOMPLETE:{step}")
+        if identity.get("execution_id") != execution.get("execution_id"):
+            raise ValueError(f"PASE_F09_015_RUN_IDENTITY_MISMATCH:{step}")
+        stages = envelope.get("stages")
+        if not isinstance(stages, dict) or set(stages) != set(TELEMETRY_STAGES):
+            raise ValueError(f"PASE_F09_015_STAGE_SET_INVALID:{step}")
+        for stage in TELEMETRY_STAGES:
+            value = stages[stage]
+            if not isinstance(value, dict) or value.get("duration_ms") == NOT_OBSERVED:
+                raise ValueError(f"PASE_F09_015_STAGE_NOT_OBSERVED:{step}:{stage}")
+            duration_value = value.get("duration_ms")
+            if isinstance(duration_value, bool) or not isinstance(duration_value, (int, float)) or duration_value < 0:
+                raise ValueError(f"PASE_F09_015_STAGE_DURATION_INVALID:{step}:{stage}")
+        external_checks = envelope.get("exact_head_checks")
+        if (not isinstance(external_checks, dict)
+                or external_checks.get("measurement") != "OUTSIDE_STAGE"
+                or external_checks.get("elapsed_ms") != NOT_OBSERVED
+                or not str(external_checks.get("reason", "")).strip()):
+            raise ValueError(f"PASE_F09_015_EXACT_HEAD_CHECKS_BOUNDARY_MISSING:{step}")
         if "verdict" in envelope:
             raise ValueError(f"PASE_F09_015_ENVELOPE_OWNS_VERDICT:{step}")
         if len(json.dumps(envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")) > MAX_ENVELOPE_BYTES:

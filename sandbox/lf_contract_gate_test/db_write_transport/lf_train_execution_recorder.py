@@ -36,8 +36,8 @@ from urllib.parse import quote
 
 try:
     from pase_f09_015_telemetry import (
-        CANONICAL_STEPS, MAX_ENVELOPE_BYTES, StageMetrics, make_envelope,
-        record_failure_once, sanitize_message, serialize_envelope, utc_now,
+        CANONICAL_STEPS, MAX_ENVELOPE_BYTES, NOT_OBSERVED, StageMetrics, make_envelope,
+        record_failure_once, sanitize_message, serialize_envelope, sql_measurement_family, utc_now,
     )
 except ImportError:  # The Train copies this trusted recorder by itself.
     import importlib.util
@@ -48,9 +48,10 @@ except ImportError:  # The Train copies this trusted recorder by itself.
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    CANONICAL_STEPS, MAX_ENVELOPE_BYTES, StageMetrics = module.CANONICAL_STEPS, module.MAX_ENVELOPE_BYTES, module.StageMetrics
+    CANONICAL_STEPS, MAX_ENVELOPE_BYTES, NOT_OBSERVED, StageMetrics = module.CANONICAL_STEPS, module.MAX_ENVELOPE_BYTES, module.NOT_OBSERVED, module.StageMetrics
     make_envelope, record_failure_once = module.make_envelope, module.record_failure_once
     sanitize_message, serialize_envelope, utc_now = module.sanitize_message, module.serialize_envelope, module.utc_now
+    sql_measurement_family = module.sql_measurement_family
 
 OPERATION = "ACTUALIZACION_DB_LF"
 CLEAN = "PASS_CLEAN"
@@ -91,7 +92,30 @@ def failure_receipt_summary(failure: dict, fallback_summary: str) -> str:
 
 _TELEMETRY_STAGE = None
 _TELEMETRY_STARTED_AT = None
+_TELEMETRY_TRAIN_STARTED_AT = None
 _TELEMETRY_METRICS = StageMetrics()
+
+
+def telemetry_metrics_to_state(metrics: StageMetrics | None = None) -> dict:
+    metrics = metrics or _TELEMETRY_METRICS
+    return {name: counter.fields() for name, counter in (
+        ("queries", metrics.queries), ("transport", metrics.transport),
+        ("control_execution", metrics.control_execution), ("judges", metrics.judges),
+        ("evidence_persistence", metrics.evidence_persistence))}
+
+
+def telemetry_metrics_from_state(value: dict | None) -> StageMetrics:
+    metrics = StageMetrics()
+    for name in ("queries", "transport", "control_execution", "judges", "evidence_persistence"):
+        counter_data = (value or {}).get(name) or {}
+        count, duration, byte_count = counter_data.get("count"), counter_data.get("duration_ms"), counter_data.get("bytes")
+        if all(isinstance(item, (int, float)) and not isinstance(item, bool)
+               for item in (count, duration, byte_count)):
+            counter = getattr(metrics, name)
+            counter.count = int(count)
+            counter.duration_ms = float(duration)
+            counter.bytes = int(byte_count)
+    return metrics
 
 
 # ------------------------------------------------- provenance and rule D1
@@ -328,8 +352,10 @@ def call(sql: str, **params: str) -> dict:
     proc = subprocess.run(argv, input=sql, text=True, capture_output=True, timeout=120, check=False)
     elapsed_ms = (time.perf_counter_ns() - started) / 1_000_000
     if _TELEMETRY_STAGE:
-        _TELEMETRY_METRICS.queries.add(elapsed_ms, len((sql + json.dumps(params, sort_keys=True)).encode("utf-8"))
-                                       + len(proc.stdout.encode("utf-8")) + len(proc.stderr.encode("utf-8")))
+        family = sql_measurement_family(sql)
+        getattr(_TELEMETRY_METRICS, family).add(
+            elapsed_ms, len((sql + json.dumps(params, sort_keys=True)).encode("utf-8"))
+            + len(proc.stdout.encode("utf-8")) + len(proc.stderr.encode("utf-8")))
     if proc.returncode != 0:
         tail = " | ".join(proc.stderr.strip().splitlines()[-4:])
         raise RuntimeError(f"TRAIN_EXEC_SQL_FAILED:{tail}")
@@ -337,7 +363,26 @@ def call(sql: str, **params: str) -> dict:
     return json.loads(out[-1]) if out else {}
 
 
-def record_step(ids: dict, step: str, evidence: dict) -> dict:
+def telemetry_run_identity(ctx: dict, ids: dict) -> dict:
+    """Stable Train identity shared with the PASE control-runner envelope."""
+    return {
+        "run_kind": "TRAIN",
+        "suite_id": "LF_MIGRATION_MERGE_TRAIN",
+        "repository": ctx.get("repo") or NOT_OBSERVED,
+        "pr": str(ctx.get("pr") or NOT_OBSERVED),
+        "git_head_sha": ctx.get("head_sha") or NOT_OBSERVED,
+        "github_run_id": str(ctx.get("run_id") or NOT_OBSERVED),
+        "github_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT") or NOT_OBSERVED,
+        "train_run_id": str(ctx.get("run_id") or NOT_OBSERVED),
+        "execution_id": ids.get("execution_id") or NOT_OBSERVED,
+        "migration_version": ctx.get("version") or NOT_OBSERVED,
+        "source_blob": ctx.get("source_blob") or NOT_OBSERVED,
+        "source_sha256": ctx.get("source_sha256") or NOT_OBSERVED,
+        "control_id": ids.get("effect_scope") or NOT_OBSERVED,
+    }
+
+
+def record_step(ids: dict, step: str, evidence: dict, *, ctx: dict | None = None) -> dict:
     global _TELEMETRY_METRICS
     prior = call(
         "select coalesce((select jsonb_build_object('status', status)"
@@ -354,7 +399,7 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
     started_at = (apply_metrics.get("started_at") if step == "patch" else None) or _TELEMETRY_STARTED_AT or utc_now()
     finished_at = utc_now()
     stage_metrics = StageMetrics()
-    for family in ("queries", "transport"):
+    for family in ("queries", "transport", "evidence_persistence"):
         values = apply_metrics.get(family) or {}
         count, duration, byte_count = values.get("count"), values.get("duration_ms"), values.get("bytes")
         if isinstance(count, (int, float)) and isinstance(duration, (int, float)) and isinstance(byte_count, (int, float)):
@@ -366,34 +411,54 @@ def record_step(ids: dict, step: str, evidence: dict) -> dict:
         counter.count += source.count
         counter.duration_ms += source.duration_ms
         counter.bytes += source.bytes
+    # Control execution and judging measure local work only. Exact-head GitHub
+    # checks finish before this recorder starts and are explicitly declared
+    # outside-stage in the envelope. SQL writes are classified by call() into
+    # evidence_persistence; read-only SQL round-trips go only into queries.
+    import time as _time
+    control_started = _time.perf_counter_ns()
+    input_value = evidence.get("exact_target") or evidence.get("target_binding") or ids
+    result_value = evidence.get("write_receipt") or evidence.get("db_write_transport_readback") \
+                   or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified")
+    stage_metrics.control_execution.add((_time.perf_counter_ns() - control_started) / 1_000_000,
+                                        len(json.dumps(evidence, sort_keys=True).encode("utf-8")))
+    judge_started = _time.perf_counter_ns()
+    allowed_statuses = (CLEAN, "BLOCKED_BY_ENFORCEMENT", "RETURN_TO_WORKER") if evidence.get("blocking_codes") else (CLEAN, None)
+    stage_metrics.judges.add((_time.perf_counter_ns() - judge_started) / 1_000_000,
+                             len(json.dumps({"step": step, "allowed_statuses": allowed_statuses}, sort_keys=True).encode("utf-8")))
     envelope = make_envelope(
         step=step, started_at=started_at, finished_at=finished_at,
         execution_id=ids["execution_id"], control_id=ids.get("effect_scope", "NOT_OBSERVED"),
-        input_value=evidence.get("exact_target") or evidence.get("target_binding") or ids,
-        result_value=evidence.get("write_receipt") or evidence.get("db_write_transport_readback")
-                     or evidence.get("failure") or evidence.get("preflight_pass") or evidence.get("verified"),
+        input_value=input_value,
+        result_value=result_value,
         metrics=stage_metrics,
+        run_identity=telemetry_run_identity(ctx or {}, ids),
+        total_started_at=_TELEMETRY_TRAIN_STARTED_AT,
     )
     if evidence.get("failure"):
         envelope["failure"] = evidence["failure"]
         envelope["evidence_locator"] = evidence["failure"].get("evidence_locator", "NOT_OBSERVED")
     evidence = dict(evidence)
-    evidence["pase_f09_015_telemetry_v1"] = json.loads(serialize_envelope(envelope, MAX_ENVELOPE_BYTES))
+    serialized_envelope = serialize_envelope(envelope, MAX_ENVELOPE_BYTES)
+    evidence["pase_f09_015_telemetry_v1"] = json.loads(serialized_envelope)
+    # The row-write round-trip is measured immediately after serialization and
+    # attached to the next envelope / final receipt summary. It cannot be
+    # included in its own immutable row payload without a second write.
+    _TELEMETRY_METRICS = StageMetrics()
     res = call(
         "select public.lf_record_db_operation_step_v1(:'exec', :'step', :'ref', (:'payload')::jsonb, :'actor');",
         exec=ids["execution_id"], step=step, ref=f"{ids['actor']}:{step}",
         payload=json.dumps(evidence, sort_keys=True), actor=ids["actor"],
     )
-    allowed_statuses = (CLEAN, "BLOCKED_BY_ENFORCEMENT", "RETURN_TO_WORKER") if evidence.get("blocking_codes") else (CLEAN, None)
     if res.get("outcome") != "STEP_RECORDED" or res.get("status") not in allowed_statuses:
         raise RuntimeError(f"TRAIN_EXEC_STEP_NOT_CLEAN:{step}:{json.dumps(res, sort_keys=True)[:600]}")
-    _TELEMETRY_METRICS = StageMetrics()
     return res
 
 
 def record_receipt(state: dict) -> dict:
     """Append the typed terminal receipt; the SQL side builds it from canonical state."""
     ctx, ids = state["context"], state["ids"]
+    global _TELEMETRY_STAGE
     prov = dict(state.get("provenance") or {})
     if not prov:
         prov = authorization_from_env()
@@ -404,19 +469,33 @@ def record_receipt(state: dict) -> dict:
     observed_main = git_out("rev-parse", "HEAD")
     if not prov.get("main_before") and SHA1_RE.fullmatch(observed_main or ""):
         prov["main_before"] = observed_main
+    prior_write_metrics = _TELEMETRY_METRICS.evidence_persistence.fields()
+    prov["pase_f09_015_metrics"] = {
+        "evidence_persistence_before_receipt": prior_write_metrics,
+        "accounting_rule": "Each psql write-function round-trip is counted once in evidence_persistence; read-only psql calls are counted once in queries. The terminal receipt append round-trip is measured after its immutable payload is built and returned separately because it cannot include its own duration.",
+    }
+    _TELEMETRY_STAGE = "receipt"
+    receipt_started = time.perf_counter_ns()
     res = call(
         "select public.lf_record_migration_train_receipt_v1(:'exec', (:'prov')::jsonb, :'actor');",
         exec=ids["execution_id"], prov=json.dumps(prov, sort_keys=True), actor=ids["actor"],
     )
     if res.get("outcome") not in ("TRAIN_RECEIPT_RECORDED", "TRAIN_RECEIPT_REPLAY"):
         raise RuntimeError(f"TRAIN_EXEC_RECEIPT_FAILED:{json.dumps(res, sort_keys=True)[:600]}")
-    return res
+    receipt_round_trip_ms = round((time.perf_counter_ns() - receipt_started) / 1_000_000, 3)
+    _TELEMETRY_STAGE = None
+    return {**res, "receipt_write_observation": {
+        "duration_ms": receipt_round_trip_ms,
+        "accounted_in_envelope": False,
+        "reason": "Measured after immutable receipt append; self-duration cannot be embedded without mutating or appending a second receipt.",
+    }}
 
 
 def begin(ctx: dict) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     _TELEMETRY_STAGE = "preflight"
     _TELEMETRY_STARTED_AT = utc_now()
+    _TELEMETRY_TRAIN_STARTED_AT = _TELEMETRY_STARTED_AT
     _TELEMETRY_METRICS = StageMetrics()
     validate_context(ctx)
     provenance = capture_provenance(ctx)
@@ -447,8 +526,7 @@ def begin(ctx: dict) -> dict:
     )
     if capability.get("entry_guard_state") != "GUARDED":
         raise RuntimeError("TRAIN_EXEC_TRANSPORT_NOT_GUARDED")
-    record_step(ids, "preflight", preflight_evidence(ctx, capability))
-    _TELEMETRY_STAGE = None
+    record_step(ids, "preflight", preflight_evidence(ctx, capability), ctx=ctx)
     effect = call(
         "select public.fn_lf_operation_reserve_effect_v1(:'exec', :'owner', :fence, :'scope', :'sha', :'dispatch', :'actor');",
         exec=ids["execution_id"], owner=ids["lease_owner"], fence=ids["lease_fence"],
@@ -456,13 +534,17 @@ def begin(ctx: dict) -> dict:
     )
     if effect.get("dispatch_permitted") is not True:
         raise RuntimeError(f"TRAIN_EXEC_EFFECT_NOT_PERMITTED:{json.dumps(effect, sort_keys=True)[:600]}")
+    _TELEMETRY_STAGE = None
     return {"context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_READY_TO_APPLY", "effect_state": "RESERVED",
-            "provenance": provenance, "patch_started_at": utc_now()}
+            "provenance": provenance, "patch_started_at": utc_now(),
+            "telemetry_train_started_at": _TELEMETRY_TRAIN_STARTED_AT,
+            "telemetry_pending_metrics": telemetry_metrics_to_state()}
 
 
 def resume(ctx: dict) -> dict:
     """Resume one expired open execution only when its exact migration is in the ledger."""
     validate_context(ctx)
+    resumed_at = utc_now()
     provenance = capture_provenance(ctx)
     enforce_d1(provenance)
     ids = identity(ctx["pr"], ctx["version"], ctx["run_id"])
@@ -528,14 +610,16 @@ def resume(ctx: dict) -> dict:
     return {
         "context": ctx, "ids": ids, "result": "TRAIN_EXECUTION_RESUMED",
         "effect_state": candidate["effect_state"], "ledger_receipt": ledger_receipt,
-        "provenance": provenance,
+        "provenance": provenance, "patch_started_at": resumed_at,
+        "telemetry_train_started_at": resumed_at,
     }
 
 
 def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
           failure: dict | None = None) -> dict:
     """Record pre-apply failure; SQL independently rejects any version in the ledger."""
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     ctx, ids = state["context"], state["ids"]
     original_error = failure or {"code": "TRAIN_STEP_FAILED", "sqlstate": "NOT_OBSERVED",
                                  "message": error_summary, "evidence_locator": "NOT_OBSERVED"}
@@ -555,7 +639,7 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
         if original_error.get("pase_f09_015_metrics"):
             failed_evidence["pase_f09_015_metrics"] = original_error["pase_f09_015_metrics"]
         outcome = record_failure_once(
-            lambda _error: record_step(ids, "patch", failed_evidence),
+            lambda _error: record_step(ids, "patch", failed_evidence, ctx=ctx),
             lambda receipt: rejected.update(receipt), safe_error,
         )
         _TELEMETRY_STAGE = None
@@ -587,11 +671,12 @@ def abort(state: dict, run_id: str, failed_step: str, error_summary: str,
 
 
 def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     _TELEMETRY_STAGE = "patch"
     _TELEMETRY_STARTED_AT = state.get("patch_started_at") or utc_now()
-    _TELEMETRY_METRICS = StageMetrics()
+    _TELEMETRY_METRICS = telemetry_metrics_from_state(state.get("telemetry_pending_metrics"))
     receipt = {"apply_receipt": apply_receipt, "train_run_id": ctx["run_id"]}
     if state.get("effect_state") != "SUCCEEDED":
         call(
@@ -600,17 +685,19 @@ def commit(state: dict, decision: dict, apply_receipt: dict) -> dict:
             scope=ids["effect_scope"], receipt=json.dumps(receipt, sort_keys=True), actor=ids["actor"],
         )
         state["effect_state"] = "SUCCEEDED"
-    record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt))
+    record_step(ids, "patch", patch_evidence(ctx, ids, decision, apply_receipt), ctx=ctx)
     _TELEMETRY_STAGE = None
-    return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED"}
+    return {**state, "result": "TRAIN_EXECUTION_PATCH_RECORDED",
+            "telemetry_pending_metrics": telemetry_metrics_to_state()}
 
 
 def close(state: dict, merge_sha: str, parity_status: str) -> dict:
-    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_METRICS
+    global _TELEMETRY_STAGE, _TELEMETRY_STARTED_AT, _TELEMETRY_TRAIN_STARTED_AT, _TELEMETRY_METRICS
     ctx, ids = state["context"], state["ids"]
+    _TELEMETRY_TRAIN_STARTED_AT = state.get("telemetry_train_started_at") or state.get("patch_started_at")
     _TELEMETRY_STAGE = "verify"
     _TELEMETRY_STARTED_AT = utc_now()
-    _TELEMETRY_METRICS = StageMetrics()
+    _TELEMETRY_METRICS = telemetry_metrics_from_state(state.get("telemetry_pending_metrics"))
     ledger = call(
         "select coalesce((select jsonb_build_object('version', version, 'name', name)"
         " from supabase_migrations.schema_migrations where version = :'v'), '{}'::jsonb);",
@@ -618,8 +705,7 @@ def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     )
     if ledger.get("version") != ctx["version"] or ledger.get("name") != ctx["name"]:
         raise RuntimeError(f"TRAIN_EXEC_LEDGER_READBACK_MISMATCH:{json.dumps(ledger)}")
-    record_step(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status))
-    _TELEMETRY_STAGE = None
+    record_step(ids, "verify", verify_evidence(ctx, ids, ledger, merge_sha, parity_status), ctx=ctx)
     evidence = {"train_run_id": ctx["run_id"], "pr": int(ctx["pr"]), "merge_sha": merge_sha,
                 "ledger": ledger, "parity": parity_status}
     res = call(
@@ -629,7 +715,9 @@ def close(state: dict, merge_sha: str, parity_status: str) -> dict:
     )
     if res.get("result") not in ("EXECUTION_COMPLETED", "REPLAY_ALREADY_COMPLETED"):
         raise RuntimeError(f"TRAIN_EXEC_CLOSE_FAILED:{json.dumps(res)}")
-    done = {**state, "result": "TRAIN_EXECUTION_COMPLETED", "close": res}
+    _TELEMETRY_STAGE = None
+    done = {**state, "result": "TRAIN_EXECUTION_COMPLETED", "close": res,
+            "telemetry_pending_metrics": telemetry_metrics_to_state()}
     done["receipt"] = record_receipt(done)
     return done
 
