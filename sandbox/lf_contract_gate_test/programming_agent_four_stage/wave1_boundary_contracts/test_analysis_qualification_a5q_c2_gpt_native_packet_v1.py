@@ -86,8 +86,15 @@ NEG = {
     "EVIDENCE_REFS_INVALID ": lambda: mutate(lambda r: r.update(evidence_refs=[])),
     "DECISION_STATEMENT_MISSING": lambda: mutate(lambda r: r.update(decision_statement="corto")),
     "SELF_APPROVAL_LANGUAGE": lambda: mutate(lambda r: r.update(decision_statement="Se decide mostrar el ahorro; el propietario solo confirma la decisión tomada.")),
+    "SELF_APPROVAL_LANGUAGE ": lambda: mutate(lambda r: r.update(decision_statement="El agente ha aprobado el alcance del piloto y cierra la revisión del propietario.")),
     "SOLUTION_INFERRED": lambda: mutate(lambda r: r["pending_decisions"][0].update(question="¿Se guarda el ahorro en una tabla de la base de datos?")),
 }
+
+
+def test_denial_of_approval_is_not_self_approval():
+    ok = mutate(lambda r: r.update(decision_statement="Ninguna decisión ha sido aprobada por el agente; todas siguen pendientes del propietario humano."))
+    assert run(ok)[0] == eq.PASS_C2
+    assert pk.affirmed_self_approval("Se decide mostrar el ahorro.") and not pk.affirmed_self_approval("No se puede considerar aprobada ninguna regla.")
 
 
 def test_raw_negatives():

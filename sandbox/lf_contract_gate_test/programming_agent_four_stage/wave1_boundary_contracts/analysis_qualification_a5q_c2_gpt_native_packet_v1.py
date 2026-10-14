@@ -30,6 +30,20 @@ MIN_DISTINCT_GAPS = 5
 SELF_APPROVAL = re.compile(r"\b(aprob(é|ado|ada|amos|ó)|decid(í|ido|ida|imos)|se decide|queda decidid[oa]|elegid[oa]|se elige|se adopta)\b", re.I)
 
 
+NEGATOR = re.compile(r"\b(no|ninguna?|ningún|ni|sin|nunca|tampoco|nada)\b", re.I)
+
+
+def affirmed_self_approval(text: str) -> bool:
+    """True when an approval/decision verb appears in a sentence that does not negate it (a denial is not self-approval)."""
+    for m in SELF_APPROVAL.finditer(text):
+        start = max(text.rfind(".", 0, m.start()), text.rfind(",", 0, m.start()), text.rfind(";", 0, m.start())) + 1
+        end_candidates = [i for i in (text.find(".", m.end()), text.find(",", m.end()), text.find(";", m.end())) if i != -1]
+        end = min(end_candidates) if end_candidates else len(text)
+        if not NEGATOR.search(text[start:end]):
+            return True
+    return False
+
+
 def input_obj() -> dict:
     return {"a4_stage_output": common.load_frozen(INPUT_FILE, INPUT_FILE_SHA256, "A5")}
 
@@ -116,7 +130,7 @@ def semantic_checks(packet: dict, out: dict) -> str | None:
     if not isinstance(st, str) or len(st.strip()) < 40:
         return "DECISION_STATEMENT_MISSING"
     text = json.dumps(out, ensure_ascii=False)
-    if SELF_APPROVAL.search(text):
+    if affirmed_self_approval(text):
         return "SELF_APPROVAL_LANGUAGE"
     low, ctx_text = text.lower(), packet["input"]["input_literal"].lower()
     for pat in chk["forbidden_solution_patterns"]:
