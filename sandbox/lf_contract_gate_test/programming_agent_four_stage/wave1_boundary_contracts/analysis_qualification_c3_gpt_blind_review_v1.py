@@ -57,7 +57,8 @@ def prompt_text(unit: str, criterion: str, checks, input_literal: str, items, ru
         f"('{REVIEW_SCHEMA}'), unit ('{unit}Q'), items. items es una lista de dos objetos, en el orden "
         f"{items[0]['item_id']}, {items[1]['item_id']}, cada uno con exactamente: item_id, checks, verdict, rationale. "
         "checks es una lista con un objeto por chequeo, en el orden dado, con exactamente: code, result (PASS|FAIL), "
-        "evidence_refs (1 a 3 citas textuales cortas, copiadas LITERALMENTE de la solicitud o del ítem, sin comillas "
+        "evidence_refs (1 a 3 citas textuales, copiadas LITERALMENTE de la solicitud o del ítem, cada una de al menos "
+        "8 caracteres: cita la frase o el fragmento que contiene el dato, no etiquetas sueltas como 'L1'; sin comillas "
         "ni saltos de línea), note (una frase). verdict es PASS solo si los tres chequeos son PASS; si no, FAIL. "
         "rationale: 1 a 3 frases. No asumas que un ítem es correcto o incorrecto por su posición.",
     ]
