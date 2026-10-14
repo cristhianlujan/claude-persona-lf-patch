@@ -7,7 +7,7 @@ Este directorio contiene el workflow como parche de texto. **No lo copies ni lo 
 1. Crear un rol PostgreSQL dedicado de solo lectura, con `SELECT` únicamente sobre `supabase_migrations.schema_migrations`; limitar la conexión al pooler.
 2. Crear el secret `LF_SUPABASE_RO_DATABASE_URL` en el Environment `lf-merge-train`, restringido a `main`. No reutilizar ni añadir `LF_SUPABASE_DB_PASSWORD`.
 3. Crear la etiqueta `ready-to-reconcile`.
-4. Confirmar que la GitHub App del Train puede publicar statuses y fusionar PRs; mantener el permiso de comentarios/lectura en el token automático de GitHub.
+4. Confirmar que la GitHub App del Train tiene permisos mínimos para leer contenidos, publicar statuses, comentar y fusionar PRs. El parche usa esa App para checkout y llamadas de GitHub; no depende de un token PAT adicional.
 5. Definir la decisión pendiente de nombres del caso `lf_pilot_srcr_g12` que cruza el baseline. La lane exige identidad exacta contra el ledger y no inventa una equivalencia de nombre.
 
 ## Instalación para Paulo, después del OK
