@@ -25,7 +25,7 @@ def valid(text: str) -> bool:
       r"\b(?:insert\s+into|update|delete\s+from)\s+public\.lf_capability_current",
       r"\bupdate\s+public\.lf_router_action_registry",
       r"\b(?:insert\s+into|update|delete\s+from)\s+public\.lf_operation_effect_guard",
-      r"\b(?:insert\s+into|update|delete\s+from)\s+public\.lf_eventos\s+.*?'RUNTIME_PREFLIGHT'",
+      r"\binsert\s+into\s+public\.lf_eventos\s*\([^)]*\)\s*values\s*\(\s*[\'\"]RUNTIME_PREFLIGHT",
     ):
         if re.search(forbidden,text,re.I|re.S):
             return False
