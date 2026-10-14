@@ -1,0 +1,1 @@
+Prompts de ejecución GPT Native PE10_C3 V2, A original y D shadow. Los casos 201–212 usan exactamente el mismo conjunto de entradas para ambos brazos. El escenario 212 se entrega secuencialmente, sin anticipar etapas futuras.
