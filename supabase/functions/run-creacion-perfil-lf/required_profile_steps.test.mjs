@@ -98,3 +98,15 @@ test('reject UPDATE missing holdout',()=>{
  const incomplete=full.filter(v=>v!=='regression_after');
  assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,routes(incomplete,noChange)),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
 });
+
+// SQL parity regression: the conditional policy must freeze exactly six
+// prefix steps, with method_selection/evolution_decision in slots five/six.
+test('reject shifted method/decision prefix even when both route lists agree',()=>{
+ const shifted=[...full];
+ shifted.splice(3,4,'method_selection','evolution_decision','change_scope','baseline_read');
+ const shiftedNoChange=[...noChange];
+ shiftedNoChange.splice(3,3,'method_selection','evolution_decision','baseline_read');
+ const policy=routes(shifted,shiftedNoChange);
+ policy.operation_policy_snapshots.PASS_POLICY.policy_payload.required_steps_before_decision=shifted.slice(0,5);
+ assert.throws(()=>select('ACTUALIZACION_PERFIL_LF',evolved,policy),/PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID/);
+});
