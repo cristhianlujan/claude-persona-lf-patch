@@ -108,6 +108,43 @@ class MigrationRouteGuardTests(unittest.TestCase):
         self.assertFalse(any(c.kwargs.get("method") == "POST" for c in api_request.call_args_list))
         self.assertTrue(any("requires Train" in item.args[0] for item in summary.call_args_list))
 
+    def test_ready_to_reconcile_label_never_publishes_success(self):
+        decision = guard.reconciliation_label_decision([{"name": "ready-to-reconcile"}])
+        self.assertEqual(decision, (True, "ready-to-reconcile owns verification; route guard publishes no status"))
+
+    def test_conflicting_lane_labels_fail_closed(self):
+        decision = guard.reconciliation_label_decision([
+            {"name": "ready-to-merge"}, {"name": "ready-to-reconcile"},
+        ])
+        self.assertEqual(decision, (False, "conflicting ready-to-merge and ready-to-reconcile labels"))
+
+    def _run_labeled_pull(self, labels):
+        pull = {"state": "open", "base": {"ref": "main"}, "head": {"sha": "head-1"}, "labels": labels}
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": "owner/repo", "GH_READ_TOKEN": "read-token",
+            "APP_TOKEN": "app-token", "GITHUB_EVENT_PATH": "", "PR_NUMBER_INPUT": "1",
+        }), patch.object(guard, "write_summary") as summary, \
+            patch.object(guard, "api_request", return_value=pull) as api_request:
+            result = guard.main()
+        return result, api_request, summary
+
+    def test_route_guard_does_not_publish_for_reconcile_pr(self):
+        result, api_request, summary = self._run_labeled_pull([{"name": "ready-to-reconcile"}])
+        self.assertEqual(result, 0)
+        self.assertEqual(api_request.call_count, 1)
+        self.assertFalse(any(c.kwargs.get("method") == "POST" for c in api_request.call_args_list))
+        self.assertTrue(any("no lf-merge-train/verified status published" in c.args[0]
+                            for c in summary.call_args_list))
+
+    def test_route_guard_rejects_conflicting_labels_without_status(self):
+        result, api_request, summary = self._run_labeled_pull([
+            {"name": "ready-to-merge"}, {"name": "ready-to-reconcile"},
+        ])
+        self.assertEqual(result, 1)
+        self.assertEqual(api_request.call_count, 1)
+        self.assertFalse(any(c.kwargs.get("method") == "POST" for c in api_request.call_args_list))
+        self.assertTrue(any("conflicting ready-to-merge" in c.args[0] for c in summary.call_args_list))
+
 
 if __name__ == "__main__":
     unittest.main()
