@@ -21,11 +21,37 @@ FUNCTIONS = (
     "lf_profile_update_effective_route_v1(text)",
     "lf_profile_update_evolution_step_guard_v1(text,text,jsonb)",
 )
+# The migration contains these exact candidate sources (not a second copy).
+SOURCES = (
+    "skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql",
+    "skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql",
+    "skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql",
+)
 BEGIN_RE = re.compile(r"(?m)^BEGIN;\s*$")
 COMMIT_RE = re.compile(r"(?m)^COMMIT;\s*$")
 
 
+def verify_source_parity(sql: str) -> None:
+    """Prevent Train from admitting a migration with stale helper source bytes.
+
+    Compare the embedded exact source to each canonical candidate file and
+    independently verify the Git blob SHA-1 pinned by the source header.
+    """
+    for path in SOURCES:
+        source_bytes = (ROOT / path).read_bytes()
+        source_text = source_bytes.decode("utf-8").rstrip("\n")
+        git_blob = hashlib.sha1(
+            f"blob {len(source_bytes)}\\0".encode("ascii") + source_bytes
+        ).hexdigest()
+        marker = f"-- SOURCE {path} BLOB {git_blob}"
+        if sql.count(marker) != 1:
+            raise ValueError("PE10_MIGRATION_SOURCE_BLOB_DRIFT:" + path)
+        if not source_text or sql.count(source_text) != 1:
+            raise ValueError("PE10_MIGRATION_SOURCE_BYTES_DRIFT:" + path)
+
+
 def validate_source(sql: str) -> dict[str, object]:
+    verify_source_parity(sql)
     starts, ends = list(BEGIN_RE.finditer(sql)), list(COMMIT_RE.finditer(sql))
     if len(starts) != 1 or len(ends) != 1 or sql[ends[0].end():].strip():
         raise ValueError("PE10_ROLLBACK_SOURCE_TRANSACTION_BOUNDARY_INVALID")
@@ -149,7 +175,25 @@ def main() -> int:
             pass
         else:
             raise SystemExit("PE10_ROLLBACK_DANGEROUS_SOURCE_ACCEPTED")
+        # A changed source file or changed migration body must invalidate
+        # the frozen bytes before either enters a privileged Train run.
+        broken = sql.replace(
+            "-- Candidate-only: NOT a deployed migration or a grant of Profile Updater write authority.",
+            "-- Candidate-only: source tampered before Train admission.",
+            1,
+        )
+        if broken == sql:
+            raise SystemExit("PE10_SOURCE_DRIFT_NEGATIVE_FIXTURE_MISSING")
+        try:
+            validate_source(broken)
+        except ValueError as e:
+            if "PE10_MIGRATION_SOURCE_BYTES_DRIFT" not in str(e):
+                raise
+        else:
+            raise SystemExit("PE10_SOURCE_DRIFT_NEGATIVE_ACCEPTED")
         print(json.dumps({
+            "source_parity": "PASS_3_OF_3_EXACT_BLOBS",
+            "negative_drift_rejected": True,
             "status": "PASS_STATIC_ONLY",
             "schema": "PE10_HELPERS_ROLLBACK_PROBE_V1",
             "source_sha256": record["source_sha256"],
