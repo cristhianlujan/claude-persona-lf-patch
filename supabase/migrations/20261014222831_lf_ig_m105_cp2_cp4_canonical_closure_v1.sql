@@ -123,7 +123,7 @@ BEGIN
  'authorizes_production',v_sample.authorizes_production,
  'sample_run_id',v_run.id,
  'stale_run_id',v_stale);
- IF (v_observed @> v_contract->'pass_when') IS DISTINCT FROM true
+ IF (v_observed @> (v_contract->'pass_when')) IS DISTINCT FROM true
  THEN RAISE EXCEPTION 'M105_CP2_ASSERTION_OBSERVED_NOT_MATCHING_CONTRACT'; END IF;
  v_ref:='supabase://programacion.v_ig_m105_cp2_sample_readback_v1#screen=1&run='
   ||v_run.id||'&stale_run='||v_stale;
