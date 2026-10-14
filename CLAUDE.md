@@ -42,6 +42,8 @@ On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. 
 
 The Router (ACT-0001, Supabase) is the authority for database writes; this file only points to it. If this file and the Router disagree, the Router wins.
 
+Read-only database inspection through the Supabase RO connector is outside Router routing. Limit it to the authorized inspection scope and do not use it to write.
+
 1. Resolve the route with `public.lf_router_resolve_v1` (read-only users can run it). Database targets resolve to `ACTUALIZACION_DB_LF`; read its policies in `public.v_lf_operation_policy_snapshot`.
 2. Ask `DB_WRITE_TRANSPORT` for the route:
 
