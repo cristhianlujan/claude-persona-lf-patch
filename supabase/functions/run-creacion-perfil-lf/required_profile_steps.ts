@@ -62,7 +62,13 @@ export function resolveProfileRequiredSteps(
         noChange.some((id) => !update.includes(id)) ||
         noChange.includes("github_write") ||
         noChange.includes("pre_write_execution_binding_gate") ||
-        noChange.includes("post_merge_reconcile")) {
+        noChange.includes("post_merge_reconcile") ||
+        !["deterministic_validation","semantic_judge","close","report_output"]
+          .every((id) => noChange.includes(id)) ||
+        !["change_scope","regression_plan","pre_write_execution_binding_gate",
+          "github_write","github_readback","deterministic_validation",
+          "semantic_judge","regression_after","post_merge_reconcile","close","report_output"]
+          .every((id) => update.includes(id))) {
       throw new Error("PROFILE_EVOLUTION_FROZEN_ROUTES_INVALID");
     }
     const decisionIdx = update.indexOf("evolution_decision");
