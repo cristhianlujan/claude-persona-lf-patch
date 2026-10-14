@@ -1,0 +1,118 @@
+{
+  "schema_version": "ANALYSIS_A15_REFREEZE_CONFIRMATION_V1",
+  "files": [
+    {
+      "unit": "A1",
+      "path": "analysis_request_context_v1.schema.json",
+      "sha256": "b47d9b77d63fece5df1c7a1b24936c6398e96d13ff6b020b2b572c8f43eb2744",
+      "git_blob_sha1": "cb6cf1c663da4dc12c1f1a6fabedb6e666836d85",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A2",
+      "path": "analysis_change_classification_contract_v1.json",
+      "sha256": "7360cc4f81ddf3e9d80f87382219858b3c2e4e1895f2c85cc3bdd5db0d29cc04",
+      "git_blob_sha1": "0f07d3603c1bf3e4d2a4b9de5d6c3a3968bb4051",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A3",
+      "path": "analysis_targeted_evidence_contract_v1.json",
+      "sha256": "b2ca8318f6bd4a9f8cd28f44dc0f228cd25cf7392fd14d9c4148b82d9dac4f83",
+      "git_blob_sha1": "97d06e88b963690202424a2936ae2b7bf597cea7",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A4",
+      "path": "shared_change_impact_contract_v1.json",
+      "sha256": "8dbe08a396ce375094d11d77dee4dc80cfe180a3e7703ea5af549399b8231765",
+      "git_blob_sha1": "4d38665d7f6da4e556bc05e8ed10489b62ddcc0b",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A5",
+      "path": "analysis_decision_context_adr_contract_v1.json",
+      "sha256": "b09ce629e7a7078e10738c48348f197361854a26f997aa1a3c12b774f3847be1",
+      "git_blob_sha1": "da77f17283ced275f5498f7a5be07a7180edb7bc",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A6",
+      "path": "analysis_implementability_contract_v1.json",
+      "sha256": "487715da22c498da0ebd1d551dffd788316fa3fdd088db331f130d882233d0ae",
+      "git_blob_sha1": "d000e6900300e12bcc1e1e56490ca3acf40713d1",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A7",
+      "path": "analysis_material_front_coverage_contract_v1.json",
+      "sha256": "5cc5234ab6c9a44efa4ffa7a1286975cf400b2daa8366ec19dd6f1ce46cbc0b8",
+      "git_blob_sha1": "a0ef134afc07ed6fcc2385b37212d01e678f0cc6",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A8",
+      "path": "analysis_stop_rule_contract_v1.json",
+      "sha256": "fb43f9cfc1a462a7febd808e54e6260c1ec34f9c93c25e1a7f7709957e3cfa76",
+      "git_blob_sha1": "4bb7265c985b06e23cc2428c4332187a9330fdae",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A9",
+      "path": "analysis_programming_handoff_parity_contract_v1.json",
+      "sha256": "90b41ca8fe9163bb2299bb4acf51f31fe9a6abdde936a645d3155f17bbd946df",
+      "git_blob_sha1": "f74fc959975415f28a4ad4e02ad35671b7f4ad23",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "A9_PG01",
+      "path": "programming_entry_contract_v1.json",
+      "sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "git_blob_sha1": "56e561a72f8cfd9d085dd8087b854ff2ac740b1b",
+      "matches_declared_blob": true
+    },
+    {
+      "unit": "VALIDATOR",
+      "path": "validate_wave1_boundary_contracts_v1.py",
+      "sha256": "64ece87edf378582fa51b93a39169c581906b55749bd5a4e3a8a14557130ea06",
+      "git_blob_sha1": "0167d817e21ffff74a50c92bc907cd0d94001e9d",
+      "matches_declared_blob": true
+    }
+  ],
+  "checks": [
+    {
+      "code": "BUNDLE_BYTES_MATCH_MANIFEST",
+      "result": "PASS",
+      "evidence_refs": [
+        "cb6cf1c663da4dc12c1f1a6fabedb6e666836d85",
+        "da77f17283ced275f5498f7a5be07a7180edb7bc",
+        "0167d817e21ffff74a50c92bc907cd0d94001e9d"
+      ],
+      "note": "Se calcularon mediante código SQL criptográfico los SHA-256 y Git blob SHA-1 de los bytes UTF-8 exactos. Los 11 archivos coinciden con declared_blob y con source_bundle del manifiesto, respetando unidad, ruta y orden. También coinciden los 11 tamaños declarados."
+    },
+    {
+      "code": "REFREEZE_REASON_CONSISTENT",
+      "result": "PASS",
+      "evidence_refs": [
+        "PROGRAMMING_ENTRY_CONTRACT_AND_WAVE1_VALIDATOR_CHANGED_AFTER_FIRST_FREEZE (A5 decision_context added by PR #2436); A5 contract was missing from the first bundle",
+        "analysis_decision_context_adr_contract_v1.json",
+        "programming_entry_contract_v1.json",
+        "validate_wave1_boundary_contracts_v1.py"
+      ],
+      "note": "El paquete incorpora expresamente los tres archivos que justifican el refreeze. Se comprobó que A5 declara decision_context, que el contrato de entrada de Programming contiene esa referencia y que el validador Wave1 incluye referencias a ambos contratos. La composición del paquete es coherente con el motivo declarado."
+    },
+    {
+      "code": "NO_OVERCLAIM",
+      "result": "PASS",
+      "evidence_refs": [
+        "\"merge_performed\": false",
+        "\"story_retirement_authorized\": false",
+        "\"independent_confirmation_ref\": null",
+        "\"empirical_gates_status\": \"PRIOR_GATES_FROM_FIRST_FREEZE_NOT_RERUN_BY_INDEPENDENT_JUDGE\""
+      ],
+      "note": "El manifiesto no declara una fusión realizada ni autoriza retirar historias. runtime_activation y production_activation permanecen en false. No existe una referencia de autoconfirmación y los gates empíricos están identificados explícitamente como resultados del primer freeze que no fueron reejecutados por un juez independiente."
+    }
+  ],
+  "verdict": "CONFIRM",
+  "rationale": "Los tres chequeos son PASS. Se verificaron mediante código los hashes de los 11 archivos y se confirmó una coincidencia del 100% con los blobs declarados y el source_bundle. El motivo del refreeze y los límites del manifiesto son consistentes. CONFIRM se limita a la integridad del paquete y la consistencia documental. No constituye atestación de proveedor, revisión independiente formal, reejecución de gates empíricos, autorización de merge ni cierre del checkpoint A15Q_C1."
+}
