@@ -17,7 +17,6 @@ import sys
 from typing import Any
 
 EVENT_ID = 21014
-CUTOFF = datetime.fromisoformat("2026-10-14T23:09:31+00:00")
 NOT_OBSERVED = "NOT_OBSERVED"
 TRAIN_PREFIX = "EXEC-DB-TRAIN-"
 C3_TARGET = re.compile(r"^(?:\d{14}_)?lf_pase_f09_015_c3_", re.IGNORECASE)
@@ -192,6 +191,9 @@ def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) 
     payload = parse_jsonb(event_row.get("payload"))
     if payload.get("acceptance_declared") is not False:
         raise ValueError("F09_013_FREEZE_EVENT_ENVELOPE_INVALID")
+    cutoff = as_utc(payload.get("occurred_at"))
+    if cutoff is None:
+        raise ValueError("F09_013_FREEZE_EVENT_OCCURRED_AT_MISSING")
     caps = caps_from_event(payload)
     rule = payload.get("acceptance_rule") or {}
     target_count = int(rule.get("sample_count", 10))
@@ -212,7 +214,7 @@ def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) 
     candidates = []
     for run in all_runs:
         created = as_utc(run.get("created_at"))
-        if str(run.get("status") or "") != "COMPLETED" or created is None or created <= CUTOFF:
+        if str(run.get("status") or "") != "COMPLETED" or created is None or created <= cutoff:
             continue
         if migration_target_excluded(run.get("target_code")):
             continue
@@ -293,7 +295,7 @@ def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) 
     valid_count = cold_count + hot_count
     return {
         "event_id": EVENT_ID,
-        "cutoff_created_at_exclusive": CUTOFF.isoformat().replace("+00:00", "Z"),
+        "cutoff_created_at_exclusive": cutoff.isoformat().replace("+00:00", "Z"),
         "sample_target": target_count,
         "minimum_cold_samples": min_cold,
         "valid_sample_count": valid_count,
