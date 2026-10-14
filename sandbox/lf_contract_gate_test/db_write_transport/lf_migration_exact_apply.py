@@ -67,7 +67,13 @@ def sanitize_dry_run_output(text: str, *, limit: int = 800) -> str:
     ordered = important + [line for line in lines if line not in important]
     result = " | ".join(ordered) or "dry-run produced no diagnostic output"
     if len(result) > limit:
-        result = "…" + result[-(limit - 1):]
+        final_tail = result[-limit:]
+        diagnostic = next((line for line in reversed(important)
+                           if re.search(r"error|failed|not found|mismatch", line, re.I)), None)
+        if diagnostic and diagnostic not in final_tail and len(diagnostic) + 3 < limit:
+            result = diagnostic + " | " + final_tail[-(limit - len(diagnostic) - 3):]
+        else:
+            result = "…" + final_tail[-(limit - 1):]
     return result
 
 
