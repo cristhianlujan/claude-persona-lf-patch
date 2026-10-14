@@ -105,7 +105,7 @@ async function operationSnapshot(ex: any): Promise<any> {
     rows(`/rest/v1/lf_operation_step_judge_bindings?operation_code=eq.${encodeURIComponent(op)}&status=eq.ACTIVE_ENFORCEMENT&select=step_id,step_order,judge_code,clean_result_value,blocked_result_value,return_result_value,required_evidence_keys`, "JUDGE_BINDINGS_READ"),
     rows(`/rest/v1/v_lf_operation_policy_snapshot?operation_code=eq.${encodeURIComponent(op)}&select=*`, "POLICY_SNAPSHOT_READ"),
   ]);
-  const effectiveRequiredSteps = resolveProfileRequiredSteps(op, steps, ex.manifest);
+  const effectiveRequiredSteps = resolveProfileRequiredSteps(op, steps, ex.manifest, recorded);
   const rec = new Map(recorded.map((r: any) => [r.step_id, r]));
   const contractsBy = new Map(contracts.map((r: any) => [r.step_id, r]));
   const bindingsBy = new Map(bindings.map((r: any) => [r.step_id, r]));
