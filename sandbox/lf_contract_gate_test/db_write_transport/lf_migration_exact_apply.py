@@ -24,12 +24,30 @@ HERE = Path(__file__).resolve().parent
 TRANSPORT_PATH = HERE / "lf_db_write_transport.py"
 SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 VERSION_TOKEN_RE = re.compile(r"(?<!\d)(20\d{12})(?!\d)")
-SQLSTATE_RE = re.compile(r"(?:SQLSTATE|SQL state)\s*[:=]?\s*([0-9A-Z]{5})|ERROR:\s*([0-9A-Z]{5})|EXACT_APPLY_PRIMARY_SQL_ERROR:([0-9A-Z]{5})", re.I)
+SQLSTATE_RE = re.compile(r"(?m)^ERROR:\s+([0-9A-Z]{5}):")
+POSTGRES_ERROR_RE = re.compile(r"(?m)^ERROR:")
+FALLBACK_TRANSPORT_PATTERNS = tuple(re.compile(pattern, re.I) for pattern in (
+    r"could not connect to server",
+    r"connection refused",
+    r"connection timed out",
+    r"timeout expired",
+    r"server closed the connection unexpectedly",
+    r"could not translate host name",
+    r"no route to host",
+    r"network is unreachable",
+))
 
 
 def postgres_sqlstate(message: str) -> str | None:
     match = SQLSTATE_RE.search(message or "")
-    return next((part for part in (match.groups() if match else ()) if part), None)
+    return match.group(1) if match else None
+
+
+def fallback_allowed(message: str, *, allow_fallback: bool) -> bool:
+    detail = message or ""
+    if not allow_fallback or POSTGRES_ERROR_RE.search(detail):
+        return False
+    return any(pattern.search(detail) for pattern in FALLBACK_TRANSPORT_PATTERNS)
 
 
 def _transport_command(argv: list[str]) -> bool:
@@ -106,7 +124,7 @@ def build_db_url() -> str:
 
 def _psql(db_url: str, sql: str, *, cwd: Path) -> str:
     proc = _run(
-        ["psql", db_url, "-X", "-v", "ON_ERROR_STOP=1", "-At", "-c", sql],
+        ["psql", db_url, "-X", "-v", "VERBOSITY=verbose", "-v", "ON_ERROR_STOP=1", "-At", "-c", sql],
         cwd=cwd,
     )
     if proc.returncode != 0:
@@ -258,7 +276,7 @@ def _fallback_apply(
         handle.write(payload)
         tmp = Path(handle.name)
     try:
-        proc = _run(["psql", db_url, "-X", "-v", "ON_ERROR_STOP=1", "-f", str(tmp)], cwd=project_root)
+        proc = _run(["psql", db_url, "-X", "-v", "VERBOSITY=verbose", "-v", "ON_ERROR_STOP=1", "-f", str(tmp)], cwd=project_root)
         if proc.returncode != 0:
             detail = "\\n".join(proc.stderr.strip().splitlines()[-18:]) if proc.stderr.strip() else f"rc={proc.returncode}"
             raise RuntimeError(f"EXACT_APPLY_FALLBACK_FAILED:{detail}")
@@ -333,14 +351,9 @@ def apply_exact(
         raise RuntimeError(
             f"EXACT_APPLY_LEDGER_MOVED_AFTER_PRIMARY_FAILURE:before={floor_before} after={floor_after}"
         )
-    if not allow_fallback:
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:{primary_detail}")
-    sqlstate = postgres_sqlstate(primary_detail)
-    if sqlstate:
-        # A server-side migration error is definitive. Replaying the same SQL
-        # through the fallback would hide the original attempt and double the
-        # measured failure path.
-        raise RuntimeError(f"EXACT_APPLY_PRIMARY_SQL_ERROR:{sqlstate}:{primary_detail}")
+    if not fallback_allowed(primary_detail, allow_fallback=allow_fallback):
+        sqlstate = postgres_sqlstate(primary_detail) or NOT_OBSERVED
+        raise RuntimeError(f"EXACT_APPLY_PRIMARY_FAILED_NO_FALLBACK:sqlstate={sqlstate}:{primary_detail}")
 
     _fallback_apply(
         project_root=project_root,

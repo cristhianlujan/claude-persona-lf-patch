@@ -5,6 +5,8 @@ import importlib.util
 import os
 from pathlib import Path
 import sys
+from types import SimpleNamespace
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 TARGET = HERE / "lf_migration_exact_apply.py"
@@ -27,9 +29,17 @@ def main() -> int:
     assert module.pending_versions_from_dry_run("No migrations to push") == []
     checks += 1
 
-    assert module.postgres_sqlstate("ERROR: PZ015: controlled failure") == "PZ015"
-    assert module.postgres_sqlstate("EXACT_APPLY_PRIMARY_SQL_ERROR:PZ015: controlled failure") == "PZ015"
-    assert module.postgres_sqlstate("network unreachable") is None
+    assert module.postgres_sqlstate("ERROR:  42501: insufficient privilege") == "42501"
+    assert module.postgres_sqlstate("ERROR: controlled failure") is None
+    assert module.postgres_sqlstate("ERROR: pipeline EKB writer failed") is None
+    assert module.postgres_sqlstate("could not connect to server") is None
+    assert module.fallback_allowed("psql: error: connection refused", allow_fallback=True)
+    assert not module.fallback_allowed("ERROR:  42501: permission denied", allow_fallback=True)
+    assert not module.fallback_allowed("ERROR: pipeline EKB writer failed", allow_fallback=True)
+    assert not module.fallback_allowed("connection refused", allow_fallback=False)
+    with patch.object(module, "_run", return_value=SimpleNamespace(returncode=0, stdout="ok", stderr="")) as run:
+        assert module._psql("postgres://example", "select 1", cwd=Path(".").resolve()) == "ok"
+        assert "VERBOSITY=verbose" in run.call_args.args[0]
     assert module._transport_command(["supabase", "db", "push", "--dry-run"])
     assert not module._transport_command(["supabase", "db", "push", "--help"])
     checks += 1
@@ -82,7 +92,8 @@ def main() -> int:
     assert decision.fallback_executor == "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML"
     checks += 1
 
-    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/7")
+    checks += 1
+    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/8")
     return 0
 
 
