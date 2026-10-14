@@ -61,6 +61,7 @@ export function resolveProfileRequiredSteps(
         update.length !== snapshot.length || update.some((v, i) => snapshot[i] !== v) ||
         noChange.some((id) => !update.includes(id)) ||
         noChange.includes("github_write") ||
+        noChange.includes("github_readback") ||
         noChange.includes("pre_write_execution_binding_gate") ||
         noChange.includes("post_merge_reconcile") ||
         !["deterministic_validation","semantic_judge","close","report_output"]
