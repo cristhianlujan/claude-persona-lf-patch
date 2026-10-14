@@ -162,16 +162,38 @@ def verify_execution(execution: dict, canonical_steps: tuple[str, ...] = CANONIC
             "not_reached": not_reached, "emitted": [step for step in canonical_steps if step in emitted]}
 
 
+_VERSION_PREFIX_RE = re.compile(r"^\d{14}_")
+
+
+def _retry_migration_name(item: dict) -> str:
+    """Owner decision D1 (2026-10-14): chain retries by PR + migration name.
+
+    The Train may reassign the version between attempts when the ledger floor
+    advances, so the version is recorded per attempt but is not part of the key.
+    """
+    name = str(item.get("migration_name") or "").strip()
+    if not name:
+        path = str(item.get("migration_path") or "").strip()
+        base = path.rsplit("/", 1)[-1]
+        name = base[:-4] if base.endswith(".sql") else base
+    name = _VERSION_PREFIX_RE.sub("", name)
+    if not name:
+        raise ValueError("PASE_F09_015_RETRY_CHAIN_MIGRATION_NAME_MISSING:"
+                         + str(item.get("execution_id") or NOT_OBSERVED))
+    return name
+
+
 def retry_chains(executions: list[dict]) -> list[dict]:
     groups: dict[tuple[str, str], list[dict]] = {}
     for item in executions:
-        key = (str(item.get("pr", "")), str(item.get("migration_version", "")))
+        key = (str(item.get("pr", "")), _retry_migration_name(item))
         groups.setdefault(key, []).append(item)
     result = []
-    for (pr, version), items in sorted(groups.items(), key=lambda item: (int(item[0][0]) if item[0][0].isdigit() else item[0][0], item[0][1])):
+    for (pr, name), items in sorted(groups.items(), key=lambda item: (int(item[0][0]) if item[0][0].isdigit() else item[0][0], item[0][1])):
         ordered = sorted(items, key=lambda item: (str(item.get("created_at") or ""),
                                                   str(item.get("execution_id") or "")))
-        result.append({"pr": pr, "migration_version": version,
+        result.append({"pr": pr, "migration_name": name,
                        "attempts": [{"attempt_number": i, "execution_id": item.get("execution_id"),
+                                     "migration_version": str(item.get("migration_version") or NOT_OBSERVED),
                                      "created_at": item.get("created_at")} for i, item in enumerate(ordered, 1)]})
     return result
