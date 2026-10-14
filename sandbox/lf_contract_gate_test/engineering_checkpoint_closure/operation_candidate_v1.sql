@@ -65,7 +65,7 @@ BEGIN
     OR v_exec.target_code IS DISTINCT FROM
        concat_ws('/',p_plan_code,p_unit_code,p_checkpoint_code)
     OR v_exec.idempotency_key IS NULL
-    OR coalesce(v_exec.request_sha256,'') !~ '^[a-f0-9]{64}
+    OR coalesce(v_exec.request_sha256,'') !~ '^[a-f0-9]{64}$'
  THEN RAISE EXCEPTION 'ENGINEERING_CLOSE_EXECUTION_NOT_BOUND'; END IF;
  IF NOT EXISTS (
    SELECT 1 FROM public.lf_operation_registry r
@@ -174,7 +174,7 @@ BEGIN
  v_receipt_sha:=v_assertion->>'assertion_receipt_sha256';
  IF v_assertion->>'passed' IS DISTINCT FROM 'true'
     OR v_assertion->>'contract_sha256' IS DISTINCT FROM v_contract_sha
-    OR coalesce(v_receipt_sha,'') !~ '^[a-f0-9]{64}
+    OR coalesce(v_receipt_sha,'') !~ '^[a-f0-9]{64}$'
  THEN RAISE EXCEPTION 'ENGINEERING_CLOSE_ASSERTION_RECEIPT_INVALID'; END IF;
 
  v_transition:=programacion.fn_engineering_checkpoint_transition_v1(
