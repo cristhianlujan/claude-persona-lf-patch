@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "SAME_CASES_BOTH_ARMS",
+   "statement": "Ambos brazos cubren exactamente los mismos 7 casos de la entrada, con case_id copiados, y el baseline trae TODOS los dominios fijos por cada caso."
+  },
+  {
+   "code": "CANDIDATE_FRONTS_TRIGGERED",
+   "statement": "Cada frente del brazo candidate cita como trigger_ref una source_ref del propio caso, y las evidence_refs de cada registro son solo source_refs de ese caso, sin repetidos."
+  },
+  {
+   "code": "COMPARISON_TOTALS_EXACT",
+   "statement": "Los enteros de comparison son exactos (casos comparados, dominios fijos por caso, total de dominios del baseline y total de frentes del candidate) y el texto no afirma calidad, costo, latencia, superioridad ni READY."
+  }
+ ],
+ "criterion": "Revisor ciego verifica cobertura de ambos brazos y totales exactos de la comparación, sin calidad, costo ni latencia",
+ "decoy_must_fail_checks": [
+  "COMPARISON_TOTALS_EXACT",
+  "CANDIDATE_FRONTS_TRIGGERED"
+ ],
+ "replacements": [
+  [
+   "\"candidate_total_fronts\": 12",
+   "\"candidate_total_fronts\": 9"
+  ],
+  [
+   "\"baseline_total_domains\": 42",
+   "\"baseline_total_domains\": 40"
+  ],
+  [
+   "\"trigger_ref\": \"github://cristhianlujan/claude-persona-lf-patch/pull/1800\"",
+   "\"trigger_ref\": \"lf_eventos://99999\""
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Produce AMBOS brazos"
+}
