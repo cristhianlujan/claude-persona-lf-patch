@@ -40,6 +40,7 @@ class StageCandidate(unittest.TestCase):
             "manifest->>'governance_scope'='PE10_V02_GOVERNED_REGISTRATION'",
             "manifest->>'governance_target'=v_op",
             f"manifest->>'governance_pr'='{EXPECTED_PR}'",
+            "manifest->>'governance_owner_role'='SUPER_ADMIN'",
         ):
             self.assertIn(field, self.sql)
         self.assertIn("PE10_V02_GOVERNED_ACTOR_REQUIRED", self.sql)
@@ -52,12 +53,13 @@ class StageCandidate(unittest.TestCase):
             "'governance_authority_domain','LF_GOVERNANCE'",
             "'governance_reviewer_role','SUPER_ADMIN_GOVERNANCE'",
             "'governance_authority_ref','contract://LF_GOVERNANCE_SUPER_ADMIN_V1'",
-            "'governance_authority_receipt_state','PENDING_VERIFIED_RECEIPT'",
+            "'governance_authority_binding','OWNER_ROLE_ONLY_NOT_HUMAN_DECISION'",
             "'proposed_operation_version','v0.2','activation_authorized',false",
         ):
             self.assertIn(field, self.sql)
         self.assertIn("created_by_execution_id is technical provenance", self.sql)
         self.assertIn("Do not use the product B2B_ADMIN_LF", self.sql)
+        self.assertIn("This owner designation is not a human decision request", self.sql)
 
     def test_no_activation_or_durable_migration(self):
         self.assertEqual(len(re.findall(r"\bBEGIN;", self.sql)), 1)
