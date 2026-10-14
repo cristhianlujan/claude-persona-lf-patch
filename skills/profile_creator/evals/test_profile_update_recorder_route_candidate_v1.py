@@ -57,6 +57,16 @@ class RecorderCandidate(unittest.TestCase):
         self.assertNotIn("UPDATE public.lf_operation_registry",self.sql)
         self.assertNotIn("INSERT INTO public.lf_operation_steps",self.sql)
 
+    def test_evolved_routes_reject_unproven_substantive_results(self):
+        self.assertIn("v_route_resolution->>'outcome' in ('NO_CHANGE','UPDATE')",self.sql)
+        self.assertIn("public.lf_profile_update_result_class_v1(p_evidence_payload->'validator_result') is distinct from 'PASS'",self.sql)
+        self.assertIn("public.lf_profile_update_result_class_v1(p_evidence_payload->'malformed_input_result') is distinct from 'PASS'",self.sql)
+        self.assertIn("public.lf_profile_update_result_class_v1(p_evidence_payload->'semantic_judge_result') is distinct from 'PASS'",self.sql)
+        for code in ("PROFILE_EVOLUTION_VALIDATOR_PASS_UNPROVEN",
+                     "PROFILE_EVOLUTION_MALFORMED_GATE_PASS_UNPROVEN",
+                     "PROFILE_EVOLUTION_SEMANTIC_PASS_UNPROVEN"):
+            self.assertIn(code,self.sql)
+
     def test_immutable_legacy_route(self):
         self.assertIn("LEGACY_FROZEN",self.route)
         self.assertIn("v_snapshot_steps:=v_execution.manifest#>",self.sql)
