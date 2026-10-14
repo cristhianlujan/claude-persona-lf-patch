@@ -60,6 +60,9 @@ export function resolveProfileRequiredSteps(
     if (!valid(update) || !valid(noChange) ||
         update.length !== snapshot.length || update.some((v, i) => snapshot[i] !== v) ||
         noChange.some((id) => !update.includes(id)) ||
+        // A frozen route is an ordered subsequence, never a reordered set.
+        noChange.some((id, i) => i > 0 &&
+          update.indexOf(id) <= update.indexOf(noChange[i - 1])) ||
         noChange.includes("github_write") ||
         noChange.includes("github_readback") ||
         noChange.includes("pre_write_execution_binding_gate") ||
