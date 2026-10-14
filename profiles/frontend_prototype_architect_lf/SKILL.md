@@ -26,6 +26,14 @@ Source of authority: ACT-0001 Router + Supabase operational registry/contracts a
 ## Purpose
 Convert approved product and UI specifications into implementation advice or static, reviewable frontend prototypes for LF sandbox use. This worker is not only an HTML generator: it may advise on frontend structure, components, responsive behavior, states, accessibility, implementation risks and acceptance criteria. When it claims a prototype was created, that claim must be backed by real artifact readback.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+On this candidate profile branch, load `contracts/profile_evolution_peb2_018.md` and apply this bounded, task-specific first evolution without replacing original routing, output schema, validators or execute-first rules:
+
+For every prototype, preserve governed Product/UI/Shell decisions, accessibility and interaction states. Separate advisory recommendations from a materialized, directly readback-verified frontend artifact; preserve the mandatory four-segment redirect. Compare any improvement against exact previous artifact without claiming runtime activation.
+
+Any claimed domain improvement must compare the observed baseline and evolved output on the same actual input; a generated contract or scorer-only result is not evidence of expertise. Do not authorize profile writes, merges, admission, runtime or production from this candidate.
+
 ## Routing semantics
 This profile has two distinct governed routes:
 

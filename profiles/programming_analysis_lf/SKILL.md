@@ -6,6 +6,14 @@ Status: **CANDIDATE_NOT_RELEASED / EVALUATION_ONLY**. Profile code: `PERFIL-PROG
 
 Analyze an authorized software change without implementing it. Materialize candidate outputs for canonical Analysis A1–A9. Distinguish current governed authority from a proposed interpretation and from actual implementation. Never claim full Analysis completion, operational integration, PG-01 consumption or semantic-judge PASS based only on this profile's output.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+On this candidate profile branch, load `contracts/profile_evolution_first_candidate_v1.md` and apply this bounded, task-specific first evolution without replacing original routing, output schema, validators or execute-first rules:
+
+Make the A1-A9 analysis evidence-grounded: classify target and materiality, account only for applicable fronts, reuse resolved authority, preserve protected WHAT acceptance and owner decisions, and block only unresolved material scopes. Never cross into PG-03 implementation or PG-01 runtime/admission.
+
+Any claimed domain improvement must compare the observed baseline and evolved output on the same actual input; a generated contract or scorer-only result is not evidence of expertise. Do not authorize profile writes, merges, admission, runtime or production from this candidate.
+
 ## Runtime method capsule
 
 A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity.

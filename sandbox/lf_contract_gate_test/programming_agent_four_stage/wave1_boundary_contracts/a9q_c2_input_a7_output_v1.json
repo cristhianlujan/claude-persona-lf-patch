@@ -1,0 +1,138 @@
+{
+  "schema_version": "A7_FRONTS_OUTPUT_V1",
+  "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+  "material_fronts": [
+    {
+      "front_id": "A7-FRONT-001",
+      "scope_ids": [
+        "A6-REQ-001",
+        "dimension:functional",
+        "dimension:permissions"
+      ],
+      "obligation_mode": "REQUIRED",
+      "closure": "BLOCKED",
+      "blockers": [
+        "A5-DEC-001",
+        "A5-DEC-003"
+      ],
+      "evidence_refs": [
+        "A6-REQ-001",
+        "dimension:functional",
+        "dimension:permissions",
+        "decision:A5-DEC-001",
+        "decision:A5-DEC-003"
+      ],
+      "reason": "El frente comprende el alcance funcional de la comunicación del ahorro a los clientes del piloto y la identificación de los permisos aplicables. La entrada no acredita capacidad funcional exacta, segmentos, canales, autorizaciones ni condiciones de acceso. A5-DEC-001 y A5-DEC-003 permanecen pendientes. La obligación de considerar este frente no constituye aprobación de sus requisitos."
+    },
+    {
+      "front_id": "A7-FRONT-002",
+      "scope_ids": [
+        "A6-REQ-002",
+        "A6-REQ-004",
+        "dimension:data"
+      ],
+      "obligation_mode": "REQUIRED",
+      "closure": "BLOCKED",
+      "blockers": [
+        "A5-DEC-002",
+        "A5-DEC-004"
+      ],
+      "evidence_refs": [
+        "A6-REQ-002",
+        "A6-REQ-004",
+        "dimension:data",
+        "decision:A5-DEC-002",
+        "decision:A5-DEC-004",
+        "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+        "gap:INSTALLMENT_DISTINCTION_UNRESOLVED"
+      ],
+      "reason": "El frente agrupa la definición del ahorro, su base de comparación y la distinción funcional respecto del monto de la cuota. No existen definiciones económicas autorizadas ni evidencia suficiente de sus relaciones. No se determinan importes ni reglas de cálculo. Ambas decisiones permanecen pendientes y los requisitos son provisionales."
+    },
+    {
+      "front_id": "A7-FRONT-003",
+      "scope_ids": [
+        "A6-REQ-003",
+        "dimension:state"
+      ],
+      "obligation_mode": "REQUIRED",
+      "closure": "BLOCKED",
+      "blockers": [
+        "A5-DEC-003"
+      ],
+      "evidence_refs": [
+        "A6-REQ-003",
+        "dimension:state",
+        "decision:A5-DEC-003",
+        "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED"
+      ],
+      "reason": "El frente comprende las condiciones y el momento en que la información del ahorro debe estar disponible antes de aceptar una oferta. No se han acreditado los estados de la oferta, sus transiciones ni las condiciones aplicables. No se inventan estados o comportamientos. A5-DEC-003 sigue pendiente."
+    },
+    {
+      "front_id": "A7-FRONT-004",
+      "scope_ids": [
+        "dimension:errors",
+        "dimension:side_effects"
+      ],
+      "obligation_mode": "REQUIRED",
+      "closure": "BLOCKED",
+      "blockers": [
+        "A5-DEC-002",
+        "A5-DEC-003",
+        "A5-DEC-004"
+      ],
+      "evidence_refs": [
+        "dimension:errors",
+        "dimension:side_effects",
+        "decision:A5-DEC-002",
+        "decision:A5-DEC-003",
+        "decision:A5-DEC-004"
+      ],
+      "reason": "El frente agrupa los comportamientos ante información económica no disponible, indeterminada o incompatible con las condiciones de la oferta, así como los posibles efectos colaterales asociados. La entrada no proporciona reglas autorizadas para estas dimensiones. No puede afirmarse su existencia, inexistencia o comportamiento concreto. Permanece bloqueado por las decisiones materiales relacionadas."
+    },
+    {
+      "front_id": "A7-FRONT-005",
+      "scope_ids": [
+        "A6-REQ-005"
+      ],
+      "obligation_mode": "REQUIRED",
+      "closure": "BLOCKED",
+      "blockers": [
+        "A5-DEC-004",
+        "A5-DEC-005"
+      ],
+      "evidence_refs": [
+        "A6-REQ-005",
+        "decision:A5-DEC-004",
+        "decision:A5-DEC-005",
+        "gap:ACCEPTANCE_EVIDENCE_MISSING"
+      ],
+      "reason": "El frente comprende los criterios necesarios para evaluar si los clientes comprenden el ahorro y lo distinguen de la cuota durante el piloto. No se suministran criterios de aceptación autorizados ni evidencia de comprensión verificable. No se inventan métricas, umbrales o resultados. Las decisiones A5-DEC-004 y A5-DEC-005 permanecen pendientes."
+    }
+  ],
+  "evidence_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2",
+    "supabase://public.lf_eventos/20843",
+    "gap:TARGET_AUTHORITY_NOT_SUPPLIED",
+    "gap:SAVINGS_SEMANTICS_UNRESOLVED",
+    "gap:OFFER_ACCEPTANCE_BOUNDARY_UNRESOLVED",
+    "gap:INSTALLMENT_DISTINCTION_UNRESOLVED",
+    "gap:ACCEPTANCE_EVIDENCE_MISSING",
+    "A6-REQ-001",
+    "A6-REQ-002",
+    "A6-REQ-003",
+    "A6-REQ-004",
+    "A6-REQ-005",
+    "dimension:functional",
+    "dimension:data",
+    "dimension:permissions",
+    "dimension:state",
+    "dimension:errors",
+    "dimension:side_effects",
+    "decision:A5-DEC-001",
+    "decision:A5-DEC-002",
+    "decision:A5-DEC-003",
+    "decision:A5-DEC-004",
+    "decision:A5-DEC-005"
+  ],
+  "fronts_statement": "Se identificaron cinco frentes materiales que cubren los cinco requisitos y las seis dimensiones de A6, sin dejar elementos sin vincular. Los frentes comprenden alcance funcional y permisos, información económica, condiciones de la oferta, errores y efectos colaterales, y criterios de comprensión. Todos tienen obligation_mode REQUIRED porque deben considerarse en el análisis, pero ninguno constituye un requisito funcional aprobado. Los cinco permanecen BLOCKED por decisiones A5 pendientes y ausencia de autoridad positiva, evidencia de vigencia y definición suficiente del comportamiento. No se asigna REUSE_AS_IS ni NOT_APPLICABLE porque esas clasificaciones exigirían evidencia positiva que la entrada no proporciona. La cobertura de elementos identificados no demuestra que se hayan descubierto todos los posibles frentes reales del sistema ni que exista autorización para implementar. No se seleccionaron soluciones técnicas ni se resolvieron decisiones del propietario."
+}

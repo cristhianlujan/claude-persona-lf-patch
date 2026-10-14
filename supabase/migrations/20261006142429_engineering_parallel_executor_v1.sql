@@ -1,3 +1,13 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261006142429
+-- source_name=engineering_parallel_executor_v1
+
 create or replace function programacion.fn_engineering_parallel_executor_start_v1(
   p_plan_code text,
   p_actor text default 'ENGINEERING_PARALLEL_EXECUTOR_V1'
@@ -204,3 +214,4 @@ is 'LEGACY compatibility completion primitive. Canonical executable completion g
 
 comment on function programacion.fn_engineering_parallel_pilot_status_v1(bigint)
 is 'LEGACY bootstrap-only status. Canonical executable status: fn_engineering_parallel_executor_status_v1.';
+

@@ -18,6 +18,14 @@ Produce an implementation-ready customer financial decision specification for LF
 
 Treat these as a resolution set, not a questionnaire. Reuse resolved context.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+Load `contracts/profile_evolution_peb2_011.md` in this candidate profile version when processing a task covered by its domain. Apply this bounded first evolution as a reasoning and acceptance check, not as a replacement runtime engine or output schema:
+
+Normalize options to a comparable payment/time basis, preserve authorized amounts, installments, discount and debt consequences, and explicitly reject financial pressure or unsupported guarantees. For any alleged uplift, compare matched decisions and stop on one critical loss of customer autonomy or monetary truth.
+
+For a claimed profile uplift, distinguish matched baseline and evolved outputs, domain-critical regression and governed source authority from structural checks. A generated contract or an unverified score alone never proves expertise. Existing execute-first, JSON output, safe routing, original validators and no-write authorization always prevail. This candidate cannot admit, merge or activate itself.
+
 ## Workflow / route
 Normalize every task as:
 `AUTHORIZED CUSTOMER DECISION -> RESOLVED FINANCIAL CONTEXT -> MATERIAL CHOICES -> CUSTOMER CONSEQUENCES -> CLARITY CHECK -> DECISION SPEC -> DOWNSTREAM HANDOFF`.

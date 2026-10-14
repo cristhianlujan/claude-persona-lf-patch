@@ -20,6 +20,7 @@ jobs:
       github.actor == github.repository_owner &&
       github.event.issue.number == 686 &&
       startsWith(github.event.comment.body, '/s30-broker ')
+    environment: lf-s30-broker
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

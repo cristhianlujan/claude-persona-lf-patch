@@ -1,0 +1,80 @@
+{
+  "schema": "PE10E_FIRST_EVOLUTION_COMPARATIVE_ACCEPTANCE_V1",
+  "plan_code": "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1",
+  "unit_code": "PE10E",
+  "checkpoint_code": "PE10E_C4",
+  "decision": "ACCEPT_COMPLETED_QUALITATIVE_COMPARATIVE_VALIDATION",
+  "scope": "FIRST_EVOLUTION_ACCEPTANCE_ONLY",
+  "supporting_previous_checkpoint": "PE10E_C3B",
+  "reviewed_by": "USER_ACCEPTANCE_IN_CHAT",
+  "first_release": {
+    "merged_profiles_count": 9,
+    "pr_numbers": [
+      2322,
+      2324,
+      2325,
+      2326,
+      2327,
+      2328,
+      2329,
+      2330,
+      2331
+    ],
+    "merge_identifiers_source": "programacion.engineering_plan_units[PE10E].unit_metadata.first_evolution_acceptance_v2.git_receipts",
+    "prior_user_accepted": true
+  },
+  "pilot": {
+    "test_id": "PE10E_PILOT_001",
+    "model_reported": "Claude Sonnet 5.5",
+    "input_description": "LF B2B multiple cartera loads: identify why offers unavailable; A/B/C group, draft and valid/invalid counts; authority/permissions unknown and no DB access.",
+    "original_commit": "ff0e48bc870b48c7ea645c79544ed5b083a75720",
+    "evolved_commit": "2b4dec92cfc925208014fb0bc9e708799078f5b5",
+    "blind_initial_review": true,
+    "unblinded_mapping": {
+      "RESPUESTA_X": "EVOLVED",
+      "RESPUESTA_Y": "ORIGINAL"
+    },
+    "execution_ids_reported": {
+      "RESPUESTA_X": "aa21d50230668ed8c",
+      "RESPUESTA_Y": "a18d4f625c14a1504"
+    },
+    "reported_tool_uses": {
+      "RESPUESTA_X": 7,
+      "RESPUESTA_Y": 6
+    },
+    "reviewed_requirements_count": {
+      "RESPUESTA_X": 5,
+      "RESPUESTA_Y": 2
+    },
+    "findings": [
+      "Both avoided fabricating a confirmed block cause",
+      "Evolved X provided broader actionable requirements and acceptance signals",
+      "Original Y was more concise",
+      "No severe regression identified in this pilot review"
+    ],
+    "raw_source_sha256": "c6cb9837ca287c121359ffc20f435cadafcddcd3418be8c4af557265d38f1515",
+    "raw_source_kind": "USER_SUBMITTED_CLAUDE_JSON_30089_BYTES",
+    "unblinding_source_kind": "USER_SUBMITTED_CLAUDE_MAPPING_JSON",
+    "isolated_execution_verified": false,
+    "provider_attested": false,
+    "canonical_validators_executed": false,
+    "independent_semantic_judge_executed": false,
+    "normal_runtime_binding_projection_applied": false,
+    "projection_observation": "Normal runtime_binding includes Purpose, Runtime method capsule, Routing and evidence boundaries, Critical separation; all four are identical between commits; candidate section excluded from projection.",
+    "sample_size": 1,
+    "quantified_expertise_uplift_proven": false
+  },
+  "acceptance": {
+    "qualitative_comparative_improvement_observed": true,
+    "status": "ACCEPTED_PILOT_AND_FIRST_EVOLUTION",
+    "code_accepted": true,
+    "expert_certification": false,
+    "claim_statistical_15_percent": false,
+    "claim_120_cases": false,
+    "authorize_v02_cutover": false,
+    "require_more_tests_to_close_this_specific_checkpoint": false,
+    "preserve_independent_cutover_assurance_checkpoint": "PE10_C3",
+    "advanced_expert_benchmark_contract": "skills/profile_creator/contracts/profile_expert_behavior_benchmark_v1.json",
+    "advanced_benchmark_is_separate_nonblocking_scope_for_first_release": true
+  }
+}

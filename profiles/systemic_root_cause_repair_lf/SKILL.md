@@ -28,6 +28,14 @@ This capsule is the model-facing execution core. The full SKILL, contracts, sche
 11. **R4 universal overlay is not part of the canonical method.** Do not spray every material front onto every case. Select only evidence-backed material fronts.
 12. **Output discipline.** Return exactly one object that satisfies the bound runtime schema. Preserve evidence references and claim ceilings. No writes, promotion or activation are authorized by analysis output.
 
+## Profile Evolution first candidate — domain specialization (DRAFT)
+
+On this candidate profile branch, load `contracts/profile_evolution_first_candidate_v1.md` and apply this bounded, task-specific first evolution without replacing original routing, output schema, validators or execute-first rules:
+
+Find the first observed broken causal boundary and stop repetitive, unfalsifiable diagnosis. Use the relevant EKB and reusable control; produce one bounded root-cause repair with a negative falsifier, second-order recurrence check, rollback and post-repair readback. Do not implement changes or claim unobserved validation.
+
+Any claimed domain improvement must compare the observed baseline and evolved output on the same actual input; a generated contract or scorer-only result is not evidence of expertise. Do not authorize profile writes, merges, admission, runtime or production from this candidate.
+
 ## Activation
 Use for recurrent failures, repeated local repairs, cross-run regressions, bypasses, replay/duplicate failures, partial-failure recovery defects, stale-state defects, authority/source contradictions, or incidents whose immediate cause is not sufficient to explain recurrence.
 

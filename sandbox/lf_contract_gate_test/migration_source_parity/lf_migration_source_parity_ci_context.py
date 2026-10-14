@@ -33,6 +33,21 @@ MANAGED_PREFIXES = (
     "programacion_revoke_security_definer_",
     "programacion_worker_spec_",
     "programacion_prog017_",
+    # Narrow reviewed PR families; keep the ig_ root excluded (ig_cv_ is external).
+    "analysis_a9_pg01_",
+    "ig_m9_m10_contract_preflight_",
+    "b2b_effective_menu_grants_",
+    "b2b_shell_nav_order_reconcile_",
+    "ig_ci50_qualification_activation_",
+    "ig_m82_resolver_timing_sink_",
+    "ig_candidate_action_receipt_consumption_",
+    "ig_test_deliverable_misbind_repair_",
+    "ig_m5_4_remove_legacy_resolver_calls",
+    "ig_m5_5_explicit_fingerprint",
+    "programming_context_snapshot_runtime_guard_",
+    "engineering_specific_technical_contract_reduction_",
+    "engineering_transversal_read_only_measure_adapter_",
+    "intelligence_method_portfolio_",
 )
 
 MANAGED_EXACT_NAMES = {
@@ -78,6 +93,8 @@ MANAGED_EXACT_NAMES = {
     "r5e_vacuum_inventory_activation_v1",
     "inventory_distinct_refresh_v1",
     "inventory_unused_gin_cleanup_v1",
+    "f0_train_credential_canary_noop_v1",
+    "ig_m100_sandbox_technical_vs_operational_authority_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (

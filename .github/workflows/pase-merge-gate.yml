@@ -66,7 +66,6 @@ jobs:
       - name: Evaluate base-anchored PASE merge gate
         env:
           PASE_REPOSITORY: ${{ github.repository }}
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: ${{ vars.LF_SUPABASE_PROJECT_ID }}
           SUPABASE_POOLER_HOST: ${{ vars.LF_SUPABASE_POOLER_HOST }}
         run: |
