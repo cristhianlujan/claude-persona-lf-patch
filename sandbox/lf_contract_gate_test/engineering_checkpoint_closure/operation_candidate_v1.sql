@@ -163,7 +163,8 @@ BEGIN
  IF jsonb_typeof(v_proof) IS DISTINCT FROM 'object'
     OR v_proof->>'status' IS DISTINCT FROM 'PASS'
     OR jsonb_typeof(v_proof->'observed') IS DISTINCT FROM 'object'
-    OR coalesce(v_proof->'observed' @> (v_contract->'pass_when'),false) IS NOT TRUE
+    OR (jsonb_typeof(v_contract->'pass_when')='object'
+       AND coalesce(v_proof->'observed' @> (v_contract->'pass_when'),false) IS NOT TRUE)
  THEN RAISE EXCEPTION 'ENGINEERING_CLOSE_PROVIDER_PROOF_FAILED'; END IF;
  v_evidence_ref:=v_proof->>'evidence_ref';
  IF nullif(btrim(coalesce(v_evidence_ref,'')),'') IS NULL
