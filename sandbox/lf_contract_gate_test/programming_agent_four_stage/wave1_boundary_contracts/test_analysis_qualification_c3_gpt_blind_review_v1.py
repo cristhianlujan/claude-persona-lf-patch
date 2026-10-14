@@ -47,6 +47,18 @@ class T(unittest.TestCase):
     def test_good(self):
         self.assertEqual(self.v(self.r), "PASS")
 
+    def test_rules_block(self):
+        cfg = dict(CFG, rules_start="REGLA:", rules_end="\nFIN")
+        pr = "producer text. REGLA: haz X y Y.\nFIN more"
+        p, _ = m.build_packet("AX", cfg, RAW, INP, "https://chat/x", pr)
+        self.assertEqual(p["rules_text"], "REGLA: haz X y Y.")
+        self.assertIn("REGLAS DE LA ETAPA", p["prompt_for_gpt"])
+        self.assertIn("REGLA: haz X y Y.", p["prompt_for_gpt"])
+        self.assertNotIn("producer text", p["prompt_for_gpt"])
+        with self.assertRaises(ValueError):
+            m.build_packet("AX", cfg, RAW, INP, "https://chat/x")
+        self.assertNotIn("rules_text", self.p)
+
     def test_decoy_unique_replacement(self):
         with self.assertRaises(ValueError):
             m.make_decoy(RAW, [["no existe", "x"]])

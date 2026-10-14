@@ -37,7 +37,7 @@ def make_decoy(raw: str, replacements) -> str:
     return out
 
 
-def prompt_text(unit: str, criterion: str, checks, input_literal: str, items) -> str:
+def prompt_text(unit: str, criterion: str, checks, input_literal: str, items, rules_text: str | None = None) -> str:
     lines = [
         "Eres un revisor independiente. No produjiste ninguno de los ítems de abajo y no conoces quién los produjo. "
         "Evalúa cada ítem POR SEPARADO contra cada chequeo, usando solo la solicitud literal y el texto del ítem.",
@@ -47,6 +47,8 @@ def prompt_text(unit: str, criterion: str, checks, input_literal: str, items) ->
         "CHEQUEOS (evalúa cada uno, PASS o FAIL):",
     ]
     lines += [f"- {c['code']}: {c['statement']}" for c in checks]
+    if rules_text:
+        lines += ["", "REGLAS DE LA ETAPA (con las que se produjo el ítem; úsalas solo para juzgar, no para producir nada):", rules_text]
     lines += ["", "SOLICITUD LITERAL (entrada):", input_literal, ""]
     for it in items:
         lines += [f"<<<{it['item_id']}>>>", it["text"], f"<<<FIN {it['item_id']}>>>", ""]
@@ -62,7 +64,7 @@ def prompt_text(unit: str, criterion: str, checks, input_literal: str, items) ->
     return "\n".join(lines)
 
 
-def build_packet(unit: str, cfg: dict, c2_raw: str, c2_packet_input: dict, c2_chat_ref: str):
+def build_packet(unit: str, cfg: dict, c2_raw: str, c2_packet_input: dict, c2_chat_ref: str, c2_prompt: str | None = None):
     """Return (packet, key). packet goes to the reviewer; key never does."""
     real_sha = sha(c2_raw)
     decoy = make_decoy(c2_raw, cfg["replacements"])
@@ -77,13 +79,22 @@ def build_packet(unit: str, cfg: dict, c2_raw: str, c2_packet_input: dict, c2_ch
            "replacements": cfg["replacements"], "decoy_must_fail_checks": cfg["decoy_must_fail_checks"],
            "c2_chat_transcript_ref": c2_chat_ref}
     literal = c2_packet_input["input_literal"]
-    prompt = prompt_text(unit, cfg["criterion"], cfg["checks"], literal, items)
+    rules_text = None
+    if cfg.get("rules_start"):
+        if not c2_prompt:
+            raise ValueError("RULES_NEED_C2_PROMPT")
+        a = c2_prompt.index(cfg["rules_start"])
+        b = c2_prompt.index(cfg["rules_end"], a)
+        rules_text = c2_prompt[a:b]
+    prompt = prompt_text(unit, cfg["criterion"], cfg["checks"], literal, items, rules_text)
     packet = {"schema": SCHEMA, "unit": unit, "checkpoint": f"{unit}Q_C3",
               "subject_ref": f"{PLAN}/{unit}Q/{unit}Q_C3", "evidence_tier": TIER,
               "decision_doc": DECISION_DOC, "criterion": cfg["criterion"], "checks": cfg["checks"],
               "input": c2_packet_input, "items": items, "prompt_for_gpt": prompt,
               "limits": {"provider_attested": False, "real_execution_receipt": False,
                          "independent_review": False}}
+    if rules_text:
+        packet["rules_text"] = rules_text
     packet["packet_sha256"] = sha(json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
     return packet, key
 
