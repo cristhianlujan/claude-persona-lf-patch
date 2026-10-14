@@ -95,9 +95,9 @@ BEGIN
 
   SELECT * INTO recorded FROM public.lf_operation_execution_steps
    WHERE execution_id=p_execution_id AND step_id='method_selection';
-  IF NOT FOUND OR recorded.status <> 'STEP_PASS_WITH_EVIDENCE'
-     OR recorded.evidence_payload->>'recorded_by_rpc'<>'lf_record_profile_operation_step_v1'
-     OR recorded.evidence_payload->>'mini_judge_result'<>'STEP_PASS_WITH_EVIDENCE'
+  IF NOT FOUND OR recorded.status IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE'
+     OR recorded.evidence_payload->>'recorded_by_rpc' IS DISTINCT FROM 'lf_record_profile_operation_step_v1'
+     OR recorded.evidence_payload->>'mini_judge_result' IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE'
   THEN RETURN 'EVOLUTION_SELECTION_STEP_NOT_CLEAN'; END IF;
   IF recorded.evidence_payload->>'profile_assessment_receipt_id'
      IS DISTINCT FROM p_payload->>'profile_assessment_receipt_id'
