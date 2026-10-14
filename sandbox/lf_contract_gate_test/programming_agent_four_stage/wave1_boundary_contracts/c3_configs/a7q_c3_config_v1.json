@@ -1,0 +1,33 @@
+{
+ "checks": [
+  {
+   "code": "COVERAGE_COMPLETE",
+   "statement": "Cada requirement_id y cada 'dimension:<nombre>' de la entrada queda vinculado a al menos un frente; no se inventan frentes que la entrada no sustente."
+  },
+  {
+   "code": "NO_NA_REUSE_WITHOUT_EVIDENCE",
+   "statement": "No hay frentes NOT_APPLICABLE ni REUSE_AS_IS: la entrada no trae autoridad positiva ni evidencia de vigencia que los respalde."
+  },
+  {
+   "code": "BLOCKED_FRONTS_VALID",
+   "statement": "Todo frente está BLOCKED y sus blockers son decision_id que existen en la entrada; las referencias son válidas y no se propone solución técnica."
+  }
+ ],
+ "criterion": "Juez comprueba cobertura, evidencias de NA/REUSE y frentes BLOCKED",
+ "decoy_must_fail_checks": [
+  "NO_NA_REUSE_WITHOUT_EVIDENCE",
+  "BLOCKED_FRONTS_VALID"
+ ],
+ "replacements": [
+  [
+   "\"obligation_mode\": \"REQUIRED\",\n      \"closure\": \"BLOCKED\",\n      \"blockers\": [\n        \"A5-DEC-003\"\n      ],",
+   "\"obligation_mode\": \"NOT_APPLICABLE\",\n      \"closure\": \"CLOSED\",\n      \"blockers\": [],"
+  ],
+  [
+   "\"blockers\": [\n        \"A5-DEC-002\",\n        \"A5-DEC-004\"\n      ],",
+   "\"blockers\": [\n        \"A5-DEC-002\",\n        \"A5-DEC-099\"\n      ],"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Agrupa en frentes materiales"
+}
