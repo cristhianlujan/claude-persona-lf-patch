@@ -61,6 +61,8 @@ def build_evolution_plan(
             **normalized.get("signals", {}),
             "profile_gaps": assessment["profile_gaps"],
             "budget": normalized.get("budget", {}),
+            "precondition_evidence": normalized.get("precondition_evidence", {}),
+            "method_evidence": normalized.get("method_evidence", {}),
         },
         capability_catalog,
         capability_policy,
