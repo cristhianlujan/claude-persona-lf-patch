@@ -100,6 +100,17 @@ These rules apply only to REMEDIATE_EXISTING work.
 - Preserve supplied qualifiers.
 - Router and Direct materially agree for the same governed input.
 
+## Conditional asynchronous-state and runtime-configuration remediation — PE10 candidate
+
+Use **only for REMEDIATE_EXISTING** when the supplied evidence shows stale asynchronous responses, conflicting UI identity/state, cached permissions, or hardcoded dynamic configuration. This is a candidate improvement; it does not add a mandatory probe to unrelated UI work or change canonical Shell ownership.
+
+- **Same-entity state identity.** For each load, tie displayed data, role/permission and action to the requested entity id and current request epoch. Cancel previous work and discard late responses; cancellation alone is insufficient. While any required evidence is unresolved, the action remains disabled, with an explicit loading/error state. Server RBAC and revision validation stay authoritative. If a response revision exists, propagate its condition in the mutation request; do not claim an unknown backend enforces it.
+- **Atomic user-visible consistency.** Re-evaluate pending approval/rejection confirmation when current entity, owner, amount, status or version changes. Never let stale content or a previous eligibility check survive the change. A confirmed rejection is announced only after the server reports the terminal outcome; timeout/UNKNOWN is not success. Preserve cancellation and focus-restoration responsibilities.
+- **Live configuration as data.** Existing visual tokens and support contacts are resolved from their canonical config source, not literal colors, phone numbers or a build-time fallback. Disabled/hover/normal states retain token semantics. Reject stale revision data that would overwrite a more recent config. If a provider gives no sequence or revision, do not fabricate one: keep the last independently verified config and report inability to establish freshness.
+- **Test relevant negative controls.** A/B out-of-order responses, role change before action, unavailable config, older revision response, blank support contact, duplicate click, timeout and terminal server rejection. Do not introduce invented API fields, component identifiers, or unjustified cross-screen repairs. If no defect is supported, preserve the existing UI and return its bounded decision.
+
+Candidate evidence: frozen PE10_C3 V2 UI cases 205–208; local implementation suite 39/39 previously run (not a live browser/server proof). This section is not an independent semantic judge, admission or runtime activation.
+
 ## New-screen invariants
 These rules apply to CREATE_NEW work.
 - Supplied requirements are not defects.
