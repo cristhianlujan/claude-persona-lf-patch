@@ -48,6 +48,12 @@ def main() -> int:
     assert "ERROR: Remote migration version mismatch" in clean
     assert module.sanitize_dry_run_output("x" * 40, limit=12).endswith("x" * 11)
     assert len(module.sanitize_dry_run_output("z" * 1000)) == 800
+    long_dry_run = ("Remote migration versions not found in local migrations directory\\n"
+                    + "version " * 500 + "\\nAnd update local migrations to match remote database:\\nsupabase db pull")
+    preserved_tail = module.sanitize_dry_run_output(long_dry_run)
+    assert len(preserved_tail) <= 800
+    assert "Remote migration versions not found in local migrations directory" in preserved_tail
+    assert preserved_tail.endswith("supabase db pull")
     checks += 1
 
     version = "20261014174311"
