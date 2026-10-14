@@ -1,0 +1,100 @@
+{
+  "schema_version": "lf-pase-f09-014-quality-case-manifest/v1",
+  "plan": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "unit": "PASE-ATOM-F09-014",
+  "base_main_sha": "b8b62dba0c01dcd99faee7be82beb84608131a9c",
+  "owner_authorization": {
+    "owner": "PAULO_PASE_OWNER",
+    "date": "2026-10-14",
+    "scope": ["branches lf/**", "Draft PRs with code, tests and fixtures only"],
+    "merge_route": "Merge Train only via ready-to-merge when later approved",
+    "database_write": false,
+    "production_activation": false
+  },
+  "router": {
+    "operation": "CREATE_DRAFT_PR",
+    "status": "BLOCKED",
+    "blocking_code": "BLOCK_OPERATION_NOT_REGISTERED",
+    "route_used": "EXPLICIT_OWNER_AUTHORIZATION_FOR_CODE_ONLY_DRAFT_PR"
+  },
+  "case_verdict_policy": {
+    "blocking_false_pass_tolerance": 0,
+    "false_fail_must_be_measured": true,
+    "replay_runs_required": 2,
+    "producer_must_differ_from_judge": true,
+    "unknown_selected_is_never_pass": true,
+    "stale_f06_inventory_is_not_refreshed": true
+  },
+  "cases": [
+    {
+      "case_id": "GOLDEN-SCENARIO-MATRIX",
+      "class": "GOLDEN",
+      "producer": "F04 scenario control profiles and existing owner tests",
+      "producer_paths": ["sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py", "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py"],
+      "judge": "Independent F09-014 case runner validates profile/catalog coverage and runs existing deterministic scenario and assurance suites",
+      "judge_path": "sandbox/lf_contract_gate_test/pase_evaluation_quality/test_f09_014_quality_cases_v1.py",
+      "expected_verdict": "PASS when every selected F04 profile scenario has a declared terminal disposition and the existing deterministic suites pass; otherwise BLOCK/FAIL.",
+      "source_refs": [
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_catalog_v1.json", "blob_sha": "7c1404e84062ec55901ab4a8603a906c92803be1"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py", "blob_sha": "cd9f008cbbba18112390824b790054b8459131bc"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/test_pase_scenario_qualification_v1.py", "blob_sha": "2dc0daf4c43bd1ed08ea729d201a4927a9f18e5e"},
+        {"path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/test_assurance_evaluator_core_v1.py", "blob_sha": "252501053c3cf1a6a2471cfeb9bd2e52542f8bd6"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/contract_validation_v1.json", "blob_sha": "0cfd52f55973462634be634effd1f569d2a5edcc"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/pack_validation_harness_v1.json", "blob_sha": "1b0652140d3f97fcc5c10504605ded5c362fe4b4"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/visual_evidence_gate_v1.json", "blob_sha": "6f05079c3a827b8a3eda55ae733ff5f120a181da"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/assurance_evaluator_v1.json", "blob_sha": "3dd5cc9baa29819594f61e010808171dcff26945"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/runtime_deploy_verification_v1.json", "blob_sha": "91b374c0f4ec204ade99fc4f6095b651db0c7036"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/full_regression_v1.json", "blob_sha": "2e8ddad7c8258f3471860ead20bb9121a29a8dfd"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/migration_source_parity_v1.json", "blob_sha": "b757e1cf6339cded70300e570e0f32fc36ca1edf"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/currentness_authority_v1.json", "blob_sha": "6d96c4a1743edb4d8b8c01dae4f40a686001ce26"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/evidence_stack_v1.json", "blob_sha": "676132610b4fe30c77eda560570095f6684c7b35"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/gate_check_observability_v1.json", "blob_sha": "6b1724f67f96d4089c9c4138f6a15eb2d413aae6"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/profiles/source_fidelity_exact_head_v1.json", "blob_sha": "138e19dffb700a538a724ee6d499e26f2e27dcce"}
+      ]
+    },
+    {
+      "case_id": "BLOCK-STALE-F06-INVENTORY",
+      "class": "BLOCKING",
+      "producer": "F06 control-binding inventory fixture",
+      "producer_paths": ["sandbox/lf_contract_gate_test/pase_control_binding_inventory/pase_control_binding_inventory_v1.json"],
+      "judge": "Independent currentness assertion compares embedded observed_git_main_sha with exact main SHA",
+      "judge_path": "sandbox/lf_contract_gate_test/pase_evaluation_quality/test_f09_014_quality_cases_v1.py",
+      "expected_verdict": "BLOCK_STALE_CURRENTNESS; do not rewrite or refresh the fixture.",
+      "source_refs": [
+        {"path": "sandbox/lf_contract_gate_test/pase_control_binding_inventory/pase_control_binding_inventory_v1.json", "blob_sha": "9b1b02e4daab45149f6bff0bfe5ba0aff6fd14cd"}
+      ]
+    },
+    {
+      "case_id": "BLOCK-UNKNOWN-SELECTED-SCENARIO",
+      "class": "BLOCKING",
+      "producer": "PASE scenario qualifier selection",
+      "producer_paths": ["sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py"],
+      "judge": "Independent F09-014 assertion expects BLOCK_SCENARIO_SELECTED_UNKNOWN for a selected scenario with no assertion",
+      "judge_path": "sandbox/lf_contract_gate_test/pase_evaluation_quality/test_f09_014_quality_cases_v1.py",
+      "expected_verdict": "BLOCK_SCENARIO_SELECTED_UNKNOWN; never PASS.",
+      "source_refs": [
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/pase_scenario_qualification_v1.py", "blob_sha": "cd9f008cbbba18112390824b790054b8459131bc"},
+        {"path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/test_pase_scenario_qualification_v1.py", "blob_sha": "2dc0daf4c43bd1ed08ea729d201a4927a9f18e5e"}
+      ]
+    },
+    {
+      "case_id": "DIFFICULT-PROVIDER-BOUND-RECEIPT",
+      "class": "DIFFICULT",
+      "producer": "ASSURANCE_EVALUATOR runner/core with a typed independent judge_result_id and receipt-shaped input",
+      "producer_paths": ["sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py", "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_runner_v1.py"],
+      "judge": "Independent F09-014 assertions verify absent/unconsumed provider-bound evidence remains UNPROVEN or BLOCKED",
+      "judge_path": "sandbox/lf_contract_gate_test/pase_evaluation_quality/test_f09_014_quality_cases_v1.py",
+      "expected_verdict": "UNPROVEN without a provider-bound VERIFIED Evidence Ledger readback; BLOCK if receipt-shaped fields are unrecognized or unbound; never PASS from a typed judge_result_id or VERIFIED label alone.",
+      "source_refs": [
+        {"path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_core_v1.py", "blob_sha": "640a21915751bb31b21a38bf137995faf4872c6b"},
+        {"path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_evaluator_runner_v1.py", "blob_sha": "4300d74065b838165339ad45f6cbdc35c7410cca"},
+        {"path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/assurance_legacy_s36_guard_v1.py", "blob_sha": "7b342bd00e46779151789c15131165a6faf660a9"},
+        {"path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/test_assurance_evaluator_core_v1.py", "blob_sha": "252501053c3cf1a6a2471cfeb9bd2e52542f8bd6"},
+        {"path": "supabase/migrations/20260914170500_lf_evidence_ledger_v1.sql", "blob_sha": "682a6c9379a352baa309cccaf2dba0a6d53432f4"},
+        {"path": "supabase/migrations/20260914185240_lf_evidence_ledger_subject_antireplay_v1.sql", "blob_sha": "d0759ff47386a1e040eef4e107fc5d5961a37eed"},
+        {"path": "supabase/migrations/20260930133539_evidence_ledger_crossbind_hardening_v1.sql", "blob_sha": "34733c34e7701978256b15139cc1b183b45fd57b"},
+        {"path": "supabase/migrations/20261013051000_lf_pe10_c3_verified_source_receipt_v3.sql", "blob_sha": "de78592204c1abd0d01c76a9bfeea3fda919a376"}
+      ]
+    }
+  ]
+}
