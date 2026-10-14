@@ -79,10 +79,24 @@ export function resolveProfileRequiredSteps(
       return legacy.filter((step) => prefix.has(step.step_id));
     }
     const payload = decision.evidence_payload;
-    const outcome = payload && typeof payload === "object" && !Array.isArray(payload)
-      ? (payload as Record<string, unknown>).decision : null;
+    const evidence = payload && typeof payload === "object" && !Array.isArray(payload)
+      ? payload as Record<string, unknown> : null;
+    // The recorded step must originate from the governed recorder, not from
+    // a producer's unbound candidate plan or caller-supplied judge status.
+    if (!evidence ||
+        evidence.recorded_by_rpc !== "lf_record_profile_operation_step_v1" ||
+        evidence.mini_judge_result !== "STEP_PASS_WITH_EVIDENCE") {
+      throw new Error("PROFILE_EVOLUTION_ROUTE_RECORDER_UNVERIFIED");
+    }
+    const outcome = evidence.decision;
     if (outcome !== "UPDATE" && outcome !== "NO_CHANGE") {
       throw new Error("PROFILE_EVOLUTION_ROUTE_NOT_ADMITTED");
+    }
+    if ((outcome === "NO_CHANGE" && evidence.evolution_mode !== "NO_CHANGE") ||
+        (outcome === "UPDATE" && !new Set([
+          "PATCH", "SPECIALIZE", "ADAPT", "REARCHITECT", "OPTIMIZE",
+        ]).has(String(evidence.evolution_mode ?? "")))) {
+      throw new Error("PROFILE_EVOLUTION_DECISION_MODE_MISMATCH");
     }
     const route = new Set(outcome === "UPDATE" ? update : noChange);
     return legacy.filter((step) => route.has(step.step_id));
