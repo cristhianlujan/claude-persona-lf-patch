@@ -14,6 +14,11 @@ REG = {
         {"method_id": "SELF_REFINE", "exact_version": "1.0.0",
          "qualification_state": "QUALIFIED", "benchmark_receipt_ref": "evidence://holdout"}]}
 }
+METHOD_RECEIPT = {"subject_type": "METHOD_QUALIFICATION",
+                  "subject_ref": "SELF_REFINE@1.0.0", "provider_ref": "evidence://holdout",
+                  "verification_state": "VERIFIED", "resolver_id": "LF_SUPABASE_READBACK_V1",
+                  "resolver_active": True, "resolver_trust_level": "TRUSTED_PROVIDER_BOUND",
+                  "receipt_id": "method-receipt"}
 RECEIPT = {"subject_type": "PROFILE_ASSESSMENT", "subject_ref": "quality_pack",
            "subject_sha256": D, "verification_state": "VERIFIED",
            "resolver_id": "LF_SUPABASE_READBACK_V1", "resolver_active": True,
@@ -21,8 +26,10 @@ RECEIPT = {"subject_type": "PROFILE_ASSESSMENT", "subject_ref": "quality_pack",
 
 
 class TestTrustedReadback(unittest.TestCase):
-    def make(self, cap=REG, evidence=RECEIPT):
-        return make_trusted_profile_readback(lambda name: cap, lambda slug, digest: evidence)
+    def make(self, cap=REG, evidence=RECEIPT, method_receipt=METHOD_RECEIPT):
+        return make_trusted_profile_readback(
+            lambda name: cap, lambda slug, digest: evidence,
+            lambda mid, version, ref: method_receipt)
 
     def test_positive_remains_receipt_only(self):
         result = self.make()("quality_pack", D, D)
@@ -51,6 +58,15 @@ class TestTrustedReadback(unittest.TestCase):
         record = {**REG, "manifest": {"catalog_payload_sha256": D, "qualified_method_portfolio": [{"method_id": "SELF_REFINE"}]}}
         self.assertEqual(self.make(record)("quality_pack", D, D)["status"], "UNRESOLVED")
 
+    def test_method_missing_ledger_receipt(self):
+        self.assertEqual(self.make(method_receipt=None)("quality_pack", D, D)["reason"],
+                         "METHOD_QUALIFICATION_RECEIPT_UNVERIFIED")
+
+    def test_method_receipt_wrong_benchmark(self):
+        wrong = {**METHOD_RECEIPT, "provider_ref": "forged"}
+        self.assertEqual(self.make(method_receipt=wrong)("quality_pack", D, D)["reason"],
+                         "METHOD_QUALIFICATION_RECEIPT_UNVERIFIED")
+
     def test_missing_assessment(self):
         self.assertEqual(self.make(evidence=None)("quality_pack", D, D)["reason"], "ASSESSMENT_RECEIPT_MISSING")
 
@@ -66,7 +82,8 @@ class TestTrustedReadback(unittest.TestCase):
     def test_reader_failure(self):
         def error(_):
             raise RuntimeError("no DB")
-        reader = make_trusted_profile_readback(error, lambda slug, digest: RECEIPT)
+        reader = make_trusted_profile_readback(error, lambda slug, digest: RECEIPT,
+                                               lambda mid, version, ref: METHOD_RECEIPT)
         self.assertEqual(reader("quality_pack", D, D)["reason"], "TRUSTED_SOURCE_UNAVAILABLE")
 
     def test_bad_hash(self):
@@ -79,11 +96,12 @@ class TestSQLBinding(unittest.TestCase):
         calls = []
         def fetch(query, params):
             calls.append((query, params))
-            return [REG] if len(params) == 1 else [RECEIPT]
+            return [REG] if len(params) == 1 else [METHOD_RECEIPT] if "@" in params[0] else [RECEIPT]
         result = make_postgres_trusted_readback(fetch)("quality_pack", D, D)
         self.assertEqual(result["status"], "VERIFIED_CURRENT")
         self.assertEqual([params for _, params in calls],
-                         [("METHOD_PACK_REGISTRY",), ("quality_pack", D)])
+                         [("METHOD_PACK_REGISTRY",), ("quality_pack", D),
+                          ("SELF_REFINE@1.0.0", "evidence://holdout")])
         self.assertTrue(all("SELECT" in query and "INSERT" not in query and "DELETE" not in query
                             for query, _ in calls))
 
