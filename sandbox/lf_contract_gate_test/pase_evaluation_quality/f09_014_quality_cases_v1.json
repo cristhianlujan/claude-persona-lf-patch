@@ -2,7 +2,7 @@
   "schema_version": "lf-pase-f09-014-quality-case-manifest/v1",
   "plan": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
   "unit": "PASE-ATOM-F09-014",
-  "base_main_sha": "b8b62dba0c01dcd99faee7be82beb84608131a9c",
+  "base_main_sha": "70b483e912901ac121054d4b6b5db8e41b32702e",
   "owner_authorization": {
     "owner": "PAULO_PASE_OWNER",
     "date": "2026-10-14",
