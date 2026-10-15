@@ -129,6 +129,41 @@ def validate_shape(schema: Any, value: Any) -> dict[str, Any]:
     }
 
 
+
+def candidate_output_gate(profile_slug: str, mode: str | None, candidate_allowed: bool,
+                          blocking_codes: list[str]) -> dict[str, Any]:
+    """Return an explicit *unexecuted* admission obligation for every evolution.
+
+    This does not turn caller-supplied validator claims into an authority
+    receipt, and it never blocks read-only planning or authorizes a write.
+    """
+    if mode == "NO_CHANGE" and not blocking_codes:
+        state = "NOT_APPLICABLE_NO_CHANGE"
+    elif candidate_allowed:
+        state = "REQUIRED_BEFORE_ADMISSION"
+    else:
+        state = "BLOCKED_UPSTREAM"
+    return {
+        "schema": "PROFILE_CANDIDATE_OUTPUT_GATE_V1",
+        "status": state,
+        "operation_scope": "ACTUALIZACION_PERFIL_LF",
+        "profile_slug": profile_slug,
+        "canonical_schema_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
+        "canonical_profile_validator_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
+        "generic_shape_preflight": "skills/profile_creator/validators/profile_output_shape_preflight_v1.py",
+        "positive_and_negative_output_evidence_required": True,
+        "validator_execution_required_before_admission": True,
+        "single_bounded_self_repair_allowed": True,
+        "on_semantic_tie_or_unqualified_gain": "STOP_NO_QUALIFIED_GAIN",
+        "independent_provenance_required_for_assurance": True,
+        "executed": False,
+        "passing_receipt": None,
+        "candidate_admitted": False,
+        "source_write_authorized": False,
+        "runtime_activation_authorized": False,
+    }
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--schema", type=Path, required=True)
