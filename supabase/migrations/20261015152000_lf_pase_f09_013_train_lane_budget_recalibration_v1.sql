@@ -31,6 +31,7 @@ BEGIN
     'work_code', c_unit,
     'purpose', 'Recalibrate the F09-013 Merge Train lane budget to measure Train overhead only after the prior total and aggregate patch-duration caps were exceeded by SQL apply time.',
     'occurred_at', to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+    'origin', 'GO de Paulo, 2026-10-15 10:30 Lima',
     'supersedes_event_id', 21014,
     'acceptance_declared', false,
     'unit_state_transition', false,
@@ -44,7 +45,8 @@ BEGIN
     ),
     'recalibration_rule', jsonb_build_object(
       'scope', 'TRAIN_OVERHEAD_ONLY',
-      'time_cap_formula', 'CEIL(MAX(p99_ms*1.25,p99_ms+50))',
+      'time_cap_formula', 'CEIL(p99_ms*1.25) + 50',
+      'absolute_margin_ms', 50,
       'percentile_method', 'nearest-rank; for the five E3 calibration executions, p99 equals the maximum observed value',
       'count_cap', 'maximum observed count across the same five E3 calibration executions',
       'uncapped_metric_values', jsonb_build_object(
@@ -55,9 +57,9 @@ BEGIN
     ),
     'frozen_caps', jsonb_build_object(
       'preflight', jsonb_build_object(
-        'duration_ms_cap', 2869,
+        'duration_ms_cap', 2919,
         'queries_count_cap', 4,
-        'queries_duration_ms_cap', 2855,
+        'queries_duration_ms_cap', 2905,
         'transport_count_cap', 'NOT_APPLICABLE',
         'transport_duration_ms_cap', 'NOT_APPLICABLE'
       ),
@@ -66,12 +68,12 @@ BEGIN
         'queries_count_cap', 13,
         'queries_duration_ms_cap', 'NOT_APPLICABLE',
         'transport_count_cap', 1,
-        'transport_duration_ms_cap', 720
+        'transport_duration_ms_cap', 770
       ),
       'verify', jsonb_build_object(
-        'duration_ms_cap', 1659,
+        'duration_ms_cap', 1709,
         'queries_count_cap', 2,
-        'queries_duration_ms_cap', 1659,
+        'queries_duration_ms_cap', 1709,
         'transport_count_cap', 'NOT_APPLICABLE',
         'transport_duration_ms_cap', 'NOT_APPLICABLE'
       ),
@@ -111,7 +113,7 @@ BEGIN
       )
     ),
     'acceptance_rule', jsonb_build_object(
-      'eligible', 'EXEC-DB-TRAIN-* with status COMPLETED and created_at strictly greater than this event row created_at; excludes lf_pase_f09_015_c3_* targets.',
+      'eligible', 'EXEC-DB-TRAIN-* with status COMPLETED and created_at strictly greater than this event payload occurred_at; excludes lf_pase_f09_015_c3_* targets.',
       'sample_count', 10,
       'min_cold_samples', 2,
       'classification', 'Keep E2 exactly: cold is first Train run after at least 30 minutes without runs; hot starts within 10 minutes after the previous run; exclude intervals between 10 and 30 minutes.',
