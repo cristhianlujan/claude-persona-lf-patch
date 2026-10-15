@@ -177,6 +177,53 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertEqual(r["status"],"EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR",r)
             self.assertTrue(r["profile_validator_executed"])
 
+    def test_generic_updater_self_repair_is_bounded_and_not_executed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            result=validate_bound_output(root,packet)
+            directive=result["remediation"]
+            self.assertEqual(result["status"],"FAIL")
+            self.assertEqual(directive["classification"],"CANDIDATE_OUTPUT_DEFECT")
+            self.assertEqual(directive["action"],"RETURN_TO_GOVERNED_PRODUCER_ONCE")
+            self.assertEqual(directive["target"],"CANDIDATE_OUTPUT_ONLY")
+            self.assertEqual(directive["max_repair_cycles"],1)
+            self.assertEqual(directive["attempts_executed"],0)
+            self.assertFalse(directive["producer_repair_executed"])
+            self.assertFalse(directive["may_change_canonical_schema_or_validator"])
+            self.assertFalse(result["admission_authorized"])
+
+    def test_generic_updater_validator_rejection_requests_one_repair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},
+                                     "self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            result=validate_bound_output(root,packet)
+            self.assertEqual(result["blocking_codes"],["CANONICAL_VALIDATOR_RESULT_UNEXPECTED"])
+            self.assertEqual(result["remediation"]["action"],"RETURN_TO_GOVERNED_PRODUCER_ONCE")
+            self.assertTrue(result["remediation"]["must_rerun_same_bound_canonical_schema_and_validator"])
+            self.assertTrue(result["profile_validator_executed"])
+
+    def test_generic_updater_bad_negative_repair_targets_fixture_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,_=self.make_bound_fixture(directory)
+            packet["expected_valid"]=False
+            result=validate_bound_output(root,packet)
+            self.assertEqual(result["blocking_codes"],["CANONICAL_VALIDATOR_RESULT_UNEXPECTED"])
+            self.assertEqual(result["remediation"]["target"],"NEGATIVE_FIXTURE_ONLY")
+            self.assertFalse(result["admission_authorized"])
+
+    def test_generic_updater_missing_authority_does_not_self_repair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,_=self.make_bound_fixture(directory)
+            packet["validator_sha256"]="0"*64
+            result=validate_bound_output(root,packet)
+            self.assertEqual(result["blocking_codes"],["SOURCE_SHA_MISMATCH:validator"])
+            self.assertEqual(result["remediation"]["max_repair_cycles"],0)
+            self.assertEqual(result["remediation"]["action"],"RETURN_TO_EVIDENCE_OR_AUTHORITY")
+
     def test_updater_stale_raw_hash_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             root,packet,p=self.make_bound_fixture(directory)
