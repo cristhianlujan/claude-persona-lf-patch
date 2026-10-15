@@ -21,6 +21,42 @@ class RecorderCandidate(unittest.TestCase):
         import json
         cls.policy = json.loads(CONTRACT.read_text(encoding="utf8"))
 
+    def test_output_parity_guard_v02_update_only(self):
+        self.assertIn("and v_route_resolution->>'outcome'='UPDATE'", self.sql)
+        self.assertIn("and p_step_id='deterministic_validation'", self.sql)
+        self.assertIn("if v_block_code is null and v_has_evolved_route", self.sql)
+        self.assertIn("PROFILE_EVOLUTION_OUTPUT_PARITY_RECEIPT_UNVERIFIED", self.sql)
+        self.assertIn("PROFILE_EVOLUTION_OUTPUT_PARITY_SOURCE_UNRESOLVED", self.sql)
+        gate=self.policy["output_contract_gate"]
+        self.assertEqual(gate["existing_step_id"],"deterministic_validation")
+        self.assertEqual(gate["applies_to_frozen_outcome"],"UPDATE")
+        self.assertTrue(gate["does_not_authorize_cutover"])
+
+    def test_verified_positive_and_negative_receipts_are_required(self):
+        self.assertIn("'PROFILE_OUTPUT_VALIDATION_POSITIVE'",self.sql)
+        self.assertIn("'PROFILE_OUTPUT_VALIDATION_NEGATIVE'",self.sql)
+        self.assertIn("public.lf_profile_update_verified_receipt_v1(",self.sql)
+        self.assertIn("v_output_gate->>'positive_receipt_id'",self.sql)
+        self.assertIn("v_output_gate->>'negative_receipt_id'",self.sql)
+        self.assertTrue(self.policy["output_contract_gate"]["candidate_without_supported_reader_must_block"])
+        self.assertFalse(self.policy["output_contract_gate"]["current_reader_supports_output_classes"])
+
+    def test_refuses_claimed_pass_without_exact_readback(self):
+        for guard in (
+            "v_output_gate->>'candidate_head_sha' is distinct from v_output_head",
+            "v_output_readback->>'recorded_by_rpc' is distinct from",
+            "v_output_readback->>'sha_match' is distinct from 'true'",
+            "v_output_gate->>'positive_output_sha256' is not distinct from",
+        ):
+            self.assertIn(guard,self.sql)
+
+    def test_legacy_v01_and_nochange_untouched(self):
+        self.assertIn("v_has_evolved_route :=",self.sql)
+        self.assertIn("required_steps_by_outcome",self.sql)
+        self.assertTrue(self.policy["route_validation"]["legacy_v01_frozen_runs_unchanged"])
+        self.assertFalse(self.policy["route_validation"]["no_change_requires_new_candidate_output"])
+        self.assertFalse(self.policy["output_contract_gate"]["current_reader_supports_output_classes"])
+
     def test_no_second_recorder_or_parallel_operation(self):
         self.assertEqual(self.sql.count("CREATE OR REPLACE FUNCTION public.lf_record_profile_operation_step_v1("), 1)
         self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_record_profile_operation_step_v2", self.sql)

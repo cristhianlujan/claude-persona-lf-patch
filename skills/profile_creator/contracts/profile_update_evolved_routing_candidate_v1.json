@@ -162,14 +162,23 @@
     "missing_gpt_native_provider_attestation_never_passes_semantic_gate": true,
     "missing_method_qualification_may_not_execute_method": true,
     "independent_assurance_reuses": "INDEPENDENT_ASSURANCE@2.0.1",
-    "no_runtime_activation": true
+    "no_runtime_activation": true,
+    "update_requires_canonical_output_parity_receipts": true,
+    "update_requires_positive_and_negative_validator_evidence": true,
+    "verified_evidence_must_match_exact_github_readback_head": true,
+    "no_change_requires_new_candidate_output": false,
+    "legacy_v01_frozen_runs_unchanged": true,
+    "caller_declared_validator_pass_never_admits": true
   },
   "consumer_preconditions": [
     "SUPABASE_NEW_OPERATION_CONTRACT_AND_PASS_POLICY_ADMITTED",
     "PROFILE_STEP_JUDGE_READER_AND_RECORDER_USE_SAME_FROZEN_ROUTES",
     "OIDC_GOVERNED_CALLER_DISPATCHES_EXISTING_PROFILE_UPDATER",
     "EXACT_PROFILE_SOURCE_AND_CURRENTNESS_BOUND",
-    "TRAIN_ROLLBACK_NEGATIVE_POSITIVE_TESTS_AND_POST_APPLY_READBACK"
+    "TRAIN_ROLLBACK_NEGATIVE_POSITIVE_TESTS_AND_POST_APPLY_READBACK",
+    "CURRENT_PROFILE_OUTPUT_SCHEMA_AND_VALIDATOR_PARITY_PROVED",
+    "PROVIDER_BOUND_PROFILE_OUTPUT_VALIDATION_RECEIPT_PRODUCER_ADMITTED",
+    "OUTPUT_PARITY_RECEIPT_READER_AND_RECORDER_ATOMICALLY_QUALIFIED"
   ],
   "provisional_judge_specs": {
     "method_selection": {
@@ -222,5 +231,31 @@
     "receipt_verifier": "public.lf_profile_update_verified_receipt_v1",
     "receipt_verifier_source": "skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql"
   },
-  "activation_boundary": "NOT_READY: no step registration, no active policy, no authentic GPT_NATIVE dispatcher, no qualified methods, no rollback Train"
+  "activation_boundary": "NOT_READY: profile output schema/validator mismatch unresolved; output receipt provider and boolean verifier not qualified; existing independent assurance, step governance and rollback gates still pending",
+  "output_contract_gate": {
+    "status": "CANDIDATE_ONLY_FAIL_CLOSED_UNTIL_VERIFIED_PRODUCER",
+    "applies_to_frozen_outcome": "UPDATE",
+    "existing_step_id": "deterministic_validation",
+    "generic_runner": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
+    "receipt_reader": "public.lf_profile_update_verified_receipt_v1",
+    "evidence_field": "candidate_output_contract_gate",
+    "requires": [
+      "canonical_schema_source_and_sha",
+      "canonical_validator_source_and_sha",
+      "positive_output_sha256",
+      "negative_output_sha256",
+      "positive_receipt_id",
+      "negative_receipt_id",
+      "candidate_head_sha"
+    ],
+    "requires_provider_bound_positive_and_negative_receipts": true,
+    "receipts_subject_classes": [
+      "PROFILE_OUTPUT_VALIDATION_POSITIVE",
+      "PROFILE_OUTPUT_VALIDATION_NEGATIVE"
+    ],
+    "current_reader_supports_output_classes": false,
+    "candidate_without_supported_reader_must_block": true,
+    "does_not_authorize_cutover": true,
+    "legacy_scope_untouched": true
+  }
 }
