@@ -39,6 +39,61 @@
         ".yaml",
         ".yml"
       ]
+    },
+    {
+      "family": "AGENTS_GUIDANCE",
+      "kind": "exact",
+      "value": "AGENTS.md"
+    },
+    {
+      "family": "CANONICAL_ROUTE_GUARD",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/canonical_route_guard/"
+    },
+    {
+      "family": "CLAUDE_GUIDANCE",
+      "kind": "exact",
+      "value": "CLAUDE.md"
+    },
+    {
+      "family": "MIGRATION_SOURCE_PARITY_TOOLING",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/migration_source_parity/"
+    },
+    {
+      "family": "PASE_MERGE_GATE",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_merge_gate/"
+    },
+    {
+      "family": "PASE_ORCHESTRATOR",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_orchestrator/"
+    },
+    {
+      "family": "PASE_PERFORMANCE_EVALUATOR",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/pase_f09_013/"
+    },
+    {
+      "family": "S30_MIGRATION_SOURCE_PARITY_TOOLING",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/s30_migration_source_parity/"
+    },
+    {
+      "family": "TRAIN_MIGRATION_CARRIER",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/migration_merge_train/"
+    },
+    {
+      "family": "TRAIN_RECEIPT_VERIFIER",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/train_receipt_verifier/"
+    },
+    {
+      "family": "TRAIN_WRITE_TRANSPORT",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/db_write_transport/"
     }
   ],
   "family_controls": {
@@ -57,6 +112,49 @@
     "SERVICE_RUNTIME": [],
     "SUPABASE_FUNCTION": [],
     "MIGRATION_ROUTE_GUARD": [
+      "MIGRATION_ROUTE_GUARD"
+    ],
+    "AGENTS_GUIDANCE": [
+      "CI_ROUTER_SELFTEST"
+    ],
+    "CANONICAL_ROUTE_GUARD": [
+      "CI_ROUTER_SELFTEST",
+      "MIGRATION_ROUTE_GUARD"
+    ],
+    "CLAUDE_GUIDANCE": [
+      "CI_ROUTER_SELFTEST"
+    ],
+    "MIGRATION_SOURCE_PARITY_TOOLING": [
+      "CI_ROUTER_SELFTEST",
+      "MIGRATION_SOURCE_PARITY"
+    ],
+    "PASE_MERGE_GATE": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "PASE_ORCHESTRATOR": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "PASE_PERFORMANCE_EVALUATOR": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "S30_MIGRATION_SOURCE_PARITY_TOOLING": [
+      "CI_ROUTER_SELFTEST",
+      "MIGRATION_SOURCE_PARITY"
+    ],
+    "TRAIN_MIGRATION_CARRIER": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE",
+      "MIGRATION_SOURCE_PARITY"
+    ],
+    "TRAIN_RECEIPT_VERIFIER": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "TRAIN_WRITE_TRANSPORT": [
+      "CI_ROUTER_SELFTEST",
       "MIGRATION_ROUTE_GUARD"
     ]
   },
