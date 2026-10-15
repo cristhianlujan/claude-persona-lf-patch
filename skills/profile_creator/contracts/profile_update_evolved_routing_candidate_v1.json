@@ -256,6 +256,47 @@
     "current_reader_supports_output_classes": false,
     "candidate_without_supported_reader_must_block": true,
     "does_not_authorize_cutover": true,
-    "legacy_scope_untouched": true
+    "legacy_scope_untouched": true,
+    "preventive_remediation": {
+      "schema": "PROFILE_UPDATER_PREVENTIVE_GAP_REVIEW_V1",
+      "scope": "ALL_GOVERNED_PROFILES_ONLY_ON_RELEVANT_EVIDENCED_GAPS",
+      "existing_frozen_step_owners": {
+        "baseline_read": [
+          "ORIGIN_AND_EKB"
+        ],
+        "method_selection": [
+          "METHOD_AND_CAUSAL_GAP"
+        ],
+        "deterministic_validation": [
+          "STRUCTURAL_AND_OUTPUT_PARITY",
+          "BOUNDED_PRODUCER_REPAIR_DIRECTIVE"
+        ],
+        "regression_after": [
+          "FUNCTIONAL_AND_REGRESSION"
+        ],
+        "semantic_judge": [
+          "SEMANTIC_VALUE"
+        ],
+        "report_output": [
+          "PROVENANCE_AND_LEARNING"
+        ]
+      },
+      "transversal_validator": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
+      "repair_directive_schema": "PROFILE_UPDATE_BOUND_REMEDIATION_DIRECTIVE_V1",
+      "repair_instruction_is_not_execution": true,
+      "repair_owner": "GOVERNED_PROFILE_UPDATER_PRODUCER",
+      "max_repair_cycles_per_evidenced_defect": 1,
+      "batch_multiple_known_defects_before_one_revalidation": true,
+      "preserve_original_and_after_raw_with_exact_hashes": true,
+      "must_revalidate_canonical_schema_validator_and_functional_delta": true,
+      "independent_semantic_judge_must_pass_for_admission": true,
+      "semantic_tie_or_fail": "STOP_NO_QUALIFIED_GAIN",
+      "missing_source_or_attestation": "BLOCK_RETURN_TO_EVIDENCE_OR_AUTHORITY",
+      "no_schema_or_validator_weakening": true,
+      "new_operation_steps": false,
+      "historical_v01_runs_unmodified": true,
+      "activation_authorized": false,
+      "status": "CANDIDATE_ONLY_NOT_APPLIED_AS_RUNTIME"
+    }
   }
 }
