@@ -40,3 +40,14 @@ Se consume `Backoffice → módulo → pantalla → regla/validación → policy
 2. Probar transaccionalmente con rollback autorizado y postcondiciones; Train exact-version; readback Git=ledger=BD.
 3. Verificar implementación de consumidor de duración de dispositivo confiable antes de deduplicar.
 4. Reconciliar reglas monetarias con validador, configuración por empresa y extracción histórica; nuevos changesets por alcance, no mezclar dominios.
+
+## Ampliación: auditoría recursiva de números anidados en reglas B2B
+
+La revisión de `valor_config` recursiva (objetos y arrays, profundidad 8) descubre parámetros que la inspección de nivel superior no detectó:
+
+- **30 días de exportación duplicados:** `B2B-RULE-REPORTS-EXTRACTION-001.contextual_export_max_days=30` y `B2B-RULE-PORTAL-TREE-001.sidebar_nodes[REPORTS].contextual_export_max_days=30`. El árbol del menú no debe ser fuente alternativa de un límite funcional. Falta binding verificado del consumidor; NO remover la copia sin contrato.
+- **Jerarquía Dashboard:** `B2B-RULE-DASHBOARD-001` contiene `executive_metric_contract.principles.max_visible_cards=4`, `information_architecture.cognitive_load_controls.max_top_kpis=4` y `information_architecture.visual_hierarchy[*].max_visible_kpis=4`; `managerial_growth_contract.indicator_groups_contract.top_summary_candidate.max_primary_indicators=3`. **No son la misma restricción necesariamente**: distinguir resumen principal (3) del límite general (4), y verificar componentes `lf_design` antes de consolidar.
+- **Referencias no umbrales:** `B2B-RULE-AUTH-014.error_id_mapping`, órdenes de menú y ordinales de cuotas son identificadores/secuencia, no parámetros de seguridad configurables.
+- **Validación empresarial duplicada:** `B2B_VAL_TRUSTED_DEVICE_DURATION_ALLOWED` contiene lista y default duplicados del `SEC-B2B-TRUSTED-DEVICE` ID25. La política ID25 ya define ambos y `lf_ops.empresas.trusted_device_duration_days` es el valor por empresa. Requiere comprobar consumidor antes de retirar literales de validación.
+
+La auditoría SQL recursiva constituye evidencia de definiciones registradas; no certifica lo codificado en repositorios frontend/backend. `paulozterra/lf-platform` no estuvo accesible vía GitHub en la sesión.
