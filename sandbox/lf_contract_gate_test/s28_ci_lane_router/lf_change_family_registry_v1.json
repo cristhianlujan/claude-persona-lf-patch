@@ -81,6 +81,11 @@
       "value": "sandbox/lf_contract_gate_test/s30_migration_source_parity/"
     },
     {
+      "family": "TRANSVERSAL_ASSETS",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/transversal_assets/"
+    },
+    {
       "family": "TRAIN_MIGRATION_CARRIER",
       "kind": "prefix",
       "value": "sandbox/lf_contract_gate_test/migration_merge_train/"
@@ -156,6 +161,10 @@
     "TRAIN_WRITE_TRANSPORT": [
       "CI_ROUTER_SELFTEST",
       "MIGRATION_ROUTE_GUARD"
+    ],
+    "TRANSVERSAL_ASSETS": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
     ]
   },
   "path_admission": {
