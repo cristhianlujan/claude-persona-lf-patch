@@ -29,3 +29,23 @@ El carrier reutilizado es `run_migration_source_parity_pase_entry_v1.py` → `ru
 3. Repetir con casos reales de no-migration, migration, runtime, docs y fallo/stale. Exigir que los siete canarios de `CANARIES_EVIDENCE.md` sean verdes antes de pedir cualquier cambio de ruleset.
 
 No se ejecutaron simulaciones de PR ni pruebas con writes. No se modificaron workflows.
+
+## Segunda vuelta: PRs abiertos tras corregir el registro (15/10/2026)
+
+Después de que #2762 llegó a main (`13a23b0ecb55f3e68ac1d961918760968d3e0a74`), revisé cinco PRs abiertos en sus heads actuales. No se rebasaron ramas ni se evaluaron merges históricos. El control de currentness se conservó; por eso los PRs con base anterior a main quedan stale.
+
+| Tipo | PR abierto (base → head) | PASE fuera de CI | `pase-merge-gate` | Paridad de migraciones | Falso bloqueo |
+|---|---|---|---|---|---|
+| Sin migración | #2753 `a8634eac…` → `9ca972f4…` | No llega a decisión: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST` al proyectar el plan | `BLOCK_PASE_MERGE_GATE_STALE_BASE` (base `a8634eac…`, main `13a23b0e…`) | `FAIL_MIGRATION_PARITY_FOCAL_REF_CURRENTNESS`, base esperada `a8634eac…`, main live `13a23b0e…` | PASE: bloqueo global por política/universo incoherente, no atribuible al changeset. Gate/paridad: no; stale real y esperado. |
+| Con migración | #2755 `0497ead9…` → `62dfe29f…` | No llega a decisión: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST` | `BLOCK_PASE_MERGE_GATE_STALE_BASE` (base `0497ead9…`, main `13a23b0e…`) | Bloqueada por currentness: base `0497ead9…` distinta de main live `13a23b0e…`; no alcanzó consulta de ledger | PASE: bloqueo global no atribuible al changeset. Gate/paridad: no; stale real y esperado. |
+| Runtime | #2706 `193c3828…` → `f64a53ef…` | No llega a decisión: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST` | `BLOCK_PASE_MERGE_GATE_STALE_BASE` (base `193c3828…`, main `13a23b0e…`) | `FAIL_MIGRATION_PARITY_FOCAL_REF_CURRENTNESS`, base esperada `193c3828…`, main live `13a23b0e…` | PASE: bloqueo global no atribuible al changeset. Gate/paridad: no; stale real y esperado. |
+| Docs | #2752 `a8634eac…` → `85fe1e4e…` | No llega a decisión: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST` | `BLOCK_PASE_MERGE_GATE_STALE_BASE` (base `a8634eac…`, main `13a23b0e…`) | `FAIL_MIGRATION_PARITY_FOCAL_REF_CURRENTNESS`, base esperada `a8634eac…`, main live `13a23b0e…` | PASE: bloqueo global no atribuible al changeset. Gate/paridad: no; stale real y esperado. |
+| Fallo / stale | #2676 `81428fb7…` → `9ce54051…` (DRAFT; evaluado como datos, sin aplicar) | No llega a decisión: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST` | `BLOCK_PASE_MERGE_GATE_STALE_BASE` (base `81428fb7…`, main `13a23b0e…`) | Bloqueada por currentness: base `81428fb7…` distinta de main live `13a23b0e…`; no alcanzó consulta de ledger | PASE: bloqueo global no atribuible al changeset. Gate/paridad: no; stale real y esperado. |
+
+### Diagnóstico y límites de la segunda vuelta
+
+El `lf_ci_control_impact_registry_v2.json` actual contiene 26 controles, mientras que `lf_pase_control_repair_quarantine_v1.json` conserva un digest distinto. Ejecuté `test_lf_pase_control_repair_quarantine_v1.py` en main y falla antes de evaluar los cambios: `FAIL_REPAIR_POLICY_UNIVERSE_DIGEST`. El test también espera 25 controles. #2762 corrigió el registro compartido S28; no modificó este registro de controles ni la política de cuarentena. Por tanto, esta segunda vuelta **no produce una decisión PASE por PR** y demuestra un bloqueo global de integridad que requiere diagnóstico gobernado aparte. No actualicé el digest ni relajé el fail-closed.
+
+`pase-merge-gate` sí devuelve el bloqueo correcto para la identidad vieja del base. La paridad también termina en su guarda de currentness antes de consultar ledger; no se invocó una conexión de base. Así se evita confundir deuda histórica con el changeset, pero estos resultados no demuestran aceptación de la paridad sobre un base vigente. No había PR abierto por tipo con base `13a23b0e…` al tomar estos snapshots; no rebaseé ni abrí canarios porque las categorías sí tenían PRs abiertos y la instrucción pide evaluar sus heads exactos. El caso runtime usa #2706 (candidato UI Architect con helper asíncrono y pruebas locales), no #2748, que no era una muestra runtime tan directa.
+
+**Estado shadow:** parcial / bloqueado. Queda volver a ejecutar cuando el universo/digest de la política PASE esté coherente y existan heads abiertos basados en main vigente, sin reinterpretar como falso bloqueo los rechazos correctos por stale. La inspección del código de paridad confirma que el análisis usa `git diff --name-status base...head -- supabase/migrations`; no se ejecutó el paso live de ledger en estas muestras.
