@@ -152,6 +152,21 @@ class RouterIntentConsistencyTests(unittest.TestCase):
         self.assertFalse(r["downstream_execution_allowed"])
         self.assertFalse(r["effects_executed"])
 
+    def test_alias_registry_malformed_blocks(self):
+        x = copy.deepcopy(CATALOG)
+        x["type_aliases"] = ["not-a-mapping"]
+        self.assertEqual(assess(catalog=x)["blocking_code"], "BLOCK_CATALOG_TYPE_ALIASES_INVALID")
+
+    def test_router_asset_receipt_malformed_blocks(self):
+        x = copy.deepcopy(CORRECT_ROUTE)
+        x["asset"] = "invalid"
+        self.assertEqual(assess(route=x)["blocking_code"], "BLOCK_ROUTER_TARGET_RECEIPT_INVALID")
+
+    def test_multiple_active_routes_block(self):
+        x = copy.deepcopy(CATALOG)
+        x["active_routes"].append(copy.deepcopy(x["active_routes"][0]))
+        self.assertEqual(assess(catalog=x)["blocking_code"], "BLOCK_CANONICAL_OPERATION_AMBIGUOUS")
+
     def test_determinism_for_identical_inputs(self):
         self.assertEqual(assess(), assess())
 
