@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT/"skills/profile_creator/validators"))
 
 from profile_output_shape_preflight_v1 import validate_shape, candidate_output_gate
 from validate_candidate_depth import validate_candidate
-from run_bound_profile_output_validator_v1 import validate_bound_output
+from run_bound_profile_output_validator_v1 import validate_bound_output, validate_with_bounded_producer_repair
 
 
 class OutputShapeParitiyChecks(unittest.TestCase):
@@ -235,6 +235,91 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertEqual(result["blocking_codes"],["SOURCE_SHA_MISMATCH:validator"])
             self.assertEqual(result["remediation"]["max_repair_cycles"],0)
             self.assertEqual(result["remediation"]["action"],"RETURN_TO_EVIDENCE_OR_AUTHORITY")
+
+    def test_bounded_repair_local_positive_runs_once_and_revalidates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            calls=[]
+            def producer(working_root, before_packet, directive):
+                calls.append((before_packet["raw_output_sha256"], directive["defect_code"]))
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                                         "self_verdict":"PASS"}))
+                return {**before_packet, "raw_output_sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE")
+            self.assertEqual(result["before"]["status"],"FAIL")
+            self.assertEqual(result["after"]["status"],"CANDIDATE_OUTPUT_PARITY_OBSERVED")
+            self.assertEqual(result["producer_attempts"],1)
+            self.assertEqual(len(calls),1)
+            self.assertTrue(result["local_deterministic_revalidation"])
+            self.assertFalse(result["independent_review_executed"])
+            self.assertFalse(result["admission_authorized"])
+
+    def test_bounded_repair_wrong_negative_fixture_revalidates_rejection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            packet["expected_valid"]=False
+            def producer(working_root, before_packet, directive):
+                self.assertEqual(directive["target"],"NEGATIVE_FIXTURE_ONLY")
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},
+                                         "self_verdict":"PASS"}))
+                return {**before_packet, "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE")
+            self.assertEqual(result["after"]["status"],"EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR")
+            self.assertFalse(result["admission_authorized"])
+
+    def test_bounded_repair_does_not_retry_unsolved_defect(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            invoked=[]
+            def producer(working_root, before_packet, directive):
+                invoked.append(1)
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"UNATTESTED"},
+                                         "self_verdict":"PASS"}))
+                return {**before_packet, "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"STOP_REPAIR_NOT_VALIDATED")
+            self.assertEqual(result["after"]["status"],"FAIL")
+            self.assertEqual(result["producer_attempts"],1)
+            self.assertEqual(len(invoked),1)
+
+    def test_bounded_repair_never_runs_on_stale_authority(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            packet["schema_sha256"]="0"*64
+            invoked=[]
+            result=validate_with_bounded_producer_repair(root,packet,lambda *args:invoked.append(1))
+            self.assertEqual(result["status"],"NO_CORRECTABLE_OUTPUT_DEFECT")
+            self.assertEqual(invoked,[])
+            self.assertEqual(result["producer_attempts"],0)
+
+    def test_bounded_repair_may_not_change_validator_authority(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            def producer(working_root, before_packet, directive):
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                                         "self_verdict":"PASS"}))
+                return {**before_packet, "validator_sha256":"0"*64,
+                        "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"STOP_REPAIR_AUTHORITY_CHANGED")
+            self.assertIsNone(result["after"])
+
+    def test_bounded_repair_cannot_pretend_to_change_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            result=validate_with_bounded_producer_repair(root,packet,lambda _,q,d: q)
+            self.assertEqual(result["status"],"STOP_REPAIR_NO_OUTPUT_DELTA")
+            self.assertEqual(result["producer_attempts"],1)
 
     def test_updater_stale_raw_hash_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
