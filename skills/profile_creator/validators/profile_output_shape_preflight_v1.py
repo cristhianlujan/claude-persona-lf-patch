@@ -178,7 +178,7 @@ def candidate_output_gate(profile_slug: str, mode: str | None, candidate_allowed
                  "on_gap": "STOP_NO_IN_PLACE_POST_WRITE_REPAIR"},
                 {"id": "FUNCTIONAL_AND_REGRESSION", "at": "regression_after",
                  "check": "MATERIAL_TARGET_BEHAVIOR_AND_CRITICAL_REGRESSIONS",
-                 "on_gap": "RETURN_TO_GOVERNED_PRODUCER_ONCE_OR_STOP"},
+                 "on_gap": "STOP_REQUIRE_NEW_GOVERNED_CHANGESET_FOR_REGRESSION"},
                 {"id": "SEMANTIC_VALUE", "at": "semantic_judge",
                  "check": "PAIRED_RAW_BEHAVIOR_AND_INDEPENDENT_UTILITY",
                  "on_gap": "STOP_NO_QUALIFIED_GAIN_ON_TIE_OR_FAIL"},
