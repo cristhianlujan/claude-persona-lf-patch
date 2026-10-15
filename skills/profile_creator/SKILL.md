@@ -67,6 +67,49 @@ This depth gate is **not** semantic Quality Pack approval. It must return `seman
 
 The outer Profile Creator result must include a `depth_gate` receipt bound to the exact same `deliverable_artifact_ref`.
 
+## Transversal generated-output parity — creation and update
+
+This is a **common prevention rule** for both `CREACION_PERFIL_LF` and
+`ACTUALIZACION_PERFIL_LF`: a candidate must not repeat the PE10_C3 failure of
+publishing `PASS` with a required output field absent or with an unrecognized
+enum. Never copy Product/UI-specific rules into the Profile Creator/Updater.
+
+**At creation (new profiles)**, `validate_candidate_depth.py` must inspect
+the materialized positive output sample against the candidate's exact
+`schemas/output.schema.json` using
+`validators/profile_output_shape_preflight_v1.py`.
+A missing nested required key, mistyped key, unsupported enum/const, invalid
+root shape or unsupported schema applicator is a producer self-repair failure,
+not `DEPTH_READY_FOR_SEMANTIC_REVIEW`. Preserve the complete source schema and
+the valid positive/negative examples and the original ownership of independent
+semantic review. This structural preflight is deliberately NOT a complete JSON
+Schema validator and never authorizes runtime/cutover.
+
+**At evolution (existing profiles)**, `plan_profile_evolution.py` emits
+`candidate_output_contract_gate` in addition to the existing advisory
+method/decision steps. When it says `REQUIRED_BEFORE_ADMISSION`, the updater
+must materialize *real candidate outputs* and use the **current profile's
+bound canonical schema and existing profile-local validator**, plus the shared
+shape preflight where applicable, BEFORE requesting semantic/admission PASS.
+A new local validator or an unqualified schema file cannot override the
+authoritative runtime contract. Resolve conflicting or missing binding to
+`RETURN_TO_EVIDENCE_OR_AUTHORITY`, never invent a PASS. Evidence includes:
+source revision, candidate revision, output file SHA-256, exact schema/validator
+references, executed validation return code and error codes, and a negative
+counterexample for the material change. The profile-local validator is invoked
+only by the governed execution consumer, NOT by the read-only S26 source
+assessment or generic baseline AST scanner.
+
+When a validator fails, allow **one bounded candidate self-repair** for the
+proved defect, preserving the raw failure for comparison. Then report
+`NO_QUALIFIED_GAIN` or `BLOCKED` and stop that optimization attempt; do
+not create further benchmark rounds just to increase evidence counts. A
+semantic tie with structural uplift is still a semantic tie. Unavailable
+independent or provider attestation is a provenance blocker, not a reason
+to replay all cases. In all outcomes, producer depth, deterministic parity,
+functional execution and independent review remain separate, and no
+candidate is auto-merged or activated.
+
 ## Handoff outcome rule
 
 For outputs routed to Quality Pack, the evidence layers remain distinct:
