@@ -102,11 +102,24 @@ class OutputShapeParitiyChecks(unittest.TestCase):
         self.assertEqual(review["execution_state"],"NOT_EXECUTED_IN_READ_ONLY_PLANNER")
         self.assertTrue(review["not_an_additional_operation_or_checkpoint"])
         self.assertEqual([x["at"] for x in review["reviews"]],
-                         ["baseline_read","method_selection","deterministic_validation",
-                          "regression_after","semantic_judge","report_output"])
+                         ["baseline_read","method_selection","pre_write_execution_binding_gate",
+                          "deterministic_validation","regression_after","semantic_judge","report_output"])
+        self.assertEqual(gate["prewrite_check_owner"],"pre_write_execution_binding_gate")
+        self.assertEqual(gate["postwrite_readback_check_owner"],"deterministic_validation")
+        self.assertEqual(review["post_write_mismatch"],"BLOCK_AND_RESTART_NEW_GOVERNED_CHANGESET")
         self.assertTrue(review["no_semantic_self_attestation"])
         self.assertEqual(review["max_producer_repair_cycles_per_evidenced_defect"],1)
         self.assertFalse(review["new_operation_steps_required"])
+
+    def test_update_candidate_repair_is_not_assigned_after_github_write(self):
+        g=candidate_output_gate("future_generic_profile","PATCH",True,[])
+        reviews=g["preventive_gap_review"]["reviews"]
+        repair=[x for x in reviews if x["on_gap"].startswith("RETURN_TO_GOVERNED_PRODUCER")]
+        self.assertEqual([x["at"] for x in repair],["pre_write_execution_binding_gate"])
+        self.assertEqual(g["prewrite_repair_allowed_only_before"],"github_write")
+        post=[x for x in reviews if x["at"]=="deterministic_validation"][0]
+        self.assertEqual(post["on_gap"],"STOP_NO_IN_PLACE_POST_WRITE_REPAIR")
+        self.assertFalse(g["source_write_authorized"])
 
     def test_updater_no_change_no_unneeded_round(self):
         gate = candidate_output_gate("new_future_profile", "NO_CHANGE", False, [])
