@@ -13,8 +13,13 @@ SPEC.loader.exec_module(guard)
 HEAD = "a" * 40
 
 
-def check(name, conclusion="success", *, status="completed", head=HEAD):
-    return {"name": name, "conclusion": conclusion, "status": status, "head_sha": head}
+def check(name, conclusion="success", *, status="completed", head=HEAD, run_id=None, started_at=None):
+    result = {"name": name, "conclusion": conclusion, "status": status, "head_sha": head}
+    if run_id is not None:
+        result["id"] = run_id
+    if started_at is not None:
+        result["started_at"] = started_at
+    return result
 
 
 def valid_pair():
@@ -44,6 +49,36 @@ class RequiredPaseChecksTests(unittest.TestCase):
         ]
         self.assertEqual(guard.evaluate(pages, HEAD, self.required, final=True),
                          (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
+
+    def test_cancelled_older_run_is_ignored_when_newest_exact_head_succeeds(self):
+        payload = {"check_runs": [
+            check("lf-independent-change-admission", "cancelled", run_id=10),
+            check("lf-independent-change-admission", "success", run_id=11),
+            check("ig-runtime-candidate-judge", "success", run_id=12),
+        ]}
+        self.assertEqual(guard.evaluate(payload, HEAD, self.required, final=True),
+                         (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
+
+    def test_newest_failure_blocks_even_when_older_run_succeeded(self):
+        payload = {"check_runs": [
+            check("lf-independent-change-admission", "success", run_id=10),
+            check("lf-independent-change-admission", "failure", run_id=11),
+            check("ig-runtime-candidate-judge", "success", run_id=12),
+        ]}
+        code, message = guard.evaluate(payload, HEAD, self.required, final=True)
+        self.assertEqual(code, guard.BLOCK)
+        self.assertIn("FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS", message)
+        self.assertIn("conclusion=failure", message)
+
+    def test_newest_in_progress_waits_even_when_older_run_succeeded(self):
+        payload = {"check_runs": [
+            check("lf-independent-change-admission", "success", run_id=10),
+            check("lf-independent-change-admission", None, status="in_progress", run_id=11),
+            check("ig-runtime-candidate-judge", "success", run_id=12),
+        ]}
+        code, message = guard.evaluate(payload, HEAD, self.required)
+        self.assertEqual(code, guard.WAIT)
+        self.assertIn("WAIT_TRAIN_REQUIRED_CHECK_PENDING", message)
 
     def test_skipped_blocks_explicitly(self):
         payload = valid_pair()

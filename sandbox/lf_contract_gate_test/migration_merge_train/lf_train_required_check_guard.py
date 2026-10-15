@@ -44,35 +44,50 @@ def evaluate(payload: Any, expected_head: str, required_checks: tuple[str, ...],
             code = "FAIL" if final else "WAIT"
             return (BLOCK if final else WAIT), f"{code}_TRAIN_REQUIRED_CHECK_MISSING check={name}"
 
-        for row in matching:
-            observed_head = row.get("head_sha")
-            if observed_head != expected_head:
-                return BLOCK, (
-                    f"FAIL_TRAIN_REQUIRED_CHECK_HEAD_MISMATCH check={name} "
-                    f"expected={expected_head} observed={observed_head or 'NOT_OBSERVED'}"
-                )
+        exact_head = [row for row in matching if row.get("head_sha") == expected_head]
+        if not exact_head:
+            latest = max(matching, key=_run_recency_key)
+            observed_head = latest.get("head_sha")
+            return BLOCK, (
+                f"FAIL_TRAIN_REQUIRED_CHECK_HEAD_MISMATCH check={name} "
+                f"expected={expected_head} observed={observed_head or 'NOT_OBSERVED'}"
+            )
 
-        pending = [row for row in matching if row.get("status") != "completed"]
-        if pending:
+        # Multiple attempts can exist for the same check and head. Only the
+        # newest exact-head attempt governs; older attempts may be cancelled
+        # when the workflow uses cancel-in-progress.
+        latest = max(exact_head, key=_run_recency_key)
+
+        if latest.get("status") != "completed":
             if final:
                 return BLOCK, (
                     f"FAIL_TRAIN_REQUIRED_CHECK_NOT_COMPLETED check={name} "
-                    f"status={pending[0].get('status') or 'NOT_OBSERVED'}"
+                    f"status={latest.get('status') or 'NOT_OBSERVED'}"
                 )
             return WAIT, (
                 f"WAIT_TRAIN_REQUIRED_CHECK_PENDING check={name} "
-                f"status={pending[0].get('status') or 'NOT_OBSERVED'}"
+                f"status={latest.get('status') or 'NOT_OBSERVED'}"
             )
 
-        for row in matching:
-            conclusion = row.get("conclusion")
-            if conclusion != "success":
-                return BLOCK, (
-                    f"FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS check={name} "
-                    f"conclusion={conclusion or 'NOT_OBSERVED'}"
-                )
+        conclusion = latest.get("conclusion")
+        if conclusion != "success":
+            return BLOCK, (
+                f"FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS check={name} "
+                f"conclusion={conclusion or 'NOT_OBSERVED'}"
+            )
 
     return 0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"
+
+
+def _run_recency_key(row: dict[str, Any]) -> tuple[int, int | str, str]:
+    """Order API check runs by numeric id, falling back to started_at."""
+    run_id = row.get("id")
+    try:
+        if run_id is not None:
+            return (1, int(run_id), str(row.get("started_at") or ""))
+    except (TypeError, ValueError):
+        pass
+    return (0, str(row.get("started_at") or ""), "")
 
 
 def main() -> int:
