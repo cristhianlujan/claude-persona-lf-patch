@@ -36,15 +36,17 @@ DECLARE
       one_screen jsonb;
       requested_action text;
       screen_route_exists boolean;
+      primary_cta_count integer := 0;
+      primary_cta_elements jsonb := '[]'::jsonb;
     BEGIN
       WITH grounded AS (
         SELECT
           p.id AS pantalla_id, p.codigo, p.nombre, p.module_code,
-          m.app_shell_code
+          m.app_shell_code, m.is_active AS module_is_active
         FROM lf_ops.pantallas p
         JOIN lf_ops.modulos m ON m.module_id=p.module_id
         JOIN lf_ops.app_shells s ON s.app_shell_id=m.app_shell_id
-        WHERE p.activa AND m.is_active
+        WHERE p.activa
           AND (
             position(
               ' '||btrim(regexp_replace(translate(lower(p.codigo),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
@@ -65,7 +67,8 @@ DECLARE
             'nombre_canonico',nombre,
             'tipo_activo','PANTALLA',
             'module_code',module_code,
-            'app_shell_code',app_shell_code
+            'app_shell_code',app_shell_code,
+            'module_is_active',module_is_active
           ) ORDER BY codigo
         ),'[]'::jsonb)
       INTO screen_count, screens
@@ -96,6 +99,27 @@ DECLARE
       END IF;
 
       one_screen := screens->0;
+      -- Resolve an explicitly named primary button using the canonical
+      -- UI element register, independent of scope/effect authorization.
+      IF v_req ~ '(^| )boton( |$)'
+         AND v_req ~ '(^| )(principal|primario)( |$)'
+      THEN
+        SELECT count(*),
+          coalesce(jsonb_agg(
+            jsonb_build_object(
+              'element_id',e.element_id,'element_code',e.element_code,
+              'element_role',e.element_role,'context_key',e.context_key,
+              'semantic_binding_status',e.semantic_binding_status,
+              'status',e.status
+            ) ORDER BY e.element_id
+          ),'[]'::jsonb)
+        INTO primary_cta_count,primary_cta_elements
+        FROM lf_ops.pantalla_elementos e
+        WHERE e.pantalla_id=(one_screen->>'pantalla_id')::integer
+          AND e.element_role='PRIMARY_CTA'
+          AND e.semantic_binding_status='RESOLVED_ID'
+          AND e.required_for_implementation;
+      END IF;
       -- The positive action must appear at the start; a verb in a negated
       -- constraint later in the request is not positive action authority.
       requested_action := CASE WHEN v_req ~
@@ -120,6 +144,8 @@ DECLARE
         'request_sha256',encode(extensions.digest(convert_to(p_request_text,'UTF8'),'sha256'),'hex'),
         'target_resolution','CANONICAL_SCREEN_GROUNDED',
         'target_count',1,
+        'screen_element',case when primary_cta_count=1 then primary_cta_elements->0 else null end,
+        'element_resolution',case when primary_cta_count=1 then 'CANONICAL_ELEMENT_GROUNDED' else 'UNATTESTED' end,
         'semantic_resolution_required',true,
         'semantic_gap_code','EFFECT_SCOPE_ATTESTATION_REQUIRED',
         'semantic_scope_state','UNATTESTED',
@@ -169,6 +195,13 @@ BEGIN
          item.case_code,x->>'status',x->>'asset_type',x->>'blocking_code',x->>'candidate_asset_code';
     END IF;
   END LOOP;
+
+  x:=public.lf_router_resolve_v1('Cambiar únicamente el texto del botón principal de la pantalla Iniciar sesión B2B a “Acceder”, sin modificar la autenticación, las validaciones ni otras partes de la pantalla.');
+  IF x#>>'{screen_element,element_code}'<>'B2B_AUTH001_SUBMIT'
+     OR x#>>'{screen_element,element_role}'<>'PRIMARY_CTA'
+     OR x->>'element_resolution'<>'CANONICAL_ELEMENT_GROUNDED'
+     OR x#>>'{asset,module_is_active}'<>'false'
+  THEN RAISE EXCEPTION 'LF_SCREEN_ROUTER_PRIMARY_CTA_OR_MODULE_READBACK_MISMATCH'; END IF;
 
   x:=public.lf_router_resolve_v1('Cambiar el texto de la pantalla que no existe');
   IF x->>'status'<>'BLOCKED'
@@ -219,15 +252,17 @@ DECLARE
       one_screen jsonb;
       requested_action text;
       screen_route_exists boolean;
+      primary_cta_count integer := 0;
+      primary_cta_elements jsonb := '[]'::jsonb;
     BEGIN
       WITH grounded AS (
         SELECT
           p.id AS pantalla_id, p.codigo, p.nombre, p.module_code,
-          m.app_shell_code
+          m.app_shell_code, m.is_active AS module_is_active
         FROM lf_ops.pantallas p
         JOIN lf_ops.modulos m ON m.module_id=p.module_id
         JOIN lf_ops.app_shells s ON s.app_shell_id=m.app_shell_id
-        WHERE p.activa AND m.is_active
+        WHERE p.activa
           AND (
             position(
               ' '||btrim(regexp_replace(translate(lower(p.codigo),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
@@ -248,7 +283,8 @@ DECLARE
             'nombre_canonico',nombre,
             'tipo_activo','PANTALLA',
             'module_code',module_code,
-            'app_shell_code',app_shell_code
+            'app_shell_code',app_shell_code,
+            'module_is_active',module_is_active
           ) ORDER BY codigo
         ),'[]'::jsonb)
       INTO screen_count, screens
@@ -279,6 +315,27 @@ DECLARE
       END IF;
 
       one_screen := screens->0;
+      -- Resolve an explicitly named primary button using the canonical
+      -- UI element register, independent of scope/effect authorization.
+      IF v_req ~ '(^| )boton( |$)'
+         AND v_req ~ '(^| )(principal|primario)( |$)'
+      THEN
+        SELECT count(*),
+          coalesce(jsonb_agg(
+            jsonb_build_object(
+              'element_id',e.element_id,'element_code',e.element_code,
+              'element_role',e.element_role,'context_key',e.context_key,
+              'semantic_binding_status',e.semantic_binding_status,
+              'status',e.status
+            ) ORDER BY e.element_id
+          ),'[]'::jsonb)
+        INTO primary_cta_count,primary_cta_elements
+        FROM lf_ops.pantalla_elementos e
+        WHERE e.pantalla_id=(one_screen->>'pantalla_id')::integer
+          AND e.element_role='PRIMARY_CTA'
+          AND e.semantic_binding_status='RESOLVED_ID'
+          AND e.required_for_implementation;
+      END IF;
       -- The positive action must appear at the start; a verb in a negated
       -- constraint later in the request is not positive action authority.
       requested_action := CASE WHEN v_req ~
@@ -303,6 +360,8 @@ DECLARE
         'request_sha256',encode(extensions.digest(convert_to(p_request_text,'UTF8'),'sha256'),'hex'),
         'target_resolution','CANONICAL_SCREEN_GROUNDED',
         'target_count',1,
+        'screen_element',case when primary_cta_count=1 then primary_cta_elements->0 else null end,
+        'element_resolution',case when primary_cta_count=1 then 'CANONICAL_ELEMENT_GROUNDED' else 'UNATTESTED' end,
         'semantic_resolution_required',true,
         'semantic_gap_code','EFFECT_SCOPE_ATTESTATION_REQUIRED',
         'semantic_scope_state','UNATTESTED',
@@ -352,6 +411,13 @@ BEGIN
          item.case_code,x->>'status',x->>'asset_type',x->>'blocking_code',x->>'candidate_asset_code';
     END IF;
   END LOOP;
+
+  x:=public.lf_router_resolve_v1('Cambiar únicamente el texto del botón principal de la pantalla Iniciar sesión B2B a “Acceder”, sin modificar la autenticación, las validaciones ni otras partes de la pantalla.');
+  IF x#>>'{screen_element,element_code}'<>'B2B_AUTH001_SUBMIT'
+     OR x#>>'{screen_element,element_role}'<>'PRIMARY_CTA'
+     OR x->>'element_resolution'<>'CANONICAL_ELEMENT_GROUNDED'
+     OR x#>>'{asset,module_is_active}'<>'false'
+  THEN RAISE EXCEPTION 'LF_SCREEN_ROUTER_PRIMARY_CTA_OR_MODULE_READBACK_MISMATCH'; END IF;
 
   x:=public.lf_router_resolve_v1('Cambiar el texto de la pantalla que no existe');
   IF x->>'status'<>'BLOCKED'
