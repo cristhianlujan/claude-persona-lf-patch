@@ -154,10 +154,16 @@ task, resolved authority, frozen update outcome and material gap:
 4. **Single bounded producer repair**: on a verified output defect,
    return the defect and pre-repair RAW SHA to the existing producer once.
    Correct only the candidate output or deliberate negative fixture, not the
-   schema, authority, test oracle or historical RAW. Preserve failed and
-   corrected versions; rerun the same bound validator on the new exact head.
+   schema, authority, test oracle or historical RAW. The corrected output must
+   be a **different bound file**, with its own SHA; the original file must be
+   byte-for-byte unchanged after producer and validator execution. A local SHA
+   snapshot is not a durable provider-bound RAW receipt. The governed consumer
+   must separately preserve and verify both immutable outputs before admission.
+   Preserve failed and corrected versions; rerun the same bound validator on the new exact head.
    The runner only **requests** remediation; the authorized producer must
-   actually perform and attest it. No uncontrolled retry chain.
+   actually perform and attest it. The consumer must enforce the model/process
+   timeout and budget; a synchronous local test callback does NOT provide that
+   protection. No uncontrolled retry chain.
 5. `regression_after` and `semantic_judge`: test material behavior
    (including critical negatives and relevant causality) against a frozen
    baseline. Mechanical shape repair does not prove functional improvement.
