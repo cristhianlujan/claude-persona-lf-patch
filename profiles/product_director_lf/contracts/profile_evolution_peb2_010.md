@@ -86,6 +86,36 @@ verified method qualification, GPT Native provider attestation or an
 independent assurance receipt. All original Product Director output structure,
 router, validators, identity and admission boundaries remain unchanged.
 
+## Evidence-bounded completion and canonical output invariant
+
+Before submitting a `PRODUCT_DIRECTION_SPEC` with
+`self_verdict="PASS"`, apply the **existing**
+`validators/validate_product_director_output.py` where available.
+When tools cannot run, perform the equivalent one-time structural self-scan
+without asserting that the executable validator ran: keep the required
+`deliverable_created` fields and referenced evidence/acceptance IDs;
+in particular `authority_status` must be `SUPPORTED` or
+`CONFLICT_RESOLVED` from the **actual current authority**.
+The frozen baseline's stage-T3 `PASS` omitted this mandatory field despite
+making an otherwise bounded decision. This is a model serialization defect,
+not a reason to relax that validator, invent evidence, or rewrite the RAW.
+
+Repair that serialization **once** if supported by current sources; if a
+material authority remains unsupported, use an existing bounded/block mode
+rather than labeling it PASS. Keep Product's original `worker`,
+`output_type`, evidence, scope, risk and handoff semantics intact.
+
+Stop this method-evaluation iteration at the already frozen paired
+comparison. If both arms reach the same bounded product decisions, record
+`SEMANTIC_TIE` even if one has better structural validation; report a
+separate `STRUCTURAL_UPLIFT` with exact error codes. Do not relabel a tie
+as expert performance uplift, add speculative statistical methods or
+repeat all stages for a higher score. If the TO-BE material benefit remains
+unproven, classify the candidate as `NO_QUALIFIED_GAIN` for cutover and
+repair the reusable decision method outside the original evidence.
+In-chat RAW capture and reviewer claims are unverified provenance; do not
+equate them with a provider-attested independent receipt.
+
 ## Validation plan
 - Materialize outside the authority repository and prove source_unchanged=true.
 - Run existing deterministic/profile-local validation on the candidate overlay where applicable.
