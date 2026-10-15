@@ -124,6 +124,75 @@ to replay all cases. In all outcomes, producer depth, deterministic parity,
 functional execution and independent review remain separate, and no
 candidate is auto-merged or activated.
 
+## Transversal preventive gap review and bounded repair (Profile Updater)
+
+This applies to **every governed profile update**, not only UI Architect or
+Product Director. It complements the S26 structural compatibility baseline;
+**13/13 means structural compatibility, not proven task quality**. Do not
+insert new required steps into frozen v0.1 runs or create a second repair engine.
+Consume `candidate_output_contract_gate.preventive_gap_review` during v0.2
+planning; it is explicitly unexecuted until the existing governed consumer
+materializes evidence.
+
+At existing stage boundaries, perform only the checks relevant to the actual
+task, resolved authority, frozen update outcome and material gap:
+
+1. `baseline_read`: inspect the origin of the defect (profile generation
+   instructions/template, canonical binding, current policy and matched EKB),
+   not only its symptom. If an upstream shared method is wrong, repair that
+   shared owner through its own governed route; profile-local fixes cannot
+   substitute for the origin repair.
+2. `method_selection`: resolve a real structural, functional, causal,
+   uncertainty, semantic or evidence gap and qualify the smallest applicable
+   method. Do not require all 13 dimensions or all capability families on
+   each output; the 13-dimensional baseline remains the compatibility floor.
+3. For **new v0.2 UPDATE candidates only**, before `github_write`,
+   reuse `pre_write_execution_binding_gate` to bind the candidate RAW,
+   frozen schema and canonical local validator, check a positive and a relevant
+   negative counterexample, and repair one evidenced defect before writing.
+   A missing authority or durable RAW path blocks. The existing gate remains
+   responsible for its original source-binding and write authority checks.
+   At `deterministic_validation` (after `github_readback`), independently
+   verify the exact written blob and SHA against the candidate already validated
+   before write. A mismatch **blocks and requires a new governed changeset**;
+   do not repair the written artifact in place or rewrite history.
+4. **Single bounded producer repair**: on a verified output defect,
+   return the defect and pre-repair RAW SHA to the existing producer once.
+   Correct only the candidate output or deliberate negative fixture, not the
+   schema, authority, test oracle or historical RAW. The corrected output must
+   be a **different bound file**, with its own SHA; the original file must be
+   byte-for-byte unchanged after producer and validator execution. A local SHA
+   snapshot is not a durable provider-bound RAW receipt. The governed consumer
+   must separately preserve and verify both immutable outputs before admission.
+   Preserve failed and corrected versions; rerun the same bound validator on the new exact head.
+   The runner only **requests** remediation; the authorized producer must
+   actually perform and attest it. The consumer must enforce the model/process
+   timeout and budget; a synchronous local test callback does NOT provide that
+   protection. Repair is forbidden after `github_write`; later semantic or
+   regression rejection routes a fresh authorized changeset, never an implicit
+   second write on the frozen execution. No uncontrolled retry chain.
+5. `regression_after` and `semantic_judge`: test material behavior
+   (including critical negatives and relevant causality) against a frozen
+   baseline. Mechanical shape repair does not prove functional improvement.
+   An independent reviewer resolves meaningful semantic value. TIE, FAIL,
+   regression or `NO_QUALIFIED_GAIN` stops the update attempt; provenance
+   missing blocks admission but does not trigger more benchmark rounds.
+6. `report_output`: reconcile origin correction, candidate repair, positive
+   and negative validator evidence, semantic verdict, provider-bound receipts
+   where required, and EKB cause/prevention readback. Record new learnings
+   through the existing governed EKB/Train route, never an unapproved direct
+   profile-runtime database write. Nothing auto-activates.
+
+**Repair scope:** one bounded correction cycle **per evidenced defect in
+the active candidate pass**, with a finite batch and a single post-repair
+revalidation. Multiple defects can be corrected together before that rerun.
+If the same defect remains or a new material gap cannot be solved safely,
+stop/return to source; never silently mark a check executed or passed.
+When the method itself is deficient, correct the Updater/Creator shared
+origin once and preserve specialization only where a domain-owned profile
+actually needs it. A reviewer MUST differ from the producer. The explicit
+producer repair receipt and semantic/assurance receipts are not interchangeable.
+
 ## Handoff outcome rule
 
 For outputs routed to Quality Pack, the evidence layers remain distinct:

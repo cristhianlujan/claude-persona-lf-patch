@@ -51,7 +51,7 @@ The planner is read-only. It returns `BLOCKED_LEARNING_PREFLIGHT` unless the liv
 
 `write_allowed=true` requires both a PASS Learning Preflight and a repairable structural delta. The baseline evaluator discovers target callables statically with AST and never imports or executes target profile code.
 
-Post-write closure requires a fresh 10/10 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
+Post-write closure requires a fresh 13/13 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
 
 ## Transversal output parity (new and evolved profiles)
 
@@ -83,3 +83,23 @@ from this runner is only structural/local; never provider attestation or
 cutover approval. No additional pack discovery engine or profile-specific
 branching is introduced.
 
+
+## Preventive gaps and bounded remediation (Updater)
+
+The read-only candidate planner now declares `preventive_gap_review` for
+origin/EKB, qualified methods, structural/schema parity, functional regression,
+semantic utility and final provenance. These are **assignments to the existing
+frozen steps**, not a new engine or blanket requirement to scan all profiles.
+A material output mismatch returns a bounded repair directive from
+`run_bound_profile_output_validator_v1.py`; the authorized producer, not
+the validator, performs a maximum of one correction pass per evidenced defect
+batch, then reruns exact-head validation. If it cannot repair safely, STOP.
+No claim of automatic repair, independent PASS, admission or production.
+
+The local candidate helper rejects mutation of the original RAW and requires a
+new `raw_output_ref` and SHA-256 for the repaired candidate. Its
+`original_raw_snapshot_sha256` proves only a local readback; the
+`original_raw_durable_receipt` remains `null` until a governed evidence
+writer records it. The helper has no remote producer timeout/budget enforcement.
+These are required, separately verified capabilities of the authorized
+consumer before any governed end-to-end qualification.
