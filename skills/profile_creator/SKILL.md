@@ -146,11 +146,16 @@ task, resolved authority, frozen update outcome and material gap:
    uncertainty, semantic or evidence gap and qualify the smallest applicable
    method. Do not require all 13 dimensions or all capability families on
    each output; the 13-dimensional baseline remains the compatibility floor.
-3. `deterministic_validation`: bind the exact current profile schema and
-   canonical local validator to the generated candidate; check valid output
-   and a relevant invalid counterexample. The shared runner reports exact
-   errors. If source/validator authority is missing, stop: do not change the
-   schema or silently waive a validator failure.
+3. For **new v0.2 UPDATE candidates only**, before `github_write`,
+   reuse `pre_write_execution_binding_gate` to bind the candidate RAW,
+   frozen schema and canonical local validator, check a positive and a relevant
+   negative counterexample, and repair one evidenced defect before writing.
+   A missing authority or durable RAW path blocks. The existing gate remains
+   responsible for its original source-binding and write authority checks.
+   At `deterministic_validation` (after `github_readback`), independently
+   verify the exact written blob and SHA against the candidate already validated
+   before write. A mismatch **blocks and requires a new governed changeset**;
+   do not repair the written artifact in place or rewrite history.
 4. **Single bounded producer repair**: on a verified output defect,
    return the defect and pre-repair RAW SHA to the existing producer once.
    Correct only the candidate output or deliberate negative fixture, not the
@@ -163,7 +168,9 @@ task, resolved authority, frozen update outcome and material gap:
    The runner only **requests** remediation; the authorized producer must
    actually perform and attest it. The consumer must enforce the model/process
    timeout and budget; a synchronous local test callback does NOT provide that
-   protection. No uncontrolled retry chain.
+   protection. Repair is forbidden after `github_write`; later semantic or
+   regression rejection routes a fresh authorized changeset, never an implicit
+   second write on the frozen execution. No uncontrolled retry chain.
 5. `regression_after` and `semantic_judge`: test material behavior
    (including critical negatives and relevant causality) against a frozen
    baseline. Mechanical shape repair does not prove functional improvement.
