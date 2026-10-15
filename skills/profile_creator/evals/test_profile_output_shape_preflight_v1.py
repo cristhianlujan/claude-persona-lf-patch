@@ -244,9 +244,10 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             calls=[]
             def producer(working_root, before_packet, directive):
                 calls.append((before_packet["raw_output_sha256"], directive["defect_code"]))
-                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                repaired=p.with_name('repaired_output.json')
+                repaired.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
                                          "self_verdict":"PASS"}))
-                return {**before_packet, "raw_output_sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+                return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(), "raw_output_sha256": hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE")
             self.assertEqual(result["before"]["status"],"FAIL")
@@ -257,6 +258,9 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertTrue(result["producer_repair_executed"])
             self.assertTrue(result["source_authority_unchanged"])
             self.assertTrue(result["local_deterministic_revalidation"])
+            self.assertTrue(result["original_raw_preserved_local"])
+            self.assertIsNone(result["original_raw_durable_receipt"])
+            self.assertNotEqual(result["repaired_output_ref"],packet["raw_output_ref"])
             self.assertFalse(result["independent_review_executed"])
             self.assertFalse(result["admission_authorized"])
 
@@ -266,9 +270,10 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             packet["expected_valid"]=False
             def producer(working_root, before_packet, directive):
                 self.assertEqual(directive["target"],"NEGATIVE_FIXTURE_ONLY")
-                p.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},
+                repaired=p.with_name('repaired_output.json')
+                repaired.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},
                                          "self_verdict":"PASS"}))
-                return {**before_packet, "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+                return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(), "raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE")
             self.assertEqual(result["after"]["status"],"EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR")
@@ -282,9 +287,10 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             invoked=[]
             def producer(working_root, before_packet, directive):
                 invoked.append(1)
-                p.write_text(json.dumps({"deliverable_created":{"authority_status":"UNATTESTED"},
+                repaired=p.with_name('repaired_output.json')
+                repaired.write_text(json.dumps({"deliverable_created":{"authority_status":"UNATTESTED"},
                                          "self_verdict":"PASS"}))
-                return {**before_packet, "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+                return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(), "raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"STOP_REPAIR_NOT_VALIDATED")
             self.assertEqual(result["after"]["status"],"FAIL")
@@ -309,10 +315,11 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
             packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
             def producer(working_root, before_packet, directive):
-                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                repaired=p.with_name('repaired_output.json')
+                repaired.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
                                          "self_verdict":"PASS"}))
-                return {**before_packet, "validator_sha256":"0"*64,
-                        "raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+                return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(), "validator_sha256":"0"*64,
+                        "raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"STOP_REPAIR_AUTHORITY_CHANGED")
             self.assertIsNone(result["after"])
@@ -323,16 +330,46 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
             packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
             def producer(working_root,before_packet,directive):
-                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                repaired=p.with_name('repaired_output.json')
+                repaired.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
                                          "self_verdict":"PASS"}))
                 validator=root/before_packet["validator_ref"]
                 validator.write_text(validator.read_text()+"\\n# unauthorized mutation")
-                return {**before_packet,"raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+                return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(),"raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"STOP_REPAIR_NOT_VALIDATED")
             self.assertEqual(result["after"]["blocking_codes"],["SOURCE_SHA_MISMATCH:validator"])
             self.assertFalse(result["source_authority_unchanged"])
             self.assertFalse(result["producer_repair_executed"])
+
+    def test_bounded_repair_rejects_original_raw_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            def producer(working_root,before_packet,directive):
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                                         "self_verdict":"PASS"}))
+                return {**before_packet,"raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"STOP_ORIGINAL_RAW_MUTATED")
+            self.assertFalse(result["original_raw_preserved_local"])
+            self.assertFalse(result["producer_repair_executed"])
+
+    def test_bounded_repair_failure_without_producer_cannot_change_raw(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            original=p.read_bytes()
+            def producer(*args):
+                raise RuntimeError("producer unavailable")
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"STOP_PRODUCER_REPAIR_FAILED")
+            self.assertEqual(result["producer_attempts"],1)
+            self.assertFalse(result["producer_repair_executed"])
+            self.assertTrue(result["original_raw_preserved_local"])
+            self.assertEqual(p.read_bytes(),original)
 
     def test_bounded_repair_cannot_pretend_to_change_output(self):
         with tempfile.TemporaryDirectory() as directory:
