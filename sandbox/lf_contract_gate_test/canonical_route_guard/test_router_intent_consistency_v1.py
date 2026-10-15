@@ -14,7 +14,7 @@ REQUEST = (
     "Cambiar únicamente el texto del botón principal de la pantalla Iniciar sesión B2B "
     "a “Acceder”, sin modificar la autenticación, las validaciones ni otras partes de la pantalla."
 )
-TARGET = "PANTALLA-B2B-LOGIN"
+TARGET = "B2B-AUTH-001"
 INTENT = {
     "schema_version": "LF_ROUTER_INTENT_PROPOSAL_V1",
     "request_sha256": hashlib.sha256(REQUEST.encode()).hexdigest(),
@@ -33,6 +33,7 @@ INTENT = {
     },
 }
 CATALOG = {
+    # The route below is an intentionally hypothetical fixture; live ACT-0001 has no PANTALLA update route.
     "revision_sha256": "candidate-catalog-revision",
     "type_aliases": {"PANTALLA": ["pantalla"], "ADAPTER": ["adapter", "adaptador"]},
     "assets": {
