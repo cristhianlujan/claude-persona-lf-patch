@@ -51,6 +51,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_fondeo_legal_seguimiento_v1",  # SALY-only tracking; exact migration name, no new general prefix.
     "b2b_corporate_scope_model_v1",
     "pase_f07_x03_runtime_implementation_deploy_v1",
     "promote_router_compact_jit_v1",
