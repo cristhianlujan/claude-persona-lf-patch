@@ -166,6 +166,91 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
     return block("CANONICAL_VALIDATOR_RESULT_UNEXPECTED")
 
 
+
+def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_repair) -> dict:
+    """ONE local repair pass through a caller-supplied, governed producer adapter.
+
+    The producer adapter is supplied by the authorized operation consumer, never
+    selected by untrusted profile output or packet contents. This utility does
+    not authenticate OIDC, dispatch a profile job, publish a branch, create
+    provider-bound receipts, record an operation step, or authorize admission.
+    """
+    before = validate_bound_output(root, packet)
+    remediation = before.get("remediation") or {}
+    receipt = {
+        "schema": "PROFILE_UPDATE_BOUNDED_REVALIDATION_V1",
+        "status": "NOT_EXECUTED",
+        "before": before,
+        "after": None,
+        "producer_attempts": 0,
+        "producer_repair_executed": False,
+        "original_failure_sha256": before.get("raw_output_sha256"),
+        "repaired_output_sha256": None,
+        "original_raw_durable_receipt": None,
+        "source_authority_unchanged": None,
+        "local_deterministic_revalidation": False,
+        "requires_governed_producer_and_durable_raw_receipt": True,
+        "independent_review_executed": False,
+        "provider_attested": False,
+        "admission_authorized": False,
+        "runtime_activation_authorized": False,
+    }
+    if remediation.get("action") != "RETURN_TO_GOVERNED_PRODUCER_ONCE":
+        receipt["status"] = "NO_CORRECTABLE_OUTPUT_DEFECT"
+        return receipt
+    if not callable(producer_repair):
+        receipt["status"] = "BLOCKED_PRODUCER_ADAPTER_MISSING"
+        return receipt
+    if packet.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
+        receipt["status"] = "BLOCKED_OPERATION_SCOPE"
+        return receipt
+    if not before.get("source_readback_matched") or not before.get("original_failure_sha256", before.get("raw_output_sha256")):
+        receipt["status"] = "BLOCKED_UNBOUND_FAILURE"
+        return receipt
+
+    # Only a verified candidate/negative-fixture defect is eligible. Preserve
+    # the original evidence before the external producer is invoked.
+    receipt["producer_attempts"] = 1
+    try:
+        proposed = producer_repair(root, dict(packet), dict(remediation))
+    except Exception:
+        receipt["status"] = "STOP_PRODUCER_REPAIR_FAILED"
+        return receipt
+    receipt["producer_repair_executed"] = True
+    if not isinstance(proposed, dict) or set(proposed) != set(packet):
+        receipt["status"] = "STOP_REPAIR_REBOUND_UNTRUSTED"
+        return receipt
+    if any(proposed[key] != packet[key] for key in packet if key != "raw_output_sha256"):
+        receipt["status"] = "STOP_REPAIR_AUTHORITY_CHANGED"
+        return receipt
+    revised_sha = proposed.get("raw_output_sha256")
+    if not isinstance(revised_sha, str) or not SHA.fullmatch(revised_sha):
+        receipt["status"] = "STOP_REPAIR_SHA_INVALID"
+        return receipt
+    if revised_sha == packet.get("raw_output_sha256"):
+        receipt["status"] = "STOP_REPAIR_NO_OUTPUT_DELTA"
+        return receipt
+    receipt["repaired_output_sha256"] = revised_sha
+    receipt["source_authority_unchanged"] = True
+    after = validate_bound_output(root, proposed)
+    receipt["after"] = after
+    eligible = (
+        (proposed["expected_valid"] is True
+         and after["status"] == "CANDIDATE_OUTPUT_PARITY_OBSERVED")
+        or
+        (proposed["expected_valid"] is False and after["status"] in {
+            "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE",
+            "EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR",
+        })
+    )
+    if not eligible:
+        receipt["status"] = "STOP_REPAIR_NOT_VALIDATED"
+        return receipt
+    receipt["local_deterministic_revalidation"] = True
+    receipt["status"] = "LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE"
+    return receipt
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
