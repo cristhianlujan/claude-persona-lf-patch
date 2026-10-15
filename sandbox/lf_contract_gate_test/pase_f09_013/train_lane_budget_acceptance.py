@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Read-only evaluator for the frozen F09-013 Train lane budget.
+"""Read-only evaluator for the recalibrated F09-013 Train lane budget.
 
-Live mode reads event 21014 and execution evidence from Supabase using a
+Live mode reads the F09-013 recalibration event and execution evidence using a
 read-only PostgreSQL transaction. It never writes. Unit tests exercise only
 fixture data; this file must not be run in live mode as part of this PR.
 """
@@ -16,8 +16,15 @@ import re
 import sys
 from typing import Any
 
-EVENT_ID = 21014
+EVENT_CODE = "PASE-ATOM-F09-013-TRAIN-LANE-BUDGET-RECALIBRATION-V1"
 NOT_OBSERVED = "NOT_OBSERVED"
+NO_CAP_VALUES = {NOT_OBSERVED, "NOT_APPLICABLE", "INFORMATIVE"}
+OPTIONAL_NO_CAPS = {
+    "preflight.transport_count", "preflight.transport_duration_ms",
+    "patch.duration_ms", "patch.queries_duration_ms",
+    "verify.transport_count", "verify.transport_duration_ms",
+    "total.duration_ms",
+}
 TRAIN_PREFIX = "EXEC-DB-TRAIN-"
 C3_TARGET = re.compile(r"^(?:\d{14}_)?lf_pase_f09_015_c3_", re.IGNORECASE)
 STEP_NAMES = ("preflight", "patch", "verify")
@@ -139,15 +146,27 @@ def caps_from_event(event_payload: dict) -> dict[str, int | float | None]:
             if key not in block:
                 raise ValueError(f"F09_013_EVENT_METRIC_CAP_MISSING:{step}.{key}")
             raw = block[key]
-            caps[f"{step}.{metric}"] = None if raw == NOT_OBSERVED else number(raw)
+            metric_name = f"{step}.{metric}"
+            if isinstance(raw, str) and raw in NO_CAP_VALUES:
+                if metric_name not in OPTIONAL_NO_CAPS:
+                    raise ValueError(f"F09_013_EVENT_UNCAPPED_REQUIRED_METRIC:{metric_name}")
+                caps[metric_name] = None
+            else:
+                caps[metric_name] = number(raw)
+                if caps[metric_name] is None:
+                    raise ValueError(f"F09_013_EVENT_METRIC_CAP_INVALID:{metric_name}")
     total_block = frozen.get("total")
     if not isinstance(total_block, dict) or "duration_ms_cap" not in total_block:
         raise ValueError("F09_013_EVENT_TOTAL_CAP_MISSING")
     raw_total = total_block["duration_ms_cap"]
-    caps["total.duration_ms"] = None if raw_total == NOT_OBSERVED else number(raw_total)
-    if any(value is None and not key.endswith(("transport_count", "transport_duration_ms"))
-           for key, value in caps.items()):
-        raise ValueError("F09_013_REQUIRED_NUMERIC_CAP_MISSING")
+    if isinstance(raw_total, str) and raw_total in NO_CAP_VALUES:
+        if "total.duration_ms" not in OPTIONAL_NO_CAPS:
+            raise ValueError("F09_013_EVENT_TOTAL_CAP_INVALID")
+        caps["total.duration_ms"] = None
+    else:
+        caps["total.duration_ms"] = number(raw_total)
+        if caps["total.duration_ms"] is None:
+            raise ValueError("F09_013_EVENT_TOTAL_CAP_INVALID")
     return caps
 
 
@@ -186,14 +205,14 @@ def execution_metrics(run: dict, step_rows: list[dict]) -> tuple[dict[str, Any],
 
 
 def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) -> dict:
-    if int(event_row.get("id", -1)) != EVENT_ID:
-        raise ValueError("F09_013_FREEZE_EVENT_ID_MISMATCH")
     payload = parse_jsonb(event_row.get("payload"))
-    if payload.get("acceptance_declared") is not False:
-        raise ValueError("F09_013_FREEZE_EVENT_ENVELOPE_INVALID")
-    cutoff = as_utc(payload.get("occurred_at"))
+    if payload.get("budget_revision_code") != EVENT_CODE:
+        raise ValueError("F09_013_RECALIBRATION_EVENT_CODE_MISMATCH")
+    if payload.get("acceptance_declared") is not False or payload.get("unit_state_transition") is not False:
+        raise ValueError("F09_013_RECALIBRATION_EVENT_ENVELOPE_INVALID")
+    cutoff = as_utc(event_row.get("created_at"))
     if cutoff is None:
-        raise ValueError("F09_013_FREEZE_EVENT_OCCURRED_AT_MISSING")
+        raise ValueError("F09_013_RECALIBRATION_EVENT_CREATED_AT_MISSING")
     caps = caps_from_event(payload)
     rule = payload.get("acceptance_rule") or {}
     target_count = int(rule.get("sample_count", 10))
@@ -294,7 +313,7 @@ def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) 
     hot_count = len(valid_by_group["hot"])
     valid_count = cold_count + hot_count
     return {
-        "event_id": EVENT_ID,
+        "event_id": event_row.get("id"),
         "cutoff_created_at_exclusive": cutoff.isoformat().replace("+00:00", "Z"),
         "sample_target": target_count,
         "minimum_cold_samples": min_cold,
@@ -316,9 +335,12 @@ def fetch_live(dsn: str) -> dict:
         raise RuntimeError("Install psycopg v3 to use live read-only mode") from exc
 
     event_sql = """
-        SELECT id, payload
+        SELECT id, payload, created_at
           FROM public.lf_eventos
-         WHERE id = %s AND evento_tipo = 'PLAN_SNAPSHOT_DETALLADO'
+         WHERE evento_tipo = 'PLAN_SNAPSHOT_DETALLADO'
+           AND entidad_tipo = 'ENGINEERING_WORK_ITEM'
+           AND entidad_codigo = 'PASE-ATOM-F09-013'
+           AND payload->>'budget_revision_code' = %s
     """
     execution_sql = """
         SELECT execution_id, status, target_code, created_at, started_at,
@@ -342,11 +364,12 @@ def fetch_live(dsn: str) -> dict:
                 read_only = cursor.fetchone()[0]
                 if str(read_only).lower() not in ("on", "true", "1"):
                     raise RuntimeError("F09_013_READ_ONLY_TRANSACTION_NOT_CONFIRMED")
-                cursor.execute(event_sql, (EVENT_ID,))
+                cursor.execute(event_sql, (EVENT_CODE,))
                 event_records = cursor.fetchall()
                 if len(event_records) != 1:
-                    raise RuntimeError(f"F09_013_FREEZE_EVENT_CARDINALITY:{len(event_records)}")
-                event = {"id": event_records[0][0], "payload": event_records[0][1]}
+                    raise RuntimeError(f"F09_013_RECALIBRATION_EVENT_CARDINALITY:{len(event_records)}")
+                event = {"id": event_records[0][0], "payload": event_records[0][1],
+                         "created_at": event_records[0][2]}
                 cursor.execute(execution_sql)
                 executions = [dict(zip([d.name for d in cursor.description], row))
                               for row in cursor.fetchall()]
