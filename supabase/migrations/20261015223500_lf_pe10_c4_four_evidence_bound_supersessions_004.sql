@@ -100,41 +100,6 @@ BEGIN
     THEN RAISE EXCEPTION 'PE10_C4_004_ALREADY_DISPOSED:%',v_old; END IF;
   END LOOP;
 
-  -- Exact helper body repeated for test and durable replay. No auto discovery.
-  FOR v_record IN SELECT * FROM (VALUES ('EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-001','EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-002',1,0,'IN_PROGRESS'),
-  ('EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-002','EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-003',6,1,'COMPLETED'),
-  ('EXEC-LF-SRCR-SPEC-READINESS-20260919-001','EXEC-LF-SRCR-SPEC-READINESS-20260919-002',6,0,'COMPLETED'),
-  ('EXEC-LF-SRCR-WOW-CLOSURE-20260919-001','EXEC-LF-SRCR-WOW-CLOSURE-20260919-002',6,0,'COMPLETED')) AS cases(old_id,successor_id,expected_pass,expected_nonpass,successor_status)
-  LOOP
-    v_old:=v_record.old_id; v_successor:=v_record.successor_id;
-    v_code:=v_prefix||v_old;
-    v_payload:=jsonb_build_object(
-      'evidence_schema_version','operational-event/v2',
-      'execution_id',v_actor,
-      'producer','PE10_C4_INDIVIDUALLY_ATTESTED_SUPERSESSION_V1',
-      'purpose','Document exact historic successor and pre-write disposition without declaring acceptance',
-      'acceptance_declared',false,'occurred_at',clock_timestamp(),
-      'operation_code','ACTUALIZACION_PERFIL_LF','checkpoint','PE10_C4',
-      'historical_execution_id',v_old,'successor_execution_id',v_successor,
-      'expected_historic_pass_steps',v_record.expected_pass,
-      'expected_historic_nonpass_steps',v_record.expected_nonpass,
-      'successor_status_at_preflight',v_record.successor_status,
-      'disposition','SUPERSEDED','previous_status','IN_PROGRESS',
-      'write_observed',false,'historical_steps_mutated',false,
-      'manifest_mutated',false,'profile_mutated',false,'v02_activated',false,
-      'cutover_admitted',false
-    );
-    IF private.fn_lf_event_acceptance_signal_v2(
-       'ARTIFACT_RECONCILED',v_code,
-       'Historical execution superseded with explicit successor and no approval',
-       v_payload) IS NOT NULL
-    THEN RAISE EXCEPTION 'PE10_C4_004_SIGNAL_INVALID:%',v_old; END IF;
-    -- Store stable schema per row as local evidence; read back byte-for-byte later.
-    v_payload:=jsonb_set(v_payload,'{occurred_at}',to_jsonb('2026-10-15T22:30:00Z'::text),true);
-    -- The explicit timestamp is observation metadata; do not infer a commit time.
-    -- From here reuse same payload in test and durable operations, identity by exact row.
-  END LOOP;
-
   -- TEST FIRST: write 4 independently preflighted items, rollback deliberately.
   BEGIN
     FOR v_record IN SELECT * FROM (VALUES ('EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-001','EXEC-LF-SRCR-LIVE-AUTHORITY-RECONCILIATION-20260919-002',1,0,'IN_PROGRESS'),
