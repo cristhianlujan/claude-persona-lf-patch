@@ -364,8 +364,8 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             # A validator may print a valid response then mutate its own file;
             # source SHA readback must be repeated AFTER subprocess execution.
             validator.write_text(
-                validator.read_text() + "\\nfrom pathlib import Path\\n"
-                + "v=Path(__file__)\\nv.write_text(v.read_text()+'\\\\n# tampered')\\n",
+                validator.read_text() + "\nfrom pathlib import Path\n"
+                + "if valid:\n    v=Path(__file__)\n    v.write_text(v.read_text()+'\\n# tampered')\n",
                 encoding="utf-8",
             )
             packet["validator_sha256"]=hashlib.sha256(validator.read_bytes()).hexdigest()
