@@ -183,6 +183,7 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
         "before": before,
         "after": None,
         "producer_attempts": 0,
+        "producer_adapter_invoked": False,
         "producer_repair_executed": False,
         "original_failure_sha256": before.get("raw_output_sha256"),
         "repaired_output_sha256": None,
@@ -216,7 +217,7 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
     except Exception:
         receipt["status"] = "STOP_PRODUCER_REPAIR_FAILED"
         return receipt
-    receipt["producer_repair_executed"] = True
+    receipt["producer_adapter_invoked"] = True
     if not isinstance(proposed, dict) or set(proposed) != set(packet):
         receipt["status"] = "STOP_REPAIR_REBOUND_UNTRUSTED"
         return receipt
@@ -231,9 +232,9 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
         receipt["status"] = "STOP_REPAIR_NO_OUTPUT_DELTA"
         return receipt
     receipt["repaired_output_sha256"] = revised_sha
-    receipt["source_authority_unchanged"] = True
     after = validate_bound_output(root, proposed)
     receipt["after"] = after
+    receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched"))
     eligible = (
         (proposed["expected_valid"] is True
          and after["status"] == "CANDIDATE_OUTPUT_PARITY_OBSERVED")
@@ -247,6 +248,7 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
         receipt["status"] = "STOP_REPAIR_NOT_VALIDATED"
         return receipt
     receipt["local_deterministic_revalidation"] = True
+    receipt["producer_repair_executed"] = True
     receipt["status"] = "LOCAL_REPAIRED_REVALIDATED_AWAITING_GOVERNED_EVIDENCE"
     return receipt
 
