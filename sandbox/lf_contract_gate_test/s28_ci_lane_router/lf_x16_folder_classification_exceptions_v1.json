@@ -362,10 +362,6 @@
       "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
     },
     {
-      "path": "sandbox/lf_contract_gate_test/transversal_assets/",
-      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
-    },
-    {
       "path": "sandbox/lf_contract_gate_test/visual_evidence_gate/",
       "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
     },

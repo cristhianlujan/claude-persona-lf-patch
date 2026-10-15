@@ -16,6 +16,9 @@ import lf_pase_control_repair_quarantine_v1 as quarantine_module  # noqa: E402
 
 
 ROUTES = {
+    "sandbox/lf_contract_gate_test/transversal_assets/global_technical_inventory/build_external_baseline_delta_v1.py": {
+        "mode": "CI_ROUTER_SELFTEST_ONLY", "controls": {"CI_ROUTER_SELFTEST", "LF_CONTRACT_CORE"}
+    },
     "sandbox/lf_contract_gate_test/migration_source_parity/x16_route_probe.py": {
         "mode": "SPECIALIZED_REQUIRED", "controls": {"CI_ROUTER_SELFTEST", "MIGRATION_SOURCE_PARITY"}
     },
