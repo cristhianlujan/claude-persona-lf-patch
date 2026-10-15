@@ -127,7 +127,7 @@ BEGIN
     'evaluation_conducted',true,
     'independent_assurance_pass',false,
     'not_admitted',true,
-    'no_qualified_gain_proven',true,
+    'qualified_gain_demonstrated',false,
     'operational_cutover_allowed',false,
     'no_rerun_required',true,
     'reconciliation_event_id',v_event,
