@@ -368,7 +368,7 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
                 validator.write_text(validator.read_text()+"\\n# unauthorized mutation")
                 return {**before_packet, "raw_output_ref":repaired.relative_to(root).as_posix(),"raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()}
             result=validate_with_bounded_producer_repair(root,packet,producer)
-            self.assertEqual(result["status"],"STOP_REPAIR_NOT_VALIDATED")
+            self.assertEqual(result["status"],"STOP_POST_VALIDATION_SOURCE_MUTATED")
             self.assertEqual(result["after"]["blocking_codes"],["SOURCE_SHA_MISMATCH:validator"])
             self.assertFalse(result["source_authority_unchanged"])
             self.assertFalse(result["producer_repair_executed"])
