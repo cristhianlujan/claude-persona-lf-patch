@@ -43,10 +43,47 @@ claim an active canonical screen route.
 python3 sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_consistency_v1.py
 ```
 
-17 tests: original real response mismatch; missing/unverified semantic assurance;
+20 tests: original real response mismatch; missing/unverified semantic assurance;
 request SHA drift; uncertain intent; stale catalogue; ungrounded type; negation;
 scope conflict; unregistered target/operation; forbidden/out-of-scope/missing
 effects; positive consistency-only; deterministic replay.
+
+## Live canonical-readback 2026-10-15
+
+- Canonical B2B login screen **exists** in `lf_ops.pantallas`:
+  `id=51`, `codigo=B2B-AUTH-001`, `nombre=Iniciar sesión`,
+  `estado=CANDIDATO`, `activa=true`, module `B2B_AUTENTICACION`.
+- The historical fixture identifier `PANTALLA-B2B-LOGIN` was **not** canonical
+  and has been replaced in tests by `B2B-AUTH-001`.
+- Existing `public.lf_router_action_registry` has no active `PANTALLA`
+  or `SCREEN` update route. There are separate registered `APP_SHELL`
+  create/update routes; **do not assume shell maintenance is screen copy**.
+- Existing `public.lf_router_resolve_v1` does **not** emit
+  `declared_effect_scopes`; the guard's positive fixture supplies this
+  field hypothetically. A trusted canonical operation-contract scope binder
+  must be wired before an actual live positive PASS is possible.
+- `CAPABILITY_SELECTOR@1.0.0` is released but selection-only, not a
+  semantic model or authority. `CURRENTNESS_AUTHORITY`,
+  `CAPABILITY_VERSION_COMPATIBILITY`, `TYPED_EVIDENCE_REGISTRY` and
+  `INDEPENDENT_ASSURANCE` are released; the exact Router semantic executor
+  and its trusted attestation path remain unverified.
+- The correct handling of this B2B input today is **BLOCKED until current
+  canonical screen and action binding resolve**, not a synthetic update route.
+- `WORK-ADMISSION-ROUTING-CONTAMINATION-001` is an applicable existing EKB
+  warning against silently entering a specialized work lane before
+  transversal classification.
+
+## Proof and blockers
+
+- The exact PR candidate Python source and regression suite were reproduced
+  locally from their readback checksums: initial 17/17 PASS.
+- Updated to the canonical real target code and expanded malformed-input /
+  duplicate-route negatives: **20/20 local unit tests PASS**. This does not
+  prove live enforcement; CI and governed semantic runtime have not passed.
+- Actual complete correction requires an authoritative screen subject
+  resolver, registered screen operation/contract (or an existing operation
+  that is *proved* applicable), a trusted semantic-gap consumer, and
+  live post-Router pre-effect enforcement. No parallel router or handler.
 
 ## Physical integration/cutover remaining
 
