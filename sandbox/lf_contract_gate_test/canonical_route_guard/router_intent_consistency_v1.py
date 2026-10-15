@@ -105,7 +105,10 @@ def check(
     if any(_overlaps(a, b) for a in allow for b in deny):
         return blocked("BLOCK_SCOPE_CONTRADICTION")
 
-    type_aliases = (catalog.get("type_aliases") or {}).get(target_type, [])
+    aliases_map = catalog.get("type_aliases")
+    if not isinstance(aliases_map, Mapping):
+        return blocked("BLOCK_CATALOG_TYPE_ALIASES_INVALID")
+    type_aliases = aliases_map.get(target_type, [])
     if not isinstance(type_aliases, list) or not any(
         isinstance(alias, str) and _words(alias)
         and all(word in _words(evidence["target_quote"]) for word in _words(alias))
@@ -128,19 +131,25 @@ def check(
     asset = assets[target_code]
     if not isinstance(asset, Mapping) or asset.get("type") != target_type or asset.get("active") is not True:
         return blocked("BLOCK_CANONICAL_TARGET_NOT_ACTIVE")
-    if (actual_router_response.get("asset") or {}).get("codigo_activo") != target_code:
+    router_asset = actual_router_response.get("asset")
+    if not isinstance(router_asset, Mapping):
+        return blocked("BLOCK_ROUTER_TARGET_RECEIPT_INVALID")
+    if router_asset.get("codigo_activo") != target_code:
         return blocked("BLOCK_ROUTER_SEMANTIC_TARGET_MISMATCH")
 
     routes = catalog.get("active_routes")
     if not isinstance(routes, list):
         return blocked("BLOCK_CANONICAL_ROUTE_REGISTRY_MISSING")
-    operation = next((
-        row.get("operation_code") for row in routes
+    matches = [
+        row for row in routes
         if isinstance(row, Mapping) and row.get("asset_type") == target_type
         and row.get("action_code") == action_code and row.get("active") is True
-    ), None)
-    if not operation:
+    ]
+    if not matches:
         return blocked("BLOCK_CANONICAL_OPERATION_NOT_REGISTERED")
+    if len(matches) != 1 or not isinstance(matches[0].get("operation_code"), str):
+        return blocked("BLOCK_CANONICAL_OPERATION_AMBIGUOUS")
+    operation = matches[0]["operation_code"]
     if operation != actual_router_response.get("operation_code"):
         return blocked("BLOCK_ROUTER_OPERATION_MISMATCH")
 
