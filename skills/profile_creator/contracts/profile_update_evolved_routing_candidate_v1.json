@@ -296,7 +296,14 @@
       "new_operation_steps": false,
       "historical_v01_runs_unmodified": true,
       "activation_authorized": false,
-      "status": "CANDIDATE_ONLY_NOT_APPLIED_AS_RUNTIME"
+      "status": "CANDIDATE_ONLY_NOT_APPLIED_AS_RUNTIME",
+      "original_raw_must_remain_unchanged": true,
+      "repaired_output_must_have_distinct_source_ref": true,
+      "original_raw_local_sha_readback_required": true,
+      "original_raw_durable_receipt_required_before_governed_consumer_admission": true,
+      "local_snapshot_sha_is_not_provider_bound_durability": true,
+      "producer_execution_timeout_and_budget_required_from_authorized_consumer": true,
+      "generic_callback_does_not_enforce_remote_budget": true
     }
   }
 }
