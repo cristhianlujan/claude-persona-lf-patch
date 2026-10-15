@@ -100,6 +100,20 @@ counterexample for the material change. The profile-local validator is invoked
 only by the governed execution consumer, NOT by the read-only S26 source
 assessment or generic baseline AST scanner.
 
+The executable post-generation adapter is
+`validators/run_bound_profile_output_validator_v1.py --root <repo> --binding <packet.json>`.
+The binding is a typed `PROFILE_OUTPUT_VALIDATION_BINDING_V1` with
+`operation_code`, `profile_slug`, `expected_valid`, exact source-relative
+`schema_ref`, `validator_ref`, `raw_output_ref`, their three SHA-256
+digests, and a declared `validator_transport` of `STDIN_JSON` or
+`JSON_FILE_ARGUMENT`. The canonical owner must resolve this binding from
+current authority, not guess a path from filenames. Only the governed
+post-generation consumer invokes the exact profile validator; the shared
+Updater planner remains read-only and records the obligation as **unexecuted**.
+Require a valid positive output and an intentional negative counterexample
+using the same canonical validator. Neither an expected negative rejection
+nor a local positive result is an independent acceptance or runtime receipt.
+
 When a validator fails, allow **one bounded candidate self-repair** for the
 proved defect, preserving the raw failure for comparison. Then report
 `NO_QUALIFIED_GAIN` or `BLOCKED` and stop that optimization attempt; do
