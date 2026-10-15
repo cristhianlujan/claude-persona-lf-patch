@@ -51,6 +51,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_autofondeo_prestamo_planilla_premisa_v1",  # SALY business-premise correction only; exact migration name.
     "saly_fondeo_legal_c1_lote01_v1",  # SALY-only evidence insert C1 for LEG-01 / LEG-02.
     "saly_fondeo_legal_seguimiento_v1",  # SALY-only tracking; exact migration name, no new general prefix.
     "b2b_corporate_scope_model_v1",
