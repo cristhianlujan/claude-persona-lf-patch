@@ -17,6 +17,12 @@ Este directorio contiene el workflow como parche de texto. **No lo copies ni lo 
 3. Verificar antes de habilitarlo que el route guard devuelve sin publicar `lf-merge-train/verified` para PRs con `ready-to-reconcile` y que la App sea el único emisor de ese status en esta lane.
 4. Fusionar la PR de instalación por el procedimiento vigente. No pegar el YAML desde el head de una PR de reconciliación: el parche y el verificador deben venir de `main`.
 
+## Instalación segura
+
+- Antes de habilitar la cola, ejecutar un canario obligatorio con una PR real de renombre y confirmar el recibo, el status sobre el head exacto y el merge esperado.
+- Si el canario falla, retirar el workflow instalado y no volver a etiquetar esa PR.
+- Una PR que quede `BLOCKED` se reemplaza con una PR nueva; no se reetiqueta ni se reintenta la misma clave.
+
 ## Límites operativos
 
 - El workflow compara el head exacto con el ledger usando solo `SELECT`, produce un recibo artifact y no ejecuta archivos `.sql`.
