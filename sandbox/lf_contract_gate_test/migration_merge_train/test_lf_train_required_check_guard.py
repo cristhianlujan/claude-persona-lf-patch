@@ -37,6 +37,14 @@ class RequiredPaseChecksTests(unittest.TestCase):
         self.assertEqual(guard.evaluate(valid_pair(), HEAD, self.required, final=True),
                          (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
 
+    def test_paginated_check_runs_are_combined(self):
+        pages = [
+            {"check_runs": [check("lf-independent-change-admission")]},
+            {"check_runs": [check("ig-runtime-candidate-judge")]},
+        ]
+        self.assertEqual(guard.evaluate(pages, HEAD, self.required, final=True),
+                         (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
+
     def test_skipped_blocks_explicitly(self):
         payload = valid_pair()
         payload["check_runs"][0]["conclusion"] = "skipped"

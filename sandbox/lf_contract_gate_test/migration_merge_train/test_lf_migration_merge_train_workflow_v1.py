@@ -158,7 +158,7 @@ assert 'if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi' in wf
 assert "guard_args+=(--final)" in wf
 assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
 assert '--checks-file sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json' in wf
-assert 'checks="$(gh api "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"' in wf
+assert 'checks="$(gh api --paginate --slurp "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"' in wf
 assert 'conclusion!="skipped"' not in wf
 checks_config = (ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json").read_text(encoding="utf-8")
 assert '"lf-independent-change-admission"' in checks_config

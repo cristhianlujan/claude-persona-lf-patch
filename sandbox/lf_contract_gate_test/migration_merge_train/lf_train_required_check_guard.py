@@ -33,10 +33,11 @@ def load_required_checks(path: Path = DEFAULT_CHECKS_FILE) -> tuple[str, ...]:
 
 
 def evaluate(payload: Any, expected_head: str, required_checks: tuple[str, ...], *, final: bool = False) -> tuple[int, str]:
-    if not isinstance(payload, dict) or not isinstance(payload.get("check_runs"), list):
+    pages = payload if isinstance(payload, list) else [payload]
+    if not pages or any(not isinstance(page, dict) or not isinstance(page.get("check_runs"), list) for page in pages):
         return BLOCK, "FAIL_TRAIN_PASE_CHECKS_INVALID"
 
-    runs = payload["check_runs"]
+    runs = [row for page in pages for row in page["check_runs"]]
     for name in required_checks:
         matching = [row for row in runs if isinstance(row, dict) and row.get("name") == name]
         if not matching:
