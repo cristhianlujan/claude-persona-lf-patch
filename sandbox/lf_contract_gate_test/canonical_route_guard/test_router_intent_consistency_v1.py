@@ -125,9 +125,14 @@ class RouterIntentConsistencyTests(unittest.TestCase):
         x["active_routes"] = []
         self.assertEqual(assess(catalog=x)["blocking_code"], "BLOCK_CANONICAL_OPERATION_NOT_REGISTERED")
 
-    def test_broad_effect_cannot_escape_scoped_copy(self):
+    def test_broad_effect_overlaps_forbidden_area(self):
         x = copy.deepcopy(CORRECT_ROUTE)
         x["declared_effect_scopes"] = ["UI"]
+        self.assertEqual(assess(route=x)["blocking_code"], "BLOCK_ROUTER_FORBIDDEN_EFFECT")
+
+    def test_unrelated_effect_cannot_escape_scoped_copy(self):
+        x = copy.deepcopy(CORRECT_ROUTE)
+        x["declared_effect_scopes"] = ["UI.SCREEN.REPLACE"]
         self.assertEqual(assess(route=x)["blocking_code"], "BLOCK_ROUTER_EFFECT_OUT_OF_SCOPE")
 
     def test_forbidden_authentication_effect_blocks(self):
