@@ -96,6 +96,18 @@ class OutputShapeParitiyChecks(unittest.TestCase):
         self.assertIsNone(gate["passing_receipt"])
         self.assertTrue(gate["validator_execution_required_before_admission"])
 
+    def test_generic_preventive_review_reuses_existing_steps(self):
+        gate=candidate_output_gate("future_generic_profile","PATCH",True,[])
+        review=gate["preventive_gap_review"]
+        self.assertEqual(review["execution_state"],"NOT_EXECUTED_IN_READ_ONLY_PLANNER")
+        self.assertTrue(review["not_an_additional_operation_or_checkpoint"])
+        self.assertEqual([x["at"] for x in review["reviews"]],
+                         ["baseline_read","method_selection","deterministic_validation",
+                          "regression_after","semantic_judge","report_output"])
+        self.assertTrue(review["no_semantic_self_attestation"])
+        self.assertEqual(review["max_producer_repair_cycles_per_evidenced_defect"],1)
+        self.assertFalse(review["new_operation_steps_required"])
+
     def test_updater_no_change_no_unneeded_round(self):
         gate = candidate_output_gate("new_future_profile", "NO_CHANGE", False, [])
         self.assertEqual(gate["status"], "NOT_APPLICABLE_NO_CHANGE")
