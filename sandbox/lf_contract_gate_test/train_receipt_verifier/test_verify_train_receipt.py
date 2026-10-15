@@ -100,6 +100,20 @@ class TrainReceiptVerifierTest(unittest.TestCase):
         self.assertEqual(result["result"], "FAIL")
         self.assertIn("schema_migrations:VERSION_NAME_MISMATCH", result["reasons"])
 
+    def test_already_applied_exact_version_and_name_is_accepted(self):
+        # Local schema_migrations fixture already contains the exact target row.
+        snapshot = completed_fixture()
+        snapshot["ledger_rows"] = [{"version": VERSION, "name": NAME}]
+        result = verify_snapshot(snapshot)
+        self.assertEqual(result["result"], "PASS")
+
+    def test_already_applied_version_with_different_name_fails(self):
+        snapshot = completed_fixture()
+        snapshot["ledger_rows"] = [{"version": VERSION, "name": "lf_conflicting_v1"}]
+        result = verify_snapshot(snapshot)
+        self.assertEqual(result["result"], "FAIL")
+        self.assertIn("schema_migrations:VERSION_NAME_MISMATCH", result["reasons"])
+
     def test_head_sha_must_match_github_source_head(self):
         snapshot = completed_fixture()
         snapshot["github_pull"]["head"]["sha"] = "9" * 40
@@ -111,11 +125,13 @@ class TrainReceiptVerifierTest(unittest.TestCase):
         snapshot = completed_fixture()
         receipt = snapshot["event"]["payload"]["receipt"]
         receipt["terminal_status"] = "BLOCKED"
+        receipt.pop("completed_at")
         receipt.pop("apply")
         receipt.pop("merge")
         receipt["effect"] = {"phase": "ABANDONED"}
         receipt["failure"] = {"reason": "APPLY_FAILED_BEFORE_LEDGER_EFFECT",
-                              "failed_step": "Apply exact version and ledger readback"}
+                              "failed_step": "Apply exact version and ledger readback",
+                              "recorded_at": "2026-10-15T15:30:00Z"}
         snapshot["execution"]["status"] = "BLOCKED"
         snapshot["steps"] = snapshot["steps"][:2]
         snapshot["steps"][1]["status"] = "BLOCKED_BY_ENFORCEMENT"
@@ -124,6 +140,48 @@ class TrainReceiptVerifierTest(unittest.TestCase):
         result = verify_snapshot(snapshot)
         self.assertEqual(result["result"], "BLOCKED")
         self.assertNotEqual(result["result"], "PASS")
+
+    def test_blocked_without_failure_recorded_at_fails(self):
+        snapshot = completed_fixture()
+        receipt = snapshot["event"]["payload"]["receipt"]
+        receipt["terminal_status"] = "BLOCKED"
+        receipt.pop("completed_at")
+        receipt.pop("apply")
+        receipt.pop("merge")
+        receipt["effect"] = {"phase": "ABANDONED"}
+        receipt["failure"] = {"reason": "APPLY_FAILED_BEFORE_LEDGER_EFFECT",
+                              "failed_step": "Apply exact version and ledger readback"}
+        snapshot["execution"]["status"] = "BLOCKED"
+        snapshot["steps"] = snapshot["steps"][:2]
+        snapshot["ledger_rows"] = []
+        snapshot["github_pull"].update({"state": "open", "merged": False, "merge_commit_sha": None})
+        result = verify_snapshot(snapshot)
+        self.assertEqual(result["result"], "FAIL")
+        self.assertIn("failure.recorded_at:MISSING", result["reasons"])
+
+    def test_blocked_failure_timestamp_must_have_timezone_and_follow_start(self):
+        for timestamp, expected_reason in (
+            ("2026-10-15T15:30:00", "failure.recorded_at:INVALID_UTC_TIMESTAMP"),
+            ("2026-10-15T15:19:59Z", "receipt.failure.recorded_at:BEFORE_STARTED_AT"),
+        ):
+            with self.subTest(timestamp=timestamp):
+                snapshot = completed_fixture()
+                receipt = snapshot["event"]["payload"]["receipt"]
+                receipt["terminal_status"] = "BLOCKED"
+                receipt.pop("completed_at")
+                receipt.pop("apply")
+                receipt.pop("merge")
+                receipt["effect"] = {"phase": "ABANDONED"}
+                receipt["failure"] = {"reason": "APPLY_FAILED_BEFORE_LEDGER_EFFECT",
+                                      "failed_step": "Apply exact version and ledger readback",
+                                      "recorded_at": timestamp}
+                snapshot["execution"]["status"] = "BLOCKED"
+                snapshot["steps"] = snapshot["steps"][:2]
+                snapshot["ledger_rows"] = []
+                snapshot["github_pull"].update({"state": "open", "merged": False, "merge_commit_sha": None})
+                result = verify_snapshot(snapshot)
+                self.assertEqual(result["result"], "FAIL")
+                self.assertIn(expected_reason, result["reasons"])
 
     def test_receipt_hash_mismatch_fails_closed(self):
         snapshot = completed_fixture()

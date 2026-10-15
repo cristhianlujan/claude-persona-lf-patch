@@ -44,16 +44,18 @@ def _required(obj: dict[str, Any], key: str, path: str, errors: list[str]) -> An
     return value
 
 
-def _required_timestamp(obj: dict[str, Any], key: str, path: str, errors: list[str]) -> None:
+def _required_timestamp(obj: dict[str, Any], key: str, path: str, errors: list[str]) -> datetime | None:
     value = _required(obj, key, path, errors)
     if value is None:
-        return
+        return None
     try:
         parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             raise ValueError("timezone missing")
+        return parsed
     except (TypeError, ValueError):
         errors.append(f"{path}.{key}:INVALID_UTC_TIMESTAMP")
+        return None
 
 
 def verify_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
@@ -101,15 +103,20 @@ def verify_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
     manifest = _obj(execution.get("manifest"), "execution.manifest", errors)
     if manifest.get("pr") != pr or str(manifest.get("train_run_id")) != str(run_id):
         errors.append("receipt:PR_OR_RUN_ID_MANIFEST_MISMATCH")
-    _required_timestamp(receipt, "started_at", "receipt", errors)
-    _required_timestamp(receipt, "completed_at", "receipt", errors)
-    try:
-        started_at = datetime.fromisoformat(str(receipt.get("started_at", "")).replace("Z", "+00:00"))
-        completed_at = datetime.fromisoformat(str(receipt.get("completed_at", "")).replace("Z", "+00:00"))
-        if started_at.tzinfo is not None and completed_at.tzinfo is not None and completed_at < started_at:
+    started_at = _required_timestamp(receipt, "started_at", "receipt", errors)
+    if terminal == "COMPLETED":
+        completed_at = _required_timestamp(receipt, "completed_at", "receipt", errors)
+        if started_at is not None and completed_at is not None and completed_at < started_at:
             errors.append("receipt.completed_at:BEFORE_STARTED_AT")
-    except (TypeError, ValueError):
-        pass
+    elif terminal == "BLOCKED":
+        # The Train writer omits receipt.completed_at on BLOCKED receipts.
+        # Its failure record carries the terminal timestamp instead.
+        failure_time = _required_timestamp(
+            _obj(receipt.get("failure"), "receipt.failure", errors),
+            "recorded_at", "failure", errors,
+        )
+        if started_at is not None and failure_time is not None and failure_time < started_at:
+            errors.append("receipt.failure.recorded_at:BEFORE_STARTED_AT")
     terminated_by = _required(receipt, "terminated_by", "receipt", errors)
     if run_id and terminated_by != f"LF-MIGRATION-TRAIN-RUN-{run_id}":
         errors.append("receipt.terminated_by:RUN_ID_MISMATCH")
