@@ -212,12 +212,12 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
     # Only a verified candidate/negative-fixture defect is eligible. Preserve
     # the original evidence before the external producer is invoked.
     receipt["producer_attempts"] = 1
+    receipt["producer_adapter_invoked"] = True
     try:
         proposed = producer_repair(root, dict(packet), dict(remediation))
     except Exception:
         receipt["status"] = "STOP_PRODUCER_REPAIR_FAILED"
         return receipt
-    receipt["producer_adapter_invoked"] = True
     if not isinstance(proposed, dict) or set(proposed) != set(packet):
         receipt["status"] = "STOP_REPAIR_REBOUND_UNTRUSTED"
         return receipt
