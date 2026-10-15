@@ -1,0 +1,75 @@
+{
+  "schema": "PROFILE_EVOLUTION_PHASE_SEPARATION_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "phase_owner": "TRANSVERSAL_PROFILE_GOVERNANCE",
+  "policy_source": "public.lf_policy_versions",
+  "unit_source": "programacion.engineering_plan_units",
+  "expert_checkpoint": "PE10E_C4",
+  "cutover_unit": "PE10",
+  "first_evolution": {
+    "status": "CODE_MERGED_USER_ACCEPTED",
+    "scope": "VERSIONED_PROFILE_CONTRACTS_ONLY",
+    "proof": "INDIVIDUAL_PR_MERGED_WITH_MAIN_READBACK",
+    "required_per_profile": [
+      "git_merged_commit",
+      "skill_hook",
+      "domain_contract"
+    ],
+    "evidence_count": 9,
+    "independent_execution": false,
+    "expertise_certified": false,
+    "runtime_activated": false,
+    "operational_cutover_authorized": false
+  },
+  "expert_certification": {
+    "status": "BLOCK_GPT_NATIVE_EXECUTOR_AND_REVIEWER_MISSING",
+    "execution_required": "AUTHENTIC_FOUR_ARM_TASK_OUTPUT",
+    "arms": [
+      "A_ORIGINAL",
+      "B_UPDATER_V01",
+      "C_EVOLUTION_CURRENT",
+      "D_EVOLUTION_TARGET"
+    ],
+    "holdout": "BLIND_INDEPENDENT",
+    "admission_required": [
+      "AUTHENTIC_PRODUCER_PROVENANCE_OR_APPROVED_EQUIVALENT",
+      "FROZEN_PAIRED_BENCHMARK_PASS",
+      "INDEPENDENT_ASSURANCE_PASS",
+      "ZERO_CRITICAL_REGRESSIONS",
+      "SAFE_CHANGE_ADMISSION"
+    ],
+    "scorer": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+    "weak_evidence_forbidden": [
+      "DOCUMENT_ONLY",
+      "SYNTHETIC_SCORER_FIXTURES",
+      "CURRENT_CHAT_AUTHOR_CLAIM_AS_PROVIDER_ATTESTATION",
+      "SHARED_PRODUCER_AND_JUDGE",
+      "MCQ_ONLY_AS_EXPERT_PERFORMANCE"
+    ],
+    "checkpoint_status_change_allowed_only_after_real_evidence": true
+  },
+  "separation": {
+    "first_evolution_is_expert_admission": false,
+    "first_evolution_is_runtime_activation": false,
+    "expert_checkpoint_is_not_applicable": false,
+    "v02_cutover_requires_expert_benchmark": true,
+    "phase1_acceptance_does_not_close_expert_checkpoint": true,
+    "active_governance_policy_unmodified": true,
+    "existing_checkpoints_unchanged": true
+  },
+  "preflight": {
+    "old_wrong_classification": "READBACK_ONCE_WITH_EMPTY_QUERY",
+    "new_precise_block": "BLOCK_GPT_NATIVE_EXECUTOR_AND_REVIEWER_MISSING",
+    "action_kind_when_runner_exists": "DECLARED_TEST_EXECUTION",
+    "do_not_route_to_run_test_without_executor": true,
+    "no_synthetic_pass_or_new_read_query": true,
+    "explicit_assertion_receipt_required": true,
+    "do_not_modify_generic_compiler": true
+  },
+  "expected_results": {
+    "positive_first_evolution": "PUBLISH_CODE_STAGE_WITH_9_MERGED_GIT_READBACKS_AND_RUNTIME_FALSE",
+    "negative_expert_from_code_only": "BLOCK",
+    "negative_runtime_cutover_without_four_arm_and_independent_review": "BLOCK",
+    "positive_expert_only_after_actual_runtime_and_assurance": "EVALUATE_EXPERT_CHECKPOINT_NOT_AUTO_PASS"
+  }
+}

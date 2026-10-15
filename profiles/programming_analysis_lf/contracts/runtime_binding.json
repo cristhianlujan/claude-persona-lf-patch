@@ -36,14 +36,23 @@
         "Routing and evidence boundaries",
         "Critical separation"
       ],
-      "max_chars": 8000
+      "max_chars": 10000
     },
     "projection_rationale": {
       "policy": "ANALYSIS_STAGE_SOURCE_FIRST",
       "full_source_to_model": false,
       "full_canonical_sources_retained": true,
       "canonical_stage_contracts_loaded_by_authority_context": true,
-      "proposed_profile_pack_does_not_authorize_runtime": true
-    }
+      "proposed_profile_pack_does_not_authorize_runtime": true,
+      "evolution_candidate_policy": "Only selected candidate source extends projected SKILL method; no source implies no evolution overlay. Budget bound includes exact extra source."
+    },
+    "conditional_sections": [
+      {
+        "when_source_ref": "profiles/programming_analysis_lf/contracts/profile_evolution_first_candidate_v1.md",
+        "include_sections": [
+          "Profile Evolution first candidate — domain specialization (DRAFT)"
+        ]
+      }
+    ]
   }
 }

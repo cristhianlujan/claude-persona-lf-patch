@@ -38,6 +38,65 @@ Allowed with separate authorization: read-only SQL and inspection; local develop
 
 On attempted unauthorized database write: `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`. Stop before execution and report the attempted operation, target, and canonical route. A soft route guard, exploratory mode, prior success, or agent judgment NEVER overrides this hard block. Any exception requires explicit owner approval with bounded scope, recorded evidence, and an approved controlled execution path.
 
+### Router first for every database write
+
+The Router (ACT-0001, Supabase) is the authority for database writes; this file only points to it. If this file and the Router disagree, the Router wins.
+
+Read-only database inspection through the Supabase RO connector is outside Router routing. Limit it to the authorized inspection scope and do not use it to write.
+
+1. Resolve the route with `public.lf_router_resolve_v1` (read-only users can run it). Database targets resolve to `ACTUALIZACION_DB_LF`; read its policies in `public.v_lf_operation_policy_snapshot`.
+2. Ask `DB_WRITE_TRANSPORT` for the route:
+
+```bash
+python sandbox/lf_contract_gate_test/db_write_transport/lf_db_write_transport.py \
+  --target-type <MIGRATION|DB|FUNCTION|TRIGGER|CAPABILITY> \
+  [--migration-path supabase/migrations/<version>_<name>.sql] \
+  --router-operation ACTUALIZACION_DB_LF   # or --router-execution-id EXEC-…
+```
+
+Without Router passage the answer is `REDIRECT_TO_ROUTER`. With it, the only route is `MIGRATION_VIA_MERGE_TRAIN`. There is no direct executor for agents.
+
+Merge Train checklist:
+- one migration file per PR;
+- classified name (see below);
+- PR not in Draft (`FAIL_TRAIN_DRAFT_PR`);
+- required checks green on the exact HEAD;
+- no other `ready-to-merge` PR in flight;
+- then label `ready-to-merge`. The Train assigns or reassigns the version; do not hand-pick one to dodge a collision.
+
+A write rejected for read-only access or missing permission is intentional. Do not look for another route; use the Merge Train.
+
+You do not need to create the `ACTUALIZACION_DB_LF` execution: the Merge Train reserves it when the PR is labeled, records preflight/patch/verify with real evidence and closes it (`EXEC-DB-TRAIN-PR<n>-<version>-R<run>`). Do not reserve executions by hand for Train migrations.
+
+### Migration naming — check before opening a migration PR
+
+The Merge Train rejects any migration whose name (the filename without the 14-digit version and `.sql`) is not classified in `sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py`. A name is accepted only if it:
+
+- starts with a prefix in `MANAGED_PREFIXES` (e.g. `lf_`, `pr93_`, `programacion_…`); or
+- matches `STRATEGY_MIGRATION_RE` (`s<N>_…`, e.g. `s30_…`); or
+- is listed in `MANAGED_EXACT_NAMES`; or
+- starts with a prefix in `CLASSIFIED_EXTERNAL_PREFIXES` or is listed in `CLASSIFIED_EXTERNAL_NAMES`.
+
+Read that file on `main` before naming a migration. Its lists are the authority; this section only points to them.
+
+If the name does not fit, first open a separate code-only PR that registers the exact name (or a family the owner approved) with a positive and a negative test (pattern: `test_f0_train_exact_classification.py`), get it merged into `main`, and only then label the migration PR `ready-to-merge`. The Train reads the classifier from `main`, so registering the name inside the migration PR itself does not work. Never broaden prefixes without owner approval.
+
+The PR check `classify-migration-names` flags unclassified names early, and the Train rejects them before any database write (`FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY`). Do not label an unclassified migration.
+
+### One merge path to `main`: the Train queue
+
+The Train runs one PR at a time (`concurrency: lf-migrations`) and syncs each PR with `main` when it starts. A merge that bypasses the Train while a Train run is in flight moves `main` under it, and the Train's final exact-head merge is rejected (observed 2026-10-13: #2484 merged directly during the Train run of #2485).
+
+Rules for every agent:
+- Merge every PR, with or without migrations, by labeling it `ready-to-merge`. Do not merge PRs directly from the web, `gh pr merge`, or the merge API, even when `lf-merge-train/verified` is already green for a code-only PR.
+- Before labeling, check that no Train run is `queued` or `in_progress` for a PR you are not handling; if one is, wait for it to finish.
+- PRs that change the Train itself (`.github/workflows/lf-migration-merge-train.yml`, `sandbox/lf_contract_gate_test/db_write_transport/**`, guard or parity code) always go through the Train.
+- If a Train run fails because `main` advanced (stale head, not a content conflict), update the branch from `main`, wait for green checks on the new head, then remove and re-add `ready-to-merge`. Do not force-push and do not hand-merge.
+
+This is enforced: the route guard (`DIRECT_MERGE_FOR_NON_MIGRATION = False` in `sandbox/lf_contract_gate_test/migration_route_guard/lf_migration_route_guard.py`) no longer publishes `lf-merge-train/verified` for code-only PRs, so the merge button stays blocked until the Train publishes the status right before its own exact-head merge. A PR showing "Expected — waiting for status" is normal: label it `ready-to-merge`.
+
+Emergency (Train itself broken): only the repository admin may temporarily relax the `protect-main` ruleset to merge the Train fix, restore it immediately after, and record both changes in that PR.
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the

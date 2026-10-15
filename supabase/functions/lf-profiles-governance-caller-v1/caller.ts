@@ -1,3 +1,4 @@
+import {CP2_PREFLIGHT_ACTION, CP2_EXECUTE_ACTION, Cp2Fault, executeCp2} from "./cp2_edge_bridge.ts";
 export const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 export const OIDC_AUDIENCE = "lf-profiles-governance-caller-v1";
 
@@ -471,7 +472,11 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       const action = typeof body.action === "string" ? body.action : "";
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
-      if (isRecurationIdentity && action !== RECURATION_ACTION && action !== RECURATION_POLL_ACTION) {
+      const isCp2Action = action === CP2_PREFLIGHT_ACTION || action === CP2_EXECUTE_ACTION;
+      if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
+        return json({outcome: "BLOCKED", code: "CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED"}, 403);
+      }
+      if (isRecurationIdentity && action !== RECURATION_ACTION && action !== RECURATION_POLL_ACTION && !isCp2Action) {
         return json({ outcome: "BLOCKED", code: "OIDC_ACTION_SCOPE_MISMATCH", allowed_action: RECURATION_ACTION }, 403);
       }
       if (!isRecurationIdentity && (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION)) {
@@ -489,6 +494,13 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         workflow_sha: workflowSha,
       };
       if (isRecurationIdentity) caller.workflow_name = config.recurationWorkflowName;
+
+      if (isCp2Action) {
+        // Authorization is rechecked via the canonical read-only release context
+        // before each new Edge invocation, never via the SQL recuration queue.
+        const out = await executeCp2(config, deps.fetchFn, action, body);
+        return json({...out.result, caller}, out.status);
+      }
 
       if (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION) {
         if (Object.prototype.hasOwnProperty.call(body, "pantalla_ids")) {
@@ -646,6 +658,9 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       return json({ outcome: "BLOCKED", code: "ACTION_NOT_ALLOWED" }, 400);
     } catch (error) {
+      if (error instanceof Cp2Fault) {
+        return json({outcome: "BLOCKED", code: error.code}, error.status);
+      }
       if (error instanceof CallerFault) {
         return json({ outcome: "BLOCKED", code: error.code, ...error.details }, error.status);
       }

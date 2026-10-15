@@ -1,3 +1,13 @@
+-- LF_MIGRATION_RECONCILIATION_SOURCE_V1
+-- reconciliation_mode=SOURCE_ONLY_NO_DDL_REPLAY
+-- owner_binding_required=true
+-- reconciliation_owner_operation_code=ACTUALIZACION_DB_LF
+-- historical_origin_owner_status=UNAVAILABLE_PRE_OWNER_FIRST_CUTOVER
+-- source_authority=supabase_migrations.schema_migrations
+-- reconciliation_owner_execution_id=EXEC-DB-SOURCE-RECONCILE-BATCH2-20261013-001
+-- source_version=20261007051836
+-- source_name=engineering_unit_first_scheduler_simplification_v1
+
 create or replace function programacion.fn_engineering_unit_scheduler_admission_v2(
   p_plan_code text,
   p_unit_code text
@@ -285,3 +295,4 @@ on conflict (codigo) do update set
   estado=excluded.estado,
   ultima_vez=now(),
   updated_at=now();
+

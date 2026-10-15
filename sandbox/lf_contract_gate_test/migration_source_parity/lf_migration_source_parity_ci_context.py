@@ -33,9 +33,25 @@ MANAGED_PREFIXES = (
     "programacion_revoke_security_definer_",
     "programacion_worker_spec_",
     "programacion_prog017_",
+    # Narrow reviewed PR families; keep the ig_ root excluded (ig_cv_ is external).
+    "analysis_a9_pg01_",
+    "ig_m9_m10_contract_preflight_",
+    "b2b_effective_menu_grants_",
+    "b2b_shell_nav_order_reconcile_",
+    "ig_ci50_qualification_activation_",
+    "ig_m82_resolver_timing_sink_",
+    "ig_candidate_action_receipt_consumption_",
+    "ig_test_deliverable_misbind_repair_",
+    "ig_m5_4_remove_legacy_resolver_calls",
+    "ig_m5_5_explicit_fingerprint",
+    "programming_context_snapshot_runtime_guard_",
+    "engineering_specific_technical_contract_reduction_",
+    "engineering_transversal_read_only_measure_adapter_",
+    "intelligence_method_portfolio_",
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_fondeo_legal_seguimiento_v1",  # SALY-only tracking; exact migration name, no new general prefix.
     "b2b_corporate_scope_model_v1",
     "pase_f07_x03_runtime_implementation_deploy_v1",
     "promote_router_compact_jit_v1",
@@ -78,6 +94,8 @@ MANAGED_EXACT_NAMES = {
     "r5e_vacuum_inventory_activation_v1",
     "inventory_distinct_refresh_v1",
     "inventory_unused_gin_cleanup_v1",
+    "f0_train_credential_canary_noop_v1",
+    "ig_m100_sandbox_technical_vs_operational_authority_v1",
 }
 
 CLASSIFIED_EXTERNAL_PREFIXES = (
@@ -91,8 +109,38 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_tie_break_",
 )
 CLASSIFIED_EXTERNAL_NAMES = {
+    "independent_assurance_oracle_independence_measure_v1",
     "retire_b2b_auth005_legacy_totp_screen",
     "ig_1_serialize_input_readiness_run_pair_v1",
+    "ig_m8_2_per_family_resolver_hook_v1",
+    "ig_m8_2_per_family_resolver_facade_v1",
+    "ig_m8_6_batch_common_v1",
+    "20261011040000_lf_d2_facade_request_plan_v1",
+    "20261011041000_lf_d2_facade_receipt_readback_v1",
+    "20261011042000_lf_d2_source_binding_candidate_v1",
+    "20261011043000_lf_d2_admission_readiness_v1",
+    "20261011050000_b2b_scoped_load_metadata_rls_v1",
+    "20261011051000_lf_d2_admission_column_grants_v1",
+    "20261011054000_lf_source_asset_authority_acl_v1",
+    "20261011060000_lf_d2_metadata_admission_split_v1",
+    "20261012001100_ig_m99_ekb_jsonb_null_assertion_v1",
+    "20261012002200_ig_m99_cohort_authority_reconcile_v1",
+    "20261012004000_ig_m99_rollback_receipt_policy_v1",
+    "20261012005800_ig_m99_transversal_reconciler_decouple_v1",
+    "20261012010600_ig_m99_runtime_proof_gate_contract_v1",
+    "20261012011000_ig_m910_versioned_cohort_contract_v1",
+    "20261012011500_ig_m99_reversible_consumer_binding_v1",
+    "20261012015000_ig_m910_residue_delta_ekb_v1",
+    "20261012021000_ig_m912_readiness_ig_owned_contract_v1",
+    "20261012021100_ig_m912_receipt_sourcepack_reconcile_v1",
+    "20261012021200_ig_m912_ekb_contract_errors_v1",
+    "20261012023000_ig_m912_m98_technical_consumption_v1",
+    "20261012032000_ig_m913_ledger_independent_contract_v1",
+    "20261012032100_ig_m913_ekb_contract_errors_v1",
+    "20261012040000_ig_m100_typed_frozen_bundle_contract_v1",
+    "20261012040100_ig_m100_human_approval_semantics_v1",
+    "20261012040200_ig_m100_ekb_contract_findings_v1",
+    "20261012072000_lf_gpt_native_in_chat_capture_policy_candidate_v1",
 }
 STRATEGY_MIGRATION_RE = re.compile(r"^s[1-9][0-9]*_[a-z0-9][a-z0-9_]*$")
 FILENAME_RE = re.compile(r"^(\d{14})_(.+)\.sql$")

@@ -4,6 +4,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import argparse
+import sys
+from pathlib import Path
 from datetime import datetime
 from typing import Any
 
@@ -49,6 +52,29 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
         upstream.get("status") != "BENCHMARK_PASS" or upstream.get("blocking_codes") or
         upstream.get("cutover_eligible") is not False):
         codes.append("FOUR_ARM_BENCHMARK_NOT_ADMITTED")
+    # The AS-IS is the EFFECTIVE pre-update profile, not an assumed arm C.
+    # A can be current when starting from generic, B after updater v0.1,
+    # and C only if current Evolution is already the exact effective profile.
+    binding = target.get("as_is_binding")
+    if not isinstance(binding, dict):
+        codes.append("AS_IS_BINDING_MISSING")
+        binding = {}
+    as_is_arm = binding.get("arm")
+    if as_is_arm not in ARMS[:-1]:
+        codes.append("AS_IS_ARM_NOT_PRE_UPDATE")
+    if not all(isinstance(binding.get(k), str) and binding[k].strip()
+               for k in ("profile_revision", "source_ref", "source_sha256", "authority_readback_ref")):
+        codes.append("AS_IS_SOURCE_AUTHORITY_MISSING")
+    if not (isinstance(binding.get("source_sha256"), str) and
+            len(binding["source_sha256"]) == 64 and
+            all(c in "0123456789abcdef" for c in binding["source_sha256"])):
+        codes.append("AS_IS_SOURCE_SHA_INVALID")
+    raw_binding = raw.get("as_is_binding")
+    if not isinstance(raw_binding, dict) or any(
+        raw_binding.get(k) != binding.get(k)
+        for k in ("arm", "profile_revision", "source_ref", "source_sha256", "authority_readback_ref")
+    ):
+        codes.append("AS_IS_SOURCE_NOT_BOUND_TO_RAW")
     cases = raw.get("cases")
     domains = target.get("domain_targets")
     if not isinstance(cases, list) or not cases:
@@ -83,6 +109,10 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
             continue
         weight = float(dif) * (2 if case.get("critical") is True else 1)
         values = {}
+        if as_is_arm in ARMS[:-1]:
+            as_is_record = case.get("arms", {}).get(as_is_arm) if isinstance(case.get("arms"), dict) else None
+            if not isinstance(as_is_record, dict) or as_is_record.get("profile_revision") != binding.get("profile_revision"):
+                codes.append("AS_IS_PROFILE_REVISION_MISMATCH")
         for arm in ARMS:
             record = case.get("arms", {}).get(arm) if isinstance(case.get("arms"), dict) else None
             score = record.get("score") if isinstance(record, dict) else None
@@ -128,7 +158,7 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
         v = acc[domain]
         if v["cases"] < n:
             codes.append("TO_BE_SAMPLE_NOT_MET")
-        as_is = v["sum"]["C_EVOLUTION_CURRENT"] / v["weight"]
+        as_is = v["sum"][as_is_arm] / v["weight"]
         post = v["sum"]["D_EVOLUTION_TARGET"] / v["weight"]
         original = v["sum"]["A_ORIGINAL"] / v["weight"]
         gap_before = max(0., float(minimum) - as_is)
@@ -136,7 +166,9 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
         rows.append({
             "domain_family": domain, "cases": v["cases"],
             "original_A": round(original, 6),
-            "as_is_current_C": round(as_is, 6),
+            "as_is_effective": round(as_is, 6),
+            "as_is_arm": as_is_arm,
+            "as_is_profile_revision": binding["profile_revision"],
             "to_be_minimum": minimum,
             "post_updater_D": round(post, 6),
             "gap_initial": round(gap_before, 6),
@@ -155,7 +187,9 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
         "blocking_codes": [f"TO_BE_NOT_MET:{d}" for d in unmet],
         "benchmark_scope": "EXPERT_TASK_PERFORMANCE_E2E",
         "target_contract_sha256": digest(target),
-        "reference_baseline": "C_EVOLUTION_CURRENT",
+        "reference_baseline": as_is_arm,
+        "baseline_profile_revision": binding["profile_revision"],
+        "baseline_source_sha256": binding["source_sha256"],
         "historic_control": "A_ORIGINAL",
         "domain_results": rows,
         "target_met_domains": len(rows)-len(unmet),
@@ -164,3 +198,25 @@ def evaluate(raw: dict[str, Any], target: dict[str, Any], upstream: dict[str, An
         "cutover_eligible": False,
         "note": "Supplementary gate only. External runtime provenance and independent assurance remain mandatory."
     }
+
+def main() -> int:
+    """Read existing artifacts; never generate model outputs or admit deployment."""
+    parser = argparse.ArgumentParser(description="Supplementary PE10E_C4 AS-IS/TO-BE/GAP calculation")
+    parser.add_argument("--raw", required=True, type=Path)
+    parser.add_argument("--target", required=True, type=Path)
+    parser.add_argument("--upstream", required=True, type=Path)
+    args = parser.parse_args()
+    try:
+        result = evaluate(
+            json.loads(args.raw.read_text(encoding="utf-8")),
+            json.loads(args.target.read_text(encoding="utf-8")),
+            json.loads(args.upstream.read_text(encoding="utf-8")),
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        result = _blocked(["INPUT_ARTIFACT_UNAVAILABLE_OR_INVALID"])
+        result["detail"] = type(exc).__name__
+    print(json.dumps(result, sort_keys=True, ensure_ascii=False))
+    return 0 if result["status"] == "TARGET_PASS" else 1
+
+if __name__ == "__main__":
+    sys.exit(main())

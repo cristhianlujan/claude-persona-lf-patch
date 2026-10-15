@@ -1,0 +1,89 @@
+{
+  "schema_version": "REQUEST_CONTEXT_V1",
+  "request_identity": {
+    "request_ref": "REQ-LF-A1Q-C2-PILOT-0001",
+    "request_kind": "USER_REQUEST"
+  },
+  "objective": {
+    "problem_statement": "Según la solicitud, los clientes del marketplace no comprenden cuánto les ahorra negociar su deuda antes de aceptar una oferta y abandonan.",
+    "desired_outcome": "Que los clientes comprendan cuánto les ahorra negociar su deuda antes de aceptar una oferta, sin confundir ese ahorro con el monto de la cuota, para el piloto."
+  },
+  "target_hints": [
+    "clientes del marketplace",
+    "negociación de deuda",
+    "ahorro",
+    "oferta antes de la aceptación",
+    "monto de la cuota"
+  ],
+  "source_refs": [
+    "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2.input.input_literal",
+    "supabase://public.lf_eventos/20843"
+  ],
+  "provided_facts": [
+    {
+      "fact_code": "USER_REPORTED_LACK_OF_COMPREHENSION",
+      "value": "La solicitud afirma que hoy los clientes no comprenden cuánto ahorran al negociar su deuda.",
+      "source_ref": "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2.input.input_literal"
+    },
+    {
+      "fact_code": "USER_REPORTED_ABANDONMENT",
+      "value": "La solicitud afirma que los clientes abandonan; no aporta cifras ni evidencia cuantitativa.",
+      "source_ref": "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2.input.input_literal"
+    },
+    {
+      "fact_code": "USER_STATED_PILOT_URGENCY",
+      "value": "La solicitud indica que el requerimiento es urgente para el piloto.",
+      "source_ref": "supabase://programacion.engineering_plan_units/A1Q#unit_metadata.gpt_native_packets_v1.A1Q_C2.input.input_literal"
+    }
+  ],
+  "constraints": [
+    "El ahorro debe poder conocerse antes de aceptar una oferta.",
+    "La información del ahorro no debe confundirse con el monto de la cuota.",
+    "La necesidad se declara urgente para el piloto; no se proporciona fecha límite."
+  ],
+  "ambiguities": [
+    {
+      "code": "SAVINGS_MEANING_AND_BASIS",
+      "statement": "No se define qué significa 'ahorro', respecto de qué importe se compara ni cómo se determina.",
+      "materiality": "MATERIAL",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "OFFER_AND_ACCEPTANCE_BOUNDARY",
+      "statement": "No se especifica en qué momento de la negociación existe una oferta que el cliente puede aceptar.",
+      "materiality": "MATERIAL",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "CLIENT_CHANNEL_AND_SCOPE",
+      "statement": "No se indican los canales, pantallas o segmentos de clientes del marketplace incluidos en el piloto.",
+      "materiality": "MATERIAL",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "INSTALLMENT_MEANING",
+      "statement": "No se define qué representa el monto de la cuota ni en qué situaciones corresponde distinguirlo del ahorro.",
+      "materiality": "MATERIAL",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "ABANDONMENT_EVIDENCE",
+      "statement": "No se aportan mediciones, causas verificadas ni alcance del abandono mencionado.",
+      "materiality": "UNKNOWN",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "COMPREHENSION_CRITERION",
+      "statement": "No se define cómo se determinará que la diferencia entre ahorro y cuota resulta clara para el cliente.",
+      "materiality": "MATERIAL",
+      "resolution_state": "OPEN"
+    },
+    {
+      "code": "PILOT_DEADLINE",
+      "statement": "Se indica urgencia, pero no una fecha o hito preciso del piloto.",
+      "materiality": "UNKNOWN",
+      "resolution_state": "OPEN"
+    }
+  ],
+  "no_solution_inferred": true
+}

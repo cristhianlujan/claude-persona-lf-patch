@@ -1,0 +1,13 @@
+name: LF Edge Operation R17 Tests
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/edge_function_operation/**'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m unittest discover -s sandbox/lf_contract_gate_test/edge_function_operation -p 'test_*.py' -v
