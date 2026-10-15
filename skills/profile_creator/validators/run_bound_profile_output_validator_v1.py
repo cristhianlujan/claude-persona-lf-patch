@@ -237,6 +237,26 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
         except OSError:
             return False
 
+    # A profile-local validator is executable code. Its initial subprocess
+    # could already have mutated authority before a correction is attempted.
+    def source_still_bound(bound_packet: dict) -> bool:
+        for name in ("schema", "validator", "raw_output"):
+            ref = bound_packet.get(name + "_ref")
+            digest = bound_packet.get(name + "_sha256")
+            if not isinstance(ref, str) or not isinstance(digest, str) or not SHA.fullmatch(digest):
+                return False
+            try:
+                bound_path = (root / ref).resolve(strict=True)
+                if not bound_path.is_relative_to(root) or sha(bound_path.read_bytes()) != digest:
+                    return False
+            except (OSError, RuntimeError):
+                return False
+        return True
+
+    if not source_still_bound(packet):
+        receipt["status"] = "BLOCKED_SOURCE_MUTATED_DURING_INITIAL_VALIDATION"
+        return receipt
+
     # Existing producer adapter gets exactly one attempt. The original remains
     # immutable; it must produce a DIFFERENT source-bound candidate artifact.
     receipt["producer_attempts"] = 1
@@ -281,24 +301,7 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
     if not receipt["original_raw_preserved_local"]:
         receipt["status"] = "STOP_ORIGINAL_RAW_MUTATED"
         return receipt
-    # The profile-local validator is executable code. A clean pre-execution
-    # source SHA is insufficient: re-read exact bound bytes after its process
-    # returns, including the schema and the validator itself.
-    def source_still_bound() -> bool:
-        for name in ("schema", "validator", "raw_output"):
-            ref = proposed.get(name + "_ref")
-            digest = proposed.get(name + "_sha256")
-            if not isinstance(ref, str) or not isinstance(digest, str) or not SHA.fullmatch(digest):
-                return False
-            try:
-                bound_path = (root / ref).resolve(strict=True)
-                if not bound_path.is_relative_to(root) or sha(bound_path.read_bytes()) != digest:
-                    return False
-            except (OSError, RuntimeError):
-                return False
-        return True
-
-    receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched")) and source_still_bound()
+    receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched")) and source_still_bound(proposed)
     if not receipt["source_authority_unchanged"]:
         receipt["status"] = "STOP_POST_VALIDATION_SOURCE_MUTATED"
         return receipt
