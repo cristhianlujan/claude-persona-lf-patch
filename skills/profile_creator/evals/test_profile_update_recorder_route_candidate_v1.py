@@ -30,7 +30,7 @@ class RecorderCandidate(unittest.TestCase):
         gate=self.policy["output_contract_gate"]
         self.assertEqual(gate["existing_step_id"],"deterministic_validation")
         self.assertEqual(gate["applies_to_frozen_outcome"],"UPDATE")
-        self.assertFalse(gate["does_not_authorize_cutover"])
+        self.assertTrue(gate["does_not_authorize_cutover"])
 
     def test_verified_positive_and_negative_receipts_are_required(self):
         self.assertIn("'PROFILE_OUTPUT_VALIDATION_POSITIVE'",self.sql)
