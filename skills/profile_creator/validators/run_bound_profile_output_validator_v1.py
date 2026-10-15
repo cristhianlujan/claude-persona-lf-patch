@@ -37,6 +37,45 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
 
     def block(code: str) -> dict:
         result["blocking_codes"].append(code)
+        # One governed producer repair may correct a proven candidate/fixture
+        # defect. This reader never edits a profile or declares admission.
+        output_fault = code in {"OUTPUT_SHAPE_INVALID", "OUTPUT_JSON_INVALID",
+                                "CANONICAL_VALIDATOR_RESULT_UNEXPECTED"}
+        source_bound = result["source_readback_matched"] is True
+        negative = packet.get("expected_valid") is False if isinstance(packet, dict) else False
+        allowed = output_fault and source_bound
+        result["remediation"] = {
+            "schema": "PROFILE_UPDATE_BOUND_REMEDIATION_DIRECTIVE_V1",
+            "classification": (
+                "CANDIDATE_OUTPUT_DEFECT" if output_fault and not negative
+                else "NEGATIVE_COUNTEREXAMPLE_DEFECT" if output_fault
+                else "SOURCE_OR_VALIDATOR_AUTHORITY_BLOCKER"
+            ),
+            "action": (
+                "RETURN_TO_GOVERNED_PRODUCER_ONCE" if allowed
+                else "RETURN_TO_EVIDENCE_OR_AUTHORITY"
+            ),
+            "target": (
+                "NEGATIVE_FIXTURE_ONLY" if allowed and negative
+                else "CANDIDATE_OUTPUT_ONLY" if allowed
+                else "NONE"
+            ),
+            "max_repair_cycles": 1 if allowed else 0,
+            "attempts_executed": 0,
+            "input_raw_sha256": (
+                result.get("raw_output_sha256") if source_bound else None
+            ),
+            "defect_code": code,
+            "shape_errors": result.get("shape_errors", []),
+            "validator_errors": result.get("validator_errors", []),
+            "must_rerun_same_bound_canonical_schema_and_validator": allowed,
+            "must_preserve_original_failure_and_new_head_evidence": allowed,
+            "may_change_canonical_schema_or_validator": False,
+            "semantic_judge_required": True,
+            "producer_repair_executed": False,
+            "admission_authorized": False,
+            "runtime_activation_authorized": False,
+        }
         return result
 
     if not isinstance(packet, dict) or packet.get("schema") != SCHEMA:
