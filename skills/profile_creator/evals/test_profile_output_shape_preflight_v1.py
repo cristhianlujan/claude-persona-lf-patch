@@ -355,6 +355,38 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertFalse(result["source_authority_unchanged"])
             self.assertFalse(result["producer_repair_executed"])
 
+    def test_bounded_repair_rechecks_validator_source_after_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            validator=root/packet["validator_ref"]
+            # A validator may print a valid response then mutate its own file;
+            # source SHA readback must be repeated AFTER subprocess execution.
+            validator.write_text(
+                validator.read_text() + "\\nfrom pathlib import Path\\n"
+                + "v=Path(__file__)\\nv.write_text(v.read_text()+'\\\\n# tampered')\\n",
+                encoding="utf-8",
+            )
+            packet["validator_sha256"]=hashlib.sha256(validator.read_bytes()).hexdigest()
+            def producer(working_root, before_packet, directive):
+                repaired=p.with_name("repaired_output.json")
+                repaired.write_text(json.dumps({
+                    "deliverable_created":{"authority_status":"SUPPORTED"},
+                    "self_verdict":"PASS"
+                }))
+                return {
+                    **before_packet,
+                    "raw_output_ref":repaired.relative_to(root).as_posix(),
+                    "raw_output_sha256":hashlib.sha256(repaired.read_bytes()).hexdigest()
+                }
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["after"]["status"],"CANDIDATE_OUTPUT_PARITY_OBSERVED")
+            self.assertEqual(result["status"],"STOP_POST_VALIDATION_SOURCE_MUTATED")
+            self.assertFalse(result["source_authority_unchanged"])
+            self.assertFalse(result["producer_repair_executed"])
+            self.assertFalse(result["admission_authorized"])
+
     def test_bounded_repair_rejects_original_raw_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:
             root,packet,p=self.make_bound_fixture(directory)
