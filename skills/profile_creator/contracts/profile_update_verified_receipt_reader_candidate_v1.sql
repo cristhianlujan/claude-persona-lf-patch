@@ -84,22 +84,25 @@ BEGIN
                    AND l.receipt_payload->>'status'='CANDIDATE_OUTPUT_PARITY_OBSERVED'
                    AND l.receipt_payload->>'profile_validator_executed'='true'
                    AND l.receipt_payload->>'validator_exit_code'='0'
-                   AND jsonb_typeof(l.receipt_payload->'validator_errors')='array'
-                   AND jsonb_array_length(l.receipt_payload->'validator_errors')=0
+                   AND CASE WHEN jsonb_typeof(l.receipt_payload->'validator_errors')='array'
+                     THEN jsonb_array_length(l.receipt_payload->'validator_errors')=0
+                     ELSE false END
                    AND l.receipt_payload->>'validator_stdout_sha256' ~ '^[0-9a-f]{64}$')
                  OR
                  (p_subject_type='PROFILE_OUTPUT_VALIDATION_NEGATIVE'
                    AND (
                      (l.receipt_payload->>'status'='EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR'
                       AND l.receipt_payload->>'profile_validator_executed'='true'
-                      AND jsonb_typeof(l.receipt_payload->'validator_errors')='array'
-                      AND jsonb_array_length(l.receipt_payload->'validator_errors')>0
+                      AND CASE WHEN jsonb_typeof(l.receipt_payload->'validator_errors')='array'
+                        THEN jsonb_array_length(l.receipt_payload->'validator_errors')>0
+                        ELSE false END
                       AND l.receipt_payload->>'validator_stdout_sha256' ~ '^[0-9a-f]{64}$')
                      OR
                      (l.receipt_payload->>'status'='EXPECTED_NEGATIVE_REJECTED_BY_SHAPE'
                       AND l.receipt_payload->>'profile_validator_executed'='false'
-                      AND jsonb_typeof(l.receipt_payload->'shape_errors')='array'
-                      AND jsonb_array_length(l.receipt_payload->'shape_errors')>0)
+                      AND CASE WHEN jsonb_typeof(l.receipt_payload->'shape_errors')='array'
+                        THEN jsonb_array_length(l.receipt_payload->'shape_errors')>0
+                        ELSE false END)
                    ))
                )
              )
