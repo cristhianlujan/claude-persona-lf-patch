@@ -142,7 +142,7 @@ BEGIN
   v_contract_new:=jsonb_set(v_contract_old,'{pass_when}',
     to_jsonb('Documented final evaluation disposition: either verified independent approval or exact existing evidence reconciled as NOT_ADMITTED, with cutover blocked'::text),true);
   v_contract_new:=jsonb_set(v_contract_new,'{validator_code}',
-    to_jsonb('PE10_C3_TERMINAL_DISPOSITION_READBACK_V1'::text),true);
+    to_jsonb('SUPABASE_CATALOG_ASSERT_V1'::text),true);
   v_contract_new:=jsonb_set(v_contract_new,'{resolver_policy}',
     to_jsonb('READ_EXISTING_RECONCILED_NONADMISSION_STOP_RETEST'::text),true);
   v_contract_new:=jsonb_set(v_contract_new,'{validation_input}',
@@ -159,7 +159,7 @@ BEGIN
       'operational_cutover_allowed',false),true);
   v_spec_new:=jsonb_set(v_spec_new,'{validator_contract}',
     jsonb_build_object('required',true,
-      'validator_code','PE10_C3_TERMINAL_DISPOSITION_READBACK_V1',
+      'validator_code','SUPABASE_CATALOG_ASSERT_V1',
       'pass_when','Exact event 21093 links frozen subject and completed comparison to NOT_ADMITTED; no independent PASS asserted; C5 retains separate cutover admission gate',
       'failure_code','PE10_C3_RECONCILIATION_DISPOSITION_MISSING',
       'resolver_policy','NO_NEW_EVALUATION_AND_NO_CUTOVER_WITHOUT_C5_ADMISSION'),true);
