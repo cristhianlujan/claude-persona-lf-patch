@@ -95,3 +95,11 @@ A material output mismatch returns a bounded repair directive from
 the validator, performs a maximum of one correction pass per evidenced defect
 batch, then reruns exact-head validation. If it cannot repair safely, STOP.
 No claim of automatic repair, independent PASS, admission or production.
+
+The local candidate helper rejects mutation of the original RAW and requires a
+new `raw_output_ref` and SHA-256 for the repaired candidate. Its
+`original_raw_snapshot_sha256` proves only a local readback; the
+`original_raw_durable_receipt` remains `null` until a governed evidence
+writer records it. The helper has no remote producer timeout/budget enforcement.
+These are required, separately verified capabilities of the authorized
+consumer before any governed end-to-end qualification.
