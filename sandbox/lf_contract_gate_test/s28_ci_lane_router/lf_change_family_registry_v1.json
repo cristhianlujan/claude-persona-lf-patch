@@ -32,6 +32,64 @@
       "value": "supabase/functions/"
     },
     {
+      "family": "CI_PLATFORM_GOVERNANCE",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/ci_db_target/",
+        "sandbox/lf_contract_gate_test/contract_check_self_change_admission/",
+        "sandbox/lf_contract_gate_test/f0_workflow_activation/"
+      ]
+    },
+    {
+      "family": "RUNTIME_TESTING",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/edge_function_operation/",
+        "sandbox/lf_contract_gate_test/profile_execution_runtime/"
+      ]
+    },
+    {
+      "family": "ENGINEERING_CHECKPOINTS",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/engineering_checkpoint_closure/",
+        "sandbox/lf_contract_gate_test/engineering_checkpoint_mcp/",
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/",
+        "sandbox/lf_contract_gate_test/s30_engineering_checkpoint_mcp/"
+      ]
+    },
+    {
+      "family": "HUMAN_DECISION_ROUTING",
+      "kind": "prefix",
+      "value": "sandbox/lf_contract_gate_test/human_decision_routing/"
+    },
+    {
+      "family": "INPUT_GOVERNANCE",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/input_governance/",
+        "sandbox/lf_contract_gate_test/input_governance_cross_family/",
+        "sandbox/lf_contract_gate_test/input_governance_incremental/",
+        "sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/"
+      ]
+    },
+    {
+      "family": "PASE_SUPPORT",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/pase_evaluation_quality/",
+        "sandbox/lf_contract_gate_test/pase_github_entrypoint/"
+      ]
+    },
+    {
+      "family": "PROGRAMMING_AGENT_TESTS",
+      "kind": "prefixes",
+      "prefixes": [
+        "sandbox/lf_contract_gate_test/programming_agent_four_stage/",
+        "sandbox/lf_contract_gate_test/programming_simple_executor/"
+      ]
+    },
+    {
       "family": "WORKFLOW",
       "kind": "prefix_suffixes",
       "value": ".github/workflows/",
@@ -163,6 +221,35 @@
       "MIGRATION_ROUTE_GUARD"
     ],
     "TRANSVERSAL_ASSETS": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "CI_PLATFORM_GOVERNANCE": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "RUNTIME_TESTING": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "ENGINEERING_CHECKPOINTS": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "HUMAN_DECISION_ROUTING": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "INPUT_GOVERNANCE": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE",
+      "INPUT_GOVERNANCE_MIGRATION_PARITY"
+    ],
+    "PASE_SUPPORT": [
+      "CI_ROUTER_SELFTEST",
+      "LF_CONTRACT_CORE"
+    ],
+    "PROGRAMMING_AGENT_TESTS": [
       "CI_ROUTER_SELFTEST",
       "LF_CONTRACT_CORE"
     ]

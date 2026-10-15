@@ -48,12 +48,15 @@ class FixedFamily:
     kind: str
     value: str
     suffixes: tuple[str, ...] = ()
+    prefixes: tuple[str, ...] = ()
 
     def matches(self, path: str) -> bool:
         if self.kind == "exact":
             return path == self.value
         if self.kind == "prefix":
             return path.startswith(self.value)
+        if self.kind == "prefixes":
+            return any(path.startswith(prefix) for prefix in self.prefixes)
         return path.startswith(self.value) and any(path.endswith(suffix) for suffix in self.suffixes)
 
 
@@ -87,12 +90,26 @@ def compile_family_registry(data: Mapping[str, Any]) -> FamilyRegistry:
     for row in raw:
         if not isinstance(row, Mapping):
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ENTRY")
-        family, kind, value = row.get("family"), row.get("kind"), row.get("value")
+        family, kind = row.get("family"), row.get("kind")
+        if not isinstance(family, str) or FAMILY_RE.fullmatch(family) is None or family in seen:
+            raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ID", str(family))
+        if kind == "prefixes":
+            prefixes = row.get("prefixes")
+            if (
+                set(row) != {"family", "kind", "prefixes"}
+                or not isinstance(prefixes, list)
+                or not prefixes
+                or any(not isinstance(prefix, str) or not _safe_path(prefix) for prefix in prefixes)
+                or len(prefixes) != len(set(prefixes))
+            ):
+                raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_MATCHER", str(prefixes))
+            seen.add(family)
+            fixed.append(FixedFamily(family, kind, "", prefixes=tuple(sorted(prefixes))))
+            continue
+        value = row.get("value")
         expected_keys = {"family", "kind", "value", "suffixes"} if kind == "prefix_suffixes" else {"family", "kind", "value"}
         if set(row) != expected_keys:
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ENTRY")
-        if not isinstance(family, str) or FAMILY_RE.fullmatch(family) is None or family in seen:
-            raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_ID", str(family))
         if kind not in {"prefix", "exact", "prefix_suffixes"} or not isinstance(value, str) or not _safe_path(value):
             raise ChangesetIntegrityError("FAIL_CHANGESET_FIXED_FAMILY_MATCHER", str(value))
         suffixes = row.get("suffixes", [])
