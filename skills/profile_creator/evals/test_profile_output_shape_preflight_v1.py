@@ -253,6 +253,9 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertEqual(result["after"]["status"],"CANDIDATE_OUTPUT_PARITY_OBSERVED")
             self.assertEqual(result["producer_attempts"],1)
             self.assertEqual(len(calls),1)
+            self.assertTrue(result["producer_adapter_invoked"])
+            self.assertTrue(result["producer_repair_executed"])
+            self.assertTrue(result["source_authority_unchanged"])
             self.assertTrue(result["local_deterministic_revalidation"])
             self.assertFalse(result["independent_review_executed"])
             self.assertFalse(result["admission_authorized"])
@@ -287,6 +290,8 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertEqual(result["after"]["status"],"FAIL")
             self.assertEqual(result["producer_attempts"],1)
             self.assertEqual(len(invoked),1)
+            self.assertTrue(result["producer_adapter_invoked"])
+            self.assertFalse(result["producer_repair_executed"])
 
     def test_bounded_repair_never_runs_on_stale_authority(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -311,6 +316,23 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             result=validate_with_bounded_producer_repair(root,packet,producer)
             self.assertEqual(result["status"],"STOP_REPAIR_AUTHORITY_CHANGED")
             self.assertIsNone(result["after"])
+
+    def test_bounded_repair_change_to_validator_blob_is_detected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            def producer(working_root,before_packet,directive):
+                p.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                                         "self_verdict":"PASS"}))
+                validator=root/before_packet["validator_ref"]
+                validator.write_text(validator.read_text()+"\\n# unauthorized mutation")
+                return {**before_packet,"raw_output_sha256":hashlib.sha256(p.read_bytes()).hexdigest()}
+            result=validate_with_bounded_producer_repair(root,packet,producer)
+            self.assertEqual(result["status"],"STOP_REPAIR_NOT_VALIDATED")
+            self.assertEqual(result["after"]["blocking_codes"],["SOURCE_SHA_MISMATCH:validator"])
+            self.assertFalse(result["source_authority_unchanged"])
+            self.assertFalse(result["producer_repair_executed"])
 
     def test_bounded_repair_cannot_pretend_to_change_output(self):
         with tempfile.TemporaryDirectory() as directory:
