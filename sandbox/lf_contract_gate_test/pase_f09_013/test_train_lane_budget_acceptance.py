@@ -15,9 +15,9 @@ BASE = datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc)
 def freeze_event():
     frozen = {}
     for step, values in {
-        "preflight": (2869, 4, 2855, "NOT_APPLICABLE", "NOT_APPLICABLE"),
-        "patch": ("INFORMATIVE", 13, "NOT_APPLICABLE", 1, 720),
-        "verify": (1659, 2, 1659, "NOT_APPLICABLE", "NOT_APPLICABLE"),
+        "preflight": (2919, 4, 2905, "NOT_APPLICABLE", "NOT_APPLICABLE"),
+        "patch": ("INFORMATIVE", 13, "NOT_APPLICABLE", 1, 770),
+        "verify": (1709, 2, 1709, "NOT_APPLICABLE", "NOT_APPLICABLE"),
     }.items():
         duration, qcount, qduration, tcount, tduration = values
         frozen[step] = {
@@ -35,6 +35,7 @@ def freeze_event():
             "acceptance_declared": False,
             "unit_state_transition": False,
             "budget_revision_code": budget.EVENT_CODE,
+            "origin": budget.OWNER_GO_ORIGIN,
             "occurred_at": "2026-10-14T23:09:31.769234Z",
             "frozen_caps": frozen,
             "acceptance_rule": {"sample_count": 10, "min_cold_samples": 2},
@@ -64,7 +65,10 @@ def steps_for(run):
         duration = run["_patch_duration"] if step == "patch" else 500
         envelope = {
             "duration_ms": duration,
-            "queries": {"count": 2, "duration_ms": min(duration - 1, 1000)},
+            "queries": {
+                "count": {"preflight": 4, "patch": 13, "verify": 2}[step],
+                "duration_ms": min(duration - 1, 1000),
+            },
             "transport": {
                 "count": 1 if step == "patch" else budget.NOT_OBSERVED,
                 "duration_ms": 10 if step == "patch" else budget.NOT_OBSERVED,
@@ -201,26 +205,26 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "RECALIBRATION_EVENT_CODE_MISMATCH"):
             budget.analyze(event, [], [])
 
-    def test_heavy_patch_passes_when_train_overhead_stays_within_caps(self):
+    def test_75000ms_patch_passes_when_train_overhead_stays_within_caps(self):
         prior_time = BASE - timedelta(minutes=60)
         prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
         prior["completed_at"] = prior_time
         heavy = execution(
             "EXEC-DB-TRAIN-PR2-20261015003000-R2",
-            prior_time + timedelta(minutes=30), None, patch_duration=76000,
+            prior_time + timedelta(minutes=30), None, patch_duration=75000,
         )
         rows = steps_for(heavy)
         patch = next(row for row in rows if row["step_id"] == "patch")
         envelope = patch["evidence_payload"]["pase_f09_015_telemetry_v1"]
-        envelope["queries"]["duration_ms"] = 75500
+        envelope["queries"]["duration_ms"] = 74500
         report = budget.analyze(freeze_event(), [prior, heavy], rows)
         item = report["evaluated_executions"][0]
         self.assertTrue(item["valid_sample"])
-        self.assertEqual(item["metrics"]["patch.duration_ms"], 76000)
-        self.assertEqual(item["metrics"]["patch.queries_duration_ms"], 75500)
+        self.assertEqual(item["metrics"]["patch.duration_ms"], 75000)
+        self.assertEqual(item["metrics"]["patch.queries_duration_ms"], 74500)
         self.assertEqual(item["exceeded_caps"], [])
 
-    def test_preflight_over_cap_still_fails(self):
+    def test_preflight_2872ms_passes_with_additive_margin(self):
         prior_time = BASE - timedelta(minutes=60)
         prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
         prior["completed_at"] = prior_time
@@ -230,18 +234,51 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
         )
         rows = steps_for(sample)
         preflight = next(row for row in rows if row["step_id"] == "preflight")
-        preflight["evidence_payload"]["pase_f09_015_telemetry_v1"]["duration_ms"] = 2870
+        preflight["evidence_payload"]["pase_f09_015_telemetry_v1"]["duration_ms"] = 2872
+        report = budget.analyze(freeze_event(), [prior, sample], rows)
+        item = report["evaluated_executions"][0]
+        self.assertEqual(item["exceeded_caps"], [])
+        self.assertTrue(item["valid_sample"])
+
+    def test_preflight_2950ms_fails_above_recalibrated_cap(self):
+        prior_time = BASE - timedelta(minutes=60)
+        prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
+        prior["completed_at"] = prior_time
+        sample = execution(
+            "EXEC-DB-TRAIN-PR2-20261015003000-R2",
+            prior_time + timedelta(minutes=30), None,
+        )
+        rows = steps_for(sample)
+        preflight = next(row for row in rows if row["step_id"] == "preflight")
+        preflight["evidence_payload"]["pase_f09_015_telemetry_v1"]["duration_ms"] = 2950
         report = budget.analyze(freeze_event(), [prior, sample], rows)
         item = report["evaluated_executions"][0]
         self.assertEqual(
             item["exceeded_caps"],
-            [{"metric": "preflight.duration_ms", "observed": 2870, "cap": 2869}],
+            [{"metric": "preflight.duration_ms", "observed": 2950, "cap": 2919}],
         )
         self.assertTrue(any(
             finding["kind"] == "BUDGET_EXCEEDED"
             and finding["metric"] == "preflight.duration_ms"
             for finding in report["findings"]
         ))
+
+    def test_patch_transport_727ms_passes_with_additive_margin(self):
+        prior_time = BASE - timedelta(minutes=60)
+        prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
+        prior["completed_at"] = prior_time
+        sample = execution(
+            "EXEC-DB-TRAIN-PR2-20261015003000-R2",
+            prior_time + timedelta(minutes=30), None,
+        )
+        rows = steps_for(sample)
+        patch = next(row for row in rows if row["step_id"] == "patch")
+        patch["evidence_payload"]["pase_f09_015_telemetry_v1"]["transport"]["duration_ms"] = 727
+        report = budget.analyze(freeze_event(), [prior, sample], rows)
+        item = report["evaluated_executions"][0]
+        self.assertEqual(item["metrics"]["patch.transport_duration_ms"], 727)
+        self.assertEqual(item["exceeded_caps"], [])
+        self.assertTrue(item["valid_sample"])
 
 
 if __name__ == "__main__":
