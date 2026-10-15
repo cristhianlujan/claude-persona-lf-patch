@@ -85,7 +85,7 @@
     {
       "control_id": "LF_MIGRATION_ROUTE_GUARD_TEST_WORKFLOW",
       "path": ".github/workflows/lf-migration-name-classification.yml",
-      "migration_parity_required": true,
+      "migration_parity_required": false,
       "input_governance_parity_required": false,
       "ci_router_selftest_required": true,
       "p0_exact_head_external_required": false,
@@ -98,7 +98,7 @@
     {
       "control_id": "LF_MIGRATION_ROUTE_GUARD_WORKFLOW",
       "path": ".github/workflows/lf-migration-route-guard.yml",
-      "migration_parity_required": true,
+      "migration_parity_required": false,
       "input_governance_parity_required": false,
       "ci_router_selftest_required": true,
       "p0_exact_head_external_required": false,

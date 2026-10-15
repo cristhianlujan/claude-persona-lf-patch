@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Strict declarative ownership for exact shared LF CI self-test controls.
+"""Strict declarative ownership for exact shared LF CI controls.
 
 This registry removes the need to patch lf_ci_lane_router.py whenever a new
-shared CI self-test control must be classified. V1 intentionally supports exact
-paths and one non-specialized self-test profile only: unknown siblings,
-lookalikes, migrations and external P0 ownership remain fail-closed or governed
-by their existing specialized authorities.
+shared CI control must be classified. V1 supports its exact non-specialized
+self-test profile plus one closed migration-route-guard profile for two exact
+workflow paths. Unknown siblings, lookalikes, migrations and external P0
+ownership remain fail-closed or governed by their existing specialized
+authorities.
 """
 from __future__ import annotations
 
@@ -29,6 +30,15 @@ _REQUIRED_FIELDS = frozenset({
 })
 _OPTIONAL_FIELDS = frozenset({"required_controls"})
 _SYMBOL_RE = re.compile(r"^[A-Z][A-Z0-9_-]*$")
+_MIGRATION_ROUTE_GUARD_CONTROLS = tuple(sorted(("CI_ROUTER_SELFTEST", "MIGRATION_ROUTE_GUARD")))
+_CLOSED_SPECIALIZED_PROFILES = {
+    "LF_MIGRATION_ROUTE_GUARD_TEST_WORKFLOW": (
+        ".github/workflows/lf-migration-name-classification.yml", False,
+    ),
+    "LF_MIGRATION_ROUTE_GUARD_WORKFLOW": (
+        ".github/workflows/lf-migration-route-guard.yml", True,
+    ),
+}
 
 
 class SharedRegistryValidationError(ValueError):
@@ -139,12 +149,35 @@ def compile_shared_registry(data: Mapping[str, Any]) -> CompiledSharedRegistry:
         selftest = _require_bool(raw, "ci_router_selftest_required", control_id)
         p0_external = _require_bool(raw, "p0_exact_head_external_required", control_id)
         deep_shared = _require_bool(raw, "deep_shared", control_id)
-        if migration or input_gov or not selftest or p0_external or deep_shared:
+        required_controls = _required_controls(raw, control_id, ("CI_ROUTER_SELFTEST",))
+        specialized_profile = _CLOSED_SPECIALIZED_PROFILES.get(control_id)
+        if specialized_profile is not None:
+            expected_path, expected_deep_shared = specialized_profile
+            if (
+                path != expected_path
+                or migration
+                or input_gov
+                or not selftest
+                or p0_external
+                or deep_shared is not expected_deep_shared
+                or required_controls != _MIGRATION_ROUTE_GUARD_CONTROLS
+            ):
+                raise SharedRegistryValidationError(
+                    "FAIL_LF_SHARED_REGISTRY_PROFILE",
+                    f"{control_id}:REQUIRES_EXACT_MIGRATION_ROUTE_GUARD_PROFILE",
+                )
+        elif (
+            migration
+            or input_gov
+            or not selftest
+            or p0_external
+            or deep_shared
+            or required_controls != ("CI_ROUTER_SELFTEST",)
+        ):
             raise SharedRegistryValidationError(
                 "FAIL_LF_SHARED_REGISTRY_PROFILE",
                 f"{control_id}:V1_REQUIRES_EXACT_NON_SPECIALIZED_SELFTEST",
             )
-        required_controls = _required_controls(raw, control_id, ("CI_ROUTER_SELFTEST",))
 
         controls.append(
             SharedControlOwnership(
