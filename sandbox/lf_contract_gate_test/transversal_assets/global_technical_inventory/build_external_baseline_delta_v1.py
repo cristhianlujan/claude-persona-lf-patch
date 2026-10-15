@@ -8,7 +8,8 @@ states NEW/STALE/MISSING become delta items.
 For repository NEW/STALE items, GitHub main is the only source of baseline metadata:
 path, git blob, SHA-256 of exact bytes, last commit touching the path, byte length,
 and extension. Last-commit attribution is collected in one `git log --name-only`
-pass for all changed repository paths; no per-file rev-list/log queries are used.
+pass for all changed paths; only unresolved paths are retried with first-parent
+merge diffs. No per-file history queries are used.
 
 For MISSING items the authoritative object no longer exists, so content-derived
 fields are intentionally null. Edge NEW/STALE items come only from the detector's
@@ -115,8 +116,8 @@ def _last_commits_one_pass(checkout: Path, paths: Iterable[str]) -> dict[str, st
     if any("\n" in path or "\r" in path for path in wanted):
         _fail("DELTA_REPO_PATH_NEWLINE_UNSUPPORTED")
 
-    # One history traversal for every requested path. Git emits newest commits first,
-    # therefore the first occurrence of a path is its last commit at HEAD.
+    # First history traversal for every requested path. Git emits newest commits
+    # first, therefore the first occurrence of a path is its last commit at HEAD.
     output = _git(
         checkout,
         "log",
@@ -146,6 +147,43 @@ def _last_commits_one_pass(checkout: Path, paths: Iterable[str]) -> dict[str, st
             result[line] = current_commit
             if len(result) == len(wanted_set):
                 break
+
+    missing = sorted(wanted_set - set(result))
+    if missing:
+        # Default git log omits merge commits whose file is introduced by the
+        # merge resolution itself. Retry only unresolved paths with the merge's
+        # first-parent delta; resolved paths keep their original result.
+        merge_output = _git(
+            checkout,
+            "log",
+            "--format=@@%H",
+            "--name-only",
+            "--no-renames",
+            "--diff-merges=first-parent",
+            "HEAD",
+            "--",
+            *missing,
+        )
+        merge_wanted = set(missing)
+        merge_result: dict[str, str] = {}
+        current_commit = None
+        for raw_line in merge_output.splitlines():
+            line = raw_line.strip("\r")
+            if not line:
+                continue
+            if line.startswith("@@"):
+                commit = line[2:]
+                if not HEX40.fullmatch(commit):
+                    _fail("DELTA_FILE_HISTORY_COMMIT_INVALID")
+                current_commit = commit
+                continue
+            if line in merge_wanted and line not in merge_result:
+                if current_commit is None:
+                    _fail("DELTA_FILE_HISTORY_PARSE_INVALID")
+                merge_result[line] = current_commit
+                if len(merge_result) == len(merge_wanted):
+                    break
+        result.update(merge_result)
 
     missing = sorted(wanted_set - set(result))
     if missing:

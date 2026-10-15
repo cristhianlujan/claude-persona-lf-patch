@@ -36,8 +36,10 @@ CREATE TEMP TABLE demo_empresa_plazo_config (
 
 CREATE TEMP TABLE demo_ofertas (
   offer_id uuid NOT NULL,
+  debt_id uuid NOT NULL, -- identidad de deuda ilustrativa: una deuda puede tener varias ofertas alternativas
   company_id uuid NOT NULL,
   currency_code char(3) NOT NULL,
+  offer_total_amount numeric(18,2) NOT NULL CHECK (offer_total_amount >= 0),
   PRIMARY KEY (offer_id, company_id)
 );
 
@@ -46,8 +48,8 @@ CREATE TEMP TABLE demo_planes (
   offer_id uuid NOT NULL,
   company_id uuid NOT NULL,
   config_version integer NOT NULL,
-  plan_total_amount numeric(18,2) NOT NULL CHECK (plan_total_amount >= 0), -- total de ESTA alternativa
   state_code text NOT NULL, -- valor real se resolverá desde lf_ops.estados_catalogo
+  UNIQUE (offer_id,company_id), -- ejemplo cuota: cada plan vincula UNA oferta económica propia
   FOREIGN KEY (offer_id,company_id) REFERENCES demo_ofertas(offer_id,company_id),
   FOREIGN KEY (company_id,config_version) REFERENCES demo_empresa_plazo_config(company_id,config_version)
 );
@@ -63,11 +65,11 @@ CREATE TEMP TABLE demo_cuotas (
 ROLLBACK;
 ```
 
-**Identidad y conciliación:** `offer_id` pertenece a la empresa; cada oferta puede contener muchos `plan_id`. Cuota cero `cuota_num=0` vive en `demo_cuotas`, NO en cabecera del plan. Las cuotas regulares inician en `1`. La suma de `demo_cuotas.amount` de cada plan (incluida cuota cero) debe conciliar exactamente `demo_planes.plan_total_amount` de esa alternativa. No se supone que distintos planes de una misma oferta tengan el mismo monto total; el criterio de precisión está en `B2B-RULE-INSTALLMENT-001` ID422. Esa verificación NO es todavía un validator operativo: `B2B_IMP_VAL_INSTALLMENT_SUM` ID88 tiene `tolerance_policy=PENDING_DECISION` y agrupación física aún sin reconciliar.
+**Identidad y conciliación:** en este ejemplo una deuda (`debt_id`) puede tener ofertas alternativas con distinto `offer_id`; cada plan de cuotas (`plan_id`) corresponde a su propia oferta económica y monto `demo_ofertas.offer_total_amount` (no es el mismo monto de todas las alternativas). Se muestra `UNIQUE(offer_id,company_id)` solo para ilustrar la distinción económica; la cardinalidad física final deberá reconciliarse con el contrato Cliente VIGENTE. Cuota cero (`cuota_num=0`) es opcional y vive en `demo_cuotas`, NO en cabecera del plan. Es pago inicial activo solo si supera el parámetro candidato de 1 unidad monetaria; cero no se considera activo. Las cuotas regulares inician en `1`. La suma de importes de cuotas efectivas debe conciliar `demo_ofertas.offer_total_amount`. El criterio de precisión está en `B2B-RULE-INSTALLMENT-001` ID422. Esa verificación NO es todavía un validator operativo: `B2B_IMP_VAL_INSTALLMENT_SUM` ID88 tiene `tolerance_policy=PENDING_DECISION` y agrupación física aún sin reconciliar.
 
 **Entrada Excel:** `REFERENCIA_EMPRESA + PLAN` solo relaciona filas dentro del archivo. LF asigna claves internas. No usar número de fila, texto del plan o RUC como PK.
 
-**Fechas:** se calculan desde `PAYMENT_CONFIRMED` para cuota 0, según calendario/ventana por empresa; los vencimientos propuestos previos no se vuelven definitivos hasta el snapshot contractual. No inventar número fijo de días ni usar la fecha del Excel como definitiva para modalidad dinámica.
+**Fechas:** los ejemplos de ventana de pago son sugerencias sujetas al futuro modelado físico. Si hay cuota 0 activa, un `PAYMENT_CONFIRMED` real puede ser el evento de referencia para estudiar una propuesta de cronograma; si no hay cuota 0 activa, el evento de activación **no está definido**. Se debe modelar la relación entre empresa, deuda, oferta, plan, calendario, ledger, pago y snapshot antes de fijar vencimientos definitivos. No inventar número fijo de días ni asumir que una fecha Excel es contractual.
 
 ## Ejemplos, NO límites codificados
 

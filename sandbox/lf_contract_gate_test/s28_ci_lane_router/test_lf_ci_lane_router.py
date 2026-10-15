@@ -285,7 +285,7 @@ def required_controls_shadow_main():
     assert got.required_controls == (CONTROL_CI_ROUTER_SELFTEST,), got
 
     owner_bundle = classify([workflow, validate_workflow, db_regression_workflow, router_readme, router, router_test])
-    assert owner_bundle.required_controls == (CONTROL_CI_ROUTER_SELFTEST,), owner_bundle
+    assert owner_bundle.required_controls == tuple(sorted((CONTROL_CI_ROUTER_SELFTEST, "LF_CONTRACT_CORE"))), owner_bundle
     assert owner_bundle.mode == "CI_ROUTER_SELFTEST_ONLY", owner_bundle
     assert owner_bundle.p0_exact_head_external_required is False, owner_bundle
 
