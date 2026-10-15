@@ -111,6 +111,24 @@ class OutputShapeParitiyChecks(unittest.TestCase):
         self.assertEqual(review["max_producer_repair_cycles_per_evidenced_defect"],1)
         self.assertFalse(review["new_operation_steps_required"])
 
+    def test_v02_prewrite_does_not_require_future_github_head(self):
+        contract=json.loads((ROOT/"skills/profile_creator/contracts/profile_update_evolved_routing_candidate_v1.json").read_text(encoding="utf-8"))
+        gate=contract["output_contract_gate"]
+        pre=gate["pre_write_check"]
+        post=gate["post_write_check"]
+        self.assertEqual(gate["existing_step_id"],"deterministic_validation")
+        self.assertEqual(pre["existing_step_id"],"pre_write_execution_binding_gate")
+        self.assertEqual(post["existing_step_id"],"deterministic_validation")
+        self.assertNotIn("candidate_head_sha",pre["requires"])
+        self.assertNotIn("positive_receipt_id",pre["requires"])
+        self.assertNotIn("negative_receipt_id",pre["requires"])
+        self.assertIn("candidate_head_sha",post["requires"])
+        self.assertIn("positive_receipt_id",post["requires"])
+        self.assertIn("negative_receipt_id",post["requires"])
+        self.assertTrue(pre["candidate_pass_is_not_admission"])
+        self.assertTrue(post["no_in_place_mutation_or_implicit_repair"])
+        self.assertFalse(gate["does_not_authorize_cutover"] is False)
+
     def test_update_candidate_repair_is_not_assigned_after_github_write(self):
         g=candidate_output_gate("future_generic_profile","PATCH",True,[])
         reviews=g["preventive_gap_review"]["reviews"]
