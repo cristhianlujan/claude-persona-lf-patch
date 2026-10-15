@@ -6,6 +6,8 @@ No model calls, profile-local code imports, provider claims or DB writes.
 import copy
 import json
 import sys
+import hashlib
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -14,6 +16,7 @@ sys.path.insert(0, str(ROOT/"skills/profile_creator/validators"))
 
 from profile_output_shape_preflight_v1 import validate_shape, candidate_output_gate
 from validate_candidate_depth import validate_candidate
+from run_bound_profile_output_validator_v1 import validate_bound_output
 
 
 class OutputShapeParitiyChecks(unittest.TestCase):
@@ -103,6 +106,93 @@ class OutputShapeParitiyChecks(unittest.TestCase):
                                      ["METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED"])
         self.assertEqual(gate["status"], "BLOCKED_UPSTREAM")
         self.assertFalse(gate["candidate_admitted"])
+
+    def make_bound_fixture(self, folder, mode="STDIN_JSON"):
+        root=Path(folder)
+        slug="future_generic_profile"
+        schema_path=root/f"profiles/{slug}/schemas/output.schema.json"
+        val_path=root/f"profiles/{slug}/validators/validate_output.py"
+        output_path=root/"evidence/output.json"
+        for path in (schema_path,val_path,output_path):
+            path.parent.mkdir(parents=True,exist_ok=True)
+        schema={
+            "type":"object","required":["deliverable_created","self_verdict"],
+            "properties":{
+                "deliverable_created":{"type":"object","required":["authority_status"],
+                    "properties":{"authority_status":{"enum":["SUPPORTED","CONFLICT_RESOLVED"]}}},
+                "self_verdict":{"enum":["PASS","BLOCKED"]},
+            }
+        }
+        schema_path.write_text(json.dumps(schema),encoding="utf-8")
+        program='''import sys,json
+from pathlib import Path
+obj=json.loads(Path(sys.argv[1]).read_text() if len(sys.argv)>1 else sys.stdin.read())
+valid=obj.get("deliverable_created",{}).get("authority_status")=="SUPPORTED" and obj.get("self_verdict")=="PASS"
+print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UNVERIFIED"}]}))
+'''
+        val_path.write_text(program,encoding="utf-8")
+        output_path.write_text(json.dumps({"deliverable_created":{"authority_status":"SUPPORTED"},
+                                          "self_verdict":"PASS"}),encoding="utf-8")
+        packet={"schema":"PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+                "operation_code":"ACTUALIZACION_PERFIL_LF","profile_slug":slug,
+                "validator_transport":mode,"expected_valid":True}
+        for key,path in (("schema",schema_path),("validator",val_path),("raw_output",output_path)):
+            packet[key+"_ref"]=path.relative_to(root).as_posix()
+            packet[key+"_sha256"]=hashlib.sha256(path.read_bytes()).hexdigest()
+        return root,packet,output_path
+
+    def test_updater_executes_generic_stdin_profile_validator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,_=self.make_bound_fixture(directory,"STDIN_JSON")
+            result=validate_bound_output(root,packet)
+            self.assertEqual(result["status"],"CANDIDATE_OUTPUT_PARITY_OBSERVED",result)
+            self.assertTrue(result["profile_validator_executed"])
+            self.assertFalse(result["admission_authorized"])
+            self.assertFalse(result["provider_attested"])
+
+    def test_updater_executes_generic_file_argument_validator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,_=self.make_bound_fixture(directory,"JSON_FILE_ARGUMENT")
+            result=validate_bound_output(root,packet)
+            self.assertEqual(result["status"],"CANDIDATE_OUTPUT_PARITY_OBSERVED",result)
+
+    def test_updater_missing_required_field_rejected_before_validator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            r=validate_bound_output(root,packet)
+            self.assertEqual(r["status"],"FAIL")
+            self.assertIn("OUTPUT_SHAPE_INVALID",r["blocking_codes"])
+            self.assertFalse(r["profile_validator_executed"])
+
+    def test_updater_frozen_negative_validator_rejects(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},
+                                     "self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            packet["expected_valid"]=False
+            r=validate_bound_output(root,packet)
+            self.assertEqual(r["status"],"EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR",r)
+            self.assertTrue(r["profile_validator_executed"])
+
+    def test_updater_stale_raw_hash_prevents_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            r=validate_bound_output(root,packet)
+            self.assertEqual(r["status"],"FAIL")
+            self.assertIn("SOURCE_SHA_MISMATCH:raw_output",r["blocking_codes"])
+            self.assertFalse(r["profile_validator_executed"])
+
+    def test_updater_rejects_validator_outside_profile_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            packet["validator_ref"]="profiles/other_profile/validators/validate_output.py"
+            r=validate_bound_output(root,packet)
+            self.assertEqual(r["status"],"FAIL")
+            self.assertFalse(r["profile_validator_executed"])
 
     def test_negative_bad_status_rejected(self):
         s={"type":"object","required":["self_verdict"],"properties":{"self_verdict":{"enum":["PASS","NEEDS_INPUT","BLOCKED"]}}}
