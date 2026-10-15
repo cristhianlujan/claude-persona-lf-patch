@@ -235,7 +235,7 @@
   "output_contract_gate": {
     "status": "CANDIDATE_ONLY_FAIL_CLOSED_UNTIL_VERIFIED_PRODUCER",
     "applies_to_frozen_outcome": "UPDATE",
-    "existing_step_id": "pre_write_execution_binding_gate",
+    "existing_step_id": "deterministic_validation",
     "generic_runner": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
     "receipt_reader": "public.lf_profile_update_verified_receipt_v1",
     "evidence_field": "candidate_output_contract_gate",
@@ -316,6 +316,56 @@
     "pre_write_guard_required_before": "github_write",
     "post_write_failure_action": "BLOCK_AND_RESTART_NEW_GOVERNED_CHANGESET",
     "prewrite_source_ref_kind": "UNWRITTEN_CANDIDATE_CONTENT_SHA256",
-    "postwrite_source_ref_kind": "GITHUB_EXACT_HEAD_AND_BLOB_SHA"
+    "postwrite_source_ref_kind": "GITHUB_EXACT_HEAD_AND_BLOB_SHA",
+    "pre_write_step_id": "pre_write_execution_binding_gate",
+    "pre_write_check": {
+      "stage": "UNWRITTEN_CANDIDATE",
+      "existing_step_id": "pre_write_execution_binding_gate",
+      "requires": [
+        "canonical_schema_source_and_sha",
+        "canonical_validator_source_and_sha",
+        "positive_output_sha256",
+        "negative_output_sha256",
+        "immutable_original_raw_sha256",
+        "separate_repaired_raw_sha256",
+        "local_positive_and_negative_results",
+        "candidate_source_snapshot_receipt"
+      ],
+      "cannot_require": [
+        "candidate_head_sha",
+        "positive_receipt_id",
+        "negative_receipt_id",
+        "post_write_ledger_receipt_id"
+      ],
+      "provider_bound_receipts_not_yet_applicable": true,
+      "must_preserve_preexisting_server_trust_gate": true,
+      "return_if_failed": "BLOCK_BEFORE_GITHUB_WRITE",
+      "no_changeset_written_by_validation": true,
+      "candidate_pass_is_not_admission": true
+    },
+    "post_write_check": {
+      "stage": "EXACT_GITHUB_WRITTEN_READBACK",
+      "existing_step_id": "deterministic_validation",
+      "requires": [
+        "canonical_schema_source_and_sha",
+        "canonical_validator_source_and_sha",
+        "positive_output_sha256",
+        "negative_output_sha256",
+        "positive_receipt_id",
+        "negative_receipt_id",
+        "candidate_head_sha",
+        "github_commit_sha",
+        "git_blob_sha",
+        "unmodified_original_raw_durable_receipt",
+        "post_write_schema_and_validator_sha_readback"
+      ],
+      "validate_against_prewrite_candidate_output_sha": true,
+      "provider_bound_positive_and_negative_receipts_required": true,
+      "receipt_reader": "public.lf_profile_update_verified_receipt_v1",
+      "missing_reader_or_receipt": "BLOCK_ADMISSION",
+      "no_in_place_mutation_or_implicit_repair": true
+    },
+    "field_reuse_note": "Existing requires array applies to post-write deterministic_validation only; pre-write requirements are pre_write_check.requires",
+    "candidate_head_sha_must_never_be_prewrite_requirement": true
   }
 }
