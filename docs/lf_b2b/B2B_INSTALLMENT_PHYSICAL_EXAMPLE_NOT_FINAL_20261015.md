@@ -37,7 +37,6 @@ CREATE TEMP TABLE demo_empresa_plazo_config (
 CREATE TEMP TABLE demo_ofertas (
   offer_id uuid NOT NULL,
   company_id uuid NOT NULL,
-  total_amount numeric(18,2) NOT NULL,
   currency_code char(3) NOT NULL,
   PRIMARY KEY (offer_id, company_id)
 );
@@ -47,6 +46,7 @@ CREATE TEMP TABLE demo_planes (
   offer_id uuid NOT NULL,
   company_id uuid NOT NULL,
   config_version integer NOT NULL,
+  plan_total_amount numeric(18,2) NOT NULL CHECK (plan_total_amount >= 0), -- total de ESTA alternativa
   state_code text NOT NULL, -- valor real se resolverá desde lf_ops.estados_catalogo
   FOREIGN KEY (offer_id,company_id) REFERENCES demo_ofertas(offer_id,company_id),
   FOREIGN KEY (company_id,config_version) REFERENCES demo_empresa_plazo_config(company_id,config_version)
@@ -63,7 +63,7 @@ CREATE TEMP TABLE demo_cuotas (
 ROLLBACK;
 ```
 
-**Identidad y conciliación:** `offer_id` pertenece a la empresa; cada oferta puede contener muchos `plan_id`. Cuota cero `cuota_num=0` vive en `demo_cuotas`, NO en cabecera del plan. Las cuotas regulares inician en `1`. La suma de `demo_cuotas.amount` de cada plan (incluida cuota cero) debe conciliar exactamente el monto total acordado del plan; el criterio de precisión está en `B2B-RULE-INSTALLMENT-001` ID422. Esa verificación NO es todavía un validator operativo: `B2B_IMP_VAL_INSTALLMENT_SUM` ID88 tiene `tolerance_policy=PENDING_DECISION` y agrupación física aún sin reconciliar.
+**Identidad y conciliación:** `offer_id` pertenece a la empresa; cada oferta puede contener muchos `plan_id`. Cuota cero `cuota_num=0` vive en `demo_cuotas`, NO en cabecera del plan. Las cuotas regulares inician en `1`. La suma de `demo_cuotas.amount` de cada plan (incluida cuota cero) debe conciliar exactamente `demo_planes.plan_total_amount` de esa alternativa. No se supone que distintos planes de una misma oferta tengan el mismo monto total; el criterio de precisión está en `B2B-RULE-INSTALLMENT-001` ID422. Esa verificación NO es todavía un validator operativo: `B2B_IMP_VAL_INSTALLMENT_SUM` ID88 tiene `tolerance_policy=PENDING_DECISION` y agrupación física aún sin reconciliar.
 
 **Entrada Excel:** `REFERENCIA_EMPRESA + PLAN` solo relaciona filas dentro del archivo. LF asigna claves internas. No usar número de fila, texto del plan o RUC como PK.
 
