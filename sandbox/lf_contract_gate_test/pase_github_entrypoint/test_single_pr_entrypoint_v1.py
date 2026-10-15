@@ -12,6 +12,9 @@ ALLOWLIST = Path(__file__).with_name("auxiliary_pr_workflows_v1.json")
 
 PULL_REQUEST = re.compile(r"^  pull_request:\s*$", re.MULTILINE)
 PULL_REQUEST_TARGET = re.compile(r"^  pull_request_target:\s*$", re.MULTILINE)
+# Preauthorize the reconciliation lane by its exact filename. It is optional
+# during rollout; the equality check below still rejects every other
+# pull_request_target workflow.
 EXPECTED_TRUSTED_PR = sorted(
     [
         "lf-ig-runtime-candidate-judge.yml",
@@ -20,6 +23,11 @@ EXPECTED_TRUSTED_PR = sorted(
         "lf-migration-route-guard.yml",
         "pase-merge-gate.yml",
     ]
+    + (
+        ["lf-migration-reconcile-lane.yml"]
+        if (WORKFLOWS / "lf-migration-reconcile-lane.yml").is_file()
+        else []
+    )
 )
 
 
