@@ -49,20 +49,20 @@ DECLARE
       where b.codigo_activo=v_asset.codigo_activo
         and (
           position(
-            ' '||btrim(regexp_replace(translate(lower(b.codigo_activo),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+            ' '||btrim(regexp_replace(translate(lower(b.codigo_activo),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
             in ' '||v_req||' '
           )>0
           or position(
-            ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+            ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
             in ' '||v_req||' '
           )>0
           or exists (
             select 1
             from jsonb_array_elements_text(coalesce(b.aliases,'[]'::jsonb)) al
-            where length(btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g')))>=8
-              and btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g')) <> lower(b.tipo_activo)
+            where length(btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')))>=8
+              and btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')) <> lower(b.tipo_activo)
               and position(
-                ' '||btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+                ' '||btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
                 in ' '||v_req||' '
               )>0
           )
@@ -118,8 +118,8 @@ BEGIN
     SELECT 1 FROM public.v_lf_fuente_operativa_busqueda b
     WHERE b.codigo_activo='ADAPTER-LF-SHELL-PROFILE-20260827'
       AND position(
-        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g'))||' '
-        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g')||' '
+        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
+        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')||' '
       )>0
   )
   THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_IDENTITY_REGRESSION'; END IF;
@@ -175,20 +175,20 @@ DECLARE
       where b.codigo_activo=v_asset.codigo_activo
         and (
           position(
-            ' '||btrim(regexp_replace(translate(lower(b.codigo_activo),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+            ' '||btrim(regexp_replace(translate(lower(b.codigo_activo),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
             in ' '||v_req||' '
           )>0
           or position(
-            ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+            ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
             in ' '||v_req||' '
           )>0
           or exists (
             select 1
             from jsonb_array_elements_text(coalesce(b.aliases,'[]'::jsonb)) al
-            where length(btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g')))>=8
-              and btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g')) <> lower(b.tipo_activo)
+            where length(btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')))>=8
+              and btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')) <> lower(b.tipo_activo)
               and position(
-                ' '||btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_\- ]+',' ','g'))||' '
+                ' '||btrim(regexp_replace(translate(lower(al),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
                 in ' '||v_req||' '
               )>0
           )
@@ -244,8 +244,8 @@ BEGIN
     SELECT 1 FROM public.v_lf_fuente_operativa_busqueda b
     WHERE b.codigo_activo='ADAPTER-LF-SHELL-PROFILE-20260827'
       AND position(
-        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g'))||' '
-        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g')||' '
+        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
+        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g')||' '
       )>0
   )
   THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_IDENTITY_REGRESSION'; END IF;
