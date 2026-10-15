@@ -355,6 +355,27 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             self.assertFalse(result["source_authority_unchanged"])
             self.assertFalse(result["producer_repair_executed"])
 
+    def test_bounded_repair_checks_source_after_initial_validator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root,packet,p=self.make_bound_fixture(directory)
+            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
+            validator=root/packet["validator_ref"]
+            validator.write_text(
+                validator.read_text() + "\nfrom pathlib import Path\n"
+                + "if not valid:\n    v=Path(__file__)\n    v.write_text(v.read_text()+'\\n# tampered-initial')\n",
+                encoding="utf-8",
+            )
+            packet["validator_sha256"]=hashlib.sha256(validator.read_bytes()).hexdigest()
+            calls=[]
+            result=validate_with_bounded_producer_repair(
+                root,packet,lambda *args:calls.append(1))
+            self.assertEqual(result["status"],"BLOCKED_SOURCE_MUTATED_DURING_INITIAL_VALIDATION")
+            self.assertEqual(result["producer_attempts"],0)
+            self.assertFalse(result["producer_adapter_invoked"])
+            self.assertEqual(calls,[])
+            self.assertFalse(result["admission_authorized"])
+
     def test_bounded_repair_rechecks_validator_source_after_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             root,packet,p=self.make_bound_fixture(directory)
