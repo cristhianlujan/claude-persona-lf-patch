@@ -18,3 +18,6 @@
 /.github/workflows/lf-f1-reconcile-unit-tests.yml @cristhianlujan @paulozterra
 /sandbox/lf_contract_gate_test/migration_source_parity/reconcile_source_only.py @cristhianlujan @paulozterra
 /sandbox/lf_contract_gate_test/migration_source_parity/test_reconcile_source_only.py @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/migration_merge_train/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/train_receipt_verifier/** @cristhianlujan @paulozterra
+/sandbox/lf_contract_gate_test/migration_route_guard/** @cristhianlujan @paulozterra
