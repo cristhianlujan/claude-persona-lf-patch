@@ -235,7 +235,7 @@
   "output_contract_gate": {
     "status": "CANDIDATE_ONLY_FAIL_CLOSED_UNTIL_VERIFIED_PRODUCER",
     "applies_to_frozen_outcome": "UPDATE",
-    "existing_step_id": "deterministic_validation",
+    "existing_step_id": "pre_write_execution_binding_gate",
     "generic_runner": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
     "receipt_reader": "public.lf_profile_update_verified_receipt_v1",
     "evidence_field": "candidate_output_contract_gate",
@@ -268,17 +268,19 @@
           "METHOD_AND_CAUSAL_GAP"
         ],
         "deterministic_validation": [
-          "STRUCTURAL_AND_OUTPUT_PARITY",
-          "BOUNDED_PRODUCER_REPAIR_DIRECTIVE"
+          "WRITTEN_ARTIFACT_PARITY_AND_PROVENANCE"
         ],
         "regression_after": [
-          "FUNCTIONAL_AND_REGRESSION"
+          "FUNCTIONAL_AND_REGRESSION_STOP_POST_WRITE"
         ],
         "semantic_judge": [
           "SEMANTIC_VALUE"
         ],
         "report_output": [
           "PROVENANCE_AND_LEARNING"
+        ],
+        "pre_write_execution_binding_gate": [
+          "CANDIDATE_PARITY_AND_BOUNDED_PRODUCER_REPAIR"
         ]
       },
       "transversal_validator": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
@@ -303,7 +305,17 @@
       "original_raw_durable_receipt_required_before_governed_consumer_admission": true,
       "local_snapshot_sha_is_not_provider_bound_durability": true,
       "producer_execution_timeout_and_budget_required_from_authorized_consumer": true,
-      "generic_callback_does_not_enforce_remote_budget": true
-    }
+      "generic_callback_does_not_enforce_remote_budget": true,
+      "no_postwrite_in_place_self_repair": true,
+      "prewrite_repair_only_for_new_v02_update_execution": true,
+      "no_change_skips_prewrite_artifact_fix": true,
+      "no_retroactive_snapshot_mutation": true,
+      "postwrite_regression_failure_requires_new_authorized_changeset": true
+    },
+    "post_write_validation_step_id": "deterministic_validation",
+    "pre_write_guard_required_before": "github_write",
+    "post_write_failure_action": "BLOCK_AND_RESTART_NEW_GOVERNED_CHANGESET",
+    "prewrite_source_ref_kind": "UNWRITTEN_CANDIDATE_CONTENT_SHA256",
+    "postwrite_source_ref_kind": "GITHUB_EXACT_HEAD_AND_BLOB_SHA"
   }
 }
