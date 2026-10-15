@@ -52,7 +52,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           path: reconcile-head
           fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: false
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Resolve current main and reject mixed labels
@@ -80,7 +80,20 @@ jobs:
           else
             echo "conflict=false" >> "$GITHUB_OUTPUT"
           fi
-          git -C reconcile-head fetch --no-tags origin "refs/heads/main:refs/remotes/origin/main"
+
+      # The PR checkout has no persisted credential. Supply the App token only
+      # to this fetch through Git's process environment; do not write it to config.
+      - name: Fetch current main into exact PR checkout
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git -C reconcile-head fetch --no-tags origin "refs/heads/main:refs/remotes/origin/main"
 
       - name: Verify exact source against read-only ledger
         id: verify
@@ -199,9 +212,14 @@ jobs:
           pull="$(gh api "repos/$REPO/pulls/$PR")"
           live_head="$(jq -r '.head.sha' <<<"$pull")"
           labels="$(jq -r '[.labels[].name] | join(",")' <<<"$pull")"
+          state="$(jq -r '.state' <<<"$pull")"
+          draft="$(jq -r '.draft' <<<"$pull")"
           [ "$live_main" = "$MAIN_SHA" ] || { echo "BLOCKED_STALE_MAIN expected=$MAIN_SHA actual=$live_main"; exit 2; }
           [ "$live_head" = "$HEAD_SHA" ] || { echo "BLOCKED_STALE_HEAD expected=$HEAD_SHA actual=$live_head"; exit 2; }
+          [[ ",$labels," == *",ready-to-reconcile,"* ]] || { echo "BLOCKED_RECONCILE_LABEL_MISSING"; exit 1; }
           [[ ",$labels," != *",ready-to-merge,"* ]] || { echo "FAIL_MIXED_LANE_LABELS"; exit 1; }
+          [ "$state" = "open" ] || { echo "BLOCKED_PR_NOT_OPEN state=$state"; exit 1; }
+          [ "$draft" = "false" ] || { echo "BLOCKED_PR_IS_DRAFT"; exit 1; }
           gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
             -f state=success -f context='lf-merge-train/verified' \
             -f description='source-only reconciliation verified against exact ledger identity' >/dev/null
