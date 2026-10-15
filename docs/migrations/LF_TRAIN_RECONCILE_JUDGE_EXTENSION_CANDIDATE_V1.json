@@ -1,0 +1,82 @@
+{
+  "schema_version": "LF_TRAIN_OPERATION_MODE_EXTENSION_CANDIDATE_V1",
+  "status": "CANDIDATE_NOT_REGISTERED_NOT_ACTIVE",
+  "operation_code": "ACTUALIZACION_DB_LF",
+  "mode": "RECONCILE_GIT_ONLY",
+  "reuses": [
+    "ACT-0001",
+    "ROUTER_DOWNSTREAM_AUTHORITY",
+    "MIGRATION_SOURCE_PARITY",
+    "LF_MIGRATION_MERGE_TRAIN",
+    "lf_operation_execution"
+  ],
+  "authority_boundary": {
+    "entry": "ACT-0001",
+    "executor": "LF_MIGRATION_MERGE_TRAIN",
+    "target_type": "MIGRATION",
+    "effect_transport": "GIT_ONLY",
+    "db_writes_allowed": false,
+    "ledger_dml_allowed": false,
+    "secrets_exposed_to_caller": false
+  },
+  "existing_bindings_not_to_override": {
+    "steps": [
+      "preflight",
+      "patch",
+      "verify"
+    ],
+    "judge_code": "JUDGE_DB_MUTATION_SANDBOX_MINIMAL_V1",
+    "required_behavior": "Existing SQL migration consumers stay unchanged"
+  },
+  "proposed_mode_judge": {
+    "preflight": {
+      "requirements": [
+        "router_authority_receipt",
+        "router_authority_validation",
+        "exact_base_sha",
+        "exact_head_sha",
+        "read_only_ledger_snapshot_digest",
+        "rename_only_diff",
+        "policy_refs",
+        "ekb_refs"
+      ],
+      "result": "PASS_CLEAN_OR_BLOCK"
+    },
+    "patch": {
+      "requirements": [
+        "train_merge_exact_head_receipt",
+        "git_rename_only_effect_receipt",
+        "effect_guard_github_identity",
+        "ledger_write_absence_evidence"
+      ],
+      "result": "PASS_CLEAN_OR_BLOCK"
+    },
+    "verify": {
+      "requirements": [
+        "merged_main_sha",
+        "exact_renamed_blob_readback",
+        "canonical_migration_source_parity",
+        "unchanged_ledger_snapshot_digest",
+        "router_authority_currentness",
+        "independent_closeout_receipt"
+      ],
+      "result": "PASS_CLEAN_OR_BLOCK"
+    }
+  },
+  "promotion_gates": [
+    "version_and_register_mode_contract",
+    "versioned_selective_judge_binding_without_changing_existing_sql_judge",
+    "readback_currentness_and_router_authority",
+    "sandbox_e2e_rename_without_db_write",
+    "canonical_parity_and_ledger_unchanged",
+    "post_merge_governed_close",
+    "negative_tests_missing_receipt_stale_router_changed_sql",
+    "EKB_and_independent_closure"
+  ],
+  "implementation_state": {
+    "premerge_validation": "CANDIDATE_AVAILABLE",
+    "postmerge_git_only_judge": "NOT_IMPLEMENTED",
+    "git_only_closeout": "NOT_IMPLEMENTED",
+    "train_merge_gate": "BLOCKED_UNTIL_ADMITTED"
+  }
+}

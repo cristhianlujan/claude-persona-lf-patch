@@ -6,6 +6,7 @@ on:
       - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
       - 'sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py'
       - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/**'
 permissions:
   contents: read
 jobs:
@@ -24,3 +25,5 @@ jobs:
         run: python3 sandbox/lf_contract_gate_test/f0_workflow_activation/test_scope.py
       - name: Test Train UTC future-version policy
         run: python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py
+      - name: Verify RECONCILE Git-only and Router preflight
+        run: python3 sandbox/lf_contract_gate_test/db_write_transport/test_reconcile_git_only_v1.py
