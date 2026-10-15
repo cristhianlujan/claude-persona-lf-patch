@@ -8,6 +8,9 @@
 -- verify permissions (no ledger SELECT); ROLLBACK.
 --
 -- This reader returns only a boolean. No private ledger data leaves the function.
+-- This is candidate source: PACK_VALIDATION_HARNESS is not cut over to this
+-- producer contract; until admitted, output-type receipt lookup returns false.
+-- Negative validator rejection may exit 0 when JSON says valid=false.
 CREATE OR REPLACE FUNCTION public.lf_profile_update_verified_receipt_v1(
     p_subject_type text,
     p_subject_ref text,
@@ -24,7 +27,8 @@ AS $lf$
 DECLARE
     v_id uuid;
 BEGIN
-    IF p_subject_type NOT IN ('PROFILE_ASSESSMENT', 'METHOD_QUALIFICATION')
+    IF p_subject_type NOT IN ('PROFILE_ASSESSMENT', 'METHOD_QUALIFICATION',
+         'PROFILE_OUTPUT_VALIDATION_POSITIVE', 'PROFILE_OUTPUT_VALIDATION_NEGATIVE')
        OR NULLIF(btrim(p_subject_ref), '') IS NULL
        OR p_receipt_id IS NULL
        OR p_receipt_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
@@ -54,6 +58,55 @@ BEGIN
            AND NULLIF(btrim(l.provider_ref),'') IS NOT NULL
            AND l.receipt_sha256 ~ '^[0-9a-f]{64}$'
            AND l.verified_at IS NOT NULL
+           -- Output-validation receipts require a real provider-bound harness
+           -- execution, not a chat/worker PASS string. Existing assessment
+           -- and method-qualification behavior is preserved unchanged.
+           AND (
+             p_subject_type NOT IN
+               ('PROFILE_OUTPUT_VALIDATION_POSITIVE','PROFILE_OUTPUT_VALIDATION_NEGATIVE')
+             OR (
+               l.capability_code='PACK_VALIDATION_HARNESS'
+               AND l.receipt_kind='PROFILE_OUTPUT_VALIDATION_RESULT'
+               AND l.gate_code='PROFILE_OUTPUT_CONTRACT_VALIDATION'
+               AND l.receipt_payload->>'schema'='PROFILE_OUTPUT_VALIDATION_RESULT_V1'
+               AND l.receipt_payload->>'source_readback_matched'='true'
+               AND l.receipt_payload->>'structural_check_executed'='true'
+               AND l.receipt_payload->>'admission_authorized'='false'
+               AND l.receipt_payload->>'provider_attested'='false'
+               AND l.receipt_payload->>'runtime_activation_authorized'='false'
+               AND l.receipt_payload->>'raw_output_sha256'=l.subject_sha256
+               AND jsonb_typeof(l.receipt_payload->'source_refs')='object'
+               AND l.receipt_payload->'source_refs' ? 'schema'
+               AND l.receipt_payload->'source_refs' ? 'validator'
+               AND l.receipt_payload->'source_refs' ? 'raw_output'
+               AND (
+                 (p_subject_type='PROFILE_OUTPUT_VALIDATION_POSITIVE'
+                   AND l.receipt_payload->>'status'='CANDIDATE_OUTPUT_PARITY_OBSERVED'
+                   AND l.receipt_payload->>'profile_validator_executed'='true'
+                   AND l.receipt_payload->>'validator_exit_code'='0'
+                   AND CASE WHEN jsonb_typeof(l.receipt_payload->'validator_errors')='array'
+                     THEN jsonb_array_length(l.receipt_payload->'validator_errors')=0
+                     ELSE false END
+                   AND l.receipt_payload->>'validator_stdout_sha256' ~ '^[0-9a-f]{64}$')
+                 OR
+                 (p_subject_type='PROFILE_OUTPUT_VALIDATION_NEGATIVE'
+                   AND (
+                     (l.receipt_payload->>'status'='EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR'
+                      AND l.receipt_payload->>'profile_validator_executed'='true'
+                      AND CASE WHEN jsonb_typeof(l.receipt_payload->'validator_errors')='array'
+                        THEN jsonb_array_length(l.receipt_payload->'validator_errors')>0
+                        ELSE false END
+                      AND l.receipt_payload->>'validator_stdout_sha256' ~ '^[0-9a-f]{64}$')
+                     OR
+                     (l.receipt_payload->>'status'='EXPECTED_NEGATIVE_REJECTED_BY_SHAPE'
+                      AND l.receipt_payload->>'profile_validator_executed'='false'
+                      AND CASE WHEN jsonb_typeof(l.receipt_payload->'shape_errors')='array'
+                        THEN jsonb_array_length(l.receipt_payload->'shape_errors')>0
+                        ELSE false END)
+                   ))
+               )
+             )
+           )
     );
 END;
 $lf$;
