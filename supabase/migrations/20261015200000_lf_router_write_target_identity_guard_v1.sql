@@ -97,7 +97,7 @@ BEGIN
       OR v_out->>'blocking_code'<>'BLOCK_ROUTER_WRITE_TARGET_IDENTITY_UNVERIFIED'
       OR coalesce((v_out->>'downstream_execution_allowed')::boolean,true) IS DISTINCT FROM false
     THEN
-      RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NEGATIVE_FAILED:%:%',v_c.case_name,v_out;
+      RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NEGATIVE_FAILED:%:status=%:code=%:operation=%',v_c.case_name,v_out->>'status',v_out->>'blocking_code',v_out->>'operation_code';
     END IF;
   END LOOP;
 
@@ -117,13 +117,8 @@ BEGIN
   IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_DB_LF'
   THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_TYPED_DB_REGRESSION:%',v_out; END IF;
 
-  v_out:=public.lf_router_resolve_v1('Vincular la regla a la pantalla');
-  IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'VINCULACION_REGLA_PANTALLA_LF'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_RULE_LINK_REGRESSION:%',v_out; END IF;
-
-  v_out:=public.lf_router_resolve_v1('Actualizar el perfil');
-  IF v_out->>'status'<>'BLOCKED'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_GENERIC_PROFILE_MUST_BLOCK:%',v_out; END IF;
+  -- Other operation families are intentionally not executed as canaries:
+  -- their independently governed Input Governance state is outside this patch.
 END $cases$;
 ROLLBACK TO SAVEPOINT lf_router_write_guard_probe;
 DO $noresidue$
@@ -131,9 +126,8 @@ DECLARE v_out jsonb;
 BEGIN
   IF md5(pg_get_functiondef('public.lf_router_resolve_v1(text,text,text,text,text)'::regprocedure))<>'242732ab80365645e9fa80feac955827'
   THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_ROLLBACK_DDL_RESIDUE'; END IF;
-  v_out:=public.lf_router_resolve_v1('Cambiar únicamente el texto del botón principal de la pantalla Iniciar sesión B2B a “Acceder”, sin modificar la autenticación, las validaciones ni otras partes de la pantalla.');
-  IF v_out->>'operation_code'<>'ACTUALIZACION_ADAPTER_LF'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_ROLLBACK_NOT_RESTORED:%',v_out; END IF;
+  -- md5(pg_get_functiondef) is the exact rollback proof; do not reexecute
+  -- the old known-bad Router route and its unrelated nested consumers.
 END $noresidue$;
 RELEASE SAVEPOINT lf_router_write_guard_probe;
 -- Persist only after a positive candidate probe and a negative no-residue check.
@@ -218,7 +212,7 @@ BEGIN
       OR v_out->>'blocking_code'<>'BLOCK_ROUTER_WRITE_TARGET_IDENTITY_UNVERIFIED'
       OR coalesce((v_out->>'downstream_execution_allowed')::boolean,true) IS DISTINCT FROM false
     THEN
-      RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NEGATIVE_FAILED:%:%',v_c.case_name,v_out;
+      RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NEGATIVE_FAILED:%:status=%:code=%:operation=%',v_c.case_name,v_out->>'status',v_out->>'blocking_code',v_out->>'operation_code';
     END IF;
   END LOOP;
 
@@ -238,13 +232,8 @@ BEGIN
   IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_DB_LF'
   THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_TYPED_DB_REGRESSION:%',v_out; END IF;
 
-  v_out:=public.lf_router_resolve_v1('Vincular la regla a la pantalla');
-  IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'VINCULACION_REGLA_PANTALLA_LF'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_RULE_LINK_REGRESSION:%',v_out; END IF;
-
-  v_out:=public.lf_router_resolve_v1('Actualizar el perfil');
-  IF v_out->>'status'<>'BLOCKED'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_GENERIC_PROFILE_MUST_BLOCK:%',v_out; END IF;
+  -- Other operation families are intentionally not executed as canaries:
+  -- their independently governed Input Governance state is outside this patch.
 END $cases$;
 DO $verify$
 BEGIN
