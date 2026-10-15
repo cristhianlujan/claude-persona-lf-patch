@@ -531,7 +531,7 @@ jobs:
             guard_args=(--head-sha "$EXPECTED_HEAD")
             if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi
             set +e
-            guard_output="$(printf '%s' "$checks" | python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py "${guard_args[@]}")"
+            guard_output="$(printf '%s' "$checks" | python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py --checks-file sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json "${guard_args[@]}")"
             guard_rc=$?
             set -e
             echo "$guard_output"
