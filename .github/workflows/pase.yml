@@ -19,7 +19,6 @@ permissions:
 
 jobs:
   lf-pase:
-    if: ${{ false }}
     name: PASE
     runs-on: ubuntu-latest
     outputs:
