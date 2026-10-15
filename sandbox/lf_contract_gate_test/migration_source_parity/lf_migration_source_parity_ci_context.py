@@ -51,6 +51,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_fondeo_legal_seguimiento_v1",  # SALY-only tracking; exact migration name, no new general prefix.
     "b2b_corporate_scope_model_v1",
     "pase_f07_x03_runtime_implementation_deploy_v1",
     "promote_router_compact_jit_v1",
@@ -108,6 +109,7 @@ CLASSIFIED_EXTERNAL_PREFIXES = (
     "router_generic_tie_break_",
 )
 CLASSIFIED_EXTERNAL_NAMES = {
+    "independent_assurance_oracle_independence_measure_v1",
     "retire_b2b_auth005_legacy_totp_screen",
     "ig_1_serialize_input_readiness_run_pair_v1",
     "ig_m8_2_per_family_resolver_hook_v1",

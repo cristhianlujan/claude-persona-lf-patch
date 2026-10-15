@@ -19,6 +19,8 @@ for p in (ASSESS_DIR, SELECT_DIR, VALIDATOR_DIR):
 from evaluate_s26_learning_preflight import evaluate_learning_preflight
 from evaluate_s26_profile_baseline import evaluate as evaluate_s26
 from profile_assessment_v1 import assess_profile
+from profile_evolution_step_candidates_v1 import derive_step_candidates
+from profile_output_shape_preflight_v1 import candidate_output_gate
 from capability_selector_v2 import compose_capabilities
 
 
@@ -36,7 +38,8 @@ def build_evolution_plan(
 ) -> dict[str, Any]:
     structural = evaluate_s26(repo, slug)
     learning = evaluate_learning_preflight(
-        preflight_payload, slug, repo_root=repo, current_revision=current_revision
+        preflight_payload, slug, repo_root=repo, current_revision=current_revision,
+        assessment_only=True,
     )
     preflight_pass = learning["status"] == "PASS"
 
@@ -135,7 +138,7 @@ def build_evolution_plan(
     )
     patch_minimality_required = mode == "PATCH"
 
-    return {
+    plan = {
         "schema": "PROFILE_EVOLUTION_PLAN_V1",
         "operation_code": "ACTUALIZACION_PERFIL_LF",
         "conceptual_responsibility": "PROFILE_EVOLUTION_ORCHESTRATOR",
@@ -170,6 +173,11 @@ def build_evolution_plan(
         "automatic_runtime_activation": False,
         "automatic_production_activation": False,
     }
+    plan["candidate_output_contract_gate"] = candidate_output_gate(
+        slug, mode, candidate_allowed, blockers,
+    )
+    plan["step_candidates"] = derive_step_candidates(plan)
+    return plan
 
 
 
