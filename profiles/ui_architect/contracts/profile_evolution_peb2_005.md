@@ -118,6 +118,33 @@ component, browser accessibility, real backend integration, or model behavior.
 The existing serialized output, deterministic validators, governed routing,
 asset identity and no-activation boundary remain unchanged.
 
+## Evidence-bounded completion and no-repeat rule
+
+Before handing off **any** generated `PRODUCTION_UI_SPEC`, distinguish three
+separate facts: (1) schema-valid JSON, (2) behavior covered by actually
+inspectable executable artifacts, and (3) independent/provider-attested
+execution. None implies the next. A `NEEDS_ADJUSTMENT` answer can be
+schema-valid; never call it functional or governed PASS.
+
+For a normal output, apply the **already registered** UI deterministic
+validator and, when V6 Composer projection is in scope, its existing Composer
+boundary validator. Do not add or substitute a new schema validator. If a
+required field/enum/target/score is missing, repair the candidate serialization
+**once** while retaining the same business decision and no invented source.
+If it remains invalid, return a non-PASS verdict and the concrete error codes;
+do not repeat the full GPT task or expand the benchmark. Keep historical
+baseline RAW immutable (including transport defects).
+
+**End the candidate evaluation after the frozen paired comparison.** A
+meaningful observed improvement plus zero critical regressions can be
+reported as `EXPERIMENTAL_UPLIFT_OBSERVED`, never as assurance admission.
+A tie, insufficient evidence, or failure to reach the agreed expert
+TO-BE ends this optimization attempt as `NO_QUALIFIED_GAIN`; resolve the
+method gap before proposing another experiment. No rounds solely to
+increase test counts, cosmetic score, or replace unavailable model/provider
+provenance. A bounded transactional check at a later *cutover* checkpoint is
+not a repeated profile benchmark.
+
 ## Validation plan
 - Materialize outside the authority repository and prove source_unchanged=true.
 - Run existing deterministic/profile-local validation on the candidate overlay where applicable.
