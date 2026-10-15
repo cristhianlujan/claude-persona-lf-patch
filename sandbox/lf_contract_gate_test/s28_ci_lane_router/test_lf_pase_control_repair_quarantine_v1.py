@@ -43,7 +43,12 @@ policy = load_policy()
 
 # 1: policy exactly covers the live applicability universe.
 by_id = validate_policy(policy, control_universe=universe)
-ok(sorted(by_id) == universe and len(universe) == 25, "live universe coverage")
+ok(sorted(by_id) == universe and len(universe) == 26, "live universe coverage")
+ok(
+    by_id["MIGRATION_ROUTE_GUARD"]["state"] == "REPAIR_OBSERVE_ONLY"
+    and by_id["MIGRATION_ROUTE_GUARD"]["reentry_evidence"] is None,
+    "new control remains observe-only",
+)
 
 required = ["LF_CONTRACT_CORE", "MIGRATION_SOURCE_PARITY", "PROFILE_RUNTIME_V3"]
 not_applicable = [

@@ -76,6 +76,21 @@ def test_unrelated_main_change_is_current_rebound() -> None:
     assert r["evidence_semantics"] == "HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY"
 
 
+def test_main_advanced_after_pr_snapshot_rebinds_without_false_block() -> None:
+    # Local-only race fixture: PR evidence is bound, then main advances on an
+    # unrelated path before evaluation. Currentness must rebind to live main.
+    repo, bound = setup_repo()
+    (repo / "unrelated/readme.md").write_text("main advanced after PR snapshot\n", encoding="utf-8")
+    live_main = commit_all(repo, "unrelated main advance after PR snapshot")
+    r = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=live_main
+    )
+    assert r["decision"] == "CURRENT_REBOUND", r
+    assert r["ready"] is True, r
+    assert r["rebind_allowed"] is True, r
+    assert r["resolved_revision"] == live_main
+
+
 def test_ci_authority_change_blocks_without_compatibility_proof() -> None:
     repo, base = setup_repo()
     p = repo / "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
@@ -224,6 +239,7 @@ def test_feature_push_uses_merge_base_not_diff_base_as_authority() -> None:
 def main() -> None:
     tests = [
         test_unrelated_main_change_is_current_rebound,
+        test_main_advanced_after_pr_snapshot_rebinds_without_false_block,
         test_ci_authority_change_blocks_without_compatibility_proof,
         test_same_revision_is_current,
         test_pr_that_contains_current_main_binds_current_authority,
