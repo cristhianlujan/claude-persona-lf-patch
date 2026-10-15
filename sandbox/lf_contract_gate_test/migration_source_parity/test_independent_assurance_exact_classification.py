@@ -16,15 +16,10 @@ class IndependentAssuranceExactClassificationTests(unittest.TestCase):
     )
     FAILURE_CODE = "FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY"
 
-    def assert_path_rejected(self, path: str) -> None:
+    def assert_path_rejected(self, path: str, expected_code: str) -> None:
         with self.assertRaises(ValueError) as raised:
             classify_path(path, self.FAILURE_CODE)
-        self.assertTrue(
-            str(raised.exception).startswith(
-                (self.FAILURE_CODE, "FAIL_MIGRATION_FILENAME:")
-            ),
-            str(raised.exception),
-        )
+        self.assertTrue(str(raised.exception).startswith(expected_code), str(raised.exception))
 
     def test_versioned_real_path_is_classified(self):
         name, classification = classify_path(self.REAL_PATH, self.FAILURE_CODE)
@@ -33,21 +28,25 @@ class IndependentAssuranceExactClassificationTests(unittest.TestCase):
 
     def test_path_with_uppercase_name_variant_is_rejected(self):
         path = self.REAL_PATH.replace("_independent_", "_Independent_", 1)
-        self.assert_path_rejected(path)
+        self.assert_path_rejected(path, self.FAILURE_CODE)
 
     def test_path_with_leading_space_in_name_is_rejected(self):
         path = self.REAL_PATH.replace("_independent_", "_ independent_", 1)
-        self.assert_path_rejected(path)
+        self.assert_path_rejected(path, "FAIL_MIGRATION_FILENAME:")
 
     def test_path_with_trailing_space_in_name_is_rejected(self):
         path = self.REAL_PATH.replace("_measure_v1.sql", "_measure_v1 .sql")
-        self.assert_path_rejected(path)
+        self.assert_path_rejected(path, "FAIL_MIGRATION_FILENAME:")
 
-    def test_path_with_exact_name_as_substring_is_rejected(self):
+    def test_path_with_extra_prefix_before_exact_name_is_rejected(self):
         path = self.REAL_PATH.replace(
             "_independent_assurance", "_x_independent_assurance", 1
-        ).replace("_measure_v1.sql", "_measure_v1_extra.sql")
-        self.assert_path_rejected(path)
+        )
+        self.assert_path_rejected(path, self.FAILURE_CODE)
+
+    def test_path_with_extra_suffix_after_exact_name_is_rejected(self):
+        path = self.REAL_PATH.replace("_measure_v1.sql", "_measure_v1_extra.sql")
+        self.assert_path_rejected(path, self.FAILURE_CODE)
 
     def test_exact_name_is_classified(self):
         self.assertTrue(classified("independent_assurance_oracle_independence_measure_v1"))
