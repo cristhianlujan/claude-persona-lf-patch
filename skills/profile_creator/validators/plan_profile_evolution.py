@@ -20,6 +20,7 @@ from evaluate_s26_learning_preflight import evaluate_learning_preflight
 from evaluate_s26_profile_baseline import evaluate as evaluate_s26
 from profile_assessment_v1 import assess_profile
 from profile_evolution_step_candidates_v1 import derive_step_candidates
+from profile_output_shape_preflight_v1 import candidate_output_gate
 from capability_selector_v2 import compose_capabilities
 
 
@@ -172,6 +173,9 @@ def build_evolution_plan(
         "automatic_runtime_activation": False,
         "automatic_production_activation": False,
     }
+    plan["candidate_output_contract_gate"] = candidate_output_gate(
+        slug, mode, candidate_allowed, blockers,
+    )
     plan["step_candidates"] = derive_step_candidates(plan)
     return plan
 

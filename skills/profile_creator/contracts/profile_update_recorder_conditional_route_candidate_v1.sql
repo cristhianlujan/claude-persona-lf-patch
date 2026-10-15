@@ -30,6 +30,10 @@ declare
   v_trust jsonb;
   v_route_resolution jsonb;
   v_has_evolved_route boolean := false;
+  v_output_gate jsonb;
+  v_output_readback jsonb;
+  v_output_slug text;
+  v_output_head text;
 begin
   if p_execution_id is null or btrim(p_execution_id) = '' or p_step_id is null or btrim(p_step_id) = '' then return jsonb_build_object('outcome','BLOCKED','code','STEP_IDENTITY_MISSING','durable',false); end if;
   if p_step_id = 'init_execution' then return jsonb_build_object('outcome','BLOCKED','code','INIT_STEP_IMMUTABLE','durable',false); end if;
@@ -129,6 +133,47 @@ begin
   if v_block_code is null and v_execution.operation_code='ACTUALIZACION_PERFIL_LF' then
     v_block_code:=public.lf_profile_update_substantive_block_v1(p_execution_id,p_step_id,p_evidence_payload,v_execution.manifest);
     if v_block_code is not null then v_block_details:=jsonb_build_object('reason','Substantive Profile update/graduation evidence did not satisfy fail-closed contract','graduation_contract',v_execution.manifest->>'graduation_contract'); end if;
+  end if;
+  -- Inert on v0.1 and NO_CHANGE. v0.2 UPDATE must not convert caller-
+  -- declared validator PASS into admission without provider-bound receipts.
+  if v_block_code is null and v_has_evolved_route
+      and v_route_resolution->>'outcome'='UPDATE'
+      and p_step_id='deterministic_validation' then
+    v_output_gate:=p_evidence_payload->'candidate_output_contract_gate';
+    select es.evidence_payload into v_output_readback
+      from public.lf_operation_execution_steps es
+     where es.execution_id=p_execution_id and es.step_id='github_readback'
+       and es.status='STEP_PASS_WITH_EVIDENCE';
+    v_output_slug:=split_part(coalesce(v_execution.target_path,''),'/',2);
+    v_output_head:=v_output_readback->>'exact_head';
+    if coalesce(jsonb_typeof(v_output_gate),'')<>'object'
+       or coalesce(v_output_slug,'')=''
+       or coalesce(v_output_head,'') !~ '^[0-9a-f]{40}$'
+       or v_output_readback->>'recorded_by_rpc' is distinct from
+          'lf_record_profile_operation_step_v1'
+       or v_output_readback->>'sha_match' is distinct from 'true'
+       or v_output_gate->>'candidate_head_sha' is distinct from v_output_head
+       or coalesce(v_output_gate->>'positive_output_sha256','') !~ '^[0-9a-f]{64}$'
+       or coalesce(v_output_gate->>'negative_output_sha256','') !~ '^[0-9a-f]{64}$'
+       or v_output_gate->>'positive_output_sha256' is not distinct from
+          v_output_gate->>'negative_output_sha256' then
+      v_block_code:='PROFILE_EVOLUTION_OUTPUT_PARITY_SOURCE_UNRESOLVED';
+    elsif not public.lf_profile_update_verified_receipt_v1(
+           'PROFILE_OUTPUT_VALIDATION_POSITIVE',v_output_slug,
+           v_output_gate->>'positive_receipt_id',
+           v_output_gate->>'positive_output_sha256',v_output_head)
+       or not public.lf_profile_update_verified_receipt_v1(
+           'PROFILE_OUTPUT_VALIDATION_NEGATIVE',v_output_slug,
+           v_output_gate->>'negative_receipt_id',
+           v_output_gate->>'negative_output_sha256',v_output_head)
+    then
+      v_block_code:='PROFILE_EVOLUTION_OUTPUT_PARITY_RECEIPT_UNVERIFIED';
+    end if;
+    if v_block_code is not null then
+      v_block_details:=jsonb_build_object(
+        'reason','Canonical positive and negative output receipts are required; model and caller PASS do not qualify',
+        'profile_slug',v_output_slug,'candidate_head_sha',v_output_head);
+    end if;
   end if;
   -- v0.2 only: evidence marked UNPROVEN is not a substantive PASS.
   -- Preserve v0.1 frozen executions; require actual successful validation
