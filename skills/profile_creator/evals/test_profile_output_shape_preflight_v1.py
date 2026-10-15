@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"skills/profile_creator/validators"))
 
-from profile_output_shape_preflight_v1 import validate_shape
+from profile_output_shape_preflight_v1 import validate_shape, candidate_output_gate
 from validate_candidate_depth import validate_candidate
 
 
@@ -83,6 +83,26 @@ class OutputShapeParitiyChecks(unittest.TestCase):
         self.assertFalse(result["profile_local_validator_executed"])
         self.assertFalse(result["semantic_review_executed"])
         self.assertFalse(result["provider_attestation"])
+
+    def test_updater_candidate_never_auto_admitted(self):
+        gate = candidate_output_gate("new_future_profile", "SPECIALIZE", True, [])
+        self.assertEqual(gate["status"], "REQUIRED_BEFORE_ADMISSION")
+        self.assertFalse(gate["executed"])
+        self.assertFalse(gate["candidate_admitted"])
+        self.assertFalse(gate["source_write_authorized"])
+        self.assertIsNone(gate["passing_receipt"])
+        self.assertTrue(gate["validator_execution_required_before_admission"])
+
+    def test_updater_no_change_no_unneeded_round(self):
+        gate = candidate_output_gate("new_future_profile", "NO_CHANGE", False, [])
+        self.assertEqual(gate["status"], "NOT_APPLICABLE_NO_CHANGE")
+        self.assertFalse(gate["executed"])
+
+    def test_updater_blocked_authority_never_bypassed(self):
+        gate = candidate_output_gate("new_future_profile", "PATCH", False,
+                                     ["METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED"])
+        self.assertEqual(gate["status"], "BLOCKED_UPSTREAM")
+        self.assertFalse(gate["candidate_admitted"])
 
     def test_negative_bad_status_rejected(self):
         s={"type":"object","required":["self_verdict"],"properties":{"self_verdict":{"enum":["PASS","NEEDS_INPUT","BLOCKED"]}}}
