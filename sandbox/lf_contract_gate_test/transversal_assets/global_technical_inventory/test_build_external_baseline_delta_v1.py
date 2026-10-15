@@ -33,6 +33,17 @@ def run(repo: Path, *args: str) -> str:
     return proc.stdout.strip()
 
 
+def run_unchecked(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(repo), *args],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+    )
+
+
 def blob(repo: Path, rev_path: str) -> str:
     return run(repo, "rev-parse", rev_path)
 
@@ -140,6 +151,57 @@ class ExternalBaselineDeltaBuilderTest(unittest.TestCase):
         self.assertNotIn("rev-list", " ".join(calls[0]))
         self.assertEqual(result["repo/new.txt"], self.change_commit)
         self.assertEqual(result["repo/stale.py"], self.change_commit)
+
+    def test_file_added_in_merge_resolution_uses_first_parent_pass(self) -> None:
+        repo = Path(self.temp.name) / "merge-repo"
+        repo.mkdir()
+        run(repo, "init", "-q")
+        run(repo, "config", "user.email", "fixture@example.invalid")
+        run(repo, "config", "user.name", "Fixture")
+        (repo / "conflict.txt").write_text("base\n", encoding="utf-8")
+        run(repo, "add", ".")
+        run(repo, "commit", "-q", "-m", "fixture base")
+        base_branch = run(repo, "branch", "--show-current")
+
+        run(repo, "checkout", "-q", "-b", "feature")
+        (repo / "conflict.txt").write_text("feature side\n", encoding="utf-8")
+        run(repo, "commit", "-qam", "fixture feature change")
+        run(repo, "checkout", "-q", base_branch)
+        (repo / "conflict.txt").write_text("main side\n", encoding="utf-8")
+        run(repo, "commit", "-qam", "fixture main change")
+
+        merge = run_unchecked(repo, "merge", "--no-ff", "--no-commit", "feature")
+        self.assertNotEqual(merge.returncode, 0, "fixture must create a merge conflict")
+        (repo / "conflict.txt").write_text("merge resolution\n", encoding="utf-8")
+        (repo / "merge-only.txt").write_text("added by merge resolution\n", encoding="utf-8")
+        run(repo, "add", ".")
+        run(repo, "commit", "-q", "-m", "fixture merge resolution")
+        merge_commit = run(repo, "rev-parse", "HEAD")
+
+        calls = []
+        real_run = subprocess.run
+
+        def counted(*args, **kwargs):
+            command = args[0]
+            if isinstance(command, list) and "log" in command:
+                calls.append(command)
+            return real_run(*args, **kwargs)
+
+        with patch("build_external_baseline_delta_v1.subprocess.run", side_effect=counted):
+            result = _last_commits_one_pass(repo, ["merge-only.txt"])
+
+        self.assertEqual(result["merge-only.txt"], merge_commit)
+        self.assertEqual(len(calls), 2)
+        self.assertNotIn("--diff-merges=first-parent", calls[0])
+        self.assertIn("--diff-merges=first-parent", calls[1])
+        self.assertEqual(calls[1][calls[1].index("--") + 1 :], ["merge-only.txt"])
+
+    def test_fails_closed_when_path_is_absent_from_history(self) -> None:
+        with self.assertRaisesRegex(
+            DeltaBuildError,
+            "DELTA_FILE_LAST_COMMIT_MISSING:repo/never-created.txt",
+        ):
+            _last_commits_one_pass(self.repo, ["repo/never-created.txt"])
 
     def test_fails_closed_on_checkout_sha_mismatch(self) -> None:
         report = copy.deepcopy(self.report)
