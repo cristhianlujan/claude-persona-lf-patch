@@ -20,6 +20,7 @@ from evaluate_s26_learning_preflight import evaluate_learning_preflight
 from evaluate_s26_profile_baseline import evaluate as evaluate_s26
 from profile_assessment_v1 import assess_profile
 from profile_evolution_step_candidates_v1 import derive_step_candidates
+from profile_output_shape_preflight_v1 import candidate_output_gate
 from capability_selector_v2 import compose_capabilities
 
 
@@ -172,32 +173,9 @@ def build_evolution_plan(
         "automatic_runtime_activation": False,
         "automatic_production_activation": False,
     }
-    # Transversal output gate: a plan may prepare a candidate but MUST NOT
-    # mistake semantic/structural prose for valid output samples. This receipt
-    # is an obligation, not a claim that any generated output was checked.
-    plan["candidate_output_contract_gate"] = {
-        "schema": "PROFILE_CANDIDATE_OUTPUT_GATE_V1",
-        "status": (
-            "REQUIRED_BEFORE_ADMISSION" if candidate_allowed else
-            "NOT_APPLICABLE_NO_CHANGE" if mode == "NO_CHANGE" and not blockers else
-            "BLOCKED_UPSTREAM"
-        ),
-        "operation_scope": "ACTUALIZACION_PERFIL_LF",
-        "profile_slug": slug,
-        "canonical_schema_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
-        "canonical_profile_validator_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
-        "generic_shape_preflight": "skills/profile_creator/validators/profile_output_shape_preflight_v1.py",
-        "positive_and_negative_output_evidence_required": True,
-        "validator_execution_required_before_admission": True,
-        "single_bounded_self_repair_allowed": True,
-        "on_semantic_tie_or_unqualified_gain": "STOP_NO_QUALIFIED_GAIN",
-        "independent_provenance_required_for_assurance": True,
-        "executed": False,
-        "passing_receipt": None,
-        "candidate_admitted": False,
-        "source_write_authorized": False,
-        "runtime_activation_authorized": False,
-    }
+    plan["candidate_output_contract_gate"] = candidate_output_gate(
+        slug, mode, candidate_allowed, blockers,
+    )
     plan["step_candidates"] = derive_step_candidates(plan)
     return plan
 
