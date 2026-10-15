@@ -124,6 +124,62 @@ to replay all cases. In all outcomes, producer depth, deterministic parity,
 functional execution and independent review remain separate, and no
 candidate is auto-merged or activated.
 
+## Transversal preventive gap review and bounded repair (Profile Updater)
+
+This applies to **every governed profile update**, not only UI Architect or
+Product Director. It complements the S26 structural compatibility baseline;
+**13/13 means structural compatibility, not proven task quality**. Do not
+insert new required steps into frozen v0.1 runs or create a second repair engine.
+Consume `candidate_output_contract_gate.preventive_gap_review` during v0.2
+planning; it is explicitly unexecuted until the existing governed consumer
+materializes evidence.
+
+At existing stage boundaries, perform only the checks relevant to the actual
+task, resolved authority, frozen update outcome and material gap:
+
+1. `baseline_read`: inspect the origin of the defect (profile generation
+   instructions/template, canonical binding, current policy and matched EKB),
+   not only its symptom. If an upstream shared method is wrong, repair that
+   shared owner through its own governed route; profile-local fixes cannot
+   substitute for the origin repair.
+2. `method_selection`: resolve a real structural, functional, causal,
+   uncertainty, semantic or evidence gap and qualify the smallest applicable
+   method. Do not require all 13 dimensions or all capability families on
+   each output; the 13-dimensional baseline remains the compatibility floor.
+3. `deterministic_validation`: bind the exact current profile schema and
+   canonical local validator to the generated candidate; check valid output
+   and a relevant invalid counterexample. The shared runner reports exact
+   errors. If source/validator authority is missing, stop: do not change the
+   schema or silently waive a validator failure.
+4. **Single bounded producer repair**: on a verified output defect,
+   return the defect and pre-repair RAW SHA to the existing producer once.
+   Correct only the candidate output or deliberate negative fixture, not the
+   schema, authority, test oracle or historical RAW. Preserve failed and
+   corrected versions; rerun the same bound validator on the new exact head.
+   The runner only **requests** remediation; the authorized producer must
+   actually perform and attest it. No uncontrolled retry chain.
+5. `regression_after` and `semantic_judge`: test material behavior
+   (including critical negatives and relevant causality) against a frozen
+   baseline. Mechanical shape repair does not prove functional improvement.
+   An independent reviewer resolves meaningful semantic value. TIE, FAIL,
+   regression or `NO_QUALIFIED_GAIN` stops the update attempt; provenance
+   missing blocks admission but does not trigger more benchmark rounds.
+6. `report_output`: reconcile origin correction, candidate repair, positive
+   and negative validator evidence, semantic verdict, provider-bound receipts
+   where required, and EKB cause/prevention readback. Record new learnings
+   through the existing governed EKB/Train route, never an unapproved direct
+   profile-runtime database write. Nothing auto-activates.
+
+**Repair scope:** one bounded correction cycle **per evidenced defect in
+the active candidate pass**, with a finite batch and a single post-repair
+revalidation. Multiple defects can be corrected together before that rerun.
+If the same defect remains or a new material gap cannot be solved safely,
+stop/return to source; never silently mark a check executed or passed.
+When the method itself is deficient, correct the Updater/Creator shared
+origin once and preserve specialization only where a domain-owned profile
+actually needs it. A reviewer MUST differ from the producer. The explicit
+producer repair receipt and semantic/assurance receipts are not interchangeable.
+
 ## Handoff outcome rule
 
 For outputs routed to Quality Pack, the evidence layers remain distinct:
