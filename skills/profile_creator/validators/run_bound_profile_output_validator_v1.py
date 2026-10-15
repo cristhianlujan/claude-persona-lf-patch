@@ -281,7 +281,27 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
     if not receipt["original_raw_preserved_local"]:
         receipt["status"] = "STOP_ORIGINAL_RAW_MUTATED"
         return receipt
-    receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched"))
+    # The profile-local validator is executable code. A clean pre-execution
+    # source SHA is insufficient: re-read exact bound bytes after its process
+    # returns, including the schema and the validator itself.
+    def source_still_bound() -> bool:
+        for name in ("schema", "validator", "raw_output"):
+            ref = proposed.get(name + "_ref")
+            digest = proposed.get(name + "_sha256")
+            if not isinstance(ref, str) or not isinstance(digest, str) or not SHA.fullmatch(digest):
+                return False
+            try:
+                bound_path = (root / ref).resolve(strict=True)
+                if not bound_path.is_relative_to(root) or sha(bound_path.read_bytes()) != digest:
+                    return False
+            except (OSError, RuntimeError):
+                return False
+        return True
+
+    receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched")) and source_still_bound()
+    if not receipt["source_authority_unchanged"]:
+        receipt["status"] = "STOP_POST_VALIDATION_SOURCE_MUTATED"
+        return receipt
     eligible = (
         (proposed["expected_valid"] is True
          and after["status"] == "CANDIDATE_OUTPUT_PARITY_OBSERVED")
