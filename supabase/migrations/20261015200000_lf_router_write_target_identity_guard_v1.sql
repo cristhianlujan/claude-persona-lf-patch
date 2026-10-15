@@ -101,10 +101,17 @@ BEGIN
     END IF;
   END LOOP;
 
-  v_out:=public.lf_router_resolve_v1('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO');
-  IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_ADAPTER_LF'
-      OR v_out#>>'{asset,codigo_activo}'<>'ADAPTER-LF-SHELL-PROFILE-20260827'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_REGRESSION:%',v_out; END IF;
+  -- Positive identity evidence comes from the canonical catalog, not from
+  -- executing an adapter's unrelated Input Governance child flow.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.v_lf_fuente_operativa_busqueda b
+    WHERE b.codigo_activo='ADAPTER-LF-SHELL-PROFILE-20260827'
+      AND position(
+        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g'))||' '
+        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g')||' '
+      )>0
+  )
+  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_IDENTITY_REGRESSION'; END IF;
 
   v_out:=public.lf_router_resolve_v1('Corregir una funcion SQL bajo la operacion de base de datos',NULL,'UPDATE','DB','ROUTER');
   IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_DB_LF'
@@ -215,10 +222,17 @@ BEGIN
     END IF;
   END LOOP;
 
-  v_out:=public.lf_router_resolve_v1('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO');
-  IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_ADAPTER_LF'
-      OR v_out#>>'{asset,codigo_activo}'<>'ADAPTER-LF-SHELL-PROFILE-20260827'
-  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_REGRESSION:%',v_out; END IF;
+  -- Positive identity evidence comes from the canonical catalog, not from
+  -- executing an adapter's unrelated Input Governance child flow.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.v_lf_fuente_operativa_busqueda b
+    WHERE b.codigo_activo='ADAPTER-LF-SHELL-PROFILE-20260827'
+      AND position(
+        ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g'))||' '
+        in ' '||regexp_replace(translate(lower('Actualizar el adapter ADAPTER_LF_SHELL_PROFILE_v0.1_CANDIDATO'),'áéíóúüñ','aeiouun'),'[^a-z0-9_\\- ]+',' ','g')||' '
+      )>0
+  )
+  THEN RAISE EXCEPTION 'LF_ROUTER_WRITE_GUARD_NAMED_ADAPTER_IDENTITY_REGRESSION'; END IF;
 
   v_out:=public.lf_router_resolve_v1('Corregir una funcion SQL bajo la operacion de base de datos',NULL,'UPDATE','DB','ROUTER');
   IF v_out->>'status'<>'READY_TO_EXECUTE' OR v_out->>'operation_code'<>'ACTUALIZACION_DB_LF'
