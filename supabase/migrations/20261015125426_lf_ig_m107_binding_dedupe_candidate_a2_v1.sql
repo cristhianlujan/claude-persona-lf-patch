@@ -109,8 +109,7 @@ begin
     )
   );
 end;
-$function$
-
+$function$;
 
 REVOKE ALL ON FUNCTION programacion.fn_input_design_binding_graph_v2_candidate_v1(integer) FROM PUBLIC;
 COMMENT ON FUNCTION programacion.fn_input_design_binding_graph_v2_candidate_v1(integer)
