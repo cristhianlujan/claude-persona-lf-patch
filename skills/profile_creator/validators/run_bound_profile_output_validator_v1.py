@@ -168,12 +168,12 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
 
 
 def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_repair) -> dict:
-    """ONE local repair pass through a caller-supplied, governed producer adapter.
+    """One local candidate repair, never an independent or provider attestation.
 
-    The producer adapter is supplied by the authorized operation consumer, never
-    selected by untrusted profile output or packet contents. This utility does
-    not authenticate OIDC, dispatch a profile job, publish a branch, create
-    provider-bound receipts, record an operation step, or authorize admission.
+    The callback is owned by an authorized operation consumer. This function
+    neither resolves governance credentials nor imposes a process timeout on
+    that callback; the real producer must separately prove budget and dispatch.
+    No historical RAW may be overwritten during the attempt.
     """
     before = validate_bound_output(root, packet)
     remediation = before.get("remediation") or {}
@@ -186,10 +186,14 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
         "producer_adapter_invoked": False,
         "producer_repair_executed": False,
         "original_failure_sha256": before.get("raw_output_sha256"),
-        "repaired_output_sha256": None,
+        "original_raw_snapshot_sha256": None,
+        "original_raw_preserved_local": False,
         "original_raw_durable_receipt": None,
+        "repaired_output_sha256": None,
+        "repaired_output_ref": None,
         "source_authority_unchanged": None,
         "local_deterministic_revalidation": False,
+        "producer_budget_enforced": False,
         "requires_governed_producer_and_durable_raw_receipt": True,
         "independent_review_executed": False,
         "provider_attested": False,
@@ -202,38 +206,81 @@ def validate_with_bounded_producer_repair(root: Path, packet: dict, producer_rep
     if not callable(producer_repair):
         receipt["status"] = "BLOCKED_PRODUCER_ADAPTER_MISSING"
         return receipt
-    if packet.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
+    if not isinstance(packet, dict) or packet.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
         receipt["status"] = "BLOCKED_OPERATION_SCOPE"
         return receipt
-    if not before.get("source_readback_matched") or not before.get("original_failure_sha256", before.get("raw_output_sha256")):
+    if not before.get("source_readback_matched"):
         receipt["status"] = "BLOCKED_UNBOUND_FAILURE"
         return receipt
+    original_ref = packet.get("raw_output_ref")
+    original_sha = packet.get("raw_output_sha256")
+    if not isinstance(original_ref, str) or not isinstance(original_sha, str):
+        receipt["status"] = "BLOCKED_UNBOUND_FAILURE"
+        return receipt
+    root = root.resolve()
+    try:
+        original_path = (root / original_ref).resolve(strict=True)
+        if not original_path.is_relative_to(root) or not original_path.is_file():
+            raise OSError("UNSAFE_ORIGINAL")
+        original_bytes = original_path.read_bytes()
+    except OSError:
+        receipt["status"] = "BLOCKED_ORIGINAL_RAW_UNAVAILABLE"
+        return receipt
+    if sha(original_bytes) != original_sha:
+        receipt["status"] = "BLOCKED_ORIGINAL_RAW_MISMATCH"
+        return receipt
+    receipt["original_raw_snapshot_sha256"] = original_sha
 
-    # Only a verified candidate/negative-fixture defect is eligible. Preserve
-    # the original evidence before the external producer is invoked.
+    def original_intact() -> bool:
+        try:
+            return sha(original_path.read_bytes()) == original_sha
+        except OSError:
+            return False
+
+    # Existing producer adapter gets exactly one attempt. The original remains
+    # immutable; it must produce a DIFFERENT source-bound candidate artifact.
     receipt["producer_attempts"] = 1
     receipt["producer_adapter_invoked"] = True
     try:
         proposed = producer_repair(root, dict(packet), dict(remediation))
     except Exception:
-        receipt["status"] = "STOP_PRODUCER_REPAIR_FAILED"
+        receipt["original_raw_preserved_local"] = original_intact()
+        receipt["status"] = ("STOP_PRODUCER_REPAIR_FAILED" if receipt["original_raw_preserved_local"]
+                             else "STOP_ORIGINAL_RAW_MUTATED")
+        return receipt
+    receipt["original_raw_preserved_local"] = original_intact()
+    if not receipt["original_raw_preserved_local"]:
+        receipt["status"] = "STOP_ORIGINAL_RAW_MUTATED"
         return receipt
     if not isinstance(proposed, dict) or set(proposed) != set(packet):
         receipt["status"] = "STOP_REPAIR_REBOUND_UNTRUSTED"
         return receipt
-    if any(proposed[key] != packet[key] for key in packet if key != "raw_output_sha256"):
+    allowed_delta = {"raw_output_ref", "raw_output_sha256"}
+    if any(proposed[key] != packet[key] for key in packet if key not in allowed_delta):
         receipt["status"] = "STOP_REPAIR_AUTHORITY_CHANGED"
         return receipt
+    revised_ref = proposed.get("raw_output_ref")
     revised_sha = proposed.get("raw_output_sha256")
-    if not isinstance(revised_sha, str) or not SHA.fullmatch(revised_sha):
+    if not isinstance(revised_ref, str) or not isinstance(revised_sha, str) or not SHA.fullmatch(revised_sha):
         receipt["status"] = "STOP_REPAIR_SHA_INVALID"
         return receipt
-    if revised_sha == packet.get("raw_output_sha256"):
+    if revised_ref == original_ref and revised_sha == original_sha:
+        receipt["status"] = "STOP_REPAIR_NO_OUTPUT_DELTA"
+        return receipt
+    if revised_ref == original_ref:
+        receipt["status"] = "STOP_REPAIR_SAME_RAW_PATH"
+        return receipt
+    if revised_sha == original_sha:
         receipt["status"] = "STOP_REPAIR_NO_OUTPUT_DELTA"
         return receipt
     receipt["repaired_output_sha256"] = revised_sha
+    receipt["repaired_output_ref"] = revised_ref
     after = validate_bound_output(root, proposed)
     receipt["after"] = after
+    receipt["original_raw_preserved_local"] = original_intact()
+    if not receipt["original_raw_preserved_local"]:
+        receipt["status"] = "STOP_ORIGINAL_RAW_MUTATED"
+        return receipt
     receipt["source_authority_unchanged"] = bool(after.get("source_readback_matched"))
     eligible = (
         (proposed["expected_valid"] is True
