@@ -17,6 +17,7 @@ import sys
 from typing import Any
 
 EVENT_CODE = "PASE-ATOM-F09-013-TRAIN-LANE-BUDGET-RECALIBRATION-V1"
+OWNER_GO_ORIGIN = "GO de Paulo, 2026-10-15 10:30 Lima"
 NOT_OBSERVED = "NOT_OBSERVED"
 NO_CAP_VALUES = {NOT_OBSERVED, "NOT_APPLICABLE", "INFORMATIVE"}
 OPTIONAL_NO_CAPS = {
@@ -208,11 +209,13 @@ def analyze(event_row: dict, execution_rows: list[dict], step_rows: list[dict]) 
     payload = parse_jsonb(event_row.get("payload"))
     if payload.get("budget_revision_code") != EVENT_CODE:
         raise ValueError("F09_013_RECALIBRATION_EVENT_CODE_MISMATCH")
+    if payload.get("origin") != OWNER_GO_ORIGIN:
+        raise ValueError("F09_013_RECALIBRATION_EVENT_OWNER_GO_MISSING")
     if payload.get("acceptance_declared") is not False or payload.get("unit_state_transition") is not False:
         raise ValueError("F09_013_RECALIBRATION_EVENT_ENVELOPE_INVALID")
-    cutoff = as_utc(event_row.get("created_at"))
+    cutoff = as_utc(payload.get("occurred_at"))
     if cutoff is None:
-        raise ValueError("F09_013_RECALIBRATION_EVENT_CREATED_AT_MISSING")
+        raise ValueError("F09_013_RECALIBRATION_EVENT_OCCURRED_AT_MISSING")
     caps = caps_from_event(payload)
     rule = payload.get("acceptance_rule") or {}
     target_count = int(rule.get("sample_count", 10))
@@ -335,7 +338,7 @@ def fetch_live(dsn: str) -> dict:
         raise RuntimeError("Install psycopg v3 to use live read-only mode") from exc
 
     event_sql = """
-        SELECT id, payload, created_at
+        SELECT id, payload
           FROM public.lf_eventos
          WHERE evento_tipo = 'PLAN_SNAPSHOT_DETALLADO'
            AND entidad_tipo = 'ENGINEERING_WORK_ITEM'
@@ -368,8 +371,7 @@ def fetch_live(dsn: str) -> dict:
                 event_records = cursor.fetchall()
                 if len(event_records) != 1:
                     raise RuntimeError(f"F09_013_RECALIBRATION_EVENT_CARDINALITY:{len(event_records)}")
-                event = {"id": event_records[0][0], "payload": event_records[0][1],
-                         "created_at": event_records[0][2]}
+                event = {"id": event_records[0][0], "payload": event_records[0][1]}
                 cursor.execute(execution_sql)
                 executions = [dict(zip([d.name for d in cursor.description], row))
                               for row in cursor.fetchall()]
