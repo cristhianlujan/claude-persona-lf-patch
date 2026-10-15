@@ -15,9 +15,9 @@ BASE = datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc)
 def freeze_event():
     frozen = {}
     for step, values in {
-        "preflight": (2869, 4, 2855, budget.NOT_OBSERVED, budget.NOT_OBSERVED),
-        "patch": (10200, 13, 9379, 1, 720),
-        "verify": (1659, 2, 1659, budget.NOT_OBSERVED, budget.NOT_OBSERVED),
+        "preflight": (2869, 4, 2855, "NOT_APPLICABLE", "NOT_APPLICABLE"),
+        "patch": ("INFORMATIVE", 13, "NOT_APPLICABLE", 1, 720),
+        "verify": (1659, 2, 1659, "NOT_APPLICABLE", "NOT_APPLICABLE"),
     }.items():
         duration, qcount, qduration, tcount, tduration = values
         frozen[step] = {
@@ -27,11 +27,14 @@ def freeze_event():
             "transport_count_cap": tcount,
             "transport_duration_ms_cap": tduration,
         }
-    frozen["total"] = {"duration_ms_cap": 44416}
+    frozen["total"] = {"duration_ms_cap": "INFORMATIVE"}
     return {
-        "id": budget.EVENT_ID,
+        "id": 21100,
+        "created_at": BASE - timedelta(minutes=31),
         "payload": {
             "acceptance_declared": False,
+            "unit_state_transition": False,
+            "budget_revision_code": budget.EVENT_CODE,
             "occurred_at": "2026-10-14T23:09:31.769234Z",
             "frozen_caps": frozen,
             "acceptance_rule": {"sample_count": 10, "min_cold_samples": 2},
@@ -106,19 +109,21 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
         self.assertEqual(report["valid_sample_count"], 2)
         self.assertEqual(report["valid_cold_sample_count"], 1)
         self.assertEqual(report["valid_hot_sample_count"], 1)
-        self.assertEqual(samples[hot["execution_id"]]["exceeded_caps"][0]["cap"], 10200)
+        self.assertEqual(samples[hot["execution_id"]]["exceeded_caps"], [])
         self.assertEqual(samples[intermediate["execution_id"]]["exceeded_caps"], [])
         self.assertEqual(report["percentiles_nearest_rank"]["cold"]["patch.duration_ms"]["p99"], 10199)
         self.assertEqual(report["percentiles_nearest_rank"]["hot"]["patch.duration_ms"]["p99"], 10201)
 
-    def test_exact_cap_is_not_an_excess_and_exact_ten_minutes_is_hot(self):
+    def test_patch_duration_is_informative_and_exact_ten_minutes_is_hot(self):
         prior_time = BASE - timedelta(minutes=60)
         prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
         prior["completed_at"] = prior_time
         sample = execution("EXEC-DB-TRAIN-PR2-20261015001020-R2",
                            prior_time + timedelta(minutes=10), None,
                            patch_duration=10200)
-        report = budget.analyze(freeze_event(), [prior, sample], steps_for(sample))
+        event = freeze_event()
+        event["created_at"] = prior_time + timedelta(minutes=5)
+        report = budget.analyze(event, [prior, sample], steps_for(sample))
         item = report["evaluated_executions"][0]
         self.assertEqual(item["classification"], "hot")
         self.assertEqual(item["idle_gap_minutes"], 10)
@@ -167,6 +172,7 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
     def test_cutoff_comes_from_event_and_excludes_exact_fractional_boundary(self):
         event = freeze_event()
         cutoff = datetime.fromisoformat(event["payload"]["occurred_at"].replace("Z", "+00:00"))
+        event["created_at"] = cutoff
         prior_time = cutoff - timedelta(hours=1)
         prior = execution("EXEC-DB-TRAIN-PR1-20261014220000-R1", prior_time, None)
         prior["completed_at"] = prior_time
@@ -191,9 +197,51 @@ class TrainLaneBudgetAcceptanceTest(unittest.TestCase):
 
     def test_wrong_freeze_event_fails_closed(self):
         event = freeze_event()
-        event["id"] = 21015
-        with self.assertRaisesRegex(ValueError, "EVENT_ID_MISMATCH"):
+        event["payload"]["budget_revision_code"] = "OLD_EVENT"
+        with self.assertRaisesRegex(ValueError, "RECALIBRATION_EVENT_CODE_MISMATCH"):
             budget.analyze(event, [], [])
+
+    def test_heavy_patch_passes_when_train_overhead_stays_within_caps(self):
+        prior_time = BASE - timedelta(minutes=60)
+        prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
+        prior["completed_at"] = prior_time
+        heavy = execution(
+            "EXEC-DB-TRAIN-PR2-20261015003000-R2",
+            prior_time + timedelta(minutes=30), None, patch_duration=76000,
+        )
+        rows = steps_for(heavy)
+        patch = next(row for row in rows if row["step_id"] == "patch")
+        envelope = patch["evidence_payload"]["pase_f09_015_telemetry_v1"]
+        envelope["queries"]["duration_ms"] = 75500
+        report = budget.analyze(freeze_event(), [prior, heavy], rows)
+        item = report["evaluated_executions"][0]
+        self.assertTrue(item["valid_sample"])
+        self.assertEqual(item["metrics"]["patch.duration_ms"], 76000)
+        self.assertEqual(item["metrics"]["patch.queries_duration_ms"], 75500)
+        self.assertEqual(item["exceeded_caps"], [])
+
+    def test_preflight_over_cap_still_fails(self):
+        prior_time = BASE - timedelta(minutes=60)
+        prior = execution("EXEC-DB-TRAIN-PR1-20261014230000-R1", prior_time, None)
+        prior["completed_at"] = prior_time
+        sample = execution(
+            "EXEC-DB-TRAIN-PR2-20261015003000-R2",
+            prior_time + timedelta(minutes=30), None,
+        )
+        rows = steps_for(sample)
+        preflight = next(row for row in rows if row["step_id"] == "preflight")
+        preflight["evidence_payload"]["pase_f09_015_telemetry_v1"]["duration_ms"] = 2870
+        report = budget.analyze(freeze_event(), [prior, sample], rows)
+        item = report["evaluated_executions"][0]
+        self.assertEqual(
+            item["exceeded_caps"],
+            [{"metric": "preflight.duration_ms", "observed": 2870, "cap": 2869}],
+        )
+        self.assertTrue(any(
+            finding["kind"] == "BUDGET_EXCEEDED"
+            and finding["metric"] == "preflight.duration_ms"
+            for finding in report["findings"]
+        ))
 
 
 if __name__ == "__main__":
