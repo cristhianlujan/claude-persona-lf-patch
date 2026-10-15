@@ -502,15 +502,120 @@ def evaluate(repo_root: Path, inventory_path: Path, policy_path: Path, tested_re
     return result
 
 
+
+def run_output_pair_preflight(repo_root: Path, request_path: Path) -> dict[str, Any]:
+    """Bounded, local-only output pair in existing PACK_VALIDATION_HARNESS.
+
+    Never asserts provider-bound verification, ledger write, or admission.
+    A governed provider must independently verify the source and results.
+    """
+    import re
+    root = repo_root.resolve()
+    result: dict[str, Any] = {
+        "schema_version": "LF_PROFILE_OUTPUT_PAIR_PREFLIGHT_V1",
+        "producer_capability_code": "PACK_VALIDATION_HARNESS",
+        "status": "BLOCKED", "blocking_codes": [], "positive": None, "negative": None,
+        "provider_readback_verified": False, "ledger_receipts_created": 0,
+        "provider_attested": False, "candidate_admitted": False,
+        "runtime_authorized": False, "automatic_impact_authorized": False,
+    }
+
+    def blocked(code: str) -> dict[str, Any]:
+        add_block(result["blocking_codes"], code)
+        return result
+
+    try:
+        request = load_json(request_path)
+        if not isinstance(request, dict) or request.get("schema") != "LF_PROFILE_OUTPUT_PAIR_REQUEST_V1":
+            return blocked("PAIR_REQUEST_SCHEMA_INVALID")
+        slug, head = request.get("profile_slug"), request.get("candidate_head_sha")
+        if not isinstance(slug, str) or re.fullmatch(r"[a-z][a-z0-9_]*", slug) is None:
+            return blocked("PAIR_PROFILE_INVALID")
+        if not isinstance(head, str) or re.fullmatch(r"[0-9a-f]{40}", head) is None:
+            return blocked("PAIR_HEAD_INVALID")
+        result["profile_slug"], result["candidate_head_sha"] = slug, head
+        observed = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                                  capture_output=True, text=True, timeout=10, check=False)
+        if observed.returncode != 0 or observed.stdout.strip() != head:
+            return blocked("PAIR_HEAD_STALE")
+        runner = "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py"
+        paths = {runner, "skills/profile_creator/validators/profile_output_shape_preflight_v1.py"}
+        bindings = {}
+        for name, expected in (("positive", True), ("negative", False)):
+            ref = request.get(name + "_binding_ref")
+            if not isinstance(ref, str):
+                return blocked("PAIR_BINDING_REF_MISSING:" + name)
+            binding_file = safe_repo_path(root, ref, prefix="evidence")
+            packet = load_json(binding_file)
+            if not isinstance(packet, dict) or packet.get("profile_slug") != slug:
+                return blocked("PAIR_PROFILE_SCOPE_INVALID:" + name)
+            if packet.get("expected_valid") is not expected or packet.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
+                return blocked("PAIR_EXPECTED_VALIDITY_INVALID:" + name)
+            bindings[name] = binding_file
+            paths.add(binding_file.relative_to(root).as_posix())
+            for key in ("schema_ref", "validator_ref", "raw_output_ref"):
+                value = packet.get(key)
+                if not isinstance(value, str):
+                    return blocked("PAIR_SOURCE_REF_MISSING:" + name + ":" + key)
+                safe_repo_path(root, value)
+                paths.add(value)
+        for ref in sorted(paths):
+            file = safe_repo_path(root, ref)
+            if not file.is_file() or file.is_symlink():
+                return blocked("PAIR_SOURCE_MISSING:" + ref)
+            from_head = subprocess.run(["git", "-C", str(root), "show", "HEAD:" + ref],
+                                       capture_output=True, timeout=10, check=False)
+            if from_head.returncode != 0 or sha256_bytes(from_head.stdout) != sha256_file(file):
+                return blocked("PAIR_GIT_SOURCE_MISMATCH:" + ref)
+        for name in ("positive", "negative"):
+            run = subprocess.run([sys.executable, str(root / runner), "--root", str(root),
+                                  "--binding", str(bindings[name])],
+                                 cwd=root, capture_output=True, text=True,
+                                 timeout=30, check=False)
+            try:
+                receipt = json.loads(run.stdout)
+            except ValueError:
+                return blocked("PAIR_OUTPUT_NOT_JSON:" + name)
+            expected_states = (("CANDIDATE_OUTPUT_PARITY_OBSERVED",) if name == "positive"
+                 else ("EXPECTED_NEGATIVE_REJECTED_BY_VALIDATOR", "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE"))
+            if run.returncode != 0 or receipt.get("status") not in expected_states:
+                result[name] = receipt
+                return blocked("PAIR_VALIDATION_FAILED:" + name)
+            if receipt.get("source_readback_matched") is not True or receipt.get("admission_authorized") is not False:
+                return blocked("PAIR_RESULT_UNTRUSTED:" + name)
+            result[name] = receipt
+        if result["positive"]["raw_output_sha256"] == result["negative"]["raw_output_sha256"]:
+            return blocked("PAIR_DUPLICATE_RAW")
+        result["status"] = "LOCAL_PAIR_VALIDATED_UNATTESTED"
+        result["source_commit_verified_locally"] = True
+        result["verification_needed"] = "INDEPENDENT_GITHUB_PROVIDER_READBACK_AND_GOVERNED_EVIDENCE_LEDGER"
+    except (ValueError, UnicodeError, OSError, subprocess.TimeoutExpired) as exc:
+        return blocked("PAIR_EXECUTION_ERROR:" + type(exc).__name__)
+    finally:
+        result["result_sha256"] = sha256_bytes(canonical_json_bytes(
+            {k: v for k, v in result.items() if k != "result_sha256"}))
+    return result
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--inventory-json", required=True)
-    parser.add_argument("--policy-json", required=True)
-    parser.add_argument("--tested-revision", required=True)
+    parser.add_argument("--inventory-json")
+    parser.add_argument("--policy-json")
+    parser.add_argument("--tested-revision")
+    parser.add_argument("--output-pair-request")
     parser.add_argument("--output-json")
     parser.add_argument("--timeout-seconds", type=int, default=120)
     args = parser.parse_args()
+
+    if args.output_pair_request:
+        pair = run_output_pair_preflight(Path(args.repo_root), Path(args.output_pair_request))
+        rendered = json.dumps(pair, indent=2, sort_keys=True)
+        print(rendered)
+        if args.output_json:
+            Path(args.output_json).write_text(rendered + "\n", encoding="utf-8")
+        return 0 if pair["status"] == "LOCAL_PAIR_VALIDATED_UNATTESTED" else 1
+    if not args.inventory_json or not args.policy_json or not args.tested_revision:
+        parser.error("inventory, policy and tested-revision required for normal pack validation")
 
     try:
         result = evaluate(
