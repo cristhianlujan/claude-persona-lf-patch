@@ -59,11 +59,13 @@ BEGIN
     v_run_id:=(v_curator->>'run_id')::bigint;
     v_curator_ms:=round(extract(epoch from (clock_timestamp()-v_started))*1000)::bigint;
     SELECT * INTO STRICT v_run FROM programacion.input_readiness_runs WHERE id=v_run_id;
+    -- Contract: a CURATING run has NO sealed source snapshot. The run guard
+    -- computes it on CURATING -> VALIDATING; source_current applies only to
+    -- COMPLETED runs. Do not conflate lifecycle with fresh-source dimensions.
     IF v_run.status<>'CURATING'
        OR v_run.pantalla_id<>43
        OR v_run.version_id<>19
-       OR v_run.source_snapshot_sha256 IS NULL
-       OR (programacion.fn_input_run_source_currentness_v1(v_run_id)->>'source_current')<>'true'
+       OR v_run.source_snapshot_sha256 IS NOT NULL
        OR (SELECT count(*) FROM programacion.input_family_assessments WHERE run_id=v_run_id)<>47
     THEN RAISE EXCEPTION 'IG_M107_PROFILE_CURATOR_READBACK_INVALID'; END IF;
 
@@ -76,7 +78,12 @@ BEGIN
            validator_component_id=v_validator_component
      WHERE id=v_run_id;
     SELECT * INTO STRICT v_run FROM programacion.input_readiness_runs WHERE id=v_run_id;
-    IF v_run.status<>'VALIDATING' THEN RAISE EXCEPTION 'IG_M107_PROFILE_VALIDATING_STAGE_MISSING'; END IF;
+    -- The manifest is now generated and VALIDATING admission must be true
+    -- across contract/policy/source dimensions; terminal lifecycle remains false.
+    IF v_run.status<>'VALIDATING'
+       OR v_run.source_snapshot_sha256 IS NULL
+       OR (programacion.fn_input_governance_continuation_currentness_v1(v_run_id)->>'continuation_current')<>'true'
+    THEN RAISE EXCEPTION 'IG_M107_PROFILE_VALIDATING_STAGE_MISSING'; END IF;
 
     SELECT * INTO STRICT v_family FROM programacion.input_family_assessments
       WHERE run_id=v_run_id AND family_code='SCREEN_IDENTITY' AND validator_outcome='PENDING';
@@ -249,7 +256,7 @@ BEGIN
         'Costo de SQL se concentra en recomputar manifesta/canonical graph y verificaciones por fila. Se mide costo de cada trigger de UPDATE con buffers y consultas internas autorizadas, para priorizar optimizacion segura y genericidad. Guardrails positivos y negativos activos, sin triggers deshabilitados.',
         'ROW_TRIGGER_RECALCULATION_ATOMIC_TX_PROFILE',
         'Usar duraciones de triggers reales para distinguir currentness, assertion re-evaluation y source manifest por familia/propuesta. Las propuestas de cache o batching exigen snapshot actual, readback independiente, negativo tamper y regresion; no extrapolar una familia a 47, ni p90 con muestra n=1. No ampliar timeout ni quitar triggers.',
-        'Muestra 1 familia, 1 propuesta, 1 negativa; los planes EXPLAIN en evidencia conservan tiempos por trigger. Run temporal y receipts limpiados con rollback; CP3 sigue PENDING hasta su prueba integral.',
+        'Muestra 1 familia, 1 propuesta, 1 negativa; los planes EXPLAIN en evidencia conservan tiempos por trigger. Preflight inicial falló en la corrida anterior por confundir CURATING (sin snapshot) con COMPLETED currentness; reparado al ubicar la verificación tras la transición a VALIDATING. Run temporal y receipts limpiados con rollback; CP3 sigue PENDING hasta su prueba integral.',
         'HIGH',1,clock_timestamp(),clock_timestamp(),
         'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7',
         'ACTIVO',v_evidence_payload::text,clock_timestamp(),clock_timestamp(),
