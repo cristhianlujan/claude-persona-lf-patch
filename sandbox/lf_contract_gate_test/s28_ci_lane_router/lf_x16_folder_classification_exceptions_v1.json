@@ -1,0 +1,381 @@
+{
+  "schema_version": "LF_X16_FOLDER_CLASSIFICATION_EXCEPTIONS_V1",
+  "exceptions": [
+    {
+      "path": "sandbox/lf_contract_gate_test/assurance_evaluator_boundary/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/assurance_method_candidate/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/authority_readback/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/capability_cutover/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/capability_execution_contract/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/ci_db_target/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/closure_gate/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/consumer_bindings/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_carrier/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_core/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_execution/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_responsibility_inventory/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_self_change_admission/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_check_semantic_integration/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_legacy_normalization/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_predicate_semantics/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/contract_resolution/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/creation_factory_parity_repair_v1/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/edge_function_operation/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/engineering_checkpoint_closure/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/engineering_checkpoint_mcp/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/engineering_checkpoints/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/evidence/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/f0_workflow_activation/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/fixtures/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/gate_check_observability/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/github_reconciliation/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/global_technical_inventory/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/human_decision_routing/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/ig_cv/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_cross_family/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_e2e/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_evaluation_lf/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_incremental/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_recuration/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/lote1/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/material_currentness/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/owner_runner_carrier_authority/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pack_validation_contract/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pack_validation_harness/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_control_binding_inventory/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_control_qualification/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_evaluation_quality/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_github_entrypoint/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_scenario_qualification/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pase_temporary_disable/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/plan_authority/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/plan_delta_authority/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_e2e/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_f07_008/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_f08/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_final_evidence/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_orchestrator/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_retirement/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/post_pase_router/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pre_ekb_gate/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_driven_screen_generation/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_execution_runtime/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/profile_runtime_structural_context_v3/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/programming_simple_executor/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/receipts/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_screen_relation_current_v1/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/runtime_deploy_verification/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s26_governance_ekb/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_card_update/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_context_admission/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_currentness_cutover/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_db_write_transport/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_engineering_checkpoint_mcp/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_independent_strategy_review/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_owner_first_assurance/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g06/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g07/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g08/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g09/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g10/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g11/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_pilot_srcr_g12/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s30_qualification_independent_review/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s31_currentness_cutover/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s36_suite_ownership/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/s36_wp4_adversarial/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/srcr_v07r1_candidate_20261007/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/story_creator_implementation_package/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/story_creator_visual_screen_reading_architecture/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/strategy_qualification/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/transversal_asset_readme/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/transversal_assets/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/visual_evidence_gate/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/waiver_authority/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/work_protocol_manifest_v1/",
+      "reason": "Existing main (d9b41e7) folder outside the X16-approved active-surface set; keep fail-closed until CHANGESET_GOVERNANCE approves a family or a changeset manifest."
+    }
+  ]
+}
