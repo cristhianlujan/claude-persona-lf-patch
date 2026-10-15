@@ -23,14 +23,25 @@ DECLARE
     return jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ASSET_TYPE_UNRESOLVED','router','ACT-0001','action_code',v_action);
   end if;$exact_anchor$;
   v_guard text := $guard_sql$  -- ACT-0001 R5: lexical candidate discovery is not identity evidence.
-  -- Fail closed for inferred mutation targets lacking an exact canonical identity
+  -- Fail closed for inferred updates and existing-target operations lacking identity
   -- mention. A governed semantic consumer may resolve a gap and resubmit
   -- explicit typed inputs; this SQL never manufactures semantic authority.
   if v_target_norm=''
      and nullif(btrim(coalesce(p_asset_type_hint,'')),'') is null
-     and v_action in ('UPDATE','PROFILE_UPDATE','SKILL_UPDATE','ADAPTER_UPDATE',
-                      'REGLA_UPDATE','STRATEGY_UPDATE','APP_SHELL_UPDATE',
-                      'RUNTIME_UPDATE')
+     and (
+       v_action in ('UPDATE','PROFILE_UPDATE','SKILL_UPDATE','ADAPTER_UPDATE',
+                    'REGLA_UPDATE','STRATEGY_UPDATE','APP_SHELL_UPDATE',
+                    'RUNTIME_UPDATE')
+       or (
+         v_asset_found and exists (
+           select 1 from public.lf_router_action_registry action_route
+           where action_route.asset_type=v_type_hint
+             and action_route.action_code=v_action
+             and action_route.status='ACTIVE'
+             and action_route.requires_existing_target
+         )
+       )
+     )
   then
     if not v_asset_found or not exists (
       select 1
@@ -138,14 +149,25 @@ DECLARE
     return jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ASSET_TYPE_UNRESOLVED','router','ACT-0001','action_code',v_action);
   end if;$exact_anchor$;
   v_guard text := $guard_sql$  -- ACT-0001 R5: lexical candidate discovery is not identity evidence.
-  -- Fail closed for inferred mutation targets lacking an exact canonical identity
+  -- Fail closed for inferred updates and existing-target operations lacking identity
   -- mention. A governed semantic consumer may resolve a gap and resubmit
   -- explicit typed inputs; this SQL never manufactures semantic authority.
   if v_target_norm=''
      and nullif(btrim(coalesce(p_asset_type_hint,'')),'') is null
-     and v_action in ('UPDATE','PROFILE_UPDATE','SKILL_UPDATE','ADAPTER_UPDATE',
-                      'REGLA_UPDATE','STRATEGY_UPDATE','APP_SHELL_UPDATE',
-                      'RUNTIME_UPDATE')
+     and (
+       v_action in ('UPDATE','PROFILE_UPDATE','SKILL_UPDATE','ADAPTER_UPDATE',
+                    'REGLA_UPDATE','STRATEGY_UPDATE','APP_SHELL_UPDATE',
+                    'RUNTIME_UPDATE')
+       or (
+         v_asset_found and exists (
+           select 1 from public.lf_router_action_registry action_route
+           where action_route.asset_type=v_type_hint
+             and action_route.action_code=v_action
+             and action_route.status='ACTIVE'
+             and action_route.requires_existing_target
+         )
+       )
+     )
   then
     if not v_asset_found or not exists (
       select 1
