@@ -376,7 +376,7 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
     def test_bounded_repair_checks_source_after_initial_validator(self):
         with tempfile.TemporaryDirectory() as directory:
             root,packet,p=self.make_bound_fixture(directory)
-            p.write_text(json.dumps({"deliverable_created":{},"self_verdict":"PASS"}))
+            p.write_text(json.dumps({"deliverable_created":{"authority_status":"CONFLICT_RESOLVED"},"self_verdict":"PASS"}))
             packet["raw_output_sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
             validator=root/packet["validator_ref"]
             validator.write_text(
@@ -388,6 +388,8 @@ print(json.dumps({"valid":valid,"errors":[] if valid else [{"code":"AUTHORITY_UN
             calls=[]
             result=validate_with_bounded_producer_repair(
                 root,packet,lambda *args:calls.append(1))
+            self.assertEqual(result["before"]["blocking_codes"],["CANONICAL_VALIDATOR_RESULT_UNEXPECTED"])
+            self.assertTrue(result["before"]["profile_validator_executed"])
             self.assertEqual(result["status"],"BLOCKED_SOURCE_MUTATED_DURING_INITIAL_VALIDATION")
             self.assertEqual(result["producer_attempts"],0)
             self.assertFalse(result["producer_adapter_invoked"])
