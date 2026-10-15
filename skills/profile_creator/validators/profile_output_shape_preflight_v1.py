@@ -151,6 +151,7 @@ def candidate_output_gate(profile_slug: str, mode: str | None, candidate_allowed
         "canonical_schema_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
         "canonical_profile_validator_source": "EXACT_PROFILE_CONTRACT_OR_RUNTIME_BINDING",
         "generic_shape_preflight": "skills/profile_creator/validators/profile_output_shape_preflight_v1.py",
+        "bound_profile_validator_runner": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
         "positive_and_negative_output_evidence_required": True,
         "validator_execution_required_before_admission": True,
         "single_bounded_self_repair_allowed": True,
