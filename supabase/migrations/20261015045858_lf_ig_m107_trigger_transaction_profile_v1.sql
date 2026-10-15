@@ -166,7 +166,16 @@ BEGIN
        USING 'PASS'::text,'[]'::jsonb,v_physical,v_validator_id,v_family.id;
     v_family_ms:=(v_plan_family->0->>'Execution Time')::numeric;
     v_family_triggers:=coalesce(v_plan_family->0->'Triggers','[]'::jsonb);
-    v_family_trigger_count:=jsonb_array_length(v_family_triggers);
+    -- EXPLAIN reports both user-defined and internal FK triggers.
+    -- Count the governed application triggers by exact catalogue identity;
+    -- preserve FK timings in v_family_triggers without treating them as missing gates.
+    SELECT count(*) INTO v_family_trigger_count
+    FROM jsonb_array_elements(v_family_triggers) jt(value)
+    WHERE jt.value->>'Trigger Name' IN (
+      SELECT tgname FROM pg_trigger WHERE NOT tgisinternal
+      AND tgenabled IN ('O','A') AND tgtype&16=16
+      AND tgrelid='programacion.input_family_assessments'::regclass
+    );
     IF (SELECT validator_outcome FROM programacion.input_family_assessments
           WHERE id=v_family.id)<>'PASS'
         OR v_family_trigger_count<>6 THEN
@@ -201,7 +210,13 @@ BEGIN
       INTO v_plan_proposal USING v_validator_id,'PASS'::text,v_evidence,v_prop.id;
     v_proposal_ms:=(v_plan_proposal->0->>'Execution Time')::numeric;
     v_proposal_triggers:=coalesce(v_plan_proposal->0->'Triggers','[]'::jsonb);
-    v_proposal_trigger_count:=jsonb_array_length(v_proposal_triggers);
+    SELECT count(*) INTO v_proposal_trigger_count
+    FROM jsonb_array_elements(v_proposal_triggers) jt(value)
+    WHERE jt.value->>'Trigger Name' IN (
+      SELECT tgname FROM pg_trigger WHERE NOT tgisinternal
+      AND tgenabled IN ('O','A') AND tgtype&16=16
+      AND tgrelid='programacion.input_gap_proposals'::regclass
+    );
     IF (SELECT validator_outcome FROM programacion.input_gap_proposals
          WHERE id=v_prop.id)<>'PASS' OR v_proposal_trigger_count<>2 THEN
       RAISE EXCEPTION 'IG_M107_PROFILE_PROPOSAL_TRIGGERS_INCOMPLETE:%',
@@ -232,16 +247,23 @@ BEGIN
     'positive_family','SCREEN_IDENTITY',
     'family_statement_execution_ms',v_family_ms,
     'family_triggers',v_family_triggers,
+    'family_application_triggers_measured',v_family_trigger_count,
+    'family_all_triggers_measured',jsonb_array_length(v_family_triggers),
     'family_buffer_summary',v_plan_family->0->'Plan',
     'proposal_statement_execution_ms',v_proposal_ms,
     'proposal_triggers',v_proposal_triggers,
+    'proposal_application_triggers_measured',v_proposal_trigger_count,
+    'proposal_all_triggers_measured',jsonb_array_length(v_proposal_triggers),
     'proposal_buffer_summary',v_plan_proposal->0->'Plan',
     'negative_error_code',v_probe_error,
     'negative_accepted',false,
     'all_runtime_changes_rolled_back',true,
     'source_asof_new_run',true,
     'scope','DIAGNOSTIC_ONE_SCREEN_ONE_FAMILY_ONE_PROPOSAL',
-    'performance_admission',false);
+    'performance_admission',false,
+    'preflight_repair_history',jsonb_build_array(
+      'R38684272108 blocked: CURATING has no sealed snapshot; resolved by moving currentness check after VALIDATING',
+      'R38684657571 blocked: EXPLAIN includes internal FK triggers; catalogue-filter user trigger count while retaining all FK trigger timings'));
   FOR v_trial IN 1..2 LOOP
     BEGIN
       INSERT INTO public.lf_error_knowledge(
