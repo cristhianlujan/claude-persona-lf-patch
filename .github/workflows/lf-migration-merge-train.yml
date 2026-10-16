@@ -64,22 +64,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Set up Supabase CLI for REAL mode
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
-        uses: supabase/setup-cli@v1
-        with:
-          version: 2.48.3
-
-      - name: Install PostgreSQL client for REAL mode
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-          supabase db push --help >/dev/null
-          psql --version
-
       - name: Acquire GitHub App token for REAL mode
         id: app_token
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
@@ -328,6 +312,22 @@ jobs:
             echo "source_blob=$blob"
             echo "source_sha256=$sha256"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Supabase CLI for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.48.3
+
+      - name: Install PostgreSQL client for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          supabase db push --help >/dev/null
+          psql --version
 
       - name: Read floors, assign version, and run M2 check
         id: plan
