@@ -94,7 +94,7 @@ BEGIN
   'candidate_contracts_count',v_contracts,
   'candidate_judge_bindings_count',v_bindings,
   'candidate_judges_count',v_judges,
-  'negative_guards_passed',true,
+  'negative_guard_rejections_observed',jsonb_build_array('CONTEXT_INVALID','ROUTE_BLOCKED','RECEIPT_UNVERIFIED'),
   'negative_guard_observed',v_negative_guard,
   'negative_route_observed',v_negative_route,
   'invalid_receipt_rejected',true,
