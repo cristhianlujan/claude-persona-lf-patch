@@ -7,6 +7,10 @@ on:
     paths:
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_level2_advisory_handoff_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_intent_consistency_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_consistency_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_safety_contract_v1.py'
+      - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
 permissions:
@@ -29,3 +33,20 @@ jobs:
       - name: Execute positive and negative level2 handoff contract tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_level2_advisory_handoff_v1
+
+  router-intent-consistency-candidate:
+    name: router-intent-consistency-candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate sources without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execute intent-consistency and adversarial contract tests (candidate only)
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_intent_consistency_v1 test_router_intent_safety_contract_v1
