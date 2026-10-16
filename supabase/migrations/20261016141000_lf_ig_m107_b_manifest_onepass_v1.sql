@@ -159,7 +159,7 @@ BEGIN
     )
   );
 END;
-$function$
+$function$;
 
 
 CREATE FUNCTION programacion.fn_ig_m107_bundle_from_manifest_v1(p_run_id bigint,p_manifest jsonb)
