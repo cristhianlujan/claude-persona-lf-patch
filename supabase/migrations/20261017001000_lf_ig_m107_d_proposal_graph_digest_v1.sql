@@ -165,3 +165,122 @@ DO $post$ BEGIN
  AND NOT tgisinternal AND tgenabled IN ('O','A') AND (tgtype&16)=16)<>2
  THEN RAISE EXCEPTION 'IG_M107_D_REQUIRED_GUARDS_NOT_PRESERVED'; END IF;
 END $post$;
+
+
+-- Executed inside the Migration Train's exact-version transaction. The
+-- synthetic validator run rolls back; only the EKB evidence survives.
+DO $test$
+DECLARE
+ v_curator jsonb; v_id bigint; v_run programacion.input_readiness_runs%rowtype;
+ v_validator text; v_component bigint; v_one record; v_bad jsonb; v_err text;
+ v_result jsonb; v_refs_count integer; v_graph_count integer;
+ v_graph_sha text; v_graph_match integer:=0; v_other_match integer:=0;
+ v_pre_count integer; v_trigger_count integer;
+BEGIN
+ IF (SELECT max(id) FROM programacion.input_readiness_runs WHERE pantalla_id=43)<>933
+  OR (SELECT status FROM programacion.input_readiness_runs WHERE id=933)<>'COMPLETED'
+ THEN RAISE EXCEPTION 'IG_M107_D_HISTORICAL_SOURCE_CHANGED'; END IF;
+ SELECT count(*) INTO v_pre_count FROM programacion.input_readiness_runs WHERE pantalla_id=43;
+ BEGIN
+  v_curator:=programacion.fn_input_governance_direct_step_v1(43,'MANUAL');
+  IF v_curator->>'status' IS DISTINCT FROM 'VALIDATOR_RUNTIME_REQUIRED'
+   OR v_curator->>'step' IS DISTINCT FROM 'CURATOR_MATERIALIZED' THEN
+   RAISE EXCEPTION 'IG_M107_D_CURATOR_TEST_SETUP_FAILED:%',left(v_curator::text,300); END IF;
+  v_id:=(v_curator->>'run_id')::bigint;
+  SELECT * INTO STRICT v_run FROM programacion.input_readiness_runs WHERE id=v_id;
+  IF v_run.status<>'CURATING' THEN RAISE EXCEPTION 'IG_M107_D_TEST_RUN_INVALID'; END IF;
+  SELECT id INTO STRICT v_component FROM programacion.componentes
+   WHERE version_id=v_run.version_id AND componente_codigo='INPUT_VALIDATOR';
+  v_validator:='INPUT_VALIDATOR:SQL:ig-governed-dispatch-v1:'||gen_random_uuid()::text;
+  UPDATE programacion.input_readiness_runs SET status='VALIDATING',
+    validator_identity=v_validator,validator_component_id=v_component WHERE id=v_id;
+  SELECT * INTO STRICT v_run FROM programacion.input_readiness_runs WHERE id=v_id;
+  SELECT count(*),count(*) FILTER (WHERE source_refs->0->>'kind'='SCREEN_CANONICAL_GRAPH')
+    INTO v_refs_count,v_graph_count FROM programacion.input_gap_proposals
+    WHERE run_id=v_id AND validator_outcome='PENDING';
+  IF v_refs_count<>20 OR v_graph_count<>19 THEN
+    RAISE EXCEPTION 'IG_M107_D_PROPOSAL_COHORT_DRIFT:%:%',v_refs_count,v_graph_count; END IF;
+  SELECT id,source_refs INTO STRICT v_one
+  FROM programacion.input_gap_proposals
+  WHERE run_id=v_id AND source_refs->0->>'kind'='SCREEN_CANONICAL_GRAPH'
+  ORDER BY id LIMIT 1;
+  v_bad:=jsonb_build_object(
+    'direct_source_readback',true,'source_snapshot_sha256',v_run.source_snapshot_sha256,
+    'source_readback_scheme','DIRECT_GRAPH_SHA_V1',
+    'source_readbacks',jsonb_build_array(jsonb_build_object(
+        'source_ref',v_one.source_refs->0,
+        'source_observed_sha256',repeat('0',64))),
+    'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX',
+    'proposal_is_canonical_source',false,'automatic_canonicalization','DENY'
+  );
+  BEGIN
+    UPDATE programacion.input_gap_proposals SET validator_identity=v_validator,
+      validator_outcome='PASS',status='VALIDATED',validator_evidence=v_bad,
+      validated_at=clock_timestamp() WHERE id=v_one.id;
+  EXCEPTION WHEN OTHERS THEN v_err:=SQLERRM; END;
+  IF position('V512_PROPOSAL_SOURCE_READBACK_DIGEST_MISMATCH' in coalesce(v_err,''))=0
+    OR (SELECT validator_outcome FROM programacion.input_gap_proposals WHERE id=v_one.id)<>'PENDING'
+  THEN RAISE EXCEPTION 'IG_M107_D_FALSE_SHA_NOT_REJECTED:%',v_err; END IF;
+
+  v_result:=programacion.fn_input_governance_validate_gap_proposals_v1(v_id,v_validator);
+  IF (v_result->>'validated_proposal_count')::integer<>v_refs_count THEN
+    RAISE EXCEPTION 'IG_M107_D_BATCH_VALIDATION_FAILED:%',left(v_result::text,350); END IF;
+  SELECT m->>'observed_sha256' INTO STRICT v_graph_sha
+    FROM jsonb_array_elements(v_run.source_manifest) m
+    WHERE m->'ref'='{"kind":"SCREEN_CANONICAL_GRAPH"}'::jsonb;
+  SELECT count(*) FILTER (
+    WHERE ref->'source_ref'->>'kind'='SCREEN_CANONICAL_GRAPH'
+       AND ref->>'source_observed_sha256'=v_graph_sha),
+    count(*) FILTER (
+    WHERE ref->'source_ref'->>'kind'='SCREEN_STATE_SET'
+       AND (ref->>'source_observed_sha256') ~ '^[0-9a-f]{64}$')
+    INTO v_graph_match,v_other_match
+  FROM programacion.input_gap_proposals p
+  CROSS JOIN LATERAL jsonb_array_elements(p.validator_evidence->'source_readbacks') ref
+  WHERE p.run_id=v_id AND p.validator_outcome='PASS'
+    AND p.validator_evidence->>'source_readback_scheme'='DIRECT_GRAPH_SHA_V1';
+  IF v_graph_match<>19 OR v_other_match<>1 THEN
+    RAISE EXCEPTION 'IG_M107_D_MANIFEST_PROPOSAL_SHA_MISMATCH:%:%',v_graph_match,v_other_match;
+  END IF;
+  SELECT count(*) INTO v_trigger_count FROM pg_trigger
+    WHERE tgrelid='programacion.input_gap_proposals'::regclass
+      AND NOT tgisinternal AND tgenabled IN ('O','A') AND (tgtype&16)=16;
+  IF v_trigger_count<>2 THEN RAISE EXCEPTION 'IG_M107_D_TRIGGER_COVERAGE_INVALID'; END IF;
+
+  RAISE EXCEPTION 'IG_M107_D_REVERT_TEMP_RUN' USING ERRCODE='PZ127';
+ EXCEPTION WHEN SQLSTATE 'PZ127' THEN NULL;
+ END;
+ IF (SELECT count(*) FROM programacion.input_readiness_runs WHERE pantalla_id=43)<>v_pre_count
+   OR EXISTS(SELECT 1 FROM programacion.input_readiness_runs WHERE id=v_id)
+   OR EXISTS(SELECT 1 FROM programacion.input_gap_proposals WHERE run_id=v_id)
+   OR EXISTS(SELECT 1 FROM programacion.input_family_assessments WHERE run_id=v_id)
+   OR v_graph_match<>19 OR v_other_match<>1 OR v_trigger_count<>2
+ THEN RAISE EXCEPTION 'IG_M107_D_ROLLBACK_NOT_CLEAN'; END IF;
+
+ INSERT INTO public.lf_error_knowledge(
+ id,codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+ severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia,
+ created_at,updated_at,lifecycle_phase,root_cause_family,detectability,source_context,source_ref)
+ VALUES(gen_random_uuid(),'IG-M107-D-PROPOSAL-GRAPH-RECEIPT-036','GOVERNANCE',
+ 'M10.7 lote D: reuso SHA de grafo del manifiesto vigente dentro de UPDATE de propuesta',
+ 'El guard conserva manifiesto completo actual, currentness, identidad y validación de fuentes. Para las referencias de grafo usa su SHA calculado en ese manifiesto, sin segunda reconstrucción.',
+ '19 referencias al mismo grafo ocasionaban una segunda reconstrucción por propuesta además de la construcción del manifiesto independiente por UPDATE.',
+ 'PROPOSAL_SAME_UPDATE_MANIFEST_GRAPH_DIGEST_REUSE',
+ 'No compartir datos entre propuestas, transacciones o runs. Verificar pantalla/ref y hashes; conservar modo legacy, referencias de otras clases, dos triggers y rechazo fail-closed.',
+ 'Train: 20 propuestas PASS en un solo run temporal; 19 SHA del grafo coinciden con manifiesto y 1 referencia de estado conserva verificación independiente; SHA falso rechazado; rollback limpio; dos triggers activos.',
+ 'MEDIUM',1,clock_timestamp(),clock_timestamp(),'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7/LOT_D',
+ 'ACTIVO',jsonb_build_object(
+   'schema_version','IG_M107_D_PROPOSAL_GRAPH_SHA_V1',
+   'screen_id',43,'run_id_rolled_back',v_id,
+   'proposals_passed',v_refs_count,
+   'graph_digest_matches',v_graph_match,'other_ref_matches',v_other_match,
+   'source_sha_tamper_rejected',true,'source_sha_error',v_err,
+   'proposal_update_triggers_active',v_trigger_count,
+   'rollback_clean',true,'no_cross_update_cache',true,
+   'validator_p90_measured',false,'CP3_closed',false)::text,
+ clock_timestamp(),clock_timestamp(),'VALIDATION','R5_EROSION_PROCESO',
+ 'LOUD_EARLY','One screen synthetic rollback, 20 proposals',
+ 'supabase/migrations/20261017001000_lf_ig_m107_d_proposal_graph_digest_v1.sql');
+ IF (SELECT count(*) FROM public.lf_error_knowledge WHERE codigo='IG-M107-D-PROPOSAL-GRAPH-RECEIPT-036')<>1
+ THEN RAISE EXCEPTION 'IG_M107_D_EKB_NOT_PERSISTED'; END IF;
+END $test$;
