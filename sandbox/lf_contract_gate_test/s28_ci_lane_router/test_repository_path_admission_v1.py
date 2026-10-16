@@ -39,6 +39,23 @@ def main() -> int:
     assert expected_exact.issubset(policy.github_exact)
     checks += 1
 
+    # Exact, narrowly-scoped CI workflow admission: never a .github prefix.
+    router_workflow = ".github/workflows/lf-router-level2-advisory-tests.yml"
+    assert policy.evaluate(router_workflow) == {
+        "verdict": "ADMIT", "code": "PASS_GITHUB_EXACT_PATH_ADMISSION"
+    }
+    checks += 1
+    for lookalike in (
+        router_workflow + ".bak",
+        router_workflow.replace(".yml", ".yaml"),
+        router_workflow.replace(".yml", "-copy.yml"),
+        ".github/workflows/subdir/lf-router-level2-advisory-tests.yml",
+    ):
+        assert policy.evaluate(lookalike) == {
+            "verdict": "BLOCK", "code": "FAIL_UNAUTHORIZED_GITHUB_PATH"
+        }, lookalike
+        checks += 1
+
     for path in sorted(policy.github_exact):
         result = policy.evaluate(path)
         assert result == {"verdict": "ADMIT", "code": "PASS_GITHUB_EXACT_PATH_ADMISSION"}, (path, result)
