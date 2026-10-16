@@ -2,6 +2,16 @@
   "schema_version": "pase-auxiliary-pr-workflows/v1",
   "workflows": [
     {
+      "name": "ig_ci50_change_impact_qualification.yml",
+      "owner": "IG CI50",
+      "reason": "Runs the focused CI50 change-impact qualification suite."
+    },
+    {
+      "name": "ig_m46_python_harness.yml",
+      "owner": "IG M4.6",
+      "reason": "Runs the M4.6 Python harness regression suite."
+    },
+    {
       "name": "ig-m105-cp2-oidc-bridge-tests.yml",
       "owner": "IG M10.5 CP2",
       "reason": "Runs the focused OIDC bridge regression suite for CP2 changes."
@@ -15,16 +25,6 @@
       "name": "ig-n9-judge-unit-tests.yml",
       "owner": "IG N9 Judge",
       "reason": "Runs the N9 judge unit tests when judge code changes."
-    },
-    {
-      "name": "ig_ci50_change_impact_qualification.yml",
-      "owner": "IG CI50",
-      "reason": "Runs the focused CI50 change-impact qualification suite."
-    },
-    {
-      "name": "ig_m46_python_harness.yml",
-      "owner": "IG M4.6",
-      "reason": "Runs the M4.6 Python harness regression suite."
     },
     {
       "name": "lf-edge-function-operation-tests.yml",
@@ -45,6 +45,11 @@
       "name": "lf-parity-proposal-tests.yml",
       "owner": "LF Migration Source Parity",
       "reason": "Runs focused tests for migration parity proposal changes."
+    },
+    {
+      "name": "lf-router-level2-advisory-tests.yml",
+      "owner": "LF Router ACT-0001 / CI",
+      "reason": "Runs exact-source positive and negative tests for the advisory level2 handoff; CI owns execution, PASE consumes evidence."
     },
     {
       "name": "lf-runtime-independent-readback-oidc-tests.yml",
