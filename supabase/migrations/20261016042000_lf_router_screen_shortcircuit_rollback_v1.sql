@@ -37,14 +37,14 @@ BEGIN
  -- Bare text (no hints) must first traverse canonical discovery and not the
  -- early-return screen branch. Both explicit asset types must remain intact.
  v_req:='Inspeccionar el perfil PERFIL-UI-ARCHITECT y revisar la pantalla Iniciar sesión B2B.';
- v_result:=public.lf_router_resolve_v1(v_req);
+ v_result:=public.lf_router_resolve_v1(p_request_text=>v_req,p_action_hint=>'ASSET_INSPECTION');
  IF v_result->>'status'<>'READY_INSPECTION'
     OR v_result->>'asset_type'<>'PERFIL'
     OR v_result#>>'{asset,codigo_activo}'<>'PERFIL-UI-ARCHITECT'
  THEN RAISE EXCEPTION 'ACT0001_PROFILE_ROUTE_NOT_RESTORED:%',v_result; END IF;
 
  v_req:='Inspeccionar la skill ACT-0045 para evaluar la pantalla Iniciar sesión B2B.';
- v_result:=public.lf_router_resolve_v1(v_req);
+ v_result:=public.lf_router_resolve_v1(p_request_text=>v_req,p_action_hint=>'ASSET_INSPECTION');
  IF v_result->>'status'<>'READY_INSPECTION'
     OR v_result->>'asset_type'<>'SKILL'
     OR v_result#>>'{asset,codigo_activo}'<>'ACT-0045'
@@ -112,14 +112,14 @@ BEGIN
  -- Bare text (no hints) must first traverse canonical discovery and not the
  -- early-return screen branch. Both explicit asset types must remain intact.
  v_req:='Inspeccionar el perfil PERFIL-UI-ARCHITECT y revisar la pantalla Iniciar sesión B2B.';
- v_result:=public.lf_router_resolve_v1(v_req);
+ v_result:=public.lf_router_resolve_v1(p_request_text=>v_req,p_action_hint=>'ASSET_INSPECTION');
  IF v_result->>'status'<>'READY_INSPECTION'
     OR v_result->>'asset_type'<>'PERFIL'
     OR v_result#>>'{asset,codigo_activo}'<>'PERFIL-UI-ARCHITECT'
  THEN RAISE EXCEPTION 'ACT0001_PROFILE_ROUTE_NOT_RESTORED:%',v_result; END IF;
 
  v_req:='Inspeccionar la skill ACT-0045 para evaluar la pantalla Iniciar sesión B2B.';
- v_result:=public.lf_router_resolve_v1(v_req);
+ v_result:=public.lf_router_resolve_v1(p_request_text=>v_req,p_action_hint=>'ASSET_INSPECTION');
  IF v_result->>'status'<>'READY_INSPECTION'
     OR v_result->>'asset_type'<>'SKILL'
     OR v_result#>>'{asset,codigo_activo}'<>'ACT-0045'
