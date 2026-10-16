@@ -32,7 +32,7 @@ for marker in (
     "LF_MIGRATION_TRAIN_APP_ID",
     "LF_MIGRATION_TRAIN_APP_PRIVATE_KEY",
     "PASE-GLOBAL-04",
-    "LF_MIGRATION_TRAIN_MODE: DRY_RUN",
+    "LF_MIGRATION_TRAIN_MODE: REAL",
     "--paginate --slurp",
     "sleep 10",
     "GITHUB_STEP_SUMMARY",
@@ -138,4 +138,51 @@ assert "if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'REAL'" in wf
 assert "if: failure() && env.LF_MIGRATION_TRAIN_MODE == 'DRY_RUN'" in wf
 checks += 1
 
+# F09-X16: versioned main check list, exact-head, conclusion=success.
+guard_path = ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py"
+guard = guard_path.read_text(encoding="utf-8")
+assert "lf_train_required_check_guard.py" in wf
+for marker in (
+    'DEFAULT_CHECKS_FILE = Path(__file__).with_name("lf_train_required_pre_apply_checks_v1.json")',
+    'def load_required_checks(',
+    'required_checks: tuple[str, ...]',
+    'exact_head = [row for row in matching if row.get("head_sha") == expected_head]',
+    'latest = max(exact_head, key=_run_recency_key)',
+    'def _run_recency_key(',
+    'conclusion != "success"',
+    '"{code}_TRAIN_REQUIRED_CHECK_MISSING check={name}"',
+    "FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS",
+):
+    assert marker in guard, marker
+    checks += 1
+assert 'for attempt in $(seq 1 90); do' in wf
+assert 'if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi' in wf
+assert "guard_args+=(--final)" in wf
+assert 'python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py' in wf
+assert '--checks-file sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json' in wf
+assert 'checks="$(gh api --paginate --slurp "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"' in wf
+assert 'conclusion!="skipped"' not in wf
+checks_config = (ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json").read_text(encoding="utf-8")
+assert '"lf-independent-change-admission"' in checks_config
+assert '"ig-runtime-candidate-judge"' in checks_config
+assert 'lf_train_required_pre_apply_checks_v1.json' in guard
+checks += 1
+
+# DB tools only after authoritative exact PR-file classification.
+# No-SQL PRs bypass CLI/apt while SQL PRs retain both tools.
+source_pos = wf.index("- name: Resolve exact PR files and migration blob")
+cli_pos = wf.index("- name: Set up Supabase CLI for REAL mode")
+pg_pos = wf.index("- name: Install PostgreSQL client for REAL mode")
+plan_pos = wf.index("- name: Read floors, assign version, and run M2 check")
+assert source_pos < cli_pos < pg_pos < plan_pos
+checks += 1
+for section in (wf[cli_pos:pg_pos], wf[pg_pos:plan_pos]):
+    assert "if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'" in section
+    assert "if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'\\n" not in section
+    checks += 1
+assert wf.count("supabase/setup-cli@v1") == 1
+assert wf.count("sudo apt-get install -y postgresql-client") == 1
+checks += 1
+
 print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/{checks}")
+

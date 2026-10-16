@@ -64,22 +64,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Set up Supabase CLI for REAL mode
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
-        uses: supabase/setup-cli@v1
-        with:
-          version: 2.48.3
-
-      - name: Install PostgreSQL client for REAL mode
-        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-          supabase db push --help >/dev/null
-          psql --version
-
       - name: Acquire GitHub App token for REAL mode
         id: app_token
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
@@ -329,6 +313,22 @@ jobs:
             echo "source_sha256=$sha256"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Set up Supabase CLI for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.48.3
+
+      - name: Install PostgreSQL client for REAL mode
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          supabase db push --help >/dev/null
+          psql --version
+
       - name: Read floors, assign version, and run M2 check
         id: plan
         env:
@@ -511,7 +511,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for _ in $(seq 1 90); do
+          for attempt in $(seq 1 90); do
             # A retimestamp can advance the Git ref before the PR API readback catches up.
             # Accept only the known previous head briefly, never an unrelated revision.
             for propagation_attempt in $(seq 1 10); do
@@ -527,15 +527,19 @@ jobs:
               fi
               sleep 2
             done
-            checks="$(gh api --paginate "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
-            bad="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.conclusion!=null and (.conclusion!="success" and .conclusion!="skipped" and .conclusion!="neutral"))] | length')"
-            [ "$bad" = "0" ] || { echo "FAIL_TRAIN_PASE_CHECK"; exit 2; }
-            pending="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge") | select(.status!="completed")] | length')"
-            present="$(printf '%s' "$checks" | jq '[.check_runs[]? | select(.name=="lf-independent-change-admission" or .name=="ig-runtime-candidate-judge")] | length')"
-            if [ "$present" -ge 2 ] && [ "$pending" = "0" ]; then exit 0; fi
+            checks="$(gh api --paginate --slurp "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
+            guard_args=(--head-sha "$EXPECTED_HEAD")
+            if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi
+            set +e
+            guard_output="$(printf '%s' "$checks" | python3 sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py --checks-file sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json "${guard_args[@]}")"
+            guard_rc=$?
+            set -e
+            echo "$guard_output"
+            if [ "$guard_rc" -eq 0 ]; then exit 0; fi
+            if [ "$guard_rc" -ne 10 ]; then exit 2; fi
             sleep 5
           done
-          echo "FAIL_TRAIN_PASE_CHECK_TIMEOUT"
+          echo "FAIL_TRAIN_REQUIRED_CHECK_TIMEOUT"
           exit 2
 
       - name: Persist exact source and require Saga READY_TO_APPLY

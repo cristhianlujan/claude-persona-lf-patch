@@ -34,10 +34,28 @@ def main() -> int:
         ".github/workflows/lf-pack-validation-core.yml",
         ".github/workflows/lf-migration-source-parity-core.yml",
         ".github/workflows/lf-migration-merge-train.yml",
+        ".github/workflows/lf-migration-reconcile-lane.yml",
         ".github/workflows/lf-input-governance-recurate.yml",
     }
     assert expected_exact.issubset(policy.github_exact)
     checks += 1
+
+    # Exact, narrowly-scoped CI workflow admission: never a .github prefix.
+    router_workflow = ".github/workflows/lf-router-level2-advisory-tests.yml"
+    assert policy.evaluate(router_workflow) == {
+        "verdict": "ADMIT", "code": "PASS_GITHUB_EXACT_PATH_ADMISSION"
+    }
+    checks += 1
+    for lookalike in (
+        router_workflow + ".bak",
+        router_workflow.replace(".yml", ".yaml"),
+        router_workflow.replace(".yml", "-copy.yml"),
+        ".github/workflows/subdir/lf-router-level2-advisory-tests.yml",
+    ):
+        assert policy.evaluate(lookalike) == {
+            "verdict": "BLOCK", "code": "FAIL_UNAUTHORIZED_GITHUB_PATH"
+        }, lookalike
+        checks += 1
 
     for path in sorted(policy.github_exact):
         result = policy.evaluate(path)
@@ -58,6 +76,7 @@ def main() -> int:
             checks += 1
 
     for path in (
+        ".github/workflows/lf-x-not-admitted.yml",
         ".github/workflows/unregistered.yml",
         ".github/CODEOWNERS",
         ".github/pull_request_template.md",
