@@ -172,7 +172,7 @@ BEGIN
        AND NOT (valor_config ? 'offer_may_have_multiple_plans'))<>1
  OR (SELECT COUNT(*) FROM lf_ops.reglas
      WHERE id=654 AND estado='CANDIDATO'
-       AND valor_config->'file_relation_key'='["REFERENCIA_EMPRESA","PLAN"]'::jsonb
+       AND valor_config->'file_relation_key'='["REFERENCIA_EMPRESA","PLAN","OFERTA"]'::jsonb
        AND descripcion LIKE '%insufficient to distinguish schedules%')<>1
  OR (SELECT COUNT(*) FROM lf_ops.reglas
      WHERE id=620 AND estado='CANDIDATO'
