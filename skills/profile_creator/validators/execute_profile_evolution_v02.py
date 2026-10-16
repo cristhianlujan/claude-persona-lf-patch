@@ -98,6 +98,14 @@ def execute_profile_evolution_v02(
         return _block("EVIDENCE_STEP_CANDIDATES_MISSING")
     if method_candidate.get("selected_method_ids") != selected_ids:
         return _block("METHOD_SELECTION_CANDIDATE_MISMATCH")
+    assessment_receipt_id = readback.get("assessment_receipt_ref")
+    assessment_sha = readback.get("assessment_sha256")
+    selector_version = operation_binding.get("selector_version")
+    if (not isinstance(assessment_receipt_id, str) or not assessment_receipt_id
+            or not _sha(assessment_sha, 64)
+            or not isinstance(selector_version, str) or not selector_version
+            or operation_binding.get("method_registry_version") != readback.get("registry_version")):
+        return _block("BOUND_ASSESSMENT_SELECTOR_RECEIPTS_MISSING")
     qualified = readback.get("qualified_method_ids")
     if len(set(qualified)) != len(qualified):
         return _block("QUALIFIED_METHOD_PORTFOLIO_INVALID")
@@ -124,7 +132,8 @@ def execute_profile_evolution_v02(
                 or method_info.get("current_source_sha") != source_sha
                 or not isinstance(method_info.get("exact_version"), str)
                 or not isinstance(method_info.get("qualification_receipt_id"), str)
-                or not method_info["qualification_receipt_id"]):
+                or not method_info["qualification_receipt_id"]
+                or not _sha(method_info.get("method_subject_sha256"), 64)):
             return _block("METHOD_QUALIFICATION_RECEIPT_INVALID", method_id=mid)
         verified_methods.append(method_info)
 
@@ -163,13 +172,31 @@ def execute_profile_evolution_v02(
     decision = "NO_CHANGE" if mode == "NO_CHANGE" else "UPDATE"
     # No write is initiated here. The canonical OIDC caller and step recorder
     # decide the next route from immutable PASS_POLICY after recording.
-    method_step = {"selected_method_ids": selected_ids,
-                   "execution_receipts": completed, "selection_digest": _digest(selection),
-                   "assessment_digest": _digest(assessment),
-                   "source_head_sha": source_sha, "method_execution_permitted": False}
-    decision_step = {"decision": decision, "evolution_mode": mode,
-                     "execution_receipts": completed, "source_head_sha": source_sha,
-                     "github_write_permitted": False}
+    selected_methods = [
+        {"method_id": method["method_id"], "exact_version": method["exact_version"],
+         "receipt_id": method["qualification_receipt_id"],
+         "subject_sha256": method["method_subject_sha256"],
+         "source_head_sha": source_sha}
+        for method in verified_methods
+    ]
+    method_step = {"profile_slug": profile_slug, "source_head_sha": source_sha,
+                   "profile_assessment_receipt_id": assessment_receipt_id,
+                   "profile_assessment_sha256": assessment_sha,
+                   "selector_version": selector_version,
+                   "selected_methods": selected_methods,
+                   "no_additional_method_needed": not bool(selected_methods),
+                   "empty_selection_reason": "NO_ADDITIONAL_METHOD_NEEDED_WITH_EVIDENCE"
+                   if not selected_methods else None,
+                   "method_execution_permitted": False,
+                   "execution_receipts": completed,
+                   "selection_digest": _digest(selection)}
+    decision_step = {"profile_slug": profile_slug, "source_head_sha": source_sha,
+                     "profile_assessment_receipt_id": assessment_receipt_id,
+                     "profile_assessment_sha256": assessment_sha,
+                     "decision": decision, "evolution_mode": mode,
+                     "decision_evidence_ref": assessment_receipt_id,
+                     "github_write_permitted": False,
+                     "execution_receipts": completed}
     try:
         step_result = record_evolution_steps(execution_id, method_step, decision_step)
     except Exception:
