@@ -126,6 +126,22 @@ class Level2AdvisoryTests(unittest.TestCase):
         self.assertEqual(p["subject_candidates"], [])
         self.assertFalse(p["downstream_execution_allowed"])
 
+    def test_actual_router_blocked_shape_keeps_literal_without_inventing_screen(self):
+        # 2026-10-16 real ACT-0001 readback: subject is UNRESOLVED
+        # even though the canonical screen exists in the catalog.
+        # This tests the current route shape, not a runtime handoff receipt.
+        r=copy.deepcopy(ROUTER)
+        r["subject_binding_state"]="UNRESOLVED"
+        r.pop("subject_candidates")
+        p=check(router=r)
+        self.assertEqual(p["status"], "ADVISORY_ONLY")
+        self.assertEqual(p["input_literal"], REQUEST)
+        self.assertEqual(p["subject_candidates"], [])
+        self.assertEqual(p["executor_candidates"][0]["code"], EXECUTOR)
+        self.assertIs(p["executor_candidates"][0]["runtime_enabled"], False)
+        self.assertIs(p["downstream_execution_allowed"], False)
+        self.assertIs(p["native_runtime_executed"], False)
+
     def test_false_unique_subject_rejected(self):
         r=copy.deepcopy(ROUTER)
         r["subject_candidates"]=[]
