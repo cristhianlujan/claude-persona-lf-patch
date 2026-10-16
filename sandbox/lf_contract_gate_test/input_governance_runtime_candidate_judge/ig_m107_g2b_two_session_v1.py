@@ -106,8 +106,13 @@ def run(connect) -> dict:
     checks: dict[str, bool] = {}
     started = time.monotonic()
     phase_times: dict[str, int] = {}
+    from psycopg.rows import tuple_row
     a = connect()
     b = connect()
+    # The existing N9 client uses dict_row; this isolated test expects
+    # positional SQL columns and changes only its own connection instances.
+    a.row_factory = tuple_row
+    b.row_factory = tuple_row
     try:
         pre = preflight(a)
         a.commit()
