@@ -92,8 +92,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 \
             -f sandbox/lf_contract_gate_test/canonical_route_guard/act0001_pg_rollback_isolation_v1.sql \
             | tee /tmp/act0001-isolated-pg-proof.txt
-          grep -q '^ PASS_ACT0001_ISOLATED_PG17_ROLLBACK_NO_RESIDUE
- /tmp/act0001-isolated-pg-proof.txt
+          grep -q 'PASS_ACT0001_ISOLATED_PG17_ROLLBACK_NO_RESIDUE' /tmp/act0001-isolated-pg-proof.txt
       - name: Exercise T02, T12, T14 and PE1 against isolated material fixtures
         env:
           PGHOST: localhost
