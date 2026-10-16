@@ -40,7 +40,7 @@ BEGIN
      AND q.status='SUCCEEDED'
      AND q.profile_code='PERFIL-UI-ARCHITECT'
      AND q.receipt->>'input_sha256'=encode(extensions.digest(convert_to(q.input_literal,'UTF8'),'sha256'),'hex')
-     AND e.manifest->>'input_sha256'='sha256:'||q.receipt->>'input_sha256'
+     AND e.manifest->>'input_sha256'=('sha256:'||(q.receipt->>'input_sha256'))
      AND e.status='COMPLETED';
   IF v_check<>1 OR v_literal_digest IS DISTINCT FROM
        'd98ba31bb99ab1bf230be579d46479ece5960888b6c077070adc7c11ad4fccca'
