@@ -91,7 +91,10 @@ def verify_native_material_candidate(*, handoff: dict[str, Any],
         _check(isinstance(content, bytes)
                and hashlib.sha256(content).hexdigest() == item["sha256"],
                "SOURCE_CURRENTNESS_UNVERIFIED")
-    _check(any(x["ref"] == "profiles/" + handoff.get("profile_slug", "") + "/SKILL.md"
+    profile_slug = handoff.get("profile_slug")
+    _check(isinstance(profile_slug, str) and bool(profile_slug.strip()),
+           "PROFILE_SOURCE_UNBOUND")
+    _check(any(x["ref"] == "profiles/" + profile_slug + "/SKILL.md"
                for x in manifest), "PROFILE_SOURCE_UNBOUND")
     _check(isinstance(review_receipt_id, str) and bool(review_receipt_id.strip())
            and callable(trusted_review_readback), "INDEPENDENT_REVIEW_MISSING")
