@@ -34,6 +34,20 @@ BEGIN
      AND valor_config->>'group_by'='external_offer_id'
      AND valor_config->>'tolerance_policy'='PENDING_DECISION')<>1
  THEN RAISE EXCEPTION 'B2B_INSTALLMENT_VALIDATION_LEGACY_GROUP_GUARD_FAILED'; END IF;
+
+ IF (SELECT COUNT(*) FROM lf_ops.reglas
+     WHERE id=620 AND codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001'
+       AND estado='CANDIDATO'
+       AND NOT(valor_config ? 'contract_field_matrix_v5')
+       AND valor_config->'contract_field_matrix_v4'->'standard_excel_complete_offer_headers'->>10='PLAN'
+       AND valor_config->'contract_field_matrix_v4'->'standard_excel_schedule_headers'->>1='PLAN')<>1
+ THEN RAISE EXCEPTION 'B2B_EXCEL_V5_CONTRACT_SOURCE_GUARD_FAILED'; END IF;
+
+ IF (SELECT COUNT(*) FROM lf_ops.reglas
+     WHERE id=618 AND codigo='B2B-RULE-IMPORT-SOURCE-MAPPING-001' AND estado='CANDIDATO'
+       AND valor_config->'standard_excel_identity_policy'->>'plan_transport_key'='FILE_JOIN_REFERENCE_ONLY_NOT_CANONICAL_KEY'
+       AND valor_config->'standard_excel_currency_policy'->>'cronograma_inherits_by'='REFERENCIA_EMPRESA_PLUS_PLAN')<>1
+ THEN RAISE EXCEPTION 'B2B_EXCEL_V5_IDENTITY_SOURCE_GUARD_FAILED'; END IF;
 END $preflight$;
 
 -- Replace the previously inverted definition; leave the physical foreign keys pending.
@@ -75,6 +89,77 @@ SET valor_config=valor_config-'group_by',
     updated_at=CURRENT_TIMESTAMP
 WHERE id=88 AND codigo='B2B_IMP_VAL_INSTALLMENT_SUM' AND estado='CANDIDATO';
 
+
+-- Owner approved 2026-10-16: explicit OFERTA file-local key on both sheets.
+-- Keep V4 unchanged as historical contract; V5 is the new candidate for Excel Completo.
+-- EXCEL_ASISTIDO base contract is unaffected.
+UPDATE lf_ops.reglas
+SET valor_config = valor_config || jsonb_build_object(
+   'contract_field_matrix_v5',
+    jsonb_set(
+      jsonb_set(
+        valor_config->'contract_field_matrix_v4',
+        '{standard_excel_complete_offer_headers}',
+        jsonb_insert(
+          valor_config->'contract_field_matrix_v4'->'standard_excel_complete_offer_headers',
+          '{10}','"OFERTA"'::jsonb,true),
+        false),
+      '{standard_excel_schedule_headers}',
+      jsonb_insert(
+        valor_config->'contract_field_matrix_v4'->'standard_excel_schedule_headers',
+        '{1}','"OFERTA"'::jsonb,true),
+      false) ||
+      jsonb_build_object(
+        'file_relation_semantic',
+          'REFERENCIA_EMPRESA_PLUS_PLAN_PLUS_OFERTA_ONLY_JOINS_OFFERS_TO_SCHEDULE_WITHIN_FILE_LF_GENERATES_INTERNAL_IDS',
+        'file_offer_reference_header','OFERTA',
+        'file_offer_reference_role','FILE_LOCAL_NOT_CANONICAL_ID',
+        'file_offer_reference_uniqueness','UNIQUE_WITHIN_REFERENCIA_EMPRESA_PLUS_PLAN',
+        'same_plan_different_offer_schedule_disambiguation','REQUIRED'
+      ),
+   'active_excel_complete_contract_version','V5',
+   'previous_excel_complete_contract_version','V4'
+ ),
+ updated_at=CURRENT_TIMESTAMP
+WHERE id=620 AND codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001'
+  AND estado='CANDIDATO';
+
+UPDATE lf_ops.reglas
+SET valor_config = valor_config ||
+    jsonb_build_object(
+      'file_relation_key',jsonb_build_array('REFERENCIA_EMPRESA','PLAN','OFERTA'),
+      'file_offer_reference_header','OFERTA',
+      'file_offer_reference_role','FILE_LOCAL_NOT_CANONICAL_ID'
+    ),
+ updated_at=CURRENT_TIMESTAMP
+WHERE id=654 AND codigo='B2B-RULE-LOAD-MULTI-OFFER-001'
+ AND estado='CANDIDATO';
+
+UPDATE lf_ops.reglas
+SET valor_config =
+    jsonb_set(
+      jsonb_set(
+        valor_config,
+        '{standard_excel_identity_policy}',
+        valor_config->'standard_excel_identity_policy' ||
+          jsonb_build_object(
+            'plan_transport_key','REFERENCIA_EMPRESA_PLUS_PLAN_PLUS_OFERTA_FILE_JOIN_ONLY',
+            'offer_transport_key','REFERENCIA_EMPRESA_PLUS_PLAN_PLUS_OFERTA_FILE_JOIN_ONLY',
+            'file_offer_reference_header','OFERTA',
+            'file_offer_reference_role','FILE_LOCAL_NOT_CANONICAL_ID'
+          ),false),
+      '{standard_excel_currency_policy}',
+      valor_config->'standard_excel_currency_policy' ||
+        jsonb_build_object(
+          'cronograma_inherits_by','REFERENCIA_EMPRESA_PLUS_PLAN_PLUS_OFERTA'
+        ),false),
+ updated_at=CURRENT_TIMESTAMP
+WHERE id=618 AND codigo='B2B-RULE-IMPORT-SOURCE-MAPPING-001'
+ AND estado='CANDIDATO';
+
+-- Multiple alternatives per Plan require their own offer schedule; no backend
+-- external_offer_id, no second authority for IDs. Actual server validator
+-- remains pending physical grouping, as established in this changeset.
 DO $readback$
 BEGIN
  IF (SELECT COUNT(*) FROM lf_ops.reglas
@@ -98,5 +183,28 @@ BEGIN
        AND valor_config->>'tolerance_policy'='PENDING_DECISION')<>1
  THEN RAISE EXCEPTION 'B2B_PLAN_OFFER_EXCLUSIVE_SELECTION_READBACK_FAILED'; END IF;
 END $readback$;
+
+
+DO $v5readback$
+BEGIN
+ IF (SELECT count(*) FROM lf_ops.reglas WHERE id=620 AND estado='CANDIDATO'
+   AND valor_config->>'active_excel_complete_contract_version'='V5'
+   AND valor_config->'contract_field_matrix_v5'->'standard_excel_complete_offer_headers'->>11='OFERTA'
+   AND valor_config->'contract_field_matrix_v5'->'standard_excel_schedule_headers'->>2='OFERTA'
+   AND jsonb_array_length(valor_config->'contract_field_matrix_v5'->'standard_excel_complete_offer_headers')=20
+   AND jsonb_array_length(valor_config->'contract_field_matrix_v5'->'standard_excel_schedule_headers')=5
+   AND jsonb_array_length(valor_config->'contract_field_matrix_v4'->'standard_excel_schedule_headers')=4
+   AND valor_config->'contract_field_matrix_v5'->>'file_offer_reference_role'='FILE_LOCAL_NOT_CANONICAL_ID')<>1
+ OR (SELECT count(*) FROM lf_ops.reglas WHERE id=654 AND estado='CANDIDATO'
+   AND valor_config->'file_relation_key'='["REFERENCIA_EMPRESA","PLAN","OFERTA"]'::jsonb
+   AND valor_config->>'canonical_identity'='LF_GENERATED_INTERNAL_ID')<>1
+ OR (SELECT count(*) FROM lf_ops.reglas WHERE id=618 AND estado='CANDIDATO'
+   AND valor_config->'standard_excel_identity_policy'->>'file_offer_reference_header'='OFERTA'
+   AND valor_config->'standard_excel_identity_policy'->>'external_offer_id_standard_excel'='DENY'
+   AND valor_config->'standard_excel_currency_policy'->>'cronograma_inherits_by'='REFERENCIA_EMPRESA_PLUS_PLAN_PLUS_OFERTA')<>1
+ OR (SELECT count(*) FROM lf_ops.campos_validaciones WHERE id=88 AND estado='CANDIDATO'
+   AND NOT (valor_config ? 'group_by'))<>1
+ THEN RAISE EXCEPTION 'B2B_EXCEL_V5_OFFER_REFERENCE_READBACK_FAILED'; END IF;
+END $v5readback$;
 
 COMMIT;
