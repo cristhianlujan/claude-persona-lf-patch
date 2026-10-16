@@ -1,0 +1,238 @@
+# Paulo: copy this file to .github/workflows/lf-migration-reconcile-lane.yml
+# only after Cristhian completes the prerequisites in lane_workflow.README.md.
+name: LF migration source reconciliation lane
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  actions: write
+
+concurrency:
+  group: lf-migrations
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  reconcile-source-only:
+    if: github.event.label.name == 'ready-to-reconcile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: lf-merge-train
+    steps:
+      - name: Create Train App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.LF_MIGRATION_TRAIN_APP_ID }}
+          private-key: ${{ secrets.LF_MIGRATION_TRAIN_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-statuses: write
+
+      # Trusted verifier code is checked out from main. The PR checkout is only
+      # read through Git objects; no PR code or SQL is executed.
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: reconcile-head
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Resolve current main and reject mixed labels
+        id: preflight
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pull="$(gh api "repos/$REPO/pulls/$PR")"
+          labels="$(jq -r '[.labels[].name] | join(",")' <<<"$pull")"
+          head="$(jq -r '.head.sha' <<<"$pull")"
+          base="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
+          echo "main_sha=$base" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head" >> "$GITHUB_OUTPUT"
+          if [[ "$head" != "$EVENT_HEAD" ]]; then
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            echo "reason=PR head changed after the label event" >> "$GITHUB_OUTPUT"
+          elif [[ ",$labels," == *",ready-to-merge,"* ]]; then
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            echo "reason=ready-to-merge and ready-to-reconcile cannot coexist" >> "$GITHUB_OUTPUT"
+          else
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The PR checkout has no persisted credential. Supply the App token only
+      # to this fetch through Git's process environment; do not write it to config.
+      - name: Fetch current main into exact PR checkout
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth_header"
+          GIT_CONFIG_COUNT=1 \
+          GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+          GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
+            git -C reconcile-head fetch --no-tags origin "refs/heads/main:refs/remotes/origin/main"
+
+      - name: Verify exact source against read-only ledger
+        id: verify
+        if: steps.preflight.outputs.conflict != 'true'
+        env:
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          MAIN_SHA: ${{ steps.preflight.outputs.main_sha }}
+          HEAD_SHA: ${{ steps.preflight.outputs.head_sha }}
+        shell: bash
+        run: |
+          set +e
+          python3 trusted/sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_reconcile_lane.py \
+            --repo "$GITHUB_WORKSPACE/reconcile-head" \
+            --repo-label "$REPO" \
+            --pr-number "$PR" \
+            --base-sha "$MAIN_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --database-url-env LF_SUPABASE_RO_DATABASE_URL \
+            --out "$GITHUB_WORKSPACE/receipt.json"
+          rc=$?
+          set -e
+          verdict="$(jq -r '.verdict // "BLOCKED"' "$GITHUB_WORKSPACE/receipt.json")"
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+
+      - name: Record mixed-label or stale-event rejection
+        id: reject-preflight
+        if: steps.preflight.outputs.conflict == 'true'
+        env:
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          REASON: ${{ steps.preflight.outputs.reason }}
+          MAIN_SHA: ${{ steps.preflight.outputs.main_sha }}
+          HEAD_SHA: ${{ steps.preflight.outputs.head_sha }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          unsigned = {
+            "schema_version": "lf-migration-reconcile-lane-receipt/v1",
+            "lane": "RECONCILE_SOURCE_ONLY",
+            "repo": os.environ["REPO"],
+            "pr": int(os.environ["PR"]),
+            "base_sha": os.environ["MAIN_SHA"],
+            "head_sha": os.environ["HEAD_SHA"],
+            "main_sha": os.environ["MAIN_SHA"],
+            "files": [],
+            "verdict": "FAIL",
+            "reason": os.environ["REASON"],
+          }
+          unsigned["receipt_sha256"] = hashlib.sha256(
+            json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+          ).hexdigest()
+          open("receipt.json", "w", encoding="utf-8").write(json.dumps(unsigned, sort_keys=True, separators=(",", ":")) + "\n")
+          print(json.dumps(unsigned, sort_keys=True))
+          PY
+          echo "verdict=FAIL" >> "$GITHUB_OUTPUT"
+
+      - name: Upload deterministic verification receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-reconcile-receipt-pr-${{ github.event.pull_request.number }}
+          path: receipt.json
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Comment verdict and receipt table
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          VERIFY_VERDICT: ${{ steps.verify.outputs.verdict }}
+          PREFLIGHT_VERDICT: ${{ steps.reject-preflight.outputs.verdict }}
+          PREFLIGHT_REASON: ${{ steps.preflight.outputs.reason }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          verdict = os.environ.get("PREFLIGHT_VERDICT") or os.environ.get("VERIFY_VERDICT") or "BLOCKED"
+          reason = os.environ.get("PREFLIGHT_REASON", "")
+          lines = [f"RECONCILE_SOURCE_ONLY: **{verdict}**"]
+          try:
+            receipt = json.load(open("receipt.json", encoding="utf-8"))
+            reason = receipt.get("reason", reason)
+            lines += [f"Receipt SHA-256: `{receipt.get('receipt_sha256', 'NOT_OBSERVED')}`",
+                      "| Versión | Nombre | Git blob SHA | Hash ledger | Veredicto |",
+                      "|---|---|---|---|---|"]
+            for f in receipt.get("files", []):
+              safe = lambda value: str(value).replace("|", "\\|").replace("\n", " ")
+              lines.append("| " + " | ".join(safe(f.get(k, "")) for k in
+                ("version", "name", "git_hash", "ledger_hash", "verdict")) + " |")
+          except (OSError, json.JSONDecodeError):
+            pass
+          if reason:
+            lines.append(f"Reason: `{reason}`")
+          open("comment.md", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+          PY
+          gh pr comment "$PR" --repo "$REPO" --body-file comment.md
+
+      - name: Publish verified status and merge exact head
+        if: steps.verify.outputs.verdict == 'PASS'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          MAIN_SHA: ${{ steps.preflight.outputs.main_sha }}
+          HEAD_SHA: ${{ steps.preflight.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          live_main="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
+          pull="$(gh api "repos/$REPO/pulls/$PR")"
+          live_head="$(jq -r '.head.sha' <<<"$pull")"
+          labels="$(jq -r '[.labels[].name] | join(",")' <<<"$pull")"
+          state="$(jq -r '.state' <<<"$pull")"
+          draft="$(jq -r '.draft' <<<"$pull")"
+          [ "$live_main" = "$MAIN_SHA" ] || { echo "BLOCKED_STALE_MAIN expected=$MAIN_SHA actual=$live_main"; exit 2; }
+          [ "$live_head" = "$HEAD_SHA" ] || { echo "BLOCKED_STALE_HEAD expected=$HEAD_SHA actual=$live_head"; exit 2; }
+          [[ ",$labels," == *",ready-to-reconcile,"* ]] || { echo "BLOCKED_RECONCILE_LABEL_MISSING"; exit 1; }
+          [[ ",$labels," != *",ready-to-merge,"* ]] || { echo "FAIL_MIXED_LANE_LABELS"; exit 1; }
+          [ "$state" = "open" ] || { echo "BLOCKED_PR_NOT_OPEN state=$state"; exit 1; }
+          [ "$draft" = "false" ] || { echo "BLOCKED_PR_IS_DRAFT"; exit 1; }
+          gh api --method POST "repos/$REPO/statuses/$HEAD_SHA" \
+            -f state=success -f context='lf-merge-train/verified' \
+            -f description='source-only reconciliation verified against exact ledger identity' >/dev/null
+          response="$(gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
+            -f sha="$HEAD_SHA" -f merge_method=squash)"
+          jq -e '.merged == true' <<<"$response" >/dev/null
+          gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-reconcile" >/dev/null 2>&1 || true
+
+      - name: Remove lane label after failure
+        if: always() && (steps.verify.outputs.verdict != 'PASS' || failure())
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh api --method DELETE "repos/$REPO/issues/$PR/labels/ready-to-reconcile" >/dev/null 2>&1 || true
