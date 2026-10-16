@@ -23,6 +23,10 @@ INTENT = {
     "target_type": "PANTALLA",
     "target_code": TARGET,
     "action_code": "SCREEN_UPDATE",
+    "requested_mode": "EXECUTE",
+    "excluded_target_codes": [],
+    "work_units": [{"target_type": "PANTALLA", "target_code": TARGET, "action_code": "SCREEN_UPDATE"}],
+    "condition_state": "NOT_APPLICABLE",
     "allowed_scopes": ["UI.BUTTON.PRIMARY.LABEL"],
     "denied_scopes": ["AUTHENTICATION", "VALIDATION", "UI.OTHER"],
     "evidence": {
