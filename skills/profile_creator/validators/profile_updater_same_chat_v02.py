@@ -62,7 +62,13 @@ def freeze_same_chat_handoff(*, contract: dict[str, Any],
            "PROFILE_PLAN_INVALID")
     _check(plan.get("operation_code") == "ACTUALIZACION_PERFIL_LF",
            "UPDATER_OPERATION_MISMATCH")
-    _check(plan.get("profile_slug") == contract.get("profile_slug"),
+    # The canonical LF_PROFILE_EXECUTION_CONTRACT_V1 binds profile_code,
+    # while build_runtime_request binds profile_slug separately. Do not invent
+    # a required profile_slug field in the execution contract.
+    slug = plan.get("profile_slug")
+    _check(isinstance(slug, str) and bool(slug),
+           "PROFILE_BINDING_MISSING")
+    _check(contract.get("profile_slug") in (None, slug),
            "PROFILE_BINDING_MISMATCH")
     _check(plan.get("profile_source_write_allowed") is False,
            "UNAUTHORIZED_PROFILE_WRITE")
@@ -76,6 +82,9 @@ def freeze_same_chat_handoff(*, contract: dict[str, Any],
                "SOURCE_BINDING_INVALID")
         _check(_sha_text(source["content"]) == source["content_sha256"],
                "SOURCE_CONTENT_DRIFT")
+    # Anchor this planner's slug to an actual canonical profile source.
+    _check(any(source["ref"] == "profiles/" + slug + "/SKILL.md"
+               for source in profile_sources), "CANONICAL_PROFILE_SOURCE_MISSING")
     assessment = plan.get("profile_assessment")
     selection = plan.get("selection")
     _check(isinstance(assessment, dict) and isinstance(selection, dict),
@@ -105,7 +114,7 @@ def freeze_same_chat_handoff(*, contract: dict[str, Any],
     source_manifest = [{"ref": x["ref"], "sha256": x["content_sha256"]}
                        for x in profile_sources]
     frozen = {"schema": SCHEMA, "run_id": contract["run_id"],
-              "profile_slug": contract["profile_slug"], "executor_mode": mode,
+              "profile_slug": slug, "executor_mode": mode,
               "current_chat_surface": current_surface,
               "conversation_scope": "EXISTING_CONVERSATION_ONLY",
               "session_creation": False, "api_invocation": False,
