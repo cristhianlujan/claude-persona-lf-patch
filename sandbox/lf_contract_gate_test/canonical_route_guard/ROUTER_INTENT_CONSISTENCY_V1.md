@@ -103,3 +103,64 @@ effects; positive consistency-only; deterministic replay.
 
 This candidate is an actionable fail-closed validator, **not** a claim that
 the original B2B case is fixed in the running Router.
+
+## 2026-10-16 — fase 1, ampliación transversal en el MISMO PR (aún DRAFT)
+
+Diagnóstico externo confirmado: el Router llegó a READY con escritura ante
+solicitudes SIMULAR o NO CREAR; también omitió sujetos positivos al escoger
+un solo código y confundió un activo excluido con el destino.
+
+La protección candidata YA EXISTENTE ahora comprueba, además de sus invariantes
+previos, los campos **atestados por el verificador externo**:
+- `requested_mode`: solo `EXECUTE` puede superar la revisión de una ruta
+  con efectos; `ANALYZE`, `EXPLORE`, `SIMULATE` y `PREPARE` **no se
+  prohíben como trabajo**: se desvían de esta revisión de escritura.
+- `excluded_target_codes`: lista explícita, con cita de procedencia si hay
+  exclusiones; ningún target excluido puede aprobar una ruta de efectos.
+- `work_units`: unidad única ligada a target/type/action; ante múltiples
+  unidades, el candidato escalar **no declara PASS parcial** y exige una ruta
+  compuesta gobernada todavía no implementada.
+- `condition_state`: una condición no satisfecha/no comprobada no permite
+  afirmar que procede un efecto.
+
+Un resultado `ROUTE_CONSISTENCY_PASS` sigue devolviendo
+`downstream_execution_allowed=false`. No es permiso ni ejecución.
+El contrato de procedencia del pedido, el modo y las exclusiones está
+contenido en el mismo objeto verificado; **los unit tests usan un callback
+falso** para probar exclusivamente la frontera determinista.
+
+### Prueba reproducible
+
+```bash
+cd sandbox/lf_contract_gate_test/canonical_route_guard
+python3 -m unittest -v test_router_intent_consistency_v1.py test_router_intent_safety_contract_v1.py
+```
+
+- Antes: 20/20 suite previa PASS, pero 14/16 casos nuevos FALLABAN.
+- Después: **36/36 PASS local**; blobs del módulo y dos suites leídos de
+  vuelta en GitHub. El caso positivo continúa siendo un fixture hipotético.
+- No se ejecutaron la matriz externa de 33 casos íntegra ni T02/T12/T14/PE1
+  contra PostgreSQL; ese CSV no se encuentra en la rama examinada.
+- No hay verificador semántico atestado conectado a ACT-0001.
+- No hay prueba de `pre_write_execution_binding_gate` ni de efecto real.
+- PASE del HEAD posterior a estos cambios falló en
+  `Enforce single ordinary PR entrypoint`: el selftest enumeró doce
+  workflows ordinarios distintos de `pase.yml`; no fue un fallo de las 36
+  pruebas Python. **No se reinterpretó como éxito ni se modificó PASE**.
+- No se habilitó Router, perfil, skill, escritura, merge, deploy ni migración.
+
+### Límite arquitectónico
+
+Este guard solo compara un **plan ya interpretado** contra una ruta de
+efectos. NO entiende texto libre, no decide si un modo es verdadero, no
+selecciona capacidades ni reemplaza al Router. La semántica gobernada y
+la composición deben encargarse de crear la propuesta y demostrar su
+cobertura. Un tipo nuevo no debe quedar impedido de ser creado por el
+requisito de identidad preexistente de este guard, que **solo aplica a
+operaciones sobre targets ya registrados**. No reutilizarlo como gate
+universal para crear, explorar ni simular.
+
+**Próximo checkpoint:** validar un recibo real del verificador externo,
+conectar este control antes del primer efecto por la operación existente,
+probar positivos y negativos bajo un aislamiento PostgreSQL verificado y
+sin alterar las operaciones canónicas.
