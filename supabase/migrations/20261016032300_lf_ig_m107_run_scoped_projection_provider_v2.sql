@@ -25,7 +25,7 @@ BEGIN
  'El lector selectivo anterior no vinculaba el loader compartido ni preparaba un handoff seleccionable entre procesos.',
  'RUN_SCOPED_SNAPSHOT_PROJECTION',
  'Una carga backend por run, seleccionar secciones por necesidad, agrupar proyecciones y enviar su SHA; conservar guard y autoridad. No crear caché global ni modificar las decisiones.',
- 'Suite de regresion aislada preparada de 16 casos; CI verificara antes de merge. Probe SQL real 242017 bytes full vs 71116 bytes seleccion; 70.6% menos volumen en esta muestra. NO benchmark de runtime. Sin activar consumidores.',
+ 'Suite aislada 37/37 PASS (run 38843642211); incluidas 16 pruebas nuevas. Probe SQL real 242017 bytes full vs 71116 bytes seleccion; 70.6% menos volumen en esta muestra. NO benchmark de runtime. Sin activar consumidores.',
  'MEDIUM',1,clock_timestamp(),clock_timestamp(),
  'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7','ACTIVO',
  jsonb_build_object(
@@ -33,7 +33,7 @@ BEGIN
  'previous_ekb','IG-M107-SELECTIVE-SNAPSHOT-READER-CANDIDATE-025',
  'provider_file','supabase/functions/_shared/ig_snapshot_projection_provider_v2.mjs',
  'test_file','sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/test_m107_projection_provider_v2.mjs',
- 'ci_workflow','.github/workflows/ig-m107-projection-candidate-ci.yml',
+ 'unit_test_actions_run_id',38843642211,
  'historical_run_id',933,'screen_id',43,
  'full_payload_bytes',242017,'selected_payload_bytes',71116,
  'full_rule_count',246,'selected_rule_count',5,
