@@ -69,13 +69,13 @@ WHERE id=617 AND codigo='B2B-RULE-INSTALLMENT-PLAN-001' AND estado='CANDIDATO';
 -- two different alternative offers to the same schedule.
 UPDATE lf_ops.reglas
 SET descripcion = descripcion ||
-  ' Owner 2026-10-15: within a plan there can be several independent offer alternatives, with exclusive selection; PLAN A and PLAN B can each contribute one selected offer to a combined quote. The current standard Excel join key REFERENCIA_EMPRESA+PLAN is insufficient to distinguish schedules for two alternative offers under the SAME PLAN. The physical and Excel identity mapping is PENDING_FUNCTIONAL_DEFINITION; no ambiguous rows may be accepted as a valid resolved schedule until the authoritative mapping is defined.',
+  ' Owner 2026-10-15: within a plan there can be several independent offer alternatives, with exclusive selection; PLAN A and PLAN B can each contribute one selected offer to a combined quote. The prior Excel V4 join key REFERENCIA_EMPRESA+PLAN cannot distinguish alternative offers under the same plan. Excel Completo V5 supersedes V4 by adding OFERTA to both sheets and joins on REFERENCIA_EMPRESA+PLAN+OFERTA; internal ID mapping remains PENDING_FUNCTIONAL_DEFINITION, and ambiguous rows must not be accepted.',
  updated_at=CURRENT_TIMESTAMP
 WHERE id=654 AND codigo='B2B-RULE-LOAD-MULTI-OFFER-001' AND estado='CANDIDATO';
 
 UPDATE lf_ops.reglas
 SET descripcion = descripcion ||
-   ' Before implementation, reconcile the Excel Completo relation REFERENCIA_EMPRESA+PLAN against multiple alternative economic offers within a plan. Existing V4 Excel schema remains unchanged; same-plan multi-offer disambiguation is PENDING_FUNCTIONAL_DEFINITION. Do not silently associate one cronograma with more than one offer.',
+   ' Excel Completo V4 is retained unchanged as historic evidence; the V5 candidate adds OFERTA on both sheets and disambiguates by REFERENCIA_EMPRESA+PLAN+OFERTA. The final internal plan-offer identity mapping is PENDING_FUNCTIONAL_DEFINITION. Do not silently associate one cronograma with more than one offer.',
  updated_at=CURRENT_TIMESTAMP
 WHERE id=620 AND codigo='B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001'
  AND estado='CANDIDATO';
@@ -173,10 +173,10 @@ BEGIN
  OR (SELECT COUNT(*) FROM lf_ops.reglas
      WHERE id=654 AND estado='CANDIDATO'
        AND valor_config->'file_relation_key'='["REFERENCIA_EMPRESA","PLAN","OFERTA"]'::jsonb
-       AND descripcion LIKE '%insufficient to distinguish schedules%')<>1
+       AND descripcion LIKE '%Excel Completo V5 supersedes V4%')<>1
  OR (SELECT COUNT(*) FROM lf_ops.reglas
      WHERE id=620 AND estado='CANDIDATO'
-       AND descripcion LIKE '%same-plan multi-offer disambiguation is PENDING_FUNCTIONAL_DEFINITION%')<>1
+       AND descripcion LIKE '%Excel Completo V4 is retained unchanged%')<>1
  OR (SELECT COUNT(*) FROM lf_ops.campos_validaciones
      WHERE id=88 AND estado='CANDIDATO'
        AND NOT (valor_config ? 'group_by')
