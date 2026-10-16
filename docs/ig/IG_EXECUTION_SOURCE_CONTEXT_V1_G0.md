@@ -22,12 +22,25 @@ Esta revisión **sustituye el método anterior basado en bloquear tablas, crear 
 4. Compartir **entradas, no decisiones**. Las validaciones independientes y Q0–Q8 siguen vigentes.
 5. Rechazar snapshot alterado, incompleto o usado con otra identidad. No compartir paquetes entre ejecuciones. Los cambios posteriores en Supabase no cambian retroactivamente la evaluación; los actos que requieran vigencia actual conservan un guard independiente, sin reconstruir las entradas de cada fase.
 
+### Eficiencia obligatoria de las consultas SQL que construyen el snapshot
+
+La optimización es **doble e inseparable**: (A) resolver las fuentes una vez y reutilizar en memoria; **y (B) extraerlas con SQL eficiente**, sin trabajo repetido dentro de esa primera consulta.
+
+1. **Plan de consulta real antes de seleccionar el SQL:** medir `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` en una muestra controlada, distinguir planificación/ejecución/transporte, revisar llamadas a funciones costosas, filtros, índices, cardinalidad, materializaciones y lecturas de buffers.
+2. **CTE `MATERIALIZED` selectiva, no indiscriminada:** materializar cuando el mismo resultado costoso se utiliza varias veces y el plan demuestre menos evaluaciones/tiempo. Comparar con CTE automática y `NOT MATERIALIZED`; cuando convenga insertar filtros al origen, dejar que el optimizador integre la CTE. No convertir materialización en regla global ni crear vistas/tablas materializadas por defecto.
+3. **Una resolución efectiva por conjunto lógico:** evitar N+1 por familia o propuesta, re-evaluación de la misma función dentro de agregados/cálculos de conteo, consultas repetidas y reconstrucción de manifiesto/grafo. Preferir agrupación/joins sobre conjuntos y derivar contadores del paquete cuando conserven equivalencia y ahorren trabajo.
+4. **Proyección y acceso apropiados:** pedir solo las columnas/filas exigidas por el contrato, aplicar selectores canónicos/condiciones temprano, comprobar uso de índices existentes antes de proponer índices nuevos. Mantener referencias completas de seguridad, dependencias, reglas y políticas; nunca omitir datos válidos para aparentar velocidad.
+5. **Mismo resultado y garantías:** comparar estructura/contenido JSONB y resultados decisionales, incluidos negativos de identidad/integridad, contra baseline con las mismas fuentes. La eficiencia SQL no autoriza relajar guards de vigencia, Validator independiente, Q0–Q8 o el límite de 150 s.
+
+La evidencia de referencia (solo **microbenchmark SQL** de datos de entrada, no runtime) está en `docs/ig/IG_M107_SQL_MATERIALIZED_BENCHMARK_V1.md`. Los resultados no autorizan por sí solos G3 ni CP3.
+
 ### Método obligatorio de validación
 1. **Equivalencia:** mismo caso y entradas; comparar flujo actual vs snapshot (reglas, vínculos, hallazgos, decisiones independientes y estados). Cero falsos PASS.
 2. **Reutilización:** contar consultas, compilaciones, reconstrucciones y cálculos; demostrar una extracción lógica por conjunto y reutilización desde memoria en todo el flujo.
 3. **Negativos:** tamper de datos/hash e identidad cruzada se rechazan; un cambio posterior de fuente no mezcla versiones, y el guard de vigencia vigente sigue aplicando cuando corresponda.
 4. **Rendimiento:** comparar tiempos y consultas antes/después en muestra representativa; medir por fase y total, repetir y calcular p50/p90 si procede. Evidenciar ahorro real sin inventar porcentajes ni ampliar 150 segundos.
 5. **Regresión:** preservar triggers existentes, reglas aplicables y Q0–Q8; no cerrar CP3 ni activar G3 sin esas evidencias.
+6. **Eficiencia SQL:** comparar consulta anterior, CTE automática y `MATERIALIZED`/`NOT MATERIALIZED` cuando aplique; exigir JSONB equivalente, conteo de evaluaciones y buffers, repeticiones bajo condiciones comparables y reducción medida en la opción seleccionada. No extrapolar microbenchmark SQL al Validator completo.
 
 **Criterio de aceptación:** equivalencia exacta, aislamiento e integridad, cero falsos PASS, reducción medida de trabajo repetido y preservación de controles vigentes. No exigir nuevas pruebas de bloqueo/versión por tabla para esta optimización.
 
