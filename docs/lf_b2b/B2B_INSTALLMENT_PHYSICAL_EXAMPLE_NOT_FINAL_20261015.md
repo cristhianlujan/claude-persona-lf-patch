@@ -1,3 +1,5 @@
+> **SUPERADO en relación Plan–Oferta.** Este ejemplo histórico mantiene una cardinalidad invertida y no debe utilizarse para programación. La referencia vigente de trabajo es [Excel Completo V5: Plan con múltiples ofertas](B2B_EXCEL_COMPLETO_V5_PLAN_MULTIOFERTA_REFERENCIA_20261016.md). La estructura física final sigue pendiente del desarrollo.
+
 # B2B Cuotas — esquema físico ILUSTRATIVO, NO modelo definitivo
 
 **Estado:** `DEMO_ONLY_NOT_FOR_MIGRATION`. No crea estructuras permanentes ni representa autoridad productiva. El modelo físico final se resuelve durante desarrollo, después de reconciliar carga, ofertas, pagos y asignación empresarial. No copiar estos CREATE TEMP TABLE a una migración.
