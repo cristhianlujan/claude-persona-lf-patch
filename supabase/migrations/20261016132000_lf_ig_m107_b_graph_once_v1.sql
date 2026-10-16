@@ -152,4 +152,4 @@ VALUES (
     'B_complete',false,'cp3_closed',false)::text,
  clock_timestamp(),clock_timestamp(),'VALIDATION','R5_EROSION_PROCESO','LOUD_EARLY',
  'Per-invocation graph optimization candidate; no consumer activation',
- 'docs/ig/IG_M107_F_TRUSTED_BACKEND_LOADER_V1.md');
+ 'docs/ig/IG_M107_B_REQUEST_GRAPH_REUSE_V1.md');
