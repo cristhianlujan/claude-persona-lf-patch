@@ -87,6 +87,44 @@ class Level2AdvisoryTests(unittest.TestCase):
         self.assertIsNone(p["execution_receipt"])
         self.assertEqual(p["executor_candidates"][0]["code"], EXECUTOR)
         self.assertEqual(p["subject_candidates"][0]["code"], "B2B-AUTH-001")
+        self.assertEqual(p["read_only_consultation_candidates"], [EXECUTOR])
+        self.assertEqual(p["read_only_consultation_mode"], "ADVISORY_NO_EFFECTS")
+        self.assertTrue(p["executor_candidates"][0]["read_only_consultation_eligible"])
+
+    def test_runtime_disabled_does_not_block_advisory_consultation(self):
+        c = copy.deepcopy(CATALOG)
+        c["executors"][EXECUTOR]["runtime_enabled"] = False
+        c["executors"][EXECUTOR]["documentary_status"] = "CANDIDATO"
+        p = check(catalog=c)
+        self.assertEqual(p["read_only_consultation_candidates"], [EXECUTOR])
+        self.assertFalse(p["profile_execution_authorized"])
+        self.assertFalse(p["downstream_execution_allowed"])
+
+    def test_cancelled_profile_never_consultable(self):
+        for terminal in ("CANCELADO", "ELIMINADO", "RETIRADO", "BLOQUEADO"):
+            r = copy.deepcopy(ROUTER)
+            c = copy.deepcopy(CATALOG)
+            r["executor_candidates"][0]["operational_status"] = terminal
+            c["executors"][EXECUTOR]["operational_status"] = terminal
+            p = check(router=r, catalog=c)
+            self.assertEqual(p["read_only_consultation_candidates"], [])
+            self.assertFalse(p["executor_candidates"][0]["read_only_consultation_eligible"])
+            self.assertFalse(p["downstream_execution_allowed"])
+
+    def test_deleted_documentary_state_excludes_consultation(self):
+        c = copy.deepcopy(CATALOG)
+        c["executors"][EXECUTOR]["documentary_status"] = "ELIMINADO"
+        p = check(catalog=c)
+        self.assertEqual(p["read_only_consultation_candidates"], [])
+        self.assertFalse(p["profile_execution_authorized"])
+
+    def test_non_profile_candidates_never_consultable_as_profiles(self):
+        r = copy.deepcopy(ROUTER)
+        c = copy.deepcopy(CATALOG)
+        r["executor_candidates"][0]["asset_type"] = "SKILL"
+        c["executors"][EXECUTOR]["type"] = "SKILL"
+        p = check(router=r, catalog=c)
+        self.assertEqual(p["read_only_consultation_candidates"], [])
 
     def test_determinism(self):
         self.assertEqual(check(), check())

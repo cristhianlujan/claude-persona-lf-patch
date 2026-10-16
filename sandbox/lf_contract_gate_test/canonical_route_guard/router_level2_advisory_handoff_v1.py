@@ -14,6 +14,13 @@ from typing import Any, Mapping
 
 SCHEMA = "LF_ROUTER_LEVEL2_ADVISORY_HANDOFF_V1"
 BLOCK_CODE = "BLOCK_EXECUTOR_CAPABILITY_UNATTESTED"
+# Consultation is not operational execution. These are explicit terminal/disabled
+# lifecycle states; CANDIDATE_READ_ONLY and runtime_enabled=false are not terminal.
+NON_CONSULTABLE_STATES = frozenset({
+    "CANCELADO", "CANCELADA", "CANCELLED", "CANCELED",
+    "ELIMINADO", "ELIMINADA", "RETIRADO", "RETIRADA",
+    "BLOQUEADO", "BLOQUEADA",
+})
 
 
 def _digest(text: str) -> str:
@@ -115,9 +122,22 @@ def prepare_handoff(
                 or canonical.get("operational_status") != item.get("operational_status")):
             return blocked("BLOCK_EXECUTOR_CURRENTNESS_DRIFT")
         seen_executors.add(code)
+        # Advisory read-only consultation is distinct from native runtime authority.
+        # No profile is auto-selected from a lexical candidate.
+        documentary = canonical.get("documentary_status")
+        consultation_eligible = (
+            kind == "PERFIL"
+            and isinstance(canonical["operational_status"], str)
+            and canonical["operational_status"].strip().upper() not in NON_CONSULTABLE_STATES
+            and (documentary is None or (
+                isinstance(documentary, str)
+                and documentary.strip().upper() not in NON_CONSULTABLE_STATES
+            ))
+        )
         executor_refs.append({"code": code, "type": kind,
                               "operational_status": canonical["operational_status"],
-                              "runtime_enabled": canonical.get("runtime_enabled") is True})
+                              "runtime_enabled": canonical.get("runtime_enabled") is True,
+                              "read_only_consultation_eligible": consultation_eligible})
 
     capability_refs: list[str] = []
     if capability_selection is not None:
@@ -151,6 +171,11 @@ def prepare_handoff(
         "subject_binding_state": subject_state,
         "subject_candidates": subject_refs,
         "executor_candidates": executor_refs,
+        "read_only_consultation_candidates": [
+            item["code"] for item in executor_refs
+            if item["read_only_consultation_eligible"]
+        ],
+        "read_only_consultation_mode": "ADVISORY_NO_EFFECTS",
         "selected_capability_candidates": capability_refs,
         "next": "RESOLVE_CANONICAL_EXECUTOR_AND_OPERATION",
         "profile_execution_authorized": False,
