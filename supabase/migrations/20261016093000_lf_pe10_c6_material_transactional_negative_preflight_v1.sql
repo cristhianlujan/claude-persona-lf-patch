@@ -82,6 +82,7 @@ BEGIN
 
  v_payload:=jsonb_build_object(
   'evidence_schema_version','operational-event/v2',
+  'acceptance_declared',false,
   'execution_id',v_actor,'producer','LF_MIGRATION_TRAIN_PE10_C6_MATERIAL',
   'occurred_at',clock_timestamp(),
   'purpose','Material v0.2 candidate readback, negative guard verification and rollback test',
