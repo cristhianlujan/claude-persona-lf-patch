@@ -57,7 +57,7 @@ class SameChatTests(unittest.TestCase):
         # and does not include profile_slug.
         contract.pop("profile_slug")
         contract["profile_code"] = "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
-        contract["contract_sha256"] = _sha_json(contract)
+        contract["contract_sha256"] = _sha_json({k: v for k, v in contract.items() if k != "contract_sha256"})
         frozen = self.freeze(contract, plan, sources, surface)
         self.assertEqual(frozen["profile_slug"], plan["profile_slug"])
 
