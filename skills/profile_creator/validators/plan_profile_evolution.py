@@ -108,7 +108,8 @@ def build_evolution_plan(
                                  "authority_ref": receipt["authority_ref"],
                                  "registry_version": receipt["registry_version"],
                                  "registry_sha256": registry_digest,
-                                 "assessment_sha256": assessment_digest}
+                                 "assessment_sha256": assessment_digest,
+                                 "assessment_receipt_ref": receipt.get("assessment_receipt_ref")}
             else:
                 source_status = {"status": "UNRESOLVED",
                                  "reason": "SOURCE_RECEIPT_INVALID_OR_STALE"}
