@@ -46,6 +46,9 @@ export function createRunScopedProjectionProviderV2({loadTrustedRunData}={}) {
       datasetPromise=Promise.resolve().then(()=>loadTrustedRunData(Object.freeze({...pinned})))
         .then(loaded=>toPayload(loaded,pinned));
       digestPromise=datasetPromise.then(sha256Hex);
+      // The dataset promise is awaited by the caller; also consume the
+      // parallel digest rejection so a failed load has no unhandled promise.
+      void digestPromise.catch(()=>{});
     }
     return datasetPromise;
   };
