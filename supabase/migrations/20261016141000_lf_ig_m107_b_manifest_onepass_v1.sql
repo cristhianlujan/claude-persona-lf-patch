@@ -201,7 +201,7 @@ REVOKE ALL ON FUNCTION programacion.fn_ig_m107_manifest_guard_bundle_v1(bigint) 
 
 DO $proof$
 DECLARE v_baseline jsonb; v_bundle jsonb; v_manifest jsonb; v_modified jsonb; v_tamper jsonb;
- v_expected_full boolean; v_func text;
+ v_expected_full boolean; v_func text; v_stored jsonb; v_synthetic_positive jsonb;
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM public.lf_error_knowledge WHERE codigo='IG-M107-B-GRAPH-INVOKE-REUSE-029') THEN RAISE EXCEPTION 'IG_M107_B_DEPENDENCY_MISSING'; END IF;
  IF EXISTS(SELECT 1 FROM public.lf_error_knowledge WHERE codigo='IG-M107-B-MANIFEST-ONEPASS-030') THEN RAISE EXCEPTION 'IG_M107_B_DUPLICATE_EKB'; END IF;
@@ -218,15 +218,20 @@ BEGIN
  INTO v_expected_full FROM programacion.input_readiness_runs r WHERE id=933;
  IF ((v_bundle->>'full_manifest_current')::boolean) IS DISTINCT FROM v_expected_full
  THEN RAISE EXCEPTION 'IG_M107_B_FULL_PARITY_FAIL'; END IF;
- -- A lifecycle change is invisible to identity, but must fail full-manifest verification.
- v_modified:=jsonb_set(v_manifest,'{0,lifecycle,synthetic_negative}','"LIFECYCLE_DRIFT"'::jsonb,true);
+ -- Positive exact pinned-manifest fixture, separate from historical live currentness.
+ SELECT r.source_manifest INTO v_stored FROM programacion.input_readiness_runs r WHERE id=933;
+ v_synthetic_positive:=programacion.fn_ig_m107_bundle_from_manifest_v1(933,v_stored);
+ IF (v_synthetic_positive->>'full_manifest_current')::boolean IS NOT TRUE
+ THEN RAISE EXCEPTION 'IG_M107_B_PINNED_MANIFEST_POSITIVE_FAIL'; END IF;
+ -- A lifecycle-only modification must fail full equality even if identity is unchanged.
+ v_modified:=jsonb_set(v_stored,'{0,lifecycle,synthetic_negative}','"LIFECYCLE_DRIFT"'::jsonb,true);
  IF programacion.fn_input_source_manifest_identity_v1(v_modified) IS DISTINCT FROM
-    programacion.fn_input_source_manifest_identity_v1(v_manifest)
+    programacion.fn_input_source_manifest_identity_v1(v_stored)
  THEN RAISE EXCEPTION 'IG_M107_B_BAD_LIFECYCLE_FIXTURE'; END IF;
  v_tamper:=programacion.fn_ig_m107_bundle_from_manifest_v1(933,v_modified);
  IF (v_tamper->>'full_manifest_current')::boolean IS NOT FALSE
  THEN RAISE EXCEPTION 'IG_M107_B_LIFECYCLE_TAMPER_ACCEPTED'; END IF;
- v_modified:=jsonb_set(v_manifest,'{0,observed_sha256}',to_jsonb(repeat('0',64)),true);
+ v_modified:=jsonb_set(v_stored,'{0,observed_sha256}',to_jsonb(repeat('0',64)),true);
  v_tamper:=programacion.fn_ig_m107_bundle_from_manifest_v1(933,v_modified);
  IF (v_tamper#>>'{g1,authority_readback,dimensions,source_manifest,current}')::boolean IS NOT FALSE
  THEN RAISE EXCEPTION 'IG_M107_B_IDENTITY_TAMPER_ACCEPTED'; END IF;
