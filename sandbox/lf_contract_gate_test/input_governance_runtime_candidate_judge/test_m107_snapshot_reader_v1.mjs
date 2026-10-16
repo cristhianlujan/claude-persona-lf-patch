@@ -39,7 +39,7 @@ test('missing key rejects rather than issuing another database request',async()=
  const r=await choose();assert.throws(()=>r.read({rules:[999]}),{code:'IG_SNAPSHOT_RULES_KEY_MISSING'});
 });
 test('unrequested sections need not be indexed',async()=>{
- const p=await packet();p.data.rules.push({rule_id:7});p.data_sha256=await sha256Hex(p.data);
+ const p=await packet();p.data=structuredClone(p.data);p.data.rules.push({rule_id:7});p.data_sha256=await sha256Hex(p.data);
  const r=await choose(p);assert.equal(r.read({graph:['screen_id']}).graph.screen_id,43);
  assert.throws(()=>r.read({rules:[7]}),{code:'IG_SNAPSHOT_RULES_IDENTITY_INVALID'});
 });
