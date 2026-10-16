@@ -11,6 +11,8 @@ on:
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_consistency_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_safety_contract_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/act0001_pg_rollback_isolation_v1.sql'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/act0001_material_probes_v1.sql'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/act0001_live_authority_source_snapshot_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -90,4 +92,34 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 \
             -f sandbox/lf_contract_gate_test/canonical_route_guard/act0001_pg_rollback_isolation_v1.sql \
             | tee /tmp/act0001-isolated-pg-proof.txt
-          grep -q '^ PASS_ACT0001_ISOLATED_PG17_ROLLBACK_NO_RESIDUE$' /tmp/act0001-isolated-pg-proof.txt
+          grep -q '^ PASS_ACT0001_ISOLATED_PG17_ROLLBACK_NO_RESIDUE
+ /tmp/act0001-isolated-pg-proof.txt
+      - name: Exercise T02, T12, T14 and PE1 against isolated material fixtures
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGDATABASE: postgres
+          PGUSER: postgres
+          PGPASSWORD: local_ci_only
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 \
+            -f sandbox/lf_contract_gate_test/canonical_route_guard/act0001_material_probes_v1.sql \
+            > /tmp/act0001-material-stdout.txt 2>&1 || {
+              cat /tmp/act0001-material-stdout.txt
+              exit 1
+            }
+          cat /tmp/act0001-material-stdout.txt
+          for marker in \
+            PASS_T02_CATALOG_CREATE_AND_DUPLICATE_BLOCK_SANDBOX_ONLY \
+            PASS_T12_CATALOG_NEW_TYPE_DISCOVERABLE_NOT_ACTIVE_SANDBOX_ONLY \
+            PASS_PE1_BASELINE_GAP_REPRODUCED_NOT_PROTECTED \
+            PASS_T14_REAL_VALIDATOR_REJECTS_STALE_REVISION_WITH_STUBBED_PRODUCERS \
+            PASS_T14_REVISION_RESTORED \
+            PASS_T14_REAL_VALIDATOR_REJECTS_CHANGED_STEP_BINDING \
+            PASS_ACT0001_MATERIAL_PROBES_ROLLBACK_ZERO_RESIDUE
+          do
+            grep -q "$marker" /tmp/act0001-material-stdout.txt
+          done
+
