@@ -69,7 +69,7 @@ BEGIN
  'HIGH',1,clock_timestamp(),clock_timestamp(),
  'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7','#2800/#2801','ACTIVO',
  v_evidence::text,clock_timestamp(),clock_timestamp(),'VALIDATION',
- 'CONCURRENT_STALE_CONTEXT','DETERMINISTIC',
+ 'R4_NO_CUESTIONA','LOUD_EARLY',
  'Fixture-only protected two-session proof; not product authority',
  'https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/38827928190'
  );
