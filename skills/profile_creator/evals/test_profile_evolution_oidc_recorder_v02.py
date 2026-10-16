@@ -46,8 +46,9 @@ class OidcAdapterTests(unittest.TestCase):
 
     def test_reject_untrusted_receipt(self):
         m = dict(self.methods, profile_assessment_receipt_id="fixture://not-trusted")
+        d = dict(self.decision, profile_assessment_receipt_id="fixture://not-trusted")
         with self.assertRaisesRegex(ValueError, "OIDC_EVIDENCE_RECEIPT_INVALID"):
-            make_oidc_profile_evolution_recorder(positive_packet)(EXEC, m, self.decision)
+            make_oidc_profile_evolution_recorder(positive_packet)(EXEC, m, d)
 
     def test_reject_mismatched_assessment(self):
         d = dict(self.decision, profile_assessment_receipt_id=str("0"*8+"-0000-0000-0000-000000000000"))
