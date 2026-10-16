@@ -58,7 +58,7 @@ export function createRunScopedProjectionProviderV2({loadTrustedRunData}={}) {
     const id=identity(run);
     if(pinned && !sameId(pinned,id))
       throw new SnapshotInvalidError('IG_PROVIDER_RUN_SCOPE_MISMATCH');
-    const key=consumer+':'+run.status+':'+String(run.validator_identity??'');
+    const key=consumer+':'+run.status+':'+String(run.curator_identity??'')+':'+String(run.validator_identity??'');
     if(boundByStage.has(key))return boundByStage.get(key);
     const pending=selectSnapshotReadV1({consumer,run,
       loadTrustedSnapshot:async()=>{
@@ -89,6 +89,23 @@ export function createRunScopedProjectionProviderV2({loadTrustedRunData}={}) {
   async function projectForTransfer({consumer,run,selection}) {
     const result=await select({consumer,run,selection});
     if(result.mode!=='SHARED_SNAPSHOT')return result;
+    // Reconstitute only requested graph paths as nested JSON so the recipient
+    // can apply its normal graph-path selector. No copy of the full graph.
+    let projectedData=result.data;
+    if(Array.isArray(selection.graph)){
+      const graph=Object.create(null);
+      for(const path of selection.graph){
+        const parts=path.split('.');
+        let dst=graph;
+        for(const part of parts.slice(0,-1)){
+          if(!Object.prototype.hasOwnProperty.call(dst,part))
+            dst[part]=Object.create(null);
+          dst=dst[part];
+        }
+        dst[parts[parts.length-1]]=result.data.graph[path];
+      }
+      projectedData=Object.freeze({...result.data,graph});
+    }
     // Only the selected data crosses process boundaries; receiver validates
     // this digest and the full run/stage envelope before using the projection.
     return Object.freeze({
@@ -98,8 +115,8 @@ export function createRunScopedProjectionProviderV2({loadTrustedRunData}={}) {
       consumer_stage:roles[consumer],
       ...identity(run),
       validator_identity:run.validator_identity??null,
-      data:result.data,
-      data_sha256:await sha256Hex(result.data)
+      data:projectedData,
+      data_sha256:await sha256Hex(projectedData)
     });
   }
   return Object.freeze({
