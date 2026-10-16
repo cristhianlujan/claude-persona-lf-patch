@@ -163,10 +163,53 @@ def check(
     if any(not any(effect == permitted or effect.startswith(permitted + ".") for permitted in allow) for effect in effects):
         return blocked("BLOCK_ROUTER_EFFECT_OUT_OF_SCOPE")
 
+    # A passing catalogue/route match is not enough: enforce the verified
+    # request envelope before even a consistency-only handoff.  These fields
+    # must be included in the governed proposal signed by the external verifier.
+    mode = proposal.get("requested_mode")
+    if mode not in ("EXECUTE", "ANALYZE", "EXPLORE", "SIMULATE", "PREPARE"):
+        return blocked("BLOCK_REQUEST_MODE_UNATTESTED")
+    if mode != "EXECUTE":
+        return blocked("BLOCK_NON_EXECUTION_MODE_EFFECTS")
+
+    excluded = proposal.get("excluded_target_codes")
+    if not isinstance(excluded, list) or any(
+        not isinstance(code, str) or not code.strip() for code in excluded
+    ) or len(excluded) != len(set(excluded)):
+        return blocked("BLOCK_EXCLUDED_TARGET_SET_UNATTESTED")
+    if excluded and not _is_in(request_text, evidence.get("excluded_targets_quote", "")):
+        return blocked("BLOCK_EXCLUDED_TARGET_EVIDENCE_UNGROUNDED")
+    if target_code in excluded:
+        return blocked("BLOCK_ROUTER_EXCLUDED_TARGET")
+
+    units = proposal.get("work_units")
+    if not isinstance(units, list) or not units or any(not isinstance(u, Mapping) for u in units):
+        return blocked("BLOCK_WORK_UNITS_UNATTESTED")
+    if len(units) != 1:
+        # This candidate is scalar: do not accept silently dropping a unit.
+        # Composite routing belongs to a separately verified governed handoff.
+        return blocked("BLOCK_ROUTER_COMPOSITE_COVERAGE_INCOMPLETE")
+    unit = units[0]
+    if any(unit.get(key) != expected for key, expected in (
+        ("target_type", target_type), ("target_code", target_code), ("action_code", action_code)
+    )):
+        return blocked("BLOCK_WORK_UNIT_ROUTE_MISMATCH")
+
+    condition = proposal.get("condition_state")
+    if not isinstance(condition, str) or not condition.strip():
+        return blocked("BLOCK_CONDITION_STATE_UNATTESTED")
+    if condition != "NOT_APPLICABLE":
+        return blocked("BLOCK_CONDITIONAL_EFFECT_UNRESOLVED")
+
     return {
         "status": "ROUTE_CONSISTENCY_PASS",
         "operation_code": operation,
         "target_code": target_code,
+        "request_sha256": _sha(request_text),
+        "requested_mode": mode,
+        "excluded_target_codes": excluded,
+        "work_units": units,
+        "condition_state": condition,
         "downstream_execution_allowed": False,
         "effects_executed": False,
         "next": "DEFER_TO_CANONICAL_OPERATION_CONTRACT",
