@@ -165,7 +165,7 @@ def check_case(case_name: str, record: Any) -> list[str]:
     return errors
 
 
-def validate(bundle: Any) -> dict[str, Any]:
+def validate(bundle: Any, *, trusted_provider_verifier=None) -> dict[str, Any]:
     errors: list[str] = []
     if not isinstance(bundle, dict):
         return {"status": "FAIL", "code": TEST_CODE, "errors": ["INVALID_BUNDLE"]}
@@ -200,6 +200,15 @@ def validate(bundle: Any) -> dict[str, Any]:
                 errors.append("NEGATIVE_NOT_ATTESTED:" + case)
     if bundle.get("production_changed") is not False:
         errors.append("PRODUCTION_CHANGE_FORBIDDEN")
+    # In-band flags and refs are data, not provider evidence. Only an
+    # independently wired provider verifier can attest a positive result.
+    independent_pass = False
+    if trusted_provider_verifier is not None:
+        try:
+            independent_pass = trusted_provider_verifier(bundle) is True
+        except Exception:
+            independent_pass = False
+    _fail(errors, "INDEPENDENT_PROVIDER_VERIFICATION_REQUIRED", independent_pass)
     all_errors = errors + [f"{k}:{e}" for k, v in details.items() for e in v]
     return {
         "test_code": TEST_CODE, "status": "FAIL" if all_errors else "PASS",
@@ -221,6 +230,20 @@ def main() -> int:
         observed = validate(synthetic)
         if observed["status"] != "FAIL" or "REAL_PROVIDER_PROVENANCE_REQUIRED" not in observed["errors"]:
             print(json.dumps({"status": "FAIL", "error": "SELF_TEST_DID_NOT_REJECT_SYNTHETIC"}))
+            return 2
+        # A self-declared provider/reviewer assertion cannot become proof.
+        claimed = {
+            "schema": SCHEMA, "evidence_mode": "REAL_AUTHORIZED_RUNTIME",
+            "provider_execution_ref": "unverified://untrusted-provider",
+            "independent_provider_readback_ref": "unverified://untrusted-reviewer",
+            "source_head_sha256": "a" * 64, "provider_attested": True,
+            "independent_reviewer_attested": True,
+            "cases": {}, "negative_controls": {}, "production_changed": False,
+        }
+        rejected = validate(claimed)
+        if (rejected["status"] != "FAIL" or
+                "INDEPENDENT_PROVIDER_VERIFICATION_REQUIRED" not in rejected["errors"]):
+            print(json.dumps({"status": "FAIL", "error": "CLAIMED_PROVIDER_ATTESTATION_NOT_BLOCKED"}))
             return 2
         print(json.dumps({"status": "NEGATIVE_SELF_TEST_PASS", "checkpoint_pass": False,
                           "real_consumer_attested": False, "rejected": observed["errors"]}, sort_keys=True))
