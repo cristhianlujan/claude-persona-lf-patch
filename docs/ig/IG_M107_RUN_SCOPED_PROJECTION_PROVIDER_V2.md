@@ -10,8 +10,9 @@ decisiones, caché global, tabla nueva ni reglas por pantalla.
 
 - Código: `supabase/functions/_shared/ig_snapshot_projection_provider_v2.mjs`.
 - Tests: `sandbox/lf_contract_gate_test/input_governance_runtime_candidate_judge/test_m107_projection_provider_v2.mjs`.
-- CI aislado, sin secretos o DB:
-  `.github/workflows/ig-m107-projection-candidate-ci.yml`.
+- Prueba Node ejecutada de forma aislada en GitHub Actions (37/37 PASS),
+  sin introducir un nuevo workflow permanente no autorizado.
+  Evidencia: run `38843642211`.
 - EKB leído: `IG-M107-RUN-CONTEXT-CANDIDATE-G1-010`, `IG-M107-INMEM-SNAPSHOT-PILOT-022`,
   `IG-M107-SQL-MATERIALIZATION-BENCHMARK-023`,
   `IG-M107-SELECTIVE-SNAPSHOT-READER-CANDIDATE-025`.
