@@ -136,6 +136,8 @@ class Level2AdvisoryTests(unittest.TestCase):
         p=check(router=r)
         self.assertEqual(p["status"], "ADVISORY_ONLY")
         self.assertEqual(p["input_literal"], REQUEST)
+        self.assertEqual(p["request_sha256"], ROUTER["request_sha256"])
+        self.assertEqual(p["subject_binding_state"], "UNRESOLVED")
         self.assertEqual(p["subject_candidates"], [])
         self.assertEqual(p["executor_candidates"][0]["code"], EXECUTOR)
         self.assertIs(p["executor_candidates"][0]["runtime_enabled"], False)
