@@ -269,6 +269,7 @@
       ".github/workflows/lf-material-currentness.yml",
       ".github/workflows/lf-migration-merge-train.yml",
       ".github/workflows/lf-migration-name-classification.yml",
+      ".github/workflows/lf-migration-reconcile-lane.yml",
       ".github/workflows/lf-migration-route-guard.yml",
       ".github/workflows/lf-migration-source-parity-core.yml",
       ".github/workflows/lf-pack-validation-core.yml",

@@ -168,5 +168,21 @@ assert '"ig-runtime-candidate-judge"' in checks_config
 assert 'lf_train_required_pre_apply_checks_v1.json' in guard
 checks += 1
 
+# DB tools only after authoritative exact PR-file classification.
+# No-SQL PRs bypass CLI/apt while SQL PRs retain both tools.
+source_pos = wf.index("- name: Resolve exact PR files and migration blob")
+cli_pos = wf.index("- name: Set up Supabase CLI for REAL mode")
+pg_pos = wf.index("- name: Install PostgreSQL client for REAL mode")
+plan_pos = wf.index("- name: Read floors, assign version, and run M2 check")
+assert source_pos < cli_pos < pg_pos < plan_pos
+checks += 1
+for section in (wf[cli_pos:pg_pos], wf[pg_pos:plan_pos]):
+    assert "if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '1'" in section
+    assert "if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'\\n" not in section
+    checks += 1
+assert wf.count("supabase/setup-cli@v1") == 1
+assert wf.count("sudo apt-get install -y postgresql-client") == 1
+checks += 1
+
 print(f"PASS_MIGRATION_MERGE_TRAIN_WORKFLOW_CONTRACT={checks}/{checks}")
 

@@ -17,6 +17,11 @@ permissions:
   pull-requests: read
   actions: read
 
+concurrency:
+  # Cancel only an obsolete run of the same PR. Never cancel Train or non-PR runs.
+  group: lf-pase-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lf-pase:
     name: PASE
