@@ -51,6 +51,22 @@ class SameChatTests(unittest.TestCase):
         return freeze_same_chat_handoff(contract=contract, plan=plan,
             input_literal="Test", profile_sources=sources, current_surface=surface)
 
+    def test_actual_contract_without_slug_is_accepted(self):
+        contract, plan, sources, surface, _, _ = fx()
+        # build_execution_contract in the existing runtime binds profile_code
+        # and does not include profile_slug.
+        contract.pop("profile_slug")
+        contract["profile_code"] = "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
+        contract["contract_sha256"] = _sha_json(contract)
+        frozen = self.freeze(contract, plan, sources, surface)
+        self.assertEqual(frozen["profile_slug"], plan["profile_slug"])
+
+    def test_canonical_profile_source_is_required(self):
+        contract, plan, sources, surface, _, _ = fx()
+        sources[0]["ref"] = "profiles/other_profile/SKILL.md"
+        self.assertBlocked("CANONICAL_PROFILE_SOURCE_MISSING", lambda:
+            self.freeze(contract, plan, sources, surface))
+
     def test_gpt_same_chat(self):
         _, _, _, surface, frozen, raw = fx()
         cap = capture_current_chat_raw(frozen, raw, current_surface=surface)
