@@ -235,10 +235,10 @@ def run_request(path: pathlib.Path, head_sha: str) -> int:
     if not SHA40_RE.fullmatch(head_sha):
         raise RequestError("HEAD_SHA_INVALID")
     request = json.loads(path.read_text(encoding="utf-8"))
-    if request.get("schema_version") != REQUEST_SCHEMA:
-        raise RequestError("REQUEST_SCHEMA_INVALID")
     if request.get("schema_version") == "LF_IG_G2B_TWO_SESSION_REQUEST_V1":
         return _run_strict_g2b_request(request, head_sha)
+    if request.get("schema_version") != REQUEST_SCHEMA:
+        raise RequestError("REQUEST_SCHEMA_INVALID")
     cases = request.get("cases")
     if not isinstance(cases, list) or not 1 <= len(cases) <= MAX_CASES:
         raise RequestError("REQUEST_CASE_COUNT_INVALID")
