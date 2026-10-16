@@ -48,7 +48,7 @@ test('projected packet is accepted by original selective reader',async()=>{
 test('selector never sends whole data implicitly',async()=>{
  const x=fixture();const p=await x.provider.projectForTransfer({consumer:'INPUT_VALIDATOR',run:base,selection:{graph:['screen.id']}});
  assert.deepEqual(Object.keys(p.data),['graph']);
- assert.equal(p.data.graph['screen.id'],43);
+ assert.equal(p.data.graph.screen.id,43);
 });
 test('same frozen dataset can be rebound to curator stage only with valid identity',async()=>{
  const x=fixture();
