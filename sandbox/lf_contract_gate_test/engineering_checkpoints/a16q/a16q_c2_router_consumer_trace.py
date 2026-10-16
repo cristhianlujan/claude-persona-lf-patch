@@ -231,6 +231,20 @@ def main() -> int:
         if observed["status"] != "FAIL" or "REAL_PROVIDER_PROVENANCE_REQUIRED" not in observed["errors"]:
             print(json.dumps({"status": "FAIL", "error": "SELF_TEST_DID_NOT_REJECT_SYNTHETIC"}))
             return 2
+        # A self-declared provider/reviewer assertion cannot become proof.
+        claimed = {
+            "schema": SCHEMA, "evidence_mode": "REAL_AUTHORIZED_RUNTIME",
+            "provider_execution_ref": "unverified://untrusted-provider",
+            "independent_provider_readback_ref": "unverified://untrusted-reviewer",
+            "source_head_sha256": "a" * 64, "provider_attested": True,
+            "independent_reviewer_attested": True,
+            "cases": {}, "negative_controls": {}, "production_changed": False,
+        }
+        rejected = validate(claimed)
+        if (rejected["status"] != "FAIL" or
+                "INDEPENDENT_PROVIDER_VERIFICATION_REQUIRED" not in rejected["errors"]):
+            print(json.dumps({"status": "FAIL", "error": "CLAIMED_PROVIDER_ATTESTATION_NOT_BLOCKED"}))
+            return 2
         print(json.dumps({"status": "NEGATIVE_SELF_TEST_PASS", "checkpoint_pass": False,
                           "real_consumer_attested": False, "rejected": observed["errors"]}, sort_keys=True))
         return 0
