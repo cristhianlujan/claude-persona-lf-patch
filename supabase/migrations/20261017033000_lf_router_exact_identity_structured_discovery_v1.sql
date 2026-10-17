@@ -185,26 +185,27 @@ begin
     from (
       select distinct b.codigo_activo,b.tipo_activo
       from public.v_lf_fuente_operativa_busqueda b
-      where (v_type_hint is null or b.tipo_activo=v_type_hint)
-        and (
+      where (
           (length(btrim(b.codigo_activo))>=6
             and position(
               ' '||btrim(regexp_replace(translate(lower(b.codigo_activo),
                   'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
               in ' '||v_req||' ')>0)
-          or (length(btrim(b.nombre_canonico))>=8
+          or ((v_type_hint is null or b.tipo_activo=v_type_hint)
+              and (length(btrim(b.nombre_canonico))>=8
             and position(
               ' '||btrim(regexp_replace(translate(lower(b.nombre_canonico),
                   'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
-              in ' '||v_req||' ')>0)
-          or exists (
+              in ' '||v_req||' ')>0))
+          or ((v_type_hint is null or b.tipo_activo=v_type_hint)
+              and exists (
             select 1 from jsonb_array_elements_text(coalesce(b.aliases,'[]'::jsonb)) al
             where length(btrim(al))>=8
               and position(
                 ' '||btrim(regexp_replace(translate(lower(al),
                     'áéíóúüñ','aeiouun'),'[^a-z0-9_ -]+',' ','g'))||' '
                 in ' '||v_req||' ')>0
-          )
+          ))
         )
     ) x;
 
