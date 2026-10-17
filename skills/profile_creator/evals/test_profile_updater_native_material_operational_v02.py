@@ -16,6 +16,8 @@ def make_bindings():
     handoff, capture, _, _ = fixture()
     row=ledger_row()
     row["subject_sha256"]=capture["raw_output_sha256"]
+    row["source_subject_sha256"]=capture["raw_output_sha256"]
+    row["reviewer_manifest"]["subject_sha256"]=capture["raw_output_sha256"]
     row["source_payload"]["handoff_sha256"]=handoff["handoff_sha256"]
     row["source_payload"]["capture_sha256"]=capture["capture_sha256"]
     row["source_payload"]["source_manifest_sha256"]=handoff["source_manifest_sha256"]
