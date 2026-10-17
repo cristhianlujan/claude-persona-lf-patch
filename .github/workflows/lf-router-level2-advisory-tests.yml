@@ -15,6 +15,10 @@ on:
       - 'supabase/migrations/*lf_router_unstructured_mutation_fail_closed_v1.sql'
       - 'supabase/migrations/*lf_router_explicit_target_semantic_admission_v1.sql'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_explicit_target_and_catalog_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
+      - 'supabase/migrations/*lf_router_rw101_c2_test_contract_v1.sql'
+      - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
 permissions:
@@ -49,3 +53,10 @@ jobs:
       - name: Validate typed target authority and DB Train catalog compatibility
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_explicit_target_and_catalog_v1
+
+      - name: Execute RW1-01 C2 frozen needs-oracle positive and negative controls
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json --self-test
