@@ -66,7 +66,7 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
         if not isinstance(case.get("context"), str):
             errors.append(f"{case_id}:CONTEXT_NOT_DECLARED")
         goals = oracle.get("must_acknowledge_goal_terms", [])
-        if not isinstance(goals, list) or any(term not in literal for term in goals):
+        if not isinstance(goals, list) or not isinstance(literal, str) or any(term not in literal for term in goals):
             errors.append(f"{case_id}:GOAL_REQUIREMENT_NOT_SOURCE_BOUND")
         if oracle.get("must_report_exclusions") is not bool(oracle.get("excluded_subjects", [])):
             errors.append(f"{case_id}:EXCLUSION_ORACLE_INCONSISTENT")
@@ -168,8 +168,26 @@ def main() -> int:
         if any(not check_result(target, p) for p in probes):
             print(json.dumps({"status": "SELF_TEST_FALSE_PASS"}))
             return 2
+        multi = next(c for c in doc["cases"] if c["oracle"]["must_acknowledge_goal_terms"])
+        multi_trace = {
+            "id": multi["id"], "next_step": "COMPOSE",
+            "handoff_literal": multi["literal_request"],
+            "request_sha256": sha(multi["literal_request"]),
+            "router_effect_authorized": False,
+            "candidate_responsibilities": [{"authority_evidence_ref": "fixture://test-only"}],
+            "selected_effect_targets": [],
+            "acknowledged_exclusions": [],
+            "acknowledged_goals": list(multi["oracle"]["must_acknowledge_goal_terms"]),
+        }
+        if check_result(multi, multi_trace):
+            print(json.dumps({"status": "SELF_TEST_COMPOSITE_BASELINE_REJECTED"}))
+            return 2
+        lost_goal = {**multi_trace, "acknowledged_goals": multi_trace["acknowledged_goals"][:-1]}
+        if not check_result(multi, lost_goal):
+            print(json.dumps({"status": "SELF_TEST_LOST_SECOND_GOAL_FALSE_PASS"}))
+            return 2
         print(json.dumps({"status": "SELF_TEST_VALIDATOR_NEGATIVES_PASS",
-                          "negative_probes": len(probes), "stats": stats}, ensure_ascii=False))
+                          "negative_probes": len(probes) + 1, "stats": stats}, ensure_ascii=False))
         return 0
     if args.responses is None:
         print(json.dumps({"status": "CORPUS_VALID_NOT_EXECUTED",
