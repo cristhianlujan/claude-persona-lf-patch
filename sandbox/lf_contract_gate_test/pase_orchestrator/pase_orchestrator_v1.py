@@ -158,8 +158,29 @@ def _execution_context(plan: Mapping[str, Any], required: list[str]) -> dict[str
     source_authority = plan.get("source_authority")
     if not isinstance(source_authority, Mapping):
         raise PaseOrchestratorError("FAIL_PASE_SOURCE_AUTHORITY")
-    if source_authority.get("resolved_revision") != source_revision:
-        raise PaseOrchestratorError("FAIL_PASE_SOURCE_REVISION_DRIFT")
+    resolved_revision = _require_hex(
+        source_authority.get("resolved_revision"), HEX40, "FAIL_PASE_RESOLVED_REVISION"
+    )
+    if resolved_revision != source_revision:
+        # Currentness Authority deliberately retains historical evidence on PRs
+        # while rebinding to a later compatible main. Only its verified, ready
+        # CURRENT_REBOUND state may cross that boundary; never equate changed
+        # authority material or an unverified claim with a successful rebind.
+        if not (
+            source_authority.get("schema_version") == "LF_CI_AUTHORITY_CURRENTNESS_RECEIPT_V1"
+            and source_authority.get("evidence_revision") == source_revision
+            and source_authority.get("authority_ref") == "refs/heads/main"
+            and source_authority.get("decision") == "CURRENT_REBOUND"
+            and source_authority.get("ready") is True
+            and source_authority.get("rebind_allowed") is True
+            and source_authority.get("changed_material_ids") == []
+            and source_authority.get("affected_root_material_ids") == []
+            and source_authority.get("evidence_semantics")
+              == "HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY"
+            and isinstance(source_authority.get("authority_receipt_sha256"), str)
+            and HEX64.fullmatch(source_authority["authority_receipt_sha256"])
+        ):
+            raise PaseOrchestratorError("FAIL_PASE_SOURCE_REVISION_DRIFT")
     enforcement = plan.get("pase_control_enforcement")
     if not isinstance(enforcement, Mapping):
         raise PaseOrchestratorError("FAIL_PASE_ENFORCEMENT_MISSING")
