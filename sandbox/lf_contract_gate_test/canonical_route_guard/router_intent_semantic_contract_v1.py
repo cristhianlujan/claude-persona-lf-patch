@@ -33,7 +33,7 @@ def _identity(candidate: Mapping[str, Any]) -> str | None:
     if candidate.get("artifact_ref"):
         ref = candidate["artifact_ref"]
         return ref if isinstance(ref, str) and ":" in ref else None
-    code = candidate.get("asset_code")
+    code = candidate.get("asset_code") or candidate.get("screen_code")
     return code if isinstance(code, str) and len(code) >= 5 else None
 
 
