@@ -19,6 +19,12 @@ on:
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
       - 'supabase/migrations/*lf_router_rw101_c2_test_contract_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
+      - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
 permissions:
