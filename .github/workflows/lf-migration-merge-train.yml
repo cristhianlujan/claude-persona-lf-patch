@@ -22,10 +22,7 @@ env:
   SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
   # Option C: the Train opens, records and closes the ACTUALIZACION_DB_LF Router execution.
   # ENFORCED = pre-apply recording is fatal; OFF = disabled (emergency switch, by PR).
-  # TEMPORARY OFF (owner-authorized 2026-10-17, bounded to PR #2868): the Router authority
-  # builder is blocked by BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED, so the pre-apply
-  # reserve fails for every migration. Restore ENFORCED right after #2868 is integrated.
-  LF_TRAIN_EXECUTION_MODE: "OFF"
+  LF_TRAIN_EXECUTION_MODE: ENFORCED
 
 jobs:
   lf-migration-merge-train:
