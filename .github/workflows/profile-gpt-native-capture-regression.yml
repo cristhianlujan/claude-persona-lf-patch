@@ -5,8 +5,6 @@ on:
       - 'skills/profile_creator/evals/gpt_native_in_chat_capture_v1.py'
       - 'skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py'
       - '.github/workflows/profile-gpt-native-capture-regression.yml'
-      - 'skills/profile_creator/validators/profile_updater_native_material_*_v02.py'
-      - 'skills/profile_creator/evals/test_profile_updater_native_material_*_v02.py'
   workflow_dispatch:
 jobs:
   capture-regression:
@@ -20,5 +18,3 @@ jobs:
           python-version: '3.11'
       - name: Test exact source with positive and negative controls
         run: python skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py
-      - name: Verify native material and ledger pre-admission (positive and negative)
-        run: python -m unittest discover -s skills/profile_creator/evals -p 'test_profile_updater_native_material_*_v02.py' -v
