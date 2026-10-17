@@ -16,9 +16,11 @@ def make_bindings():
     handoff, capture, _, _ = fixture()
     row=ledger_row()
     row["subject_sha256"]=capture["raw_output_sha256"]
-    row["receipt_payload"]["handoff_sha256"]=handoff["handoff_sha256"]
-    row["receipt_payload"]["profile_slug"]=handoff["profile_slug"]
-    row["receipt_payload"]["run_id"]=handoff["run_id"]
+    row["source_payload"]["handoff_sha256"]=handoff["handoff_sha256"]
+    row["source_payload"]["capture_sha256"]=capture["capture_sha256"]
+    row["source_payload"]["source_manifest_sha256"]=handoff["source_manifest_sha256"]
+    row["source_payload"]["profile_slug"]=handoff["profile_slug"]
+    row["source_payload"]["run_id"]=handoff["run_id"]
     read_source=lambda path: b'# Repair profile\nPreserve source evidence'
     def run(row_override=None):
         return verify_native_material_pre_admission(
@@ -53,7 +55,7 @@ class OperationalBindingTest(unittest.TestCase):
 
     def test_review_wrong_run_binding_blocks(self):
         _,_,row,run=make_bindings()
-        row["receipt_payload"]["handoff_sha256"]="f"*64
+        row["source_payload"]["handoff_sha256"]="f"*64
         with self.assertRaisesRegex(MaterialBridgeBlocked,"INDEPENDENT_MATERIAL_REVIEW_UNVERIFIED"):
             run()
 
