@@ -40,7 +40,7 @@ BEGIN
      OR EXISTS(SELECT 1 FROM programacion.engineering_work_checkpoints WHERE checkpoint_code LIKE 'RW1-%')
   THEN RAISE EXCEPTION 'ROUTER_WAVE_DUPLICATE_OR_PARTIAL_CONFLICT'; END IF;
   IF jsonb_array_length(v_catalog) <> 6
-     OR (SELECT count(DISTINCT x->>'code') FROM jsonb_array_elements(v_catalog) x) <> 6
+     OR (SELECT count(DISTINCT obj->>'code') FROM jsonb_array_elements(v_catalog) AS arr(obj)) <> 6
   THEN RAISE EXCEPTION 'ROUTER_WAVE_INVALID_CATALOG'; END IF;
 
   INSERT INTO public.lf_eventos(
