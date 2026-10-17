@@ -106,6 +106,40 @@ class RouterExactIdentityMigrationTests(unittest.TestCase):
         for target in ("no_false_pass.py", "M10.7", "PAULO-165", "ACT-0013"):
             self.assertNotIn(target, self.function)
 
+    def test_semantic_handoff_preserves_full_literal_and_no_execution(self):
+        for required in (
+            "LF_ROUTER_INTENT_HANDOFF_V1",
+            "public.lf_router_intent_handoff_v1(",
+            "'literal_request',p_request_text",
+            "'candidate_subjects',coalesce(p_candidates",
+            "'positive_target_refs','[]'::jsonb",
+            "'excluded_target_refs','[]'::jsonb",
+            "'scope_binding_state','UNATTESTED'",
+            "'semantic_consumer_receipt',null",
+            "'downstream_execution_allowed',false",
+        ):
+            self.assertIn(required, self.sql)
+
+    def test_ambiguous_assets_and_negations_never_promote_identity(self):
+        for required in (
+            "BLOCK_MULTIPLE_EXACT_TARGETS_NEED_SCOPE",
+            "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+            "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+            "v_action <> 'ASSET_INSPECTION'",
+            "p_request_text,v_exact_asset_candidates,'CANONICAL_ASSET'",
+        ):
+            self.assertIn(required, self.sql)
+
+    def test_transactional_sql_regressions_cover_adversarial_paths(self):
+        for required in (
+            "ROUTER_SMOKE_EXACT_ARTIFACT_UNSAFE",
+            "ROUTER_SMOKE_MULTIPLE_EXCLUSION_UNSAFE",
+            "ROUTER_SMOKE_NEGATED_CREATE_UNSAFE",
+            "ROUTER_SMOKE_TYPED_HINT_NEGATION_BYPASS",
+            "ROUTER_SMOKE_SCREEN_EXECUTOR_BOUNDARY_UNSAFE",
+        ):
+            self.assertIn(required, self.sql)
+
     def test_no_prod_or_privilege_activation(self):
         for side_effect in (
             "grant execute", "security definer", "alter policy",
