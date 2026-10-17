@@ -190,6 +190,15 @@ BEGIN
      OR p#>>'{connector_plan,0,source_contract,ref_mode}' IS DISTINCT FROM 'EXACT_MERGED_SHA'
      OR p#>>'{connector_plan,0,runner_contract,verified_run_id_required}' IS DISTINCT FROM 'true'
   THEN RAISE EXCEPTION 'REGRESSION_EXISTING_TEST_MODE_INVALID:%',p; END IF;
+  p:=programacion.fn_engineering_execution_packet_from_spec_v1(
+     'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',no_auth,'{}'::jsonb);
+  IF p->>'status' IS DISTINCT FROM 'READY'
+     OR p->>'execution_capability' IS DISTINCT FROM 'RUN_TEST'
+     OR jsonb_array_length(coalesce(p->'connector_plan','[]'::jsonb))<>3
+     OR p#>>'{connector_plan,0,operation}' IS DISTINCT FROM 'RUN_TEST'
+     OR p#>>'{connector_plan,1,operation}' IS DISTINCT FROM 'CHECKPOINT_ASSERTION_RECORD'
+     OR p#>>'{connector_plan,2,operation}' IS DISTINCT FROM 'CHECKPOINT_TRANSITION'
+  THEN RAISE EXCEPTION 'REGRESSION_FULL_PACKET_EXISTING_SOURCE_NOT_READY:%',p; END IF;
   p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',auth);
   SELECT array_agg(x.value->>'operation' ORDER BY x.ordinality) INTO ops
   FROM jsonb_array_elements(coalesce(p->'connector_plan','[]'::jsonb)) WITH ORDINALITY x(value,ordinality);
@@ -200,8 +209,20 @@ BEGIN
   p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',legacy);
   IF p->>'status' IS DISTINCT FROM 'READY' OR p#>>'{connector_plan,0,operation}' IS DISTINCT FROM 'WRITE_GIT'
   THEN RAISE EXCEPTION 'REGRESSION_LEGACY_DEFAULT_MUST_AUTHOR:%',p; END IF;
+  p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,
+      'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',
+      no_auth#-'{test_execution_contract,test_code}');
+  IF p->>'status' IS DISTINCT FROM 'BLOCK_BOUNDED_CHECKPOINT_TEST_CONTRACT_INCOMPLETE'
+      OR p->>'execution_allowed' IS DISTINCT FROM 'false'
+  THEN RAISE EXCEPTION 'REGRESSION_MISSING_TEST_CODE_SHOULD_BLOCK:%',p; END IF;
+  p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,
+      'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',
+      no_auth#-'{test_execution_contract,execution_route}');
+  IF p->>'status' IS DISTINCT FROM 'BLOCK_RUN_TEST_EXECUTOR_UNRESOLVED'
+      OR p->>'execution_allowed' IS DISTINCT FROM 'false'
+  THEN RAISE EXCEPTION 'REGRESSION_UNBOUND_EXECUTOR_SHOULD_BLOCK:%',p; END IF;
   p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',invalid);
-  IF p->>'status' <> 'BLOCK_RUN_TEST_CI_BINDING_INCOMPLETE' OR p->>'execution_allowed' IS DISTINCT FROM 'false'
+  IF p->>'status' IS DISTINCT FROM 'BLOCK_RUN_TEST_CI_BINDING_INCOMPLETE' OR p->>'execution_allowed' IS DISTINCT FROM 'false'
   THEN RAISE EXCEPTION 'REGRESSION_MISSING_CHECK_SHOULD_BLOCK:%',p; END IF;
   p:=programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1('{"status":"READY"}'::jsonb,'LF_ROUTER_ARCHITECTURE_WAVE_V1','RW1-01','RW1-01_C2',
     jsonb_set(no_auth,'{test_execution_contract,execution_route,provider}','"UNREGISTERED"'::jsonb,true));
