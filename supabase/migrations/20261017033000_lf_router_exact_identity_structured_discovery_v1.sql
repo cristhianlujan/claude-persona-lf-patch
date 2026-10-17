@@ -211,7 +211,8 @@ begin
 
     if v_exact_asset_count>1 then
       return jsonb_build_object(
-        'router','ACT-0001','status','BLOCKED',
+        'router','ACT-0001','source','SUPABASE','status','BLOCKED',
+        'asset_type',null,'action_code',null,'operation_code',null,
         'blocking_code','BLOCK_MULTIPLE_EXACT_TARGETS_NEED_SCOPE',
         'subject_binding_state','AMBIGUOUS',
         'subject_candidates',v_exact_asset_candidates,
