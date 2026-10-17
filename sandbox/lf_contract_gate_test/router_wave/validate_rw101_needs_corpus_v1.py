@@ -75,7 +75,7 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
         if oracle.get("clarification_requires_material_discriminator") is not ("CLARIFY" in steps if isinstance(steps, list) else False):
             errors.append(f"{case_id}:CLARIFICATION_CONTRACT_MISMATCH")
         reason = oracle.get("clarification_reason")
-        if "CLARIFY" in steps if isinstance(steps, list) else False:
+        if isinstance(steps, list) and "CLARIFY" in steps:
             expected_fixture = {
                 "UNRESOLVED_REFERENT": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE",
                 "ROUTE_AMBIGUITY": "MULTIPLE_RESPONSIBILITIES_AFTER_CONTEXT_RECOVERY_IN_TEST_FIXTURE",
