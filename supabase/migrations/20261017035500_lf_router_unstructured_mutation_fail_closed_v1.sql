@@ -711,10 +711,17 @@ select gen_random_uuid(),
  'Live negative probes MUST not return READY_TO_EXECUTE. Structured read-only inspections continue to work.',
  'HIGH',1,clock_timestamp(),clock_timestamp(),
  'LF_ROUTER_ACT0001_TRANSVERSAL_INTENT','ACTIVO',
- 'github://cristhianlujan/claude-persona-lf-patch/pull/2864'
+ 'https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2867'
 where not exists(
  select 1 from public.lf_error_knowledge
  where codigo='LF-ROUTER-ACT0001-UNSTRUCTURED-MUTATION-FALSE-READY-20261017-002'
 );
+
+-- Reconcile the previous source reference after Train retimestamp.
+-- PR URL is stable across canonical migration renumbering.
+update public.lf_error_knowledge
+   set source_ref='https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2864'
+ where codigo='LF-ROUTER-ACT0001-LEXICAL-ARTIFACT-MISIDENTITY-20261017-001'
+   and source_ref='github://cristhianlujan/claude-persona-lf-patch/supabase/migrations/20261017033000_lf_router_exact_identity_structured_discovery_v1.sql';
 
 commit;
