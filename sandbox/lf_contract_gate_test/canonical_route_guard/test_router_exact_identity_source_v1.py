@@ -10,10 +10,10 @@ from pathlib import Path
 import unittest
 
 REPO = Path(__file__).resolve().parents[3]
-MIGRATION = REPO / (
-    "supabase/migrations/"
-    "20261017033000_lf_router_exact_identity_structured_discovery_v1.sql"
-)
+_MATCHES = list(REPO.glob("supabase/migrations/*_lf_router_exact_identity_structured_discovery_v1.sql"))
+if len(_MATCHES) != 1:
+    raise AssertionError(f"Expected exactly one canonical migration: {_MATCHES!r}")
+MIGRATION = _MATCHES[0]
 
 
 class RouterExactIdentityMigrationTests(unittest.TestCase):
