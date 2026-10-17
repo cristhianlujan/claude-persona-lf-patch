@@ -106,6 +106,9 @@ def verify_native_material_candidate(*, handoff: dict[str, Any],
            and reviewed.get("subject_raw_sha256") == capture["raw_output_sha256"]
            and reviewed.get("handoff_sha256") == handoff["handoff_sha256"]
            and reviewed.get("profile_slug") == handoff["profile_slug"]
+           and reviewed.get("run_id") == handoff["run_id"]
+           and reviewed.get("capture_sha256") == capture["capture_sha256"]
+           and reviewed.get("source_manifest_sha256") == handoff["source_manifest_sha256"]
            and reviewed.get("reviewer_execution_id") != handoff["run_id"]
            and isinstance(reviewed.get("reviewer_execution_id"), str)
            and bool(reviewed["reviewer_execution_id"])
