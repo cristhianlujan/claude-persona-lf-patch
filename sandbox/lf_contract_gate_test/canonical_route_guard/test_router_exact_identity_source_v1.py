@@ -22,7 +22,7 @@ class RouterExactIdentityMigrationTests(unittest.TestCase):
         cls.sql = MIGRATION.read_text(encoding="utf-8")
         cls.function = cls.sql.split(
             "CREATE OR REPLACE FUNCTION public.lf_router_resolve_v1", 1
-        )[-1].split("\ninsert into public.lf_error_knowledge(", 1)[0]
+        )[-1].split("\n$function$;", 1)[0]
 
     def test_source_currentness_guard(self):
         self.assertIn("ROUTER_SOURCE_CURRENTNESS_DRIFT", self.sql)
