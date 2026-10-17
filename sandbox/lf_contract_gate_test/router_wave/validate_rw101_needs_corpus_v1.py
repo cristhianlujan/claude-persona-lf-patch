@@ -74,6 +74,16 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
             errors.append(f"{case_id}:DISCOVERY_TERMINAL_CONTRACT_MISMATCH")
         if oracle.get("clarification_requires_material_discriminator") is not ("CLARIFY" in steps if isinstance(steps, list) else False):
             errors.append(f"{case_id}:CLARIFICATION_CONTRACT_MISMATCH")
+        reason = oracle.get("clarification_reason")
+        if isinstance(steps, list) and "CLARIFY" in steps:
+            expected_fixture = {
+                "UNRESOLVED_REFERENT": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE",
+                "ROUTE_AMBIGUITY": "MULTIPLE_RESPONSIBILITIES_AFTER_CONTEXT_RECOVERY_IN_TEST_FIXTURE",
+            }
+            if reason not in expected_fixture or case.get("routing_precondition_fixture") != expected_fixture.get(reason):
+                errors.append(f"{case_id}:CLARIFICATION_REASON_FIXTURE_MISMATCH")
+        elif reason is not None:
+            errors.append(f"{case_id}:UNEXPECTED_CLARIFICATION_REASON")
         if oracle.get("known_responsible_must_not_stall") and (
                 "DISCOVER" in steps or "CLARIFY" in steps):
             errors.append(f"{case_id}:KNOWN_ROUTE_ALLOWED_TO_STALL")
@@ -125,8 +135,17 @@ def check_result(case: dict, answer: dict) -> list[str]:
         if not isinstance(answer.get("material_route_discriminator"), str) or not answer["material_route_discriminator"].strip():
             errors.append(f"{cid}:QUESTION_WITHOUT_ROUTE_DISCRIMINATOR")
         choices = answer.get("unresolved_responsibility_alternatives")
-        if not isinstance(choices, list) or len(set(map(str, choices))) < 2:
-            errors.append(f"{cid}:NO_MATERIAL_ROUTING_AMBIGUITY")
+        why = answer.get("clarification_reason")
+        if why != oracle.get("clarification_reason"):
+            errors.append(f"{cid}:CLARIFICATION_REASON_NOT_SUPPORTED_BY_FIXTURE")
+        if why == "ROUTE_AMBIGUITY":
+            if not isinstance(choices, list) or len(set(map(str, choices))) < 2:
+                errors.append(f"{cid}:NO_MATERIAL_ROUTING_AMBIGUITY")
+        elif why == "UNRESOLVED_REFERENT":
+            if choices not in (None, []):
+                errors.append(f"{cid}:INVENTED_RESPONSIBILITY_ALTERNATIVES")
+        else:
+            errors.append(f"{cid}:UNRECOGNIZED_CLARIFICATION_REASON")
         if not isinstance(answer.get("recovered_context_refs"), list):
             errors.append(f"{cid}:CONTEXT_RECOVERY_NOT_ACCOUNTED")
     else:
@@ -252,6 +271,34 @@ def main() -> int:
         if not check_result(ambiguous, empty_clarification):
             print(json.dumps({"status": "SELF_TEST_EMPTY_CLARIFICATION_FALSE_PASS"}))
             return 2
+        # A missing referent is not evidence for two known routes.
+        referent = next(c for c in doc["cases"] if c["oracle"].get("clarification_reason") == "UNRESOLVED_REFERENT")
+        route_ambiguous = next(c for c in doc["cases"] if c["oracle"].get("clarification_reason") == "ROUTE_AMBIGUITY")
+        def clarification(c, reason, alternatives):
+            return {
+                "id": c["id"], "next_step": "CLARIFY",
+                "handoff_literal": c["literal_request"],
+                "request_sha256": sha(c["literal_request"]),
+                "router_effect_authorized": False,
+                "clarification_question": "¿Qué referente o ruta corresponde?",
+                "material_route_discriminator": "Identidad necesaria para elegir responsable",
+                "clarification_reason": reason,
+                "unresolved_responsibility_alternatives": alternatives,
+                "recovered_context_refs": [],
+            }
+        referent_ok = clarification(referent, "UNRESOLVED_REFERENT", [])
+        routing_ok = clarification(route_ambiguous, "ROUTE_AMBIGUITY", ["ui_fixture", "data_fixture"])
+        if check_result(referent, referent_ok) or check_result(route_ambiguous, routing_ok):
+            print(json.dumps({"status": "SELF_TEST_REASONED_CLARIFICATION_BASELINE_REJECTED"}))
+            return 2
+        reason_probes = [
+            (referent, {**referent_ok, "unresolved_responsibility_alternatives": ["fabricated_a", "fabricated_b"]}),
+            (route_ambiguous, {**routing_ok, "unresolved_responsibility_alternatives": []}),
+            (route_ambiguous, {**routing_ok, "clarification_reason": "UNRESOLVED_REFERENT"}),
+        ]
+        if any(not check_result(c, payload) for c, payload in reason_probes):
+            print(json.dumps({"status": "SELF_TEST_CLARIFICATION_FALSE_PASS"}))
+            return 2
         novel = next(c for c in doc["cases"] if "DISCOVER" in c["oracle"]["acceptable_next_steps"])
         undispatched = {
             "id": novel["id"], "next_step": "DISCOVER",
@@ -273,7 +320,7 @@ def main() -> int:
             print(json.dumps({"status": "SELF_TEST_DISCOVER_CONTRACT_BASELINE_REJECTED"}))
             return 2
         print(json.dumps({"status": "SELF_TEST_VALIDATOR_NEGATIVES_PASS",
-                          "negative_probes": len(probes) + 4, "shape_only": True,
+                          "negative_probes": len(probes) + 4 + len(reason_probes), "shape_only": True,
                           "stats": stats}, ensure_ascii=False))
         return 0
     if args.responses is None:

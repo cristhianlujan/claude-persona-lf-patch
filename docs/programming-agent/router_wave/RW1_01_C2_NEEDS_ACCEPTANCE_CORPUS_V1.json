@@ -23,7 +23,11 @@
     "original_corpus_previously_overpermissive_discover_accepted_for_26_30": true,
     "test_fixture_is_not_actual_supabase_registry": true,
     "live_consumer_evidence_required_independently": true,
-    "synthetic_fixture_must_not_be_used_to_claim_runtime_or_route_permission": true
+    "synthetic_fixture_must_not_be_used_to_claim_runtime_or_route_permission": true,
+    "clarification_does_not_always_require_two_alternatives": true,
+    "clarification_requires_mismatch_between_known_route_and_recovered_context": true,
+    "synthetic_context_fixtures_are_not_live_execution_evidence": true,
+    "n01_n10_multi_case_traceability": true
   },
   "requirements": [
     "N01",
@@ -46,9 +50,11 @@
       "literal_request": "Investiga tres alternativas de navegación del portal B2B sin implementar nada.",
       "context": "",
       "requirements": [
+        "N01",
         "N02",
         "N04",
-        "N09"
+        "N09",
+        "N10"
       ],
       "oracle": {
         "acceptable_next_steps": [
@@ -140,9 +146,11 @@
       "literal_request": "Simula crear una skill de validación, sin crearla ni modificar registros.",
       "context": "",
       "requirements": [
+        "N01",
         "N04",
         "N06",
-        "N09"
+        "N09",
+        "N10"
       ],
       "oracle": {
         "acceptable_next_steps": [
@@ -204,7 +212,8 @@
       "context": "",
       "requirements": [
         "N04",
-        "N06"
+        "N06",
+        "N10"
       ],
       "oracle": {
         "acceptable_next_steps": [
@@ -266,6 +275,7 @@
       "literal_request": "Actualiza el activo ACT-0053 y conserva intacto ACT-0052.",
       "context": "",
       "requirements": [
+        "N01",
         "N02",
         "N06"
       ],
@@ -332,6 +342,7 @@
       "literal_request": "Necesito una regla y una skill nuevas para revisar ofertas.",
       "context": "",
       "requirements": [
+        "N01",
         "N05",
         "N08"
       ],
@@ -541,16 +552,17 @@
         "must_report_exclusions": false,
         "discovery_can_be_terminal_only_if_route_unresolved": false,
         "known_responsible_must_not_stall": false,
-        "clarification_requires_material_discriminator": true
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "UNRESOLVED_REFERENT"
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
-      "routing_precondition_fixture": "MULTIPLE_RESPONSIBILITIES_AFTER_CONTEXT_RECOVERY_IN_TEST_FIXTURE"
+      "routing_precondition_fixture": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE"
     },
     {
       "id": "R16",
       "family": "CLARIFY",
       "literal_request": "Publica ese proyecto.",
-      "context": "Hay dos proyectos conocidos y ninguno fue nombrado ni identificado inequívocamente.",
+      "context": "Fixture sintético: dos proyectos conocidos con responsables distintos, uno del ámbito UI y otro de datos; «ese proyecto» no permite elegir una ruta competente sin identificarlo.",
       "requirements": [
         "N03",
         "N08",
@@ -573,7 +585,8 @@
         "must_report_exclusions": false,
         "discovery_can_be_terminal_only_if_route_unresolved": false,
         "known_responsible_must_not_stall": false,
-        "clarification_requires_material_discriminator": true
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "ROUTE_AMBIGUITY"
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
       "routing_precondition_fixture": "MULTIPLE_RESPONSIBILITIES_AFTER_CONTEXT_RECOVERY_IN_TEST_FIXTURE"
@@ -812,7 +825,8 @@
       "requirements": [
         "N04",
         "N08",
-        "N09"
+        "N09",
+        "N10"
       ],
       "oracle": {
         "acceptable_next_steps": [
@@ -873,6 +887,7 @@
       "literal_request": "Puedes mostrar candidatos para el perfil UI Architect sin ejecutarlo.",
       "context": "",
       "requirements": [
+        "N01",
         "N02",
         "N08",
         "N09"
