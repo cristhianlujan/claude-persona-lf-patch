@@ -16,6 +16,8 @@ on:
       - 'supabase/migrations/*lf_router_explicit_target_semantic_admission_v1.sql'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_explicit_target_and_catalog_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
       - 'supabase/migrations/*lf_router_rw101_c2_test_contract_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -23,6 +25,8 @@ on:
     branches: [main]
     paths:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
@@ -66,3 +70,9 @@ jobs:
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json --self-test
+
+      - name: Reproduce RW1-01 C3 adversarial shape gaps (diagnosis only)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
