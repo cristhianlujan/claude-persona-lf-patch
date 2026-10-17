@@ -17,9 +17,11 @@ MIG = MATCHES[0]
 
 
 def get_def(sql: str, name: str, next_marker: str) -> str:
-    begin = f"CREATE OR REPLACE FUNCTION public.{name}"
-    # pg_get_functiondef uses uppercase CREATE.
-    return sql.split(begin, 1)[1].split(next_marker, 1)[0]
+    begin = f"create or replace function public.{name}"
+    idx = sql.lower().find(begin)
+    if idx < 0:
+        raise AssertionError(f"Definition not present: {name}")
+    return sql[idx + len(begin):].split(next_marker, 1)[0]
 
 
 class RouterTypedTargetCatalogTests(unittest.TestCase):
