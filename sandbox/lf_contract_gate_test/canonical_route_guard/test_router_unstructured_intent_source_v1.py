@@ -7,8 +7,10 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
-MIG = ROOT / ("supabase/migrations/"
-              "20261017035500_lf_router_unstructured_mutation_fail_closed_v1.sql")
+_MATCHES = list(ROOT.glob("supabase/migrations/*_lf_router_unstructured_mutation_fail_closed_v1.sql"))
+if len(_MATCHES) != 1:
+    raise AssertionError(f"Expected exactly one canonical migration: {_MATCHES!r}")
+MIG = _MATCHES[0]
 
 
 class UnstructuredIntentSourceTests(unittest.TestCase):
