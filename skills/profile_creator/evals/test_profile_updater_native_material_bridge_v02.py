@@ -36,6 +36,8 @@ def fixture():
     review = dict(receipt_id='LEDGER-REVIEW-1', verification_state='VERIFIED',
                   verdict='PASS', subject_raw_sha256=c['raw_output_sha256'],
                   handoff_sha256=h['handoff_sha256'], profile_slug='repair',
+                  run_id='RUN-1', capture_sha256=c['capture_sha256'],
+                  source_manifest_sha256=h['source_manifest_sha256'],
                   reviewer_execution_id='REVIEWER-2',
                   positive_controls_passed=True, negative_controls_passed=True)
     def test_bridge(hh=h, cc=c, sr=lambda ref: src, rr=lambda rid: review):
