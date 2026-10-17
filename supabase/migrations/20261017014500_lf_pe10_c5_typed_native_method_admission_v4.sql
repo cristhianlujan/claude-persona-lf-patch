@@ -164,8 +164,8 @@ WITH frozen AS (
       AND reviewer.subject_sha256=raw.subject_sha256
       AND reviewer.source_head_sha=raw.source_head_sha
       AND reviewer.receipt_payload->>'verdict'='PASS'
-      AND reviewer.receipt_payload->>'producer_execution_id'=raw.execution_id
-      AND reviewer.receipt_payload->>'reviewer_execution_id'=reviewer.execution_id
+      AND reviewer.verification_payload->>'producer_execution_id'=raw.execution_id
+      AND reviewer.verification_payload->>'reviewer_execution_id'=reviewer.execution_id
       AND reviewer.execution_id<>raw.execution_id
       AND rv.active AND rv.trust_level='TRUSTED_PROVIDER_BOUND'
       AND ro.operation_code='REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
