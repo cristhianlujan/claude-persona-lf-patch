@@ -696,8 +696,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DENY_UNAUTHORIZED_EFFECT",
-          "CLARIFY"
+          "DENY_UNAUTHORIZED_EFFECT"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
