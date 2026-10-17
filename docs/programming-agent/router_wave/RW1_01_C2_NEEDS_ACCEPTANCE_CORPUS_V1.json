@@ -1,0 +1,848 @@
+{
+  "schema": "LF_ROUTER_RW1_01_NEEDS_ACCEPTANCE_CORPUS_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-01",
+  "checkpoint_code": "RW1-01_C2",
+  "status": "REFERENCE_ORACLES_NOT_EXECUTED",
+  "source": "RW1_01_C1_NEEDS_SOURCES_AND_BIASES_V1.md; owner needs; holdout pending independent reviewer",
+  "assessment_constraints": {
+    "same_oracle_for_all_architectures": true,
+    "no_current_router_output_used_as_oracle": true,
+    "catalog_currentness_required": true,
+    "independent_holdout_not_in_this_file": true,
+    "next_step_not_permission": true,
+    "no_fabricated_executors": true,
+    "no_state_transition_from_corpus_only": true,
+    "if_registered_capability_unavailable": "DISCOVER_OR_CAPABILITY_GAP_NOT_FALSE_READY",
+    "no_hardcoded_asset_type_executors": true,
+    "determinism_under_same_input_and_snapshot": true
+  },
+  "requirements": [
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08",
+    "N09",
+    "N10",
+    "N11",
+    "N12"
+  ],
+  "cases": [
+    {
+      "id": "R01",
+      "family": "EXPLORATORY",
+      "literal_request": "Investiga tres alternativas de navegación del portal B2B sin implementar nada.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N04",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin implementar nada"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R02",
+      "family": "EXPLORATORY",
+      "literal_request": "Compara dos maneras de organizar el módulo de ofertas B2B y explica riesgos.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N04"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "módulo de ofertas B2B"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R03",
+      "family": "EXPLORATORY",
+      "literal_request": "Revisa el flujo de inicio de sesión B2B y explica posibles mejoras.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N04"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "inicio de sesión B2B"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R04",
+      "family": "SIMULATION",
+      "literal_request": "Simula crear una skill de validación, sin crearla ni modificar registros.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin crearla ni modificar registros"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R05",
+      "family": "SIMULATION",
+      "literal_request": "Diseña una demostración parcial del tablero de cartera, pero no la publiques.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no la publiques"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R06",
+      "family": "SIMULATION",
+      "literal_request": "Quiero una demo completa de las pantallas B2B, solo navegable localmente, sin desplegar.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin desplegar"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R07",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Cambia solo la etiqueta del botón de login B2B a Acceder, sin tocar autenticación.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin tocar autenticación"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R08",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Actualiza el activo ACT-0053 y conserva intacto ACT-0052.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ACT-0053",
+          "ACT-0052"
+        ],
+        "excluded_subjects": [
+          "ACT-0052"
+        ],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R09",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Corrige solo el texto de una notificación del módulo B2B; no cambies permisos.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no cambies permisos"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R10",
+      "family": "MULTIOBJECT",
+      "literal_request": "Necesito una regla y una skill nuevas para revisar ofertas.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N08"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "regla",
+          "skill"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R11",
+      "family": "MULTIOBJECT",
+      "literal_request": "Planifica el módulo completo de cartera: pantallas, API y pruebas, primero como análisis.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N05",
+        "N08"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "pantallas, API y pruebas",
+          "primero como análisis"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R12",
+      "family": "MULTIOBJECT",
+      "literal_request": "Investiga un perfil y un adapter apropiados; no habilites ninguno.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "perfil",
+          "adapter",
+          "no habilites ninguno"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R13",
+      "family": "MULTIOBJECT",
+      "literal_request": "Actualizar ACT-0053, revisar ACT-0054 y excluir expresamente ACT-0052.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ACT-0053",
+          "ACT-0054",
+          "excluir expresamente ACT-0052"
+        ],
+        "excluded_subjects": [
+          "ACT-0052"
+        ],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R14",
+      "family": "MULTIOBJECT",
+      "literal_request": "Necesito revisar UX del login y seguridad de autenticación, sin realizar cambios.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "UX del login",
+          "seguridad de autenticación",
+          "sin realizar cambios"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R15",
+      "family": "CLARIFY",
+      "literal_request": "Modifica eso.",
+      "context": "No existe antecedente de qué es «eso» en el contexto autorizado.",
+      "requirements": [
+        "N03",
+        "N02"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "CLARIFY"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "Modifica eso"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R16",
+      "family": "CLARIFY",
+      "literal_request": "Publica ese proyecto.",
+      "context": "Hay dos proyectos conocidos y ninguno fue nombrado ni identificado inequívocamente.",
+      "requirements": [
+        "N03",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "CLARIFY"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ese proyecto"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R17",
+      "family": "CONTEXTUAL",
+      "literal_request": "Cambia esa etiqueta a Entrar.",
+      "context": "Contexto anterior inequívoco: el usuario hablaba del texto del botón principal de login B2B.",
+      "requirements": [
+        "N02",
+        "N03",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "esa etiqueta a Entrar"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R18",
+      "family": "CONTEXTUAL",
+      "literal_request": "Revisa el último archivo del proyecto y dime dónde se utiliza.",
+      "context": "Contexto autorizado identifica un único archivo y repositorio.",
+      "requirements": [
+        "N01",
+        "N03"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "último archivo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R19",
+      "family": "NOVEL",
+      "literal_request": "Quiero incorporar un tipo de activo interactivo nuevo que todavía no existe.",
+      "context": "",
+      "requirements": [
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "tipo de activo interactivo nuevo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R20",
+      "family": "NOVEL",
+      "literal_request": "Investiga si existe una capacidad que produzca un mapa de dependencias con navegación.",
+      "context": "",
+      "requirements": [
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "DERIVE",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "mapa de dependencias con navegación"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R21",
+      "family": "NOVEL",
+      "literal_request": "Quiero crear un recurso de tipo COMPONENTE_XR_INTERACTIVO.",
+      "context": "No consta actualmente un ejecutor registrado para ese tipo.",
+      "requirements": [
+        "N07",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "COMPONENTE_XR_INTERACTIVO"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R22",
+      "family": "NOVEL",
+      "literal_request": "Diseña una interacción futura que combine documentación, reglas y evidencia.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "documentación, reglas y evidencia"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R23",
+      "family": "TECHNICAL",
+      "literal_request": "Registrar una migración aprobada de base de datos por el Merge Train.",
+      "context": "La migración y autoridad de operación están identificadas en un expediente válido.",
+      "requirements": [
+        "N08",
+        "N09",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "TECHNICAL_GOVERNANCE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "Merge Train"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R24",
+      "family": "TECHNICAL",
+      "literal_request": "Analiza por qué falló la reserva del Merge Train sin aplicar SQL.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin aplicar SQL"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R25",
+      "family": "TECHNICAL",
+      "literal_request": "Aplicar una migración cualquiera saltando los controles para ahorrar tiempo.",
+      "context": "No consta autorización para una excepción a controles.",
+      "requirements": [
+        "N09",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DENY_UNAUTHORIZED_EFFECT",
+          "CLARIFY"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "saltando los controles"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R26",
+      "family": "BOUNDARY",
+      "literal_request": "Puedes mostrar candidatos para el perfil UI Architect sin ejecutarlo.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin ejecutarlo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R27",
+      "family": "BOUNDARY",
+      "literal_request": "Ejecuta el perfil UI Architect en producción.",
+      "context": "No existe prueba de runtime/permiso vigente para activar el perfil.",
+      "requirements": [
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "en producción"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R28",
+      "family": "BOUNDARY",
+      "literal_request": "Recupera el estado de A16Q_C2 y su evidencia; no declares cierre.",
+      "context": "",
+      "requirements": [
+        "N09",
+        "N10",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no declares cierre"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R29",
+      "family": "BOUNDARY",
+      "literal_request": "Revisa si un adapter puede ayudar con la pantalla de login, pero no lo elijas como ejecutor.",
+      "context": "",
+      "requirements": [
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no lo elijas como ejecutor"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    },
+    {
+      "id": "R30",
+      "family": "BOUNDARY",
+      "literal_request": "Repite exactamente la misma solicitud y usa el mismo snapshot para comprobar consistencia.",
+      "context": "Se proporciona el mismo catálogo/versión/contexto a ambas ejecuciones.",
+      "requirements": [
+        "N11",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "DISCOVER"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "mismo snapshot"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
+    }
+  ]
+}
