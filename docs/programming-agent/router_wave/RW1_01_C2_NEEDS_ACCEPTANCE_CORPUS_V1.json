@@ -15,7 +15,8 @@
     "no_state_transition_from_corpus_only": true,
     "if_registered_capability_unavailable": "DISCOVER_OR_CAPABILITY_GAP_NOT_FALSE_READY",
     "no_hardcoded_asset_type_executors": true,
-    "determinism_under_same_input_and_snapshot": true
+    "determinism_under_same_input_and_snapshot": true,
+    "multi_object_semantic_acknowledgement_required": true
   },
   "requirements": [
     "N01",
@@ -55,7 +56,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -81,7 +84,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -107,7 +112,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -134,7 +141,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -160,7 +169,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -186,7 +197,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -213,7 +226,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -242,7 +257,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": true
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -269,7 +286,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -297,7 +316,12 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "skill"
+        ],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -326,7 +350,13 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "pantallas",
+          "API",
+          "pruebas"
+        ],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -356,7 +386,12 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "perfil",
+          "adapter"
+        ],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -387,7 +422,12 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "ACT-0053",
+          "ACT-0054"
+        ],
+        "must_report_exclusions": true
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -417,7 +457,12 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "UX del login",
+          "seguridad de autenticación"
+        ],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -442,7 +487,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -468,7 +515,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -495,7 +544,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -521,7 +572,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -547,7 +600,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -574,7 +629,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -600,7 +657,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -628,7 +687,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -654,7 +715,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -681,7 +744,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -706,7 +771,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -733,7 +800,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -760,7 +829,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -787,7 +858,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -813,7 +886,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -839,7 +914,9 @@
         "router_may_authorize_effect": false,
         "route_identity_must_be_grounded": true,
         "operational_effect_requires_independent_authority": true,
-        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     }
