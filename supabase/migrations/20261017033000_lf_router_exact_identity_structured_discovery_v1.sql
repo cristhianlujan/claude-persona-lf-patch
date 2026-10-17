@@ -267,7 +267,13 @@ begin
   IF nullif(btrim(coalesce(p_target_hint,'')),'') IS NULL
      AND nullif(btrim(coalesce(p_asset_type_hint,'')),'') IS NULL
      AND nullif(btrim(coalesce(p_action_hint,'')),'') IS NULL
-     AND v_type_hint IN ('PERFIL','SKILL','ADAPTER')
+     AND (
+       v_type_hint IN ('PERFIL','SKILL','ADAPTER')
+       OR (
+         v_type_hint is null
+         and v_req ~ '(^| )(pantalla|screen)( |$)'
+       )
+     )
      AND v_req ~ '^(por favor )?(cambiar|cambia|modificar|modifica|actualizar|actualiza|corregir|corrige|ajustar|ajusta|editar|edita|reemplazar|reemplaza|renombrar|renombra)( |$)'
      AND NOT v_req ~ '(^| )(perfil|profile|skill|adapter)( |$)'
      AND NOT EXISTS (
