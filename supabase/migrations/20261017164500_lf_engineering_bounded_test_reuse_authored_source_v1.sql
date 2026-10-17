@@ -156,9 +156,7 @@ begin
     'mutation_policy','TEST_ARTIFACT_ONLY'
   );
 end;
-$function$
-
-
+$function$;
 
 DO $regression$
 DECLARE
