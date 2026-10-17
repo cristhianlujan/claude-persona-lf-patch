@@ -67,6 +67,36 @@ as $artifact$
   );
 $artifact$;
 
+
+-- Durable handoff shape for an independently governed semantic consumer.
+-- This helper never interprets exclusions and cannot authorize execution.
+create or replace function public.lf_router_intent_handoff_v1(
+  p_request_text text,
+  p_candidates jsonb,
+  p_reference_kind text
+) returns jsonb
+language sql stable
+set search_path to 'pg_catalog','public'
+as $handoff$
+  select jsonb_build_object(
+    'schema_version','LF_ROUTER_INTENT_HANDOFF_V1',
+    'router','ACT-0001',
+    'literal_request',p_request_text,
+    'request_sha256',encode(extensions.digest(
+      convert_to(coalesce(p_request_text,''),'UTF8'),'sha256'),'hex'),
+    'reference_kind',p_reference_kind,
+    'candidate_subjects',coalesce(p_candidates,'[]'::jsonb),
+    'positive_target_refs','[]'::jsonb,
+    'excluded_target_refs','[]'::jsonb,
+    'allowed_scope',null,
+    'forbidden_scope',null,
+    'scope_binding_state','UNATTESTED',
+    'semantic_consumer_receipt',null,
+    'executor_binding_state','NOT_SELECTED',
+    'downstream_execution_allowed',false
+  );
+$handoff$;
+
 CREATE OR REPLACE FUNCTION public.lf_router_resolve_v1(p_request_text text, p_target_hint text DEFAULT NULL::text, p_action_hint text DEFAULT NULL::text, p_asset_type_hint text DEFAULT NULL::text, p_distribution_mode text DEFAULT 'ROUTER'::text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -184,6 +214,8 @@ begin
         'blocking_code','BLOCK_MULTIPLE_EXACT_TARGETS_NEED_SCOPE',
         'subject_binding_state','AMBIGUOUS',
         'subject_candidates',v_exact_asset_candidates,
+        'semantic_handoff',public.lf_router_intent_handoff_v1(
+          p_request_text,v_exact_asset_candidates,'CANONICAL_ASSET'),
         'semantic_gap_code','POSITIVE_NEGATIVE_TARGET_ROLES_UNATTESTED',
         'semantic_resolution_required',true,
         'request_sha256',encode(extensions.digest(
@@ -258,6 +290,8 @@ begin
       'subject_binding_state',case when v_discovery_count=1 then 'RESOLVED'
         when v_discovery_count>1 then 'AMBIGUOUS' else 'UNRESOLVED' end,
       'subject_candidates',v_artifact_discovery->'matches',
+      'semantic_handoff',public.lf_router_intent_handoff_v1(
+        p_request_text,v_artifact_discovery->'matches','REPOSITORY_ARTIFACT'),
       'subject_resolution_source','programacion.engineering_plan_units.action_specs_v1',
       'next_governance_entrypoint',case when v_discovery_count=1 then
         'programacion.fn_engineering_unit_bootstrap_v3' else null end,
@@ -353,6 +387,40 @@ begin
       'downstream_execution_allowed',false
     );
   END IF;
+
+  -- Negative/exclusion expressions are a trigger for independent semantic
+  -- resolution, NEVER a classifier or authority to accept/reject a target.
+  -- This also applies when callers give explicit typed hints: hints cannot
+  -- override the literal user's forbidden scope.
+  if v_action <> 'ASSET_INSPECTION'
+     and v_req ~ '(^| )(sin|no|excepto|excluye|excluir|excluyendo|excluido|excluida)( |$)'
+  then
+    return jsonb_build_object(
+      'router','ACT-0001','source','SUPABASE','status','BLOCKED',
+      'blocking_code','BLOCK_SCOPE_SEMANTICS_UNATTESTED',
+      'action_code',v_action,'asset_type',v_type_hint,
+      'operation_code',null,
+      'subject_binding_state',case when v_asset_found then 'CANDIDATE'
+                                   else 'UNRESOLVED' end,
+      'subject_candidates',case when v_asset_found then
+        jsonb_build_array(jsonb_build_object(
+          'asset_code',v_asset.codigo_activo,
+          'asset_type',v_asset.tipo_activo))
+        else '[]'::jsonb end,
+      'semantic_handoff',public.lf_router_intent_handoff_v1(
+        p_request_text,case when v_asset_found then
+          jsonb_build_array(jsonb_build_object(
+            'asset_code',v_asset.codigo_activo,
+            'asset_type',v_asset.tipo_activo))
+          else '[]'::jsonb end,'CANONICAL_ASSET'),
+      'semantic_resolution_required',true,
+      'semantic_gap_code','POSITIVE_NEGATIVE_SCOPE_NOT_BOUND',
+      'request_sha256',encode(extensions.digest(
+        convert_to(p_request_text,'UTF8'),'sha256'),'hex'),
+      'executor_selection_state','NOT_SELECTED',
+      'downstream_execution_allowed',false
+    );
+  end if;
 
   if v_action in ('PROFILE_CREATE','SKILL_CREATE','ADAPTER_CREATE','REGLA_CREATE') and v_asset_found and v_target_norm='' then
     if not exists (
