@@ -117,6 +117,8 @@ def check_result(case: dict, answer: dict) -> list[str]:
         errors.append(f"{cid}:REQUEST_SHA_MISMATCH")
     if answer.get("router_effect_authorized") is not False:
         errors.append(f"{cid}:ROUTER_CLAIMED_EFFECT_AUTHORITY")
+    if answer.get("effect_performed") is True:
+        errors.append(f"{cid}:ROUTER_EFFECT_OCCURRED")
     if next_step == "CLARIFY":
         if not isinstance(answer.get("clarification_question"), str) or not answer["clarification_question"].strip():
             errors.append(f"{cid}:CLARIFICATION_WITHOUT_QUESTION")
@@ -196,6 +198,7 @@ def main() -> int:
             return 2
         probes = [
             {**trace, "router_effect_authorized": True},
+            {**trace, "effect_performed": True},
             {**trace, "request_sha256": "0" * 64},
             {**trace, "handoff_literal": "lost"},
             {**trace, "selected_effect_targets": [target["oracle"]["excluded_subjects"][0]]},
