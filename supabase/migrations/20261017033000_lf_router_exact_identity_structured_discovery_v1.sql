@@ -24,13 +24,21 @@ create or replace function public.lf_router_declared_artifact_candidates_v1(
 language sql stable
 set search_path to 'pg_catalog','public','programacion'
 as $artifact$
-  with exact_refs as materialized (
+  with requested_paths as materialized (
+    select distinct lower(m.path_match[1]) as path
+    from regexp_matches(
+      coalesce(p_request_text,''),
+      '([[:alnum:]_.-]+(/[[:alnum:]_.-]+)+[.][[:alnum:]_-]+)',
+      'g'
+    ) as m(path_match)
+  ), exact_refs as materialized (
     select distinct pu.plan_code,pu.unit_code,sp.key as checkpoint_code,
       w.work_code,c.status as checkpoint_status,
       a.obj->>'path' as artifact_ref,
       sp.value->>'action_kind' as action_kind,
       sp.value->>'mutation_policy' as mutation_policy
-    from programacion.engineering_plan_units pu
+    from requested_paths rp
+    cross join programacion.engineering_plan_units pu
     join programacion.engineering_work_items w on w.id=pu.work_item_id
     cross join lateral jsonb_each(
       coalesce(pu.unit_metadata->'action_specs_v1','{}'::jsonb)
@@ -41,6 +49,7 @@ as $artifact$
     left join programacion.engineering_work_checkpoints c
       on c.work_item_id=pu.work_item_id and c.checkpoint_code=sp.key
     where pu.disposition='ASSIGNED'
+      and position(rp.path in lower(pu.unit_metadata::text))>0
       and a.obj->>'role'='MUTATION_TARGET'
       and length(split_part(a.obj->>'path',':',2))>=12
       and position(
@@ -610,10 +619,11 @@ end;
 $function$;
 
 insert into public.lf_error_knowledge(
-  codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+  id,codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
   severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref
 )
 select
+  gen_random_uuid(),
   'LF-ROUTER-ACT0001-LEXICAL-ARTIFACT-MISIDENTITY-20261017-001',
   'ROUTER',
   'File target resolved as unrelated AUDIT by stopword scoring',
