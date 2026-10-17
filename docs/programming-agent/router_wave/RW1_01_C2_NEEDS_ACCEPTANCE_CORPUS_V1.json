@@ -16,7 +16,11 @@
     "if_registered_capability_unavailable": "DISCOVER_OR_CAPABILITY_GAP_NOT_FALSE_READY",
     "no_hardcoded_asset_type_executors": true,
     "determinism_under_same_input_and_snapshot": true,
-    "multi_object_semantic_acknowledgement_required": true
+    "multi_object_semantic_acknowledgement_required": true,
+    "no_generic_discover_for_routable_requests": true,
+    "discovery_is_not_an_indefinite_holding_pattern": true,
+    "output_shape_pass_is_not_evidence_attestation": true,
+    "original_corpus_previously_overpermissive_discover_accepted_for_26_30": true
   },
   "requirements": [
     "N01",
@@ -45,8 +49,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -58,7 +61,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -73,8 +79,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -86,7 +91,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -101,8 +109,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -114,7 +121,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -130,8 +140,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -143,7 +152,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -158,8 +170,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -171,7 +182,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -186,8 +200,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -199,7 +212,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -215,8 +231,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -228,7 +243,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -243,8 +261,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -259,7 +276,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": true
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -275,8 +295,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -288,7 +307,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -304,8 +326,7 @@
       "oracle": {
         "acceptable_next_steps": [
           "COMPOSE",
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -321,7 +342,10 @@
           "regla",
           "skill"
         ],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -338,8 +362,7 @@
       "oracle": {
         "acceptable_next_steps": [
           "COMPOSE",
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -356,7 +379,10 @@
           "API",
           "pruebas"
         ],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -373,8 +399,7 @@
       "oracle": {
         "acceptable_next_steps": [
           "COMPOSE",
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -391,7 +416,10 @@
           "perfil",
           "adapter"
         ],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -407,8 +435,7 @@
       "oracle": {
         "acceptable_next_steps": [
           "COMPOSE",
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -427,7 +454,10 @@
           "ACT-0053",
           "ACT-0054"
         ],
-        "must_report_exclusions": true
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -444,8 +474,7 @@
       "oracle": {
         "acceptable_next_steps": [
           "COMPOSE",
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -462,7 +491,10 @@
           "UX del login",
           "seguridad de autenticación"
         ],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -489,7 +521,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": true
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -517,7 +552,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": true
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -533,8 +571,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -546,7 +583,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -561,8 +601,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -574,7 +613,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -602,7 +644,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -631,7 +676,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -659,7 +707,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -689,7 +740,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -717,7 +771,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -733,8 +790,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -746,7 +802,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -773,7 +832,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -789,8 +851,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -802,7 +863,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -818,7 +882,6 @@
       "oracle": {
         "acceptable_next_steps": [
           "DERIVE",
-          "DISCOVER",
           "CAPABILITY_GAP"
         ],
         "must_preserve_literal": true,
@@ -831,7 +894,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -847,8 +913,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -860,7 +925,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -875,8 +943,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -888,7 +955,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     },
@@ -903,8 +973,7 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "DERIVE",
-          "DISCOVER"
+          "DERIVE"
         ],
         "must_preserve_literal": true,
         "must_preserve_terms": [
@@ -916,7 +985,10 @@
         "operational_effect_requires_independent_authority": true,
         "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
         "must_acknowledge_goal_terms": [],
-        "must_report_exclusions": false
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS"
     }
