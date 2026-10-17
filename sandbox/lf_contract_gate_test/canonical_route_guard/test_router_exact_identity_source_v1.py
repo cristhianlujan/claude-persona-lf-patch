@@ -57,6 +57,17 @@ class RouterExactIdentityMigrationTests(unittest.TestCase):
         ):
             self.assertIn(expression, self.sql)
 
+    def test_request_paths_materialized_once_and_prefilter_all_references(self):
+        for expression in (
+            "with requested_paths as materialized",
+            "regexp_matches(",
+            "as m(path_match)",
+            "cross join programacion.engineering_plan_units",
+            "position(rp.path in lower(pu.unit_metadata::text))>0",
+            "with exact_refs",
+        ):
+            self.assertIn(expression, self.sql.lower())
+
     def test_subject_does_not_become_executor(self):
         for code in (
             "BLOCK_ARTIFACT_CONSUMER_UNATTESTED",
