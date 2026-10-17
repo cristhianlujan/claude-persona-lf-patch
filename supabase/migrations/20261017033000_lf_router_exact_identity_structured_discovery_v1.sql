@@ -688,6 +688,89 @@ begin
 end;
 $function$;
 
+
+-- Transactional SQL smoke controls. A failure aborts the same migration,
+-- leaving neither altered Router source nor a misleading EKB success row.
+do $lf_router_scope_smoke$
+declare
+  v_path text;
+  v_resp jsonb;
+  v_candidates jsonb;
+begin
+  select split_part(a.obj->>'path',':',2) into v_path
+  from programacion.engineering_plan_units pu
+  cross join lateral jsonb_each(
+    coalesce(pu.unit_metadata->'action_specs_v1','{}'::jsonb)
+  ) sp(key,value)
+  cross join lateral jsonb_array_elements(
+    coalesce(sp.value#>'{target,mutation_artifacts}','[]'::jsonb)
+  ) a(obj)
+  where pu.plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
+    and pu.unit_code='M10.7'
+    and sp.key='NO_FALSE_PASS'
+    and a.obj->>'role'='MUTATION_TARGET'
+  limit 1;
+
+  if v_path is null then
+    raise exception 'ROUTER_SMOKE_SOURCE_DECLARATION_ABSENT';
+  end if;
+
+  v_resp:=public.lf_router_resolve_v1(
+    'Actualizar exclusivamente el archivo ' || v_path ||
+    ' sin modificar runtime, contratos ni otros archivos.'
+  );
+  if v_resp->>'status'<>'BLOCKED'
+     or v_resp->>'blocking_code'<>'BLOCK_ARTIFACT_CONSUMER_UNATTESTED'
+     or v_resp->>'subject_binding_state'<>'RESOLVED'
+     or v_resp#>>'{semantic_handoff,scope_binding_state}'<>'UNATTESTED'
+     or v_resp#>>'{semantic_handoff,literal_request}' is null
+     or v_resp->>'downstream_execution_allowed'<>'false'
+  then
+    raise exception 'ROUTER_SMOKE_EXACT_ARTIFACT_UNSAFE:%',v_resp;
+  end if;
+
+  v_resp:=public.lf_router_resolve_v1(
+    'Actualizar ACT-0053 pero no modificar ACT-0052'
+  );
+  if v_resp->>'status'<>'BLOCKED'
+     or v_resp->>'blocking_code'<>'BLOCK_MULTIPLE_EXACT_TARGETS_NEED_SCOPE'
+     or v_resp->>'downstream_execution_allowed'<>'false'
+  then
+    raise exception 'ROUTER_SMOKE_MULTIPLE_EXCLUSION_UNSAFE:%',v_resp;
+  end if;
+
+  v_resp:=public.lf_router_resolve_v1('Simula sin crear una skill');
+  if v_resp->>'status'<>'BLOCKED'
+     or v_resp->>'blocking_code'<>'BLOCK_SCOPE_SEMANTICS_UNATTESTED'
+     or v_resp->>'downstream_execution_allowed'<>'false'
+  then
+    raise exception 'ROUTER_SMOKE_NEGATED_CREATE_UNSAFE:%',v_resp;
+  end if;
+
+  v_resp:=public.lf_router_resolve_v1(
+    'Actualizar ACT-0053 sin modificar otros activos',
+    'ACT-0053'
+  );
+  if v_resp->>'status'<>'BLOCKED'
+     or v_resp->>'blocking_code'<>'BLOCK_SCOPE_SEMANTICS_UNATTESTED'
+     or v_resp->>'downstream_execution_allowed'<>'false'
+  then
+    raise exception 'ROUTER_SMOKE_TYPED_HINT_NEGATION_BYPASS:%',v_resp;
+  end if;
+
+  v_resp:=public.lf_router_resolve_v1(
+    'Cambiar únicamente el texto del botón principal de la pantalla Iniciar sesión B2B a Acceder, sin modificar la autenticación.'
+  );
+  if v_resp->>'status'<>'BLOCKED'
+     or v_resp->>'blocking_code'<>'BLOCK_EXECUTOR_CAPABILITY_UNATTESTED'
+     or v_resp#>>'{semantic_handoff,scope_binding_state}'<>'UNATTESTED'
+     or v_resp->>'downstream_execution_allowed'<>'false'
+  then
+    raise exception 'ROUTER_SMOKE_SCREEN_EXECUTOR_BOUNDARY_UNSAFE:%',v_resp;
+  end if;
+end;
+$lf_router_scope_smoke$;
+
 insert into public.lf_error_knowledge(
   id,codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
   severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref
