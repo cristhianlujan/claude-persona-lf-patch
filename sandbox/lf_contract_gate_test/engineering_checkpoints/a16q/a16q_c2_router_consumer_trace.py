@@ -97,7 +97,8 @@ def check_case(case_name: str, record: Any) -> list[str]:
     _fail(errors, "LITERAL_OR_SHA_INVALID", digest is not None
           and _sha(digest) and _hash_part(request.get("sha256")) == digest)
     _fail(errors, "ROUTER_AUTHORITY_UNVERIFIED", router.get("router") == "ACT-0001"
-          and router.get("status") in {"READY_TO_EXECUTE", "READY_INSPECTION"}
+          and router.get("status") == "READY_TO_EXECUTE"
+          and router.get("downstream_execution_allowed") is True
           and _nonempty(router.get("authority_receipt_ref"))
           and _sha(_hash_part(router.get("authority_receipt_sha256"))))
     _fail(errors, "ROUTER_INPUT_BINDING_MISSING",
@@ -244,6 +245,27 @@ def main() -> int:
         if (rejected["status"] != "FAIL" or
                 "INDEPENDENT_PROVIDER_VERIFICATION_REQUIRED" not in rejected["errors"]):
             print(json.dumps({"status": "FAIL", "error": "CLAIMED_PROVIDER_ATTESTATION_NOT_BLOCKED"}))
+            return 2
+        # Inspection-only routing must never authorize downstream consumption.
+        probe = {
+            "case_id": CASES[0], "evidence_mode": "REAL_AUTHORIZED_RUNTIME",
+            "trace": {field: {} for field in TRACE_FIELDS},
+        }
+        probe["trace"]["router"] = {
+            "router": "ACT-0001", "status": "READY_TO_EXECUTE",
+            "downstream_execution_allowed": True,
+            "authority_receipt_ref": "test-only://router",
+            "authority_receipt_sha256": "a" * 64,
+        }
+        def authority_error(status: str, allowed: bool) -> bool:
+            probe["trace"]["router"]["status"] = status
+            probe["trace"]["router"]["downstream_execution_allowed"] = allowed
+            return "ROUTER_AUTHORITY_UNVERIFIED" in check_case(CASES[0], probe)
+        if (authority_error("READY_TO_EXECUTE", True)
+                or not authority_error("READY_INSPECTION", True)
+                or not authority_error("READY_TO_EXECUTE", False)
+                or not authority_error("BLOCKED", False)):
+            print(json.dumps({"status": "FAIL", "error": "ROUTER_AUTHORITY_MODE_GUARD_NOT_EFFECTIVE"}))
             return 2
         print(json.dumps({"status": "NEGATIVE_SELF_TEST_PASS", "checkpoint_pass": False,
                           "real_consumer_attested": False, "rejected": observed["errors"]}, sort_keys=True))
