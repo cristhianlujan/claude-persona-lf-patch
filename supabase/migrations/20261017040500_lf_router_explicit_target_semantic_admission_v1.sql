@@ -942,10 +942,14 @@ begin
      or (v_receipt->>'target_repo') is distinct from v_exec.target_repo
      or (v_receipt->>'target_path') is distinct from v_exec.target_path
      or v_receipt->>'router' is distinct from 'ACT-0001'
+     or v_receipt->>'producer_ref' is null
      or v_receipt->>'producer_ref' not in (
          'public.lf_router_resolve_v1',
          'public.lf_router_operation_catalog_match_v1'
        )
+     or (v_receipt->>'producer_ref'='public.lf_router_operation_catalog_match_v1'
+         and (v_receipt->>'route_eligibility_only' is distinct from 'true'
+           or v_receipt->>'scope_attested' is distinct from 'false'))
      or v_receipt->>'authority_ref' is distinct from 'ROUTER_DOWNSTREAM_AUTHORITY' then
     return jsonb_build_object('applicable',true,'valid',false,'code','ROUTER_AUTHORITY_RECEIPT_IDENTITY_MISMATCH');
   end if;
