@@ -70,6 +70,13 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
             errors.append(f"{case_id}:GOAL_REQUIREMENT_NOT_SOURCE_BOUND")
         if oracle.get("must_report_exclusions") is not bool(oracle.get("excluded_subjects", [])):
             errors.append(f"{case_id}:EXCLUSION_ORACLE_INCONSISTENT")
+        if oracle.get("discovery_can_be_terminal_only_if_route_unresolved") is not ("DISCOVER" in steps if isinstance(steps, list) else False):
+            errors.append(f"{case_id}:DISCOVERY_TERMINAL_CONTRACT_MISMATCH")
+        if oracle.get("clarification_requires_material_discriminator") is not ("CLARIFY" in steps if isinstance(steps, list) else False):
+            errors.append(f"{case_id}:CLARIFICATION_CONTRACT_MISMATCH")
+        if oracle.get("known_responsible_must_not_stall") and (
+                "DISCOVER" in steps or "CLARIFY" in steps):
+            errors.append(f"{case_id}:KNOWN_ROUTE_ALLOWED_TO_STALL")
     for missing in sorted(REQUIREMENTS - coverage):
         errors.append(f"UNCOVERED_REQUIREMENT:{missing}")
     if len(cases) < 20 or len(families) < 7 or min(families.values(), default=0) < 2:
@@ -98,9 +105,25 @@ def check_result(case: dict, answer: dict) -> list[str]:
     if next_step == "CLARIFY":
         if not isinstance(answer.get("clarification_question"), str) or not answer["clarification_question"].strip():
             errors.append(f"{cid}:CLARIFICATION_WITHOUT_QUESTION")
+        if not isinstance(answer.get("material_route_discriminator"), str) or not answer["material_route_discriminator"].strip():
+            errors.append(f"{cid}:QUESTION_WITHOUT_ROUTE_DISCRIMINATOR")
+        choices = answer.get("unresolved_responsibility_alternatives")
+        if not isinstance(choices, list) or len(set(map(str, choices))) < 2:
+            errors.append(f"{cid}:NO_MATERIAL_ROUTING_AMBIGUITY")
+        if not isinstance(answer.get("recovered_context_refs"), list):
+            errors.append(f"{cid}:CONTEXT_RECOVERY_NOT_ACCOUNTED")
     else:
         if answer.get("clarification_question"):
             errors.append(f"{cid}:QUESTION_WITHOUT_CLARIFICATION_STEP")
+    if next_step == "DISCOVER":
+        disc = answer.get("discovery_handoff")
+        required = ("registered_discovery_capability_ref", "catalog_revision_ref", "unresolved_route_reason")
+        if not isinstance(disc, dict) or any(
+                not isinstance(disc.get(k), str) or not disc[k].strip() for k in required):
+            errors.append(f"{cid}:GENERIC_DISCOVER_WITHOUT_GROUNDED_HANDOFF")
+    if next_step == "CAPABILITY_GAP":
+        if not answer.get("source_search_receipt_ref") or not answer.get("missing_capability"):
+            errors.append(f"{cid}:CAPABILITY_GAP_WITHOUT_DISCOVERY_READBACK")
     if next_step in ("DERIVE", "COMPOSE", "TECHNICAL_GOVERNANCE"):
         targets = answer.get("candidate_responsibilities")
         if not isinstance(targets, list) or not targets:
@@ -186,8 +209,33 @@ def main() -> int:
         if not check_result(multi, lost_goal):
             print(json.dumps({"status": "SELF_TEST_LOST_SECOND_GOAL_FALSE_PASS"}))
             return 2
+        # A generic DISCOVER is never an acceptable terminal response for
+        # requests whose competent responsible is already recoverable.
+        direct = next(c for c in doc["cases"] if c["oracle"]["known_responsible_must_not_stall"])
+        indefinite_discovery = {
+            "id": direct["id"], "next_step": "DISCOVER",
+            "handoff_literal": direct["literal_request"],
+            "request_sha256": sha(direct["literal_request"]),
+            "router_effect_authorized": False,
+            "acknowledged_goals": direct["oracle"]["must_acknowledge_goal_terms"],
+            "acknowledged_exclusions": direct["oracle"]["excluded_subjects"],
+        }
+        if not check_result(direct, indefinite_discovery):
+            print(json.dumps({"status": "SELF_TEST_ALWAYS_DISCOVER_FALSE_PASS"}))
+            return 2
+        ambiguous = next(c for c in doc["cases"] if c["oracle"]["clarification_requires_material_discriminator"])
+        empty_clarification = {
+            "id": ambiguous["id"], "next_step": "CLARIFY",
+            "handoff_literal": ambiguous["literal_request"],
+            "request_sha256": sha(ambiguous["literal_request"]),
+            "router_effect_authorized": False,
+            "clarification_question": "¿Cuál?",
+        }
+        if not check_result(ambiguous, empty_clarification):
+            print(json.dumps({"status": "SELF_TEST_EMPTY_CLARIFICATION_FALSE_PASS"}))
+            return 2
         print(json.dumps({"status": "SELF_TEST_VALIDATOR_NEGATIVES_PASS",
-                          "negative_probes": len(probes) + 1, "stats": stats}, ensure_ascii=False))
+                          "negative_probes": len(probes) + 3, "stats": stats}, ensure_ascii=False))
         return 0
     if args.responses is None:
         print(json.dumps({"status": "CORPUS_VALID_NOT_EXECUTED",
@@ -209,7 +257,8 @@ def main() -> int:
     for case in doc["cases"]:
         if case["id"] in by_id:
             issues.extend(check_result(case, by_id[case["id"]]))
-    print(json.dumps({"status": "PROBE_FAIL" if issues else "PROBE_ORACLES_PASS",
+    print(json.dumps({"status": "PROBE_FAIL" if issues else "PROBE_CONTRACT_SHAPE_PASS_UNATTESTED",
+                      "requires_independent_source_and_consumer_attestation": True,
                       "not_a_checkpoint_closure": True,
                       "tested": len(expected) - len(missing), "errors": issues,
                       "stats": stats}, ensure_ascii=False))
