@@ -64,7 +64,7 @@ class RouterExactIdentityMigrationTests(unittest.TestCase):
             "as m(path_match)",
             "cross join programacion.engineering_plan_units",
             "position(rp.path in lower(pu.unit_metadata::text))>0",
-            "with exact_refs",
+            "exact_refs as materialized",
         ):
             self.assertIn(expression, self.sql.lower())
 
