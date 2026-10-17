@@ -234,8 +234,29 @@ def main() -> int:
         if not check_result(ambiguous, empty_clarification):
             print(json.dumps({"status": "SELF_TEST_EMPTY_CLARIFICATION_FALSE_PASS"}))
             return 2
+        novel = next(c for c in doc["cases"] if "DISCOVER" in c["oracle"]["acceptable_next_steps"])
+        undispatched = {
+            "id": novel["id"], "next_step": "DISCOVER",
+            "handoff_literal": novel["literal_request"],
+            "request_sha256": sha(novel["literal_request"]),
+            "router_effect_authorized": False,
+            "acknowledged_exclusions": novel["oracle"]["excluded_subjects"],
+            "acknowledged_goals": novel["oracle"]["must_acknowledge_goal_terms"],
+        }
+        if not check_result(novel, undispatched):
+            print(json.dumps({"status": "SELF_TEST_DISCOVER_WITHOUT_HANDLER_FALSE_PASS"}))
+            return 2
+        plausible_discovery = {**undispatched, "discovery_handoff": {
+            "registered_discovery_capability_ref": "fixture://not-live-capability",
+            "catalog_revision_ref": "fixture://not-live-revision",
+            "unresolved_route_reason": "No role registered in fixture",
+        }}
+        if check_result(novel, plausible_discovery):
+            print(json.dumps({"status": "SELF_TEST_DISCOVER_CONTRACT_BASELINE_REJECTED"}))
+            return 2
         print(json.dumps({"status": "SELF_TEST_VALIDATOR_NEGATIVES_PASS",
-                          "negative_probes": len(probes) + 3, "stats": stats}, ensure_ascii=False))
+                          "negative_probes": len(probes) + 4, "shape_only": True,
+                          "stats": stats}, ensure_ascii=False))
         return 0
     if args.responses is None:
         print(json.dumps({"status": "CORPUS_VALID_NOT_EXECUTED",
