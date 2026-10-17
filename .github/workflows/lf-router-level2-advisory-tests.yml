@@ -13,6 +13,8 @@ on:
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_semantic_contract_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_unstructured_intent_source_v1.py'
       - 'supabase/migrations/*lf_router_unstructured_mutation_fail_closed_v1.sql'
+      - 'supabase/migrations/*lf_router_explicit_target_semantic_admission_v1.sql'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_explicit_target_and_catalog_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -44,3 +46,6 @@ jobs:
       - name: Verify unstructured mutation never bypasses semantic authority
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_unstructured_intent_source_v1
+      - name: Validate typed target authority and DB Train catalog compatibility
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_explicit_target_and_catalog_v1
