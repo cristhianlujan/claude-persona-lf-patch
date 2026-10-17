@@ -11,6 +11,8 @@ on:
       - 'supabase/migrations/*lf_router_exact_identity_structured_discovery_v1.sql'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_intent_semantic_contract_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_semantic_contract_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_unstructured_intent_source_v1.py'
+      - 'supabase/migrations/*lf_router_unstructured_mutation_fail_closed_v1.sql'
   workflow_dispatch:
 
 permissions:
@@ -39,3 +41,6 @@ jobs:
       - name: Execute contextual request and semantic role adversarial tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_intent_semantic_contract_v1
+      - name: Verify unstructured mutation never bypasses semantic authority
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_unstructured_intent_source_v1
