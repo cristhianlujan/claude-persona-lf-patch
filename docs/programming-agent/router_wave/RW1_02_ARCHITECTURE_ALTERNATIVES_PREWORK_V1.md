@@ -63,8 +63,12 @@
 - **«Todo desconocido a un explorador genérico»:** un explorador inventado es falso READY; solo se puede usar responsable registrado o investigar un gap legítimo.
 - **«El Router bloquea hasta comprobar todo»:** detiene tareas de análisis que no requieren ejecución, viola continuidad segura.
 - **«Pasó el test Python, por tanto pasa C2 del Router»:** el log dice `shape_only=true`; acredita el validador, NO destinatarios reales.
-- **«Vincular GitHub Actions arregla el checkpoint»:** la función `programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1` compila `WRITE_GIT` de autoría aunque `test_execution_contract.authoring_required=false`, seguido de `RUN_TEST`. Se requiere resolver reutilización del artefacto ya autorado; no generar un PR redundante ni falsificar fuente.
+- **«Vincular GitHub Actions arregla el checkpoint»:** el defecto de autoría redundante de `programacion.fn_engineering_execution_packet_apply_bounded_checkpoint_test_v1` **ya fue reparado** por PR #2881. Los PR #2879/#2882/#2883 integraron el workflow, vincularon `RUN_TEST` y cerraron **solo RW1-01_C2** con recibo material. Esa reparación del pipeline **no demuestra** la arquitectura futura ni continuidad E2E de ACT-0001.
 - **«Arreglar un ejemplo equivale a reparar el Router»:** prohibir casos específicos; la reparación debe ser causal y transversal.
+
+## 6. Evidencia actual de fuente
+
+La línea base del Router vivo y los falsificadores contrastables de A/B/C/D están en [`RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md`](RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md). Lecturas de Supabase 2026-10-17: función Router de 39.602 caracteres, 35 rutas ACTIVE, 16 tipos con ruta ACTIVE frente a 22 tipos distintos no archivados (conjuntos **no equivalentes**), y cuatro solicitudes de control reproducibles pero sin continuidad material demostrada. Son observaciones diagnósticas, no evaluación de prototipos.
 
 ## 6. Secuencia verificable y decisión posterior
 
