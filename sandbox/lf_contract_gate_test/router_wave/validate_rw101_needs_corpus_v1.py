@@ -65,6 +65,11 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
                 errors.append(f"{case_id}:EXCLUDED_SUBJECT_NOT_FROM_LITERAL")
         if not isinstance(case.get("context"), str):
             errors.append(f"{case_id}:CONTEXT_NOT_DECLARED")
+        goals = oracle.get("must_acknowledge_goal_terms", [])
+        if not isinstance(goals, list) or any(term not in literal for term in goals):
+            errors.append(f"{case_id}:GOAL_REQUIREMENT_NOT_SOURCE_BOUND")
+        if oracle.get("must_report_exclusions") is not bool(oracle.get("excluded_subjects", [])):
+            errors.append(f"{case_id}:EXCLUSION_ORACLE_INCONSISTENT")
     for missing in sorted(REQUIREMENTS - coverage):
         errors.append(f"UNCOVERED_REQUIREMENT:{missing}")
     if len(cases) < 20 or len(families) < 7 or min(families.values(), default=0) < 2:
@@ -104,6 +109,16 @@ def check_result(case: dict, answer: dict) -> list[str]:
             errors.append(f"{cid}:UNATTESTED_RESPONSIBLE")
     if next_step == "CAPABILITY_GAP" and not answer.get("missing_capability"):
         errors.append(f"{cid}:INVENTED_CAPABILITY_GAP")
+    ack_goals = answer.get("acknowledged_goals")
+    if oracle.get("must_acknowledge_goal_terms"):
+        if not isinstance(ack_goals, list) or any(
+                goal not in ack_goals for goal in oracle["must_acknowledge_goal_terms"]):
+            errors.append(f"{cid}:MULTIOBJECT_GOAL_LOST")
+    ack_exclusions = answer.get("acknowledged_exclusions")
+    if oracle.get("must_report_exclusions"):
+        if not isinstance(ack_exclusions, list) or any(
+                ex not in ack_exclusions for ex in oracle["excluded_subjects"]):
+            errors.append(f"{cid}:EXCLUSION_NOT_ACKNOWLEDGED")
     if any(x in (answer.get("selected_effect_targets") or [])
            for x in oracle["excluded_subjects"]):
         errors.append(f"{cid}:EXCLUDED_TARGET_SELECTED_FOR_EFFECT")
@@ -135,6 +150,8 @@ def main() -> int:
             "router_effect_authorized": False,
             "candidate_responsibilities": [{"authority_evidence_ref": "fixture://test-only"}],
             "selected_effect_targets": [],
+            "acknowledged_exclusions": list(target["oracle"]["excluded_subjects"]),
+            "acknowledged_goals": [],
         }
         if check_result(target, trace):
             print(json.dumps({"status": "SELF_TEST_BASELINE_REJECTED"}))
@@ -146,6 +163,7 @@ def main() -> int:
             {**trace, "selected_effect_targets": [target["oracle"]["excluded_subjects"][0]]},
             {**trace, "candidate_responsibilities": [{"authority_evidence_ref": ""}]},
             {**trace, "claims_e2e": True},
+            {**trace, "acknowledged_exclusions": []},
         ]
         if any(not check_result(target, p) for p in probes):
             print(json.dumps({"status": "SELF_TEST_FALSE_PASS"}))
