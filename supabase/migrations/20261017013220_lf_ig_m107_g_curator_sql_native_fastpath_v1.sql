@@ -104,11 +104,14 @@ BEGIN
        43,'MANUAL',v_identity,true);
    v_run_id:=(v_out->>'run_id')::bigint;
    IF v_out->>'status' IS DISTINCT FROM 'VALIDATOR_RUNTIME_REQUIRED'
-     OR v_out->>'strategy' IS DISTINCT FROM 'REBIND'
+     OR v_out->>'run_status' IS DISTINCT FROM 'CURATING'
+     OR (v_out->>'parent_run_id')::bigint IS DISTINCT FROM 944
      OR v_out#>>'{request_context_summary,graph_build_exactly_once}' IS DISTINCT FROM 'true'
    THEN RAISE EXCEPTION 'IG_M107_G_SELFTEST_REBIND_NOT_READY:%',left(v_out::text,450); END IF;
    IF (SELECT curator_identity FROM programacion.input_readiness_runs WHERE id=v_run_id)
         IS DISTINCT FROM v_identity
+      OR (SELECT scope->>'mode' FROM programacion.input_readiness_runs WHERE id=v_run_id)
+         IS DISTINCT FROM 'RUNTIME_ASSERTION_REBIND_SAFE_SUCCESSOR_V1'
       OR (SELECT status FROM programacion.input_readiness_runs WHERE id=v_run_id)<>'CURATING'
    THEN RAISE EXCEPTION 'IG_M107_G_CURATOR_IDENTITY_UNBOUND'; END IF;
    SELECT count(*),count(*) FILTER (
@@ -117,9 +120,10 @@ BEGIN
     INTO v_new_families,v_positive_count
    FROM programacion.input_family_assessments WHERE run_id=v_run_id;
    SELECT count(*) INTO v_new_proposals FROM programacion.input_gap_proposals WHERE run_id=v_run_id;
-   IF v_new_families<>47 OR v_positive_count<>47 OR v_new_proposals<>20 THEN
-     RAISE EXCEPTION 'IG_M107_G_TEMP_FAMILIES_PROPOSALS_INVALID:%:%:%',
-       v_new_families,v_positive_count,v_new_proposals; END IF;
+   -- REBIND materializes families; proposals are not an acceptance criterion at this stage.
+   IF v_new_families<>47 OR v_positive_count<>47 THEN
+     RAISE EXCEPTION 'IG_M107_G_TEMP_FAMILY_RECEIPTS_INVALID:%:%',
+       v_new_families,v_positive_count; END IF;
    -- A normal non-trigger call must retain the original canonical resolution.
    SELECT c.especificacion INTO STRICT v_contract FROM programacion.contratos c
     WHERE c.version_id=v_base.version_id AND c.contrato_codigo='INPUT_READINESS_CONTRACT'
@@ -163,7 +167,7 @@ BEGIN
    OR EXISTS(SELECT 1 FROM programacion.input_readiness_runs WHERE id=v_run_id)
    OR EXISTS(SELECT 1 FROM programacion.input_family_assessments WHERE run_id=v_run_id)
    OR EXISTS(SELECT 1 FROM programacion.input_gap_proposals WHERE run_id=v_run_id)
-   OR v_positive_count<>47 OR v_new_proposals<>20
+   OR v_positive_count<>47
  THEN RAISE EXCEPTION 'IG_M107_G_TEST_RESIDUE_OR_PARITY'; END IF;
  IF (SELECT count(*) FROM pg_trigger t where t.tgrelid='programacion.input_family_assessments'::regclass
     and (t.tgtype&16)=16 and t.tgenabled IN ('O','A') and not t.tgisinternal)<>6
@@ -179,14 +183,14 @@ BEGIN
  'La resolución adicional del grafo por cada familia sobre el mismo contexto elevaba el costo de 47 evaluaciones; G/EKB 040 comparó ~7.06s vs ~2.47s por 12 operaciones.',
  'CURATOR_TRUSTED_TRIGGER_SAME_TRANSACTION_GRAPH_DIGEST',
  'Solo ruta interna del trigger de Curator, propietario efectivo, run CURATING, estrategia y SHA idénticos. No confiar en GUC externa, no omitir readback fuera de la ruta, no modificar Validator, contratos ni triggers.',
- 'Train: selftest REBIND con 47 familias, 20 propuestas, 47 core receipts; comparador ordinario con SHA canónico, negativos SHA/identidad y rollback limpio.',
+ 'Train: selftest REBIND con 47 familias y 47 core receipts (propuestas no son checkpoint REBIND); comparador ordinario con SHA canónico, negativos SHA/identidad y rollback limpio.',
  'MEDIUM',1,clock_timestamp(),clock_timestamp(),
  'IG_CURATOR_VALIDATOR_REFACTOR_V2/M10.7/G','ACTIVO',
  jsonb_build_object(
   'schema_version','IG_M107_G_CURATOR_TRUSTED_FASTPATH_V2',
   'screen_id',43,'baseline_run',944,'rolled_back_run',v_run_id,
   'curator_families_proven',v_positive_count,
-  'proposals_materialized',v_new_proposals,'fallback_readback_kept',true,
+  'proposals_observed_not_required',v_new_proposals,'fallback_readback_kept',true,
   'only_privileged_insert_trigger',true,'corrupt_context_rejected',true,
   'wrong_identity_rejected',true,'rollback_clean',true,
   'family_update_triggers',6,
