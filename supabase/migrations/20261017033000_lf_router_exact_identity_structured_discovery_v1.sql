@@ -379,6 +379,8 @@ begin
         else 'UNRESOLVED'
       end,
       'subject_candidates',v_screen_subjects,
+      'semantic_handoff',public.lf_router_intent_handoff_v1(
+        p_request_text,v_screen_subjects,'CANONICAL_SCREEN'),
       'executor_selection_state','CANDIDATES_ONLY_NOT_AUTHORIZED',
       'executor_candidates',v_executor_candidates,
       'request_sha256',encode(extensions.digest(convert_to(p_request_text,'UTF8'),'sha256'),'hex'),
