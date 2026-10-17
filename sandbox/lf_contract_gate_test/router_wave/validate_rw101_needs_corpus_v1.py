@@ -83,6 +83,21 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
         errors.append("UNBALANCED_MINIMUM_COVERAGE")
     if not doc.get("assessment_constraints", {}).get("independent_holdout_not_in_this_file"):
         errors.append("INDEPENDENT_HOLDOUT_MUST_BE_RESERVED")
+    if not doc.get("assessment_constraints", {}).get("test_fixture_is_not_actual_supabase_registry"):
+        errors.append("TEST_FIXTURE_MISREPRESENTED_AS_LIVE_AUTHORITY")
+    for case in cases:
+        if not isinstance(case, dict):
+            continue
+        route = case.get("routing_precondition_fixture")
+        steps = (case.get("oracle") or {}).get("acceptable_next_steps") or []
+        if not isinstance(route, str) or not route.strip():
+            errors.append(str(case.get("id")) + ":MISSING_ROUTING_FIXTURE")
+        elif route == "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE":
+            if "DERIVE" not in steps and "COMPOSE" not in steps:
+                errors.append(str(case.get("id")) + ":KNOWN_RESPONSIBLE_NOT_DERIVABLE")
+        elif route == "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE":
+            if "DISCOVER" not in steps and "CAPABILITY_GAP" not in steps:
+                errors.append(str(case.get("id")) + ":UNKNOWN_CAPABILITY_FORCED_READY")
     return errors, {"cases": len(cases), "groups": dict(sorted(families.items())),
                     "requirements": len(coverage)}
 
