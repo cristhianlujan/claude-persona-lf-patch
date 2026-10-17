@@ -301,6 +301,7 @@ $v4_query$;
  v_event_payload:=jsonb_build_object(
  'evidence_schema_version','operational-event/v2','execution_id',v_actor,
  'producer','PE10_C5_CANONICAL_TYPED_CONTRACT_REPAIR',
+ 'purpose','Repair typed C5 admission with safe-change and no production cutover',
  'occurred_at',clock_timestamp(),'plan_code',v_plan,'checkpoint_code','PE10_C5',
  'new_contract','PE10_C5_TYPED_NATIVE_ADMISSION_V4',
  'baseline_accepted',v_n,'benchmark_pairs',v_b,'event_candidates',v_event,
