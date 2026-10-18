@@ -1143,6 +1143,8 @@ $m03_raw_json$;
  v_result jsonb;
  v_assertion jsonb;
  v_transition jsonb;
+ v_dbg_msg text;
+ v_dbg_context text;
  v_ref text := 'https://github.com/cristhianlujan/claude-persona-lf-patch/blob/18b4d42cb952c1d0b9f38424040198945c01c710/docs/profile_updater/experiments/pe10_methods32_p0/PE10_M03_RAW_V2.json#git_blob_sha=c6cb821d7e6917a66c0bd657bac1e2ad1b24dab8';
  v_n integer;
 BEGIN
@@ -1320,4 +1322,8 @@ BEGIN
      WHERE work_item_id=1133 AND status='DONE')<>1
  OR (SELECT status FROM programacion.engineering_work_items WHERE id=1133)<>'IN_PROGRESS'
  THEN RAISE EXCEPTION 'M03_CLOSE_POSTSTATE_INCONSISTENT'; END IF;
+
+EXCEPTION WHEN OTHERS THEN
+ GET STACKED DIAGNOSTICS v_dbg_msg=MESSAGE_TEXT, v_dbg_context=PG_EXCEPTION_CONTEXT;
+ RAISE EXCEPTION 'PE10_M03_CANONICAL_DIAGNOSTIC sqlstate=% msg=% context=%', SQLSTATE, left(v_dbg_msg,350), left(v_dbg_context,180) USING ERRCODE=SQLSTATE;
 END $m03_close$;
