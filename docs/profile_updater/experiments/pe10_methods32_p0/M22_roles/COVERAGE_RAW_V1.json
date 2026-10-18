@@ -1,0 +1,112 @@
+{
+  "schema": "PE10_M22_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M22_COVER_Q1",
+      "result": "39 callee tokens =>0 unresolved,33 one-candidate,6 multiple-candidate"
+    },
+    {
+      "id": "M22_COVER_Q2",
+      "result": "38 total historical callers,38 unique; hash NULL=0, syntactically valid=38"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "COVER_CS1",
+        "observation": "6/39 current callee name resolutions are ambiguous",
+        "components": [
+          "identity_qualification",
+          "schema_wrapper_ambiguity"
+        ]
+      },
+      {
+        "id": "COVER_CS2",
+        "observation": "historical rows internally unique/valid",
+        "components": [
+          "snapshot_integrity",
+          "live_completeness"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "identity_qualification"
+      ],
+      [
+        "snapshot_integrity"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "resolve six ambiguous callees by schema/object identity"
+    }
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "COVER_INV1",
+        "rule": "39=0+33+6 resolution partition",
+        "observed": "reconciles",
+        "valid_case": "multiple bucket preserved",
+        "counterexample": "collapse multiple to one",
+        "status": "PASS"
+      },
+      {
+        "id": "COVER_INV2",
+        "rule": "historical caller identity uniqueness and hash presence",
+        "observed": "38 unique/38; null0; valid38",
+        "valid_case": "all satisfy",
+        "counterexample": "duplicate/null hash",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M22_COVER_F1",
+      "classification": "MEASURED",
+      "claim": "Historical inventory passes uniqueness/hash-syntax invariants."
+    },
+    {
+      "id": "M22_COVER_F2",
+      "classification": "MEASURED_RISK",
+      "claim": "Six callee tokens fail current name-only uniqueness and require qualified identity."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M22_COVER_N1",
+      "hypothesis": "All callee tokens resolve uniquely",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M22_COVER_N2",
+      "hypothesis": "Historical integrity proves live completeness",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "schema/object identity of six ambiguous tokens"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}

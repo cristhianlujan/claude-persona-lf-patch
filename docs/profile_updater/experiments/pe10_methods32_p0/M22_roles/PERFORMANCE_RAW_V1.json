@@ -1,0 +1,114 @@
+{
+  "schema": "PE10_M22_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M22_PERF_Q1",
+      "result": "track_functions=none; pg_stat rows for curator/validator pattern=0"
+    },
+    {
+      "id": "M22_PERF_Q2",
+      "result": "pre-cutoff partitions: BLOCKED20 curator 5 NULL/0 zero/15 positive; validator20 NULL; COMPLETED233 curator0 NULL/75 zero/158 positive; validator0/99/134; CURATING2 both NULL"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "PERF_CS1",
+        "observation": "stats absent under track_functions=none",
+        "components": [
+          "instrumentation_disabled",
+          "zero_usage_inference"
+        ]
+      },
+      {
+        "id": "PERF_CS2",
+        "observation": "NULL/zero/positive duration semantics differ by status",
+        "components": [
+          "duration_semantics",
+          "status_cohort",
+          "measurement_path"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "instrumentation_disabled"
+      ],
+      [
+        "duration_semantics"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "classify zero-duration semantics and matched completed cohorts"
+    }
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "PERF_INV1",
+        "rule": "n=null+zero+positive per status/stage",
+        "observed": "all partitions reconcile",
+        "valid_case": "COMPLETED curator 233=0+75+158",
+        "counterexample": "treat BLOCKED validator NULL20 as zero",
+        "status": "PASS"
+      },
+      {
+        "id": "PERF_INV2",
+        "rule": "missing pg_stat rows under disabled tracking cannot imply zero usage",
+        "observed": "track_functions none",
+        "valid_case": "UNKNOWN usage",
+        "counterexample": "zero calls conclusion",
+        "status": "PASS_AS_SCOPE_GUARD"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M22_PERF_F1",
+      "classification": "MEASURED",
+      "claim": "Duration partitions reconcile only when NULL,zero,positive remain distinct."
+    },
+    {
+      "id": "M22_PERF_F2",
+      "classification": "MEASURED_LIMIT",
+      "claim": "Function stats cannot establish zero usage under track_functions=none."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M22_PERF_N1",
+      "hypothesis": "NULL durations equal zero",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M22_PERF_N2",
+      "hypothesis": "0 stats rows proves no calls",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "zero-duration semantics",
+    "matched causal performance effect"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}
