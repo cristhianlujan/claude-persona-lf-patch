@@ -1,0 +1,409 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M18.json",
+    "sha256": "ea756fb0573ff82a29d1d9c9bdeff65c2ab0723420859e43b11ac0930179e379"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "producer": "B+D: five separately frozen role-bound research passes, each applying GDE/BARINEL/information-gain rules without fabricated probabilities, followed by synthesizer after freeze; one coordinated shared context, no independent autonomous-agent claim",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "git_blob_sha": "4d8b77869d4cf6e89ae18462eb8b4c0f9905aa7e",
+      "source_commit": "ca54c5382d1010eb180cc352f0f386bc10df8e59",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/ARCHITECTURE_RAW_V1.json",
+      "query_count": 5,
+      "negative_count": 3,
+      "gde_conflict_sets": 2,
+      "barinel_status": "NOT_CALIBRATED",
+      "role_output_frozen": true,
+      "cognitive_independence_claim": false
+    },
+    {
+      "role": "PERFORMANCE",
+      "git_blob_sha": "1e756ac669f0d61b12ae231b7e873d9c86893761",
+      "source_commit": "7847646440754522d6469e4561514e8cef484954",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/PERFORMANCE_RAW_V1.json",
+      "query_count": 10,
+      "negative_count": 4,
+      "gde_conflict_sets": 2,
+      "barinel_status": "NOT_CALIBRATED",
+      "role_output_frozen": true,
+      "cognitive_independence_claim": false
+    },
+    {
+      "role": "AUTHORITY",
+      "git_blob_sha": "fa0d63ee65ec597ba423d0821cb4245714d0b70b",
+      "source_commit": "1da3740a6dcab3b0415c5b08659e2d6e9b0f2b1f",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/AUTHORITY_RAW_V1.json",
+      "query_count": 6,
+      "negative_count": 4,
+      "gde_conflict_sets": 2,
+      "barinel_status": "NOT_CALIBRATED",
+      "role_output_frozen": true,
+      "cognitive_independence_claim": false
+    },
+    {
+      "role": "COVERAGE",
+      "git_blob_sha": "410c86ef7c0566840781e615b85c76805a7e0057",
+      "source_commit": "c6620c7ac22b71b9f304dfd673da402a46f25008",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/COVERAGE_RAW_V1.json",
+      "query_count": 7,
+      "negative_count": 4,
+      "gde_conflict_sets": 2,
+      "barinel_status": "NOT_CALIBRATED",
+      "role_output_frozen": true,
+      "cognitive_independence_claim": false
+    },
+    {
+      "role": "INNOVATION",
+      "git_blob_sha": "77af141dc562d929ebb355073731eb372f549f3e",
+      "source_commit": "de25f49f94aab4a320d8f3d3e14f61b7d6ec6c87",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/INNOVATION_RAW_V1.json",
+      "query_count": 6,
+      "negative_count": 4,
+      "gde_conflict_sets": 3,
+      "barinel_status": "NOT_CALIBRATED",
+      "role_output_frozen": true,
+      "cognitive_independence_claim": false
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_SYNTHESIS_V1.json",
+    "source_commit": "10968a004600a6b0f24593a1dcc92c102111e26c",
+    "git_blob_sha": "e8f836006e7b5a2af8bd081fd6624fbfc0251666"
+  },
+  "synthesis": {
+    "schema": "PE10_M18_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M18",
+    "base_code": "B",
+    "algorithm_codes": [
+      "D"
+    ],
+    "source_cutoff": "2026-10-15T00:00:00Z",
+    "role_code": "SYNTHESIZER",
+    "source_scope": "READ_ONLY_P0_HISTORICAL_AND_EXPLICIT_CURRENT_ROLE",
+    "role_bound_single_context": true,
+    "autonomous_agent_claim": false,
+    "source_pieces_frozen_before_synthesis": true,
+    "no_new_sql_in_synthesis": true,
+    "synthesis_inputs": [
+      {
+        "role": "ARCHITECTURE",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/ARCHITECTURE_RAW_V1.json",
+        "source_commit": "ca54c5382d1010eb180cc352f0f386bc10df8e59",
+        "git_blob_sha": "4d8b77869d4cf6e89ae18462eb8b4c0f9905aa7e",
+        "evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/ca54c5382d1010eb180cc352f0f386bc10df8e59/docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/ARCHITECTURE_RAW_V1.json#git_blob_sha=4d8b77869d4cf6e89ae18462eb8b4c0f9905aa7e",
+        "readbacks": 5,
+        "negative_tests": 3,
+        "role_output_frozen": true
+      },
+      {
+        "role": "PERFORMANCE",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/PERFORMANCE_RAW_V1.json",
+        "source_commit": "7847646440754522d6469e4561514e8cef484954",
+        "git_blob_sha": "1e756ac669f0d61b12ae231b7e873d9c86893761",
+        "evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/7847646440754522d6469e4561514e8cef484954/docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/PERFORMANCE_RAW_V1.json#git_blob_sha=1e756ac669f0d61b12ae231b7e873d9c86893761",
+        "readbacks": 10,
+        "negative_tests": 4,
+        "role_output_frozen": true
+      },
+      {
+        "role": "AUTHORITY",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/AUTHORITY_RAW_V1.json",
+        "source_commit": "1da3740a6dcab3b0415c5b08659e2d6e9b0f2b1f",
+        "git_blob_sha": "fa0d63ee65ec597ba423d0821cb4245714d0b70b",
+        "evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/1da3740a6dcab3b0415c5b08659e2d6e9b0f2b1f/docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/AUTHORITY_RAW_V1.json#git_blob_sha=fa0d63ee65ec597ba423d0821cb4245714d0b70b",
+        "readbacks": 6,
+        "negative_tests": 4,
+        "role_output_frozen": true
+      },
+      {
+        "role": "COVERAGE",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/COVERAGE_RAW_V1.json",
+        "source_commit": "c6620c7ac22b71b9f304dfd673da402a46f25008",
+        "git_blob_sha": "410c86ef7c0566840781e615b85c76805a7e0057",
+        "evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/c6620c7ac22b71b9f304dfd673da402a46f25008/docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/COVERAGE_RAW_V1.json#git_blob_sha=410c86ef7c0566840781e615b85c76805a7e0057",
+        "readbacks": 7,
+        "negative_tests": 4,
+        "role_output_frozen": true
+      },
+      {
+        "role": "INNOVATION",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/INNOVATION_RAW_V1.json",
+        "source_commit": "de25f49f94aab4a320d8f3d3e14f61b7d6ec6c87",
+        "git_blob_sha": "77af141dc562d929ebb355073731eb372f549f3e",
+        "evidence_ref": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/de25f49f94aab4a320d8f3d3e14f61b7d6ec6c87/docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/INNOVATION_RAW_V1.json#git_blob_sha=77af141dc562d929ebb355073731eb372f549f3e",
+        "readbacks": 6,
+        "negative_tests": 4,
+        "role_output_frozen": true
+      }
+    ],
+    "readbacks_total": 34,
+    "negative_tests_total": 19,
+    "gde_conflict_sets_total": 11,
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "roles_not_calibrated": 5,
+      "reason": "None of the five frozen role reports had an independent executable pass/fail component spectrum with justified priors; numeric BARINEL probabilities would be fabricated."
+    },
+    "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+    "findings": [
+      {
+        "id": "M18_SYN_F1",
+        "finding": "The historical event-20161 inventory is internally self-consistent for its declared population, but it is not a live certification: all 38 caller names still resolve, 21/21 trigger bindings remain mapped, yet 22/38 caller definitions have changed by empirical md5(prosrc) comparison.",
+        "classification": "MEASURED_HISTORICAL_INTEGRITY_PLUS_CURRENT_DRIFT",
+        "evidence": [
+          "M18_COVER_Q1",
+          "M18_COVER_Q2",
+          "M18_ARQ_Q3",
+          "M18_ARQ_Q4"
+        ]
+      },
+      {
+        "id": "M18_SYN_F2",
+        "finding": "Current lexical topology shows selective evolution: 70/76 historical callee tokens remain in current bodies and six do not; changed bodies expose newer cached-v2/context/handoff paths. This is structural evidence, not runtime execution proof.",
+        "classification": "MEASURED_CURRENT_LEXICAL_EVOLUTION",
+        "evidence": [
+          "M18_INNOV_Q3",
+          "M18_INNOV_Q6"
+        ]
+      },
+      {
+        "id": "M18_SYN_F3",
+        "finding": "Coverage cannot be promoted from historical to live without qualification: 6/39 historical callee tokens have multiple current schema candidates, and 64 current IG-pattern functions are outside the historical caller set, including 23 path-shape candidates; none of those candidates is automatically a caller.",
+        "classification": "MEASURED_CURRENT_COVERAGE_RISK_WITH_CLASSIFICATION_LIMIT",
+        "evidence": [
+          "M18_COVER_Q3",
+          "M18_COVER_Q6",
+          "M18_INNOV_Q4"
+        ]
+      },
+      {
+        "id": "M18_SYN_F4",
+        "finding": "A performance improvement is not demonstrated. pg_stat function timing is unavailable under track_functions=none; pre-cutoff readiness stage durations exist, but 5.13 versus 5.13.1 differs in revision, time window, screen population, exact-zero prevalence and sample size. On overlapping screens 5.13.1 frequently has larger positive stage times, which is directional evidence only, not a causal regression proof.",
+        "classification": "MEASURED_PERFORMANCE_UNRESOLVED",
+        "evidence": [
+          "M18_PERF_Q4",
+          "M18_PERF_Q6",
+          "M18_PERF_Q9",
+          "M18_PERF_Q10",
+          "M18_INNOV_Q5"
+        ]
+      },
+      {
+        "id": "M18_SYN_F5",
+        "finding": "The CP2 42501 is an authority/readback-path issue rather than demonstrated functional failure: the current read-only principal has no EXECUTE on either currentness-function variant but has SELECT on the evidence tables. Receipt 38 remains historical SOAK authority, not a current CP2 or performance receipt.",
+        "classification": "MEASURED_AUTHORITY_BOUNDARY",
+        "evidence": [
+          "M18_AUTH_Q1",
+          "M18_AUTH_Q2",
+          "M18_AUTH_Q4",
+          "M18_AUTH_Q6",
+          "M18_PERF_Q2"
+        ]
+      },
+      {
+        "id": "M18_SYN_F6",
+        "finding": "The P0 event itself carries acceptance_declared=false and provenance/currentness drift notes, so treating its LIVE_PG_PROC labels as timeless live authority would contradict the source's own provenance limits.",
+        "classification": "MEASURED_HISTORICAL_PROVENANCE_LIMIT",
+        "evidence": [
+          "M18_INNOV_Q1",
+          "M18_INNOV_Q2"
+        ]
+      },
+      {
+        "id": "M18_SYN_F7",
+        "finding": "GDE narrows the high-value risk families to stale-currentness promotion, post-snapshot path evolution, identity qualification, wrong authority path and cohort equivalence. No role produced evidence sufficient to calibrate BARINEL or prove a single functional root cause.",
+        "classification": "METHOD_RESULT_WITH_EVIDENCE_LIMIT",
+        "evidence": [
+          "ARCH_CS1",
+          "PERF_CS2",
+          "AUTH_CS1",
+          "COVER_CS1",
+          "INNOV_CS1"
+        ]
+      }
+    ],
+    "apparent_contradictions_resolved": [
+      {
+        "topic": "Historically self-consistent inventory vs current structural drift",
+        "disposition": "NOT_AN_ACTUAL_CONTRADICTION",
+        "reason": "The claims apply to different observation times; historical integrity does not imply current identity or topology equivalence.",
+        "evidence": [
+          "M18_COVER_Q1",
+          "M18_ARQ_Q3",
+          "M18_INNOV_Q3"
+        ]
+      },
+      {
+        "topic": "All 21 trigger bindings still mapped vs six historical callee tokens missing from current function bodies",
+        "disposition": "NOT_AN_ACTUAL_CONTRADICTION",
+        "reason": "Trigger binding identity and internal function-body call relations are different topology layers.",
+        "evidence": [
+          "M18_ARQ_Q4",
+          "M18_INNOV_Q3"
+        ]
+      },
+      {
+        "topic": "SOAK receipt verified vs performance/current CP2 unresolved",
+        "disposition": "NOT_AN_ACTUAL_CONTRADICTION",
+        "reason": "Receipt 38 certifies historical SOAK quality conditions, not stage latency or current CP2 functional authority.",
+        "evidence": [
+          "M18_AUTH_Q2",
+          "M18_PERF_Q2"
+        ]
+      },
+      {
+        "topic": "5.13.1 frequently slower on overlapping screens vs causal regression not proven",
+        "disposition": "NOT_AN_ACTUAL_CONTRADICTION",
+        "reason": "Observed direction is compatible with multiple causes because revision, time, sample size, screen mix and zero-duration semantics are not controlled.",
+        "evidence": [
+          "M18_PERF_Q9",
+          "M18_PERF_Q10",
+          "M18_INNOV_Q5"
+        ]
+      },
+      {
+        "topic": "Function EXECUTE denied vs evidence remains readable",
+        "disposition": "NOT_AN_ACTUAL_CONTRADICTION",
+        "reason": "EXECUTE on fn_input_readiness_run_is_current and SELECT on evidence tables are distinct privileges.",
+        "evidence": [
+          "M18_AUTH_Q4",
+          "M18_AUTH_Q6"
+        ]
+      }
+    ],
+    "actual_unresolved_contradictions": [],
+    "causal_model": {
+      "proven_root_cause": false,
+      "supported_risk_families": [
+        "Historical snapshot promoted beyond its observation time",
+        "Post-snapshot function/path evolution",
+        "Unqualified or ambiguous callee identity",
+        "Unauthorized CP2 readback path",
+        "Performance cohort/revision mismatch"
+      ],
+      "not_proven": [
+        "A single Curator defect",
+        "A single Validator defect",
+        "A causal performance regression in 5.13.1",
+        "Runtime execution of current complement/path-shape candidates",
+        "Canonical historical definition_md5 construction method"
+      ],
+      "negative_falsifiers": [
+        "Most historical caller names did not disappear",
+        "Broad trigger rebinding is not observed in the 21 historical bindings",
+        "Zero function stats do not prove zero usage",
+        "SOAK verification does not prove performance",
+        "Name-pattern complement candidates are not promoted to callers",
+        "42501 is not classified as functional failure"
+      ]
+    },
+    "candidate_repairs": [
+      {
+        "action": "Qualify the six ambiguous callee names by schema/object identity and classify the six changed lexical edges plus 23 path-shape candidates by actual references/lifecycle provenance.",
+        "status": "PROPOSED_NOT_IMPLEMENTED"
+      },
+      {
+        "action": "Construct a same-screen, same-path matched performance cohort with explicit treatment of exact-zero durations before accepting any optimization claim.",
+        "status": "PROPOSED_NOT_IMPLEMENTED"
+      },
+      {
+        "action": "Reconstruct CP2 through authorized SELECT-only evidence sources and historical receipt 38 without EXECUTE elevation.",
+        "status": "PROPOSED_NOT_IMPLEMENTED"
+      }
+    ],
+    "chosen_repair": {
+      "state": "VERIFY_FIRST",
+      "implemented": false,
+      "reason": "Structural/currentness and performance risks are demonstrated, but a causal functional defect and a safe production repair are not.",
+      "next_safe_step": "Targeted identity/reference classification plus matched performance and authorized CP2 readback; only then decide whether code/runtime repair is justified."
+    },
+    "rejected_alternatives": [
+      "Treat the 38-row historical snapshot as complete live coverage",
+      "Add all 64 current name-pattern functions to the caller denominator",
+      "Infer runtime execution from lexical references",
+      "Treat 5.13.1 aggregate timing as a causal benchmark without cohort control",
+      "Elevate EXECUTE to bypass 42501",
+      "Invent BARINEL probabilities without a qualified spectrum",
+      "Apply a production repair from this diagnostic run"
+    ],
+    "omissions_searched": [
+      "post-snapshot caller-definition drift",
+      "trigger rebinding",
+      "callee schema ambiguity",
+      "current complement/path-shape candidates",
+      "historical/current provenance boundaries",
+      "performance timing source availability",
+      "exact-zero duration semantics",
+      "revision and screen-population confounding",
+      "authority and privilege boundaries",
+      "external versus SQL identity domains"
+    ],
+    "unresolved": [
+      "Canonical historical definition_md5 construction method",
+      "Runtime execution of new path-shape candidates",
+      "Historical schema identity for six currently ambiguous callee tokens",
+      "Whether the six changed lexical edges materially change runtime behavior",
+      "Semantic meaning of exact-zero durations across revisions",
+      "Matched causal performance effect of 5.13.1",
+      "Equivalent qualified CP2 functional evidence under authorized SELECT-only path"
+    ],
+    "constraints_preserved": [
+      "READ_ONLY diagnostic work",
+      "No production/runtime edits",
+      "P0 historical cutoff preserved in claims",
+      "Current observations explicitly separated from P0 evidence",
+      "Five role reports frozen before synthesis",
+      "No role report read another role report before freeze",
+      "No cross-method result used as M18 input",
+      "No autonomous independent-agent claim",
+      "No external evaluation"
+    ],
+    "non_isolation_risk": "Five specialist reports were executed sequentially as role-bound passes in one shared model context. Their source observations and frozen artifacts are distinct and none used another role report as input before freeze, but cognitive independence comparable to separate autonomous agents is not demonstrated.",
+    "performance_cost": {
+      "role_queries": 34,
+      "transport_elapsed_ms": "NOT_MEASURED",
+      "possible_source_reuse": "NOT_QUANTIFIED"
+    },
+    "final_method_status": "B_D_FIVE_ROLE_REPORTS_AND_SYNTHESIS_MATERIAL_ONLY_NOT_YET_GOVERNED_DONE"
+  },
+  "source_queries_total": 34,
+  "negative_tests_total": 19,
+  "gde_conflict_sets_total": 11,
+  "barinel_calibrated": false,
+  "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+  "synthesis_claims": 7,
+  "synthesis_reconciled_apparent_contradictions": 5,
+  "final_method_state": "B_D_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false,
+    "leakage_risk": "Shared model cognition not isolated; role reports were frozen before synthesis and did not consume peer reports, but cognitive independence comparable to separate autonomous agents is not demonstrated."
+  },
+  "limits": [
+    "Historical P0 and explicit current readbacks are separated by claim",
+    "Historical definition_md5 construction remains unknown",
+    "Lexical structure is not runtime execution proof",
+    "Performance cohorts are not causally equivalent",
+    "BARINEL probabilities not calibrated",
+    "No product/runtime repair was applied"
+  ]
+}
