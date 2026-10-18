@@ -42,6 +42,8 @@ def score(candidate:str, responses:list, cases:dict, mod):
     if not isinstance(responses,list) or any(not isinstance(r,dict) for r in responses):
         return {"candidate":candidate,"status":"INVALID_RESPONSES","errors":["RESPONSES_NOT_OBJECT_ARRAY"]}
     ids=[r.get("id") for r in responses]
+    if any(not isinstance(v,str) for v in ids):
+        return {"candidate":candidate,"status":"INVALID_RESPONSES","errors":["RESPONSE_ID_NOT_STRING"]}
     seen=Counter(ids)
     expected=set(cases)
     got=set(ids)
@@ -90,17 +92,20 @@ def selftest(cases,mod):
     wrong=score("A",[bad],{"R08":c},mod)
     duplicate=score("A",[answer,answer],{"R08":c},mod)
     missing=score("A",[],{"R08":c},mod)
+    malformed=score("A",[dict(answer,id=["R08"])],{"R08":c},mod)
     valid=(ok["shape_valid"]==1 and ok["architectural_verdict"]=="NOT_DETERMINABLE_FROM_SHAPE"
            and not ok["real_responsible_attested"]
            and wrong["shape_valid"]==0 and any("REQUEST_SHA_MISMATCH" in e for e in wrong["errors"])
            and any("DUPLICATE_ID" in e for e in duplicate["errors"])
-           and any("MISSING" in e for e in missing["errors"]))
+           and any("MISSING" in e for e in missing["errors"])
+           and malformed["status"]=="INVALID_RESPONSES")
     print(json.dumps({"status":"SELFTEST_PASS" if valid else "SELFTEST_FAIL",
        "controls":{"fixture_reference_never_attested":not ok["real_responsible_attested"],
                    "frozen_shape_does_not_select_winner":ok["architectural_verdict"]=="NOT_DETERMINABLE_FROM_SHAPE",
                    "bad_sha_rejected":wrong["shape_valid"]==0,
                    "duplicate_rejected":any("DUPLICATE_ID" in e for e in duplicate["errors"]),
-                   "missing_rejected":any("MISSING" in e for e in missing["errors"])},
+                   "missing_rejected":any("MISSING" in e for e in missing["errors"]),
+                   "malformed_id_rejected":malformed["status"]=="INVALID_RESPONSES"},
        "real_architecture_results":"NONE"},ensure_ascii=False))
     return 0 if valid else 3
 
