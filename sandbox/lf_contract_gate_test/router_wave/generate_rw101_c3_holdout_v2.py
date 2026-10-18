@@ -103,6 +103,11 @@ def build(seed:str):
                 "discovery_can_be_terminal_only_if_route_unresolved":"DISCOVER" in seq,
                 "clarification_requires_material_discriminator":"CLARIFY" in seq,
                 "clarification_reason":clarify,
+                "clarification_discriminator_contract":({
+                    "target_goals":list(unresolved),
+                    "materiality_basis":"RESPONSIBLE_ROUTE_DEPENDS_ON_RESOLUTION",
+                    "resolution_type":"EXACT_REFERENT_IDENTITY",
+                } if "CLARIFY" in seq else None),
                 "known_responsible_must_not_stall":family not in ("FUTURE_CAPABILITY","PARTIAL_PLUS_QUESTION"),
                 "partial_progress_required":"CLARIFY" in seq and len(seq)>1,
                 "partial_progress_completed_goals":completed,
