@@ -1,0 +1,147 @@
+{
+  "schema": "PE10_M19_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M19",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M19_ARQ_Q1",
+      "sql": "SELECT id,created_at,payload->>'occurred_at' occurred_at,payload->>'sql_caller_count' declared_callers,jsonb_array_length(payload->'sql_callers') callers,payload->'scope_guards' scope_guards,payload->'historical_provenance_only' historical_limits FROM public.lf_eventos WHERE id=20161;",
+      "result": "event 20161 at 2026-10-04; declared/actual callers=38; scope guards say no production/runtime/caller changes by that snapshot; historical note says router 5.12 vs governed readiness 5.13 and old contract existence is not usage evidence."
+    },
+    {
+      "id": "M19_ARQ_Q2",
+      "sql": "WITH e AS (SELECT payload FROM public.lf_eventos WHERE id=20161), h AS (SELECT x->>'caller' caller,x->>'definition_md5' historical_md5 FROM e,jsonb_array_elements(payload->'sql_callers') x), l AS (SELECT n.nspname||'.'||p.proname caller,md5(p.prosrc) current_md5 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace) SELECT count(*) total,count(*) FILTER(WHERE l.caller IS NULL) absent_current,count(*) FILTER(WHERE l.caller IS NOT NULL AND h.historical_md5=l.current_md5) empirical_match,count(*) FILTER(WHERE l.caller IS NOT NULL AND h.historical_md5<>l.current_md5) empirical_changed FROM h LEFT JOIN l USING(caller);",
+      "result": "38 total; 0 absent current names; 16 empirical md5(prosrc) matches; 22 empirical changes."
+    }
+  ],
+  "atms": {
+    "evidence": [
+      {
+        "id": "E_ARQ_HIST",
+        "source": "public.lf_eventos/20161",
+        "time": "2026-10-04T05:14:40.880842Z",
+        "identity": "event_id=20161",
+        "assumptions": [
+          "snapshot describes its observation time only"
+        ],
+        "supports": [
+          "C_ARQ_HIST_INTEGRITY"
+        ]
+      },
+      {
+        "id": "E_ARQ_CURR",
+        "source": "pg_proc current readback",
+        "time": "CURRENT_READBACK",
+        "identity": "schema.function name + md5(prosrc)",
+        "assumptions": [
+          "empirical md5(prosrc) is a comparison, not proof of historical hash recipe"
+        ],
+        "supports": [
+          "C_ARQ_CURRENT_DRIFT"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_ARQ_HIST_INTEGRITY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_ARQ_HIST"
+          ]
+        ]
+      },
+      {
+        "id": "C_ARQ_CURRENT_DRIFT",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_ARQ_HIST",
+            "E_ARQ_CURR"
+          ]
+        ]
+      },
+      {
+        "id": "C_ARQ_LIVE_CERTIFIED",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_ARQ_1",
+        "set": [
+          "ASSUME_P0_IS_TIMELESS_CURRENT"
+        ],
+        "reason": "historical_provenance_only explicitly records drift"
+      },
+      {
+        "id": "N_ARQ_2",
+        "set": [
+          "ASSUME_MD5_PROSRC_IS_CANONICAL_HISTORICAL_HASH"
+        ],
+        "reason": "hash recipe not demonstrated"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_ARQ_HIST",
+        "invalidates": [
+          "C_ARQ_HIST_INTEGRITY",
+          "C_ARQ_CURRENT_DRIFT"
+        ]
+      },
+      {
+        "withdraw": "E_ARQ_CURR",
+        "invalidates": [
+          "C_ARQ_CURRENT_DRIFT"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M19_ARQ_F1",
+      "classification": "MEASURED",
+      "claim": "The historical snapshot is valid only as-of its own observation and cannot by itself certify current caller definitions.",
+      "evidence": [
+        "M19_ARQ_Q1",
+        "M19_ARQ_Q2"
+      ]
+    },
+    {
+      "id": "M19_ARQ_F2",
+      "classification": "MEASURED_WITH_LIMIT",
+      "claim": "22/38 caller names differ by empirical current md5(prosrc); historical hash construction remains UNKNOWN.",
+      "evidence": [
+        "M19_ARQ_Q2"
+      ]
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M19_ARQ_N1",
+      "hypothesis": "P0 proves live-current architecture.",
+      "result": "REJECTED_BY_ATMS_NOGOOD"
+    },
+    {
+      "id": "M19_ARQ_N2",
+      "hypothesis": "Current absence explains drift.",
+      "result": "FALSIFIED: 0 absent names"
+    }
+  ],
+  "unresolved": [
+    "historical definition_md5 recipe",
+    "runtime meaning of changed definitions"
+  ],
+  "role_output_frozen": true
+}
