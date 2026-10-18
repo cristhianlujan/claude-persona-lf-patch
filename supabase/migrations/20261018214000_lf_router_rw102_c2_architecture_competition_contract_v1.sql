@@ -62,7 +62,7 @@ BEGIN
      OR v_compiled->>'action_kind' IS DISTINCT FROM 'BOUNDED_CHECKPOINT_TEST_AUTHORING'
      OR v_contract->>'status' IS DISTINCT FROM 'READY'
      OR v_contract->>'mode' IS DISTINCT FROM 'EXPLICIT_PASS_WHEN_SUBSET'
-     OR v_packet->>'status' IS DISTINCT FROM 'BLOCK_RUN_TEST_CI_BINDING_INCOMPLETE'
+     OR v_packet->>'status' IS DISTINCT FROM 'BLOCK_RUN_TEST_EXECUTOR_UNRESOLVED'
   THEN RAISE EXCEPTION 'RW102_C2_CONTRACT_COMPILE_STATE_UNEXPECTED:spec=% contract=% packet=%',
        v_compiled::text,v_contract::text,v_packet::text; END IF;
 
