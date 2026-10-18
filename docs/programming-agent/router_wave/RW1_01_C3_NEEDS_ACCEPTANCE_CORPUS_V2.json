@@ -29,7 +29,11 @@
     "synthetic_context_fixtures_are_not_live_execution_evidence": true,
     "n01_n10_multi_case_traceability": true,
     "v1_holdout_h01_h12_burned": true,
-    "new_holdout_must_use_secret_seed_after_source_freeze": true
+    "new_holdout_must_use_secret_seed_after_source_freeze": true,
+    "unresolved_capability_must_not_progress": true,
+    "response_schema_fail_closed": true,
+    "responsibility_goal_binding_exact": true,
+    "partial_clarification_goal_binding_required": true
   },
   "requirements": [
     "N01",
@@ -1292,7 +1296,6 @@
       "oracle": {
         "acceptable_next_steps": [
           "DISCOVER",
-          "DERIVE",
           "CAPABILITY_GAP"
         ],
         "must_preserve_literal": true,
@@ -1314,38 +1317,17 @@
             "DISCOVER"
           ],
           [
-            "DERIVE"
-          ],
-          [
             "CAPABILITY_GAP"
           ]
         ],
-        "responsibility_expectations": [
-          {
-            "goal": "__route__",
-            "responsibility_ref": "fixture://rw101-v2/R20/responsibility/1",
-            "authority_evidence_ref": "fixture://rw101-v2/R20/authority/1",
-            "context_evidence_refs": [
-              "fixture://rw101-v2/R20/context/1"
-            ]
-          }
-        ],
+        "responsibility_expectations": [],
         "partial_progress_required": false,
         "partial_progress_completed_goals": [],
         "partial_progress_unresolved_goals": []
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
       "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
-      "responsibility_fixture": [
-        {
-          "goal": "__route__",
-          "responsibility_ref": "fixture://rw101-v2/R20/responsibility/1",
-          "authority_evidence_ref": "fixture://rw101-v2/R20/authority/1",
-          "context_evidence_refs": [
-            "fixture://rw101-v2/R20/context/1"
-          ]
-        }
-      ]
+      "responsibility_fixture": []
     },
     {
       "id": "R21",
@@ -1404,7 +1386,6 @@
       ],
       "oracle": {
         "acceptable_next_steps": [
-          "COMPOSE",
           "DISCOVER",
           "CAPABILITY_GAP"
         ],
@@ -1424,41 +1405,20 @@
         "clarification_requires_material_discriminator": false,
         "acceptable_next_step_sequences": [
           [
-            "COMPOSE"
-          ],
-          [
             "DISCOVER"
           ],
           [
             "CAPABILITY_GAP"
           ]
         ],
-        "responsibility_expectations": [
-          {
-            "goal": "__route__",
-            "responsibility_ref": "fixture://rw101-v2/R22/responsibility/1",
-            "authority_evidence_ref": "fixture://rw101-v2/R22/authority/1",
-            "context_evidence_refs": [
-              "fixture://rw101-v2/R22/context/1"
-            ]
-          }
-        ],
+        "responsibility_expectations": [],
         "partial_progress_required": false,
         "partial_progress_completed_goals": [],
         "partial_progress_unresolved_goals": []
       },
       "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
       "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
-      "responsibility_fixture": [
-        {
-          "goal": "__route__",
-          "responsibility_ref": "fixture://rw101-v2/R22/responsibility/1",
-          "authority_evidence_ref": "fixture://rw101-v2/R22/authority/1",
-          "context_evidence_refs": [
-            "fixture://rw101-v2/R22/context/1"
-          ]
-        }
-      ]
+      "responsibility_fixture": []
     },
     {
       "id": "R23",
