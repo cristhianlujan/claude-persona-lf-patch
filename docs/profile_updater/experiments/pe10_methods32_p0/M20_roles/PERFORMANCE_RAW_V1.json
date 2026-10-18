@@ -1,0 +1,185 @@
+{
+  "schema": "PE10_M20_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M20_PERF_Q1",
+      "sql": "SELECT current_setting('track_functions') track_functions,count(*) FILTER(WHERE s.funcid IS NOT NULL) stats_rows,count(*) FILTER(WHERE s.calls>0) positive_calls FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace LEFT JOIN pg_stat_user_functions s ON s.funcid=p.oid WHERE (n.nspname||'.'||p.proname) ~ 'input_governance_(curator|validator)';",
+      "result": "track_functions=none; stats_rows=0; positive_calls=0."
+    },
+    {
+      "id": "M20_PERF_Q2",
+      "sql": "SELECT contract_revision,count(*) FILTER(WHERE status='COMPLETED') completed,count(*) FILTER(WHERE status='COMPLETED' AND curator_duration_ms=0) curator_zero,count(*) FILTER(WHERE status='COMPLETED' AND validator_duration_ms=0) validator_zero,percentile_cont(0.5) WITHIN GROUP (ORDER BY curator_duration_ms) FILTER(WHERE status='COMPLETED' AND curator_duration_ms>0) curator_p50_positive,percentile_cont(0.5) WITHIN GROUP (ORDER BY validator_duration_ms) FILTER(WHERE status='COMPLETED' AND validator_duration_ms>0) validator_p50_positive FROM programacion.input_readiness_runs WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' AND contract_revision IN('5.13','5.13.1') GROUP BY contract_revision ORDER BY contract_revision;",
+      "result": "5.13: completed86, curator_zero3, validator_zero11, positive p50 23915/69597 ms. 5.13.1: completed20, curator_zero6, validator_zero5, positive p50 60257.5/246293 ms."
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "PERF_CS1",
+        "observation": "function stats absent under track_functions=none",
+        "components": [
+          "instrumentation_disabled",
+          "zero_usage_inference"
+        ]
+      },
+      {
+        "id": "PERF_CS2",
+        "observation": "5.13 and 5.13.1 positive stage medians differ with different sample/zero cohorts",
+        "components": [
+          "revision_effect",
+          "cohort_equivalence",
+          "zero_duration_semantics"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      {
+        "id": "HS1",
+        "components": [
+          "instrumentation_disabled"
+        ],
+        "open_world_alternatives": [
+          "zero_usage_inference"
+        ]
+      },
+      {
+        "id": "HS2",
+        "components": [
+          "revision_effect"
+        ],
+        "open_world_alternatives": [
+          "cohort_equivalence",
+          "zero_duration_semantics"
+        ]
+      }
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "reason": "No justified executable pass/fail spectrum with priors for component-health likelihood."
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "selected_next_query": "Build same-screen/same-path matched cohorts and explicitly classify zero durations."
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "pg_stat/current_setting",
+        "time": "CURRENT",
+        "assumptions": [
+          "missing stats are not zero usage"
+        ],
+        "supports": [
+          "C1_STATS_UNAVAILABLE"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "input_readiness_runs pre-cutoff",
+        "time": "BEFORE_2026-10-15",
+        "assumptions": [
+          "revision cohorts require equivalence proof"
+        ],
+        "supports": [
+          "C2_REVISION_VARIATION"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C1_STATS_UNAVAILABLE",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C2_REVISION_VARIATION",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C3_IMPROVEMENT",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "ZERO_STATS_EQUALS_ZERO_USAGE"
+        ],
+        "reason": "track_functions=none"
+      },
+      {
+        "set": [
+          "POOL_REVISIONS"
+        ],
+        "reason": "cohort equivalence not established"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C1_STATS_UNAVAILABLE"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C2_REVISION_VARIATION"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_PERF_F1",
+      "classification": "MEASURED",
+      "claim": "Function-level stats cannot support speed/usage claims under track_functions=none."
+    },
+    {
+      "id": "M20_PERF_F2",
+      "classification": "MEASURED_WITH_COHORT_LIMIT",
+      "claim": "5.13.1 has larger positive p50 stage durations than 5.13, but causal regression is not established."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M20_PERF_N1",
+      "hypothesis": "No pg_stat rows prove no calls",
+      "result": "FALSIFIED_AS_INFERENCE"
+    },
+    {
+      "id": "M20_PERF_N2",
+      "hypothesis": "5.13 and 5.13.1 are directly equivalent cohorts",
+      "result": "NOT_PROVEN"
+    }
+  ],
+  "unresolved": [
+    "zero-duration semantics",
+    "causal matched performance effect"
+  ],
+  "role_output_frozen": true
+}
