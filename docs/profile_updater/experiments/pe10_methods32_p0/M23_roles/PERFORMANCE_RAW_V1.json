@@ -1,0 +1,169 @@
+{
+  "schema": "PE10_M23_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M23",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M23_PERF_Q1",
+      "sql": "SELECT status,count(*) n,count(*) FILTER(WHERE curator_duration_ms IS NULL) c_null,count(*) FILTER(WHERE curator_duration_ms=0) c_zero,count(*) FILTER(WHERE curator_duration_ms>0) c_pos,count(*) FILTER(WHERE validator_duration_ms IS NULL) v_null,count(*) FILTER(WHERE validator_duration_ms=0) v_zero,count(*) FILTER(WHERE validator_duration_ms>0) v_pos FROM programacion.input_readiness_runs WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' GROUP BY status ORDER BY status;",
+      "result": "BLOCKED20: curator 5 NULL/0 zero/15 positive, validator20 NULL; COMPLETED233: curator0/75/158, validator0/99/134; CURATING2: both stages NULL."
+    },
+    {
+      "id": "M23_PERF_Q2",
+      "sql": "SELECT id,created_at,payload->>'verification_status' verification_status,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38;",
+      "result": "receipt38 VERIFIED; screens13; families47; false_pass0; d4=0."
+    }
+  ],
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E_PERF_RUNS",
+        "source": "programacion.input_readiness_runs",
+        "time": "rows before 2026-10-15",
+        "identity": "status x duration partition",
+        "assumptions": [
+          "NULL, zero and positive are distinct"
+        ],
+        "supports": [
+          "C_PERF_PARTITIONS"
+        ]
+      },
+      {
+        "id": "E_PERF_SOAK",
+        "source": "programacion.provenance_receipts/38",
+        "time": "2026-10-07T16:01:00.760627Z",
+        "identity": "SOAK_OBSERVATION_HISTORY_V2",
+        "assumptions": [
+          "receipt scope is historical SOAK quality, not latency"
+        ],
+        "supports": [
+          "C_PERF_SOAK"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_PERF_PARTITIONS",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_PERF_RUNS"
+          ]
+        ]
+      },
+      {
+        "id": "C_PERF_SOAK",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_PERF_SOAK"
+          ]
+        ]
+      },
+      {
+        "id": "C_PERF_SPEED_PROVEN",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_PERF_1",
+        "set": [
+          "NULL_EQUALS_ZERO_DURATION"
+        ],
+        "reason": "observed partitions distinguish them"
+      },
+      {
+        "id": "N_PERF_2",
+        "set": [
+          "SOAK_RECEIPT_EQUALS_LATENCY_PROOF"
+        ],
+        "reason": "receipt has quality-history fields, not latency"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_PERF_RUNS",
+        "invalidates": [
+          "C_PERF_PARTITIONS"
+        ],
+        "preserves": [
+          "C_PERF_SOAK"
+        ]
+      },
+      {
+        "withdraw": "E_PERF_SOAK",
+        "invalidates": [
+          "C_PERF_SOAK"
+        ],
+        "preserves": [
+          "C_PERF_PARTITIONS"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "PERF_INV1",
+        "rule": "for each status/stage n=NULL+zero+positive",
+        "observed": "all status partitions reconcile",
+        "valid_case": "COMPLETED curator 233=0+75+158",
+        "counterexample": "BLOCKED validator NULL20 treated as zero",
+        "status": "PASS"
+      },
+      {
+        "id": "PERF_INV2",
+        "rule": "SOAK verification does not mutate into performance evidence",
+        "observed": "receipt38 contains screens/families/false-pass/D4 but no latency metric",
+        "valid_case": "quality claim only",
+        "counterexample": "derive speed from receipt38",
+        "status": "PASS_AS_SCOPE_GUARD"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M23_PERF_F1",
+      "classification": "MEASURED",
+      "claim": "Duration evidence reconciles only as three distinct partitions: NULL, zero and positive."
+    },
+    {
+      "id": "M23_PERF_F2",
+      "classification": "MEASURED_SCOPE",
+      "claim": "Receipt38 supports SOAK quality history and cannot support a latency claim."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M23_PERF_N1",
+      "hypothesis": "NULL durations can be normalized to zero",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M23_PERF_N2",
+      "hypothesis": "SOAK receipt proves performance",
+      "result": "FALSIFIED"
+    }
+  ],
+  "unresolved": [
+    "meaning of exact-zero completed durations",
+    "matched causal performance effect"
+  ],
+  "role_output_frozen": true
+}
