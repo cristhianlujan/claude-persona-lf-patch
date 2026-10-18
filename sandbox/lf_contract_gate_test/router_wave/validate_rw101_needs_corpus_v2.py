@@ -35,6 +35,9 @@ DISCOVERY_KEYS = {
     "registered_discovery_capability_ref","catalog_revision_ref","unresolved_route_reason",
 }
 PARTIAL_PROGRESS_KEYS = {"completed_goals","unresolved_goals"}
+CLARIFICATION_DISCRIMINATOR_KEYS = {
+    "target_goals","materiality_basis","resolution_type",
+}
 
 TOP_LEVEL_COLLECTION_FIELDS = {
     "next_steps","selected_effect_targets","derived_targets","composed_targets",
@@ -121,6 +124,26 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
         has_clarify=any("CLARIFY" in seq for seq in seqs if isinstance(seq,list))
         if o.get("clarification_requires_material_discriminator") is not has_clarify:
             errors.append(f"{cid}:CLARIFICATION_CONTRACT_MISMATCH")
+        discriminator_contract=o.get("clarification_discriminator_contract")
+        if has_clarify:
+            if not isinstance(discriminator_contract,dict):
+                errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_CONTRACT_REQUIRED")
+                discriminator_contract={}
+            elif set(discriminator_contract)!=CLARIFICATION_DISCRIMINATOR_KEYS:
+                errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_CONTRACT_SHAPE_INVALID")
+            dtargets=discriminator_contract.get("target_goals")
+            if not isinstance(dtargets,list) or not dtargets or any(not isinstance(x,str) or not x.strip() for x in dtargets):
+                errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_TARGETS_INVALID")
+                dtargets=[]
+            for target in dtargets:
+                if target not in literal:
+                    errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_TARGET_NOT_SOURCE_BOUND")
+            if discriminator_contract.get("materiality_basis")!="RESPONSIBLE_ROUTE_DEPENDS_ON_RESOLUTION":
+                errors.append(f"{cid}:CLARIFICATION_MATERIALITY_BASIS_INVALID")
+            if discriminator_contract.get("resolution_type")!="EXACT_REFERENT_IDENTITY":
+                errors.append(f"{cid}:CLARIFICATION_RESOLUTION_TYPE_INVALID")
+        elif discriminator_contract is not None:
+            errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_WITHOUT_CLARIFY")
         if o.get("partial_progress_required"):
             comp=_arr(o.get("partial_progress_completed_goals"))
             unr=_arr(o.get("partial_progress_unresolved_goals"))
@@ -128,6 +151,10 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
                 errors.append(f"{cid}:INVALID_PARTIAL_PROGRESS_ORACLE")
             if not set(comp+unr).issubset(set(goals)):
                 errors.append(f"{cid}:PARTIAL_PROGRESS_GOAL_OUTSIDE_LITERAL_GOALS")
+            if has_clarify and isinstance(discriminator_contract,dict):
+                dtargets=_arr(discriminator_contract.get("target_goals"))
+                if len(dtargets)!=len(unr) or set(dtargets)!=set(unr):
+                    errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_TARGETS_NOT_EXACT_UNRESOLVED_GOALS")
             if not any(("CLARIFY" in seq and any(s in PROGRESS_STEPS for s in seq)) for seq in seqs):
                 errors.append(f"{cid}:PARTIAL_PROGRESS_WITHOUT_PROGRESS_PLUS_CLARIFY_SEQUENCE")
         fixture=_arr(c.get("responsibility_fixture"))
@@ -308,10 +335,26 @@ def check_result(case: dict, answer: dict) -> list[str]:
     if "CLARIFY" in seq:
         q=answer.get("clarification_question")
         discriminator=answer.get("material_route_discriminator")
+        expected_discriminator=o.get("clarification_discriminator_contract")
         if not isinstance(q,str) or not q.strip():
             errors.append(f"{cid}:CLARIFICATION_WITHOUT_QUESTION")
-        if not isinstance(discriminator,str) or not discriminator.strip():
-            errors.append(f"{cid}:QUESTION_WITHOUT_ROUTE_DISCRIMINATOR")
+        if not isinstance(discriminator,dict):
+            errors.append(f"{cid}:QUESTION_WITHOUT_STRUCTURED_ROUTE_DISCRIMINATOR")
+            discriminator={}
+        else:
+            nested_unknown=_unknown_keys(discriminator,CLARIFICATION_DISCRIMINATOR_KEYS)
+            if nested_unknown:
+                errors.append(f"{cid}:UNKNOWN_CLARIFICATION_DISCRIMINATOR_FIELDS:{','.join(nested_unknown)}")
+            if not isinstance(discriminator.get("target_goals"),list):
+                errors.append(f"{cid}:CLARIFICATION_DISCRIMINATOR_TARGETS_NOT_ARRAY")
+        if discriminator!=expected_discriminator:
+            errors.append(f"{cid}:MATERIAL_ROUTE_DISCRIMINATOR_NOT_EXACT_ORACLE")
+        expected_discriminator_targets=_arr(
+            expected_discriminator.get("target_goals") if isinstance(expected_discriminator,dict) else []
+        )
+        question_text=_norm(q or "")
+        if expected_discriminator_targets and not all(_norm(goal) in question_text for goal in expected_discriminator_targets):
+            errors.append(f"{cid}:CLARIFICATION_QUESTION_NOT_BOUND_TO_DISCRIMINATOR_TARGET")
         if answer.get("clarification_reason")!=o.get("clarification_reason"):
             errors.append(f"{cid}:CLARIFICATION_REASON_NOT_SUPPORTED_BY_FIXTURE")
         if o.get("partial_progress_required"):
@@ -336,8 +379,7 @@ def check_result(case: dict, answer: dict) -> list[str]:
                 targets=_arr(answer.get("clarification_target_goals"))
                 if len(targets)!=len(expected_pending) or set(targets)!=expected_pending:
                     errors.append(f"{cid}:CLARIFICATION_TARGET_GOALS_MISMATCH")
-                bound_text=_norm((q or "")+" "+(discriminator or ""))
-                if expected_pending and not any(_norm(goal) in bound_text for goal in expected_pending):
+                if expected_pending and not all(_norm(goal) in question_text for goal in expected_pending):
                     errors.append(f"{cid}:CLARIFICATION_TEXT_NOT_BOUND_TO_UNRESOLVED_GOAL")
     else:
         if answer.get("clarification_question") or answer.get("material_route_discriminator") or answer.get("clarification_target_goals"):
@@ -384,7 +426,7 @@ def valid_answer(case: dict) -> dict:
         target=unresolved[0] if unresolved else "referente"
         ans.update(
             clarification_question=f"¿Cuál es el referente exacto para {target}?",
-            material_route_discriminator=f"identidad exacta de {target}",
+            material_route_discriminator=json.loads(json.dumps(o.get("clarification_discriminator_contract"))),
             clarification_reason=o.get("clarification_reason"),
         )
         if o.get("partial_progress_required"):
@@ -439,8 +481,18 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
     probes.append(("clarification_missing_target_goals",bad))
     bad=json.loads(json.dumps(a)); bad["clarification_target_goals"]=["login"]
     probes.append(("clarification_wrong_target_goal",bad))
-    bad=json.loads(json.dumps(a)); bad["clarification_question"]="¿Cuál es tu color favorito?"; bad["material_route_discriminator"]="color favorito"
+    bad=json.loads(json.dumps(a)); bad["clarification_question"]="¿Cuál es tu color favorito?"
     probes.append(("clarification_text_unbound",bad))
+    bad=json.loads(json.dumps(a)); bad["material_route_discriminator"]={
+        "target_goals":list(bad["clarification_target_goals"]),
+        "materiality_basis":"TARGET_TEXT_MENTIONED",
+        "resolution_type":"EXACT_REFERENT_IDENTITY",
+    }
+    probes.append(("clarification_nonmaterial_discriminator",bad))
+    bad=json.loads(json.dumps(a)); bad["material_route_discriminator"]={
+        "target_goals":list(bad["clarification_target_goals"]),
+    }
+    probes.append(("clarification_incomplete_discriminator_contract",bad))
     bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["covered_goals"].append("la otra pantalla")
     probes.append(("responsibility_claims_unresolved_goal",bad))
 
@@ -485,7 +537,7 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
         "status":"SELF_TEST_V2_HARDENING_PASS",
         "negative_probes":len(probes),
         "good_cases":len(cases),
-        "blockers_covered":["B1","B2","B3","B4","B5","V3-B3","V3-B4"],
+        "blockers_covered":["B1","B2","B3","B4","B5","V3-B3","V3-B4","V4-CLARIFICATION-MATERIALITY"],
         "shape_only":True,
     }
 
