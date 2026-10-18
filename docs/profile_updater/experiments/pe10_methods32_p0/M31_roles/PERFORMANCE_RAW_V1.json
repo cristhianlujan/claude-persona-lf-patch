@@ -1,0 +1,300 @@
+{
+  "schema": "PE10_M31_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M31",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M31-PERF-F01",
+      "claim": "Pre-cut Curator duration partitions 255=7 null+75 zero+173 positive; Validator partitions 255=22+99+134.",
+      "evidence_refs": [
+        "M31_PERF_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M31-PERF-F02",
+      "claim": "Positive-only p50/p90 are Curator 28,148/115,850.6 ms and Validator 78,758.5/257,428.6 ms.",
+      "evidence_refs": [
+        "M31_PERF_Q02"
+      ],
+      "confidence": "HIGH_FOR_DESCRIPTION"
+    },
+    {
+      "id": "M31-PERF-F03",
+      "claim": "Chunk component-sum relation partitions 493 into 385 greater, 10 equal and 98 lower than duration_ms.",
+      "evidence_refs": [
+        "M31_PERF_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M31-PERF-F04",
+      "claim": "All 6 direct requests have nonnegative e2e ordering and map to 5 distinct runs.",
+      "evidence_refs": [
+        "M31_PERF_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M31-PERF-F05",
+      "claim": "62 same-screen+same-source-snapshot pairs exist, but this does not establish matched intervention/workload equivalence.",
+      "evidence_refs": [
+        "M31_PERF_Q05"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "PERF-A1",
+          "text": "Null and zero duration semantics are unknown unless a timing contract defines them."
+        },
+        {
+          "id": "PERF-A2",
+          "text": "Chunk component timings may overlap or nest."
+        },
+        {
+          "id": "PERF-A3",
+          "text": "Same screen+snapshot is not sufficient to prove matched workload/intervention."
+        },
+        {
+          "id": "PERF-A4",
+          "text": "Many-to-one request/run mapping may represent reuse rather than defect."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Descriptive duration population is measurable",
+          "support": [
+            "M31_PERF_Q01",
+            "M31_PERF_Q02"
+          ],
+          "assumptions": [
+            "PERF-A1"
+          ]
+        },
+        {
+          "claim": "Naive stage additivity is unsafe",
+          "support": [
+            "M31_PERF_Q03"
+          ],
+          "assumptions": [
+            "PERF-A2"
+          ]
+        },
+        {
+          "claim": "Request ordering is nonnegative in observed rows",
+          "support": [
+            "M31_PERF_Q04"
+          ],
+          "assumptions": [
+            "PERF-A4"
+          ]
+        },
+        {
+          "claim": "Candidate matched pairs exist but causal matching is unproven",
+          "support": [
+            "M31_PERF_Q05"
+          ],
+          "assumptions": [
+            "PERF-A3"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "PERF-NG1",
+          "invalidates_if": "Timing contract proves null/zero semantics and component overlap.",
+          "invalidates_claims": [
+            "Any defect interpretation from current timing partitions"
+          ]
+        },
+        {
+          "id": "PERF-NG2",
+          "invalidates_if": "Candidate matched pairs differ in workload, revision, route or reuse.",
+          "invalidates_claims": [
+            "Any causal comparison from the 62 pairs"
+          ]
+        },
+        {
+          "id": "PERF-NG3",
+          "invalidates_if": "Many-to-one request/run linkage is documented reuse.",
+          "invalidates_claims": [
+            "Any mapping-defect interpretation"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "PERF-NG1",
+          "result": "Retain descriptive counts only."
+        },
+        {
+          "on": "PERF-NG2",
+          "result": "Downgrade matched-pair inference to descriptive."
+        },
+        {
+          "on": "PERF-NG3",
+          "result": "Retain reuse observation, remove defect implication."
+        }
+      ]
+    },
+    "C": {
+      "invariants": [
+        {
+          "id": "PERF-I1",
+          "type": "PARTITION",
+          "statement": "Curator total=null+zero+positive",
+          "observed": "255=7+75+173",
+          "status": "PASS"
+        },
+        {
+          "id": "PERF-I2",
+          "type": "PARTITION",
+          "statement": "Validator total=null+zero+positive",
+          "observed": "255=22+99+134",
+          "status": "PASS"
+        },
+        {
+          "id": "PERF-I3",
+          "type": "PARTITION",
+          "statement": "Chunk total=sum_gt+sum_eq+sum_lt",
+          "observed": "493=385+10+98",
+          "status": "PASS"
+        },
+        {
+          "id": "PERF-I4",
+          "type": "POSITIVE",
+          "statement": "finished_at>=requested_at for completed direct requests",
+          "observed": "6/6",
+          "status": "PASS"
+        },
+        {
+          "id": "PERF-I5",
+          "type": "NEGATIVE",
+          "statement": "Component sums are not generally additive.",
+          "observed": "Only 10/493 equal",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "PERF-MT1",
+          "transform": "Assume exclusive additive stages→three-way sum relation",
+          "observed_relation": "Equality only 10/493",
+          "result": "COUNTEREXAMPLE_FOUND"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "SQL set/count invariants directly executable."
+    },
+    "E": {
+      "state": "NEEDS_MORE_EVIDENCE",
+      "rationale": "Internal partitions are consistent, but clock semantics, overlap, reuse and causal matching remain unresolved.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Timing contract resolves null/zero/overlap semantics.",
+        "Controlled matched replay proves or excludes material regression."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Matched evidence proves attributable regression.",
+        "to_VERIFY_FIRST": "A bounded governed verification protocol is established.",
+        "to_NO_ACTION_SUPPORTED": "Matched complete evidence excludes material regression."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not infer causality from percentiles.",
+    "Do not assume null/zero semantics.",
+    "Do not assume additive stages.",
+    "Do not treat same screen+snapshot as complete matched cohort."
+  ],
+  "unresolved": [
+    "Timing semantics",
+    "Stage overlap",
+    "Request/run reuse",
+    "Matched intervention boundary"
+  ],
+  "next_safe_step": "Define canonical timing semantics and run matched verification before performance repair.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 4,
+    "invariants": 5,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M31_PERF_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "total": 255,
+        "curator_null": 7,
+        "curator_zero": 75,
+        "curator_positive": 173,
+        "validator_null": 22,
+        "validator_zero": 99,
+        "validator_positive": 134
+      }
+    },
+    {
+      "query_id": "M31_PERF_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "curator_p50_positive": 28148,
+        "curator_p90_positive": 115850.6,
+        "validator_p50_positive": 78758.5,
+        "validator_p90_positive": 257428.6
+      }
+    },
+    {
+      "query_id": "M31_PERF_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "total": 493,
+        "sum_gt": 385,
+        "sum_eq": 10,
+        "sum_lt": 98
+      }
+    },
+    {
+      "query_id": "M31_PERF_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 6,
+        "unfinished": 0,
+        "nonnegative_e2e": 6,
+        "negative_e2e": 0,
+        "distinct_runs": 5
+      }
+    },
+    {
+      "query_id": "M31_PERF_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "matched_pairs": 62
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:44:00Z"
+}
