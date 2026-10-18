@@ -1,0 +1,113 @@
+{
+  "schema": "PE10_M22_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M22_INNOV_Q1",
+      "result": "95 current pattern functions =>31 historical-member,64 complement candidates; 23 complement path-shape candidates"
+    },
+    {
+      "id": "M22_INNOV_Q2",
+      "result": "38 SQL rows,6 external rows,0 exact raw-name overlap,0 missing external key"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "INNOV_CS1",
+        "observation": "64 current complement candidates including23 path-shaped",
+        "components": [
+          "post_snapshot_evolution",
+          "caller_classification",
+          "name_pattern_false_positive"
+        ]
+      },
+      {
+        "id": "INNOV_CS2",
+        "observation": "SQL/external identity domains are disjoint by raw name",
+        "components": [
+          "identity_domain",
+          "incorrect_denominator_merge"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "caller_classification"
+      ],
+      [
+        "identity_domain"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "classify 23 path-shaped candidates by actual references/lifecycle first"
+    }
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "INNOV_INV1",
+        "rule": "95=31+64 current pattern partition",
+        "observed": "reconciles",
+        "valid_case": "candidate bucket preserved",
+        "counterexample": "promote all64 to callers",
+        "status": "PASS"
+      },
+      {
+        "id": "INNOV_INV2",
+        "rule": "SQL/external domains not merged absent mapping",
+        "observed": "38/6, overlap0, missing keys0",
+        "valid_case": "separate",
+        "counterexample": "append six externals",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M22_INNOV_F1",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "claim": "23 path-shaped complement objects are high-value candidates, not caller proof."
+    },
+    {
+      "id": "M22_INNOV_F2",
+      "classification": "MEASURED",
+      "claim": "SQL and external identity domains remain separate under observed keys/names."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M22_INNOV_N1",
+      "hypothesis": "64 complement names are proven omissions",
+      "result": "FALSIFIED_AS_INFERENCE"
+    },
+    {
+      "id": "M22_INNOV_N2",
+      "hypothesis": "External rows can be merged into SQL caller denominator",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "actual reference/lifecycle classification of path-shaped candidates"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}
