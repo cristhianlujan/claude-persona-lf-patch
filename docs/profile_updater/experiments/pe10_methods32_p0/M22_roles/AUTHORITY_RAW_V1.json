@@ -1,0 +1,113 @@
+{
+  "schema": "PE10_M22_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M22_AUTH_Q1",
+      "result": "read-only user; transaction_read_only=on; EXECUTE false/false; SELECT evidence tables true/true"
+    },
+    {
+      "id": "M22_AUTH_Q2",
+      "result": "two exact EKB records: total2, validated2, pre-cutoff2"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "AUTH_CS1",
+        "observation": "function EXECUTE denied while evidence SELECT allowed",
+        "components": [
+          "authority_path",
+          "permission_scope",
+          "functional_fail_misclassification"
+        ]
+      },
+      {
+        "id": "AUTH_CS2",
+        "observation": "two historical authority records pre-cutoff",
+        "components": [
+          "temporal_authority",
+          "source_substitution"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "authority_path"
+      ],
+      [
+        "temporal_authority"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "use SELECT-only CP2 evidence contract rather than privilege elevation"
+    }
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "AUTH_INV1",
+        "rule": "EXECUTE and SELECT are distinct capabilities",
+        "observed": "false/false vs true/true",
+        "valid_case": "read via SELECT",
+        "counterexample": "infer no access",
+        "status": "PASS"
+      },
+      {
+        "id": "AUTH_INV2",
+        "rule": "P0 EKB must be exact and pre-cutoff",
+        "observed": "2/2 validated/pre-cutoff",
+        "valid_case": "both qualify",
+        "counterexample": "post-cutoff record",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M22_AUTH_F1",
+      "classification": "MEASURED",
+      "claim": "42501/EXECUTE denial cannot be classified as total evidence inaccessibility or functional failure."
+    },
+    {
+      "id": "M22_AUTH_F2",
+      "classification": "MEASURED",
+      "claim": "Both exact EKB records qualify under cutoff."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M22_AUTH_N1",
+      "hypothesis": "No EXECUTE means no evidence path",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M22_AUTH_N2",
+      "hypothesis": "BARINEL ranking justified",
+      "result": "NOT_CALIBRATED"
+    }
+  ],
+  "unresolved": [
+    "historical privilege state beyond EKB"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}
