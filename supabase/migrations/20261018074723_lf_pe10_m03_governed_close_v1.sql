@@ -212,7 +212,7 @@ begin
     'assertion_receipt_sha256',v_receipt_sha
   );
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION programacion.fn_engineering_checkpoint_transition_v1(p_plan_code text, p_unit_code text, p_checkpoint_code text, p_new_status text, p_evidence_ref text, p_actor text, p_detail text DEFAULT NULL::text)
  RETURNS jsonb
@@ -378,7 +378,7 @@ begin
     )
   );
 end;
-$function$
+$function$;
 
 DO $m03_close$
 DECLARE
