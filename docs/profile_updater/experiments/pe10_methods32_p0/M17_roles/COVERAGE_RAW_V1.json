@@ -1,0 +1,229 @@
+{
+  "schema": "PE10_M17_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M17",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "inputs": [
+    "Original frozen P0",
+    "PE10_METHOD_V1 COVERAGE contract",
+    "readonly historical inventory"
+  ],
+  "sql_evidence": [
+    {
+      "id": "M17_COVER_Q1",
+      "sql_literal": "SELECT count(*) total,count(DISTINCT x->>'dedupe_key') distinct_keys,count(*) FILTER(WHERE NOT(x ? 'dedupe_key')) missing_dedupe_key,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') valid_hash_syntax,count(*) FILTER(WHERE x->>'definition_md5' IS NULL) null_hash FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "distinct_keys": 38,
+          "missing_dedupe_key": 0,
+          "valid_hash_syntax": 38,
+          "null_hash": 0
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_HISTORICAL_INVENTORY"
+    },
+    {
+      "id": "M17_COVER_Q2",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) u FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "u": 0
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_HISTORICAL_INVENTORY"
+    },
+    {
+      "id": "M17_COVER_Q3",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) u FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "u": 0
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_HISTORICAL_INVENTORY"
+    },
+    {
+      "id": "M17_COVER_Q4",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') trigger_bindings,jsonb_array_length(payload->'external_inventory') external_entries,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') relation_snapshot_rows,payload->'deduplication' source_dedupe,payload->'excluded_name_candidate' excluded_candidate,payload->'ambiguous_name_candidates_checked' ambiguous_candidates FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "trigger_bindings": 21,
+          "external_entries": 6,
+          "relation_snapshot_rows": 27,
+          "source_dedupe": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded_candidate": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "ambiguous_candidates": 1
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_HISTORICAL_INVENTORY"
+    },
+    {
+      "id": "M17_COVER_Q5",
+      "sql_literal": "WITH sample(v) AS (VALUES('ACTIVE'::text),('INACTIVE'::text),(NULL::text)) SELECT count(*) total,count(*) FILTER(WHERE v='ACTIVE') t,count(*) FILTER(WHERE NOT(v='ACTIVE')) f,count(*) FILTER(WHERE (v='ACTIVE') IS NULL) u FROM sample",
+      "rows": [
+        {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "u": 1
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "EXPLICIT_SQL_COUNTEREXAMPLE"
+    },
+    {
+      "id": "M17_COVER_Q6",
+      "sql_literal": "WITH samples(expected,observed) AS(VALUES(38,38),(38,37),(38,NULL::int)) SELECT expected,observed,(expected=observed) IS TRUE accepted FROM samples ORDER BY observed NULLS LAST",
+      "rows": [
+        {
+          "expected": 38,
+          "observed": 37,
+          "accepted": false
+        },
+        {
+          "expected": 38,
+          "observed": 38,
+          "accepted": true
+        },
+        {
+          "expected": 38,
+          "observed": null,
+          "accepted": false
+        }
+      ],
+      "rows_returned": 3,
+      "scope": "EXPLICIT_SQL_COUNTEREXAMPLE"
+    }
+  ],
+  "findings": [
+    {
+      "id": "COVER_F1",
+      "claim": "SQL inventory 38 entries has 38 unique dedupe keys, none missing; this proves only internal snapshot dedupe, not exhaustive live consumers",
+      "evidence": [
+        "M17_COVER_Q1"
+      ],
+      "classification": "MEASURED_ASOF"
+    },
+    {
+      "id": "COVER_F2",
+      "claim": "Historical hash strings 38 syntactically valid 32-char hex; canonical derivation and object existence are unproven",
+      "evidence": [
+        "M17_COVER_Q1"
+      ],
+      "classification": "MEASURED_FORMAT_ONLY"
+    },
+    {
+      "id": "COVER_F3",
+      "claim": "Caller 38 and external 6 are separate populations, each fully partitioned into SQL TRUE/FALSE/NULL; they must not be summed as one identity domain",
+      "evidence": [
+        "M17_COVER_Q2",
+        "M17_COVER_Q3"
+      ],
+      "classification": "MEASURED_ASOF"
+    },
+    {
+      "id": "COVER_F4",
+      "claim": "Source has 21 trigger bindings plus relation snapshots, but no proof of total runtime reachability; explicit excluded and ambiguous-name records require identity review",
+      "evidence": [
+        "M17_COVER_Q4"
+      ],
+      "classification": "MEASURED_SOURCE_BOUNDARY"
+    },
+    {
+      "id": "COVER_F5",
+      "claim": "Synthetic NULL and wrong denominator prove negative invariant triggers without claiming domain correctness",
+      "evidence": [
+        "M17_COVER_Q5",
+        "M17_COVER_Q6"
+      ],
+      "classification": "MEASURED_SYNTHETIC"
+    }
+  ],
+  "causal_hypotheses": [
+    {
+      "hypothesis": "Population completeness artificially inflated by mixing SQL callers, external assets and trigger bindings",
+      "status": "UNPROVEN_OUTSIDE_SNAPSHOT",
+      "falsifier": "Build source-pinned set of unique canonical identifiers and complementary missing entity rows"
+    },
+    {
+      "hypothesis": "Lexical snapshot misses wrappers/ctx variants with zero direct mention",
+      "status": "HYPOTHESIS",
+      "falsifier": "Enumerate all schema/pg_proc and external registrations for actual consumer reachability as-of"
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "COVER_38_UNIQUE_DEDUPE",
+      "pass": true
+    },
+    {
+      "id": "COVER_HASH_SYNTAX_NOT_METHOD",
+      "pass": true
+    },
+    {
+      "id": "COVER_CALLERS_RECONCILED",
+      "pass": true
+    },
+    {
+      "id": "COVER_EXTERNALS_RECONCILED",
+      "pass": true
+    },
+    {
+      "id": "COVER_NULL_COUNTEREXAMPLE",
+      "pass": true
+    },
+    {
+      "id": "COVER_BAD_DENOMINATOR_REJECT",
+      "pass": true
+    },
+    {
+      "id": "COVER_NULL_DENOMINATOR_REJECT",
+      "pass": true
+    },
+    {
+      "id": "COVER_VALID_DENOMINATOR_PASS",
+      "pass": true
+    }
+  ],
+  "contradictions": [],
+  "unresolved": [
+    "No source-complete live universe of all consumers at P0",
+    "No canonical hash generation method established",
+    "No evidence all lexical excluded candidates are functionally irrelevant"
+  ],
+  "measured_costs": {
+    "queries_executed": 6,
+    "returned_rows": 8,
+    "db_runtime_ms": "UNKNOWN"
+  },
+  "next_safe_step": "Build complementary canonical identity population with source, time and null/absent breakdown before claiming coverage complete",
+  "external_quality_score": "NOT_PERFORMED"
+}
