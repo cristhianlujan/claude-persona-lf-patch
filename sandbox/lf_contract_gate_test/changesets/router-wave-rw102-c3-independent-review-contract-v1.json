@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw102-c3-independent-review-contract-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_02_C3_BLIND_JUDGE_HANDOFF_V1.md": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261018221000_lf_router_rw102_c3_independent_review_contract_v1.sql": "MIGRATION"
+  }
+}
