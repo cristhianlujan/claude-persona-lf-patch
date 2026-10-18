@@ -1,0 +1,216 @@
+{
+  "schema": "PE10_M29_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M29",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M29-COV-F01",
+      "claim": "Frozen P0 inventories are internally deduplicated: 38 callers, 21 triggers and 6 external entries.",
+      "evidence_refs": [
+        "M29_COV_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-COV-F02",
+      "claim": "All 38 frozen caller names currently resolve; partition reconciles 38=38 resolved+0 absent.",
+      "evidence_refs": [
+        "M29_COV_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-COV-F03",
+      "claim": "Bounded current pattern scan decomposes 75 candidates into 27 overlap+48 outside-P0, while P0 decomposes 38 into 27 overlap+11 outside-pattern.",
+      "evidence_refs": [
+        "M29_COV_Q03"
+      ],
+      "confidence": "HIGH_FOR_BOUNDED_PATTERN"
+    },
+    {
+      "id": "M29-COV-F04",
+      "claim": "Trigger enabled-state TLP reconciles 21=21 TRUE+0 FALSE+0 NULL+0 absent.",
+      "evidence_refs": [
+        "M29_COV_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-COV-F05",
+      "claim": "Pre-cut readiness rows span 42 screens and family_count is invariant at 47; this does not by itself reproduce the governed receipt cohort.",
+      "evidence_refs": [
+        "M29_COV_Q05"
+      ],
+      "confidence": "HIGH_FOR_RAW_RELATION"
+    }
+  ],
+  "algorithm_application": {
+    "C": {
+      "invariants": [
+        {
+          "id": "COV-I1",
+          "type": "SET",
+          "statement": "P0 inventory dedupe cardinalities equal totals.",
+          "observed": "38/38 callers, 21/21 triggers, 6/6 external",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I2",
+          "type": "PARTITION",
+          "statement": "P0 caller total=resolved+absent",
+          "observed": "38=38+0",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I3",
+          "type": "SET_DECOMPOSITION",
+          "statement": "candidate_total=overlap+candidate_outside_P0",
+          "observed": "75=27+48",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I4",
+          "type": "SET_DECOMPOSITION",
+          "statement": "P0_total=overlap+P0_outside_candidate",
+          "observed": "38=27+11",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I5",
+          "type": "PARTITION",
+          "statement": "trigger total=TRUE+FALSE+NULL+absent",
+          "observed": "21=21+0+0+0",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I6",
+          "type": "NEGATIVE",
+          "statement": "Raw screen/family relation must not be substituted for governed cohort without predicate reproduction.",
+          "observed": "42 screens with constant family_count=47, but no governed inclusion predicate in this query.",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "COV-MT1",
+          "transform": "Change population from frozen P0 to bounded current name-pattern candidates.",
+          "expected_relation": "A complete universe claim should be stable only if the selector is authoritative.",
+          "observed_relation": "Sets differ materially: 48 candidate-only and 11 P0-only.",
+          "result": "COUNTEREXAMPLE_FOUND"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "Set/partition invariants directly testable in SQL.",
+      "overfitting_checks": [
+        "Do not treat bounded name pattern as authoritative current universe.",
+        "Do not use raw 42-screen count as governed receipt denominator."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical coverage sets reconcile internally, but selector metamorphism shows bounded current discovery and frozen P0 are not interchangeable; current totality remains unverified.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized current universe manifest classifies all complements/exclusions.",
+        "Exact governed receipt predicate reproduces the intended historical cohort."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A material in-scope consumer/trigger is proven omitted.",
+        "to_NO_ACTION_SUPPORTED": "Current universe and governed cohort reconcile with no material omission.",
+        "to_NEEDS_MORE_EVIDENCE": "Authoritative universe predicate remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate frozen completeness with current completeness.",
+    "Do not equate pattern candidates with runtime consumers.",
+    "Do not replace governed cohort with raw relation counts."
+  ],
+  "unresolved": [
+    "Current governed universe predicate",
+    "Materiality of 48 candidate-only objects",
+    "Reason for 11 P0-only callers",
+    "Exact governed receipt cohort predicate"
+  ],
+  "next_safe_step": "Use an authorized current-universe manifest and exact receipt predicate; no runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "invariants": 6,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M29_COV_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "callers_distinct": 38,
+        "triggers": 21,
+        "triggers_distinct": 21,
+        "external_entries": 6,
+        "external_distinct": 6
+      }
+    },
+    {
+      "query_id": "M29_COV_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "resolved": 38,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M29_COV_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "cand_total": 75,
+        "overlap": 27,
+        "cand_outside_p0": 48,
+        "p0_total": 38,
+        "p0_outside_cand": 11
+      }
+    },
+    {
+      "query_id": "M29_COV_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 21,
+        "tlp_true": 21,
+        "tlp_false": 0,
+        "tlp_null": 0,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M29_COV_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "pre_cut_screens": 42,
+        "family_count_values": 1,
+        "min_family_count": 47,
+        "max_family_count": 47
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:56:00Z"
+}
