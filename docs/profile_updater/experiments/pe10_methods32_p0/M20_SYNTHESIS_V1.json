@@ -1,0 +1,218 @@
+{
+  "schema": "PE10_M20_SYNTHESIS_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_code": "SYNTHESIZER",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "source_pieces_frozen_before_synthesis": true,
+  "no_new_sql_in_synthesis": true,
+  "synthesis_inputs": [
+    {
+      "role": "ARCHITECTURE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M20_roles/ARCHITECTURE_RAW_V1.json",
+      "git_blob_sha": "55f2770cdf9289e83e0a24ea214bdddf086ad020",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "conflict_sets": 2,
+      "atms_nogoods": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M20_roles/PERFORMANCE_RAW_V1.json",
+      "git_blob_sha": "22f5e3453ca9f7277c71d903670efbf0933945c1",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "conflict_sets": 2,
+      "atms_nogoods": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M20_roles/AUTHORITY_RAW_V1.json",
+      "git_blob_sha": "3b314ea00e1753bbdb0231e984e6c7123ed93a66",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "conflict_sets": 2,
+      "atms_nogoods": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M20_roles/COVERAGE_RAW_V1.json",
+      "git_blob_sha": "0a0039999e951bb60921d4acae8a1c65819df611",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "conflict_sets": 2,
+      "atms_nogoods": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M20_roles/INNOVATION_RAW_V1.json",
+      "git_blob_sha": "2f1cd81eea23e2f6a0106c92a6ae2ee649dcc217",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "conflict_sets": 2,
+      "atms_nogoods": 2,
+      "role_output_frozen": true
+    }
+  ],
+  "readbacks_total": 10,
+  "negative_tests_total": 10,
+  "gde_conflict_sets_total": 10,
+  "atms_nogoods_total": 10,
+  "barinel": {
+    "status": "NOT_CALIBRATED",
+    "roles_not_calibrated": 5,
+    "reason": "No role had a justified pass/fail component spectrum with priors; numeric BARINEL probabilities would be fabricated."
+  },
+  "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+  "atms_cross_role": {
+    "evidence_identity_preserved": true,
+    "propagation_tests": [
+      {
+        "withdraw": "architecture-current-readback",
+        "invalidates": [
+          "current-definition-drift"
+        ],
+        "preserves": [
+          "historical-snapshot-scope"
+        ]
+      },
+      {
+        "withdraw": "performance-runs",
+        "invalidates": [
+          "revision-timing-variation"
+        ],
+        "preserves": [
+          "stats-unavailable-under-track_functions-none"
+        ]
+      },
+      {
+        "withdraw": "authority-current-privileges",
+        "invalidates": [
+          "current-privilege-boundary"
+        ],
+        "preserves": [
+          "historical-EKB-42501-observation"
+        ]
+      },
+      {
+        "withdraw": "coverage-current-resolution",
+        "invalidates": [
+          "callee-ambiguity-current"
+        ],
+        "preserves": [
+          "historical-inventory-integrity"
+        ]
+      },
+      {
+        "withdraw": "innovation-current-complement",
+        "invalidates": [
+          "complement-candidate-signal"
+        ],
+        "preserves": [
+          "temporal-layering"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_SYN_F1",
+      "classification": "MEASURED",
+      "finding": "Historical P0 remains internally scoped but not live-certified: 22/38 caller definitions differ by empirical current md5(prosrc), while no current caller name is absent."
+    },
+    {
+      "id": "M20_SYN_F2",
+      "classification": "MEASURED_PERFORMANCE_LIMIT",
+      "finding": "track_functions=none prevents function-stat inference; 5.13.1 positive stage medians are larger than 5.13 but cohort/zero semantics block causal regression or improvement claims."
+    },
+    {
+      "id": "M20_SYN_F3",
+      "classification": "MEASURED_AUTHORITY",
+      "finding": "42501 remains an authority/readback-path condition; SELECT evidence is available while EXECUTE is denied."
+    },
+    {
+      "id": "M20_SYN_F4",
+      "classification": "MEASURED_COVERAGE_RISK",
+      "finding": "Historical 38/76 inventory is internally reconciled, but 6/39 callee tokens are currently ambiguous by name and require schema identity."
+    },
+    {
+      "id": "M20_SYN_F5",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "finding": "64 current complement names including 23 path-shaped candidates are discovery signals, not proven callers or omissions."
+    },
+    {
+      "id": "M20_SYN_F6",
+      "classification": "METHOD_RESULT",
+      "finding": "GDE narrows alternatives to temporal equivalence, post-snapshot definition/path evolution, identity qualification, authority path and cohort equivalence; ATMS prevents unsupported evidence substitution and propagates withdrawals."
+    }
+  ],
+  "contradictions": [
+    {
+      "topic": "historical integrity vs current drift",
+      "resolution": "different evidence time and claim scope; both supported"
+    },
+    {
+      "topic": "larger 5.13.1 timings vs causal regression",
+      "resolution": "direction measured, cause unresolved"
+    },
+    {
+      "topic": "42501 vs readable tables",
+      "resolution": "EXECUTE denial and SELECT access are different privileges"
+    },
+    {
+      "topic": "39 callee tokens vs six ambiguous current names",
+      "resolution": "historical token identity lacks sufficient current schema qualification"
+    }
+  ],
+  "causal_model": {
+    "proven_root_cause": false,
+    "supported_risk_families": [
+      "snapshot currentness promotion",
+      "post-snapshot definition/path evolution",
+      "callee identity ambiguity",
+      "wrong authority readback path",
+      "performance cohort mismatch"
+    ],
+    "not_proven": [
+      "single Curator defect",
+      "single Validator defect",
+      "causal 5.13.1 regression",
+      "64 caller omissions",
+      "canonical historical hash recipe"
+    ]
+  },
+  "decision": {
+    "state": "VERIFY_FIRST",
+    "implemented_repair": false,
+    "reason": "D+M identifies discriminating risks and assumption dependencies but no single causal defect or safe product repair is proven."
+  },
+  "next_safe_step": "Qualify changed call paths and ambiguous callees, classify path-shaped complement candidates, and build matched performance/authorized CP2 evidence before repair.",
+  "unresolved": [
+    "canonical historical hash recipe",
+    "runtime materiality of changed definitions",
+    "zero-duration semantics",
+    "matched performance effect",
+    "current complement caller classification"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "no production/runtime edits",
+    "P0/current separation",
+    "five reports frozen before synthesis",
+    "no cross-method inputs",
+    "no autonomous-agent claim"
+  ],
+  "non_isolation_risk": "Five role-bound passes ran sequentially in one shared model context. Artifacts were frozen before synthesis and no peer report was consumed before freeze; autonomous cognitive independence is not demonstrated.",
+  "final_method_status": "B_D_M_FIVE_ROLE_REPORTS_SYNTHESIZED_MATERIAL_ONLY_NOT_YET_GOVERNED_DONE"
+}
