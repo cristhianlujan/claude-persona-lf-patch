@@ -1,0 +1,148 @@
+{
+  "schema": "PE10_M18_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": ["D"],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "method_application": {
+    "D": {
+      "gde_conflict_sets": [
+        {
+          "id": "ARQ_CS1",
+          "observation": "Historical snapshot labels callers LIVE_PG_PROC while 22/38 current names have no empirical md5(prosrc) match to historical definition_md5.",
+          "components": ["snapshot_freshness", "post_snapshot_function_definition_change", "historical_hash_representation_unknown"]
+        },
+        {
+          "id": "ARQ_CS2",
+          "observation": "All 21 historical trigger bindings still exist with the same trigger->function name mapping.",
+          "components": ["broad_trigger_topology_drift", "trigger_function_rebinding"]
+        }
+      ],
+      "minimal_hitting_sets": [
+        ["snapshot_freshness"],
+        ["post_snapshot_function_definition_change"],
+        ["historical_hash_representation_unknown"]
+      ],
+      "barinel": {
+        "status": "NOT_CALIBRATED",
+        "reason": "No executable pass/fail spectrum with justified priors and component traces was available; probabilities would be fabricated."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "highest_value_next_query": "Inspect changed current function bodies only for material callee-path changes against historical callees, while preserving historical/current separation.",
+        "reason": "This distinguishes harmless implementation drift from changed dependency topology at lower cost than broad database re-inventory."
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "M18_ARQ_Q1",
+      "scope": "P0_HISTORICAL",
+      "sql": "SELECT id, created_at, jsonb_object_keys(payload) AS payload_key FROM public.lf_eventos WHERE id=20161 ORDER BY payload_key;",
+      "result_summary": "Event 20161 exists at 2026-10-04 05:14:40.880842+00 and exposes caller, trigger, external inventory, usage, scope and provenance fields."
+    },
+    {
+      "id": "M18_ARQ_Q2",
+      "scope": "P0_HISTORICAL",
+      "sql": "SELECT jsonb_pretty(payload->'sql_callers'->0) AS first_caller, jsonb_pretty(payload->'trigger_bindings'->0) AS first_trigger, jsonb_pretty(payload->'external_inventory'->0) AS first_external, jsonb_pretty(payload->'usage_stats') AS usage_stats, jsonb_pretty(payload->'scope_guards') AS scope_guards FROM public.lf_eventos WHERE id=20161;",
+      "result_summary": "Historical caller rows include caller, callees, caller_oid, definition_md5, operational_class and currentness_source; usage_stats says track_functions=none and zero stat rows cannot prove no usage; scope_guards says no production/runtime changes."
+    },
+    {
+      "id": "M18_ARQ_Q3",
+      "scope": "P0_HISTORICAL_PLUS_EXPLICIT_CURRENT_READBACK",
+      "sql": "WITH e AS (SELECT payload FROM public.lf_eventos WHERE id=20161), callers AS (SELECT x->>'caller' caller,x->>'definition_md5' historical_md5,x->>'operational_class' operational_class,x->>'currentness_source' source_label,x->'callees' callees FROM e,jsonb_array_elements(payload->'sql_callers') x), live AS (SELECT n.nspname||'.'||p.proname caller,count(*) overloads,array_agg(md5(p.prosrc) ORDER BY p.oid) current_prosrc_md5 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace GROUP BY 1) SELECT count(*) snapshot_rows,count(DISTINCT c.caller) unique_callers,sum(jsonb_array_length(c.callees)) lexical_edges,count(*) FILTER (WHERE l.caller IS NULL) absent_current_names,count(*) FILTER (WHERE l.caller IS NOT NULL AND c.historical_md5=ANY(l.current_prosrc_md5)) at_least_one_current_hash_match,count(*) FILTER (WHERE l.caller IS NOT NULL AND NOT(c.historical_md5=ANY(l.current_prosrc_md5))) current_name_but_hash_changed FROM callers c LEFT JOIN live l USING(caller);",
+      "result_summary": "38 snapshot rows, 38 unique callers, 76 lexical edges, 0 absent current names, 16 empirical historical/current md5(prosrc) matches and 22 current names with changed empirical hash."
+    },
+    {
+      "id": "M18_ARQ_Q4",
+      "scope": "P0_HISTORICAL_PLUS_EXPLICIT_CURRENT_READBACK",
+      "sql": "Compare event 20161 trigger_bindings by table_name+trigger_name with current pg_trigger and trigger function identity.",
+      "result_summary": "21 historical trigger rows; 21 exact current trigger matches; 0 missing trigger bindings; 0 trigger-function name mismatches."
+    },
+    {
+      "id": "M18_ARQ_Q5",
+      "scope": "P0_HISTORICAL",
+      "sql": "Expand event 20161 external_inventory and count rows/distinct dedupe_key.",
+      "result_summary": "6 external rows and 6 unique external dedupe keys spanning ACTIVE/CANDIDATE/CANDIDATE_TEST and multiple governance lifecycle states."
+    }
+  ],
+  "findings": [
+    {
+      "id": "M18_ARQ_F1",
+      "claim": "The historical SQL caller identity set remains name-resolvable today, but the snapshot cannot certify current function definitions: 22/38 caller names have a different empirical md5(prosrc) than the historical definition_md5.",
+      "classification": "MEASURED_CURRENT_COMPARISON_WITH_HISTORICAL_LIMIT",
+      "evidence_refs": ["M18_ARQ_Q3"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true,
+      "limit": "The historical hash construction method is not proven canonical by this comparison; matching is empirical only."
+    },
+    {
+      "id": "M18_ARQ_F2",
+      "claim": "Broad trigger-binding drift is falsified at current name/function mapping level for the 21 bindings in the snapshot.",
+      "classification": "MEASURED_CURRENT_COMPARISON",
+      "evidence_refs": ["M18_ARQ_Q4"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_ARQ_F3",
+      "claim": "The six external inventory entries form a separate identity/lifecycle domain; no evidence here justifies adding them to the 38 SQL-caller denominator.",
+      "classification": "MEASURED_HISTORICAL_SCOPE",
+      "evidence_refs": ["M18_ARQ_Q5"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": false
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "M18_ARQ_N1",
+      "hypothesis": "Most historical caller names disappeared from current pg_proc.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_ARQ_Q3"]
+    },
+    {
+      "id": "M18_ARQ_N2",
+      "hypothesis": "Trigger rebinding is the dominant topology drift visible from the P0 trigger set.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_ARQ_Q4"]
+    },
+    {
+      "id": "M18_ARQ_N3",
+      "hypothesis": "Historical definition_md5 equals md5(prosrc) by proven canonical contract.",
+      "result": "NOT_PROVEN",
+      "evidence_refs": ["M18_ARQ_Q3"]
+    }
+  ],
+  "causal_hypothesis": {
+    "state": "PARTIAL",
+    "claim": "A material false-currentness risk exists because function definitions changed after the historical snapshot while caller identities and trigger bindings largely persisted. Whether those changes alter the relevant dependency paths remains unproven."
+  },
+  "minimal_safe_action": "Inspect only the 22 changed current bodies for material changes in the historical callee relations before any live-topology or optimization conclusion.",
+  "unresolved": [
+    "Canonical historical hash-construction method",
+    "Whether any of the 22 changed bodies altered relevant callee paths",
+    "Runtime execution frequency of the 38 callers"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "No production mutation",
+    "Historical/current separation",
+    "No peer role reports used",
+    "No external evaluation",
+    "No autonomous-agent claim"
+  ],
+  "measured_costs": {
+    "sql_observations": 5,
+    "transport_elapsed_ms": "NOT_MEASURED",
+    "barinel_calibration": "NOT_AVAILABLE"
+  },
+  "role_output_frozen": true
+}
