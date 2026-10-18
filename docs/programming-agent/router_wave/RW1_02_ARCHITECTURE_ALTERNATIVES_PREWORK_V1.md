@@ -68,7 +68,9 @@
 
 ## 6. Evidencia actual de fuente
 
-La línea base del Router vivo y los falsificadores contrastables de A/B/C/D están en [`RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md`](RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md). Lecturas de Supabase 2026-10-17: función Router de 39.602 caracteres, 35 rutas ACTIVE, 16 tipos con ruta ACTIVE frente a 22 tipos distintos no archivados (conjuntos **no equivalentes**), y cuatro solicitudes de control reproducibles pero sin continuidad material demostrada. Son observaciones diagnósticas, no evaluación de prototipos.
+La línea base del Router vivo y los falsificadores contrastables de A/B/C/D están en [`RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md`](RW1_02_LIVE_SOURCE_BASELINE_AND_COMPETITION_V1.md).
+
+**Cobertura exacta y evaluación offline:** [`RW1_02_EXACT_CATALOG_COVERAGE_AND_OFFLINE_SCORECARD_V1.md`](RW1_02_EXACT_CATALOG_COVERAGE_AND_OFFLINE_SCORECARD_V1.md) documenta 14 de 22 nombres de tipo sin correspondencia `ACTIVE` exacta (no equivale a 14 funciones ausentes) y la interfaz neutral [`compare_rw102_candidate_traces_v1.py`](../../../sandbox/lf_contract_gate_test/router_wave/compare_rw102_candidate_traces_v1.py), que sin trazas devuelve `NOT_EXECUTED`, jamás elige arquitectura por `shape PASS` y no acredita autoridad mediante cadenas del productor. **No hay trazas A/B/C/D ni tiempos verificados todavía.** Lecturas de Supabase 2026-10-17: función Router de 39.602 caracteres, 35 rutas ACTIVE, 16 tipos con ruta ACTIVE frente a 22 tipos distintos no archivados (conjuntos **no equivalentes**), y cuatro solicitudes de control reproducibles pero sin continuidad material demostrada. Son observaciones diagnósticas, no evaluación de prototipos.
 
 ## 6. Secuencia verificable y decisión posterior
 
