@@ -1,0 +1,830 @@
+{
+  "schema_version": "RW102_ARCHITECTURE_COMPETITION_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-02",
+  "checkpoint_code": "RW1-02_C2",
+  "scope": "EXECUTABLE_DESIGN_CONTRACT_BENCHMARK_NOT_ROUTER_RUNTIME",
+  "source_c1_blob": "470979c9b9a0dd9a728601b6ec5f577d7445f8b5",
+  "requirements_expected": [
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08",
+    "N09",
+    "N10",
+    "N11",
+    "N12"
+  ],
+  "candidates": {
+    "A_MIN_ROUTER_SEMANTIC_SPECIALIST": {
+      "eligible": true,
+      "description": "Router retains discovery/derivation ownership; an on-demand semantic specialist only normalizes goals, exclusions, conditions and ambiguity. It cannot discover workers, route, authorize effects or mutate.",
+      "capabilities": {
+        "preserve_literal": true,
+        "discover_registered_responsibility": true,
+        "semantic_normalization": true,
+        "preserve_negation": true,
+        "multi_goal_composition": true,
+        "context_resolution": true,
+        "material_clarification_only": true,
+        "future_capability_gap": true,
+        "role_separation": true,
+        "no_effect_authority": true,
+        "safe_readonly_continuity": true,
+        "deterministic_authority": true,
+        "simulation_no_effect": true,
+        "typed_hint_non_authority": true,
+        "train_technical_route_separation": true,
+        "stale_currentness_fail_closed": true
+      },
+      "structural_metrics": {
+        "core_router_semantic_rule_change_touches": 0,
+        "router_authority_decision_responsibilities": 3,
+        "new_shared_runtime_components": 1,
+        "base_control_hops": 2,
+        "semantic_extra_hops": 1,
+        "router_internal_semantic_engine": false,
+        "specialist_can_discover_workers": false,
+        "specialist_can_authorize_effect": false,
+        "specialist_can_route": false
+      }
+    },
+    "B_MIN_CLASSIFIER_COMPOSITE_DERIVATION": {
+      "eligible": true,
+      "description": "Router uses a minimal deterministic classifier and composite derivation without a semantic specialist.",
+      "capabilities": {
+        "preserve_literal": true,
+        "discover_registered_responsibility": true,
+        "semantic_normalization": false,
+        "preserve_negation": false,
+        "multi_goal_composition": true,
+        "context_resolution": false,
+        "material_clarification_only": false,
+        "future_capability_gap": true,
+        "role_separation": true,
+        "no_effect_authority": true,
+        "safe_readonly_continuity": true,
+        "deterministic_authority": true,
+        "simulation_no_effect": true,
+        "typed_hint_non_authority": true,
+        "train_technical_route_separation": true,
+        "stale_currentness_fail_closed": true
+      },
+      "structural_metrics": {
+        "core_router_semantic_rule_change_touches": 1,
+        "router_authority_decision_responsibilities": 4,
+        "new_shared_runtime_components": 0,
+        "base_control_hops": 2,
+        "semantic_extra_hops": 0,
+        "router_internal_semantic_engine": false,
+        "specialist_can_discover_workers": false,
+        "specialist_can_authorize_effect": false,
+        "specialist_can_route": false
+      }
+    },
+    "C_BOUNDED_SEMANTIC_ROUTER": {
+      "eligible": true,
+      "description": "Router performs bounded semantic normalization internally before discovery/derivation; effect authority remains external.",
+      "capabilities": {
+        "preserve_literal": true,
+        "discover_registered_responsibility": true,
+        "semantic_normalization": true,
+        "preserve_negation": true,
+        "multi_goal_composition": true,
+        "context_resolution": true,
+        "material_clarification_only": true,
+        "future_capability_gap": true,
+        "role_separation": true,
+        "no_effect_authority": true,
+        "safe_readonly_continuity": true,
+        "deterministic_authority": true,
+        "simulation_no_effect": true,
+        "typed_hint_non_authority": true,
+        "train_technical_route_separation": true,
+        "stale_currentness_fail_closed": true
+      },
+      "structural_metrics": {
+        "core_router_semantic_rule_change_touches": 1,
+        "router_authority_decision_responsibilities": 6,
+        "new_shared_runtime_components": 0,
+        "base_control_hops": 2,
+        "semantic_extra_hops": 0,
+        "router_internal_semantic_engine": true,
+        "specialist_can_discover_workers": false,
+        "specialist_can_authorize_effect": false,
+        "specialist_can_route": false
+      }
+    },
+    "D_CURRENT_HYBRID_BASELINE": {
+      "eligible": false,
+      "description": "Current lexical/registry/hint hybrid used only as a control baseline; not an eligible winner.",
+      "capabilities": {
+        "preserve_literal": true,
+        "discover_registered_responsibility": true,
+        "semantic_normalization": false,
+        "preserve_negation": false,
+        "multi_goal_composition": false,
+        "context_resolution": false,
+        "material_clarification_only": false,
+        "future_capability_gap": false,
+        "role_separation": false,
+        "no_effect_authority": true,
+        "safe_readonly_continuity": false,
+        "deterministic_authority": true,
+        "simulation_no_effect": true,
+        "typed_hint_non_authority": false,
+        "train_technical_route_separation": true,
+        "stale_currentness_fail_closed": false
+      },
+      "structural_metrics": {
+        "core_router_semantic_rule_change_touches": 2,
+        "router_authority_decision_responsibilities": 7,
+        "new_shared_runtime_components": 0,
+        "base_control_hops": 2,
+        "semantic_extra_hops": 0,
+        "router_internal_semantic_engine": false,
+        "specialist_can_discover_workers": false,
+        "specialist_can_authorize_effect": false,
+        "specialist_can_route": false
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "T01",
+      "family": "SIMPLE_INSPECTION",
+      "literal_request": "Inspeccionar perfil UI Architect sin ejecutar.",
+      "required_capabilities": [
+        "preserve_literal",
+        "discover_registered_responsibility",
+        "no_effect_authority",
+        "role_separation"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N08",
+        "N09"
+      ]
+    },
+    {
+      "id": "T02",
+      "family": "SINGLE_CHANGE_NEGATION",
+      "literal_request": "Cambiar solo el texto del botón B2B a «Acceder», sin tocar autenticación.",
+      "required_capabilities": [
+        "preserve_literal",
+        "discover_registered_responsibility",
+        "semantic_normalization",
+        "preserve_negation",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T03",
+      "family": "MULTIOBJECT",
+      "literal_request": "Crear pantalla y regla con responsables correspondientes.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "multi_goal_composition",
+        "discover_registered_responsibility",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N05",
+        "N09"
+      ]
+    },
+    {
+      "id": "T04",
+      "family": "MULTIOBJECT",
+      "literal_request": "Crear regla y skill sin perder ninguno de los objetivos.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "multi_goal_composition",
+        "discover_registered_responsibility",
+        "role_separation"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N05",
+        "N08"
+      ]
+    },
+    {
+      "id": "T05",
+      "family": "SIMULATION",
+      "literal_request": "Simular crear una pantalla sin escribir ni activar nada.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "simulation_no_effect",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N04",
+        "N09"
+      ]
+    },
+    {
+      "id": "T06",
+      "family": "EXCLUSION",
+      "literal_request": "Usar ACT-0053 pero no ACT-0052.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "typed_hint_non_authority",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T07",
+      "family": "CONTEXTUAL_RESOLVED",
+      "literal_request": "Modificar la misma pantalla que acabamos de identificar.",
+      "required_capabilities": [
+        "preserve_literal",
+        "context_resolution",
+        "material_clarification_only",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N03"
+      ]
+    },
+    {
+      "id": "T08",
+      "family": "CONTEXTUAL_UNRESOLVED",
+      "literal_request": "Ajustar esa otra vista sin contexto autorizado suficiente.",
+      "required_capabilities": [
+        "preserve_literal",
+        "context_resolution",
+        "material_clarification_only",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N03",
+        "N09"
+      ]
+    },
+    {
+      "id": "T09",
+      "family": "FUTURE_REGISTERED",
+      "literal_request": "Crear nuevo widget de riesgo con capacidad registrada.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "discover_registered_responsibility",
+        "role_separation"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": true,
+      "needs": [
+        "N02",
+        "N07",
+        "N08"
+      ]
+    },
+    {
+      "id": "T10",
+      "family": "FUTURE_UNREGISTERED",
+      "literal_request": "Crear un tipo futuro sin responsable registrado.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "future_capability_gap",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": true,
+      "needs": [
+        "N07",
+        "N09"
+      ]
+    },
+    {
+      "id": "T11",
+      "family": "TYPED_HINT",
+      "literal_request": "Target tipado provisto por caller con scope de escritura no atestado.",
+      "required_capabilities": [
+        "preserve_literal",
+        "typed_hint_non_authority",
+        "no_effect_authority",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N09"
+      ]
+    },
+    {
+      "id": "T12",
+      "family": "ROLE_SEPARATION",
+      "literal_request": "Pantalla con adapter auxiliar: seleccionar responsable, no adapter como ejecutor.",
+      "required_capabilities": [
+        "preserve_literal",
+        "role_separation",
+        "discover_registered_responsibility",
+        "no_effect_authority"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N02",
+        "N08",
+        "N09"
+      ]
+    },
+    {
+      "id": "T13",
+      "family": "DEMO_PARTIAL",
+      "literal_request": "Preparar DEMO parcial de módulo sin activar producción.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "simulation_no_effect",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N04",
+        "N10"
+      ]
+    },
+    {
+      "id": "T14",
+      "family": "DEMO_FULL",
+      "literal_request": "Preparar DEMO completa manteniendo efectos gobernados fuera del Router.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "simulation_no_effect",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N04",
+        "N09"
+      ]
+    },
+    {
+      "id": "T15",
+      "family": "TRAIN_ROUTE",
+      "literal_request": "Aplicar migración técnica por Train sin fabricar solicitud humana.",
+      "required_capabilities": [
+        "preserve_literal",
+        "train_technical_route_separation",
+        "no_effect_authority"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N09",
+        "N10"
+      ]
+    },
+    {
+      "id": "T16",
+      "family": "SAFE_CONTINUITY",
+      "literal_request": "Continuar investigación read-only aunque la escritura esté bloqueada.",
+      "required_capabilities": [
+        "preserve_literal",
+        "safe_readonly_continuity",
+        "no_effect_authority",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N02",
+        "N09",
+        "N10"
+      ]
+    },
+    {
+      "id": "T17",
+      "family": "CONDITIONAL",
+      "literal_request": "Cambiar oferta solo si la regla vigente lo permite; no tocar permisos.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T18",
+      "family": "MULTI_OWNER",
+      "literal_request": "Pantalla y skill requieren responsables distintos y coordinación.",
+      "required_capabilities": [
+        "preserve_literal",
+        "multi_goal_composition",
+        "role_separation",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N02",
+        "N05",
+        "N08"
+      ]
+    },
+    {
+      "id": "T19",
+      "family": "DETERMINISM",
+      "literal_request": "Misma entrada, contexto y revisión deben conservar decisión de autoridad.",
+      "required_capabilities": [
+        "preserve_literal",
+        "deterministic_authority",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N11"
+      ]
+    },
+    {
+      "id": "T20",
+      "family": "STALE_CURRENTNESS",
+      "literal_request": "Registry revision stale: no emitir READY con autoridad antigua.",
+      "required_capabilities": [
+        "preserve_literal",
+        "stale_currentness_fail_closed",
+        "no_effect_authority"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N09",
+        "N11"
+      ]
+    },
+    {
+      "id": "T21",
+      "family": "NEGATION",
+      "literal_request": "Route UI change but leave credential validation untouched.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T22",
+      "family": "PARAPHRASE",
+      "literal_request": "Please inspect who owns the change; don't implement it.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "discover_registered_responsibility",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T23",
+      "family": "FUTURE_UNREGISTERED",
+      "literal_request": "Tipo de activo no conocido y sin registro vigente.",
+      "required_capabilities": [
+        "preserve_literal",
+        "future_capability_gap",
+        "stale_currentness_fail_closed",
+        "no_effect_authority"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": true,
+      "needs": [
+        "N07",
+        "N11"
+      ]
+    },
+    {
+      "id": "T24",
+      "family": "RESEARCH",
+      "literal_request": "Investigar responsable sin efectuar cambios.",
+      "required_capabilities": [
+        "preserve_literal",
+        "discover_registered_responsibility",
+        "no_effect_authority",
+        "safe_readonly_continuity"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N02",
+        "N09",
+        "N10"
+      ]
+    },
+    {
+      "id": "T25",
+      "family": "NEGATIVE_SCOPE",
+      "literal_request": "Modificar UI sin cambiar autorización ni permisos.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T26",
+      "family": "PROFILE_RUNTIME",
+      "literal_request": "Perfil READ_ONLY con runtime no atestado: derivar/inspeccionar, no ejecutar.",
+      "required_capabilities": [
+        "preserve_literal",
+        "role_separation",
+        "no_effect_authority",
+        "safe_readonly_continuity"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N08",
+        "N09",
+        "N10"
+      ]
+    },
+    {
+      "id": "T27",
+      "family": "EXPLICIT_OPERATION",
+      "literal_request": "Operación explícita no concede autoridad de efecto al Router.",
+      "required_capabilities": [
+        "preserve_literal",
+        "typed_hint_non_authority",
+        "no_effect_authority"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N09"
+      ]
+    },
+    {
+      "id": "T28",
+      "family": "MULTIOBJECT",
+      "literal_request": "Onboarding para varios segmentos, conservar todos los objetivos.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "multi_goal_composition",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N05"
+      ]
+    },
+    {
+      "id": "T29",
+      "family": "DISCOVERY",
+      "literal_request": "Investigar quién es responsable y continuar con evidencia.",
+      "required_capabilities": [
+        "preserve_literal",
+        "discover_registered_responsibility",
+        "safe_readonly_continuity"
+      ],
+      "semantic_complex": false,
+      "extensibility_case": false,
+      "needs": [
+        "N02",
+        "N10"
+      ]
+    },
+    {
+      "id": "T30",
+      "family": "LOGIN_EXACT",
+      "literal_request": "Cambiar solo B2B login button text to Acceder; no auth/validation/other screens.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "discover_registered_responsibility",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N02",
+        "N06",
+        "N09"
+      ]
+    },
+    {
+      "id": "T31",
+      "family": "EXCLUSION_CODE",
+      "literal_request": "ACT-0053 pero no ACT-0052; excluir código negado.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "preserve_negation",
+        "typed_hint_non_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N06"
+      ]
+    },
+    {
+      "id": "T32",
+      "family": "FUTURE_REGISTERED",
+      "literal_request": "Crear nuevo widget de riesgo sin inferir skill por palabra riesgo.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "role_separation",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": true,
+      "needs": [
+        "N02",
+        "N07",
+        "N08"
+      ]
+    },
+    {
+      "id": "T33",
+      "family": "MULTIOBJECT",
+      "literal_request": "Crear regla y skill; no perder regla al elegir skill.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "multi_goal_composition",
+        "discover_registered_responsibility"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N01",
+        "N05"
+      ]
+    },
+    {
+      "id": "T34",
+      "family": "SIMULATION",
+      "literal_request": "Simular crear nueva pantalla; crear no significa escribir.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "simulation_no_effect",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N04",
+        "N09"
+      ]
+    },
+    {
+      "id": "T35",
+      "family": "PARTIAL_CLARIFY",
+      "literal_request": "Derivar ofertas y aclarar solo el referente de «lo que te mostré antes».",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "context_resolution",
+        "material_clarification_only",
+        "safe_readonly_continuity"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N03",
+        "N05",
+        "N10"
+      ]
+    },
+    {
+      "id": "T36",
+      "family": "AUTHORITY_CONFLICT",
+      "literal_request": "Nota dice aprobada, receipt vigente dice en disputa: investigar contradicción sin efectos.",
+      "required_capabilities": [
+        "preserve_literal",
+        "semantic_normalization",
+        "stale_currentness_fail_closed",
+        "safe_readonly_continuity",
+        "no_effect_authority"
+      ],
+      "semantic_complex": true,
+      "extensibility_case": false,
+      "needs": [
+        "N09",
+        "N10",
+        "N11",
+        "N12"
+      ]
+    }
+  ],
+  "selection_policy": {
+    "hard_rule": "ANY_MISSING_REQUIRED_CAPABILITY_ELIMINATES_ELIGIBLE_CANDIDATE",
+    "baseline_eligible": false,
+    "eligible_candidates": [
+      "A_MIN_ROUTER_SEMANTIC_SPECIALIST",
+      "B_MIN_CLASSIFIER_COMPOSITE_DERIVATION",
+      "C_BOUNDED_SEMANTIC_ROUTER"
+    ],
+    "lexicographic_tiebreak": [
+      "hard_failures_asc",
+      "core_router_semantic_rule_change_touches_asc",
+      "router_authority_decision_responsibilities_asc",
+      "new_shared_runtime_components_asc",
+      "avg_control_hops_asc"
+    ],
+    "weights_forbidden": true,
+    "actual_latency": "NOT_MEASURED_NO_EQUIVALENT_IMPLEMENTATIONS",
+    "actual_cost": "NOT_MEASURED_NO_EQUIVALENT_IMPLEMENTATIONS"
+  },
+  "hard_invariants": {
+    "router_owns_discovery_and_derivation": true,
+    "semantic_specialist_is_not_router": true,
+    "semantic_specialist_cannot_discover_workers": true,
+    "semantic_specialist_cannot_route": true,
+    "semantic_specialist_cannot_authorize_effect": true,
+    "effect_authority_outside_router": true,
+    "current_baseline_not_oracle": true,
+    "no_production_mutation": true
+  }
+}

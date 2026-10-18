@@ -25,6 +25,10 @@ on:
       - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
       - 'supabase/migrations/*lf_router_rw101_c2_test_contract_v1.sql'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -37,6 +41,9 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -102,3 +109,15 @@ jobs:
           assert len({x['id'] for x in p['cases']})==12
           print(json.dumps({'status':'C3_V2_GENERATOR_SMOKE_PASS','case_count':12}))
           PY
+
+      - name: Execute RW1-02 C2 architecture competition benchmark
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json \
+            --self-test
