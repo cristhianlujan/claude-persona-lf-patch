@@ -1,0 +1,259 @@
+{
+  "schema": "PE10_M27_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M27",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M27-INN-F01",
+      "claim": "The bounded current related-function surface contains 75 functions, including 10 cached, 4 context, 1 manifest and 4 receipt-named functions.",
+      "evidence_refs": [
+        "M27_INN_Q01"
+      ],
+      "confidence": "HIGH_FOR_QUERY_RULE"
+    },
+    {
+      "id": "M27-INN-F02",
+      "claim": "Whitespace-normalized body comparison finds 2 duplicate-body groups containing 5 functions; duplication alone does not establish defect or safe deletion.",
+      "evidence_refs": [
+        "M27_INN_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-INN-F03",
+      "claim": "Existing manifest/receipt functions have mixed volatility and EXECUTE grants; notably release_bundle_manifest_v1 is STABLE and executable, while several receipt functions are VOLATILE. No function was invoked.",
+      "evidence_refs": [
+        "M27_INN_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-INN-F04",
+      "claim": "track_functions is none and pg_stat_user_functions exposes zero rows/calls for the bounded family, so zero stats cannot be interpreted as zero runtime use.",
+      "evidence_refs": [
+        "M27_INN_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-INN-F05",
+      "claim": "Frozen P0 declares 38 callers and 76 callee edges, with max declared out-degree 5 and no zero-callee caller; this is a static declared graph, not runtime telemetry.",
+      "evidence_refs": [
+        "M27_INN_Q05"
+      ],
+      "confidence": "HIGH_FOR_STATIC_GRAPH"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "INN-A1",
+          "text": "Existing cache/context/manifest/receipt surfaces may satisfy evidence needs and should be evaluated before inventing a new subsystem."
+        },
+        {
+          "id": "INN-A2",
+          "text": "Exact/normalized body duplication may represent intentional compatibility variants."
+        },
+        {
+          "id": "INN-A3",
+          "text": "VOLATILE functions may write or have side effects; EXECUTE privilege alone is not permission to invoke them during read-only research."
+        },
+        {
+          "id": "INN-A4",
+          "text": "track_functions=none makes zero function stats non-informative about usage."
+        },
+        {
+          "id": "INN-A5",
+          "text": "Static declared edges are not equivalent to runtime call frequency or criticality."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Reuse-first evidence strategy is plausible",
+          "support": [
+            "M27_INN_Q01",
+            "M27_INN_Q03"
+          ],
+          "assumptions": [
+            "INN-A1",
+            "INN-A3"
+          ]
+        },
+        {
+          "claim": "Duplicate-body cleanup is not currently justified",
+          "support": [
+            "M27_INN_Q02"
+          ],
+          "assumptions": [
+            "INN-A2"
+          ]
+        },
+        {
+          "claim": "Runtime non-use cannot be inferred from stats",
+          "support": [
+            "M27_INN_Q04"
+          ],
+          "assumptions": [
+            "INN-A4"
+          ]
+        },
+        {
+          "claim": "Frozen graph describes declared structure only",
+          "support": [
+            "M27_INN_Q05"
+          ],
+          "assumptions": [
+            "INN-A5"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "INN-NG1",
+          "invalidates_if": "Existing safe manifest surface cannot provide required current evidence.",
+          "invalidates_claims": [
+            "Any assumption that no new evidence surface is needed"
+          ]
+        },
+        {
+          "id": "INN-NG2",
+          "invalidates_if": "Compatibility ownership rejects one duplicate-body member as obsolete/unsafe.",
+          "invalidates_claims": [
+            "Any assumption that duplicate bodies are harmless"
+          ]
+        },
+        {
+          "id": "INN-NG3",
+          "invalidates_if": "A function marked executable is actually unsafe to call under research scope due side effects.",
+          "invalidates_claims": [
+            "Any inference that executable means safe-to-query"
+          ]
+        },
+        {
+          "id": "INN-NG4",
+          "invalidates_if": "Governed runtime telemetry contradicts the frozen static graph.",
+          "invalidates_claims": [
+            "Any runtime criticality conclusion from declared edges"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "INN-NG1",
+          "result": "Escalate to bounded evidence-surface gap; still do not invent runtime repair before authority review."
+        },
+        {
+          "on": "INN-NG2",
+          "result": "Reclassify duplicate group for targeted compatibility repair review."
+        },
+        {
+          "on": "INN-NG3",
+          "result": "Exclude volatile/side-effect function from read-only evidence plan."
+        },
+        {
+          "on": "INN-NG4",
+          "result": "Use governed runtime evidence and retain static graph only as historical structure."
+        }
+      ],
+      "alternative_supports": [
+        "A safer path is to reuse existing STABLE/read-only manifest surfaces where inputs and authority are explicit, rather than creating new runtime instrumentation."
+      ]
+    },
+    "E": {
+      "state": "NO_ACTION_SUPPORTED",
+      "rationale": "No material runtime defect is demonstrated. Existing evidence surfaces and compatibility variants should be verified/reused before any new subsystem, duplicate removal or runtime intervention.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized safe manifest readback reveals a material inconsistency.",
+        "Compatibility ownership proves a duplicate-body variant is unsafe/obsolete.",
+        "Governed runtime telemetry contradicts the static graph at a critical edge."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A current material runtime inconsistency or unsafe compatibility variant is proven.",
+        "to_VERIFY_FIRST": "A bounded evidence gap can be closed through existing safe surfaces.",
+        "to_NEEDS_MORE_EVIDENCE": "Required safe evidence surfaces cannot be accessed or interpreted."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not infer zero runtime use from pg_stat_user_functions when track_functions=none.",
+    "Do not delete duplicate-body variants without compatibility ownership.",
+    "Do not invoke VOLATILE receipt/manifests merely because EXECUTE is granted.",
+    "Do not infer runtime criticality from static declared edge count."
+  ],
+  "unresolved": [
+    "Safe inputs for existing manifest surfaces",
+    "Compatibility ownership for duplicate-body groups",
+    "Governed runtime-edge evidence",
+    "Whether current evidence needs exceed existing surfaces"
+  ],
+  "next_safe_step": "Prefer authorized read-only reuse of existing safe evidence surfaces; no new runtime subsystem or duplicate removal.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 4,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M27_INN_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "related_functions": 75,
+        "cached_functions": 10,
+        "context_functions": 4,
+        "manifest_functions": 1,
+        "receipt_functions": 4
+      }
+    },
+    {
+      "query_id": "M27_INN_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "duplicate_body_groups": 2,
+        "functions_in_duplicate_groups": 5
+      }
+    },
+    {
+      "query_id": "M27_INN_Q03",
+      "status": "SUCCESS",
+      "result": "16 manifest/receipt functions enumerated with volatility and current-user EXECUTE; no function invoked"
+    },
+    {
+      "query_id": "M27_INN_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "track_functions": "none",
+        "stats_rows": 0,
+        "calls": 0
+      }
+    },
+    {
+      "query_id": "M27_INN_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "declared_edges": 76,
+        "max_declared_out_degree": 5,
+        "zero_declared_callees": 0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:24:00Z"
+}
