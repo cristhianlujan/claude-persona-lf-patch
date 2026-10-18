@@ -1,0 +1,886 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M12",
+  "base_code": "A",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M12.json",
+    "sha256": "04392fbcd8e40c7236abef2b7019b2668efd8ff5e46bb50765f9f384b5ef78a3"
+  },
+  "producer": "One integrated SRCR D+M+E experiment; independent raw output from P0, no peer method results used",
+  "external_evaluation": "NOT_PERFORMED",
+  "sql_evidence": [
+    {
+      "id": "M12_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' pack,payload->'scope_guards' scope_guards,payload->'historical_provenance_only' provenance FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "pack": "SOURCE_PACK_V1",
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          },
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q02",
+      "sql_literal": "SELECT count(*) total,count(DISTINCT x->>'dedupe_key') deduped,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') labeled_live FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "deduped": 38,
+          "labeled_live": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q03",
+      "sql_literal": "SELECT count(*) lexical_edges,count(DISTINCT c.value) distinct_targets,count(*) FILTER(WHERE c.value ILIKE '%cached%') cached_edges FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(value) WHERE e.id=20161",
+      "rows": [
+        {
+          "lexical_edges": 76,
+          "distinct_targets": 39,
+          "cached_edges": 11
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q04",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') trigger_bindings,jsonb_array_length(payload->'external_inventory') external_assets,jsonb_array_length(payload->'edge_current') edge_entries,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') consumer_snapshots,payload->'usage_stats' usage_stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "trigger_bindings": 21,
+          "external_assets": 6,
+          "edge_entries": 4,
+          "consumer_snapshots": 27,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q05",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload->>'pass' qualified,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "qualified": "true",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q06",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q07",
+      "sql_literal": "SELECT payload->'deduplication' deduplication,payload->'excluded_name_candidate' excluded_candidate,payload->'ambiguous_name_candidates_checked' ambiguous_names FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "deduplication": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded_candidate": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "ambiguous_names": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q08",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'definition_md5'~'^[a-f0-9]{32}$') valid_format,count(*) FILTER(WHERE x->>'definition_md5' IS NULL) absent FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "valid_format": 38,
+          "absent": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q09",
+      "sql_literal": "SELECT coalesce(x->>'operational_class','UNKNOWN') class,coalesce(x->>'governance_lifecycle','UNKNOWN') lifecycle,count(*) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161 GROUP BY 1,2 ORDER BY 1,2",
+      "rows": [
+        {
+          "class": "ACTIVE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 2
+        },
+        {
+          "class": "ACTIVE",
+          "lifecycle": "RUNTIME_SANDBOX_CANARY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "NO_HABILITADO",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE_TEST",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        }
+      ],
+      "rows_returned": 5,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q10",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') historical,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') later FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "historical": 1,
+          "later": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_BEFORE_P0_CUTOFF"
+    },
+    {
+      "id": "M12_Q11",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "PRESENT_ROLE_ONLY"
+    }
+  ],
+  "algorithm_execution": {
+    "D": {
+      "conflicts": [
+        [
+          "HIST_SOAK_TEXT_DRIFT",
+          "SOURCE_RECEIPT_BINDING"
+        ],
+        [
+          "CP2_ROLE_PRIVILEGE",
+          "CP2_READ_CONTEXT"
+        ],
+        [
+          "STATIC_GRAPH_PROMOTION",
+          "MISSING_RUNTIME_TRACE"
+        ]
+      ],
+      "minimal_hitting_sets": [
+        [
+          "HIST_SOAK_TEXT_DRIFT",
+          "CP2_ROLE_PRIVILEGE",
+          "STATIC_GRAPH_PROMOTION"
+        ],
+        [
+          "SOURCE_RECEIPT_BINDING",
+          "CP2_ROLE_PRIVILEGE",
+          "STATIC_GRAPH_PROMOTION"
+        ],
+        [
+          "HIST_SOAK_TEXT_DRIFT",
+          "CP2_READ_CONTEXT",
+          "STATIC_GRAPH_PROMOTION"
+        ],
+        [
+          "SOURCE_RECEIPT_BINDING",
+          "CP2_READ_CONTEXT",
+          "STATIC_GRAPH_PROMOTION"
+        ],
+        [
+          "HIST_SOAK_TEXT_DRIFT",
+          "CP2_ROLE_PRIVILEGE",
+          "MISSING_RUNTIME_TRACE"
+        ],
+        [
+          "SOURCE_RECEIPT_BINDING",
+          "CP2_ROLE_PRIVILEGE",
+          "MISSING_RUNTIME_TRACE"
+        ],
+        [
+          "HIST_SOAK_TEXT_DRIFT",
+          "CP2_READ_CONTEXT",
+          "MISSING_RUNTIME_TRACE"
+        ],
+        [
+          "SOURCE_RECEIPT_BINDING",
+          "CP2_READ_CONTEXT",
+          "MISSING_RUNTIME_TRACE"
+        ]
+      ],
+      "all_hitting_sets_count": 27,
+      "barinel": "NOT_CALIBRATABLE_WITHOUT_EXECUTION_SPECTRA",
+      "information_gain": "ORDINAL_ONLY_NO_PRIORS",
+      "scope": "DIAGNOSTIC_HYPOTHESES_NOT_PROVEN_CAUSAL"
+    },
+    "M": {
+      "facts": [
+        "SOURCE20161",
+        "RECEIPT38",
+        "EKB_PRE_P0",
+        "ASOF",
+        "SAFE_SELECT",
+        "NO_STATS"
+      ],
+      "rules": {
+        "ASOF_GRAPH": [
+          [
+            "SOURCE20161",
+            "ASOF"
+          ]
+        ],
+        "HIST_SOAK": [
+          [
+            "RECEIPT38",
+            "ASOF"
+          ]
+        ],
+        "RISK_CP2": [
+          [
+            "EKB_PRE_P0",
+            "ASOF"
+          ]
+        ],
+        "SOURCE_PROMOTION_RISK": [
+          [
+            "ASOF_GRAPH"
+          ]
+        ],
+        "RISK_ANY": [
+          [
+            "RISK_CP2"
+          ],
+          [
+            "SOURCE_PROMOTION_RISK"
+          ]
+        ],
+        "SAFE_CHECK": [
+          [
+            "SAFE_SELECT",
+            "RISK_CP2"
+          ],
+          [
+            "SAFE_SELECT",
+            "SOURCE_PROMOTION_RISK"
+          ]
+        ],
+        "NO_USAGE_NOT_PROVEN": [
+          [
+            "SOURCE20161",
+            "NO_STATS"
+          ]
+        ]
+      },
+      "nogoods": [
+        [
+          "ASOF",
+          "CLAIM_CURRENT"
+        ],
+        [
+          "NO_STATS",
+          "CLAIM_ZERO_USAGE"
+        ]
+      ],
+      "justifications": {
+        "SOURCE20161": [
+          [
+            "SOURCE20161"
+          ]
+        ],
+        "RECEIPT38": [
+          [
+            "RECEIPT38"
+          ]
+        ],
+        "EKB_PRE_P0": [
+          [
+            "EKB_PRE_P0"
+          ]
+        ],
+        "ASOF": [
+          [
+            "ASOF"
+          ]
+        ],
+        "SAFE_SELECT": [
+          [
+            "SAFE_SELECT"
+          ]
+        ],
+        "NO_STATS": [
+          [
+            "NO_STATS"
+          ]
+        ],
+        "ASOF_GRAPH": [
+          [
+            "ASOF",
+            "SOURCE20161"
+          ]
+        ],
+        "HIST_SOAK": [
+          [
+            "ASOF",
+            "RECEIPT38"
+          ]
+        ],
+        "RISK_CP2": [
+          [
+            "ASOF",
+            "EKB_PRE_P0"
+          ]
+        ],
+        "SOURCE_PROMOTION_RISK": [
+          [
+            "ASOF",
+            "SOURCE20161"
+          ]
+        ],
+        "RISK_ANY": [
+          [
+            "ASOF",
+            "EKB_PRE_P0"
+          ],
+          [
+            "ASOF",
+            "SOURCE20161"
+          ]
+        ],
+        "SAFE_CHECK": [
+          [
+            "ASOF",
+            "EKB_PRE_P0",
+            "SAFE_SELECT"
+          ],
+          [
+            "ASOF",
+            "SAFE_SELECT",
+            "SOURCE20161"
+          ]
+        ],
+        "NO_USAGE_NOT_PROVEN": [
+          [
+            "NO_STATS",
+            "SOURCE20161"
+          ]
+        ]
+      },
+      "retractions": [
+        {
+          "id": "M12_RETRACT_1",
+          "removed": [],
+          "graph": true,
+          "soak": true,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_2",
+          "removed": [
+            "SOURCE20161"
+          ],
+          "graph": false,
+          "soak": true,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_3",
+          "removed": [
+            "RECEIPT38"
+          ],
+          "graph": true,
+          "soak": false,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_4",
+          "removed": [
+            "EKB_PRE_P0"
+          ],
+          "graph": true,
+          "soak": true,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_5",
+          "removed": [
+            "SOURCE20161",
+            "EKB_PRE_P0"
+          ],
+          "graph": false,
+          "soak": true,
+          "risk": false,
+          "eligible_verification": false,
+          "derived_state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M12_RETRACT_6",
+          "removed": [
+            "SAFE_SELECT"
+          ],
+          "graph": true,
+          "soak": true,
+          "risk": true,
+          "eligible_verification": false,
+          "derived_state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M12_RETRACT_7",
+          "removed": [
+            "SOURCE20161",
+            "RECEIPT38"
+          ],
+          "graph": false,
+          "soak": false,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_8",
+          "removed": [
+            "EKB_PRE_P0",
+            "RECEIPT38"
+          ],
+          "graph": true,
+          "soak": false,
+          "risk": true,
+          "eligible_verification": true,
+          "derived_state": "VERIFY_FIRST"
+        }
+      ],
+      "qualified_current_from_historical": false
+    },
+    "E": {
+      "states": [
+        "VERIFY_FIRST",
+        "REPAIR_REQUIRED",
+        "NEEDS_MORE_EVIDENCE",
+        "NO_ACTION_SUPPORTED"
+      ],
+      "actual_state": "VERIFY_FIRST",
+      "scenarios": [
+        {
+          "id": "E_ACTUAL",
+          "inputs": {
+            "causal_defect": false,
+            "proven_trace": false,
+            "material_risk": true,
+            "authorized_discriminator": true,
+            "missing_evidence": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_POSITIVE_CAUSAL",
+          "inputs": {
+            "causal_defect": true,
+            "proven_trace": true,
+            "material_risk": true,
+            "authorized_discriminator": true,
+            "missing_evidence": false,
+            "qualified_source": true
+          },
+          "expected": "REPAIR_REQUIRED",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E_UNKNOWN_NO_READ",
+          "inputs": {
+            "causal_defect": false,
+            "proven_trace": false,
+            "material_risk": true,
+            "authorized_discriminator": false,
+            "missing_evidence": true,
+            "qualified_source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E_FULL_NEGATIVE",
+          "inputs": {
+            "causal_defect": false,
+            "proven_trace": false,
+            "material_risk": false,
+            "authorized_discriminator": false,
+            "missing_evidence": false,
+            "qualified_source": true
+          },
+          "expected": "NO_ACTION_SUPPORTED",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E_42501_PERMISSION_ONLY",
+          "inputs": {
+            "causal_defect": false,
+            "proven_trace": false,
+            "material_risk": true,
+            "authorized_discriminator": true,
+            "missing_evidence": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_CAUSAL_PROOF_MISSING",
+          "inputs": {
+            "causal_defect": true,
+            "proven_trace": false,
+            "material_risk": true,
+            "authorized_discriminator": true,
+            "missing_evidence": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_SOURCE_MISSING",
+          "inputs": {
+            "causal_defect": false,
+            "proven_trace": false,
+            "material_risk": false,
+            "authorized_discriminator": false,
+            "missing_evidence": true,
+            "qualified_source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "derived_states_after_retraction": [
+        {
+          "id": "M12_RETRACT_1",
+          "removed": [],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_2",
+          "removed": [
+            "SOURCE20161"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_3",
+          "removed": [
+            "RECEIPT38"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_4",
+          "removed": [
+            "EKB_PRE_P0"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_5",
+          "removed": [
+            "SOURCE20161",
+            "EKB_PRE_P0"
+          ],
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M12_RETRACT_6",
+          "removed": [
+            "SAFE_SELECT"
+          ],
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M12_RETRACT_7",
+          "removed": [
+            "SOURCE20161",
+            "RECEIPT38"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M12_RETRACT_8",
+          "removed": [
+            "EKB_PRE_P0",
+            "RECEIPT38"
+          ],
+          "state": "VERIFY_FIRST"
+        }
+      ],
+      "reversal_criteria": [
+        {
+          "when": "functional defect materially proved with causal trace",
+          "state": "REPAIR_REQUIRED"
+        },
+        {
+          "when": "risk removed and qualifying scope complete",
+          "state": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "when": "authorized discriminator becomes unavailable",
+          "state": "NEEDS_MORE_EVIDENCE"
+        }
+      ]
+    }
+  },
+  "negative_tests": [
+    {
+      "id": "D_EIGHT_DIAGNOSES",
+      "pass": true
+    },
+    {
+      "id": "D_NO_DIAGNOSIS_STRICT_SUBSET",
+      "pass": true
+    },
+    {
+      "id": "M_GRAPH_REMOVED",
+      "pass": true
+    },
+    {
+      "id": "M_SOAK_REMOVED",
+      "pass": true
+    },
+    {
+      "id": "M_EKB_REMOVED_ALTERNATIVE",
+      "pass": true
+    },
+    {
+      "id": "M_NO_RISK_BOTH_INPUTS",
+      "pass": true
+    },
+    {
+      "id": "M_NO_SAFE_SELECT",
+      "pass": true
+    },
+    {
+      "id": "E_ALL_SCENARIOS",
+      "pass": true
+    },
+    {
+      "id": "E_FOUR_STATES_EXERCISED",
+      "pass": true
+    },
+    {
+      "id": "E_42501_NOT_FUNCTIONAL",
+      "pass": true
+    },
+    {
+      "id": "P0_AUTHORITY_SCREEN",
+      "pass": true
+    },
+    {
+      "id": "P0_HISTORICAL_CUTOFF",
+      "pass": true
+    },
+    {
+      "id": "TELEMETRY_ZERO_NOT_ZERO_USE",
+      "pass": true
+    },
+    {
+      "id": "HASH_SYNTAX_NOT_CANONICAL_METHOD",
+      "pass": true
+    },
+    {
+      "id": "NO_BARINEL_NUMERIC",
+      "pass": true
+    },
+    {
+      "id": "NO_PROD_REPAIR",
+      "pass": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "M12_F01",
+      "claim": "The 38 historical callers and 76 nominal edges do not establish current execution; third GDE conflict is a trace gap",
+      "source": [
+        "M12_Q01",
+        "M12_Q02",
+        "M12_Q03"
+      ],
+      "scope": "HISTORICAL_MEASUREMENT"
+    },
+    {
+      "id": "M12_F02",
+      "claim": "M9.11 SOAK verified 13 screens/47 families with zero false pass and D4; does not establish E2E perf or current CP2 authority",
+      "source": [
+        "M12_Q05",
+        "M12_Q06"
+      ],
+      "scope": "HISTORICAL_MEASUREMENT"
+    },
+    {
+      "id": "M12_F03",
+      "claim": "GDE three modeled risk conflicts give eight minimal diagnostic candidate sets; ATMS shows alternative evidentiary support and dependency invalidation",
+      "source": [
+        "M12_Q01",
+        "M12_Q05",
+        "M12_Q06"
+      ],
+      "scope": "COMPUTED_METHOD"
+    },
+    {
+      "id": "M12_F04",
+      "claim": "Removing the authorized discriminator downgrades E decision from VERIFY_FIRST to NEEDS_MORE_EVIDENCE, not a claimed applied repair",
+      "source": [
+        "M12_Q06",
+        "M12_Q11"
+      ],
+      "scope": "TYPED_ALGORITHM"
+    }
+  ],
+  "causal_model": {
+    "proven": false,
+    "alternatives": [
+      "SOAK projection/receipt mismatch",
+      "CP2 read privilege/currentness mismatch",
+      "static graph/trace mismatch"
+    ],
+    "falsifiers": [
+      "Versioned qualified runtime trace at same cutoff",
+      "Read-authorized CP2 records with exact permission source",
+      "Historical receipt/validation and appropriate currentness contract"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Source-pinned SOAK/CP2 reconciliation",
+      "status": "READ_ONLY_PROPOSAL"
+    },
+    {
+      "action": "Use ATMS revocation for stale evidence",
+      "status": "PROPOSED_CONTROL"
+    }
+  ],
+  "chosen_repair": {
+    "state": "VERIFY_FIRST",
+    "implementation": false,
+    "decision_scope": "P0_SOURCE_ONLY",
+    "risk": "No proven runtime defect or performance effect"
+  },
+  "rejected_alternatives": [
+    "Grant EXECUTE to readonly principal",
+    "Replace uncertainty by known-answer D4/CP2 repairs",
+    "Treat BARINEL numerics as known",
+    "Finish domain repair because checkpoint administrative proof exists"
+  ],
+  "omissions_searched": [
+    "nominal and runtime graph difference",
+    "hash canonical method",
+    "telemetry gap",
+    "P0 EKB scope",
+    "alternative supports",
+    "negative scenario coverage",
+    "reversal typed states"
+  ],
+  "unresolved": [
+    "No causal defect proven",
+    "No time-qualified runtime trace",
+    "No proven canonical inventory hashing method",
+    "E2E performance unknown"
+  ],
+  "constraints_preserved": [
+    "P0 cutoff",
+    "no product mutations",
+    "no other method artifacts consulted",
+    "no external quality scoring"
+  ],
+  "conclusion": "D_M_E_EXECUTED_SOURCE_EVIDENCE_WITH_VERIFICATION_FIRST_NO_APPLIED_REPAIR"
+}
