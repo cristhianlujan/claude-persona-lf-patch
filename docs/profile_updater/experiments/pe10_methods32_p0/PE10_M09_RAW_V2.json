@@ -1,0 +1,596 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M09",
+  "base_code": "A",
+  "algorithm_codes": [
+    "E"
+  ],
+  "contract": "PE10_METHOD_V1",
+  "source_cutoff_utc": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M09.json",
+    "sha256": "49b6c91b84756fe18bf79374275d51be3b33dd5879969898b60e8a3a4e71865a"
+  },
+  "producer": "One integrated SRCR+E method run; no separate agent or independent comparative scoring represented",
+  "mode": "P0_HISTORICAL_READ_ONLY_DECISION_TYPE_NOT_RUNTIME_REPAIR",
+  "external_evaluation": "NOT_PERFORMED",
+  "sql_evidence": [
+    {
+      "id": "M09_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->>'fetch_spec_version' fetch_spec,payload->'historical_provenance_only' provenance FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "fetch_spec": "SOURCE_PACK_LOOKUP_V2",
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q02",
+      "sql_literal": "SELECT count(*) total_callers,count(DISTINCT x->>'dedupe_key') unique_caller_keys,count(*) FILTER(WHERE x->>'definition_md5'~'^[a-f0-9]{32}$') hash_syntax_valid,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') labeled_historical_live FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total_callers": 38,
+          "unique_caller_keys": 38,
+          "hash_syntax_valid": 38,
+          "labeled_historical_live": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q03",
+      "sql_literal": "SELECT count(*) reference_edges,count(DISTINCT (x->>'caller')||'->'||c.name) distinct_edges,count(DISTINCT c.name) destination_labels FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "reference_edges": 76,
+          "distinct_edges": 76,
+          "destination_labels": 39
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q04",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') trigger_bindings,jsonb_array_length(payload->'edge_current') edge_snapshot_entries,jsonb_array_length(payload->'external_inventory') external_assets,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') relation_snapshots,payload->'usage_stats' usage_stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "trigger_bindings": 21,
+          "edge_snapshot_entries": 4,
+          "external_assets": 6,
+          "relation_snapshots": 27,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q05",
+      "sql_literal": "SELECT coalesce(x->>'operational_class','UNKNOWN') class,coalesce(x->>'governance_lifecycle','UNKNOWN') lifecycle,count(*) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161 GROUP BY 1,2 ORDER BY 1,2",
+      "rows": [
+        {
+          "class": "ACTIVE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 2
+        },
+        {
+          "class": "ACTIVE",
+          "lifecycle": "RUNTIME_SANDBOX_CANARY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "NO_HABILITADO",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE_TEST",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        }
+      ],
+      "rows_returned": 5,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q06",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verification_status,payload->>'pass' pass,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'screens_below_2' screens_below,payload->>'families_below_2' families_below,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' unresolved_d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verification_status": "VERIFIED",
+          "pass": "true",
+          "screens": "13",
+          "families": "47",
+          "screens_below": "0",
+          "families_below": "0",
+          "false_pass": "0",
+          "unresolved_d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q07",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN ('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q08",
+      "sql_literal": "SELECT payload->'scope_guards' scope_guards,payload->'deduplication' deduplication,payload->'excluded_name_candidate' excluded_name_candidate,payload->'ambiguous_name_candidates_checked' ambiguous_checked FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          },
+          "deduplication": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded_name_candidate": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "ambiguous_checked": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q09",
+      "sql_literal": "SELECT jsonb_array_length(payload->'router_binding_snapshot_json_rows') router_snapshots,jsonb_array_length(payload->'contract_snapshot_json_rows') contract_snapshots,jsonb_array_length(payload->'test_suite_snapshot_json_rows') test_suite_snapshots FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "router_snapshots": 4,
+          "contract_snapshots": 19,
+          "test_suite_snapshots": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q10",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') pre_cutoff,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') post_cutoff FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "pre_cutoff": 1,
+          "post_cutoff": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "HISTORICAL_P0_SOURCE_READ_IN_PRESENT",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    },
+    {
+      "id": "M09_Q11",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "readback_scope": "PRESENT_SQL_PRINCIPAL_NOT_P0",
+      "time_basis": "The rows predate P0 cutoff; query execution is current and cannot attest P0 runtime"
+    }
+  ],
+  "algorithm_execution": {
+    "E": {
+      "rules": {
+        "state_type": "PE10_E_DECISION_V1",
+        "source": "module E DRAFT canonical states; evidence-based diagnostic only",
+        "rules": [
+          {
+            "state": "REPAIR_REQUIRED",
+            "when": "specific material defect proved with trace or counterexample and attributable failure; not inferred from access error alone",
+            "follow_up": "repair candidate under separate governed authorization and test negative+positive"
+          },
+          {
+            "state": "VERIFY_FIRST",
+            "when": "source-backed risk with safe discriminating check remains and repair causality not established",
+            "follow_up": "authorized select/readback qualified to same time and cohort"
+          },
+          {
+            "state": "NEEDS_MORE_EVIDENCE",
+            "when": "required source unavailable or ambiguous and no discriminating authorized verification path identified",
+            "follow_up": "obtain eligible observations rather than fabricate verdict"
+          },
+          {
+            "state": "NO_ACTION_SUPPORTED",
+            "when": "sufficient qualified scope has no demonstrated risk or open uncertainty materially affecting action",
+            "follow_up": "record negative finding without unjustified patch"
+          }
+        ]
+      },
+      "implementation": "Executed pure decision classifier against seven scenarios; diagnostic verdict independent of admin checkpoint DONE.",
+      "actual_state": "VERIFY_FIRST",
+      "actual_inputs": {
+        "proven_defect": false,
+        "causal_trace": false,
+        "source_risk": true,
+        "authorized_falsifier": true,
+        "source_qualified": true,
+        "material_unknown": true
+      },
+      "decision_scenarios": [
+        {
+          "id": "E09_ACTUAL_SOURCE_RISK",
+          "inputs": {
+            "proven_defect": false,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_falsifier": true,
+            "source_qualified": true,
+            "material_unknown": true
+          },
+          "expected": "VERIFY_FIRST",
+          "type": "ACTUAL_P0_DECISION",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_42501_IS_NOT_FUNCTIONAL_DEFECT",
+          "inputs": {
+            "proven_defect": false,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_falsifier": true,
+            "source_qualified": true,
+            "material_unknown": true
+          },
+          "expected": "VERIFY_FIRST",
+          "type": "NEGATIVE_CHECK",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_NO_QUALIFIED_READ_PATH",
+          "inputs": {
+            "proven_defect": false,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_falsifier": false,
+            "source_qualified": false,
+            "material_unknown": true
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "type": "SYNTHETIC_NEGATIVE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E09_PROVEN_CAUSAL_DEFECT",
+          "inputs": {
+            "proven_defect": true,
+            "causal_trace": true,
+            "source_risk": true,
+            "authorized_falsifier": true,
+            "source_qualified": true,
+            "material_unknown": false
+          },
+          "expected": "REPAIR_REQUIRED",
+          "type": "SYNTHETIC_POSITIVE",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E09_NO_DEMONSTRATED_RISK_FULL_SCOPE",
+          "inputs": {
+            "proven_defect": false,
+            "causal_trace": false,
+            "source_risk": false,
+            "authorized_falsifier": false,
+            "source_qualified": true,
+            "material_unknown": false
+          },
+          "expected": "NO_ACTION_SUPPORTED",
+          "type": "SYNTHETIC_NEGATIVE",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E09_RISK_NO_CAUSAL_TRACE",
+          "inputs": {
+            "proven_defect": true,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_falsifier": true,
+            "source_qualified": true,
+            "material_unknown": true
+          },
+          "expected": "VERIFY_FIRST",
+          "type": "SYNTHETIC_NEGATIVE",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_MISSING_SOURCE_NOR_RISK",
+          "inputs": {
+            "proven_defect": false,
+            "causal_trace": false,
+            "source_risk": false,
+            "authorized_falsifier": false,
+            "source_qualified": false,
+            "material_unknown": true
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "type": "SYNTHETIC_NEGATIVE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "positive_negative_tests": [
+        {
+          "id": "E09_ACTUAL_SOURCE_RISK",
+          "pass": true,
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_42501_IS_NOT_FUNCTIONAL_DEFECT",
+          "pass": true,
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_NO_QUALIFIED_READ_PATH",
+          "pass": true,
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E09_PROVEN_CAUSAL_DEFECT",
+          "pass": true,
+          "expected": "REPAIR_REQUIRED",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E09_NO_DEMONSTRATED_RISK_FULL_SCOPE",
+          "pass": true,
+          "expected": "NO_ACTION_SUPPORTED",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E09_RISK_NO_CAUSAL_TRACE",
+          "pass": true,
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E09_MISSING_SOURCE_NOR_RISK",
+          "pass": true,
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E09_RECENT_USAGE_STATS_NOT_INFERRED",
+          "pass": true,
+          "evidence": "M09_Q04"
+        },
+        {
+          "id": "E09_HISTORICAL_CUTOFF",
+          "pass": true,
+          "evidence": "M09_Q10"
+        },
+        {
+          "id": "E09_SOAK_NOT_E2E_METRICS",
+          "pass": true,
+          "evidence": "M09_Q06"
+        }
+      ],
+      "risks": [
+        {
+          "id": "RISK_ASOF",
+          "description": "Historical caller snapshot may be misrepresented as live",
+          "evidence": [
+            "M09_Q01",
+            "M09_Q02",
+            "M09_Q03"
+          ]
+        },
+        {
+          "id": "RISK_SOAK",
+          "description": "Confusing qualified historical SOAK acceptance with current E2E performance",
+          "evidence": [
+            "M09_Q06",
+            "M09_Q07"
+          ]
+        },
+        {
+          "id": "RISK_AUTHORITY",
+          "description": "Mistaking documented CP2 privilege limitation for a functional failure",
+          "evidence": [
+            "M09_Q07",
+            "M09_Q11"
+          ]
+        }
+      ],
+      "reversal_criteria": [
+        {
+          "trigger": "Same-cutoff qualified authorized live trace proves function-level defect and causal association",
+          "next_state": "REPAIR_REQUIRED"
+        },
+        {
+          "trigger": "Qualified same-cutoff source and tests eliminate all material risk",
+          "next_state": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "trigger": "Discriminating read path unavailable with material uncertainty",
+          "next_state": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "falsifiers": [
+        "P0-time qualified call graph and actual invocation traces",
+        "Authorized equivalent CP2 SELECT context",
+        "Actual representative E2E stage timestamps and cohort denominators"
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "M09-F1",
+      "claim": "Event 20161 has 38 named historical caller identities with nominal edges; neither proves current invocations or production need for change",
+      "source": [
+        "M09_Q01",
+        "M09_Q02",
+        "M09_Q03"
+      ],
+      "confidence": "MEASURED_ASOF_ONLY"
+    },
+    {
+      "id": "M09-F2",
+      "claim": "M9.11 receipt 38 is historically VERIFIED (13 screens/47 families, 0 false PASS and D4); does not certify CP2 currentness or E2E timing",
+      "source": [
+        "M09_Q06",
+        "M09_Q07"
+      ],
+      "confidence": "MEASURED_ASOF_ONLY"
+    },
+    {
+      "id": "M09-F3",
+      "claim": "Two EKB entries pre-cutoff explain soak-criterion drift and CP2 read permission risk; neither proves a runnable repair in the P0 restricted scope",
+      "source": [
+        "M09_Q07"
+      ],
+      "confidence": "MEASURED_HISTORICAL"
+    },
+    {
+      "id": "M09-F4",
+      "claim": "track_functions none cannot establish zero usage or latency improvement; recommendation is VERIFY_FIRST with material unknowns",
+      "source": [
+        "M09_Q04",
+        "M09_Q10"
+      ],
+      "confidence": "OBSERVED_LIMIT_AND_DECISION"
+    }
+  ],
+  "causal_model": {
+    "causal_defect_proven": false,
+    "hypotheses": [
+      "Version-as-of mismatch",
+      "Reader-authority mismatch",
+      "Historical SOAK evidence replaced by latest-only projection"
+    ],
+    "limitations": [
+      "No current qualified invocation trace",
+      "No performance cohort and denominator",
+      "No valid functional CP2 execute privilege from readonly actor"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Obtain time-pinned authorized readbacks and compare caller/evidence identity without altering permissions",
+      "status": "FIRST_SAFE_VERIFICATION"
+    },
+    {
+      "action": "Fetch valid previous SOAK history receipt for current checkpoint contract without reruns",
+      "status": "PROPOSED"
+    }
+  ],
+  "chosen_repair": {
+    "type": "VERIFY_FIRST",
+    "scope": "HISTORICAL_RISK_TRIAGE_NOT_LIVE_PATCH",
+    "reason": "Source risks and safe read-only falsifiers exist; no proved runtime defect or quantified benefit",
+    "verification_route": "Authorized SELECT readbacks with same temporal basis, no RLS or runtime modification"
+  },
+  "rejected_alternatives": [
+    "Patch production on historic risk alone",
+    "Change read-only permissions to obtain CP2 PASS",
+    "Claim NO_ACTION_SUPPORTED because stats absent",
+    "Claim REPAIR_REQUIRED merely due 42501"
+  ],
+  "omissions_searched": [
+    "E states alternatives and reversals",
+    "authority of M9.11 vs CP2",
+    "complete typed risks and falsifiers",
+    "historical provenance",
+    "zero-telemetry fallacy",
+    "nominal graph vs invoked runtime",
+    "source identity and temporal cutoff"
+  ],
+  "unresolved": [
+    "Exact current execution graph not in P0",
+    "Historical inventory hash canonical derivation not proven",
+    "Qualified benchmark end-to-end latency unavailable",
+    "No proven material defect eligible for repair"
+  ],
+  "constraints_preserved": [
+    "P0 historical cutoff",
+    "No product/runtime mutation",
+    "No cross-method comparison",
+    "Original RAW unchanged",
+    "No ad hoc EXECUTE elevation"
+  ],
+  "research_conclusion": "E_TYPED_DECISION_EXECUTED_VERIFY_FIRST_WITH_UNRESOLVED_MATERIAL_EVIDENCE",
+  "admin_checkpoint_status_at_start": "PENDING"
+}
