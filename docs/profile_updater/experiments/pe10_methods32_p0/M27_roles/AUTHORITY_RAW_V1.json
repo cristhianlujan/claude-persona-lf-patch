@@ -1,0 +1,273 @@
+{
+  "schema": "PE10_M27_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M27",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M27-AUT-F01",
+      "claim": "Event 20161 is a READBACK_VERIFICADO inventory-only evidence snapshot for M10.9, created 2026-10-04; it is not current certification.",
+      "evidence_refs": [
+        "M27_AUT_Q01B"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-AUT-F02",
+      "claim": "Current principal is supabase_read_only_user with transaction_read_only=on; it cannot execute fn_input_governance_execute, although it can execute the engineering checkpoint transition function. No transition was invoked.",
+      "evidence_refs": [
+        "M27_AUT_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-AUT-F03",
+      "claim": "Across 255 pre-cut readiness rows, curator identity is present in all rows; validator identity is null in 7; no non-null row has equal curator/validator identity. Components have 3/8 nulls and no equal non-null component IDs.",
+      "evidence_refs": [
+        "M27_AUT_Q03"
+      ],
+      "confidence": "HIGH_FOR_RECORDED_FIELDS"
+    },
+    {
+      "id": "M27-AUT-F04",
+      "claim": "Event 20161 has migration_batch_id null and created_by_execution_id CHATGPT-IG-M10.9-20261004-001.",
+      "evidence_refs": [
+        "M27_AUT_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-AUT-F05",
+      "claim": "No row in public.lf_operation_execution matches that created_by_execution_id.",
+      "evidence_refs": [
+        "M27_AUT_Q05"
+      ],
+      "confidence": "HIGH_FOR_VISIBLE_LEDGER"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "AUT-A1",
+          "text": "Recorded identity inequality is not equivalent to material execution independence."
+        },
+        {
+          "id": "AUT-A2",
+          "text": "Absence from public.lf_operation_execution does not prove absence from every possible historical authority ledger."
+        },
+        {
+          "id": "AUT-A3",
+          "text": "Read-only identity and privilege results describe this session only."
+        },
+        {
+          "id": "AUT-A4",
+          "text": "Inventory-only event scope must not be promoted to current functional attestation."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "P0 is historical inventory evidence, not current certification",
+          "support": [
+            "M27_AUT_Q01B"
+          ],
+          "assumptions": [
+            "AUT-A4"
+          ]
+        },
+        {
+          "claim": "Current research session cannot execute IG runtime",
+          "support": [
+            "M27_AUT_Q02"
+          ],
+          "assumptions": [
+            "AUT-A3"
+          ]
+        },
+        {
+          "claim": "Recorded Curator/Validator fields are distinct where both exist",
+          "support": [
+            "M27_AUT_Q03"
+          ],
+          "assumptions": [
+            "AUT-A1"
+          ]
+        },
+        {
+          "claim": "Canonical operation linkage is not visible in public.lf_operation_execution",
+          "support": [
+            "M27_AUT_Q04",
+            "M27_AUT_Q05"
+          ],
+          "assumptions": [
+            "AUT-A2"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "AUT-NG1",
+          "invalidates_if": "Recorded identity labels map to one effective principal/session.",
+          "invalidates_claims": [
+            "Any material-independence claim based only on distinct text labels"
+          ]
+        },
+        {
+          "id": "AUT-NG2",
+          "invalidates_if": "A legacy/external canonical ledger contains the missing execution link.",
+          "invalidates_claims": [
+            "Any claim that event 20161 lacks all authority provenance"
+          ]
+        },
+        {
+          "id": "AUT-NG3",
+          "invalidates_if": "Another authorized principal has EXECUTE while this read-only principal does not.",
+          "invalidates_claims": [
+            "Any global claim that the system cannot execute IG"
+          ]
+        },
+        {
+          "id": "AUT-NG4",
+          "invalidates_if": "A current governed attestation supersedes the inventory-only event.",
+          "invalidates_claims": [
+            "Any claim that P0 is the latest authority evidence"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "AUT-NG1",
+          "result": "Downgrade identity separation to label-level evidence only."
+        },
+        {
+          "on": "AUT-NG2",
+          "result": "Replace authority-link gap with legacy/external linkage and re-evaluate provenance."
+        },
+        {
+          "on": "AUT-NG3",
+          "result": "Retain only session-specific privilege statement."
+        },
+        {
+          "on": "AUT-NG4",
+          "result": "Use the newer governed attestation for current authority; keep P0 historical."
+        }
+      ],
+      "alternative_supports": [
+        "Material independence needs execution provenance, principal/session boundaries and input/output separation, not labels alone."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "The read-only boundary is clear and historical provenance fields are visible, but material actor independence and canonical event authority are not fully attested.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "A canonical historical ledger binds event 20161 to an authorized operation.",
+        "Material execution provenance proves independent Curator/Validator principals/sessions.",
+        "A governed current receipt supersedes the historical inventory evidence."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A real authority bypass or invalid attestation is proven.",
+        "to_NO_ACTION_SUPPORTED": "Canonical provenance and material independence are fully attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required authority provenance remains inaccessible."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate distinct identity strings with material independence.",
+    "Do not infer global execution inability from this read-only principal.",
+    "Do not infer absence of all provenance from one unmatched ledger.",
+    "Do not promote an inventory-only 2026-10-04 event to current certification."
+  ],
+  "unresolved": [
+    "Canonical event authority lineage",
+    "Material Curator/Validator independence",
+    "Whether a newer governed attestation exists",
+    "Historical executor namespace"
+  ],
+  "next_safe_step": "Resolve canonical provenance and material independence through authorized readbacks; do not widen grants.",
+  "measured_costs": {
+    "select_attempts": 7,
+    "successful_selects": 6,
+    "query_errors": 1,
+    "negative_tests": 4,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M27_AUT_Q01_ERR",
+      "status": "ERROR",
+      "error": "42703 column event_type does not exist; hint evento_tipo"
+    },
+    {
+      "query_id": "M27_AUT_SCHEMA_Q01",
+      "status": "SUCCESS",
+      "result": "public.lf_eventos columns discovered; evento_tipo/entidad_codigo are canonical names"
+    },
+    {
+      "query_id": "M27_AUT_Q01B",
+      "status": "SUCCESS",
+      "result": {
+        "id": 20161,
+        "evento_tipo": "READBACK_VERIFICADO",
+        "entidad_codigo": "IG_CURATOR_VALIDATOR_REFACTOR_V2.M10.9.PAULO-167",
+        "created_at": "2026-10-04T05:14:40.880842Z",
+        "descripcion": "Evidence snapshot for M10.9 governed multi-source caller inventory; scope remained inventory-only.",
+        "severidad": "INFO",
+        "origen": "CHATGPT"
+      }
+    },
+    {
+      "query_id": "M27_AUT_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "current_user": "supabase_read_only_user",
+        "transaction_read_only": "on",
+        "can_execute_ig": false,
+        "can_transition_checkpoint": true
+      }
+    },
+    {
+      "query_id": "M27_AUT_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "runs": 255,
+        "curator_identity_null": 0,
+        "validator_identity_null": 7,
+        "same_identity": 0,
+        "curator_component_null": 3,
+        "validator_component_null": 8,
+        "same_component": 0
+      }
+    },
+    {
+      "query_id": "M27_AUT_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "migration_batch_id": null,
+        "created_by_execution_id": "CHATGPT-IG-M10.9-20261004-001",
+        "created_at": "2026-10-04T05:14:40.880842Z"
+      }
+    },
+    {
+      "query_id": "M27_AUT_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "matching_execution_rows": 0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:20:00Z"
+}

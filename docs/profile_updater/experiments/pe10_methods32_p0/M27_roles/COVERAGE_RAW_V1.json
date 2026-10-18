@@ -1,0 +1,270 @@
+{
+  "schema": "PE10_M27_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M27",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M27-COV-F01",
+      "claim": "Frozen P0 inventories are internally deduplicated: 38 callers, 21 triggers and 6 external entries, all distinct under their observed keys.",
+      "evidence_refs": [
+        "M27_COV_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-COV-F02",
+      "claim": "All 38 frozen caller names currently resolve.",
+      "evidence_refs": [
+        "M27_COV_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-COV-F03",
+      "claim": "A bounded current name-pattern scan returns 75 candidates: 27 overlap P0, 48 are outside P0, while 11 P0 callers fall outside the pattern.",
+      "evidence_refs": [
+        "M27_COV_Q03"
+      ],
+      "confidence": "HIGH_FOR_BOUNDED_PATTERN"
+    },
+    {
+      "id": "M27-COV-F04",
+      "claim": "All 21 frozen trigger names currently resolve with matching enabled-state text.",
+      "evidence_refs": [
+        "M27_COV_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-COV-F05",
+      "claim": "Pre-cut readiness rows contain 42 distinct pantalla_id values and family_count is consistently 47; this raw denominator is not automatically identical to the governed receipt cohort.",
+      "evidence_refs": [
+        "M27_COV_Q05"
+      ],
+      "confidence": "HIGH_FOR_RAW_RELATION"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "COV-A1",
+          "text": "Frozen P0 completeness is completeness of the frozen inventory, not proof of current closed-world completeness."
+        },
+        {
+          "id": "COV-A2",
+          "text": "Name-pattern membership is only a discovery heuristic and may both miss valid P0 callers and include non-runtime objects."
+        },
+        {
+          "id": "COV-A3",
+          "text": "Raw pre-cut screens/family_count do not reproduce the governed receipt inclusion predicate."
+        },
+        {
+          "id": "COV-A4",
+          "text": "Trigger name/enabled matching is structural, not full semantic equivalence."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Frozen inventory internal deduplication",
+          "support": [
+            "M27_COV_Q01"
+          ],
+          "assumptions": [
+            "COV-A1"
+          ]
+        },
+        {
+          "claim": "Frozen callers remain name-resolvable",
+          "support": [
+            "M27_COV_Q02"
+          ],
+          "assumptions": [
+            "COV-A1"
+          ]
+        },
+        {
+          "claim": "Current bounded complement exists but materiality is unknown",
+          "support": [
+            "M27_COV_Q03"
+          ],
+          "assumptions": [
+            "COV-A2"
+          ]
+        },
+        {
+          "claim": "Frozen triggers remain structurally present",
+          "support": [
+            "M27_COV_Q04"
+          ],
+          "assumptions": [
+            "COV-A4"
+          ]
+        },
+        {
+          "claim": "Raw historical relation spans 42 screens with family_count 47",
+          "support": [
+            "M27_COV_Q05"
+          ],
+          "assumptions": [
+            "COV-A3"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "COV-NG1",
+          "invalidates_if": "Current authoritative universe differs from the frozen inventory.",
+          "invalidates_claims": [
+            "Any claim that P0 is complete current coverage"
+          ]
+        },
+        {
+          "id": "COV-NG2",
+          "invalidates_if": "Pattern heuristic excludes material current consumers or includes wrappers/tests.",
+          "invalidates_claims": [
+            "Any claim that 75 candidates are the current runtime universe"
+          ]
+        },
+        {
+          "id": "COV-NG3",
+          "invalidates_if": "Governed receipt cohort uses a narrower inclusion predicate than raw readiness rows.",
+          "invalidates_claims": [
+            "Any claim that 42 screens are the governed receipt denominator"
+          ]
+        },
+        {
+          "id": "COV-NG4",
+          "invalidates_if": "Trigger body/function semantics changed despite same name/enabled state.",
+          "invalidates_claims": [
+            "Any claim of full trigger semantic equivalence"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "COV-NG1",
+          "result": "Retain P0 as historical scope only; require current manifest."
+        },
+        {
+          "on": "COV-NG2",
+          "result": "Use candidate set only for discovery; no totality claim."
+        },
+        {
+          "on": "COV-NG3",
+          "result": "Keep raw denominator separate from governed cohort."
+        },
+        {
+          "on": "COV-NG4",
+          "result": "Retain structural presence only."
+        }
+      ],
+      "alternative_supports": [
+        "Current completeness needs an explicit governed universe predicate plus classification of complements and exclusions."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Frozen coverage is internally coherent and structurally resolvable, but current totality and governed cohort reproduction remain unverified.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized current universe manifest classifies all complements and exclusions.",
+        "Runtime edge evidence proves a material omitted current consumer.",
+        "Exact governed receipt predicate reproduces the intended historical cohort."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A material in-scope current consumer/trigger is proven omitted.",
+        "to_NO_ACTION_SUPPORTED": "Current universe and historical cohort are fully reconciled with no material omission.",
+        "to_NEEDS_MORE_EVIDENCE": "Authoritative universe predicate remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate frozen P0 completeness with current completeness.",
+    "Do not equate name-pattern candidates with runtime consumers.",
+    "Do not replace governed receipt denominator with raw 42-screen relation.",
+    "Do not infer trigger semantic equivalence from structural matching."
+  ],
+  "unresolved": [
+    "Current governed universe predicate",
+    "Materiality of 48 bounded complements",
+    "Reason 11 P0 callers fall outside pattern",
+    "Exact governed receipt cohort predicate",
+    "Current external inventory status"
+  ],
+  "next_safe_step": "Build/read an authorized current-universe manifest and classify complements/exclusions without altering P0.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 4,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M27_COV_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "callers_distinct": 38,
+        "triggers": 21,
+        "triggers_distinct": 21,
+        "external_entries": 6,
+        "external_distinct": 6
+      }
+    },
+    {
+      "query_id": "M27_COV_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "p0_callers": 38,
+        "resolved": 38,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M27_COV_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "bounded_candidates": 75,
+        "overlap_p0": 27,
+        "outside_p0": 48,
+        "p0_outside_pattern": 11
+      }
+    },
+    {
+      "query_id": "M27_COV_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "p0_triggers": 21,
+        "resolved": 21,
+        "enabled_match": 21
+      }
+    },
+    {
+      "query_id": "M27_COV_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "pre_cut_screens": 42,
+        "distinct_family_count_values": 1,
+        "min_family_count": 47,
+        "max_family_count": 47
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:22:00Z"
+}
