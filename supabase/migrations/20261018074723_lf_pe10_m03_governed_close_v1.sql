@@ -1239,10 +1239,18 @@ BEGIN
  (evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,
   payload,origen,created_by_execution_id)
  VALUES
- ('ENGINEERING_PLAN_BINDING','PROGRAM_PLAN',
-  'PEVO-PE10-METHODS32-P0/METHODS32',
-  'Canonical plan-unit binding for independent method checkpoint results, not a runtime release.',
-  'INFO',jsonb_build_object('work_item_id',1133,'method_case','PE10-IG-M107-M109-P0',
+ ('PLAN_SNAPSHOT_DETALLADO','ENGINEERING_PLAN',
+  'PEVO-PE10-METHODS32-P0',
+  'Plan-unit binding for independently researched PE10 method checkpoints; no runtime execution or acceptance.',
+  'INFO',jsonb_build_object(
+    'evidence_schema_version','operational-event/v2',
+    'execution_id',v_exec,
+    'producer','LF_MIGRATION_MERGE_TRAIN',
+    'purpose','Bind the PE10 independent-method engineering plan and prove the executed M03 research; no production release.',
+    'occurred_at',clock_timestamp(),
+    'acceptance_declared',false,
+    'plan_code','PEVO-PE10-METHODS32-P0',
+    'work_item_id',1133,'method_case','PE10-IG-M107-M109-P0',
     'source_event_id',20161,'checkpoint_ordering','INDEPENDENT_METHOD_VARIANTS',
     'external_evaluator_status','NOT_PERFORMED','runtime_activation',false,
     'train_execution_id',v_exec,'method_output_status','RESEARCH_RESULT_ONLY'),
