@@ -1,0 +1,197 @@
+{
+  "schema": "PE10_M17_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M17",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "inputs": [
+    "Original P0 frozen",
+    "PE10_METHOD_V1 PERFORMANCE contract",
+    "authorized historical data read-only"
+  ],
+  "sql_evidence": [
+    {
+      "id": "M17_PERF_Q1",
+      "sql_literal": "SELECT id,created_at,payload->'usage_stats' usage_stats,payload->>'test_case_count' test_cases,payload->>'trigger_binding_count' triggers FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          },
+          "test_cases": "77",
+          "triggers": "21"
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_SOURCE_PRE_P0"
+    },
+    {
+      "id": "M17_PERF_Q2",
+      "sql_literal": "SELECT count(*) total_callers,count(*) FILTER(WHERE x ? 'duration_ms') callers_with_duration_ms,count(*) FILTER(WHERE x ? 'finished_at' AND x ? 'requested_at') callers_with_e2e_timestamps FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total_callers": 38,
+          "callers_with_duration_ms": 0,
+          "callers_with_e2e_timestamps": 0
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_SOURCE_PRE_P0"
+    },
+    {
+      "id": "M17_PERF_Q3",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload ? 'duration_ms' duration_payload_present,payload ? 'p90_ms' p90_payload_present,payload ? 'finished_at' finished_at_present FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "duration_payload_present": false,
+          "p90_payload_present": false,
+          "finished_at_present": false
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_SOURCE_PRE_P0"
+    },
+    {
+      "id": "M17_PERF_Q4",
+      "sql_literal": "WITH sample(case_id,requested,finished) AS (VALUES('POSITIVE'::text,TIMESTAMPTZ '2026-10-14 12:00:00+00',TIMESTAMPTZ '2026-10-14 12:02:30+00'),('UNKNOWN',TIMESTAMPTZ '2026-10-14 12:00:00+00',NULL::timestamptz),('ZERO',TIMESTAMPTZ '2026-10-14 12:00:00+00',TIMESTAMPTZ '2026-10-14 12:00:00+00')) SELECT case_id,EXTRACT(EPOCH FROM (finished-requested))*1000 AS elapsed_ms, (finished IS NOT NULL AND finished>requested) duration_qualified FROM sample ORDER BY case_id",
+      "rows": [
+        {
+          "case_id": "POSITIVE",
+          "elapsed_ms": "150000.000000",
+          "duration_qualified": true
+        },
+        {
+          "case_id": "UNKNOWN",
+          "elapsed_ms": null,
+          "duration_qualified": false
+        },
+        {
+          "case_id": "ZERO",
+          "elapsed_ms": "0.000000",
+          "duration_qualified": false
+        }
+      ],
+      "rows_returned": 3,
+      "scope": "EXPLICIT_SYNTHETIC_CLOCK_TEST"
+    },
+    {
+      "id": "M17_PERF_Q5",
+      "sql_literal": "SELECT current_setting('track_functions',true) current_track_functions,(SELECT payload->'usage_stats'->>'track_functions' FROM public.lf_eventos WHERE id=20161) historical_track_functions,current_user principal,current_setting('transaction_read_only') read_only",
+      "rows": [
+        {
+          "current_track_functions": "none",
+          "historical_track_functions": "none",
+          "principal": "supabase_read_only_user",
+          "read_only": "on"
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "CURRENT_CONFIG_VS_HISTORICAL"
+    }
+  ],
+  "findings": [
+    {
+      "id": "PERF_F1",
+      "claim": "Historical event records track_functions none; zero stat rows cannot establish zero usage or speed benefit",
+      "evidence": [
+        "M17_PERF_Q1",
+        "M17_PERF_Q5"
+      ],
+      "classification": "MEASURED_SOURCE_LIMIT"
+    },
+    {
+      "id": "PERF_F2",
+      "claim": "38 historical caller entries lack per-caller duration_ms and request/finish timestamps in the inspected representation; no population performance claim supported here",
+      "evidence": [
+        "M17_PERF_Q2"
+      ],
+      "classification": "MEASURED_INVENTORY_ONLY"
+    },
+    {
+      "id": "PERF_F3",
+      "claim": "Qualified SOAK receipt38 has no p90/duration fields in the inspected payload; it is not a latency performance receipt",
+      "evidence": [
+        "M17_PERF_Q3"
+      ],
+      "classification": "MEASURED_RECEIPT_SCOPE"
+    },
+    {
+      "id": "PERF_F4",
+      "claim": "Synthetic SQL clock examples produce qualified 150000ms, missing NULL and zero-duration not-qualified; not an observed runtime cohort",
+      "evidence": [
+        "M17_PERF_Q4"
+      ],
+      "classification": "SYNTHETIC_INVARIANT"
+    }
+  ],
+  "causal_hypotheses": [
+    {
+      "hypothesis": "Repeated curator/validator source reads increase processing",
+      "status": "HYPOTHESIS_NOT_MEASURED",
+      "falsifier": "Read canonical same-cohort e2e request/stage spans, compare before/after read-one changes"
+    },
+    {
+      "hypothesis": "Queue overhead dominates running functions",
+      "status": "HYPOTHESIS_NOT_MEASURED",
+      "falsifier": "Observe queue requested_at/started_at/finished_at for same qualified run group"
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "PERF_NO_ZERO_USAGE_INFERENCE",
+      "pass": true
+    },
+    {
+      "id": "PERF_SOURCE_NO_EXECUTION_DURATIONS",
+      "pass": true
+    },
+    {
+      "id": "PERF_UNKNOWN_DURATION_REMAINS_NULL",
+      "pass": true
+    },
+    {
+      "id": "PERF_ZERO_DURATION_NOT_METRIC",
+      "pass": true
+    },
+    {
+      "id": "PERF_QUALIFIED_CLOCK_POSITIVE",
+      "pass": true
+    },
+    {
+      "id": "PERF_RECEIPT_NO_P90_METRIC",
+      "pass": true
+    }
+  ],
+  "contradictions": [],
+  "unresolved": [
+    "No denominator or P0 qualified e2e cohort",
+    "No observed p90 or Curator/Validator fraction",
+    "Unknown actual improvement from any candidate"
+  ],
+  "measured_costs": {
+    "queries_executed": 5,
+    "returned_rows": 7,
+    "db_runtime_ms": "UNKNOWN"
+  },
+  "next_safe_step": "Inspect source-defined e2e request queue and actual stage timestamps before attributing bottlenecks, use comparable clock and cohort",
+  "transport_validation_recovery": {
+    "issue": "PG NUMERIC represented as JSON string; local strict-number assertions failed even though SQL returned 150000.000000 and 0.000000",
+    "fix": "Explicit Number() conversion for test comparisons only; preserve original literal SQL and raw serialized values",
+    "functional_fault": false,
+    "rerun_queries": 5
+  },
+  "external_quality_score": "NOT_PERFORMED"
+}
