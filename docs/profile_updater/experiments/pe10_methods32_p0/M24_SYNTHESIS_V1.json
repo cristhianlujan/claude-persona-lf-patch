@@ -1,0 +1,174 @@
+{
+  "schema": "PE10_M24_SYNTHESIS_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_code": "SYNTHESIZER",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "source_pieces_frozen_before_synthesis": true,
+  "no_new_sql_in_synthesis": true,
+  "synthesis_inputs": [
+    {
+      "role": "ARCHITECTURE",
+      "git_blob_sha": "6a92e4b63637b1313af0fe9300dde68426859318",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "gde_conflict_sets": 2,
+      "atms_nogoods": 2,
+      "invariants": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "git_blob_sha": "c63789dee0d2fb4dd2fdff854bab68f41af7e059",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "gde_conflict_sets": 2,
+      "atms_nogoods": 2,
+      "invariants": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "git_blob_sha": "70f28a7ba33ff5f84357419c5df50f9b4df3a060",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "gde_conflict_sets": 2,
+      "atms_nogoods": 2,
+      "invariants": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "git_blob_sha": "ac2fe90617bba3f2198790c365e135d78835c399",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "gde_conflict_sets": 2,
+      "atms_nogoods": 2,
+      "invariants": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "git_blob_sha": "b983ff203982b114d3ea1c3a23833287cf4d784e",
+      "readbacks": 2,
+      "negative_tests": 2,
+      "gde_conflict_sets": 2,
+      "atms_nogoods": 2,
+      "invariants": 2,
+      "role_output_frozen": true
+    }
+  ],
+  "readbacks_total": 10,
+  "negative_tests_total": 10,
+  "gde_conflict_sets_total": 10,
+  "atms_nogoods_total": 10,
+  "invariants_total": 10,
+  "atms_propagation_tests": 5,
+  "metamorphic_tests_total": 5,
+  "barinel": {
+    "status": "NOT_CALIBRATED",
+    "roles_not_calibrated": 5
+  },
+  "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+  "solver_used": false,
+  "findings": [
+    {
+      "id": "M24_SYN_F1",
+      "classification": "MEASURED",
+      "finding": "All 21 historical trigger bindings still map exactly, while 22/38 caller definitions differ empirically; trigger stability does not imply internal call-path equivalence."
+    },
+    {
+      "id": "M24_SYN_F2",
+      "classification": "MEASURED_LIMIT",
+      "finding": "Function-level stats are unavailable with track_functions=none; revision timing direction is measurable but causal performance is not."
+    },
+    {
+      "id": "M24_SYN_F3",
+      "classification": "MEASURED_AUTHORITY",
+      "finding": "42501 remains a permission/readback-path condition; SELECT evidence access coexists with EXECUTE denial."
+    },
+    {
+      "id": "M24_SYN_F4",
+      "classification": "MEASURED_COVERAGE_RISK",
+      "finding": "Six callee tokens are ambiguous by current name resolution and 64 current pattern objects remain candidates, not caller truth."
+    },
+    {
+      "id": "M24_SYN_F5",
+      "classification": "MEASURED_STRUCTURAL",
+      "finding": "Six historical lexical edges are absent from current bodies; all occur on empirically changed caller definitions, but runtime effect is unproven."
+    }
+  ],
+  "combined_reasoning": {
+    "diagnosis": "Evidence supports post-snapshot structural evolution and evidence-source mismatches, but not a single causal Curator/Validator defect.",
+    "assumptions_preserved": [
+      "P0 is historical",
+      "current observations remain current",
+      "lexical structure != runtime execution",
+      "permission error != functional failure"
+    ],
+    "discriminating_next_steps": [
+      "qualify six ambiguous callee identities",
+      "classify six removed/replacement edges",
+      "matched performance cohort",
+      "authorized CP2 SELECT-only evidence"
+    ]
+  },
+  "metamorphic_tests": [
+    {
+      "id": "DMC_META1",
+      "status": "PASS",
+      "observed": "38=16+22+0 comparator"
+    },
+    {
+      "id": "DMC_META2",
+      "status": "PASS",
+      "observed": "21=21 trigger matches+0 missing"
+    },
+    {
+      "id": "DMC_META3",
+      "status": "PASS",
+      "observed": "39=0+33+6 callee resolution"
+    },
+    {
+      "id": "DMC_META4",
+      "status": "PASS",
+      "observed": "95=31+64 current-pattern partition"
+    },
+    {
+      "id": "DMC_META5",
+      "status": "PASS",
+      "observed": "6 missing historical tokens are subset of changed-hash edges"
+    }
+  ],
+  "decision": {
+    "state": "VERIFY_FIRST",
+    "implemented_repair": false,
+    "reason": "D+M+C narrows causes and verifies invariants/assumption dependencies, but runtime causal defect and repair are not proven."
+  },
+  "unresolved": [
+    "canonical historical hash method",
+    "runtime effect of six edge changes",
+    "zero-duration semantics",
+    "matched performance effect",
+    "qualified callee identities",
+    "current complement caller classification"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "no production/runtime edits",
+    "P0/current separation",
+    "five reports frozen before synthesis",
+    "no cross-method inputs",
+    "no autonomous-agent claim"
+  ],
+  "non_isolation_risk": "Five role-bound passes were sequential in one shared model context; artifacts were frozen before synthesis, but autonomous cognitive independence is not claimed.",
+  "final_method_status": "B_D_M_C_FIVE_ROLE_REPORTS_SYNTHESIZED_MATERIAL_ONLY_NOT_YET_GOVERNED_DONE"
+}
