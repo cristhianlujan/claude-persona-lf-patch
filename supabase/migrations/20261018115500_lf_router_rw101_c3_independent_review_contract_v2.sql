@@ -37,7 +37,7 @@ DECLARE
       {"path":"cristhianlujan/claude-persona-lf-patch:sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py","role":"EVIDENCE","purpose":"V2_FAIL_CLOSED_CHECKER","target_kind":"EXACT_EXISTING_FILE"},
       {"path":"cristhianlujan/claude-persona-lf-patch:sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py","role":"EVIDENCE","purpose":"SECRET_SEED_HOLDOUT_GENERATOR","target_kind":"EXACT_EXISTING_FILE"},
       {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md","role":"EVIDENCE","purpose":"INDEPENDENT_JUDGE_PROTOCOL","target_kind":"EXACT_EXISTING_FILE"},
-      {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json","role":"MUTATION_TARGET","purpose":"INDEPENDENT_VERDICT","target_kind":"EXACT_FUTURE_FILE"}
+      {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json","role":"MUTATION_TARGET","purpose":"INDEPENDENT_VERDICT","target_kind":"EXACT_FILE"}
     ],
     "evidence_artifacts":[
       {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json","role":"EVIDENCE","purpose":"V2_PUBLIC_ORACLE","target_kind":"EXACT_EXISTING_FILE"},
@@ -46,7 +46,7 @@ DECLARE
       {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md","role":"EVIDENCE","purpose":"INDEPENDENT_JUDGE_PROTOCOL","target_kind":"EXACT_EXISTING_FILE"}
     ],
     "mutation_artifacts":[
-      {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json","role":"MUTATION_TARGET","purpose":"INDEPENDENT_VERDICT","target_kind":"EXACT_FUTURE_FILE"}
+      {"path":"cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json","role":"MUTATION_TARGET","purpose":"INDEPENDENT_VERDICT","target_kind":"EXACT_FILE"}
     ]
   },
   "forbidden":[
