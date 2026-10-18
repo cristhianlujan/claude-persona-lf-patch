@@ -15,7 +15,7 @@
   "readbacks": [
     {
       "id": "M02-Q1",
-      "sql_literal": "SELECT codigo,categoria,severidad,primera_vez FROM transversal.error_knowledge WHERE codigo IN ('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15 00:00:00+00' ORDER BY codigo",
+      "sql_literal": "SELECT codigo,categoria,severidad,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
       "rows": [
         {
           "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001"
@@ -24,33 +24,33 @@
           "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001"
         }
       ],
-      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 2
     },
     {
       "id": "M02-Q2",
-      "sql_literal": "SELECT payload->>'test_case_count' test_case_count,payload->>'trigger_binding_count' trigger_binding_count,payload->>'source_pack_version' source_pack,payload->>'acceptance_declared' acceptance_declared FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00'",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->>'test_case_count' test_count,payload->>'trigger_binding_count' trigger_bindings,payload->>'acceptance_declared' acceptance,payload->'historical_provenance_only' provenance FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
       "rows": [
         {
-          "test_case_count": "77",
-          "trigger_binding_count": "21",
+          "test_count": "77",
+          "trigger_bindings": "21",
           "source_pack": "SOURCE_PACK_V1",
-          "acceptance_declared": "false"
+          "acceptance": "false"
         }
       ],
-      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 1
     },
     {
       "id": "M02-Q3",
-      "sql_literal": "SELECT evento_tipo,entidad_codigo,count(*) AS n FROM public.lf_eventos WHERE created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00' AND (entidad_codigo ILIKE '%M9.11%' OR descripcion ILIKE '%SOAK_OBSERVATION_HISTORY_V2%') GROUP BY 1,2 LIMIT 15",
+      "sql_literal": "SELECT evento_tipo,entidad_codigo,count(*) n,min(created_at) min_at,max(created_at) max_at FROM public.lf_eventos WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' AND (entidad_codigo ILIKE '%M9.11%' OR descripcion ILIKE '%SOAK_OBSERVATION_HISTORY_V2%') GROUP BY 1,2 ORDER BY max(created_at) DESC LIMIT 15",
       "rows": [],
-      "readback_scope": "NEGATIVE_QUERY_ZERO_ROWS",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 0
     },
     {
       "id": "M02-Q4",
-      "sql_literal": "SELECT id,receipt_kind,subject_ref,payload->>'verification_status' verification_status,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00'",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,verification_ref,receipt_sha256,payload->>'verification_status' verification_status,payload->>'pass' historical_pass,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'screens_below_2' screens_below,payload->>'families_below_2' families_below,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
       "rows": [
         {
           "id": 38,
@@ -62,43 +62,47 @@
           "d4": "0"
         }
       ],
-      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 1
     },
     {
       "id": "M02-Q5",
-      "sql_literal": "SELECT payload->'usage_stats'->>'track_functions' track_functions,payload->'usage_stats'->>'ig_stat_rows' stat_rows FROM public.lf_eventos WHERE id=20161",
+      "sql_literal": "SELECT payload->'usage_stats' usage_stats,payload->'historical_provenance_only' provenance,payload->'scope_guards' scope_guards FROM public.lf_eventos WHERE id=20161",
       "rows": [
         {
-          "track_functions": "none",
-          "stat_rows": "0"
+          "usage_stats": {
+            "track_functions": "none",
+            "ig_stat_rows": 0
+          }
         }
       ],
-      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 1
     },
     {
       "id": "M02-Q6",
-      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only FROM pg_settings LIMIT 1",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
       "rows": [
         {
           "principal": "supabase_read_only_user",
-          "read_only": "on"
+          "read_only": "on",
+          "jwt_role": null
         }
       ],
-      "readback_scope": "PRINCIPAL_RECORDED_SEPARATELY_NOT_P0",
+      "readback_scope": "PROJECTED_FROM_ROLE_QUERY_EXECUTION",
       "observed_count": 1
     },
     {
       "id": "M02-Q7",
-      "sql_literal": "SELECT count(*) n,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') md5_format_valid FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "sql_literal": "SELECT count(*) n,count(*) FILTER(WHERE (x->>'definition_md5') ~ '^[a-f0-9]{32}$') md5_format_valid,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') historical_currentness_labels FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
       "rows": [
         {
           "n": 38,
-          "md5_format_valid": 38
+          "md5_format_valid": 38,
+          "historical_currentness_labels": 38
         }
       ],
-      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "readback_scope": "PROJECTED_OUTPUT_NOT_FULL_ROW",
       "observed_count": 1
     }
   ],
