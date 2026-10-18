@@ -1,0 +1,167 @@
+{
+  "schema": "PE10_M18_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": ["D"],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "method_application": {
+    "D": {
+      "gde_conflict_sets": [
+        {
+          "id": "COVER_CS1",
+          "observation": "The historical snapshot is internally complete for its declared arrays, but 6 of 39 unqualified callee tokens resolve to multiple current schemas.",
+          "components": ["callee_identity_qualification", "wrapper_duplication", "topology_resolution"]
+        },
+        {
+          "id": "COVER_CS2",
+          "observation": "Current name-pattern search finds 64 functions not in the historical caller identity set, but name-pattern membership does not establish caller status or historical omission.",
+          "components": ["population_complement", "caller_classification", "post_snapshot_objects"]
+        }
+      ],
+      "minimal_hitting_sets": [
+        ["callee_identity_qualification"],
+        ["caller_classification"],
+        ["post_snapshot_objects"]
+      ],
+      "barinel": {
+        "status": "NOT_CALIBRATED",
+        "reason": "No pass/fail component spectrum or justified priors exist for completeness defects."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "highest_value_next_query": "Resolve the six ambiguous callee tokens by caller-body/schema context, then classify current complement candidates by actual references rather than names.",
+        "reason": "This attacks denominator and topology ambiguity without inflating the inventory."
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "M18_COVER_Q1",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Declared sql_caller_count=38 equals actual array length 38; declared trigger_binding_count=21 equals actual 21; external inventory=6; unexplained_material_callers=0; one ambiguous-name candidate was checked and excluded."
+    },
+    {
+      "id": "M18_COVER_Q2",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "38/38 caller identities are distinct; zero missing caller/hash/class/currentness fields; all callees are arrays; all 38 definition_md5 values are syntactically valid 32-char lowercase hex; 76 callee edges."
+    },
+    {
+      "id": "M18_COVER_Q3",
+      "scope": "HISTORICAL_TOKENS_PLUS_CURRENT_NAME_RESOLUTION",
+      "result_summary": "39 unique historical callee tokens; 0 unresolved by current proname; 33 have one current name candidate and 6 are ambiguous across multiple schemas: curator_materialize_v1, execute, safe_autofix_v1, validator_validate_v1, worker_spec and input_readiness_run_is_current."
+    },
+    {
+      "id": "M18_COVER_Q4",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "The snapshot records one excluded candidate as NOT_IG_CALLER, explicit deduplication rules, zero unexplained material callers, and no historical_callers_confirmed entries."
+    },
+    {
+      "id": "M18_COVER_Q5",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "SQL inventory has 38 rows/38 unique names; external inventory has 6 rows/6 unique dedupe keys; exact raw-name overlap between the two sets is zero."
+    },
+    {
+      "id": "M18_COVER_Q6",
+      "scope": "CURRENT_COMPLEMENT_DISCOVERY",
+      "result_summary": "95 current functions in programacion/public/lf_ops match input_governance|input_readiness|guard_input; 31 are historical caller identities and 64 are not. The 64 are complement candidates only, not proven callers or historical omissions."
+    },
+    {
+      "id": "M18_COVER_Q7",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "76 historical edge rows have zero duplicate caller+callee pairs; 21 trigger rows have 21 unique dedupe keys; all 6 external entries contain required identity/class/lifecycle fields."
+    }
+  ],
+  "findings": [
+    {
+      "id": "M18_COVER_F1",
+      "claim": "The event-20161 inventory is internally self-consistent for its declared population: counts reconcile, required caller fields are populated, hash syntax is valid, and no duplicate caller-callee edge pairs were found.",
+      "classification": "MEASURED_HISTORICAL_INTERNAL_INTEGRITY",
+      "evidence_refs": ["M18_COVER_Q1","M18_COVER_Q2","M18_COVER_Q7"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_COVER_F2",
+      "claim": "Historical callee identities are not fully schema-qualified: 6/39 callee tokens currently have multiple schema candidates, so name-only topology reconstruction can select the wrong object.",
+      "classification": "MEASURED_CURRENT_RESOLUTION_RISK",
+      "evidence_refs": ["M18_COVER_Q3"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_COVER_F3",
+      "claim": "The six external records should remain a separate identity/lifecycle set unless a proven mapping exists; raw-name overlap with the SQL caller set is zero and the snapshot defines separate dedupe identities.",
+      "classification": "MEASURED_HISTORICAL_SCOPE",
+      "evidence_refs": ["M18_COVER_Q4","M18_COVER_Q5"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_COVER_F4",
+      "claim": "Current complement discovery finds 64 name-pattern functions outside the historical caller set, but this is not evidence that 64 callers were omitted. Each candidate needs actual reference/lifecycle classification.",
+      "classification": "MEASURED_CURRENT_COMPLEMENT_WITH_CLASSIFICATION_LIMIT",
+      "evidence_refs": ["M18_COVER_Q6"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "M18_COVER_N1",
+      "hypothesis": "The 38-row snapshot contains duplicate caller identities or malformed/missing definition_md5 fields.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_COVER_Q2"]
+    },
+    {
+      "id": "M18_COVER_N2",
+      "hypothesis": "All historical callee tokens resolve uniquely by current function name.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_COVER_Q3"]
+    },
+    {
+      "id": "M18_COVER_N3",
+      "hypothesis": "Every current function matching the IG naming pattern is a caller and should be added to the denominator.",
+      "result": "NOT_SUPPORTED",
+      "evidence_refs": ["M18_COVER_Q6"]
+    },
+    {
+      "id": "M18_COVER_N4",
+      "hypothesis": "The external inventory can be mechanically merged with the SQL caller set.",
+      "result": "NOT_SUPPORTED",
+      "evidence_refs": ["M18_COVER_Q4","M18_COVER_Q5"]
+    }
+  ],
+  "causal_hypothesis": {
+    "state": "PARTIAL",
+    "claim": "Coverage error risk is concentrated in identity qualification and current-complement classification, not in obvious corruption of the historical 38-row snapshot."
+  },
+  "minimal_safe_action": "Qualify ambiguous callee tokens by schema/object identity and classify current complement candidates through actual references before changing any caller denominator or declaring live coverage.",
+  "unresolved": [
+    "Historical schema identity for six currently ambiguous callee tokens",
+    "Which current complement candidates are true callers versus callees/helpers/wrappers",
+    "Whether any post-snapshot object creates a material route omitted from P0"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "No production mutation",
+    "Historical/current separation",
+    "No name-pattern candidate promoted to caller",
+    "No peer role reports used",
+    "No autonomous-agent claim"
+  ],
+  "measured_costs": {
+    "sql_observations": 7,
+    "transport_elapsed_ms": "NOT_MEASURED",
+    "barinel_calibration": "NOT_AVAILABLE"
+  },
+  "role_output_frozen": true
+}
