@@ -1,0 +1,325 @@
+{
+  "schema": "PE10_M28_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M28",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M28-AUT-F01",
+      "claim": "Event 20161 is a READBACK_VERIFICADO inventory-only historical snapshot created 2026-10-04, with migration_batch_id null and created_by_execution_id CHATGPT-IG-M10.9-20261004-001.",
+      "evidence_refs": [
+        "M28_AUT_Q01",
+        "M28_AUT_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-AUT-F02",
+      "claim": "Current principal is supabase_read_only_user with transaction_read_only=on; it cannot execute fn_input_governance_execute. It can execute the engineering checkpoint transition function, which was not invoked during research.",
+      "evidence_refs": [
+        "M28_AUT_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-AUT-F03",
+      "claim": "Across 255 pre-cut runs, Curator identity is always present, Validator identity is null in 7, and no non-null row has equal Curator/Validator identity; component IDs have 3/8 nulls and no equal non-null pair.",
+      "evidence_refs": [
+        "M28_AUT_Q04"
+      ],
+      "confidence": "HIGH_FOR_RECORDED_FIELDS"
+    },
+    {
+      "id": "M28-AUT-F04",
+      "claim": "No visible public.lf_operation_execution row matches event 20161 created_by_execution_id, although 294 completed ACTUALIZACION_DB_LF operations exist pre-cut.",
+      "evidence_refs": [
+        "M28_AUT_Q05",
+        "M28_AUT_Q06"
+      ],
+      "confidence": "HIGH_FOR_VISIBLE_LEDGER"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "AUT-C1",
+          "members": [
+            "legacy_or_external_authority_link",
+            "visible_authority_link_gap"
+          ],
+          "basis": [
+            "M28-AUT-F01",
+            "M28-AUT-F04"
+          ]
+        },
+        {
+          "id": "AUT-C2",
+          "members": [
+            "label_only_identity_separation",
+            "material_independence_unproven"
+          ],
+          "basis": [
+            "M28-AUT-F03"
+          ]
+        },
+        {
+          "id": "AUT-C3",
+          "members": [
+            "session_readonly_boundary",
+            "current_attestation_missing"
+          ],
+          "basis": [
+            "M28-AUT-F02"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "visible_authority_link_gap",
+          "material_independence_unproven"
+        ],
+        [
+          "legacy_or_external_authority_link",
+          "material_independence_unproven"
+        ],
+        [
+          "visible_authority_link_gap",
+          "current_attestation_missing"
+        ]
+      ],
+      "open_world_alternatives": [
+        "Historical event authority may live in a legacy or external ledger.",
+        "Distinct identity/component fields may correspond to materially separate executions.",
+        "A newer governed attestation may exist outside the frozen P0."
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No pass/fail spectrum over authority components and no justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Canonical historical event/operation provenance across authorized ledgers.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Material execution provenance for Curator and Validator principals/sessions/inputs.",
+            "cost": "MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Authorized current attestation path without grant widening.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "M": {
+      "assumptions": [
+        {
+          "id": "AUT-A1",
+          "text": "P0 event scope is inventory-only historical evidence."
+        },
+        {
+          "id": "AUT-A2",
+          "text": "Absence from public.lf_operation_execution does not prove absence from all historical authority sources."
+        },
+        {
+          "id": "AUT-A3",
+          "text": "Distinct identity/component values are weaker than material independence."
+        },
+        {
+          "id": "AUT-A4",
+          "text": "Session privilege results apply to this principal, not the entire system."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "P0 is historical inventory evidence",
+          "support": [
+            "M28_AUT_Q02"
+          ],
+          "assumptions": [
+            "AUT-A1"
+          ]
+        },
+        {
+          "claim": "Visible canonical operation link is unresolved",
+          "support": [
+            "M28_AUT_Q05",
+            "M28_AUT_Q06"
+          ],
+          "assumptions": [
+            "AUT-A2"
+          ]
+        },
+        {
+          "claim": "Recorded Curator/Validator fields are distinct where present",
+          "support": [
+            "M28_AUT_Q04"
+          ],
+          "assumptions": [
+            "AUT-A3"
+          ]
+        },
+        {
+          "claim": "Research session cannot execute IG",
+          "support": [
+            "M28_AUT_Q03"
+          ],
+          "assumptions": [
+            "AUT-A4"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "AUT-NG1",
+          "invalidates_if": "A legacy/external authorized ledger binds event 20161.",
+          "invalidates_claims": [
+            "Any global no-provenance claim"
+          ]
+        },
+        {
+          "id": "AUT-NG2",
+          "invalidates_if": "Distinct labels map to one effective execution principal/session.",
+          "invalidates_claims": [
+            "Any material-independence claim from identity fields"
+          ]
+        },
+        {
+          "id": "AUT-NG3",
+          "invalidates_if": "Another authorized principal can execute IG.",
+          "invalidates_claims": [
+            "Any system-wide inability claim from current principal"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "AUT-NG1",
+          "result": "Replace visible authority gap with resolved historical provenance."
+        },
+        {
+          "on": "AUT-NG2",
+          "result": "Escalate authority risk and remove independence support."
+        },
+        {
+          "on": "AUT-NG3",
+          "result": "Retain only session-specific privilege statement."
+        }
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical scope and read-only boundary are clear, but canonical event authority and material Curator/Validator independence remain unverified.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized provenance binds event 20161 to a canonical operation.",
+        "Material execution provenance proves separate principals/sessions/inputs.",
+        "Current governed attestation closes the historical gap."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A real authority bypass or shared effective principal is proven.",
+        "to_NO_ACTION_SUPPORTED": "Canonical provenance and material independence are fully attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required authority evidence remains inaccessible."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate distinct identity strings with material independence.",
+    "Do not infer global execution inability from the read-only principal.",
+    "Do not infer total absence of provenance from one unmatched ledger."
+  ],
+  "unresolved": [
+    "Canonical historical event authority",
+    "Material Curator/Validator independence",
+    "Current governed attestation",
+    "Historical executor namespace"
+  ],
+  "next_safe_step": "Resolve provenance and material independence through authorized readbacks; no grant widening.",
+  "measured_costs": {
+    "select_attempts": 6,
+    "successful_selects": 6,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M28_AUT_Q01",
+      "status": "SUCCESS",
+      "result": "public.lf_eventos schema discovered"
+    },
+    {
+      "query_id": "M28_AUT_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "id": 20161,
+        "evento_tipo": "READBACK_VERIFICADO",
+        "created_at": "2026-10-04T05:14:40.880842Z",
+        "migration_batch_id": null,
+        "created_by_execution_id": "CHATGPT-IG-M10.9-20261004-001"
+      }
+    },
+    {
+      "query_id": "M28_AUT_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "current_user": "supabase_read_only_user",
+        "transaction_read_only": "on",
+        "can_execute_ig": false,
+        "can_transition_checkpoint": true
+      }
+    },
+    {
+      "query_id": "M28_AUT_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "runs": 255,
+        "curator_identity_null": 0,
+        "validator_identity_null": 7,
+        "same_identity": 0,
+        "curator_component_null": 3,
+        "validator_component_null": 8,
+        "same_component": 0
+      }
+    },
+    {
+      "query_id": "M28_AUT_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "matching_execution_rows": 0
+      }
+    },
+    {
+      "query_id": "M28_AUT_Q06",
+      "status": "SUCCESS",
+      "result": {
+        "completed_train_ops": 294
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:34:00Z"
+}
