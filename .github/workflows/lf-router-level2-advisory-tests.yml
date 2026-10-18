@@ -16,6 +16,11 @@ on:
       - 'supabase/migrations/*lf_router_explicit_target_semantic_admission_v1.sql'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_explicit_target_and_catalog_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md'
+      - 'supabase/migrations/*lf_router_rw101_c3_independent_review_contract_v2.sql'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
@@ -25,6 +30,10 @@ on:
     branches: [main]
     paths:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
       - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
@@ -76,3 +85,20 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
+
+      - name: Validate RW1-01 C3 V2 repair package (not independent verdict)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json --self-test
+          python3 sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py --seed ci-smoke-not-a-real-holdout --nonce ci-smoke --out /tmp/rw101_c3_holdout_v2.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/rw101_c3_holdout_v2.json',encoding='utf-8'))
+          assert p['schema_version']=='RW101_C3_SECRET_HOLDOUT_V2'
+          assert p['case_count']==12 and len(p['cases'])==12
+          assert len({x['id'] for x in p['cases']})==12
+          print(json.dumps({'status':'C3_V2_GENERATOR_SMOKE_PASS','case_count':12}))
+          PY
