@@ -38,9 +38,9 @@
     "scope": "LOCAL_CHECKER_CONTRACT_ONLY_NOT_ROUTER_RUNTIME"
   },
   "material_findings": [],
-  "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/router_wave/RW1_01_C3_RAW1_PASS_V5.json",
+  "evidence_ref": "chatgpt-file://file_000000008310820ebab66817492c9701/RAW1.json#sha256=a7fbc77c8500fdb48559fab7112318beaefb3ada658a819ba50e5a6251edc25a",
   "evidence_refs": [
-    "github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/router_wave/RW1_01_C3_RAW1_PASS_V5.json",
-    "github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/router_wave/RW1_01_C3_RAW2_PASS_V5.json"
+    "chatgpt-file://file_000000008310820ebab66817492c9701/RAW1.json#sha256=a7fbc77c8500fdb48559fab7112318beaefb3ada658a819ba50e5a6251edc25a",
+    "chatgpt-file://file_00000000a0bc820ea8d8abed5c078e2d/RAW2_FINAL.json#sha256=efcc5ec4f9619ff380649f9fd1741350a17168691c7ee85658ad9a29b73f1714"
   ]
 }
