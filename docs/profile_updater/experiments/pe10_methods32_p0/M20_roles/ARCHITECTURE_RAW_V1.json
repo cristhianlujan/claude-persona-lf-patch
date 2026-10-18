@@ -1,0 +1,187 @@
+{
+  "schema": "PE10_M20_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M20_ARQ_Q1",
+      "sql": "SELECT id,created_at,payload->>'sql_caller_count' declared_callers,jsonb_array_length(payload->'sql_callers') callers,jsonb_array_length(payload->'trigger_bindings') triggers,payload->'historical_provenance_only' historical_limits FROM public.lf_eventos WHERE id=20161;",
+      "result": "event 20161: 38 callers,21 triggers; source explicitly records readiness/currentness drift and rejects inferring usage from old contract existence."
+    },
+    {
+      "id": "M20_ARQ_Q2",
+      "sql": "WITH e AS (SELECT payload FROM public.lf_eventos WHERE id=20161), h AS (SELECT x->>'caller' caller,x->>'definition_md5' historical_md5 FROM e,jsonb_array_elements(payload->'sql_callers') x), l AS (SELECT n.nspname||'.'||p.proname caller,md5(p.prosrc) current_md5 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace) SELECT count(*) total,count(*) FILTER(WHERE l.caller IS NULL) absent_current,count(*) FILTER(WHERE l.caller IS NOT NULL AND h.historical_md5=l.current_md5) empirical_match,count(*) FILTER(WHERE l.caller IS NOT NULL AND h.historical_md5<>l.current_md5) empirical_changed FROM h LEFT JOIN l USING(caller);",
+      "result": "38 total; 0 absent; 16 empirical matches; 22 empirical changed."
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "ARQ_CS1",
+        "observation": "historical 38-name set remains resolvable while 22 empirical definitions changed",
+        "components": [
+          "snapshot_freshness",
+          "post_snapshot_definition_change",
+          "historical_hash_recipe_unknown"
+        ]
+      },
+      {
+        "id": "ARQ_CS2",
+        "observation": "historical source itself records readiness/currentness drift",
+        "components": [
+          "temporal_equivalence",
+          "snapshot_promotion"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      {
+        "id": "HS1",
+        "components": [
+          "snapshot_freshness"
+        ],
+        "open_world_alternatives": [
+          "post_snapshot_definition_change",
+          "historical_hash_recipe_unknown"
+        ]
+      },
+      {
+        "id": "HS2",
+        "components": [
+          "temporal_equivalence"
+        ],
+        "open_world_alternatives": [
+          "snapshot_promotion"
+        ]
+      }
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "reason": "No justified executable pass/fail spectrum with priors for component-health likelihood."
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "selected_next_query": "Qualify changed definitions by material callee-path change before any live-topology conclusion."
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "event20161",
+        "time": "2026-10-04",
+        "assumptions": [
+          "as-of only"
+        ],
+        "supports": [
+          "C1"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current pg_proc",
+        "time": "CURRENT",
+        "assumptions": [
+          "md5(prosrc) comparator is empirical only"
+        ],
+        "supports": [
+          "C2"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C1",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C2",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1",
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C3_LIVE_CERTIFIED",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "ASSUME_P0_TIMELESS"
+        ],
+        "reason": "source records drift"
+      },
+      {
+        "set": [
+          "ASSUME_HASH_RECIPE"
+        ],
+        "reason": "not proven"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C2"
+        ]
+      },
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C1",
+          "C2"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_ARQ_F1",
+      "classification": "MEASURED",
+      "claim": "Historical architecture evidence is internally scoped but cannot certify current definitions."
+    },
+    {
+      "id": "M20_ARQ_F2",
+      "classification": "MEASURED_WITH_LIMIT",
+      "claim": "22/38 current names differ by empirical md5(prosrc); hash recipe remains unknown."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M20_ARQ_N1",
+      "hypothesis": "Current absence explains drift",
+      "result": "FALSIFIED: absent_current=0"
+    },
+    {
+      "id": "M20_ARQ_N2",
+      "hypothesis": "BARINEL numeric ranking is justified",
+      "result": "FALSIFIED_BY_MISSING_SPECTRUM_PRIORS"
+    }
+  ],
+  "unresolved": [
+    "historical hash recipe",
+    "runtime materiality of definition changes"
+  ],
+  "role_output_frozen": true
+}
