@@ -1,0 +1,10 @@
+{
+  "solution_ref": "router-wave-rw102-c2-architecture-competition-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json": "ENGINEERING_CHECKPOINTS",
+    "docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py": "ENGINEERING_CHECKPOINTS",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "supabase/migrations/20261018214000_lf_router_rw102_c2_architecture_competition_contract_v1.sql": "MIGRATION"
+  }
+}
