@@ -1,0 +1,143 @@
+{
+  "schema": "PE10_M19_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M19",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M19_COVER_Q1",
+      "sql": "WITH x AS (SELECT e.value j FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') e WHERE l.id=20161) SELECT count(*) total,count(DISTINCT j->>'caller') distinct_callers,count(*) FILTER(WHERE (j->>'definition_md5') !~ '^[0-9a-f]{32}$') invalid_hash_syntax,sum(jsonb_array_length(j->'callees')) lexical_edges FROM x;",
+      "result": "38 total,38 distinct callers,0 invalid hash syntax,76 lexical edges."
+    },
+    {
+      "id": "M19_COVER_Q2",
+      "sql": "SELECT payload->'deduplication' deduplication,payload->'excluded_name_candidate' excluded_name_candidate,payload->>'unexplained_material_callers' unexplained_material_callers,jsonb_array_length(payload->'external_inventory') external_count FROM public.lf_eventos WHERE id=20161;",
+      "result": "explicit logical-identity dedupe; one named candidate excluded as NOT_IG_CALLER; unexplained_material_callers=0; external_count=6."
+    }
+  ],
+  "atms": {
+    "evidence": [
+      {
+        "id": "E_COVER_INV",
+        "source": "event 20161 sql_callers",
+        "time": "2026-10-04",
+        "identity": "38 caller rows",
+        "assumptions": [
+          "completeness applies to declared snapshot population only"
+        ],
+        "supports": [
+          "C_COVER_INTERNAL"
+        ]
+      },
+      {
+        "id": "E_COVER_SCOPE",
+        "source": "event 20161 dedupe/exclusion/external",
+        "time": "2026-10-04",
+        "identity": "dedupe + exclusion + external inventory",
+        "assumptions": [
+          "external identities are not merged absent mapping"
+        ],
+        "supports": [
+          "C_COVER_SCOPE_RULES"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_COVER_INTERNAL",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_COVER_INV"
+          ]
+        ]
+      },
+      {
+        "id": "C_COVER_SCOPE_RULES",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_COVER_SCOPE"
+          ]
+        ]
+      },
+      {
+        "id": "C_COVER_LIVE_COMPLETE",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_COVER_1",
+        "set": [
+          "DECLARE_LIVE_COMPLETENESS_FROM_SNAPSHOT"
+        ],
+        "reason": "snapshot scope is historical"
+      },
+      {
+        "id": "N_COVER_2",
+        "set": [
+          "COUNT_EXCLUDED_NAME_AS_CALLER"
+        ],
+        "reason": "source explicitly classifies NOT_IG_CALLER"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_COVER_INV",
+        "invalidates": [
+          "C_COVER_INTERNAL"
+        ]
+      },
+      {
+        "withdraw": "E_COVER_SCOPE",
+        "invalidates": [
+          "C_COVER_SCOPE_RULES"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M19_COVER_F1",
+      "classification": "MEASURED_HISTORICAL",
+      "claim": "Historical declared inventory is internally reconciled at 38 distinct callers and 76 edges with syntactically valid hashes.",
+      "evidence": [
+        "M19_COVER_Q1"
+      ]
+    },
+    {
+      "id": "M19_COVER_F2",
+      "classification": "MEASURED_HISTORICAL",
+      "claim": "The snapshot encodes dedupe/exclusion rules and a separate six-entry external inventory; these scope rules must survive reuse.",
+      "evidence": [
+        "M19_COVER_Q2"
+      ]
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M19_COVER_N1",
+      "hypothesis": "Snapshot has duplicate caller identities.",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M19_COVER_N2",
+      "hypothesis": "Name/existence alone proves caller membership.",
+      "result": "FALSIFIED_BY_SOURCE_EXCLUSION"
+    }
+  ],
+  "unresolved": [
+    "current live completeness beyond historical snapshot"
+  ],
+  "role_output_frozen": true
+}
