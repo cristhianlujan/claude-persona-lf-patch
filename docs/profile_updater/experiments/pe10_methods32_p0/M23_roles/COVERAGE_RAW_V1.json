@@ -1,0 +1,165 @@
+{
+  "schema": "PE10_M23_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M23",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M23_COVER_Q1",
+      "sql": "WITH c AS (SELECT DISTINCT jsonb_array_elements_text(x->'callees') callee FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), p AS (SELECT p.proname,count(*) candidates FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace GROUP BY p.proname) SELECT count(*) total,count(*) FILTER(WHERE p.proname IS NULL) zero,count(*) FILTER(WHERE p.candidates=1) one,count(*) FILTER(WHERE p.candidates>1) multi FROM c LEFT JOIN p ON p.proname=c.callee;",
+      "result": "39 total callee tokens; zero=0; one=33; multi=6."
+    },
+    {
+      "id": "M23_COVER_Q2",
+      "sql": "WITH x AS (SELECT e.value j FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') e WHERE l.id=20161) SELECT count(*) total,count(DISTINCT j->>'caller') unique_callers,count(*) FILTER(WHERE nullif(j->>'definition_md5','') IS NULL) hash_null,count(*) FILTER(WHERE (j->>'definition_md5') ~ '^[0-9a-f]{32}$') hash_valid FROM x;",
+      "result": "total38; unique_callers38; hash_null0; hash_valid38."
+    }
+  ],
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E_COVER_RESOLVE",
+        "source": "historical callee tokens + current pg_proc names",
+        "time": "P0 tokens + CURRENT_READBACK",
+        "identity": "39 unique callee tokens",
+        "assumptions": [
+          "proname multiplicity requires qualification"
+        ],
+        "supports": [
+          "C_COVER_AMBIGUITY"
+        ]
+      },
+      {
+        "id": "E_COVER_HIST",
+        "source": "event20161 caller rows",
+        "time": "2026-10-04",
+        "identity": "38 historical callers",
+        "assumptions": [
+          "internal validity applies to snapshot population"
+        ],
+        "supports": [
+          "C_COVER_INTERNAL"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_COVER_AMBIGUITY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_COVER_RESOLVE"
+          ]
+        ]
+      },
+      {
+        "id": "C_COVER_INTERNAL",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_COVER_HIST"
+          ]
+        ]
+      },
+      {
+        "id": "C_COVER_LIVE_COMPLETE",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_COVER_1",
+        "set": [
+          "PRONAME_PRESENCE_EQUALS_UNIQUE_IDENTITY"
+        ],
+        "reason": "6 tokens have multiple candidates"
+      },
+      {
+        "id": "N_COVER_2",
+        "set": [
+          "HISTORICAL_INTERNAL_VALIDITY_EQUALS_LIVE_COMPLETENESS"
+        ],
+        "reason": "time/source equivalence absent"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_COVER_RESOLVE",
+        "invalidates": [
+          "C_COVER_AMBIGUITY"
+        ],
+        "preserves": [
+          "C_COVER_INTERNAL"
+        ]
+      },
+      {
+        "withdraw": "E_COVER_HIST",
+        "invalidates": [
+          "C_COVER_INTERNAL"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "COVER_INV1",
+        "rule": "39=zero+one+multi",
+        "observed": "39=0+33+6",
+        "valid_case": "partition reconciles",
+        "counterexample": "collapse multiple candidates into one",
+        "status": "PASS"
+      },
+      {
+        "id": "COVER_INV2",
+        "rule": "historical caller identities are unique and hashes non-null/valid syntax",
+        "observed": "38 unique/38 total; null0; valid38",
+        "valid_case": "all historical rows satisfy",
+        "counterexample": "duplicate or null hash",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M23_COVER_F1",
+      "classification": "MEASURED",
+      "claim": "Historical caller inventory passes uniqueness/hash-presence checks."
+    },
+    {
+      "id": "M23_COVER_F2",
+      "classification": "MEASURED_RISK",
+      "claim": "Six callee tokens are currently ambiguous under name-only resolution."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M23_COVER_N1",
+      "hypothesis": "All historical callee names resolve uniquely",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M23_COVER_N2",
+      "hypothesis": "Historical internal validity proves current completeness",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "qualified schema/object identity of six ambiguous callees"
+  ],
+  "role_output_frozen": true
+}
