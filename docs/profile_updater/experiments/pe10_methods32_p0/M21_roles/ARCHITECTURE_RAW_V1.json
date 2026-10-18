@@ -1,0 +1,87 @@
+{
+  "schema": "PE10_M21_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M21_ARQ_Q1",
+      "sql": "WITH h AS (SELECT x->>'caller' caller,x->>'definition_md5' historical_md5 FROM public.lf_eventos l,jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), live AS (SELECT n.nspname||'.'||p.proname caller,md5(p.prosrc) current_md5 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace) SELECT count(*) total,count(*) FILTER(WHERE live.caller IS NULL) absent,count(*) FILTER(WHERE live.caller IS NOT NULL AND h.historical_md5=live.current_md5) comparator_true,count(*) FILTER(WHERE live.caller IS NOT NULL AND h.historical_md5<>live.current_md5) comparator_false FROM h LEFT JOIN live USING(caller);",
+      "result": "partition total=38, absent=0, comparator_true=16, comparator_false=22."
+    },
+    {
+      "id": "M21_ARQ_Q2",
+      "sql": "WITH x AS (SELECT e.value j FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') e WHERE l.id=20161) SELECT count(*) total,count(DISTINCT j->>'caller') unique_callers,count(*) FILTER(WHERE nullif(j->>'definition_md5','') IS NULL) hash_null,count(*) FILTER(WHERE (j->>'definition_md5') ~ '^[0-9a-f]{32}$') hash_valid,count(*) FILTER(WHERE (j->>'definition_md5') !~ '^[0-9a-f]{32}$') hash_invalid FROM x;",
+      "result": "38 total,38 unique,0 null hashes,38 syntactically valid,0 invalid."
+    }
+  ],
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "ARQ_INV1",
+        "rule": "total = true + false + absent",
+        "observed": "38 = 16 + 22 + 0",
+        "valid_case": "partition reconciles",
+        "counterexample": "39 or any unreconciled total would violate",
+        "status": "PASS"
+      },
+      {
+        "id": "ARQ_INV2",
+        "rule": "historical caller identities unique and each hash is 32-char lowercase hex",
+        "observed": "38 unique/38 total; valid=38,null=0,invalid=0",
+        "valid_case": "all historical rows satisfy syntax",
+        "counterexample": "NULL or non-hex hash would violate",
+        "status": "PASS"
+      },
+      {
+        "id": "ARQ_INV3",
+        "rule": "empirical comparator equality is not equivalent to historical canonical-hash-method proof",
+        "observed": "16 true/22 false under md5(prosrc)",
+        "valid_case": "reported as empirical comparator only",
+        "counterexample": "claim canonical recipe from equality alone",
+        "status": "PASS_AS_SCOPE_GUARD"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED_OR_NOT_AVAILABLE",
+      "reason": "All tested invariants are directly evaluable by SQL counts/partitions; no solver result is claimed."
+    }
+  },
+  "findings": [
+    {
+      "id": "M21_ARQ_F1",
+      "classification": "MEASURED",
+      "claim": "Comparator population fully reconciles 16 TRUE,22 FALSE,0 absent across 38 historical callers."
+    },
+    {
+      "id": "M21_ARQ_F2",
+      "classification": "MEASURED",
+      "claim": "All 38 historical hashes are present and syntactically valid; this does not prove the historical hash-generation method."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M21_ARQ_N1",
+      "hypothesis": "Comparator partition has hidden/unreconciled members",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M21_ARQ_N2",
+      "hypothesis": "Hash syntax validity proves canonical historical hashing method",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "canonical historical definition_md5 construction method"
+  ],
+  "role_output_frozen": true
+}

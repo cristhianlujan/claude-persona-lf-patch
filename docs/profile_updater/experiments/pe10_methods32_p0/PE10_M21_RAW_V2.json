@@ -1,0 +1,251 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M21.json",
+    "sha256": "af542c5af8974415367758c6312e860168b34425b49f42f3d073074ea214cf60"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "producer": "B+C: five frozen role-bound metamorphic/invariant investigations followed by synthesis in one coordinated context.",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "git_blob_sha": "7f7e2a996262c13287bd8022ecee62da8f144659",
+      "query_count": 2,
+      "negative_count": 2,
+      "invariant_count": 3,
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "git_blob_sha": "e419f7a90d34f184bd2fe1023cbcf268520b02a9",
+      "query_count": 2,
+      "negative_count": 2,
+      "invariant_count": 3,
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "git_blob_sha": "71728209d57b811d437ffa4167d3e487c80d2b48",
+      "query_count": 2,
+      "negative_count": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "git_blob_sha": "5c4eb93751391a4ff9299baefa922f646bdf0468",
+      "query_count": 2,
+      "negative_count": 2,
+      "invariant_count": 3,
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "git_blob_sha": "ba366c522667b3cbf8b742c8a65ad46666a9e945",
+      "query_count": 2,
+      "negative_count": 2,
+      "invariant_count": 3,
+      "role_output_frozen": true
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M21_SYNTHESIS_V1.json",
+    "source_commit": "7e33a9e2a55a375c5a797241b88b56d17057c05c",
+    "git_blob_sha": "8b8d113078043369968123fb34eb26db3091d663"
+  },
+  "synthesis": {
+    "schema": "PE10_M21_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M21",
+    "base_code": "B",
+    "algorithm_codes": [
+      "C"
+    ],
+    "source_cutoff": "2026-10-15T00:00:00Z",
+    "role_code": "SYNTHESIZER",
+    "role_bound_single_context": true,
+    "autonomous_agent_claim": false,
+    "source_pieces_frozen_before_synthesis": true,
+    "no_new_sql_in_synthesis": true,
+    "synthesis_inputs": [
+      {
+        "role": "ARCHITECTURE",
+        "git_blob_sha": "7f7e2a996262c13287bd8022ecee62da8f144659",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "invariants": 3,
+        "role_output_frozen": true
+      },
+      {
+        "role": "PERFORMANCE",
+        "git_blob_sha": "e419f7a90d34f184bd2fe1023cbcf268520b02a9",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "invariants": 3,
+        "role_output_frozen": true
+      },
+      {
+        "role": "AUTHORITY",
+        "git_blob_sha": "71728209d57b811d437ffa4167d3e487c80d2b48",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      },
+      {
+        "role": "COVERAGE",
+        "git_blob_sha": "5c4eb93751391a4ff9299baefa922f646bdf0468",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "invariants": 3,
+        "role_output_frozen": true
+      },
+      {
+        "role": "INNOVATION",
+        "git_blob_sha": "ba366c522667b3cbf8b742c8a65ad46666a9e945",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "invariants": 3,
+        "role_output_frozen": true
+      }
+    ],
+    "readbacks_total": 10,
+    "negative_tests_total": 10,
+    "invariants_total": 14,
+    "solver_used": false,
+    "findings": [
+      {
+        "id": "M21_SYN_F1",
+        "classification": "MEASURED",
+        "finding": "Historical hash comparator reconciles exactly 38=16 TRUE+22 FALSE+0 absent; 38/38 historical hashes are present and syntactically valid, without proving the historical hash recipe."
+      },
+      {
+        "id": "M21_SYN_F2",
+        "classification": "MEASURED",
+        "finding": "Duration data requires three-valued partitioning: NULL, zero and positive reconcile independently by status; treating NULL as zero is invalid."
+      },
+      {
+        "id": "M21_SYN_F3",
+        "classification": "MEASURED",
+        "finding": "Authority capabilities are non-monotonic by privilege: EXECUTE=false while SELECT=true, so permission denial cannot be promoted to functional failure or total evidence inaccessibility."
+      },
+      {
+        "id": "M21_SYN_F4",
+        "classification": "MEASURED",
+        "finding": "All 38 historical caller names resolve currently, but 6/39 callee tokens have multiple current name candidates and therefore fail a uniqueness invariant."
+      },
+      {
+        "id": "M21_SYN_F5",
+        "classification": "MEASURED_CANDIDATE_ONLY",
+        "finding": "Current pattern population reconciles 95=31 historical-member+64 complement candidates; candidate membership is not omission proof. SQL/external domains remain separate with 0 raw-name overlap."
+      }
+    ],
+    "metamorphic_tests": [
+      {
+        "id": "C_META_1",
+        "transform": "repartition comparator outcomes",
+        "expected": "total invariant unchanged",
+        "observed": "38=16+22+0",
+        "status": "PASS"
+      },
+      {
+        "id": "C_META_2",
+        "transform": "separate NULL/zero/positive duration categories",
+        "expected": "status totals reconcile",
+        "observed": "all status partitions reconcile",
+        "status": "PASS"
+      },
+      {
+        "id": "C_META_3",
+        "transform": "remove EXECUTE capability while retaining SELECT",
+        "expected": "evidence-read capability can remain",
+        "observed": "SELECT true with EXECUTE false",
+        "status": "PASS"
+      },
+      {
+        "id": "C_META_4",
+        "transform": "resolve callee by proname only",
+        "expected": "ambiguity must surface when >1 candidate",
+        "observed": "6 multiple-candidate tokens",
+        "status": "PASS"
+      },
+      {
+        "id": "C_META_5",
+        "transform": "partition current pattern names by historical membership",
+        "expected": "total=current member+complement",
+        "observed": "95=31+64",
+        "status": "PASS"
+      }
+    ],
+    "contradictions": [
+      {
+        "topic": "38 current-present caller names vs 22 comparator-false",
+        "resolution": "name presence and definition equality are different invariants"
+      },
+      {
+        "topic": "family_count 47 in both revisions vs cohort equivalence",
+        "resolution": "same family count does not preserve sample/duration partition"
+      },
+      {
+        "topic": "EXECUTE denied vs SELECT allowed",
+        "resolution": "privileges are distinct capabilities"
+      },
+      {
+        "topic": "0 unresolved callee names vs 6 ambiguous",
+        "resolution": "name existence does not imply unique object identity"
+      }
+    ],
+    "decision": {
+      "state": "VERIFY_FIRST",
+      "implemented_repair": false,
+      "reason": "C validates population/invariant boundaries and counterexamples, but no single domain defect or safe repair is established."
+    },
+    "unresolved": [
+      "canonical historical hash method",
+      "zero-duration semantics",
+      "matched performance effect",
+      "six callee object identities",
+      "caller classification of current complement"
+    ],
+    "constraints_preserved": [
+      "READ_ONLY",
+      "no production edits",
+      "P0/current separation",
+      "five reports frozen before synthesis",
+      "no cross-method inputs",
+      "no autonomous-agent claim"
+    ],
+    "non_isolation_risk": "Five role-bound passes were sequential in one shared model context; reports were frozen before synthesis, but independent autonomous cognition is not claimed.",
+    "final_method_status": "B_C_FIVE_ROLE_REPORTS_SYNTHESIZED_MATERIAL_ONLY_NOT_YET_GOVERNED_DONE"
+  },
+  "source_queries_total": 10,
+  "negative_tests_total": 10,
+  "invariants_total": 14,
+  "metamorphic_tests_total": 5,
+  "solver_used": false,
+  "final_method_state": "B_C_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false
+  },
+  "limits": [
+    "invariants validate partitions/identity boundaries, not business-rule truth beyond measured evidence",
+    "solver result not claimed",
+    "P0/current separation preserved"
+  ]
+}
