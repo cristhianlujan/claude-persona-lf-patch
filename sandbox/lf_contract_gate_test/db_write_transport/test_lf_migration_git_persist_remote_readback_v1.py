@@ -17,8 +17,8 @@ class GitPersistReadbackTest(unittest.TestCase):
         sha = "a" * 40
         readings = [
             subprocess.CompletedProcess([], 0, "", ""),
-            subprocess.CompletedProcess([], 0, "b"*40 + "\\trefs/heads/example\\n", ""),
-            subprocess.CompletedProcess([], 0, sha + "\\trefs/heads/example\\n", ""),
+            subprocess.CompletedProcess([], 0, "b"*40 + "\trefs/heads/example\n", ""),
+            subprocess.CompletedProcess([], 0, sha + "\trefs/heads/example\n", ""),
         ]
         with patch.object(module, "_run", side_effect=readings) as run, patch.object(module.time, "sleep") as sleep:
             module.require_remote_exact_head("lf/migration-source-persist/example", sha)
@@ -27,7 +27,7 @@ class GitPersistReadbackTest(unittest.TestCase):
             self.assertTrue(all(call.kwargs.get("check") is False for call in run.call_args_list))
 
     def test_wrong_sha_never_succeeds(self):
-        with patch.object(module, "_run", return_value=subprocess.CompletedProcess([], 0, "b"*40+"\\trefs/heads/example\\n", "")) as run, patch.object(module.time, "sleep") as sleep:
+        with patch.object(module, "_run", return_value=subprocess.CompletedProcess([], 0, "b"*40+"\trefs/heads/example\n", "")) as run, patch.object(module.time, "sleep") as sleep:
             with self.assertRaisesRegex(ValueError, "MIGRATION_GIT_PERSIST_REMOTE_READBACK_MISMATCH"):
                 module.require_remote_exact_head("lf/migration-source-persist/example", "a"*40)
             self.assertEqual(run.call_count, 8)
