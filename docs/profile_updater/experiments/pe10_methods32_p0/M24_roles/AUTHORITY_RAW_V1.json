@@ -1,0 +1,199 @@
+{
+  "schema": "PE10_M24_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M24_AUTH_Q1",
+      "result": "two exact EKB records VALIDATED_TESTED on Oct14; CP2 unauthorized currentness/latest13 and SOAK criterion drift"
+    },
+    {
+      "id": "M24_AUTH_Q2",
+      "result": "read-only user; EXECUTE false/false; SELECT true/true"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "AUTH_CS1",
+        "observation": "permission denial coexists with evidence SELECT access",
+        "components": [
+          "wrong_readback_path",
+          "privilege_scope",
+          "functional_fail_misclassification"
+        ]
+      },
+      {
+        "id": "AUTH_CS2",
+        "observation": "historical EKB authority precedes cutoff",
+        "components": [
+          "temporal_authority",
+          "source_substitution"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "wrong_readback_path"
+      ],
+      [
+        "temporal_authority"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "authorized SELECT-only CP2 evidence reconstruction"
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "EKB exact records",
+        "time": "2026-10-14",
+        "assumptions": [
+          "historical authority observation"
+        ],
+        "supports": [
+          "C_HIST_AUTH"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current privileges",
+        "time": "CURRENT",
+        "assumptions": [
+          "current only"
+        ],
+        "supports": [
+          "C_CURRENT_AUTH"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_HIST_AUTH",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C_CURRENT_AUTH",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C_FUNCTIONAL_FAIL",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "42501_EQUALS_FUNCTIONAL_FAIL"
+        ],
+        "reason": "permission scope evidence"
+      },
+      {
+        "set": [
+          "ELEVATE_EXECUTE"
+        ],
+        "reason": "SELECT path exists"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C_HIST_AUTH"
+        ],
+        "preserves": [
+          "C_CURRENT_AUTH"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C_CURRENT_AUTH"
+        ],
+        "preserves": [
+          "C_HIST_AUTH"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "I1",
+        "rule": "EXECUTE and SELECT are distinct capabilities",
+        "observed": "false/false vs true/true",
+        "valid_case": "read evidence without function execution",
+        "counterexample": "total access denial inference",
+        "status": "PASS"
+      },
+      {
+        "id": "I2",
+        "rule": "historical authority evidence remains temporally scoped",
+        "observed": "EKB Oct14 pre-cutoff",
+        "valid_case": "historical claim only",
+        "counterexample": "project current privilege backward",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "classification": "MEASURED",
+      "claim": "42501 belongs to readback authority path, not demonstrated function failure."
+    },
+    {
+      "id": "F2",
+      "classification": "MEASURED",
+      "claim": "Authorized SELECT evidence path remains available."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "N1",
+      "hypothesis": "No EXECUTE means no evidence",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "N2",
+      "hypothesis": "Privilege elevation required",
+      "result": "FALSIFIED"
+    }
+  ],
+  "unresolved": [
+    "historical grant state outside EKB"
+  ],
+  "role_output_frozen": true
+}
