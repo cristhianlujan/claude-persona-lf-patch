@@ -1,0 +1,377 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M29",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C",
+    "E"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M29.json",
+    "sha256": "84db22f2238f703f5c7edab7e8a09432021aa05c2344bb4231e5a39e120b9ce0"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/ARCHITECTURE_RAW_V1.json",
+      "git_blob_sha": "0e0a67b0201fb2a6f2da3078d0edb145ca23cbaa",
+      "select_attempts": 4,
+      "successful_selects": 4,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "invariants": 4,
+      "metamorphic_tests": 1,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/PERFORMANCE_RAW_V1.json",
+      "git_blob_sha": "dbb1207c8851d146252b691e05a9526361503710",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "invariants": 5,
+      "metamorphic_tests": 1,
+      "decision_state": "NEEDS_MORE_EVIDENCE",
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/AUTHORITY_RAW_V1.json",
+      "git_blob_sha": "68025c383816c06ba717f3e207bb9d2c94b6b713",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "invariants": 5,
+      "metamorphic_tests": 1,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/COVERAGE_RAW_V1.json",
+      "git_blob_sha": "ac04186e6aaff50ebb24c6ea78ad1ec3a8210781",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "invariants": 6,
+      "metamorphic_tests": 1,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/INNOVATION_RAW_V1.json",
+      "git_blob_sha": "de07ac22541b4a49b62992978786ee8d80b07d8b",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 4,
+      "invariants": 6,
+      "metamorphic_tests": 1,
+      "decision_state": "NO_ACTION_SUPPORTED",
+      "role_output_frozen": true
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_SYNTHESIS_V1.json",
+    "git_blob_sha": "5835568e79778eba057b22b0271b66b05095cbf6",
+    "source_commit": "27e94966eedeb96873ccbf88e480f6f2b03873af"
+  },
+  "synthesis": {
+    "schema": "PE10_M29_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M29",
+    "definition_version": "PE10_METHOD_V1",
+    "base_code": "B",
+    "algorithm_codes": [
+      "C",
+      "E"
+    ],
+    "synthesizer_contract": {
+      "inputs": "Only the five separately frozen M29 role RAW files.",
+      "role_bound_single_context": true,
+      "independent_agents_claimed": false,
+      "cross_method_results_used": false,
+      "voting_used": false,
+      "reconciliation_rule": "Resolve by invariant scope, metamorphic counterexamples, provenance and falsifiers; never by majority."
+    },
+    "frozen_role_inputs": [
+      {
+        "role_code": "ARCHITECTURE",
+        "blob_sha": "0e0a67b0201fb2a6f2da3078d0edb145ca23cbaa",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/ARCHITECTURE_RAW_V1.json"
+      },
+      {
+        "role_code": "PERFORMANCE",
+        "blob_sha": "dbb1207c8851d146252b691e05a9526361503710",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/PERFORMANCE_RAW_V1.json"
+      },
+      {
+        "role_code": "AUTHORITY",
+        "blob_sha": "68025c383816c06ba717f3e207bb9d2c94b6b713",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/AUTHORITY_RAW_V1.json"
+      },
+      {
+        "role_code": "COVERAGE",
+        "blob_sha": "ac04186e6aaff50ebb24c6ea78ad1ec3a8210781",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/COVERAGE_RAW_V1.json"
+      },
+      {
+        "role_code": "INNOVATION",
+        "blob_sha": "de07ac22541b4a49b62992978786ee8d80b07d8b",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/INNOVATION_RAW_V1.json"
+      }
+    ],
+    "role_states": {
+      "ARCHITECTURE": "VERIFY_FIRST",
+      "PERFORMANCE": "NEEDS_MORE_EVIDENCE",
+      "AUTHORITY": "VERIFY_FIRST",
+      "COVERAGE": "VERIFY_FIRST",
+      "INNOVATION": "NO_ACTION_SUPPORTED"
+    },
+    "reconciliation": [
+      {
+        "id": "M29-SYN-RC01",
+        "issue": "All SQL partitions reconcile, yet current semantic equivalence remains open.",
+        "resolution": "Partition consistency validates the measured sets, not the missing business/currentness rule. The comparator metamorphic test proves hash interpretation is representation-sensitive."
+      },
+      {
+        "id": "M29-SYN-RC02",
+        "issue": "Performance invariants pass while causal performance remains unresolved.",
+        "resolution": "Internal arithmetic/set consistency is necessary but not sufficient for clock semantics or matched causal comparison."
+      },
+      {
+        "id": "M29-SYN-RC03",
+        "issue": "Authority identity/component partitions show separation in recorded fields, but material independence is not proved.",
+        "resolution": "Preserve field-level invariant only; require execution provenance for material independence."
+      },
+      {
+        "id": "M29-SYN-RC04",
+        "issue": "Innovation finds stable duplicate-body grouping and existing evidence surfaces.",
+        "resolution": "That supports reuse-first verification, not deletion or runtime intervention."
+      }
+    ],
+    "integrated_findings": [
+      {
+        "id": "M29-SYN-F01",
+        "claim": "P0 caller/trigger populations are internally consistent and current names structurally resolve; TLP/set partitions reconcile exactly.",
+        "support": [
+          "M29-ARQ-F01",
+          "M29-ARQ-F02",
+          "M29-ARQ-F04",
+          "M29-COV-F01",
+          "M29-COV-F02",
+          "M29-COV-F04"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M29-SYN-F02",
+        "claim": "Hash equality is comparator-sensitive: md5(prosrc) yields 16 matches while md5(pg_get_functiondef()) yields 0, so no canonical historical hash method is established by coincidence alone.",
+        "support": [
+          "M29-ARQ-F03"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M29-SYN-F03",
+        "claim": "Bounded current candidate and frozen P0 sets are not interchangeable: 75=27 overlap+48 outside, while 38=27 overlap+11 outside-pattern.",
+        "support": [
+          "M29-COV-F03"
+        ],
+        "confidence": "HIGH_FOR_BOUNDED_PATTERN"
+      },
+      {
+        "id": "M29-SYN-F04",
+        "claim": "Timing partitions and nonnegative request ordering are internally consistent, but chunk additivity fails as a general invariant and causal performance remains unproven.",
+        "support": [
+          "M29-PERF-F02",
+          "M29-PERF-F03",
+          "M29-PERF-F04",
+          "M29-PERF-F05"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M29-SYN-F05",
+        "claim": "Recorded identity/component partitions reconcile and show no equal non-null pairs, but canonical authority linkage and material execution independence are not established.",
+        "support": [
+          "M29-AUT-F03",
+          "M29-AUT-F04",
+          "M29-AUT-F05"
+        ],
+        "confidence": "HIGH_FOR_RECORDED_FIELDS"
+      },
+      {
+        "id": "M29-SYN-F06",
+        "claim": "Existing evidence surfaces and stable duplicate-body grouping support reuse-first verification; no runtime repair or duplicate deletion is justified.",
+        "support": [
+          "M29-INN-F01",
+          "M29-INN-F02",
+          "M29-INN-F03",
+          "M29-INN-F04",
+          "M29-INN-F05"
+        ],
+        "confidence": "MEDIUM_HIGH"
+      }
+    ],
+    "algorithm_application": {
+      "C": {
+        "executed": true,
+        "invariant_count": 26,
+        "metamorphic_test_count": 5,
+        "all_partition_arithmetic_reconciled": true,
+        "cross_role_metamorphic_tests": [
+          {
+            "id": "SYN-MT1",
+            "transform": "Hash comparator prosrc→functiondef",
+            "result": "COUNTEREXAMPLE_FOUND",
+            "effect": "Blocks canonical-hash inference from empirical match rate."
+          },
+          {
+            "id": "SYN-MT2",
+            "transform": "Stage timing additive assumption→three-way relation partition",
+            "result": "COUNTEREXAMPLE_FOUND",
+            "effect": "Blocks additive decomposition."
+          },
+          {
+            "id": "SYN-MT3",
+            "transform": "Material-independence claim→label-only evidence reduction",
+            "result": "OVERFITTING_REJECTED",
+            "effect": "Blocks independence claim from labels alone."
+          },
+          {
+            "id": "SYN-MT4",
+            "transform": "Frozen P0 selector→bounded current name-pattern selector",
+            "result": "COUNTEREXAMPLE_FOUND",
+            "effect": "Blocks selector interchangeability/closed-world claim."
+          },
+          {
+            "id": "SYN-MT5",
+            "transform": "Raw body duplicate grouping→whitespace-normalized grouping",
+            "result": "INVARIANT_HELD",
+            "effect": "Shows duplicate grouping is not merely whitespace-induced, but does not prove deletion safety."
+          }
+        ],
+        "solver_used": false,
+        "solver_reason": "All implemented checks were SQL set/partition/metamorphic invariants; no compatible QED/VeriEQL/SMT verifier was available or required.",
+        "overfitting_checks": [
+          "TLP consistency cannot prove a missing business/currentness rule.",
+          "Comparator yielding preferred matches is not privileged without canonical provenance.",
+          "Distinct labels are not material independence.",
+          "Pattern candidates are not automatically runtime universe.",
+          "Duplicate bodies are not automatically safe to remove."
+        ]
+      },
+      "E": {
+        "executed": true,
+        "state": "VERIFY_FIRST",
+        "rationale": "No material runtime defect is demonstrated. Invariants expose important representation/selector/semantics limits that require governed verification before either repair or no-action closure. Performance remains NEEDS_MORE_EVIDENCE within this path.",
+        "demonstrated_defect": false,
+        "implemented_repair": false,
+        "runtime_modified": false,
+        "potential_falsifiers": [
+          "Canonical historical hash serialization is demonstrated and current semantic equivalence is attested.",
+          "Authorized current universe manifest reconciles material consumers/exclusions.",
+          "Canonical provenance proves authority and material Curator/Validator independence.",
+          "Controlled matched performance replay proves or excludes a material regression."
+        ],
+        "reversal_criteria": {
+          "to_REPAIR_REQUIRED": "A governed invariant/currentness verification proves a material active defect.",
+          "to_NO_ACTION_SUPPORTED": "Currentness, coverage, authority and performance unknowns close without material defect.",
+          "to_NEEDS_MORE_EVIDENCE": "Required governed evidence remains inaccessible or ambiguous."
+        }
+      }
+    },
+    "chosen_repair": {
+      "immediate": "NO_RUNTIME_REPAIR",
+      "next_verification": [
+        "CANONICAL_HASH_AND_CURRENT_SEMANTIC_ATTESTATION",
+        "CURRENT_UNIVERSE_MANIFEST",
+        "AUTHORITY_AND_MATERIAL_INDEPENDENCE_READBACK",
+        "MATCHED_PERFORMANCE_VERIFICATION"
+      ]
+    },
+    "constraints_preserved": [
+      "READ_ONLY research",
+      "No production/runtime mutation",
+      "No grant widening",
+      "P0 historical facts separated from post-cut observations",
+      "Five role RAWs frozen before synthesis",
+      "No independent-agent claim",
+      "No cross-method result input",
+      "No domain READY/DONE claim"
+    ],
+    "unresolved": [
+      "Canonical historical hash serialization",
+      "Current semantic equivalence",
+      "Authoritative current consumer universe",
+      "Canonical historical authority link",
+      "Material Curator/Validator independence",
+      "Timing semantics and matched intervention boundary"
+    ],
+    "measured_costs": {
+      "producer_select_attempts": 24,
+      "producer_successful_selects": 24,
+      "producer_query_errors": 0,
+      "negative_falsifiers": 16,
+      "invariants": 26,
+      "metamorphic_tests": 5,
+      "producer_files": 5,
+      "production_writes": 0,
+      "tokens": "NO_MEDIDO"
+    },
+    "final_state": "VERIFY_FIRST",
+    "synthesized_at": "2026-10-18T23:00:00Z"
+  },
+  "source_queries_total": 24,
+  "successful_queries_total": 24,
+  "query_errors_preserved": 0,
+  "negative_tests_total": 16,
+  "invariants_total": 26,
+  "metamorphic_tests_total": 5,
+  "role_state_counts": {
+    "VERIFY_FIRST": 3,
+    "NEEDS_MORE_EVIDENCE": 1,
+    "NO_ACTION_SUPPORTED": 1,
+    "REPAIR_REQUIRED": 0
+  },
+  "algorithm_C_executed": true,
+  "tlp_reconciled": true,
+  "solver_used": false,
+  "algorithm_E_executed": true,
+  "evidence_decision_contract": {
+    "allowed_states": [
+      "VERIFY_FIRST",
+      "REPAIR_REQUIRED",
+      "NEEDS_MORE_EVIDENCE",
+      "NO_ACTION_SUPPORTED"
+    ],
+    "integrated_state": "VERIFY_FIRST",
+    "evidence_scoped": true,
+    "falsifiers_specified": true,
+    "reversal_criteria_specified": true,
+    "implemented_repair": false
+  },
+  "final_method_state": "B_C_E_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false
+  }
+}
