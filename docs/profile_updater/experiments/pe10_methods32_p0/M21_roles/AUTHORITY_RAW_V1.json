@@ -1,1 +1,76 @@
-{"schema":"PE10_M21_ROLE_RAW_V1","method_code":"PE10_M21","role_code":"AUTHORITY","base_code":"B","algorithm_codes":["C"],"source_cutoff":"2026-10-15T00:00:00Z","role_output_frozen":true,"note":"Authority invariant evidence: current read-only principal has SELECT on evidence tables and lacks function EXECUTE; two exact EKB records are VALIDATED_TESTED and pre-cutoff. No functional failure inferred from permission denial."}
+{
+  "schema": "PE10_M21_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M21_AUTH_Q1",
+      "result": "current_user=supabase_read_only_user; transaction_read_only=on; EXECUTE currentness functions=false/false; SELECT runs/receipts=true/true"
+    },
+    {
+      "id": "M21_AUTH_Q2",
+      "result": "exact EKB population total=2; VALIDATED_TESTED=2; pre-cutoff=2"
+    }
+  ],
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "AUTH_INV1",
+        "rule": "EXECUTE denial does not imply SELECT denial",
+        "observed": "false/false vs true/true",
+        "valid_case": "SELECT evidence path",
+        "counterexample": "infer no evidence access",
+        "status": "PASS"
+      },
+      {
+        "id": "AUTH_INV2",
+        "rule": "P0 EKB must be exact-code and pre-cutoff",
+        "observed": "2/2 exact,validated,pre-cutoff",
+        "valid_case": "both qualify",
+        "counterexample": "post-cutoff/different code",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M21_AUTH_F1",
+      "classification": "MEASURED",
+      "claim": "Authority capabilities partition cleanly: function execution denied while evidence-table reads remain authorized."
+    },
+    {
+      "id": "M21_AUTH_F2",
+      "classification": "MEASURED",
+      "claim": "Both exact EKB authority records qualify under cutoff."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M21_AUTH_N1",
+      "hypothesis": "No EXECUTE means no evidence path",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M21_AUTH_N2",
+      "hypothesis": "Post-cutoff evidence may count as P0",
+      "result": "REJECTED_BY_INVARIANT"
+    }
+  ],
+  "unresolved": [
+    "historical grant state outside EKB observation"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}
