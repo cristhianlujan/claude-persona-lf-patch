@@ -160,9 +160,7 @@ BEGIN
   );
 
   UPDATE programacion.engineering_plan_units
-     SET unit_metadata=v_new,
-         updated_at=now(),
-         updated_by_execution_id='LF_ROUTER_RW101_C3_V2_BIND_TRAIN_20261018'
+     SET unit_metadata=v_new
    WHERE plan_code=v_plan AND unit_code=v_unit
      AND md5(unit_metadata::text)=v_prior_md5;
   GET DIAGNOSTICS v_count=ROW_COUNT;
