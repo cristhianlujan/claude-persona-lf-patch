@@ -1,0 +1,210 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M02",
+  "base_code": "A",
+  "algorithm_codes": [
+    "D"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "mode": "REVERIFY_ORIGINAL_GDE_CANDIDATES",
+  "original_raw": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/prior_originals/PE10_M02_RAW.json",
+    "sha256": "34cdfe2c2d3619495122092934d2db7719a312d620094b97463d1c41866c54e7"
+  },
+  "readbacks": [
+    {
+      "id": "M02-Q1",
+      "sql_literal": "SELECT codigo,categoria,severidad,primera_vez FROM transversal.error_knowledge WHERE codigo IN ('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15 00:00:00+00' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001"
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001"
+        }
+      ],
+      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "observed_count": 2
+    },
+    {
+      "id": "M02-Q2",
+      "sql_literal": "SELECT payload->>'test_case_count' test_case_count,payload->>'trigger_binding_count' trigger_binding_count,payload->>'source_pack_version' source_pack,payload->>'acceptance_declared' acceptance_declared FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00'",
+      "rows": [
+        {
+          "test_case_count": "77",
+          "trigger_binding_count": "21",
+          "source_pack": "SOURCE_PACK_V1",
+          "acceptance_declared": "false"
+        }
+      ],
+      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "observed_count": 1
+    },
+    {
+      "id": "M02-Q3",
+      "sql_literal": "SELECT evento_tipo,entidad_codigo,count(*) AS n FROM public.lf_eventos WHERE created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00' AND (entidad_codigo ILIKE '%M9.11%' OR descripcion ILIKE '%SOAK_OBSERVATION_HISTORY_V2%') GROUP BY 1,2 LIMIT 15",
+      "rows": [],
+      "readback_scope": "NEGATIVE_QUERY_ZERO_ROWS",
+      "observed_count": 0
+    },
+    {
+      "id": "M02-Q4",
+      "sql_literal": "SELECT id,receipt_kind,subject_ref,payload->>'verification_status' verification_status,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15 00:00:00+00'",
+      "rows": [
+        {
+          "id": 38,
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "verification_status": "VERIFIED",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "observed_count": 1
+    },
+    {
+      "id": "M02-Q5",
+      "sql_literal": "SELECT payload->'usage_stats'->>'track_functions' track_functions,payload->'usage_stats'->>'ig_stat_rows' stat_rows FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "track_functions": "none",
+          "stat_rows": "0"
+        }
+      ],
+      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "observed_count": 1
+    },
+    {
+      "id": "M02-Q6",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only FROM pg_settings LIMIT 1",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on"
+        }
+      ],
+      "readback_scope": "PRINCIPAL_RECORDED_SEPARATELY_NOT_P0",
+      "observed_count": 1
+    },
+    {
+      "id": "M02-Q7",
+      "sql_literal": "SELECT count(*) n,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') md5_format_valid FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "n": 38,
+          "md5_format_valid": 38
+        }
+      ],
+      "readback_scope": "PROJECTION_OF_READBACK_ONLY",
+      "observed_count": 1
+    }
+  ],
+  "algorithm_execution": {
+    "GDE": {
+      "conflict_sets": [
+        [
+          "soak_projection",
+          "historical_soak_binding"
+        ],
+        [
+          "cp2_current_reader",
+          "cp2_privilege_contract"
+        ]
+      ],
+      "minimal_hitting_sets": [
+        [
+          "soak_projection",
+          "cp2_current_reader"
+        ],
+        [
+          "soak_projection",
+          "cp2_privilege_contract"
+        ],
+        [
+          "historical_soak_binding",
+          "cp2_current_reader"
+        ],
+        [
+          "historical_soak_binding",
+          "cp2_privilege_contract"
+        ]
+      ],
+      "enumeration": "4 minimal two-component hitting sets computed; open-world alternatives remain; not a confirmed fault repair"
+    },
+    "BARINEL": {
+      "status": "NOT_CALIBRATABLE",
+      "reason": "No component execution spectra or priors; numeric likelihood/health not computed"
+    },
+    "INFORMATION_GAIN": {
+      "mode": "ORDINAL_ONLY",
+      "ranking": [
+        "Read qualified historical M9.11 receipt",
+        "Check historical CP2 privilege/equivalent SELECT",
+        "Check source-pinned caller identities"
+      ],
+      "numeric_entropy": "NOT_JUSTIFIED"
+    }
+  },
+  "negative_tests": [
+    {
+      "id": "GDE_MINIMALITY",
+      "pass": true,
+      "proof": "Every set hits both conflicts; removing either element misses one conflict"
+    },
+    {
+      "id": "GDE_EMPTY_SET_REJECT",
+      "pass": true
+    },
+    {
+      "id": "BARINEL_NO_INVENTED_NUMERICS",
+      "pass": true
+    },
+    {
+      "id": "ZERO_EVENT_MATCH_NOT_ZERO_HISTORICAL_RECEIPTS",
+      "pass": true,
+      "proof": "id38 VERIFIED in provenance_receipts"
+    },
+    {
+      "id": "CP2_PERMISSION_NOT_FUNCTIONAL_FAILURE",
+      "pass": true
+    }
+  ],
+  "findings": [
+    {
+      "code": "M02-F1",
+      "claim": "Historical SOAK and CP2 risk families are separate; candidate hitting sets are not confirmed causal repairs.",
+      "evidence": [
+        "M02-Q1"
+      ]
+    },
+    {
+      "code": "M02-F2",
+      "claim": "Zero matches in a narrow event text search does not establish absence of verified historical receipt 38.",
+      "evidence": [
+        "M02-Q3",
+        "M02-Q4"
+      ]
+    },
+    {
+      "code": "M02-F3",
+      "claim": "Numeric BARINEL and expected information gain cannot be calibrated from P0; ordinal questions retained.",
+      "evidence": [
+        "M02-Q1",
+        "M02-Q4"
+      ]
+    }
+  ],
+  "causal_model": "Competing source-restricted hypotheses, no proven production defect.",
+  "chosen_repair": "VERIFY_FIRST",
+  "constraints_preserved": [
+    "P0 cutoff",
+    "Read only",
+    "Original unchanged",
+    "No method quality scoring",
+    "No runtime changes"
+  ],
+  "result": "GDE_MATERIAL_RESEARCH_VERIFIED_CAUSAL_UNKNOWN"
+}
