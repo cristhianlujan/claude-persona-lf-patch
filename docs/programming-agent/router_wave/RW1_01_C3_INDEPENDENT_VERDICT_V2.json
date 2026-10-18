@@ -35,12 +35,17 @@
     "raw2_sha256": "efcc5ec4f9619ff380649f9fd1741350a17168691c7ee85658ad9a29b73f1714",
     "holdout_commitment_sha256": "072e23f12f2cebfb955cae55a228078d150e243dd4992368ec1043cb996b53f1",
     "holdout_manifest_sha256": "52d74740d8787c6a9b125e817eab6685e428911d040281701b0c2a15786f4347",
-    "scope": "LOCAL_CHECKER_CONTRACT_ONLY_NOT_ROUTER_RUNTIME"
+    "scope": "LOCAL_CHECKER_CONTRACT_ONLY_NOT_ROUTER_RUNTIME",
+    "blind_verdict_basis": "MECHANICALLY_DERIVED_FROM_FROZEN_RAW1_UNDER_PREDECLARED_PASS_CRITERIA",
+    "raw1_label_present": false,
+    "raw1_label_omission_material": false,
+    "raw1_unchanged_verified_by_raw2": true
   },
   "material_findings": [],
   "evidence_ref": "chatgpt-file://file_000000008310820ebab66817492c9701/RAW1.json#sha256=a7fbc77c8500fdb48559fab7112318beaefb3ada658a819ba50e5a6251edc25a",
   "evidence_refs": [
     "chatgpt-file://file_000000008310820ebab66817492c9701/RAW1.json#sha256=a7fbc77c8500fdb48559fab7112318beaefb3ada658a819ba50e5a6251edc25a",
     "chatgpt-file://file_00000000a0bc820ea8d8abed5c078e2d/RAW2_FINAL.json#sha256=efcc5ec4f9619ff380649f9fd1741350a17168691c7ee85658ad9a29b73f1714"
-  ]
+  ],
+  "normalization_note": "RAW1.json froze all pass/fail measurements before reveal but omitted a verdict label. Under the predeclared rule, 42/42 public good, 12/12 holdout good, 218/218 negatives rejected, two novel falsifiers rejected, and zero unexpected failures imply PASS deterministically. RAW2 records the same RAW1 hash unchanged and terminal PASS. No RAW1 bytes were altered."
 }
