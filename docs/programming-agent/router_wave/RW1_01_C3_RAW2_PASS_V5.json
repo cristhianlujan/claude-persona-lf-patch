@@ -1,0 +1,46 @@
+{
+  "stage": "RAW2",
+  "raw1_unchanged_sha256": "a7fbc77c8500fdb48559fab7112318beaefb3ada658a819ba50e5a6251edc25a",
+  "seed": "4633f2fee0e7cde7e6ac390c9d229379e3a7eef950f1c966fbac2ca13a419bf3",
+  "nonce": "d8624ff0ad9bdb66b0f14cadf9c4b2776d32c1f488560b1380d4428dc9fe1b29",
+  "manifest_sha256": "52d74740d8787c6a9b125e817eab6685e428911d040281701b0c2a15786f4347",
+  "commitment_sha256": "072e23f12f2cebfb955cae55a228078d150e243dd4992368ec1043cb996b53f1",
+  "commitment_verified": true,
+  "source_freeze_verified": true,
+  "raw1": {
+    "stage": "RAW1",
+    "timestamp_utc": "2026-10-18T21:03:30.903429+00:00",
+    "public_good": {
+      "accepted": 42,
+      "total": 42
+    },
+    "holdout_good": {
+      "accepted": 12,
+      "total": 12
+    },
+    "negatives": {
+      "rejected": 218,
+      "total": 218,
+      "novel": [
+        [
+          "R01",
+          "novel_duplicate_candidate",
+          [
+            "R01:RESPONSIBILITY_NOT_BOUND_EXACTLY_ONCE:fixture://rw101-v2/R01/responsibility/1"
+          ]
+        ],
+        [
+          "R01",
+          "novel_extra_acknowledgment",
+          [
+            "R01:ACKNOWLEDGED_GOALS_NOT_EXACT_ORACLE"
+          ]
+        ]
+      ]
+    },
+    "unexpected_good_failures": [],
+    "unexpected_negative_acceptances": []
+  },
+  "decision": "PASS",
+  "scope": "local checker contract; no Router runtime"
+}
