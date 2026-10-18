@@ -1,0 +1,145 @@
+{
+  "schema": "PE10_M19_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M19",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M19_PERF_Q1",
+      "sql": "SELECT id,created_at,payload FROM programacion.provenance_receipts WHERE id=38;",
+      "result": "VERIFIED SOAK_OBSERVATION_HISTORY_V2; 13 screens,47 families, zero below-2, false-pass=0,D4=0; no latency distribution."
+    },
+    {
+      "id": "M19_PERF_Q2",
+      "sql": "SELECT contract_revision,count(*) FILTER(WHERE status='COMPLETED') completed,count(*) FILTER(WHERE status='COMPLETED' AND curator_duration_ms=0) curator_zero,count(*) FILTER(WHERE status='COMPLETED' AND validator_duration_ms=0) validator_zero,percentile_cont(0.5) WITHIN GROUP (ORDER BY curator_duration_ms) FILTER(WHERE status='COMPLETED' AND curator_duration_ms>0) curator_p50_positive,percentile_cont(0.5) WITHIN GROUP (ORDER BY validator_duration_ms) FILTER(WHERE status='COMPLETED' AND validator_duration_ms>0) validator_p50_positive FROM programacion.input_readiness_runs WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' GROUP BY contract_revision ORDER BY contract_revision;",
+      "result": "revision-dependent completed counts/zero cohorts/p50; 5.13=86 completed, curator p50+23915, validator p50+69597; 5.13.1=20, curator p50+60257.5, validator p50+246293; several revisions have all-zero stage durations."
+    }
+  ],
+  "atms": {
+    "evidence": [
+      {
+        "id": "E_PERF_SOAK",
+        "source": "provenance_receipts/38",
+        "time": "2026-10-07T16:01:00.760627Z",
+        "identity": "receipt_id=38",
+        "assumptions": [
+          "receipt scope is SOAK quality only"
+        ],
+        "supports": [
+          "C_PERF_SOAK_QUALITY"
+        ]
+      },
+      {
+        "id": "E_PERF_RUNS",
+        "source": "programacion.input_readiness_runs",
+        "time": "rows before 2026-10-15",
+        "identity": "contract_revision grouped stage durations",
+        "assumptions": [
+          "positive durations comparable only within qualified cohort",
+          "zero-duration semantics are not automatically latency"
+        ],
+        "supports": [
+          "C_PERF_REVISION_VARIATION"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_PERF_SOAK_QUALITY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_PERF_SOAK"
+          ]
+        ]
+      },
+      {
+        "id": "C_PERF_REVISION_VARIATION",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_PERF_RUNS"
+          ]
+        ]
+      },
+      {
+        "id": "C_PERF_IMPROVEMENT",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_PERF_1",
+        "set": [
+          "USE_SOAK_RECEIPT_AS_LATENCY_PROOF"
+        ],
+        "reason": "receipt 38 contains quality-history fields, not latency"
+      },
+      {
+        "id": "N_PERF_2",
+        "set": [
+          "POOL_REVISIONS_WITHOUT_EQUIVALENCE"
+        ],
+        "reason": "stage distributions and zero cohorts differ materially"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_PERF_SOAK",
+        "invalidates": [
+          "C_PERF_SOAK_QUALITY"
+        ]
+      },
+      {
+        "withdraw": "E_PERF_RUNS",
+        "invalidates": [
+          "C_PERF_REVISION_VARIATION"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M19_PERF_F1",
+      "classification": "MEASURED",
+      "claim": "Receipt 38 supports SOAK quality history, not performance.",
+      "evidence": [
+        "M19_PERF_Q1"
+      ]
+    },
+    {
+      "id": "M19_PERF_F2",
+      "classification": "MEASURED_WITH_COHORT_LIMIT",
+      "claim": "Pre-cutoff performance evidence varies materially by revision and zero-duration cohort; no single improvement claim is justified.",
+      "evidence": [
+        "M19_PERF_Q2"
+      ]
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M19_PERF_N1",
+      "hypothesis": "Receipt 38 proves speed.",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M19_PERF_N2",
+      "hypothesis": "All revisions are directly poolable.",
+      "result": "FALSIFIED_BY_ATMS_NOGOOD"
+    }
+  ],
+  "unresolved": [
+    "zero-duration semantics",
+    "matched cohort causal effect"
+  ],
+  "role_output_frozen": true
+}
