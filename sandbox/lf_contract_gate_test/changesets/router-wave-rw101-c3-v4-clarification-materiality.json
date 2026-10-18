@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-wave-rw101-c3-v4-clarification-materiality",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py": "ENGINEERING_CHECKPOINTS"
+  }
+}
