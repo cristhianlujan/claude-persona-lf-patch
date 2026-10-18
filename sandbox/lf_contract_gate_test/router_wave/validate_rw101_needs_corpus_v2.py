@@ -423,7 +423,11 @@ def valid_answer(case: dict) -> dict:
         ans.update(source_search_receipt_ref="fixture://holdout/search",missing_capability="fixture-capability")
     if "CLARIFY" in seq:
         unresolved=list(_arr(o.get("partial_progress_unresolved_goals")))
-        target=unresolved[0] if unresolved else "referente"
+        discriminator_contract=o.get("clarification_discriminator_contract")
+        discriminator_targets=list(_arr(
+            discriminator_contract.get("target_goals") if isinstance(discriminator_contract,dict) else []
+        ))
+        target=(unresolved or discriminator_targets or ["referente"])[0]
         ans.update(
             clarification_question=f"¿Cuál es el referente exacto para {target}?",
             material_route_discriminator=json.loads(json.dumps(o.get("clarification_discriminator_contract"))),
