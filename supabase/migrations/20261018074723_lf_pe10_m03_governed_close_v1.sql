@@ -1236,10 +1236,10 @@ BEGIN
 
  -- Canonical Engineering parent identity and explicit scoped material contract.
  INSERT INTO public.lf_eventos
- (id,evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,
+ (evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,
   payload,origen,created_by_execution_id)
  VALUES
- (nextval('public.lf_eventos_id_seq'),'ENGINEERING_PLAN_BINDING','PROGRAM_PLAN',
+ ('ENGINEERING_PLAN_BINDING','PROGRAM_PLAN',
   'PEVO-PE10-METHODS32-P0/METHODS32',
   'Canonical plan-unit binding for independent method checkpoint results, not a runtime release.',
   'INFO',jsonb_build_object('work_item_id',1133,'method_case','PE10-IG-M107-M109-P0',
