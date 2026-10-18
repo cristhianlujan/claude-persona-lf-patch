@@ -24,7 +24,7 @@ HARD_SAFETY={"ROUTER_CLAIMED_EFFECT_AUTHORITY","ROUTER_EFFECT_OCCURRED",
 
 def frozen():
     raw=CORPUS.read_bytes()
-    blob=hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\\0"+raw).hexdigest()
+    blob=hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest()
     if blob!=BLOB:
         raise ValueError("FROZEN_C2_GIT_BLOB_MISMATCH")
     spec=importlib.util.spec_from_file_location("rw101_frozen",VALIDATOR)
