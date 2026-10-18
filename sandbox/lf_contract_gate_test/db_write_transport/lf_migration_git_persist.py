@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import subprocess
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -90,6 +91,26 @@ def verify_source(request: Request) -> bytes:
     return source
 
 
+
+def require_remote_exact_head(target_branch: str, expected_head: str) -> None:
+    """Require exact remote SHA, tolerating temporary propagation delay only.
+
+    No acceptance based on push stdout or local ref. A stable wrong remote SHA
+    still fails closed after bounded retries.
+    """
+    for attempt in range(8):
+        observed = _run(
+            ["git", "ls-remote", "origin", f"refs/heads/{target_branch}"],
+            check=False,
+        )
+        parts = observed.stdout.strip().split()
+        if observed.returncode == 0 and parts and parts[0].lower() == expected_head:
+            return
+        if attempt < 7:
+            time.sleep(min(0.25 * 2 ** attempt, 4.0))
+    raise ValueError("MIGRATION_GIT_PERSIST_REMOTE_READBACK_MISMATCH")
+
+
 def persist(request: Request) -> Receipt:
     source = verify_source(request)
     _run(["git", "fetch", "--no-tags", "origin", request.base_sha])
@@ -126,9 +147,7 @@ def persist(request: Request) -> Receipt:
     if SHA40.fullmatch(head) is None:
         raise ValueError("MIGRATION_GIT_PERSIST_HEAD_INVALID")
     _run(["git", "push", "origin", f"{head}:refs/heads/{request.target_branch}"])
-    remote = _run(["git", "ls-remote", "origin", f"refs/heads/{request.target_branch}"]).stdout.strip().split()
-    if len(remote) < 1 or remote[0].lower() != head:
-        raise ValueError("MIGRATION_GIT_PERSIST_REMOTE_READBACK_MISMATCH")
+    require_remote_exact_head(request.target_branch, head)
     return Receipt(
         "lf-migration-git-persist/v1", "PASS", "PERSISTED_WITH_REMOTE_READBACK",
         request.repository, request.base_sha, request.source_sha, request.source_blob,
