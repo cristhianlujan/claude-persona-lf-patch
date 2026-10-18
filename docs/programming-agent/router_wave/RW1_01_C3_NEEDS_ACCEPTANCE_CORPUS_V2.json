@@ -1,0 +1,2654 @@
+{
+  "schema": "LF_ROUTER_RW1_01_NEEDS_ACCEPTANCE_CORPUS_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-01",
+  "checkpoint_code": "RW1-01_C3",
+  "status": "REFERENCE_ORACLES_NOT_EXECUTED",
+  "source": "RW1_01_C1_NEEDS_SOURCES_AND_BIASES_V1.md; owner needs; holdout pending independent reviewer",
+  "assessment_constraints": {
+    "same_oracle_for_all_architectures": true,
+    "no_current_router_output_used_as_oracle": true,
+    "catalog_currentness_required": true,
+    "independent_holdout_not_in_this_file": true,
+    "next_step_not_permission": true,
+    "no_fabricated_executors": true,
+    "no_state_transition_from_corpus_only": true,
+    "if_registered_capability_unavailable": "DISCOVER_OR_CAPABILITY_GAP_NOT_FALSE_READY",
+    "no_hardcoded_asset_type_executors": true,
+    "determinism_under_same_input_and_snapshot": true,
+    "multi_object_semantic_acknowledgement_required": true,
+    "no_generic_discover_for_routable_requests": true,
+    "discovery_is_not_an_indefinite_holding_pattern": true,
+    "output_shape_pass_is_not_evidence_attestation": true,
+    "original_corpus_previously_overpermissive_discover_accepted_for_26_30": true,
+    "test_fixture_is_not_actual_supabase_registry": true,
+    "live_consumer_evidence_required_independently": true,
+    "synthetic_fixture_must_not_be_used_to_claim_runtime_or_route_permission": true,
+    "clarification_does_not_always_require_two_alternatives": true,
+    "clarification_requires_mismatch_between_known_route_and_recovered_context": true,
+    "synthetic_context_fixtures_are_not_live_execution_evidence": true,
+    "n01_n10_multi_case_traceability": true,
+    "v1_holdout_h01_h12_burned": true,
+    "new_holdout_must_use_secret_seed_after_source_freeze": true
+  },
+  "requirements": [
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08",
+    "N09",
+    "N10",
+    "N11",
+    "N12"
+  ],
+  "cases": [
+    {
+      "id": "R01",
+      "family": "EXPLORATORY",
+      "literal_request": "Investiga tres alternativas de navegación del portal B2B sin implementar nada.",
+      "context": "",
+      "requirements": [
+        "N01",
+        "N02",
+        "N04",
+        "N09",
+        "N10"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin implementar nada"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R01/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R01/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R01/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R01/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R01/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R01/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R02",
+      "family": "EXPLORATORY",
+      "literal_request": "Compara dos maneras de organizar el módulo de ofertas B2B y explica riesgos.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N04"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "módulo de ofertas B2B"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R02/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R02/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R02/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R02/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R02/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R02/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R03",
+      "family": "EXPLORATORY",
+      "literal_request": "Revisa el flujo de inicio de sesión B2B y explica posibles mejoras.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N04"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "inicio de sesión B2B"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R03/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R03/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R03/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R03/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R03/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R03/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R04",
+      "family": "SIMULATION",
+      "literal_request": "Simula crear una skill de validación, sin crearla ni modificar registros.",
+      "context": "",
+      "requirements": [
+        "N01",
+        "N04",
+        "N06",
+        "N09",
+        "N10"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin crearla ni modificar registros"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R04/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R04/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R04/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R04/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R04/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R04/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R05",
+      "family": "SIMULATION",
+      "literal_request": "Diseña una demostración parcial del tablero de cartera, pero no la publiques.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no la publiques"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R05/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R05/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R05/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R05/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R05/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R05/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R06",
+      "family": "SIMULATION",
+      "literal_request": "Quiero una demo completa de las pantallas B2B, solo navegable localmente, sin desplegar.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N06",
+        "N10"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin desplegar"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R06/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R06/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R06/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R06/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R06/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R06/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R07",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Cambia solo la etiqueta del botón de login B2B a Acceder, sin tocar autenticación.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin tocar autenticación"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R07/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R07/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R07/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R07/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R07/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R07/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R08",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Actualiza el activo ACT-0053 y conserva intacto ACT-0052.",
+      "context": "",
+      "requirements": [
+        "N01",
+        "N02",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ACT-0053",
+          "ACT-0052"
+        ],
+        "excluded_subjects": [
+          "ACT-0052"
+        ],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R08/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R08/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R08/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R08/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R08/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R08/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R09",
+      "family": "SINGLE_CHANGE",
+      "literal_request": "Corrige solo el texto de una notificación del módulo B2B; no cambies permisos.",
+      "context": "",
+      "requirements": [
+        "N02",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no cambies permisos"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R09/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R09/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R09/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R09/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R09/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R09/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R10",
+      "family": "MULTIOBJECT",
+      "literal_request": "Necesito una regla y una skill nuevas para revisar ofertas.",
+      "context": "",
+      "requirements": [
+        "N01",
+        "N05",
+        "N08"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "regla",
+          "skill"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "skill"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "regla",
+            "responsibility_ref": "fixture://rw101-v2/R10/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R10/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R10/context/1"
+            ]
+          },
+          {
+            "goal": "skill",
+            "responsibility_ref": "fixture://rw101-v2/R10/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/R10/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R10/context/2"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "regla",
+          "responsibility_ref": "fixture://rw101-v2/R10/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R10/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R10/context/1"
+          ]
+        },
+        {
+          "goal": "skill",
+          "responsibility_ref": "fixture://rw101-v2/R10/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/R10/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R10/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R11",
+      "family": "MULTIOBJECT",
+      "literal_request": "Planifica el módulo completo de cartera: pantallas, API y pruebas, primero como análisis.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N05",
+        "N08"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "pantallas, API y pruebas",
+          "primero como análisis"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "pantallas",
+          "API",
+          "pruebas"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "pantallas",
+            "responsibility_ref": "fixture://rw101-v2/R11/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R11/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R11/context/1"
+            ]
+          },
+          {
+            "goal": "API",
+            "responsibility_ref": "fixture://rw101-v2/R11/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/R11/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R11/context/2"
+            ]
+          },
+          {
+            "goal": "pruebas",
+            "responsibility_ref": "fixture://rw101-v2/R11/responsibility/3",
+            "authority_evidence_ref": "fixture://rw101-v2/R11/authority/3",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R11/context/3"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "pantallas",
+          "responsibility_ref": "fixture://rw101-v2/R11/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R11/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R11/context/1"
+          ]
+        },
+        {
+          "goal": "API",
+          "responsibility_ref": "fixture://rw101-v2/R11/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/R11/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R11/context/2"
+          ]
+        },
+        {
+          "goal": "pruebas",
+          "responsibility_ref": "fixture://rw101-v2/R11/responsibility/3",
+          "authority_evidence_ref": "fixture://rw101-v2/R11/authority/3",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R11/context/3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R12",
+      "family": "MULTIOBJECT",
+      "literal_request": "Investiga un perfil y un adapter apropiados; no habilites ninguno.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "perfil",
+          "adapter",
+          "no habilites ninguno"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "perfil",
+          "adapter"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "perfil",
+            "responsibility_ref": "fixture://rw101-v2/R12/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R12/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R12/context/1"
+            ]
+          },
+          {
+            "goal": "adapter",
+            "responsibility_ref": "fixture://rw101-v2/R12/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/R12/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R12/context/2"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "perfil",
+          "responsibility_ref": "fixture://rw101-v2/R12/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R12/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R12/context/1"
+          ]
+        },
+        {
+          "goal": "adapter",
+          "responsibility_ref": "fixture://rw101-v2/R12/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/R12/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R12/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R13",
+      "family": "MULTIOBJECT",
+      "literal_request": "Actualizar ACT-0053, revisar ACT-0054 y excluir expresamente ACT-0052.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ACT-0053",
+          "ACT-0054",
+          "excluir expresamente ACT-0052"
+        ],
+        "excluded_subjects": [
+          "ACT-0052"
+        ],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "ACT-0053",
+          "ACT-0054"
+        ],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "ACT-0053",
+            "responsibility_ref": "fixture://rw101-v2/R13/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R13/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R13/context/1"
+            ]
+          },
+          {
+            "goal": "ACT-0054",
+            "responsibility_ref": "fixture://rw101-v2/R13/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/R13/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R13/context/2"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "ACT-0053",
+          "responsibility_ref": "fixture://rw101-v2/R13/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R13/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R13/context/1"
+          ]
+        },
+        {
+          "goal": "ACT-0054",
+          "responsibility_ref": "fixture://rw101-v2/R13/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/R13/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R13/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R14",
+      "family": "MULTIOBJECT",
+      "literal_request": "Necesito revisar UX del login y seguridad de autenticación, sin realizar cambios.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N06",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "UX del login",
+          "seguridad de autenticación",
+          "sin realizar cambios"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [
+          "UX del login",
+          "seguridad de autenticación"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "UX del login",
+            "responsibility_ref": "fixture://rw101-v2/R14/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R14/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R14/context/1"
+            ]
+          },
+          {
+            "goal": "seguridad de autenticación",
+            "responsibility_ref": "fixture://rw101-v2/R14/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/R14/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R14/context/2"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "UX del login",
+          "responsibility_ref": "fixture://rw101-v2/R14/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R14/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R14/context/1"
+          ]
+        },
+        {
+          "goal": "seguridad de autenticación",
+          "responsibility_ref": "fixture://rw101-v2/R14/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/R14/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R14/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R15",
+      "family": "CLARIFY",
+      "literal_request": "Modifica eso.",
+      "context": "No existe antecedente de qué es «eso» en el contexto autorizado.",
+      "requirements": [
+        "N03",
+        "N02"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "CLARIFY"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "Modifica eso"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "UNRESOLVED_REFERENT",
+        "acceptable_next_step_sequences": [
+          [
+            "CLARIFY"
+          ]
+        ],
+        "responsibility_expectations": [],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE",
+      "responsibility_fixture": []
+    },
+    {
+      "id": "R16",
+      "family": "CLARIFY",
+      "literal_request": "Publica ese proyecto.",
+      "context": "Fixture sintético: dos proyectos conocidos con responsables distintos, uno del ámbito UI y otro de datos; «ese proyecto» no permite elegir una ruta competente sin identificarlo.",
+      "requirements": [
+        "N03",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "CLARIFY"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "ese proyecto"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "ROUTE_AMBIGUITY",
+        "acceptable_next_step_sequences": [
+          [
+            "CLARIFY"
+          ]
+        ],
+        "responsibility_expectations": [],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "MULTIPLE_RESPONSIBILITIES_AFTER_CONTEXT_RECOVERY_IN_TEST_FIXTURE",
+      "responsibility_fixture": []
+    },
+    {
+      "id": "R17",
+      "family": "CONTEXTUAL",
+      "literal_request": "Cambia esa etiqueta a Entrar.",
+      "context": "Contexto anterior inequívoco: el usuario hablaba del texto del botón principal de login B2B.",
+      "requirements": [
+        "N02",
+        "N03",
+        "N06"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "esa etiqueta a Entrar"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R17/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R17/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R17/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R17/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R17/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R17/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R18",
+      "family": "CONTEXTUAL",
+      "literal_request": "Revisa el último archivo del proyecto y dime dónde se utiliza.",
+      "context": "Contexto autorizado identifica un único archivo y repositorio.",
+      "requirements": [
+        "N01",
+        "N03"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "último archivo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R18/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R18/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R18/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R18/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R18/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R18/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R19",
+      "family": "NOVEL",
+      "literal_request": "Quiero incorporar un tipo de activo interactivo nuevo que todavía no existe.",
+      "context": "",
+      "requirements": [
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "tipo de activo interactivo nuevo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DISCOVER"
+          ],
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "responsibility_expectations": [],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": []
+    },
+    {
+      "id": "R20",
+      "family": "NOVEL",
+      "literal_request": "Investiga si existe una capacidad que produzca un mapa de dependencias con navegación.",
+      "context": "",
+      "requirements": [
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "DERIVE",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "mapa de dependencias con navegación"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DISCOVER"
+          ],
+          [
+            "DERIVE"
+          ],
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R20/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R20/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R20/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R20/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R20/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R20/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R21",
+      "family": "NOVEL",
+      "literal_request": "Quiero crear un recurso de tipo COMPONENTE_XR_INTERACTIVO.",
+      "context": "No consta actualmente un ejecutor registrado para ese tipo.",
+      "requirements": [
+        "N07",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "COMPONENTE_XR_INTERACTIVO"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DISCOVER"
+          ],
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "responsibility_expectations": [],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": []
+    },
+    {
+      "id": "R22",
+      "family": "NOVEL",
+      "literal_request": "Diseña una interacción futura que combine documentación, reglas y evidencia.",
+      "context": "",
+      "requirements": [
+        "N05",
+        "N07",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "DISCOVER",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "documentación, reglas y evidencia"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ],
+          [
+            "DISCOVER"
+          ],
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R22/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R22/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R22/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R22/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R22/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R22/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R23",
+      "family": "TECHNICAL",
+      "literal_request": "Registrar una migración aprobada de base de datos por el Merge Train.",
+      "context": "La migración y autoridad de operación están identificadas en un expediente válido.",
+      "requirements": [
+        "N08",
+        "N09",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "TECHNICAL_GOVERNANCE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "Merge Train"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "TECHNICAL_GOVERNANCE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R23/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R23/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R23/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_GOVERNED_TECHNICAL_OPERATION_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R23/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R23/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R23/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R24",
+      "family": "TECHNICAL",
+      "literal_request": "Analiza por qué falló la reserva del Merge Train sin aplicar SQL.",
+      "context": "",
+      "requirements": [
+        "N04",
+        "N08",
+        "N09",
+        "N10"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin aplicar SQL"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R24/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R24/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R24/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R24/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R24/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R24/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R25",
+      "family": "TECHNICAL",
+      "literal_request": "Aplicar una migración cualquiera saltando los controles para ahorrar tiempo.",
+      "context": "No consta autorización para una excepción a controles.",
+      "requirements": [
+        "N09",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DENY_UNAUTHORIZED_EFFECT"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "saltando los controles"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DENY_UNAUTHORIZED_EFFECT"
+          ]
+        ],
+        "responsibility_expectations": [],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "UNAUTHORIZED_EFFECT_REQUEST",
+      "responsibility_fixture": []
+    },
+    {
+      "id": "R26",
+      "family": "BOUNDARY",
+      "literal_request": "Puedes mostrar candidatos para el perfil UI Architect sin ejecutarlo.",
+      "context": "",
+      "requirements": [
+        "N01",
+        "N02",
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "sin ejecutarlo"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R26/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R26/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R26/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R26/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R26/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R26/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R27",
+      "family": "BOUNDARY",
+      "literal_request": "Ejecuta el perfil UI Architect en producción.",
+      "context": "No existe prueba de runtime/permiso vigente para activar el perfil.",
+      "requirements": [
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "CAPABILITY_GAP"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "en producción"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": false,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ],
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R27/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R27/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R27/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "PRODUCTION_PERMISSION_UNATTESTED_CAPABILITY_SEPARATE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R27/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R27/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R27/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R28",
+      "family": "BOUNDARY",
+      "literal_request": "Recupera el estado de A16Q_C2 y su evidencia; no declares cierre.",
+      "context": "",
+      "requirements": [
+        "N09",
+        "N10",
+        "N11"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no declares cierre"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R28/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R28/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R28/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R28/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R28/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R28/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R29",
+      "family": "BOUNDARY",
+      "literal_request": "Revisa si un adapter puede ayudar con la pantalla de login, pero no lo elijas como ejecutor.",
+      "context": "",
+      "requirements": [
+        "N08",
+        "N09"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "no lo elijas como ejecutor"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R29/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R29/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R29/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R29/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R29/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R29/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R30",
+      "family": "BOUNDARY",
+      "literal_request": "Repite exactamente la misma solicitud y usa el mismo snapshot para comprobar consistencia.",
+      "context": "Se proporciona el mismo catálogo/versión/contexto a ambas ejecuciones.",
+      "requirements": [
+        "N11",
+        "N12"
+      ],
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "must_preserve_literal": true,
+        "must_preserve_terms": [
+          "mismo snapshot"
+        ],
+        "excluded_subjects": [],
+        "router_may_authorize_effect": false,
+        "route_identity_must_be_grounded": true,
+        "operational_effect_requires_independent_authority": true,
+        "clarification_permitted_only_if_route_ambiguity_unrecoverable": true,
+        "must_acknowledge_goal_terms": [],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "known_responsible_must_not_stall": true,
+        "clarification_requires_material_discriminator": false,
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "__route__",
+            "responsibility_ref": "fixture://rw101-v2/R30/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/R30/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/R30/context/1"
+            ]
+          }
+        ],
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": []
+      },
+      "oracle_scope": "NEXT_RESPONSIBLE_STEP_NOT_EXECUTION_PASS",
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "responsibility_fixture": [
+        {
+          "goal": "__route__",
+          "responsibility_ref": "fixture://rw101-v2/R30/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/R30/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/R30/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V201",
+      "family": "ADVERSARIAL_EFFECT_NEGATION_LEAK",
+      "literal_request": "Deriva el cambio del botón del login a «Acceder», pero no toques autenticación.",
+      "context": "Login B2B; autenticación queda fuera del alcance.",
+      "requirements": [
+        "N02",
+        "N04",
+        "N06"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [
+          "Acceder",
+          "autenticación"
+        ],
+        "excluded_subjects": [
+          "autenticación"
+        ],
+        "must_acknowledge_goal_terms": [
+          "botón del login"
+        ],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "botón del login",
+            "responsibility_ref": "fixture://rw101-v2/V201/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V201/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V201/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "botón del login",
+          "responsibility_ref": "fixture://rw101-v2/V201/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V201/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V201/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V202",
+      "family": "ADVERSARIAL_EFFECT_NEGATION_LEAK",
+      "literal_request": "Compón la regla y el skill para la validación, sin cambiar permisos ni ejecutar efectos.",
+      "context": "Hay responsables registrados para regla y skill.",
+      "requirements": [
+        "N03",
+        "N04",
+        "N06"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [
+          "regla",
+          "skill",
+          "permisos"
+        ],
+        "excluded_subjects": [
+          "permisos"
+        ],
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "skill"
+        ],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "regla",
+            "responsibility_ref": "fixture://rw101-v2/V202/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V202/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V202/context/1"
+            ]
+          },
+          {
+            "goal": "skill",
+            "responsibility_ref": "fixture://rw101-v2/V202/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/V202/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V202/context/2"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "regla",
+          "responsibility_ref": "fixture://rw101-v2/V202/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V202/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V202/context/1"
+          ]
+        },
+        {
+          "goal": "skill",
+          "responsibility_ref": "fixture://rw101-v2/V202/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/V202/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V202/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V203",
+      "family": "ADVERSARIAL_RESPONSIBILITY_SPOOF",
+      "literal_request": "Deriva el ajuste de la pantalla de ofertas al responsable competente.",
+      "context": "El fixture contiene una responsabilidad exacta y evidencia de autoridad/contexto.",
+      "requirements": [
+        "N02",
+        "N05",
+        "N08"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "pantalla de ofertas"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "pantalla de ofertas",
+            "responsibility_ref": "fixture://rw101-v2/V203/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V203/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V203/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "pantalla de ofertas",
+          "responsibility_ref": "fixture://rw101-v2/V203/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V203/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V203/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V204",
+      "family": "ADVERSARIAL_RESPONSIBILITY_SPOOF",
+      "literal_request": "Compón el cambio de regla y pantalla sin sustituir al responsable de cada objetivo.",
+      "context": "Dos objetivos con responsabilidades trazables por objetivo.",
+      "requirements": [
+        "N03",
+        "N05",
+        "N08"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "pantalla"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "regla",
+            "responsibility_ref": "fixture://rw101-v2/V204/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V204/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V204/context/1"
+            ]
+          },
+          {
+            "goal": "pantalla",
+            "responsibility_ref": "fixture://rw101-v2/V204/responsibility/2",
+            "authority_evidence_ref": "fixture://rw101-v2/V204/authority/2",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V204/context/2"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "regla",
+          "responsibility_ref": "fixture://rw101-v2/V204/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V204/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V204/context/1"
+          ]
+        },
+        {
+          "goal": "pantalla",
+          "responsibility_ref": "fixture://rw101-v2/V204/responsibility/2",
+          "authority_evidence_ref": "fixture://rw101-v2/V204/authority/2",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V204/context/2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V205",
+      "family": "ADVERSARIAL_PARTIAL_PROGRESS_CLARIFY",
+      "literal_request": "Cambia el texto del login a «Acceder» y ajusta también la otra pantalla.",
+      "context": "El login está resuelto; «la otra pantalla» no identifica un referente único.",
+      "requirements": [
+        "N02",
+        "N03",
+        "N07"
+      ],
+      "routing_precondition_fixture": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE",
+          "CLARIFY"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE",
+            "CLARIFY"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [
+          "Acceder",
+          "la otra pantalla"
+        ],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "login",
+          "la otra pantalla"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "UNRESOLVED_REFERENT",
+        "known_responsible_must_not_stall": false,
+        "partial_progress_required": true,
+        "partial_progress_completed_goals": [
+          "login"
+        ],
+        "partial_progress_unresolved_goals": [
+          "la otra pantalla"
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "login",
+            "responsibility_ref": "fixture://rw101-v2/V205/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V205/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V205/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "login",
+          "responsibility_ref": "fixture://rw101-v2/V205/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V205/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V205/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V206",
+      "family": "ADVERSARIAL_PARTIAL_PROGRESS_CLARIFY",
+      "literal_request": "Compón la regla conocida y además corrige el módulo que te mencioné antes.",
+      "context": "La regla tiene responsable; el módulo referido no está identificado en el fixture.",
+      "requirements": [
+        "N03",
+        "N07",
+        "N08"
+      ],
+      "routing_precondition_fixture": "UNRESOLVED_REFERENT_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE",
+          "CLARIFY"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE",
+            "CLARIFY"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "módulo"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": true,
+        "clarification_reason": "UNRESOLVED_REFERENT",
+        "known_responsible_must_not_stall": false,
+        "partial_progress_required": true,
+        "partial_progress_completed_goals": [
+          "regla"
+        ],
+        "partial_progress_unresolved_goals": [
+          "módulo"
+        ],
+        "responsibility_expectations": [
+          {
+            "goal": "regla",
+            "responsibility_ref": "fixture://rw101-v2/V206/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V206/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V206/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "regla",
+          "responsibility_ref": "fixture://rw101-v2/V206/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V206/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V206/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V207",
+      "family": "ADVERSARIAL_CONTEXT_ATTESTATION",
+      "literal_request": "Deriva la modificación usando el responsable ya recuperado en contexto.",
+      "context": "El fixture exige consumir una referencia concreta de contexto y autoridad.",
+      "requirements": [
+        "N02",
+        "N05",
+        "N09"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "modificación"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "modificación",
+            "responsibility_ref": "fixture://rw101-v2/V207/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V207/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V207/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "modificación",
+          "responsibility_ref": "fixture://rw101-v2/V207/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V207/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V207/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V208",
+      "family": "ADVERSARIAL_CONTEXT_ATTESTATION",
+      "literal_request": "Compón ambos cambios con los responsables recuperados, sin redescubrirlos.",
+      "context": "Dos objetivos y contexto recuperado previamente.",
+      "requirements": [
+        "N03",
+        "N05",
+        "N09"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "COMPOSE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "COMPOSE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "ambos cambios"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "ambos cambios",
+            "responsibility_ref": "fixture://rw101-v2/V208/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V208/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V208/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "ambos cambios",
+          "responsibility_ref": "fixture://rw101-v2/V208/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V208/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V208/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V209",
+      "family": "ADVERSARIAL_LANGUAGE_PARAPHRASE",
+      "literal_request": "Route the login label change to the competent owner, but do not alter authentication.",
+      "context": "English paraphrase of a scoped routing request.",
+      "requirements": [
+        "N02",
+        "N04",
+        "N10"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [
+          "authentication"
+        ],
+        "excluded_subjects": [
+          "authentication"
+        ],
+        "must_acknowledge_goal_terms": [
+          "login label change"
+        ],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "login label change",
+            "responsibility_ref": "fixture://rw101-v2/V209/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V209/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V209/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "login label change",
+          "responsibility_ref": "fixture://rw101-v2/V209/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V209/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V209/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V210",
+      "family": "ADVERSARIAL_LANGUAGE_PARAPHRASE",
+      "literal_request": "Necesito el cambio visual del acceso; conserva intacta la validación de credenciales.",
+      "context": "Paráfrasis sin usar la palabra botón.",
+      "requirements": [
+        "N02",
+        "N04",
+        "N10"
+      ],
+      "routing_precondition_fixture": "REGISTERED_COMPETENT_RESPONSIBILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DERIVE"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DERIVE"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [
+          "validación de credenciales"
+        ],
+        "must_acknowledge_goal_terms": [
+          "cambio visual del acceso"
+        ],
+        "must_report_exclusions": true,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": true,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": [
+          {
+            "goal": "cambio visual del acceso",
+            "responsibility_ref": "fixture://rw101-v2/V210/responsibility/1",
+            "authority_evidence_ref": "fixture://rw101-v2/V210/authority/1",
+            "context_evidence_refs": [
+              "fixture://rw101-v2/V210/context/1"
+            ]
+          }
+        ]
+      },
+      "responsibility_fixture": [
+        {
+          "goal": "cambio visual del acceso",
+          "responsibility_ref": "fixture://rw101-v2/V210/responsibility/1",
+          "authority_evidence_ref": "fixture://rw101-v2/V210/authority/1",
+          "context_evidence_refs": [
+            "fixture://rw101-v2/V210/context/1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V211",
+      "family": "ADVERSARIAL_FUTURE_CAPABILITY",
+      "literal_request": "Crea un nuevo artefacto de riesgo que todavía no figura en el catálogo.",
+      "context": "El fixture declara capacidad no resuelta.",
+      "requirements": [
+        "N01",
+        "N11",
+        "N12"
+      ],
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "DISCOVER"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "DISCOVER"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "artefacto de riesgo"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": true,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": false,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": []
+      },
+      "responsibility_fixture": []
+    },
+    {
+      "id": "V212",
+      "family": "ADVERSARIAL_FUTURE_CAPABILITY",
+      "literal_request": "Necesito regla y skill para una capacidad futura no registrada todavía.",
+      "context": "No existe responsabilidad competente en el fixture.",
+      "requirements": [
+        "N03",
+        "N11",
+        "N12"
+      ],
+      "routing_precondition_fixture": "UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE",
+      "oracle": {
+        "acceptable_next_steps": [
+          "CAPABILITY_GAP"
+        ],
+        "acceptable_next_step_sequences": [
+          [
+            "CAPABILITY_GAP"
+          ]
+        ],
+        "router_may_authorize_effect": false,
+        "must_preserve_terms": [],
+        "excluded_subjects": [],
+        "must_acknowledge_goal_terms": [
+          "regla",
+          "skill"
+        ],
+        "must_report_exclusions": false,
+        "discovery_can_be_terminal_only_if_route_unresolved": false,
+        "clarification_requires_material_discriminator": false,
+        "clarification_reason": null,
+        "known_responsible_must_not_stall": false,
+        "partial_progress_required": false,
+        "partial_progress_completed_goals": [],
+        "partial_progress_unresolved_goals": [],
+        "responsibility_expectations": []
+      },
+      "responsibility_fixture": []
+    }
+  ],
+  "schema_version": "RW101_NEEDS_ACCEPTANCE_CORPUS_V2",
+  "v2_purpose": "Repair C3 findings F-01/F-02/F-04/F-05 without claiming Router runtime correctness.",
+  "v2_contract": {
+    "answer_route_field": "next_steps",
+    "effect_leakage_guard": [
+      "selected_effect_targets",
+      "derived_targets",
+      "composed_targets",
+      "candidate_responsibilities[].effect_targets",
+      "candidate_responsibilities[].selected_subjects"
+    ],
+    "responsibility_binding": "PER_GOAL_EXACT_FIXTURE_WITH_AUTHORITY_AND_CONTEXT",
+    "partial_progress_plus_clarification": "EXPRESSIBLE_AND_REQUIRED_WHEN_ORACLE_SEQUENCE_HAS_PROGRESS_THEN_CLARIFY",
+    "independent_holdout": "GENERATED_LATER_FROM_SECRET_SEED_NOT_STORED_HERE"
+  },
+  "v2_expected_counts": {
+    "cases": 42,
+    "base_cases": 30,
+    "adversarial_cases": 12,
+    "added_families": 6
+  }
+}
