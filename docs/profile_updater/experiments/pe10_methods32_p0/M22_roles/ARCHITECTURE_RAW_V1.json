@@ -1,0 +1,114 @@
+{
+  "schema": "PE10_M22_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M22_ARQ_Q1",
+      "result": "38 comparator population = 16 empirical TRUE +22 FALSE +0 absent"
+    },
+    {
+      "id": "M22_ARQ_Q2",
+      "result": "historical snapshot arrays:38 callers,21 triggers,6 external; source records readiness/currentness drift"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "ARQ_CS1",
+        "observation": "22/38 empirical definition mismatches with 0 absent names",
+        "components": [
+          "post_snapshot_definition_change",
+          "hash_recipe_unknown",
+          "snapshot_freshness"
+        ]
+      },
+      {
+        "id": "ARQ_CS2",
+        "observation": "snapshot itself records currentness drift",
+        "components": [
+          "temporal_equivalence",
+          "snapshot_promotion"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "post_snapshot_definition_change"
+      ],
+      [
+        "temporal_equivalence"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "inspect material call-path differences in 22 changed definitions"
+    }
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "ARQ_INV1",
+        "rule": "total=true+false+absent",
+        "observed": "38=16+22+0",
+        "valid_case": "reconciled",
+        "counterexample": "unreconciled population",
+        "status": "PASS"
+      },
+      {
+        "id": "ARQ_INV2",
+        "rule": "historical snapshot identity domains remain separate",
+        "observed": "38 callers/21 triggers/6 external",
+        "valid_case": "separate arrays",
+        "counterexample": "merge external into caller denominator",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M22_ARQ_F1",
+      "classification": "MEASURED",
+      "claim": "Comparator partition reconciles and shows definition drift without name disappearance."
+    },
+    {
+      "id": "M22_ARQ_F2",
+      "classification": "MEASURED_LIMIT",
+      "claim": "P0 source cannot certify live architecture because it records currentness drift."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M22_ARQ_N1",
+      "hypothesis": "absent names cause mismatch",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M22_ARQ_N2",
+      "hypothesis": "BARINEL numeric ranking justified",
+      "result": "FALSIFIED_BY_MISSING_SPECTRUM_PRIORS"
+    }
+  ],
+  "unresolved": [
+    "historical hash recipe",
+    "runtime materiality of changed definitions"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}
