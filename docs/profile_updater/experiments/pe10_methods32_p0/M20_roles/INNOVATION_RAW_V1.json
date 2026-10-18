@@ -1,0 +1,184 @@
+{
+  "schema": "PE10_M20_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M20_INNOV_Q1",
+      "sql": "SELECT 'EVENT_20161' source,created_at observed_at FROM public.lf_eventos WHERE id=20161 UNION ALL SELECT 'RECEIPT_38',created_at FROM programacion.provenance_receipts WHERE id=38 UNION ALL SELECT codigo,primera_vez FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') ORDER BY observed_at;",
+      "result": "event Oct-04; receipt Oct-07; two validated EKB records Oct-14."
+    },
+    {
+      "id": "M20_INNOV_Q2",
+      "sql": "WITH hist AS (SELECT x->>'caller' caller FROM public.lf_eventos l,jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), cur AS (SELECT n.nspname||'.'||p.proname fullname,p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN('programacion','public','lf_ops') AND p.proname ~ '(input_governance|input_readiness|guard_input)') SELECT count(*) FILTER(WHERE h.caller IS NULL) complement_count,count(*) FILTER(WHERE h.caller IS NULL AND c.proname ~ '(queue|direct_step|handoff|continuation|_ctx|cached_v2)') path_shape_candidates FROM cur c LEFT JOIN hist h ON h.caller=c.fullname;",
+      "result": "64 current complement name-pattern functions; 23 path-shape candidates; candidate signal only."
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "INNOV_CS1",
+        "observation": "evidence is temporally layered across Oct-04/07/14",
+        "components": [
+          "temporal_layering",
+          "later_evidence_rewrite"
+        ]
+      },
+      {
+        "id": "INNOV_CS2",
+        "observation": "64 complement candidates, 23 path-shaped",
+        "components": [
+          "post_snapshot_evolution",
+          "name_pattern_false_positive",
+          "caller_classification"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      {
+        "id": "HS1",
+        "components": [
+          "temporal_layering"
+        ],
+        "open_world_alternatives": [
+          "later_evidence_rewrite"
+        ]
+      },
+      {
+        "id": "HS2",
+        "components": [
+          "post_snapshot_evolution"
+        ],
+        "open_world_alternatives": [
+          "name_pattern_false_positive",
+          "caller_classification"
+        ]
+      }
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "reason": "No justified executable pass/fail spectrum with priors for component-health likelihood."
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "selected_next_query": "Classify complement candidates by actual references/lifecycle; prioritize path-shaped candidates."
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "timestamps across event/receipt/EKB",
+        "time": "2026-10-04..14",
+        "assumptions": [
+          "later evidence refines interpretation, not historical time"
+        ],
+        "supports": [
+          "C1_TEMPORAL"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current pg_proc complement",
+        "time": "CURRENT",
+        "assumptions": [
+          "name pattern is candidate discovery only"
+        ],
+        "supports": [
+          "C2_CANDIDATES"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C1_TEMPORAL",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C2_CANDIDATES",
+        "state": "SUPPORTED_AS_CANDIDATES_ONLY",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C3_64_OMISSIONS",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "REWRITE_P0_WITH_LATER_EVIDENCE"
+        ],
+        "reason": "time identity mismatch"
+      },
+      {
+        "set": [
+          "NAME_PATTERN_EQUALS_CALLER"
+        ],
+        "reason": "reference proof absent"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C1_TEMPORAL"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C2_CANDIDATES"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_INNOV_F1",
+      "classification": "MEASURED",
+      "claim": "The evidence chain has multiple observation times and must not be flattened."
+    },
+    {
+      "id": "M20_INNOV_F2",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "claim": "Current complement/path shapes are investigation candidates, not proven historical omissions."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M20_INNOV_N1",
+      "hypothesis": "Later evidence can rewrite P0 observation time",
+      "result": "REJECTED"
+    },
+    {
+      "id": "M20_INNOV_N2",
+      "hypothesis": "All 64 current complement names are callers",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "creation/provenance and actual caller role of complement candidates"
+  ],
+  "role_output_frozen": true
+}
