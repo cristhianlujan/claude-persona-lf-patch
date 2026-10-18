@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw102-c1-source-authority-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_02_C1_SOURCE_AUTHORITY_BASELINE_V1.md": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261018212500_lf_router_rw102_c1_source_authority_close_v1.sql": "MIGRATION"
+  }
+}
