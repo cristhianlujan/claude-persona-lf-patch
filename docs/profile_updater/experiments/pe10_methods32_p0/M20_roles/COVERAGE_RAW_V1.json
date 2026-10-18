@@ -1,0 +1,182 @@
+{
+  "schema": "PE10_M20_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M20_COVER_Q1",
+      "sql": "WITH x AS (SELECT e.value j FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') e WHERE l.id=20161) SELECT count(*) total,count(DISTINCT j->>'caller') distinct_callers,count(*) FILTER(WHERE (j->>'definition_md5') !~ '^[0-9a-f]{32}$') invalid_hash_syntax,sum(jsonb_array_length(j->'callees')) lexical_edges FROM x;",
+      "result": "38 total,38 distinct,0 invalid hash syntax,76 lexical edges."
+    },
+    {
+      "id": "M20_COVER_Q2",
+      "sql": "WITH c AS (SELECT DISTINCT jsonb_array_elements_text(x->'callees') callee FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), p AS (SELECT p.proname,count(*) candidates FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace GROUP BY p.proname) SELECT count(*) unique_callee_tokens,count(*) FILTER(WHERE p.proname IS NULL) unresolved_current_name,count(*) FILTER(WHERE p.candidates=1) exactly_one_current_name,count(*) FILTER(WHERE p.candidates>1) ambiguous_current_name FROM c LEFT JOIN p ON p.proname=c.callee;",
+      "result": "39 unique callee tokens; 0 unresolved; 33 unique-name; 6 ambiguous current names."
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "COVER_CS1",
+        "observation": "historical declared population internally reconciles",
+        "components": [
+          "snapshot_integrity",
+          "live_completeness"
+        ]
+      },
+      {
+        "id": "COVER_CS2",
+        "observation": "6/39 historical callee tokens have multiple current-name candidates",
+        "components": [
+          "callee_identity_qualification",
+          "wrapper_schema_ambiguity"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      {
+        "id": "HS1",
+        "components": [
+          "snapshot_integrity"
+        ],
+        "open_world_alternatives": [
+          "live_completeness"
+        ]
+      },
+      {
+        "id": "HS2",
+        "components": [
+          "callee_identity_qualification"
+        ],
+        "open_world_alternatives": [
+          "wrapper_schema_ambiguity"
+        ]
+      }
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "reason": "No justified executable pass/fail spectrum with priors for component-health likelihood."
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "selected_next_query": "Resolve six ambiguous callees by schema/object identity before current coverage conclusions."
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "event20161 caller array",
+        "time": "2026-10-04",
+        "assumptions": [
+          "integrity applies to declared snapshot"
+        ],
+        "supports": [
+          "C1_INTERNAL"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current pg_proc name resolution",
+        "time": "CURRENT",
+        "assumptions": [
+          "proname multiplicity requires schema qualification"
+        ],
+        "supports": [
+          "C2_AMBIGUITY"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C1_INTERNAL",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C2_AMBIGUITY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C3_LIVE_COMPLETE",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "SNAPSHOT_EQUALS_LIVE_COMPLETE"
+        ],
+        "reason": "time identity differs"
+      },
+      {
+        "set": [
+          "UNQUALIFIED_CALLEE_IS_UNIQUE"
+        ],
+        "reason": "6 names are ambiguous"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C1_INTERNAL"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C2_AMBIGUITY"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_COVER_F1",
+      "classification": "MEASURED_HISTORICAL",
+      "claim": "Historical inventory is internally reconciled for its declared population."
+    },
+    {
+      "id": "M20_COVER_F2",
+      "classification": "MEASURED_CURRENT",
+      "claim": "6/39 callee tokens are ambiguous under current name-only resolution."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M20_COVER_N1",
+      "hypothesis": "All callee tokens resolve uniquely by name",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M20_COVER_N2",
+      "hypothesis": "Historical snapshot certifies current live completeness",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "historical schema identity for ambiguous callee tokens"
+  ],
+  "role_output_frozen": true
+}
