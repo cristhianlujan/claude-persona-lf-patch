@@ -1,0 +1,307 @@
+{
+  "schema": "PE10_M28_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M28",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M28-ARQ-F01",
+      "claim": "Frozen P0 has 38 distinct callers and no missing definition_md5.",
+      "evidence_refs": [
+        "M28_ARQ_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-ARQ-F02",
+      "claim": "All 38 frozen caller names currently resolve; under empirical md5(prosrc), 16 equal the frozen hash and 22 differ. Canonical historical hash serialization is not demonstrated.",
+      "evidence_refs": [
+        "M28_ARQ_Q02"
+      ],
+      "confidence": "HIGH_WITH_HASH_METHOD_LIMIT"
+    },
+    {
+      "id": "M28-ARQ-F03",
+      "claim": "A bounded current related-function scan returns 75 objects, 63 normalized families and 20 multi-member families.",
+      "evidence_refs": [
+        "M28_ARQ_Q03"
+      ],
+      "confidence": "HIGH_FOR_QUERY_RULE"
+    },
+    {
+      "id": "M28-ARQ-F04",
+      "claim": "All 21 frozen trigger names currently resolve with matching enabled-state text.",
+      "evidence_refs": [
+        "M28_ARQ_Q04"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "ARQ-C1",
+          "members": [
+            "historical_snapshot_not_current",
+            "body_definition_drift"
+          ],
+          "basis": [
+            "M28-ARQ-F01",
+            "M28-ARQ-F02"
+          ]
+        },
+        {
+          "id": "ARQ-C2",
+          "members": [
+            "body_definition_drift",
+            "canonical_hash_method_unknown"
+          ],
+          "basis": [
+            "M28-ARQ-F02"
+          ]
+        },
+        {
+          "id": "ARQ-C3",
+          "members": [
+            "variant_surface_change",
+            "historical_snapshot_not_current"
+          ],
+          "basis": [
+            "M28-ARQ-F03"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "historical_snapshot_not_current",
+          "body_definition_drift"
+        ],
+        [
+          "historical_snapshot_not_current",
+          "canonical_hash_method_unknown"
+        ],
+        [
+          "body_definition_drift",
+          "variant_surface_change"
+        ]
+      ],
+      "open_world_alternatives": [
+        "Frozen definition_md5 may use a representation other than md5(prosrc).",
+        "Multi-member families may be intentional compatibility surfaces.",
+        "Current bodies may differ while preserving route semantics."
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No executable pass/fail spectra or justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Authoritative current manifest with documented canonical hash and active-entry mapping.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Governed semantic route equivalence for the 22 empirical body changes.",
+            "cost": "MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Compatibility ownership for multi-member families.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "M": {
+      "assumptions": [
+        {
+          "id": "ARQ-A1",
+          "text": "P0 is historical as-of evidence, not current certification."
+        },
+        {
+          "id": "ARQ-A2",
+          "text": "md5(prosrc) is empirical only until historical hash method is proved."
+        },
+        {
+          "id": "ARQ-A3",
+          "text": "Pattern-normalized family counts are bounded discovery, not authoritative active topology."
+        },
+        {
+          "id": "ARQ-A4",
+          "text": "Trigger name/enabled equality is structural only."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Historical caller-set integrity",
+          "support": [
+            "M28_ARQ_Q01"
+          ],
+          "assumptions": [
+            "ARQ-A1"
+          ]
+        },
+        {
+          "claim": "Current object continuity without semantic closure",
+          "support": [
+            "M28_ARQ_Q02"
+          ],
+          "assumptions": [
+            "ARQ-A1",
+            "ARQ-A2"
+          ]
+        },
+        {
+          "claim": "Variant surface requires current classification",
+          "support": [
+            "M28_ARQ_Q03"
+          ],
+          "assumptions": [
+            "ARQ-A3"
+          ]
+        },
+        {
+          "claim": "Frozen triggers remain structurally present",
+          "support": [
+            "M28_ARQ_Q04"
+          ],
+          "assumptions": [
+            "ARQ-A4"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "ARQ-NG1",
+          "invalidates_if": "Historical hash representation differs from md5(prosrc).",
+          "invalidates_claims": [
+            "Any proven-drift reading of the 16/22 split"
+          ]
+        },
+        {
+          "id": "ARQ-NG2",
+          "invalidates_if": "Pattern scan includes wrappers/tests or misses active variants.",
+          "invalidates_claims": [
+            "Any complete-active-topology claim from 75 objects"
+          ]
+        },
+        {
+          "id": "ARQ-NG3",
+          "invalidates_if": "Trigger target semantics changed despite same name/enabled state.",
+          "invalidates_claims": [
+            "Any trigger semantic-equivalence claim"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "ARQ-NG1",
+          "result": "Downgrade body-drift conclusion to UNKNOWN while retaining name resolution."
+        },
+        {
+          "on": "ARQ-NG2",
+          "result": "Retain only bounded discovery counts."
+        },
+        {
+          "on": "ARQ-NG3",
+          "result": "Retain only structural trigger continuity."
+        }
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical structure is coherent, but current semantic equivalence and active variant intent are not certified.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Canonical current manifest attests hash representation and active entries.",
+        "Governed semantic route tests prove equivalence or expose a broken active route."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A material active route defect is proven.",
+        "to_NO_ACTION_SUPPORTED": "Current semantic equivalence and variant intent are fully attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required current topology evidence is unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not treat 22 empirical hash differences as proven functional drift.",
+    "Do not treat 75 bounded objects as complete active topology.",
+    "Do not infer trigger semantic equivalence from name/enabled equality."
+  ],
+  "unresolved": [
+    "Canonical historical hash serialization",
+    "Current active-entry mapping",
+    "Semantic equivalence of changed bodies",
+    "Variant ownership"
+  ],
+  "next_safe_step": "Verify current manifest and active-route semantics; no runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 4,
+    "successful_selects": 4,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M28_ARQ_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "distinct_callers": 38,
+        "missing_md5": 0
+      }
+    },
+    {
+      "query_id": "M28_ARQ_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "p0_total": 38,
+        "resolved": 38,
+        "equal_md5_prosrc": 16,
+        "changed_md5_prosrc": 22,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M28_ARQ_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "objects": 75,
+        "normalized_families": 63,
+        "multi_member_families": 20
+      }
+    },
+    {
+      "query_id": "M28_ARQ_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "p0_triggers": 21,
+        "resolved": 21,
+        "enabled_match": 21
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:30:00Z"
+}
