@@ -2,6 +2,6 @@
   "solution_ref": "router-wave-rw101-c3-independent-pass-close-v1",
   "paths": {
     "docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json": "ENGINEERING_CHECKPOINTS",
-    "supabase/migrations/20261018204200_lf_router_rw101_c3_independent_pass_close_v1.sql": "ENGINEERING_CHECKPOINTS"
+    "supabase/migrations/20261018204200_lf_router_rw101_c3_independent_pass_close_v1.sql": "MIGRATION"
   }
 }
