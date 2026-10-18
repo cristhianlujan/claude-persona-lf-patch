@@ -1,0 +1,169 @@
+{
+  "schema": "PE10_M18_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": ["D"],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "method_application": {
+    "D": {
+      "gde_conflict_sets": [
+        {
+          "id": "INNOV_CS1",
+          "observation": "Event 20161 explicitly carries provenance/currentness drift notes and acceptance_declared=false, while current lexical bodies retain 70/76 historical callee tokens but replace or remove six historical edges.",
+          "components": ["snapshot_promotion_to_live", "post_snapshot_path_evolution", "lexical_vs_runtime_semantics"]
+        },
+        {
+          "id": "INNOV_CS2",
+          "observation": "Current complement discovery exposes queue/direct/handoff/continuation/context/cached-v2 path shapes outside the historical caller identity set.",
+          "components": ["new_path_shapes", "caller_classification", "post_snapshot_lifecycle"]
+        },
+        {
+          "id": "INNOV_CS3",
+          "observation": "Pre-cutoff revision 5.13 and 5.13.1 occupy different time windows and screen populations despite constant family_count=47.",
+          "components": ["revision_effect", "temporal_confounding", "screen_mix"]
+        }
+      ],
+      "minimal_hitting_sets": [
+        ["post_snapshot_path_evolution"],
+        ["caller_classification"],
+        ["temporal_confounding"]
+      ],
+      "barinel": {
+        "status": "NOT_CALIBRATED",
+        "reason": "The available observations are structural/temporal rather than an independent pass/fail component spectrum with justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "highest_value_next_query": "Classify the six changed lexical edges and the 23 new path-shape candidates by actual references and lifecycle provenance before any current completeness/performance conclusion.",
+        "reason": "It distinguishes harmless refactoring from material route evolution and avoids a full blind re-inventory."
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "M18_INNOV_Q1",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Event 20161 records source_pack SOURCE_PACK_V1 / lookup V2, git provenance, acceptance_declared=false, and historical_provenance_only notes that router readiness was 5.12 while governed current readiness snapshot was 5.13; existence of older contracts is explicitly not caller-usage evidence."
+    },
+    {
+      "id": "M18_INNOV_Q2",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Temporal order before cutoff is event 20161 on 2026-10-04, receipt 38 on 2026-10-07, SOAK EKB on 2026-10-14 23:39, CP2 authority EKB on 2026-10-14 23:44."
+    },
+    {
+      "id": "M18_INNOV_Q3",
+      "scope": "HISTORICAL_EDGES_PLUS_CURRENT_LEXICAL_READBACK",
+      "result_summary": "Of 76 historical caller-callee lexical edges, 70 callee tokens are still present in current caller bodies and 6 are absent. All six absent edges belong to callers whose empirical md5(prosrc) differs from historical definition_md5. Among 55 edges on changed-hash callers, 49 retain the historical token and 6 do not."
+    },
+    {
+      "id": "M18_INNOV_Q4",
+      "scope": "CURRENT_COMPLEMENT_DISCOVERY",
+      "result_summary": "64 current IG-pattern functions are outside the historical caller identity set; 23 have queue/direct-step/handoff/continuation/context/cached-v2 path-shape names. These are candidate route-evolution signals, not proven callers."
+    },
+    {
+      "id": "M18_INNOV_Q5",
+      "scope": "PRE_CUTOFF_TEMPORAL_COHORT",
+      "result_summary": "Revision 5.13 has 86 completed runs across 42 screens from 2026-09-28 to 2026-10-05; 5.13.1 has 20 completed runs across 16 screens from 2026-10-08 to 2026-10-14. Both show family_count=47, but zero-stage prevalence and screen mix differ."
+    },
+    {
+      "id": "M18_INNOV_Q6",
+      "scope": "CURRENT_CHANGED_BODY_TOKEN_READBACK",
+      "result_summary": "Five callers responsible for the six missing historical tokens now reference newer path shapes: bootstrap cached_v1 points to cached_v2; recurate_source_stale points to cached_v2; shadow_evaluate points to bootstrap_classify_v2_ctx; curator_materialize now includes curator plan/handoff and validator handoff; validate_v2 now references evidence rehydrate/semantic-scope paths. This is lexical structural evidence only, not runtime execution proof."
+    }
+  ],
+  "findings": [
+    {
+      "id": "M18_INNOV_F1",
+      "claim": "The P0 event itself warns against promoting its snapshot to live authority: acceptance_declared=false and its provenance notes already document version/currentness drift.",
+      "classification": "MEASURED_HISTORICAL_PROVENANCE",
+      "evidence_refs": ["M18_INNOV_Q1","M18_INNOV_Q2"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_INNOV_F2",
+      "claim": "Current lexical topology shows selective evolution rather than wholesale disappearance: 70/76 historical callee tokens remain, while six historical edges no longer appear and newer cached/context/handoff paths appear in those changed bodies.",
+      "classification": "MEASURED_CURRENT_LEXICAL_EVOLUTION",
+      "evidence_refs": ["M18_INNOV_Q3","M18_INNOV_Q6"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true,
+      "limit": "Lexical references do not prove runtime execution."
+    },
+    {
+      "id": "M18_INNOV_F3",
+      "claim": "Queue/direct/handoff/continuation/context/cached-v2 functions are plausible route-evolution candidates outside the historical caller set, but names alone cannot establish that they are callers or were omitted at P0 time.",
+      "classification": "CURRENT_CANDIDATE_SIGNAL_NOT_CALLER_PROOF",
+      "evidence_refs": ["M18_INNOV_Q4"],
+      "confidence": "MEDIUM_HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_INNOV_F4",
+      "claim": "Performance comparison by revision is temporally and population-confounded even when family_count remains 47; 5.13 and 5.13.1 cover different time windows and screen populations.",
+      "classification": "MEASURED_TEMPORAL_CONFOUNDING",
+      "evidence_refs": ["M18_INNOV_Q5"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "M18_INNOV_N1",
+      "hypothesis": "All 76 historical lexical caller-callee edges remain unchanged in current bodies.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_INNOV_Q3"]
+    },
+    {
+      "id": "M18_INNOV_N2",
+      "hypothesis": "Changed function hashes imply complete loss of historical callee relations.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_INNOV_Q3"]
+    },
+    {
+      "id": "M18_INNOV_N3",
+      "hypothesis": "Current queue/handoff/context-shaped functions are proven historical omissions solely from their names.",
+      "result": "NOT_SUPPORTED",
+      "evidence_refs": ["M18_INNOV_Q4"]
+    },
+    {
+      "id": "M18_INNOV_N4",
+      "hypothesis": "Revision 5.13 and 5.13.1 are temporally equivalent performance cohorts.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_INNOV_Q5"]
+    }
+  ],
+  "causal_hypothesis": {
+    "state": "PARTIAL",
+    "claim": "The strongest alternative to a simple Curator/Validator defect is evidence staleness plus post-snapshot route evolution and cohort drift. Structural changes are demonstrable; their runtime and causal performance effect is not."
+  },
+  "minimal_safe_action": "Perform targeted reference/lifecycle classification of changed lexical edges and new path-shape candidates, then construct a matched performance cohort; avoid broad repair until those two uncertainties are resolved.",
+  "unresolved": [
+    "Runtime execution of new path-shape candidates",
+    "Creation/provenance dates for current complement functions",
+    "Whether changed lexical edges alter observed business behavior",
+    "Matched causal performance effect of 5.13.1"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "No production mutation",
+    "Historical/current separation",
+    "Lexical evidence not promoted to runtime proof",
+    "No peer role reports used",
+    "No autonomous-agent claim"
+  ],
+  "measured_costs": {
+    "sql_observations": 6,
+    "transport_elapsed_ms": "NOT_MEASURED",
+    "barinel_calibration": "NOT_AVAILABLE"
+  },
+  "role_output_frozen": true
+}
