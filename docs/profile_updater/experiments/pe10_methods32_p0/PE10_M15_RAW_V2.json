@@ -673,8 +673,10 @@
   },
   "negative_tests": [
     {
-      "id": "M_ATMS_WITHDRAW_SOURCE",
-      "pass": true
+      "id": "M_ATMS_WITHDRAW_SOURCE_RETAINS_EKB_ALTERNATIVE",
+      "pass": true,
+      "expected": "After withdrawing ASOF_SOURCE, risk remains supported by historical EKB, safe SELECT remains and decision remains VERIFY_FIRST",
+      "observed": "risk=true,safe=true,state=VERIFY_FIRST"
     },
     {
       "id": "M_ATMS_SOAK_WITHDRAWAL",
