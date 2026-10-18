@@ -1,0 +1,168 @@
+{
+  "schema": "PE10_M23_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M23",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M23_ARQ_Q1",
+      "sql": "WITH h AS (SELECT x->>'caller' caller,x->>'definition_md5' historical_md5 FROM public.lf_eventos l,jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), live AS (SELECT n.nspname||'.'||p.proname caller,md5(p.prosrc) current_md5 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace) SELECT count(*) total,count(*) FILTER(WHERE live.caller IS NULL) absent,count(*) FILTER(WHERE live.caller IS NOT NULL AND h.historical_md5=live.current_md5) eq_true,count(*) FILTER(WHERE live.caller IS NOT NULL AND h.historical_md5<>live.current_md5) eq_false FROM h LEFT JOIN live USING(caller);",
+      "result": "total=38; absent=0; eq_true=16; eq_false=22."
+    },
+    {
+      "id": "M23_ARQ_Q2",
+      "sql": "SELECT jsonb_array_length(payload->'sql_callers') callers,jsonb_array_length(payload->'trigger_bindings') triggers,jsonb_array_length(payload->'external_inventory') external,payload->'historical_provenance_only' limits FROM public.lf_eventos WHERE id=20161;",
+      "result": "callers=38,triggers=21,external=6; source says readiness 5.12 vs governed 5.13 is provenance/currentness drift and older contract existence is not caller-usage evidence."
+    }
+  ],
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E_ARQ_P0",
+        "source": "public.lf_eventos/20161",
+        "time": "2026-10-04T05:14:40.880842Z",
+        "identity": "event_id=20161",
+        "assumptions": [
+          "snapshot is valid only for its observation time"
+        ],
+        "supports": [
+          "C_ARQ_SCOPE"
+        ]
+      },
+      {
+        "id": "E_ARQ_CURRENT",
+        "source": "current pg_proc",
+        "time": "CURRENT_READBACK",
+        "identity": "schema.function+md5(prosrc)",
+        "assumptions": [
+          "md5(prosrc) equality is an empirical comparator, not proof of historical hash recipe"
+        ],
+        "supports": [
+          "C_ARQ_DRIFT"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_ARQ_SCOPE",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_ARQ_P0"
+          ]
+        ]
+      },
+      {
+        "id": "C_ARQ_DRIFT",
+        "state": "SUPPORTED_WITH_LIMIT",
+        "justifications": [
+          [
+            "E_ARQ_P0",
+            "E_ARQ_CURRENT"
+          ]
+        ]
+      },
+      {
+        "id": "C_ARQ_LIVE_CERTIFIED",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_ARQ_1",
+        "set": [
+          "P0_EQUALS_TIMELESS_CURRENT"
+        ],
+        "reason": "source records explicit currentness drift"
+      },
+      {
+        "id": "N_ARQ_2",
+        "set": [
+          "EMPIRICAL_HASH_EQUALS_CANONICAL_HASH_METHOD"
+        ],
+        "reason": "historical construction method is not demonstrated"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_ARQ_CURRENT",
+        "invalidates": [
+          "C_ARQ_DRIFT"
+        ],
+        "preserves": [
+          "C_ARQ_SCOPE"
+        ]
+      },
+      {
+        "withdraw": "E_ARQ_P0",
+        "invalidates": [
+          "C_ARQ_SCOPE",
+          "C_ARQ_DRIFT"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "ARQ_INV1",
+        "rule": "comparator population = TRUE + FALSE + absent",
+        "observed": "38=16+22+0",
+        "valid_case": "full reconciliation",
+        "counterexample": "any unreconciled member",
+        "status": "PASS"
+      },
+      {
+        "id": "ARQ_INV2",
+        "rule": "callers/triggers/external remain separate identity domains unless mapped",
+        "observed": "38/21/6 arrays",
+        "valid_case": "separate denominators",
+        "counterexample": "append external rows to caller count",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M23_ARQ_F1",
+      "classification": "MEASURED",
+      "claim": "Historical/current comparator reconciles 38 callers into 16 empirical equal and 22 empirical changed with zero absent names."
+    },
+    {
+      "id": "M23_ARQ_F2",
+      "classification": "MEASURED_LIMIT",
+      "claim": "P0 explicitly limits temporal promotion; live certification and historical hash recipe remain unproven."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M23_ARQ_N1",
+      "hypothesis": "Current name disappearance explains observed comparator differences",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M23_ARQ_N2",
+      "hypothesis": "Hash equality proves canonical historical hash method",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "canonical historical definition_md5 method",
+    "runtime materiality of changed definitions"
+  ],
+  "role_output_frozen": true
+}
