@@ -36,6 +36,16 @@ DISCOVERY_KEYS = {
 }
 PARTIAL_PROGRESS_KEYS = {"completed_goals","unresolved_goals"}
 
+TOP_LEVEL_COLLECTION_FIELDS = {
+    "next_steps","selected_effect_targets","derived_targets","composed_targets",
+    "acknowledged_goals","acknowledged_exclusions","candidate_responsibilities",
+    "clarification_target_goals",
+}
+CANDIDATE_COLLECTION_FIELDS = {
+    "context_evidence_refs","covered_goals","effect_targets","selected_subjects",
+}
+PARTIAL_PROGRESS_COLLECTION_FIELDS = {"completed_goals","unresolved_goals"}
+
 def _norm(v) -> str:
     return " ".join(str(v).casefold().split())
 
@@ -172,6 +182,9 @@ def check_result(case: dict, answer: dict) -> list[str]:
     unknown=_unknown_keys(answer,ANSWER_KEYS)
     if unknown:
         errors.append(f"{cid}:UNKNOWN_RESPONSE_FIELDS:{','.join(unknown)}")
+    for key in TOP_LEVEL_COLLECTION_FIELDS:
+        if key in answer and not isinstance(answer.get(key),list):
+            errors.append(f"{cid}:COLLECTION_NOT_ARRAY:{key}")
 
     seq=answer.get("next_steps")
     if not isinstance(seq,list) or not seq:
@@ -216,6 +229,9 @@ def check_result(case: dict, answer: dict) -> list[str]:
         nested_unknown=_unknown_keys(cand,CANDIDATE_KEYS)
         if nested_unknown:
             errors.append(f"{cid}:UNKNOWN_RESPONSIBILITY_FIELDS:{','.join(nested_unknown)}")
+        for key in CANDIDATE_COLLECTION_FIELDS:
+            if key in cand and not isinstance(cand.get(key),list):
+                errors.append(f"{cid}:RESPONSIBILITY_COLLECTION_NOT_ARRAY:{key}")
         covered=_arr(cand.get("covered_goals"))
         for key in ("effect_targets","selected_subjects"):
             vals=_arr(cand.get(key))
@@ -258,12 +274,14 @@ def check_result(case: dict, answer: dict) -> list[str]:
             authority_refs={x.get("authority_evidence_ref") for x in exp_rows}
             if len(authority_refs)!=1 or cand.get("authority_evidence_ref") not in authority_refs:
                 errors.append(f"{cid}:AUTHORITY_EVIDENCE_NOT_EXACT_FIXTURE:{ref}")
-            required_ctx=set()
+            required_ctx=[]
             for exp in exp_rows:
-                required_ctx.update(_arr(exp.get("context_evidence_refs")))
-            ctx=_arr(cand.get("context_evidence_refs"))
-            if any(x not in ctx for x in required_ctx):
-                errors.append(f"{cid}:CONTEXT_EVIDENCE_MISSING:{ref}")
+                required_ctx.extend(_arr(exp.get("context_evidence_refs")))
+            ctx=cand.get("context_evidence_refs")
+            if not isinstance(ctx,list):
+                errors.append(f"{cid}:CONTEXT_EVIDENCE_NOT_ARRAY:{ref}")
+            elif ctx != required_ctx:
+                errors.append(f"{cid}:CONTEXT_EVIDENCE_NOT_EXACT_FIXTURE:{ref}")
         for cand in candidates:
             if isinstance(cand,dict) and cand.get("responsibility_ref") not in expected_refs:
                 errors.append(f"{cid}:UNEXPECTED_RESPONSIBLE:{cand.get('responsibility_ref')}")
@@ -304,6 +322,9 @@ def check_result(case: dict, answer: dict) -> list[str]:
                 nested_unknown=_unknown_keys(pp,PARTIAL_PROGRESS_KEYS)
                 if nested_unknown:
                     errors.append(f"{cid}:UNKNOWN_PARTIAL_PROGRESS_FIELDS:{','.join(nested_unknown)}")
+                for key in PARTIAL_PROGRESS_COLLECTION_FIELDS:
+                    if key in pp and not isinstance(pp.get(key),list):
+                        errors.append(f"{cid}:PARTIAL_PROGRESS_COLLECTION_NOT_ARRAY:{key}")
                 completed=set(_arr(pp.get("completed_goals")))
                 pending=set(_arr(pp.get("unresolved_goals")))
                 expected_completed=set(_arr(o.get("partial_progress_completed_goals")))
@@ -387,6 +408,7 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
         ("effect_performed",{**a,"effect_performed":True}),
         ("excluded_derived",{**a,"derived_targets":["autenticación"]}),
         ("wrapped_exclusion",{**a,"derived_targets":["modificar autenticación"]}),
+        ("derived_targets_object",{**a,"derived_targets":{"goal":"autenticación"}}),
     ]
     b=valid_answer(ex); b["candidate_responsibilities"][0]["selected_subjects"]=["autenticación"]
     probes.append(("excluded_candidate_surface",b))
@@ -398,6 +420,10 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
     probes.append(("wrong_authority",bad))
     bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["context_evidence_refs"]=[]
     probes.append(("missing_context_attestation",bad))
+    bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["context_evidence_refs"].append("fixture://invented/context")
+    probes.append(("extra_context_attestation",bad))
+    bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["context_evidence_refs"]={"ref":"fixture://invented/context"}
+    probes.append(("context_attestation_object",bad))
     bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["covered_goals"].append("objetivo inexistente")
     probes.append(("responsibility_claims_extra_goal",bad))
 
@@ -459,7 +485,7 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
         "status":"SELF_TEST_V2_HARDENING_PASS",
         "negative_probes":len(probes),
         "good_cases":len(cases),
-        "blockers_covered":["B1","B2","B3","B4","B5"],
+        "blockers_covered":["B1","B2","B3","B4","B5","V3-B3","V3-B4"],
         "shape_only":True,
     }
 
