@@ -1,0 +1,244 @@
+{
+  "schema": "PE10_M30_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M30",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M30-ARQ-F01",
+      "claim": "Frozen P0 contains 38 distinct callers with no missing definition hash.",
+      "evidence_refs": [
+        "M30_ARQ_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-ARQ-F02",
+      "claim": "All 38 caller names resolve; empirical md5(prosrc) partitions into 16 equal and 22 unequal, while md5(pg_get_functiondef()) yields zero equal.",
+      "evidence_refs": [
+        "M30_ARQ_Q02"
+      ],
+      "confidence": "HIGH_WITH_COMPARATOR_LIMIT"
+    },
+    {
+      "id": "M30-ARQ-F03",
+      "claim": "Bounded current scan exposes 75 related objects, 63 normalized families and 20 multi-member families.",
+      "evidence_refs": [
+        "M30_ARQ_Q03"
+      ],
+      "confidence": "HIGH_FOR_QUERY_RULE"
+    },
+    {
+      "id": "M30-ARQ-F04",
+      "claim": "Trigger enabled-state partition is 21 true, 0 false, 0 absent.",
+      "evidence_refs": [
+        "M30_ARQ_Q04"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "ARQ-C1",
+          "members": [
+            "historical_snapshot_not_current",
+            "body_or_route_drift"
+          ],
+          "basis": [
+            "M30-ARQ-F01",
+            "M30-ARQ-F02"
+          ]
+        },
+        {
+          "id": "ARQ-C2",
+          "members": [
+            "canonical_hash_unknown",
+            "body_or_route_drift"
+          ],
+          "basis": [
+            "M30-ARQ-F02"
+          ]
+        },
+        {
+          "id": "ARQ-C3",
+          "members": [
+            "variant_surface_change",
+            "historical_snapshot_not_current"
+          ],
+          "basis": [
+            "M30-ARQ-F03"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "historical_snapshot_not_current",
+          "canonical_hash_unknown"
+        ],
+        [
+          "historical_snapshot_not_current",
+          "body_or_route_drift"
+        ],
+        [
+          "variant_surface_change",
+          "body_or_route_drift"
+        ]
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No justified executable spectra or priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Authoritative current manifest with canonical hash representation and active entries.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Governed semantic equivalence for empirically changed bodies.",
+            "cost": "MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Compatibility ownership for multi-member families.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "C": {
+      "invariants": [
+        {
+          "id": "ARQ-I1",
+          "type": "PARTITION",
+          "statement": "caller total=prosrc_true+prosrc_false+absent",
+          "observed": "38=16+22+0",
+          "status": "PASS"
+        },
+        {
+          "id": "ARQ-I2",
+          "type": "METAMORPHIC",
+          "statement": "Comparator substitution must not be assumed invariant.",
+          "observed": "prosrc_true=16 vs functiondef_true=0",
+          "status": "PASS"
+        },
+        {
+          "id": "ARQ-I3",
+          "type": "PARTITION",
+          "statement": "trigger total=true+false+absent",
+          "observed": "21=21+0+0",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "ARQ-MT1",
+          "transform": "md5(prosrc)→md5(pg_get_functiondef())",
+          "observed_relation": "16→0 equal rows",
+          "result": "COUNTEREXAMPLE_FOUND"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "SQL set/partition invariants directly executable."
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical structure is coherent but comparator sensitivity and current variant surface prevent current semantic closure.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Canonical hash method and active-entry manifest are attested.",
+        "Governed semantic route evidence proves or disproves current equivalence."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A material active-route invariant fails.",
+        "to_NO_ACTION_SUPPORTED": "Current equivalence and variant intent are fully attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required current evidence remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not infer canonical hash representation from preferred comparator.",
+    "Do not treat 75 bounded objects as complete active topology.",
+    "Do not infer full trigger semantics from enabled-state equality."
+  ],
+  "unresolved": [
+    "Canonical historical hash serialization",
+    "Current semantic route equivalence",
+    "Active variant mapping"
+  ],
+  "next_safe_step": "Verify current manifest and route semantics without runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 4,
+    "successful_selects": 4,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "invariants": 3,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M30_ARQ_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "distinct_callers": 38,
+        "missing_hash": 0
+      }
+    },
+    {
+      "query_id": "M30_ARQ_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "absent": 0,
+        "prosrc_true": 16,
+        "prosrc_false": 22,
+        "functiondef_true": 0
+      }
+    },
+    {
+      "query_id": "M30_ARQ_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "objects": 75,
+        "families": 63,
+        "multi_member": 20
+      }
+    },
+    {
+      "query_id": "M30_ARQ_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 21,
+        "tlp_true": 21,
+        "tlp_false": 0,
+        "absent": 0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T23:10:00Z"
+}

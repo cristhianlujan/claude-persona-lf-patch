@@ -1,0 +1,269 @@
+{
+  "schema": "PE10_M30_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M30",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M30-AUT-F01",
+      "claim": "Event 20161 is a historical inventory-only READBACK_VERIFICADO with created_by_execution_id CHATGPT-IG-M10.9-20261004-001 and null migration_batch_id.",
+      "evidence_refs": [
+        "M30_AUT_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-AUT-F02",
+      "claim": "Current research principal is supabase_read_only_user, transaction_read_only=on, and cannot execute IG runtime.",
+      "evidence_refs": [
+        "M30_AUT_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-AUT-F03",
+      "claim": "Identity partition reconciles 255=0 same+248 different+7 null; component partition reconciles 255=0+247+8.",
+      "evidence_refs": [
+        "M30_AUT_Q03"
+      ],
+      "confidence": "HIGH_FOR_RECORDED_FIELDS"
+    },
+    {
+      "id": "M30-AUT-F04",
+      "claim": "Visible event-operation linkage partitions 1=0 matched+1 unmatched in public.lf_operation_execution.",
+      "evidence_refs": [
+        "M30_AUT_Q04"
+      ],
+      "confidence": "HIGH_FOR_VISIBLE_LEDGER"
+    },
+    {
+      "id": "M30-AUT-F05",
+      "claim": "294 completed ACTUALIZACION_DB_LF operations exist pre-cut, so the unmatched event identity is specific rather than absence of the train ledger class.",
+      "evidence_refs": [
+        "M30_AUT_Q05"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "AUT-C1",
+          "members": [
+            "visible_authority_link_gap",
+            "legacy_or_external_authority"
+          ],
+          "basis": [
+            "M30-AUT-F01",
+            "M30-AUT-F04",
+            "M30-AUT-F05"
+          ]
+        },
+        {
+          "id": "AUT-C2",
+          "members": [
+            "label_only_separation",
+            "material_independence_unproven"
+          ],
+          "basis": [
+            "M30-AUT-F03"
+          ]
+        },
+        {
+          "id": "AUT-C3",
+          "members": [
+            "session_readonly_boundary",
+            "current_attestation_missing"
+          ],
+          "basis": [
+            "M30-AUT-F02"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "visible_authority_link_gap",
+          "material_independence_unproven"
+        ],
+        [
+          "legacy_or_external_authority",
+          "material_independence_unproven"
+        ],
+        [
+          "visible_authority_link_gap",
+          "current_attestation_missing"
+        ]
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No executable authority spectra or justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Canonical historical event/operation provenance across authorized ledgers.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Material Curator/Validator principal/session/input provenance.",
+            "cost": "MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Current governed attestation without grant widening.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "C": {
+      "invariants": [
+        {
+          "id": "AUT-I1",
+          "type": "PARTITION",
+          "statement": "identity total=same+different+null",
+          "observed": "255=0+248+7",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I2",
+          "type": "PARTITION",
+          "statement": "component total=same+different+null",
+          "observed": "255=0+247+8",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I3",
+          "type": "PARTITION",
+          "statement": "event link total=matched+unmatched",
+          "observed": "1=0+1",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I4",
+          "type": "NEGATIVE",
+          "statement": "Distinct labels/components are not material independence.",
+          "observed": "No same pairs, but no effective-principal/session proof.",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "AUT-MT1",
+          "transform": "Reduce authority evidence to identity/component inequality only",
+          "observed_relation": "Material independence remains unsupported.",
+          "result": "OVERFITTING_REJECTED"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "SQL partitions directly executable."
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical authority fields and read-only boundary are clear, but canonical event provenance and material independence remain unresolved.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized ledger resolves event provenance.",
+        "Material execution provenance proves separate principals/sessions/inputs."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Authority bypass/shared effective principal is proven.",
+        "to_NO_ACTION_SUPPORTED": "Canonical provenance and material independence are attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required provenance remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate label inequality with material independence.",
+    "Do not infer global no-provenance from one unmatched ledger.",
+    "Do not infer system-wide inability from current read-only principal."
+  ],
+  "unresolved": [
+    "Canonical event authority",
+    "Material execution independence",
+    "Current governed attestation"
+  ],
+  "next_safe_step": "Resolve provenance and material independence by authorized readback; no grants changed.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "invariants": 4,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M30_AUT_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "id": 20161,
+        "evento_tipo": "READBACK_VERIFICADO",
+        "migration_batch_id": null,
+        "created_by_execution_id": "CHATGPT-IG-M10.9-20261004-001"
+      }
+    },
+    {
+      "query_id": "M30_AUT_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "current_user": "supabase_read_only_user",
+        "transaction_read_only": "on",
+        "can_execute_ig": false
+      }
+    },
+    {
+      "query_id": "M30_AUT_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "total": 255,
+        "identity_same": 0,
+        "identity_different": 248,
+        "identity_null": 7,
+        "component_same": 0,
+        "component_different": 247,
+        "component_null": 8
+      }
+    },
+    {
+      "query_id": "M30_AUT_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 1,
+        "matched": 0,
+        "unmatched": 1
+      }
+    },
+    {
+      "query_id": "M30_AUT_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "completed_train_ops": 294
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T23:14:00Z"
+}
