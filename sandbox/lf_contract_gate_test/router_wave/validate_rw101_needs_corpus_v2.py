@@ -16,6 +16,32 @@ ALLOWED_NEXT = {
 PROGRESS_STEPS = {"DERIVE","COMPOSE","TECHNICAL_GOVERNANCE"}
 REQUIREMENTS = {"N%02d" % i for i in range(1,13)}
 
+ANSWER_KEYS = {
+    "id","next_steps","handoff_literal","request_sha256",
+    "router_effect_authorized","effect_performed","claims_e2e",
+    "consumer_execution_receipt_ref",
+    "selected_effect_targets","derived_targets","composed_targets",
+    "acknowledged_goals","acknowledged_exclusions",
+    "candidate_responsibilities","discovery_handoff",
+    "source_search_receipt_ref","missing_capability",
+    "clarification_question","material_route_discriminator",
+    "clarification_reason","clarification_target_goals","partial_progress",
+}
+CANDIDATE_KEYS = {
+    "responsibility_ref","authority_evidence_ref","context_evidence_refs",
+    "covered_goals","effect_targets","selected_subjects",
+}
+DISCOVERY_KEYS = {
+    "registered_discovery_capability_ref","catalog_revision_ref","unresolved_route_reason",
+}
+PARTIAL_PROGRESS_KEYS = {"completed_goals","unresolved_goals"}
+
+def _norm(v) -> str:
+    return " ".join(str(v).casefold().split())
+
+def _unknown_keys(obj, allowed):
+    return sorted(set(obj)-set(allowed)) if isinstance(obj,dict) else []
+
 def sha(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -113,8 +139,12 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
         if not isinstance(route,str) or not route:
             errors.append(f"{cid}:MISSING_ROUTING_FIXTURE")
         if route=="UNRESOLVED_CAPABILITY_IN_TEST_FIXTURE":
-            if not any(("DISCOVER" in seq or "CAPABILITY_GAP" in seq) for seq in seqs):
+            if any(any(s in PROGRESS_STEPS for s in seq) for seq in seqs if isinstance(seq,list)):
                 errors.append(f"{cid}:UNKNOWN_CAPABILITY_FORCED_READY")
+            if not any(("DISCOVER" in seq or "CAPABILITY_GAP" in seq) for seq in seqs):
+                errors.append(f"{cid}:UNKNOWN_CAPABILITY_WITHOUT_DISCOVERY_OR_GAP")
+            if fixture or exps:
+                errors.append(f"{cid}:UNRESOLVED_CAPABILITY_HAS_RESPONSIBILITY_FIXTURE")
     for miss in sorted(REQUIREMENTS-coverage):
         errors.append(f"UNCOVERED_REQUIREMENT:{miss}")
     if len(cases)<42 or adversarial<12 or len(families)<15 or min(families.values(),default=0)<2:
@@ -134,8 +164,15 @@ def corpus_check(doc: dict) -> tuple[list[str], dict]:
 def check_result(case: dict, answer: dict) -> list[str]:
     errors=[]
     cid=case["id"]; o=case["oracle"]
+    if not isinstance(answer,dict):
+        return [f"{cid}:ANSWER_NOT_OBJECT"]
     if answer.get("id")!=cid:
         return [f"{cid}:IDENTITY_MISMATCH"]
+
+    unknown=_unknown_keys(answer,ANSWER_KEYS)
+    if unknown:
+        errors.append(f"{cid}:UNKNOWN_RESPONSE_FIELDS:{','.join(unknown)}")
+
     seq=answer.get("next_steps")
     if not isinstance(seq,list) or not seq:
         errors.append(f"{cid}:NEXT_STEPS_REQUIRED_V2")
@@ -151,59 +188,111 @@ def check_result(case: dict, answer: dict) -> list[str]:
         errors.append(f"{cid}:ROUTER_CLAIMED_EFFECT_AUTHORITY")
     if answer.get("effect_performed") is not False:
         errors.append(f"{cid}:EFFECT_MUST_BE_EXPLICIT_FALSE")
+
     goals=_arr(o.get("must_acknowledge_goal_terms"))
     ack=_arr(answer.get("acknowledged_goals"))
-    if any(g not in ack for g in goals):
-        errors.append(f"{cid}:MULTIOBJECT_GOAL_LOST")
+    if len(ack)!=len(goals) or set(ack)!=set(goals):
+        errors.append(f"{cid}:ACKNOWLEDGED_GOALS_NOT_EXACT_ORACLE")
+
     exclusions=_arr(o.get("excluded_subjects"))
     ackx=_arr(answer.get("acknowledged_exclusions"))
-    if o.get("must_report_exclusions") and any(x not in ackx for x in exclusions):
-        errors.append(f"{cid}:EXCLUSION_NOT_ACKNOWLEDGED")
+    if len(ackx)!=len(exclusions) or set(ackx)!=set(exclusions):
+        errors.append(f"{cid}:ACKNOWLEDGED_EXCLUSIONS_NOT_EXACT_ORACLE")
+
+    unresolved=set(_arr(o.get("partial_progress_unresolved_goals")))
+    allowed_subjects=set(goals)-unresolved
     effect_surfaces=[]
     for key in ("selected_effect_targets","derived_targets","composed_targets"):
-        effect_surfaces.extend(map(str,_arr(answer.get(key))))
+        vals=_arr(answer.get(key))
+        effect_surfaces.extend(map(str,vals))
+        for val in vals:
+            if val not in allowed_subjects:
+                errors.append(f"{cid}:UNBOUND_EFFECT_OR_DERIVATION_SUBJECT:{val}")
     candidates=_arr(answer.get("candidate_responsibilities"))
     for cand in candidates:
-        if isinstance(cand,dict):
-            effect_surfaces.extend(map(str,_arr(cand.get("effect_targets"))))
-            effect_surfaces.extend(map(str,_arr(cand.get("selected_subjects"))))
+        if not isinstance(cand,dict):
+            errors.append(f"{cid}:INVALID_RESPONSIBILITY_CANDIDATE")
+            continue
+        nested_unknown=_unknown_keys(cand,CANDIDATE_KEYS)
+        if nested_unknown:
+            errors.append(f"{cid}:UNKNOWN_RESPONSIBILITY_FIELDS:{','.join(nested_unknown)}")
+        covered=_arr(cand.get("covered_goals"))
+        for key in ("effect_targets","selected_subjects"):
+            vals=_arr(cand.get(key))
+            effect_surfaces.extend(map(str,vals))
+            for val in vals:
+                if val not in set(covered):
+                    errors.append(f"{cid}:CANDIDATE_SURFACE_NOT_BOUND_TO_COVERED_GOAL:{val}")
+                if val in unresolved:
+                    errors.append(f"{cid}:UNRESOLVED_GOAL_LEAKED_TO_CANDIDATE_SURFACE:{val}")
+
     for ex in exclusions:
-        if ex in effect_surfaces:
-            errors.append(f"{cid}:EXCLUDED_SUBJECT_LEAKED_TO_EFFECT_OR_DERIVATION:{ex}")
+        exn=_norm(ex)
+        for surface in effect_surfaces:
+            sn=_norm(surface)
+            if exn and (sn==exn or exn in sn):
+                errors.append(f"{cid}:EXCLUDED_SUBJECT_LEAKED_TO_EFFECT_OR_DERIVATION:{ex}")
+
     derivation=any(s in PROGRESS_STEPS for s in seq)
+    expected=_arr(o.get("responsibility_expectations"))
     if derivation:
         if not candidates or any(not isinstance(x,dict) for x in candidates):
             errors.append(f"{cid}:NO_COMPETENT_RESPONSIBLE")
-        expected=_arr(o.get("responsibility_expectations"))
-        expected_refs={x["responsibility_ref"] for x in expected if isinstance(x,dict)}
+        expected_by_ref={}
         for exp in expected:
-            matches=[x for x in candidates if isinstance(x,dict) and x.get("responsibility_ref")==exp.get("responsibility_ref")]
+            if isinstance(exp,dict):
+                expected_by_ref.setdefault(exp.get("responsibility_ref"),set()).add(exp.get("goal"))
+        expected_refs=set(expected_by_ref)
+        for ref,expected_goals in expected_by_ref.items():
+            matches=[x for x in candidates if isinstance(x,dict) and x.get("responsibility_ref")==ref]
             if len(matches)!=1:
-                errors.append(f"{cid}:RESPONSIBILITY_NOT_BOUND_PER_GOAL:{exp.get('goal')}")
+                errors.append(f"{cid}:RESPONSIBILITY_NOT_BOUND_EXACTLY_ONCE:{ref}")
                 continue
-            c=matches[0]
-            if exp.get("goal") not in _arr(c.get("covered_goals")):
-                errors.append(f"{cid}:RESPONSIBILITY_GOAL_NOT_COVERED:{exp.get('goal')}")
-            if c.get("authority_evidence_ref")!=exp.get("authority_evidence_ref"):
-                errors.append(f"{cid}:AUTHORITY_EVIDENCE_NOT_EXACT_FIXTURE:{exp.get('goal')}")
-            ctx=_arr(c.get("context_evidence_refs"))
-            if any(ref not in ctx for ref in _arr(exp.get("context_evidence_refs"))):
-                errors.append(f"{cid}:CONTEXT_EVIDENCE_MISSING:{exp.get('goal')}")
-        for c in candidates:
-            if isinstance(c,dict) and c.get("responsibility_ref") not in expected_refs:
-                errors.append(f"{cid}:UNEXPECTED_RESPONSIBLE:{c.get('responsibility_ref')}")
+            cand=matches[0]
+            covered=_arr(cand.get("covered_goals"))
+            if len(covered)!=len(expected_goals) or set(covered)!=expected_goals:
+                errors.append(f"{cid}:RESPONSIBILITY_GOALS_NOT_EXACT:{ref}")
+            if set(covered)&unresolved:
+                errors.append(f"{cid}:RESPONSIBILITY_COVERS_UNRESOLVED_GOAL:{ref}")
+            exp_rows=[x for x in expected if isinstance(x,dict) and x.get("responsibility_ref")==ref]
+            authority_refs={x.get("authority_evidence_ref") for x in exp_rows}
+            if len(authority_refs)!=1 or cand.get("authority_evidence_ref") not in authority_refs:
+                errors.append(f"{cid}:AUTHORITY_EVIDENCE_NOT_EXACT_FIXTURE:{ref}")
+            required_ctx=set()
+            for exp in exp_rows:
+                required_ctx.update(_arr(exp.get("context_evidence_refs")))
+            ctx=_arr(cand.get("context_evidence_refs"))
+            if any(x not in ctx for x in required_ctx):
+                errors.append(f"{cid}:CONTEXT_EVIDENCE_MISSING:{ref}")
+        for cand in candidates:
+            if isinstance(cand,dict) and cand.get("responsibility_ref") not in expected_refs:
+                errors.append(f"{cid}:UNEXPECTED_RESPONSIBLE:{cand.get('responsibility_ref')}")
+    else:
+        if candidates:
+            errors.append(f"{cid}:RESPONSIBILITY_WITHOUT_PROGRESS_STEP")
+
     if "DISCOVER" in seq:
         d=answer.get("discovery_handoff")
         needed=("registered_discovery_capability_ref","catalog_revision_ref","unresolved_route_reason")
         if not isinstance(d,dict) or any(not isinstance(d.get(k),str) or not d[k].strip() for k in needed):
             errors.append(f"{cid}:GENERIC_DISCOVER_WITHOUT_GROUNDED_HANDOFF")
+        elif _unknown_keys(d,DISCOVERY_KEYS):
+            errors.append(f"{cid}:UNKNOWN_DISCOVERY_FIELDS:{','.join(_unknown_keys(d,DISCOVERY_KEYS))}")
+    elif answer.get("discovery_handoff"):
+        errors.append(f"{cid}:DISCOVERY_HANDOFF_WITHOUT_DISCOVER_STEP")
+
     if "CAPABILITY_GAP" in seq:
         if not answer.get("source_search_receipt_ref") or not answer.get("missing_capability"):
             errors.append(f"{cid}:CAPABILITY_GAP_WITHOUT_DISCOVERY_READBACK")
+    elif answer.get("source_search_receipt_ref") or answer.get("missing_capability"):
+        errors.append(f"{cid}:CAPABILITY_GAP_FIELDS_WITHOUT_GAP_STEP")
+
     if "CLARIFY" in seq:
-        if not isinstance(answer.get("clarification_question"),str) or not answer["clarification_question"].strip():
+        q=answer.get("clarification_question")
+        discriminator=answer.get("material_route_discriminator")
+        if not isinstance(q,str) or not q.strip():
             errors.append(f"{cid}:CLARIFICATION_WITHOUT_QUESTION")
-        if not isinstance(answer.get("material_route_discriminator"),str) or not answer["material_route_discriminator"].strip():
+        if not isinstance(discriminator,str) or not discriminator.strip():
             errors.append(f"{cid}:QUESTION_WITHOUT_ROUTE_DISCRIMINATOR")
         if answer.get("clarification_reason")!=o.get("clarification_reason"):
             errors.append(f"{cid}:CLARIFICATION_REASON_NOT_SUPPORTED_BY_FIXTURE")
@@ -212,14 +301,31 @@ def check_result(case: dict, answer: dict) -> list[str]:
             if not isinstance(pp,dict):
                 errors.append(f"{cid}:PARTIAL_PROGRESS_REQUIRED")
             else:
-                if set(_arr(pp.get("completed_goals")))!=set(_arr(o.get("partial_progress_completed_goals"))):
+                nested_unknown=_unknown_keys(pp,PARTIAL_PROGRESS_KEYS)
+                if nested_unknown:
+                    errors.append(f"{cid}:UNKNOWN_PARTIAL_PROGRESS_FIELDS:{','.join(nested_unknown)}")
+                completed=set(_arr(pp.get("completed_goals")))
+                pending=set(_arr(pp.get("unresolved_goals")))
+                expected_completed=set(_arr(o.get("partial_progress_completed_goals")))
+                expected_pending=set(_arr(o.get("partial_progress_unresolved_goals")))
+                if completed!=expected_completed:
                     errors.append(f"{cid}:PARTIAL_PROGRESS_COMPLETED_GOALS_MISMATCH")
-                if set(_arr(pp.get("unresolved_goals")))!=set(_arr(o.get("partial_progress_unresolved_goals"))):
+                if pending!=expected_pending:
                     errors.append(f"{cid}:PARTIAL_PROGRESS_UNRESOLVED_GOALS_MISMATCH")
-    elif answer.get("clarification_question"):
-        errors.append(f"{cid}:QUESTION_WITHOUT_CLARIFICATION_STEP")
-    if answer.get("claims_e2e") is True and not answer.get("consumer_execution_receipt_ref"):
-        errors.append(f"{cid}:E2E_CLAIM_WITHOUT_CONSUMER_RECEIPT")
+                targets=_arr(answer.get("clarification_target_goals"))
+                if len(targets)!=len(expected_pending) or set(targets)!=expected_pending:
+                    errors.append(f"{cid}:CLARIFICATION_TARGET_GOALS_MISMATCH")
+                bound_text=_norm((q or "")+" "+(discriminator or ""))
+                if expected_pending and not any(_norm(goal) in bound_text for goal in expected_pending):
+                    errors.append(f"{cid}:CLARIFICATION_TEXT_NOT_BOUND_TO_UNRESOLVED_GOAL")
+    else:
+        if answer.get("clarification_question") or answer.get("material_route_discriminator") or answer.get("clarification_target_goals"):
+            errors.append(f"{cid}:CLARIFICATION_FIELDS_WITHOUT_CLARIFICATION_STEP")
+
+    if answer.get("claims_e2e") is not False:
+        errors.append(f"{cid}:E2E_CLAIM_NOT_ALLOWED_IN_FIXTURE_CONTRACT")
+    if answer.get("consumer_execution_receipt_ref"):
+        errors.append(f"{cid}:CONSUMER_RECEIPT_OUTSIDE_FIXTURE_CONTRACT")
     return errors
 
 def valid_answer(case: dict) -> dict:
@@ -253,15 +359,18 @@ def valid_answer(case: dict) -> dict:
     if "CAPABILITY_GAP" in seq:
         ans.update(source_search_receipt_ref="fixture://holdout/search",missing_capability="fixture-capability")
     if "CLARIFY" in seq:
+        unresolved=list(_arr(o.get("partial_progress_unresolved_goals")))
+        target=unresolved[0] if unresolved else "referente"
         ans.update(
-            clarification_question="¿Cuál es el referente exacto?",
-            material_route_discriminator="fixture discriminator",
+            clarification_question=f"¿Cuál es el referente exacto para {target}?",
+            material_route_discriminator=f"identidad exacta de {target}",
             clarification_reason=o.get("clarification_reason"),
         )
         if o.get("partial_progress_required"):
+            ans["clarification_target_goals"]=unresolved
             ans["partial_progress"]={
                 "completed_goals":list(_arr(o.get("partial_progress_completed_goals"))),
-                "unresolved_goals":list(_arr(o.get("partial_progress_unresolved_goals"))),
+                "unresolved_goals":unresolved,
             }
     return ans
 
@@ -271,14 +380,17 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
     good_failures={k:v for k,v in good_failures.items() if v}
     if good_failures:
         return False,{"status":"SELF_TEST_GOOD_BASELINE_REJECTED","errors":good_failures}
+
     probes=[]
     ex=cases["V201"]; a=valid_answer(ex)
     probes += [
         ("effect_performed",{**a,"effect_performed":True}),
         ("excluded_derived",{**a,"derived_targets":["autenticación"]}),
+        ("wrapped_exclusion",{**a,"derived_targets":["modificar autenticación"]}),
     ]
     b=valid_answer(ex); b["candidate_responsibilities"][0]["selected_subjects"]=["autenticación"]
     probes.append(("excluded_candidate_surface",b))
+
     c=cases["V203"]; a=valid_answer(c)
     bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["responsibility_ref"]="fixture://plausible-but-wrong"
     probes.append(("wrong_responsibility_nonempty_authority",bad))
@@ -286,21 +398,70 @@ def run_self_test(doc: dict) -> tuple[bool,dict]:
     probes.append(("wrong_authority",bad))
     bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["context_evidence_refs"]=[]
     probes.append(("missing_context_attestation",bad))
+    bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["covered_goals"].append("objetivo inexistente")
+    probes.append(("responsibility_claims_extra_goal",bad))
+
     m=cases["V204"]; a=valid_answer(m); bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"]=bad["candidate_responsibilities"][:1]
     probes.append(("multi_goal_missing_responsibility",bad))
-    p=cases["V205"]; a=valid_answer(p); bad=json.loads(json.dumps(a)); bad.pop("partial_progress",None)
+
+    p=cases["V205"]; a=valid_answer(p)
+    bad=json.loads(json.dumps(a)); bad.pop("partial_progress",None)
     probes.append(("progress_plus_question_missing_partial_progress",bad))
     bad=json.loads(json.dumps(a)); bad["next_steps"]=["CLARIFY"]
     probes.append(("question_without_allowed_progress_sequence",bad))
-    f=cases["V211"]; a=valid_answer(f); bad=json.loads(json.dumps(a)); bad["next_steps"]=["DERIVE"]
-    bad["candidate_responsibilities"]=[{"responsibility_ref":"fixture://fake","authority_evidence_ref":"fixture://fake","context_evidence_refs":["fixture://fake"],"covered_goals":["artefacto de riesgo"]}]
+    bad=json.loads(json.dumps(a)); bad.pop("clarification_target_goals",None)
+    probes.append(("clarification_missing_target_goals",bad))
+    bad=json.loads(json.dumps(a)); bad["clarification_target_goals"]=["login"]
+    probes.append(("clarification_wrong_target_goal",bad))
+    bad=json.loads(json.dumps(a)); bad["clarification_question"]="¿Cuál es tu color favorito?"; bad["material_route_discriminator"]="color favorito"
+    probes.append(("clarification_text_unbound",bad))
+    bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"][0]["covered_goals"].append("la otra pantalla")
+    probes.append(("responsibility_claims_unresolved_goal",bad))
+
+    f=cases["V211"]; a=valid_answer(f)
+    bad=json.loads(json.dumps(a)); bad["next_steps"]=["DERIVE"]
+    bad["candidate_responsibilities"]=[{"responsibility_ref":"fixture://fake","authority_evidence_ref":"fixture://fake","context_evidence_refs":["fixture://fake"],"covered_goals":["artefacto de riesgo"],"effect_targets":[],"selected_subjects":[]}]
     probes.append(("future_capability_forced_derive",bad))
+    bad=json.loads(json.dumps(a)); bad["candidate_responsibilities"]=[{"responsibility_ref":"fixture://fake","authority_evidence_ref":"fixture://fake","context_evidence_refs":["fixture://fake"],"covered_goals":["artefacto de riesgo"],"effect_targets":[],"selected_subjects":[]}]
+    probes.append(("discover_with_invented_responsibility",bad))
+
     a=valid_answer(c); bad=json.loads(json.dumps(a)); bad.pop("next_steps"); bad["next_step"]="DERIVE"
     probes.append(("legacy_single_next_step_schema",bad))
+    a=valid_answer(c); bad=json.loads(json.dumps(a)); bad["write_authorized"]=True
+    probes.append(("unknown_write_authorized_claim",bad))
+    a=valid_answer(c); bad=json.loads(json.dumps(a)); bad["router_runtime_pass"]=True
+    probes.append(("unknown_router_runtime_claim",bad))
+    a=valid_answer(c); bad=json.loads(json.dumps(a)); bad["acknowledged_goals"].append("objetivo extra")
+    probes.append(("acknowledged_goal_injection",bad))
+
     failures=[name for name,payload in probes if not check_result(cases[payload["id"]],payload)]
     if failures:
         return False,{"status":"SELF_TEST_FALSE_PASS","probes_not_rejected":failures}
-    return True,{"status":"SELF_TEST_V2_NEGATIVES_PASS","negative_probes":len(probes),"good_cases":len(cases),"shape_only":True}
+
+    bad_doc=json.loads(json.dumps(doc))
+    r20=next(x for x in bad_doc["cases"] if x["id"]=="R20")
+    r20["oracle"]["acceptable_next_steps"].append("DERIVE")
+    r20["oracle"]["acceptable_next_step_sequences"].append(["DERIVE"])
+    r20["responsibility_fixture"]=[{
+        "goal":"__route__",
+        "responsibility_ref":"fixture://bad/r20/responsibility",
+        "authority_evidence_ref":"fixture://bad/r20/authority",
+        "context_evidence_refs":["fixture://bad/r20/context"],
+    }]
+    r20["oracle"]["responsibility_expectations"]=json.loads(json.dumps(r20["responsibility_fixture"]))
+    corpus_errors,_=corpus_check(bad_doc)
+    if not any("UNKNOWN_CAPABILITY_FORCED_READY" in x for x in corpus_errors):
+        return False,{"status":"SELF_TEST_CORPUS_FALSE_PASS","missing":"UNKNOWN_CAPABILITY_FORCED_READY"}
+    if not any("UNRESOLVED_CAPABILITY_HAS_RESPONSIBILITY_FIXTURE" in x for x in corpus_errors):
+        return False,{"status":"SELF_TEST_CORPUS_FALSE_PASS","missing":"UNRESOLVED_CAPABILITY_HAS_RESPONSIBILITY_FIXTURE"}
+
+    return True,{
+        "status":"SELF_TEST_V2_HARDENING_PASS",
+        "negative_probes":len(probes),
+        "good_cases":len(cases),
+        "blockers_covered":["B1","B2","B3","B4","B5"],
+        "shape_only":True,
+    }
 
 def main() -> int:
     ap=argparse.ArgumentParser()
