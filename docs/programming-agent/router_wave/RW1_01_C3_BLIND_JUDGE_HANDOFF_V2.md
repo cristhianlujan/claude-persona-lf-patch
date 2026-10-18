@@ -75,11 +75,15 @@ Entregar también `RW1_01_C3_INDEPENDENT_VERDICT_V2.json` con:
     "holdout_revealed_after_raw1": true,
     "v2_public_good_cases": 42,
     "v2_public_good_cases_accepted": 42,
+    "public_v2_all_42_good_accepted": true,
     "holdout_good_cases": 12,
     "holdout_good_cases_accepted": 12,
+    "holdout_12_good_accepted": true,
     "holdout_bad_cases": 24,
     "holdout_bad_cases_rejected": 24,
+    "holdout_at_least_24_bad_rejected": true,
     "novel_falsifiers_added": 2,
+    "novel_falsifiers_at_least_2": true,
     "material_blockers": 0,
     "no_router_runtime_claim": true,
     "no_production_mutation": true
@@ -88,7 +92,7 @@ Entregar también `RW1_01_C3_INDEPENDENT_VERDICT_V2.json` con:
 }
 ```
 
-Los conteos son mínimos contractuales; si el juez prueba más negativos, conservar el total real en evidencia adicional, pero no bajar los mínimos.
+Los conteos registran el total real observado y los booleanos contractuales acreditan los umbrales mínimos. Si el juez prueba más negativos, conservar el total real y mantener el booleano de umbral en `true` solo cuando corresponda.
 
 ## Cierre
 
