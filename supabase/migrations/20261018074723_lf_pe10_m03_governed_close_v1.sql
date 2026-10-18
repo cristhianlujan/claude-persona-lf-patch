@@ -1259,10 +1259,10 @@ BEGIN
   'LF_MIGRATION_MERGE_TRAIN',v_exec)
  RETURNING id INTO v_event_id;
  INSERT INTO programacion.engineering_plan_units
- (id,plan_code,unit_code,unit_class,lot_code,lot_from,lot_to,title,exit_criterion,
+ (plan_code,unit_code,unit_class,lot_code,lot_from,lot_to,title,exit_criterion,
   plan_event_id,source_event_id,work_item_id,created_by_execution_id,disposition,unit_metadata)
  VALUES
- (nextval('programacion.engineering_plan_units_id_seq'),
+ (
  'PEVO-PE10-METHODS32-P0','METHODS32','METHOD_EVIDENCE',
  'PE10_METHODS32_P0',1,32,'PE10 32 separately researched methods',
  'Each method checkpoint closes only on actual executed method and a governed material assertion receipt; independent variants need not wait for unassessed earlier variants.',
