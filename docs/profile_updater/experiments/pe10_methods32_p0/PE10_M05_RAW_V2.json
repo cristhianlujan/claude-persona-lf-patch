@@ -1,0 +1,434 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M05",
+  "base_code": "A",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "path": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M05.json",
+    "sha256": "8fefae266b4b2279cb8d921dd4b2893ac607993fd38ae70c72d6f3f0bf050685"
+  },
+  "producer": "One integrated SRCR C-method investigation, no other method findings as input",
+  "scope": "READ_ONLY_HISTORICAL_REPLAY_PLUS_EXPLICIT_SYNTHETIC_NEGATIVES",
+  "external_evaluation": "NOT_PERFORMED",
+  "sql_evidence": [
+    {
+      "id": "M05_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' pack,payload->>'sql_caller_count' declared_callers,payload->>'trigger_binding_count' declared_triggers,payload->'scope_guards' scope_guards FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "pack": "SOURCE_PACK_V1",
+          "declared_callers": "38",
+          "declared_triggers": "21",
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q02",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n,count(DISTINCT x->>'dedupe_key') deduplicated FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "deduplicated": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q03",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'external_inventory') x WHERE l.id=20161",
+      "rows": [
+        {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q04",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') valid,count(*) FILTER(WHERE NOT(x->>'definition_md5' ~ '^[a-f0-9]{32}$')) invalid,count(*) FILTER(WHERE (x->>'definition_md5' ~ '^[a-f0-9]{32}$') IS NULL) unknown FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "unknown": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q05",
+      "sql_literal": "WITH samples(v) AS (VALUES ('ACTIVE'::text),('INACTIVE'::text),(NULL::text)) SELECT count(*) total,count(*) FILTER (WHERE v='ACTIVE') t,count(*) FILTER (WHERE NOT(v='ACTIVE')) f,count(*) FILTER (WHERE (v='ACTIVE') IS NULL) n FROM samples",
+      "rows": [
+        {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "EXPLICIT_SYNTHETIC_CONTRACT_NEGATIVES",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q06",
+      "sql_literal": "WITH examples(expected_n,observed_n) AS (VALUES (38,38),(38,37),(38,NULL::int)) SELECT expected_n,observed_n,(expected_n=observed_n) IS TRUE as accepted FROM examples ORDER BY observed_n NULLS LAST",
+      "rows": [
+        {
+          "expected_n": 38,
+          "observed_n": 37,
+          "accepted": false
+        },
+        {
+          "expected_n": 38,
+          "observed_n": 38,
+          "accepted": true
+        },
+        {
+          "expected_n": 38,
+          "observed_n": null,
+          "accepted": false
+        }
+      ],
+      "rows_returned": 3,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "EXPLICIT_SYNTHETIC_CONTRACT_NEGATIVES",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q07",
+      "sql_literal": "SELECT count(*) nominal_edges,count(DISTINCT (x->>'caller')||'->'||callee.name) distinct_edges,count(DISTINCT x->>'dedupe_key') caller_identities,count(DISTINCT callee.name) callee_names FROM public.lf_eventos l CROSS JOIN LATERAL jsonb_array_elements(l.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') callee(name) WHERE l.id=20161",
+      "rows": [
+        {
+          "nominal_edges": 76,
+          "distinct_edges": 76,
+          "caller_identities": 38,
+          "callee_names": 39
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q08",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') triggers,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') relation_snapshots,jsonb_array_length(payload->'external_inventory') external_assets,payload->'usage_stats' stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "triggers": 21,
+          "relation_snapshots": 27,
+          "external_assets": 6,
+          "stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q09",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q10",
+      "sql_literal": "SELECT id,created_at,payload->>'verification_status' verified,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "verified": "VERIFIED",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q11",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') within_cutoff,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') after_cutoff FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "within_cutoff": 1,
+          "after_cutoff": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_ASOF_P0_SNAPSHOT_READBACK",
+      "limitations": "No current runtime invocations inferred"
+    },
+    {
+      "id": "M05_Q12",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "TOOL_EXECUTION_IDENTITY_ONLY",
+      "limitations": "No current runtime invocations inferred"
+    }
+  ],
+  "algorithm_execution": {
+    "C": {
+      "module": "METAMORPHIC_AND_INVARIANT_VERIFICATION",
+      "TLP_populations": {
+        "sql_callers": {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "deduplicated": 38
+        },
+        "external_inventory": {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        },
+        "definition_hashes": {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "unknown": 0
+        },
+        "synthetic_nullable_source": {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      },
+      "source_declared_count": {
+        "declared": "38",
+        "observed": 38,
+        "match": true
+      },
+      "negative_contract_cases": [
+        {
+          "expected_n": 38,
+          "observed_n": 37,
+          "accepted": false
+        },
+        {
+          "expected_n": 38,
+          "observed_n": 38,
+          "accepted": true
+        },
+        {
+          "expected_n": 38,
+          "observed_n": null,
+          "accepted": false
+        }
+      ],
+      "nominal_graph": {
+        "nominal_edges": 76,
+        "distinct_edges": 76,
+        "caller_identities": 38,
+        "callee_names": 39
+      },
+      "valid_and_invalid_cases_count": 2,
+      "null_denominator_rejected": true,
+      "solver": "NOT_USED_NO_QED_OR_VERIEQL_ENGINE_AVAILABLE",
+      "business_rule_proof": "NOT_DERIVED_FROM_TLP_ALONE"
+    },
+    "negative_tests": [
+      {
+        "id": "TLP_CALLERS_TRUE_FALSE_NULL",
+        "pass": true
+      },
+      {
+        "id": "TLP_EXTERNAL_TRUE_FALSE_NULL",
+        "pass": true
+      },
+      {
+        "id": "TLP_HASH_VALID_INVALID_UNKNOWN",
+        "pass": true
+      },
+      {
+        "id": "TLP_SYNTHETIC_NULL_EXERCISED",
+        "pass": true
+      },
+      {
+        "id": "SOURCE_DECLARED_COUNT_CONSISTENT",
+        "pass": true
+      },
+      {
+        "id": "INVARIANT_VALID_CASE_ACCEPTED",
+        "pass": true
+      },
+      {
+        "id": "INVARIANT_WRONG_COUNT_REJECTED",
+        "pass": true
+      },
+      {
+        "id": "INVARIANT_UNKNOWN_DENOMINATOR_REJECTED",
+        "pass": true
+      },
+      {
+        "id": "ASOF_NOT_PROMOTED_TO_CURRENT",
+        "pass": true
+      },
+      {
+        "id": "NO_UNSUPPORTED_SOLVER_ASSERTION",
+        "pass": true
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M05-F01",
+      "claim": "TLP partitions reconcile over the 38 historical SQL callers; no NULL in operational_class comparison. This is a consistency test on the snapshot, not live usage.",
+      "evidence": [
+        "M05_Q01",
+        "M05_Q02"
+      ],
+      "scope": "MEASURED_HISTORICAL"
+    },
+    {
+      "id": "M05-F02",
+      "claim": "Six external inventory entries reconcile across TRUE/FALSE/NULL with explicit lifecycle distinction; do not sum with 38 SQL identities.",
+      "evidence": [
+        "M05_Q03",
+        "M05_Q08"
+      ],
+      "scope": "MEASURED_HISTORICAL"
+    },
+    {
+      "id": "M05-F03",
+      "claim": "All 38 historical hash strings are format valid; method of hash construction is UNKNOWN.",
+      "evidence": [
+        "M05_Q04"
+      ],
+      "scope": "MEASURED_SYNTAX_ONLY"
+    },
+    {
+      "id": "M05-F04",
+      "claim": "Synthetic NULL TLP and valid/invalid count checks reject bad and unknown denominators, proving failure controls exercise negative cases.",
+      "evidence": [
+        "M05_Q05",
+        "M05_Q06"
+      ],
+      "scope": "MEASURED_SYNTHETIC_SQL"
+    },
+    {
+      "id": "M05-F05",
+      "claim": "Historical 76 nominal directed edges to 39 callee names do not prove execution topology, and zero pg_stat rows with track_functions none do not prove no use.",
+      "evidence": [
+        "M05_Q07",
+        "M05_Q08"
+      ],
+      "scope": "MEASURED_WITH_LIMITS"
+    }
+  ],
+  "causal_model": {
+    "status": "NOT_CAUSALLY_PROVEN",
+    "hypotheses": [
+      "Count/TLP drift may cause false inventory completeness",
+      "Mixing distinct domains inflates consumer totals",
+      "Historical hash validity mistaken for canonical hash derivation"
+    ],
+    "falsifiers": [
+      "Qualified joined unique population at one cutoff",
+      "Explicitly reproduced canonical hash generation",
+      "Execution trace evidence for each named edge"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Materialize 3VL and missing-identity partitions in coverage readbacks",
+      "status": "PROPOSED_ONLY"
+    },
+    {
+      "action": "Compare source-pinned edges with actual permitted invocation traces",
+      "status": "PROPOSED_ONLY"
+    }
+  ],
+  "chosen_repair": "VERIFY_FIRST_NO_PRODUCTION_CHANGE",
+  "rejected_alternatives": [
+    "TLP equivalence implies business correctness",
+    "Invalid counts treated as accepted",
+    "UNKNOWN treated as FALSE without explicit rule",
+    "Invent QED/SMT solver run"
+  ],
+  "unresolved": [
+    "Canonical definition_md5 source method",
+    "Runtime call reachability",
+    "E2E timing population and clocks",
+    "Coverage beyond event 20161 source"
+  ],
+  "constraints_preserved": [
+    "P0 source as-of cutoff",
+    "No direct edits",
+    "No runtime activation",
+    "No inference of currentness",
+    "No unsupported SMT claims"
+  ],
+  "conclusion": "C_ALGORITHM_MATERIAL_TESTS_COMPLETE_WITH_UNKNOWN_BUSINESS_CAUSES"
+}
