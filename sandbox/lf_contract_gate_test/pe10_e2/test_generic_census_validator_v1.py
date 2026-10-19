@@ -169,6 +169,20 @@ class TestEvidenceFloor(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "substantive reason"):
             validator.validate_synthesis(self.rows, result)
 
+    def test_null_schema_qualifier_is_explicitly_unknown(self):
+        r = edge("beta.fn_any()", "fn_target", "CURRENT_CONSUMER_OUTSIDE_P0",
+                 context="UNREVIEWED", count=1)
+        r["called_schema"] = None
+        r["static_confirmed"] = False
+        _, rows = validator.canonical_manifest([r])
+        self.assertEqual(rows[0]["key"], "beta.fn_any()|?.fn_target")
+
+    def test_missing_or_null_callee_identity_fails(self):
+        r = edge("beta.fn_any()", "fn_target", "CURRENT_EDGE_NOT_IN_P0")
+        r["called_name"] = None
+        with self.assertRaisesRegex(ValueError, "invalid exact callee"):
+            validator.canonical_manifest([r])
+
     def test_missing_object_remains_unknown(self):
         r = edge("beta.fn_user()", "fn_missing", "CURRENT_EDGE_NOT_IN_P0",
                  context="UNREVIEWED", count=0)
