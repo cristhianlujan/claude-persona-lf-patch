@@ -119,6 +119,7 @@ CLASSIFIED_EXTERNAL_NAMES = {
     "ig_m8_2_per_family_resolver_hook_v1",
     "ig_m8_2_per_family_resolver_facade_v1",
     "ig_m8_6_batch_common_v1",
+    "20261003003000_lf_pilot_srcr_g12_state_authority_v1",
     "20261011040000_lf_d2_facade_request_plan_v1",
     "20261011041000_lf_d2_facade_receipt_readback_v1",
     "20261011042000_lf_d2_source_binding_candidate_v1",
