@@ -131,6 +131,44 @@ class TestEvidenceFloor(unittest.TestCase):
         self.assertEqual(rows[0]["resolution_status"], "AMBIGUOUS_STATIC_CALLEE_IDENTITY")
         self.assertEqual(len(digest), 64)
 
+    def test_reject_fabricated_preserved_edge(self):
+        wrong = self.synthesis()
+        wrong["preserved_edge_keys"].append("fabricated.unknown|?.fn_fiction")
+        with self.assertRaisesRegex(ValueError, "preserved key not tied"):
+            validator.validate_synthesis(self.rows, wrong)
+
+    def test_reject_unresolved_without_explanation(self):
+        wrong = self.synthesis()
+        moved = wrong["preserved_edge_keys"].pop()
+        wrong["explicit_unresolved_keys"] = [moved]
+        with self.assertRaisesRegex(ValueError, "exact reason coverage"):
+            validator.validate_synthesis(self.rows, wrong)
+
+    def test_reject_edge_both_preserved_and_unresolved(self):
+        wrong = self.synthesis()
+        moved = wrong["preserved_edge_keys"][0]
+        wrong["explicit_unresolved_keys"] = [moved]
+        wrong["unresolved_reasons"] = {moved: "Call provenance is not demonstrable"}
+        with self.assertRaisesRegex(ValueError, "both preserved and unresolved"):
+            validator.validate_synthesis(self.rows, wrong)
+
+    def test_unresolved_with_reason_does_not_claim_pass(self):
+        result = self.synthesis()
+        moved = result["preserved_edge_keys"].pop()
+        result["explicit_unresolved_keys"] = [moved]
+        result["unresolved_reasons"] = {moved: "Static token may occur in dynamic SQL"}
+        observed = validator.validate_synthesis(self.rows, result)
+        self.assertEqual(observed["status"], "UNRESOLVED_STATIC_MANIFEST_CONSERVATION")
+        self.assertEqual(observed["unresolved_edges"], 1)
+
+    def test_reject_short_unresolved_reason(self):
+        result = self.synthesis()
+        moved = result["preserved_edge_keys"].pop()
+        result["explicit_unresolved_keys"] = [moved]
+        result["unresolved_reasons"] = {moved: "unknown"}
+        with self.assertRaisesRegex(ValueError, "substantive reason"):
+            validator.validate_synthesis(self.rows, result)
+
     def test_missing_object_remains_unknown(self):
         r = edge("beta.fn_user()", "fn_missing", "CURRENT_EDGE_NOT_IN_P0",
                  context="UNREVIEWED", count=0)
