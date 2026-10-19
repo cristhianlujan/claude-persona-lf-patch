@@ -27,3 +27,14 @@ config=json.loads(Path("sandbox/lf_contract_gate_test/ci_db_target/lf_ci_db_targ
 assert config["credential_sources"]["lf-independent-change-admission"]=="GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_READONLY_PASSWORD"
 assert config["credential_sources"]["ig-runtime-candidate-judge"]=="GITHUB_ACTIONS_SECRET_LF_SUPABASE_DB_PASSWORD"
 print("PASS_F0_N9_NONAPPLICABLE_BEFORE_STALE_AND_PER_CONSUMER_SECRETS")
+
+# Same-PR PASE refresh cancels superseded work; no cross-PR or main cancellation.
+pase = (p / "pase.yml").read_text()
+prefix, sep, _ = pase.partition("\njobs:")
+assert sep, "missing PASE jobs anchor"
+assert pase.count("\nconcurrency:\n") == 1
+assert "  group: lf-pase-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}" in prefix
+assert "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in prefix
+assert "github.ref" not in prefix.split("concurrency:", 1)[-1], "non-PR runs must use a unique run ID"
+assert "  pull_request:\n" in prefix and "  push:\n" in prefix and "  workflow_call:\n" in prefix
+print("PASS_F0_PASE_SUPERSEDED_PR_ONLY")

@@ -1,0 +1,288 @@
+{
+  "schema": "PE10_M25_SYNTHESIS_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M25",
+  "definition_version": "PE10_METHOD_V1",
+  "base_code": "B",
+  "algorithm_codes": [
+    "E"
+  ],
+  "synthesizer_contract": {
+    "inputs": "Only the five separately frozen M25 role RAW files listed in frozen_role_inputs.",
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "shared_context_non_isolation_risk": "The producers and synthesizer were role-bound sequential passes in one coordinated model context. Blob freezing prevents later rewriting but does not create independent-agent isolation.",
+    "cross_method_results_used": false,
+    "voting_used": false,
+    "reconciliation_rule": "Contradictions are resolved by evidence scope, authority and readback limitations, not majority."
+  },
+  "frozen_role_inputs": [
+    {
+      "role_code": "ARCHITECTURE",
+      "blob_sha": "d28c5e4800c403b53c665867c59b8a5c74da7760",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/ARCHITECTURE_RAW_V1.json",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/pe10/m25-b-e-evidence-decision-20261018/docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/ARCHITECTURE_RAW_V1.json"
+    },
+    {
+      "role_code": "PERFORMANCE",
+      "blob_sha": "42e9e4a74415e2ab0916d49828deae4516020ef5",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/PERFORMANCE_RAW_V1.json",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/pe10/m25-b-e-evidence-decision-20261018/docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/PERFORMANCE_RAW_V1.json"
+    },
+    {
+      "role_code": "AUTHORITY",
+      "blob_sha": "7323a2571023ea150207cd23c3618d4e15e6ad48",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/AUTHORITY_RAW_V1.json",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/pe10/m25-b-e-evidence-decision-20261018/docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/AUTHORITY_RAW_V1.json"
+    },
+    {
+      "role_code": "COVERAGE",
+      "blob_sha": "3ccf5f11c8106da549f74b93a8d9e9c9b7671873",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/COVERAGE_RAW_V1.json",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/pe10/m25-b-e-evidence-decision-20261018/docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/COVERAGE_RAW_V1.json"
+    },
+    {
+      "role_code": "INNOVATION",
+      "blob_sha": "d74165e48b6776d7ffe564a8324f684f6e6e317d",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/INNOVATION_RAW_V1.json",
+      "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/blob/pe10/m25-b-e-evidence-decision-20261018/docs/profile_updater/experiments/pe10_methods32_p0/M25_roles/INNOVATION_RAW_V1.json"
+    }
+  ],
+  "role_states": {
+    "ARCHITECTURE": "VERIFY_FIRST",
+    "PERFORMANCE": "NEEDS_MORE_EVIDENCE",
+    "AUTHORITY": "VERIFY_FIRST",
+    "COVERAGE": "VERIFY_FIRST",
+    "INNOVATION": "NO_ACTION_SUPPORTED"
+  },
+  "reconciliation": [
+    {
+      "id": "M25-SYN-RC01",
+      "apparent_conflict": "Innovation selects NO_ACTION_SUPPORTED while Architecture, Authority and Coverage select VERIFY_FIRST.",
+      "resolution": "The scopes differ. Innovation rejects runtime/product repair on P0; the other roles request evidence-only verification of currentness, authority and totality. These are compatible: no runtime action, but verify before any current-state closure.",
+      "preserved_uncertainty": "Current equivalence and material consumer coverage remain unknown."
+    },
+    {
+      "id": "M25-SYN-RC02",
+      "apparent_conflict": "Performance selects NEEDS_MORE_EVIDENCE while the proposed integrated state is VERIFY_FIRST.",
+      "resolution": "VERIFY_FIRST is the procedural next state, not a performance verdict. The performance conclusion remains NEEDS_MORE_EVIDENCE until an intervention boundary, complete clocks and matched workload cohort exist.",
+      "preserved_uncertainty": "No improvement or regression magnitude is inferred from positive-only or unmatched medians."
+    },
+    {
+      "id": "M25-SYN-RC03",
+      "apparent_conflict": "All 38 caller names and 21 trigger names still resolve, yet Architecture reports 22 hash mismatches and six absent lexical edge names.",
+      "resolution": "Name/OID existence tests continuity only; it does not establish canonical body-hash equality, route equivalence or runtime invocation. Historical hash serialization is also unknown.",
+      "preserved_uncertainty": "The six lexical changes may be replacement, dynamic resolution, rename or removal."
+    },
+    {
+      "id": "M25-SYN-RC04",
+      "apparent_conflict": "Receipt 38 is VERIFIED/PASS, while the case still cannot close.",
+      "resolution": "Receipt 38 authoritatively verifies historical SOAK_OBSERVATION_HISTORY_V2 criteria. It does not attest a causal performance improvement, post-cut inventory totality, current route equivalence or material actor independence.",
+      "preserved_uncertainty": "Historical soak adequacy is preserved; current and performance claims remain separate."
+    },
+    {
+      "id": "M25-SYN-RC05",
+      "apparent_conflict": "Curator and Validator identity/component fields differ, but Authority withholds an independence conclusion.",
+      "resolution": "Distinct stored labels/components are supporting evidence, not proof of separate effective principals, inputs, execution paths or non-collusion.",
+      "preserved_uncertainty": "Material independence requires canonical execution provenance."
+    },
+    {
+      "id": "M25-SYN-RC06",
+      "apparent_conflict": "Bounded current complements contain 53 name-pattern objects and 18 lexical candidates outside P0, but Coverage does not call them missing consumers.",
+      "resolution": "These searches identify candidates only. Pattern/lexical occurrence cannot prove runtime materiality or define the total universe; P0 also includes eight names outside the selected pattern.",
+      "preserved_uncertainty": "The authoritative current universe and exclusion rules are not yet attested."
+    }
+  ],
+  "integrated_findings": [
+    {
+      "id": "M25-SYN-F01",
+      "claim": "P0 supports no demonstrated runtime/product defect: historical soak receipt 38 is verified and its negative criteria are zero.",
+      "support": [
+        "M25-ARQ-F04",
+        "M25-COV-F06",
+        "M25-INN-F01"
+      ],
+      "confidence": "HIGH_WITHIN_P0_SCOPE"
+    },
+    {
+      "id": "M25-SYN-F02",
+      "claim": "P0 does not support a causal claim of integral performance improvement or regression.",
+      "support": [
+        "M25-PERF-F01",
+        "M25-PERF-F02",
+        "M25-PERF-F04",
+        "M25-PERF-F05"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M25-SYN-F03",
+      "claim": "Post-cut object/name continuity is strong for the frozen callers/triggers, but present definition/route equivalence and total consumer coverage are not certified.",
+      "support": [
+        "M25-ARQ-F02",
+        "M25-ARQ-F03",
+        "M25-COV-F03",
+        "M25-COV-F04",
+        "M25-COV-F05"
+      ],
+      "confidence": "HIGH_FOR_LIMITED_CLAIM"
+    },
+    {
+      "id": "M25-SYN-F04",
+      "claim": "The read-only boundary is intentional and must not be widened; permission denial is not functional failure.",
+      "support": [
+        "M25-AUT-F01",
+        "M25-AUT-F02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M25-SYN-F05",
+      "claim": "Nominal identity/component separation is observed, but material Curator/Validator independence is not attested.",
+      "support": [
+        "M25-AUT-F04"
+      ],
+      "confidence": "HIGH_FOR_FIELDS_ONLY"
+    },
+    {
+      "id": "M25-SYN-F06",
+      "claim": "Existing manifest/context/cache surfaces argue for reuse-first verification and against creating a new runtime mechanism without a proven gap.",
+      "support": [
+        "M25-INN-F03",
+        "M25-INN-F04",
+        "M25-INN-F05"
+      ],
+      "confidence": "MEDIUM_HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "No runtime repair is supported by P0, but present-state closure is also unsupported. A bounded evidence-only verification can discriminate current topology/coverage/authority risks; performance remains explicitly NEEDS_MORE_EVIDENCE until a matched cohort exists.",
+      "demonstrated_defect": false,
+      "repair_authorized": false,
+      "no_action_scope": "No production, runtime, grant, variant-deletion or optimization action.",
+      "verification_scope": [
+        "Canonical current object/consumer/trigger manifest with documented hash serialization, active-entry mapping, lifecycle and exclusions.",
+        "Canonical authority/ledger linkage and material Curator/Validator independence readback.",
+        "Matched performance comparison with explicit intervention boundary, equivalent workload and complete clocks."
+      ],
+      "evidence": [
+        "ARCHITECTURE:d28c5e4800c403b53c665867c59b8a5c74da7760",
+        "PERFORMANCE:42e9e4a74415e2ab0916d49828deae4516020ef5",
+        "AUTHORITY:7323a2571023ea150207cd23c3618d4e15e6ad48",
+        "COVERAGE:3ccf5f11c8106da549f74b93a8d9e9c9b7671873",
+        "INNOVATION:d74165e48b6776d7ffe564a8324f684f6e6e317d"
+      ],
+      "potential_falsifiers": [
+        "Authoritative current manifest proves body/route/entry equivalence and complete material consumer coverage.",
+        "Canonical provenance proves material independence and valid current verification without privilege widening.",
+        "Matched complete performance evidence establishes or rejects a material change."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A governed verification demonstrates a material active defect with an attributable minimal target.",
+        "to_NO_ACTION_SUPPORTED": "All currentness, coverage, authority and matched-performance unknowns close without a material defect.",
+        "to_NEEDS_MORE_EVIDENCE": "The three verification products cannot be obtained safely or remain underpowered/ambiguous."
+      }
+    }
+  },
+  "causal_model": {
+    "integrated_hypothesis": "The immediate systemic risk is evidence-scope collapse: valid historical soak evidence, static inventory, nominal identities and descriptive timings can be merged into an unsupported claim of current, causal and independent improvement.",
+    "causal_chain": [
+      "valid bounded evidence",
+      "scope/time/authority collapse",
+      "unsupported equivalence or speed claim",
+      "premature closure",
+      "potential hidden consumer, route or independence risk"
+    ],
+    "competing_hypotheses": [
+      "No current defect exists and only certification is missing.",
+      "A current architecture/coverage defect exists outside P0.",
+      "A real performance change exists but available cohorts are incomparable.",
+      "Duplicate/context variants are intentional compatibility surfaces."
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "id": "M25-SYN-A0",
+      "action": "No runtime repair or privilege change.",
+      "risk": "LOW",
+      "authorized": true
+    },
+    {
+      "id": "M25-SYN-A1",
+      "action": "Evidence-only current manifest and authority/independence receipt through existing canonical surfaces.",
+      "risk": "LOW",
+      "authorized_as_plan_only": true
+    },
+    {
+      "id": "M25-SYN-A2",
+      "action": "Evidence-only matched performance design/replay in an authorized non-production context.",
+      "risk": "LOW_TO_MEDIUM",
+      "authorized_as_plan_only": true
+    },
+    {
+      "id": "M25-SYN-A3",
+      "action": "Modify functions, grants, variants or consumers.",
+      "risk": "HIGH",
+      "authorized": false
+    }
+  ],
+  "chosen_repair": {
+    "immediate": "M25-SYN-A0",
+    "next_verification": [
+      "M25-SYN-A1",
+      "M25-SYN-A2"
+    ],
+    "note": "This is a diagnostic decision and not an implemented product repair."
+  },
+  "rejected_alternatives": [
+    {
+      "id": "M25-SYN-A3",
+      "reason": "No material active defect or causal performance target is demonstrated."
+    },
+    {
+      "id": "M25-SYN-X1",
+      "action": "Declare current NO_ACTION solely from receipt 38.",
+      "reason": "Receipt scope is historical soak, not current equivalence or performance causality."
+    },
+    {
+      "id": "M25-SYN-X2",
+      "action": "Treat outside-P0 lexical objects as proven consumers.",
+      "reason": "Static text is not runtime evidence."
+    },
+    {
+      "id": "M25-SYN-X3",
+      "action": "Widen read-only EXECUTE to reproduce currentness.",
+      "reason": "Contradicts validated EKB governance and is unnecessary for evidence planning."
+    }
+  ],
+  "constraints_preserved": [
+    "READ_ONLY investigation",
+    "No production/runtime mutation",
+    "No EXECUTE invocation or grant widening",
+    "P0 facts separated from post-cut observations",
+    "No cross-method result inputs",
+    "Five producer RAWs frozen before synthesis",
+    "No independent-agent claim",
+    "No READY/DONE/PASS product conclusion"
+  ],
+  "unresolved": [
+    "Canonical historical hash serialization",
+    "Current active entry points and route equivalence",
+    "Total material current consumer universe and exclusions",
+    "Canonical authority linkage and material actor independence",
+    "Performance intervention boundary, matched cohort and complete clocks",
+    "Runtime intent of duplicate/context/cache variants"
+  ],
+  "next_safe_step": "Through the existing governed Operation/Migration→Train path, attest this M25 method result only. Do not execute the proposed current-system verifications or any runtime repair as part of M25.",
+  "measured_costs": {
+    "producer_select_attempts": 37,
+    "producer_successful_selects": 35,
+    "producer_query_errors": 2,
+    "producer_files": 5,
+    "production_writes": 0,
+    "tokens": "NO_MEDIDO"
+  },
+  "synthesized_at": "2026-10-18T21:22:58.867Z"
+}

@@ -1,0 +1,744 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M03",
+  "base_code": "A",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_frozen_at_utc": "2026-10-15T00:00:00Z",
+  "source_case": "P0_ORIGINAL.md (original), without post-cutoff method solutions",
+  "method_contract": "PE10_METHOD_V1 DRAFT / SRCR_SINGLE / ATMS M only",
+  "execution_mode_actual": "ONE_GPT_CONTEXT_READ_ONLY_WITH_EXECUTED_ATMS",
+  "scope": "RESEARCH_ONLY_ASOF_HISTORICAL; ADMIN_CURRENTNESS_SEPARATE",
+  "comparison_to_other_methods": "NOT_PERFORMED",
+  "start_observed": "not clock-attested",
+  "end_observed": "2026-10-18T07:23:27.106Z",
+  "time_claim": "Only individual SQL client durations are estimates of tool round trips; not LF runtime benchmark",
+  "investigation_status": "RESEARCH_RAW_COMPLETE_PENDING_GOVERNED_VALIDATION",
+  "checkpoint_status_in_db": "PENDING",
+  "sql_evidence": [
+    {
+      "id": "M03_Q01",
+      "sql_literal": "SELECT current_user AS role, current_setting('transaction_read_only') AS read_only, current_setting('request.jwt.claim.role',true) AS jwt_role",
+      "rows": [
+        {
+          "role": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:21.931Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 570
+    },
+    {
+      "id": "M03_Q02",
+      "sql_literal": "SELECT id,created_at,payload->'source_pack_version' AS source_pack_version,payload->'fetch_spec_version' AS fetch_spec_version,payload->'sql_caller_count' AS declared_sql,payload->'trigger_binding_count' AS declared_triggers,payload->'test_case_count' AS declared_tests,payload->'usage_stats' AS usage_stats,payload->'historical_provenance_only' AS historical_provenance FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack_version": "SOURCE_PACK_V1",
+          "fetch_spec_version": "SOURCE_PACK_LOOKUP_V2",
+          "declared_sql": 38,
+          "declared_triggers": 21,
+          "declared_tests": 77,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          },
+          "historical_provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:22.320Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 385
+    },
+    {
+      "id": "M03_Q03",
+      "sql_literal": "SELECT count(*) AS n,count(DISTINCT x->>'dedupe_key') AS unique_callers,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') AS active,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') AS md5_syntax_valid,count(*) FILTER(WHERE x->>'caller_oid' ~ '^[0-9]+$') AS oids_present,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') AS historically_marked_live FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "n": 38,
+          "unique_callers": 38,
+          "active": 38,
+          "md5_syntax_valid": 38,
+          "oids_present": 38,
+          "historically_marked_live": 38
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:22.792Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 472
+    },
+    {
+      "id": "M03_Q04",
+      "sql_literal": "SELECT count(*) total_edges,count(DISTINCT concat(x->>'caller','->',callee.name)) distinct_edges,count(DISTINCT callee.name) distinct_callees,count(*) FILTER(WHERE callee.name LIKE '%cached%') cached_name_edges,count(DISTINCT callee.name) FILTER(WHERE callee.name LIKE '%cached%') cached_name_targets FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') callee(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "total_edges": 76,
+          "distinct_edges": 76,
+          "distinct_callees": 39,
+          "cached_name_edges": 11,
+          "cached_name_targets": 9
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:23.249Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 457
+    },
+    {
+      "id": "M03_Q05",
+      "sql_literal": "SELECT jsonb_array_length(payload->'edge_current') AS edge_entries,jsonb_array_length(payload->'external_inventory') AS external_entries,jsonb_array_length(payload->'trigger_bindings') AS triggers,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') AS consumer_snapshots,payload->'pg_depend_direct_rows' AS pg_depend_direct_rows,payload->'unexplained_material_callers' AS unexplained_material_callers FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "edge_entries": 4,
+          "external_entries": 6,
+          "triggers": 21,
+          "consumer_snapshots": 27,
+          "pg_depend_direct_rows": 0,
+          "unexplained_material_callers": 0
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:23.777Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 528
+    },
+    {
+      "id": "M03_Q06",
+      "sql_literal": "SELECT x->>'operational_class' AS operational_class,x->>'governance_lifecycle' AS governance_lifecycle,count(*) AS n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161 GROUP BY 1,2 ORDER BY 1,2",
+      "rows": [
+        {
+          "operational_class": "ACTIVE",
+          "governance_lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 2
+        },
+        {
+          "operational_class": "ACTIVE",
+          "governance_lifecycle": "RUNTIME_SANDBOX_CANARY",
+          "n": 1
+        },
+        {
+          "operational_class": "CANDIDATE",
+          "governance_lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        },
+        {
+          "operational_class": "CANDIDATE",
+          "governance_lifecycle": "NO_HABILITADO",
+          "n": 1
+        },
+        {
+          "operational_class": "CANDIDATE_TEST",
+          "governance_lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        }
+      ],
+      "rows_returned": 5,
+      "time_observed_utc": "2026-10-18T07:23:24.234Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 457
+    },
+    {
+      "id": "M03_Q07",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,verification_ref,receipt_sha256,payload->'pass' AS historical_pass,payload->'verification_status' AS status,payload->'screens_total' AS screens,payload->'families_total' AS families,payload->'screens_below_2' AS insufficient_screens,payload->'families_below_2' AS insufficient_families,payload->'known_false_pass_signals' AS false_pass,payload->'unresolved_d4' AS d4 FROM programacion.provenance_receipts WHERE id=38",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verification_ref": "supabase://programacion.input_readiness_runs/SOAK_OBSERVATION_HISTORY_V2/20261007",
+          "receipt_sha256": "17e949addd09caa82add52c0d792e91d0460435d1b6f77ef7910ff76c431c972",
+          "historical_pass": true,
+          "status": "VERIFIED",
+          "screens": 13,
+          "families": 47,
+          "insufficient_screens": 0,
+          "insufficient_families": 0,
+          "false_pass": 0,
+          "d4": 0
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:24.667Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 433
+    },
+    {
+      "id": "M03_Q08",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN ('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez < TIMESTAMPTZ '2026-10-15 00:00:00+00' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "time_observed_utc": "2026-10-18T07:23:25.117Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 450
+    },
+    {
+      "id": "M03_Q09",
+      "sql_literal": "SELECT count(*) AS rows, array_agg(DISTINCT (x::jsonb #>> '{adapter_metadata,input_governance_observed_revision}')) AS observed_revisions FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements_text(e.payload->'router_binding_snapshot_json_rows') x WHERE e.id=20161",
+      "rows": [
+        {
+          "rows": 4,
+          "observed_revisions": [
+            "5.12"
+          ]
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:25.456Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 339
+    },
+    {
+      "id": "M03_Q10",
+      "sql_literal": "SELECT payload->'excluded_name_candidate' AS excluded,payload->'ambiguous_name_candidates_checked' AS ambiguous_checked,payload->'ambiguous_name_candidates_excluded' AS ambiguous_excluded FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "excluded": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "ambiguous_checked": 1,
+          "ambiguous_excluded": 1
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:25.859Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 403
+    },
+    {
+      "id": "M03_Q11",
+      "sql_literal": "SELECT (payload ? 'end_to_end_duration_ms') AS has_e2e_duration_field,(payload ? 'latency_distribution') AS has_latency_distribution,payload->'usage_stats'->>'track_functions' AS track_functions,payload->'usage_stats'->>'ig_stat_rows' AS ig_stat_rows FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "has_e2e_duration_field": false,
+          "has_latency_distribution": false,
+          "track_functions": "none",
+          "ig_stat_rows": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:26.231Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 372
+    },
+    {
+      "id": "M03_Q12",
+      "sql_literal": "SELECT x->>'caller' AS caller, x->'callees' AS callees FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161 AND x->>'caller' IN ('programacion.fn_input_governance_curator_materialize_v1','programacion.fn_input_governance_validator_validate_v1','programacion.fn_input_governance_execute') ORDER BY 1",
+      "rows": [
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "callees": [
+            "fn_input_governance_bootstrap_materialize_v2",
+            "fn_input_governance_curator_rebind_v1",
+            "fn_input_governance_recurate_source_stale_v1",
+            "fn_input_governance_recurate_v2",
+            "fn_input_readiness_run_is_current_cached_v1"
+          ]
+        },
+        {
+          "caller": "programacion.fn_input_governance_execute",
+          "callees": [
+            "fn_input_governance_ekb_checkpoint",
+            "fn_input_governance_worker_spec_known_current_v1",
+            "fn_input_governance_worker_spec_known_no_current_v1",
+            "fn_input_readiness_run_is_current_cached_v1"
+          ]
+        },
+        {
+          "caller": "programacion.fn_input_governance_validator_validate_v1",
+          "callees": [
+            "fn_input_governance_bootstrap_validate_v1",
+            "fn_input_governance_validate_v2",
+            "fn_input_governance_validator_rebind_v1"
+          ]
+        }
+      ],
+      "rows_returned": 3,
+      "time_observed_utc": "2026-10-18T07:23:26.666Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ASOF_HISTORICAL_QUERY_RUN_20261018",
+      "elapsed_client_ms": 435
+    },
+    {
+      "id": "M03_Q13",
+      "sql_literal": "SELECT c.id,c.checkpoint_code,c.status,c.evidence_ref,c.assertion_receipt,c.completed_at FROM programacion.engineering_work_checkpoints c WHERE c.work_item_id=1133 AND c.checkpoint_code='PE10_M03'",
+      "rows": [
+        {
+          "id": 1627,
+          "checkpoint_code": "PE10_M03",
+          "status": "PENDING",
+          "evidence_ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M03.json#sha256=35c677ff8ba29da910a88b4c2f28fa1905a2723bd9608f60d8405f5eb6d7adea",
+          "assertion_receipt": null,
+          "completed_at": null
+        }
+      ],
+      "rows_returned": 1,
+      "time_observed_utc": "2026-10-18T07:23:27.090Z",
+      "source": "Supabase read_only execute_sql",
+      "scope": "ADMIN_LIVE_20261018",
+      "elapsed_client_ms": 424
+    }
+  ],
+  "algorithms_executed": [
+    "ATMS_M: minimal support environments, two alternative risk justifications, invalidation propagation and nogoods"
+  ],
+  "algorithm_non_executed_reasons": [],
+  "ATMS": {
+    "type": "EXECUTED_ASSUMPTION_BASED_TMS",
+    "engine": "deterministic JS in one chat; no external oracles",
+    "evidence_facts": {
+      "E20161": "public.lf_eventos/20161 as-of 2026-10-04",
+      "E38": "programacion.provenance_receipts/38 as-of 2026-10-07",
+      "EKB_SOAK": "EKB drift as-of 2026-10-14",
+      "EKB_CP2": "EKB privilege mismatch as-of 2026-10-14"
+    },
+    "rules": {
+      "HISTORICAL_SNAPSHOT": [
+        [
+          "E20161",
+          "ASOF_SCOPE"
+        ]
+      ],
+      "HISTORICAL_CALLER_INVENTORY": [
+        [
+          "HISTORICAL_SNAPSHOT",
+          "DEDUPE_SCOPE"
+        ]
+      ],
+      "HISTORICAL_SOAK_RECEIPT": [
+        [
+          "E38",
+          "SOAK_ASOF_ONLY"
+        ]
+      ],
+      "SAFE_REUSE_HISTORICAL_SOAK": [
+        [
+          "HISTORICAL_SOAK_RECEIPT",
+          "EKB_SOAK",
+          "ASOF_SCOPE"
+        ]
+      ],
+      "HISTORICAL_PERMISSION_ISSUE": [
+        [
+          "EKB_CP2"
+        ]
+      ],
+      "STATIC_GRAPH_NOT_EXECUTION": [
+        [
+          "E20161",
+          "STATIC_NOT_RUNTIME"
+        ]
+      ],
+      "NO_VALID_TIMING_COHORT": [
+        [
+          "E20161",
+          "NO_TELEMETRY"
+        ]
+      ],
+      "RISK_OF_FALSE_CLOSURE": [
+        [
+          "HISTORICAL_SNAPSHOT",
+          "EKB_SOAK"
+        ],
+        [
+          "HISTORICAL_SNAPSHOT",
+          "EKB_CP2"
+        ]
+      ],
+      "INVALID_PROMOTION_TO_CURRENT": [
+        [
+          "HISTORICAL_SNAPSHOT",
+          "CLAIM_CURRENT_FROM_ASOF"
+        ]
+      ],
+      "INVALID_INFER_NO_USAGE": [
+        [
+          "NO_VALID_TIMING_COHORT",
+          "CLAIM_NO_USAGE_FROM_NO_STATS"
+        ]
+      ]
+    },
+    "nogoods": [
+      [
+        "ASOF_SCOPE",
+        "CLAIM_CURRENT_FROM_ASOF"
+      ],
+      [
+        "STATIC_NOT_RUNTIME",
+        "CLAIM_NO_USAGE_FROM_NO_STATS"
+      ],
+      [
+        "NO_TELEMETRY",
+        "CLAIM_NO_USAGE_FROM_NO_STATS"
+      ]
+    ],
+    "assumptions": [
+      "ASOF_SCOPE",
+      "DEDUPE_SCOPE",
+      "SOAK_ASOF_ONLY",
+      "STATIC_NOT_RUNTIME",
+      "NO_TELEMETRY",
+      "CLAIM_CURRENT_FROM_ASOF",
+      "CLAIM_NO_USAGE_FROM_NO_STATS"
+    ],
+    "labels": {
+      "HISTORICAL_SNAPSHOT": [
+        [
+          "ASOF_SCOPE",
+          "E20161"
+        ]
+      ],
+      "HISTORICAL_CALLER_INVENTORY": [
+        [
+          "ASOF_SCOPE",
+          "DEDUPE_SCOPE",
+          "E20161"
+        ]
+      ],
+      "HISTORICAL_SOAK_RECEIPT": [
+        [
+          "E38",
+          "SOAK_ASOF_ONLY"
+        ]
+      ],
+      "SAFE_REUSE_HISTORICAL_SOAK": [
+        [
+          "ASOF_SCOPE",
+          "E38",
+          "EKB_SOAK",
+          "SOAK_ASOF_ONLY"
+        ]
+      ],
+      "HISTORICAL_PERMISSION_ISSUE": [
+        [
+          "EKB_CP2"
+        ]
+      ],
+      "STATIC_GRAPH_NOT_EXECUTION": [
+        [
+          "E20161",
+          "STATIC_NOT_RUNTIME"
+        ]
+      ],
+      "NO_VALID_TIMING_COHORT": [
+        [
+          "E20161",
+          "NO_TELEMETRY"
+        ]
+      ],
+      "RISK_OF_FALSE_CLOSURE": [
+        [
+          "ASOF_SCOPE",
+          "E20161",
+          "EKB_CP2"
+        ],
+        [
+          "ASOF_SCOPE",
+          "E20161",
+          "EKB_SOAK"
+        ]
+      ],
+      "INVALID_PROMOTION_TO_CURRENT": [],
+      "INVALID_INFER_NO_USAGE": []
+    },
+    "counterfactual_runs": [
+      {
+        "scenario": "REMOVE_E38",
+        "removed": [
+          "E38"
+        ],
+        "claim": "HISTORICAL_SOAK_RECEIPT",
+        "supported": false,
+        "expected_supported": false
+      },
+      {
+        "scenario": "REMOVE_E20161",
+        "removed": [
+          "E20161"
+        ],
+        "claim": "HISTORICAL_SNAPSHOT",
+        "supported": false,
+        "expected_supported": false
+      },
+      {
+        "scenario": "REMOVE_EKB_SOAK",
+        "removed": [
+          "EKB_SOAK"
+        ],
+        "claim": "RISK_OF_FALSE_CLOSURE",
+        "supported": true,
+        "expected_supported": true
+      },
+      {
+        "scenario": "FORBID_CURRENT_FROM_ASOF",
+        "claim": "INVALID_PROMOTION_TO_CURRENT",
+        "supported": false,
+        "expected_supported": false
+      },
+      {
+        "scenario": "FORBID_USAGE_FROM_NO_STATS",
+        "claim": "INVALID_INFER_NO_USAGE",
+        "supported": false,
+        "expected_supported": false
+      }
+    ],
+    "negative_checks_passed": true
+  },
+  "findings": [
+    {
+      "id": "M03_F01",
+      "claim": "Evento histórico 20161 registra 38 callers SQL, 38 identidades deduplicadas, 76 aristas literales (76 pares distintos) y 39 labels de destino; son referencias de snapshot, no llamadas medidas.",
+      "evidence_refs": [
+        "M03_Q02",
+        "M03_Q03",
+        "M03_Q04"
+      ],
+      "confidence": "MEASURED_HISTORICAL_ONLY",
+      "impact": "Distinguir inventario léxico vs runtime",
+      "new_vs_input": "Reconcilia aristas duplicadas y número de destinos sin asumir ejecución"
+    },
+    {
+      "id": "M03_F02",
+      "claim": "38/38 hashes cumplen formato MD5; NO se ha demostrado canonicalización/hash de código ni vigencia actual.",
+      "evidence_refs": [
+        "M03_Q03"
+      ],
+      "confidence": "MEASURED_FORMAT_ONLY",
+      "impact": "Los hashes formales no certifican integridad histórica del método hash",
+      "new_vs_input": "Separación explícita de validez sintáctica y autoría/verificación"
+    },
+    {
+      "id": "M03_F03",
+      "claim": "Inventario etiquetado LIVE_PG_PROC al 2026-10-04: 38/38; recibo SOAK VERIFIED al 2026-10-07 pero sujeto a M9.11, no a rendimiento ni a CHECKPOINT M03.",
+      "evidence_refs": [
+        "M03_Q03",
+        "M03_Q07"
+      ],
+      "confidence": "MEASURED_SCOPED",
+      "impact": "Evita transferir currentness de otra fecha o contrato",
+      "new_vs_input": "ATMS separa justificación histórica y vigencia operacional"
+    },
+    {
+      "id": "M03_F04",
+      "claim": "En evento 20161: 21 trigger bindings, 4 Edge snapshots, 6 externos y 27 relaciones de consumo en snapshot; estos conjuntos no son sumables por posible solape/identidades diferentes.",
+      "evidence_refs": [
+        "M03_Q05",
+        "M03_Q06"
+      ],
+      "confidence": "MEASURED_HISTORICAL_WITH_SCOPE_LIMIT",
+      "impact": "Cobertura total no puede deducirse por suma de poblaciones",
+      "new_vs_input": "Medición de clases y relación de solapamiento no demostrada"
+    },
+    {
+      "id": "M03_F05",
+      "claim": "track_functions=none; ig_stat_rows=0. Ninguna métrica E2E/latency_distribution en este evento; ausencia no prueba rendimiento ni inactividad.",
+      "evidence_refs": [
+        "M03_Q02",
+        "M03_Q11"
+      ],
+      "confidence": "MEASURED_ABSENCE_IN_EVENT_ONLY",
+      "impact": "Mejoras de tiempo no inferibles del snapshot",
+      "new_vs_input": "Negativo lógico ATMS contra inferencia de cero uso"
+    },
+    {
+      "id": "M03_F06",
+      "claim": "El snapshot Router contiene observación antigua de readiness 5.12 (en 4 filas) frente a nota interna de 5.13; no equivale a drift actual confirmado ni permite cambiar contratos.",
+      "evidence_refs": [
+        "M03_Q02",
+        "M03_Q09"
+      ],
+      "confidence": "MEASURED_DOCUMENTED_HISTORICAL_NOTE",
+      "impact": "El mantenimiento de evidencia as-of exige anclar versión",
+      "new_vs_input": "Invalidador de promoción de snapshot a CURRENT"
+    },
+    {
+      "id": "M03_F07",
+      "claim": "El recibo 38 valida criterios soak históricos 13 pantallas, 47 familias, 0 observaciones insuficientes, 0 false PASS signals y 0 D4, pero no tasa o tiempo de flujo completo.",
+      "evidence_refs": [
+        "M03_Q07"
+      ],
+      "confidence": "MEASURED_RECEIPT_CONTENT",
+      "impact": "Prueba independiente para SOAK, no para performance/consumers",
+      "new_vs_input": "ATMS propaga retirada del recibo a justificación"
+    },
+    {
+      "id": "M03_F08",
+      "claim": "EKB históricos distinguen falta de permiso de CP2 de una conclusión sobre la política vigente y prohíben elevar EXECUTE como ensayo; invocación no ejecutada.",
+      "evidence_refs": [
+        "M03_Q08"
+      ],
+      "confidence": "MEASURED_HISTORICAL_EKB",
+      "impact": "Evita falsos READY y escalar permisos innecesariamente",
+      "new_vs_input": "Soportes ATMS alternativos para riesgo de cierre prematuro"
+    },
+    {
+      "id": "M03_F09",
+      "claim": "La búsqueda nominal de otro caller Edge fue excluida con clasificación NOT_IG_CALLER por objetivo de invocación distinto; el nombre no aporta evidencia de uso.",
+      "evidence_refs": [
+        "M03_Q10"
+      ],
+      "confidence": "MEASURED_HISTORICAL_DECLARATION",
+      "impact": "Contraprueba contra falso positivo de cobertura",
+      "new_vs_input": "Negativo explícito de candidato excluido"
+    }
+  ],
+  "causal_model": {
+    "causality_proven": false,
+    "hypotheses": [
+      {
+        "id": "H1",
+        "claim": "Confundir vigencia histórica con CURRENT puede inflar cobertura y producir cierres prematuros",
+        "support": [
+          "M03_F03",
+          "M03_F06",
+          "M03_F08"
+        ],
+        "falsifier": "Readback versionado y temporal del grafo ejecutor dentro de un mismo corte y mecanismo"
+      },
+      {
+        "id": "H2",
+        "claim": "Inventario léxico de funciones no certifica uso ni impacto temporal",
+        "support": [
+          "M03_F01",
+          "M03_F05"
+        ],
+        "falsifier": "Trazas runtime instrumentadas con fuente/callee/timestamp y cohortes comparables"
+      },
+      {
+        "id": "H3",
+        "claim": "La falta de permiso de CP2 podría explicarse por capacidad de lectura mal descrita y no por ausencia de historial SOAK",
+        "support": [
+          "M03_F07",
+          "M03_F08"
+        ],
+        "falsifier": "Permisos y recibos vigentes de rol ejecutor autorizado a la fecha objetivo"
+      }
+    ],
+    "atms_dependency_supports": [
+      [
+        "ASOF_SCOPE",
+        "E20161",
+        "EKB_CP2"
+      ],
+      [
+        "ASOF_SCOPE",
+        "E20161",
+        "EKB_SOAK"
+      ]
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "id": "R1",
+      "action": "Comparar as-of vs current mediante export o readback versionado con identidades deduplicadas, sin activar funciones",
+      "pros": "Distingue drift real de dato antiguo",
+      "risk": "Ninguno sobre producción al ser SELECT",
+      "prerequisites": "Autorización sólo lectura y semántica canónica de hash/URI"
+    },
+    {
+      "id": "R2",
+      "action": "Obtener cohortes de duración E2E por etapa y causa de espera de observaciones existentes",
+      "pros": "Permite medir tiempo integral",
+      "risk": "Datos históricos pueden no ser representativos",
+      "prerequisites": "Timestamps de fuente equiparable y cohortes representativas"
+    },
+    {
+      "id": "R3",
+      "action": "Reutilizar recibo SOAK 38 sólo para historial M9.11, sin deducir CP2 currentness",
+      "pros": "Evita readbacks duplicados y falso bloqueo",
+      "risk": "No prueba currentness actual",
+      "prerequisites": "Contrato de CP2 admite heredado"
+    }
+  ],
+  "chosen_repair": {
+    "id": "R1",
+    "reason": "La primera decisión segura es separar identidad/version as-of del estado actual; no hay evidencia para modificar runtime ni hacer de SOAK una prueba de mejora"
+  },
+  "rejected_alternatives": [
+    "Elevar EXECUTE para poder obtener un PASS de CP2",
+    "Eliminar variantes cached por coincidencia de nombre",
+    "Usar 0 filas pg_stat como 0 uso o tiempo menor",
+    "Añadir 38+21+4+6 como total de consumidores únicos",
+    "Comparar main 2026-10-18 como si fuera fuente 2026-10-15"
+  ],
+  "omissions_searched": [
+    "integridad de identidades SQL y formato hash",
+    "grafo nominal de llamadas, deduplicación y candidate_exclusion",
+    "Edge/triggers/inventario externo y solapes",
+    "router snapshot revision vs 5.13 de nota",
+    "recibo SOAK, origen histórico, EKB CP2 y permisos",
+    "estadísticas y evidencia temporal ausente",
+    "ATMS nogoods, justificaciones y contrafactuales"
+  ],
+  "negative_falsifiers": [
+    "Retirar evidencia 38 invalida justificación de SOAK",
+    "Retirar evento 20161 invalida inventario de origen",
+    "Retirar un EKB mantiene soporte alternativo para riesgo hipotético",
+    "No permitir promocionar as-of a CURRENT sin observación independiente",
+    "No inferir falta de uso de cero estadísticas"
+  ],
+  "constraints_preserved": [
+    "P0 2026-10-15 UTC",
+    "historia sólo con fuentes anteriores al corte",
+    "no writes en investigador",
+    "algoritmo M únicamente",
+    "no comparativa de métodos ni uso de M01/M02",
+    "sin benchmark inventado",
+    "sin uso de datos posteriores al corte como hallazgos del caso"
+  ],
+  "unresolved": [
+    "Duración E2E comparable no presente en fuente",
+    "Hash canónico del método de captura no atestado",
+    "No se probaron rutas runtime dinámicas; aristas son menciones",
+    "Readback CURRENT no forma parte de P0 y requeriría replay declarado",
+    "Cobertura completa del universo trans-modular no demostrada",
+    "Recibo gobernado del checkpoint administrativo M03 no existe"
+  ],
+  "next_safe_step": "Congelar RAW V2 y validar con su contrato; registrar fuente por Train. Para prueba de CURRENT ejecutar lote separado REPLAY_ASOF_NOT_ATTESTED, no convertirlo en hallazgo P0.",
+  "research_conclusion": "DIAGNOSTIC_COMPLETE_WITH_MATERIAL_UNKNOWNS; NO_PRODUCT_CHANGE",
+  "admin_receipt_state": "PENDING_BY_SEQUENCING_AND_MISSING_OPERATION"
+}

@@ -198,13 +198,45 @@ def self_test() -> None:
             pass
         else:
             raise AssertionError(f"transaction escape accepted:{bad_sql}")
+    import ig_m107_g2b_two_session_v1 as g2b
+    g2b.self_test()
     print("IG_RUNTIME_CANDIDATE_JUDGE_REQUEST_SELFTEST_PASS")
+
+
+def _run_strict_g2b_request(request: dict[str, Any], head_sha: str) -> int:
+    """Separate, fixed-operation G2B transport; no candidate SQL or PR code."""
+    import ig_m107_g2b_two_session_v1 as probe
+
+    required = {
+        "schema_version": "LF_IG_G2B_TWO_SESSION_REQUEST_V1",
+        "scope": "FIXTURE_ONLY",
+        "fixture_table": "programacion.input_g2b_source_fixture_v1",
+        "case_id": "IG_M107_G2B_TWO_BACKENDS_001",
+    }
+    if request != required:
+        raise RequestError("G2B_REQUEST_NOT_EXACT_GOVERNED_CASE")
+    probe.self_test()
+    conn_factory = judge._connect  # Existing trusted, protected-environment target.
+    receipt = probe.run(conn_factory)
+    payload = {
+        "schema_version": "LF_IG_G2B_TWO_SESSION_TRANSPORT_RECEIPT_V1",
+        "request_head_sha": head_sha,
+        "test_receipt": receipt,
+        "case_pass": receipt["test_result"] == "PASS_FIXTURE_ONLY"
+                     and receipt["all_checks_passed"],
+        "production_authorized": False,
+        "runtime_activation_authorized": False,
+    }
+    print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    return 0 if payload["case_pass"] else 2
 
 
 def run_request(path: pathlib.Path, head_sha: str) -> int:
     if not SHA40_RE.fullmatch(head_sha):
         raise RequestError("HEAD_SHA_INVALID")
     request = json.loads(path.read_text(encoding="utf-8"))
+    if request.get("schema_version") == "LF_IG_G2B_TWO_SESSION_REQUEST_V1":
+        return _run_strict_g2b_request(request, head_sha)
     if request.get("schema_version") != REQUEST_SCHEMA:
         raise RequestError("REQUEST_SCHEMA_INVALID")
     cases = request.get("cases")

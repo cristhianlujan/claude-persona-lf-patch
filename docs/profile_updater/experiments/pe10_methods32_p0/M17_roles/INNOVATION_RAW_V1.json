@@ -1,0 +1,236 @@
+{
+  "schema": "PE10_M17_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M17",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "inputs": [
+    "Frozen P0 source",
+    "PE10_METHOD_V1 INNOVATION contract",
+    "read-only source identities"
+  ],
+  "sql_evidence": [
+    {
+      "id": "M17_INNOV_Q1",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->>'test_case_count' test_cases,payload->>'trigger_binding_count' triggers,payload->>'acceptance_declared' acceptance_declared,payload->'scope_guards' scope_guards FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "test_cases": "77",
+          "triggers": "21",
+          "acceptance_declared": "false",
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    },
+    {
+      "id": "M17_INNOV_Q2",
+      "sql_literal": "SELECT count(*) inventory_count,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') source_labeled_live,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[0-9a-f]{32}$') format_valid FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "inventory_count": 38,
+          "source_labeled_live": 38,
+          "format_valid": 38
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    },
+    {
+      "id": "M17_INNOV_Q3",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload->>'screens_total' screens,payload->>'families_total' families FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "screens": "13",
+          "families": "47"
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    },
+    {
+      "id": "M17_INNOV_Q4",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY primera_vez",
+      "rows": [
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11."
+        },
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados."
+        }
+      ],
+      "rows_returned": 2,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    },
+    {
+      "id": "M17_INNOV_Q5",
+      "sql_literal": "WITH t AS(SELECT (SELECT created_at FROM public.lf_eventos WHERE id=20161) inventory_time,(SELECT created_at FROM programacion.provenance_receipts WHERE id=38) soak_time,(SELECT max(primera_vez) FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001')) ekb_last_time) SELECT inventory_time,soak_time,ekb_last_time, inventory_time < soak_time source_before_receipt, soak_time < ekb_last_time receipt_before_ekb, ekb_last_time<TIMESTAMPTZ '2026-10-15T00:00:00Z' all_pre_cutoff FROM t",
+      "rows": [
+        {
+          "inventory_time": "2026-10-04 05:14:40.880842+00",
+          "soak_time": "2026-10-07 16:01:00.760627+00",
+          "ekb_last_time": "2026-10-14 23:44:24.874586+00",
+          "source_before_receipt": true,
+          "receipt_before_ekb": true,
+          "all_pre_cutoff": true
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    },
+    {
+      "id": "M17_INNOV_Q6",
+      "sql_literal": "SELECT payload->'usage_stats' usage_stats,payload->'deduplication' dedup,payload->'excluded_name_candidate' excluded,payload->'historical_provenance_only' provenance FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          },
+          "dedup": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "P0_HISTORICAL_SOURCES_RETRIEVED_READONLY"
+    }
+  ],
+  "findings": [
+    {
+      "id": "INNOV_F1",
+      "claim": "The P0 packet joins three pre-cutoff evidence times: caller inventory earlier than verified SOAK receipt, which precedes last EKB finding. Same P0 cutoff does not mean same observation timestamp.",
+      "evidence": [
+        "M17_INNOV_Q1",
+        "M17_INNOV_Q3",
+        "M17_INNOV_Q4",
+        "M17_INNOV_Q5"
+      ],
+      "classification": "MEASURED_TEMPORAL_ORDER"
+    },
+    {
+      "id": "INNOV_F2",
+      "claim": "The 38 labels LIVE_PG_PROC are historical labels at source-event time, not current qualified observations; this naming can create false confidence in live topology",
+      "evidence": [
+        "M17_INNOV_Q1",
+        "M17_INNOV_Q2"
+      ],
+      "classification": "MEASURED_LABEL_RISK"
+    },
+    {
+      "id": "INNOV_F3",
+      "claim": "Source-pack acceptance_declared false, runtime_activation false and no production change. No basis to infer a completed operational remediation.",
+      "evidence": [
+        "M17_INNOV_Q1"
+      ],
+      "classification": "MEASURED_GUARD"
+    },
+    {
+      "id": "INNOV_F4",
+      "claim": "Existing verified receipt and missing perf telemetry can coexist; neither disproves the other, so a single status field would erase distinctions",
+      "evidence": [
+        "M17_INNOV_Q3",
+        "M17_INNOV_Q6"
+      ],
+      "classification": "MEASURED_ALTERNATIVE_EXPLANATION"
+    }
+  ],
+  "causal_hypotheses": [
+    {
+      "hypothesis": "Status confusion caused by joining historical event, later SOAK receipt and still later EKB warning into one undifferentiated CURRENT flag",
+      "status": "HYPOTHESIS",
+      "falsifier": "Materialize source/time/role identity for every claim and test claim reversal when one source is withdrawn"
+    },
+    {
+      "hypothesis": "Cost pressure from repeated independent SQL reads across roles, despite overlapping source event",
+      "status": "HYPOTHESIS_UNMEASURED",
+      "falsifier": "Instrument transport/execution per query and compare source-once memoized variables to independent live reads, keeping different freshness needs isolated"
+    },
+    {
+      "hypothesis": "No product defect in tested path; only evidence currentness/read privilege mismatch",
+      "status": "OPEN_ALTERNATIVE",
+      "falsifier": "Authorized same-time functional CP2 trace vs permission code"
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "INNOV_TRI_TEMPORAL_ORDER",
+      "pass": true
+    },
+    {
+      "id": "INNOV_SOURCE_LABEL_NOT_NOW",
+      "pass": true
+    },
+    {
+      "id": "INNOV_NO_PREDETERMINED_ACCEPTANCE",
+      "pass": true
+    },
+    {
+      "id": "INNOV_P0_NO_RUNTIME_ACTIVATION",
+      "pass": true
+    },
+    {
+      "id": "INNOV_RECEIPT_VERIFIED_NOT_PERF",
+      "pass": true
+    }
+  ],
+  "contradictions": [],
+  "unresolved": [
+    "No observed E2E performance gain",
+    "Cannot prove no defect or a causal defect",
+    "No source-complete same-time topology"
+  ],
+  "measured_costs": {
+    "queries_executed": 6,
+    "returned_rows": 7,
+    "db_runtime_ms": "UNKNOWN"
+  },
+  "novel_safe_design": {
+    "idea": "Version-stamped read-once evidence graph, with per-claim source timestamp and invalidation, not forced CURRENT flags",
+    "status": "PROPOSAL_NOT_IMPLEMENTED",
+    "risk": "Cross-time reuse without qualification would worsen currentness",
+    "test": "Discriminating allowed reads under same temporal/evidence contracts"
+  },
+  "next_safe_step": "Verify each P0 claim's temporal provenance and allow null/unknown before any repair; measure read-once transport objectively",
+  "external_quality_score": "NOT_PERFORMED"
+}

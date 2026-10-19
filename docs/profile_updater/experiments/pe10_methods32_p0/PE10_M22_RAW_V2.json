@@ -1,0 +1,243 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M22",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M22.json",
+    "sha256": "bbb21bd84ec17a11326d6555e4b1536936ac159493cf1750916fb5365f3a3ad8"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "git_blob_sha": "270fec1d5b00b261dd10ca32c9b71ce428df6d65",
+      "query_count": 2,
+      "negative_count": 2,
+      "gde_conflict_sets": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "git_blob_sha": "b9d5c95432d830c1226a07d6f39d40f77d991a3e",
+      "query_count": 2,
+      "negative_count": 2,
+      "gde_conflict_sets": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "git_blob_sha": "551663b884fc13bb1965f7676ef1c02694175324",
+      "query_count": 2,
+      "negative_count": 2,
+      "gde_conflict_sets": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "git_blob_sha": "a4336a35d52ed6bb1ec766f9f744bff5518fa3dc",
+      "query_count": 2,
+      "negative_count": 2,
+      "gde_conflict_sets": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "git_blob_sha": "26bfdc0d7447e64ebe956ad7bd0c53cff9a008ef",
+      "query_count": 2,
+      "negative_count": 2,
+      "gde_conflict_sets": 2,
+      "invariant_count": 2,
+      "role_output_frozen": true
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M22_SYNTHESIS_V1.json",
+    "source_commit": "7d6da71f1b3ab7a2f045d130130801ed034e7ae9",
+    "git_blob_sha": "113f091e7a531d4aa0d18a4f22e230b7e6c05fe1"
+  },
+  "synthesis": {
+    "schema": "PE10_M22_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M22",
+    "base_code": "B",
+    "algorithm_codes": [
+      "D",
+      "C"
+    ],
+    "source_cutoff": "2026-10-15T00:00:00Z",
+    "role_code": "SYNTHESIZER",
+    "role_bound_single_context": true,
+    "autonomous_agent_claim": false,
+    "source_pieces_frozen_before_synthesis": true,
+    "no_new_sql_in_synthesis": true,
+    "synthesis_inputs": [
+      {
+        "role": "ARCHITECTURE",
+        "git_blob_sha": "270fec1d5b00b261dd10ca32c9b71ce428df6d65",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "conflict_sets": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      },
+      {
+        "role": "PERFORMANCE",
+        "git_blob_sha": "b9d5c95432d830c1226a07d6f39d40f77d991a3e",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "conflict_sets": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      },
+      {
+        "role": "AUTHORITY",
+        "git_blob_sha": "551663b884fc13bb1965f7676ef1c02694175324",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "conflict_sets": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      },
+      {
+        "role": "COVERAGE",
+        "git_blob_sha": "a4336a35d52ed6bb1ec766f9f744bff5518fa3dc",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "conflict_sets": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      },
+      {
+        "role": "INNOVATION",
+        "git_blob_sha": "26bfdc0d7447e64ebe956ad7bd0c53cff9a008ef",
+        "readbacks": 2,
+        "negative_tests": 2,
+        "conflict_sets": 2,
+        "invariants": 2,
+        "role_output_frozen": true
+      }
+    ],
+    "readbacks_total": 10,
+    "negative_tests_total": 10,
+    "gde_conflict_sets_total": 10,
+    "invariants_total": 10,
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "roles_not_calibrated": 5
+    },
+    "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+    "solver_used": false,
+    "findings": [
+      {
+        "id": "M22_SYN_F1",
+        "classification": "MEASURED",
+        "finding": "Comparator invariant reconciles 38=16 TRUE+22 FALSE+0 absent; GDE keeps hash-recipe and snapshot-freshness alternatives open."
+      },
+      {
+        "id": "M22_SYN_F2",
+        "classification": "MEASURED",
+        "finding": "Duration partitions reconcile only with NULL/zero/positive separated; function stats are unavailable under track_functions=none."
+      },
+      {
+        "id": "M22_SYN_F3",
+        "classification": "MEASURED",
+        "finding": "Authority evidence separates EXECUTE denial from SELECT access; 42501 cannot be promoted to functional failure."
+      },
+      {
+        "id": "M22_SYN_F4",
+        "classification": "MEASURED",
+        "finding": "Historical callers are unique and hashes present, while 6/39 callee names are currently ambiguous and break name-only identity uniqueness."
+      },
+      {
+        "id": "M22_SYN_F5",
+        "classification": "MEASURED_CANDIDATE_ONLY",
+        "finding": "95 pattern objects partition 31 historical/64 complement; 23 path-shaped complements are priority candidates, not proven callers."
+      }
+    ],
+    "metamorphic_tests": [
+      {
+        "id": "DC_META1",
+        "transform": "repartition comparator",
+        "observed": "38=16+22+0",
+        "status": "PASS"
+      },
+      {
+        "id": "DC_META2",
+        "transform": "separate duration null/zero/positive",
+        "observed": "status totals reconcile",
+        "status": "PASS"
+      },
+      {
+        "id": "DC_META3",
+        "transform": "deny EXECUTE retain SELECT",
+        "observed": "evidence path remains",
+        "status": "PASS"
+      },
+      {
+        "id": "DC_META4",
+        "transform": "name-only callee resolution",
+        "observed": "6 ambiguities surface",
+        "status": "PASS"
+      },
+      {
+        "id": "DC_META5",
+        "transform": "current-pattern membership partition",
+        "observed": "95=31+64",
+        "status": "PASS"
+      }
+    ],
+    "decision": {
+      "state": "VERIFY_FIRST",
+      "implemented_repair": false,
+      "reason": "D identifies alternatives and next discriminators; C validates boundaries/counterexamples but no single causal domain defect is proven."
+    },
+    "unresolved": [
+      "canonical historical hash method",
+      "runtime materiality of changed definitions",
+      "zero-duration semantics",
+      "six qualified callee identities",
+      "actual caller role of path-shaped candidates"
+    ],
+    "constraints_preserved": [
+      "READ_ONLY",
+      "no production repair",
+      "P0/current separation",
+      "five reports frozen before synthesis",
+      "no cross-method inputs",
+      "no autonomous-agent claim"
+    ],
+    "non_isolation_risk": "Five role-bound passes ran sequentially in one shared model context; artifacts froze before synthesis, but autonomous cognitive independence is not claimed.",
+    "final_method_status": "B_D_C_FIVE_ROLE_REPORTS_SYNTHESIZED_MATERIAL_ONLY_NOT_YET_GOVERNED_DONE"
+  },
+  "source_queries_total": 10,
+  "negative_tests_total": 10,
+  "gde_conflict_sets_total": 10,
+  "invariants_total": 10,
+  "metamorphic_tests_total": 5,
+  "barinel_calibrated": false,
+  "information_gain_mode": "ORDINAL_DISCRIMINATION_COST",
+  "solver_used": false,
+  "final_method_state": "B_D_C_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false
+  }
+}

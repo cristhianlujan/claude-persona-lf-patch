@@ -1,0 +1,337 @@
+{
+  "schema": "PE10_M27_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M27",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M27-PERF-F01",
+      "claim": "Among 255 pre-cut input_readiness_runs, curator duration is null/zero/positive in 7/75/173 rows and validator duration in 22/99/134.",
+      "evidence_refs": [
+        "M27_PERF_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-PERF-F02",
+      "claim": "Positive-only pre-cut medians/p90 are curator 28,148/115,850.6 ms and validator 78,758.5/257,428.6 ms; zero/null semantics are not established.",
+      "evidence_refs": [
+        "M27_PERF_Q02"
+      ],
+      "confidence": "HIGH_FOR_DESCRIPTION"
+    },
+    {
+      "id": "M27-PERF-F03",
+      "claim": "The first three planned queries exposed schema mismatches; discovery identified the actual tables/columns instead of treating query errors as product failures.",
+      "evidence_refs": [
+        "M27_PERF_Q03_ERR",
+        "M27_PERF_Q04_ERR",
+        "M27_PERF_Q05_ERR",
+        "M27_PERF_DISC_Q01",
+        "M27_PERF_DISC_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-PERF-F04",
+      "claim": "Six pre-cut direct requests map to five distinct runs; none are unfinished and no finished_at precedes requested_at.",
+      "evidence_refs": [
+        "M27_PERF_Q04B"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-PERF-F05",
+      "claim": "There are 62 same-screen+same-source-snapshot run pairs with non-null curator/validator durations, but this is not yet a controlled matched intervention comparison.",
+      "evidence_refs": [
+        "M27_PERF_Q05B"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-PERF-F06",
+      "claim": "Across 493 pre-cut validator chunks, component sums exceed duration_ms in 385 rows, so stage fields cannot safely be treated as additive without semantic documentation.",
+      "evidence_refs": [
+        "M27_PERF_Q06"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "PERF-A1",
+          "text": "Null and zero durations have unknown semantics unless a revision contract defines them."
+        },
+        {
+          "id": "PERF-A2",
+          "text": "Same pantalla_id+source_snapshot_sha256 reduces but does not eliminate workload/intervention confounding."
+        },
+        {
+          "id": "PERF-A3",
+          "text": "Chunk component timings may overlap or nest; arithmetic additivity is not assumed."
+        },
+        {
+          "id": "PERF-A4",
+          "text": "Schema/query errors reflect investigator query mismatch unless product behavior is independently implicated."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Descriptive timing distribution exists",
+          "support": [
+            "M27_PERF_Q01",
+            "M27_PERF_Q02"
+          ],
+          "assumptions": [
+            "PERF-A1"
+          ]
+        },
+        {
+          "claim": "Direct request/run mapping is many-to-one in at least one case",
+          "support": [
+            "M27_PERF_Q04B"
+          ],
+          "assumptions": []
+        },
+        {
+          "claim": "Candidate matched pairs exist but causal equivalence is unproven",
+          "support": [
+            "M27_PERF_Q05B"
+          ],
+          "assumptions": [
+            "PERF-A2"
+          ]
+        },
+        {
+          "claim": "Chunk timing components are non-additive under naive summation",
+          "support": [
+            "M27_PERF_Q06"
+          ],
+          "assumptions": [
+            "PERF-A3"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "PERF-NG1",
+          "invalidates_if": "Zeros are semantically valid completed zero-cost stages.",
+          "invalidates_claims": [
+            "Any inference that zero durations indicate missing telemetry or defect"
+          ]
+        },
+        {
+          "id": "PERF-NG2",
+          "invalidates_if": "Same snapshot pairs differ materially in family_count, revision, route or cache reuse.",
+          "invalidates_claims": [
+            "Any causal before/after comparison based only on the 62 pairs"
+          ]
+        },
+        {
+          "id": "PERF-NG3",
+          "invalidates_if": "Component timings are documented as overlapping/nested.",
+          "invalidates_claims": [
+            "Any claim that components_gt_total is a telemetry defect"
+          ]
+        },
+        {
+          "id": "PERF-NG4",
+          "invalidates_if": "A failed SQL query is due to stale investigator schema assumptions.",
+          "invalidates_claims": [
+            "Any claim that query errors are runtime failures"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "PERF-NG1",
+          "result": "Keep descriptive counts; remove missing-telemetry interpretation."
+        },
+        {
+          "on": "PERF-NG2",
+          "result": "Downgrade matched-pair causal claims to descriptive only."
+        },
+        {
+          "on": "PERF-NG3",
+          "result": "Retain non-additivity observation; remove defect implication."
+        },
+        {
+          "on": "PERF-NG4",
+          "result": "Classify the 3 failures as query-design errors and use discovered schema."
+        }
+      ],
+      "alternative_supports": [
+        "A valid causal performance claim requires controlled matched workload, canonical e2e clock, revision semantics and reuse markers."
+      ]
+    },
+    "E": {
+      "state": "NEEDS_MORE_EVIDENCE",
+      "rationale": "Performance telemetry is measurable but not causally attributable because duration semantics, additive meaning, matched intervention boundary and reuse effects remain unresolved.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Timing contract establishes zero/null/component semantics.",
+        "Governed matched replay controls source, workload, revision, cache/reuse and e2e clock.",
+        "Matched replay demonstrates attributable regression or excludes it."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Controlled matched evidence proves material attributable regression.",
+        "to_VERIFY_FIRST": "A bounded governed verification protocol closes the remaining confounders.",
+        "to_NO_ACTION_SUPPORTED": "Matched complete evidence excludes material regression."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not treat p50/p90 as causal improvement/regression without matched cohorts.",
+    "Do not treat zero durations as missing or valid without semantics.",
+    "Do not sum chunk components as mutually exclusive stages.",
+    "Do not classify investigator SQL schema errors as product failures."
+  ],
+  "unresolved": [
+    "Zero/null duration semantics",
+    "Controlled intervention boundary",
+    "Request/run reuse semantics",
+    "Chunk timing overlap semantics",
+    "Matched workload equivalence"
+  ],
+  "next_safe_step": "Define canonical timing semantics and run a governed matched replay before any performance repair.",
+  "measured_costs": {
+    "select_attempts": 10,
+    "successful_selects": 7,
+    "query_errors": 3,
+    "negative_tests": 4,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M27_PERF_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "runs": 255,
+        "curator_null": 7,
+        "curator_zero": 75,
+        "curator_positive": 173,
+        "validator_null": 22,
+        "validator_zero": 99,
+        "validator_positive": 134
+      }
+    },
+    {
+      "query_id": "M27_PERF_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "curator_p50_positive": 28148,
+        "curator_p90_positive": 115850.6,
+        "validator_p50_positive": 78758.5,
+        "validator_p90_positive": 257428.6
+      }
+    },
+    {
+      "query_id": "M27_PERF_Q03_ERR",
+      "status": "ERROR",
+      "error": "42P01 relation programacion.input_governance_requests does not exist"
+    },
+    {
+      "query_id": "M27_PERF_Q04_ERR",
+      "status": "ERROR",
+      "error": "42P01 relation programacion.input_validator_chunks does not exist"
+    },
+    {
+      "query_id": "M27_PERF_Q05_ERR",
+      "status": "ERROR",
+      "error": "42703 column a.source_revision does not exist"
+    },
+    {
+      "query_id": "M27_PERF_DISC_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "tables": [
+          "ig_direct_requests_v1",
+          "input_readiness_runs",
+          "input_validator_chunk_timings",
+          "v_agent_task_readiness",
+          "v_authority_readiness"
+        ]
+      }
+    },
+    {
+      "query_id": "M27_PERF_DISC_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "input_readiness_runs_columns": [
+          "id",
+          "version_id",
+          "pantalla_id",
+          "universe_rule_id",
+          "supersedes_run_id",
+          "scope",
+          "source_snapshot_sha256",
+          "universe_snapshot_sha256",
+          "family_count",
+          "status",
+          "curator_identity",
+          "curator_completed_at",
+          "validator_identity",
+          "validator_completed_at",
+          "blocked_reason",
+          "created_at",
+          "contract_version",
+          "source_manifest",
+          "source_observed_at",
+          "curator_component_id",
+          "validator_component_id",
+          "contract_revision",
+          "contract_snapshot_sha256",
+          "invalidated_at",
+          "invalidated_reason",
+          "invalidated_by_run_id",
+          "curator_duration_ms",
+          "validator_duration_ms"
+        ]
+      }
+    },
+    {
+      "query_id": "M27_PERF_Q04B",
+      "status": "SUCCESS",
+      "result": {
+        "total_requests": 6,
+        "requests_without_run": 0,
+        "distinct_runs_linked": 5,
+        "unfinished": 0,
+        "negative_e2e": 0
+      }
+    },
+    {
+      "query_id": "M27_PERF_Q05B",
+      "status": "SUCCESS",
+      "result": {
+        "matched_pairs": 62
+      }
+    },
+    {
+      "query_id": "M27_PERF_Q06",
+      "status": "SUCCESS",
+      "result": {
+        "chunks": 493,
+        "duration_null": 0,
+        "duration_zero": 0,
+        "components_gt_total": 385
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:18:00Z"
+}

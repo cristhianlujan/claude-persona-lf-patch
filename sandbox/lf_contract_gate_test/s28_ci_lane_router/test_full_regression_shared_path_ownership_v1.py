@@ -15,7 +15,7 @@ EXACT_PATHS = (
 def main() -> int:
     decision = classify(EXACT_PATHS)
     assert decision.mode == "CI_ROUTER_SELFTEST_ONLY", decision
-    assert decision.required_controls == ("CI_ROUTER_SELFTEST",), decision
+    assert decision.required_controls == ("CI_ROUTER_SELFTEST", "LF_CONTRACT_CORE"), decision
     assert decision.ci_router_selftest_required is True
     assert decision.migration_parity_required is False
     assert decision.input_governance_parity_required is False
@@ -23,7 +23,7 @@ def main() -> int:
     assert decision.deep_shared is False
 
     lookalike = classify((
-        "sandbox/lf_contract_gate_test/transversal_assets/full_regression/unbound_sibling.py",
+        "sandbox/lf_contract_gate_test/transversal_asset_readme/unbound_sibling.py",
     ))
     assert lookalike.mode == "CLASSIFICATION_REQUIRED", lookalike
     assert lookalike.deep_shared is True

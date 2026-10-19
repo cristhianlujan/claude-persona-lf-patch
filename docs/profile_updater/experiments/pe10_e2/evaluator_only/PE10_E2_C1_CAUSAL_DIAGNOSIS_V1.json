@@ -1,0 +1,278 @@
+{
+  "schema": "PE10_E2_C1_CAUSAL_DIAGNOSIS_V1",
+  "status": "EVIDENCE_FROZEN_C1_NOT_AUTOMATIC_METHOD_PASS",
+  "access": "EVALUATOR_ONLY_NOT_FOR_C3_PRODUCER_INPUT",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "historical_cutoff_utc": "2026-10-15T00:00:00Z",
+  "historical_source_event": 20161,
+  "original_method_work_item_id": 1133,
+  "new_work_item_id": 1134,
+  "original_method_artifacts": {
+    "M18_INNOVATION_RAW_V1": {
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_roles/INNOVATION_RAW_V1.json",
+      "blob_sha": "77af141dc562d929ebb355073731eb372f549f3e",
+      "query_ids": [
+        "M18_INNOV_Q3",
+        "M18_INNOV_Q6"
+      ]
+    },
+    "M18_SYNTHESIS_V1": {
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M18_SYNTHESIS_V1.json",
+      "blob_sha": "e8f836006e7b5a2af8bd081fd6624fbfc0251666",
+      "finding_ids": [
+        "M18_SYN_F2",
+        "M18_SYN_F3"
+      ]
+    },
+    "M29_ARCHITECTURE_RAW_V1": {
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/ARCHITECTURE_RAW_V1.json",
+      "blob_sha": "0e0a67b0201fb2a6f2da3078d0edb145ca23cbaa",
+      "query_ids": [
+        "M29_ARQ_Q01",
+        "M29_ARQ_Q02",
+        "M29_ARQ_Q03"
+      ]
+    },
+    "M29_COVERAGE_RAW_V1": {
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_roles/COVERAGE_RAW_V1.json",
+      "blob_sha": "ac04186e6aaff50ebb24c6ea78ad1ec3a8210781",
+      "query_ids": [
+        "M29_COV_Q01",
+        "M29_COV_Q02",
+        "M29_COV_Q03"
+      ]
+    },
+    "M29_SYNTHESIS_V1": {
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M29_SYNTHESIS_V1.json",
+      "blob_sha": "5835568e79778eba057b22b0271b66b05095cbf6"
+    }
+  },
+  "sql_readbacks": [
+    {
+      "id": "E2_C1_Q01",
+      "scope": "HISTORICAL_P0_EVENT_20161",
+      "query": "SELECT x->>'caller' AS caller,x->'callees' AS callees FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161 AND x->>'caller' IN ('programacion.fn_input_governance_recurate_v2','programacion.fn_input_governance_recurate_source_stale_v1') ORDER BY caller",
+      "observed": [
+        {
+          "caller": "programacion.fn_input_governance_recurate_source_stale_v1",
+          "callees": [
+            "fn_input_governance_bootstrap_classify_v2_cached_v1",
+            "fn_input_governance_materialize_gap_proposals_v1"
+          ]
+        },
+        {
+          "caller": "programacion.fn_input_governance_recurate_v2",
+          "callees": [
+            "fn_input_governance_bootstrap_classify_v2",
+            "fn_input_governance_bootstrap_materialize_v2",
+            "fn_input_governance_materialize_gap_proposals_v1",
+            "fn_input_readiness_run_is_current"
+          ]
+        }
+      ],
+      "limits": "Inventory recorded 2026-10-04; historical edges are declarations, not live execution.",
+      "evidence_type": "POSTGRES_SELECT_P0",
+      "status": "SELECT_REPLAYED"
+    },
+    {
+      "id": "E2_C1_Q02",
+      "scope": "CURRENT_SQL_BODY_NOT_P0",
+      "query": "SELECT n.nspname||'.'||p.proname AS consumer FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosrc ~ '(^|[^[:alnum:]_])fn_input_governance_bootstrap_classify_v2_cached_v2[[:space:]]*\\(' ORDER BY consumer",
+      "observed": [
+        "programacion.fn_input_governance_bootstrap_classify_v2_cached_v1",
+        "programacion.fn_input_governance_recurate_source_stale_v1",
+        "programacion.fn_input_governance_recurate_v2",
+        "programacion.fn_input_run_semantic_revalidation_v1",
+        "programacion.fn_t_remed_screen_status_v1"
+      ],
+      "limits": "Textual call-site syntax in current SQL body, not an execution trace, parser proof or historical P0 state.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
+    },
+    {
+      "id": "E2_C1_Q03",
+      "scope": "CURRENT_BODY_VS_HISTORICAL_TOKEN_COMPARISON",
+      "query": "WITH old AS (\n SELECT x->>'caller' AS caller,j.target AS target\n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x\n CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') j(target)\n WHERE e.id=20161\n), now AS (\n SELECT n.nspname||'.'||p.proname AS caller,p.prosrc AS body\n FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace\n), comparisons AS (\n SELECT old.caller,old.target,\n  n.body ILIKE '%'||old.target||'%' AS naive_substring,\n  n.body ~ ('(^|[^[:alnum:]_])'||old.target||'[[:space:]]*\\(') AS exact_call_token\n FROM old JOIN now n ON n.caller=old.caller\n)\nSELECT count(*) AS total_edges,\n count(*) FILTER(WHERE naive_substring) AS naive_retained,\n count(*) FILTER(WHERE NOT naive_substring) AS naive_missing,\n count(*) FILTER(WHERE exact_call_token) AS exact_call_retained,\n count(*) FILTER(WHERE NOT exact_call_token) AS exact_call_missing,\n count(*) FILTER(WHERE naive_substring AND NOT exact_call_token) AS substring_only\nFROM comparisons",
+      "observed": {
+        "historical_edges": 76,
+        "naive_retained": 70,
+        "naive_missing": 6,
+        "exact_pattern_retained": 68,
+        "exact_pattern_missing": 8,
+        "substring_only": 2
+      },
+      "limits": "Exact syntax regex is stronger than substring but may still match comments/strings or miss dynamic calls; not an AST and not runtime attestation.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
+    },
+    {
+      "id": "E2_C1_Q04",
+      "scope": "CURRENT_NAME_PATTERN_SELECTION",
+      "query": "SELECT proname, proname ~* '(input_governance|input_readiness|guard_input)' AS selected FROM pg_proc WHERE proname IN ('fn_t_remed_screen_status_v1','fn_input_governance_recurate_v2','fn_input_governance_recurate_source_stale_v1')",
+      "observed": [
+        {
+          "caller": "fn_input_governance_recurate_source_stale_v1",
+          "selected": true
+        },
+        {
+          "caller": "fn_input_governance_recurate_v2",
+          "selected": true
+        },
+        {
+          "caller": "fn_t_remed_screen_status_v1",
+          "selected": false
+        }
+      ],
+      "limits": "Negative on a naming selector is not proof the excluded object lacks material dependency.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
+    },
+    {
+      "id": "E2_C1_Q05",
+      "scope": "ORIGINAL_RAW_METHOD_READBACK_GITHUB",
+      "query": "Read unchanged source blob SHA for original M18 and M29 specialist RAW and synthesis files; no new method runs",
+      "observed": {
+        "M18_INNOV_Q6": "Noted newer cached-v2 path in one recuration variant and changed lexical edges, with no complete reverse consumer set",
+        "M18_SYN_F2": "Summarizes path changes as 70/76 lexical tokens and cached/context/handoff evolution without the concrete consumer pair",
+        "M29_COV_Q03": "75 bounded candidates; 27 overlap; 48 outside P0 and 11 P0-only, not reverse references",
+        "M29_SYNTHESIS": "Retained count-based and selector caveats, not an enumerated consumer adjacency set"
+      },
+      "limits": "Original reports are not all full literal SQL transcripts; do not upgrade source summaries to verified SQL execution details.",
+      "evidence_type": "GITHUB_BLOB_READBACK_NOT_SQL",
+      "status": "GITHUB_SOURCE_REVIEWED"
+    }
+  ],
+  "findings": [
+    {
+      "id": "C1-F01",
+      "classification": "MEASURED_SNAPSHOT_SELECTION_GAP",
+      "evidence": [
+        "E2_C1_Q01",
+        "E2_C1_Q02"
+      ],
+      "finding": "Historical caller inventory was a frozen partial graph. Two known consumers had different declared callees in P0 from current exact call-like references, while a current external-domain consumer was absent from the event. Simply reconciling the 38 historical caller names/hashes cannot discover current reverse dependencies."
+    },
+    {
+      "id": "C1-F02",
+      "classification": "MEASURED_FALSE_CONTINUITY_BY_SUBSTRING",
+      "evidence": [
+        "E2_C1_Q03"
+      ],
+      "finding": "A naive lexical comparison misclassifies 2 of 76 pairs as retained solely because short names occur inside longer names/comments. One instance is a cached version rename. Do not call regex a full parser."
+    },
+    {
+      "id": "C1-F03",
+      "classification": "MEASURED_CROSS_DOMAIN_SELECTION_GAP",
+      "evidence": [
+        "E2_C1_Q02",
+        "E2_C1_Q04"
+      ],
+      "finding": "Name-pattern exploration excludes a consumer outside the selected namespace vocabulary despite an exact call-shaped token in its current SQL body."
+    },
+    {
+      "id": "C1-F04",
+      "classification": "SOURCE_BACKED_PARTIAL_DISCOVERY_AND_SYNTHESIS_LOSS",
+      "evidence": [
+        "E2_C1_Q05"
+      ],
+      "finding": "M18 role innovation partially detected new path shapes but the final synthesis retained abstract counts and families rather than exact materially relevant adjacency facts. M29 validated set partitions and candidate counts but did not independently close the reverse-consumer completeness property."
+    },
+    {
+      "id": "C1-F05",
+      "classification": "METHOD_AND_RECEIPT_CONTRACT_GAP",
+      "evidence": [
+        "E2_C1_Q05"
+      ],
+      "finding": "Original checkpoint acceptance verified the existence and execution evidence of reports, not passing an evaluator-only H1-H4 rubric. A successful method execution receipt cannot be promoted to a domain discovery success."
+    }
+  ],
+  "causal_model": [
+    {
+      "mechanism": "Historical snapshot treated as closed world or promoted to currentness",
+      "effect": "Later caller-to-callee rewiring is not discovered from the original edges",
+      "status": "SUPPORTED_AS_INSUFFICIENT_DISCOVERY_PATH_NOT_AS_PROVEN_ROOT_CAUSE_OF_EACH_AGENT"
+    },
+    {
+      "mechanism": "Partial-token identity comparison",
+      "effect": "False-retained relations under version suffixes or comments",
+      "status": "DEMONSTRATED_COUNTEREXAMPLE"
+    },
+    {
+      "mechanism": "Vocabulary-constrained universe",
+      "effect": "Cross-domain consumers excluded before verification",
+      "status": "DEMONSTRATED_SELECTOR_BLIND_SPOT"
+    },
+    {
+      "mechanism": "Synthesis over-aggregation",
+      "effect": "Role-level concrete relations not preserved as obligatory final evidence",
+      "status": "SUPPORTED_BY_M18_ROLE_VS_SYNTHESIS"
+    },
+    {
+      "mechanism": "C invariant validates selected population not completeness of global dependencies",
+      "effect": "Counts reconcile even with missing legitimate consumers",
+      "status": "SUPPORTED_BY_M29_TEST_DEFINITION"
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "C1-N01",
+      "claim_to_falsify": "All historical lexical edges retained",
+      "result": "FALSIFIED by 8 exact-pattern misses",
+      "scope": "CURRENT STATIC"
+    },
+    {
+      "id": "C1-N02",
+      "claim_to_falsify": "Substring evidence proves the original callee still invoked",
+      "result": "FALSIFIED by 2 substring-only current references",
+      "scope": "CURRENT STATIC"
+    },
+    {
+      "id": "C1-N03",
+      "claim_to_falsify": "Namespace/name scan includes every material consumer",
+      "result": "FALSIFIED by an external-domain consumer",
+      "scope": "CURRENT STATIC"
+    },
+    {
+      "id": "C1-N04",
+      "claim_to_falsify": "Every found raw candidate was necessarily preserved into synthesis",
+      "result": "COUNTEREXAMPLE on M18 role-to-synthesis specificity",
+      "scope": "FROZEN_RAW"
+    },
+    {
+      "id": "C1-N05",
+      "claim_to_falsify": "A present SQL call-shaped token demonstrates actual execution",
+      "result": "NOT_PROVED; requires separate runtime/provenance",
+      "scope": "CURRENT STATIC"
+    },
+    {
+      "id": "C1-N06",
+      "claim_to_falsify": "Present-day pg_proc body is identical to body at P0 freeze",
+      "result": "NOT_PROVED and visibly inconsistent with historical declarations",
+      "scope": "HISTORICAL_VS_CURRENT"
+    }
+  ],
+  "constraints_preserved": {
+    "same_case": true,
+    "original_p0_unchanged": true,
+    "source_cutoff_unchanged": true,
+    "original_raw_unchanged": true,
+    "original_32_checkpoints_unchanged": true,
+    "production_modified": false,
+    "method_producers_executed": false,
+    "source_scope": "P0 event is historical; current bodies only current replay, never attributed to historical cutoff",
+    "no_answers_in_method_definition": true,
+    "evaluator_details_producer_excluded": true,
+    "c3_producer_contamination_guard": "C3 must have separately attested input allowlist that excludes evaluator_only/**, H1-H4 labels/answers, this C1 artifact and previous method reports. C1 does NOT claim C3 independence before the actual run."
+  },
+  "unresolved": [
+    "Precise date on which current cached-path SQL bodies changed",
+    "Whether static references are executed at runtime",
+    "Whether current reference census covers dynamically built SQL or non-SQL services",
+    "Whether unchanged method source can attain real independent sessions for the future C3 rerun",
+    "Which combination of general corrections will recover missing consumers without known-answer leakage"
+  ],
+  "chosen_repair": "C1 establishes the miss mechanism only. C2 should implement general exact-name bidirectional discovery, qualified identities, comparison of historical/current sources, closed-world falsification and synthesis evidence conservation. Do not encode C1 oracle names in producer prompts.",
+  "next_safe_step": "C2 general-method repair with positive and negative controls, then only C3 frozen-original-P0 producer reruns with independent input receipts; C4 grades only after freeze.",
+  "sql_log_status": "READ_ONLY_SOURCE_AND_CURRENT_REPLAY; no production mutation in diagnostic",
+  "evaluator_oracle_policy": "This document is excluded from C3 producer inputs; future C3 attestation must prove exclusion, not just claim it."
+}

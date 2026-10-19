@@ -1,0 +1,226 @@
+{
+  "schema": "PE10_M27_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M27",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false,
+    "current_sql_use": "Post-cut catalog observations separated from frozen P0."
+  },
+  "findings": [
+    {
+      "id": "M27-ARQ-F01",
+      "claim": "Frozen P0 contains 38 distinct caller entries with nonempty caller and definition_md5 fields.",
+      "evidence_refs": [
+        "M27_ARQ_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M27-ARQ-F02",
+      "claim": "All 38 frozen caller names currently resolve; under empirical md5(pg_proc.prosrc), 16 equal the frozen definition_md5 and 22 differ. This does not prove the historical canonical hash representation.",
+      "evidence_refs": [
+        "M27_ARQ_Q02"
+      ],
+      "confidence": "HIGH_WITH_HASH_METHOD_LIMIT"
+    },
+    {
+      "id": "M27-ARQ-F03",
+      "claim": "A bounded current programacion name scan contains 75 related objects, 63 normalized families and 20 multi-member families.",
+      "evidence_refs": [
+        "M27_ARQ_Q03"
+      ],
+      "confidence": "HIGH_FOR_QUERY_RULE"
+    },
+    {
+      "id": "M27-ARQ-F04",
+      "claim": "All 21 frozen trigger names currently resolve and their enabled-state text matches the frozen values.",
+      "evidence_refs": [
+        "M27_ARQ_Q04"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "M": {
+      "assumptions": [
+        {
+          "id": "ARQ-A1",
+          "text": "P0 event 20161 is the frozen historical scope, not current certification."
+        },
+        {
+          "id": "ARQ-A2",
+          "text": "md5(prosrc) is an empirical comparator only unless canonical historical hash serialization is demonstrated."
+        },
+        {
+          "id": "ARQ-A3",
+          "text": "Name-pattern family counts are bounded discovery, not an authoritative active topology."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "P0 caller-set integrity",
+          "support": [
+            "M27_ARQ_Q01"
+          ],
+          "assumptions": [
+            "ARQ-A1"
+          ]
+        },
+        {
+          "claim": "Current object continuity but not semantic equivalence",
+          "support": [
+            "M27_ARQ_Q02"
+          ],
+          "assumptions": [
+            "ARQ-A1",
+            "ARQ-A2"
+          ]
+        },
+        {
+          "claim": "Current variant surface may exceed frozen topology",
+          "support": [
+            "M27_ARQ_Q03"
+          ],
+          "assumptions": [
+            "ARQ-A3"
+          ]
+        },
+        {
+          "claim": "Frozen trigger bindings remain structurally present",
+          "support": [
+            "M27_ARQ_Q04"
+          ],
+          "assumptions": [
+            "ARQ-A1"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "ARQ-NG1",
+          "invalidates_if": "Canonical historical hash is not md5(prosrc).",
+          "invalidates_claims": [
+            "Any claim that 22 changed bodies are proven historical drift"
+          ]
+        },
+        {
+          "id": "ARQ-NG2",
+          "invalidates_if": "Name-pattern scan omits or includes non-runtime variants.",
+          "invalidates_claims": [
+            "Any claim that 75 objects are the complete active topology"
+          ]
+        },
+        {
+          "id": "ARQ-NG3",
+          "invalidates_if": "Trigger name/enabled equality does not preserve trigger function/body semantics.",
+          "invalidates_claims": [
+            "Any claim of full trigger semantic equivalence"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "ARQ-NG1",
+          "result": "Downgrade body-drift conclusion to UNKNOWN; retain object resolution only."
+        },
+        {
+          "on": "ARQ-NG2",
+          "result": "Discard active-topology completeness; retain bounded discovery count."
+        },
+        {
+          "on": "ARQ-NG3",
+          "result": "Discard semantic trigger-equivalence claim; retain structural presence."
+        }
+      ],
+      "alternative_supports": [
+        "Current semantic route equivalence requires authoritative manifest/active-entry evidence independent of md5(prosrc)."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical structure remains visible, but current semantic equivalence and active variant intent are not certified.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authoritative current manifest proves semantic equivalence and active-entry mapping.",
+        "Governed current route evidence identifies a broken active path."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A governed active-route defect is proven.",
+        "to_NO_ACTION_SUPPORTED": "Current semantic equivalence and variant intent are attested.",
+        "to_NEEDS_MORE_EVIDENCE": "No authorized source can resolve current topology."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not treat 22 empirical hash differences as proven functional drift.",
+    "Do not treat 75 pattern-matched objects as complete runtime topology.",
+    "Do not infer trigger semantic equivalence from name/enabled equality alone."
+  ],
+  "unresolved": [
+    "Canonical historical hash serialization",
+    "Active-entry mapping",
+    "Semantic equivalence of changed bodies",
+    "Runtime meaning of multi-member families"
+  ],
+  "next_safe_step": "Verify current topology through governed manifest/route evidence; no runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 4,
+    "successful_selects": 4,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M27_ARQ_Q01",
+      "sql": "with p0 as (select payload from public.lf_eventos where id=20161), c as (select x from p0,jsonb_array_elements(payload->'sql_callers') x) select count(*) callers, count(*) filter(where coalesce(x->>'caller','')='') missing_caller, count(distinct x->>'caller') distinct_callers, count(*) filter(where coalesce(x->>'definition_md5','')='') missing_definition_md5 from c;",
+      "result": {
+        "callers": 38,
+        "missing_caller": 0,
+        "distinct_callers": 38,
+        "missing_definition_md5": 0
+      }
+    },
+    {
+      "query_id": "M27_ARQ_Q02",
+      "sql": "with p0 as (select payload from public.lf_eventos where id=20161), c as (select x->>'caller' fqn,x->>'definition_md5' old_md5 from p0,jsonb_array_elements(payload->'sql_callers') x), cur as (select n.nspname||'.'||p.proname fqn,p.oid,md5(p.prosrc) cur_md5 from pg_proc p join pg_namespace n on n.oid=p.pronamespace) select count(*) p0_total,count(*) filter(where cur.fqn is not null) current_resolved,count(*) filter(where cur.cur_md5=c.old_md5) md5_prosrc_equal,count(*) filter(where cur.fqn is not null and cur.cur_md5<>c.old_md5) md5_prosrc_changed,count(*) filter(where cur.fqn is null) absent from c left join cur using(fqn);",
+      "result": {
+        "p0_total": 38,
+        "current_resolved": 38,
+        "md5_prosrc_equal": 16,
+        "md5_prosrc_changed": 22,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M27_ARQ_Q03",
+      "sql": "select count(*) objects,count(distinct regexp_replace(proname,'(_v[0-9]+|_cached_v[0-9]+|_ctx)$','','g')) normalized_families,count(*) filter(where cnt>1) multi_member_families from (select p.proname,count(*) over(partition by regexp_replace(p.proname,'(_v[0-9]+|_cached_v[0-9]+|_ctx)$','','g')) cnt from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='programacion' and (p.proname ilike '%input_governance%' or p.proname ilike '%input_readiness%' or p.proname ilike '%input_run%')) s;",
+      "result": {
+        "objects": 75,
+        "normalized_families": 63,
+        "multi_member_families": 20
+      }
+    },
+    {
+      "query_id": "M27_ARQ_Q04",
+      "sql": "with p0 as (select payload from public.lf_eventos where id=20161), tr as (select x->>'trigger' trigger_name,x->>'table' table_name,x->>'function' function_name,x->>'enabled' enabled from p0,jsonb_array_elements(payload->'trigger_bindings') x) select count(*) p0_triggers,count(*) filter(where t.oid is not null) current_trigger_name_matches,count(*) filter(where t.tgenabled::text=tr.enabled) enabled_matches from tr left join pg_trigger t on t.tgname=tr.trigger_name and not t.tgisinternal;",
+      "result": {
+        "p0_triggers": 21,
+        "current_trigger_name_matches": 21,
+        "enabled_matches": 21
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:15:00Z"
+}

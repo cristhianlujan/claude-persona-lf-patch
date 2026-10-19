@@ -1,0 +1,599 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M10",
+  "base_code": "A",
+  "algorithm_codes": [
+    "D",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "path": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M10.json",
+    "sha256": "f7a3a2979c0e8094f3168ac0b5f6d4d8f9902f1664dc5529cc7a88c53789e3d6"
+  },
+  "producer": "One integrated SRCR researcher running D GDE then E typed decision without peer-method answers",
+  "external_evaluation": "NOT_PERFORMED",
+  "source_scope": "P0 HISTORICAL READ_ONLY",
+  "sql_evidence": [
+    {
+      "id": "M10_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->>'fetch_spec_version' fetch_spec,payload->'scope_guards' guards FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "fetch_spec": "SOURCE_PACK_LOOKUP_V2",
+          "guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q02",
+      "sql_literal": "SELECT count(*) total_callers,count(DISTINCT x->>'dedupe_key') unique_callers,count(*) FILTER(WHERE x->>'currentness_source'='LIVE_PG_PROC') historical_live_label FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total_callers": 38,
+          "unique_callers": 38,
+          "historical_live_label": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q03",
+      "sql_literal": "SELECT count(*) lexical_edges,count(DISTINCT c.name) distinct_callees,count(*) FILTER(WHERE c.name ILIKE '%cached%') cached_edges FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "lexical_edges": 76,
+          "distinct_callees": 39,
+          "cached_edges": 11
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q04",
+      "sql_literal": "SELECT count(*) assets,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') active_assets,count(*) FILTER(WHERE x->>'governance_lifecycle'='CANDIDATE_READ_ONLY') readonly_candidates FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161",
+      "rows": [
+        {
+          "assets": 6,
+          "active_assets": 3,
+          "readonly_candidates": 4
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q05",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') triggers,jsonb_array_length(payload->'edge_current') edge_snapshots,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') consumer_relation_snapshots,payload->'usage_stats' usage_stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "triggers": 21,
+          "edge_snapshots": 4,
+          "consumer_relation_snapshots": 27,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q06",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload->>'pass' qualified,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'screens_below_2' screens_below,payload->>'families_below_2' families_below,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "qualified": "true",
+          "screens": "13",
+          "families": "47",
+          "screens_below": "0",
+          "families_below": "0",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q07",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q08",
+      "sql_literal": "SELECT payload->'historical_provenance_only' provenance,payload->'excluded_name_candidate' excluded_candidate,payload->'deduplication' identity_rule FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          },
+          "excluded_candidate": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "identity_rule": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q09",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'definition_md5' ~ '^[a-f0-9]{32}$') format_valid,count(*) FILTER(WHERE x->>'definition_md5' IS NULL) absent FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "format_valid": 38,
+          "absent": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q10",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') before_cutoff,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') after_cutoff FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "before_cutoff": 1,
+          "after_cutoff": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_PRE_CUTOFF_RETRIEVED_NOW"
+    },
+    {
+      "id": "M10_Q11",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "CURRENT_READONLY_PRINCIPAL_NOT_P0"
+    }
+  ],
+  "algorithm_execution": {
+    "D": {
+      "conflict_sets": [
+        [
+          "SOAK_TEXT_PROJECTION_DRIFT",
+          "M911_SOAK_AUTHORITY_BINDING"
+        ],
+        [
+          "CP2_PERMISSION_GAP",
+          "CP2_ASOF_READER_GAP"
+        ],
+        [
+          "CALL_GRAPH_STATIC_ONLY",
+          "NO_DYNAMIC_TRACES"
+        ]
+      ],
+      "minimal_hitting_sets": [
+        [
+          "SOAK_TEXT_PROJECTION_DRIFT",
+          "CP2_PERMISSION_GAP",
+          "CALL_GRAPH_STATIC_ONLY"
+        ],
+        [
+          "M911_SOAK_AUTHORITY_BINDING",
+          "CP2_PERMISSION_GAP",
+          "CALL_GRAPH_STATIC_ONLY"
+        ],
+        [
+          "SOAK_TEXT_PROJECTION_DRIFT",
+          "CP2_ASOF_READER_GAP",
+          "CALL_GRAPH_STATIC_ONLY"
+        ],
+        [
+          "M911_SOAK_AUTHORITY_BINDING",
+          "CP2_ASOF_READER_GAP",
+          "CALL_GRAPH_STATIC_ONLY"
+        ],
+        [
+          "SOAK_TEXT_PROJECTION_DRIFT",
+          "CP2_PERMISSION_GAP",
+          "NO_DYNAMIC_TRACES"
+        ],
+        [
+          "M911_SOAK_AUTHORITY_BINDING",
+          "CP2_PERMISSION_GAP",
+          "NO_DYNAMIC_TRACES"
+        ],
+        [
+          "SOAK_TEXT_PROJECTION_DRIFT",
+          "CP2_ASOF_READER_GAP",
+          "NO_DYNAMIC_TRACES"
+        ],
+        [
+          "M911_SOAK_AUTHORITY_BINDING",
+          "CP2_ASOF_READER_GAP",
+          "NO_DYNAMIC_TRACES"
+        ]
+      ],
+      "enumerated_hitting_sets": 27,
+      "information_gain_rank": [
+        {
+          "candidate": "Qualified M9.11 soak receipt vs text projection",
+          "rank": 1,
+          "source_queries": [
+            "M10_Q06",
+            "M10_Q07"
+          ],
+          "purpose": "Distinguish as-of SOAK criterion drift from absent evidence",
+          "cost": "READ_ONLY"
+        },
+        {
+          "candidate": "CP2 historical authority vs authorized reader",
+          "rank": 2,
+          "source_queries": [
+            "M10_Q07",
+            "M10_Q11"
+          ],
+          "purpose": "Distinguish permission 42501 from functional failure",
+          "cost": "ROLE_CONSTRAINT"
+        },
+        {
+          "candidate": "Actual invoked graph/time versus nominal function references",
+          "rank": 3,
+          "source_queries": [
+            "M10_Q02",
+            "M10_Q03",
+            "M10_Q05"
+          ],
+          "purpose": "Require cohort and runtime trace before any performance/coverage repair",
+          "cost": "UNKNOWN"
+        }
+      ],
+      "expected_probabilistic_ig": "NOT_COMPUTED_NO_PRIORS",
+      "barinel": "NOT_CALIBRATABLE_NO_PROPER_SPECTRA",
+      "diagnostic_scope": "MODELED_ASSUMPTIONS_NOT_PROVEN_DEFECTS"
+    },
+    "E": {
+      "decision_rules": [
+        "REPAIR_REQUIRED only if demonstrated defect and causal evidence",
+        "VERIFY_FIRST if risk and safe falsifier",
+        "NEEDS_MORE_EVIDENCE when material uncertainty and no authorized evidence route",
+        "NO_ACTION_SUPPORTED when sufficiently qualified and no material risk"
+      ],
+      "typed_decision": "VERIFY_FIRST",
+      "scenarios": [
+        {
+          "id": "E_ACTUAL",
+          "inputs": {
+            "demonstrated_defect": false,
+            "material_causal_proof": false,
+            "observed_risk": true,
+            "available_safe_falsifier": true,
+            "material_unknown": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "basis": "historical sources only",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_42501_NOT_CAUSAL_DEFECT",
+          "inputs": {
+            "demonstrated_defect": false,
+            "material_causal_proof": false,
+            "observed_risk": true,
+            "available_safe_falsifier": true,
+            "material_unknown": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "basis": "negative permission case",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_MISSING_SAFE_READER",
+          "inputs": {
+            "demonstrated_defect": false,
+            "material_causal_proof": false,
+            "observed_risk": true,
+            "available_safe_falsifier": false,
+            "material_unknown": true,
+            "qualified_source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "basis": "synthetic exclusion",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E_CAUSAL_DEFECT_PROVED",
+          "inputs": {
+            "demonstrated_defect": true,
+            "material_causal_proof": true,
+            "observed_risk": true,
+            "available_safe_falsifier": true,
+            "material_unknown": false,
+            "qualified_source": true
+          },
+          "expected": "REPAIR_REQUIRED",
+          "basis": "synthetic positive",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E_NO_RISK_QUALIFIED",
+          "inputs": {
+            "demonstrated_defect": false,
+            "material_causal_proof": false,
+            "observed_risk": false,
+            "available_safe_falsifier": false,
+            "material_unknown": false,
+            "qualified_source": true
+          },
+          "expected": "NO_ACTION_SUPPORTED",
+          "basis": "synthetic negative",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E_FAULT_WITHOUT_CAUSAL_TRACE",
+          "inputs": {
+            "demonstrated_defect": true,
+            "material_causal_proof": false,
+            "observed_risk": true,
+            "available_safe_falsifier": true,
+            "material_unknown": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "basis": "causal negative",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_INCOMPLETE_CONTEXT",
+          "inputs": {
+            "demonstrated_defect": false,
+            "material_causal_proof": false,
+            "observed_risk": false,
+            "available_safe_falsifier": false,
+            "material_unknown": true,
+            "qualified_source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "basis": "missing observation",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "scope": "HISTORICAL_RISK_TRIAGE_ONLY",
+      "reversal_criteria": [
+        {
+          "trigger": "same-time causal trace of a material functional defect",
+          "next": "REPAIR_REQUIRED"
+        },
+        {
+          "trigger": "qualified source resolves remaining risk",
+          "next": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "trigger": "no valid authorized falsifier exists",
+          "next": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "falsifiers": [
+        "Qualified M9.11 soak receipt vs text projection",
+        "CP2 historical authority vs authorized reader",
+        "Actual invoked graph/time versus nominal function references"
+      ]
+    }
+  },
+  "negative_tests": [
+    {
+      "id": "GDE_8_MINIMAL_SET",
+      "pass": true
+    },
+    {
+      "id": "GDE_PROPER_SUBSETS_FAIL",
+      "pass": true
+    },
+    {
+      "id": "E_TYPED_SEVEN_SCENARIOS",
+      "pass": true
+    },
+    {
+      "id": "E_ALL_FOUR_STATES",
+      "pass": true
+    },
+    {
+      "id": "E_42501_NOT_REPAIR_REQUIRED",
+      "pass": true
+    },
+    {
+      "id": "E_NO_CLAIM_PERFORMANCE_GAIN",
+      "pass": true
+    },
+    {
+      "id": "E_SOAK_PROVENANCE_SCOPE",
+      "pass": true
+    },
+    {
+      "id": "E_VALID_MD5_SYNTAX_NOT_DERIVATION",
+      "pass": true
+    },
+    {
+      "id": "E_ASOF_CUTOFF",
+      "pass": true
+    },
+    {
+      "id": "E_SOURCE_EKB_2",
+      "pass": true
+    },
+    {
+      "id": "E_NO_QA_SCORE",
+      "pass": true
+    },
+    {
+      "id": "GDE_NO_INVENTED_BARINEL_PRIORS",
+      "pass": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "M10_F01",
+      "claim": "EKB-before-P0 documents two risk families, not a proven patch specification. Four evidence alternatives generate 8 minimal hitting sets when combined with invocation uncertainty.",
+      "evidence": [
+        "M10_Q07",
+        "M10_Q03",
+        "M10_Q05"
+      ],
+      "classification": "MODELED_GDE"
+    },
+    {
+      "id": "M10_F02",
+      "claim": "M9.11 receipt 38 VERIFIED with zero false PASS/D4 is historical soak proof, not an E2E runtime performance certification.",
+      "evidence": [
+        "M10_Q06",
+        "M10_Q07"
+      ],
+      "classification": "MEASURED_HISTORICAL"
+    },
+    {
+      "id": "M10_F03",
+      "claim": "Historical event contains 38 SQL callers and 76 lexical edges; labels of LIVE_PG_PROC within snapshot cannot guarantee current invocation.",
+      "evidence": [
+        "M10_Q01",
+        "M10_Q02",
+        "M10_Q03"
+      ],
+      "classification": "MEASURED_SOURCE_SCOPE"
+    },
+    {
+      "id": "M10_F04",
+      "claim": "The typed method E decision is VERIFY_FIRST and not REPAIR_REQUIRED because no material causal defect evidence was retrieved.",
+      "evidence": [
+        "M10_Q06",
+        "M10_Q07",
+        "M10_Q11"
+      ],
+      "classification": "DECISION_HYPOTHESIS_GOVERNED"
+    }
+  ],
+  "causal_model": {
+    "status": "CAUSAL_UNKNOWN",
+    "alternatives": [
+      "SOAK source projection vs authoritative receipt",
+      "CP2 permission vs currentness",
+      "Static reference graph vs trace gap"
+    ],
+    "negative_falsifiers": [
+      "Prove current same-cutoff invocation before claiming usage",
+      "Demonstrate functional defect before moving decision to REPAIR_REQUIRED",
+      "Reject numerical expected entropy/BARINEL with no spectra"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Reuse time-qualified SOAK receipt to evaluate mismatch",
+      "scope": "READ_ONLY"
+    },
+    {
+      "action": "Authorized CP2 SELECT versus privilege diagnosis",
+      "scope": "READ_ONLY"
+    },
+    {
+      "action": "Version-bound execution tracing if existing nonmutating authority permits",
+      "scope": "UNKNOWN"
+    }
+  ],
+  "chosen_repair": {
+    "state": "VERIFY_FIRST",
+    "reason": "Source-backed risks with safe next observation; repair causality unproven",
+    "reversal_criteria": "Defined by method E",
+    "runtime_modification": false
+  },
+  "rejected_alternatives": [
+    "Programmatic mutation under P0",
+    "Invent posterior defect probabilities",
+    "Mark CP2 functional fail based on 42501"
+  ],
+  "omissions_searched": [
+    "SOAK provenance",
+    "CP2 permission",
+    "function inventory",
+    "nominal edges",
+    "external assets",
+    "historical MD5 syntax",
+    "telemetry gap",
+    "decision risk and reversal"
+  ],
+  "unresolved": [
+    "Actual time-qualified CP2 runtime state not measured",
+    "Hash canonical construction UNKNOWN",
+    "Actual performance cohort UNKNOWN",
+    "No confirmed actionable defect"
+  ],
+  "constraints_preserved": [
+    "Case P0 cutoff",
+    "No product runtime mutation",
+    "No prior method outputs supplied",
+    "No external oracle",
+    "Preserve RAW source"
+  ],
+  "conclusion": "D_GDE_AND_E_TYPED_DECISION_EXECUTED_VERIFY_FIRST_NOT_APPLIED_REPAIR"
+}

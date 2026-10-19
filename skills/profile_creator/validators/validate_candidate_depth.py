@@ -2,6 +2,8 @@
 import json
 import re
 import sys
+
+from profile_output_shape_preflight_v1 import validate_shape
 from pathlib import Path
 
 CORE_FILES = {
@@ -305,6 +307,17 @@ def validate_candidate(pack):
             contract_text = files.get("contracts/main_contract.md", "")
             if "user_payload" not in contract_text or "internal_envelope" not in contract_text:
                 blocking.append("USER_INTERNAL_CONTRACT_BOUNDARY_MISSING")
+
+    # Creation and evolution share the same source-based shape preflight.
+    # Do not infer from the presence of a schema that a sample obeys its
+    # required fields, enums or explicit authority. This is NOT semantic PASS.
+    positive_sample = parse_json_text(files, "examples/good_output.json", blocking)
+    if schema is not None and positive_sample is not None:
+        shape = validate_shape(schema, positive_sample)
+        for issue in shape["blocking_codes"]:
+            blocking.append("GOOD_OUTPUT_CONTRACT_DRIFT:" + issue["path"] + ":" + issue["code"])
+    # An intentionally bad semantic example may validly be schema-correct.
+    # It is not a positive sample, so do not require it to validate as good.
 
     evals = parse_json_text(files, "evals/eval_matrix.json", blocking)
     if evals is not None:

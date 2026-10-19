@@ -1,0 +1,181 @@
+{
+  "schema": "PE10_M29_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M29",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M29-ARQ-F01",
+      "claim": "Frozen P0 has 38 distinct callers with no missing caller/hash fields.",
+      "evidence_refs": [
+        "M29_ARQ_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-ARQ-F02",
+      "claim": "TLP over empirical md5(prosrc) equality reconciles exactly to 38: TRUE 16, FALSE 22, NULL 0, absent 0.",
+      "evidence_refs": [
+        "M29_ARQ_Q02"
+      ],
+      "confidence": "HIGH_FOR_EMPIRICAL_COMPARATOR"
+    },
+    {
+      "id": "M29-ARQ-F03",
+      "claim": "Changing comparator from md5(prosrc) to md5(pg_get_functiondef()) changes the equality outcome from 16 to 0; all 38 comparator outputs differ.",
+      "evidence_refs": [
+        "M29_ARQ_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-ARQ-F04",
+      "claim": "Trigger enabled-state TLP reconciles exactly to 21: TRUE 21, FALSE 0, NULL 0, absent 0.",
+      "evidence_refs": [
+        "M29_ARQ_Q04"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "C": {
+      "invariants": [
+        {
+          "id": "ARQ-I1",
+          "type": "PARTITION",
+          "statement": "caller_total = TRUE + FALSE + NULL + absent",
+          "observed": "38=16+22+0+0",
+          "status": "PASS"
+        },
+        {
+          "id": "ARQ-I2",
+          "type": "POSITIVE",
+          "statement": "All frozen caller identities are populated and distinct.",
+          "observed": "38/38 distinct, 0 missing",
+          "status": "PASS"
+        },
+        {
+          "id": "ARQ-I3",
+          "type": "PARTITION",
+          "statement": "trigger_total = TRUE + FALSE + NULL + absent",
+          "observed": "21=21+0+0+0",
+          "status": "PASS"
+        },
+        {
+          "id": "ARQ-I4",
+          "type": "NEGATIVE",
+          "statement": "Comparator substitution must not be assumed semantics-preserving.",
+          "observed": "16 matches via prosrc vs 0 via functiondef; 38/38 comparator outputs differ",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "ARQ-MT1",
+          "transform": "Substitute md5(pg_get_functiondef()) for md5(prosrc).",
+          "expected_relation": "If comparator representation were canonical-equivalent, classification should be invariant.",
+          "observed_relation": "Not invariant: 16→0 matches.",
+          "result": "COUNTEREXAMPLE_FOUND"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "No compatible QED/SMT verifier was available or necessary for these SQL set/partition invariants.",
+      "overfitting_checks": [
+        "Do not select comparator because it reproduces a preferred answer.",
+        "Treat both comparator outputs as empirical until historical serialization is demonstrated."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Set partitions are internally consistent, but comparator sensitivity proves that current hash-equality interpretation depends on an unverified representation.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Historical source proves canonical hash serialization.",
+        "Governed semantic route verification closes current equivalence independently of hash representation."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A governed invariant fails on an active route or trigger.",
+        "to_NO_ACTION_SUPPORTED": "Canonical representation and semantic equivalence are attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Canonical representation remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not infer canonical hash method from the comparator that happens to match 16 rows.",
+    "Do not treat TLP consistency as proof that the business rule/universe is complete.",
+    "Do not infer full trigger semantics from enabled-state partition alone."
+  ],
+  "unresolved": [
+    "Canonical historical hash representation",
+    "Current semantic route equivalence",
+    "Full trigger semantic equivalence"
+  ],
+  "next_safe_step": "Prove canonical comparator/semantic equivalence through governed evidence; no runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 4,
+    "successful_selects": 4,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "invariants": 4,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M29_ARQ_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "distinct_callers": 38,
+        "missing_caller": 0,
+        "missing_hash": 0
+      }
+    },
+    {
+      "query_id": "M29_ARQ_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "tlp_true": 16,
+        "tlp_false": 22,
+        "tlp_null": 0,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M29_ARQ_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "equal_prosrc": 16,
+        "equal_functiondef": 0,
+        "comparator_outputs_differ": 38
+      }
+    },
+    {
+      "query_id": "M29_ARQ_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 21,
+        "tlp_true": 21,
+        "tlp_false": 0,
+        "tlp_null": 0,
+        "absent": 0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:50:00Z"
+}

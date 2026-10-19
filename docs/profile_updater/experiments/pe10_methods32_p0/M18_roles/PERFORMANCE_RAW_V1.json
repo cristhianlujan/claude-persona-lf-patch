@@ -1,0 +1,189 @@
+{
+  "schema": "PE10_M18_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": ["D"],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "method_application": {
+    "D": {
+      "gde_conflict_sets": [
+        {
+          "id": "PERF_CS1",
+          "observation": "Event 20161 contains no top-level timing keys and track_functions=none, while input_readiness_runs contains stage duration fields.",
+          "components": ["evidence_source_selection", "missing_function_stats", "stage_duration_instrumentation"]
+        },
+        {
+          "id": "PERF_CS2",
+          "observation": "Latest pre-cutoff revisions 5.13 and 5.13.1 have overlapping screens but materially different stage-duration distributions and zero-duration prevalence.",
+          "components": ["cohort_equivalence", "revision_effect", "zero_duration_semantics", "workload_effect"]
+        }
+      ],
+      "minimal_hitting_sets": [
+        ["cohort_equivalence"],
+        ["revision_effect"],
+        ["zero_duration_semantics"],
+        ["workload_effect"]
+      ],
+      "barinel": {
+        "status": "NOT_CALIBRATED",
+        "reason": "No justified component spectra with independent pass/fail outcome probabilities; ranking by likelihood would be fabricated."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "selected_query": "Compare 5.13 vs 5.13.1 on overlapping pantalla_id and constant family_count before any aggregate speed conclusion.",
+        "reason": "It directly tests cohort mismatch at low read-only cost."
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "M18_PERF_Q1",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Event 20161 usage_stats has track_functions=none, ig_stat_rows=0, and no top-level timing/duration/elapsed/latency keys."
+    },
+    {
+      "id": "M18_PERF_Q2",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Provenance receipt 38 is VERIFIED for SOAK quality history: 13 screens, 47 families, zero known false PASS signals and zero unresolved D4; it contains no latency distribution."
+    },
+    {
+      "id": "M18_PERF_Q3",
+      "scope": "EXPLICIT_CURRENT_TABLE_WITH_PRE_CUTOFF_ROWS",
+      "result_summary": "ig_direct_requests_v1 has six rows before cutoff with e2e_ms from 46,596.626 to 322,785.297; consumers are STORY_CREATOR/MANUAL and last_status is BLOCKED, so they are not a qualified Curator/Validator benchmark cohort."
+    },
+    {
+      "id": "M18_PERF_Q4",
+      "scope": "CURRENT_READBACK",
+      "result_summary": "current_setting('track_functions')=none; curator/validator-related pg_stat_user_functions call/total/self times are NULL. Missing stats cannot support zero-usage or speed claims."
+    },
+    {
+      "id": "M18_PERF_Q5",
+      "scope": "SCHEMA_READBACK",
+      "result_summary": "input_readiness_runs contains curator_completed_at, validator_completed_at, curator_duration_ms and validator_duration_ms, allowing direct pre-cutoff stage analysis."
+    },
+    {
+      "id": "M18_PERF_Q6",
+      "scope": "PRE_CUTOFF_MEASURED",
+      "result_summary": "255 runs before cutoff; curator duration known in 248 and validator in 233. Zero durations: curator 75, validator 99. Positive-only p50/p90: curator 28,148/115,850.6 ms; validator 78,758.5/257,428.6 ms."
+    },
+    {
+      "id": "M18_PERF_Q7",
+      "scope": "PRE_CUTOFF_MEASURED",
+      "result_summary": "By status: BLOCKED=20 (validator durations all NULL), COMPLETED=233 (curator zero=75, validator zero=99), CURATING=2 (both durations NULL)."
+    },
+    {
+      "id": "M18_PERF_Q8",
+      "scope": "PRE_CUTOFF_MEASURED",
+      "result_summary": "For COMPLETED zero-duration rows, wall-clock deltas computed from stage timestamps are also exactly 0 ms; zero values are internally timestamp-consistent, not demonstrably corrupted."
+    },
+    {
+      "id": "M18_PERF_Q9",
+      "scope": "PRE_CUTOFF_MEASURED",
+      "result_summary": "Contract revisions vary sharply. Revision 5.13: 86 completed, curator positive p50/p90 23,915/45,223 ms, validator 69,597/155,020.2 ms. Revision 5.13.1: 20 completed, curator 60,257.5/136,648.4 ms, validator 246,293/408,971.6 ms; zero counts also differ."
+    },
+    {
+      "id": "M18_PERF_Q10",
+      "scope": "PRE_CUTOFF_MATCHED_SCREEN_CHECK",
+      "result_summary": "5.13 covers 42 screens, 5.13.1 covers 16, all 16 overlap and family_count remains 47 in shown rows. Many overlapping screens have higher positive stage medians in 5.13.1, but per-screen n is often 1-2 and zero-duration handling differs."
+    }
+  ],
+  "findings": [
+    {
+      "id": "M18_PERF_F1",
+      "claim": "Event 20161 and pg_stat_user_functions cannot substantiate a speed claim; function statistics are unavailable because track_functions=none.",
+      "classification": "MEASURED_SOURCE_LIMIT",
+      "evidence_refs": ["M18_PERF_Q1","M18_PERF_Q4"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_PERF_F2",
+      "claim": "Pre-cutoff input_readiness_runs contains usable stage-duration evidence, but aggregate comparison is confounded by revision mix and a large exact-zero cohort.",
+      "classification": "MEASURED_WITH_COHORT_LIMIT",
+      "evidence_refs": ["M18_PERF_Q6","M18_PERF_Q7","M18_PERF_Q8","M18_PERF_Q9"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_PERF_F3",
+      "claim": "A naive latest-revision improvement claim is not supported: on the 16 overlapping screens, 5.13.1 commonly shows larger positive stage times than 5.13, but sample sizes and zero-duration handling prevent a causal regression conclusion.",
+      "classification": "MEASURED_DIRECTION_WITH_CAUSAL_LIMIT",
+      "evidence_refs": ["M18_PERF_Q9","M18_PERF_Q10"],
+      "confidence": "MEDIUM_HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_PERF_F4",
+      "claim": "SOAK receipt 38 certifies quality-history conditions, not end-to-end or stage latency.",
+      "classification": "MEASURED_SCOPE",
+      "evidence_refs": ["M18_PERF_Q2"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": false
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "M18_PERF_N1",
+      "hypothesis": "Zero pg_stat rows prove no Curator/Validator calls.",
+      "result": "FALSIFIED_AS_INFERENCE",
+      "evidence_refs": ["M18_PERF_Q1","M18_PERF_Q4"]
+    },
+    {
+      "id": "M18_PERF_N2",
+      "hypothesis": "Zero duration rows are demonstrably inconsistent with their timestamps.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_PERF_Q8"]
+    },
+    {
+      "id": "M18_PERF_N3",
+      "hypothesis": "Receipt 38 is a performance receipt.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_PERF_Q2"]
+    },
+    {
+      "id": "M18_PERF_N4",
+      "hypothesis": "5.13 and 5.13.1 are fully equivalent cohorts.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_PERF_Q9","M18_PERF_Q10"]
+    }
+  ],
+  "causal_hypothesis": {
+    "state": "UNPROVEN",
+    "alternatives": [
+      "Actual stage regression in 5.13.1",
+      "Different execution path or workload despite same family_count",
+      "Instrumentation/zero-duration semantics changed across revisions",
+      "Selection bias from only 16 overlapping screens and low per-screen n"
+    ]
+  },
+  "minimal_safe_action": "Build a same-screen, same-path, same-revision-transition cohort using only positive qualified durations and explicitly model zero-duration semantics before accepting or rejecting the performance optimization.",
+  "unresolved": [
+    "Semantic meaning of exact-zero stage durations by revision",
+    "Whether 5.13.1 changed execution path or only instrumentation",
+    "Qualified end-to-end denominator linked to the same Curator/Validator runs",
+    "Statistical significance with matched repeated observations"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "No production mutation",
+    "Historical/current separation",
+    "No peer role reports used",
+    "No external evaluation",
+    "No false BARINEL probabilities"
+  ],
+  "measured_costs": {
+    "sql_observations": 10,
+    "transport_elapsed_ms": "NOT_MEASURED",
+    "barinel_calibration": "NOT_AVAILABLE"
+  },
+  "role_output_frozen": true
+}

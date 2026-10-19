@@ -1,0 +1,162 @@
+{
+  "schema": "PE10_M18_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": ["D"],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "method_application": {
+    "D": {
+      "gde_conflict_sets": [
+        {
+          "id": "AUTH_CS1",
+          "observation": "CP2 historical EKB records SQLSTATE 42501 on fn_input_readiness_run_is_current while the read-only principal has SELECT on the underlying evidence tables but no EXECUTE on either current function variant.",
+          "components": ["unauthorized_function_readback", "authority_boundary", "wrong_evidence_path"]
+        },
+        {
+          "id": "AUTH_CS2",
+          "observation": "SOAK canonical receipt 38 verifies historical criteria, while CP2 EKB explicitly rejects latest-13 CURRENT as historical substitute.",
+          "components": ["historical_authority_source", "currentness_projection", "cohort_substitution"]
+        }
+      ],
+      "minimal_hitting_sets": [
+        ["wrong_evidence_path"],
+        ["unauthorized_function_readback"],
+        ["cohort_substitution"]
+      ],
+      "barinel": {
+        "status": "NOT_CALIBRATED",
+        "reason": "No independent executable test spectrum with justified priors exists for authority-failure components."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "highest_value_next_query": "Reconstruct CP2 evidence only from authorized SELECT tables/receipts and compare it with the exact historical receipt contract, without invoking the forbidden currentness function.",
+        "reason": "It discriminates data insufficiency from access-path error without privilege elevation."
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "M18_AUTH_Q1",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Both EKB records are pre-cutoff and VALIDATED_TESTED. CP2 record says the currentness function readback failed with SQLSTATE 42501 and latest-13 is not equivalent to historical as-of; prevention explicitly says do not elevate EXECUTE. SOAK drift record requires >=2 eligible observations, zero false PASS and zero D4 from receipt 38."
+    },
+    {
+      "id": "M18_AUTH_Q2",
+      "scope": "P0_HISTORICAL",
+      "result_summary": "Receipt 38 created 2026-10-07 is VERIFIED SOAK_OBSERVATION_HISTORY_V2 with 13 screens, 47 families, zero below-2, zero known false PASS and zero unresolved D4."
+    },
+    {
+      "id": "M18_AUTH_Q3",
+      "scope": "CURRENT_IDENTITY_READBACK",
+      "result_summary": "current_user=session_user=supabase_read_only_user; transaction_read_only=on; track_functions=none."
+    },
+    {
+      "id": "M18_AUTH_Q4",
+      "scope": "CURRENT_PRIVILEGE_READBACK",
+      "result_summary": "Two current fn_input_readiness_run_is_current(bigint) variants resolve in programacion and public; current read-only principal has EXECUTE=false on both."
+    },
+    {
+      "id": "M18_AUTH_Q5",
+      "scope": "CURRENT_CHECKPOINT_READBACK",
+      "result_summary": "M17 remains DONE with governed receipt; M18 remains PENDING with no assertion receipt/completed_at; M19 remains PENDING."
+    },
+    {
+      "id": "M18_AUTH_Q6",
+      "scope": "CURRENT_PRIVILEGE_READBACK",
+      "result_summary": "Current read-only principal has programacion USAGE and SELECT on input_readiness_runs, provenance_receipts and transversal.error_knowledge."
+    }
+  ],
+  "findings": [
+    {
+      "id": "M18_AUTH_F1",
+      "claim": "The observed 42501 is an authority/readback-path condition, not evidence of a functional CP2 defect. The permitted connector still lacks EXECUTE on both currentness-function variants while retaining SELECT on the evidence tables.",
+      "classification": "MEASURED_HISTORICAL_AND_CURRENT_AUTHORITY",
+      "evidence_refs": ["M18_AUTH_Q1","M18_AUTH_Q3","M18_AUTH_Q4","M18_AUTH_Q6"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_AUTH_F2",
+      "claim": "Receipt 38 is the authoritative historical SOAK source for the stated criteria; a latest CURRENT sample cannot substitute for it.",
+      "classification": "MEASURED_HISTORICAL_AUTHORITY",
+      "evidence_refs": ["M18_AUTH_Q1","M18_AUTH_Q2"],
+      "confidence": "HIGH",
+      "impact": "HIGH",
+      "new_vs_input": false
+    },
+    {
+      "id": "M18_AUTH_F3",
+      "claim": "No privilege elevation is needed to continue safe evidence review: required historical/current records are readable by SELECT while the forbidden function remains non-executable.",
+      "classification": "MEASURED_CURRENT_BOUNDARY",
+      "evidence_refs": ["M18_AUTH_Q4","M18_AUTH_Q6"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": true
+    },
+    {
+      "id": "M18_AUTH_F4",
+      "claim": "Administrative experiment state is still open at this role freeze: M18 has no governed assertion receipt and is not DONE.",
+      "classification": "MEASURED_CURRENT_STATE",
+      "evidence_refs": ["M18_AUTH_Q5"],
+      "confidence": "HIGH",
+      "impact": "MEDIUM",
+      "new_vs_input": true
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "M18_AUTH_N1",
+      "hypothesis": "The read-only connector currently has EXECUTE on fn_input_readiness_run_is_current.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_AUTH_Q4"]
+    },
+    {
+      "id": "M18_AUTH_N2",
+      "hypothesis": "Lack of EXECUTE prevents all relevant CP2 evidence reads.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_AUTH_Q6"]
+    },
+    {
+      "id": "M18_AUTH_N3",
+      "hypothesis": "Receipt 38 proves current CP2 functionality.",
+      "result": "FALSIFIED_AS_SCOPE_INFERENCE",
+      "evidence_refs": ["M18_AUTH_Q1","M18_AUTH_Q2"]
+    },
+    {
+      "id": "M18_AUTH_N4",
+      "hypothesis": "M18 can already be represented as governed DONE.",
+      "result": "FALSIFIED",
+      "evidence_refs": ["M18_AUTH_Q5"]
+    }
+  ],
+  "causal_hypothesis": {
+    "state": "PARTIAL",
+    "claim": "The known CP2 evidence gap is best explained by an unauthorized readback choice plus temporal-cohort substitution, not by demonstrated Curator/Validator functional failure."
+  },
+  "minimal_safe_action": "Use receipt 38 and authorized SELECT-only cohort tables for CP2 reconstruction; do not elevate EXECUTE and do not convert current permission state into historical proof.",
+  "unresolved": [
+    "Equivalent CP2 functional result under an authorized evidence-only query contract",
+    "Historical grants beyond what the pre-cutoff EKB validation records",
+    "Whether any later authorized CP2 evidence materially changes the diagnosis"
+  ],
+  "constraints_preserved": [
+    "READ_ONLY",
+    "No privilege elevation",
+    "No production mutation",
+    "Historical/current separation",
+    "No peer role reports used",
+    "No autonomous-agent claim"
+  ],
+  "measured_costs": {
+    "sql_observations": 6,
+    "transport_elapsed_ms": "NOT_MEASURED",
+    "barinel_calibration": "NOT_AVAILABLE"
+  },
+  "role_output_frozen": true
+}

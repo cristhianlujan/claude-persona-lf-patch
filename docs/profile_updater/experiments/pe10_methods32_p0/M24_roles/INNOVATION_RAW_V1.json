@@ -1,0 +1,200 @@
+{
+  "schema": "PE10_M24_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M24_INNOV_Q1",
+      "result": "evidence chronology: event Oct04 < receipt Oct07 < EKB Oct14 23:39 < EKB Oct14 23:44"
+    },
+    {
+      "id": "M24_INNOV_Q2",
+      "result": "76 historical edges;55 on changed-hash callers;6 historical callee tokens missing from current bodies; all6 on changed-hash callers"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "INNOV_CS1",
+        "observation": "six historical lexical edges no longer present in current bodies",
+        "components": [
+          "post_snapshot_path_evolution",
+          "lexical_refactor",
+          "runtime_path_change"
+        ]
+      },
+      {
+        "id": "INNOV_CS2",
+        "observation": "evidence sources span distinct times",
+        "components": [
+          "temporal_equivalence",
+          "later_evidence_rewrite"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "post_snapshot_path_evolution"
+      ],
+      [
+        "temporal_equivalence"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "classify six removed edges and replacement paths by object/reference identity"
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "event+receipt+EKB timestamps",
+        "time": "Oct04..Oct14",
+        "assumptions": [
+          "time identity preserved"
+        ],
+        "supports": [
+          "C_TIME"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "historical edges+current bodies",
+        "time": "P0+CURRENT",
+        "assumptions": [
+          "lexical token presence is structural not runtime proof"
+        ],
+        "supports": [
+          "C_EDGE_EVOLUTION"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_TIME",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C_EDGE_EVOLUTION",
+        "state": "SUPPORTED_STRUCTURAL_ONLY",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C_RUNTIME_CHANGE",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "LATER_EVIDENCE_REWRITES_P0"
+        ],
+        "reason": "distinct timestamps"
+      },
+      {
+        "set": [
+          "LEXICAL_CHANGE_EQUALS_RUNTIME_CHANGE"
+        ],
+        "reason": "execution not observed"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C_TIME"
+        ],
+        "preserves": [
+          "C_EDGE_EVOLUTION"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C_EDGE_EVOLUTION"
+        ],
+        "preserves": [
+          "C_TIME"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "I1",
+        "rule": "chronology must preserve source timestamps",
+        "observed": "strict ordered sequence",
+        "valid_case": "separate evidence layers",
+        "counterexample": "flatten to P0",
+        "status": "PASS"
+      },
+      {
+        "id": "I2",
+        "rule": "historical edge count partitions changed-hash/nonchanged and missing-token subset",
+        "observed": "76 total;55 changed-hash edges;6 missing all within changed",
+        "valid_case": "subset consistency",
+        "counterexample": "missing edge on unchanged hash without explanation",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "classification": "MEASURED_STRUCTURAL",
+      "claim": "Six historical lexical edges disappeared from current bodies; structural evolution is real but runtime effect is unknown."
+    },
+    {
+      "id": "F2",
+      "classification": "MEASURED",
+      "claim": "Evidence chronology forbids rewriting P0 with later observations."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "N1",
+      "hypothesis": "all historical lexical edges remain",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "N2",
+      "hypothesis": "lexical edge removal proves runtime behavior change",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "runtime effect of six edge changes",
+    "replacement-path classification"
+  ],
+  "role_output_frozen": true
+}

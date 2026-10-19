@@ -53,6 +53,28 @@ def main():
  expect_error(module,plan(['MIGRATION_SOURCE_PARITY'],{'MIGRATION_SOURCE_PARITY':['MIGRATION_SOURCE_PARITY']},coverage=False),'FAIL_PASE_PLAN_COVERAGE_INCOMPLETE'); checks+=1
  expect_error(module,plan([],{},base_sha=None),'FAIL_PASE_BASE_SHA'); checks+=1
  p=plan([],{}); p['source_authority']['resolved_revision']='4'*40; expect_error(module,p,'FAIL_PASE_SOURCE_REVISION_DRIFT'); checks+=1
+ # Historical evidence is immutable; ready CURRENT_REBOUND may reference
+ # compatible live main without flattening those distinct SHA identities.
+ p=plan([],{})
+ p['source_authority']={'schema_version':'LF_CI_AUTHORITY_CURRENTNESS_RECEIPT_V1',
+   'authority_ref':'refs/heads/main','evidence_revision':'3'*40,
+   'resolved_revision':'4'*40,'decision':'CURRENT_REBOUND','ready':True,
+   'rebind_allowed':True,'changed_material_ids':[],
+   'affected_root_material_ids':[],'authority_receipt_sha256':'a'*64,
+   'evidence_semantics':'HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY'}
+ got=module.build_dispatch_plan(p)
+ assert got['execution_envelope']['source_revision']=='3'*40
+ assert got['execution_envelope']['source_currentness_decision']=='CURRENT_REBOUND'
+ checks+=1
+ p_bad=plan([],{})
+ p_bad['source_authority']=dict(p['source_authority'],changed_material_ids=['ci_applicability_authority'])
+ expect_error(module,p_bad,'FAIL_PASE_SOURCE_REVISION_DRIFT'); checks+=1
+ p_bad=plan([],{})
+ p_bad['source_authority']=dict(p['source_authority'],rebind_allowed=False)
+ expect_error(module,p_bad,'FAIL_PASE_SOURCE_REVISION_DRIFT'); checks+=1
+ p_bad=plan([],{})
+ p_bad['source_authority']=dict(p['source_authority'],authority_receipt_sha256='UNVERIFIED')
+ expect_error(module,p_bad,'FAIL_PASE_SOURCE_REVISION_DRIFT'); checks+=1
  p=plan([],{}); p['pase_control_enforcement']['source_plan_sha256']='f'*64; expect_error(module,p,'FAIL_PASE_ENFORCEMENT_PLAN_DRIFT'); checks+=1
  p=plan(['MIGRATION_SOURCE_PARITY'],{'MIGRATION_SOURCE_PARITY':['MIGRATION_SOURCE_PARITY']}); p['pase_control_enforcement']['observe_only_controls']=[]; expect_error(module,p,'FAIL_PASE_ENFORCEMENT_PARTITION'); checks+=1
  with tempfile.TemporaryDirectory() as tmp:
