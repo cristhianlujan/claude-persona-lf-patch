@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -57,7 +58,9 @@ def load_auxiliary_allowlist(path: Path) -> list[str]:
     return names
 
 
-def validate_ordinary_workflows(workflows_dir: Path, allowlist_names: list[str]) -> list[str]:
+def validate_ordinary_workflows(
+    workflows_dir: Path, allowlist_names: list[str], *, repo: Path = ROOT,
+) -> list[str]:
     files = sorted([*workflows_dir.glob("*.yml"), *workflows_dir.glob("*.yaml")])
     ordinary_pr = sorted(
         path.name
@@ -71,9 +74,18 @@ def validate_ordinary_workflows(workflows_dir: Path, allowlist_names: list[str])
     if ordinary_pr != allowed:
         unlisted = sorted(set(ordinary_pr) - set(allowed))
         stale = sorted(set(allowed) - set(ordinary_pr))
-        raise AssertionError(
-            f"ordinary pull_request workflows differ: unlisted={unlisted}; missing_or_stale={stale}"
-        )
+        message = f"ordinary pull_request workflows differ: unlisted={unlisted}; missing_or_stale={stale}"
+        if unlisted:
+            contains_main = subprocess.run(
+                ["git", "-C", str(repo), "merge-base", "--is-ancestor", "origin/main", "HEAD"],
+                text=True, capture_output=True,
+            )
+            if contains_main.returncode == 1:
+                message += (
+                    "\nSTALE_BASE: la rama es anterior a la allowlist vigente en main; "
+                    "actualiza la rama con main."
+                )
+        raise AssertionError(message)
     return ordinary_pr
 
 
@@ -103,6 +115,41 @@ def exercise_allowlist_regressions() -> None:
             assert "removed.yml" in str(exc)
         else:
             raise AssertionError("stale allowlist entry was accepted")
+
+        # The rejection is identical; only stale branches receive an action hint.
+        repo = Path(temporary)
+        def git(*args: str) -> str:
+            return subprocess.check_output(
+                ["git", "-C", str(repo), *args], text=True, stderr=subprocess.DEVNULL,
+            ).strip()
+
+        git("init")
+        git("config", "user.email", "ci@example.invalid")
+        git("config", "user.name", "CI")
+        git("add", ".")
+        git("commit", "-m", "base")
+        base = git("rev-parse", "HEAD")
+        git("update-ref", "refs/remotes/origin/main", base)
+        (workflows / "new-ordinary.yml").write_text("on:\n  pull_request:\n", encoding="utf-8")
+        original = (
+            "ordinary pull_request workflows differ: "
+            "unlisted=['new-ordinary.yml']; missing_or_stale=[]"
+        )
+        for stale_base in (False, True):
+            if stale_base:
+                git("commit", "--allow-empty", "-m", "main ahead")
+                git("update-ref", "refs/remotes/origin/main", git("rev-parse", "HEAD"))
+                git("checkout", "--detach", base)
+            try:
+                validate_ordinary_workflows(workflows, ["aux.yml"], repo=repo)
+            except AssertionError as exc:
+                expected = original + (
+                    "\nSTALE_BASE: la rama es anterior a la allowlist vigente en main; "
+                    "actualiza la rama con main." if stale_base else ""
+                )
+                assert str(exc) == expected, str(exc)
+            else:
+                raise AssertionError("unlisted workflow accepted by stale-base hint")
 
 
 files = sorted([*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")])

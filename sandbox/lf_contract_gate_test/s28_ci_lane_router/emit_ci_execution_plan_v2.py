@@ -163,6 +163,8 @@ def main() -> int:
         repo=repo,
         bound_revision=bound_revision,
         current_revision=current_revision,
+        event_name=args.event_name,
+        candidate_head_revision=args.head,
     )
     CURRENTNESS.require_ready(currentness)
 

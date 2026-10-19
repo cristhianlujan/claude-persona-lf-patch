@@ -236,6 +236,100 @@ def test_feature_push_uses_merge_base_not_diff_base_as_authority() -> None:
     assert r["ready"] is True, r
 
 
+def pr_receipt(*, authority_change: bool, current_head: bool = False):
+    repo, base = setup_repo()
+    sh(repo, "checkout", "-b", "feature")
+    (repo / "unrelated/readme.md").write_text("feature\n", encoding="utf-8")
+    head = commit_all(repo, "feature")
+    sh(repo, "checkout", "master")
+    changed_path = "sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_ci_lane_router.py"
+    path = changed_path if authority_change else "unrelated/readme.md"
+    (repo / path).write_text("main advance\n", encoding="utf-8")
+    current = commit_all(repo, "main advance")
+    if current_head:
+        sh(repo, "checkout", "feature")
+        sh(repo, "merge", "--no-edit", current)
+        head = sh(repo, "rev-parse", "HEAD")
+    bound = M.resolve_authority_evidence_revision(
+        repo=repo, event_name="pull_request", ref_name="feature",
+        diff_base_revision=base, candidate_head_revision=head,
+        current_revision=current,
+    )
+    return M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=bound, current_revision=current,
+        event_name="pull_request", candidate_head_revision=head,
+    ), changed_path
+
+
+def blocked_message(receipt):
+    try:
+        M.require_ready(receipt)
+    except RuntimeError as exc:
+        return str(exc)
+    raise AssertionError("blocked receipt was accepted")
+
+
+def test_stale_pr_preserves_reason_and_adds_selector_hint() -> None:
+    receipt, path = pr_receipt(authority_change=True)
+    assert receipt["stale_base"] is True
+    assert receipt["reason"] == "COMPATIBILITY_ASSESSMENT_MISSING"
+    assert receipt["changed_ci_authority_paths"] == [path]
+    message = blocked_message(receipt)
+    assert message.startswith(
+        "BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:"
+        "COMPATIBILITY_ASSESSMENT_MISSING:STALE_BASE\n"
+    ), message
+    assert f"La rama está atrás de main y main cambió reglas de CI: {path}." in message
+    assert "Actualiza la rama con main (o etiqueta ready-to-merge: el Train sincroniza)." in message
+
+
+def test_current_pr_has_no_stale_hint() -> None:
+    receipt, _ = pr_receipt(authority_change=True, current_head=True)
+    assert receipt["stale_base"] is False
+    assert receipt["ready"] is True
+    M.require_ready(receipt)
+    # Even the same blocking reason must retain the original message when current.
+    receipt.update(ready=False, decision="UNKNOWN_FAIL_CLOSED",
+                   reason="COMPATIBILITY_ASSESSMENT_MISSING")
+    assert blocked_message(receipt) == (
+        "BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:"
+        "COMPATIBILITY_ASSESSMENT_MISSING"
+    )
+
+
+def test_stale_pr_without_selector_changes_stays_ready() -> None:
+    receipt, _ = pr_receipt(authority_change=False)
+    assert receipt["stale_base"] is True
+    assert receipt["changed_ci_authority_paths"] == []
+    assert receipt["ready"] is True
+    assert receipt["decision"] == "CURRENT_REBOUND"
+    M.require_ready(receipt)
+
+
+def test_stale_hint_does_not_relabel_other_block_reasons() -> None:
+    receipt, _ = pr_receipt(authority_change=True)
+    receipt["reason"] = "COMPATIBILITY_UNKNOWN"
+    assert blocked_message(receipt) == (
+        "BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_UNKNOWN"
+    )
+
+
+def test_stale_selector_paths_are_sorted_and_capped_at_ten() -> None:
+    repo, base = setup_repo()
+    for i in range(12):
+        (repo / f"sandbox/lf_contract_gate_test/s28_ci_lane_router/probe_{i:02}.py").write_text(
+            "# selector fixture\n", encoding="utf-8"
+        )
+    current = commit_all(repo, "twelve selector changes")
+    receipt = M.evaluate_ci_authority_currentness(
+        repo=repo, bound_revision=base, current_revision=current,
+        event_name="pull_request", candidate_head_revision=base,
+    )
+    paths = receipt["changed_ci_authority_paths"]
+    assert len(paths) == 10 and paths == sorted(paths)
+    assert paths[-1].endswith("probe_09.py")
+
+
 def main() -> None:
     tests = [
         test_unrelated_main_change_is_current_rebound,
@@ -247,6 +341,11 @@ def main() -> None:
         test_pr_uses_live_merge_base_not_stale_event_base,
         test_push_to_main_binds_new_evidence_to_current_main,
         test_feature_push_uses_merge_base_not_diff_base_as_authority,
+        test_stale_pr_preserves_reason_and_adds_selector_hint,
+        test_current_pr_has_no_stale_hint,
+        test_stale_pr_without_selector_changes_stays_ready,
+        test_stale_hint_does_not_relabel_other_block_reasons,
+        test_stale_selector_paths_are_sorted_and_capped_at_ten,
     ]
     for test in tests:
         test()
