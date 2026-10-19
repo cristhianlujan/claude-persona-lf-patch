@@ -62,3 +62,25 @@ De junio de 2026, anteriores a la disciplina de ledger; el CLI de Supabase los i
 - Lote 3, 29 renombres exactos: #2622 (bloqueado por guard M10.4 en 1 archivo; solución en #2937).
 - `20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql` → `20261012064408_20261003003000_lf_pilot_srcr_g12_state_authority_v1.sql`: contenido idéntico; requiere registrar el nombre exacto en el clasificador (decisión de Cristhian).
 - Tramo anterior al baseline: no revisado en este corte.
+
+## Anexo (2026-10-19 tarde): estado final post-baseline y tramo pre-baseline
+
+### Post-baseline: cerrado
+Tras #2622 (29 renombres) y #2940 (`lf_pilot_srcr_g12`), re-inventario sobre main `3b5267264591b566059491dab77b68dbd8cff0b3`: no queda ninguna diferencia fuera de las 22 registradas arriba (secciones A–E). La sección "Pendientes" queda resuelta.
+
+### Pre-baseline (`version <= 20261005203801`): congelado por diseño, registrado en bloque
+Este tramo está congelado por los controles de paridad: `CLASSIFICATION_BASELINE_END=20261005203801`, fuentes Git históricas fijadas por blob (`FAIL_LF_MIGRATION_HISTORICAL_SOURCE_DRIFT`, `FAIL_LF_MIGRATION_BACKDATED_SOURCE`) y ledger cutover→baseline fijado por digest (`GRANDFATHERED_COUNT=796`, `GRANDFATHERED_SHA256=94b5e2bb…`). Modificar estas fuentes rompería esos controles; **no se corrigen, se registran**.
+
+Inventario completo (solo lectura, 2026-10-19): `docs/reconcile/PRE_BASELINE_INVENTORY_20261019.json`.
+
+| Estado | # |
+|---|---|
+| Archivos Git / filas ledger | 760 / 1228 |
+| Idénticas | 480 |
+| Equivalentes (solo comentarios) | 165 |
+| Misma versión, contenido distinto (editadas tras aplicar) | 31 |
+| Renombre con contenido idéntico | 17 |
+| Solo en Git | 67 |
+| Solo en ledger (aplicadas sin fuente en Git; 399 antes del cutover `20260808031006`) | 536 |
+
+Todas las diferencias de este tramo quedan registradas por este anexo y el JSON. Cualquier corrección futura requiere decisión del owner y cambio coordinado de los controles de línea base.
