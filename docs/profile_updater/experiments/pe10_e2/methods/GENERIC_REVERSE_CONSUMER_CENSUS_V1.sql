@@ -15,11 +15,6 @@ p0 AS (
   CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') j(callee)
   WHERE e.id=__SOURCE_EVENT_ID__
 ),
-seed_names AS (
-  SELECT lower(historical_callee) AS proname FROM p0
-  UNION
-  SELECT lower(split_part(caller,'.',2)) FROM p0
-),
 all_functions AS (
   SELECT p.oid, n.nspname AS schema_name, p.proname,
          pg_get_function_identity_arguments(p.oid) AS identity_args,
@@ -28,6 +23,26 @@ all_functions AS (
   WHERE n.nspname NOT IN ('pg_catalog','information_schema')
     AND n.nspname !~ '^pg_'
     AND p.prokind IN ('f','p')
+),
+current_seed_callees AS (
+  -- Extend, without hardcoded answers, from the CURRENT bodies of every frozen P0 caller.
+  -- This is needed because new versions may never have been named in historical callees.
+  SELECT DISTINCT lower(m.parts[4]) AS proname
+  FROM all_functions f
+  JOIN (SELECT DISTINCT lower(caller) AS caller FROM p0) s
+    ON s.caller=lower(f.schema_name||'.'||f.proname)
+  CROSS JOIN LATERAL regexp_matches(
+    f.body,
+    '(^|[^A-Za-z0-9_])(([A-Za-z_][A-Za-z0-9_]*)\\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\\(',
+    'g'
+  ) m(parts)
+),
+seed_names AS (
+  SELECT lower(historical_callee) AS proname FROM p0
+  UNION
+  SELECT lower(split_part(caller,'.',2)) FROM p0
+  UNION
+  SELECT proname FROM current_seed_callees
 ),
 call_tokens AS (
   SELECT DISTINCT f.oid caller_oid, f.schema_name caller_schema,
