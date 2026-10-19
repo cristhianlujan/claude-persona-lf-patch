@@ -70,12 +70,14 @@
           ]
         }
       ],
-      "limits": "Inventory recorded 2026-10-04; historical edges are declarations, not live execution."
+      "limits": "Inventory recorded 2026-10-04; historical edges are declarations, not live execution.",
+      "evidence_type": "POSTGRES_SELECT_P0",
+      "status": "SELECT_REPLAYED"
     },
     {
       "id": "E2_C1_Q02",
       "scope": "CURRENT_SQL_BODY_NOT_P0",
-      "query": "SELECT n.nspname||'.'||p.proname AS caller FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosrc ~ '(^|[^[:alnum:]_])fn_input_governance_bootstrap_classify_v2_cached_v2[[:space:]]*\\\\(' ORDER BY caller",
+      "query": "SELECT n.nspname||'.'||p.proname AS consumer FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosrc ~ '(^|[^[:alnum:]_])fn_input_governance_bootstrap_classify_v2_cached_v2[[:space:]]*\\(' ORDER BY consumer",
       "observed": [
         "programacion.fn_input_governance_bootstrap_classify_v2_cached_v1",
         "programacion.fn_input_governance_recurate_source_stale_v1",
@@ -83,12 +85,14 @@
         "programacion.fn_input_run_semantic_revalidation_v1",
         "programacion.fn_t_remed_screen_status_v1"
       ],
-      "limits": "Textual call-site syntax in current SQL body, not an execution trace, parser proof or historical P0 state."
+      "limits": "Textual call-site syntax in current SQL body, not an execution trace, parser proof or historical P0 state.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
     },
     {
       "id": "E2_C1_Q03",
       "scope": "CURRENT_BODY_VS_HISTORICAL_TOKEN_COMPARISON",
-      "query": "For 76 historical caller/callee pairs from event 20161, compare current pg_proc.prosrc: (A) ILIKE '%'||historical_callee||'%' versus (B) regexp '(^|[^[:alnum:]_])'||historical_callee||'[[:space:]]*\\\\('",
+      "query": "WITH old AS (\n SELECT x->>'caller' AS caller,j.target AS target\n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x\n CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') j(target)\n WHERE e.id=20161\n), now AS (\n SELECT n.nspname||'.'||p.proname AS caller,p.prosrc AS body\n FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace\n), comparisons AS (\n SELECT old.caller,old.target,\n  n.body ILIKE '%'||old.target||'%' AS naive_substring,\n  n.body ~ ('(^|[^[:alnum:]_])'||old.target||'[[:space:]]*\\(') AS exact_call_token\n FROM old JOIN now n ON n.caller=old.caller\n)\nSELECT count(*) AS total_edges,\n count(*) FILTER(WHERE naive_substring) AS naive_retained,\n count(*) FILTER(WHERE NOT naive_substring) AS naive_missing,\n count(*) FILTER(WHERE exact_call_token) AS exact_call_retained,\n count(*) FILTER(WHERE NOT exact_call_token) AS exact_call_missing,\n count(*) FILTER(WHERE naive_substring AND NOT exact_call_token) AS substring_only\nFROM comparisons",
       "observed": {
         "historical_edges": 76,
         "naive_retained": 70,
@@ -97,7 +101,9 @@
         "exact_pattern_missing": 8,
         "substring_only": 2
       },
-      "limits": "Exact syntax regex is stronger than substring but may still match comments/strings or miss dynamic calls; not an AST and not runtime attestation."
+      "limits": "Exact syntax regex is stronger than substring but may still match comments/strings or miss dynamic calls; not an AST and not runtime attestation.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
     },
     {
       "id": "E2_C1_Q04",
@@ -117,7 +123,9 @@
           "selected": false
         }
       ],
-      "limits": "Negative on a naming selector is not proof the excluded object lacks material dependency."
+      "limits": "Negative on a naming selector is not proof the excluded object lacks material dependency.",
+      "evidence_type": "POSTGRES_SELECT_CURRENT",
+      "status": "SELECT_REPLAYED"
     },
     {
       "id": "E2_C1_Q05",
@@ -129,7 +137,9 @@
         "M29_COV_Q03": "75 bounded candidates; 27 overlap; 48 outside P0 and 11 P0-only, not reverse references",
         "M29_SYNTHESIS": "Retained count-based and selector caveats, not an enumerated consumer adjacency set"
       },
-      "limits": "Original reports are not all full literal SQL transcripts; do not upgrade source summaries to verified SQL execution details."
+      "limits": "Original reports are not all full literal SQL transcripts; do not upgrade source summaries to verified SQL execution details.",
+      "evidence_type": "GITHUB_BLOB_READBACK_NOT_SQL",
+      "status": "GITHUB_SOURCE_REVIEWED"
     }
   ],
   "findings": [
