@@ -1,0 +1,184 @@
+{
+  "schema": "PE10_M20_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M20",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M20_AUTH_Q1",
+      "sql": "SELECT codigo,primera_vez,estado,patron,causa_raiz FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') ORDER BY codigo;",
+      "result": "both exact EKB records are VALIDATED_TESTED pre-cutoff; one is SOAK criterion drift, the other unauthorized currentness/latest-13 readback."
+    },
+    {
+      "id": "M20_AUTH_Q2",
+      "sql": "SELECT current_user,current_setting('transaction_read_only') transaction_read_only,has_function_privilege(current_user,'programacion.fn_input_readiness_run_is_current(bigint)','EXECUTE') can_exec_programacion,has_function_privilege(current_user,'public.fn_input_readiness_run_is_current(bigint)','EXECUTE') can_exec_public,has_table_privilege(current_user,'programacion.input_readiness_runs','SELECT') readiness_select,has_table_privilege(current_user,'programacion.provenance_receipts','SELECT') receipt_select;",
+      "result": "read-only user; transaction_read_only=on; EXECUTE false on both currentness functions; SELECT true on evidence tables."
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "AUTH_CS1",
+        "observation": "42501 historical authority issue plus current EXECUTE=false while SELECT=true",
+        "components": [
+          "wrong_readback_path",
+          "missing_execute",
+          "functional_failure_misclassification"
+        ]
+      },
+      {
+        "id": "AUTH_CS2",
+        "observation": "historical SOAK authority and current privilege state are different evidence times",
+        "components": [
+          "temporal_authority_equivalence",
+          "source_substitution"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      {
+        "id": "HS1",
+        "components": [
+          "wrong_readback_path"
+        ],
+        "open_world_alternatives": [
+          "missing_execute",
+          "functional_failure_misclassification"
+        ]
+      },
+      {
+        "id": "HS2",
+        "components": [
+          "temporal_authority_equivalence"
+        ],
+        "open_world_alternatives": [
+          "source_substitution"
+        ]
+      }
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED",
+      "reason": "No justified executable pass/fail spectrum with priors for component-health likelihood."
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "selected_next_query": "Reconstruct CP2 evidence only through authorized SELECT sources and compare exact temporal authority."
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "EKB exact codes",
+        "time": "2026-10-14",
+        "assumptions": [
+          "validated EKB describes historical observed authority condition"
+        ],
+        "supports": [
+          "C1_42501_PATH"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current privilege readback",
+        "time": "CURRENT",
+        "assumptions": [
+          "current privilege state is not universal history"
+        ],
+        "supports": [
+          "C2_CURRENT_BOUNDARY"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C1_42501_PATH",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C2_CURRENT_BOUNDARY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C3_FUNCTIONAL_FAIL",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "42501_EQUALS_FUNCTIONAL_FAIL"
+        ],
+        "reason": "permission failure is authority/path evidence"
+      },
+      {
+        "set": [
+          "ELEVATE_EXECUTE"
+        ],
+        "reason": "SELECT path already authorized"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C2_CURRENT_BOUNDARY"
+        ]
+      },
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C1_42501_PATH"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M20_AUTH_F1",
+      "classification": "MEASURED",
+      "claim": "42501 is explained by authority/readback path, not a demonstrated functional failure."
+    },
+    {
+      "id": "M20_AUTH_F2",
+      "classification": "MEASURED_CURRENT",
+      "claim": "Evidence remains readable via SELECT without EXECUTE elevation."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M20_AUTH_N1",
+      "hypothesis": "Current connector has EXECUTE",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M20_AUTH_N2",
+      "hypothesis": "Evidence review requires privilege elevation",
+      "result": "FALSIFIED"
+    }
+  ],
+  "unresolved": [
+    "historical grants outside recorded EKB observation"
+  ],
+  "role_output_frozen": true
+}

@@ -1,0 +1,278 @@
+{
+  "schema": "PE10_M30_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M30",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M30-COV-F01",
+      "claim": "Frozen P0 inventories are internally deduplicated: 38 callers, 21 triggers and 6 external entries.",
+      "evidence_refs": [
+        "M30_COV_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-COV-F02",
+      "claim": "All 38 frozen caller names currently resolve.",
+      "evidence_refs": [
+        "M30_COV_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-COV-F03",
+      "claim": "Bounded current candidate set decomposes to 75=27 overlap+48 outside-P0, while 11 P0 callers fall outside the pattern.",
+      "evidence_refs": [
+        "M30_COV_Q03"
+      ],
+      "confidence": "HIGH_FOR_BOUNDED_PATTERN"
+    },
+    {
+      "id": "M30-COV-F04",
+      "claim": "Trigger structural partition is 21 true, 0 false, 0 absent.",
+      "evidence_refs": [
+        "M30_COV_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-COV-F05",
+      "claim": "Pre-cut readiness rows span 42 screens and family_count is invariant at 47; raw relation is not the governed cohort predicate.",
+      "evidence_refs": [
+        "M30_COV_Q05"
+      ],
+      "confidence": "HIGH_FOR_RAW_RELATION"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "COV-C1",
+          "members": [
+            "frozen_scope_not_current",
+            "current_complement_materiality_unknown"
+          ],
+          "basis": [
+            "M30-COV-F01",
+            "M30-COV-F03"
+          ]
+        },
+        {
+          "id": "COV-C2",
+          "members": [
+            "pattern_false_positive",
+            "pattern_false_negative"
+          ],
+          "basis": [
+            "M30-COV-F03"
+          ]
+        },
+        {
+          "id": "COV-C3",
+          "members": [
+            "raw_relation_denominator",
+            "governed_cohort_predicate_unknown"
+          ],
+          "basis": [
+            "M30-COV-F05"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "frozen_scope_not_current",
+          "pattern_false_positive"
+        ],
+        [
+          "frozen_scope_not_current",
+          "pattern_false_negative"
+        ],
+        [
+          "current_complement_materiality_unknown",
+          "governed_cohort_predicate_unknown"
+        ]
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No pass/fail coverage spectra or justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Authorized current universe manifest with inclusion/exclusion predicate.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Classify 48 candidate-only and 11 P0-only objects by runtime provenance.",
+            "cost": "MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Reproduce exact governed historical cohort predicate.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "C": {
+      "invariants": [
+        {
+          "id": "COV-I1",
+          "type": "SET",
+          "statement": "Frozen inventory totals equal dedupe cardinalities.",
+          "observed": "38/38,21/21,6/6",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I2",
+          "type": "PARTITION",
+          "statement": "P0 total=resolved+absent",
+          "observed": "38=38+0",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I3",
+          "type": "SET_DECOMPOSITION",
+          "statement": "candidate total=overlap+outside",
+          "observed": "75=27+48",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I4",
+          "type": "SET_DECOMPOSITION",
+          "statement": "P0 total=overlap+P0-only",
+          "observed": "38=27+11",
+          "status": "PASS"
+        },
+        {
+          "id": "COV-I5",
+          "type": "PARTITION",
+          "statement": "trigger total=true+false+absent",
+          "observed": "21=21+0+0",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "COV-MT1",
+          "transform": "Frozen P0 selector→bounded current name-pattern selector",
+          "observed_relation": "Sets differ: 48 candidate-only, 11 P0-only.",
+          "result": "COUNTEREXAMPLE_FOUND"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "SQL set/partition invariants directly executable."
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Historical scope is coherent, but bounded selector divergence prevents a current closed-world coverage claim.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized current universe classifies complements/exclusions.",
+        "Exact governed cohort predicate reproduces intended historical denominator."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Material in-scope omission is proven.",
+        "to_NO_ACTION_SUPPORTED": "Current universe reconciles with no material omission.",
+        "to_NEEDS_MORE_EVIDENCE": "Authoritative universe predicate remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate historical completeness with current completeness.",
+    "Do not equate name-pattern candidates with runtime consumers.",
+    "Do not substitute raw screen counts for governed cohort."
+  ],
+  "unresolved": [
+    "Current universe predicate",
+    "Complement materiality",
+    "Exact governed cohort predicate"
+  ],
+  "next_safe_step": "Use authorized current manifest/cohort predicate; no runtime mutation.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "invariants": 5,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M30_COV_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "callers_distinct": 38,
+        "triggers": 21,
+        "triggers_distinct": 21,
+        "external_entries": 6,
+        "external_distinct": 6
+      }
+    },
+    {
+      "query_id": "M30_COV_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "total": 38,
+        "resolved": 38,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M30_COV_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "cand_total": 75,
+        "overlap": 27,
+        "outside_p0": 48,
+        "p0_outside_pattern": 11
+      }
+    },
+    {
+      "query_id": "M30_COV_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 21,
+        "tlp_true": 21,
+        "tlp_false": 0,
+        "absent": 0
+      }
+    },
+    {
+      "query_id": "M30_COV_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "pre_cut_screens": 42,
+        "family_count_values": 1,
+        "min_family_count": 47,
+        "max_family_count": 47
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T23:16:00Z"
+}

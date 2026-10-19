@@ -1,0 +1,270 @@
+{
+  "schema": "PE10_1133_RAW_EVIDENCE_MANIFEST_V1",
+  "work_item_id": 1133,
+  "work_code": "PEVO-PE10-METHODS32-P0",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "archive_attachment_file_id": "file_000000004e48820e8414025654581746",
+  "archive_sha256": "8142626c361e29a0b696126048783c672f8457d00dc7e62f22d9b415fa3aecba",
+  "source_type": "CHATGPT_CONVERSATION_ATTACHMENT",
+  "storage_note": "Original RAWs are in existing conversation archive, not copied into Git by this migration. Git stores only source-bound SHA index. The attachment is not a server-verifiable evidence provider.",
+  "status": "HASH_INDEX_AND_PROVENANCE_ONLY_NOT_CHECKPOINT_COMPLETE",
+  "run_limitation": "M03–M32 analysis is partial; B specialist roles were one model context; no independent session claim; M01/M02 unchanged.",
+  "checkpoints": [
+    {
+      "method_code": "PE10_M01",
+      "checkpoint_id": 1625,
+      "method_base": "A",
+      "raw_path": "prior_originals/PE10_M01_RAW.json",
+      "raw_sha256": "58667ea7e8abec32c52e1495cff2eb9c6da1b8c62dce10cbc6464071cc04bc96",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M02",
+      "checkpoint_id": 1626,
+      "method_base": "A",
+      "raw_path": "prior_originals/PE10_M02_RAW.json",
+      "raw_sha256": "34cdfe2c2d3619495122092934d2db7719a312d620094b97463d1c41866c54e7",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M03",
+      "checkpoint_id": 1627,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M03.json",
+      "raw_sha256": "35c677ff8ba29da910a88b4c2f28fa1905a2723bd9608f60d8405f5eb6d7adea",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M04",
+      "checkpoint_id": 1628,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M04.json",
+      "raw_sha256": "4ec684e46bb3b6ed25a0dd18919f632aacca3b2ea5db7dce9dfd120b21941bfd",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M05",
+      "checkpoint_id": 1629,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M05.json",
+      "raw_sha256": "8fefae266b4b2279cb8d921dd4b2893ac607993fd38ae70c72d6f3f0bf050685",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M06",
+      "checkpoint_id": 1630,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M06.json",
+      "raw_sha256": "21d4e22c04f2f5b1dee4216807f9466a4a55fbf49d91e174f440d7e76280b5d4",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M07",
+      "checkpoint_id": 1631,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M07.json",
+      "raw_sha256": "518a7e53245608950e5681a5cca655998ac8913dcec718918bf490495d8ea421",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M08",
+      "checkpoint_id": 1632,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M08.json",
+      "raw_sha256": "197bba20c5ac02a7bc0a70e43246499798af8fcca068c091eda6f9df165befd1",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M09",
+      "checkpoint_id": 1633,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M09.json",
+      "raw_sha256": "49b6c91b84756fe18bf79374275d51be3b33dd5879969898b60e8a3a4e71865a",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M10",
+      "checkpoint_id": 1634,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M10.json",
+      "raw_sha256": "f7a3a2979c0e8094f3168ac0b5f6d4d8f9902f1664dc5529cc7a88c53789e3d6",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M11",
+      "checkpoint_id": 1635,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M11.json",
+      "raw_sha256": "2e96a42a53379abc98ce503a60db4fabedfdb68f222605b137618fa9ca5872be",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M12",
+      "checkpoint_id": 1636,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M12.json",
+      "raw_sha256": "04392fbcd8e40c7236abef2b7019b2668efd8ff5e46bb50765f9f384b5ef78a3",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M13",
+      "checkpoint_id": 1637,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M13.json",
+      "raw_sha256": "ed1b41639150ea4c775c2ed17b44867b7a3e2fdfa89588bdbe950beb436b03b6",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M14",
+      "checkpoint_id": 1638,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M14.json",
+      "raw_sha256": "4809575beee9815347ce3e53da9c8c68f99d6b3ae13aee9915954daf7153c686",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M15",
+      "checkpoint_id": 1639,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M15.json",
+      "raw_sha256": "cceaeb904bad988a95be757f2bd7b5bad048f27d489ca6bc41f46ccc3f388dcb",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M16",
+      "checkpoint_id": 1640,
+      "method_base": "A",
+      "raw_path": "methods/PE10_M16.json",
+      "raw_sha256": "aa4c29172f6355e748f15b0fb6d3d4e3e2f1f2b358f2de63b293ee8837a0dda3",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M17",
+      "checkpoint_id": 1641,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M17.json",
+      "raw_sha256": "105a7dddfb5ba49ee5b29e3c63f1c215f820fd7505ef0bd1c9a8a67ec1ad93f5",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M18",
+      "checkpoint_id": 1642,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M18.json",
+      "raw_sha256": "ea756fb0573ff82a29d1d9c9bdeff65c2ab0723420859e43b11ac0930179e379",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M19",
+      "checkpoint_id": 1643,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M19.json",
+      "raw_sha256": "13a3c0278e78c8ffe8b4ebbd44c084c972277ac3d8fe06a6fb5c027e0fa80ce1",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M20",
+      "checkpoint_id": 1644,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M20.json",
+      "raw_sha256": "5fdb1e282b3ff7e425b29c89440ac3ee5bffaa390930e0202775e1c77918cc63",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M21",
+      "checkpoint_id": 1645,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M21.json",
+      "raw_sha256": "af542c5af8974415367758c6312e860168b34425b49f42f3d073074ea214cf60",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M22",
+      "checkpoint_id": 1646,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M22.json",
+      "raw_sha256": "bbb21bd84ec17a11326d6555e4b1536936ac159493cf1750916fb5365f3a3ad8",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M23",
+      "checkpoint_id": 1647,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M23.json",
+      "raw_sha256": "bcdc0f50dec580977aeae18ffd3d89a340d57c766fe0059d790e2b62beeae461",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M24",
+      "checkpoint_id": 1648,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M24.json",
+      "raw_sha256": "9fa8e95b882eafad85549b252f0016c880ee8f74b793152316f8e59d1c16063d",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M25",
+      "checkpoint_id": 1649,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M25.json",
+      "raw_sha256": "b0809de7b913badea7b7b34e223ec85ed91bd9d7a7443e23e414956a25c22ed7",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M26",
+      "checkpoint_id": 1650,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M26.json",
+      "raw_sha256": "2fc474fa158c7d6c06f553a0e5374ac17980bff0cd31a231a7a2030c24b11bb3",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M27",
+      "checkpoint_id": 1651,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M27.json",
+      "raw_sha256": "1dcf87203fe4ba824afef76c88a88197d3a141791ea1fefab4e888196129de3f",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M28",
+      "checkpoint_id": 1652,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M28.json",
+      "raw_sha256": "9ec2cdd1b2b838779f4f04c29643fc5c87542b8ba40d1deed06ebb122a928204",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M29",
+      "checkpoint_id": 1653,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M29.json",
+      "raw_sha256": "84db22f2238f703f5c7edab7e8a09432021aa05c2344bb4231e5a39e120b9ce0",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M30",
+      "checkpoint_id": 1654,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M30.json",
+      "raw_sha256": "1360b569f3bc3a72a15760f59775f050eccb93e9de426425f8a1aa85f036813f",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M31",
+      "checkpoint_id": 1655,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M31.json",
+      "raw_sha256": "cf7dac18b4fcab83f4cf9463ece3468c0d48a96e6da21de83a42dac34f7b9d56",
+      "completion_attested": false
+    },
+    {
+      "method_code": "PE10_M32",
+      "checkpoint_id": 1656,
+      "method_base": "B",
+      "raw_path": "methods/PE10_M32.json",
+      "raw_sha256": "65dc403d6b5d2a1210fc28ffb54afd1030dda46ac2d550879417b0217886b410",
+      "completion_attested": false
+    }
+  ]
+}

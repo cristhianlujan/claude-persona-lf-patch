@@ -1,0 +1,311 @@
+{
+  "schema": "PE10_M17_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M17",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "inputs": [
+    "original_p0_frozen",
+    "PE10_METHOD_V1 ARCHITECTURE contract",
+    "authorized current read-only retrieval of historical source"
+  ],
+  "sql_evidence": [
+    {
+      "id": "M17_ARQ_Q1",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,jsonb_array_length(payload->'sql_callers') sql_callers,jsonb_array_length(payload->'edge_current') edge_snapshots,jsonb_array_length(payload->'trigger_bindings') triggers,jsonb_array_length(payload->'external_inventory') external_assets FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "sql_callers": 38,
+          "edge_snapshots": 4,
+          "triggers": 21,
+          "external_assets": 6
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_SOURCE_CURRENT_RO_QUERY"
+    },
+    {
+      "id": "M17_ARQ_Q2",
+      "sql_literal": "SELECT count(*) nominal_edges,count(DISTINCT (x->>'caller')||'->'||c.name) distinct_edges,count(DISTINCT c.name) target_labels,count(*) FILTER(WHERE c.name ILIKE '%cached%') mentions_cached FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "nominal_edges": 76,
+          "distinct_edges": 76,
+          "target_labels": 39,
+          "mentions_cached": 11
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_SOURCE_CURRENT_RO_QUERY"
+    },
+    {
+      "id": "M17_ARQ_Q3",
+      "sql_literal": "SELECT x->>'caller' caller,c.name mentioned_target,x->>'currentness_source' inventory_source FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161 ORDER BY caller,mentioned_target LIMIT 24",
+      "rows": [
+        {
+          "caller": "programacion.fn_guard_input_family_assessment_update",
+          "mentioned_target": "fn_input_governance_assertion_relevant",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_actionable_remediation_summary_v1",
+          "mentioned_target": "fn_input_readiness_run_is_current",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_context_manifest",
+          "mentioned_target": "fn_input_readiness_run_is_current",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_evaluation_outcome_summary",
+          "mentioned_target": "fn_input_readiness_run_is_current",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2",
+          "mentioned_target": "fn_input_governance_semantic_probe_v3",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v1_cached_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v1",
+          "mentioned_target": "fn_input_governance_semantic_probe_v3",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v1_cached_v2",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2",
+          "mentioned_target": "fn_input_governance_semantic_probe_v3_cached_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_materialize_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_materialize_v1",
+          "mentioned_target": "fn_input_governance_ekb_checkpoint",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_materialize_v2",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v2",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_materialize_v2",
+          "mentioned_target": "fn_input_governance_ekb_checkpoint",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_materialize_v2",
+          "mentioned_target": "fn_input_governance_materialize_gap_proposals_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_validate_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_assertions_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_validate_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_bootstrap_validate_v1",
+          "mentioned_target": "fn_input_governance_ekb_checkpoint",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_materialize_v2",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "mentioned_target": "fn_input_governance_curator_rebind_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "mentioned_target": "fn_input_governance_recurate_source_stale_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "mentioned_target": "fn_input_governance_recurate_v2",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_materialize_v1",
+          "mentioned_target": "fn_input_readiness_run_is_current_cached_v1",
+          "inventory_source": "LIVE_PG_PROC"
+        },
+        {
+          "caller": "programacion.fn_input_governance_curator_rebind_v1",
+          "mentioned_target": "fn_input_governance_bootstrap_classify_v2",
+          "inventory_source": "LIVE_PG_PROC"
+        }
+      ],
+      "rows_returned": 24,
+      "scope": "FROZEN_P0_SOURCE_CURRENT_RO_QUERY"
+    },
+    {
+      "id": "M17_ARQ_Q4",
+      "sql_literal": "SELECT coalesce(x->>'operational_class','UNKNOWN') class,coalesce(x->>'governance_lifecycle','UNKNOWN') lifecycle,count(*) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161 GROUP BY 1,2 ORDER BY 1,2",
+      "rows": [
+        {
+          "class": "ACTIVE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 2
+        },
+        {
+          "class": "ACTIVE",
+          "lifecycle": "RUNTIME_SANDBOX_CANARY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE",
+          "lifecycle": "NO_HABILITADO",
+          "n": 1
+        },
+        {
+          "class": "CANDIDATE_TEST",
+          "lifecycle": "CANDIDATE_READ_ONLY",
+          "n": 1
+        }
+      ],
+      "rows_returned": 5,
+      "scope": "FROZEN_P0_SOURCE_CURRENT_RO_QUERY"
+    },
+    {
+      "id": "M17_ARQ_Q5",
+      "sql_literal": "SELECT payload->'deduplication' dedupe_policy,payload->'excluded_name_candidate' excluded,payload->'ambiguous_name_candidates_checked' ambiguous,payload->'scope_guards' forbidden_change FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "dedupe_policy": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          },
+          "ambiguous": 1,
+          "forbidden_change": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "FROZEN_P0_SOURCE_CURRENT_RO_QUERY"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ARCH_F1",
+      "claim": "Historical source contains 38 SQL caller identities, 76 lexical caller-callee edges and 21 trigger bindings. Graph is a source snapshot not an execution trace.",
+      "evidence": [
+        "M17_ARQ_Q1",
+        "M17_ARQ_Q2"
+      ],
+      "classification": "MEASURED_ASOF"
+    },
+    {
+      "id": "ARCH_F2",
+      "claim": "Nominal callee names and cached lexical references require exact object resolution/version proof before lifecycle changes.",
+      "evidence": [
+        "M17_ARQ_Q2",
+        "M17_ARQ_Q3"
+      ],
+      "classification": "MEASURED_LEXICAL_NOT_EXECUTED"
+    },
+    {
+      "id": "ARCH_F3",
+      "claim": "Six external assets have independent lifecycle classes; they are not directly equivalent to SQL function identities.",
+      "evidence": [
+        "M17_ARQ_Q4",
+        "M17_ARQ_Q5"
+      ],
+      "classification": "MEASURED_SCOPE"
+    }
+  ],
+  "causal_hypotheses": [
+    {
+      "hypothesis": "Static snapshot promoted to live topology incorrectly",
+      "test": "Compare qualified P0-time and source-pinned live graph using allowed readbacks with exact identity and cutoff",
+      "status": "UNPROVEN"
+    },
+    {
+      "hypothesis": "Cached/ctx consumer chains may have unobserved wrappers",
+      "test": "Inspect exact qualified definitions/reachability; avoid inferring dynamic calls from textual mentions",
+      "status": "UNPROVEN"
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "ARCH_N1_LEXICAL_NOT_EXECUTION",
+      "pass": true
+    },
+    {
+      "id": "ARCH_N2_SIX_EXTERNAL_NOT_ADD_TO_38",
+      "pass": true
+    },
+    {
+      "id": "ARCH_N3_TIME_SCOPE_NOT_LIVE",
+      "pass": true
+    }
+  ],
+  "contradictions": [],
+  "unresolved": [
+    "Actual runtime invocation/connection graph not demonstrated",
+    "Canonical object equivalence of external sources not proven",
+    "P0 source is historical, not a current snapshot"
+  ],
+  "measured_costs": {
+    "queries_executed": 5,
+    "returned_rows": 32,
+    "db_runtime_ms": "UNKNOWN"
+  },
+  "next_safe_step": "Read exact source-pinned object definitions/reachability before any graph refactor",
+  "external_quality_score": "NOT_PERFORMED"
+}

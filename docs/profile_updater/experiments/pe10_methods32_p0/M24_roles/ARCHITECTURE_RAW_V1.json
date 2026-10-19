@@ -1,0 +1,200 @@
+{
+  "schema": "PE10_M24_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "role_code": "ARCHITECTURE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M24_ARQ_Q1",
+      "result": "38 total;0 absent;16 empirical same;22 changed"
+    },
+    {
+      "id": "M24_ARQ_Q2",
+      "result": "21 historical trigger bindings;21 exact current matches;0 missing;0 function mismatch"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "ARQ_CS1",
+        "observation": "22 definition comparisons changed while all names remain",
+        "components": [
+          "definition_drift",
+          "hash_recipe_unknown",
+          "snapshot_freshness"
+        ]
+      },
+      {
+        "id": "ARQ_CS2",
+        "observation": "trigger mapping stable while internal definitions changed",
+        "components": [
+          "internal_call_path_evolution",
+          "trigger_rebinding"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "definition_drift"
+      ],
+      [
+        "internal_call_path_evolution"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "inspect material call-path changes among changed definitions"
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "event20161+current pg_proc",
+        "time": "P0+CURRENT",
+        "assumptions": [
+          "empirical comparator only"
+        ],
+        "supports": [
+          "C_DRIFT"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "event20161 trigger bindings+current pg_trigger",
+        "time": "P0+CURRENT",
+        "assumptions": [
+          "trigger identity is separate topology layer"
+        ],
+        "supports": [
+          "C_TRIG_STABLE"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_DRIFT",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C_TRIG_STABLE",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C_LIVE_EQUIVALENT",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "TRIGGER_STABILITY_EQUALS_INTERNAL_EQUIVALENCE"
+        ],
+        "reason": "different topology layers"
+      },
+      {
+        "set": [
+          "EMPIRICAL_HASH_EQUALS_CANONICAL_RECIPE"
+        ],
+        "reason": "recipe unproven"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C_DRIFT"
+        ],
+        "preserves": [
+          "C_TRIG_STABLE"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C_TRIG_STABLE"
+        ],
+        "preserves": [
+          "C_DRIFT"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "I1",
+        "rule": "38=16+22+0",
+        "observed": "reconciled",
+        "valid_case": "partition complete",
+        "counterexample": "unreconciled comparator",
+        "status": "PASS"
+      },
+      {
+        "id": "I2",
+        "rule": "trigger total=matched+missing and mismatches tracked separately",
+        "observed": "21=21+0; mismatch0",
+        "valid_case": "all mapped",
+        "counterexample": "missing/rebound trigger",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "classification": "MEASURED",
+      "claim": "Definitions show selective drift while historical trigger binding identity remains stable."
+    },
+    {
+      "id": "F2",
+      "classification": "LIMIT",
+      "claim": "Stable triggers do not prove internal function equivalence."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "N1",
+      "hypothesis": "Broad trigger rebinding explains drift",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "N2",
+      "hypothesis": "Hash comparator proves canonical recipe",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "canonical hash recipe",
+    "runtime materiality of changed definitions"
+  ],
+  "role_output_frozen": true
+}

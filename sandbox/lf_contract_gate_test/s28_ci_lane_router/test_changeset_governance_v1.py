@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from lf_changeset_governance import ChangesetIntegrityError, evaluate_pr_integrity
 from lf_ci_lane_router import classify
+from lf_changeset_governance import ChangesetIntegrityError, compile_family_registry, evaluate_pr_integrity
 
 MANIFEST_PREFIX = "sandbox/lf_contract_gate_test/changesets"
 
@@ -46,6 +46,30 @@ def main():
     assert r["families"]["services/profile_runtime_api/x.py"] == "SERVICE_RUNTIME"
     checks += 1
 
+    grouped = compile_family_registry({
+        "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
+        "fixed_families": [{
+            "family": "GROUPED_TEST_FAMILY",
+            "kind": "prefixes",
+            "prefixes": ["sandbox/lf_contract_gate_test/group_a/", "sandbox/lf_contract_gate_test/group_b/"],
+        }],
+        "family_controls": {"GROUPED_TEST_FAMILY": ["CI_ROUTER_SELFTEST"]},
+    })
+    assert grouped.family_for("sandbox/lf_contract_gate_test/group_a/test.py") == "GROUPED_TEST_FAMILY"
+    assert grouped.family_for("sandbox/lf_contract_gate_test/group_b/test.py") == "GROUPED_TEST_FAMILY"
+    assert grouped.family_for("sandbox/lf_contract_gate_test/group_c/test.py") is None
+    checks += 1
+
+    expect(
+        "FAIL_CHANGESET_FIXED_FAMILY_MATCHER",
+        lambda: compile_family_registry({
+            "registry_version": "LF_CHANGE_FAMILY_REGISTRY_V1",
+            "fixed_families": [{"family": "BAD_GROUP", "kind": "prefixes", "prefixes": ["../outside/"]}],
+            "family_controls": {"BAD_GROUP": ["CI_ROUTER_SELFTEST"]},
+        }),
+    )
+    checks += 1
+
     r = evaluate_pr_integrity(
         [manifest("SOL-1"), "custom/a.py"],
         manifest_data={"solution_ref": "SOL-1", "paths": {"custom/a.py": "CUSTOM"}},
@@ -70,7 +94,7 @@ def main():
     r = evaluate_pr_integrity([legacy_root])
     assert r["classification_required"] and r["violations"] == [f"UNDECLARED_PATH:{legacy_root}"]
     checks += 1
-    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/9 PASS")
+    print(f"CHANGESET_FIXED_FAMILY_TESTS={checks}/11 PASS")
 
     r = evaluate_pr_integrity(
         [manifest("SOL-3"), "other/a.txt"],

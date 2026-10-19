@@ -1,6 +1,6 @@
 name: LF Analysis C1 Source Attestation
 
-# Read-only run: executes the A1Q..A14Q C1 source attestation on the exact commit it was
+# Read-only run: executes the A1Q..A15Q C1 source attestation on the exact commit it was
 # started on and prints the observed facts. It also runs on every push to main that touches the
 # runner, the dossier or this workflow, so each such commit carries its own run as evidence.
 # No secrets, no database, no transition.
@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       units:
-        description: 'Comma separated units (default A1..A14)'
+        description: 'Comma separated units (default A1..A15)'
         required: false
-        default: 'A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14'
+        default: 'A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15'
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
           python-version: '3.12'
       - name: Execute deterministic C1 source attestation
         env:
-          UNITS: ${{ inputs.units || 'A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14' }}
+          UNITS: ${{ inputs.units || 'A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15' }}
         run: |
           python3 -I sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_qualification_c1_ci_attest_v1.py --units "$UNITS" --output "$RUNNER_TEMP/c1-attestation.json" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload attestation report

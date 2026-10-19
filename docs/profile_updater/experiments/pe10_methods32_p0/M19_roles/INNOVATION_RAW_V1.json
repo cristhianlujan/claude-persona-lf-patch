@@ -1,0 +1,143 @@
+{
+  "schema": "PE10_M19_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M19",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M19_INNOV_Q1",
+      "sql": "SELECT 'EVENT_20161' source,created_at observed_at FROM public.lf_eventos WHERE id=20161 UNION ALL SELECT 'RECEIPT_38',created_at FROM programacion.provenance_receipts WHERE id=38 UNION ALL SELECT codigo,primera_vez FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') ORDER BY observed_at;",
+      "result": "temporal sequence: event 20161 Oct-04; receipt38 Oct-07; two EKB validations Oct-14."
+    },
+    {
+      "id": "M19_INNOV_Q2",
+      "sql": "WITH hist AS (SELECT x->>'caller' caller FROM public.lf_eventos l,jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), cur AS (SELECT n.nspname||'.'||p.proname fullname,p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN('programacion','public','lf_ops') AND p.proname ~ '(input_governance|input_readiness|guard_input)') SELECT count(*) FILTER(WHERE h.caller IS NULL) complement_count,count(*) FILTER(WHERE h.caller IS NULL AND c.proname ~ '(queue|direct_step|handoff|continuation|_ctx|cached_v2)') path_shape_candidates FROM cur c LEFT JOIN hist h ON h.caller=c.fullname;",
+      "result": "64 current name-pattern complement functions outside historical caller identity set; 23 have queue/direct/handoff/continuation/ctx/cached_v2 shapes; candidate signal only."
+    }
+  ],
+  "atms": {
+    "evidence": [
+      {
+        "id": "E_INNOV_TIME",
+        "source": "event+receipt+EKB timestamps",
+        "time": "2026-10-04..2026-10-14",
+        "identity": "four authoritative records",
+        "assumptions": [
+          "later records may refine interpretation but cannot rewrite earlier observation time"
+        ],
+        "supports": [
+          "C_INNOV_TEMPORAL_LAYERING"
+        ]
+      },
+      {
+        "id": "E_INNOV_COMP",
+        "source": "current pg_proc complement",
+        "time": "CURRENT_READBACK",
+        "identity": "name-pattern complement",
+        "assumptions": [
+          "name pattern is candidate discovery, not caller proof"
+        ],
+        "supports": [
+          "C_INNOV_CANDIDATES"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_INNOV_TEMPORAL_LAYERING",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_INNOV_TIME"
+          ]
+        ]
+      },
+      {
+        "id": "C_INNOV_CANDIDATES",
+        "state": "SUPPORTED_AS_CANDIDATES_ONLY",
+        "justifications": [
+          [
+            "E_INNOV_COMP"
+          ]
+        ]
+      },
+      {
+        "id": "C_INNOV_64_OMISSIONS",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_INNOV_1",
+        "set": [
+          "USE_LATER_RECORD_TO_REWRITE_P0_FACT"
+        ],
+        "reason": "ATMS preserves observation-time identity"
+      },
+      {
+        "id": "N_INNOV_2",
+        "set": [
+          "PROMOTE_NAME_PATTERN_TO_CALLER"
+        ],
+        "reason": "candidate discovery lacks reference proof"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_INNOV_TIME",
+        "invalidates": [
+          "C_INNOV_TEMPORAL_LAYERING"
+        ]
+      },
+      {
+        "withdraw": "E_INNOV_COMP",
+        "invalidates": [
+          "C_INNOV_CANDIDATES"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M19_INNOV_F1",
+      "classification": "MEASURED",
+      "claim": "Evidence authority is temporally layered; later receipt/EKB evidence refines but does not rewrite the Oct-04 snapshot.",
+      "evidence": [
+        "M19_INNOV_Q1"
+      ]
+    },
+    {
+      "id": "M19_INNOV_F2",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "claim": "64 current complement functions, including 23 path-shaped names, are candidates requiring reference/lifecycle classification; they are not 64 proven omissions.",
+      "evidence": [
+        "M19_INNOV_Q2"
+      ]
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M19_INNOV_N1",
+      "hypothesis": "Later evidence can be treated as same-time P0 evidence.",
+      "result": "REJECTED_BY_ATMS_NOGOOD"
+    },
+    {
+      "id": "M19_INNOV_N2",
+      "hypothesis": "All 64 complement functions are callers.",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "reference/lifecycle classification of complement candidates"
+  ],
+  "role_output_frozen": true
+}

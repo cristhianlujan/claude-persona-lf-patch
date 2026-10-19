@@ -68,14 +68,37 @@ class PaseF09015TelemetryTest(unittest.TestCase):
         self.assertTrue(result["failure_row_rejected"])
         self.assertEqual(result["not_reached"], ["verify"])
 
-    def test_retry_chain_is_ordered_by_time_and_scoped_to_pr_version(self):
+    def test_retry_chain_survives_version_reassignment(self):
         chain = retry_chains([
-            {"pr": 9, "migration_version": "20261014000000", "execution_id": "e2", "created_at": "2026-10-14T02:00Z"},
-            {"pr": 9, "migration_version": "20261014000000", "execution_id": "e1", "created_at": "2026-10-14T01:00Z"},
-            {"pr": 10, "migration_version": "20261014000000", "execution_id": "e3", "created_at": "2026-10-14T03:00Z"},
+            {"pr": 9, "migration_name": "lf_c3_v1", "migration_version": "20261014000500",
+             "execution_id": "e2", "created_at": "2026-10-14T02:00Z"},
+            {"pr": 9, "migration_name": "lf_c3_v1", "migration_version": "20261014000000",
+             "execution_id": "e1", "created_at": "2026-10-14T01:00Z"},
         ])
+        self.assertEqual(len(chain), 1)
         self.assertEqual([x["execution_id"] for x in chain[0]["attempts"]], ["e1", "e2"])
-        self.assertEqual(len(chain), 2)
+        self.assertEqual([x["migration_version"] for x in chain[0]["attempts"]],
+                         ["20261014000000", "20261014000500"])
+
+    def test_retry_chain_separates_names_and_prs(self):
+        chain = retry_chains([
+            {"pr": 9, "migration_name": "lf_a_v1", "migration_version": "20261014000000", "execution_id": "e1", "created_at": "1"},
+            {"pr": 9, "migration_name": "lf_b_v1", "migration_version": "20261014000000", "execution_id": "e2", "created_at": "2"},
+            {"pr": 10, "migration_name": "lf_a_v1", "migration_version": "20261014000000", "execution_id": "e3", "created_at": "3"},
+        ])
+        self.assertEqual(len(chain), 3)
+
+    def test_retry_chain_name_from_path_and_version_prefix(self):
+        chain = retry_chains([
+            {"pr": 9, "migration_path": "supabase/migrations/20261014000000_lf_a_v1.sql", "execution_id": "e1", "created_at": "1"},
+            {"pr": 9, "migration_name": "20261014000500_lf_a_v1", "execution_id": "e2", "created_at": "2"},
+        ])
+        self.assertEqual(len(chain), 1)
+        self.assertEqual(chain[0]["migration_name"], "lf_a_v1")
+
+    def test_retry_chain_missing_name_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "RETRY_CHAIN_MIGRATION_NAME_MISSING"):
+            retry_chains([{"pr": 9, "migration_version": "20261014000000", "execution_id": "e1"}])
 
 
 if __name__ == "__main__":

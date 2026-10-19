@@ -1,0 +1,640 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M14",
+  "base_code": "A",
+  "algorithm_codes": [
+    "D",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M14.json",
+    "sha256": "4809575beee9815347ce3e53da9c8c68f99d6b3ae13aee9915954daf7153c686"
+  },
+  "producer": "One A integrated SRCR D/C/E investigator, no peer result input",
+  "external_evaluation": "NOT_PERFORMED",
+  "sql_evidence": [
+    {
+      "id": "M14_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->'scope_guards' guards FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q02",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n,count(DISTINCT x->>'dedupe_key') caller_keys FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "caller_keys": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q03",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q04",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'definition_md5'~'^[a-f0-9]{32}$') valid,count(*) FILTER(WHERE NOT(x->>'definition_md5'~'^[a-f0-9]{32}$')) invalid,count(*) FILTER(WHERE (x->>'definition_md5'~'^[a-f0-9]{32}$') IS NULL) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "n": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q05",
+      "sql_literal": "SELECT count(*) lexical_edges,count(DISTINCT (x->>'caller')||'->'||c.name) unique_edges,count(DISTINCT c.name) destinations FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "lexical_edges": 76,
+          "unique_edges": 76,
+          "destinations": 39
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q06",
+      "sql_literal": "WITH x(flag) AS (VALUES('ACTIVE'::text),('OTHER'::text),(NULL::text)) SELECT count(*) total,count(*) FILTER(WHERE flag='ACTIVE') t,count(*) FILTER(WHERE NOT(flag='ACTIVE')) f,count(*) FILTER(WHERE (flag='ACTIVE') IS NULL) n FROM x",
+      "rows": [
+        {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "EXPLICIT_SQL_CONTRACT_COUNTEREXAMPLE"
+    },
+    {
+      "id": "M14_Q07",
+      "sql_literal": "WITH x(expected,observed) AS (VALUES(38,38),(38,39),(38,NULL::int)) SELECT expected,observed,(expected=observed) IS TRUE accepted FROM x ORDER BY observed NULLS LAST",
+      "rows": [
+        {
+          "expected": 38,
+          "observed": 38,
+          "accepted": true
+        },
+        {
+          "expected": 38,
+          "observed": 39,
+          "accepted": false
+        },
+        {
+          "expected": 38,
+          "observed": null,
+          "accepted": false
+        }
+      ],
+      "rows_returned": 3,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "EXPLICIT_SQL_CONTRACT_COUNTEREXAMPLE"
+    },
+    {
+      "id": "M14_Q08",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q09",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q10",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') trigger_count,jsonb_array_length(payload->'external_inventory') external_count,jsonb_array_length(payload->'consumer_relation_snapshot_json_rows') relation_snapshots,payload->'usage_stats' usage_stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "trigger_count": 21,
+          "external_count": 6,
+          "relation_snapshots": 27,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q11",
+      "sql_literal": "SELECT payload->'historical_provenance_only' provenance,payload->'deduplication' dedup,payload->'excluded_name_candidate' excluded_name FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          },
+          "dedup": {
+            "rule": "One logical caller identity per source URI/object identity; evidence from multiple governed sources is merged instead of double-counted.",
+            "router_identity": "PROGRAMACION_FN_LF_ROUTER_INPUT_GOVERNANCE_RESOLVE_V1 maps to live SQL lf_ops.fn_lf_router_input_governance_resolve_v1.",
+            "profiles_edge_identity": "EDGE_FN_LF_PROFILES_GOVERNANCE_CALLER_V1 maps to live Edge lf-profiles-governance-caller-v1."
+          },
+          "excluded_name": {
+            "object": "lf-profile-creator-governance-caller-v1",
+            "reason": "Current caller.ts invokes configured LF_PROFILE_CREATOR_RUNTIME_SLUG/default run-creacion-perfil-lf and contains no IG call; name/existence is not usage evidence.",
+            "sha256": "27594e559e752587c5644463efc67fb9be245319b856766d85435431325cf6ee",
+            "version": 16,
+            "edge_marker": "ACTIVE",
+            "classification": "NOT_IG_CALLER",
+            "verified_target": "run-creacion-perfil-lf"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q12",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') asof,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') post FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "asof": 1,
+          "post": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "HISTORICAL_SOURCE_CUTOFF"
+    },
+    {
+      "id": "M14_Q13",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "PRINCIPAL_CURRENT_NOT_P0"
+    }
+  ],
+  "algorithm_execution": {
+    "D": {
+      "conflicts": [
+        [
+          "SOAK_PROJECTION",
+          "QUALIFIED_RECEIPT_CONTEXT"
+        ],
+        [
+          "CP2_AUTHORIZED_READER",
+          "CP2_PERMISSION_ERROR"
+        ],
+        [
+          "LEXICAL_CALL_GRAPH",
+          "NO_INVOCATION_TRACES"
+        ]
+      ],
+      "minimal_hitting_sets": [
+        [
+          "SOAK_PROJECTION",
+          "CP2_AUTHORIZED_READER",
+          "LEXICAL_CALL_GRAPH"
+        ],
+        [
+          "QUALIFIED_RECEIPT_CONTEXT",
+          "CP2_AUTHORIZED_READER",
+          "LEXICAL_CALL_GRAPH"
+        ],
+        [
+          "SOAK_PROJECTION",
+          "CP2_PERMISSION_ERROR",
+          "LEXICAL_CALL_GRAPH"
+        ],
+        [
+          "QUALIFIED_RECEIPT_CONTEXT",
+          "CP2_PERMISSION_ERROR",
+          "LEXICAL_CALL_GRAPH"
+        ],
+        [
+          "SOAK_PROJECTION",
+          "CP2_AUTHORIZED_READER",
+          "NO_INVOCATION_TRACES"
+        ],
+        [
+          "QUALIFIED_RECEIPT_CONTEXT",
+          "CP2_AUTHORIZED_READER",
+          "NO_INVOCATION_TRACES"
+        ],
+        [
+          "SOAK_PROJECTION",
+          "CP2_PERMISSION_ERROR",
+          "NO_INVOCATION_TRACES"
+        ],
+        [
+          "QUALIFIED_RECEIPT_CONTEXT",
+          "CP2_PERMISSION_ERROR",
+          "NO_INVOCATION_TRACES"
+        ]
+      ],
+      "hitting_total": 27,
+      "barinel": "NOT_CALIBRATABLE_NO_SPECTRA",
+      "information_gain": "ORDINAL_NEXT_OBSERVATION_ONLY",
+      "diagnoses_causal": false
+    },
+    "C": {
+      "three_valued_partitions": {
+        "callers": {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "caller_keys": 38
+        },
+        "external": {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        },
+        "hashes": {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "n": 0
+        },
+        "synthetic": {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      },
+      "contract_cases": [
+        {
+          "expected": 38,
+          "observed": 38,
+          "accepted": true
+        },
+        {
+          "expected": 38,
+          "observed": 39,
+          "accepted": false
+        },
+        {
+          "expected": 38,
+          "observed": null,
+          "accepted": false
+        }
+      ],
+      "solver": "NOT_USED_NO_SMT",
+      "business_rule_certified": false
+    },
+    "E": {
+      "actual_state": "VERIFY_FIRST",
+      "scenarios": [
+        {
+          "id": "E_ASOF_REAL",
+          "inputs": {
+            "verified_functional_defect": false,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_discriminator": true,
+            "missing_data": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_TRUE_DEFECT",
+          "inputs": {
+            "verified_functional_defect": true,
+            "causal_trace": true,
+            "source_risk": true,
+            "authorized_discriminator": true,
+            "missing_data": false,
+            "qualified_source": true
+          },
+          "expected": "REPAIR_REQUIRED",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E_TLP_NULL",
+          "inputs": {
+            "verified_functional_defect": false,
+            "causal_trace": false,
+            "source_risk": false,
+            "authorized_discriminator": false,
+            "missing_data": true,
+            "qualified_source": true
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E_COMPLETE_NOTHING",
+          "inputs": {
+            "verified_functional_defect": false,
+            "causal_trace": false,
+            "source_risk": false,
+            "authorized_discriminator": false,
+            "missing_data": false,
+            "qualified_source": true
+          },
+          "expected": "NO_ACTION_SUPPORTED",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E_42501_IS_PRIVILEGE",
+          "inputs": {
+            "verified_functional_defect": false,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_discriminator": true,
+            "missing_data": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_FAILED_COUNT_NOT_CAUSAL",
+          "inputs": {
+            "verified_functional_defect": true,
+            "causal_trace": false,
+            "source_risk": true,
+            "authorized_discriminator": true,
+            "missing_data": true,
+            "qualified_source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_NO_AUTHORIZED_SOURCE",
+          "inputs": {
+            "verified_functional_defect": false,
+            "causal_trace": false,
+            "source_risk": false,
+            "authorized_discriminator": false,
+            "missing_data": false,
+            "qualified_source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "reversal_criteria": [
+        {
+          "if": "qualified causal defect",
+          "state": "REPAIR_REQUIRED"
+        },
+        {
+          "if": "qualified complete and no risk",
+          "state": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "if": "authorized read path unavailable",
+          "state": "NEEDS_MORE_EVIDENCE"
+        }
+      ]
+    }
+  },
+  "negative_tests": [
+    {
+      "id": "D_GDE_8_MINIMAL",
+      "pass": true
+    },
+    {
+      "id": "D_REMOVAL_BREAKS_MINIMALITY",
+      "pass": true
+    },
+    {
+      "id": "C_TLP_38_CALLERS",
+      "pass": true
+    },
+    {
+      "id": "C_TLP_6_EXTERNAL",
+      "pass": true
+    },
+    {
+      "id": "C_TLP_HASH_PARTITION",
+      "pass": true
+    },
+    {
+      "id": "C_TLP_NULL_SYNTHTEST",
+      "pass": true
+    },
+    {
+      "id": "C_MATCH_ACCEPTS",
+      "pass": true
+    },
+    {
+      "id": "C_MISMATCH_REJECTS",
+      "pass": true
+    },
+    {
+      "id": "C_NULL_REJECTS",
+      "pass": true
+    },
+    {
+      "id": "E_SEVEN_SCENARIOS",
+      "pass": true
+    },
+    {
+      "id": "E_ALL_STATES",
+      "pass": true
+    },
+    {
+      "id": "E_PERMISSION_IS_NOT_FUNCTIONAL",
+      "pass": true
+    },
+    {
+      "id": "E_NULL_UNKNOWN_NOT_CLOSED",
+      "pass": true
+    },
+    {
+      "id": "P0_SOAK_PASS_CONTEXT",
+      "pass": true
+    },
+    {
+      "id": "P0_CUTOFF_NO_NEW",
+      "pass": true
+    },
+    {
+      "id": "NO_USAGE_NOT_INFERRED",
+      "pass": true
+    },
+    {
+      "id": "NO_SMT_CLAIM",
+      "pass": true
+    },
+    {
+      "id": "NO_BARINEL_CALIBRATION",
+      "pass": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "M14_F1",
+      "claim": "Three modeled GDE contradictions yield eight minimum candidate sets but do not establish actual defects",
+      "evidence": [
+        "M14_Q05",
+        "M14_Q08",
+        "M14_Q09"
+      ],
+      "type": "HYPOTHETICAL_DIAGNOSIS"
+    },
+    {
+      "id": "M14_F2",
+      "claim": "38 SQL caller and 6 external inventory populations independently reconcile via TLP, not additive",
+      "evidence": [
+        "M14_Q02",
+        "M14_Q03"
+      ],
+      "type": "MEASURED_ASOF"
+    },
+    {
+      "id": "M14_F3",
+      "claim": "Synthetic NULL and wrong-count cases are rejected; neither SMT proof nor business correctness is established",
+      "evidence": [
+        "M14_Q06",
+        "M14_Q07"
+      ],
+      "type": "EXECUTED_CONTRACT_NEGATIVES"
+    },
+    {
+      "id": "M14_F4",
+      "claim": "Typed E decision VERIFY_FIRST relies on source risk, not an observed causal runtime bug",
+      "evidence": [
+        "M14_Q08",
+        "M14_Q09",
+        "M14_Q12"
+      ],
+      "type": "E_TYPOLOGY_EXECUTED"
+    }
+  ],
+  "causal_model": {
+    "proven": false,
+    "alternatives": [
+      "SOAK authority mismatch",
+      "CP2 permission vs reader defect",
+      "static graph vs invocation absence"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Verify qualified receipt + CP2 read path before any repair",
+      "status": "SAFE_READ_ONLY"
+    }
+  ],
+  "chosen_repair": {
+    "state": "VERIFY_FIRST",
+    "implementation": false,
+    "reason": "No validated functional cause; material evidence gap"
+  },
+  "rejected_alternatives": [
+    "Treat NULL as FALSE",
+    "Claim applied repair from a typed state",
+    "Infer no usage from zero stats",
+    "Invent BARINEL/SMT numerical outputs"
+  ],
+  "omissions_searched": [
+    "negative score",
+    "read authority",
+    "3VL populations",
+    "causal trace",
+    "historical/current cutoff",
+    "source coverage"
+  ],
+  "unresolved": [
+    "No runtime trace",
+    "Unknown canonical hash method",
+    "No E2E duration cohort"
+  ],
+  "constraints_preserved": [
+    "P0 only",
+    "no production",
+    "no quality score",
+    "no cross-method inputs"
+  ],
+  "conclusion": "D_C_E_EXECUTED_DIAGNOSIS_METAMORPHIC_TYPED_DECISION_WITH_OPEN_UNKNOWNS"
+}

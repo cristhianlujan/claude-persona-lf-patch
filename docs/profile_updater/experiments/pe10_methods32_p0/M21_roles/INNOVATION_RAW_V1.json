@@ -1,0 +1,84 @@
+{
+  "schema": "PE10_M21_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M21_INNOV_Q1",
+      "result": "SQL snapshot rows=38; external rows=6; exact raw-name overlap=0; external missing dedupe_key=0"
+    },
+    {
+      "id": "M21_INNOV_Q2",
+      "result": "current IG-pattern functions=95; historical-member exact names=31; complement candidates=64"
+    }
+  ],
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "INNOV_INV1",
+        "rule": "SQL and external identity domains remain separate absent explicit mapping",
+        "observed": "38+6 with 0 raw-name overlap and 0 missing external keys",
+        "valid_case": "keep separate domains",
+        "counterexample": "append 6 external to SQL caller denominator",
+        "status": "PASS"
+      },
+      {
+        "id": "INNOV_INV2",
+        "rule": "current pattern population = historical member + complement candidate",
+        "observed": "95=31+64",
+        "valid_case": "partition reconciles",
+        "counterexample": "unreconciled total",
+        "status": "PASS"
+      },
+      {
+        "id": "INNOV_INV3",
+        "rule": "candidate discovery is not historical omission proof",
+        "observed": "64 complement candidates without caller-reference proof",
+        "valid_case": "label candidates only",
+        "counterexample": "claim 64 missing callers",
+        "status": "PASS_AS_SCOPE_GUARD"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M21_INNOV_F1",
+      "classification": "MEASURED",
+      "claim": "SQL and external snapshot identities are disjoint by raw name and external keys are complete."
+    },
+    {
+      "id": "M21_INNOV_F2",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "claim": "Current pattern set partitions into 31 historical members and 64 complement candidates; complement status is not caller truth."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M21_INNOV_N1",
+      "hypothesis": "External rows can be mechanically appended to SQL callers",
+      "result": "FALSIFIED/UNSUPPORTED"
+    },
+    {
+      "id": "M21_INNOV_N2",
+      "hypothesis": "64 complement candidates are 64 proven omissions",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "actual caller/reference/lifecycle classification of complement candidates"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}

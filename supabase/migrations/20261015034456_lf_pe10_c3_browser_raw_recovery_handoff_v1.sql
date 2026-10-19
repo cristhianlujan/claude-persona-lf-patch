@@ -1,0 +1,50 @@
+-- PE10_C3 browser raw recovery instruction event (data-only, append-only).
+-- Router ACT-0001 -> ACTUALIZACION_DB_LF -> LF Migration Merge Train.
+-- No updates/deletes, new schema, reviewer verdict or profile activation.
+BEGIN;
+DO $pe10_capture_recovery$
+DECLARE
+ v_payload jsonb := $eventpacket${"evidence_schema_version":"operational-event/v2","execution_id":"PE10_C3_BROWSER_RECOVERY_V1","producer":"PE10_C3_BROWSER_RECOVERY_V1","purpose":"Preserve prior completed GPT Native browser RAW outputs with exact hashes and run them through the governed event capture route, without re-execution.","occurred_at":"__CLOCK__","acceptance_declared":false,"provider_attested":false,"subject_ref":"PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1/PE10_C3","coordination_set":"PE10_C3_BROWSER_OCT2026_V1","task_code":"RAW_RECOVERY_ONLY","instruction_source_event_id":21022,"expected_raw":[{"ref":"UI_B_R2","sha256":"181025bdd40f612b636b60233862a3edc4eb346f6f094d9b11a846a969f97713","utf8_bytes":26298,"chat_url":"https://chatgpt.com/c/6ad03be1-a150-83e9-9f58-c5dde78e05ce","source_event":21023,"case_id":"PESC3-V2-206","stage":"T1"},{"ref":"PRODUCT_A_T1","sha256":"912fdea00927f94d254985e58a126adbf0e72d348cd5d28e0d0d9afa3bc7393c","utf8_bytes":16655,"chat_url":"https://chatgpt.com/c/6ad03e8b-2d40-83e9-9787-aebee48ec7d9","source_event":21024,"case_id":"PESC3-V2-212","stage":"T1"},{"ref":"PRODUCT_A_T2","sha256":"6aeb8f6572ea85507e7e2571aa444897196cd1028fca761a2438a0226db89811","utf8_bytes":23354,"chat_url":"https://chatgpt.com/c/6ad03e8b-2d40-83e9-9787-aebee48ec7d9","source_event":21024,"case_id":"PESC3-V2-212","stage":"T2"},{"ref":"PRODUCT_A_T3","sha256":"d8599039deacca87144f99fdb96e04442bf2095498a7d8d2fbbba7317c8033a4","utf8_bytes":31804,"chat_url":"https://chatgpt.com/c/6ad03e8b-2d40-83e9-9787-aebee48ec7d9","source_event":21024,"case_id":"PESC3-V2-212","stage":"T3"},{"ref":"PRODUCT_B_T1","sha256":"855d0e6038282ecd67c0728bfb70cb37a57af84ad724fdc23b2ed31a64347869","utf8_bytes":15421,"chat_url":"https://chatgpt.com/c/6ad03ff2-ce80-83e9-aaea-dc51464e1547","source_event":21025,"case_id":"PESC3-V2-212","stage":"T1"},{"ref":"PRODUCT_B_T2","sha256":"dac5f22b248957988da1d70f3779b8dc171868aa2e89a6100f9870599325e9af","utf8_bytes":19984,"chat_url":"https://chatgpt.com/c/6ad03ff2-ce80-83e9-aaea-dc51464e1547","source_event":21025,"case_id":"PESC3-V2-212","stage":"T2"},{"ref":"PRODUCT_B_T3","sha256":"786671517fedfae17128b4218d8c7a74cd2668f901183fc001b61aa637b91778","utf8_bytes":24596,"chat_url":"https://chatgpt.com/c/6ad03ff2-ce80-83e9-aaea-dc51464e1547","source_event":21025,"case_id":"PESC3-V2-212","stage":"T3"},{"ref":"REVIEW","sha256":"53f855d14260761cef4d260d060e847c2bcb4cf9a8f0047948178271a82c96bc","utf8_bytes":23886,"chat_url":"https://chatgpt.com/c/6ad042b7-5f54-83ea-8995-facb4094c519","source_event":21026,"case_id":"PESC3-V2-206+PESC3-V2-212","stage":"REVIEW"}],"instructions_for_claude":"# PE10_C3 — recuperacion RAW de la corrida ya ejecutada (NO reejecucion)\n\nActua como Claude coordinador de recuperacion. Lee el paquete del evento HANDOFF_DEEP_CONTEXT en public.lf_eventos por su event ID exacto y verifica coordination_set=PE10_C3_BROWSER_OCT2026_V1 y execution_id=PE10_C3_BROWSER_RECOVERY_V1. Su objetivo NO es volver a pedir respuestas a GPT: solo rescatar y persistir los ocho RAW de chats ya terminados.\n\n1. Accede a Chrome mediante la integracion de Claude que este realmente conectada. Los ocho chat_url y SHA-256 exactos estan en payload.expected_raw. Abre las conversaciones existentes. Recupera la cadena exacta de cada respuesta mediante el almacenamiento local ya existente, si hay claves PE10_C3 reales, o mediante lectura del mensaje terminado del DOM de cada conversacion. No inventes claves de localStorage ni leas credenciales/cookies. Si la fuente perdida es irrecuperable, declara el ref exacto pendiente.\n2. Compara SHA-256 UTF-8 de cada RAW con su expected_raw.sha256 y verifica tamano en bytes. No recortes, reformatees, desanonimices, reserialices JSON ni sustituyas saltos de linea para forzar una coincidencia. Si el DOM produce bytes distintos del texto capturado previamente, registra la diferencia con ambos hashes y no afirmes coincidencia. Verifica que se pueda parsear JSON; para el revisor conserva el dictamen completo, incluidos sus limites de integridad.\n3. Mantiene la separacion: NO inicies otros chats productores ni un nuevo evaluador. No muestres candidatos al productor de base ni mapeos al evaluador. Registra procedencia: enlace exacto, stage, fuente, SHA y si hubo relectura DOM o localStorage.\n4. Crea un unico paquete estable con 8 archivos de texto RAW UTF-8 nombrados por ref, mas manifest JSON de SHA y procedencia, y exportalo a almacenamiento persistente verificable. No consideres localStorage el unico respaldo. Si no se puede entregar un archivo ZIP completo al usuario, di cual capacidad de archivos falta; no declares evidencia persistida.\n5. Ruta Supabase: el tipo existente RAW_CAPTURE_BATCH_PREPARED YA ESTA ACTIVO, contract_mode OPERATIONAL con evidence_schema_version=operational-event/v2. NO pidas crear nuevo tipo. Para persistir cada uno de los 8 RAW, obten autorizacion del Router ACT-0001; aplica la ruta de DB_WRITE_TRANSPORT. Si corresponde a migracion, crear UN PR con UN archivo de migracion de datos por GitHub autorizado y ejecutar exclusivamente por Migration Merge Train (etiqueta ready-to-merge tras CI/Train libre). Si no tienes acceso GitHub para crear PR ni transporte operacional autorizado, NO uses SQL Editor, psql, credenciales o trucos: devuelve el ZIP verificable como unica entrega al usuario.\n6. Cada evento de captura debe ser append-only, idempotente por execution_id unico PE10_C3_BROWSER_CAPTURE_V1|<ref>. Evento RAW_CAPTURE_BATCH_PREPARED en public.lf_eventos con entidad_tipo=PROGRAM_PLAN, entidad_codigo de PE10_C3, producer/execution_id/purpose/occurred_at/acceptance_declared=false, evidence_schema_version=operational-event/v2, y raw_base64, raw_sha256, expected_source_sha256, chat_url, case_id, stage, source_event_id. Los bytes originales se guardan en base64 y su hash se verifica contra la entrada. NO declares provider_attested, qualified, independent_review o checkpoint closure. No modifiques eventos anteriores ni los hechos previos.\n7. En la migracion propuesta, antes del commit prueba controles positivos/negativos cuando tengas runtime de prueba autorizado y realiza readback exacto de ocho SHA, blobs base64 decodificados y enlaces. Solo tras Train MERGED+APPLIED+READBACK registra IDs reales. Si falla un evento o un control, no marques el lote completo ni repitas GPT.\n8. Al terminar, ejecuta los VALIDADORES originales contra los JSON recuperados y registra errores sin arreglar los RAW originales. En particular UI_B_R2 debe comprobar el validador existente; los archivos que declaro haber probado deben recuperarse para dar por verificadas esas pruebas. No aceptes como prueba que diga 12/12 o 8/8 en el texto.\n9. Entrega: (a) refs RAW recuperados 0..8/8 con hashes recalculados, (b) ZIP/PR, (c) IDs reales de eventos escritos si los hubiera, (d) validadores y numero de errores, (e) diferencias materialmente observables entre original y candidato sin autoproclamar aprobacion, (f) PE10_C3 sigue IN_PROGRESS hasta recibo independiente valido.\n\nLa prioridad es NO PERDER LOS RAW ni volver a repetir trabajo ya hecho. Si Chrome se desconecto, registra esa unica causa y una ruta de recuperacion concreta.","required_existing_event_type":"RAW_CAPTURE_BATCH_PREPARED","capture_mode":"APPEND_ONLY_UNATTESTED","no_reexecution":true}$eventpacket$::jsonb;
+ v_exec constant text := 'PE10_C3_BROWSER_RECOVERY_V1';
+ v_id bigint;
+ v_count int;
+BEGIN
+ IF NOT EXISTS (SELECT 1 FROM public.v_lf_event_type_contract_audit_v2
+                WHERE event_type='HANDOFF_DEEP_CONTEXT' AND active AND contract_mode='OPERATIONAL'
+                  AND 'operational-event/v2'=ANY(allowed_evidence_schemas)) THEN
+   RAISE EXCEPTION 'PE10_RECOVERY_HANDOFF_TYPE_NOT_ACTIVE';
+ END IF;
+ IF NOT EXISTS (SELECT 1 FROM public.v_lf_event_type_contract_audit_v2
+                WHERE event_type='RAW_CAPTURE_BATCH_PREPARED' AND active AND contract_mode='OPERATIONAL'
+                  AND 'operational-event/v2'=ANY(allowed_evidence_schemas)) THEN
+   RAISE EXCEPTION 'PE10_RECOVERY_RAW_TYPE_NOT_ACTIVE';
+ END IF;
+ IF jsonb_array_length(v_payload->'expected_raw')<>8 THEN RAISE EXCEPTION 'PE10_RECOVERY_EXPECTED_EIGHT'; END IF;
+ IF EXISTS (SELECT 1 FROM jsonb_array_elements(v_payload->'expected_raw') r
+            WHERE r->>'sha256' !~ '^[0-9a-f]{64}$') THEN RAISE EXCEPTION 'PE10_RECOVERY_HASH_NOT_64_HEX'; END IF;
+ v_payload := jsonb_set(v_payload,'{occurred_at}',to_jsonb(to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"+00:00"')));
+ SELECT count(*) INTO v_count FROM public.lf_eventos
+ WHERE evento_tipo='HANDOFF_DEEP_CONTEXT' AND created_by_execution_id=v_exec;
+ IF v_count>1 THEN RAISE EXCEPTION 'PE10_RECOVERY_DUPLICATE_EVENT'; END IF;
+ IF v_count=0 THEN
+   INSERT INTO public.lf_eventos(evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,origen,created_by_execution_id,payload)
+   VALUES ('HANDOFF_DEEP_CONTEXT','PROGRAM_PLAN',
+           'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1.PE10_C3.BROWSER.RAW_RECOVERY',
+           'Resume raw-capture recovery for prior completed GPT Native browser chats; no execution or acceptance asserted.',
+           'INFO','DERIVE_FROM_EXECUTION_ID',v_exec,v_payload)
+   RETURNING id INTO v_id;
+ ELSE
+   SELECT id INTO v_id FROM public.lf_eventos
+   WHERE evento_tipo='HANDOFF_DEEP_CONTEXT' AND created_by_execution_id=v_exec;
+ END IF;
+ IF NOT EXISTS (
+ SELECT 1 FROM public.lf_eventos
+ WHERE id=v_id AND payload->>'execution_id'=v_exec
+ AND payload->>'acceptance_declared'='false'
+ AND payload->>'no_reexecution'='true'
+ AND payload->'expected_raw'=v_payload->'expected_raw'
+ AND payload->>'instructions_for_claude'=v_payload->>'instructions_for_claude'
+ ) THEN RAISE EXCEPTION 'PE10_RECOVERY_EVENT_READBACK_MISMATCH'; END IF;
+END;
+$pe10_capture_recovery$;
+COMMIT;

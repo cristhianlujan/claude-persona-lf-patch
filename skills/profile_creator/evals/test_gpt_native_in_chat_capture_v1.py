@@ -88,5 +88,21 @@ def main():
         print("PASS_POSITIVE_AND_8_NEGATIVE_TYPED_NO_MODEL_CALLS")
 
 
+def test_native_material_pre_admission_suite():
+    """Run the bounded same-chat bridge under this canonical CI entrypoint."""
+    import unittest
+    suite = unittest.defaultTestLoader.discover(
+        start_dir=str(Path(__file__).resolve().parent),
+        pattern="test_profile_updater_native_material_*_v02.py",
+    )
+    if suite.countTestCases() == 0:
+        raise AssertionError("NATIVE_MATERIAL_SUITE_NOT_DISCOVERED")
+    result = unittest.TextTestRunner(verbosity=1).run(suite)
+    if not result.wasSuccessful():
+        raise AssertionError("NATIVE_MATERIAL_PRE_ADMISSION_REGRESSION_FAILED")
+    print(f"PASS_NATIVE_MATERIAL_PRE_ADMISSION_TESTS count={result.testsRun}")
+
+
 if __name__ == "__main__":
     main()
+    test_native_material_pre_admission_suite()

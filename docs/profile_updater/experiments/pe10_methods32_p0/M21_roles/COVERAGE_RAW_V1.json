@@ -1,0 +1,84 @@
+{
+  "schema": "PE10_M21_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "queries": [
+    {
+      "id": "M21_COVER_Q1",
+      "result": "historical callers=38; current-present by exact schema.function name=38; absent=0"
+    },
+    {
+      "id": "M21_COVER_Q2",
+      "result": "historical unique callee tokens=39; current name candidates partition 0 unresolved,33 single,6 multiple"
+    }
+  ],
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "COVER_INV1",
+        "rule": "historical total = current-present + absent",
+        "observed": "38=38+0",
+        "valid_case": "all 38 resolve",
+        "counterexample": "any missing name enters absent",
+        "status": "PASS"
+      },
+      {
+        "id": "COVER_INV2",
+        "rule": "callee tokens = zero + one + multiple candidates",
+        "observed": "39=0+33+6",
+        "valid_case": "partition reconciles",
+        "counterexample": "treat 6 multiple as unique",
+        "status": "PASS"
+      },
+      {
+        "id": "COVER_INV3",
+        "rule": "name presence is not object-identity uniqueness",
+        "observed": "6 multiple candidates",
+        "valid_case": "schema qualification required",
+        "counterexample": "proname-only unique inference",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M21_COVER_F1",
+      "classification": "MEASURED",
+      "claim": "All 38 historical caller names resolve currently; no absent name."
+    },
+    {
+      "id": "M21_COVER_F2",
+      "classification": "MEASURED",
+      "claim": "39 callee tokens reconcile into 33 unique-name and 6 ambiguous-name current resolutions."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M21_COVER_N1",
+      "hypothesis": "Historical caller names are missing currently",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M21_COVER_N2",
+      "hypothesis": "All callee tokens have unique current identity by name",
+      "result": "FALSIFIED"
+    }
+  ],
+  "unresolved": [
+    "schema/object identity of six ambiguous callee tokens"
+  ],
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "role_output_frozen": true
+}

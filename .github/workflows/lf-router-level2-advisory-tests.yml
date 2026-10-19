@@ -1,0 +1,123 @@
+name: LF Router Level2 Advisory Tests
+
+# CI executes tests and produces evidence. PASE consumes it separately.
+# The ordinary PR workflow is registered as auxiliary to the PASE entrypoint.
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_level2_advisory_handoff_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_level2_advisory_handoff_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_exact_identity_source_v1.py'
+      - 'supabase/migrations/*lf_router_exact_identity_structured_discovery_v1.sql'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_intent_semantic_contract_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_intent_semantic_contract_v1.py'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_unstructured_intent_source_v1.py'
+      - 'supabase/migrations/*lf_router_unstructured_mutation_fail_closed_v1.sql'
+      - 'supabase/migrations/*lf_router_explicit_target_semantic_admission_v1.sql'
+      - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_explicit_target_and_catalog_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md'
+      - 'supabase/migrations/*lf_router_rw101_c3_independent_review_contract_v2.sql'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
+      - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
+      - 'supabase/migrations/*lf_router_rw101_c2_test_contract_v1.sql'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
+      - '.github/workflows/lf-router-level2-advisory-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_ADVERSARIAL_REVIEW_BRIEF_V1.md'
+      - 'docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - '.github/workflows/lf-router-level2-advisory-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  router-level2-advisory-contract:
+    name: router-level2-advisory-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate sources without credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execute positive and negative level2 handoff contract tests
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_level2_advisory_handoff_v1
+      - name: Execute exact-identity and structured-artifact source guards
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_exact_identity_source_v1
+      - name: Execute contextual request and semantic role adversarial tests
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_intent_semantic_contract_v1
+      - name: Verify unstructured mutation never bypasses semantic authority
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_unstructured_intent_source_v1
+      - name: Validate typed target authority and DB Train catalog compatibility
+        working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
+        run: python3 -m unittest -v test_router_explicit_target_and_catalog_v1
+
+      - name: Execute RW1-01 C2 frozen needs-oracle positive and negative controls
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py docs/programming-agent/router_wave/RW1_01_C2_NEEDS_ACCEPTANCE_CORPUS_V1.json --self-test
+
+      - name: Reproduce RW1-01 C3 adversarial shape gaps (diagnosis only)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_c3_adversarial_gaps_v1.py
+
+      - name: Validate RW1-01 C3 V2 repair package (not independent verdict)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json --self-test
+          python3 sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py --seed ci-smoke-not-a-real-holdout --nonce ci-smoke --out /tmp/rw101_c3_holdout_v2.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/rw101_c3_holdout_v2.json',encoding='utf-8'))
+          assert p['schema_version']=='RW101_C3_SECRET_HOLDOUT_V2'
+          assert p['case_count']==12 and len(p['cases'])==12
+          assert len({x['id'] for x in p['cases']})==12
+          print(json.dumps({'status':'C3_V2_GENERATOR_SMOKE_PASS','case_count':12}))
+          PY
+
+      - name: Execute RW1-02 C2 architecture competition benchmark
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json \
+            --self-test

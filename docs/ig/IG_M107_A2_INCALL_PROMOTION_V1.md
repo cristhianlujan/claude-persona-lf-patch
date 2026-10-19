@@ -1,0 +1,9 @@
+# IG M10.7 A2 — Promoción acotada de deduplicación *dentro* de una invocación
+
+Objeto existente: `programacion.fn_input_design_binding_graph_v2(integer)`. Cambio puntual del cuerpo SQL: precargar los recibos por token único, reutilizarlos en el armado de campos, variantes, elementos y suma de fallos por **asociación**. Conserva firma, estructura `DESIGN_BINDING_GRAPH_V4`, funciones guardas externas, permisos, dueño y `search_path`. No crea caché global ni entre llamadas.
+
+Autoridad: EKB `IG-M107-A2-INCALL-RECEIPT-DEDUPE-CANDIDATE-013` + PR #2750 merged + Train COMPLETED (version 20261015125426). JSON y SHA exactos en 1,43,58 por tres ensayos alternos; negativo de pantalla inexistente; pantalla43 40 asociaciones/12 tokens, mediana observada de 94.686 a 34.047 ms en grafo. No atribuir reducción al Validator: este cambioset es **solo grafo de diseño**.
+
+Preflight: checksum MD5 de código original y del candidato, EKB de paridad, Router ACT-0001. Prueba antes y después de reemplazo de igualdad JSON/SHA en las 3 pantallas, negativo de pantalla inexistente, permisos y metadatos. Las pruebas se ejecutan dentro de la migración versionada; error → rollback del Train, sin alterar producción externa a LF_SUPABASE_SANDBOX.
+
+Post-PASE: ledger exact-version = Git main = definición nueva en Supabase + EKB `IG-M107-A2-INCALL-PROMOTION-014`; unidad M10.7 sigue en 45%, CP3 pendiente. G2B #2742 continúa bloqueando reutilización de **datos mutables entre llamadas**, no este reuso de resultados locales. Cualquier cambio concurrente de fuente será vigilado por los guards de vigencia existentes, sin asumir que la muestra anterior prueba concurrencia. No quitar ni saltar controles.

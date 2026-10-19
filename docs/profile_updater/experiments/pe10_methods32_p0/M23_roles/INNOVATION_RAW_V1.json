@@ -1,0 +1,168 @@
+{
+  "schema": "PE10_M23_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M23",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M23_INNOV_Q1",
+      "sql": "WITH hist AS (SELECT x->>'caller' caller FROM public.lf_eventos l,jsonb_array_elements(l.payload->'sql_callers') x WHERE l.id=20161), cur AS (SELECT n.nspname||'.'||p.proname fullname,p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN('programacion','public','lf_ops') AND p.proname ~ '(input_governance|input_readiness|guard_input)') SELECT count(*) total,count(*) FILTER(WHERE h.caller IS NOT NULL) hist,count(*) FILTER(WHERE h.caller IS NULL) complement,count(*) FILTER(WHERE h.caller IS NULL AND c.proname ~ '(queue|direct_step|handoff|continuation|_ctx|cached_v2)') path_candidates FROM cur c LEFT JOIN hist h ON h.caller=c.fullname;",
+      "result": "total95; hist31; complement64; path_candidates23."
+    },
+    {
+      "id": "M23_INNOV_Q2",
+      "sql": "SELECT 'EVENT' source,created_at t FROM public.lf_eventos WHERE id=20161 UNION ALL SELECT 'RECEIPT38',created_at FROM programacion.provenance_receipts WHERE id=38 UNION ALL SELECT codigo,primera_vez FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') ORDER BY t;",
+      "result": "ordered evidence times: event Oct04, receipt38 Oct07, SOAK EKB Oct14 23:39, CP2 EKB Oct14 23:44."
+    }
+  ],
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E_INNOV_COMP",
+        "source": "current pg_proc name-pattern complement",
+        "time": "CURRENT_READBACK",
+        "identity": "95 current pattern objects",
+        "assumptions": [
+          "name-pattern membership is candidate discovery only"
+        ],
+        "supports": [
+          "C_INNOV_CANDIDATES"
+        ]
+      },
+      {
+        "id": "E_INNOV_TIME",
+        "source": "event+receipt+EKB timestamps",
+        "time": "2026-10-04..14",
+        "identity": "four evidence records",
+        "assumptions": [
+          "later evidence refines interpretation but does not rewrite earlier observation time"
+        ],
+        "supports": [
+          "C_INNOV_TIME"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_INNOV_CANDIDATES",
+        "state": "SUPPORTED_AS_CANDIDATES_ONLY",
+        "justifications": [
+          [
+            "E_INNOV_COMP"
+          ]
+        ]
+      },
+      {
+        "id": "C_INNOV_TIME",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_INNOV_TIME"
+          ]
+        ]
+      },
+      {
+        "id": "C_INNOV_64_OMISSIONS",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_INNOV_1",
+        "set": [
+          "NAME_PATTERN_EQUALS_CALLER"
+        ],
+        "reason": "reference/lifecycle proof absent"
+      },
+      {
+        "id": "N_INNOV_2",
+        "set": [
+          "LATER_EVIDENCE_REWRITES_P0_TIME"
+        ],
+        "reason": "evidence identities have distinct timestamps"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_INNOV_COMP",
+        "invalidates": [
+          "C_INNOV_CANDIDATES"
+        ],
+        "preserves": [
+          "C_INNOV_TIME"
+        ]
+      },
+      {
+        "withdraw": "E_INNOV_TIME",
+        "invalidates": [
+          "C_INNOV_TIME"
+        ],
+        "preserves": [
+          "C_INNOV_CANDIDATES"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "INNOV_INV1",
+        "rule": "current pattern total=historical member+complement candidate",
+        "observed": "95=31+64",
+        "valid_case": "partition reconciles",
+        "counterexample": "promote all complement candidates to caller truth",
+        "status": "PASS"
+      },
+      {
+        "id": "INNOV_INV2",
+        "rule": "evidence time order remains monotonic and distinct",
+        "observed": "Oct04 < Oct07 < Oct14 23:39 < Oct14 23:44",
+        "valid_case": "preserve times",
+        "counterexample": "collapse all into P0 time",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M23_INNOV_F1",
+      "classification": "MEASURED_CANDIDATE_ONLY",
+      "claim": "64 complement objects, including 23 path-shaped candidates, require actual reference/lifecycle classification."
+    },
+    {
+      "id": "M23_INNOV_F2",
+      "classification": "MEASURED",
+      "claim": "Evidence chronology is ordered and must remain temporally distinct."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M23_INNOV_N1",
+      "hypothesis": "64 complement candidates are proven omissions",
+      "result": "FALSIFIED_AS_INFERENCE"
+    },
+    {
+      "id": "M23_INNOV_N2",
+      "hypothesis": "Later evidence can be treated as same-time P0 evidence",
+      "result": "REJECTED_BY_INVARIANT"
+    }
+  ],
+  "unresolved": [
+    "actual caller/reference/lifecycle status of complement candidates"
+  ],
+  "role_output_frozen": true
+}

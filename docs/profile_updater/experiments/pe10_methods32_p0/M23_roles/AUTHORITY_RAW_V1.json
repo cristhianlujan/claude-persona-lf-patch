@@ -1,0 +1,168 @@
+{
+  "schema": "PE10_M23_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M23",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M23_AUTH_Q1",
+      "sql": "SELECT current_user,current_setting('transaction_read_only') ro,has_function_privilege(current_user,'programacion.fn_input_readiness_run_is_current(bigint)','EXECUTE') exec_p,has_function_privilege(current_user,'public.fn_input_readiness_run_is_current(bigint)','EXECUTE') exec_pub,has_table_privilege(current_user,'programacion.input_readiness_runs','SELECT') sel_runs,has_table_privilege(current_user,'programacion.provenance_receipts','SELECT') sel_receipts;",
+      "result": "supabase_read_only_user; transaction_read_only=on; EXECUTE=false/false; SELECT=true/true."
+    },
+    {
+      "id": "M23_AUTH_Q2",
+      "sql": "SELECT count(*) total,count(*) FILTER(WHERE estado='VALIDATED_TESTED') validated,count(*) FILTER(WHERE primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z') pre_cutoff FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001');",
+      "result": "total2; validated2; pre_cutoff2."
+    }
+  ],
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E_AUTH_CURRENT",
+        "source": "current privilege readback",
+        "time": "CURRENT_READBACK",
+        "identity": "supabase_read_only_user",
+        "assumptions": [
+          "current privileges are current evidence only"
+        ],
+        "supports": [
+          "C_AUTH_CURRENT"
+        ]
+      },
+      {
+        "id": "E_AUTH_EKB",
+        "source": "transversal.error_knowledge exact two codes",
+        "time": "2026-10-14",
+        "identity": "two exact validated records",
+        "assumptions": [
+          "pre-cutoff EKB records historical authority observations"
+        ],
+        "supports": [
+          "C_AUTH_HISTORY"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_AUTH_CURRENT",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_AUTH_CURRENT"
+          ]
+        ]
+      },
+      {
+        "id": "C_AUTH_HISTORY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_AUTH_EKB"
+          ]
+        ]
+      },
+      {
+        "id": "C_AUTH_FUNCTIONAL_FAIL",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_AUTH_1",
+        "set": [
+          "EXECUTE_DENIAL_EQUALS_NO_EVIDENCE_ACCESS"
+        ],
+        "reason": "SELECT is true on evidence tables"
+      },
+      {
+        "id": "N_AUTH_2",
+        "set": [
+          "42501_EQUALS_FUNCTIONAL_FAILURE"
+        ],
+        "reason": "permission error is an authority/path observation"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_AUTH_CURRENT",
+        "invalidates": [
+          "C_AUTH_CURRENT"
+        ],
+        "preserves": [
+          "C_AUTH_HISTORY"
+        ]
+      },
+      {
+        "withdraw": "E_AUTH_EKB",
+        "invalidates": [
+          "C_AUTH_HISTORY"
+        ],
+        "preserves": [
+          "C_AUTH_CURRENT"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "AUTH_INV1",
+        "rule": "EXECUTE and SELECT capabilities partition independently",
+        "observed": "EXECUTE false/false; SELECT true/true",
+        "valid_case": "authorized read path remains",
+        "counterexample": "infer total access denial",
+        "status": "PASS"
+      },
+      {
+        "id": "AUTH_INV2",
+        "rule": "historical EKB used for P0 must be exact and pre-cutoff",
+        "observed": "2/2 exact records validated/pre-cutoff",
+        "valid_case": "both qualify",
+        "counterexample": "post-cutoff record",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "M23_AUTH_F1",
+      "classification": "MEASURED",
+      "claim": "Current authority permits SELECT evidence reads while denying currentness-function execution."
+    },
+    {
+      "id": "M23_AUTH_F2",
+      "classification": "MEASURED",
+      "claim": "Both exact EKB authority records qualify before cutoff; permission denial is not functional-failure proof."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M23_AUTH_N1",
+      "hypothesis": "No EXECUTE implies no evidence access",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M23_AUTH_N2",
+      "hypothesis": "42501 proves business/function failure",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "historical privilege state outside recorded EKB"
+  ],
+  "role_output_frozen": true
+}

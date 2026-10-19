@@ -1,0 +1,72 @@
+{
+  "scope": "ONLY_PE10_M03_ADMIN_READBACK_20261018",
+  "raw_git_path": "docs/profile_updater/experiments/pe10_methods32_p0/PE10_M03_RAW_V2.json",
+  "research_complete": true,
+  "database_done": false,
+  "reason": "Canonical closure path lacks assigned plan unit/active provider/operation and current checkpoint is M01. No authority to bypass sequence.",
+  "readback": [
+    {
+      "id": "M03_A1",
+      "sql": "SELECT plan_code,unit_code,disposition,work_item_id FROM programacion.engineering_plan_units WHERE work_item_id=1133",
+      "rows": []
+    },
+    {
+      "id": "M03_A2",
+      "sql": "SELECT checkpoint_code,sequence_no,status FROM programacion.engineering_work_checkpoints WHERE work_item_id=1133 AND status NOT IN('DONE','NOT_APPLICABLE') ORDER BY sequence_no LIMIT 3",
+      "rows": [
+        {
+          "checkpoint_code": "PE10_M01",
+          "sequence_no": 1,
+          "status": "PENDING"
+        },
+        {
+          "checkpoint_code": "PE10_M02",
+          "sequence_no": 2,
+          "status": "PENDING"
+        },
+        {
+          "checkpoint_code": "PE10_M03",
+          "sequence_no": 3,
+          "status": "PENDING"
+        }
+      ]
+    },
+    {
+      "id": "M03_A3",
+      "sql": "SELECT operation_code,status,lifecycle_state_code FROM public.lf_operation_registry WHERE operation_code='CIERRE_CHECKPOINT_INGENIERIA_LF'",
+      "rows": [
+        {
+          "operation_code": "CIERRE_CHECKPOINT_INGENIERIA_LF",
+          "status": "CANDIDATO_READ_ONLY",
+          "lifecycle_state_code": "OP_CANDIDATE"
+        }
+      ]
+    },
+    {
+      "id": "M03_A4",
+      "sql": "SELECT asset_type,action_code,status,write_allowed FROM public.lf_router_action_registry WHERE asset_type='ENGINEERING_CHECKPOINT' AND action_code='CHECKPOINT_CLOSE'",
+      "rows": [
+        {
+          "asset_type": "ENGINEERING_CHECKPOINT",
+          "action_code": "CHECKPOINT_CLOSE",
+          "status": "CANDIDATO_READ_ONLY",
+          "write_allowed": false
+        }
+      ]
+    },
+    {
+      "id": "M03_A5",
+      "sql": "SELECT count(*) active_providers FROM programacion.engineering_checkpoint_closure_providers_v1 WHERE checkpoint_code='PE10_M03' AND binding_state='ACTIVE'",
+      "rows": [
+        {
+          "active_providers": 0
+        }
+      ]
+    }
+  ],
+  "non_actions": [
+    "M01 and M02 not rewritten",
+    "No PENDING to DONE mutation attempted",
+    "M04 not initiated"
+  ]
+}
