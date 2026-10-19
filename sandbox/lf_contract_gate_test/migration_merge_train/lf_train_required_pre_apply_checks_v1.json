@@ -2,6 +2,7 @@
   "schema_version": "lf-train-required-pre-apply-checks/v1",
   "required_checks": [
     "lf-independent-change-admission",
-    "ig-runtime-candidate-judge"
+    "ig-runtime-candidate-judge",
+    "PASE"
   ]
 }
