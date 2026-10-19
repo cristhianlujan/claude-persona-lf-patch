@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "NO_SELF_APPROVAL",
+   "statement": "El agente no aprueba, elige ni decide nada: decisions_approved_by_agent está vacío, no_self_approval es true y ninguna decisión pendiente aparece resuelta ni se resuelve un ADR."
+  },
+  {
+   "code": "NO_UNNECESSARY_ESCALATION",
+   "statement": "Solo se escalan al propietario decisiones materiales de producto o alcance; las tareas de investigación o verificación (por ejemplo reconstruir la línea base o comprobar la autoridad) no se presentan como decisiones del propietario."
+  },
+  {
+   "code": "REFS_AND_SUPPORT_VALID",
+   "statement": "current_decisions solo contiene decisiones respaldadas por una fuente de la entrada (si no hay, está vacía); cada pendiente cita un gap_ref y un impact_ref coherentes de la entrada; toda referencia es válida y no se infiere solución técnica."
+  }
+ ],
+ "criterion": "Independiente rechaza ADR autodecidida y escalamiento innecesario",
+ "decoy_must_fail_checks": [
+  "NO_SELF_APPROVAL",
+  "REFS_AND_SUPPORT_VALID"
+ ],
+ "replacements": [
+  [
+   "\"decisions_approved_by_agent\": [],",
+   "\"decisions_approved_by_agent\": [\"A5-DEC-002\"],"
+  ],
+  [
+   "\"current_decisions\": [],",
+   "\"current_decisions\": [\n    {\"decision_id\": \"CUR-001\", \"statement\": \"El ahorro se define como la diferencia total pagada.\", \"source_ref\": \"supabase://public.lf_eventos/99999\"}\n  ],"
+  ],
+  [
+   "¿Qué distinción funcional debe establecerse entre el ahorro de la negociación y el monto de la cuota para evitar que el cliente confunda ambos conceptos?",
+   "¿Qué tablas debe leer el equipo para reconstruir la línea base AS-IS de la implementación existente?"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Conserva las decisiones materiales"
+}

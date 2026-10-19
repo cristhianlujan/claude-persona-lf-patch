@@ -1,0 +1,348 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M26",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "E"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M26.json",
+    "sha256": "2fc474fa158c7d6c06f553a0e5374ac17980bff0cd31a231a7a2030c24b11bb3"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/ARCHITECTURE_RAW_V1.json",
+      "git_blob_sha": "33e64f99a80ebe0e7c460a987262b5c1064cc59b",
+      "select_attempts": 4,
+      "successful_selects": 4,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/PERFORMANCE_RAW_V1.json",
+      "git_blob_sha": "4faa5758160cd83bbc828684456aa1c67e7928b7",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "decision_state": "NEEDS_MORE_EVIDENCE",
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/AUTHORITY_RAW_V1.json",
+      "git_blob_sha": "8542592b7d83531b519efdbcd0378752c6304d83",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/COVERAGE_RAW_V1.json",
+      "git_blob_sha": "97909346ef46c4fb0c9bf1ff30831cbb700cec3c",
+      "select_attempts": 8,
+      "successful_selects": 8,
+      "query_errors": 0,
+      "client_capture_errors": 1,
+      "negative_falsifiers": 4,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/INNOVATION_RAW_V1.json",
+      "git_blob_sha": "c3366ae3c816b3c382b74552b359dc0ef3e29ea2",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 4,
+      "decision_state": "NO_ACTION_SUPPORTED",
+      "role_output_frozen": true
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_SYNTHESIS_V1.json",
+    "git_blob_sha": "b580c8c52975bfaac345fc64f6156debfe57dc6b",
+    "source_commit": "0fe3191f709ca280785a423c04f5871ae303b79e"
+  },
+  "synthesis": {
+    "schema": "PE10_M26_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M26",
+    "definition_version": "PE10_METHOD_V1",
+    "base_code": "B",
+    "algorithm_codes": [
+      "D",
+      "E"
+    ],
+    "synthesizer_contract": {
+      "inputs": "Only the five separately frozen M26 role RAW files.",
+      "role_bound_single_context": true,
+      "independent_agents_claimed": false,
+      "shared_context_non_isolation_risk": "Five role-bound passes were executed sequentially in one coordinated model context. Blob freezing prevents later rewriting; it does not create cognitive independence.",
+      "cross_method_results_used": false,
+      "voting_used": false,
+      "reconciliation_rule": "Resolve by evidence scope, authority and falsifiers; never by majority."
+    },
+    "frozen_role_inputs": [
+      {
+        "role_code": "ARCHITECTURE",
+        "blob_sha": "33e64f99a80ebe0e7c460a987262b5c1064cc59b",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/ARCHITECTURE_RAW_V1.json"
+      },
+      {
+        "role_code": "PERFORMANCE",
+        "blob_sha": "4faa5758160cd83bbc828684456aa1c67e7928b7",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/PERFORMANCE_RAW_V1.json"
+      },
+      {
+        "role_code": "AUTHORITY",
+        "blob_sha": "8542592b7d83531b519efdbcd0378752c6304d83",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/AUTHORITY_RAW_V1.json"
+      },
+      {
+        "role_code": "COVERAGE",
+        "blob_sha": "97909346ef46c4fb0c9bf1ff30831cbb700cec3c",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/COVERAGE_RAW_V1.json"
+      },
+      {
+        "role_code": "INNOVATION",
+        "blob_sha": "c3366ae3c816b3c382b74552b359dc0ef3e29ea2",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M26_roles/INNOVATION_RAW_V1.json"
+      }
+    ],
+    "role_states": {
+      "ARCHITECTURE": "VERIFY_FIRST",
+      "PERFORMANCE": "NEEDS_MORE_EVIDENCE",
+      "AUTHORITY": "VERIFY_FIRST",
+      "COVERAGE": "VERIFY_FIRST",
+      "INNOVATION": "NO_ACTION_SUPPORTED"
+    },
+    "reconciliation": [
+      {
+        "id": "M26-SYN-RC01",
+        "apparent_conflict": "Innovation selects NO_ACTION_SUPPORTED while Architecture, Authority and Coverage select VERIFY_FIRST.",
+        "resolution": "Scopes differ. Innovation rejects runtime intervention because no defect is demonstrated; the other roles require evidence-only current verification. Therefore no runtime repair is supported, while current-state closure is also not supported.",
+        "preserved_uncertainty": "Current semantic equivalence, authority linkage and current consumer totality remain unverified."
+      },
+      {
+        "id": "M26-SYN-RC02",
+        "apparent_conflict": "Performance selects NEEDS_MORE_EVIDENCE while integrated state is VERIFY_FIRST.",
+        "resolution": "VERIFY_FIRST describes the next governed action. The performance claim itself remains NEEDS_MORE_EVIDENCE until matched workload, complete clocks and intervention boundary exist.",
+        "preserved_uncertainty": "No causal speedup or regression magnitude is asserted."
+      },
+      {
+        "id": "M26-SYN-RC03",
+        "apparent_conflict": "All 38 caller objects and 21 frozen triggers still resolve, yet 22/38 current md5(prosrc) differ.",
+        "resolution": "Object continuity does not imply definition or route equivalence. The historical hash serialization is not canonically proven, so the 16/22 split is empirical under md5(prosrc), not a proof of historical hash method.",
+        "preserved_uncertainty": "Canonical historical hash representation remains UNKNOWN."
+      },
+      {
+        "id": "M26-SYN-RC04",
+        "apparent_conflict": "Frozen P0 is internally complete, while current bounded scans expose many complements outside P0.",
+        "resolution": "P0 is valid as a frozen historical denominator. Pattern and lexical complements are candidate current objects, not automatically material runtime consumers.",
+        "preserved_uncertainty": "An authoritative current universe predicate and materiality classification are still needed."
+      }
+    ],
+    "integrated_findings": [
+      {
+        "id": "M26-SYN-F01",
+        "claim": "P0 does not demonstrate a material runtime/product defect; receipt 38 remains a valid historical soak receipt.",
+        "support": [
+          "M26-ARQ-F01",
+          "M26-COV-F01",
+          "M26-INN-F01"
+        ],
+        "confidence": "HIGH_WITHIN_P0_SCOPE"
+      },
+      {
+        "id": "M26-SYN-F02",
+        "claim": "All 38 frozen caller objects and all 21 frozen triggers still resolve, but current semantic equivalence is not certified because 22/38 caller bodies differ under md5(prosrc).",
+        "support": [
+          "M26-ARQ-F02",
+          "M26-COV-F02"
+        ],
+        "confidence": "HIGH_FOR_OBJECT_CONTINUITY_AND_EMPIRICAL_HASH_DELTA"
+      },
+      {
+        "id": "M26-SYN-F03",
+        "claim": "Current bounded scans expose complements outside P0, but static pattern/lexical occurrence does not prove runtime materiality.",
+        "support": [
+          "M26-COV-F03",
+          "M26-COV-F04",
+          "M26-INN-F02"
+        ],
+        "confidence": "HIGH_FOR_BOUNDED_STATIC_SCAN"
+      },
+      {
+        "id": "M26-SYN-F04",
+        "claim": "Available timing rows are descriptive only; null/zero clocks, unmatched cohorts and overlapping stage accounting prevent causal performance claims.",
+        "support": [
+          "M26-PERF-F03",
+          "M26-PERF-F04",
+          "M26-PERF-F05"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M26-SYN-F05",
+        "claim": "The read-only boundary is intentional; lack of EXECUTE is not a functional failure. Material actor independence and canonical event authority remain unverified.",
+        "support": [
+          "M26-AUT-F01",
+          "M26-AUT-F02",
+          "M26-AUT-F03",
+          "M26-AUT-F04"
+        ],
+        "confidence": "HIGH_FOR_OBSERVED_AUTHORITY_FIELDS"
+      },
+      {
+        "id": "M26-SYN-F06",
+        "claim": "Existing cache/context/manifest surfaces argue for reuse-first verification rather than adding a new runtime mechanism.",
+        "support": [
+          "M26-INN-F03",
+          "M26-INN-F04",
+          "M26-INN-F05"
+        ],
+        "confidence": "MEDIUM_HIGH"
+      }
+    ],
+    "algorithm_application": {
+      "D": {
+        "executed": true,
+        "mode": "GDE_MINIMAL_HITTING_SETS_PLUS_ORDINAL_INFORMATION_GAIN",
+        "barinel_executed": false,
+        "barinel_reason": "No justified component priors or measurable pass/fail spectra; probabilities would be fabricated.",
+        "cross_role_diagnosis_candidates": [
+          "snapshot/current-scope staleness",
+          "body/route drift without proven functional defect",
+          "current consumer-universe incompleteness",
+          "authority/provenance attestation gap",
+          "performance clock/cohort incomparability"
+        ],
+        "next_query_priority": [
+          "Authoritative current manifest with explicit universe predicate, canonical hash representation, active-entry mapping and exclusions.",
+          "Canonical authority/provenance readback for event/receipt and Curator/Validator material separation.",
+          "Matched performance replay only after the intervention boundary and clock semantics are fixed."
+        ]
+      },
+      "E": {
+        "state": "VERIFY_FIRST",
+        "rationale": "No runtime repair is demonstrated or authorized, but present-state closure is unsafe because current semantic equivalence, material coverage and authority remain unverified. Performance remains NEEDS_MORE_EVIDENCE inside this VERIFY_FIRST workflow.",
+        "demonstrated_defect": false,
+        "repair_authorized": false,
+        "implemented_repair": false,
+        "no_action_scope": "No production/runtime mutation, privilege widening, variant deletion, cache rewrite or performance optimization.",
+        "potential_falsifiers": [
+          "A canonical current manifest reproduces semantic equivalence and complete material consumer coverage.",
+          "Governed provenance proves valid authority and material Curator/Validator separation.",
+          "A matched complete performance replay proves or excludes a material regression."
+        ],
+        "reversal_criteria": {
+          "to_REPAIR_REQUIRED": "Governed verification demonstrates a material active defect with an attributable minimal target.",
+          "to_NO_ACTION_SUPPORTED": "Currentness, coverage, authority and performance unknowns close without a material defect.",
+          "to_NEEDS_MORE_EVIDENCE": "Required governed evidence cannot be obtained safely or remains ambiguous."
+        }
+      }
+    },
+    "causal_model": {
+      "integrated_hypothesis": "The dominant risk is evidence-scope collapse: a valid historical soak snapshot can be mistaken for current semantic equivalence, complete runtime coverage, material independence and causal performance evidence.",
+      "competing_hypotheses": [
+        "No current defect exists and only certification is missing.",
+        "A current architecture/coverage defect exists outside the frozen P0 scope.",
+        "A real performance change exists but available cohorts/clocks cannot identify it.",
+        "Current variants and duplicate bodies are intentional compatibility surfaces."
+      ]
+    },
+    "chosen_repair": {
+      "immediate": "NO_RUNTIME_REPAIR",
+      "next_verification": [
+        "CURRENT_MANIFEST_AND_UNIVERSE_ATTESTATION",
+        "AUTHORITY_AND_MATERIAL_INDEPENDENCE_READBACK",
+        "MATCHED_PERFORMANCE_VERIFICATION_AFTER_BOUNDARY_DEFINITION"
+      ],
+      "note": "Diagnostic decision only; nothing in runtime is modified."
+    },
+    "constraints_preserved": [
+      "READ_ONLY research",
+      "No production/runtime mutation",
+      "No grant widening",
+      "P0 historical facts separated from post-cut observations",
+      "Five role RAWs frozen before synthesis",
+      "No independent-agent claim",
+      "No cross-method result input",
+      "No READY/DONE/PASS product conclusion"
+    ],
+    "unresolved": [
+      "Canonical historical hash serialization",
+      "Current active entry points and semantic route equivalence",
+      "Authoritative current material consumer universe",
+      "Canonical event/receipt authority linkage",
+      "Material Curator/Validator independence",
+      "Matched performance cohort and clock semantics"
+    ],
+    "measured_costs": {
+      "producer_select_attempts": 27,
+      "producer_successful_selects": 27,
+      "producer_query_errors": 0,
+      "client_capture_errors": 1,
+      "negative_falsifiers": 17,
+      "producer_files": 5,
+      "production_writes": 0,
+      "tokens": "NO_MEDIDO"
+    },
+    "final_state": "VERIFY_FIRST",
+    "synthesized_at": "2026-10-18T21:55:00Z"
+  },
+  "source_queries_total": 27,
+  "successful_queries_total": 27,
+  "query_errors_preserved": 0,
+  "client_capture_errors_preserved": 1,
+  "negative_tests_total": 17,
+  "role_state_counts": {
+    "VERIFY_FIRST": 3,
+    "NEEDS_MORE_EVIDENCE": 1,
+    "NO_ACTION_SUPPORTED": 1,
+    "REPAIR_REQUIRED": 0
+  },
+  "algorithm_D_executed": true,
+  "barinel_probabilistic_executed": false,
+  "barinel_reason": "No justified priors or pass/fail spectra; ordinal information gain used instead.",
+  "algorithm_E_executed": true,
+  "evidence_decision_contract": {
+    "allowed_states": [
+      "VERIFY_FIRST",
+      "REPAIR_REQUIRED",
+      "NEEDS_MORE_EVIDENCE",
+      "NO_ACTION_SUPPORTED"
+    ],
+    "integrated_state": "VERIFY_FIRST",
+    "evidence_scoped": true,
+    "falsifiers_specified": true,
+    "reversal_criteria_specified": true,
+    "implemented_repair": false
+  },
+  "final_method_state": "B_D_E_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false
+  }
+}

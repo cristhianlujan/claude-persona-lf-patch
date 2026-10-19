@@ -1,0 +1,203 @@
+{
+  "schema": "PE10_M17_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M17",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "inputs": [
+    "original P0",
+    "PE10_METHOD_V1 AUTHORITY contract",
+    "readonly Supabase"
+  ],
+  "sql_evidence": [
+    {
+      "id": "M17_AUTH_Q1",
+      "sql_literal": "SELECT codigo,categoria,severidad,primera_vez,causa_raiz,prevencion,validacion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "categoria": "GOVERNANCE",
+          "severidad": "HIGH",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2.",
+          "validacion": "2026-10-14: Q1 receipt 38 PASS, Q2 cohort PASS_OBSERVED 13/13 screens, 47 families, 199 completed runs. SQL 42501 reproducido. Migración revierte primer ensayo y lee CP2 DONE, otros tres pendientes sin autorizar producción."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "categoria": "GOVERNANCE",
+          "severidad": "HIGH",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza.",
+          "validacion": "Read-only 2026-10-14: receipt 38 13/13 screens,47/47 families, zero below-2, false_pass=0,D4=0; tres negativos sintéticos rechazados. Migración prueba rollback y comprueba CP1 DONE/CP2 PENDING, sin activar producción."
+        }
+      ],
+      "rows_returned": 2,
+      "scope": "HISTORICAL_SOURCE_BEFORE_CUTOFF"
+    },
+    {
+      "id": "M17_AUTH_Q2",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verification_status,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' unresolved_d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verification_status": "VERIFIED",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "unresolved_d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "HISTORICAL_SOURCE_BEFORE_CUTOFF"
+    },
+    {
+      "id": "M17_AUTH_Q3",
+      "sql_literal": "SELECT id,created_at,payload->'historical_provenance_only' provenance,payload->'scope_guards' scope_guards,payload->>'source_pack_version' source_pack FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "provenance": {
+            "router_note": "Router binding snapshot observes readiness revision 5.12 while governed current readiness snapshot is 5.13; retained as provenance/currentness drift only.",
+            "contract_note": "Older input contract rows remain recorded; caller usage is not inferred from their existence."
+          },
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          },
+          "source_pack": "SOURCE_PACK_V1"
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "HISTORICAL_SOURCE_BEFORE_CUTOFF"
+    },
+    {
+      "id": "M17_AUTH_Q4",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') tx_readonly,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "tx_readonly": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "scope": "CURRENT_TOOL_OR_PRIVILEGES_NOT_P0"
+    },
+    {
+      "id": "M17_AUTH_Q5",
+      "sql_literal": "SELECT n.nspname schema_name,p.proname function_name,pg_get_function_identity_arguments(p.oid) signature,has_function_privilege(current_user,p.oid,'EXECUTE') can_execute_now FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='programacion' AND (p.proname ILIKE '%cp2%dispatch%' OR p.proname='fn_engineering_checkpoint_close_governed_v1') ORDER BY p.proname LIMIT 20",
+      "rows": [
+        {
+          "schema_name": "programacion",
+          "function_name": "fn_engineering_checkpoint_close_governed_v1",
+          "signature": "p_execution_id text, p_plan_code text, p_unit_code text, p_checkpoint_code text",
+          "can_execute_now": false
+        },
+        {
+          "schema_name": "programacion",
+          "function_name": "fn_ig_m105_cp2_route_repository_dispatch_v1",
+          "signature": "p_packet jsonb, p_action_spec jsonb",
+          "can_execute_now": true
+        }
+      ],
+      "rows_returned": 2,
+      "scope": "CURRENT_TOOL_OR_PRIVILEGES_NOT_P0"
+    }
+  ],
+  "findings": [
+    {
+      "id": "AUTH_F1",
+      "claim": "Two pre-cutoff EKB entries describe risk of SOAK criterion drift and CP2 read/role currentness; documentation of a permission problem is not evidence of a functional defect",
+      "evidence": [
+        "M17_AUTH_Q1"
+      ],
+      "classification": "MEASURED_EKB"
+    },
+    {
+      "id": "AUTH_F2",
+      "claim": "Historical M9.11 receipt 38 is VERIFIED with 13 screens 47 families, zero known false PASS and unresolved D4; it does not attest current CP2 or E2E",
+      "evidence": [
+        "M17_AUTH_Q2"
+      ],
+      "classification": "MEASURED_RECEIPT"
+    },
+    {
+      "id": "AUTH_F3",
+      "claim": "Event20161 is pre-cutoff source with no recorded runtime activation in scope guards; cannot silently upgrade as-of to current",
+      "evidence": [
+        "M17_AUTH_Q3"
+      ],
+      "classification": "MEASURED_ASOF"
+    },
+    {
+      "id": "AUTH_F4",
+      "claim": "Present connector is supabase_read_only_user and transaction_read_only=on; current pg_proc has_function_privilege reflects NOW, not P0 historical grants",
+      "evidence": [
+        "M17_AUTH_Q4",
+        "M17_AUTH_Q5"
+      ],
+      "classification": "MEASURED_CURRENT_ONLY"
+    }
+  ],
+  "causal_hypotheses": [
+    {
+      "hypothesis": "CP2 failure readback caused by privilege mismatch rather than Curator/Validator behavior",
+      "status": "UNPROVEN_FUNCTIONAL",
+      "falsifier": "Authorized equivalent SELECT and time-qualified dispatch receipt, without EXECUTE grant to readonly actor"
+    },
+    {
+      "hypothesis": "Historical receipt criteria were omitted from latest SOAK projection",
+      "status": "UNPROVEN_ACTUAL_DRIFT",
+      "falsifier": "Compare exact M9.11 as-of receipt contents to canonical action_spec and required screening cohort"
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "AUTH_EKB_TWO_HISTORIC",
+      "pass": true
+    },
+    {
+      "id": "AUTH_M911_QUALIFIED_RECEIPT",
+      "pass": true
+    },
+    {
+      "id": "AUTH_CURRENT_ROLE_RO",
+      "pass": true
+    },
+    {
+      "id": "AUTH_CURRENT_NOT_P0",
+      "pass": true
+    },
+    {
+      "id": "AUTH_NO_PROD_MUTATION_ASSERT",
+      "pass": true
+    }
+  ],
+  "contradictions": [],
+  "unresolved": [
+    "Historical P0 exact privileges cannot be inferred from current has_function_privilege",
+    "No service_role execution authorized here",
+    "No functional CP2 PASS/FAIL asserted by current readonly identity"
+  ],
+  "measured_costs": {
+    "queries_executed": 5,
+    "returned_rows": 7,
+    "db_runtime_ms": "UNKNOWN"
+  },
+  "next_safe_step": "Use source-pinned historical evidence and authorized SELECT-based CP2 equivalence; preserve explicit 42501 permission classification",
+  "external_quality_score": "NOT_PERFORMED"
+}

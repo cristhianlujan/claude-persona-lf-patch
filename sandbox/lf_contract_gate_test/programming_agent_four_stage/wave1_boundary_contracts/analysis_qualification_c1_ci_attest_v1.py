@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI source-attestation runner for the Analysis A1Q..A14Q C1 checkpoints.
+"""CI source-attestation runner for the Analysis A1Q..A15Q C1 checkpoints.
 
 Runs inside GitHub Actions on the exact main SHA. For each unit it
   1. recomputes the sha256 of the canonical source bytes by itself (not through the adapter),
@@ -23,7 +23,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
 DOSSIER = REPO / "docs/programming-agent/ANALYSIS_QUALIFICATION_JUDGE_DOSSIER_V1.json"
-UNITS = [f"A{n}" for n in range(1, 15)]
+UNITS = [f"A{n}" for n in range(1, 16)]
 sys.path.insert(0, str(HERE))
 
 

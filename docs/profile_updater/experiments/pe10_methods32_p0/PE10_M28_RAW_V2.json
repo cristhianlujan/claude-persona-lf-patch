@@ -1,0 +1,568 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M28",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "E"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M28.json",
+    "sha256": "9ec2cdd1b2b838779f4f04c29643fc5c87542b8ba40d1deed06ebb122a928204"
+  },
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "external_evaluation": "NOT_PERFORMED",
+  "role_reports": [
+    {
+      "role": "ARCHITECTURE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/ARCHITECTURE_RAW_V1.json",
+      "git_blob_sha": "6ad3b13a3167b92d40fdf327a926459aa1442b14",
+      "select_attempts": 4,
+      "successful_selects": 4,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "conflict_sets": 3,
+      "minimal_hitting_sets": 3,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "PERFORMANCE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/PERFORMANCE_RAW_V1.json",
+      "git_blob_sha": "474258a9c3ccf359c9b883394762011a7c529b19",
+      "select_attempts": 7,
+      "successful_selects": 7,
+      "query_errors": 0,
+      "negative_falsifiers": 4,
+      "conflict_sets": 3,
+      "minimal_hitting_sets": 3,
+      "decision_state": "NEEDS_MORE_EVIDENCE",
+      "role_output_frozen": true
+    },
+    {
+      "role": "AUTHORITY",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/AUTHORITY_RAW_V1.json",
+      "git_blob_sha": "07763d37d02edfd062841d543fa0656a8cf6a175",
+      "select_attempts": 6,
+      "successful_selects": 6,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "conflict_sets": 3,
+      "minimal_hitting_sets": 3,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "COVERAGE",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/COVERAGE_RAW_V1.json",
+      "git_blob_sha": "a9d7f76dfece1d32f16a6df5a6aaa858dd21f065",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 3,
+      "conflict_sets": 3,
+      "minimal_hitting_sets": 3,
+      "decision_state": "VERIFY_FIRST",
+      "role_output_frozen": true
+    },
+    {
+      "role": "INNOVATION",
+      "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/INNOVATION_RAW_V1.json",
+      "git_blob_sha": "dbd0fdddccdbf0f17d9ccc869cc4579b806e6688",
+      "select_attempts": 5,
+      "successful_selects": 5,
+      "query_errors": 0,
+      "negative_falsifiers": 4,
+      "conflict_sets": 3,
+      "minimal_hitting_sets": 3,
+      "decision_state": "NO_ACTION_SUPPORTED",
+      "role_output_frozen": true
+    }
+  ],
+  "synthesis_ref": {
+    "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_SYNTHESIS_V1.json",
+    "git_blob_sha": "bdc44f1fc67351de4496cf6d947c3579243fff1b",
+    "source_commit": "aae3723408a4282d606f161e50d14a5da27c4ec4"
+  },
+  "synthesis": {
+    "schema": "PE10_M28_SYNTHESIS_V1",
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "method_code": "PE10_M28",
+    "definition_version": "PE10_METHOD_V1",
+    "base_code": "B",
+    "algorithm_codes": [
+      "D",
+      "M",
+      "E"
+    ],
+    "synthesizer_contract": {
+      "inputs": "Only the five separately frozen M28 role RAW files.",
+      "role_bound_single_context": true,
+      "independent_agents_claimed": false,
+      "cross_method_results_used": false,
+      "voting_used": false,
+      "reconciliation_rule": "Resolve by evidence scope, conflict sets, ATMS assumptions/nogoods and falsifiers; never by majority."
+    },
+    "frozen_role_inputs": [
+      {
+        "role_code": "ARCHITECTURE",
+        "blob_sha": "6ad3b13a3167b92d40fdf327a926459aa1442b14",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/ARCHITECTURE_RAW_V1.json"
+      },
+      {
+        "role_code": "PERFORMANCE",
+        "blob_sha": "474258a9c3ccf359c9b883394762011a7c529b19",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/PERFORMANCE_RAW_V1.json"
+      },
+      {
+        "role_code": "AUTHORITY",
+        "blob_sha": "07763d37d02edfd062841d543fa0656a8cf6a175",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/AUTHORITY_RAW_V1.json"
+      },
+      {
+        "role_code": "COVERAGE",
+        "blob_sha": "a9d7f76dfece1d32f16a6df5a6aaa858dd21f065",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/COVERAGE_RAW_V1.json"
+      },
+      {
+        "role_code": "INNOVATION",
+        "blob_sha": "dbd0fdddccdbf0f17d9ccc869cc4579b806e6688",
+        "path": "docs/profile_updater/experiments/pe10_methods32_p0/M28_roles/INNOVATION_RAW_V1.json"
+      }
+    ],
+    "role_states": {
+      "ARCHITECTURE": "VERIFY_FIRST",
+      "PERFORMANCE": "NEEDS_MORE_EVIDENCE",
+      "AUTHORITY": "VERIFY_FIRST",
+      "COVERAGE": "VERIFY_FIRST",
+      "INNOVATION": "NO_ACTION_SUPPORTED"
+    },
+    "reconciliation": [
+      {
+        "id": "M28-SYN-RC01",
+        "issue": "Historical structure is coherent while current semantic/current-universe certification is incomplete.",
+        "resolution": "Preserve P0 as historical evidence; require current governed attestation separately."
+      },
+      {
+        "id": "M28-SYN-RC02",
+        "issue": "Performance telemetry is measurable but not causally attributable.",
+        "resolution": "Retain descriptive metrics; keep performance in NEEDS_MORE_EVIDENCE until timing semantics and matched replay exist."
+      },
+      {
+        "id": "M28-SYN-RC03",
+        "issue": "Authority labels are distinct but material independence is unproven.",
+        "resolution": "Retain label-level separation only and require provenance/material separation readback."
+      },
+      {
+        "id": "M28-SYN-RC04",
+        "issue": "Innovation supports reuse-first/no runtime intervention.",
+        "resolution": "Use existing safe evidence surfaces before adding new runtime mechanisms."
+      }
+    ],
+    "integrated_findings": [
+      {
+        "id": "M28-SYN-F01",
+        "claim": "P0 is internally coherent historical inventory evidence; all 38 frozen caller names and all 21 frozen trigger names remain structurally resolvable.",
+        "support": [
+          "M28-ARQ-F01",
+          "M28-ARQ-F04",
+          "M28-COV-F01",
+          "M28-COV-F02",
+          "M28-COV-F04"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M28-SYN-F02",
+        "claim": "Current semantic equivalence and current-universe totality are not certified: 22/38 empirical md5(prosrc) differ, canonical historical hash representation is unknown, and bounded current scans expose complements and misses relative to P0.",
+        "support": [
+          "M28-ARQ-F02",
+          "M28-COV-F03"
+        ],
+        "confidence": "HIGH_WITH_SCOPE_LIMIT"
+      },
+      {
+        "id": "M28-SYN-F03",
+        "claim": "No causal performance improvement/regression is demonstrated because null/zero semantics, non-additive stage accounting, reuse and matched intervention boundaries are unresolved.",
+        "support": [
+          "M28-PERF-F02",
+          "M28-PERF-F03",
+          "M28-PERF-F04",
+          "M28-PERF-F05",
+          "M28-PERF-F06"
+        ],
+        "confidence": "HIGH"
+      },
+      {
+        "id": "M28-SYN-F04",
+        "claim": "Current research is read-only for IG execution; recorded Curator/Validator labels are distinct where present, but canonical historical authority and material independence remain unverified.",
+        "support": [
+          "M28-AUT-F01",
+          "M28-AUT-F02",
+          "M28-AUT-F03",
+          "M28-AUT-F04"
+        ],
+        "confidence": "HIGH_FOR_OBSERVED_FIELDS"
+      },
+      {
+        "id": "M28-SYN-F05",
+        "claim": "Existing cache/context/manifest/receipt surfaces support reuse-first verification; no runtime repair, duplicate removal or new observability subsystem is justified by current evidence.",
+        "support": [
+          "M28-INN-F01",
+          "M28-INN-F02",
+          "M28-INN-F03",
+          "M28-INN-F04",
+          "M28-INN-F05"
+        ],
+        "confidence": "MEDIUM_HIGH"
+      }
+    ],
+    "algorithm_application": {
+      "D": {
+        "executed": true,
+        "cross_role_conflict_sets": [
+          {
+            "id": "SYN-C1",
+            "members": [
+              "historical_snapshot_not_current",
+              "body_or_route_drift",
+              "canonical_hash_unknown"
+            ]
+          },
+          {
+            "id": "SYN-C2",
+            "members": [
+              "current_universe_incomplete",
+              "pattern_detection_limits"
+            ]
+          },
+          {
+            "id": "SYN-C3",
+            "members": [
+              "clock_semantics_unknown",
+              "matched_workload_unknown",
+              "reuse_or_overlap"
+            ]
+          },
+          {
+            "id": "SYN-C4",
+            "members": [
+              "visible_authority_link_gap",
+              "material_independence_unproven"
+            ]
+          },
+          {
+            "id": "SYN-C5",
+            "members": [
+              "intervention_bias",
+              "existing_surface_reuse_possible"
+            ]
+          }
+        ],
+        "minimal_hitting_sets": [
+          [
+            "historical_snapshot_not_current",
+            "canonical_hash_unknown",
+            "current_universe_incomplete"
+          ],
+          [
+            "body_or_route_drift",
+            "pattern_detection_limits",
+            "material_independence_unproven"
+          ],
+          [
+            "clock_semantics_unknown",
+            "matched_workload_unknown",
+            "visible_authority_link_gap"
+          ],
+          [
+            "existing_surface_reuse_possible",
+            "material_independence_unproven",
+            "current_universe_incomplete"
+          ]
+        ],
+        "barinel": {
+          "executed": false,
+          "calibrated": false,
+          "reason": "No justified priors or executable spectra across cross-role hypotheses."
+        },
+        "information_gain": {
+          "mode": "ORDINAL_DISCRIMINATION_COST",
+          "ranked": [
+            {
+              "rank": 1,
+              "query": "Authorized current manifest with universe predicate, canonical hash method and active-entry mapping.",
+              "cost": "LOW_TO_MEDIUM"
+            },
+            {
+              "rank": 2,
+              "query": "Canonical authority + material Curator/Validator execution provenance.",
+              "cost": "MEDIUM"
+            },
+            {
+              "rank": 3,
+              "query": "Controlled matched performance replay after timing semantics are fixed.",
+              "cost": "MEDIUM"
+            }
+          ]
+        }
+      },
+      "M": {
+        "executed": true,
+        "assumptions": [
+          {
+            "id": "SYN-A1",
+            "text": "P0 is historical evidence, not current certification."
+          },
+          {
+            "id": "SYN-A2",
+            "text": "md5(prosrc) is empirical until canonical historical hash serialization is demonstrated."
+          },
+          {
+            "id": "SYN-A3",
+            "text": "Pattern/static inventories are discovery surfaces, not authoritative runtime universes."
+          },
+          {
+            "id": "SYN-A4",
+            "text": "Recorded identity inequality is weaker than material independence."
+          },
+          {
+            "id": "SYN-A5",
+            "text": "Timing semantics and matched intervention boundaries are prerequisites for causal performance inference."
+          },
+          {
+            "id": "SYN-A6",
+            "text": "Existing safe evidence surfaces should be reused before new runtime intervention."
+          }
+        ],
+        "minimal_justifications": [
+          {
+            "claim": "Historical structural continuity",
+            "support": [
+              "M28_ARQ_Q01",
+              "M28_ARQ_Q04",
+              "M28_COV_Q01",
+              "M28_COV_Q02",
+              "M28_COV_Q04"
+            ],
+            "assumptions": [
+              "SYN-A1"
+            ]
+          },
+          {
+            "claim": "Current semantic/current-universe closure is not established",
+            "support": [
+              "M28_ARQ_Q02",
+              "M28_COV_Q03"
+            ],
+            "assumptions": [
+              "SYN-A2",
+              "SYN-A3"
+            ]
+          },
+          {
+            "claim": "Performance remains descriptive only",
+            "support": [
+              "M28_PERF_Q03",
+              "M28_PERF_Q04",
+              "M28_PERF_Q05",
+              "M28_PERF_Q06",
+              "M28_PERF_Q07"
+            ],
+            "assumptions": [
+              "SYN-A5"
+            ]
+          },
+          {
+            "claim": "Authority/material independence requires further attestation",
+            "support": [
+              "M28_AUT_Q02",
+              "M28_AUT_Q03",
+              "M28_AUT_Q04",
+              "M28_AUT_Q05"
+            ],
+            "assumptions": [
+              "SYN-A4"
+            ]
+          },
+          {
+            "claim": "Reuse-first/no runtime intervention",
+            "support": [
+              "M28_INN_Q01",
+              "M28_INN_Q02",
+              "M28_INN_Q03",
+              "M28_INN_Q04",
+              "M28_INN_Q05"
+            ],
+            "assumptions": [
+              "SYN-A6"
+            ]
+          }
+        ],
+        "nogoods": [
+          {
+            "id": "SYN-NG1",
+            "invalidates_if": "Canonical hash method differs from md5(prosrc).",
+            "invalidates_claims": [
+              "Any strong drift interpretation of the 16/22 split"
+            ]
+          },
+          {
+            "id": "SYN-NG2",
+            "invalidates_if": "Authorized current universe materially differs from bounded scan/P0.",
+            "invalidates_claims": [
+              "Any current-completeness inference from those sets"
+            ]
+          },
+          {
+            "id": "SYN-NG3",
+            "invalidates_if": "Recorded identity labels map to one effective execution principal/session.",
+            "invalidates_claims": [
+              "Any material-independence inference from labels"
+            ]
+          },
+          {
+            "id": "SYN-NG4",
+            "invalidates_if": "Timing contracts and matched replay resolve confounders.",
+            "invalidates_claims": [
+              "Current performance uncertainty assumptions"
+            ]
+          },
+          {
+            "id": "SYN-NG5",
+            "invalidates_if": "Existing evidence surfaces cannot safely close the current gaps.",
+            "invalidates_claims": [
+              "Reuse-first sufficiency assumption"
+            ]
+          }
+        ],
+        "propagation": [
+          {
+            "on": "SYN-NG1",
+            "result": "Retain object resolution; downgrade body-drift semantics to UNKNOWN."
+          },
+          {
+            "on": "SYN-NG2",
+            "result": "Recompute current coverage from authoritative manifest."
+          },
+          {
+            "on": "SYN-NG3",
+            "result": "Escalate authority risk and remove material-independence support."
+          },
+          {
+            "on": "SYN-NG4",
+            "result": "Permit controlled performance decision from matched evidence."
+          },
+          {
+            "on": "SYN-NG5",
+            "result": "Open bounded evidence-surface gap without jumping to domain repair."
+          }
+        ]
+      },
+      "E": {
+        "executed": true,
+        "state": "VERIFY_FIRST",
+        "rationale": "No material runtime defect is demonstrated, but current semantic equivalence, current-universe totality and material authority separation are not closed. Performance remains NEEDS_MORE_EVIDENCE inside this verification path.",
+        "demonstrated_defect": false,
+        "implemented_repair": false,
+        "runtime_modified": false,
+        "potential_falsifiers": [
+          "Governed current manifest proves semantic equivalence and complete material consumer classification.",
+          "Canonical provenance proves valid authority and material Curator/Validator independence.",
+          "Controlled matched performance replay proves or excludes a material regression."
+        ],
+        "reversal_criteria": {
+          "to_REPAIR_REQUIRED": "Governed verification proves a material active defect with an attributable minimal target.",
+          "to_NO_ACTION_SUPPORTED": "Currentness, coverage, authority and performance unknowns close without material defect.",
+          "to_NEEDS_MORE_EVIDENCE": "Required governed evidence remains inaccessible or ambiguous."
+        }
+      }
+    },
+    "chosen_repair": {
+      "immediate": "NO_RUNTIME_REPAIR",
+      "next_verification": [
+        "CURRENT_MANIFEST_AND_UNIVERSE_ATTESTATION",
+        "AUTHORITY_AND_MATERIAL_INDEPENDENCE_READBACK",
+        "MATCHED_PERFORMANCE_VERIFICATION"
+      ]
+    },
+    "constraints_preserved": [
+      "READ_ONLY research",
+      "No production/runtime mutation",
+      "No grant widening",
+      "P0 historical facts separated from post-cut observations",
+      "Five role RAWs frozen before synthesis",
+      "No independent-agent claim",
+      "No cross-method result input",
+      "No domain READY/DONE claim"
+    ],
+    "unresolved": [
+      "Canonical historical hash serialization",
+      "Current active-entry mapping and semantic equivalence",
+      "Authoritative current material consumer universe",
+      "Canonical event/operation provenance",
+      "Material Curator/Validator independence",
+      "Matched performance semantics and intervention boundary"
+    ],
+    "measured_costs": {
+      "producer_select_attempts": 27,
+      "producer_successful_selects": 27,
+      "producer_query_errors": 0,
+      "negative_falsifiers": 17,
+      "conflict_sets": 15,
+      "minimal_hitting_sets": 15,
+      "producer_files": 5,
+      "production_writes": 0,
+      "tokens": "NO_MEDIDO"
+    },
+    "final_state": "VERIFY_FIRST",
+    "synthesized_at": "2026-10-18T22:40:00Z"
+  },
+  "source_queries_total": 27,
+  "successful_queries_total": 27,
+  "query_errors_preserved": 0,
+  "negative_tests_total": 17,
+  "conflict_sets_total": 15,
+  "minimal_hitting_sets_total": 15,
+  "role_state_counts": {
+    "VERIFY_FIRST": 3,
+    "NEEDS_MORE_EVIDENCE": 1,
+    "NO_ACTION_SUPPORTED": 1,
+    "REPAIR_REQUIRED": 0
+  },
+  "algorithm_D_executed": true,
+  "barinel_probabilistic_executed": false,
+  "algorithm_M_executed": true,
+  "atms_assumptions_tracked": true,
+  "atms_nogoods_tracked": true,
+  "atms_propagation_executed": true,
+  "algorithm_E_executed": true,
+  "evidence_decision_contract": {
+    "allowed_states": [
+      "VERIFY_FIRST",
+      "REPAIR_REQUIRED",
+      "NEEDS_MORE_EVIDENCE",
+      "NO_ACTION_SUPPORTED"
+    ],
+    "integrated_state": "VERIFY_FIRST",
+    "evidence_scoped": true,
+    "falsifiers_specified": true,
+    "reversal_criteria_specified": true,
+    "implemented_repair": false
+  },
+  "final_method_state": "B_D_M_E_ROLE_REPORTS_SYNTHESIZED_NO_DOMAIN_REPAIR",
+  "causal_defect_proven": false,
+  "solution_state": "VERIFY_FIRST",
+  "runtime_modified": false,
+  "independence_constraint": {
+    "frozen_before_synthesis": true,
+    "report_results_from_one_model_context": true,
+    "independent_agents": false
+  }
+}

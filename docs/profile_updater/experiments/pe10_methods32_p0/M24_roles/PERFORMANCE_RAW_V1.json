@@ -1,0 +1,194 @@
+{
+  "schema": "PE10_M24_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M24_PERF_Q1",
+      "result": "track_functions=none;stats_rows0;positive_calls0"
+    },
+    {
+      "id": "M24_PERF_Q2",
+      "result": "5.13 completed86 zeros3/11 p50+23915/69597;5.13.1 completed20 zeros6/5 p50+60257.5/246293"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "PERF_CS1",
+        "observation": "function stats unavailable under disabled tracking",
+        "components": [
+          "instrumentation_disabled",
+          "zero_usage_inference"
+        ]
+      },
+      {
+        "id": "PERF_CS2",
+        "observation": "revision distributions differ",
+        "components": [
+          "revision_effect",
+          "cohort_mismatch",
+          "zero_semantics"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "instrumentation_disabled"
+      ],
+      [
+        "cohort_mismatch"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "matched same-screen/path cohort with explicit zero semantics"
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "current setting+pg_stat",
+        "time": "CURRENT",
+        "assumptions": [
+          "missing stats not zero usage"
+        ],
+        "supports": [
+          "C_STATS_UNKNOWN"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "pre-cutoff readiness runs",
+        "time": "PRE_CUTOFF",
+        "assumptions": [
+          "revisions need cohort equivalence"
+        ],
+        "supports": [
+          "C_REV_VARIATION"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_STATS_UNKNOWN",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C_REV_VARIATION",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C_IMPROVEMENT",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "ZERO_STATS_EQUALS_ZERO_USAGE"
+        ],
+        "reason": "tracking disabled"
+      },
+      {
+        "set": [
+          "POOL_REVISIONS"
+        ],
+        "reason": "sample/zero distributions differ"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C_STATS_UNKNOWN"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C_REV_VARIATION"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "I1",
+        "rule": "missing instrumentation cannot produce observed zero-call truth",
+        "observed": "track_functions none",
+        "valid_case": "usage UNKNOWN",
+        "counterexample": "claim zero usage",
+        "status": "PASS"
+      },
+      {
+        "id": "I2",
+        "rule": "revision comparison requires equivalent cohort",
+        "observed": "86 vs20 and zero distributions differ",
+        "valid_case": "limit causal claim",
+        "counterexample": "pool directly",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "classification": "MEASURED_LIMIT",
+      "claim": "Function statistics cannot support usage/speed conclusions."
+    },
+    {
+      "id": "F2",
+      "classification": "MEASURED_DIRECTION",
+      "claim": "5.13.1 positive medians are larger, but causal regression is unproven."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "N1",
+      "hypothesis": "0 stats rows proves no calls",
+      "result": "FALSIFIED_AS_INFERENCE"
+    },
+    {
+      "id": "N2",
+      "hypothesis": "revisions are directly equivalent",
+      "result": "NOT_PROVEN"
+    }
+  ],
+  "unresolved": [
+    "zero-duration semantics",
+    "matched causal performance"
+  ],
+  "role_output_frozen": true
+}

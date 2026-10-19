@@ -1,5 +1,33 @@
 #!/usr/bin/env python3
 import json, sys
+from pathlib import Path
+
+# Read the existing declared schema; reuse the already-installed transversal
+# shape checker instead of writing a Product-only duplicate schema engine.
+# Missing shared code or schema is a blocker, never silent PASS.
+_ROOT = Path(__file__).resolve().parents[3]
+_SHARED = _ROOT / 'skills' / 'profile_creator' / 'validators'
+if str(_SHARED) not in sys.path:
+    sys.path.insert(0, str(_SHARED))
+try:
+    from profile_output_shape_preflight_v1 import validate_shape
+except ImportError:
+    validate_shape = None
+
+
+def _schema_contract_errors(payload):
+    path = Path(__file__).resolve().parents[1] / 'schemas' / 'product_direction_spec.schema.json'
+    if validate_shape is None or not path.is_file():
+        return [('SCHEMA_PREFLIGHT_UNAVAILABLE', '$', 'current canonical schema preflight missing')]
+    try:
+        schema = json.loads(path.read_text(encoding='utf-8'))
+        out = validate_shape(schema, payload)
+    except (OSError, ValueError) as ex:
+        return [('SCHEMA_PREFLIGHT_INVALID', '$', type(ex).__name__)]
+    return [
+        ('SCHEMA_' + issue['code'].split(':', 1)[0], issue['path'], issue['code'])
+        for issue in out['blocking_codes']
+    ]
 
 SCORE_KEYS = [
     'product_decision_clarity','scope_control_mvp_separation',
@@ -42,6 +70,8 @@ def validate(payload):
         return result(e)
     if ot != 'PRODUCT_DIRECTION_SPEC': return result(e)
     if payload.get('self_verdict') != 'PASS': err(e,'SPEC_VERDICT','self_verdict','spec candidate must use PASS')
+    for code, path, detail in _schema_contract_errors(payload):
+        err(e, code, path, detail)
 
     d=payload.get('deliverable_created')
     if not isinstance(d,dict): err(e,'DELIVERABLE_MISSING','deliverable_created','structured deliverable required'); return result(e)

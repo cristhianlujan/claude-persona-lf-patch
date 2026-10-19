@@ -1,0 +1,275 @@
+{
+  "schema": "PE10_M30_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M30",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "INNOVATION",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M30-INN-F01",
+      "claim": "Bounded related-function surface contains 75 functions including 10 cached, 4 context, 1 manifest and 4 receipt-named.",
+      "evidence_refs": [
+        "M30_INN_Q01"
+      ],
+      "confidence": "HIGH_FOR_QUERY_RULE"
+    },
+    {
+      "id": "M30-INN-F02",
+      "claim": "Raw and whitespace-normalized duplicate grouping both yield 2 groups/5 functions.",
+      "evidence_refs": [
+        "M30_INN_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-INN-F03",
+      "claim": "Evidence-related volatility partitions 16=1 immutable+4 stable+11 volatile; 9 executable, 5 executable volatile.",
+      "evidence_refs": [
+        "M30_INN_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-INN-F04",
+      "claim": "track_functions=none with zero stats rows/calls, so zero statistics cannot establish zero runtime use.",
+      "evidence_refs": [
+        "M30_INN_Q04"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M30-INN-F05",
+      "claim": "Frozen static graph contains 38 callers and 76 declared edges, max out-degree 5.",
+      "evidence_refs": [
+        "M30_INN_Q05"
+      ],
+      "confidence": "HIGH_FOR_STATIC_GRAPH"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "INN-C1",
+          "members": [
+            "intervention_bias",
+            "existing_surface_reuse_possible"
+          ],
+          "basis": [
+            "M30-INN-F01",
+            "M30-INN-F03"
+          ]
+        },
+        {
+          "id": "INN-C2",
+          "members": [
+            "intentional_compatibility",
+            "unnecessary_duplication"
+          ],
+          "basis": [
+            "M30-INN-F02"
+          ]
+        },
+        {
+          "id": "INN-C3",
+          "members": [
+            "static_graph_overstatement",
+            "runtime_telemetry_missing"
+          ],
+          "basis": [
+            "M30-INN-F04",
+            "M30-INN-F05"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "intervention_bias",
+          "intentional_compatibility"
+        ],
+        [
+          "intervention_bias",
+          "runtime_telemetry_missing"
+        ],
+        [
+          "existing_surface_reuse_possible",
+          "static_graph_overstatement"
+        ]
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No intervention spectra/priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Authorized safe manifest readback using existing surface.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 2,
+            "query": "Compatibility ownership for duplicate groups.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Governed runtime-edge evidence.",
+            "cost": "MEDIUM_TO_HIGH"
+          }
+        ]
+      }
+    },
+    "C": {
+      "invariants": [
+        {
+          "id": "INN-I1",
+          "type": "PARTITION",
+          "statement": "volatility total=i+s+v",
+          "observed": "16=1+4+11",
+          "status": "PASS"
+        },
+        {
+          "id": "INN-I2",
+          "type": "METAMORPHIC",
+          "statement": "Duplicate groups stable under whitespace normalization.",
+          "observed": "2 groups/5 functions both ways",
+          "status": "PASS"
+        },
+        {
+          "id": "INN-I3",
+          "type": "NEGATIVE",
+          "statement": "EXECUTE does not imply read-only safety for volatile functions.",
+          "observed": "5 executable volatile",
+          "status": "PASS"
+        },
+        {
+          "id": "INN-I4",
+          "type": "NEGATIVE",
+          "statement": "Zero stats cannot imply zero use when tracking disabled.",
+          "observed": "track_functions=none",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "INN-MT1",
+          "transform": "raw body→whitespace-normalized body",
+          "observed_relation": "Duplicate grouping unchanged",
+          "result": "INVARIANT_HELD"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "Catalog/count invariants directly executable."
+    },
+    "E": {
+      "state": "NO_ACTION_SUPPORTED",
+      "rationale": "No runtime defect demonstrated; existing evidence surfaces and compatibility variants should be verified/reused before intervention.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Safe manifest readback reveals material inconsistency.",
+        "Compatibility ownership proves unsafe duplicate.",
+        "Runtime evidence contradicts static assumptions."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Material inconsistency/unsafe variant proven.",
+        "to_VERIFY_FIRST": "Existing safe surface can close bounded gap.",
+        "to_NEEDS_MORE_EVIDENCE": "Safe evidence remains inaccessible."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not delete duplicates from body equality alone.",
+    "Do not invoke volatile functions from EXECUTE alone.",
+    "Do not infer zero use from disabled stats.",
+    "Do not infer runtime criticality from static graph."
+  ],
+  "unresolved": [
+    "Safe manifest inputs",
+    "Duplicate compatibility ownership",
+    "Runtime-edge evidence"
+  ],
+  "next_safe_step": "Reuse safe evidence surfaces; no new subsystem/deletion.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 4,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "invariants": 4,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M30_INN_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "related_functions": 75,
+        "cached_functions": 10,
+        "context_functions": 4,
+        "manifest_functions": 1,
+        "receipt_functions": 4
+      }
+    },
+    {
+      "query_id": "M30_INN_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "raw_groups": 2,
+        "raw_members": 5,
+        "norm_groups": 2,
+        "norm_members": 5
+      }
+    },
+    {
+      "query_id": "M30_INN_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "total": 16,
+        "immutable_count": 1,
+        "stable_count": 4,
+        "volatile_count": 11,
+        "executable_count": 9,
+        "executable_volatile": 5
+      }
+    },
+    {
+      "query_id": "M30_INN_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "track_functions": "none",
+        "stats_rows": 0,
+        "calls": 0
+      }
+    },
+    {
+      "query_id": "M30_INN_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "callers": 38,
+        "declared_edges": 76,
+        "max_out": 5,
+        "zero_callees": 0
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T23:18:00Z"
+}

@@ -52,3 +52,34 @@ The planner is read-only. It returns `BLOCKED_LEARNING_PREFLIGHT` unless the liv
 `write_allowed=true` requires both a PASS Learning Preflight and a repairable structural delta. The baseline evaluator discovers target callables statically with AST and never imports or executes target profile code.
 
 Post-write closure requires a fresh 10/10 baseline result on the exact candidate head plus the existing operation, evidence, readback, semantic and regression gates.
+
+## Transversal output parity (new and evolved profiles)
+
+For `CREACION_PERFIL_LF`, Profile Creator's existing
+`validate_candidate_depth.py` invokes the shared structural preflight
+`validators/profile_output_shape_preflight_v1.py` on each materialized positive
+output example against its output schema. A missing field or invalid enum fails
+the creation-depth gate, not merely a document checklist.
+
+For `ACTUALIZACION_PERFIL_LF`, `plan_profile_evolution.py` returns an
+explicit `candidate_output_contract_gate` before admission. It is **not
+executed** by planning: the governed post-generation consumer must resolve the
+**current bound** schema and profile-local validator and then run:
+
+```bash
+python3 skills/profile_creator/validators/run_bound_profile_output_validator_v1.py \
+  --root <exact-repository-checkout> --binding <source-bound-binding.json>
+```
+
+Binding schema: `PROFILE_OUTPUT_VALIDATION_BINDING_V1` with
+`operation_code`, `profile_slug`, `expected_valid`, three exact local refs
+(`schema_ref`, `validator_ref`, `raw_output_ref`) and matching SHA-256s,
+plus `validator_transport` = `STDIN_JSON` or `JSON_FILE_ARGUMENT`.
+Only a profile's existing, current authoritative validator is allowed, not
+one inferred from filenames. Confirm a positive output and a deliberately
+negative counterexample. Any mismatch blocks that candidate; one bounded
+repair is possible, followed by a STOP on tie or unresolved gain. Evidence
+from this runner is only structural/local; never provider attestation or
+cutover approval. No additional pack discovery engine or profile-specific
+branching is introduced.
+

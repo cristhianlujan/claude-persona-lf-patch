@@ -1,0 +1,37 @@
+{
+ "checks": [
+  {
+   "code": "NO_PREMATURE_STOP",
+   "statement": "STOP solo aparece con decisión estable, contabilidad de frentes completa y ninguna pregunta abierta que pueda cambiar el resultado; stop_criteria es coherente con research_decision y con la entrada."
+  },
+  {
+   "code": "TRACE_AND_OWNER_DECISIONS",
+   "statement": "front_trace tiene un elemento por cada frente de la entrada con sus blockers, y owner_decisions_required incluye todas las decisiones que bloquean algún frente."
+  },
+  {
+   "code": "NO_READY_NO_UNTRIGGERED_SEARCH",
+   "statement": "No se declara READY ni se resuelven decisiones del propietario, y no se ordena seguir investigando sin un gatillo respaldado por la entrada; las referencias son válidas."
+  }
+ ],
+ "criterion": "Control adversarial rechaza STOP prematuro y búsquedas sin gatillo",
+ "decoy_must_fail_checks": [
+  "NO_PREMATURE_STOP",
+  "NO_READY_NO_UNTRIGGERED_SEARCH"
+ ],
+ "replacements": [
+  [
+   "\"research_decision\": \"REQUIRES_DECISION\"",
+   "\"research_decision\": \"STOP\""
+  ],
+  [
+   "\"decision_stable\": false",
+   "\"decision_stable\": true"
+  ],
+  [
+   "\"no_ready_claim\": true",
+   "\"no_ready_claim\": false"
+  ]
+ ],
+ "rules_end": "\n\nENTRADA (JSON):",
+ "rules_start": "Decide si la investigación"
+}

@@ -1,0 +1,194 @@
+{
+  "schema": "PE10_M24_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M24",
+  "role_code": "COVERAGE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M24_COVER_Q1",
+      "result": "39 callee tokens=0 unresolved+33 single+6 multiple candidates"
+    },
+    {
+      "id": "M24_COVER_Q2",
+      "result": "95 current pattern objects=31 historical members+64 complement candidates"
+    }
+  ],
+  "algorithm_D": {
+    "conflict_sets": [
+      {
+        "id": "COVER_CS1",
+        "observation": "six callee tokens ambiguous",
+        "components": [
+          "identity_qualification",
+          "schema_wrapper_ambiguity"
+        ]
+      },
+      {
+        "id": "COVER_CS2",
+        "observation": "64 complement pattern objects outside historical set",
+        "components": [
+          "post_snapshot_evolution",
+          "caller_classification",
+          "name_false_positive"
+        ]
+      }
+    ],
+    "minimal_hitting_sets": [
+      [
+        "identity_qualification"
+      ],
+      [
+        "caller_classification"
+      ]
+    ],
+    "barinel": {
+      "status": "NOT_CALIBRATED"
+    },
+    "information_gain": {
+      "mode": "ORDINAL_DISCRIMINATION_COST",
+      "next": "resolve six ambiguous identities then classify path-shaped complement by references"
+    }
+  },
+  "algorithm_M": {
+    "evidence": [
+      {
+        "id": "E1",
+        "source": "historical callee tokens+current names",
+        "time": "P0+CURRENT",
+        "assumptions": [
+          "proname multiplicity is ambiguity"
+        ],
+        "supports": [
+          "C_AMBIG"
+        ]
+      },
+      {
+        "id": "E2",
+        "source": "current pattern complement",
+        "time": "CURRENT",
+        "assumptions": [
+          "name pattern candidate only"
+        ],
+        "supports": [
+          "C_COMP"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_AMBIG",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E1"
+          ]
+        ]
+      },
+      {
+        "id": "C_COMP",
+        "state": "SUPPORTED_AS_CANDIDATES_ONLY",
+        "justifications": [
+          [
+            "E2"
+          ]
+        ]
+      },
+      {
+        "id": "C_64_OMISSIONS",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "set": [
+          "PRONAME_EQUALS_UNIQUE_IDENTITY"
+        ],
+        "reason": "six multiple candidates"
+      },
+      {
+        "set": [
+          "PATTERN_EQUALS_CALLER"
+        ],
+        "reason": "reference proof absent"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E1",
+        "invalidates": [
+          "C_AMBIG"
+        ]
+      },
+      {
+        "withdraw": "E2",
+        "invalidates": [
+          "C_COMP"
+        ]
+      }
+    ]
+  },
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "I1",
+        "rule": "39=0+33+6",
+        "observed": "reconciled",
+        "valid_case": "ambiguity bucket preserved",
+        "counterexample": "force uniqueness",
+        "status": "PASS"
+      },
+      {
+        "id": "I2",
+        "rule": "95=31+64",
+        "observed": "reconciled",
+        "valid_case": "candidate bucket preserved",
+        "counterexample": "promote complement to caller truth",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "classification": "MEASURED_RISK",
+      "claim": "Six historical callee tokens require qualified current identity."
+    },
+    {
+      "id": "F2",
+      "classification": "CANDIDATE_ONLY",
+      "claim": "64 complement objects are discovery candidates, not proven callers."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "N1",
+      "hypothesis": "all callee tokens uniquely identify objects",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "N2",
+      "hypothesis": "64 complement objects are omissions",
+      "result": "NOT_SUPPORTED"
+    }
+  ],
+  "unresolved": [
+    "qualified identities",
+    "current complement caller classification"
+  ],
+  "role_output_frozen": true
+}

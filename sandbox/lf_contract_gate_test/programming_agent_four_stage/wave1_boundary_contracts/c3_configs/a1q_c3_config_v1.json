@@ -1,0 +1,36 @@
+{
+ "checks": [
+  {
+   "code": "INTENT_FAITHFUL",
+   "statement": "El problema y el resultado deseado reformulan solo lo que dice la solicitud literal, sin cambiar su intención."
+  },
+  {
+   "code": "AMBIGUITY_RETAINED",
+   "statement": "Todo lo que la solicitud no define (significados, alcance, criterios, fechas) queda como ambigüedad abierta y no se resuelve ni se asume."
+  },
+  {
+   "code": "NO_INVENTION",
+   "statement": "No aparecen cifras, causas, fechas, hechos ni soluciones que la solicitud literal no contenga."
+  }
+ ],
+ "criterion": "Revisor ajeno al productor confirma intención y ambigüedad sin invención",
+ "decoy_must_fail_checks": [
+  "NO_INVENTION"
+ ],
+ "replacements": [
+  [
+   "La solicitud afirma que los clientes abandonan; no aporta cifras ni evidencia cuantitativa.",
+   "Los clientes abandonan en un 40% de los casos, según la medición del piloto."
+  ],
+  [
+   "No se aportan mediciones, causas verificadas ni alcance del abandono mencionado.",
+   "El abandono está medido en 40% y se debe a la confusión entre ahorro y cuota."
+  ],
+  [
+   "Se indica urgencia, pero no una fecha o hito preciso del piloto.",
+   "El piloto vence el 30 de noviembre."
+  ]
+ ],
+ "unit": "A1",
+ "work_item_id": 1111
+}

@@ -1,0 +1,357 @@
+{
+  "schema": "PE10_M28_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M28",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D",
+    "M",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M28-PERF-F01",
+      "claim": "Independent schema discovery found input_readiness_runs, ig_direct_requests_v1 and input_validator_chunk_timings as the relevant timing/request sources.",
+      "evidence_refs": [
+        "M28_PERF_Q01",
+        "M28_PERF_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-PERF-F02",
+      "claim": "Among 255 pre-cut runs, curator duration is null/zero/positive in 7/75/173 and validator in 22/99/134.",
+      "evidence_refs": [
+        "M28_PERF_Q03"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-PERF-F03",
+      "claim": "Positive-only p50/p90 are curator 28,148/115,850.6 ms and validator 78,758.5/257,428.6 ms.",
+      "evidence_refs": [
+        "M28_PERF_Q04"
+      ],
+      "confidence": "HIGH_FOR_DESCRIPTION"
+    },
+    {
+      "id": "M28-PERF-F04",
+      "claim": "Six pre-cut direct requests map to five distinct runs; none are unfinished and no finished_at precedes requested_at.",
+      "evidence_refs": [
+        "M28_PERF_Q05"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-PERF-F05",
+      "claim": "Across 493 pre-cut validator chunks, component sums exceed duration_ms in 385 rows, so components cannot safely be assumed additive.",
+      "evidence_refs": [
+        "M28_PERF_Q06"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M28-PERF-F06",
+      "claim": "There are 62 same-screen+same-source-snapshot pairs with non-null Curator/Validator durations, but pair identity alone does not establish matched intervention/workload equivalence.",
+      "evidence_refs": [
+        "M28_PERF_Q07"
+      ],
+      "confidence": "HIGH"
+    }
+  ],
+  "algorithm_application": {
+    "D": {
+      "conflict_sets": [
+        {
+          "id": "PERF-C1",
+          "members": [
+            "clock_semantics_unknown",
+            "workload_or_revision_confounding"
+          ],
+          "basis": [
+            "M28-PERF-F02",
+            "M28-PERF-F03",
+            "M28-PERF-F06"
+          ]
+        },
+        {
+          "id": "PERF-C2",
+          "members": [
+            "request_run_reuse",
+            "intervention_boundary_unknown"
+          ],
+          "basis": [
+            "M28-PERF-F04"
+          ]
+        },
+        {
+          "id": "PERF-C3",
+          "members": [
+            "overlapping_stage_accounting",
+            "clock_semantics_unknown"
+          ],
+          "basis": [
+            "M28-PERF-F05"
+          ]
+        }
+      ],
+      "minimal_hitting_sets": [
+        [
+          "clock_semantics_unknown",
+          "request_run_reuse"
+        ],
+        [
+          "clock_semantics_unknown",
+          "intervention_boundary_unknown"
+        ],
+        [
+          "workload_or_revision_confounding",
+          "overlapping_stage_accounting"
+        ]
+      ],
+      "open_world_alternatives": [
+        "Zeros may be valid zero-cost stages rather than missing telemetry.",
+        "Same snapshot pairs may differ in route, family workload, revision or cache reuse.",
+        "Chunk component fields may intentionally overlap/nest."
+      ],
+      "barinel": {
+        "executed": false,
+        "calibrated": false,
+        "reason": "No comparable pass/fail spectra or justified priors."
+      },
+      "information_gain": {
+        "mode": "ORDINAL_DISCRIMINATION_COST",
+        "ranked": [
+          {
+            "rank": 1,
+            "query": "Authoritative timing-field semantics and additive/overlap contract.",
+            "cost": "LOW"
+          },
+          {
+            "rank": 2,
+            "query": "Canonical request/run reuse marker and intervention boundary.",
+            "cost": "LOW_TO_MEDIUM"
+          },
+          {
+            "rank": 3,
+            "query": "Controlled matched replay with identical source, workload, revision and reuse state.",
+            "cost": "MEDIUM"
+          }
+        ]
+      }
+    },
+    "M": {
+      "assumptions": [
+        {
+          "id": "PERF-A1",
+          "text": "Null/zero duration semantics are unknown without a timing contract."
+        },
+        {
+          "id": "PERF-A2",
+          "text": "Same pantalla+source snapshot is insufficient to prove matched workload/intervention."
+        },
+        {
+          "id": "PERF-A3",
+          "text": "Chunk component durations may overlap or nest."
+        },
+        {
+          "id": "PERF-A4",
+          "text": "Many-to-one direct request/run mapping may represent reuse rather than error."
+        }
+      ],
+      "justifications": [
+        {
+          "claim": "Descriptive latency distribution exists",
+          "support": [
+            "M28_PERF_Q03",
+            "M28_PERF_Q04"
+          ],
+          "assumptions": [
+            "PERF-A1"
+          ]
+        },
+        {
+          "claim": "Run reuse/many-to-one linkage is possible",
+          "support": [
+            "M28_PERF_Q05"
+          ],
+          "assumptions": [
+            "PERF-A4"
+          ]
+        },
+        {
+          "claim": "Naive component additivity is unsafe",
+          "support": [
+            "M28_PERF_Q06"
+          ],
+          "assumptions": [
+            "PERF-A3"
+          ]
+        },
+        {
+          "claim": "Candidate matched pairs exist but causal equivalence is unproven",
+          "support": [
+            "M28_PERF_Q07"
+          ],
+          "assumptions": [
+            "PERF-A2"
+          ]
+        }
+      ],
+      "nogoods": [
+        {
+          "id": "PERF-NG1",
+          "invalidates_if": "Timing contract defines zeros/nulls and component overlap semantics.",
+          "invalidates_claims": [
+            "Any defect inference from null/zero/non-additive arithmetic"
+          ]
+        },
+        {
+          "id": "PERF-NG2",
+          "invalidates_if": "Matched pairs differ materially in workload, revision, route or cache/reuse.",
+          "invalidates_claims": [
+            "Any causal comparison based solely on 62 pairs"
+          ]
+        },
+        {
+          "id": "PERF-NG3",
+          "invalidates_if": "Many-to-one request/run mapping is documented reuse.",
+          "invalidates_claims": [
+            "Any mapping-defect interpretation"
+          ]
+        }
+      ],
+      "propagation": [
+        {
+          "on": "PERF-NG1",
+          "result": "Retain descriptive timings; remove telemetry-defect implication."
+        },
+        {
+          "on": "PERF-NG2",
+          "result": "Downgrade matched-pair inference to descriptive only."
+        },
+        {
+          "on": "PERF-NG3",
+          "result": "Retain reuse observation; remove linkage-error implication."
+        }
+      ]
+    },
+    "E": {
+      "state": "NEEDS_MORE_EVIDENCE",
+      "rationale": "The telemetry is measurable but not causally attributable because clock semantics, reuse, matched workload and intervention boundary remain unresolved.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Timing contract resolves null/zero/overlap semantics.",
+        "Controlled matched replay proves or excludes attributable regression."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "Controlled matched evidence proves material attributable regression.",
+        "to_VERIFY_FIRST": "A bounded governed verification protocol is ready.",
+        "to_NO_ACTION_SUPPORTED": "Matched complete evidence excludes material regression."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not infer causality from p50/p90 alone.",
+    "Do not assume null/zero means missing telemetry.",
+    "Do not sum overlapping chunk components as exclusive stages.",
+    "Do not treat same pantalla+snapshot as a complete matched cohort."
+  ],
+  "unresolved": [
+    "Timing-field semantics",
+    "Matched workload/revision/reuse equivalence",
+    "Canonical request/run reuse semantics",
+    "Intervention boundary"
+  ],
+  "next_safe_step": "Define timing semantics and run a governed matched replay before any performance repair.",
+  "measured_costs": {
+    "select_attempts": 7,
+    "successful_selects": 7,
+    "query_errors": 0,
+    "negative_tests": 4,
+    "conflict_sets": 3,
+    "minimal_hitting_sets": 3,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M28_PERF_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "tables": [
+          "ig_direct_requests_v1",
+          "input_readiness_runs",
+          "input_validator_chunk_timings",
+          "v_agent_task_readiness",
+          "v_authority_readiness"
+        ]
+      }
+    },
+    {
+      "query_id": "M28_PERF_Q02",
+      "status": "SUCCESS",
+      "result": "Columns for input_readiness_runs, ig_direct_requests_v1 and input_validator_chunk_timings enumerated."
+    },
+    {
+      "query_id": "M28_PERF_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "runs": 255,
+        "curator_null": 7,
+        "curator_zero": 75,
+        "curator_positive": 173,
+        "validator_null": 22,
+        "validator_zero": 99,
+        "validator_positive": 134
+      }
+    },
+    {
+      "query_id": "M28_PERF_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "curator_p50_positive": 28148,
+        "curator_p90_positive": 115850.6,
+        "validator_p50_positive": 78758.5,
+        "validator_p90_positive": 257428.6
+      }
+    },
+    {
+      "query_id": "M28_PERF_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "total_requests": 6,
+        "distinct_runs_linked": 5,
+        "requests_without_run": 0,
+        "unfinished": 0,
+        "negative_e2e": 0
+      }
+    },
+    {
+      "query_id": "M28_PERF_Q06",
+      "status": "SUCCESS",
+      "result": {
+        "chunks": 493,
+        "duration_null": 0,
+        "duration_zero": 0,
+        "components_gt_total": 385
+      }
+    },
+    {
+      "query_id": "M28_PERF_Q07",
+      "status": "SUCCESS",
+      "result": {
+        "matched_pairs": 62
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:32:00Z"
+}

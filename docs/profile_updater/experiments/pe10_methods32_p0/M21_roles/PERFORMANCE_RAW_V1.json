@@ -1,0 +1,88 @@
+{
+  "schema": "PE10_M21_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M21",
+  "role_code": "PERFORMANCE",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M21_PERF_Q1",
+      "sql": "SELECT status,count(*) n,count(*) FILTER(WHERE curator_duration_ms IS NULL) curator_null,count(*) FILTER(WHERE curator_duration_ms=0) curator_zero,count(*) FILTER(WHERE curator_duration_ms>0) curator_positive,count(*) FILTER(WHERE validator_duration_ms IS NULL) validator_null,count(*) FILTER(WHERE validator_duration_ms=0) validator_zero,count(*) FILTER(WHERE validator_duration_ms>0) validator_positive FROM programacion.input_readiness_runs WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' GROUP BY status ORDER BY status;",
+      "result": "BLOCKED n20: curator null5/zero0/positive15, validator null20/zero0/positive0; COMPLETED n233: curator 0/75/158, validator 0/99/134; CURATING n2: curator null2, validator null2."
+    },
+    {
+      "id": "M21_PERF_Q2",
+      "sql": "SELECT contract_revision,count(*) FILTER(WHERE status='COMPLETED') completed,count(*) FILTER(WHERE status='COMPLETED' AND curator_duration_ms>0) curator_positive,count(*) FILTER(WHERE status='COMPLETED' AND validator_duration_ms>0) validator_positive,min(family_count) min_family,max(family_count) max_family FROM programacion.input_readiness_runs WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z' AND contract_revision IN('5.13','5.13.1') GROUP BY contract_revision ORDER BY contract_revision;",
+      "result": "5.13 completed86, positive curator83/validator75, family_count47; 5.13.1 completed20, positive curator14/validator15, family_count47."
+    }
+  ],
+  "algorithm_C": {
+    "invariants": [
+      {
+        "id": "PERF_INV1",
+        "rule": "for each status, n = null + zero + positive for each stage",
+        "observed": "all three status partitions reconcile",
+        "valid_case": "COMPLETED curator 233=0+75+158 and validator 233=0+99+134",
+        "counterexample": "BLOCKED validator cannot be treated as zero because 20 are NULL",
+        "status": "PASS"
+      },
+      {
+        "id": "PERF_INV2",
+        "rule": "NULL, zero and positive durations are distinct semantic partitions",
+        "observed": "NULL concentrated in incomplete states; exact zeros exist in COMPLETED",
+        "valid_case": "keep categories separate",
+        "counterexample": "coerce NULL to zero or zero to missing",
+        "status": "PASS"
+      },
+      {
+        "id": "PERF_INV3",
+        "rule": "equal family_count does not imply equivalent performance cohort",
+        "observed": "both revisions family_count=47 but sample/positive partitions differ",
+        "valid_case": "report non-equivalence",
+        "counterexample": "pool 5.13 and 5.13.1 solely because family_count matches",
+        "status": "PASS"
+      }
+    ],
+    "solver": {
+      "used": false,
+      "status": "NOT_REQUIRED_OR_NOT_AVAILABLE",
+      "reason": "All tested invariants are directly evaluable by SQL counts/partitions; no solver result is claimed."
+    }
+  },
+  "findings": [
+    {
+      "id": "M21_PERF_F1",
+      "classification": "MEASURED",
+      "claim": "Pre-cutoff duration partitions reconcile exactly into NULL/zero/positive and must not be collapsed."
+    },
+    {
+      "id": "M21_PERF_F2",
+      "classification": "MEASURED_LIMIT",
+      "claim": "5.13 and 5.13.1 both have family_count 47 but differ in sample and duration partitions, so cohort equivalence is not established."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M21_PERF_N1",
+      "hypothesis": "NULL validator durations in BLOCKED can be counted as zero",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M21_PERF_N2",
+      "hypothesis": "Same family_count establishes matched cohort",
+      "result": "FALSIFIED_AS_INFERENCE"
+    }
+  ],
+  "unresolved": [
+    "semantic cause of exact-zero completed durations",
+    "matched causal performance comparison"
+  ],
+  "role_output_frozen": true
+}

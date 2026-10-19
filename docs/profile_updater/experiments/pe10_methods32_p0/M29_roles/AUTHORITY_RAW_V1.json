@@ -1,0 +1,205 @@
+{
+  "schema": "PE10_M29_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M29",
+  "definition_version": "PE10_METHOD_V1",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "execution_modality": {
+    "role_bound_single_context": true,
+    "independent_agents_claimed": false,
+    "cross_method_results_used": false,
+    "peer_reports_read_before_freeze": false
+  },
+  "findings": [
+    {
+      "id": "M29-AUT-F01",
+      "claim": "Event 20161 is a READBACK_VERIFICADO inventory-only historical snapshot with non-null created_by_execution_id and null migration_batch_id.",
+      "evidence_refs": [
+        "M29_AUT_Q01"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-AUT-F02",
+      "claim": "Current principal is supabase_read_only_user with transaction_read_only=on; it cannot execute IG runtime.",
+      "evidence_refs": [
+        "M29_AUT_Q02"
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "id": "M29-AUT-F03",
+      "claim": "Identity partition reconciles 255=0 same+248 different+7 any-null.",
+      "evidence_refs": [
+        "M29_AUT_Q03"
+      ],
+      "confidence": "HIGH_FOR_RECORDED_FIELDS"
+    },
+    {
+      "id": "M29-AUT-F04",
+      "claim": "Component partition reconciles 255=0 same+247 different+8 any-null.",
+      "evidence_refs": [
+        "M29_AUT_Q04"
+      ],
+      "confidence": "HIGH_FOR_RECORDED_FIELDS"
+    },
+    {
+      "id": "M29-AUT-F05",
+      "claim": "Event execution-link partition reconciles 1=0 null+0 matched+1 unmatched in public.lf_operation_execution.",
+      "evidence_refs": [
+        "M29_AUT_Q05"
+      ],
+      "confidence": "HIGH_FOR_VISIBLE_LEDGER"
+    }
+  ],
+  "algorithm_application": {
+    "C": {
+      "invariants": [
+        {
+          "id": "AUT-I1",
+          "type": "PARTITION",
+          "statement": "Identity total=same+different+any_null",
+          "observed": "255=0+248+7",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I2",
+          "type": "PARTITION",
+          "statement": "Component total=same+different+any_null",
+          "observed": "255=0+247+8",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I3",
+          "type": "PARTITION",
+          "statement": "Event linkage total=id_null+matched+unmatched",
+          "observed": "1=0+0+1",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I4",
+          "type": "POSITIVE",
+          "statement": "Research principal is transaction read-only for this session.",
+          "observed": "transaction_read_only=on; can_execute_ig=false",
+          "status": "PASS"
+        },
+        {
+          "id": "AUT-I5",
+          "type": "NEGATIVE",
+          "statement": "Distinct labels/components do not by themselves prove material independence.",
+          "observed": "No same pairs, but material principal/session provenance is not present in these fields.",
+          "status": "PASS"
+        }
+      ],
+      "metamorphic_tests": [
+        {
+          "id": "AUT-MT1",
+          "transform": "Collapse authority evidence to label inequality only.",
+          "expected_relation": "A material-independence conclusion must remain unsupported unless provenance survives the reduction.",
+          "observed_relation": "Only label/component inequality remains; material independence is still unproven.",
+          "result": "OVERFITTING_REJECTED"
+        }
+      ],
+      "tlp_reconciled": true,
+      "solver_used": false,
+      "solver_reason": "Partition and privilege invariants directly testable in SQL.",
+      "overfitting_checks": [
+        "Do not interpret unmatched public ledger as proof of no authority anywhere.",
+        "Do not equate label inequality with independent execution."
+      ]
+    },
+    "E": {
+      "state": "VERIFY_FIRST",
+      "rationale": "Authority partitions are internally consistent, but material Curator/Validator independence and canonical historical event provenance remain unresolved.",
+      "demonstrated_defect": false,
+      "potential_falsifiers": [
+        "Authorized historical ledger matches event execution identity.",
+        "Material execution provenance proves separate principals/sessions/inputs."
+      ],
+      "reversal_criteria": {
+        "to_REPAIR_REQUIRED": "A real authority bypass or shared effective principal is proven.",
+        "to_NO_ACTION_SUPPORTED": "Canonical provenance and material independence are fully attested.",
+        "to_NEEDS_MORE_EVIDENCE": "Required authority provenance remains unavailable."
+      }
+    }
+  },
+  "negative_falsifiers": [
+    "Do not equate distinct labels with material independence.",
+    "Do not infer global lack of authority from one unmatched ledger.",
+    "Do not infer system-wide inability from this read-only principal."
+  ],
+  "unresolved": [
+    "Canonical historical authority link",
+    "Material Curator/Validator independence",
+    "Historical executor namespace"
+  ],
+  "next_safe_step": "Resolve provenance/material independence through authorized readbacks; no grant widening.",
+  "measured_costs": {
+    "select_attempts": 5,
+    "successful_selects": 5,
+    "query_errors": 0,
+    "negative_tests": 3,
+    "invariants": 5,
+    "metamorphic_tests": 1,
+    "production_writes": 0
+  },
+  "sql_log": [
+    {
+      "query_id": "M29_AUT_Q01",
+      "status": "SUCCESS",
+      "result": {
+        "id": 20161,
+        "evento_tipo": "READBACK_VERIFICADO",
+        "migration_batch_id": null,
+        "created_by_execution_id": "CHATGPT-IG-M10.9-20261004-001"
+      }
+    },
+    {
+      "query_id": "M29_AUT_Q02",
+      "status": "SUCCESS",
+      "result": {
+        "current_user": "supabase_read_only_user",
+        "transaction_read_only": "on",
+        "can_execute_ig": false,
+        "can_transition_checkpoint": true
+      }
+    },
+    {
+      "query_id": "M29_AUT_Q03",
+      "status": "SUCCESS",
+      "result": {
+        "total": 255,
+        "both_same": 0,
+        "both_different": 248,
+        "any_null": 7
+      }
+    },
+    {
+      "query_id": "M29_AUT_Q04",
+      "status": "SUCCESS",
+      "result": {
+        "total": 255,
+        "both_same": 0,
+        "both_different": 247,
+        "any_null": 8
+      }
+    },
+    {
+      "query_id": "M29_AUT_Q05",
+      "status": "SUCCESS",
+      "result": {
+        "total_events": 1,
+        "id_null": 0,
+        "matched": 0,
+        "unmatched": 1
+      }
+    }
+  ],
+  "frozen_at": "2026-10-18T22:54:00Z"
+}

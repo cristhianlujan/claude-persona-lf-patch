@@ -87,6 +87,19 @@ class TrainExecutionRecorderTest(unittest.TestCase):
         self.assertFalse(any("lf_record_db_operation_step_v1" in sql for sql in calls))
         self.assertTrue(any("lf_operation_execution_steps" in sql for sql in calls))
 
+    def test_failure_receipt_summary_contains_sqlstate_and_sanitized_message(self) -> None:
+        import lf_train_execution_recorder as recorder
+        summary = recorder.failure_receipt_summary(
+            {"sqlstate": "42501", "message": "permission denied for table secret"},
+            "See the logs",
+        )
+        self.assertEqual(summary, "SQLSTATE=42501; message=permission denied for table secret")
+        self.assertNotIn("See the logs", summary)
+        self.assertEqual(
+            recorder.failure_receipt_summary({"sqlstate": "pipel", "message": "pipeline blocked"}, "See logs"),
+            "SQLSTATE=NOT_OBSERVED; message=pipeline blocked",
+        )
+
     def test_execution_bookkeeping_verdict_fails_if_close_fails(self) -> None:
         wf = WORKFLOW.read_text()
         block = wf[wf.index("- name: execution bookkeeping verdict"):]

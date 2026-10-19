@@ -2809,7 +2809,12 @@
               "CURRENTNESS_AUTHORITY@1.0.0",
               "SOURCE_RESOLUTION_POLICY@1.4.0"
             ],
-            "stage_structure_validator": null,
+            "stage_structure_validator": {
+              "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/validate_analysis_v1_freeze_manifest_v1.py",
+              "callable": "validate",
+              "input_source": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_v1_freeze_manifest_v1.json",
+              "scope": "FREEZE_MANIFEST_VS_CURRENT_BLOBS_AND_INDEPENDENT_CONFIRMATION_REF"
+            },
             "canonical_source": {
               "repository": "cristhianlujan/claude-persona-lf-patch",
               "ref_rule": "EXACT_CURRENT_MAIN_REBOUND",

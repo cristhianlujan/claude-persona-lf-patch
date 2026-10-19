@@ -1,0 +1,835 @@
+{
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M15",
+  "base_code": "A",
+  "algorithm_codes": [
+    "M",
+    "C",
+    "E"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "path": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M15.json",
+    "sha256": "cceaeb904bad988a95be757f2bd7b5bad048f27d489ca6bc41f46ccc3f388dcb"
+  },
+  "producer": "Single role-bound SRCR integrated M/C/E; no other variant result as evidence",
+  "external_evaluation": "NOT_PERFORMED",
+  "sql_evidence": [
+    {
+      "id": "M15_Q01",
+      "sql_literal": "SELECT id,created_at,payload->>'source_pack_version' source_pack,payload->'scope_guards' scope_guards FROM public.lf_eventos WHERE id=20161 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 20161,
+          "created_at": "2026-10-04 05:14:40.880842+00",
+          "source_pack": "SOURCE_PACK_V1",
+          "scope_guards": {
+            "callers_retired": false,
+            "m10_10_executed": false,
+            "callers_modified": false,
+            "production_change": false,
+            "runtime_activation": false,
+            "n13_n14_n15_changed": false
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q02",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n,count(DISTINCT x->>'dedupe_key') unique_keys FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "unique_keys": 38
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q03",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'operational_class'='ACTIVE') t,count(*) FILTER(WHERE NOT(x->>'operational_class'='ACTIVE')) f,count(*) FILTER(WHERE (x->>'operational_class'='ACTIVE') IS NULL) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'external_inventory') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q04",
+      "sql_literal": "SELECT count(*) total,count(*) FILTER(WHERE x->>'definition_md5'~'^[a-f0-9]{32}$') valid,count(*) FILTER(WHERE NOT(x->>'definition_md5'~'^[a-f0-9]{32}$')) invalid,count(*) FILTER(WHERE (x->>'definition_md5'~'^[a-f0-9]{32}$') IS NULL) n FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x WHERE e.id=20161",
+      "rows": [
+        {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "n": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q05",
+      "sql_literal": "WITH v(x) AS(VALUES('ACTIVE'::text),('OTHER'::text),(NULL::text)) SELECT count(*) total,count(*) FILTER(WHERE x='ACTIVE') t,count(*) FILTER(WHERE NOT(x='ACTIVE')) f,count(*) FILTER(WHERE (x='ACTIVE') IS NULL) n FROM v",
+      "rows": [
+        {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "SYNTHETIC_SQL_TEST"
+    },
+    {
+      "id": "M15_Q06",
+      "sql_literal": "WITH pairs(expected,observed) AS (VALUES(38,38),(38,40),(38,NULL::int)) SELECT expected,observed,(expected=observed) IS TRUE accepted FROM pairs ORDER BY observed NULLS LAST",
+      "rows": [
+        {
+          "expected": 38,
+          "observed": 38,
+          "accepted": true
+        },
+        {
+          "expected": 38,
+          "observed": 40,
+          "accepted": false
+        },
+        {
+          "expected": 38,
+          "observed": null,
+          "accepted": false
+        }
+      ],
+      "rows_returned": 3,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "SYNTHETIC_SQL_TEST"
+    },
+    {
+      "id": "M15_Q07",
+      "sql_literal": "SELECT count(*) lexical_edges,count(DISTINCT (x->>'caller')||'->'||c.name) distinct_edges FROM public.lf_eventos e CROSS JOIN LATERAL jsonb_array_elements(e.payload->'sql_callers') x CROSS JOIN LATERAL jsonb_array_elements_text(x->'callees') c(name) WHERE e.id=20161",
+      "rows": [
+        {
+          "lexical_edges": 76,
+          "distinct_edges": 76
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q08",
+      "sql_literal": "SELECT id,created_at,receipt_kind,subject_ref,payload->>'verification_status' verified,payload->>'screens_total' screens,payload->>'families_total' families,payload->>'known_false_pass_signals' false_pass,payload->>'unresolved_d4' d4 FROM programacion.provenance_receipts WHERE id=38 AND created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z'",
+      "rows": [
+        {
+          "id": 38,
+          "created_at": "2026-10-07 16:01:00.760627+00",
+          "receipt_kind": "EVIDENCE_VERIFICATION",
+          "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+          "verified": "VERIFIED",
+          "screens": "13",
+          "families": "47",
+          "false_pass": "0",
+          "d4": "0"
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q09",
+      "sql_literal": "SELECT codigo,primera_vez,causa_raiz,prevencion FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') AND primera_vez<TIMESTAMPTZ '2026-10-15T00:00:00Z' ORDER BY codigo",
+      "rows": [
+        {
+          "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+          "primera_vez": "2026-10-14 23:44:24.874586+00",
+          "causa_raiz": "Desalineación entre verificación CP2, autoridad histórica M9.11 y privilegios de lectura declarados.",
+          "prevencion": "Leer EKB y action_spec. No elevar EXECUTE ni crear motor. Reusar recibo verificado SOAK_OBSERVATION_HISTORY_V2 y revisar la cohorte mediante tablas con SELECT autorizado. Considerar recuentos brutos como evidencia complementaria, nunca sustituto de as-of. Rectificar únicamente queries CP2."
+        },
+        {
+          "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+          "primera_vez": "2026-10-14 23:39:14.146551+00",
+          "causa_raiz": "Desalineación de proyección textual del contrato M10.7 frente a la autoridad SOAK_OBSERVATION_HISTORY_V2 de M9.11.",
+          "prevencion": "Antes de CP1 leer M9.11 DONE y el recibo VERIFIED; heredar >=2 as-of, 0 falsos PASS y 0 D4. Reusar historia. No convertir 13/47 en obligación de nuevas corridas ni confundir latest CURRENT con validez histórica. Confirmar los checkpoints posteriores por su naturaleza."
+        }
+      ],
+      "rows_returned": 2,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q10",
+      "sql_literal": "SELECT jsonb_array_length(payload->'trigger_bindings') triggers,jsonb_array_length(payload->'external_inventory') external_assets,payload->'usage_stats' usage_stats FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "triggers": 21,
+          "external_assets": 6,
+          "usage_stats": {
+            "ig_stat_rows": 0,
+            "interpretation": "track_functions none means zero stat rows cannot prove no usage; static governed graph supplies inventory currentness",
+            "track_functions": "none"
+          }
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q11",
+      "sql_literal": "SELECT count(*) FILTER(WHERE created_at<TIMESTAMPTZ '2026-10-15T00:00:00Z') before_cutoff,count(*) FILTER(WHERE created_at>=TIMESTAMPTZ '2026-10-15T00:00:00Z') after_cutoff FROM public.lf_eventos WHERE id=20161",
+      "rows": [
+        {
+          "before_cutoff": 1,
+          "after_cutoff": 0
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "P0_SOURCE_TIME_HISTORICAL"
+    },
+    {
+      "id": "M15_Q12",
+      "sql_literal": "SELECT current_user principal,current_setting('transaction_read_only') read_only,current_setting('request.jwt.claim.role',true) jwt_role",
+      "rows": [
+        {
+          "principal": "supabase_read_only_user",
+          "read_only": "on",
+          "jwt_role": null
+        }
+      ],
+      "rows_returned": 1,
+      "source": "SUPABASE_READ_ONLY",
+      "scope": "CURRENT_PRINCIPAL_NOT_P0"
+    }
+  ],
+  "algorithm_execution": {
+    "M": {
+      "facts": [
+        "ASOF_SOURCE",
+        "QUALIFIED_SOAK",
+        "HIST_EKB",
+        "SOURCE_CUTOFF",
+        "AUTH_SELECT",
+        "STATS_DISABLED"
+      ],
+      "rules": {
+        "HIST_CALLERS": [
+          [
+            "ASOF_SOURCE",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "SOAK_HISTORY": [
+          [
+            "QUALIFIED_SOAK",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "PRIVILEGE_RISK": [
+          [
+            "HIST_EKB",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "SOURCE_RISK": [
+          [
+            "HIST_CALLERS"
+          ]
+        ],
+        "METHOD_RISK": [
+          [
+            "PRIVILEGE_RISK"
+          ],
+          [
+            "SOURCE_RISK"
+          ]
+        ],
+        "SAFE_CHECK": [
+          [
+            "AUTH_SELECT",
+            "PRIVILEGE_RISK"
+          ],
+          [
+            "AUTH_SELECT",
+            "SOURCE_RISK"
+          ]
+        ],
+        "UNKNOWN_USAGE": [
+          [
+            "ASOF_SOURCE",
+            "STATS_DISABLED"
+          ]
+        ]
+      },
+      "nogoods": [
+        [
+          "SOURCE_CUTOFF",
+          "ASSERT_LIVE"
+        ],
+        [
+          "STATS_DISABLED",
+          "ASSERT_NO_USAGE"
+        ]
+      ],
+      "minimal_justifications": {
+        "ASOF_SOURCE": [
+          [
+            "ASOF_SOURCE"
+          ]
+        ],
+        "QUALIFIED_SOAK": [
+          [
+            "QUALIFIED_SOAK"
+          ]
+        ],
+        "HIST_EKB": [
+          [
+            "HIST_EKB"
+          ]
+        ],
+        "SOURCE_CUTOFF": [
+          [
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "AUTH_SELECT": [
+          [
+            "AUTH_SELECT"
+          ]
+        ],
+        "STATS_DISABLED": [
+          [
+            "STATS_DISABLED"
+          ]
+        ],
+        "HIST_CALLERS": [
+          [
+            "ASOF_SOURCE",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "SOAK_HISTORY": [
+          [
+            "QUALIFIED_SOAK",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "PRIVILEGE_RISK": [
+          [
+            "HIST_EKB",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "SOURCE_RISK": [
+          [
+            "ASOF_SOURCE",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "METHOD_RISK": [
+          [
+            "ASOF_SOURCE",
+            "SOURCE_CUTOFF"
+          ],
+          [
+            "HIST_EKB",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "SAFE_CHECK": [
+          [
+            "ASOF_SOURCE",
+            "AUTH_SELECT",
+            "SOURCE_CUTOFF"
+          ],
+          [
+            "AUTH_SELECT",
+            "HIST_EKB",
+            "SOURCE_CUTOFF"
+          ]
+        ],
+        "UNKNOWN_USAGE": [
+          [
+            "ASOF_SOURCE",
+            "STATS_DISABLED"
+          ]
+        ]
+      },
+      "retractions": [
+        {
+          "id": "M15_R1",
+          "removed": [],
+          "soak": true,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M15_R2",
+          "removed": [
+            "ASOF_SOURCE"
+          ],
+          "soak": true,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M15_R3",
+          "removed": [
+            "QUALIFIED_SOAK"
+          ],
+          "soak": false,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M15_R4",
+          "removed": [
+            "HIST_EKB"
+          ],
+          "soak": true,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M15_R5",
+          "removed": [
+            "ASOF_SOURCE",
+            "HIST_EKB"
+          ],
+          "soak": true,
+          "risk": false,
+          "safe": false,
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M15_R6",
+          "removed": [
+            "AUTH_SELECT"
+          ],
+          "soak": true,
+          "risk": true,
+          "safe": false,
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "M15_R7",
+          "removed": [
+            "QUALIFIED_SOAK",
+            "HIST_EKB"
+          ],
+          "soak": false,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "id": "M15_R8",
+          "removed": [
+            "ASOF_SOURCE",
+            "QUALIFIED_SOAK"
+          ],
+          "soak": false,
+          "risk": true,
+          "safe": true,
+          "state": "VERIFY_FIRST"
+        }
+      ],
+      "unknown_current_status": true
+    },
+    "C": {
+      "three_valued_partitions": {
+        "callers": {
+          "total": 38,
+          "t": 38,
+          "f": 0,
+          "n": 0,
+          "unique_keys": 38
+        },
+        "external": {
+          "total": 6,
+          "t": 3,
+          "f": 3,
+          "n": 0
+        },
+        "hash": {
+          "total": 38,
+          "valid": 38,
+          "invalid": 0,
+          "n": 0
+        },
+        "synthetic": {
+          "total": 3,
+          "t": 1,
+          "f": 1,
+          "n": 1
+        }
+      },
+      "contract_cases": [
+        {
+          "expected": 38,
+          "observed": 38,
+          "accepted": true
+        },
+        {
+          "expected": 38,
+          "observed": 40,
+          "accepted": false
+        },
+        {
+          "expected": 38,
+          "observed": null,
+          "accepted": false
+        }
+      ],
+      "solver": "NOT_USED_NO_SMT",
+      "business_rule_certified": false
+    },
+    "E": {
+      "actual_state": "VERIFY_FIRST",
+      "decision_scenarios": [
+        {
+          "id": "E_ACTUAL",
+          "inputs": {
+            "proven_defect": false,
+            "causal": false,
+            "risk": true,
+            "safe": true,
+            "missing": true,
+            "source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_PROVEN_DEFECT",
+          "inputs": {
+            "proven_defect": true,
+            "causal": true,
+            "risk": true,
+            "safe": true,
+            "missing": false,
+            "source": true
+          },
+          "expected": "REPAIR_REQUIRED",
+          "observed": "REPAIR_REQUIRED"
+        },
+        {
+          "id": "E_TLP_UNKNOWN",
+          "inputs": {
+            "proven_defect": false,
+            "causal": false,
+            "risk": false,
+            "safe": false,
+            "missing": true,
+            "source": true
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "id": "E_NO_RISK_FULL_SCOPE",
+          "inputs": {
+            "proven_defect": false,
+            "causal": false,
+            "risk": false,
+            "safe": false,
+            "missing": false,
+            "source": true
+          },
+          "expected": "NO_ACTION_SUPPORTED",
+          "observed": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "id": "E_CP2_42501_ONLY",
+          "inputs": {
+            "proven_defect": false,
+            "causal": false,
+            "risk": true,
+            "safe": true,
+            "missing": true,
+            "source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_CAUSAL_UNKNOWN",
+          "inputs": {
+            "proven_defect": true,
+            "causal": false,
+            "risk": true,
+            "safe": true,
+            "missing": true,
+            "source": true
+          },
+          "expected": "VERIFY_FIRST",
+          "observed": "VERIFY_FIRST"
+        },
+        {
+          "id": "E_UNVERIFIABLE",
+          "inputs": {
+            "proven_defect": false,
+            "causal": false,
+            "risk": false,
+            "safe": false,
+            "missing": true,
+            "source": false
+          },
+          "expected": "NEEDS_MORE_EVIDENCE",
+          "observed": "NEEDS_MORE_EVIDENCE"
+        }
+      ],
+      "state_from_retraction": [
+        {
+          "removed": [],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "removed": [
+            "ASOF_SOURCE"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "removed": [
+            "QUALIFIED_SOAK"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "removed": [
+            "HIST_EKB"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "removed": [
+            "ASOF_SOURCE",
+            "HIST_EKB"
+          ],
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "removed": [
+            "AUTH_SELECT"
+          ],
+          "state": "NEEDS_MORE_EVIDENCE"
+        },
+        {
+          "removed": [
+            "QUALIFIED_SOAK",
+            "HIST_EKB"
+          ],
+          "state": "VERIFY_FIRST"
+        },
+        {
+          "removed": [
+            "ASOF_SOURCE",
+            "QUALIFIED_SOAK"
+          ],
+          "state": "VERIFY_FIRST"
+        }
+      ],
+      "reversal_criteria": [
+        {
+          "when": "qualified causal defect is proven",
+          "state": "REPAIR_REQUIRED"
+        },
+        {
+          "when": "unknown facts and defects resolved",
+          "state": "NO_ACTION_SUPPORTED"
+        },
+        {
+          "when": "evidence read path unavailable",
+          "state": "NEEDS_MORE_EVIDENCE"
+        }
+      ]
+    }
+  },
+  "negative_tests": [
+    {
+      "id": "M_ATMS_WITHDRAW_SOURCE_RETAINS_EKB_ALTERNATIVE",
+      "pass": true,
+      "expected": "After withdrawing ASOF_SOURCE, risk remains supported by historical EKB, safe SELECT remains and decision remains VERIFY_FIRST",
+      "observed": "risk=true,safe=true,state=VERIFY_FIRST"
+    },
+    {
+      "id": "M_ATMS_SOAK_WITHDRAWAL",
+      "pass": true
+    },
+    {
+      "id": "M_ATMS_EKB_ALTERNATE_SOURCE",
+      "pass": true
+    },
+    {
+      "id": "M_ATMS_ALL_RISK_REMOVED",
+      "pass": true
+    },
+    {
+      "id": "M_ATMS_DISCRIMINATOR_REMOVED",
+      "pass": true
+    },
+    {
+      "id": "C_CALLERS_TLP",
+      "pass": true
+    },
+    {
+      "id": "C_EXTERNAL_TLP",
+      "pass": true
+    },
+    {
+      "id": "C_HASH_TLP",
+      "pass": true
+    },
+    {
+      "id": "C_SYNTHETIC_NULL",
+      "pass": true
+    },
+    {
+      "id": "C_VALID_ACCEPT",
+      "pass": true
+    },
+    {
+      "id": "C_WRONG_REJECT",
+      "pass": true
+    },
+    {
+      "id": "C_UNKNOWN_REJECT",
+      "pass": true
+    },
+    {
+      "id": "E_SEVEN_SCENARIOS",
+      "pass": true
+    },
+    {
+      "id": "E_FOUR_STATES",
+      "pass": true
+    },
+    {
+      "id": "E_42501_NOT_REPAIR",
+      "pass": true
+    },
+    {
+      "id": "P0_HISTORICAL_LIMIT",
+      "pass": true
+    },
+    {
+      "id": "P0_SOAK_QUALIFIED",
+      "pass": true
+    },
+    {
+      "id": "NO_NUMERIC_SMT",
+      "pass": true
+    },
+    {
+      "id": "NO_ABSENCE_STATS_NO_USAGE",
+      "pass": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "M15_F01",
+      "claim": "Historical call inventory 38 and external inventory 6 reconcile separate TLP 3VL populations; do not sum as equivalent identities",
+      "evidence": [
+        "M15_Q02",
+        "M15_Q03"
+      ],
+      "type": "MEASURED_ASOF"
+    },
+    {
+      "id": "M15_F02",
+      "claim": "ATMS retracts graph, SOAK or permission-derived claims when their source facts are removed; alternative risk supports survive one-source withdrawal",
+      "evidence": [
+        "M15_Q01",
+        "M15_Q08",
+        "M15_Q09"
+      ],
+      "type": "METHOD_COMPUTED"
+    },
+    {
+      "id": "M15_F03",
+      "claim": "Positive/wrong/NULL denominator cases exercise negative controls without solver-derived policy proof",
+      "evidence": [
+        "M15_Q05",
+        "M15_Q06"
+      ],
+      "type": "SQL_TEST"
+    },
+    {
+      "id": "M15_F04",
+      "claim": "Typed evidence decision is VERIFY_FIRST; CP2 42501 does not establish functional defect",
+      "evidence": [
+        "M15_Q09",
+        "M15_Q12"
+      ],
+      "type": "TYPE_DECISION"
+    }
+  ],
+  "causal_model": {
+    "status": "HYPOTHESIS_ONLY",
+    "alternatives": [
+      "Stale graph readback",
+      "SOAK criterion projection",
+      "Reader permission rather than functional CP2 defect"
+    ]
+  },
+  "candidate_repairs": [
+    {
+      "action": "Reconcile source-time P0 and authorized history via SELECT",
+      "status": "VERIFY_FIRST"
+    }
+  ],
+  "chosen_repair": {
+    "state": "VERIFY_FIRST",
+    "implemented": false
+  },
+  "rejected_alternatives": [
+    "Infer no usage from no stats",
+    "Claim all unknown NULL are absent errors",
+    "Patch product based on ATMS support alone"
+  ],
+  "omissions_searched": [
+    "source attribution",
+    "three-valued coverage",
+    "negative cases",
+    "qualified SOAK criteria",
+    "typed reversible states"
+  ],
+  "unresolved": [
+    "Canonical historical hashing UNKNOWN",
+    "Runtime traces not measured",
+    "E2E latency unknown"
+  ],
+  "constraints_preserved": [
+    "P0",
+    "No runtime mutating write",
+    "No peer outputs",
+    "No quality judgments"
+  ],
+  "conclusion": "M_C_E_METHOD_EXECUTED_ATMS_TLP_AND_TYPED_DECISION_NO_APPLIED_REPAIR"
+}

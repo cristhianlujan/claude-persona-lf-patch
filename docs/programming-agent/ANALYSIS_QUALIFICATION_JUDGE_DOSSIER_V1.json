@@ -1507,8 +1507,8 @@
         "source_attestation_verified"
       ],
       "adapter": {
-        "path": null,
-        "note": "freeze validator covers A15Q_C1"
+        "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_qualification_a15q_c1_source_attestation_v1.py",
+        "sha256": "0c4ded010d158e27dda00e3409d6295c60661ddfc730ed08316570d56ba88500"
       },
       "supplied_only_by_governed_runtime": [
         "readback_receipt_id",
@@ -1518,7 +1518,7 @@
       "transition_performed": false,
       "canonical_source": {
         "path": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_v1_freeze_manifest_v1.json",
-        "sha256": "3a83b8a572ebba30bed4baeeeefd1d6450412026a3783ae7fb5c2e36bc81f83a"
+        "sha256": "4ecb0fc2664bbfce80892d15d828d2344b45c09628b35b07f3db1597837d26c1"
       }
     },
     {

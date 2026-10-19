@@ -1,0 +1,144 @@
+{
+  "schema": "PE10_M19_ROLE_RAW_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M19",
+  "role_code": "AUTHORITY",
+  "base_code": "B",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "role_bound_single_context": true,
+  "autonomous_agent_claim": false,
+  "cross_method_inputs_used": false,
+  "queries": [
+    {
+      "id": "M19_AUTH_Q1",
+      "sql": "SELECT codigo,primera_vez,estado,patron,causa_raiz,validacion,evidencia FROM transversal.error_knowledge WHERE codigo IN('IG-M107-SOAK-CRITERION-DRIFT-001','IG-M107-CP2-READ-ROLE-CURRENTNESS-001') ORDER BY codigo;",
+      "result": "both EKB entries are VALIDATED_TESTED pre-cutoff; CP2 record reproduces 42501 and rejects latest-13 as historical substitute; SOAK record binds criteria to receipt 38."
+    },
+    {
+      "id": "M19_AUTH_Q2",
+      "sql": "SELECT current_user,current_setting('transaction_read_only') transaction_read_only,has_function_privilege(current_user,'programacion.fn_input_readiness_run_is_current(bigint)','EXECUTE') can_exec_programacion,has_function_privilege(current_user,'public.fn_input_readiness_run_is_current(bigint)','EXECUTE') can_exec_public,has_table_privilege(current_user,'programacion.input_readiness_runs','SELECT') readiness_select,has_table_privilege(current_user,'programacion.provenance_receipts','SELECT') receipt_select;",
+      "result": "supabase_read_only_user; transaction_read_only=on; EXECUTE false on both currentness functions; SELECT true on readiness and receipt tables."
+    }
+  ],
+  "atms": {
+    "evidence": [
+      {
+        "id": "E_AUTH_EKB",
+        "source": "transversal.error_knowledge",
+        "time": "2026-10-14",
+        "identity": "two exact EKB codes",
+        "assumptions": [
+          "EKB validation is historical evidence of observed authority condition"
+        ],
+        "supports": [
+          "C_AUTH_42501_PATH"
+        ]
+      },
+      {
+        "id": "E_AUTH_PRIV",
+        "source": "current privilege readback",
+        "time": "CURRENT_READBACK",
+        "identity": "supabase_read_only_user",
+        "assumptions": [
+          "current privilege state cannot be back-projected to all history"
+        ],
+        "supports": [
+          "C_AUTH_CURRENT_BOUNDARY"
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "id": "C_AUTH_42501_PATH",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_AUTH_EKB"
+          ]
+        ]
+      },
+      {
+        "id": "C_AUTH_CURRENT_BOUNDARY",
+        "state": "SUPPORTED",
+        "justifications": [
+          [
+            "E_AUTH_PRIV"
+          ]
+        ]
+      },
+      {
+        "id": "C_AUTH_FUNCTIONAL_FAIL",
+        "state": "UNSUPPORTED",
+        "justifications": []
+      }
+    ],
+    "nogoods": [
+      {
+        "id": "N_AUTH_1",
+        "set": [
+          "CLASSIFY_42501_AS_FUNCTIONAL_FAIL"
+        ],
+        "reason": "permission denial is an authority/path observation"
+      },
+      {
+        "id": "N_AUTH_2",
+        "set": [
+          "ELEVATE_EXECUTE_TO_READ_EVIDENCE"
+        ],
+        "reason": "authorized SELECT path already exists and EKB says do not elevate"
+      }
+    ],
+    "invalidation_propagation": [
+      {
+        "withdraw": "E_AUTH_EKB",
+        "invalidates": [
+          "C_AUTH_42501_PATH"
+        ]
+      },
+      {
+        "withdraw": "E_AUTH_PRIV",
+        "invalidates": [
+          "C_AUTH_CURRENT_BOUNDARY"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "M19_AUTH_F1",
+      "classification": "MEASURED",
+      "claim": "42501 belongs to authority/readback path, not demonstrated functional failure.",
+      "evidence": [
+        "M19_AUTH_Q1",
+        "M19_AUTH_Q2"
+      ]
+    },
+    {
+      "id": "M19_AUTH_F2",
+      "classification": "MEASURED_CURRENT",
+      "claim": "Current read-only user can SELECT evidence tables but cannot EXECUTE either currentness function.",
+      "evidence": [
+        "M19_AUTH_Q2"
+      ]
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "M19_AUTH_N1",
+      "hypothesis": "Current connector can execute currentness function.",
+      "result": "FALSIFIED"
+    },
+    {
+      "id": "M19_AUTH_N2",
+      "hypothesis": "Privilege elevation is required for evidence review.",
+      "result": "FALSIFIED"
+    }
+  ],
+  "unresolved": [
+    "historical grant state outside EKB observation"
+  ],
+  "role_output_frozen": true
+}
