@@ -1,0 +1,2352 @@
+{
+ "schema_version": "lf-reconcile-pre-baseline-inventory/v1",
+ "scope": "version <= 20261005203801 (grandfathered era)",
+ "main_sha": "3b5267264591b566059491dab77b68dbd8cff0b3",
+ "ledger_read": "2026-10-19 read-only",
+ "method": "exact = same version+name+sha256(raw); equivalent = canonical hash equal (migration_transport_normalization direct or cli); rename = identical raw content under other ledger version",
+ "counts": {
+  "git_files": 760,
+  "ledger_rows": 1228,
+  "exact": 480,
+  "equivalent_comment_only": 165,
+  "same_id_content_differs": 31,
+  "rename_identical_content": 17,
+  "git_only": 67,
+  "ledger_only": 536
+ },
+ "same_id_content_differs": [
+  "20260618025250_enrich_lf_knowledge_base_structure.sql",
+  "20260801175950_prepare_v7_object_owners.sql",
+  "20260801180000_writer_hmac_nonce_v7.sql",
+  "20260801180100_quarantine_compensating_evidence_v7.sql",
+  "20260801180200_governance_role_and_rls_v7.sql",
+  "20260801180300_static_audit_corrections_v7.sql",
+  "20260801180400_writer_key_rotation_v7.sql",
+  "20260801180500_writer_canonicalization_rls_v7.sql",
+  "20260801180510_writer_full_payload_binding_v7.sql",
+  "20260801180520_writer_scope_nonce_binding_realign_v7.sql",
+  "20260806034740_pr93_p0_revoke_public_definer_mutations.sql",
+  "20260806040224_pr93_p0_security_invoker_views.sql",
+  "20260806040806_pr93_p0_read_rpcs_security_invoker.sql",
+  "20260806041714_pr93_p0_external_function_search_paths.sql",
+  "20260806043139_pr93_p0_trigger_function_hardening.sql",
+  "20260806043852_pr93_p0_inherited_trigger_acl.sql",
+  "20260806062345_pr93_p0_hmac_attempt_receipt_reconciliation_v5.sql",
+  "20260806064151_pr93_p0_enable_rls_empty_knowledge_tables.sql",
+  "20260806194820_pr93_p0_hmac_attempt_receipt_v6_no_downgrade.sql",
+  "20260807192935_pr93_v7_writer_extensions_usage.sql",
+  "20260929032901_lf_pase_entrypoint_authority_repin_v1.sql",
+  "20260929033956_lf_pase_entrypoint_post1217_repin_v1.sql",
+  "20260929155733_lf_pase_entrypoint_post1236_repin_v1.sql",
+  "20260929174738_pase_control_system_qualification_authority_v1.sql",
+  "20260929195222_lf_pase_reconciliation_post1251_repin_v1.sql",
+  "20260929195705_lf_repository_governance_tombstone_readmodel_v1.sql",
+  "20260929212022_lf_pase_post1258_governance_repin_v1.sql",
+  "20260930064736_contract_check_bridge_retirement_v1.sql",
+  "20260930133539_evidence_ledger_crossbind_hardening_v1.sql",
+  "20261004054727_ig_cv_m1_7_authority_reuse_adrs_v1.sql",
+  "20261004195210_pase_f08_p02_contract_check_currentness_repair_v1.sql"
+ ],
+ "rename_identical_content": [
+  {
+   "git": "20260929211800_lf_pase_post1258_governance_repin_v1.sql",
+   "ledger_version": "20260929212022",
+   "ledger_name": "lf_pase_post1258_governance_repin_v1"
+  },
+  {
+   "git": "20261003013000_ig_m2_4_transversal_version_pin_v1.sql",
+   "ledger_version": "20261003015851",
+   "ledger_name": "ig_m2_4_transversal_version_pin_v1"
+  },
+  {
+   "git": "20261003013100_ig_m2_4_consume_transversal_version_pin_v1.sql",
+   "ledger_version": "20261003015938",
+   "ledger_name": "ig_m2_4_consume_transversal_version_pin_v1"
+  },
+  {
+   "git": "20261003021000_ig_m2_5_source_currentness_semantic_revalidation_v1.sql",
+   "ledger_version": "20261003021628",
+   "ledger_name": "ig_m2_5_source_currentness_semantic_revalidation_v1"
+  },
+  {
+   "git": "20261003041000_superadmin_source_resolution_capability_projection_v1.sql",
+   "ledger_version": "20261003043819",
+   "ledger_name": "superadmin_source_resolution_capability_projection_v1"
+  },
+  {
+   "git": "20261003124500_ig_t_parity_capability_currentness_v1.sql",
+   "ledger_version": "20261003130439",
+   "ledger_name": "ig_t_parity_capability_currentness_v1"
+  },
+  {
+   "git": "20261003144500_ig_t_inval_capability_promotion_v1.sql",
+   "ledger_version": "20261003144835",
+   "ledger_name": "ig_t_inval_capability_promotion_v1"
+  },
+  {
+   "git": "20261003183500_ig_rc001_n12_dynamic_source_selectors_v1.sql",
+   "ledger_version": "20261003183937",
+   "ledger_name": "ig_rc001_n12_dynamic_source_selectors_v1"
+  },
+  {
+   "git": "20261004063000_ig_cv_m7_3_negative_tests_executable_v1.sql",
+   "ledger_version": "20261004064522",
+   "ledger_name": "ig_cv_m7_3_negative_tests_executable_v1"
+  },
+  {
+   "git": "20261004121000_ig_m9_1_recuration_authority_live_universe_v1.sql",
+   "ledger_version": "20261004121050",
+   "ledger_name": "ig_m9_1_recuration_authority_live_universe_v1"
+  },
+  {
+   "git": "20261004205500_ig_m9_1_transversal_stale_successor_route_v1.sql",
+   "ledger_version": "20261004205425",
+   "ledger_name": "ig_m9_1_transversal_stale_successor_route_v1"
+  },
+  {
+   "git": "20261005075500_ig_action_spec_v3_readback_reclass.sql",
+   "ledger_version": "20261005075833",
+   "ledger_name": "ig_action_spec_v3_readback_reclass"
+  },
+  {
+   "git": "20261005092500_ig_typed_uncertainty.sql",
+   "ledger_version": "20261005092747",
+   "ledger_name": "ig_typed_uncertainty"
+  },
+  {
+   "git": "20261005093500_engineering_execution_packet_operation_matrix_v2.sql",
+   "ledger_version": "20261005084708",
+   "ledger_name": "engineering_execution_packet_operation_matrix_v2"
+  },
+  {
+   "git": "20261005100500_engineering_closure_event_live_fix.sql",
+   "ledger_version": "20261005090733",
+   "ledger_name": "engineering_closure_event_live_fix_v2"
+  },
+  {
+   "git": "20261005151134_engineering_github_artifact_pr_route_v1.sql",
+   "ledger_version": "20261005151540",
+   "ledger_name": "engineering_github_artifact_pr_route_v1"
+  },
+  {
+   "git": "20261005163300_m3_7_semantic_resolution_extra_key_repair.sql",
+   "ledger_version": "20261005164813",
+   "ledger_name": "m3_7_semantic_resolution_extra_key_repair"
+  }
+ ],
+ "git_only": [
+  "20260801163000_harden_architecture_evidence_v7.sql",
+  "20260801163300_strict_architecture_closure_v7.sql",
+  "20260801165000_service_role_nonce_writer_v6.sql",
+  "20260801165300_require_nonce_v6_for_pass.sql",
+  "20260801165500_edge_evidence_and_closure_v8.sql",
+  "20260923213500_lf_pilot_srcr_unified_execution_g06_submit_result_v1.sql",
+  "20260929033000_lf_pase_entrypoint_authority_repin_v1.sql",
+  "20260929034500_lf_pase_entrypoint_post1217_repin_v1.sql",
+  "20260929155300_lf_pase_entrypoint_post1236_repin_v1.sql",
+  "20260929195100_lf_pase_reconciliation_post1251_repin_v1.sql",
+  "20260929195600_lf_repository_governance_tombstone_readmodel_v1.sql",
+  "20261001043000_lf_global_inventory_skill_artifact_projection_v1.sql",
+  "20261001214000_lf_pilot_srcr_unified_execution_g07_advance_execution_v1.sql",
+  "20261002064500_lf_pilot_srcr_unified_execution_g09_terminality_v1.sql",
+  "20261002071500_lf_pilot_srcr_unified_execution_g10_retry_policy_v1.sql",
+  "20261003174500_ig_rc001_n10_curator_rebind_boundary_v1.sql",
+  "20261003182500_ig_rc001_n11_dynamic_component_binding_v1.sql",
+  "20261003202143_engineering_work_progress_consistency_v3.sql",
+  "20261003213000_operation_requalification_multisubject_scope_v2.sql",
+  "20261003213100_independent_assurance_subject_extension_v2.sql",
+  "20261004070200_ig_cv_m7_5_family_test_matrix_v1.sql",
+  "20261004074000_ig_cv_m7_6_gold_b_independent_v1.sql",
+  "20261004110900_input_governance_m9_4_governed_cohorts_v1.sql",
+  "20261004144500_t_decctx_decision_context_asof_v1.sql",
+  "20261004145000_t_causal_causal_effect_lineage_v1.sql",
+  "20261004145100_t_causal_n17_consumer_binding_v1.sql",
+  "20261004150700_t_causal_closeout_v1.sql",
+  "20261004152300_t_decctx_n16_consumer_binding_v1.sql",
+  "20261004152400_t_decctx_closeout_v1.sql",
+  "20261004171500_ig_m7_8_cached_v2_route_r17_preflight_v1.sql",
+  "20261004171600_ig_m7_8_source_stale_cached_v2_cutover_v1.sql",
+  "20261004215500_ig_m7_8_cached_v1_compat_wrapper_v1.sql",
+  "20261004225200_ig_m2_8_deterministic_assess_v1.sql",
+  "20261004230700_ig_m2_8_deterministic_assess_parity_v2.sql",
+  "20261005033500_ig_cv_m1a2_semantic_adr_contract_v1.sql",
+  "20261005040400_ig_m2_6_login_asset_relation_v1.sql",
+  "20261005040700_ig_m2_6_graph_entry_isolated_v1.sql",
+  "20261005042000_engineering_checkpoint_execution_contract_v1.sql",
+  "20261005042500_engineering_checkpoint_execution_contract_readback_fix.sql",
+  "20261005043000_fix_m86_terminal_checkpoint_title.sql",
+  "20261005043500_engineering_action_spec_v1.sql",
+  "20261005044600_fix_m28_action_spec_override.sql",
+  "20261005050500_engineering_checkpoint_heartbeat_v1.sql",
+  "20261005050600_engineering_bootstrap_v3_heartbeat_patch.sql",
+  "20261005050700_engineering_material_heartbeat_ekb.sql",
+  "20261005052500_ig_deterministic_digest.sql",
+  "20261005053000_engineering_action_spec_v2_material_fix.sql",
+  "20261005061000_ig_action_spec_v3_runner_gate.sql",
+  "20261005061100_ig_transition_returns_v3.sql",
+  "20261005061150_engineering_work_updates_plan_correction_type.sql",
+  "20261005061200_ig_dependency_guard_m210_repair.sql",
+  "20261005062000_engineering_bootstrap_materialized_cte.sql",
+  "20261005062100_engineering_action_spec_materialized_cte.sql",
+  "20261005062200_engineering_heartbeat_action_spec_v3.sql",
+  "20261005070000_engineering_execution_packet_v1.sql",
+  "20261005070100_engineering_bootstrap_v3_execution_packet.sql",
+  "20261005070200_engineering_tool_heartbeat_v2.sql",
+  "20261005092200_ig_resolver_receipts.sql",
+  "20261005093000_ig_m34_semantic_eligibility.sql",
+  "20261005151248_engineering_governed_writer_membership.sql",
+  "20261005151928_engineering_governed_writer_acl.sql",
+  "20261005153625_engineering_test_persistence_graph_v1.sql",
+  "20261005160946_engineering_four_capability_router_v1.sql",
+  "20261005163341_m3_8_run_test_applicable_scope_v1.sql",
+  "20261005180500_lf_engineering_dependency_blocker_reconciliation_v1.sql",
+  "20261005202800_ig_m36_review_required_typed_v1.sql",
+  "20261005203700_ig_m36_screen_state_empty_typed_v1.sql"
+ ],
+ "ledger_only": [
+  {
+   "version": "20260518171929",
+   "name": "create_cards_demo_read_insert"
+  },
+  {
+   "version": "20260518182732",
+   "name": "create_lf_inventory_demo_model"
+  },
+  {
+   "version": "20260518191442",
+   "name": "create_inventory_normalization_staging"
+  },
+  {
+   "version": "20260519164627",
+   "name": "crear_policia_cierre_verificacion_lf_001"
+  },
+  {
+   "version": "20260519172638",
+   "name": "activar_gate_lf_patches_minimo_003"
+  },
+  {
+   "version": "20260521023531",
+   "name": "create_lf_backlog_errores_operativos"
+  },
+  {
+   "version": "20260524054318",
+   "name": "create_sbx_mod_8_13_1_comparador_read_only"
+  },
+  {
+   "version": "20260528004538",
+   "name": "create_lf_operation_gitfirst_index_v01"
+  },
+  {
+   "version": "20260528020001",
+   "name": "create_lf_operation_execution_judge_v01"
+  },
+  {
+   "version": "20260528025826",
+   "name": "index_lf_skill_card_operations_v01"
+  },
+  {
+   "version": "20260528031036",
+   "name": "operation_registry_generic_classification_and_uniques"
+  },
+  {
+   "version": "20260528033413",
+   "name": "operation_execution_steps_unique_execution_step"
+  },
+  {
+   "version": "20260528045218",
+   "name": "clarify_lf_operation_as_internal_execution_control_v01"
+  },
+  {
+   "version": "20260528050808",
+   "name": "add_report_output_step_to_lf_creation_operations_v02"
+  },
+  {
+   "version": "20260529174118",
+   "name": "lote_metadata_comments_demo_sandbox_staging_001"
+  },
+  {
+   "version": "20260529175517",
+   "name": "lote_metadata_comments_nucleo_con_sustento_previo_001"
+  },
+  {
+   "version": "20260529230750",
+   "name": "lote_metadata_comments_catalogos_normalizacion_001"
+  },
+  {
+   "version": "20260530022341",
+   "name": "lote_metadata_comments_deuda_patches_pruebas_produccion_001"
+  },
+  {
+   "version": "20260530025506",
+   "name": "lote_metadata_comments_restantes_derivadas_y_cards_001"
+  },
+  {
+   "version": "20260530080035",
+   "name": "lote_column_comments_core_activos_001"
+  },
+  {
+   "version": "20260530081313",
+   "name": "lote_column_comments_backlog_eventos_logs_001"
+  },
+  {
+   "version": "20260531075904",
+   "name": "security_hardening_lf_operation_tables_v01"
+  },
+  {
+   "version": "20260531082027",
+   "name": "observability_log_enforcement_blocks_v01"
+  },
+  {
+   "version": "20260531082110",
+   "name": "fix_observability_dashboard_view_grants_v01"
+  },
+  {
+   "version": "20260531084110",
+   "name": "persist_router_state_lf_operation_v01"
+  },
+  {
+   "version": "20260531101947",
+   "name": "creacion_perfil_lf_enforcement_contract_judge_gate"
+  },
+  {
+   "version": "20260531210647",
+   "name": "create_lf_strategy_snapshots"
+  },
+  {
+   "version": "20260531225642",
+   "name": "lote_column_comments_operation_core_001"
+  },
+  {
+   "version": "20260601001915",
+   "name": "improve_lf_eventos_strategy_event_store"
+  },
+  {
+   "version": "20260601055641",
+   "name": "lote_column_comments_operation_views_001"
+  },
+  {
+   "version": "20260601085558",
+   "name": "persist_profile_governance_canvas_v011"
+  },
+  {
+   "version": "20260601085823",
+   "name": "lote_column_comments_operation_contracts_judges_001"
+  },
+  {
+   "version": "20260601085918",
+   "name": "lote_column_comments_operation_observability_001"
+  },
+  {
+   "version": "20260601090408",
+   "name": "lote_column_comments_operation_healthcheck_monitor_001"
+  },
+  {
+   "version": "20260602020757",
+   "name": "lf_step_judge_derived_result_gate_v01"
+  },
+  {
+   "version": "20260602090348",
+   "name": "audit_skill_protocols_no_bypass_marker"
+  },
+  {
+   "version": "20260603074351",
+   "name": "lote_sql_sandbox_competitive_001_a_core_tables"
+  },
+  {
+   "version": "20260603075549",
+   "name": "lote_sql_sandbox_competitive_001_b_observations"
+  },
+  {
+   "version": "20260603084134",
+   "name": "lote_sql_sandbox_competitive_001_c_engagement_comments"
+  },
+  {
+   "version": "20260603084315",
+   "name": "lote_sql_sandbox_competitive_001_d_alerts_insights_reports"
+  },
+  {
+   "version": "20260603084351",
+   "name": "lote_sql_sandbox_competitive_001_e_core_indexes"
+  },
+  {
+   "version": "20260603084450",
+   "name": "lote_sql_sandbox_competitive_001_f_observation_indexes"
+  },
+  {
+   "version": "20260603092705",
+   "name": "lote_sql_sandbox_competitive_001_g_alert_insight_report_indexes"
+  },
+  {
+   "version": "20260603181144",
+   "name": "lote_sql_sandbox_competitive_001_h_triggers_comments_view"
+  },
+  {
+   "version": "20260604041517",
+   "name": "add_profile_lf_runtime_view_from_existing_protocols"
+  },
+  {
+   "version": "20260605174019",
+   "name": "add_execution_order_to_lf_operation_steps"
+  },
+  {
+   "version": "20260605175053",
+   "name": "recreate_v_lf_operation_steps_with_execution_order"
+  },
+  {
+   "version": "20260605181116",
+   "name": "create_lf_capture_core_v0_1_1"
+  },
+  {
+   "version": "20260605191224",
+   "name": "rls_hardening_lf_capture_core_v0_1"
+  },
+  {
+   "version": "20260605215731",
+   "name": "create_lf_artifact_destination_registry"
+  },
+  {
+   "version": "20260605234004",
+   "name": "add_profile_pack_destination_support_v2"
+  },
+  {
+   "version": "20260605234630",
+   "name": "add_dynamic_profile_pack_template_model"
+  },
+  {
+   "version": "20260606061239",
+   "name": "create_lf_operation_step_contracts_layer"
+  },
+  {
+   "version": "20260606061326",
+   "name": "bind_step_contract_minijudges_creacion_perfil_lf_v2"
+  },
+  {
+   "version": "20260606071153",
+   "name": "refine_critical_step_contracts_002a"
+  },
+  {
+   "version": "20260607172955",
+   "name": "extend_lf_capture_records_web_columns_v0_2"
+  },
+  {
+   "version": "20260610120251",
+   "name": "enable_rls_sbx_tables"
+  },
+  {
+   "version": "20260610120257",
+   "name": "enable_rls_operational_tables_with_select_policy"
+  },
+  {
+   "version": "20260610155811",
+   "name": "add_contracts_skill_adapter_critical_steps_v1"
+  },
+  {
+   "version": "20260611050424",
+   "name": "act_0053_fase1_create_lf_taxonomia_lf"
+  },
+  {
+   "version": "20260611050432",
+   "name": "act_0053_fase1_create_lf_sandbox_runs"
+  },
+  {
+   "version": "20260611050441",
+   "name": "act_0053_fase1_create_lf_homologated_records"
+  },
+  {
+   "version": "20260612052756",
+   "name": "create_overall_design_onboarding_pe_v01"
+  },
+  {
+   "version": "20260612065634",
+   "name": "register_overall_onboarding_tree_candidates_v02"
+  },
+  {
+   "version": "20260612070556",
+   "name": "update_overall_card_provider_niubiz_error_guidance_v01"
+  },
+  {
+   "version": "20260612141729",
+   "name": "register_onboarding_state_abandonment_retargeting_v01"
+  },
+  {
+   "version": "20260612141846",
+   "name": "create_v_onboarding_comments_summary_v01"
+  },
+  {
+   "version": "20260613092435",
+   "name": "migrate_overall_color_palette_to_overall_design_v2"
+  },
+  {
+   "version": "20260613100547",
+   "name": "overcash_profile_governed_visual_rework_onboarding"
+  },
+  {
+   "version": "20260613101551",
+   "name": "overcash_profile_review_timer_error_step_chip_v02"
+  },
+  {
+   "version": "20260613104328",
+   "name": "canonicalize_visual_decision_sources_overcash_v03"
+  },
+  {
+   "version": "20260614043025",
+   "name": "create_bank_error_guides"
+  },
+  {
+   "version": "20260614043322",
+   "name": "bank_error_guides_add_maintenance_fields"
+  },
+  {
+   "version": "20260614051158",
+   "name": "add_feature_flag_to_runtime_requirement_type"
+  },
+  {
+   "version": "20260614224722",
+   "name": "create_presentation_assets_table"
+  },
+  {
+   "version": "20260614225326",
+   "name": "create_presentation_decks_and_link"
+  },
+  {
+   "version": "20260614225557",
+   "name": "enable_rls_read_open_write_locked_overall_design"
+  },
+  {
+   "version": "20260614230849",
+   "name": "add_prompt_fields_and_reusable_backgrounds"
+  },
+  {
+   "version": "20260614232106",
+   "name": "add_prompt_source_tracking"
+  },
+  {
+   "version": "20260614233807",
+   "name": "create_presentation_slides_plan"
+  },
+  {
+   "version": "20260615000015",
+   "name": "create_screen_area_tasks"
+  },
+  {
+   "version": "20260615000056",
+   "name": "create_onboarding_step_map"
+  },
+  {
+   "version": "20260616230206",
+   "name": "create_lockout_policy_matrix"
+  },
+  {
+   "version": "20260616230754",
+   "name": "link_screen_tasks_to_lockout_policy_matrix"
+  },
+  {
+   "version": "20260617000311",
+   "name": "create_lf_content_decisions"
+  },
+  {
+   "version": "20260617003148",
+   "name": "create_lf_knowledge_base"
+  },
+  {
+   "version": "20260617005813",
+   "name": "create_lf_pipeline_runs"
+  },
+  {
+   "version": "20260617005945",
+   "name": "add_task_review_governance_fields"
+  },
+  {
+   "version": "20260617061953",
+   "name": "create_lf_url_queue"
+  },
+  {
+   "version": "20260617111743",
+   "name": "add_execution_sql_to_step_contracts"
+  },
+  {
+   "version": "20260617153454",
+   "name": "add_regulatory_digital_security_alert_gaps"
+  },
+  {
+   "version": "20260617154417",
+   "name": "add_sbs_regulatory_references_digital_security_alerts"
+  },
+  {
+   "version": "20260617155615",
+   "name": "add_fail_condition_to_step_contracts"
+  },
+  {
+   "version": "20260617162422",
+   "name": "normalize_regulatory_reference_statuses_v2"
+  },
+  {
+   "version": "20260617163654",
+   "name": "create_lf_audit_backlog"
+  },
+  {
+   "version": "20260617165916",
+   "name": "add_tech_stability_crash_observability_tasks"
+  },
+  {
+   "version": "20260617171653",
+   "name": "add_adr_to_audit_objetivo"
+  },
+  {
+   "version": "20260617200350",
+   "name": "add_bloqueado_estado_audit_backlog"
+  },
+  {
+   "version": "20260617211606",
+   "name": "add_unique_capture_record_id_homologated"
+  },
+  {
+   "version": "20260617211745",
+   "name": "add_unique_capture_record_id_content_decisions"
+  },
+  {
+   "version": "20260617211841",
+   "name": "add_unique_decision_id_knowledge_base"
+  },
+  {
+   "version": "20260617232938",
+   "name": "create_test_policy_matrix_only"
+  },
+  {
+   "version": "20260617232952",
+   "name": "create_task_test_policy_links_soft_fk"
+  },
+  {
+   "version": "20260617232959",
+   "name": "create_test_run_tables_soft_fk"
+  },
+  {
+   "version": "20260617233126",
+   "name": "noop_test_policy_probe"
+  },
+  {
+   "version": "20260618003210",
+   "name": "create_qa_documentation_task_mode_assignments"
+  },
+  {
+   "version": "20260618011043",
+   "name": "create_clean_policy_task_board"
+  },
+  {
+   "version": "20260618035728",
+   "name": "create_overall_design_schema_inventory"
+  },
+  {
+   "version": "20260618035750",
+   "name": "create_schema_inventory_board_view"
+  },
+  {
+   "version": "20260618044436",
+   "name": "add_comments_current_governance_views"
+  },
+  {
+   "version": "20260618045319",
+   "name": "add_normalization_fields_to_schema_inventory"
+  },
+  {
+   "version": "20260618051841",
+   "name": "create_canonical_policy_registry_p1_design"
+  },
+  {
+   "version": "20260618064052",
+   "name": "create_canonical_policy_task_board"
+  },
+  {
+   "version": "20260618071046",
+   "name": "create_canonical_reference_registry_p2_design"
+  },
+  {
+   "version": "20260618071740",
+   "name": "create_reference_task_canonical_board"
+  },
+  {
+   "version": "20260618073028",
+   "name": "create_overcash_operational_board_dashboard_views_v2"
+  },
+  {
+   "version": "20260618110559",
+   "name": "create_fn_kb_quality_score"
+  },
+  {
+   "version": "20260618112513",
+   "name": "g1_consumer_ready_trigger"
+  },
+  {
+   "version": "20260618112532",
+   "name": "g2_url_queue_estados_y_tipo"
+  },
+  {
+   "version": "20260618112617",
+   "name": "g4_g5_restock_and_commercial_flag"
+  },
+  {
+   "version": "20260618113633",
+   "name": "create_v_lf_reporte_salida"
+  },
+  {
+   "version": "20260618143925",
+   "name": "drop_empty_card_exception_policy_catalog"
+  },
+  {
+   "version": "20260618150113",
+   "name": "add_cleanup_metadata_to_schema_inventory"
+  },
+  {
+   "version": "20260618150341",
+   "name": "drop_empty_legacy_test_run_tables"
+  },
+  {
+   "version": "20260618150422",
+   "name": "drop_empty_legal_document_versions"
+  },
+  {
+   "version": "20260618151400",
+   "name": "session_27_kb_polarity_and_pipeline_trazabilidad"
+  },
+  {
+   "version": "20260618161141",
+   "name": "add_parent_task_id_to_overall_screen_area_tasks"
+  },
+  {
+   "version": "20260618163222",
+   "name": "fix_v_lf_reporte_salida_hitl_resuelto"
+  },
+  {
+   "version": "20260618163709",
+   "name": "add_kb_dimension_psicologia_comportamiento"
+  },
+  {
+   "version": "20260619033214",
+   "name": "backup_kb_29g_and_reset"
+  },
+  {
+   "version": "20260619033227",
+   "name": "reset_pipeline_29g"
+  },
+  {
+   "version": "20260619041737",
+   "name": "add_execution_id_fk_to_pipeline_runs"
+  },
+  {
+   "version": "20260619053638",
+   "name": "relax_evidence_ref_for_unbound_steps"
+  },
+  {
+   "version": "20260620040613",
+   "name": "s32_fix_kb_enriched_enforcement"
+  },
+  {
+   "version": "20260620143640",
+   "name": "enable_rls_10_tables_p2_s37"
+  },
+  {
+   "version": "20260620145011",
+   "name": "upgrade_fn_block_kb_enriched_s5b_s37"
+  },
+  {
+   "version": "20260620162318",
+   "name": "add_unique_source_url_lf_knowledge_base"
+  },
+  {
+   "version": "20260621014903",
+   "name": "add_rls_policy_lf_backlog_errores_operativos_s47"
+  },
+  {
+   "version": "20260623015048",
+   "name": "lf_proto_schema_v1"
+  },
+  {
+   "version": "20260623044938",
+   "name": "lf_proto_home_sections_tasks"
+  },
+  {
+   "version": "20260623045822",
+   "name": "lf_proto_home_gaps"
+  },
+  {
+   "version": "20260623165452",
+   "name": "proto_onboarding_registro_otp"
+  },
+  {
+   "version": "20260623180341",
+   "name": "proto_onboarding_paso3_home_oferta"
+  },
+  {
+   "version": "20260623182518",
+   "name": "create_lf_ops_reglas_pantallas"
+  },
+  {
+   "version": "20260623184318",
+   "name": "lf_ops_otp_politicas_operaciones"
+  },
+  {
+   "version": "20260623184938",
+   "name": "lf_ops_campos_validaciones"
+  },
+  {
+   "version": "20260623185504",
+   "name": "lf_ops_reglas_completas_todas_capas"
+  },
+  {
+   "version": "20260623190005",
+   "name": "lf_ops_reglas_completas_v2"
+  },
+  {
+   "version": "20260623190649",
+   "name": "lf_ops_observabilidad_analytics_tageo"
+  },
+  {
+   "version": "20260623191400",
+   "name": "lf_ops_reglas_ataques_proteccion_activa"
+  },
+  {
+   "version": "20260623192316",
+   "name": "lf_ops_ataques_pendientes_decision"
+  },
+  {
+   "version": "20260623221623",
+   "name": "lf_ops_pantallas_paso3_variantes"
+  },
+  {
+   "version": "20260623224745",
+   "name": "add_created_by_and_normalize_home_offer_rules"
+  },
+  {
+   "version": "20260624003430",
+   "name": "lf_proto_offers_paso3_variantes_completas"
+  },
+  {
+   "version": "20260624003658",
+   "name": "lf_ops_pantallas_drive_links"
+  },
+  {
+   "version": "20260624004353",
+   "name": "lf_ops_pantallas_drive_links_completo"
+  },
+  {
+   "version": "20260624005444",
+   "name": "lf_ops_pantallas_drive_links_completos"
+  },
+  {
+   "version": "20260624005917",
+   "name": "lf_ops_pantalla_cuotas_desglose"
+  },
+  {
+   "version": "20260624011105",
+   "name": "lf_ops_reglas_cuotas_fechas_redondeo_v2"
+  },
+  {
+   "version": "20260624050456",
+   "name": "lf_ops_multioferta_link_y_reglas"
+  },
+  {
+   "version": "20260624060927",
+   "name": "lf_ops_eliminar_variante_solo_cuotas"
+  },
+  {
+   "version": "20260624061224",
+   "name": "lf_ops_paso3_todas_las_reglas"
+  },
+  {
+   "version": "20260624062031",
+   "name": "lf_ops_modelo_priorizacion_ofertas"
+  },
+  {
+   "version": "20260624130612",
+   "name": "lf_ops_completar_reglas_todas_pantallas"
+  },
+  {
+   "version": "20260624134351",
+   "name": "lf_ops_reglas_programacion_limpia"
+  },
+  {
+   "version": "20260624152811",
+   "name": "lf_ops_modal_cuotas_reglas_y_link"
+  },
+  {
+   "version": "20260624164743",
+   "name": "create_lf_product_rules_and_user_stories"
+  },
+  {
+   "version": "20260624171836",
+   "name": "create_lf_test_observability_core"
+  },
+  {
+   "version": "20260624171846",
+   "name": "create_lf_test_observability_results"
+  },
+  {
+   "version": "20260624171907",
+   "name": "create_lf_test_run_observability_view"
+  },
+  {
+   "version": "20260624171921",
+   "name": "create_lf_test_suite_observability_view"
+  },
+  {
+   "version": "20260624173230",
+   "name": "add_metadata_to_test_observability_tables"
+  },
+  {
+   "version": "20260625025156",
+   "name": "create_b2b_pricing_config"
+  },
+  {
+   "version": "20260625025857",
+   "name": "add_pricing_visibility_controls"
+  },
+  {
+   "version": "20260625032057",
+   "name": "extend_b2b_pricing_economics"
+  },
+  {
+   "version": "20260625034005",
+   "name": "add_b2b_fee_to_lf_pricing"
+  },
+  {
+   "version": "20260626030548",
+   "name": "lf_knowledge_schema_v3"
+  },
+  {
+   "version": "20260626031114",
+   "name": "lf_ops_pantalla_oferta_unica_pricing_v2_fix"
+  },
+  {
+   "version": "20260626233746",
+   "name": "lf_ops_modal_detalle_precio_reglas"
+  },
+  {
+   "version": "20260626234419",
+   "name": "lf_ops_modal_detalle_precio_link"
+  },
+  {
+   "version": "20260627001331",
+   "name": "lf_ops_completar_reglas_pantallas_faltantes"
+  },
+  {
+   "version": "20260628174450",
+   "name": "lf_ops_cuotas_seleccion_desglose_v2"
+  },
+  {
+   "version": "20260628174915",
+   "name": "lf_ops_cuotas_pantallas_actualizadas"
+  },
+  {
+   "version": "20260629001257",
+   "name": "lf_ops_checkout_cuotas_pantalla_reglas"
+  },
+  {
+   "version": "20260629001932",
+   "name": "lf_ops_checkout_cuotas_pantalla_reglas"
+  },
+  {
+   "version": "20260629002053",
+   "name": "lf_ops_checkout_cuotas_medio_pago"
+  },
+  {
+   "version": "20260629002739",
+   "name": "lf_ops_cronograma_pdf_y_control"
+  },
+  {
+   "version": "20260629003333",
+   "name": "lf_ops_cronograma_modal_pdf"
+  },
+  {
+   "version": "20260629173755",
+   "name": "lf_ops_checkout_estados_flujo_completo"
+  },
+  {
+   "version": "20260629174200",
+   "name": "lf_ops_checkout_estados_pago"
+  },
+  {
+   "version": "20260629174212",
+   "name": "lf_ops_checkout_limpiar_duplicado"
+  },
+  {
+   "version": "20260629174451",
+   "name": "lf_ops_checkout_pago_exitoso"
+  },
+  {
+   "version": "20260629202105",
+   "name": "lf_ops_checkout_error_pago"
+  },
+  {
+   "version": "20260630041933",
+   "name": "create_design_tokens_color"
+  },
+  {
+   "version": "20260630041957",
+   "name": "create_router_proyecto_v2"
+  },
+  {
+   "version": "20260630044132",
+   "name": "drop_shadow_router_tables"
+  },
+  {
+   "version": "20260630071456",
+   "name": "enable_rls_unprotected_lf_tables"
+  },
+  {
+   "version": "20260630152959",
+   "name": "create_lf_design_system_operational_schema"
+  },
+  {
+   "version": "20260630160122",
+   "name": "link_lf_design_router_obfuscated"
+  },
+  {
+   "version": "20260630160134",
+   "name": "link_lf_design_router_002"
+  },
+  {
+   "version": "20260630160402",
+   "name": "complete_router_relations_lf_design_005_007"
+  },
+  {
+   "version": "20260630224455",
+   "name": "update_green_action_109044"
+  },
+  {
+   "version": "20260630224710",
+   "name": "update_green_action_109044_remaining"
+  },
+  {
+   "version": "20260630225456",
+   "name": "tokenize_color_references_no_hex"
+  },
+  {
+   "version": "20260630231044",
+   "name": "close_pending_tokens_and_tokenize_remaining_hex"
+  },
+  {
+   "version": "20260630233059",
+   "name": "register_color_token_reference_doc"
+  },
+  {
+   "version": "20260701020359",
+   "name": "explicit_logo_source_reference"
+  },
+  {
+   "version": "20260701021545",
+   "name": "correct_logo_assets_folder_id"
+  },
+  {
+   "version": "20260701021643",
+   "name": "revert_logo_folder_update"
+  },
+  {
+   "version": "20260701021957",
+   "name": "register_logo_assets_explicit_files"
+  },
+  {
+   "version": "20260702031433",
+   "name": "lock_slate_text_strong_and_register_icon_source_decision"
+  },
+  {
+   "version": "20260702032125",
+   "name": "register_carta_no_adeudo_sla_decision_candidate"
+  },
+  {
+   "version": "20260702033155",
+   "name": "register_libro_reclamaciones_virtual_ley_32495"
+  },
+  {
+   "version": "20260702041115",
+   "name": "register_que_podras_hacer_full_spec_and_hero_consistency"
+  },
+  {
+   "version": "20260702041528",
+   "name": "register_dec_home_capability_001_governing_decision"
+  },
+  {
+   "version": "20260702042225",
+   "name": "add_gold_reward_supporting_evidence"
+  },
+  {
+   "version": "20260702043804",
+   "name": "register_gamification_ethical_rule_and_thermometer_pattern"
+  },
+  {
+   "version": "20260702052432",
+   "name": "deprecate_hero_subtitle_text_duplicate_consolidate_slate_text_strong"
+  },
+  {
+   "version": "20260702074504",
+   "name": "register_asset_provenance_convention_rule"
+  },
+  {
+   "version": "20260702084630",
+   "name": "formalize_typography_token_route_title"
+  },
+  {
+   "version": "20260702084647",
+   "name": "formalize_color_and_shadow_tokens_route"
+  },
+  {
+   "version": "20260702084744",
+   "name": "formalize_terrain_label_bronze_token"
+  },
+  {
+   "version": "20260702085841",
+   "name": "register_updated_at_manual_discipline_rule"
+  },
+  {
+   "version": "20260703161014",
+   "name": "register_accessible_nav_structure_rule_route"
+  },
+  {
+   "version": "20260703233137",
+   "name": "register_composite_rendering_process_rule"
+  },
+  {
+   "version": "20260704053442",
+   "name": "register_respaldo_confianza_block"
+  },
+  {
+   "version": "20260704053918",
+   "name": "register_no_cerrar_sin_confirmacion_visual_rule"
+  },
+  {
+   "version": "20260704153950",
+   "name": "register_completed_state_color_token"
+  },
+  {
+   "version": "20260705180758",
+   "name": "register_consent_checkbox_legal_spec"
+  },
+  {
+   "version": "20260708172407",
+   "name": "register_ruta_claridad_contenido_educativo_final"
+  },
+  {
+   "version": "20260708223804",
+   "name": "fix_nodo01_guion_two_paths"
+  },
+  {
+   "version": "20260708223820",
+   "name": "fix_nodo02_guion_notificacion_cobranza"
+  },
+  {
+   "version": "20260718140219",
+   "name": "create_lf_ops_pantalla_artefactos"
+  },
+  {
+   "version": "20260721040451",
+   "name": "lf_supabase_single_source_storage"
+  },
+  {
+   "version": "20260721151536",
+   "name": "create_lf_b2b_navigation_permission_structure"
+  },
+  {
+   "version": "20260721152914",
+   "name": "extend_lf_b2b_full_operational_contract"
+  },
+  {
+   "version": "20260721152951",
+   "name": "add_lf_b2b_integrity_triggers_and_references"
+  },
+  {
+   "version": "20260721153034",
+   "name": "add_lf_b2b_screen_access_state_and_icon_catalog"
+  },
+  {
+   "version": "20260721155140",
+   "name": "support_multiple_field_contexts_per_screen"
+  },
+  {
+   "version": "20260721163338",
+   "name": "add_b2b_canonical_relation_codes"
+  },
+  {
+   "version": "20260721163448",
+   "name": "scope_b2b_relation_views"
+  },
+  {
+   "version": "20260721164937",
+   "name": "harden_b2b_relations_security_and_access_model"
+  },
+  {
+   "version": "20260721165242",
+   "name": "add_runtime_public_codes_and_relation_coverage_v2"
+  },
+  {
+   "version": "20260721165425",
+   "name": "clarify_validation_severity_and_sync_contract_caches"
+  },
+  {
+   "version": "20260721171658",
+   "name": "migrate_b2b_relations_to_numeric_ids"
+  },
+  {
+   "version": "20260721171925",
+   "name": "enforce_numeric_b2b_foreign_keys"
+  },
+  {
+   "version": "20260721172239",
+   "name": "complete_numeric_b2b_primary_key_migration"
+  },
+  {
+   "version": "20260721172525",
+   "name": "fix_qa_auditorias_updated_at_column"
+  },
+  {
+   "version": "20260721172541",
+   "name": "migrate_lf_governance_decisions_to_numeric_keys_v3"
+  },
+  {
+   "version": "20260721172913",
+   "name": "migrate_lf_design_and_token_bindings_to_numeric_keys"
+  },
+  {
+   "version": "20260721173001",
+   "name": "remove_final_textual_error_trace_foreign_keys"
+  },
+  {
+   "version": "20260721175050",
+   "name": "close_b2b_numeric_keys_and_trigger_defects"
+  },
+  {
+   "version": "20260721175157",
+   "name": "enforce_unique_public_numeric_references"
+  },
+  {
+   "version": "20260721175449",
+   "name": "enforce_unique_governance_decision_alias"
+  },
+  {
+   "version": "20260724183111",
+   "name": "create_b2b_claude_code_learning_plan_v01"
+  },
+  {
+   "version": "20260724183232",
+   "name": "optimize_b2b_learning_progress_indexes_v01"
+  },
+  {
+   "version": "20260727044410",
+   "name": "create_private_lf_source_documents"
+  },
+  {
+   "version": "20260728021904",
+   "name": "create_private_lf_skill_artifacts"
+  },
+  {
+   "version": "20260801035455",
+   "name": "enforce_lf_eventos_test_evidence_v2"
+  },
+  {
+   "version": "20260801042005",
+   "name": "enforce_lf_artifact_pass_closure_immutability_v2"
+  },
+  {
+   "version": "20260801042029",
+   "name": "harden_lf_eventos_test_evidence_v2_pattern"
+  },
+  {
+   "version": "20260801042351",
+   "name": "fix_lf_artifact_pass_gate_pgcrypto_path"
+  },
+  {
+   "version": "20260801052843",
+   "name": "harden_lf_dependency_gate_immediate_v2"
+  },
+  {
+   "version": "20260801053144",
+   "name": "enforce_lf_validation_acceptance_default_deny_v2"
+  },
+  {
+   "version": "20260801054424",
+   "name": "harden_lf_validation_acceptance_semantic_v2"
+  },
+  {
+   "version": "20260801054613",
+   "name": "require_explicit_empty_dependency_declaration_v2"
+  },
+  {
+   "version": "20260801060123",
+   "name": "enforce_registered_event_contracts_and_harden_acceptance_v2"
+  },
+  {
+   "version": "20260801060218",
+   "name": "validate_empty_dependency_declaration_evidence_v2"
+  },
+  {
+   "version": "20260801060410",
+   "name": "fix_h8_execution_reference_column_v2"
+  },
+  {
+   "version": "20260801063708",
+   "name": "architecture_v2_governance_foundation"
+  },
+  {
+   "version": "20260801063848",
+   "name": "protect_event_contract_registry_and_require_operational_envelopes"
+  },
+  {
+   "version": "20260801064046",
+   "name": "architecture_v2_effective_status_reopen_reconciliation_observability"
+  },
+  {
+   "version": "20260801064156",
+   "name": "govern_validation_exemptions_and_schedule_reconciliation"
+  },
+  {
+   "version": "20260801064348",
+   "name": "fix_event_contract_governance_request_lifecycle"
+  },
+  {
+   "version": "20260801064817",
+   "name": "optimize_transitive_dependency_closure_v2"
+  },
+  {
+   "version": "20260801065041",
+   "name": "architecture_v2_capability_and_legacy_debt_registry"
+  },
+  {
+   "version": "20260801065413",
+   "name": "finalize_architecture_v2_closure_and_audit_bundle"
+  },
+  {
+   "version": "20260801065709",
+   "name": "index_architecture_v2_foreign_keys"
+  },
+  {
+   "version": "20260801081459",
+   "name": "lf_architecture_v3_r1a_exemption_and_guard_functions"
+  },
+  {
+   "version": "20260801081544",
+   "name": "lf_architecture_v3_r1b_governed_writers_and_history"
+  },
+  {
+   "version": "20260801081617",
+   "name": "lf_architecture_v3_r1c_owner_rls_acl_cutover"
+  },
+  {
+   "version": "20260801081733",
+   "name": "lf_architecture_v3_r1d_reconciliation_read_grants"
+  },
+  {
+   "version": "20260801081747",
+   "name": "lf_architecture_v3_r1e_event_contract_read_grants"
+  },
+  {
+   "version": "20260801081809",
+   "name": "lf_architecture_v3_r1f_event_contract_rls_policy"
+  },
+  {
+   "version": "20260801081829",
+   "name": "lf_architecture_v3_r1g_event_ledger_rls_policy"
+  },
+  {
+   "version": "20260801082208",
+   "name": "lf_architecture_v3_r2a_authoritative_evidence_tables"
+  },
+  {
+   "version": "20260801082446",
+   "name": "lf_architecture_v3_r2b_strict_external_and_test_writers"
+  },
+  {
+   "version": "20260801082525",
+   "name": "lf_architecture_v3_r2c_crypto_usage_grant"
+  },
+  {
+   "version": "20260801082701",
+   "name": "lf_architecture_v3_r2d_effective_pass_and_dependency_integrity"
+  },
+  {
+   "version": "20260801082858",
+   "name": "lf_architecture_v3_r3a_typed_schema_registry"
+  },
+  {
+   "version": "20260801082920",
+   "name": "lf_architecture_v3_r3b_typed_registry_enforcement"
+  },
+  {
+   "version": "20260801082958",
+   "name": "lf_architecture_v3_r3c_contract_provenance_baseline"
+  },
+  {
+   "version": "20260801083048",
+   "name": "lf_architecture_v3_r3d_reproducible_event_contract_assessment"
+  },
+  {
+   "version": "20260801083117",
+   "name": "lf_architecture_v3_r3e_event_debt_view_aggregation_fix"
+  },
+  {
+   "version": "20260801083210",
+   "name": "lf_architecture_v3_r3f_legacy_debt_writer_generated_column_fix_v3"
+  },
+  {
+   "version": "20260801083410",
+   "name": "lf_architecture_v3_r4a1_alert_ledger"
+  },
+  {
+   "version": "20260801083528",
+   "name": "lf_architecture_v3_r4a2a_canonical_v3_views"
+  },
+  {
+   "version": "20260801083537",
+   "name": "lf_architecture_v3_r4a2b_closure_v2_single_row_adapter"
+  },
+  {
+   "version": "20260801083656",
+   "name": "lf_architecture_v3_r4b_monitor_and_alert_evaluator"
+  },
+  {
+   "version": "20260801084921",
+   "name": "lf_architecture_v3_r4c_monitor_performance_and_circularity_fix"
+  },
+  {
+   "version": "20260801085052",
+   "name": "lf_architecture_v3_r4d_cron_status_wrapper"
+  },
+  {
+   "version": "20260801085128",
+   "name": "lf_architecture_v3_r4e_cron_alert_readback_fix"
+  },
+  {
+   "version": "20260801085149",
+   "name": "lf_architecture_v3_r4f_cron_cutover"
+  },
+  {
+   "version": "20260801085703",
+   "name": "lf_architecture_v3_r5a_exercised_post_merge_evidence"
+  },
+  {
+   "version": "20260801090311",
+   "name": "lf_architecture_v3_r6a_reproducible_control_probes"
+  },
+  {
+   "version": "20260801090439",
+   "name": "lf_architecture_v3_r6b_exemption_after_insert_consumption_v2"
+  },
+  {
+   "version": "20260801090541",
+   "name": "lf_architecture_v3_r6c_exemption_marker_null_fix"
+  },
+  {
+   "version": "20260801091130",
+   "name": "lf_architecture_v3_r7a_schema_fingerprint_engine"
+  },
+  {
+   "version": "20260801092040",
+   "name": "lf_architecture_v3_r8a_repository_sync_schema"
+  },
+  {
+   "version": "20260801092133",
+   "name": "lf_architecture_v3_r8b_repository_sync_writer"
+  },
+  {
+   "version": "20260801135820",
+   "name": "enable_pg_net_for_architecture_alert_delivery"
+  },
+  {
+   "version": "20260801140646",
+   "name": "add_effective_contract_provenance_overlay_v4"
+  },
+  {
+   "version": "20260801140748",
+   "name": "install_architecture_monitor_v4"
+  },
+  {
+   "version": "20260801140934",
+   "name": "install_v4_alert_ledger_and_rewire_monitor"
+  },
+  {
+   "version": "20260801141025",
+   "name": "add_v4_cron_first_run_grace"
+  },
+  {
+   "version": "20260801141140",
+   "name": "install_verified_external_alert_delivery_v4"
+  },
+  {
+   "version": "20260801141323",
+   "name": "retry_external_alerts_immediately_after_http_failure"
+  },
+  {
+   "version": "20260801141406",
+   "name": "make_http_retry_response_aware_v4"
+  },
+  {
+   "version": "20260801141814",
+   "name": "quarantine_nonconforming_legacy_events_v4"
+  },
+  {
+   "version": "20260801141921",
+   "name": "seal_architecture_fingerprint_baseline_v4"
+  },
+  {
+   "version": "20260801142238",
+   "name": "create_architecture_closure_v4"
+  },
+  {
+   "version": "20260801144704",
+   "name": "create_repository_governance_bundle_v4_table"
+  },
+  {
+   "version": "20260801144926",
+   "name": "secure_repository_governance_bundle_v4_retry"
+  },
+  {
+   "version": "20260801145414",
+   "name": "enable_compensating_repository_controls_core_v4"
+  },
+  {
+   "version": "20260801145430",
+   "name": "update_reconciliation_queue_for_compensating_controls_v4"
+  },
+  {
+   "version": "20260801145610",
+   "name": "align_external_ci_validation_with_compensating_controls_v4"
+  },
+  {
+   "version": "20260801145937",
+   "name": "canonical_closure_accepts_compensating_controls_v4"
+  },
+  {
+   "version": "20260801150429",
+   "name": "add_no_dependency_declaration_to_promotion_v4"
+  },
+  {
+   "version": "20260801150549",
+   "name": "align_artifact_pass_trigger_with_compensating_controls_v4"
+  },
+  {
+   "version": "20260801150927",
+   "name": "fix_transitive_reopen_false_degradation_v4"
+  },
+  {
+   "version": "20260801151203",
+   "name": "support_verified_cyclic_dependency_promotion_v4"
+  },
+  {
+   "version": "20260801151705",
+   "name": "optimize_transitive_dependency_gap_closure_v4"
+  },
+  {
+   "version": "20260801152550",
+   "name": "create_schema_fingerprint_baseline_v5"
+  },
+  {
+   "version": "20260801152657",
+   "name": "activate_schema_fingerprint_v5_in_closure"
+  },
+  {
+   "version": "20260801152817",
+   "name": "align_architecture_monitor_with_canonical_closure_v5"
+  },
+  {
+   "version": "20260801152844",
+   "name": "create_schema_fingerprint_baseline_v6"
+  },
+  {
+   "version": "20260801152902",
+   "name": "activate_schema_fingerprint_v6_in_closure"
+  },
+  {
+   "version": "20260801153207",
+   "name": "create_global_dependency_health_v4"
+  },
+  {
+   "version": "20260801153236",
+   "name": "use_global_dependency_health_v4_retry"
+  },
+  {
+   "version": "20260801153322",
+   "name": "create_schema_fingerprint_baseline_v7_final"
+  },
+  {
+   "version": "20260801153343",
+   "name": "activate_schema_fingerprint_v7_final"
+  },
+  {
+   "version": "20260801153549",
+   "name": "create_schema_fingerprint_baseline_v8_final"
+  },
+  {
+   "version": "20260801153609",
+   "name": "activate_schema_fingerprint_v8_final"
+  },
+  {
+   "version": "20260801153857",
+   "name": "create_reconciliation_writer_secret_v4_table"
+  },
+  {
+   "version": "20260801153908",
+   "name": "secure_reconciliation_writer_secret_v4"
+  },
+  {
+   "version": "20260801154021",
+   "name": "signed_reconciliation_and_gate_writers_v4"
+  },
+  {
+   "version": "20260801154121",
+   "name": "require_signed_reconciliation_evidence_v4"
+  },
+  {
+   "version": "20260801154709",
+   "name": "record_edge_function_deployment_evidence_v4"
+  },
+  {
+   "version": "20260801154815",
+   "name": "create_signed_architecture_closure_v5"
+  },
+  {
+   "version": "20260801154836",
+   "name": "create_schema_fingerprint_baseline_v9_signed_final"
+  },
+  {
+   "version": "20260801154902",
+   "name": "activate_schema_fingerprint_v9_signed_final"
+  },
+  {
+   "version": "20260801155023",
+   "name": "fix_final_monitor_false_positives_v5"
+  },
+  {
+   "version": "20260801155040",
+   "name": "create_schema_fingerprint_baseline_v10_final"
+  },
+  {
+   "version": "20260801155103",
+   "name": "activate_schema_fingerprint_v10_final"
+  },
+  {
+   "version": "20260801155351",
+   "name": "transfer_reconciliation_secret_to_governance_owner_retry"
+  },
+  {
+   "version": "20260801155710",
+   "name": "create_reconciliation_writer_auth_hash_v5"
+  },
+  {
+   "version": "20260801155753",
+   "name": "create_token_authenticated_writer_functions_v5"
+  },
+  {
+   "version": "20260801155811",
+   "name": "require_token_authenticated_evidence_v5"
+  },
+  {
+   "version": "20260801155958",
+   "name": "remove_reversible_reconciliation_secret_v4"
+  },
+  {
+   "version": "20260801160145",
+   "name": "record_edge_function_deployment_evidence_v5"
+  },
+  {
+   "version": "20260801160416",
+   "name": "create_token_authenticated_architecture_closure_v6"
+  },
+  {
+   "version": "20260801160439",
+   "name": "recognize_pass_v6_in_architecture_monitor"
+  },
+  {
+   "version": "20260801160503",
+   "name": "create_schema_fingerprint_baseline_v11_token_final"
+  },
+  {
+   "version": "20260801160528",
+   "name": "activate_schema_fingerprint_v11_token_final"
+  },
+  {
+   "version": "20260801163207",
+   "name": "harden_evidence_and_acl_v7"
+  },
+  {
+   "version": "20260801163239",
+   "name": "harden_artifact_promotion_v7"
+  },
+  {
+   "version": "20260801163310",
+   "name": "strict_architecture_closure_v7"
+  },
+  {
+   "version": "20260801163358",
+   "name": "restrict_net_schema_usage_v7"
+  },
+  {
+   "version": "20260801163605",
+   "name": "fix_strict_closure_status_consistency_v7"
+  },
+  {
+   "version": "20260801165425",
+   "name": "create_writer_nonce_registry_v6"
+  },
+  {
+   "version": "20260801165509",
+   "name": "replace_writer_verifier_with_nonce_v6"
+  },
+  {
+   "version": "20260801165710",
+   "name": "add_nonce_authenticated_writer_wrappers_v6"
+  },
+  {
+   "version": "20260801165736",
+   "name": "add_reconciliation_nonce_validator_v6"
+  },
+  {
+   "version": "20260801165746",
+   "name": "add_gate_nonce_validator_v6"
+  },
+  {
+   "version": "20260801165810",
+   "name": "require_nonce_v6_for_effective_artifact_pass"
+  },
+  {
+   "version": "20260801165830",
+   "name": "require_nonce_v6_for_artifact_promotion"
+  },
+  {
+   "version": "20260801165912",
+   "name": "mark_nonce_authenticated_events_v6"
+  },
+  {
+   "version": "20260801170104",
+   "name": "create_append_only_edge_deployment_evidence_v6"
+  },
+  {
+   "version": "20260801170151",
+   "name": "strict_nonce_architecture_closure_v8"
+  },
+  {
+   "version": "20260801170332",
+   "name": "revoke_api_execution_on_net_functions"
+  },
+  {
+   "version": "20260807005809",
+   "name": "pr93_v7_01_prepare_object_owners"
+  },
+  {
+   "version": "20260807010320",
+   "name": "pr93_v7_01b_prepare_writer_verifier_schema_context"
+  },
+  {
+   "version": "20260807011136",
+   "name": "pr93_v7_temporary_http_extension"
+  },
+  {
+   "version": "20260807011145",
+   "name": "pr93_v7_temporary_dblink_extension"
+  },
+  {
+   "version": "20260807011930",
+   "name": "pr93_v7_remove_temporary_dblink_extension"
+  },
+  {
+   "version": "20260807011939",
+   "name": "pr93_v7_remove_temporary_http_extension"
+  },
+  {
+   "version": "20260807012014",
+   "name": "pr93_v7_rollback_temporary_schema_create"
+  },
+  {
+   "version": "20260807012023",
+   "name": "pr93_v7_rollback_writer_membership"
+  },
+  {
+   "version": "20260807012336",
+   "name": "pr93_v7_rollback_writer_creator_membership"
+  },
+  {
+   "version": "20260807012350",
+   "name": "pr93_v7_rollback_writer_schema_usage"
+  },
+  {
+   "version": "20260807051340",
+   "name": "pr93_v10_create_dryrun_chunks"
+  },
+  {
+   "version": "20260807051720",
+   "name": "pr93_v10_dryrun_http"
+  },
+  {
+   "version": "20260807234156",
+   "name": "create_saly_ideation_schema_v1"
+  },
+  {
+   "version": "20260807234256",
+   "name": "allow_calculado_status_saly_supuestos"
+  },
+  {
+   "version": "20260808003512",
+   "name": "saly_reconstruction_traceability_v1"
+  },
+  {
+   "version": "20260808004159",
+   "name": "saly_document_persistence_states_v1"
+  },
+  {
+   "version": "20260808004450",
+   "name": "saly_event_evidence_traceability_v1"
+  },
+  {
+   "version": "20260808004541",
+   "name": "saly_reconstruction_read_views_v1"
+  },
+  {
+   "version": "20260808010546",
+   "name": "saly_add_historicos_operativos_mensuales"
+  },
+  {
+   "version": "20260808172101",
+   "name": "saly_modelo_financiero_canonico_v1"
+  },
+  {
+   "version": "20260808172348",
+   "name": "saly_traceability_fk_indexes_v1"
+  },
+  {
+   "version": "20260810055956",
+   "name": "pr122_m12_governance_bundle_r8_revision"
+  },
+  {
+   "version": "20260811231241",
+   "name": "create_b2b_backoffice_login_contract_v1"
+  },
+  {
+   "version": "20260812005844",
+   "name": "create_programacion_schema"
+  },
+  {
+   "version": "20260812010614",
+   "name": "programacion_v01_core_model"
+  },
+  {
+   "version": "20260812010809",
+   "name": "programacion_v01_cover_fk_indexes"
+  },
+  {
+   "version": "20260812012201",
+   "name": "programacion_v02_code_quality_contract"
+  },
+  {
+   "version": "20260812012253",
+   "name": "programacion_v02_fix_login_q03_wording"
+  },
+  {
+   "version": "20260812025406",
+   "name": "extend_login_contract_with_timeout_v11"
+  },
+  {
+   "version": "20260812031447",
+   "name": "ekb_add_root_cause_and_prevention_context_fields"
+  },
+  {
+   "version": "20260812033405",
+   "name": "programacion_v03_execution_evidence_runtime"
+  },
+  {
+   "version": "20260812033520",
+   "name": "programacion_v03_enforce_frozen_universe_and_independence"
+  },
+  {
+   "version": "20260812034548",
+   "name": "programacion_v04_python_github_runner_contract"
+  },
+  {
+   "version": "20260812041554",
+   "name": "create_transversal_schema"
+  },
+  {
+   "version": "20260812044116",
+   "name": "migrate_ekb_to_transversal_with_legacy_compatibility"
+  },
+  {
+   "version": "20260812044217",
+   "name": "transversal_ekb_legacy_view_comment_hardening"
+  },
+  {
+   "version": "20260812060911",
+   "name": "normalize_b2b_login_contract_numeric_relations_v12"
+  },
+  {
+   "version": "20260812062047",
+   "name": "allow_no_navigation_login_variants"
+  },
+  {
+   "version": "20260812062952",
+   "name": "fix_login_contract_search_path"
+  },
+  {
+   "version": "20260812084135",
+   "name": "saly_foundation_reglas_v01"
+  },
+  {
+   "version": "20260812084233",
+   "name": "saly_reglas_index_decision_v01"
+  },
+  {
+   "version": "20260813185516",
+   "name": "create_saly_estados_foundation_v01"
+  },
+  {
+   "version": "20260813191810",
+   "name": "seed_saly_candidate_states_v01"
+  },
+  {
+   "version": "20260813192048",
+   "name": "create_saly_transiciones_base"
+  },
+  {
+   "version": "20260813192057",
+   "name": "index_saly_transiciones"
+  },
+  {
+   "version": "20260814035958",
+   "name": "enable_rls_saly_transiciones"
+  },
+  {
+   "version": "20260815042813",
+   "name": "temp_p0_source_image_ingest_create_20260814"
+  },
+  {
+   "version": "20260815042836",
+   "name": "temp_p0_source_image_ingest_drop_20260814"
+  },
+  {
+   "version": "20260815043759",
+   "name": "temp_p0_source_image_ingest_create_20260815_v2"
+  },
+  {
+   "version": "20260815043820",
+   "name": "temp_p0_source_image_ingest_drop_20260815_v2"
+  },
+  {
+   "version": "20260815070358",
+   "name": "temporary_lf_brand_logo_storage_upload_policy"
+  },
+  {
+   "version": "20260815070418",
+   "name": "remove_temporary_lf_brand_logo_storage_upload_policy"
+  },
+  {
+   "version": "20260815070542",
+   "name": "temporary_lf_shield_64_storage_upload_policy"
+  },
+  {
+   "version": "20260815070708",
+   "name": "temporary_lf_shield_64_storage_delete_policy"
+  },
+  {
+   "version": "20260815070726",
+   "name": "remove_temporary_lf_shield_64_storage_policies"
+  },
+  {
+   "version": "20260815075523",
+   "name": "programacion_prog011_execution_insert_guard"
+  },
+  {
+   "version": "20260815082117",
+   "name": "programacion_v09_retrieval_trace_playwright_learning_runtime"
+  },
+  {
+   "version": "20260815143320",
+   "name": "programacion_prog013_prog014_insert_integrity"
+  },
+  {
+   "version": "20260815151119",
+   "name": "programacion_audit_batch_a_subject_binding_quarantine"
+  },
+  {
+   "version": "20260815151212",
+   "name": "programacion_audit_batch_b_verified_evidence_independence"
+  },
+  {
+   "version": "20260815151251",
+   "name": "programacion_audit_batch_c_human_promotion_authority"
+  },
+  {
+   "version": "20260815151339",
+   "name": "programacion_audit_batch_d_force_rls_v09"
+  },
+  {
+   "version": "20260815183508",
+   "name": "programacion_audit_batch_e_authority_attestation"
+  },
+  {
+   "version": "20260815184215",
+   "name": "programacion_audit_batch_f_authority_attest_rpc"
+  },
+  {
+   "version": "20260815185555",
+   "name": "programacion_audit_batch_g_external_authority_enforcement"
+  },
+  {
+   "version": "20260816035517",
+   "name": "programacion_decouple_postgres_authority_credentials"
+  },
+  {
+   "version": "20260818041620",
+   "name": "programacion_audit11_verified_provenance"
+  },
+  {
+   "version": "20260818041630",
+   "name": "programacion_audit11_provenance_channel_hashes_prod"
+  },
+  {
+   "version": "20260818170542",
+   "name": "normalize_auth_email_otp_legacy_references"
+  },
+  {
+   "version": "20260818171534",
+   "name": "normalize_auth004_email_otp_field_binding"
+  },
+  {
+   "version": "20260818172958",
+   "name": "normalize_legacy_totp_trace_contract"
+  },
+  {
+   "version": "20260818180803",
+   "name": "input_context_manifest_story_rule_metadata_fix"
+  },
+  {
+   "version": "20260818180951",
+   "name": "programacion_source_rule_authority_multi_source"
+  },
+  {
+   "version": "20260819022600",
+   "name": "add_company_trusted_device_duration"
+  },
+  {
+   "version": "20260819040820",
+   "name": "create_saly_campos_foundation_v01"
+  },
+  {
+   "version": "20260819051748",
+   "name": "create_saly_validaciones_foundation"
+  },
+  {
+   "version": "20260819051805",
+   "name": "create_b2b_trusted_devices_registry"
+  },
+  {
+   "version": "20260819053447",
+   "name": "create_saly_error_foundation_v01"
+  },
+  {
+   "version": "20260819161210",
+   "name": "create_otp_entrega_eventos"
+  },
+  {
+   "version": "20260819224357",
+   "name": "client_auth_runtime_core"
+  },
+  {
+   "version": "20260819224602",
+   "name": "client_auth_session_guard"
+  },
+  {
+   "version": "20260819225314",
+   "name": "client_runtime_rls_explicit_deny"
+  },
+  {
+   "version": "20260821044534",
+   "name": "harden_lf_internal_catalog_rls"
+  },
+  {
+   "version": "20260821054708",
+   "name": "close_b2b_runtime_tables_direct_client_access"
+  },
+  {
+   "version": "20260827235924",
+   "name": "gov_router_act0001_canonical_resolution_v1_retry"
+  },
+  {
+   "version": "20260828000018",
+   "name": "gov_router_act0001_matcher_false_positive_fix"
+  },
+  {
+   "version": "20260828000139",
+   "name": "gov_router_act0001_create_duplicate_match_fix"
+  },
+  {
+   "version": "20260828000319",
+   "name": "gov_router_act0001_runtime_state_alignment"
+  },
+  {
+   "version": "20260828000628",
+   "name": "gov_router_act0001_operational_view_entrypoint"
+  },
+  {
+   "version": "20260828000650",
+   "name": "gov_router_act0001_policy_distribution_resolution_fix"
+  },
+  {
+   "version": "20260828011319",
+   "name": "router_ui_capability_canary_minimal_v1"
+  },
+  {
+   "version": "20260828011401",
+   "name": "router_keyword_verification_canary_fix_v1"
+  },
+  {
+   "version": "20260828013845",
+   "name": "router_generic_keyword_dispatch_product_canary"
+  },
+  {
+   "version": "20260828013954",
+   "name": "router_generic_tie_break_and_version_disambiguation_v2"
+  },
+  {
+   "version": "20260919001718",
+   "name": "lf_pack_validation_harness_registry_policy_v1"
+  },
+  {
+   "version": "20260919031524",
+   "name": "lf_enable_rls_remaining_owned_tables_v1"
+  },
+  {
+   "version": "20260919065202",
+   "name": "lf_profile_update_begin_reconcile_v1"
+  },
+  {
+   "version": "20260930012541",
+   "name": "contract_check_legacy_bridge_inventory_v1_fix"
+  },
+  {
+   "version": "20260930194555",
+   "name": "add_input_governance_inventory_plan_view_v1"
+  },
+  {
+   "version": "20260930195007",
+   "name": "add_input_governance_repo_inventory_plan_view_v1"
+  },
+  {
+   "version": "20261001123823",
+   "name": "ig_cv_decision_d_m1_4_universe_authority"
+  },
+  {
+   "version": "20261001130841",
+   "name": "ig_cv_decision_impl_dependency"
+  },
+  {
+   "version": "20261003142037",
+   "name": "create_srcr_benchmark_v2_authority"
+  },
+  {
+   "version": "20261003144627",
+   "name": "index_srcr_benchmark_results_variant_fk"
+  },
+  {
+   "version": "20261003181416",
+   "name": "ig_rc001_n10_curator_rebind_boundary_v1"
+  },
+  {
+   "version": "20261003182232",
+   "name": "ig_rc001_n11_dynamic_component_binding_v1"
+  },
+  {
+   "version": "20261004073218",
+   "name": "ig_cv_m7_5_family_test_matrix_v1"
+  },
+  {
+   "version": "20261004113613",
+   "name": "input_governance_m9_4_governed_cohorts_v1"
+  },
+  {
+   "version": "20261004150519",
+   "name": "t_causal_causal_effect_lineage_v1"
+  },
+  {
+   "version": "20261004150537",
+   "name": "t_causal_n17_consumer_binding_v1"
+  },
+  {
+   "version": "20261004151610",
+   "name": "t_decctx_decision_context_asof_v1"
+  },
+  {
+   "version": "20261004151736",
+   "name": "t_causal_closeout_v1"
+  },
+  {
+   "version": "20261004152415",
+   "name": "t_decctx_n16_consumer_binding_v1"
+  },
+  {
+   "version": "20261004212947",
+   "name": "ig_m7_8_source_stale_cached_v2_cutover_v1"
+  },
+  {
+   "version": "20261004213223",
+   "name": "t_decctx_closeout_v1"
+  },
+  {
+   "version": "20261004221220",
+   "name": "ig_m7_8_cached_v1_compat_wrapper_v1"
+  },
+  {
+   "version": "20261005033502",
+   "name": "engineering_unit_canonical_bootstrap_v1"
+  },
+  {
+   "version": "20261005033745",
+   "name": "ig_cv_m1a2_semantic_adr_contract_v1"
+  },
+  {
+   "version": "20261005033819",
+   "name": "engineering_unit_canonical_bootstrap_v1_1"
+  },
+  {
+   "version": "20261005040056",
+   "name": "engineering_unit_bootstrap_microloop_v2"
+  },
+  {
+   "version": "20261005040243",
+   "name": "ig_m2_8_deterministic_assess_v1"
+  },
+  {
+   "version": "20261005040611",
+   "name": "ig_m2_6_login_asset_relation_v1"
+  },
+  {
+   "version": "20261005041035",
+   "name": "ig_m2_6_graph_entry_isolated_v1"
+  },
+  {
+   "version": "20261005041100",
+   "name": "ig_m2_8_deterministic_assess_parity_v2"
+  },
+  {
+   "version": "20261005042329",
+   "name": "engineering_checkpoint_execution_contract_v1"
+  },
+  {
+   "version": "20261005042622",
+   "name": "engineering_checkpoint_execution_contract_readback_fix"
+  },
+  {
+   "version": "20261005042739",
+   "name": "fix_m86_terminal_checkpoint_title"
+  },
+  {
+   "version": "20261005044315",
+   "name": "engineering_action_spec_v1"
+  },
+  {
+   "version": "20261005044725",
+   "name": "fix_m28_action_spec_override"
+  },
+  {
+   "version": "20261005051732",
+   "name": "engineering_checkpoint_heartbeat_v1"
+  },
+  {
+   "version": "20261005051749",
+   "name": "engineering_bootstrap_v3_heartbeat_patch"
+  },
+  {
+   "version": "20261005051802",
+   "name": "engineering_material_heartbeat_ekb"
+  },
+  {
+   "version": "20261005053529",
+   "name": "engineering_action_spec_v2_material_fix"
+  },
+  {
+   "version": "20261005060733",
+   "name": "ig_action_spec_v3_runner_gate"
+  },
+  {
+   "version": "20261005060800",
+   "name": "ig_transition_returns_v3"
+  },
+  {
+   "version": "20261005061058",
+   "name": "engineering_work_updates_plan_correction_type"
+  },
+  {
+   "version": "20261005061130",
+   "name": "ig_dependency_guard_m210_repair"
+  },
+  {
+   "version": "20261005065032",
+   "name": "engineering_bootstrap_materialized_cte"
+  },
+  {
+   "version": "20261005065057",
+   "name": "engineering_action_spec_materialized_cte"
+  },
+  {
+   "version": "20261005065124",
+   "name": "engineering_heartbeat_action_spec_v3"
+  },
+  {
+   "version": "20261005073921",
+   "name": "engineering_execution_packet_v1"
+  },
+  {
+   "version": "20261005073955",
+   "name": "engineering_bootstrap_v3_execution_packet"
+  },
+  {
+   "version": "20261005074032",
+   "name": "engineering_tool_heartbeat_v2"
+  },
+  {
+   "version": "20261005092406",
+   "name": "ig_resolver_receipts"
+  },
+  {
+   "version": "20261005093131",
+   "name": "ig_m34_semantic_eligibility"
+  },
+  {
+   "version": "20261005132805",
+   "name": "m3_0_precedence_fields"
+  },
+  {
+   "version": "20261005145239",
+   "name": "ig_semantic_resolution_schema"
+  },
+  {
+   "version": "20261005151728",
+   "name": "engineering_governed_writer_membership"
+  },
+  {
+   "version": "20261005152053",
+   "name": "engineering_governed_writer_acl"
+  },
+  {
+   "version": "20261005154556",
+   "name": "engineering_test_persistence_graph_v1"
+  },
+  {
+   "version": "20261005161536",
+   "name": "engineering_four_capability_router_v1"
+  },
+  {
+   "version": "20261005164154",
+   "name": "m3_8_run_test_applicable_scope_v1"
+  },
+  {
+   "version": "20261005174449",
+   "name": "lf_engineering_dependency_blocker_reconciliation_v1"
+  },
+  {
+   "version": "20261005174555",
+   "name": "lf_engineering_dependency_blocker_reconciliation_v1_source_parity"
+  },
+  {
+   "version": "20261005203419",
+   "name": "ig_m36_review_required_typed_v1"
+  },
+  {
+   "version": "20261005203801",
+   "name": "ig_m36_screen_state_empty_typed_v1"
+  }
+ ]
+}
