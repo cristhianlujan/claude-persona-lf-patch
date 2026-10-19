@@ -41,7 +41,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          guard=sandbox/lf_contract_gate_test/engineering_checkpoints/m10_4/legacy_freeze_guard.py
+          guard=sandbox/lf_contract_gate_test/engineering_checkpoints/m10_4/legacy_freeze_guard_v2.py
           if [ -f "$guard" ]; then
             python3 "$guard" self-test
             python3 "$guard" check-pr --repo "$REPO" --pr "$PR_NUMBER"
