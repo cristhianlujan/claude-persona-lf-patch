@@ -1,0 +1,34 @@
+{
+  "schema": "PE10_E2_C3_COMMON_P0_POINTER_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "mode": "ARCHITECTURE_AUDIT",
+  "source_scope": "EXACT SAME HISTORICAL P0 AS PE10_M18 AND PE10_M29; DO NOT REPLACE OR RECONSTRUCT A NEW CASE",
+  "p0_event_id": 20161,
+  "source_cutoff_utc": "2026-10-15T00:00:00Z",
+  "source_kind": "HISTORICAL_EVIDENCE_POINTER_NOT_RECONSTRUCTED_NEW_SOURCE",
+  "source_rules": [
+    "Use the original authorized frozen P0 case and event 20161 as the sole historical input.",
+    "Do not import earlier M01-M32, E2 C1/C2 evaluator findings, source-control discussions, hidden reference answers, or other arm output.",
+    "Only authorized SELECT/WITH readbacks may be used; any read of CURRENT pg_proc or operational state must be tagged CURRENT_REPLAY_NOT_P0 and cannot certify the historical snapshot at cutoff.",
+    "Do not infer runtime activity from a static SQL body or permission error 42501; preserve MEDIDO, HYPOTHESIS, UNKNOWN and negative tests.",
+    "Do not modify production, permissions, policy, Runtime/Train or source P0. Research only.",
+    "Discovery may be incomplete: report attempted paths, technical blockers, relevance and unresolved without fabricating PASS or answers."
+  ],
+  "common_roles": [
+    "ARCHITECTURE",
+    "PERFORMANCE",
+    "AUTHORITY",
+    "COVERAGE",
+    "INNOVATION"
+  ],
+  "synthesis_rule": "Five distinct original role outputs are frozen before one synthesizer reads only the five current-arm role outputs; synthesis preserves typed material witnesses or reasoned unresolved findings.",
+  "provenance_qualification": "Single ChatGPT context can produce five role passes but is not five independently context-isolated agents; input-leakage attestation is separately required.",
+  "evaluator_access": "PROHIBITED_BEFORE_BOTH_RAW_FROZEN",
+  "relative_to_original_methods": {
+    "PE10_M18_source_event": 20161,
+    "PE10_M29_source_event": 20161,
+    "case_changed": false,
+    "history_changed": false
+  },
+  "execution_status": "NOT_RUN_INPUT_POINTER_ONLY"
+}
