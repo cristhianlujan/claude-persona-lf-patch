@@ -33,7 +33,7 @@ current_seed_callees AS (
     ON s.caller=lower(f.schema_name||'.'||f.proname)
   CROSS JOIN LATERAL regexp_matches(
     f.body,
-    '(^|[^A-Za-z0-9_])(([A-Za-z_][A-Za-z0-9_]*)\\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\\(',
+    '(^|[^A-Za-z0-9_])(([A-Za-z_][A-Za-z0-9_]*)\.)?(fn_[A-Za-z0-9_]+)[[:space:]]*\(',
     'g'
   ) m(parts)
 ),
