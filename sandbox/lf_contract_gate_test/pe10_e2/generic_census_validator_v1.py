@@ -166,27 +166,56 @@ def canonical_manifest(rows: list[dict[str, Any]]) -> tuple[str, list[dict[str, 
 
 
 def validate_synthesis(rows: list[dict[str, Any]], synthesis: dict[str, Any]) -> dict[str, Any]:
-    """Fail closed on loss of any changed/outside-P0 candidate in synthesis."""
+    """Fail closed on dropped, invented or merely renamed edge evidence.
+
+    An unresolved edge remains unresolved and needs a concrete rationale; this
+    validator does not turn textual candidates into execution or semantic proof.
+    """
     digest, normalized = canonical_manifest(rows)
     if not isinstance(synthesis, dict) or synthesis.get("edge_manifest_sha256") != digest:
         raise ValueError("synthesis does not bind complete original edge manifest")
     if synthesis.get("claims_runtime_execution") is True:
         raise ValueError("runtime claim without independent execution evidence")
-    failed = [r for r in normalized
-              if r["historical_comparison"] in MATERIAL_CHANGED
-              and r["key"] not in set(synthesis.get("preserved_edge_keys", []))
-              and r["key"] not in set(synthesis.get("explicit_unresolved_keys", []))]
+
+    raw_keys = {row["key"] for row in normalized}
+    preserved_list = synthesis.get("preserved_edge_keys", [])
+    unresolved_list = synthesis.get("explicit_unresolved_keys", [])
+    if not isinstance(preserved_list, list) or not isinstance(unresolved_list, list):
+        raise ValueError("edge preservation and unresolved keys must be lists")
+    if (len(preserved_list) != len(set(preserved_list)) or
+            len(unresolved_list) != len(set(unresolved_list))):
+        raise ValueError("duplicate edge in synthesis")
+    preserved = set(preserved_list)
+    unresolved = set(unresolved_list)
+    unknown_preserved = preserved - raw_keys
+    if unknown_preserved:
+        raise ValueError("preserved key not tied to a real edge: " + sorted(unknown_preserved)[0])
+    unknown_unresolved = unresolved - raw_keys
+    if unknown_unresolved:
+        raise ValueError("unresolved unknown not tied to a real edge: " + sorted(unknown_unresolved)[0])
+    if preserved & unresolved:
+        raise ValueError("edge cannot be both preserved and unresolved")
+
+    reasons = synthesis.get("unresolved_reasons", {})
+    if not isinstance(reasons, dict) or set(reasons) != unresolved:
+        raise ValueError("unresolved edges require exact reason coverage")
+    if any(not isinstance(reason, str) or len(reason.strip()) < 12
+           for reason in reasons.values()):
+        raise ValueError("each unresolved edge requires a substantive reason")
+
+    failed = [row["key"] for row in normalized
+              if row["historical_comparison"] in MATERIAL_CHANGED
+              and row["key"] not in preserved and row["key"] not in unresolved]
     if failed:
-        raise ValueError("material incoming/outgoing edges lost in synthesis: " + ",".join(r["key"] for r in failed[:3]))
-    for key in set(synthesis.get("explicit_unresolved_keys", [])):
-        if key not in {r["key"] for r in normalized}:
-            raise ValueError(f"unresolved unknown not tied to a real edge: {key}")
+        raise ValueError("material incoming/outgoing edges lost in synthesis: " + ",".join(failed[:3]))
     counts = Counter(row["historical_comparison"] for row in normalized)
     return {
-        "status": "PASS_STATIC_MANIFEST_CONSERVATION_ONLY",
+        "status": ("UNRESOLVED_STATIC_MANIFEST_CONSERVATION" if unresolved
+                   else "PASS_STATIC_MANIFEST_CONSERVATION_ONLY"),
         "edge_manifest_sha256": digest,
         "edges": len(normalized),
         "partition": dict(counts),
+        "unresolved_edges": len(unresolved),
         "runtime_proven": False,
         "complete_current_universe_proven": False,
     }
