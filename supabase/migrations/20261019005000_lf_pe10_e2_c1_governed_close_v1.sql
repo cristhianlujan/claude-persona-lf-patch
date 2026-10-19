@@ -4,7 +4,7 @@
 DO $pe10_e2_c1$
 DECLARE
  v_exec text;
- v_ref text:='https://github.com/cristhianlujan/claude-persona-lf-patch/blob/fd693728675f9b568aecbe0bd803bda76514f34e/docs/profile_updater/experiments/pe10_e2/evaluator_only/PE10_E2_C1_CAUSAL_DIAGNOSIS_V1.json#git_blob_sha=fccc8d4312c2b55d0cf8adcf965285619d12afb4';
+ v_ref text:='https://github.com/cristhianlujan/claude-persona-lf-patch/blob/9b07f0fa5d316b40a5e3971c1a3c83c2ccf29dd3/docs/profile_updater/experiments/pe10_e2/evaluator_only/PE10_E2_C1_CAUSAL_DIAGNOSIS_V1.json#git_blob_sha=b4f80ed875b67904713fd4cc774d6cc62fe9360f';
  v_spec jsonb;
  v_contract jsonb;
  v_result jsonb;
@@ -59,7 +59,7 @@ BEGIN
  v_spec:=jsonb_set(v_spec,'{evidence_ref}',to_jsonb(v_ref),true);
  v_spec:=jsonb_set(v_spec,'{precision}','"PE10_E2_C1_EVALUATOR_ONLY_FROZEN_CAUSAL_EVIDENCE_V1"'::jsonb,true);
  v_spec:=jsonb_set(v_spec,'{evidence_metadata}',jsonb_build_object(
-  'git_blob_sha','fccc8d4312c2b55d0cf8adcf965285619d12afb4',
+  'git_blob_sha','b4f80ed875b67904713fd4cc774d6cc62fe9360f',
   'original_unchanged',true,'case_ref','PE10-IG-M107-M109-P0',
   'frozen_p0_event_id',20161,
   'findings',5,'read_only_observations',5,'negative_falsifiers',6,
@@ -91,7 +91,7 @@ BEGIN
   'read_only_observations',5,
   'evidence_findings',5,
   'negative_falsifiers',6,
-  'git_blob_sha','fccc8d4312c2b55d0cf8adcf965285619d12afb4',
+  'git_blob_sha','b4f80ed875b67904713fd4cc774d6cc62fe9360f',
   'evaluator_only',true,
   'method_producers_executed',false,
   'production_modified',false
@@ -119,7 +119,7 @@ BEGIN
    'status','EVIDENCE_COMPLETED',
    'closure_route','ACTUALIZACION_DB_LF_MERGE_TRAIN',
    'evidence_ref',v_ref,
-   'blob_sha','fccc8d4312c2b55d0cf8adcf965285619d12afb4',
+   'blob_sha','b4f80ed875b67904713fd4cc774d6cc62fe9360f',
    'assertion_receipt_sha256',v_receipt_sha,
    'source_cutoff_utc','2026-10-15T00:00:00Z',
    'original_methods_untouched',true,
