@@ -11,6 +11,7 @@ refs/heads/main, resolved at execution time.
 from __future__ import annotations
 
 import importlib.util
+import fnmatch
 import json
 import re
 import subprocess
@@ -175,6 +176,8 @@ def evaluate_ci_authority_currentness(
     repo: Path,
     bound_revision: str,
     current_revision: str,
+    event_name: str = "",
+    candidate_head_revision: str | None = None,
 ) -> dict[str, Any]:
     if bound_revision == current_revision:
         binding = build_binding(
@@ -202,8 +205,34 @@ def evaluate_ci_authority_currentness(
         "affected_material_ids": result.get("affected_material_ids") or [],
         "affected_root_material_ids": result.get("affected_root_material_ids") or [],
         "authority_receipt_sha256": result.get("receipt_sha256"),
+        "stale_base": False,
         "evidence_semantics": "HISTORICAL_IMMUTABLE_REFERENCE_NOT_MOVING_AUTHORITY",
     }
+    if event_name == "pull_request" and candidate_head_revision:
+        contains_main = subprocess.run(
+            ["git", "-C", str(repo), "merge-base", "--is-ancestor",
+             current_revision, candidate_head_revision],
+            text=True, capture_output=True,
+        )
+        if contains_main.returncode == 1:
+            out["stale_base"] = True
+            merge_base = subprocess.check_output(
+                ["git", "-C", str(repo), "merge-base",
+                 candidate_head_revision, current_revision], text=True,
+            ).strip()
+            changed = subprocess.check_output(
+                ["git", "-C", str(repo), "diff", "--name-only", "--no-renames",
+                 "-z", merge_base, current_revision], text=True,
+            ).split("\0")
+            out["changed_ci_authority_paths"] = sorted(
+                path for path in changed if path and (
+                    path in CI_AUTHORITY_SELECTORS["paths"]
+                    or any(path.startswith(p) for p in CI_AUTHORITY_SELECTORS["prefixes"])
+                    or any(fnmatch.fnmatch(path, g) for g in CI_AUTHORITY_SELECTORS["globs"])
+                )
+            )[:10]
+        elif contains_main.returncode != 0:
+            contains_main.check_returncode()
     return out
 
 
@@ -211,9 +240,18 @@ def require_ready(receipt: dict[str, Any]) -> None:
     if receipt.get("ready") is not True:
         decision = receipt.get("decision") or "UNKNOWN"
         reason = receipt.get("reason") or ""
-        raise RuntimeError(
-            f"BLOCK_CI_AUTHORITY_CURRENTNESS:{decision}:{reason}"
-        )
+        message = f"BLOCK_CI_AUTHORITY_CURRENTNESS:{decision}:{reason}"
+        if (receipt.get("stale_base") is True
+                and decision == "UNKNOWN_FAIL_CLOSED"
+                and reason == "COMPATIBILITY_ASSESSMENT_MISSING"):
+            paths = ", ".join(receipt.get("changed_ci_authority_paths") or [])
+            message += (
+                ":STALE_BASE\n"
+                "La rama está atrás de main y main cambió reglas de CI: "
+                f"{paths}. Actualiza la rama con main (o etiqueta ready-to-merge: "
+                "el Train sincroniza)."
+            )
+        raise RuntimeError(message)
 
 
 def main() -> int:
