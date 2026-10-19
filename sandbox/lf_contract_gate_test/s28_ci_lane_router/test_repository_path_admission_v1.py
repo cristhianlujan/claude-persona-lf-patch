@@ -35,6 +35,7 @@ def main() -> int:
         ".github/workflows/lf-migration-source-parity-core.yml",
         ".github/workflows/lf-migration-merge-train.yml",
         ".github/workflows/lf-migration-reconcile-lane.yml",
+        ".github/workflows/lf-independent-change-admission.yml",
         ".github/workflows/lf-input-governance-recurate.yml",
     }
     assert expected_exact.issubset(policy.github_exact)
@@ -77,6 +78,8 @@ def main() -> int:
 
     for path in (
         ".github/workflows/lf-x-not-admitted.yml",
+        ".github/workflows/lf-independent-change-admission.yaml",
+        ".github/workflows/lf-independent-change-admission-copy.yml",
         ".github/workflows/unregistered.yml",
         ".github/CODEOWNERS",
         ".github/pull_request_template.md",
