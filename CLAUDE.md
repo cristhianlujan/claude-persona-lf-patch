@@ -97,6 +97,16 @@ This is enforced: the route guard (`DIRECT_MERGE_FOR_NON_MIGRATION = False` in `
 
 Emergency (Train itself broken): only the repository admin may temporarily relax the `protect-main` ruleset to merge the Train fix, restore it immediately after, and record both changes in that PR.
 
+### PASE (shadow mode), stale bases and activation hold
+
+PASE runs in shadow mode: it is **not** a required check yet. Interpret its red results this way:
+
+- `BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_ASSESSMENT_MISSING`, or an `Enforce single ordinary PR entrypoint` assertion listing many existing workflows, on a branch that is behind `main` means **stale base**, not a defect in the PR. Do not edit code to silence it. The Train syncs the branch with `main` when it starts; for the RECONCILE lane (which does not sync) update the branch from `main` before labeling `ready-to-reconcile`.
+- `FAIL_UNAUTHORIZED_GITHUB_PATH:.github/workflows/<file>` means the workflow path is not admitted: first merge a separate code PR that adds the exact path to `path_admission.github_exact` in `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json` (pattern: #2843, #2942).
+- `FAIL_CI_PLAN_APPLICABILITY_UNRESOLVED:CLASSIFICATION_REQUIRED` means a new path without a family or changeset manifest: register it; do not bypass.
+
+**Activation hold (owner decision pending with Cristhian).** Agents MUST NOT make PASE a required check, change the `protect-main` ruleset, or add `PASE` to `sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json`. When the owner activates PASE, both changes happen in the same window so F07-X01 parity holds (ruleset contexts = Train pre-apply checks); the Train then re-runs PASE on its synced head and waits for it, so a stale-base red is resolved automatically at label time. Evidence: `claude/x16-clasificacion-pase-sombra-2026-10-19.md` (project LF).
+
 ## Soft canonical-route guard
 
 Before any repository, database, API, or external-system write, resolve the
