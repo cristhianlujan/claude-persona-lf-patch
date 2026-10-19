@@ -1,0 +1,70 @@
+{
+  "schema": "PE10_E2_C3_PRODUCER_PACKET_V1",
+  "arm": "B29",
+  "original_method": "PE10_M29",
+  "evolved_method": "PE10_M29_E2",
+  "base": "B",
+  "assigned_algorithms": [
+    "C",
+    "E"
+  ],
+  "same_p0": {
+    "case_ref": "PE10-IG-M107-M109-P0",
+    "historical_cutoff_utc": "2026-10-15T00:00:00Z",
+    "source_event_id": 20161,
+    "common_pointer_path": "docs/profile_updater/experiments/pe10_e2/producer_only/C3_COMMON_P0_POINTER_V1.json",
+    "common_pointer_git_blob_sha": "84fa0be5f7c7a4d3dae4e1c3e66c0b6b41615848"
+  },
+  "method_contract": {
+    "path": "docs/profile_updater/experiments/pe10_e2/methods/M18_M29_E2_GENERIC_METHOD_CONTRACTS_V1.json",
+    "blob_sha": "5f0f1ca02adf711e3d4144072e1247c300be19c5"
+  },
+  "tooling": {
+    "generic_reverse_consumer_sql": "docs/profile_updater/experiments/pe10_e2/methods/GENERIC_REVERSE_CONSUMER_CENSUS_V1.sql",
+    "sql_blob_sha": "93e144f6232dee2e82e2c7f4207a885b089b8685",
+    "synthesis_validator": "sandbox/lf_contract_gate_test/pe10_e2/generic_census_validator_v1.py",
+    "validator_blob_sha": "5808c220cf169ae6796725b306245660d0c75e9d",
+    "scope": "optional general read-only tools, never a substitute for analyst discovery or real runtime trace"
+  },
+  "roles_order": [
+    "ARCHITECTURE",
+    "PERFORMANCE",
+    "AUTHORITY",
+    "COVERAGE",
+    "INNOVATION",
+    "SYNTHESIZER"
+  ],
+  "execution_contract": [
+    "Begin five role-bound research investigations against the same common P0; specialize scope and apply only assigned algorithms.",
+    "Each specialist must document exact raw question, SQL literal, returned values or exact SQLSTATE error, source epoch and references, causal alternatives, omissions and falsifiers.",
+    "Freeze each of five role RAW files and read back their exact SHA before running the synthesizer.",
+    "The synthesizer may access only the five RAW reports of THIS arm, not results of other arms or evaluator.",
+    "Preserve concrete typed caller/callee identity evidence; a count-only summary cannot substitute for a material relation witness or a justified unknown.",
+    "Freeze independent-arm RAW and synthesis before any score; external judge separately evaluates.",
+    "Do not infer that passing a deterministic method check proves the four hidden discoveries or material runtime improvement."
+  ],
+  "producer_allowlist": [
+    "Current input packet and linked common P0 source event 20161",
+    "Method-specific B+D or B+C+E modules and the actual registered roles",
+    "The generic reverse-consumer method/helper and existing M0.3 reusable infrastructure (but NOT its historical source counts as case facts)",
+    "Authorized READ-ONLY SQL and canonical same-case historical evidence, with CURRENT readbacks clearly marked"
+  ],
+  "producer_denylist": [
+    "docs/profile_updater/experiments/pe10_e2/evaluator_only/**",
+    "docs/profile_updater/experiments/pe10_methods32_p0/** (original method RAW and syntheses)",
+    "Any transcript/report/summary with target answers, H1-H4 scoring or judge hints",
+    "Other arm CURRENT role outputs or synthesis",
+    "Any post-cutoff fact presented as if historical P0"
+  ],
+  "provenance_required": {
+    "input_source_manifest_sha": "MUST_MEASURE_AT_EXECUTION",
+    "session_context_isolation": "MUST_ATTEST_WITH_REAL_EXECUTION_CONTEXT",
+    "tools_read_log": "MUST_RECORD",
+    "specialist_raw_sha": "MUST_READBACK_FOR_EACH_ROLE",
+    "synthesis_after_role_freeze": "REQUIRED",
+    "producer_input_scoped": "MUST_VERIFY_DENYLIST_ABSENCE"
+  },
+  "evaluator_after_freeze": true,
+  "requested_state": "RESEARCH_ONLY",
+  "status": "READY_INPUT_ONLY_NOT_EXECUTED_NOT_GRADED"
+}
