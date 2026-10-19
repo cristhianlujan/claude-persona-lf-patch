@@ -1,0 +1,102 @@
+{
+  "schema": "PE10_E2_C2_GENERIC_METHOD_CORRECTION_RECEIPT_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "frozen_p0_event_id": 20161,
+  "frozen_cutoff_utc": "2026-10-15T00:00:00Z",
+  "method_change_scope": "B18/B29 GENERIC METHOD CONTRACTS ONLY; ORIGINAL M18/M29 RAW IMMUTABLE",
+  "producer_leakage_protection": "EVALUATOR_ONLY. This validation receipt and known case grading are NEVER part of a C3 producer input.",
+  "status": "METHOD_SOURCE_IMPLEMENTED_AND_19_LOCAL_TESTS_PASS; NO C3 PRODUCER RUN OR H1-H4 EVALUATION",
+  "code_evidence": [
+    {
+      "path": "sandbox/lf_contract_gate_test/pe10_e2/generic_census_validator_v1.py",
+      "blob_sha": "5808c220cf169ae6796725b306245660d0c75e9d",
+      "purpose": "Generic static edge evidence validation and synthesis conservation. Fails closed on invented, missing, conflicting or unreasoned unresolved edges."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/pe10_e2/test_generic_census_validator_v1.py",
+      "blob_sha": "8e9138284117f6cba59a0777fb5a987bb35beb78",
+      "purpose": "17 positive/negative unittest cases"
+    },
+    {
+      "path": "docs/profile_updater/experiments/pe10_e2/methods/GENERIC_REVERSE_CONSUMER_CENSUS_V1.sql",
+      "blob_sha": "93e144f6232dee2e82e2c7f4207a885b089b8685",
+      "purpose": "Parameter-dependent reverse-consumer census with P0 historical callers and current caller-target expansion, no case-specific callee literals."
+    },
+    {
+      "path": "docs/profile_updater/experiments/pe10_e2/methods/M18_M29_E2_GENERIC_METHOD_CONTRACTS_V1.json",
+      "blob_sha": "5f0f1ca02adf711e3d4144072e1247c300be19c5",
+      "purpose": "Independent B18/B29 method deltas, source isolation and synthesis evidence requirements."
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/input_governance_incremental/m03_live_call_graph_v1.sql",
+      "blob_sha": "b9bcf05a58f67bffadbb6b38b0ad2501106a341b",
+      "purpose": "Pre-existing M0.3 reusable extraction precedent, not modified or activated."
+    }
+  ],
+  "test_execution": {
+    "environment": "local Python 3, same exact GitHub blobs verified by Git blob SHA-1",
+    "command": "python -m unittest discover -s /mnt/data/pe10_e2 -p 'test_*.py' -v",
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "verified_exact_source_blobs": {
+      "validator": "5808c220cf169ae6796725b306245660d0c75e9d",
+      "test": "8e9138284117f6cba59a0777fb5a987bb35beb78"
+    },
+    "negative_falsifiers": [
+      "Prefix-only matching is not an exact function call",
+      "Comment, normal SQL string, nested comment and dollar-quote text do not become code-call evidence",
+      "Dropped external changed consumer fails synthesis",
+      "Forged digest, missing/false callee count and mismatched resolution fail",
+      "Unresolved targets/overloads remain unresolved",
+      "Invented preserved edge and reasonless unresolved edge fail",
+      "One edge cannot be both preserved and unresolved",
+      "Static lexical reference cannot attest runtime",
+      "CURRENT data cannot be relabeled historical P0",
+      "Unresolved edge forces explicit non-PASS outcome",
+      "NULL schema qualifier is preserved as unknown; a NULL/missing callee name cannot be accepted as an exact identifier"
+    ]
+  },
+  "sql_replay": {
+    "source_file_blob_sha": "93e144f6232dee2e82e2c7f4207a885b089b8685",
+    "query_input": {
+      "source_event_id": 20161,
+      "other_inputs": "none"
+    },
+    "mode": "POSTGRES_READ_ONLY_WITH_CURRENT_PG_PROC; NOT P0 HISTORICAL RUNTIME",
+    "result": {
+      "total_static_call_candidates": 446,
+      "historical_edge_declared": 68,
+      "current_edge_not_in_p0": 102,
+      "current_consumer_outside_p0": 276,
+      "ambiguous_resolution": 0,
+      "unresolved_resolution": 0
+    },
+    "sum_checked": true,
+    "limits": [
+      "Static candidate census has not proved material or runtime execution for each edge",
+      "SQL regexp scan may include comment/string text; the generic validator retains UNREVIEWED until context is independently checked",
+      "Other languages, dynamic EXECUTE and external applications require separate evidence",
+      "The current PostgreSQL bodies are NOT a 2026-10-15 historical snapshot",
+      "No H1-H4 success grade is justified from these facts alone"
+    ]
+  },
+  "change_rationale": [
+    "Original SQL seed_names was limited to historical caller and callee tokens; discovery could miss newly introduced callee names.",
+    "Revised SQL expands seeds using current bodies of P0 caller identities, then performs reverse search across all authorized non-system function schemas.",
+    "Synthesis guard had a reproducible false-PASS condition allowing fabricated preserved edges plus all meaningful discoveries labeled unexplained unresolved; fixed exact-key conservation, rationale, overlap and unresolved state.",
+    "The 17 tests use generic synthetic names, not hidden PE10 expected function names.",
+    "Additional NULL and absent-object identity cases are independently covered by exact same-blobs tests."
+  ],
+  "original_scope_guards": {
+    "original_32_checkpoints": "UNTOUCHED",
+    "original_method_raw": "UNCHANGED",
+    "runtime_activation": false,
+    "production_changes": false,
+    "same_case": true,
+    "new_case_created": false,
+    "oracle_not_in_method_code": true
+  },
+  "next_safe_step": "Apply governed C2 completion through Train; then C3 requires isolated blind producer input packets on same P0 and immutable RAW outputs before C4 evaluation. Do not attribute current SQL replays to historical P0."
+}

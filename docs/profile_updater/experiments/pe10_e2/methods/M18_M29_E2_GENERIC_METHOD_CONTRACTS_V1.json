@@ -1,0 +1,120 @@
+{
+  "schema": "PE10_E2_METHOD_EVOLUTION_CONTRACTS_V1",
+  "change_type": "GENERAL_METHOD_EVOLUTION_NOT_NEW_BENCHMARK_CASE",
+  "evaluation_case_ref": "PE10-IG-M107-M109-P0",
+  "evaluation_cutoff_utc": "2026-10-15T00:00:00Z",
+  "source_p0_event_id": 20161,
+  "originals_immutable": [
+    "PE10_M18",
+    "PE10_M29"
+  ],
+  "shared_existing_foundation": {
+    "source": "sandbox/lf_contract_gate_test/input_governance_incremental/m03_live_call_graph_v1.sql",
+    "reuse": "schema-qualified PostgreSQL function call extraction, OID/signature resolution, incoming/outgoing consumer relations",
+    "scope_qualification": "M0.3 frozen seed, hash, 109/118/262/33/21 historic counts are not valid generic query acceptance on PE10",
+    "additive_read_only_adaptation": "docs/profile_updater/experiments/pe10_e2/methods/GENERIC_REVERSE_CONSUMER_CENSUS_V1.sql",
+    "inputs": "Only frozen P0 event ID and authorized current readbacks; P0 labels and CURRENT labels remain distinct",
+    "producer_oracle_names_or_target_answers": "FORBIDDEN"
+  },
+  "shared_obligations": [
+    {
+      "id": "DISCOVERY-01",
+      "rule": "Start from actual P0 caller identities and ALL declared callee names; do not treat inventory as closed-world current consumer universe"
+    },
+    {
+      "id": "DISCOVERY-02",
+      "rule": "Scan all authorized pg_proc user schemas for direct incoming references to discovered candidates, including functions beyond initial lexical namespace; classify remote/Edge/dynamic consumers as UNKNOWN unless actual source inspected"
+    },
+    {
+      "id": "DISCOVERY-03",
+      "rule": "Identify callers by exact schema+name+identity args (or OID), preserve called schema when explicit; unresolved overloads and unqualified ambiguities cannot become verified edges"
+    },
+    {
+      "id": "DISCOVERY-04",
+      "rule": "Use lexical call tokens as STATIC_CALL_CANDIDATE only; inspect concrete body contexts and negatives for comments, string/dynamic SQL and prefix/suffix collisions before promoting an individual static edge"
+    },
+    {
+      "id": "DISCOVERY-05",
+      "rule": "Partition every edge into HISTORICAL_EDGE_DECLARED, CURRENT_EDGE_NOT_IN_P0 or CURRENT_CONSUMER_OUTSIDE_P0; historical comparison does not establish runtime execution"
+    },
+    {
+      "id": "DISCOVERY-06",
+      "rule": "When concrete material edges appear in individual role RAW, synthesizer must preserve each edge with source identity/query ID or give an explicit evidence-based exclusion reason; summary counts cannot replace identities"
+    },
+    {
+      "id": "DISCOVERY-07",
+      "rule": "Positive and negative tests must include full-universe/selector differences, prefix false continuity, overloaded/multi-schema ambiguity, missing callee objects, comment-only and dynamic SQL unknown, plus assertion that CURRENT is not P0"
+    },
+    {
+      "id": "DISCOVERY-08",
+      "rule": "No READY/DONE/REPAIR claim from a mere lexical reference. Record attempted sources, unresolved reachable paths, false positives, query/material costs and stop only on evidence closure or real authority barrier"
+    },
+    {
+      "id": "DISCOVERY-09",
+      "rule": "Source and evaluator separation: initial producer input must exclude this C1 evaluator-only audit, original other-arm RAW, hidden rubric and all previous expected-answer summaries"
+    }
+  ],
+  "specialist_responsibility": {
+    "ARCHITECTURE": "Reconstruct exact caller/callee typed graph in both directions; include schema/oid/overloads/lifecycle and compare historical vs current",
+    "COVERAGE": "Prove selector complement and full material consumer set or mark unknown; test missing/external and namespace candidates",
+    "INNOVATION": "Generate and falsify alternative causal accounts, especially false continuity and nominal-only dependency claims",
+    "PERFORMANCE": "Quantify graph-query costs only when measured and do not infer performance from static source",
+    "AUTHORITY": "Separate P0 authority from current readbacks; check permissions and source provenance",
+    "SYNTHESIZER": "Preserve material edge witness ledger, contradictions and unknowns from all frozen specialist results"
+  },
+  "variants": [
+    {
+      "variant_code": "PE10_M18_E2",
+      "original_method": "PE10_M18",
+      "base": "B",
+      "algorithms": [
+        "D"
+      ],
+      "generic_delta": [
+        "Adversarial GDE hypothesis ranking must incorporate discovered incoming references and omitted/unresolved edges as conflict hypotheses",
+        "Freeze five role-bound reports BEFORE synthesis",
+        "No silent loss of material identified edges in synthesis"
+      ]
+    },
+    {
+      "variant_code": "PE10_M29_E2",
+      "original_method": "PE10_M29",
+      "base": "B",
+      "algorithms": [
+        "C",
+        "E"
+      ],
+      "generic_delta": [
+        "Validate partitions over complete typed incoming/outgoing graph, not only manually preselected rows",
+        "A reconciled TLP total is necessary but never sufficient for completeness of consumer discovery",
+        "Typed evidence-governed decision must cite individual consumer witnesses or unknown scope, not counts alone"
+      ]
+    }
+  ],
+  "role_input_control": {
+    "producer_source_allowlist": [
+      "original P0 frozen context as supplied to PE10_M18/PE10_M29",
+      "assigned PE10 M18 E2 or M29 E2 contract",
+      "generic M0.3-derived read-only helper and validator",
+      "current authorized schema/source readbacks only when qualified as CURRENT"
+    ],
+    "producer_source_denylist": [
+      "docs/profile_updater/experiments/pe10_e2/evaluator_only/**",
+      "docs/profile_updater/experiments/pe10_methods32_p0/**",
+      "prior conversation/reports of expected discoveries",
+      "other experimental arm outputs",
+      "external evaluator rubric/results"
+    ],
+    "source_cutoff_is_immutable": true,
+    "single_context_not_independent": true,
+    "proof_requirements": [
+      "real producer input transcript fingerprint",
+      "input denylist access check",
+      "immutable original RAW and judge input timestamps",
+      "independent evaluator after two evolved RAW freezes"
+    ]
+  },
+  "evaluation_policy": "C3 uses the EXACT same frozen P0; deterministic method-unit tests are NOT benchmark cases and cannot count as autonomous discovery of hidden findings.",
+  "activation": "NONE",
+  "validation_state": "C2_METHOD_CONTRACT_SOURCE_ONLY_NO_PRODUCER_RUN"
+}
