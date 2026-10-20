@@ -341,7 +341,9 @@ def self_test(doc:dict,result:dict)->int:
     must_reject("description_authoritative",lambda d:d["candidates"][A].__setitem__("description_authoritative",True))
     # Neutrality positive control: a valid structured sensitivity variant can elect C.
     d=copy.deepcopy(doc)
-    d["candidates"][A]["design_contract"]["router_control_responsibilities"].extend(["COMPOSITION","GOAL_NORMALIZATION"])
+    d["candidates"][A]["design_contract"]["core_router_semantic_rule_families"]=[
+        "MINIMAL_CLASSIFICATION","BOUNDED_SEMANTIC_NORMALIZATION"
+    ]
     d["candidates"][A]["structural_metrics"]=derive_metrics(d["candidates"][A]["design_contract"])
     r=compute_result(d)
     errs,_=validate_package(d,r)
