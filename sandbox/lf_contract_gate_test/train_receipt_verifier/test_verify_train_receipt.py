@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import unittest
 
-from verify_train_receipt import verify_snapshot
+from verify_train_receipt import ReceiptError, _reports_exit_code, _selector_filter, verify_snapshot
 
 SHA = "a" * 40
 MERGE = "f" * 40
@@ -204,6 +204,35 @@ class TrainReceiptVerifierTest(unittest.TestCase):
         self.assertEqual(result["result"], "FAIL")
         self.assertIn("diff_check.class:COMPLETED_NOT_CLEAN", result["reasons"])
 
+
+    def test_merge_sha_selector_binds_exact_receipt(self):
+        sql_filter, arg, kind = _selector_filter(
+            pr=None, execution_id=None, merge_sha=MERGE,
+        )
+        self.assertEqual(
+            sql_filter,
+            "ev.payload->'receipt'->'merge'->>'merge_sha' = %s",
+        )
+        self.assertEqual(arg, MERGE)
+        self.assertEqual(kind, "merge_sha")
+
+    def test_merge_sha_selector_rejects_invalid_sha(self):
+        with self.assertRaisesRegex(ReceiptError, "INVALID_MERGE_SHA"):
+            _selector_filter(pr=None, execution_id=None, merge_sha="not-a-sha")
+
+    def test_merge_sha_missing_or_duplicate_fails_closed(self):
+        with self.assertRaisesRegex(ReceiptError, "TRAIN_RECEIPT_MERGE_SHA_NOT_UNIQUE:0"):
+            _reports_exit_code([], "merge_sha")
+        with self.assertRaisesRegex(ReceiptError, "TRAIN_RECEIPT_MERGE_SHA_NOT_UNIQUE:2"):
+            _reports_exit_code(
+                [{"result": "PASS"}, {"result": "PASS"}],
+                "merge_sha",
+            )
+
+    def test_merge_sha_requires_pass_not_blocked(self):
+        self.assertEqual(_reports_exit_code([{"result": "PASS"}], "merge_sha"), 0)
+        self.assertEqual(_reports_exit_code([{"result": "BLOCKED"}], "merge_sha"), 1)
+        self.assertEqual(_reports_exit_code([{"result": "FAIL"}], "merge_sha"), 1)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

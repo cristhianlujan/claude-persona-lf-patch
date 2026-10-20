@@ -24,6 +24,10 @@ SHA1 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 EXECUTION_ID = re.compile(r"^EXEC-DB-TRAIN-PR([0-9]+)-([0-9]{14})-R([0-9]+)$")
 REQUIRED_STEPS = ("preflight", "patch", "verify")
+CI_READONLY_PASSWORD_ENV = "LF_SUPABASE_DB_READONLY_PASSWORD"
+CI_READONLY_ROLE = "lf_ci_readonly"
+PROJECT_ID = "mhwmirqcgxxukpctffuv"
+POOLER_HOST = "aws-1-us-east-1.pooler.supabase.com"
 
 
 class ReceiptError(ValueError):
@@ -334,16 +338,47 @@ def github_get(repository: str, pr: int, token: str) -> dict[str, Any]:
     return {k: data.get(k) for k in ("number", "state", "merged", "merge_commit_sha", "base", "head")}
 
 
-def fetch_live(dsn: str, *, pr: int | None, execution_id: str | None, token: str) -> list[dict[str, Any]]:
+def _selector_filter(*, pr: int | None, execution_id: str | None,
+                     merge_sha: str | None) -> tuple[str, object, str]:
+    selectors = [pr is not None, execution_id is not None, merge_sha is not None]
+    if sum(selectors) != 1:
+        raise ReceiptError("PROVIDE_EXACTLY_ONE_SELECTOR")
+    if execution_id is not None:
+        return "e.execution_id = %s", execution_id, "execution_id"
+    if pr is not None:
+        return "e.manifest->>'pr' = %s", str(pr), "pr"
+    if not SHA1.fullmatch(str(merge_sha or "")):
+        raise ReceiptError("INVALID_MERGE_SHA")
+    return "ev.payload->'receipt'->'merge'->>'merge_sha' = %s", merge_sha, "merge_sha"
+
+
+def _connect_read_only(psycopg: Any, dsn: str, readonly_password: str):
+    if dsn:
+        return psycopg.connect(dsn, autocommit=False)
+    password = readonly_password.strip()
+    if not password:
+        raise ReceiptError("READ_ONLY_DATABASE_CREDENTIAL_MISSING")
+    return psycopg.connect(
+        host=POOLER_HOST,
+        port=5432,
+        user=f"{CI_READONLY_ROLE}.{PROJECT_ID}",
+        password=password,
+        dbname="postgres",
+        sslmode="require",
+        autocommit=False,
+    )
+
+
+def fetch_live(dsn: str, *, pr: int | None, execution_id: str | None,
+               merge_sha: str | None, readonly_password: str, token: str) -> list[dict[str, Any]]:
     try:
         import psycopg
     except ImportError as exc:
         raise ReceiptError("PSYCOPG_REQUIRED_FOR_LIVE_READ_ONLY_MODE") from exc
-    if bool(pr) == bool(execution_id):
-        raise ReceiptError("PROVIDE_EXACTLY_ONE_OF_PR_OR_EXECUTION_ID")
 
-    filters = "e.execution_id = %s" if execution_id else "e.manifest->>'pr' = %s"
-    arg = execution_id if execution_id else str(pr)
+    filters, arg, _selector_kind = _selector_filter(
+        pr=pr, execution_id=execution_id, merge_sha=merge_sha,
+    )
     query = f"""
       select ev.id, ev.evento_tipo, ev.entidad_codigo, ev.payload,
              encode(extensions.digest(convert_to((ev.payload->'receipt')::text,'UTF8'),'sha256'),'hex')
@@ -356,7 +391,7 @@ def fetch_live(dsn: str, *, pr: int | None, execution_id: str | None, token: str
        order by ev.created_at desc, ev.id desc
     """
     snapshots: list[dict[str, Any]] = []
-    with psycopg.connect(dsn, autocommit=False) as conn:
+    with _connect_read_only(psycopg, dsn, readonly_password) as conn:
         try:
             conn.execute("SET TRANSACTION READ ONLY")
             with conn.cursor() as cur:
@@ -401,34 +436,57 @@ def fetch_live(dsn: str, *, pr: int | None, execution_id: str | None, token: str
     return snapshots
 
 
+def _reports_exit_code(reports: list[dict[str, Any]], selector_kind: str) -> int:
+    if selector_kind == "merge_sha":
+        if len(reports) != 1:
+            raise ReceiptError(f"TRAIN_RECEIPT_MERGE_SHA_NOT_UNIQUE:{len(reports)}")
+        return 0 if reports[0]["result"] == "PASS" else 1
+    if selector_kind == "pr":
+        latest = reports[0]
+        return 0 if latest["result"] in ("PASS", "BLOCKED") else 1
+    return 0 if reports[0]["result"] in ("PASS", "BLOCKED") else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     selector = parser.add_mutually_exclusive_group(required=True)
     selector.add_argument("--pr", type=int)
     selector.add_argument("--execution-id")
+    selector.add_argument("--merge-sha")
     parser.add_argument("--live-read-only", action="store_true")
     parser.add_argument("--dsn-env", default="LF_SUPABASE_READONLY_DSN")
+    parser.add_argument("--readonly-password-env", default=CI_READONLY_PASSWORD_ENV)
     parser.add_argument("--github-token-env", default="GITHUB_TOKEN")
     args = parser.parse_args()
     if not args.live_read_only:
         parser.error("live use requires --live-read-only; tests run on fixtures")
     dsn = os.environ.get(args.dsn_env, "").strip()
-    if not dsn:
-        parser.error(f"missing read-only DSN environment variable: {args.dsn_env}")
+    readonly_password = os.environ.get(args.readonly_password_env, "").strip()
+    if not dsn and not readonly_password:
+        parser.error(
+            f"missing read-only database credential: {args.dsn_env} or "
+            f"{args.readonly_password_env}"
+        )
     token = os.environ.get(args.github_token_env, "").strip() or os.environ.get("GH_TOKEN", "").strip()
     if not token:
         parser.error(f"missing GitHub read token: {args.github_token_env} or GH_TOKEN")
     try:
-        snapshots = fetch_live(dsn, pr=args.pr, execution_id=args.execution_id, token=token)
+        _filter, _arg, selector_kind = _selector_filter(
+            pr=args.pr, execution_id=args.execution_id, merge_sha=args.merge_sha,
+        )
+        snapshots = fetch_live(
+            dsn,
+            pr=args.pr,
+            execution_id=args.execution_id,
+            merge_sha=args.merge_sha,
+            readonly_password=readonly_password,
+            token=token,
+        )
         reports = [verify_snapshot(item) for item in snapshots]
         print(json.dumps({"reports": reports}, indent=2, sort_keys=True))
         if any(r["result"] == "FAIL" for r in reports):
             return 1
-        # A PR may have earlier BLOCKED attempts followed by a successful retry.
-        if args.pr:
-            latest = reports[0]
-            return 0 if latest["result"] in ("PASS", "BLOCKED") else 1
-        return 0 if reports[0]["result"] in ("PASS", "BLOCKED") else 1
+        return _reports_exit_code(reports, selector_kind)
     except ReceiptError as exc:
         print(f"FAIL_TRAIN_RECEIPT_VERIFIER: {exc}", file=sys.stderr)
         return 1
