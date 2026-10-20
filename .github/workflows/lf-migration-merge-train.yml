@@ -545,13 +545,14 @@ jobs:
       - name: Require read-only parity credential and trusted runner before apply
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
         env:
-          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
         shell: bash
         run: |
           set -euo pipefail
-          # Post-apply parity runs only trusted main code with the CI read-only role.
-          # Fail before any database write if either prerequisite is missing.
-          [ -n "${LF_SUPABASE_DB_READONLY_PASSWORD:-}" ] || { echo "FAIL_TRAIN_PARITY_RO_CREDENTIAL_MISSING"; exit 2; }
+          # Post-apply parity runs only trusted main code with the existing read-only
+          # credential (lf_reconcile_readonly). Fail before any database write if
+          # either prerequisite is missing.
+          [ -n "${LF_SUPABASE_RO_DATABASE_URL:-}" ] || { echo "FAIL_TRAIN_PARITY_RO_CREDENTIAL_MISSING"; exit 2; }
           runner=sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_trusted_v1.py
           [ -f "$runner" ] || { echo "FAIL_TRAIN_PARITY_TRUSTED_RUNNER_MISSING"; exit 2; }
           python3 -I sandbox/lf_contract_gate_test/migration_source_parity/test_run_migration_source_parity_trusted_v1.py
@@ -732,8 +733,9 @@ jobs:
         id: parity
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
         env:
-          # Read-only credential only; the trusted runner never reads LF_SUPABASE_DB_PASSWORD.
-          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
+          # Read-only credential only (lf_reconcile_readonly); the trusted runner never
+          # reads LF_SUPABASE_DB_PASSWORD.
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ steps.admission.outputs.current_main }}
@@ -986,5 +988,3 @@ jobs:
             gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
           fi
           exit 0
-          
-          

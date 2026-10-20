@@ -1,0 +1,62 @@
+{
+  "schema_version":"RW1_02_C3_ADVERSARIAL_REVISE_V1",
+  "plan_code":"LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code":"RW1-02",
+  "checkpoint_code":"RW1-02_C3",
+  "checkpoint_id":1612,
+  "source_snapshot_commit":"5d7f30580d4c6bb557e51943693c4b95e192900e",
+  "source_freeze_verified":true,
+  "producer_result_hidden_until_raw1":true,
+  "independent_recomputation_completed":true,
+  "public_case_count":36,
+  "requirements_n01_n12_covered":true,
+  "candidate_count":4,
+  "eligible_candidate_count":3,
+  "mechanical_selection":"A_MIN_ROUTER_SEMANTIC_SPECIALIST",
+  "final_selection_present":false,
+  "blind_verdict":"REVISE",
+  "adversarial_mutations_total":34,
+  "a_mutations":8,
+  "c_mutations":8,
+  "selection_policy_mutations":6,
+  "invalid_false_accept_count":16,
+  "invalid_false_accept_examples":[
+    "A01","A02","A07",
+    "C01","C02","C03","C08",
+    "S01","B01","D01",
+    "N01","N02","N03","CONT01","NOVEL01","NOVEL02"
+  ],
+  "valid_false_reject_count":9,
+  "valid_false_reject_examples":[
+    "A08","C04","C05","C06","C07","S05","S06","B02","D02"
+  ],
+  "material_blockers":[
+    {
+      "code":"VALIDATOR_ACCEPTS_SEMANTICALLY_INVALID_PACKAGES",
+      "evidence":"16 INVALID_MUST_REJECT mutations were accepted."
+    },
+    {
+      "code":"VALIDATOR_HARDCODES_BASELINE_WINNER_OR_HARDPASS_SET",
+      "evidence":"9 structurally valid sensitivity variants were rejected when they changed the hard-pass set or winner away from the frozen expected A/[A,C]."
+    },
+    {
+      "code":"CANDIDATE_CAPABILITIES_AND_TIEBREAK_METRICS_LACK_PER_CANDIDATE_PROVENANCE",
+      "evidence":"Candidate objects contain eligible/description/capabilities/structural_metrics only; no capability evidence or metric derivation is bound per candidate."
+    }
+  ],
+  "raw1_sha256":"989e1293904290c8ef261b358ee016d752a5d83a4b0413a4c5d22eb26347bc2c",
+  "raw2_sha256":"a791a7d2f25d3f960308f630acdf3a9f9c7b25d11f3182827ab181fdc66c820b",
+  "raw1_unchanged_after_reveal":true,
+  "producer_result_matches_mechanical_recomputation":true,
+  "artifact":{
+    "github_run_id":"39489648184",
+    "github_job_id":"118859100291",
+    "artifact_id":"12294643462",
+    "artifact_zip_sha256":"a05c0397fc9ad0a6e35fb462d3415d152e8d5f900ced8cacd7a0b75c463a3c06"
+  },
+  "independent_judge_attested":false,
+  "latency_cost_not_invented":true,
+  "no_router_runtime_claim":true,
+  "no_production_mutation":true,
+  "next_safe_step":"Repair the competition contract causally: remove hardcoded winner/hard-pass assertions, make security-relevant candidate topology structured and exact, derive/validate selection metrics from topology evidence, then rerun C3 against the repaired frozen package."
+}
