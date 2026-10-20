@@ -66,62 +66,72 @@ def main() -> int:
         migration = root / f"{version}_{name}.sql"
         migration.write_text("select 1;", encoding="utf-8")
         base = "00000000000000"
-        # DRY_RUN_FAILED with an absent ledger proceeds to the exact fallback.
+        # Exact psql application is authoritative; a nonzero dry-run is diagnostic only.
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
-             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
-             patch.object(module, "read_ledger_max", side_effect=[base, base]), \
-             patch.object(module, "_primary_cli", return_value=(False, "DRY_RUN_FAILED:exit_code=1:Remote migration mismatch", 1, "Remote migration mismatch")), \
-             patch.object(module, "_fallback_apply") as fallback:
+             patch.object(module, "read_ledger", side_effect=[(None, None, None), (version, name, "writer")]), \
+             patch.object(module, "read_ledger_max", return_value=base), \
+             patch.object(module, "_primary_cli", return_value=(1, "Remote migration mismatch")), \
+             patch.object(module, "_fallback_apply") as exact_apply:
             result = module.apply_exact(project_root=root, migration_path=migration,
                                         db_url="postgres://example", source_blob="a" * 40,
                                         allow_fallback=True)
-            assert result.fallback_used and result.code == "FALLBACK_APPLIED_EXACT"
+            assert not result.fallback_used and result.code == "EXACT_APPLIED"
+            assert result.apply_path == "PSQL_EXACT" and result.executor == "PSQL_EXACT"
             assert result.dry_run_exit_code == 1 and result.dry_run_tail == "Remote migration mismatch"
-            fallback.assert_called_once()
+            exact_apply.assert_called_once()
         checks += 1
 
-        # A version already in the ledger is never replayed.
+        # An already-applied version is read back and never replayed.
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
              patch.object(module, "read_ledger", return_value=(version, name, "writer")), \
-             patch.object(module, "_primary_cli") as primary, \
-             patch.object(module, "_fallback_apply") as fallback:
+             patch.object(module, "_primary_cli") as diagnostic, \
+             patch.object(module, "_fallback_apply") as exact_apply:
             result = module.apply_exact(project_root=root, migration_path=migration,
                                         db_url="postgres://example", source_blob="a" * 40,
                                         allow_fallback=True)
             assert result.code == "ALREADY_APPLIED_EXACT"
-            primary.assert_not_called()
-            fallback.assert_not_called()
+            diagnostic.assert_not_called()
+            exact_apply.assert_not_called()
         checks += 1
 
-        # A Postgres ERROR during primary SQL execution blocks fallback.
+        # A Postgres ERROR fails the one exact apply; there is no second attempt.
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
-             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None)]), \
+             patch.object(module, "read_ledger", side_effect=[(None, None, None)]), \
              patch.object(module, "read_ledger_max", return_value=base), \
-             patch.object(module, "_primary_cli", return_value=(False, "ERROR:  42501: denied", 0, "dry-run ok")), \
-             patch.object(module, "_fallback_apply") as fallback:
+             patch.object(module, "_primary_cli", return_value=(0, "dry-run ok")), \
+             patch.object(module, "_fallback_apply", side_effect=RuntimeError("ERROR:  42501: denied")) as exact_apply:
             try:
                 module.apply_exact(project_root=root, migration_path=migration,
                                    db_url="postgres://example", source_blob="a" * 40,
                                    allow_fallback=True)
             except RuntimeError as exc:
-                assert "PRIMARY_FAILED_NO_FALLBACK" in str(exc)
+                assert "EXACT_APPLY_PSQL_FAILED:sqlstate=42501" in str(exc)
             else:
-                raise AssertionError("Postgres ERROR unexpectedly fell back")
-            fallback.assert_not_called()
+                raise AssertionError("Postgres ERROR unexpectedly succeeded")
+            exact_apply.assert_called_once()
         checks += 1
 
-        # An explicitly listed connection failure still permits fallback.
+        # A connection error also fails without a retry; the dry-run remains diagnostic only.
         with patch.object(module.TRANSPORT, "select_transport", return_value=decision), \
-             patch.object(module, "read_ledger", side_effect=[(None, None, None), (None, None, None), (version, name, "writer")]), \
-             patch.object(module, "read_ledger_max", side_effect=[base, base]), \
-             patch.object(module, "_primary_cli", return_value=(False, "could not connect to server", 0, "dry-run ok")), \
-             patch.object(module, "_fallback_apply") as fallback:
-            result = module.apply_exact(project_root=root, migration_path=migration,
-                                        db_url="postgres://example", source_blob="a" * 40,
-                                        allow_fallback=True)
-            assert result.fallback_used
-            assert result.dry_run_exit_code == 0 and result.dry_run_tail == "dry-run ok"
-            fallback.assert_called_once()
+             patch.object(module, "read_ledger", side_effect=[(None, None, None)]), \
+             patch.object(module, "read_ledger_max", return_value=base), \
+             patch.object(module, "_primary_cli", return_value=(1, "connection refused")), \
+             patch.object(module, "_fallback_apply", side_effect=RuntimeError("could not connect to server")) as exact_apply:
+            try:
+                module.apply_exact(project_root=root, migration_path=migration,
+                                   db_url="postgres://example", source_blob="a" * 40,
+                                   allow_fallback=True)
+            except RuntimeError as exc:
+                assert "EXACT_APPLY_PSQL_FAILED:sqlstate=NOT_OBSERVED" in str(exc)
+            else:
+                raise AssertionError("connection error unexpectedly succeeded")
+            exact_apply.assert_called_once()
+        checks += 1
+
+        old_receipt = {"code": "FALLBACK_APPLIED_EXACT", "fallback_used": True,
+                       "executor": "SOURCE_FIRST_EXACT_VERSION_MANUAL_LEDGER_DML"}
+        assert module.normalize_apply_receipt(old_receipt)["apply_path"] == "PSQL_EXACT"
+        assert module.normalize_apply_receipt({"code": "EXACT_APPLIED", "apply_path": "PSQL_EXACT"})["apply_path"] == "PSQL_EXACT"
         checks += 1
     with patch.object(module, "_run", return_value=SimpleNamespace(returncode=0, stdout="ok", stderr="")) as run:
         assert module._psql("postgres://example", "select 1", cwd=Path(".").resolve()) == "ok"
@@ -179,7 +189,7 @@ def main() -> int:
     checks += 1
 
     checks += 1
-    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/14")
+    print(f"PASS_MIGRATION_EXACT_APPLY_UNIT_TESTS={checks}/15")
     return 0
 
 
