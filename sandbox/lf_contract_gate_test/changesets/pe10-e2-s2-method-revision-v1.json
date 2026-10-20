@@ -1,0 +1,11 @@
+{
+  "solution_ref": "pe10-e2-s2-method-revision-v1",
+  "paths": {
+    "docs/profile_updater/experiments/pe10_e2/methods/E2_DECISION_RULE_S2_V1.json": "PE10_METHOD_EVOLUTION",
+    "docs/profile_updater/experiments/pe10_e2/evaluator_only/PE10_E2_S2_VALIDATION_V1.json": "PE10_EVALUATOR_EVIDENCE",
+    "sandbox/lf_contract_gate_test/pe10_e2/decision_rule_s2_validator_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/pe10_e2/test_decision_rule_s2_validator_v1.py": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261020123000_lf_pe10_e2_s2_method_revision_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/pe10-e2-s2-method-revision-v1.json": "CHANGESET_MANIFEST"
+  }
+}
