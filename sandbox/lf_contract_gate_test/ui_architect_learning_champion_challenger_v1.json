@@ -1,0 +1,13 @@
+{
+  "schema":"LF_UI_ARCHITECT_CHAMPION_CHALLENGER_V1",
+  "consumer_id":"PERFIL-UI-ARCHITECT",
+  "champion":{"id":"CHAMPION-UI-ARCHITECT-LF-NO-COMPETITIVE-CONTEXT-v1","competitive_context":"NONE","selector":"NONE"},
+  "challenger":{"id":"CHALLENGER-UI-ARCHITECT-LF-SELECTED-COMPETITIVE-CONTEXT-v1","competitive_context":"EXACT_BOUND_READ_ONLY","selector":"DETERMINISTIC_EXACT_BINDING"},
+  "one_variable":"selected_competitive_context",
+  "fixed_conditions":{"consumer":"PERFIL-UI-ARCHITECT","router":"ACT-0001","input_governance_consumer":"CONTEXT_PACK","product_direction_prerequisite":"PRODUCT_DIRECTION_AUTHORIZED_CURRENT","runtime_model":"SAME_AS_CHAMPION_REQUIRED","input":"SAME_CASE_REQUIRED","judges":"SAME_JUDGES_REQUIRED","output_contract":"SAME_PROFILE_CONTRACT_REQUIRED"},
+  "dataset":{"routing_cases":50,"families":10,"cases_per_family":5},
+  "gates":{"authority_pct_required":100,"canonical_structural_bounded_pct_required":100,"critical_must_not_invoke_fp_max":0,"critical_family_regression_allowed":false,"context_growth_unjustified_allowed":false},
+  "outcome_until_behavioral_evidence":"INSUFFICIENT_EVIDENCE",
+  "rollback":"REMOVE_SELECTED_COMPETITIVE_CONTEXT_AND_USE_CHAMPION",
+  "production_authorized":false
+}

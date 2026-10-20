@@ -1,0 +1,20 @@
+{
+  "schema":"LF_LEARNING_CARD_SOURCE_BOUNDARY_READBACK_V1",
+  "mode":"READ_ONLY",
+  "observed_live_at_utc":"2026-09-01T22:27:00Z",
+  "canonical_card_registry":"public.lf_cards",
+  "canonical_registry_keyword_matches":0,
+  "candidate_source_pr":{"pr":362,"state":"OPEN","merged":false,"head_sha":"4ac4d1704e11a0dea0a22168c9ac892425efd9ef","title":"feat(cards): governed learning fan-out sandbox candidates"},
+  "candidate_card_files":[
+    "cards/learning_competitive/autogestion_digital/CARD.md",
+    "cards/learning_competitive/negociacion_deuda/CARD.md",
+    "cards/learning_competitive/pagos_y_no_adeudo/CARD.md",
+    "cards/learning_competitive/reinsercion_financiera/CARD.md"
+  ],
+  "durable_lifecycle_events":{"event_ids":[9716,9717,9718,9719,9720],"disposition":"EXISTING_CARD_ANCHOR","card_write_executed":false},
+  "interpretation":"SOURCE_CANDIDATE_OR_ANCHOR_EVIDENCE_IS_NOT_CANONICAL_CARD_REGISTRY_MATERIALIZATION",
+  "binding_rule":"NO_CARD_AUTHORITY_FROM_OPEN_UNMERGED_PR_OR_CARD_CREADA_LABEL_WHEN_CANONICAL_REGISTRY_READBACK_IS_ABSENT",
+  "automatic_card_creation":false,
+  "automatic_binding":false,
+  "production_authorized":false
+}

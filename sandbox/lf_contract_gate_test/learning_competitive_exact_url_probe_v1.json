@@ -1,0 +1,70 @@
+{
+  "schema": "LF_LEARNING_COMPETITIVE_EXACT_URL_PROBE_V1",
+  "mode": "READ_ONLY",
+  "observed_at_utc": "2026-09-01T23:12:45.651663Z",
+  "operation_code": "BUILD_COMPETITIVE_INTELLIGENCE_MARKETPLACE_LF",
+  "operation_status": "CANDIDATO_READ_ONLY",
+  "step_contract_count_observed": 0,
+  "probe_policy": {
+    "selection": "EXACT_SOURCE_ID_AND_EXACT_REGISTERED_URL_ONLY",
+    "free_semantic_search": false,
+    "automatic_ingest": false,
+    "observation_write": false,
+    "insight_write": false,
+    "kb_write": false,
+    "authority_created": false,
+    "production_authorized": false,
+    "fallback": "NO_PERSISTED_COMPETITIVE_OBSERVATION"
+  },
+  "attempted": 5,
+  "accessible": 5,
+  "sources": [
+    {
+      "source_id": "eace75de-0a7f-4422-bd9e-7c2aeec7c211",
+      "competitor_id": "40874b20-b181-4dde-b5d6-f1c172e24bbe",
+      "url": "https://grupoinfocorp.com",
+      "platform": "web",
+      "source_type": "corporate_site",
+      "probe_result": "ACCESSIBLE_TEXT",
+      "observed_surface": "GRUPO INFOCORP – Solución de Deudas Atrasadas y vuelve a verde cómo salir de Infocorp"
+    },
+    {
+      "source_id": "45fd8283-603c-40d2-927a-bbc6f46e9c8f",
+      "competitor_id": "d21e055c-4892-46bc-a6c7-f105ba924393",
+      "url": "https://reevalua.com",
+      "platform": "web",
+      "source_type": "competitor_site",
+      "probe_result": "ACCESSIBLE_TEXT",
+      "observed_surface": "Reevalúa | Score, reporte y salud financiera"
+    },
+    {
+      "source_id": "e0c9efd6-3c0f-4efb-bfa1-d211ca61495a",
+      "competitor_id": "ff807a8e-87c2-4229-91b3-6721101ad0c4",
+      "url": "https://rtc.pe",
+      "platform": "web",
+      "source_type": "fintech_site",
+      "probe_result": "ACCESSIBLE_TEXT",
+      "observed_surface": "Préstamos con Garantía Hipotecaria | RTC.pe"
+    },
+    {
+      "source_id": "b736bf59-567a-4609-bc98-2d51c52b9a79",
+      "competitor_id": "a800efe7-65ca-4ab2-816c-fb2ac21ef5bf",
+      "url": "https://kambista.com",
+      "platform": "web",
+      "source_type": "educational_blog",
+      "probe_result": "ACCESSIBLE_TEXT",
+      "observed_surface": "Casa de cambio online - Kambista - Cambia Dólares y Soles Online"
+    },
+    {
+      "source_id": "7b7c0098-5ecc-4459-a9d3-ad78ac21c712",
+      "competitor_id": "2cd92202-73fa-4c4d-bdb3-d3ce64429235",
+      "url": "https://prestamype.com",
+      "platform": "web",
+      "source_type": "fintech_site",
+      "probe_result": "ACCESSIBLE_TEXT",
+      "observed_surface": "Prestamype | Préstamos con garantía hipotecaria y Factoring"
+    }
+  ],
+  "durable_boundary": "URL_ACCESS_PROBE_ONLY_NOT_A_COMPETITIVE_OBSERVATION",
+  "next_gate": "CANONICAL_OPERATION_STEP_CONTRACTS_AND_RUN_STATE_REQUIRED_BEFORE_SANDBOX_OBSERVATION_WRITE"
+}
