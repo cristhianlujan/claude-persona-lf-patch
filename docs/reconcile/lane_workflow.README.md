@@ -1,6 +1,6 @@
 # Instalación del carril `RECONCILE_SOURCE_ONLY`
 
-El carril ya está instalado. Este directorio conserva el YAML completo como fuente revisable para que Paulo lo pegue por la web de GitHub en la rama autorizada; los agentes no editan `.github/workflows/**`. La actualización requiere OK de Cristhian antes de etiquetar y merge exclusivamente por el Train. Los prerequisitos siguientes documentan la instalación original.
+El carril ya está instalado. El YAML completo de esta actualización se entrega en el chat para que Paulo lo pegue por la web de GitHub en la rama autorizada; los agentes no editan `.github/workflows/**`. La actualización requiere OK de Cristhian antes de etiquetar y merge exclusivamente por el Train. Los prerequisitos siguientes documentan la instalación original.
 
 ## Prerequisitos para Cristhian
 
@@ -61,7 +61,10 @@ El verificador y el merge consumen ese head. Se mantienen los rechazos de
 etiquetas mezcladas, `BLOCKED_STALE_MAIN`/`BLOCKED_STALE_HEAD`, el recibo, los
 comentarios y la prohibición de borrados o ejecución de SQL/código del PR.
 
-`test_reconcile_workflow_sync.py` ejecuta los bloques Bash del YAML propuesto
+`lane_workflow.patch.yml` conserva la fuente histórica de instalación y no se actualiza en esta PR.
+
+`test_reconcile_workflow_sync.py` ejecuta los bloques Bash del workflow instalado
+(o del YAML propuesto mediante `LF_RECONCILE_WORKFLOW_SOURCE`)
 contra Git real y una API GitHub simulada: rama atrasada → sync → checkout →
 verificador offline PASS; conflicto → exit 2, comentario, ningún push/merge.
 Esto no prueba el runtime de GitHub Actions ni el ledger vivo. Después del merge

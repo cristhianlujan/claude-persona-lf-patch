@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lf_migration_reconcile_lane as lane
 
 ROOT = Path(__file__).resolve().parents[3]
-SOURCE = Path(os.environ.get('LF_RECONCILE_WORKFLOW_SOURCE', ROOT / 'docs/reconcile/lane_workflow.patch.yml'))
+SOURCE = Path(os.environ.get('LF_RECONCILE_WORKFLOW_SOURCE', ROOT / '.github/workflows/lf-migration-reconcile-lane.yml'))
 STEPS = yaml.safe_load(SOURCE.read_text())['jobs']['reconcile-source-only']['steps']
 
 
