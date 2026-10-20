@@ -7,14 +7,32 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import yaml
+import re
+import textwrap
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lf_migration_reconcile_lane as lane
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = Path(os.environ.get('LF_RECONCILE_WORKFLOW_SOURCE', ROOT / '.github/workflows/lf-migration-reconcile-lane.yml'))
-STEPS = yaml.safe_load(SOURCE.read_text())['jobs']['reconcile-source-only']['steps']
+WORKFLOW_TEXT = SOURCE.read_text()
+# Extract only the fixed workflow step blocks needed by these shell tests.
+# YAML syntax is validated separately; CI for this suite uses stdlib only.
+STEPS = []
+for match in re.finditer(r'^      - name: ([^\n]+)\n(.*?)(?=^      - name: |\Z)',
+                         WORKFLOW_TEXT, re.MULTILINE | re.DOTALL):
+    body = match[2]
+    item = {'name': match[1]}
+    condition = re.search(r'^        if: (.+)$', body, re.MULTILINE)
+    if condition:
+        item['if'] = condition[1]
+    env = re.search(r'^        env:\n((?:          .+\n)+)', body, re.MULTILINE)
+    if env:
+        item['env'] = dict(line.strip().split(': ', 1) for line in env[1].splitlines())
+    run = re.search(r'^        run: \|\n(.*)', body, re.MULTILINE | re.DOTALL)
+    if run:
+        item['run'] = textwrap.dedent(run[1])
+    STEPS.append(item)
 
 
 def step(name):
@@ -173,7 +191,7 @@ else:
         for name in ('Verify exact source against read-only ledger',
                      'Publish verified status and merge exact head'):
             self.assertEqual(step(name)['env']['HEAD_SHA'], '${{ steps.sync.outputs.head_sha }}')
-        self.assertEqual(yaml.safe_load(SOURCE.read_text())['jobs']['reconcile-source-only']['timeout-minutes'], 40)
+        self.assertIn('    timeout-minutes: 40\n', WORKFLOW_TEXT)
         sync = step('Sync exact PR head with current main')['run']
         self.assertNotIn('remote set-url', sync)
         self.assertIn('--force-with-lease="refs/heads/$HEAD_REF:$EXPECTED_HEAD"', sync)
