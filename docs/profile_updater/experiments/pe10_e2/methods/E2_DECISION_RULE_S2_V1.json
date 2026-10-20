@@ -5,10 +5,23 @@
     "path": "docs/profile_updater/experiments/pe10_e2/methods/M18_M29_E2_GENERIC_METHOD_CONTRACTS_V1.json",
     "git_blob_sha1": "5f0f1ca02adf711e3d4144072e1247c300be19c5"
   },
-  "applies_to": ["PE10_M18_E2", "PE10_M29_E2"],
-  "originals_immutable": ["PE10_M18", "PE10_M29", "PE10_E2_C2_METHOD_VALIDATION_V1"],
+  "applies_to": [
+    "PE10_M18_E2",
+    "PE10_M29_E2"
+  ],
+  "originals_immutable": [
+    "PE10_M18",
+    "PE10_M29",
+    "PE10_E2_C2_METHOD_VALIDATION_V1"
+  ],
   "case_invariant": "PE10-IG-M107-M109-P0",
-  "decision_order": ["REPAIR_REQUIRED","MEASURE_FIRST","VERIFY_CRITICAL","CLEAR_NO_ACTION","VERIFY_MINOR"],
+  "decision_order": [
+    "REPAIR_REQUIRED",
+    "MEASURE_FIRST",
+    "VERIFY_CRITICAL",
+    "CLEAR_NO_ACTION",
+    "VERIFY_MINOR"
+  ],
   "decisions": {
     "MEASURE_FIRST": "Use when either the historical hash comparison or the reverse consumer census has not been measured. Do not infer safety, risk, or repair before both measurements exist.",
     "CLEAR_NO_ACTION": "Use only when measured hashes are all current, there is no material drift or extra consumer, and no critical reachable exposure path has been measured.",
@@ -51,7 +64,12 @@
     "other_arm_outputs": "DENIED"
   },
   "validator": "sandbox/lf_contract_gate_test/pe10_e2/decision_rule_s2_validator_v1.py",
-  "tests": "sandbox/lf_contract_gate_test/pe10_e2/test_decision_rule_s2_validator_v1.py",
+  "tests": {
+    "execution": "local deterministic validation against canonical validator",
+    "cases": 15,
+    "passed": 15,
+    "receipt": "docs/profile_updater/experiments/pe10_e2/evaluator_only/PE10_E2_S2_VALIDATION_V1.json"
+  },
   "activation": "VALIDATED_CANDIDATE_NOT_ACTIVATED",
   "checkpoint_effect": "NONE; C2 historical receipt remains immutable and C3/C4 states are not changed by this revision"
 }
