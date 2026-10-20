@@ -89,6 +89,29 @@ def main() -> int:
     assert env["PGHOST"] == m.POOLER_HOST and m.WRITE_PASSWORD_ENV not in env
     checks += 1
 
+    # 3b. Read-only URL credential (Merge Train: lf_reconcile_readonly), allowlisted roles only.
+    url_env = {m.CI_READONLY_PASSWORD_ENV: None, m.WRITE_PASSWORD_ENV: "w"}
+    env = with_env(dict(url_env, **{m.RO_URL_ENV: "postgresql://lf_reconcile_readonly.abcdefghijklmnopqrst:p%40ss%2Fx@pool.example.com:6543/postgres?sslmode=verify-full"}), m.readonly_pg_env)
+    assert env["PGUSER"] == "lf_reconcile_readonly.abcdefghijklmnopqrst" and env["PGPASSWORD"] == "p@ss/x"
+    assert env["PGHOST"] == "pool.example.com" and env["PGPORT"] == "6543" and env["PGDATABASE"] == "postgres"
+    assert env["PGSSLMODE"] == "verify-full"
+    assert m.WRITE_PASSWORD_ENV not in env and m.RO_URL_ENV not in env and m.CI_READONLY_PASSWORD_ENV not in env
+    env = with_env(dict(url_env, **{m.RO_URL_ENV: "postgres://lf_ci_readonly.x:pw@h/db"}), m.readonly_pg_env)
+    assert env["PGUSER"] == "lf_ci_readonly.x" and env["PGPORT"] == "5432" and env["PGSSLMODE"] == "require" and env["PGDATABASE"] == "db"
+    for bad_url, code in (
+        ("postgresql://postgres.abcdefghijklmnopqrst:pw@h:5432/postgres", "BLOCK_MIGRATION_PARITY_RO_URL_ROLE_NOT_READ_ONLY"),
+        ("postgresql://lf_runtime_readback_oidc_writer.x:pw@h/postgres", "BLOCK_MIGRATION_PARITY_RO_URL_ROLE_NOT_READ_ONLY"),
+        ("mysql://lf_ci_readonly.x:pw@h/db", "BLOCK_MIGRATION_PARITY_RO_URL_INVALID"),
+        ("postgresql://lf_ci_readonly.x@h/db", "BLOCK_MIGRATION_PARITY_RO_URL_INVALID"),
+    ):
+        expect_fail(m, code, lambda u=bad_url: with_env(dict(url_env, **{m.RO_URL_ENV: u}), m.readonly_pg_env))
+    expect_fail(m, "BLOCK_MIGRATION_PARITY_RO_PASSWORD_MISSING",
+                lambda: with_env(dict(url_env, **{m.RO_URL_ENV: None}), m.readonly_pg_env))
+    # The lf_ci_readonly password takes precedence when both are present.
+    env = with_env({m.CI_READONLY_PASSWORD_ENV: "ro", m.RO_URL_ENV: "postgresql://lf_reconcile_readonly.x:pw@h/db"}, m.readonly_pg_env)
+    assert env["PGUSER"].startswith("lf_ci_readonly.") and env["PGPASSWORD"] == "ro"
+    checks += 1
+
     # 4. Environment scrub.
     def scrub():
         m.scrub_environment()
@@ -143,6 +166,7 @@ def main() -> int:
             seen["sql"] = sql
             seen["user"] = env.get("PGUSER")
             seen["has_write"] = m.WRITE_PASSWORD_ENV in env
+            seen["secrets_in_process_env"] = [k for k in (m.CI_READONLY_PASSWORD_ENV, m.RO_URL_ENV, m.WRITE_PASSWORD_ENV) if k in os.environ]
             payload = {"schema_version": m.SNAPSHOT_SCHEMA, "post_cutover": [], "statement_counts": [],
                        "owners": [], "grandfathered": ["0", None], "legacy": ["0", None]}
             return m.render_rows([[json.dumps(payload)]])
@@ -150,7 +174,7 @@ def main() -> int:
         out = t / "out"
         cwd = os.getcwd()
         try:
-            rc = with_env({m.CI_READONLY_PASSWORD_ENV: "ro", m.WRITE_PASSWORD_ENV: "w", "GITHUB_REPOSITORY": "o/r"},
+            rc = with_env({m.CI_READONLY_PASSWORD_ENV: "ro", m.WRITE_PASSWORD_ENV: "w", m.RO_URL_ENV: "postgresql://lf_reconcile_readonly.x:pw@h/db", "GITHUB_REPOSITORY": "o/r"},
                           lambda: m.run(["--data-root", str(cand), "--base-sha", base, "--head-sha", head,
                                          "--output-dir", str(out)], psql=fake_psql))
         finally:
@@ -158,6 +182,7 @@ def main() -> int:
         assert not marker.exists(), "candidate code was executed"
         assert "'{29990101000000}'::text[]" in seen["sql"], seen["sql"]
         assert seen["user"].startswith("lf_ci_readonly.") and seen["has_write"] is False
+        assert seen["secrets_in_process_env"] == [], seen["secrets_in_process_env"]
         assert (out / "focal_migrations" / mig.name).read_text(encoding="utf-8") == "select 1;\n"
         summary = json.loads((out / "run-summary.json").read_text(encoding="utf-8"))
         assert summary["runner"] == "TRUSTED_READ_ONLY_V1" and summary["delegated_adapter"].endswith("lf_migration_source_parity.py")

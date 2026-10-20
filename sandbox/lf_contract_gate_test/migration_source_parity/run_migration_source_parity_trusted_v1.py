@@ -8,8 +8,10 @@ Separates CODE from DATA:
 - data: the candidate checkout given by --data-root is read only through Git
   (rev-parse, diff, show, ls-tree) and by copying changed migration files.
 
-Database: one call to public.lf_ci_migration_parity_snapshot_v1 as the CI
-read-only role lf_ci_readonly (secret LF_SUPABASE_DB_READONLY_PASSWORD). The
+Database: one call to public.lf_ci_migration_parity_snapshot_v1 with a
+read-only role: lf_ci_readonly (secret LF_SUPABASE_DB_READONLY_PASSWORD, CI
+environment lf-ci-readonly) or lf_reconcile_readonly (secret
+LF_SUPABASE_RO_DATABASE_URL, Merge Train environment lf-merge-train). The
 write credential LF_SUPABASE_DB_PASSWORD is never read and is removed from the
 environment of every child process. The snapshot is rendered into the same CSV
 files the focal runner writes today (psql --csv rules), so the parity adapter
@@ -28,6 +30,7 @@ import os
 from pathlib import Path
 import re
 import sys
+from urllib.parse import parse_qs, unquote, urlsplit
 
 HERE = Path(__file__).resolve().parent
 CODE_ROOT = HERE.parents[2]
@@ -37,6 +40,8 @@ SNAPSHOT_SCHEMA = "lf-ci-migration-parity-snapshot/v1"
 CI_READONLY_ROLE = "lf_ci_readonly"
 CI_READONLY_PASSWORD_ENV = "LF_SUPABASE_DB_READONLY_PASSWORD"
 WRITE_PASSWORD_ENV = "LF_SUPABASE_DB_PASSWORD"
+RO_URL_ENV = "LF_SUPABASE_RO_DATABASE_URL"
+ALLOWED_RO_ROLES = ("lf_ci_readonly", "lf_reconcile_readonly")
 PROJECT_ID = "mhwmirqcgxxukpctffuv"
 POOLER_HOST = "aws-1-us-east-1.pooler.supabase.com"
 VERSION_RE = re.compile(r"\d{14}")
@@ -59,25 +64,62 @@ def scrub_environment() -> None:
             os.environ.pop(name, None)
 
 
-def readonly_pg_env() -> dict[str, str]:
-    password = os.environ.get(CI_READONLY_PASSWORD_ENV, "").strip()
-    if not password:
-        fail("BLOCK_MIGRATION_PARITY_RO_PASSWORD_MISSING")
-    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip() or PROJECT_ID
-    host = os.environ.get("SUPABASE_POOLER_HOST", "").strip() or POOLER_HOST
+def _base_env() -> dict[str, str]:
     env = os.environ.copy()
-    env.pop(WRITE_PASSWORD_ENV, None)
+    for name in (WRITE_PASSWORD_ENV, CI_READONLY_PASSWORD_ENV, RO_URL_ENV, "PGPASSWORD"):
+        env.pop(name, None)
+    return env
+
+
+def _env_from_ro_url(url: str) -> dict[str, str]:
+    parts = urlsplit(url)
+    if parts.scheme not in ("postgres", "postgresql"):
+        fail("BLOCK_MIGRATION_PARITY_RO_URL_INVALID")
+    user = unquote(parts.username or "")
+    role = user.split(".", 1)[0]
+    if role not in ALLOWED_RO_ROLES:
+        fail("BLOCK_MIGRATION_PARITY_RO_URL_ROLE_NOT_READ_ONLY", role or "<empty>")
+    password = unquote(parts.password or "")
+    host = parts.hostname or ""
+    if not password or not host:
+        fail("BLOCK_MIGRATION_PARITY_RO_URL_INVALID")
+    query = parse_qs(parts.query)
+    env = _base_env()
     env.update(
         {
             "PGHOST": host,
-            "PGPORT": "5432",
-            "PGUSER": f"{CI_READONLY_ROLE}.{project}",
+            "PGPORT": str(parts.port or 5432),
+            "PGUSER": user,
             "PGPASSWORD": password,
-            "PGDATABASE": "postgres",
-            "PGSSLMODE": "require",
+            "PGDATABASE": (parts.path or "/postgres").lstrip("/") or "postgres",
+            "PGSSLMODE": (query.get("sslmode") or ["require"])[0],
         }
     )
     return env
+
+
+def readonly_pg_env() -> dict[str, str]:
+    """Read-only connection only: lf_ci_readonly password, else an allowlisted read-only URL."""
+    password = os.environ.get(CI_READONLY_PASSWORD_ENV, "").strip()
+    if password:
+        project = os.environ.get("SUPABASE_PROJECT_ID", "").strip() or PROJECT_ID
+        host = os.environ.get("SUPABASE_POOLER_HOST", "").strip() or POOLER_HOST
+        env = _base_env()
+        env.update(
+            {
+                "PGHOST": host,
+                "PGPORT": "5432",
+                "PGUSER": f"{CI_READONLY_ROLE}.{project}",
+                "PGPASSWORD": password,
+                "PGDATABASE": "postgres",
+                "PGSSLMODE": "require",
+            }
+        )
+        return env
+    url = os.environ.get(RO_URL_ENV, "").strip()
+    if url:
+        return _env_from_ro_url(url)
+    fail("BLOCK_MIGRATION_PARITY_RO_PASSWORD_MISSING")
 
 
 def psql_csv_field(value: object) -> str:
@@ -177,7 +219,7 @@ def validate_roots(data_root: Path, output_dir: Path) -> None:
         fail("FAIL_MIGRATION_PARITY_OUTPUT_INSIDE_CANDIDATE")
 
 
-def bind_data_root(*, entry, data_root: Path, event_name: str, psql) -> None:
+def bind_data_root(*, entry, data_root: Path, event_name: str, psql, pg_env: dict[str, str]) -> None:
     """Rebind the focal/flow modules so Git and files read DATA while code stays trusted."""
     focal = entry.FOCAL
     full = focal.FULL
@@ -198,7 +240,7 @@ def bind_data_root(*, entry, data_root: Path, event_name: str, psql) -> None:
             managed_versions=managed_versions,
             full=full,
         )
-        snapshot = parse_snapshot(psql(sql, env=readonly_pg_env()))
+        snapshot = parse_snapshot(psql(sql, env=pg_env))
         return write_focal_inputs(output_dir=output_dir, snapshot=snapshot, full=full)
 
     focal._prepare_focal_inputs = prepare
@@ -221,14 +263,16 @@ def run(argv: list[str] | None = None, *, psql=None) -> int:
     data_root = Path(args.data_root).resolve()
     output_dir = Path(args.output_dir).resolve()
     validate_roots(data_root, output_dir)
-    readonly_pg_env()  # fail closed before any work when the read-only secret is missing
+    pg_env = readonly_pg_env()  # fail closed before any work when no read-only credential exists
+    for name in (CI_READONLY_PASSWORD_ENV, RO_URL_ENV):
+        os.environ.pop(name, None)  # children (adapter, git) never see a database credential
     os.environ["LF_MIGRATION_PARITY_DATA_ROOT"] = str(data_root)
     os.chdir(data_root)
 
     entry = _load(ENTRY_PATH, "lf_migration_source_parity_trusted_entry")
     focal = entry.FOCAL
     full = focal.FULL
-    bind_data_root(entry=entry, data_root=data_root, event_name=args.event_name, psql=psql or full._psql)
+    bind_data_root(entry=entry, data_root=data_root, event_name=args.event_name, psql=psql or full._psql, pg_env=pg_env)
 
     maturity = focal._require_exact(args.control_maturity, focal.EXPECTED_MATURITY, "CONTROL_MATURITY")
     scope = focal._require_exact(args.evaluation_scope, focal.EXPECTED_SCOPE, "EVALUATION_SCOPE")
