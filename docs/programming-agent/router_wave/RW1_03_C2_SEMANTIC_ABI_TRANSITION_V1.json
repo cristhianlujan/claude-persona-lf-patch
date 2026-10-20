@@ -1,0 +1,253 @@
+{
+  "schema_version": "RW103_C2_SEMANTIC_ABI_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-03",
+  "checkpoint_code": "RW1-03_C2",
+  "selected_architecture": "A_MIN_ROUTER_SEMANTIC_SPECIALIST",
+  "evidence_scope": "CONTRACT_AND_TRANSITION_ONLY_NOT_ROUTER_RUNTIME_OR_PRODUCTION",
+  "authority_boundaries": {
+    "router_owns": [
+      "DISCOVERY",
+      "DERIVATION",
+      "CURRENTNESS",
+      "OPERATION_SELECTION",
+      "EFFECT_AUTHORITY_BINDING"
+    ],
+    "specialist_owns": [
+      "INTENT_NORMALIZATION",
+      "NEGATION_AND_EXCLUSION_NORMALIZATION",
+      "CONDITIONS_NORMALIZATION",
+      "MATERIAL_AMBIGUITY_DETECTION"
+    ],
+    "effect_authority_owners": [
+      "ROUTER_DOWNSTREAM_AUTHORITY",
+      "OPERATION_EFFECT_GUARD",
+      "OPERATION_MATERIALIZATION_GUARD",
+      "CANONICAL_OPERATION"
+    ],
+    "specialist_forbidden": [
+      "DISCOVER_WORKERS",
+      "SELECT_ROUTE",
+      "SELECT_OPERATION",
+      "SELECT_EXECUTOR",
+      "AUTHORIZE_EFFECT",
+      "WIDEN_SCOPE",
+      "DROP_EXCLUSIONS",
+      "MINT_TARGET_AUTHORITY"
+    ]
+  },
+  "request_abi": {
+    "schema_version": "LF_ROUTER_SEMANTIC_REQUEST_V1",
+    "required_fields": [
+      "schema_version",
+      "router",
+      "literal_request",
+      "request_sha256",
+      "reference_kind",
+      "candidate_subjects",
+      "positive_target_refs",
+      "excluded_target_refs",
+      "allowed_scope",
+      "forbidden_scope",
+      "conditions",
+      "source_currentness"
+    ],
+    "invariants": {
+      "router_must_equal": "ACT-0001",
+      "literal_request_must_be_preserved": true,
+      "request_sha256_algorithm": "SHA256_UTF8_LITERAL",
+      "candidate_subjects_are_router_supplied_only": true,
+      "no_operation_code": true,
+      "no_executor": true,
+      "no_effect_authority": true
+    }
+  },
+  "response_abi": {
+    "schema_version": "LF_ROUTER_SEMANTIC_RESULT_V1",
+    "required_fields": [
+      "schema_version",
+      "request_sha256",
+      "decision",
+      "positive_target_refs",
+      "excluded_target_refs",
+      "allowed_scope",
+      "forbidden_scope",
+      "conditions",
+      "material_ambiguities",
+      "clarification_question",
+      "semantic_receipt_sha256"
+    ],
+    "decision_enum": [
+      "RESOLVED",
+      "CLARIFICATION_REQUIRED",
+      "BLOCKED"
+    ],
+    "invariants": {
+      "request_sha256_must_match": true,
+      "positive_targets_subset_of_candidates": true,
+      "exclusions_must_be_preserved_or_strengthened": true,
+      "allowed_scope_may_only_narrow": true,
+      "forbidden_scope_may_only_expand": true,
+      "conditions_may_only_preserve_or_strengthen": true,
+      "operation_code_forbidden": true,
+      "executor_forbidden": true,
+      "downstream_execution_allowed_forbidden": true,
+      "effect_authority_forbidden": true
+    }
+  },
+  "clarification_contract": {
+    "owner": "CALLER_INTERACTION_LAYER",
+    "specialist_role": "PROPOSE_ONLY",
+    "ask_only_when": "MATERIAL_AMBIGUITY_BLOCKS_SAFE_RESOLUTION",
+    "max_question_count_per_round": 1,
+    "no_redundant_question_when_answer_is_derivable": true,
+    "clarification_never_authorizes_effect": true
+  },
+  "resume_contract": {
+    "owner": "ACT-0001",
+    "required_checks": [
+      "REQUEST_HASH_MATCH",
+      "SOURCE_CURRENTNESS_CURRENT",
+      "CANDIDATE_SUBSET_ONLY",
+      "NO_SCOPE_WIDENING",
+      "EXCLUSIONS_PRESERVED",
+      "NO_OPERATION_OR_EXECUTOR_FROM_SPECIALIST"
+    ],
+    "on_failure": "BLOCK_SEMANTIC_RESUME_INVALID",
+    "on_success": "ROUTER_REDERIVES_ROUTE_AND_AUTHORITY",
+    "specialist_result_is_not_route_authority": true
+  },
+  "compatibility_contract": {
+    "legacy_entrypoint": "public.lf_router_resolve_v1",
+    "current_handoff": "public.lf_router_intent_handoff_v1",
+    "migration_rule": "EVOLVE_HANDOFF_WITHOUT_SECOND_ROUTER",
+    "no_semantic_gap_behavior": "PRESERVE_CURRENT_ROUTER_BEHAVIOR",
+    "semantic_gap_behavior": "EMIT_VERSIONED_HANDOFF_AND_KEEP_EFFECT_BLOCKED",
+    "legacy_consumers_must_not_receive_new_effect_authority": true,
+    "input_governance_role": "ADAPTER_RECEIVER_ONLY_WHEN_APPLICABLE"
+  },
+  "transition_contract": {
+    "phases": [
+      {
+        "phase": "T0",
+        "state": "CONTRACT_ONLY",
+        "effect": "NO_RUNTIME_CHANGE"
+      },
+      {
+        "phase": "T1",
+        "state": "INSTALL_V2_HANDOFF_AND_RESUME_VALIDATOR",
+        "effect": "DISABLED_OR_SHADOW"
+      },
+      {
+        "phase": "T2",
+        "state": "SEMANTIC_CONSUMER_SHADOW",
+        "effect": "NO_EFFECT_AUTHORITY"
+      },
+      {
+        "phase": "T3",
+        "state": "CONTROLLED_CONSUMER_CUTOVER",
+        "effect": "ROUTER_REDERIVES_BEFORE_EFFECT"
+      },
+      {
+        "phase": "T4",
+        "state": "LEGACY_RETIREMENT_AFTER_RW1_05_E2E",
+        "effect": "NO_DOUBLE_ROUTER"
+      }
+    ],
+    "train_bootstrap_rule": "INSTALLATION_USES_PREEXISTING_ACT0001_AND_MERGE_TRAIN_AUTHORITY",
+    "no_circular_train_dependency": true,
+    "rollback": "REVERT_CONSUMER_TO_V1_BLOCKED_HANDOFF_AND_DISABLE_V2_RESUME",
+    "no_double_router": true
+  },
+  "acl_contract": {
+    "new_semantic_runtime_public_execute": false,
+    "new_resume_validator_public_execute": false,
+    "anon_allowed": false,
+    "authenticated_allowed": false,
+    "service_role_allowed": true,
+    "postgres_allowed": true,
+    "current_v1_handoff_acl_change_in_c2": false,
+    "no_acl_widening": true
+  },
+  "acceptance_cases": [
+    {
+      "id": "C01",
+      "family": "SIMPLE_INSPECTION",
+      "expect": "NO_SPECIALIST_REQUIRED"
+    },
+    {
+      "id": "C02",
+      "family": "EXACT_TARGET_UPDATE",
+      "expect": "ROUTER_AUTHORITY_UNCHANGED"
+    },
+    {
+      "id": "C03",
+      "family": "MULTI_OBJECT_CONDITIONAL",
+      "expect": "SEMANTIC_HANDOFF_EFFECT_BLOCKED"
+    },
+    {
+      "id": "C04",
+      "family": "NEGATIVE_EXCLUSION",
+      "expect": "EXCLUSION_PRESERVED"
+    },
+    {
+      "id": "C05",
+      "family": "FORGED_TYPED_TARGET",
+      "expect": "NO_TARGET_AUTHORITY_FROM_SPECIALIST"
+    },
+    {
+      "id": "C06",
+      "family": "STALE_SOURCE",
+      "expect": "BLOCK_SEMANTIC_RESUME_INVALID"
+    },
+    {
+      "id": "C07",
+      "family": "SPECIALIST_RETURNS_OPERATION",
+      "expect": "REJECT"
+    },
+    {
+      "id": "C08",
+      "family": "SPECIALIST_RETURNS_EFFECT_AUTHORITY",
+      "expect": "REJECT"
+    },
+    {
+      "id": "C09",
+      "family": "SPECIALIST_ADDS_CANDIDATE",
+      "expect": "REJECT"
+    },
+    {
+      "id": "C10",
+      "family": "REQUEST_HASH_MISMATCH",
+      "expect": "REJECT"
+    },
+    {
+      "id": "C11",
+      "family": "MATERIAL_AMBIGUITY",
+      "expect": "ONE_CLARIFICATION_MAX"
+    },
+    {
+      "id": "C12",
+      "family": "READONLY_CONTINUITY",
+      "expect": "READONLY_MAY_CONTINUE_WITH_WRITE_BLOCKED"
+    },
+    {
+      "id": "C13",
+      "family": "TRAIN_BOOTSTRAP",
+      "expect": "PREEXISTING_ROUTE_NO_CIRCULARITY"
+    },
+    {
+      "id": "C14",
+      "family": "LEGACY_CONSUMER",
+      "expect": "NO_NEW_EFFECT_AUTHORITY"
+    }
+  ],
+  "forbidden_claims": [
+    "ROUTER_RUNTIME_PASS",
+    "PRODUCTION_PASS",
+    "E2E_PASS",
+    "LATENCY_IMPROVEMENT",
+    "COST_IMPROVEMENT",
+    "SEMANTIC_SPECIALIST_IS_ROUTER",
+    "SEMANTIC_SPECIALIST_CAN_AUTHORIZE_EFFECT"
+  ]
+}
