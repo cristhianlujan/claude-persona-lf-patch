@@ -18,6 +18,8 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v3.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v3.py'
+      - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V3.md'
       - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
       - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V2.md'
@@ -100,9 +102,19 @@ jobs:
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v3.py
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v3.py
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json --self-test
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v3.py docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json --self-test
+          python3 sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v3.py --seed ci-v3-smoke --nonce ci-v3-smoke --out /tmp/rw101_c3_holdout_v3.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/rw101_c3_holdout_v3.json',encoding='utf-8'))
+          assert p['schema_version']=='RW101_C3_SECRET_HOLDOUT_V3'
+          modes=[c['oracle']['acceptable_next_step_sequences'][0][0] for c in p['cases'] if c['family']=='FUTURE_CAPABILITY']
+          assert modes==['DISCOVER','CAPABILITY_GAP'], modes
+          print(json.dumps({'status':'C3_V3_GENERATOR_SMOKE_PASS','future_modes':modes}))
+          PY
           python3 sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py --seed ci-smoke-not-a-real-holdout --nonce ci-smoke --out /tmp/rw101_c3_holdout_v2.json
           python3 - <<'PY'
           import json
