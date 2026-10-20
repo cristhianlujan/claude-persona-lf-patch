@@ -1,6 +1,18 @@
 # F09-X16 — evidencia de canarios contra falsos bloqueos
 
-Estado de evidencia: los checks PASE, `pase-merge-gate` y `PASE / MIGRATION_SOURCE_PARITY` aparecen como `skipped` en los PRs históricos seleccionados. Por eso esos PRs no demuestran que un PASE activo habría pasado; se conserva esa limitación explícitamente. `execution_id` se indica como `no disponible` cuando el PR no creó una ejecución de base.
+Estado de evidencia: las filas históricas de abajo conservan sus limitaciones originales. Desde el 20/10/2026 ya existen canarios X16 reales con `pase-merge-gate` y `migration-source-parity` activos en sombra; se documentan aquí sin reinterpretar los casos históricos. `execution_id` se indica como `no disponible` cuando el PR no creó una ejecución de base.
+
+## Actualización 20/10/2026 — canarios X16 reales
+
+| PR | Caso | Evidencia observada | Conclusión |
+|---|---|---|---|
+| #2961 | Smoke A, docs-only | `PASE` PASS (run `39469850858`); `pase-merge-gate` PASS (run `39469851832`, job `118790744658`); PR cerrado sin merge; sin ejecución DB. | El merge gate en sombra acepta un cambio que no exige qualification DB y no produce falso bloqueo. |
+| #2962 | Smoke B, readback RO | `PASE` PASS (run `39469853944`); `pase-merge-gate` FAIL (run `39469854057`, job `118790751874`) con `BLOCK_PASE_MERGE_GATE_QUALIFICATION_MISSING`; el caso estaba diseñado para exigir qualification inexistente. | La lectura RO funciona y el carrier falla cerrado exactamente por qualification ausente; no es un falso bloqueo ni una caída de credencial. |
+| #2980 | Runner de paridad RO | `PASE` PASS; `pase-merge-gate` PASS; `migration-source-parity` PASS (run `39494617399`, job `118876307882`); merge por Train `756f2df59c78a3a3165da51f8b5f0dbeba742142`. | La paridad confiable de solo lectura funciona en un cambio de tooling sin depender de credencial de escritura. |
+| #2970 | Canario Train + paridad RO | `PASE` PASS; `pase-merge-gate` PASS; `migration-source-parity` PASS (run `39495231528`, job `118878470245`); merge por Train `240b059b3c6832335fa19cdb7ed7b5b64dfbda62`; recibo `EXEC-DB-TRAIN-PR2970-20261020203331-R39495179920`, evento `21349`, estado `COMPLETED`. | Primer cierre real que prueba que el secret RO llega al Train y que la paridad confiable lee el snapshot con `lf_ci_readonly` antes/después del apply. |
+
+La evidencia nueva reemplaza la afirmación anterior de que “no se observó ninguna corrida PASE activa” para el estado actual de X16. No convierte automáticamente estos canarios en qualification de producción ni autoriza activar checks requeridos: la ventana de observación y la qualification exact-head siguen siendo pasos separados.
+
 
 | Canario | Evidencia real revisada | Resultado sobre falso bloqueo | Si falta prueba PASE activa: diseño seguro |
 |---|---|---|---|
