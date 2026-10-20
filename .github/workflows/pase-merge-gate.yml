@@ -1,7 +1,9 @@
 name: PASE Merge Gate
 
-# Shadow mode (not a required check) until its own activation window (X16).
+# Shadow mode (not required checks) until each one's own activation window (X16):
+#   pase-merge-gate and migration-source-parity.
 # Read-only database access only: role lf_ci_readonly via environment lf-ci-readonly.
+# Trusted code only: checkouts of the PR head are read as Git data, never executed.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -79,3 +81,70 @@ jobs:
             --current-main-sha "$PASE_CURRENT_MAIN_SHA" \
             --output-json .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
           cat .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
+
+  migration-source-parity:
+    name: migration-source-parity
+    environment: lf-ci-readonly
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted PR base (code)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout candidate head (data only, never executed)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Reject foreign head repository
+        env:
+          REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          set -euo pipefail
+          if [ "$HEAD_REPOSITORY" != "$REPOSITORY" ]; then
+            echo "BLOCK_MIGRATION_PARITY_HEAD_REPOSITORY repository=$REPOSITORY head_repository=$HEAD_REPOSITORY"
+            exit 2
+          fi
+
+      - name: Self-test trusted read-only parity runner
+        run: python3 -I trusted/sandbox/lf_contract_gate_test/migration_source_parity/test_run_migration_source_parity_trusted_v1.py
+
+      - name: Evaluate MIGRATION_SOURCE_PARITY (trusted code, read-only snapshot)
+        env:
+          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          python3 -I trusted/sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_trusted_v1.py \
+            --data-root "$GITHUB_WORKSPACE/candidate" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --base-ref main \
+            --event-name pull_request \
+            --output-dir "$RUNNER_TEMP/lf-migration-source-parity"
+
+      - name: Persist bounded parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-migration-source-parity-shadow-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/lf-migration-source-parity
+          if-no-files-found: ignore
+          retention-days: 30
