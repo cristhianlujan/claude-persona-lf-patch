@@ -1,6 +1,6 @@
 # Instalación del carril `RECONCILE_SOURCE_ONLY`
 
-Este directorio contiene el workflow como parche de texto. **No lo copies ni lo guardes en `.github/workflows/` hasta que Cristhian complete los prerequisitos y dé el OK.** La PR de implementación solo versiona código, pruebas y documentación; no consulta credenciales ni escribe en Supabase.
+El carril ya está instalado. Este directorio conserva el YAML completo como fuente revisable para que Paulo lo pegue por la web de GitHub en la rama autorizada; los agentes no editan `.github/workflows/**`. La actualización requiere OK de Cristhian antes de etiquetar y merge exclusivamente por el Train. Los prerequisitos siguientes documentan la instalación original.
 
 ## Prerequisitos para Cristhian
 
@@ -44,3 +44,27 @@ El verificador acepta `--ledger-json` para pruebas aisladas con:
 ```
 
 Para la ejecución del workflow se usa `--database-url-env LF_SUPABASE_RO_DATABASE_URL`; el DSN nunca se incluye en recibos, comentarios ni logs del verificador.
+
+## Sincronización con main antes de verificar
+
+La lane comparte `lf-migrations`, dispone de 40 minutos y sincroniza el head
+exacto con el main resuelto en preflight. Si main ya es ancestro no crea commit;
+en otro caso usa `merge-tree --write-tree` y `commit-tree` con padres (head, main).
+El push automático usa `--force-with-lease` sobre el head esperado, autenticación
+solo por entorno de Git y readback de rama y PR con reintentos. Un conflicto
+termina con `FAIL_RECONCILE_SYNC_CONFLICT` (exit 2), comenta el PR y no mergea.
+
+Tras re-fetch/checkout del head resultante, espera los checks requeridos usando
+exclusivamente el guard y el JSON de `trusted/` (main), 90 intentos cada 5 s y
+`--final` en el último; timeout: `FAIL_RECONCILE_REQUIRED_CHECK_TIMEOUT`.
+El verificador y el merge consumen ese head. Se mantienen los rechazos de
+etiquetas mezcladas, `BLOCKED_STALE_MAIN`/`BLOCKED_STALE_HEAD`, el recibo, los
+comentarios y la prohibición de borrados o ejecución de SQL/código del PR.
+
+`test_reconcile_workflow_sync.py` ejecuta los bloques Bash del YAML propuesto
+contra Git real y una API GitHub simulada: rama atrasada → sync → checkout →
+verificador offline PASS; conflicto → exit 2, comentario, ningún push/merge.
+Esto no prueba el runtime de GitHub Actions ni el ledger vivo. Después del merge
+se requiere un canario real: PR RECONCILE de 1 rename exacto con base vieja.
+
+Requiere OK de Cristhian. Probar con un PR RECONCILE de 1 rename exacto con base vieja después del merge.

@@ -1,5 +1,4 @@
-# Paulo: copy this file to .github/workflows/lf-migration-reconcile-lane.yml
-# only after Cristhian completes the prerequisites in lane_workflow.README.md.
+# Synchronize source-only PRs with main, verify exact ledger identity, and merge the verified head.
 name: LF migration source reconciliation lane
 
 on:
@@ -18,7 +17,7 @@ jobs:
   reconcile-source-only:
     if: github.event.label.name == 'ready-to-reconcile'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     environment: lf-merge-train
     steps:
       - name: Create Train App token
@@ -71,6 +70,7 @@ jobs:
           base="$(gh api "repos/$REPO/branches/main" --jq '.commit.sha')"
           echo "main_sha=$base" >> "$GITHUB_OUTPUT"
           echo "head_sha=$head" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$(jq -r '.head.ref' <<<"$pull")" >> "$GITHUB_OUTPUT"
           if [[ "$head" != "$EVENT_HEAD" ]]; then
             echo "conflict=true" >> "$GITHUB_OUTPUT"
             echo "reason=PR head changed after the label event" >> "$GITHUB_OUTPUT"
@@ -81,11 +81,98 @@ jobs:
             echo "conflict=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # The PR checkout has no persisted credential. Supply the App token only
-      # to this fetch through Git's process environment; do not write it to config.
-      - name: Fetch current main into exact PR checkout
+      - name: Sync exact PR head with current main
+        id: sync
+        if: steps.preflight.outputs.conflict != 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ steps.preflight.outputs.head_ref }}
+          EXPECTED_HEAD: ${{ steps.preflight.outputs.head_sha }}
+          CURRENT_MAIN: ${{ steps.preflight.outputs.main_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Process-only authentication; never persist the token in Git config.
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$auth_header"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header"
+          cd reconcile-head
+          git fetch --no-tags origin "$EXPECTED_HEAD" "$CURRENT_MAIN"
+
+          if git merge-base --is-ancestor "$CURRENT_MAIN" "$EXPECTED_HEAD"; then
+            echo "head_sha=$EXPECTED_HEAD" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          merge_output="$RUNNER_TEMP/reconcile-merge-tree-output.txt"
+          set +e
+          git merge-tree --write-tree "$EXPECTED_HEAD" "$CURRENT_MAIN" >"$merge_output" 2>&1
+          merge_rc=$?
+          set -e
+          if [ "$merge_rc" -ne 0 ]; then
+            cat "$merge_output"
+            echo "FAIL_RECONCILE_SYNC_CONFLICT rc=$merge_rc"
+            gh api --method POST "repos/$REPO/issues/$PR/comments" \
+              -f body="FAIL_RECONCILE_SYNC_CONFLICT: source-only branch could not sync with main; no merge. Run $GITHUB_RUN_ID."
+            exit 2
+          fi
+
+          tree_sha="$(head -n 1 "$merge_output" | tr -d '\r\n')"
+          [[ "$tree_sha" =~ ^[0-9a-f]{40}$|^[0-9a-f]{64}$ ]] || {
+            cat "$merge_output"
+            echo "FAIL_RECONCILE_SYNC_TREE_INVALID"
+            exit 2
+          }
+          new_head="$(printf '%s\n' "chore(reconcile): sync source-only lane with main" | \
+            git -c user.name='lf-migration-merge-train[bot]' \
+              -c user.email='lf-migration-merge-train[bot]@users.noreply.github.com' \
+              commit-tree "$tree_sha" -p "$EXPECTED_HEAD" -p "$CURRENT_MAIN")"
+          git push --force-with-lease="refs/heads/$HEAD_REF:$EXPECTED_HEAD" \
+            origin "$new_head:refs/heads/$HEAD_REF" || {
+              echo "FAIL_RECONCILE_SYNC_PUSH"
+              exit 2
+            }
+
+          branch_head=""
+          for attempt in $(seq 1 10); do
+            branch_head="$(git ls-remote origin "refs/heads/$HEAD_REF" | awk '{print $1}')"
+            if [ "$branch_head" = "$new_head" ]; then break; fi
+            if [ -n "$branch_head" ] && [ "$branch_head" != "$EXPECTED_HEAD" ]; then
+              echo "FAIL_RECONCILE_SYNC_BRANCH_UNEXPECTED expected_old=$EXPECTED_HEAD expected_new=$new_head observed=$branch_head"
+              exit 2
+            fi
+            sleep 2
+          done
+          [ "$branch_head" = "$new_head" ] || {
+            echo "FAIL_RECONCILE_SYNC_BRANCH_READBACK expected=$new_head observed=$branch_head"
+            exit 2
+          }
+
+          pr_head=""
+          for attempt in $(seq 1 10); do
+            pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha' 2>/dev/null || true)"
+            if [ "$pr_head" = "$new_head" ]; then break; fi
+            if [ -n "$pr_head" ] && [ "$pr_head" != "$EXPECTED_HEAD" ]; then
+              echo "FAIL_RECONCILE_SYNC_PR_HEAD_UNEXPECTED expected_old=$EXPECTED_HEAD expected_new=$new_head observed=$pr_head"
+              exit 2
+            fi
+            sleep 2
+          done
+          [ "$pr_head" = "$new_head" ] || {
+            echo "FAIL_RECONCILE_SYNC_PR_HEAD_READBACK_TIMEOUT expected=$new_head observed=${pr_head:-<empty>}"
+            exit 2
+          }
+          echo "head_sha=$new_head" >> "$GITHUB_OUTPUT"
+
+      - name: Re-fetch and checkout synced PR head
+        if: steps.preflight.outputs.conflict != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          HEAD_SHA: ${{ steps.sync.outputs.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -94,7 +181,47 @@ jobs:
           GIT_CONFIG_COUNT=1 \
           GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
           GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth_header" \
-            git -C reconcile-head fetch --no-tags origin "refs/heads/main:refs/remotes/origin/main"
+            git -C reconcile-head fetch --no-tags origin "$HEAD_SHA"
+          git -C reconcile-head checkout --detach "$HEAD_SHA"
+          [ "$(git -C reconcile-head rev-parse HEAD)" = "$HEAD_SHA" ] || {
+            echo "FAIL_RECONCILE_SYNC_CHECKOUT_READBACK"
+            exit 2
+          }
+
+      - name: Wait required pre-apply checks on synced head
+        if: steps.preflight.outputs.conflict != 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          EXPECTED_HEAD: ${{ steps.sync.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            pr_head="$(gh api "repos/$REPO/pulls/$PR" --jq '.head.sha')"
+            [ "$pr_head" = "$EXPECTED_HEAD" ] || {
+              echo "FAIL_RECONCILE_SYNC_HEAD_MOVED expected=$EXPECTED_HEAD observed=$pr_head"
+              exit 2
+            }
+            checks="$(gh api --paginate --slurp "repos/$REPO/commits/$EXPECTED_HEAD/check-runs?per_page=100")"
+            guard_args=(--head-sha "$EXPECTED_HEAD")
+            if [ "$attempt" -eq 90 ]; then guard_args+=(--final); fi
+            set +e
+            guard_output="$(printf '%s' "$checks" | python3 trusted/sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_check_guard.py --checks-file trusted/sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json "${guard_args[@]}")"
+            guard_rc=$?
+            set -e
+            echo "$guard_output"
+            if [ "$guard_rc" -eq 0 ]; then exit 0; fi
+            if [ "$attempt" -eq 90 ]; then
+              echo "FAIL_RECONCILE_REQUIRED_CHECK_TIMEOUT"
+              exit 2
+            fi
+            if [ "$guard_rc" -ne 10 ]; then exit 2; fi
+            sleep 5
+          done
+          echo "FAIL_RECONCILE_REQUIRED_CHECK_TIMEOUT"
+          exit 2
 
       - name: Verify exact source against read-only ledger
         id: verify
@@ -104,7 +231,7 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           MAIN_SHA: ${{ steps.preflight.outputs.main_sha }}
-          HEAD_SHA: ${{ steps.preflight.outputs.head_sha }}
+          HEAD_SHA: ${{ steps.sync.outputs.head_sha }}
         shell: bash
         run: |
           set +e
@@ -205,7 +332,7 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           MAIN_SHA: ${{ steps.preflight.outputs.main_sha }}
-          HEAD_SHA: ${{ steps.preflight.outputs.head_sha }}
+          HEAD_SHA: ${{ steps.sync.outputs.head_sha }}
         shell: bash
         run: |
           set -euo pipefail
