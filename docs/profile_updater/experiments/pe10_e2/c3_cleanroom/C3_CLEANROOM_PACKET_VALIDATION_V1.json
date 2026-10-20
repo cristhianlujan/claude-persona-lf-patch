@@ -1,0 +1,29 @@
+{
+  "schema": "PE10_E2_C3_CLEANROOM_PACKET_VALIDATION_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "status": "STRUCTURAL_PASS_NO_PRODUCER_EXECUTION",
+  "common_envelope_sha256": "93d4f5cba4564ddb0cc46f731375d5d83d81b724e195dfc213b2d98fc9ebc090",
+  "common_envelope_git_blob_sha1": "b1fa21e70a38b660d13cf63ee494f08579b0105d",
+  "b18_overlay_sha256": "c450070e7f332a74e5c91115f87df7ad722aa06c81a41b550ba54cf68794bd9b",
+  "b18_overlay_git_blob_sha1": "04f2306514d0bbdf1894b8383cff8696e76dc1d5",
+  "b29_overlay_sha256": "a39ac7843d5a869de7ae8b6488b13f93082febd02375dd31aa3ea170372d6de5",
+  "b29_overlay_git_blob_sha1": "ba85092fe4129486fd19e9b616458cff00618dee",
+  "validator_git_blob_sha1": "2617cf3f3fe94f162a007f441130e1a563fa6901",
+  "local_validation": {
+    "status": "PASS",
+    "same_common_p0": true
+  },
+  "invariants": {
+    "case_unchanged": true,
+    "source_event_id": 20161,
+    "source_cutoff_unchanged": true,
+    "evaluator_outputs_in_producer_packets": false,
+    "other_arm_outputs_in_producer_packets": false,
+    "current_replay_as_historical_p0": false
+  },
+  "limitations": [
+    "This receipt validates only packet structure and parity.",
+    "It does not attest a clean model context, provider independence, B18/B29 execution, semantic correctness, or C3 completion."
+  ],
+  "checkpoint_effect": "NONE"
+}
