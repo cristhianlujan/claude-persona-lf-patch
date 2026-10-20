@@ -1,0 +1,136 @@
+{
+  "schema": "PE10_E2_S2_VALIDATION_V1",
+  "scope": "EVALUATOR_ONLY_METHOD_RULE_VALIDATION_NOT_C3_PRODUCER_INPUT",
+  "validation_date": "2026-10-20",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "status": "VALIDATED_CANDIDATE_NOT_ACTIVATED",
+  "source_epoch_notice": "All Supabase observations in this receipt are CURRENT read-only observations on 2026-10-20 unless explicitly marked historical. They do not reconstruct P0 state as of 2026-10-15.",
+  "round_1_discriminant_controls": [
+    {
+      "id": "A_COMPLETE_CURRENT",
+      "expected": "CLEAR_NO_ACTION",
+      "observed": "CLEAR_NO_ACTION",
+      "passed": true
+    },
+    {
+      "id": "B_3_PLAIN_OMITTED",
+      "expected": "VERIFY_MINOR",
+      "observed": "VERIFY_MINOR",
+      "passed": true
+    },
+    {
+      "id": "C_CRON_PRESENT_UNREACHABLE",
+      "expected": "CLEAR_NO_ACTION",
+      "observed": "CLEAR_NO_ACTION",
+      "passed": true
+    },
+    {
+      "id": "D_DEMONSTRATED_DEFECT",
+      "expected": "REPAIR_REQUIRED",
+      "observed": "REPAIR_REQUIRED",
+      "passed": true
+    }
+  ],
+  "round_2_adversarial_controls": [
+    {
+      "id": "ADV_CRON_UNREACHABLE",
+      "expected": "VERIFY_MINOR",
+      "observed": "VERIFY_MINOR",
+      "passed": true
+    },
+    {
+      "id": "ADV_EDGE_SOURCE_ONLY",
+      "expected": "VERIFY_MINOR",
+      "observed": "VERIFY_MINOR",
+      "passed": true
+    },
+    {
+      "id": "ADV_SECDEF_NOT_CALLABLE",
+      "expected": "VERIFY_MINOR",
+      "observed": "VERIFY_MINOR",
+      "passed": true
+    },
+    {
+      "id": "ADV_CRON_REACHABLE",
+      "expected": "VERIFY_CRITICAL",
+      "observed": "VERIFY_CRITICAL",
+      "passed": true
+    },
+    {
+      "id": "ADV_DEFECT_PROVEN",
+      "expected": "REPAIR_REQUIRED",
+      "observed": "REPAIR_REQUIRED",
+      "passed": true
+    }
+  ],
+  "current_read_only_observations": {
+    "p0_inventory_hash_replay": {
+      "total": 38,
+      "equal": 16,
+      "modified": 22,
+      "null": 0,
+      "missing": 0,
+      "valid_len32": 38
+    },
+    "cron": {
+      "active_jobs_total": 9,
+      "subject_reaching_jobs": 1,
+      "subject_reaching_job_id": 45,
+      "schedule": "30 seconds",
+      "route": [
+        "programacion.fn_input_governance_queue_worker_v1",
+        "programacion.fn_input_governance_direct_step_v1",
+        "programacion.fn_input_governance_curator_materialize_v1",
+        "programacion.fn_input_governance_recurate_v2",
+        "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2"
+      ],
+      "other_active_jobs_not_reaching_subject": 8
+    },
+    "triggers": {
+      "enabled_user_triggers": 377,
+      "triggers_reaching_subject": 0
+    },
+    "security_definer_control": {
+      "function": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+      "security_definer": true,
+      "proacl_null": true,
+      "authenticated_execute_bit": true,
+      "authenticated_schema_usage": false,
+      "authenticated_effective_call": false,
+      "service_role_execute_bit": true,
+      "service_role_schema_usage": false,
+      "service_role_effective_call": false
+    },
+    "edge_control": {
+      "source_path": "supabase/functions/input-governance-curator-v1/index.ts",
+      "source_blob_sha1": "bd43f469d5d508f64dbee21eea7be611e7d2e780",
+      "source_calls_curator_materialize": true,
+      "historical_active_evidence_found": true,
+      "current_deployment_readback_performed": false
+    },
+    "p0_current_replay_decision": "VERIFY_CRITICAL",
+    "repair_required_demonstrated": false
+  },
+  "local_validator_tests": {
+    "validator": "sandbox/lf_contract_gate_test/pe10_e2/decision_rule_s2_validator_v1.py",
+    "execution": "local deterministic harness against the exact canonical validator source",
+    "cases": 15,
+    "passed": 15,
+    "failed": 0,
+    "errors": 0,
+    "persisted_matrix": "round_1_discriminant_controls + round_2_adversarial_controls + fail-closed validator branches documented in this receipt"
+  },
+  "limitations": [
+    "n=1 per empirical control cell; deterministic tests cover branch behavior but not agent variance.",
+    "No real case was found where a cron reaches an intermediate node but not the subject; that boundary is covered synthetically.",
+    "Current Edge deployment was not re-read live in this validation, so Git source alone is deliberately non-critical.",
+    "The P0 current replay is not a historical certification and is evaluator-only.",
+    "No C3 blindness or producer independence is certified by this rule validation."
+  ],
+  "checkpoint_preservation": {
+    "PE10_E2_C2": "DONE_UNCHANGED",
+    "PE10_E2_C3": "PENDING_UNCHANGED",
+    "PE10_E2_C4": "PENDING_UNCHANGED",
+    "original_32_methods": "UNCHANGED"
+  }
+}

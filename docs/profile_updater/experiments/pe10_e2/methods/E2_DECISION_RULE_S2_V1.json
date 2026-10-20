@@ -1,0 +1,75 @@
+{
+  "schema": "PE10_E2_DECISION_RULE_S2_V1",
+  "change_type": "ADDITIVE_METHOD_REVISION_NOT_RETROACTIVE_REWRITE",
+  "extends_contract": {
+    "path": "docs/profile_updater/experiments/pe10_e2/methods/M18_M29_E2_GENERIC_METHOD_CONTRACTS_V1.json",
+    "git_blob_sha1": "5f0f1ca02adf711e3d4144072e1247c300be19c5"
+  },
+  "applies_to": [
+    "PE10_M18_E2",
+    "PE10_M29_E2"
+  ],
+  "originals_immutable": [
+    "PE10_M18",
+    "PE10_M29",
+    "PE10_E2_C2_METHOD_VALIDATION_V1"
+  ],
+  "case_invariant": "PE10-IG-M107-M109-P0",
+  "decision_order": [
+    "REPAIR_REQUIRED",
+    "MEASURE_FIRST",
+    "VERIFY_CRITICAL",
+    "CLEAR_NO_ACTION",
+    "VERIFY_MINOR"
+  ],
+  "decisions": {
+    "MEASURE_FIRST": "Use when either the historical hash comparison or the reverse consumer census has not been measured. Do not infer safety, risk, or repair before both measurements exist.",
+    "CLEAR_NO_ACTION": "Use only when measured hashes are all current, there is no material drift or extra consumer, and no critical reachable exposure path has been measured.",
+    "VERIFY_MINOR": "Use when drift or extra consumers exist but no measured critical reachable exposure path reaches the subject and no concrete defect is proven.",
+    "VERIFY_CRITICAL": "Use when at least one measured exposure path reaches the subject and satisfies the class-specific evidence gate. This is a verification priority, not proof of defect.",
+    "REPAIR_REQUIRED": "Use only when a concrete defect or regression is demonstrated and bound to explicit evidence references. Exposure, drift, or lexical references alone cannot justify repair."
+  },
+  "measurement_floor": {
+    "hash_comparison": {
+      "required": true,
+      "method": "compare each historical inventory definition_md5 to current md5(pg_proc.prosrc)",
+      "reconciliation": "equal + modified + null + missing = total; valid_len32 + null = total",
+      "epoch_limit": "CURRENT comparison is not historical P0 runtime evidence"
+    },
+    "reverse_consumer_census": {
+      "required": true,
+      "source": "GENERIC_REVERSE_CONSUMER_CENSUS_V1.sql",
+      "identity_rule": "schema+function+identity args or OID; preserve ambiguity and unresolved objects",
+      "runtime_limit": "static call candidate is not runtime execution proof"
+    }
+  },
+  "critical_exposure_gates": {
+    "cron": "active=true AND measured route reaches subject",
+    "trigger": "active/enabled=true AND measured route reaches subject",
+    "edge": "source inspected AND deployment attested for the evaluated epoch AND measured route reaches subject",
+    "security_definer": "SECURITY DEFINER=true AND effective callable privilege is demonstrated for a relevant principal AND measured route reaches subject"
+  },
+  "anti_false_positive_rules": [
+    "Presence of a cron job without reachability is not critical.",
+    "Presence of a trigger without reachability is not critical.",
+    "Edge source in Git without deployment attestation is not critical by itself.",
+    "SECURITY DEFINER plus proacl NULL is not effective exposure by itself; schema USAGE and function EXECUTE must reconcile for the principal.",
+    "VERIFY_CRITICAL never implies REPAIR_REQUIRED without a demonstrated defect.",
+    "Every exposure classification must cite one or more query/evidence IDs."
+  ],
+  "producer_visibility": {
+    "rule_and_generic_validator": "ALLOWED",
+    "evaluator_validation_results": "DENIED_UNTIL_RAW_FREEZE",
+    "reserved_expected_discoveries": "DENIED",
+    "other_arm_outputs": "DENIED"
+  },
+  "validator": "sandbox/lf_contract_gate_test/pe10_e2/decision_rule_s2_validator_v1.py",
+  "tests": {
+    "execution": "local deterministic validation against canonical validator",
+    "cases": 15,
+    "passed": 15,
+    "receipt": "docs/profile_updater/experiments/pe10_e2/evaluator_only/PE10_E2_S2_VALIDATION_V1.json"
+  },
+  "activation": "VALIDATED_CANDIDATE_NOT_ACTIVATED",
+  "checkpoint_effect": "NONE; C2 historical receipt remains immutable and C3/C4 states are not changed by this revision"
+}
