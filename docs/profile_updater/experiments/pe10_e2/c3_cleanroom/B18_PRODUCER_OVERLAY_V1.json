@@ -1,0 +1,24 @@
+{
+  "schema": "PE10_E2_C3_PRODUCER_OVERLAY_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "common_envelope_sha256": "93d4f5cba4564ddb0cc46f731375d5d83d81b724e195dfc213b2d98fc9ebc090",
+  "common_envelope_path": "docs/profile_updater/experiments/pe10_e2/c3_cleanroom/COMMON_P0_INPUT_ENVELOPE_V1.json",
+  "producer_instruction": "Act as the actual producer investigator. Use only the common envelope plus this assigned overlay. Execute five role-bound research passes, freeze each RAW before synthesis, then synthesize from only those five reports. Do not inspect evaluator-only files, prior PE10 result summaries, original M01-M32 outputs, or the other arm. If prior PE10 findings are already visible before source access, mark CONTAMINATED and do not claim blind independence.",
+  "output_state_before_external_grading": "RAW_FROZEN_UNGRADED",
+  "forbidden_claims": [
+    "blind independence without environment-level evidence",
+    "P0 historical proof from CURRENT readbacks",
+    "runtime execution from static lexical reference",
+    "REPAIR_REQUIRED without demonstrated defect",
+    "checkpoint DONE without governed closure"
+  ],
+  "producer_arm": "B18",
+  "evolved_variant": "PE10_M18_E2",
+  "original_method": "PE10_M18",
+  "base": "B",
+  "algorithms": [
+    "D"
+  ],
+  "original_execution_contract_sha256": "0a36c488883b8c0e47a166db6dd859f20df92618cb81307d934af891e047fb5c",
+  "overlay_sha256": "c450070e7f332a74e5c91115f87df7ad722aa06c81a41b550ba54cf68794bd9b"
+}
