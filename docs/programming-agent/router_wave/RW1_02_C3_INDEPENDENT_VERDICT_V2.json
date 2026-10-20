@@ -1,0 +1,53 @@
+{
+  "schema_version": "RW1_02_C3_INDEPENDENT_VERDICT_V2",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-02",
+  "checkpoint_code": "RW1-02_C3",
+  "checkpoint_id": 1612,
+  "work_item_id": 1128,
+  "asset": "ACT-0001",
+  "blind_verdict": "PASS",
+  "final_selection": "A_MIN_ROUTER_SEMANTIC_SPECIALIST",
+  "selection_basis": "hard_failures tie A/C at 0; lexicographic tiebreak core_router_semantic_rule_change_touches A=0 < C=1; no weights",
+  "source_snapshot_commit": "469089b796cae8de01c9506c52c9ae9b72d97d0d",
+  "execution": {
+    "workflow_pr": 2978,
+    "main_after_merge": "1eee38ff814ccdb192792fe5c91da481993bce98",
+    "actions_artifact_id": 12296036918,
+    "raw1_sha256": "5789780dbc7e7842bccc1b794ee0f447f266cd8e1ed69f27b23ff1a46b98b831",
+    "raw2_sha256": "ae951406dbf4b8c94f8cdcc1b99a95f142395c79e33cad67f8d83a25af69fc8a",
+    "raw1_unchanged_after_reveal": true,
+    "local_reproduction": "review_rw102_c3_adversarial_v2.py re-run locally on the frozen snapshot produced byte-identical RAW1 and RAW2 hashes"
+  },
+  "counts": {
+    "public_cases": 36,
+    "candidates": 4,
+    "eligible": 3,
+    "adversarial_mutations_total": 37,
+    "a_mutations": 8,
+    "c_mutations": 8,
+    "selection_policy_mutations": 8,
+    "novel_falsifiers": 2,
+    "invalid_must_reject": 32,
+    "invalid_false_accepts": 0,
+    "valid_sensitivity_cases": 5,
+    "valid_sensitivity_false_rejects": 0,
+    "material_blockers": 0
+  },
+  "independent_attestation": {
+    "independent_judge_attested": true,
+    "judge_kind": "GPT_NATIVE_NEW_CHAT_NO_PRODUCER_CONTEXT",
+    "provider_attested": false,
+    "judge_identity_ref": "gpt-native://rw1-02-c3-v2-independent-attestation/chat/6ad7d9a4-7f58-83e8-b855-b79a4db66c09",
+    "evidence_presented": "compact form of RAW1: ROWS sha256 9be84c5ffc614fd5a601eb761f35dc1b5baaaae9de51be51f213c70fcd594b0e, REST sha256 9d403d7de680203ccc34e41747752e79c8e25599d24315f3ff12e18fd2793d05; the judge verified both hashes, counts, scoreboard and the absence of runtime/production/latency/cost claims",
+    "round_1_finding": "TIEBREAK_NOT_INDEPENDENTLY_VERIFIABLE: the packet lacked the frozen tiebreak rule; judge returned no PASS",
+    "round_2": "frozen selection_policy and rank_key supplied from corpus blob cf22d9889eb008dc7afcf64dd1b3712b9536ec98 and validator blob 3c0a6eb4419574accf2138725ef8cd95d4ef210e; judge re-ran the tiebreak in Python and returned PASS with zero material defects and attested=true",
+    "owner_approved_precedent": "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT"
+  },
+  "scope_boundary": "RW102_C3_V2_INDEPENDENT_ARCHITECTURE_ASSURANCE_ONLY_NOT_ROUTER_RUNTIME_OR_PRODUCTION",
+  "claims": {
+    "no_router_runtime_claim": true,
+    "no_production_mutation": true,
+    "latency_cost_not_invented": true
+  }
+}
