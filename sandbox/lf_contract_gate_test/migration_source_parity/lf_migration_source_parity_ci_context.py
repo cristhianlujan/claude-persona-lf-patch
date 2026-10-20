@@ -51,6 +51,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_legal_c1_03_04_05_evidencia_v1",  # SALY-only normative C1 legal SBS/payroll/autofunding evidence.
     "saly_fondeo_dictamen_legal_matriz_v1",  # SALY-only C1/C2/C3 legal feasibility criteria for six funding routes.
     "saly_fondeo_escenarios_tributarios_v1",  # SALY six funding-tax what-if scenarios only.
     "saly_autofondeo_prestamo_planilla_premisa_v1",  # SALY business-premise correction only; exact migration name.
