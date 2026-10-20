@@ -19,6 +19,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v3.py'
       - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v3.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/certify_rw101_c3_v3_functional.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_BLIND_JUDGE_HANDOFF_V3.md'
       - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
       - 'docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json'
@@ -124,6 +125,29 @@ jobs:
           assert len({x['id'] for x in p['cases']})==12
           print(json.dumps({'status':'C3_V2_GENERATOR_SMOKE_PASS','case_count':12}))
           PY
+
+      - name: Execute RW1-01 C3 V3 functional certification
+        env:
+          RW101_CERT_OUT: /tmp/rw101_c3_v3_cert
+        run: |
+          set -euo pipefail
+          test "$(git hash-object sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v3.py)" = "8a58e7a163f5998c9b81ec9b7bafa1272a8b4507"
+          test "$(git hash-object sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v3.py)" = "0ca2689b26e55fc6a1d447e68d674b989bf62caa"
+          test "$(git hash-object sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py)" = "8a3fdcd7118703206bbf73cbc394c30313b8b510"
+          test "$(git hash-object sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py)" = "ba48eb61efff3865f13f993e258cbd73741a4981"
+          test "$(git hash-object docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json)" = "55c09eb0fc6ddffa7a41d66eddf9c254e061f566"
+          python3 sandbox/lf_contract_gate_test/router_wave/certify_rw101_c3_v3_functional.py
+          cat /tmp/rw101_c3_v3_cert/RAW1_FUNCTIONAL.json
+          cat /tmp/rw101_c3_v3_cert/REVEAL.json
+          cat /tmp/rw101_c3_v3_cert/FINAL_FUNCTIONAL.json
+
+      - name: Upload RW1-01 C3 V3 certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rw101-c3-v3-functional-cert
+          path: /tmp/rw101_c3_v3_cert/
+          if-no-files-found: error
 
       - name: Execute RW1-02 C2 architecture competition benchmark
         run: |
