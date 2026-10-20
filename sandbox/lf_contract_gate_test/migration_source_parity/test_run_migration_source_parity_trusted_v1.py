@@ -82,7 +82,7 @@ def main() -> int:
 
     # 3. Read-only credential only.
     expect_fail(m, "BLOCK_MIGRATION_PARITY_RO_PASSWORD_MISSING",
-                lambda: with_env({m.CI_READONLY_PASSWORD_ENV: None, m.WRITE_PASSWORD_ENV: "w"}, m.readonly_pg_env))
+                lambda: with_env({m.CI_READONLY_PASSWORD_ENV: None, m.WRITE_PASSWORD_ENV: "w", m.RO_URL_ENV: None}, m.readonly_pg_env))
     env = with_env({m.CI_READONLY_PASSWORD_ENV: "ro", m.WRITE_PASSWORD_ENV: "w",
                     "SUPABASE_PROJECT_ID": "", "SUPABASE_POOLER_HOST": ""}, m.readonly_pg_env)
     assert env["PGUSER"] == f"lf_ci_readonly.{m.PROJECT_ID}" and env["PGPASSWORD"] == "ro"
