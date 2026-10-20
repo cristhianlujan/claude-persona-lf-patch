@@ -47,6 +47,10 @@ The readback must be `QUALIFIED`, match exact candidate/repository/base/head, id
 
 No exact receipt returns `MISSING` and blocks. Stale base/head, candidate/repository drift, malformed payload, invalid validator revision or non-qualified result also block fail-closed.
 
+### Database credential (read-only)
+
+The carrier connects only as the CI read-only role `lf_ci_readonly` (GitHub environment `lf-ci-readonly`, secret `LF_SUPABASE_DB_READONLY_PASSWORD`) and calls `public.lf_ci_control_system_qualification_readback_v1(...)`, a `SECURITY DEFINER` wrapper that delegates to `lf_control_system_qualification_readback_v1` and is executable only by `lf_ci_readonly` and `service_role`. The role gets no table or schema grants. If the read-only secret is missing the carrier blocks with `BLOCK_PASE_MERGE_GATE_QUALIFICATION_RO_PASSWORD_MISSING`; it never reads `LF_SUPABASE_DB_PASSWORD` and strips it from the `psql` child environment. Test: `test_pase_merge_gate_carrier_readonly_v1.py`.
+
 ## Trust boundary
 
 The workflow checks out exactly `github.event.pull_request.base.sha`. Candidate objects are fetched only so trusted base code can compute the Git diff. Candidate workflows, Python modules, build hooks and package code are never executed by this carrier.

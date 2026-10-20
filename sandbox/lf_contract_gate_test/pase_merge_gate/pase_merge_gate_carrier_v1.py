@@ -92,16 +92,28 @@ def validate_identity(*, repository: str, head_repository: str, base_sha: str, h
         _fail("BLOCK_PASE_MERGE_GATE_EMPTY_RANGE")
 
 
+CI_READONLY_ROLE = "lf_ci_readonly"
+CI_READONLY_PASSWORD_ENV = "LF_SUPABASE_DB_READONLY_PASSWORD"
+CI_READBACK_FUNCTION = "public.lf_ci_control_system_qualification_readback_v1"
+
+
 def _pg_env() -> dict[str, str]:
-    password = os.environ.get("LF_SUPABASE_DB_PASSWORD", "").strip()
+    """Read-only CI connection only (environment lf-ci-readonly).
+
+    The write credential (LF_SUPABASE_DB_PASSWORD / postgres) is never read here,
+    even when present: its absence of use is part of the contract.
+    """
+    password = os.environ.get(CI_READONLY_PASSWORD_ENV, "").strip()
     if not password:
-        _fail("BLOCK_PASE_MERGE_GATE_QUALIFICATION_DB_PASSWORD_MISSING")
+        _fail("BLOCK_PASE_MERGE_GATE_QUALIFICATION_RO_PASSWORD_MISSING")
+    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip() or PROJECT_ID
     env = os.environ.copy()
+    env.pop("LF_SUPABASE_DB_PASSWORD", None)
     env.update(
         {
-            "PGHOST": os.environ.get("SUPABASE_POOLER_HOST", POOLER_HOST),
+            "PGHOST": os.environ.get("SUPABASE_POOLER_HOST", "").strip() or POOLER_HOST,
             "PGPORT": "5432",
-            "PGUSER": f"postgres.{os.environ.get('SUPABASE_PROJECT_ID', PROJECT_ID)}",
+            "PGUSER": f"{CI_READONLY_ROLE}.{project}",
             "PGPASSWORD": password,
             "PGDATABASE": "postgres",
             "PGSSLMODE": "require",
@@ -134,7 +146,7 @@ def _psql_json(sql: str, *, variables: Mapping[str, str]) -> Any:
 
 def _qualification_readback_from_db(*, repository: str, candidate_id: str, base_sha: str, head_sha: str) -> dict[str, Any]:
     sql = r"""
-select public.lf_control_system_qualification_readback_v1(
+select public.lf_ci_control_system_qualification_readback_v1(
   :'candidate_id', :'repository', :'base_sha', :'head_sha'
 )::text;
 """
