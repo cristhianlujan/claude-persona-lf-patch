@@ -1,0 +1,104 @@
+{
+  "schema": "PE10_E2_C3_CLEANROOM_COMMON_ENVELOPE_V1",
+  "purpose": "Identical producer input envelope for PE10_E2_C3 B18/B29 reruns; no evaluator results or prior-arm outputs.",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "source_cutoff_utc": "2026-10-15T00:00:00Z",
+  "source_event": {
+    "id": 20161,
+    "created_at": "2026-10-04T05:14:40.880842Z",
+    "payload_sha256": "5ed03a1274444b49c630124ab26ed183ac964df503ba80b9baa5a0c9d95ae6cd",
+    "historical_inventory_count": 38
+  },
+  "historical_ekb": [
+    {
+      "codigo": "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+      "row_json_sha256": "9a2e10e0700d6bce30f354fee1c2e72c9dbbefbe8c7e40d91f6b27f53f5aa17c"
+    },
+    {
+      "codigo": "IG-M107-SOAK-CRITERION-DRIFT-001",
+      "row_json_sha256": "065c722da4d6feba76fc6c35c2fabef7ab97b4594e3974fb333b098f56e94d9d"
+    }
+  ],
+  "git_sources": {
+    "p0_protocol": {
+      "path": "docs/profile_updater/experiments/pe10_ig_reparador_ab_20261017/P0_CASE_AND_PROTOCOL.md",
+      "git_blob_sha1": "9cecaab714f6173a725bbb11e7043e8255889e71"
+    },
+    "e2_method_contract": {
+      "path": "docs/profile_updater/experiments/pe10_e2/methods/M18_M29_E2_GENERIC_METHOD_CONTRACTS_V1.json",
+      "git_blob_sha1": "5f0f1ca02adf711e3d4144072e1247c300be19c5"
+    },
+    "generic_census": {
+      "path": "docs/profile_updater/experiments/pe10_e2/methods/GENERIC_REVERSE_CONSUMER_CENSUS_V1.sql",
+      "git_blob_sha1": "93e144f6232dee2e82e2c7f4207a885b089b8685"
+    },
+    "generic_validator": {
+      "path": "sandbox/lf_contract_gate_test/pe10_e2/generic_census_validator_v1.py",
+      "git_blob_sha1": "5808c220cf169ae6796725b306245660d0c75e9d"
+    },
+    "s2_rule": {
+      "path": "docs/profile_updater/experiments/pe10_e2/methods/E2_DECISION_RULE_S2_V1.json",
+      "git_blob_sha1": "b3141ce75c793e1f53f429b89b86d71db99cea2c"
+    }
+  },
+  "modules": {
+    "B": "7341b9fa62cd5501f9fedc7fe07a1609c2a7eec67b387ec43fa672f0a0f48faa",
+    "C": "8cd3e66b1c81880a98896b38f2695ff2eeff59390cdf31c878422cb17f3fe462",
+    "D": "da04ec645508ad45d31154885498720e6bc287474e8aa88066e5c4fe0ff4b130",
+    "E": "f8e327df11b6b450a51411cf64569e9fa33d66653a2e52d1863b362db47d216c"
+  },
+  "roles": {
+    "ARCHITECTURE": "73a50dde20254d69789f49f6c690d251159087c9db02814b37a44aabc50d1f09",
+    "PERFORMANCE": "da931944366562b37398f321f6de6820015bf97135741f6ac45e3e7732a9a5c5",
+    "AUTHORITY": "5341281b99103d1490966612d915df6c9908ce98f0397cc89b97f839c1074a5b",
+    "COVERAGE": "44cd235c1fddfcd481bfc5bc4bafdb681b957ae70335ebfae9caf85f19e62502",
+    "INNOVATION": "37ae627359adbf572c1d533681a225f25054120592b931c9bd221468abd882e4",
+    "SYNTHESIZER": "d383c0b412b419af79d8a17e6aab548512f5475eb9f9996ce85b9794e5a1af62"
+  },
+  "producer_allowlist": [
+    "source_event_20161",
+    "two_historical_ekb_rows_listed_in_this_envelope",
+    "git_sources_listed_in_this_envelope",
+    "assigned_original_method_contract",
+    "assigned_module_definitions",
+    "assigned_role_contracts",
+    "authorized current read-only schema/source readbacks, explicitly labeled CURRENT"
+  ],
+  "producer_denylist": [
+    "docs/profile_updater/experiments/pe10_e2/evaluator_only/**",
+    "docs/profile_updater/experiments/pe10_methods32_p0/**",
+    "prior PE10 result summaries or expected discoveries",
+    "other C3 producer arm RAW/output",
+    "external evaluator rubric/results",
+    "post-cutoff observations represented as P0 historical facts"
+  ],
+  "environment_gate": {
+    "must_be_new_producer_context": true,
+    "prior_pe10_results_visible_before_source_access": "MUST_BE_FALSE",
+    "memory_or_prior_context_inheritance": "MUST_BE_DISABLED_OR_ABSENT",
+    "self_report_alone_is_not_provider_attestation": true,
+    "if_isolation_unknown_or_prior_results_visible": "MARK_CONTAMINATED_AND_DO_NOT_CLAIM_BLIND"
+  },
+  "execution_rules": {
+    "mode": "READ_ONLY",
+    "same_case": true,
+    "no_arbitrary_query_limit": true,
+    "five_role_reports_freeze_before_synthesis": true,
+    "synthesizer_receives_only_five_frozen_role_reports": true,
+    "current_readbacks_are_not_historical_proof": true,
+    "no_ready_done_repair_from_lexical_reference": true,
+    "raw_must_freeze_before_evaluator_access": true
+  },
+  "required_provenance_output": [
+    "producer_context_id",
+    "input_envelope_sha256",
+    "assigned_overlay_sha256",
+    "source_access_log_with_hashes",
+    "denylist_access_log",
+    "environment_isolation_attestation",
+    "five_role_raw_sha256",
+    "synthesis_sha256",
+    "raw_freeze_timestamp_utc",
+    "blindness_state"
+  ]
+}
