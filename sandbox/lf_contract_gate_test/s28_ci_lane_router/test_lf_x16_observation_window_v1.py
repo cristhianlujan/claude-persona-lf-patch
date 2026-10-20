@@ -52,10 +52,10 @@ class ObservationWindowFixturesTest(unittest.TestCase):
 
     def test_failure_path_repaired_after_failure_is_not_candidate(self):
         report = MODULE.analyze_window(
-            check="PASE / MIGRATION_SOURCE_PARITY", since="2026-10-14T00:00:00Z",
+            check="migration-source-parity", since="2026-10-14T00:00:00Z",
             pulls=[{"number": 43, "title": "fixture", "state": "closed", "merged_at": "2026-10-15T00:00:00Z"}],
             check_runs_by_pr={"43": [{
-                "id": 9002, "name": "PASE / MIGRATION_SOURCE_PARITY", "status": "completed",
+                "id": 9002, "name": "migration-source-parity", "status": "completed",
                 "conclusion": "failure", "started_at": "2026-10-14T12:00:00Z", "completed_at": "2026-10-14T12:05:00Z",
             }]},
             files_by_pr={"43": ["supabase/migrations/1_lf_fixture.sql"]},
@@ -79,6 +79,50 @@ class ObservationWindowFixturesTest(unittest.TestCase):
         self.assertEqual(report["thresholds"]["unresolved_failure_evidence"], 1)
         self.assertFalse(report["thresholds"]["window_ready"])
 
+
+    def test_parity_accepts_current_and_legacy_check_names(self):
+        self.assertEqual(
+            MODULE.canonical_check("migration-source-parity"),
+            "pase-migration-source-parity",
+        )
+        self.assertEqual(
+            MODULE.canonical_check("PASE / MIGRATION_SOURCE_PARITY"),
+            "pase-migration-source-parity",
+        )
+        self.assertTrue(
+            MODULE.check_matches("migration-source-parity", "pase-migration-source-parity")
+        )
+        self.assertTrue(
+            MODULE.check_matches("PASE / MIGRATION_SOURCE_PARITY", "pase-migration-source-parity")
+        )
+
+    def test_current_parity_check_wins_over_legacy_skipped_alias(self):
+        report = MODULE.analyze_window(
+            check="migration-source-parity",
+            since="2026-10-20T17:49:31Z",
+            pulls=[{"number": 2980, "title": "fixture", "state": "closed", "merged_at": None}],
+            check_runs_by_pr={"2980": [
+                {
+                    "id": 1,
+                    "name": "migration-source-parity",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "started_at": "2026-10-20T20:00:00Z",
+                },
+                {
+                    "id": 2,
+                    "name": "PASE / MIGRATION_SOURCE_PARITY",
+                    "status": "completed",
+                    "conclusion": "skipped",
+                    "started_at": "2026-10-20T20:01:00Z",
+                },
+            ]},
+            files_by_pr={"2980": ["sandbox/example.py"]},
+            now="2026-10-20T21:00:00Z",
+        )
+        self.assertEqual(report["thresholds"]["total_prs"], 1)
+        self.assertEqual(report["pull_requests"][0]["check_run_id"], "1")
+        self.assertEqual(report["pull_requests"][0]["conclusion"], "success")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
