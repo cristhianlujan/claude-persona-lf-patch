@@ -188,7 +188,7 @@ jobs:
           RW102_C3_V2_OUT: /tmp/rw102_c3_v2_review
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 origin fa6e679fc3df5ff2f9d67338aec4901a78c023c1
+          git fetch --no-tags --depth=1 origin 469089b796cae8de01c9506c52c9ae9b72d97d0d
           python3 sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v2.py
           cat /tmp/rw102_c3_v2_review/FINAL.json
 
