@@ -106,12 +106,12 @@ def _pg_env() -> dict[str, str]:
     password = os.environ.get(CI_READONLY_PASSWORD_ENV, "").strip()
     if not password:
         _fail("BLOCK_PASE_MERGE_GATE_QUALIFICATION_RO_PASSWORD_MISSING")
-    project = os.environ.get("SUPABASE_PROJECT_ID", PROJECT_ID)
+    project = os.environ.get("SUPABASE_PROJECT_ID", "").strip() or PROJECT_ID
     env = os.environ.copy()
     env.pop("LF_SUPABASE_DB_PASSWORD", None)
     env.update(
         {
-            "PGHOST": os.environ.get("SUPABASE_POOLER_HOST", POOLER_HOST),
+            "PGHOST": os.environ.get("SUPABASE_POOLER_HOST", "").strip() or POOLER_HOST,
             "PGPORT": "5432",
             "PGUSER": f"{CI_READONLY_ROLE}.{project}",
             "PGPASSWORD": password,

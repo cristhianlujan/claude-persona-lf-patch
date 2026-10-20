@@ -87,6 +87,15 @@ def main() -> int:
     assert "postgres." not in env["PGUSER"]
     checks += 1
 
+    # 3b. Empty repository variables fall back to the trusted constants (no "lf_ci_readonly." user).
+    env = with_env(
+        {"LF_SUPABASE_DB_READONLY_PASSWORD": "ro-secret", "SUPABASE_PROJECT_ID": "", "SUPABASE_POOLER_HOST": ""},
+        m._pg_env,
+    )
+    assert env["PGUSER"] == f"lf_ci_readonly.{m.PROJECT_ID}", env["PGUSER"]
+    assert env["PGHOST"] == m.POOLER_HOST, env["PGHOST"]
+    checks += 1
+
     # 4. The readback goes through the CI read-only wrapper, not the invoker function.
     captured: dict[str, object] = {}
 
