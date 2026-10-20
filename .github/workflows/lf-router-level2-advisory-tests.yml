@@ -33,6 +33,7 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v2.py'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V2.json'
       - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v1.py'
@@ -181,6 +182,23 @@ jobs:
             docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V2.json \
             docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json \
             --self-test
+
+      - name: Execute RW1-02 C3 V2 adversarial review
+        env:
+          RW102_C3_V2_OUT: /tmp/rw102_c3_v2_review
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin 469089b796cae8de01c9506c52c9ae9b72d97d0d
+          python3 sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v2.py
+          cat /tmp/rw102_c3_v2_review/FINAL.json
+
+      - name: Upload RW1-02 C3 V2 adversarial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rw102-c3-v2-adversarial-review
+          path: /tmp/rw102_c3_v2_review/
+          if-no-files-found: error
 
       - name: Execute RW1-02 C2 architecture competition benchmark
         run: |
