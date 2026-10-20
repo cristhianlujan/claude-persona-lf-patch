@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy, hashlib, importlib.util, json, os, subprocess
 from pathlib import Path
 
-SNAPSHOT="fa6e679fc3df5ff2f9d67338aec4901a78c023c1"
+SNAPSHOT="469089b796cae8de01c9506c52c9ae9b72d97d0d"
 OUT=Path(os.environ.get("RW102_C3_V2_OUT","/tmp/rw102_c3_v2_review"))
 OUT.mkdir(parents=True,exist_ok=True)
 A="A_MIN_ROUTER_SEMANTIC_SPECIALIST"
