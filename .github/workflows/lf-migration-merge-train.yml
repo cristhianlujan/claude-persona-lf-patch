@@ -542,6 +542,22 @@ jobs:
           echo "FAIL_TRAIN_REQUIRED_CHECK_TIMEOUT"
           exit 2
 
+      - name: Require read-only parity credential and trusted runner before apply
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
+        env:
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Post-apply parity runs only trusted main code with the existing read-only
+          # credential (lf_reconcile_readonly). Fail before any database write if
+          # either prerequisite is missing.
+          [ -n "${LF_SUPABASE_RO_DATABASE_URL:-}" ] || { echo "FAIL_TRAIN_PARITY_RO_CREDENTIAL_MISSING"; exit 2; }
+          runner=sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_trusted_v1.py
+          [ -f "$runner" ] || { echo "FAIL_TRAIN_PARITY_TRUSTED_RUNNER_MISSING"; exit 2; }
+          python3 -I sandbox/lf_contract_gate_test/migration_source_parity/test_run_migration_source_parity_trusted_v1.py
+          echo "PASS_TRAIN_PARITY_PREREQUISITES"
+
       - name: Persist exact source and require Saga READY_TO_APPLY
         id: write_ahead
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1' && steps.plan.outputs.already_applied_exact != 'true'
@@ -717,7 +733,9 @@ jobs:
         id: parity
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.plan.outputs.migration_count == '1'
         env:
-          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          # Read-only credential only (lf_reconcile_readonly); the trusted runner never
+          # reads LF_SUPABASE_DB_PASSWORD.
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
           GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ steps.admission.outputs.current_main }}
@@ -726,21 +744,24 @@ jobs:
         run: |
           set -euo pipefail
           [ -n "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_MISSING"; exit 2; }
-          git fetch --no-tags origin "$PARITY_HEAD"
-          git checkout --detach "$PARITY_HEAD"
-          observed="$(git rev-parse HEAD)"
+          # The workspace stays on trusted main (code). The candidate is a separate
+          # checkout read only as Git data; nothing from it is imported or executed.
+          candidate="$RUNNER_TEMP/lf-train-parity-candidate"
+          rm -rf "$candidate"
+          git clone -q --shared --no-checkout "$GITHUB_WORKSPACE" "$candidate"
+          git -C "$candidate" remote set-url origin "$(git -C "$GITHUB_WORKSPACE" remote get-url origin)"
+          git -C "$candidate" fetch -q --no-tags origin "$PARITY_HEAD"
+          git -C "$candidate" checkout -q --detach "$PARITY_HEAD"
+          observed="$(git -C "$candidate" rev-parse HEAD)"
           [ "$observed" = "$PARITY_HEAD" ] || { echo "FAIL_TRAIN_PARITY_HEAD_WORKTREE"; exit 2; }
-          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_focal_v1.py \
-            --repo-root "$GITHUB_WORKSPACE" \
+          python3 -I sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_trusted_v1.py \
+            --data-root "$candidate" \
             --base-sha "$BASE_SHA" \
             --head-sha "$PARITY_HEAD" \
             --base-ref main \
             --event-name pull_request \
-            --control-maturity CUTOVER \
-            --evaluation-scope CHANGESET_SCOPED \
-            --historical-debt-disposition RECONCILIATION_WORK_ITEM \
-            --output-dir .lf_train/parity
-          jq -e '.status=="PASS"' .lf_train/parity/run-summary.json >/dev/null
+            --output-dir "$GITHUB_WORKSPACE/.lf_train/parity"
+          jq -e '.status=="PASS" and .runner=="TRUSTED_READ_ONLY_V1"' .lf_train/parity/run-summary.json >/dev/null
 
       - name: Verify main has not moved after apply
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
