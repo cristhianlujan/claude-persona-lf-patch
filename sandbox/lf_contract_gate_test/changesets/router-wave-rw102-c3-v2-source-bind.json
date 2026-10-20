@@ -1,0 +1,7 @@
+{
+  "solution_ref":"router-wave-rw102-c3-v2-source-bind",
+  "paths":{
+    "docs/programming-agent/router_wave/RW1_02_C3_BLIND_JUDGE_HANDOFF_V2.md":"ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261020201830_lf_router_rw102_c3_v2_source_bind_v1.sql":"MIGRATION"
+  }
+}
