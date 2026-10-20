@@ -32,6 +32,9 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V2.json'
       - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v1.py'
       - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -166,6 +169,18 @@ jobs:
           name: rw102-c3-adversarial-review
           path: /tmp/rw102_c3_review/
           if-no-files-found: error
+
+      - name: Execute RW1-02 C2 neutral structured V2 benchmark
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V2.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V2.json \
+            docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json \
+            --self-test
 
       - name: Execute RW1-02 C2 architecture competition benchmark
         run: |
