@@ -967,5 +967,3 @@ jobs:
             gh api --method POST "repos/$REPO/issues/$PR/comments" -f body="$body" >/dev/null 2>&1
           fi
           exit 0
-          
-          
