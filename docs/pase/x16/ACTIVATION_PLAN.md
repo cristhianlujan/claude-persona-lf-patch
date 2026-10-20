@@ -18,3 +18,5 @@ Aplicar en este orden: `PASE` → `pase-merge-gate` → `PASE / MIGRATION_SOURCE
 ## Estado observado al preparar este plan
 
 La lectura de `protect-main` (ruleset 20571741) devuelve únicamente `lf-merge-train/verified`, que publica el Train y se excluye de la comparación. El archivo de checks del Train contiene `lf-independent-change-admission` e `ig-runtime-candidate-judge`; por tanto, la paridad actual debe fallar e informar esos dos contextos como faltantes en el ruleset. Esto documenta el estado; no cambia enforcement.
+
+Activation smoke: 2026-10-20 (preparation only; activation HOLD remains in force).
