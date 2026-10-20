@@ -1,0 +1,36 @@
+{
+  "schema_version": "RW101_C3_V3_SUPPLEMENTAL_FUNCTIONAL_EVIDENCE_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-01",
+  "checkpoint_code": "RW1-01_C3",
+  "checkpoint_id": 1609,
+  "source_freeze_main_sha": "59e611a2b27edd35006c4bfe24bcb4cbb04537e3",
+  "execution": {
+    "github_run_id": "39487232512",
+    "github_job_id": "118850694844",
+    "workflow": ".github/workflows/lf-router-level2-advisory-tests.yml",
+    "functional_verdict": "PASS",
+    "public_v2_self_test": "PASS",
+    "v3_self_test": "PASS",
+    "holdout_good_total": 12,
+    "holdout_good_accepted": 12,
+    "holdout_bad_total": 26,
+    "holdout_bad_rejected": 26,
+    "novel_falsifiers_total": 2,
+    "novel_falsifiers_rejected": 2,
+    "holdout_commitment_sha256": "56a033eca65e0e5766a4bbfc0589ad0d87602780205ecedceb166c942837745a",
+    "holdout_manifest_sha256": "e439f1c87d3b284c401b44d6add822d290b1bb546d1b321f9639c3186a2d4057",
+    "raw1_sha256": "38f3d0bc8b8739153b3969b569c2d3b5e8f794bb4b8d1103cf90ae13e21d0144",
+    "commitment_verified": true,
+    "artifact_id": "12294310938",
+    "artifact_zip_sha256": "4d87b5e16d0465a9d92eb2b28c57bd4fdd268b5f5d9337dde125e0baccb77a9c"
+  },
+  "scope": "LOCAL_ACCEPTANCE_CONTRACT_FUNCTIONAL_EVIDENCE_ONLY_NOT_ROUTER_RUNTIME",
+  "independent_judge_attested": false,
+  "no_router_runtime_claim": true,
+  "no_production_mutation": true,
+  "historical_assertion_preserved": {
+    "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/router_wave/RW1_01_C3_INDEPENDENT_VERDICT_V2.json",
+    "assertion_receipt_sha256": "b396d871a13c5a72caf02f9b2e2084c6e483fe75013ffa079dec93e72880c6d5"
+  }
+}
