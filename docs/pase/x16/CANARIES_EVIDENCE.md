@@ -18,3 +18,4 @@ Estado de evidencia: los checks PASE, `pase-merge-gate` y `PASE / MIGRATION_SOUR
 - Checks históricos: check-run IDs indicados en las filas. `skipped` significa que no se observó decisión PASE.
 - #2728 y #2750: eventos de recibo y comentarios de Train/autor en los PRs.
 - No se ejecutó ninguno de los diseños pendientes. Falta ejecutar el shadow de PASE sobre casos reales con su autoridad de base y contexto temporal completos, antes de reclamar canarios verdes.
+<!-- smoke parity shadow A (docs-only) 2026-10-20; PR de prueba, no mergear -->
