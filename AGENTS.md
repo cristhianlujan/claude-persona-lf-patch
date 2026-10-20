@@ -12,5 +12,5 @@ Every database write starts at the Router (ACT-0001) with an `ACTUALIZACION_DB_L
 
 The Router (ACT-0001) is the authority for database writes: resolve with `lf_router_resolve_v1` before each write and follow `ACTUALIZACION_DB_LF` through the Merge Train. Read-only database inspection through the Supabase RO connector is outside Router routing; limit it to the authorized inspection scope and do not use it to write.
 
-PASE runs in shadow mode. Read **PASE (shadow mode), stale bases and activation hold** in [CLAUDE.md](CLAUDE.md) before acting on a red PASE result; never make PASE required, edit the `protect-main` ruleset, or add PASE to the Train pre-apply checks without the owner's decision.
+PASE is a required check (activated 2026-10-20, #2947). Read **PASE required check, stale bases and classification** in [CLAUDE.md](CLAUDE.md) before acting on a red PASE result; changes to the `protect-main` ruleset or Train pre-apply checks require the owner's decision and must preserve their parity in the same window.
 Before every push to a PR, follow **Classify before you push (changeset manifest)** in [CLAUDE.md](CLAUDE.md#classify-before-you-push-changeset-manifest); include a manifest from the first commit only when paths lack a registered family.

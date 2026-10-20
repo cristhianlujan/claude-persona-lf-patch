@@ -97,9 +97,9 @@ This is enforced: the route guard (`DIRECT_MERGE_FOR_NON_MIGRATION = False` in `
 
 Emergency (Train itself broken): only the repository admin may temporarily relax the `protect-main` ruleset to merge the Train fix, restore it immediately after, and record both changes in that PR.
 
-### PASE (shadow mode), stale bases and activation hold
+### PASE required check, stale bases and classification
 
-PASE runs in shadow mode: it is **not** a required check yet. Interpret its red results this way:
+PASE is a required check (activated 2026-10-20, #2947). Interpret its red results this way:
 
 - `BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_ASSESSMENT_MISSING`, or an `Enforce single ordinary PR entrypoint` assertion listing many existing workflows, on a branch that is behind `main` means **stale base**, not a defect in the PR. Do not edit code to silence it. The Train syncs the branch with `main` when it starts; for the RECONCILE lane (which does not sync) update the branch from `main` before labeling `ready-to-reconcile`.
 - `FAIL_UNAUTHORIZED_GITHUB_PATH:.github/workflows/<file>` means the workflow path is not admitted: first merge a separate code PR that adds the exact path to `path_admission.github_exact` in `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json` (pattern: #2843, #2942).
@@ -131,7 +131,7 @@ Example format (replace the example paths and solution reference with the actual
 
 Do not wait for PASE to go red to add the manifest.
 
-**Activation hold (owner decision pending with Cristhian).** Agents MUST NOT make PASE a required check, change the `protect-main` ruleset, or add `PASE` to `sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json`. When the owner activates PASE, both changes happen in the same window so F07-X01 parity holds (ruleset contexts = Train pre-apply checks); the Train then re-runs PASE on its synced head and waits for it, so a stale-base red is resolved automatically at label time. Evidence: `claude/x16-clasificacion-pase-sombra-2026-10-19.md` (project LF).
+PASE is required in `protect-main` with source GitHub Actions (app `15368`) and in `sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json`. The admin saved the ruleset on 2026-10-20 at 10:48 America/Lima after #2947 merged. The Train reads its check list from trusted `main`, re-runs checks on the synced PR head and waits for all three: `lf-independent-change-admission`, `ig-runtime-candidate-judge` and `PASE`. Keep ruleset contexts (excluding `lf-merge-train/verified`) and Train pre-apply checks equal; future changes require the owner's decision and a coordinated window. Activation evidence: #2947 (merge `c031265af7b082f9ae26dbf68770994ea9d18ac0`), `PASS_F07_X01_PARITY`, and smoke #2953 (Train run `39452264310`, merge `dcd88821e6f903c9e1ba68a4ab7cab7c02e2da6a`).
 
 ## Soft canonical-route guard
 
