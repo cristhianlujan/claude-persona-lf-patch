@@ -103,7 +103,33 @@ PASE runs in shadow mode: it is **not** a required check yet. Interpret its red 
 
 - `BLOCK_CI_AUTHORITY_CURRENTNESS:UNKNOWN_FAIL_CLOSED:COMPATIBILITY_ASSESSMENT_MISSING`, or an `Enforce single ordinary PR entrypoint` assertion listing many existing workflows, on a branch that is behind `main` means **stale base**, not a defect in the PR. Do not edit code to silence it. The Train syncs the branch with `main` when it starts; for the RECONCILE lane (which does not sync) update the branch from `main` before labeling `ready-to-reconcile`.
 - `FAIL_UNAUTHORIZED_GITHUB_PATH:.github/workflows/<file>` means the workflow path is not admitted: first merge a separate code PR that adds the exact path to `path_admission.github_exact` in `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json` (pattern: #2843, #2942).
-- `FAIL_CI_PLAN_APPLICABILITY_UNRESOLVED:CLASSIFICATION_REQUIRED` means a new path without a family or changeset manifest: register it; do not bypass.
+#### Classify before you push (changeset manifest)
+
+Before every push to a PR, fetch `origin/main` and run the local PASE plan on the committed candidate HEAD:
+
+```bash
+python3 sandbox/lf_contract_gate_test/s28_ci_lane_router/emit_ci_execution_plan_v2.py \
+  --repo-root . --head "$(git rev-parse HEAD)" \
+  --base "$(git merge-base HEAD origin/main)" \
+  --authority-current-revision "$(git rev-parse origin/main)" \
+  --event-name pull_request --event-action synchronize \
+  --ref-name "$(git branch --show-current)" --output-json /tmp/lf_plan.json
+```
+
+A changeset manifest is required only when the PR changes paths without a registered family. If the plan reports `FAIL_CI_PLAN_APPLICABILITY_UNRESOLVED:CLASSIFICATION_REQUIRED`, include `sandbox/lf_contract_gate_test/changesets/<solution_ref>.json` in the **same commit** as those paths, starting with the first commit. Map every changed path without a family to an **existing** family in `sandbox/lf_contract_gate_test/s28_ci_lane_router/lf_change_family_registry_v1.json`, and list the manifest itself as `CHANGESET_MANIFEST`. The emitter reads Git objects from HEAD, so commit the manifest before rerunning the plan; do not push while classification remains unresolved. A diff with no changed paths returns `DEEP_SHARED_EMPTY_FAIL_CLOSED`; validate the actual PR diff.
+
+Use one `solution_ref` per PR, matching the manifest filename without `.json`, and list only paths in the PR diff. `FAIL_CHANGESET_MULTIPLE_SOLUTIONS` means multiple manifests are changed in the same PR. `FAIL_CHANGESET_FIXED_FAMILY_OVERRIDE` means the manifest tries to replace a path's registered fixed family. Correct the manifest; do not force a different family. Use only existing families; do not edit the family registry or broaden prefixes/allowlists to pass. If no existing family fits, stop and consult the owner; new-family registration is a separate owner decision.
+
+Example format (replace the example paths and solution reference with the actual PR diff):
+
+```json
+{
+  "solution_ref": "example-change-v1",
+  "paths": {"sandbox/lf_contract_gate_test/example/new_probe.py": "ENGINEERING_CHECKPOINTS", "sandbox/lf_contract_gate_test/changesets/example-change-v1.json": "CHANGESET_MANIFEST"}
+}
+```
+
+Do not wait for PASE to go red to add the manifest.
 
 **Activation hold (owner decision pending with Cristhian).** Agents MUST NOT make PASE a required check, change the `protect-main` ruleset, or add `PASE` to `sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json`. When the owner activates PASE, both changes happen in the same window so F07-X01 parity holds (ruleset contexts = Train pre-apply checks); the Train then re-runs PASE on its synced head and waits for it, so a stale-base red is resolved automatically at label time. Evidence: `claude/x16-clasificacion-pase-sombra-2026-10-19.md` (project LF).
 
