@@ -265,11 +265,28 @@ def validate_historical_source_identity(
 _MIGRATION_TREE_CACHE: dict[str, dict[str, str]] = {}
 
 
+def _data_root() -> pathlib.Path:
+    """Repository whose Git objects are evaluated.
+
+    Defaults to the repository containing this module. The trusted read-only
+    runner (run_migration_source_parity_trusted_v1.py) sets
+    LF_MIGRATION_PARITY_DATA_ROOT to a candidate checkout that is read only as
+    Git data; no code is imported or executed from it.
+    """
+    override = os.environ.get("LF_MIGRATION_PARITY_DATA_ROOT", "").strip()
+    if not override:
+        return _MODULE_DIR.parents[2]
+    root = pathlib.Path(override).resolve()
+    if not (root / ".git").exists():
+        fail("FAIL_LF_MIGRATION_PARITY_DATA_ROOT", str(root))
+    return root
+
+
 def _migration_tree(ref: str) -> dict[str, str]:
     cached = _MIGRATION_TREE_CACHE.get(ref)
     if cached is not None:
         return cached
-    root = _MODULE_DIR.parents[2]
+    root = _data_root()
     proc = subprocess.run(
         ["git", "ls-tree", "-r", ref, "--", "supabase/migrations"],
         cwd=root,
