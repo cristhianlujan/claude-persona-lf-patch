@@ -32,6 +32,7 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v1.py'
       - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
@@ -147,6 +148,23 @@ jobs:
         with:
           name: rw101-c3-v3-functional-cert
           path: /tmp/rw101_c3_v3_cert/
+          if-no-files-found: error
+
+      - name: Execute RW1-02 C3 adversarial review over frozen source snapshot
+        env:
+          RW102_C3_OUT: /tmp/rw102_c3_review
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin 5d7f30580d4c6bb557e51943693c4b95e192900e
+          python3 sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v1.py
+          cat /tmp/rw102_c3_review/FINAL.json
+
+      - name: Upload RW1-02 C3 adversarial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rw102-c3-adversarial-review
+          path: /tmp/rw102_c3_review/
           if-no-files-found: error
 
       - name: Execute RW1-02 C2 architecture competition benchmark
