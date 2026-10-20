@@ -1,0 +1,7 @@
+{
+  "solution_ref":"router-wave-rw102-c3-adversarial-review-v1",
+  "paths":{
+    "sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v1.py":"ENGINEERING_CHECKPOINTS",
+    ".github/workflows/lf-router-level2-advisory-tests.yml":"WORKFLOW"
+  }
+}
