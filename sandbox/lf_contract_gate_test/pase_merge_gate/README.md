@@ -95,3 +95,5 @@ Expected marker:
 ```text
 PASS_PASE_MERGE_GATE_REPAIR_ENFORCEMENT_V1 checks=26
 ```
+
+<!-- smoke pase-merge-gate shadow B (control-system readback) 2026-10-20; PR de prueba, no mergear -->
