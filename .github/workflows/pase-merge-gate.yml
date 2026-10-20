@@ -1,7 +1,7 @@
 name: PASE Merge Gate
 
-# TEMPORARILY DISABLED 2026-10-02 for the PASE merge-gate job only.
-# Independent change-admission and IG runtime judge now run from their own workflows.
+# Shadow mode (not a required check) until its own activation window (X16).
+# Read-only database access only: role lf_ci_readonly via environment lf-ci-readonly.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -16,8 +16,8 @@ concurrency:
 
 jobs:
   pase-merge-gate:
-    if: ${{ false }}
     name: pase-merge-gate
+    environment: lf-ci-readonly
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -66,8 +66,7 @@ jobs:
       - name: Evaluate base-anchored PASE merge gate
         env:
           PASE_REPOSITORY: ${{ github.repository }}
-          SUPABASE_PROJECT_ID: ${{ vars.LF_SUPABASE_PROJECT_ID }}
-          SUPABASE_POOLER_HOST: ${{ vars.LF_SUPABASE_POOLER_HOST }}
+          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
         run: |
           set -euo pipefail
           mkdir -p .lf_ci
@@ -80,4 +79,3 @@ jobs:
             --current-main-sha "$PASE_CURRENT_MAIN_SHA" \
             --output-json .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
           cat .lf_ci/lf_pase_merge_gate_carrier_result_v1.json
-
