@@ -1,8 +1,8 @@
 name: PASE
 
-# TEMPORARILY DISABLED 2026-10-02.
-# Keep the workflow source and triggers intact while PASE is rebuilt/qualified.
-# No PASE or POST-PASE execution is allowed from this workflow until explicitly re-enabled.
+# PASE runs in shadow mode (not a required check) until activation.
+# Activation hold and procedure: CLAUDE.md ("PASE (shadow mode)…") and
+# docs/pase/x16/PASE_ACTIVATION_CHECKLIST.md (#2947).
 on:
   workflow_call:
   workflow_dispatch:
