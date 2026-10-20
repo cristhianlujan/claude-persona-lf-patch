@@ -22,6 +22,7 @@ import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[3]
+CODE_ROOT = ROOT  # trusted code location; ROOT may be rebound to a data checkout
 PARITY_ADAPTER = ROOT / "sandbox/lf_contract_gate_test/lf_migration_source_parity.py"
 POSTGRES_IMAGE = "postgres:17.6"
 CUTOVER = "20260808031006"
@@ -400,7 +401,7 @@ def _run_parity(
                 "schema_version": "lf-migration-source-parity-run/v1",
                 "status": status,
                 "returncode": proc.returncode,
-                "delegated_adapter": str(PARITY_ADAPTER.relative_to(ROOT)),
+                "delegated_adapter": str(PARITY_ADAPTER.relative_to(CODE_ROOT)),
                 "functional_core_duplicated": False,
             },
             sort_keys=True,
