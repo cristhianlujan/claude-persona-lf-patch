@@ -1,0 +1,9 @@
+{
+  "solution_ref": "router-wave-rw101-c3-v3-functional-evidence-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router_wave/certify_rw101_c3_v3_functional.py": "ENGINEERING_CHECKPOINTS",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "docs/programming-agent/router_wave/RW1_01_C3_V3_FUNCTIONAL_EVIDENCE_20261020.json": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261020200500_lf_router_rw101_c3_v3_evidence_reconciliation_v1.sql": "MIGRATION"
+  }
+}
