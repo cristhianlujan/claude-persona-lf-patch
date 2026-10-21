@@ -143,15 +143,21 @@ BEGIN
   );
 
   INSERT INTO public.lf_eventos(
-    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
+    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,created_by_execution_id
   ) VALUES (
-    'RW105_C2_GPT_NATIVE_CANARY_CAPTURED',
+    'STEP_EVIDENCE',
     'ENGINEERING_WORK_CHECKPOINT',
     v_cp,
     'RW1-05_C2 real T2 semantic shadow and GPT_NATIVE current-chat capture; no deterministic or independent semantic PASS claimed.',
     'INFO',
     jsonb_build_object(
+      'evidence_schema_version','operational-event/v2',
       'schema_version','RW105_C2_GPT_NATIVE_CANARY_CAPTURE_V1',
+      'execution_id','RW1-05_C2-GPT-NATIVE-CANARY',
+      'producer','GPT_NATIVE_CURRENT_CHAT',
+      'purpose','Persist real T2 semantic shadow and GPT_NATIVE current-chat capture without declaring acceptance.',
+      'acceptance_declared',false,
+      'occurred_at',clock_timestamp(),
       'work_item_id',v_wi,
       'checkpoint_code',v_cp,
       'operation_code','EJECUCION_PERFIL_LF',
@@ -189,7 +195,6 @@ BEGIN
       ),
       'evidence_ceiling','NATIVE_RAW_CAPTURED_T2_SHADOW_REDERIVED__DETERMINISTIC_AND_INDEPENDENT_QUALITY_PENDING'
     ),
-    'GPT_NATIVE_CURRENT_CHAT',
     'RW1-05_C2-GPT-NATIVE-CANARY'
   ) RETURNING id INTO v_event_id;
 
