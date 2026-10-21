@@ -38,6 +38,10 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_c3_capture_v1.py'
       - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
+      - 'services/router_semantic_runtime/**'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
+      - 'supabase/migrations/*lf_router_rw105_c2_profile_terminal_receipt_v1.sql'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v2.py'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json'
@@ -50,6 +54,10 @@ on:
   push:
     branches: [main]
     paths:
+      - 'services/router_semantic_runtime/**'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
+      - 'supabase/migrations/*lf_router_rw105_c2_profile_terminal_receipt_v1.sql'
       - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
@@ -250,3 +258,10 @@ jobs:
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py \
             docs/programming-agent/router_wave/RW1_04_C3_BLIND_REVIEW_PACKET_V1.json \
             docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json --self-test
+
+      - name: Execute RW1-05 C2 semantic consumer and Profile Runtime bridge tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile services/router_semantic_runtime/semantic_consumer.py
+          python3 -m unittest -v services.router_semantic_runtime.tests.test_semantic_consumer
+          python3 services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py

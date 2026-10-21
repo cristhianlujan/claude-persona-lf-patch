@@ -171,18 +171,41 @@ def _reconcile_governed_pending(conn: psycopg.Connection) -> int:
                 and blocked_count == 0
             )
             if clean:
+                attached = _fetch_json_scalar(
+                    cur,
+                    "select public.lf_profile_execution_attach_terminal_authority_receipt_v1(%s,%s)",
+                    (execution_id, execution_id),
+                )
+                if attached.get("result") not in {
+                    "TERMINAL_AUTHORITY_RECEIPT_ATTACHED",
+                    "TERMINAL_AUTHORITY_RECEIPT_ALREADY_ATTACHED",
+                }:
+                    raise RuntimeError(
+                        "HETZNER_TERMINAL_AUTHORITY_RECEIPT_NOT_READY:"
+                        + str(attached.get("code") or attached.get("blocking_code") or attached.get("result"))
+                    )
+                terminal_receipt = attached.get("terminal_authority_receipt")
+                terminal_sha = attached.get("terminal_authority_receipt_sha256")
+                if not isinstance(terminal_receipt, dict) or not isinstance(terminal_sha, str):
+                    raise RuntimeError("HETZNER_TERMINAL_AUTHORITY_RECEIPT_INVALID")
+                terminal_patch = {
+                    "terminal_authority_receipt": terminal_receipt,
+                    "terminal_authority_receipt_sha256": terminal_sha,
+                }
                 cur.execute(
                     f"""
                     update {TABLE}
                        set status='SUCCEEDED',
                            updated_at=now(),
+                           result_package=coalesce(result_package,'{{}}'::jsonb)||%s,
+                           receipt=coalesce(receipt,'{{}}'::jsonb)||%s,
                            error_code=null,
                            error_detail=null
                      where request_id=%s::uuid
                        and status='BLOCKED'
                        and error_code='HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING'
                     """,
-                    (request_id,),
+                    (Jsonb(terminal_patch), Jsonb(terminal_patch), request_id),
                 )
                 reconciled += cur.rowcount
             elif execution_status == "COMPLETED":
@@ -493,7 +516,12 @@ def _begin_governed_pre_model(
             execution_id=execution_id,
             step_id="router",
             evidence_ref=f"supabase://public.lf_router_resolve_v1/{claimed['profile_code']}/PROFILE_EXECUTION",
-            payload={"router_read": "READY_TO_EXECUTE", "action": "PROFILE_EXECUTION"},
+            payload={
+                "router_read": "READY_TO_EXECUTE",
+                "action": "PROFILE_EXECUTION",
+                "router_result": route,
+                "input_literal_sha256": input_digest,
+            },
         )
 
         cur.execute(
@@ -1107,6 +1135,31 @@ def _execution_queue_outcome(profile: dict[str, Any]) -> dict[str, str | None]:
     return {"status": "SUCCEEDED", "error_code": None, "error_detail": None}
 
 
+def _reconcile_terminal_queue(
+    cur: psycopg.Cursor,
+    request_id: str,
+    *,
+    allow_missing_canonical: bool,
+) -> dict[str, Any]:
+    result = _fetch_json_scalar(
+        cur,
+        "select public.lf_profile_execution_reconcile_queue_terminal_v1(%s::uuid,%s)",
+        (request_id, _governed_execution_id(request_id)),
+    )
+    allowed = {
+        "CANONICAL_TERMINAL_RECONCILED",
+        "TERMINAL_PAIR_ALREADY_RECONCILED",
+    }
+    if allow_missing_canonical:
+        allowed.add("NO_CANONICAL_EXECUTION")
+    if result.get("result") not in allowed:
+        raise RuntimeError(
+            "HETZNER_QUEUE_TERMINAL_RECONCILE_FAILED:"
+            + str(result.get("blocking_code") or result.get("result") or "UNKNOWN")
+        )
+    return result
+
+
 def _persist_success(
     conn: psycopg.Connection,
     request_id: str,
@@ -1201,6 +1254,8 @@ def _persist_success(
         if cur.rowcount != 1:
             conn.rollback()
             raise RuntimeError("HETZNER_QUEUE_PERSIST_TARGET_MISMATCH")
+        if status in {"FAILED", "BLOCKED"} and error_code != "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING":
+            _reconcile_terminal_queue(cur, request_id, allow_missing_canonical=False)
         conn.commit()
 
 
@@ -1229,6 +1284,8 @@ def _persist_failure(conn: psycopg.Connection, request_id: str, exc: BaseExcepti
             """,
             (PROVIDER, error_code, detail, request_id),
         )
+        if cur.rowcount == 1:
+            _reconcile_terminal_queue(cur, request_id, allow_missing_canonical=True)
         conn.commit()
 
 
