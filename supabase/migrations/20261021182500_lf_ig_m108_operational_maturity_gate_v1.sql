@@ -124,8 +124,7 @@ BEGIN
           'production_authorized',false
         ),
         true
-      ),
-      updated_at=now()
+      )
   WHERE plan_code='IG_CURATOR_VALIDATOR_REFACTOR_V2'
     AND unit_code='M10.8'
     AND disposition='ASSIGNED';
