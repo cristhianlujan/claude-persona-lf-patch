@@ -25,6 +25,7 @@ required=[
  "CAUSAL_ANALYSIS",
  "SELF_REFINE",
  "LF-PE10-C5-NATIVE-SOURCE-SNAPSHOT-MISSING-20261021-001",
+ "LF-PE10-C5-GITHUB-PROVIDER-REF-HEAD-MISMATCH-20261021-001",
 ]
 for item in required:
     assert item in src, f"MISSING:{item}"
@@ -49,11 +50,13 @@ assert "'cutover_admitted',false" in src
 assert "'production_activated',false" in src
 assert "provider_readback_verified',true" in src
 assert "digest_recomputed',true" in src
+assert "github-api://repos/cristhianlujan/claude-persona-lf-patch@'||v_readback_head||" in src
 assert "capture_blob_identical_authoring_to_readback',true" in src
 assert "profile_blob_identical_authoring_to_readback',true" in src
 
 # Exactly one anchor call and one durable EKB code keep this change bounded.
 assert src.count("fn_lf_evidence_ledger_anchor_v1(")==1
 assert src.count("LF-PE10-C5-NATIVE-SOURCE-SNAPSHOT-MISSING-20261021-001")>=2
+assert src.count("LF-PE10-C5-GITHUB-PROVIDER-REF-HEAD-MISMATCH-20261021-001")>=2
 
 print("PASS PE10_C5_NATIVE_SOURCE_SNAPSHOT_SOURCE_GUARDS")
