@@ -556,30 +556,28 @@ BEGIN
     RAISE EXCEPTION 'PE10_C5_SEMANTIC_POSTSTATE_FALSE_ADMISSION';
   END IF;
 
-  INSERT INTO public.lf_eventos
-    (evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,origen,
-     created_by_execution_id,payload)
-  VALUES
-    ('ARTIFACT_RECONCILED','PROGRAM_PLAN','PE10_C5.NATIVE_SEMANTIC_REVIEW.PASS.V1',
-     'PE10 C5 exact native material independent review PASS; C5 admission still pending',
-     'INFO','DERIVE_FROM_EXECUTION_ID',v_review,
-     jsonb_build_object(
-       'evidence_schema_version','operational-event/v2',
-       'execution_id',v_review,
-       'producer','PE10_C5_NATIVE_SEMANTIC_REVIEW_PASS_V1',
-       'purpose','Complete the exact native-material independent review without admitting cutover',
-       'occurred_at',clock_timestamp(),
-       'checkpoint_code',v_checkpoint,
-       'subject_sha256',v_subject_sha,
-       'source_head_sha',v_source_head,
-       'review_record_receipt_id',v_decision::text,
-       'independent_review_receipt_id',v_final::text,
-       'semantic_verdict','PASS',
-       'six_steps_passed',true,
-       'checkpoint_pass',false,
-       'cutover_admitted',false,
-       'production_activation',false,
-       'acceptance_declared',false));
+  -- No ARTIFACT_RECONCILED event is emitted here. The operational-event/v2
+  -- guard correctly rejects semantic PASS language as an acceptance signal.
+  -- Durable trace remains in reviewer receipts, plan metadata and EKB.
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-OPERATIONAL-EVENT-ACCEPTANCE-SIGNAL-20261021-001',
+    'PROFILE_EVOLUTION',
+    'Operational trace event was rejected because semantic PASS is an acceptance signal',
+    'Train run 39638246312 reached the end of the transactional C5 review and rejected ARTIFACT_RECONCILED because its operational-event/v2 payload contained semantic_verdict=PASS and six_steps_passed=true.',
+    'ARTIFACT_RECONCILED is an OPERATIONAL event type whose envelope must have no acceptance signal; the trace payload attempted to persist a semantic PASS after review completion.',
+    'Do not use an operational trace event to mirror a PASS/acceptance result already durably represented by typed receipts and checkpoint metadata.',
+    'Keep semantic PASS in Evidence Ledger / reviewer state; use metadata and EKB for diagnostic trace, and reserve admission events for their separately registered governed event type.',
+    'This corrected migration emits no ARTIFACT_RECONCILED row and still requires verified REVIEW_DECISION, INDEPENDENT_REVIEW_RECEIPT, six clean steps, C5 PENDING and zero cutover admission.',
+    'MEDIUM',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3023'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-OPERATIONAL-EVENT-ACCEPTANCE-SIGNAL-20261021-001'
+  );
 
   INSERT INTO public.lf_error_knowledge
     (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
