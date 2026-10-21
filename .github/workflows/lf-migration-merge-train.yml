@@ -763,6 +763,52 @@ jobs:
             --output-dir "$GITHUB_WORKSPACE/.lf_train/parity"
           jq -e '.status=="PASS" and .runner=="TRUSTED_READ_ONLY_V1"' .lf_train/parity/run-summary.json >/dev/null
 
+      # Exact one-shot IG closure request. Uses EXISTING Train + canonical runner.
+      # No new workflow, credential, POST_PASE hook, or general PASE activation.
+      - name: IG M10.13 CP2 material FULL_CURRENT_STATE parity
+        id: ig_m1013_full_parity
+        if: env.LF_MIGRATION_TRAIN_MODE == 'REAL' && steps.source.outputs.migration_count == '0' && steps.admission.outputs.head_ref == 'lf/ig-m1013-cp2-evidence-20261021'
+        env:
+          LF_SUPABASE_RO_DATABASE_URL: ${{ secrets.LF_SUPABASE_RO_DATABASE_URL }}
+          GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ steps.admission.outputs.current_main }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$LF_SUPABASE_RO_DATABASE_URL" ] || {
+            echo "BLOCK_IG_M1013_CP2_READONLY_CREDENTIAL_MISSING"; exit 2;
+          }
+          current_main="$(git rev-parse HEAD)"
+          [ "$current_main" = "$BASE_SHA" ] || {
+            echo "BLOCK_IG_M1013_CP2_TRUSTED_MAIN_MOVED"; exit 2;
+          }
+          target="$RUNNER_TEMP/ig-m1013-cp2-main-data"
+          git clone -q --shared --no-checkout "$GITHUB_WORKSPACE" "$target"
+          git -C "$target" remote set-url origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$target" checkout -q --detach "$BASE_SHA"
+          mkdir -p .lf_train/ig_m1013_cp2_full
+          python3 -I sandbox/lf_contract_gate_test/migration_source_parity/test_run_migration_source_parity_trusted_v1.py
+          python3 -I sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_trusted_v1.py \
+            --data-root "$target" \
+            --base-sha "$BASE_SHA" --head-sha "$BASE_SHA" \
+            --base-ref main --event-name push \
+            --evaluation-scope FULL_CURRENT_STATE --full-current \
+            --output-dir "$GITHUB_WORKSPACE/.lf_train/ig_m1013_cp2_full"
+          jq -e '.status=="PASS" and .runner=="TRUSTED_READ_ONLY_V1" and .evaluation_scope=="FULL_CURRENT_STATE" and .current_main_sha==env.BASE_SHA and .coverage.local_versions>0 and .coverage.ledger_versions>0 and .coverage.snapshot_batches>=2' \
+            .lf_train/ig_m1013_cp2_full/run-summary.json >/dev/null
+          echo "PASS_IG_M1013_CP2_FULL_CURRENT_STATE source=$BASE_SHA"
+
+      - name: Upload IG M10.13 CP2 full-current parity evidence
+        if: always() && steps.admission.outputs.head_ref == 'lf/ig-m1013-cp2-evidence-20261021'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-ig-m1013-cp2-full-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .lf_train/ig_m1013_cp2_full
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 90
+
       - name: Verify main has not moved after apply
         if: env.LF_MIGRATION_TRAIN_MODE == 'REAL'
         env:
