@@ -1,0 +1,6 @@
+{
+  "solution_ref": "router-wave-rw105-c2-contract-bind-v1",
+  "paths": {
+    "supabase/migrations/20261021103000_lf_router_rw105_c2_contract_bind_v1.sql": "MIGRATION"
+  }
+}
