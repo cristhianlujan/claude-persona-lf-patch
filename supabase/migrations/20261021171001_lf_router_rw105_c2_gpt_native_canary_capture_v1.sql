@@ -25,6 +25,8 @@ DECLARE
   v_resume_route jsonb;
   v_raw jsonb;
   v_raw_sha text;
+  v_event_payload jsonb;
+  v_acceptance_signal text;
 BEGIN
   SELECT unit_metadata INTO STRICT v_old
   FROM programacion.engineering_plan_units
@@ -142,59 +144,76 @@ BEGIN
     'hex'
   );
 
+  v_event_payload:=jsonb_build_object(
+    'evidence_schema_version','operational-event/v2',
+    'schema_version','RW105_C2_GPT_NATIVE_CANARY_CAPTURE_V1',
+    'execution_id','RW1-05_C2-GPT-NATIVE-CANARY',
+    'producer','GPT_NATIVE_CURRENT_CHAT',
+    'purpose','Persist real T2 semantic shadow and GPT_NATIVE current-chat capture without declaring acceptance.',
+    'acceptance_declared',false,
+    'occurred_at',clock_timestamp(),
+    'work_item_id',v_wi,
+    'checkpoint_code',v_cp,
+    'operation_code','EJECUCION_PERFIL_LF',
+    'profile_code','PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF',
+    'executor_mode','GPT_NATIVE',
+    'adapter_id','chatgpt-native-current-context-v1',
+    'conversation_scope','EXISTING_CONVERSATION_ONLY',
+    'native_api_invocation',false,
+    'native_session_creation',false,
+    'remote_api_fallback','FORBIDDEN',
+    'host_execution','FORBIDDEN',
+    'request_sha256',v_request_sha,
+    'semantic_result',v_result,
+    'resume_validator_readback',jsonb_build_object(
+      'resume_validator_code',v_resume->>'status',
+      'next_action',v_resume->>'next_action',
+      'resume_allowed',(v_resume->>'router_resume_allowed')::boolean
+    ),
+    'resume_route_summary',jsonb_build_object(
+      'status',v_resume_route->>'status',
+      'router_status',v_resume_route#>>'{router_result,status}',
+      'operation_code',v_resume_route#>>'{router_result,operation_code}',
+      'asset_code',v_resume_route#>>'{router_result,asset,codigo_activo}',
+      'step_count',(v_resume_route#>>'{router_result,step_count}')::integer,
+      'router_downstream_execution_allowed',(v_resume_route#>>'{router_result,downstream_execution_allowed}')::boolean
+    ),
+    'producer_capture',jsonb_build_object(
+      'producer_mode','GPT_NATIVE',
+      'producer_transport','CHAT_SESSION_AUTHORING',
+      'capture_status','GPT_CHAT_SOURCE_READBACK_BOUND_UNATTESTED',
+      'runtime_provider_attested',false,
+      'deterministic_profile_validation','NOT_EXECUTED',
+      'independent_review_executed',false,
+      'semantic_pass_claimed',false,
+      'terminal_receipt_claimed',false,
+      'downstream_authorized',false,
+      'raw_output',v_raw,
+      'raw_output_sha256',v_raw_sha
+    ),
+    'evidence_ceiling','NATIVE_RAW_CAPTURED_T2_SHADOW_REDERIVED__DETERMINISTIC_AND_INDEPENDENT_QUALITY_PENDING'
+  );
+
+  v_acceptance_signal:=private.fn_lf_event_acceptance_signal_v2(
+    'STEP_EVIDENCE',
+    v_cp,
+    'RW1-05_C2 real T2 semantic shadow and GPT_NATIVE current-chat capture; deterministic and independent semantic review remain pending.',
+    v_event_payload
+  );
+
+  IF v_acceptance_signal IS NOT NULL THEN
+    RAISE EXCEPTION 'RW105_C2_CANARY_EVENT_ACCEPTANCE_SIGNAL:%',v_acceptance_signal;
+  END IF;
+
   INSERT INTO public.lf_eventos(
     evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,created_by_execution_id
   ) VALUES (
     'STEP_EVIDENCE',
     'ENGINEERING_WORK_CHECKPOINT',
     v_cp,
-    'RW1-05_C2 real T2 semantic shadow and GPT_NATIVE current-chat capture; no deterministic or independent semantic PASS claimed.',
+    'RW1-05_C2 real T2 semantic shadow and GPT_NATIVE current-chat capture; deterministic and independent semantic review remain pending.',
     'INFO',
-    jsonb_build_object(
-      'evidence_schema_version','operational-event/v2',
-      'schema_version','RW105_C2_GPT_NATIVE_CANARY_CAPTURE_V1',
-      'execution_id','RW1-05_C2-GPT-NATIVE-CANARY',
-      'producer','GPT_NATIVE_CURRENT_CHAT',
-      'purpose','Persist real T2 semantic shadow and GPT_NATIVE current-chat capture without declaring acceptance.',
-      'acceptance_declared',false,
-      'occurred_at',clock_timestamp(),
-      'work_item_id',v_wi,
-      'checkpoint_code',v_cp,
-      'operation_code','EJECUCION_PERFIL_LF',
-      'profile_code','PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF',
-      'executor_mode','GPT_NATIVE',
-      'adapter_id','chatgpt-native-current-context-v1',
-      'conversation_scope','EXISTING_CONVERSATION_ONLY',
-      'native_api_invocation',false,
-      'native_session_creation',false,
-      'remote_api_fallback','FORBIDDEN',
-      'host_execution','FORBIDDEN',
-      'request_sha256',v_request_sha,
-      'semantic_result',v_result,
-      'resume_validation',v_resume,
-      'resume_route_summary',jsonb_build_object(
-        'status',v_resume_route->>'status',
-        'router_status',v_resume_route#>>'{router_result,status}',
-        'operation_code',v_resume_route#>>'{router_result,operation_code}',
-        'asset_code',v_resume_route#>>'{router_result,asset,codigo_activo}',
-        'step_count',(v_resume_route#>>'{router_result,step_count}')::integer,
-        'router_downstream_execution_allowed',(v_resume_route#>>'{router_result,downstream_execution_allowed}')::boolean
-      ),
-      'producer_capture',jsonb_build_object(
-        'producer_mode','GPT_NATIVE',
-        'producer_transport','CHAT_SESSION_AUTHORING',
-        'capture_status','GPT_CHAT_SOURCE_READBACK_BOUND_UNATTESTED',
-        'runtime_provider_attested',false,
-        'deterministic_profile_validation','NOT_EXECUTED',
-        'independent_review_executed',false,
-        'semantic_pass_claimed',false,
-        'terminal_receipt_claimed',false,
-        'downstream_authorized',false,
-        'raw_output',v_raw,
-        'raw_output_sha256',v_raw_sha
-      ),
-      'evidence_ceiling','NATIVE_RAW_CAPTURED_T2_SHADOW_REDERIVED__DETERMINISTIC_AND_INDEPENDENT_QUALITY_PENDING'
-    ),
+    v_event_payload,
     'RW1-05_C2-GPT-NATIVE-CANARY'
   ) RETURNING id INTO v_event_id;
 
