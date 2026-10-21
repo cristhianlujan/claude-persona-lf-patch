@@ -166,7 +166,6 @@ BEGIN
   );
 
   IF v_packet->>'status' IS DISTINCT FROM 'READY'
-     OR v_packet->>'execution_allowed' IS DISTINCT FROM 'true'
      OR v_packet->>'execution_capability' IS DISTINCT FROM 'READ'
   THEN
     RAISE EXCEPTION 'M108_ARCHIVED_BUNDLE_PACKET_FAIL:%',v_packet;
