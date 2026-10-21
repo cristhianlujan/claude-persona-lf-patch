@@ -155,7 +155,11 @@ class SemanticShadowConsumerTest(unittest.TestCase):
     def test_specialist_cannot_return_operation_or_effect_authority(self) -> None:
         for field, value in (
             ("operation_code", "ACTUALIZACION_DB_LF"),
+            ("action_code", "SKILL_UPDATE"),
+            ("candidate_action_code", "SKILL_UPDATE"),
+            ("router_action_binding", {"candidate_action_code": "SKILL_UPDATE"}),
             ("executor", "service_role"),
+            ("executor_mode", "GPT_NATIVE"),
             ("effect_authority", True),
             ("downstream_execution_allowed", True),
             ("route_authority", True),
@@ -163,6 +167,47 @@ class SemanticShadowConsumerTest(unittest.TestCase):
             with self.subTest(field=field):
                 with self.assertRaisesRegex(SemanticConsumerBlocked, "AUTHORITY_FIELD_FORBIDDEN"):
                     normalize_result(request_fixture(), resolved_draft() | {field: value})
+
+
+    def test_router_owned_action_binding_is_allowed_on_request(self) -> None:
+        request = request_fixture()
+        request["router_action_binding"] = {
+            "schema_version": "LF_ROUTER_ACTION_BINDING_V1",
+            "source": "ACT-0001_PRE_SEMANTIC_DERIVATION",
+            "request_sha256": request["request_sha256"],
+            "asset_type": "SKILL",
+            "candidate_action_code": "SKILL_UPDATE",
+            "action_registry_operation_code": "ACTUALIZACION_SKILL_LF",
+            "action_registry_status": "ACTIVE",
+            "router_source_md5": request["source_currentness"]["router_source_md5"],
+            "binding_sha256": "sha256:" + "a" * 64,
+        }
+        out = normalize_result(request, resolved_draft())
+        self.assertEqual(out["decision"], "RESOLVED")
+        self.assertNotIn("router_action_binding", out)
+
+    def test_tampered_router_action_binding_is_rejected_before_specialist(self) -> None:
+        request = request_fixture()
+        request["router_action_binding"] = {
+            "schema_version": "LF_ROUTER_ACTION_BINDING_V1",
+            "source": "ACT-0001_PRE_SEMANTIC_DERIVATION",
+            "request_sha256": "0" * 64,
+            "asset_type": "SKILL",
+            "candidate_action_code": "SKILL_UPDATE",
+            "action_registry_operation_code": "ACTUALIZACION_SKILL_LF",
+            "action_registry_status": "ACTIVE",
+            "router_source_md5": request["source_currentness"]["router_source_md5"],
+            "binding_sha256": "sha256:" + "a" * 64,
+        }
+        specialist = Specialist(resolved_draft())
+        with self.assertRaisesRegex(SemanticConsumerBlocked, "ACTION_BINDING_INVALID"):
+            consume_shadow(
+                request,
+                specialist=specialist,
+                resume_validator=lambda _q, _r: {},
+                router_resume=lambda _req, _result: {},
+            )
+        self.assertEqual(specialist.calls, 0)
 
     def test_stale_source_blocks_before_specialist(self) -> None:
         request = request_fixture()
