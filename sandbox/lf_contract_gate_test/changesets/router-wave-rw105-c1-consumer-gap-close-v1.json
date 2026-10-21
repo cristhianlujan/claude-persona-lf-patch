@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw105-c1-consumer-gap-close-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_05_C1_CONSUMER_RECEIPT_GAP_BASELINE_V1.md": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261021064500_lf_router_rw105_c1_consumer_gap_close_v1.sql": "MIGRATION"
+  }
+}
