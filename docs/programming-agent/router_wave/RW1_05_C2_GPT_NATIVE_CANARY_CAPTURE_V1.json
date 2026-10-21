@@ -1,0 +1,62 @@
+{
+  "schema": "LF_GPT_NATIVE_IN_CHAT_CAPTURE_V1",
+  "producer_mode": "GPT_NATIVE",
+  "producer_transport": "CHAT_SESSION_AUTHORING",
+  "capture_status": "GPT_CHAT_SOURCE_READBACK_BOUND_UNATTESTED",
+  "run_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+  "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+  "profile_source_sha256": "9c27521f19d35331080b95af6cb57ddead5e69816be5550770f91125e5e48434",
+  "input_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+  "execution_contract_sha256": "3e317ad624df0053b80354e40eca29d6e43f828022602db9a214fdd95498dfaf",
+  "request_sha256": "27066018e09f84479c538f5fb2f815befacbdb0a9ec78368e6034abaf49cb3e2",
+  "raw_output": {
+    "status": "RETURN_TO_SOURCE_FOR_READBACK",
+    "claim": "No se puede validar que el artefacto inexistente esté vigente y aplicado porque la única referencia suministrada no resuelve a una revisión GitHub válida y no existe evidencia independiente adicional.",
+    "authority_reads": [
+      {
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@0000000000000000000000000000000000000000/docs/nonexistent.json",
+        "authority": "UNRESOLVED",
+        "resolved": false,
+        "observation": "La referencia no puede constituir autoridad hasta un readback directo."
+      }
+    ],
+    "source_readbacks": [
+      {
+        "source_ref": "github://cristhianlujan/claude-persona-lf-patch@0000000000000000000000000000000000000000/docs/nonexistent.json",
+        "status": "UNRESOLVABLE",
+        "result": "READBACK_REQUIRED"
+      }
+    ],
+    "revision_binding": {
+      "exact_revision_bound": false,
+      "requested_revision": "0000000000000000000000000000000000000000",
+      "reason": "SOURCE_UNRESOLVABLE"
+    },
+    "structural_identifier_reconciliation": {
+      "status": "NOT_APPLICABLE",
+      "reconciled": false,
+      "reason": "No se adopta ningún identificador estructural sin fuente resuelta."
+    },
+    "evidence_map": [],
+    "blocking_codes": [
+      "SOURCE_REF_UNRESOLVABLE"
+    ],
+    "next_gate": "SOURCE_READBACK",
+    "routing": {
+      "activation_path": "ROUTER",
+      "via": "ORCHESTRATOR",
+      "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+      "resolution_target": "SOURCE_READBACK"
+    }
+  },
+  "raw_output_sha256": "86cc34048f8436479acff5fe0830b03cc0a8bbaf6f98acfeb31e7d1c094def07",
+  "model_author_claim": "GPT_NATIVE_CURRENT_CHAT_UNVERIFIED_BY_PROVIDER",
+  "runtime_provider_attested": false,
+  "independent_semantic_review": "NOT_EXECUTED",
+  "runtime_execution_receipt": null,
+  "downstream_authorized": false,
+  "benchmark_admitted": false,
+  "production_activation": false,
+  "cutover_eligible": false,
+  "capture_sha256": "11e82435ac08e4244d7f5b553b6f375985c39c9a3d3a061e8cd9da28d69e884b"
+}

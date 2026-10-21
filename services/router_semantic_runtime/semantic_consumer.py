@@ -29,9 +29,12 @@ RESULT_REQUIRED = {
     "excluded_target_refs","allowed_scope","forbidden_scope","conditions",
     "material_ambiguities","clarification_question","semantic_receipt_sha256",
 }
-FORBIDDEN_AUTHORITY_FIELDS = {
-    "operation_code","executor","effect_authority","downstream_execution_allowed",
+REQUEST_FORBIDDEN_AUTHORITY_FIELDS = {
+    "operation_code","executor","executor_mode","effect_authority","downstream_execution_allowed",
     "route_authority","worker","worker_id","operation","target_authority",
+}
+RESULT_FORBIDDEN_AUTHORITY_FIELDS = REQUEST_FORBIDDEN_AUTHORITY_FIELDS | {
+    "action_code","candidate_action_code","router_action_binding",
 }
 DECISIONS = {"RESOLVED","CLARIFICATION_REQUIRED","BLOCKED"}
 
@@ -49,7 +52,7 @@ class SemanticSpecialist(Protocol):
 
 
 ResumeValidator = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
-RouterRederiver = Callable[[str], dict[str, Any]]
+RouterResume = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
 
 
 def canonical_sha256(value: Any) -> str:
@@ -93,8 +96,30 @@ def validate_request(request: dict[str, Any]) -> None:
         raise SemanticConsumerBlocked("SEMANTIC_REQUEST_FIELDS_MISSING")
     if request.get("schema_version") != REQUEST_SCHEMA or request.get("router") != "ACT-0001":
         raise SemanticConsumerBlocked("SEMANTIC_REQUEST_IDENTITY_INVALID")
-    if FORBIDDEN_AUTHORITY_FIELDS.intersection(request):
+    if REQUEST_FORBIDDEN_AUTHORITY_FIELDS.intersection(request):
         raise SemanticConsumerBlocked("SEMANTIC_REQUEST_AUTHORITY_FIELD_FORBIDDEN")
+    action_binding = request.get("router_action_binding")
+    if action_binding is not None:
+        if not isinstance(action_binding, dict):
+            raise SemanticConsumerBlocked("SEMANTIC_REQUEST_ACTION_BINDING_INVALID")
+        required_binding = {
+            "schema_version","source","request_sha256","asset_type",
+            "candidate_action_code","action_registry_status","router_source_md5","binding_sha256",
+        }
+        if not required_binding.issubset(action_binding):
+            raise SemanticConsumerBlocked("SEMANTIC_REQUEST_ACTION_BINDING_FIELDS_MISSING")
+        if (
+            action_binding.get("schema_version") != "LF_ROUTER_ACTION_BINDING_V1"
+            or action_binding.get("source") != "ACT-0001_PRE_SEMANTIC_DERIVATION"
+            or action_binding.get("request_sha256") != request.get("request_sha256")
+            or not isinstance(action_binding.get("candidate_action_code"), str)
+            or not action_binding["candidate_action_code"]
+            or action_binding.get("action_registry_status") != "ACTIVE"
+            or action_binding.get("router_source_md5") != request.get("source_currentness", {}).get("router_source_md5")
+            or not isinstance(action_binding.get("binding_sha256"), str)
+            or not action_binding["binding_sha256"].startswith("sha256:")
+        ):
+            raise SemanticConsumerBlocked("SEMANTIC_REQUEST_ACTION_BINDING_INVALID")
     literal = request.get("literal_request")
     if not isinstance(literal, str):
         raise SemanticConsumerBlocked("SEMANTIC_REQUEST_LITERAL_INVALID")
@@ -121,7 +146,7 @@ def normalize_result(request: dict[str, Any], draft: dict[str, Any]) -> dict[str
     validate_request(request)
     if not isinstance(draft, dict):
         raise SemanticConsumerBlocked("SEMANTIC_RESULT_NOT_OBJECT")
-    forbidden = FORBIDDEN_AUTHORITY_FIELDS.intersection(draft)
+    forbidden = RESULT_FORBIDDEN_AUTHORITY_FIELDS.intersection(draft)
     if forbidden:
         raise SemanticConsumerBlocked("SEMANTIC_RESULT_AUTHORITY_FIELD_FORBIDDEN", ",".join(sorted(forbidden)))
 
@@ -219,7 +244,7 @@ def consume_shadow(
     *,
     specialist: SemanticSpecialist,
     resume_validator: ResumeValidator,
-    router_rederive: RouterRederiver,
+    router_resume: RouterResume,
 ) -> dict[str, Any]:
     """Run T2 shadow. No result from this function authorizes an effect."""
     validate_request(request)
@@ -263,15 +288,28 @@ def consume_shadow(
     ):
         raise SemanticConsumerBlocked("SEMANTIC_RESUME_AUTHORITY_CONTRACT_MISMATCH")
 
-    # The specialist result is never the route. ACT-0001 must resolve the literal again.
-    route = router_rederive(request["literal_request"])
-    if not isinstance(route, dict):
+    # The specialist result is never the route. The DB resume bridge validates
+    # request+result again and re-enters the SAME ACT-0001 Router.
+    route_resume = router_resume(request, result)
+    if not isinstance(route_resume, dict):
+        raise SemanticConsumerBlocked("ACT0001_RESUME_RESPONSE_INVALID")
+    if (
+        route_resume.get("schema_version") != "LF_ROUTER_SEMANTIC_ROUTE_RESUME_V1"
+        or route_resume.get("status") != "ROUTER_REDERIVED"
+        or route_resume.get("semantic_result_route_authority") is not False
+        or route_resume.get("semantic_result_effect_authority") is not False
+        or route_resume.get("downstream_execution_allowed") is not False
+    ):
+        raise SemanticConsumerBlocked("ACT0001_RESUME_AUTHORITY_CONTRACT_MISMATCH")
+    route = route_resume.get("router_result")
+    if not isinstance(route, dict) or route.get("router") != "ACT-0001":
         raise SemanticConsumerBlocked("ACT0001_REDERIVE_RESPONSE_INVALID")
     return {
         **base,
         "status": "SHADOW_REDERIVED",
         "next_action": "OBSERVE_ONLY_NO_EFFECT",
         "router_rederived": True,
+        "router_resume_receipt": route_resume,
         "router_result": route,
         "route_authority": False,
         "effect_authority": False,

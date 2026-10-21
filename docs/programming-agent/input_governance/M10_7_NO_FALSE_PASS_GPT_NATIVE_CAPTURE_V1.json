@@ -1,0 +1,60 @@
+{
+  "schema_version": "M10_7_NO_FALSE_PASS_GPT_NATIVE_CAPTURE_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M10.7",
+  "checkpoint_code": "NO_FALSE_PASS",
+  "executor": {
+    "mode": "GPT_NATIVE",
+    "adapter_id": "chatgpt-native-current-context-v1",
+    "provider_identity": "OPENAI_CHATGPT_NATIVE",
+    "conversation_scope": "EXISTING_CONVERSATION_ONLY",
+    "native_api_invocation": false,
+    "native_session_creation": false,
+    "remote_api_fallback": "FORBIDDEN",
+    "host_execution": "FORBIDDEN",
+    "provider_attested": false
+  },
+  "source": {
+    "main_sha": "ffd3e4be01129e7700d035abdc9fde746952ef57",
+    "test_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_7/no_false_pass.py",
+    "test_git_blob_sha1": "635cf2bcae96712c6150c4accadcafe68296c257",
+    "test_sha256": "475e1a5981e0d356da17644c0d3c8c4a722c7044754305988e4ad8ff02a0b58a",
+    "packet_path": "docs/programming-agent/input_governance/M10_7_NO_FALSE_PASS_GPT_NATIVE_EXECUTION_PACKET_V1.json",
+    "packet_git_blob_sha1": "4b7e1c84d7851b65fe8c4bef734538b2a795fc2c",
+    "input_sha256": "fb290a3aaea348a3ea64b098453f579e475256becad6cf205dd6a29e5f233aac"
+  },
+  "execution": {
+    "exit_code": 0,
+    "stderr_present": true,
+    "stderr_scope": "NON_TEST_PYTHON_STARTUP_WARMUP_WARNING",
+    "test_stdout_sha256": "689a532d5cb47a8bdad173f010164fcca658f722bf94a36e25c0f6949cdff18c"
+  },
+  "result": {
+    "evidence_ref": "github://cristhianlujan/claude-persona-lf-patch@ffd3e4be01129e7700d035abdc9fde746952ef57/docs/programming-agent/input_governance/M10_7_NO_FALSE_PASS_GPT_NATIVE_EXECUTION_PACKET_V1.json#blob:4b7e1c84d7851b65fe8c4bef734538b2a795fc2c",
+    "observed": {
+      "adversarial_case_executed": true,
+      "budget_breach_count": 0,
+      "frozen_run_ids": [
+        930,
+        931,
+        944
+      ],
+      "frozen_window_sha256": "5dfa11c2ab8b47e205c1e5a03b5f28a42c2cae969643443690c539cbb1e52466",
+      "frozen_window_verified": true,
+      "historical_receipt_sha256": "17e949addd09caa82add52c0d792e91d0460435d1b6f77ef7910ff76c431c972",
+      "known_false_pass_signals": 0,
+      "sample_policy": "RUN_HISTORY_EFFECTIVENESS_SAMPLE_V1",
+      "semantic_authority_bound": true,
+      "test_exit_code": 0,
+      "test_passed": true,
+      "timeout_signal_count": 0,
+      "unmeasured_duration_count": 0,
+      "unresolved_d4": 0
+    },
+    "schema_version": "M10_7_NO_FALSE_PASS_RESULT_V2",
+    "status": "PASS",
+    "suite_code": "INPUT_GOVERNANCE_REGRESSION",
+    "test_code": "ENG_M10_7_NO_FALSE_PASS"
+  },
+  "capture_sha256": "43ff477bbfc2df3e12540445750df9adf932029f482facafc8ff2babc129165e"
+}

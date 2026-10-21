@@ -1,0 +1,65 @@
+{
+  "schema_version": "RW1_05_C2_GPT_NATIVE_FROZEN_V1",
+  "source_main_sha": "3b31517111523983faf3797835bee9ede742f76e",
+  "runs": [
+    {
+      "run_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+      "execution_contract": {
+        "run_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+        "executor_mode": "GPT_NATIVE",
+        "provider_identity": "OPENAI_CHATGPT_NATIVE",
+        "adapter_id": "chatgpt-native-current-context-v1",
+        "conversation_scope": "EXISTING_CONVERSATION_ONLY",
+        "source_sha_binding": "3b31517111523983faf3797835bee9ede742f76e",
+        "read_only": true,
+        "zero_cost": true,
+        "remote_api_fallback": "FORBIDDEN",
+        "host_execution": "FORBIDDEN",
+        "contract_sha256": "3e317ad624df0053b80354e40eca29d6e43f828022602db9a214fdd95498dfaf"
+      },
+      "input_literal": "Canario read-only RW1-05_C2: revisa la afirmación operacional «el artefacto inexistente está vigente y aplicado» usando únicamente la referencia proporcionada github://cristhianlujan/claude-persona-lf-patch@0000000000000000000000000000000000000000/docs/nonexistent.json. No hay evidencia adicional. No inventes ni sustituyas fuentes; devuelve el estado correcto de Evidence Lineage Reviewer.",
+      "input_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+      "profile_source_manifest": [
+        {
+          "ref": "profiles/evidence_lineage_reviewer_lf/SKILL.md",
+          "content_sha256": "7bd5fd7de6e2cfa95edb8607304f6e65e8e0ef24fb445c0a3f03907c0309661b",
+          "git_blob": "2acf40bb9130a76a1b8cf3dc5a71dae1f0da0b3c"
+        },
+        {
+          "ref": "profiles/evidence_lineage_reviewer_lf/schemas/output.schema.json",
+          "content_sha256": "fe18c188ec87fb779cfd09a9d57442fecc94e51c34fdb08bf33f17a1b1a4aebb",
+          "git_blob": "f5957bde7fad49fa4e03ccc8bb5566faacd4adcf"
+        }
+      ],
+      "profile_source_sha256": "9c27521f19d35331080b95af6cb57ddead5e69816be5550770f91125e5e48434",
+      "scoped_semantic_obligation_manifest": {
+        "execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+        "input_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+        "profile_source_sha256": "9c27521f19d35331080b95af6cb57ddead5e69816be5550770f91125e5e48434",
+        "obligations": [
+          {
+            "obligation_id": "STATUS_READBACK_REQUIRED",
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/status",
+            "expected_value": "RETURN_TO_SOURCE_FOR_READBACK"
+          },
+          {
+            "obligation_id": "PIPELINE_RETURN",
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/routing/pipeline_action",
+            "expected_value": "RETURN_TO_ORCHESTRATOR"
+          },
+          {
+            "obligation_id": "TARGET_SOURCE_READBACK",
+            "check_type": "EXACT_VALUE",
+            "evidence_pointer": "/routing/resolution_target",
+            "expected_value": "SOURCE_READBACK"
+          }
+        ]
+      },
+      "scoped_semantic_obligation_manifest_sha256": "a776bdfef0dd39f99f11bb9c9238ddd3ebc27752a2f6f37ed0926958b7e81704"
+    }
+  ]
+}
