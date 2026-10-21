@@ -153,12 +153,16 @@ BEGIN
      OR j.fail_count<>0 OR j.blocked_count<>0 OR j.judge_result<>'PASS'
   THEN RAISE EXCEPTION 'RW105_C2_11OF11_NOT_CLEAN'; END IF;
 
-  UPDATE public.lf_operation_execution
-     SET status='COMPLETED',completed_at=clock_timestamp(),
-         updated_at=clock_timestamp(),updated_by_execution_id=e
-   WHERE execution_id=e AND status='IN_PROGRESS'
-     AND operation_code='EJECUCION_PERFIL_LF' AND target_code=p;
-  IF NOT FOUND THEN RAISE EXCEPTION 'RW105_C2_EXECUTION_COMPLETION_CAS_FAILED'; END IF;
+  -- report_output closes EJECUCION_PERFIL_LF transactionally through
+  -- lf_record_operation_step_core_v1(p_close_on_report_output=true).
+  -- Do not duplicate that state transition here; require canonical readback.
+  SELECT * INTO STRICT ex
+  FROM public.lf_operation_execution
+  WHERE execution_id=e
+    AND operation_code='EJECUCION_PERFIL_LF'
+    AND target_type='PERFIL'
+    AND target_code=p
+    AND status='COMPLETED';
 
   attachment:=public.lf_profile_execution_attach_terminal_authority_receipt_v1(e,e);
   IF attachment->>'result' NOT IN (
