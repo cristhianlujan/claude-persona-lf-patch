@@ -51,6 +51,7 @@ MANAGED_PREFIXES = (
 )
 
 MANAGED_EXACT_NAMES = {
+    "saly_legal05_c2_sbs_bifurcacion_v1",  # SALY-only SBS loan-to-employees C2 branch and UIF cost compliance evidence.
     "saly_legal05_c2_aplicado_preliminar_v1",  # SALY-only LEG05 C2 applied legal analysis, no final license.
     "saly_legal_c1_03_04_05_evidencia_v1",  # SALY-only normative C1 legal SBS/payroll/autofunding evidence.
     "saly_fondeo_dictamen_legal_matriz_v1",  # SALY-only C1/C2/C3 legal feasibility criteria for six funding routes.
