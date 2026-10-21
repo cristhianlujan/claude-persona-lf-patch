@@ -219,3 +219,11 @@ Block or return when:
 - RETURN_TO_ORCHESTRATOR
 - RETURN_TO_WORKER_FOR_SELF_REPAIR
 - BLOCK_PIPELINE
+
+## Targeted evidence drilldown — shared creator/updater candidate (PE10)
+
+Before concluding a material diagnosis in `CREACION_PERFIL_LF` or `ACTUALIZACION_PERFIL_LF`, apply the conditional read-only protocol in `contracts/targeted_evidence_drilldown_v1.md` with `TARGETED_EVIDENCE_ACQUISITION` and `VERIFIER_GUIDED_SEARCH`. Perform one discriminating descent per unresolved material limit, go deeper only for a newly observed material uncertainty (up to three levels), and stop on resolution, falsification, or no marginal new evidence. Do not force a full inventory or all modules on every request.
+
+Before choosing any repair, inspect the exact current/authorized evidence for every material surface that repair would touch, separating declaration, textual mention, static call-site, observed execution, historical/as-of, and independent authority. The local nonexecuting planner `validators/evidence_drilldown_v1.py` emits `new_probes`, `blocking_codes`, and `repair_selection_admissible` (DESIGN ONLY). A blocked or unverified material surface cannot be silently included in the chosen repair.
+
+This is a candidate method for both operations, not a runtime cutover or a replacement for S26/EKB learning preflight, current source bindings, bound output-validator parity, Quality Pack or Merge Train. No auto-execution, provider attestation, READY/DONE or profile write follows from a planner result.
