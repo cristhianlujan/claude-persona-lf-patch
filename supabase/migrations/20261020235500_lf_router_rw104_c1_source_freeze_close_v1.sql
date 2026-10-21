@@ -89,6 +89,11 @@ DECLARE
       "no_production_mutation":true
     }
   },
+  "verification_queries":[
+    "SELECT checkpoint_code,status,evidence_ref,assertion_receipt_sha256 FROM programacion.engineering_work_checkpoints WHERE work_item_id=1130 ORDER BY sequence_no",
+    "SELECT version,name FROM supabase_migrations.schema_migrations WHERE version IN ('20261017034602','20261017035500','20261017040500') ORDER BY version",
+    "SELECT count(*) active_routes,count(*) FILTER (WHERE write_allowed) write_routes,count(*) FILTER (WHERE NOT write_allowed) nonwrite_routes FROM public.lf_router_action_registry WHERE status='ACTIVE'"
+  ],
   "evidence_ref":"github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/router_wave/RW1_04_C1_SOURCE_REGRESSION_DIFF_BASELINE_V1.md#blob:ab2f5232ad429b5d78fd8a943ac94be76830b943"
 }
 $spec$::jsonb;
