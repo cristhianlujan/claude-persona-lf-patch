@@ -95,9 +95,11 @@ BEGIN
     'Terminal readback PASS. Declared query observed EVIDENCE_VERIFICATION n=1110 and last_at=2026-10-17T00:59:58.709843Z. Canonical soak authority receipt 38 remains VERIFIED with SHA 17e949addd09caa82add52c0d792e91d0460435d1b6f77ef7910ff76c431c972; 13/13 screens; 47/47 families; min observations >=2; false-pass=0; D4=0. NO_FALSE_PASS and NEG_INSUFFICIENT are already DONE with GPT Native material evidence. No production authorization implied.'
   );
 
+  -- The transition return is only the acknowledgement boundary.
+  -- Ledger progress is asserted below from the persisted canonical view,
+  -- avoiding a redundant/brittle interpretation of the returned bootstrap JSON.
   IF v_transition#>>'{transition,status}' IS DISTINCT FROM 'APPLIED'
      OR v_transition#>>'{transition,new_status}' IS DISTINCT FROM 'DONE'
-     OR v_transition#>>'{transition,ledger_progress_pct}' IS DISTINCT FROM '100'
   THEN
     RAISE EXCEPTION 'M107_SOAK_RECEIPT_TRANSITION_FAIL:%',v_transition;
   END IF;
@@ -128,6 +130,39 @@ VALUES(
 )
 ON CONFLICT (codigo) DO UPDATE SET
   descripcion=excluded.descripcion,
+  patron=excluded.patron,
+  prevencion=excluded.prevencion,
+  validacion=excluded.validacion,
+  evidencia=excluded.evidencia,
+  estado=excluded.estado,
+  ultima_vez=now(),
+  updated_at=now();
+
+INSERT INTO public.lf_error_knowledge(
+  codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,
+  frecuencia,primera_vez,ultima_vez,lote_origen,estado,evidencia,lifecycle_phase,
+  consumer_role,root_cause_family,detectability,source_context,source_ref
+)
+VALUES(
+  'IG-M107-SOAK-TERMINAL-RETURN-GUARD-049',
+  'GOVERNANCE',
+  'M10.7 SOAK_RECEIPT: guard redundante del JSON de transición abortó cierre válido',
+  'El primer Train del cierre terminal ejecutó la transición y recibió transition.status=APPLIED y new_status=DONE, pero la misma migración abortó y revirtió todo al exigir además ledger_progress_pct dentro del JSON devuelto antes del postcheck canónico.',
+  'Se duplicó la autoridad de validación: se interpretó un campo del acknowledgement de transición y, además, se había definido un postcheck posterior sobre v_engineering_work_progress.',
+  'REDUNDANT_TRANSITION_RETURN_PROGRESS_GUARD',
+  'En cierres terminales, validar en el retorno sólo APPLIED/DONE y verificar progreso/status/checkpoints/blockers/dependencias desde el ledger persistido en un postcheck separado dentro de la misma transacción. Un fallo debe revertir todo.',
+  'PASS si el reintento aplica la misma transición, el postcheck confirma progress=100, work item DONE, 5/5 checkpoints DONE, 0 blockers y 0 dependencias, y el Train completa parity+merge.',
+  'HIGH',1,now(),now(),'IG_CURATOR_VALIDATOR_REFACTOR_V2','VERIFICADO',
+  'Train run 39644657954 falló fail-closed y rollback confirmó M10.7=80%, SOAK_RECEIPT=PENDING, sin escritura parcial. Reparación elimina sólo el guard redundante del return; conserva el postcheck canónico.',
+  'EXECUTION',
+  array['INPUT_GOVERNANCE','ENGINEERING_EXECUTOR']::text[],
+  'R5_EROSION_PROCESO','LOUD_EARLY',
+  'M10.7 terminal SOAK_RECEIPT Train retry',
+  'github-run://39644657954'
+)
+ON CONFLICT (codigo) DO UPDATE SET
+  descripcion=excluded.descripcion,
+  causa_raiz=excluded.causa_raiz,
   patron=excluded.patron,
   prevencion=excluded.prevencion,
   validacion=excluded.validacion,
