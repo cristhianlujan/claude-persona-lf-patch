@@ -109,6 +109,10 @@ def build_evolution_plan(
                                  "registry_version": receipt["registry_version"],
                                  "registry_sha256": registry_digest,
                                  "assessment_sha256": assessment_digest,
+                                 # This is a VERIFIED projection, not method execution
+                                 # permission. The v0.2 dispatcher consumes this
+                                 # portfolio and independently checks each method.
+                                 "qualified_method_ids": sorted(receipt["qualified_method_ids"]),
                                  "assessment_receipt_ref": receipt.get("assessment_receipt_ref")}
             else:
                 source_status = {"status": "UNRESOLVED",
