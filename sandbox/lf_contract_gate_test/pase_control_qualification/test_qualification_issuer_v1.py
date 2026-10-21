@@ -128,6 +128,25 @@ def main():
         assert out[key] == out2[key], key
     checks += 1
 
+    # R1: Train sync may change base/head while candidate material stays byte-identical.
+    # The old independent review remains admissible by material hash, but issuance binds a
+    # new exact head and therefore derives a new execution/request identity.
+    synced = copy.deepcopy(s)
+    synced["base_sha"] = "9" * 40
+    synced["observed_main_sha"] = "9" * 40
+    synced["head_sha"] = "a" * 40
+    for qid in ("Q01", "Q04", "Q11"):
+        synced["auto_evidence"][qid] = [
+            item.replace("2" * 40, "a" * 40) for item in synced["auto_evidence"][qid]
+        ]
+    synced_out = m.build(synced, copy.deepcopy(r))
+    assert synced_out["candidate_material_sha256"] == out["candidate_material_sha256"]
+    assert synced_out["qualification_input"]["base_sha"] == "9" * 40
+    assert synced_out["qualification_input"]["head_sha"] == "a" * 40
+    assert synced_out["source_execution_id"] != out["source_execution_id"]
+    assert synced_out["request_sha256"] != out["request_sha256"]
+    checks += 1
+
     # Canary C / R5: builder == reviewer => BLOCK.
     same = review(m, s, reviewer=s["builder_session_id"])
     same["reviewer_session_ref"] = s["builder_session_ref"]

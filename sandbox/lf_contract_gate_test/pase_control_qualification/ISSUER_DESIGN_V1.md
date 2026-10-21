@@ -114,9 +114,10 @@ Chosen transport: **one structured PR comment**.
 Reasons:
 - does not mutate HEAD;
 - can be produced from a separate ZERO_COST chat session and pasted by Paulo/owner;
-- GitHub provides immutable comment id, author, creation timestamp and body at read time;
-- issuer stores comment id + body SHA-256 + reviewer transcript/session refs inside the
-  qualification evidence, so the canonical DB receipt preserves exactly what was consumed;
+- GitHub provides a stable comment id plus author/timestamps; the body itself is mutable;
+- trusted workflow code records the comment id plus SHA-256 of the exact raw body it read,
+  while the offline issuer separately hashes the normalized review JSON; both digests and
+  reviewer transcript/session refs become part of the qualification request evidence;
 - no expiring Actions artifact is required as long-term authority.
 
 The comment is transport, not authority. The canonical authority remains the qualification
@@ -151,8 +152,18 @@ Q09 may be `NA` only when the qualification type is not `CONTROL_REPLACEMENT`.
 
 ## R3 — Execution ordering
 
-Both issuer and merge gate are triggered by the same PR synchronization. They may start in
-parallel.
+On `opened`/`synchronize`/`reopened`/`ready_for_review`, issuer and merge gate may start in
+parallel. The gate uses bounded polling so a review that already exists can be issued during
+the same exact-head run.
+
+A reviewer comment usually arrives *after* the candidate HEAD exists. Therefore the future
+issuer workflow must also listen to `issue_comment` (`created`/`edited`) and process only PR
+comments carrying the qualification-review marker. Posting/editing the review does not mutate
+HEAD. After a successful issue on that comment event, the future merge-gate workflow must get
+a second ordered trigger via `workflow_run` on **PASE Control Qualification Issuer** success,
+resolve the associated PR, and re-evaluate only that same current base/head. This ordered run
+is the authoritative post-receipt gate attempt; an earlier missing-receipt run may remain red
+shadow evidence.
 
 The gate must use bounded retry only for the exact missing-receipt condition:
 
@@ -163,10 +174,10 @@ The gate must use bounded retry only for the exact missing-receipt condition:
 - any error other than MISSING fails immediately;
 - after 12 MISSING reads, BLOCK.
 
-Therefore the issuer does not need to call or mutate the gate workflow, and the Train does
-not need to trust a second status producer. Once the issuer persists the exact-head receipt,
-the already-running gate can observe it. A later `synchronize` event creates fresh runs
-for the new HEAD.
+The issuer never calls the gate API and never fabricates a gate status. Once it persists the
+exact-head receipt, either the already-running bounded-poll gate observes it or the ordered
+`workflow_run` gate attempt does. A later Train `synchronize` creates a new HEAD and therefore
+a fresh issuer/gate pair; prior-head PASS is irrelevant.
 
 When the gate is eventually made required, the Train exact-head required-check guard waits
 for the gate attached to the synchronized HEAD. A prior-head PASS is irrelevant.
@@ -266,7 +277,22 @@ Preferred wrapper:
   free-form table identifiers.
 
 The role must not receive EXECUTE directly on a generic write primitive if the wrapper can
-avoid it.
+avoid it. The intended ACL shape (documentation only, not executable migration) is:
+
+```sql
+-- role creation/password material intentionally omitted here
+REVOKE ALL ON public.lf_qualification_receipts FROM lf_ci_qualification_issuer;
+REVOKE ALL ON public.lf_operation_execution FROM lf_ci_qualification_issuer;
+REVOKE ALL ON FUNCTION public.lf_ci_issue_control_system_qualification_v1(...) FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO lf_ci_qualification_issuer;
+GRANT EXECUTE ON FUNCTION public.lf_ci_issue_control_system_qualification_v1(...)
+  TO lf_ci_qualification_issuer;
+-- no direct EXECUTE grant is added for generic reserve/write primitives.
+```
+
+The wrapper itself executes as its owner only for this bounded operation. Its body must use
+fully-qualified identifiers despite the empty `search_path`, and it must not expose arbitrary
+SQL/object/operation parameters.
 
 ## How source_execution_id is created
 
@@ -294,14 +320,17 @@ name: PASE Control Qualification Issuer
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   contents: read
   pull-requests: read
+  issues: read
   actions: read
 
 concurrency:
-  group: pase-control-qualification-issuer-${{ github.event.pull_request.number }}
+  group: pase-control-qualification-issuer-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
@@ -312,23 +341,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: refs/heads/main
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - id: route
-        env:
-          REPOSITORY: ${{ github.repository }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           # trusted-main helper:
-          # 1) confirm base == current main and same repository
-          # 2) fetch HEAD as objects only
-          # 3) emit canonical PASE plan + merge route
-          # 4) output applicable=true only for CONTROL_SYSTEM_QUALIFICATION
+          # 1) resolve PR number from pull_request_target or issue_comment; reject non-PR comments
+          # 2) for issue_comment require the structured qualification-review marker
+          # 3) read PR base/head/repository through GitHub API and require base == current main
+          # 4) fetch HEAD as Git objects only; never checkout/import candidate code
+          # 5) emit canonical PASE plan + merge route
+          # 6) output applicable=true only for CONTROL_SYSTEM_QUALIFICATION
 
   issue:
     needs: classify
@@ -338,7 +365,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: refs/heads/main
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
