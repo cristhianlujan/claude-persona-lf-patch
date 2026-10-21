@@ -21,8 +21,6 @@ DECLARE
   v_source jsonb;
   v_missing jsonb;
   v_material jsonb;
-  v_new_event_id bigint;
-  v_acceptance_signal text;
 BEGIN
   SELECT * INTO STRICT v_event
   FROM public.lf_eventos
@@ -120,8 +118,8 @@ BEGIN
     '{gpt_native_canary_attempt_v1,semantic_shadow_verification}',
     jsonb_build_object(
       'status','PASS',
-      'event_id',v_event_id,
-      'event_ref','supabase://public.lf_eventos/'||v_event_id::text,
+      'source_event_id',v_event_id,
+      'source_event_ref','supabase://public.lf_eventos/'||v_event_id::text,
       'request_sha256',v_request_sha,
       'raw_output_sha256',v_raw_sha,
       'resume_validator_code','VALID',
@@ -135,7 +133,8 @@ BEGIN
       'executor_mode','GPT_NATIVE',
       'adapter_id','chatgpt-native-current-context-v1',
       'remote_api_fallback','FORBIDDEN',
-      'host_execution','FORBIDDEN'
+      'host_execution','FORBIDDEN',
+      'evidence_rule','EXISTING_EVENT_READBACK_ONLY_NO_NEW_ACCEPTANCE_EVENT'
     ),
     true
   );
@@ -147,71 +146,6 @@ BEGIN
     '{source_pack_v2,checkpoint_inputs,RW1-05_C2}',
     v_source,
     false
-  );
-
-  v_acceptance_signal:=private.fn_lf_event_acceptance_signal_v2(
-    'STEP_EVIDENCE',
-    v_cp,
-    'RW1-05_C2 real semantic shadow verified from event 21414; profile runtime canary remains pending and checkpoint stays open.',
-    jsonb_build_object(
-      'evidence_schema_version','operational-event/v2',
-      'schema_version','RW105_C2_SEMANTIC_SHADOW_VERIFIED_V1',
-      'checkpoint_code',v_cp,
-      'request_sha256',v_request_sha,
-      'source_event_id',v_event_id,
-      'real_semantic_shadow_run',true,
-      'act0001_rederived_after_valid_resume',true,
-      'router_status','READY_TO_EXECUTE',
-      'operation_code','EJECUCION_PERFIL_LF',
-      'executor_mode','GPT_NATIVE',
-      'real_profile_runtime_canary',false,
-      'checkpoint_effect','PENDING_PRESERVED',
-      'production_activation',false,
-      'cutover_eligible',false
-    )
-  );
-
-  IF v_acceptance_signal IS NOT NULL THEN
-    RAISE EXCEPTION 'RW105_C2_SEMANTIC_SHADOW_EVENT_ACCEPTANCE_SIGNAL:%',v_acceptance_signal;
-  END IF;
-
-  INSERT INTO public.lf_eventos(
-    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,created_by_execution_id
-  ) VALUES (
-    'STEP_EVIDENCE',
-    'ENGINEERING_WORK_CHECKPOINT',
-    v_cp,
-    'RW1-05_C2 real semantic shadow verified from event 21414; profile runtime canary remains pending and checkpoint stays open.',
-    'INFO',
-    jsonb_build_object(
-      'evidence_schema_version','operational-event/v2',
-      'schema_version','RW105_C2_SEMANTIC_SHADOW_VERIFIED_V1',
-      'checkpoint_code',v_cp,
-      'request_sha256',v_request_sha,
-      'source_event_id',v_event_id,
-      'source_event_ref','supabase://public.lf_eventos/'||v_event_id::text,
-      'real_semantic_shadow_run',true,
-      'act0001_rederived_after_valid_resume',true,
-      'router_status','READY_TO_EXECUTE',
-      'operation_code','EJECUCION_PERFIL_LF',
-      'profile_code','PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF',
-      'executor_mode','GPT_NATIVE',
-      'adapter_id','chatgpt-native-current-context-v1',
-      'real_profile_runtime_canary',false,
-      'remaining_blocker','REAL_PROFILE_RUNTIME_CANARY_PENDING',
-      'checkpoint_effect','PENDING_PRESERVED',
-      'production_activation',false,
-      'cutover_eligible',false
-    ),
-    'RW1-05_C2-GPT-NATIVE-CANARY'
-  )
-  RETURNING id INTO v_new_event_id;
-
-  v_new:=jsonb_set(
-    v_new,
-    '{source_pack_v2,checkpoint_inputs,RW1-05_C2,material_execution_evidence,gpt_native_canary_attempt_v1,semantic_shadow_verification,closure_event_id}',
-    to_jsonb(v_new_event_id),
-    true
   );
 
   UPDATE programacion.engineering_plan_units
@@ -232,6 +166,23 @@ BEGIN
      IS DISTINCT FROM 'PENDING'
   THEN
     RAISE EXCEPTION 'RW105_C2_SEMANTIC_SHADOW_CHANGED_CHECKPOINT';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(
+      v_new#>'{source_pack_v2,checkpoint_inputs,RW1-05_C2,missing_typed}'
+    ) x(item)
+    WHERE x.item->>'code'='REAL_SEMANTIC_SHADOW_RUN_PENDING'
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(
+      v_new#>'{source_pack_v2,checkpoint_inputs,RW1-05_C2,missing_typed}'
+    ) x(item)
+    WHERE x.item->>'code'='REAL_PROFILE_RUNTIME_CANARY_PENDING'
+      AND coalesce((x.item->>'blocking')::boolean,false)
+  ) THEN
+    RAISE EXCEPTION 'RW105_C2_SEMANTIC_SHADOW_POSTCHECK_FAILED';
   END IF;
 END
 $rw105_c2_semantic_shadow_close$;
