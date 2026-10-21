@@ -35,6 +35,11 @@ positions=[src.index("'semantic_review'"),src.index("'judge_record'"),
            src.index("'reviewer_readback'"),src.index("'report_output'")]
 assert positions == sorted(positions)
 assert src.count("public.lf_record_independent_review_step_v3(") == 4
+# The shared recorder must satisfy the current VERIFIED Evidence Ledger trigger
+# at both non-STRATEGY anchors: REVIEW_DECISION and final review receipt.
+assert src.count("'provider_readback_verified',true") == 2
+assert src.count("'digest_recomputed',true") == 2
+assert "REVIEW_DECISION" in src and "INDEPENDENT_REVIEW_RECEIPT" in src
 
 # This migration may complete only the reviewer; C5/cutover/production remain false.
 for forbidden in [
