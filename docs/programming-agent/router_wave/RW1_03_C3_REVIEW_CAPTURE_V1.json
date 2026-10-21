@@ -1,0 +1,136 @@
+{
+  "schema_version": "RW103_C3_GPT_NATIVE_CAPTURE_V1",
+  "subject_ref": "LF_ROUTER_ARCHITECTURE_WAVE_V1/RW1-03/RW1-03_C3",
+  "packet_git_blob": "4654cdab6de895890aedaa0163321cb977a174ac",
+  "chat_transcript_ref": "https://chatgpt.com/share/6ad8053a-46a8-83e8-ab6a-9f8031ca68b0",
+  "capture_method": "USER_PROVIDED_FROM_PUBLIC_CHAT_SHARE",
+  "evidence_tier": "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT",
+  "public_share_access_verified": true,
+  "public_share_contains_handoff_reference": true,
+  "provider_attested": false,
+  "real_execution_receipt": false,
+  "independent_review": false,
+  "runtime_activation": false,
+  "production_activation": false,
+  "raw_output_sha256": "77e90f302291b3f00dc4e981d383710e10ce53e3d908490a5d80efce8025aaff",
+  "raw_output": {
+    "schema_version": "RW103_C3_GPT_NATIVE_BLIND_REVIEW_V1",
+    "unit": "RW1-03",
+    "items": [
+      {
+        "item_id": "ITEM_A",
+        "checks": [
+          {
+            "code": "AUTHORITY_SEPARATION",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"AUTHORIZE_EFFECT\"",
+              "\"MINT_TARGET_AUTHORITY\"",
+              "\"ROUTER_REDERIVES_ROUTE_AND_AUTHORITY\""
+            ],
+            "note": "El especialista carece de autoridad de descubrimiento, selección, ejecución y efectos. ACT-0001 conserva la rederivación."
+          },
+          {
+            "code": "TRAIN_AND_ROLLBACK_NON_CIRCULAR",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"INSTALLATION_USES_PREEXISTING_ACT0001_AND_MERGE_TRAIN_AUTHORITY\"",
+              "\"no_circular_train_dependency\":true",
+              "\"no_double_router\":true"
+            ],
+            "note": "La instalación usa la autoridad preexistente. El rollback revierte al handoff V1 bloqueado y deshabilita V2 resume."
+          },
+          {
+            "code": "STALE_NEGATIVE_FAIL_CLOSED",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"SOURCE_CURRENTNESS_CURRENT\"",
+              "\"EXCLUSIONS_PRESERVED\"",
+              "\"BLOCK_SEMANTIC_RESUME_INVALID\""
+            ],
+            "note": "El contrato exige hash, currentness, subset, restricciones de scope, exclusiones y ausencia de campos de autoridad. Fallos bloquean resume."
+          },
+          {
+            "code": "SYNTHETIC_PROMPTS_BOUNDED",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"positive_targets_subset_of_candidates\":true",
+              "\"effect_authority_forbidden\":true",
+              "\"specialist_result_is_not_route_authority\":true"
+            ],
+            "note": "P1 conserva la exclusión B y revalida currentness. P2 rechaza C fuera de candidatos. P3 rechaza operación, executor y autorización. P4 bloquea fuente stale. P5 impide segundo Router y dependencia circular. P6 mantiene legacy read-only sin autoridad adicional. Resultado limitado al análisis contractual, no runtime."
+          },
+          {
+            "code": "LEGACY_COMPATIBILITY_NO_BYPASS",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"EVOLVE_HANDOFF_WITHOUT_SECOND_ROUTER\"",
+              "\"legacy_consumers_must_not_receive_new_effect_authority\":true",
+              "\"PRESERVE_CURRENT_ROUTER_BEHAVIOR\""
+            ],
+            "note": "Se preserva el entrypoint legacy y su comportamiento sin brecha semántica. La transición no introduce un segundo Router ni amplía autoridad de efectos."
+          }
+        ],
+        "verdict": "PASS",
+        "rationale": "Los cinco controles están satisfechos a nivel de contrato estático. No constituye certificación de implementación, ejecución real, E2E o producción."
+      },
+      {
+        "item_id": "ITEM_B",
+        "checks": [
+          {
+            "code": "AUTHORITY_SEPARATION",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"ACCEPT_SPECIALIST_ROUTE_AND_AUTHORITY\"",
+              "\"effect_authority_forbidden\":false",
+              "\"specialist_result_is_not_route_authority\":true"
+            ],
+            "note": "Existe contradicción material entre negar autoridad al especialista y aceptar su ruta y autoridad. Permite una vía de escalamiento de efectos."
+          },
+          {
+            "code": "TRAIN_AND_ROLLBACK_NON_CIRCULAR",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"V2_SEMANTIC_RESUME_REQUIRED_BEFORE_MERGE_TRAIN_INSTALL\"",
+              "\"no_circular_train_dependency\":false",
+              "\"no_double_router\":false"
+            ],
+            "note": "Introduce dependencia circular para instalar V2 y admite segundo Router durante la transición. El rollback declarado no elimina estos defectos."
+          },
+          {
+            "code": "STALE_NEGATIVE_FAIL_CLOSED",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"effect_authority_forbidden\":false",
+              "\"required_checks\":[\"REQUEST_HASH_MATCH\",\"CANDIDATE_SUBSET_ONLY\",\"NO_SCOPE_WIDENING\",\"NO_OPERATION_OR_EXECUTOR_FROM_SPECIALIST\"]",
+              "\"ACCEPT_SPECIALIST_ROUTE_AND_AUTHORITY\""
+            ],
+            "note": "Faltan SOURCE_CURRENTNESS_CURRENT y EXCLUSIONS_PRESERVED en resume. Se permite autoridad de efectos y aceptación de autoridad del especialista."
+          },
+          {
+            "code": "SYNTHETIC_PROMPTS_BOUNDED",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"effect_authority_forbidden\":false",
+              "\"ACCEPT_SPECIALIST_ROUTE_AND_AUTHORITY\"",
+              "\"V2_SEMANTIC_RESUME_REQUIRED_BEFORE_MERGE_TRAIN_INSTALL\""
+            ],
+            "note": "P1 y P4 no tienen las validaciones de currentness y exclusiones exigidas para resume. P2 está limitado por subset. P3 conserva ciertas prohibiciones de campos, pero admite autoridad de efectos y aceptación de ruta. P5 falla por circularidad y segundo Router. P6 falla al permitir nueva autoridad a consumidores legacy. No todos los prompts son seguros."
+          },
+          {
+            "code": "LEGACY_COMPATIBILITY_NO_BYPASS",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"SECOND_ROUTER_DURING_TRANSITION\"",
+              "\"legacy_consumers_must_not_receive_new_effect_authority\":false",
+              "\"anon_allowed\":true"
+            ],
+            "note": "El segundo Router, la ausencia de prohibición de nueva autoridad legacy y la ampliación de ACL rompen el aislamiento contractual."
+          }
+        ],
+        "verdict": "FAIL",
+        "rationale": "Los cinco controles presentan incumplimientos materiales o garantías insuficientes. El contrato admite autoridad indebida, dependencia circular de Train, validación incompleta de resume, incompatibilidad legacy y ampliación de ACL."
+      }
+    ]
+  }
+}
