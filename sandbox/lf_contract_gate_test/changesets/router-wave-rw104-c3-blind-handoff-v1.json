@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw104-c3-blind-handoff-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_04_C3_BLIND_REVIEW_PACKET_V1.json": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261021043000_lf_router_rw104_c3_gpt_handoff_prep_v1.sql": "MIGRATION"
+  }
+}
