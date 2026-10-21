@@ -13,8 +13,10 @@ required=[
  "8b3b41c20d77125cf4767c79487bc13d752c01a1",
  "f87727d3c81f3cda4c4ea8f5c23d7715bcda9e0f08bd1b2eae1188117b946d35",
  "NATIVE_MATERIAL_CONTENT_ONLY",
+ "fn_lf_operation_reserve_execution_v1",
  "lf_independent_review_begin_v3",
  "lf_record_independent_review_step_v3",
+ "LF-PE10-C5-REVIEW-DISPATCH-BEFORE-CONSUMER-20261021-001",
  "'route_bind'",
  "'target_currentness'",
  "'review_next_step','semantic_review'",
@@ -57,3 +59,6 @@ assert "'semantic_review_executed',false" in src
 assert "'independent_review_receipt_created',false" in src
 assert "receipt_kind IN ('REVIEW_DECISION','INDEPENDENT_REVIEW_RECEIPT')" in src
 print("PASS PE10_C5_INDEPENDENT_REVIEW_INIT_BOUNDARY")
+
+# Reservation must occur before dispatch in source order.
+assert src.index("fn_lf_operation_reserve_execution_v1(") < src.index("fn_lf_orchestrator_dispatch_receipt_v1(")
