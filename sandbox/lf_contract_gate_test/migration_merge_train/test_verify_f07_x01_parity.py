@@ -12,7 +12,8 @@ SPEC.loader.exec_module(verify)
 class F07X01ParityTests(unittest.TestCase):
     def test_loads_check_list_from_versioned_file(self):
         self.assertEqual(verify.load_required_checks(), {
-            "lf-independent-change-admission", "ig-runtime-candidate-judge", "PASE"
+            "lf-independent-change-admission", "ig-runtime-candidate-judge", "PASE",
+            "migration-source-parity",
         })
 
     def test_equal_context_sets_pass(self):
@@ -32,6 +33,7 @@ class F07X01ParityTests(unittest.TestCase):
                 {"context": "lf-independent-change-admission"},
                 {"context": "ig-runtime-candidate-judge"},
                 {"context": "PASE"},
+                {"context": "migration-source-parity"},
                 {"context": "lf-merge-train/verified"},
             ]
         }}]}
@@ -43,10 +45,26 @@ class F07X01ParityTests(unittest.TestCase):
             "required_status_checks": [
                 {"context": "lf-independent-change-admission"},
                 {"context": "ig-runtime-candidate-judge"},
+                {"context": "migration-source-parity"},
                 {"context": "lf-merge-train/verified"},
             ]
         }}]}
         self.assertEqual(verify.compare(required, ruleset), (False, ["PASE"], []))
+
+    def test_ruleset_without_migration_source_parity_remains_out_of_parity(self):
+        required = verify.load_required_checks()
+        ruleset = {"rules": [{"type": "required_status_checks", "parameters": {
+            "required_status_checks": [
+                {"context": "lf-independent-change-admission"},
+                {"context": "ig-runtime-candidate-judge"},
+                {"context": "PASE"},
+                {"context": "lf-merge-train/verified"},
+            ]
+        }}]}
+        self.assertEqual(
+            verify.compare(required, ruleset),
+            (False, ["migration-source-parity"], []),
+        )
 
     def test_extra_ruleset_context_fails_as_surplus(self):
         required = {"PASE"}

@@ -27,6 +27,7 @@ def valid_set():
         check("lf-independent-change-admission"),
         check("ig-runtime-candidate-judge"),
         check("PASE"),
+        check("migration-source-parity"),
     ]}
 
 
@@ -36,7 +37,8 @@ class RequiredPaseChecksTests(unittest.TestCase):
 
     def test_required_checks_are_loaded_from_versioned_file(self):
         self.assertEqual(self.required, (
-            "lf-independent-change-admission", "ig-runtime-candidate-judge", "PASE"
+            "lf-independent-change-admission", "ig-runtime-candidate-judge", "PASE",
+            "migration-source-parity",
         ))
 
     def test_success_set_passes_on_exact_head(self):
@@ -48,6 +50,7 @@ class RequiredPaseChecksTests(unittest.TestCase):
             {"check_runs": [check("lf-independent-change-admission")]},
             {"check_runs": [check("ig-runtime-candidate-judge")]},
             {"check_runs": [check("PASE")]},
+            {"check_runs": [check("migration-source-parity")]},
         ]
         self.assertEqual(guard.evaluate(pages, HEAD, self.required, final=True),
                          (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
@@ -58,6 +61,7 @@ class RequiredPaseChecksTests(unittest.TestCase):
             check("lf-independent-change-admission", "success", run_id=11),
             check("ig-runtime-candidate-judge", "success", run_id=12),
             check("PASE", "success", run_id=13),
+            check("migration-source-parity", "success", run_id=14),
         ]}
         self.assertEqual(guard.evaluate(payload, HEAD, self.required, final=True),
                          (0, "PASS_TRAIN_REQUIRED_PASE_CHECKS"))
@@ -148,12 +152,38 @@ class RequiredPaseChecksTests(unittest.TestCase):
         self.assertEqual(code, guard.BLOCK)
         self.assertIn("FAIL_TRAIN_REQUIRED_CHECK_MISSING check=pase-merge-gate", message)
 
-    def test_missing_pase_blocks_with_three_required_checks(self):
+    def test_missing_pase_blocks_with_required_checks(self):
         payload = valid_set()
         payload["check_runs"] = [row for row in payload["check_runs"] if row["name"] != "PASE"]
         code, message = guard.evaluate(payload, HEAD, self.required, final=True)
         self.assertEqual(code, guard.BLOCK)
         self.assertIn("FAIL_TRAIN_REQUIRED_CHECK_MISSING check=PASE", message)
+
+    def test_missing_migration_source_parity_blocks(self):
+        payload = valid_set()
+        payload["check_runs"] = [
+            row for row in payload["check_runs"]
+            if row["name"] != "migration-source-parity"
+        ]
+        code, message = guard.evaluate(payload, HEAD, self.required, final=True)
+        self.assertEqual(code, guard.BLOCK)
+        self.assertIn(
+            "FAIL_TRAIN_REQUIRED_CHECK_MISSING check=migration-source-parity",
+            message,
+        )
+
+    def test_failed_migration_source_parity_blocks(self):
+        payload = valid_set()
+        next(
+            row for row in payload["check_runs"]
+            if row["name"] == "migration-source-parity"
+        )["conclusion"] = "failure"
+        code, message = guard.evaluate(payload, HEAD, self.required, final=True)
+        self.assertEqual(code, guard.BLOCK)
+        self.assertIn(
+            "FAIL_TRAIN_REQUIRED_CHECK_NOT_SUCCESS check=migration-source-parity",
+            message,
+        )
 
     def test_failed_pase_blocks(self):
         payload = valid_set()

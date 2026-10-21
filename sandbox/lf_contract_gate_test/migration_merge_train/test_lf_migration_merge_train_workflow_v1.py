@@ -165,6 +165,7 @@ assert 'conclusion!="skipped"' not in wf
 checks_config = (ROOT / "sandbox/lf_contract_gate_test/migration_merge_train/lf_train_required_pre_apply_checks_v1.json").read_text(encoding="utf-8")
 assert '"lf-independent-change-admission"' in checks_config
 assert '"ig-runtime-candidate-judge"' in checks_config
+assert '"migration-source-parity"' in checks_config
 assert 'lf_train_required_pre_apply_checks_v1.json' in guard
 checks += 1
 
