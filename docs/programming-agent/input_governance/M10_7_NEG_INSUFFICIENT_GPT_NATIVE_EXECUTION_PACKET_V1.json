@@ -1,0 +1,49 @@
+{
+  "schema_version": "M10_7_NEG_INSUFFICIENT_GPT_NATIVE_EXECUTION_PACKET_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M10.7",
+  "checkpoint_code": "NEG_INSUFFICIENT",
+  "executor": {
+    "mode": "GPT_NATIVE",
+    "adapter_id": "chatgpt-native-current-context-v1",
+    "provider_identity": "OPENAI_CHATGPT_NATIVE",
+    "conversation_scope": "EXISTING_CONVERSATION_ONLY",
+    "native_api_invocation": false,
+    "native_session_creation": false,
+    "remote_api_fallback": "FORBIDDEN",
+    "host_execution": "FORBIDDEN",
+    "provider_attested": false
+  },
+  "source": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_sha": "838a9055053be01a690525b89895ef573200d064",
+    "test_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_7/neg_insufficient.py",
+    "git_blob_sha1": "9b0bffa9c3b1569c5e4cdc92cdc36b23ac21c9d0"
+  },
+  "input_sha256": "79b25c56447b3bd82f4c646d18ee522c7ecbbe80e3d17636cac22b870ed4babb",
+  "input": {
+    "schema_version": "M10_7_NEG_INSUFFICIENT_INPUT_V1",
+    "historical_receipt": {
+      "receipt_sha256": "17e949addd09caa82add52c0d792e91d0460435d1b6f77ef7910ff76c431c972",
+      "payload": {
+        "pass": true,
+        "head_sha": "a14a835240a990b0154b4fd78bfbc3afc8981d99",
+        "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+        "subject_type": "ig_soak_observation_history",
+        "screens_total": 13,
+        "unresolved_d4": 0,
+        "families_total": 47,
+        "schema_version": "SOAK_OBSERVATION_HISTORY_V2",
+        "subject_sha256": "05bff5fcf6acb6cd3d4f51e9b174fc2407d469217b120aed9826a2cd73fee2ec",
+        "screens_below_2": 0,
+        "families_below_2": 0,
+        "verifier_identity": "SUPABASE:SOAK_OBSERVATION_HISTORY_V2",
+        "verification_status": "VERIFIED",
+        "min_family_observations": 189,
+        "min_screen_observations": 4,
+        "known_false_pass_signals": 0
+      }
+    }
+  },
+  "closure_effect": "NONE_PACKET_ONLY"
+}
