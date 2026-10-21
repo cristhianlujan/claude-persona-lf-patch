@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw104-c1-source-freeze-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_04_C1_SOURCE_REGRESSION_DIFF_BASELINE_V1.md": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261020235500_lf_router_rw104_c1_source_freeze_close_v1.sql": "MIGRATION"
+  }
+}
