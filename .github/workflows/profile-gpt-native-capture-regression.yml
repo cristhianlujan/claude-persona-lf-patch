@@ -4,6 +4,8 @@ on:
     paths:
       - 'skills/profile_creator/evals/gpt_native_in_chat_capture_v1.py'
       - 'skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py'
+      - 'skills/profile_creator/validators/validate_pack.py'
+      - 'sandbox/lf_contract_gate_test/engineering_checkpoints/pe10_c6_transactional_dry_run_v1.py'
       - '.github/workflows/profile-gpt-native-capture-regression.yml'
   workflow_dispatch:
 jobs:
@@ -18,3 +20,5 @@ jobs:
           python-version: '3.11'
       - name: Test exact source with positive and negative controls
         run: python skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py
+      - name: Run PE10 C6 source/native regression (not SQL material gate)
+        run: python sandbox/lf_contract_gate_test/engineering_checkpoints/pe10_c6_transactional_dry_run_v1.py
