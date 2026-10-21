@@ -1,0 +1,38 @@
+{
+ "case_ref": "PE10-IG-M107-M109-P0",
+ "files": {
+  "C4_BLIND_MAPPING_COORDINATOR_ONLY.json": {
+   "bytes": 92,
+   "sha256": "11eab3e445874d57aa1a53539eeb4569b0d8025b1fb1107b6e6ffdbc5d52b1f9"
+  },
+  "C4_EVALUATION_SUMMARY_V1.json": {
+   "bytes": 2995,
+   "sha256": "87ad88c5c1a81b74b6c78aae3c43e8262cfbc9399e8d62ed78b89cc8052e3020"
+  },
+  "CANDIDATE_X1.md": {
+   "bytes": 54423,
+   "sha256": "881aa21502d693b1a176d3c40516b9cd22af34ee3353b406458a90852574e3b4"
+  },
+  "CANDIDATE_X2.md": {
+   "bytes": 68941,
+   "sha256": "e68a8b97405bde3bedf91836af04bcf11836fc45e4506a487223573681c2b437"
+  },
+  "CANDIDATE_X3.md": {
+   "bytes": 35422,
+   "sha256": "37f674f2a154c374865a520247832b0e08e736be91a99e30fb1048ed36d44638"
+  },
+  "CANDIDATE_X4.md": {
+   "bytes": 42769,
+   "sha256": "1268b8e819caa627cf14807baf8d7912844c11da22e3e9b80caf0395b75b5235"
+  },
+  "EVALUATOR_INSTRUCTIONS_C4.md": {
+   "bytes": 6451,
+   "sha256": "b994f3498d8ee55d504c2f3b7ff92f1f1d66e9898ae719df692d3e52ae6a33b1"
+  },
+  "EVALUATOR_RAW_VERIFIED_PREFIX_0_20700.txt": {
+   "bytes": 20700,
+   "sha256": "6418994ee989953fb26a85d7998277c38b2ce92062b2eeffaab03e0dbcd5df40"
+  }
+ },
+ "schema": "PE10_E2_C4_EVALUATION_MANIFEST_V1"
+}

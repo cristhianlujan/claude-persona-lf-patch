@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw104-c2-contract-bind-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_04_C1_ERRATUM_HANDOFF_SITE_COUNT_V1.md": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261021005500_lf_router_rw104_c2_contract_bind_v1.sql": "MIGRATION"
+  }
+}

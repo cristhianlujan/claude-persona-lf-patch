@@ -1,0 +1,1149 @@
+
+{
+  "case_id": "PE10-IG-M107-M109-P0",
+  "producer": "B18",
+  "variant": "PE10_M18_E2",
+  "method": "PE10_M18",
+  "base": "B",
+  "algorithm": "D",
+  "status": "RAW_FROZEN_UNGRADED",
+  "findings": [
+    {
+      "id": "S01",
+      "finding": "The historical P0 inventory and CURRENT database state are distinct observation scopes.",
+      "evidence": {
+        "historical_anchor": "public.lf_eventos.id=20161",
+        "historical_created_at": "2026-10-04T05:14:40.880842Z",
+        "historical_callers": 38,
+        "historical_declared_edges": 76,
+        "historical_callees": 39,
+        "historical_sha256": "5ed03a1274444b49c630124ab26ed183ac964df503ba80b9baa5a0c9d95ae6cd",
+        "current_cutoff": "2026-10-15T00:00:00Z",
+        "query_ids": ["Q1", "Q2", "Q3"]
+      },
+      "interpretation": "All 38 historical callers retain their current OIDs, but 23 current definitions differ by MD5 and 15 do not. CURRENT function definitions, schedules, privileges, and execution records cannot be substituted for the historical P0 state.",
+      "decision": "PRESERVE_SCOPE_SEPARATION"
+    },
+    {
+      "id": "S02",
+      "finding": "The CURRENT reverse-consumer census is broader than the P0 declared graph and contains lexical false positives.",
+      "evidence": {
+        "lexical_candidate_occurrences": 446,
+        "distinct_candidate_consumers": 216,
+        "historically_declared_direct_references_observed": 68,
+        "additional_occurrences_within_original_38_callers": 102,
+        "occurrences_outside_P0_callers": 276,
+        "historical_declared_references_not_directly_observed": 8,
+        "query_ids": ["Q4", "Q6", "Q7", "Q8"]
+      },
+      "interpretation": "The eight missing direct references occur in changed caller definitions. Source-level delegation and replacement patterns were observed but behavioral equivalence was not proved. A lexical candidate is not automatically an executable call.",
+      "decision": "RETAIN_INDIVIDUAL_WITNESSES"
+    },
+    {
+      "id": "S03",
+      "finding": "No causal performance regression is established; historical elapsed-time measurements are unsuitable as execution-duration ground truth.",
+      "evidence": {
+        "qualified_pre_cutoff_six_chunk_runs": 80,
+        "qualified_current_six_chunk_runs": 2,
+        "current_run_ids": [933, 944],
+        "current_summed_sql_ms": [205179, 111121],
+        "current_median_summed_sql_ms": 158150,
+        "pre_cutoff_median_summed_sql_ms": 78027,
+        "pre_cutoff_zero_reported_elapsed_with_positive_sql": 16,
+        "pre_cutoff_elapsed_less_than_summed_sql": 53,
+        "query_ids": ["Q9", "Q10", "Q11", "Q12", "Q13", "Q14"]
+      },
+      "interpretation": "The CURRENT sample is too small and workload comparability is not established. Run-level completion timestamps are not reliable substitutes for measured SQL work. The 42 individually checked chunk durations agreed with their recorded timestamp differences.",
+      "decision": "MEASURE_FIRST",
+      "repair_required": false
+    },
+    {
+      "id": "S04",
+      "finding": "The examined authority model restricts direct table access while allowing selected callable entry functions.",
+      "evidence": {
+        "selected_functions": 14,
+        "tested_role_function_combinations": 140,
+        "effective_direct_invocation_combinations": 10,
+        "examined_metadata_relations": 26,
+        "authenticated_direct_select_on_examined_relations": 0,
+        "queue_table_direct_application_role_access": false,
+        "query_ids": ["Q15R", "Q16", "Q17", "Q18", "Q19", "Q20", "Q21", "Q22", "Q23", "Q24", "Q33", "Q34R"]
+      },
+      "interpretation": "No unrestricted PUBLIC function-and-schema invocation path was found among the selected functions. The 26 metadata relations carry deny_direct_client_access policies for anon and authenticated with false expressions. The queue is reachable through selected privileged wrappers, not direct application-role DML.",
+      "decision": "PRESERVE_LEAST_PRIVILEGE"
+    },
+    {
+      "id": "S05",
+      "finding": "Two authenticated-callable SECURITY INVOKER contracts have a plausible functional-access mismatch.",
+      "evidence": {
+        "function_oids": [49427, 275398],
+        "authenticated_execute": true,
+        "security_definer": false,
+        "authenticated_select_on_26_examined_relations": false,
+        "nested_programacion_helper_oid": 142747,
+        "query_ids": ["Q8", "Q15R", "Q16", "Q18", "Q22", "Q23", "Q24"]
+      },
+      "interpretation": "Both functions are documented as metadata-reading contracts, but their recorded descriptions do not establish that the authenticated database role is a supported consumer. No authenticated runtime invocation or failure was observed.",
+      "decision": "VERIFY_CRITICAL",
+      "repair_required": false
+    },
+    {
+      "id": "S06",
+      "finding": "CURRENT execution coverage extends beyond stored function-body call references.",
+      "evidence": {
+        "relevant_dml_triggers": 16,
+        "distinct_trigger_functions": 11,
+        "matching_governance_sql_rules": 0,
+        "current_cron_jobs": 11,
+        "active_cron_jobs": 9,
+        "inactive_cron_jobs": 2,
+        "event_triggers": 6,
+        "registered_foreign_tables": 0,
+        "query_ids": ["Q25", "Q26", "Q27", "Q28", "Q29", "Q30", "Q31", "Q32R", "Q33", "Q34R"]
+      },
+      "interpretation": "Trigger edges, scheduled commands, stored execution attempts, queue states, view-rule dependencies, and lexical function-body references must remain separate evidence types.",
+      "decision": "PRESERVE_TYPED_COVERAGE"
+    },
+    {
+      "id": "S07",
+      "finding": "CURRENT cron job 45 is an independently evidenced governance entry path.",
+      "evidence": {
+        "job_id": 45,
+        "job_name": "ig-direct-sql-worker-v1",
+        "schedule": "30 seconds",
+        "execution_role": "postgres",
+        "configured_active": true,
+        "scheduler_succeeded_records": 26075,
+        "scheduler_failed_records": 1,
+        "queue_done_requests": 8,
+        "queue_blocked_readbacks": 6,
+        "queue_ready_readbacks": 2,
+        "query_ids": ["Q27", "Q28", "Q29", "Q30", "Q31"]
+      },
+      "interpretation": "Scheduler success is not governance readiness. All eight linked readiness runs were COMPLETED, yet six queue readbacks were BLOCKED. All eight returned promotion_authorized=false and production_authorized=false. These observations postdate P0.",
+      "decision": "RETAIN_EXECUTION_STATE_DISTINCTIONS"
+    },
+    {
+      "id": "S08",
+      "finding": "The existing dependency inventory captures the internal worker chain but omits scheduled-job relationships from the examined collection scope.",
+      "evidence": {
+        "existing_inventory_tables": 16,
+        "existing_inventory_views": 4,
+        "dependency_classification_groups": 34,
+        "worker_dispatcher_dependency_id": 203890,
+        "dispatcher_dependency_ids": [222378, 222379, 222380, 222381, 222382, 222383],
+        "cron_jobs_reconciled": 11,
+        "cron_commands_matching_inventoried_functions": 6,
+        "explicit_cron_dependencies_found": 0,
+        "query_ids": ["Q35", "Q36", "Q37", "Q38", "Q39", "Q40", "Q41", "Q42", "Q43"]
+      },
+      "interpretation": "The examined catalog refresh explicitly excludes cron; the exact-dependency collector has no cron branch; and the examined drift/currentness views do not reconcile cron.job. This is a confirmed coverage boundary relative to a comprehensive execution-dependency graph, not proof of violation of the inventory's own declared contract.",
+      "decision": "MEASURE_FIRST",
+      "repair_required": false
+    }
+  ],
+  "causal_model": {
+    "primary": "A historical function-caller graph is being compared with a CURRENT system whose execution reachability includes wrappers, triggers, scheduled jobs, privileged dispatchers, and stored queue transitions. Apparent omissions or discrepancies may arise from observation-scope mismatch, lexical classification, or collector boundaries rather than runtime defects.",
+    "paths": [
+      {
+        "id": "P01",
+        "path": [
+          "CURRENT cron.job 45",
+          "programacion.fn_input_governance_queue_worker_v1()",
+          "programacion.fn_input_governance_direct_step_v1(integer,text)",
+          "governance readback / Curator / Validator"
+        ],
+        "observation": "Scheduled configuration, source-level calls, execution logs, and stored queue outcomes are separately evidenced.",
+        "not_proven": "Existence or activation at P0; one-to-one causal mapping between every scheduler attempt and an individual governance run."
+      },
+      {
+        "id": "P02",
+        "path": [
+          "service_role",
+          "public queue submission wrappers",
+          "programacion internal SECURITY DEFINER functions",
+          "programacion.ig_direct_requests_v1",
+          "postgres scheduled worker"
+        ],
+        "observation": "The privilege and source records support the CURRENT controlled-entry design.",
+        "not_proven": "Upstream application identity and authorization of individual submissions."
+      },
+      {
+        "id": "P03",
+        "path": [
+          "authenticated",
+          "lf_ops SECURITY INVOKER contract functions",
+          "restricted metadata relations and programacion rule-link helper"
+        ],
+        "observation": "Callable outer functions coexist with unavailable direct relation privileges.",
+        "not_proven": "That authenticated execution is a supported use case or that a concrete authenticated invocation fails."
+      },
+      {
+        "id": "P04",
+        "path": [
+          "CURRENT source-level dependency",
+          "inventory.objects",
+          "inventory.dependencies",
+          "inventory static analysis / exact collector"
+        ],
+        "observation": "Internal worker and dispatcher calls are represented, while the examined collectors do not produce cron-job edges.",
+        "not_proven": "That cron coverage is required by the inventory's original specification."
+      }
+    ],
+    "diagnostic_method_limits": {
+      "GDE_hitting_sets": "NOT_APPLIED: no proven conflicting requirements or defect sets justify a minimal hitting-set repair.",
+      "BARINEL": "NOT_APPLIED: no suitable component-level pass/fail spectra.",
+      "expected_information_gain": "NOT_NUMERICALLY_ESTIMATED: no calibrated probabilities or measurement costs."
+    }
+  },
+  "candidate_repairs": [
+    {
+      "id": "CR01",
+      "name": "Read-only typed cron-to-function reconciliation",
+      "class": "MEASUREMENT_FIRST",
+      "action": "Prepare a bounded comparison of CURRENT cron.job rows, parsed candidate function references, matching inventory object identities, and existing dependency records. Report unmatched or ambiguous edges with provenance and no database mutation.",
+      "support": ["Q27", "Q38", "Q39", "Q40", "Q41", "Q43"],
+      "measured_cost": "NO_MEDIDO",
+      "measured_benefit": "NO_MEDIDO",
+      "authorized_write": false
+    },
+    {
+      "id": "CR02",
+      "name": "Contract-specific authenticated invocation verification",
+      "class": "VERIFY_CRITICAL",
+      "action": "Define an independently authorized, non-production, side-effect-controlled check of the two lf_ops contracts under the intended role. Resolve supported caller identity before evaluating any change to privileges.",
+      "support": ["Q15R", "Q16", "Q18", "Q22", "Q23", "Q24"],
+      "measured_cost": "NO_MEDIDO",
+      "measured_benefit": "NO_MEDIDO",
+      "authorized_write": false
+    },
+    {
+      "id": "CR03",
+      "name": "Timing-evidence quality gate",
+      "class": "MEASUREMENT_FIRST",
+      "action": "Exclude invalid run-level elapsed measures from causal benchmark comparisons; retain verified chunk SQL durations, run identities, workload characteristics, and sample-size limitations.",
+      "support": ["Q9", "Q10", "Q11", "Q12", "Q13", "Q14"],
+      "measured_cost": "NO_MEDIDO",
+      "measured_benefit": "NO_MEDIDO",
+      "authorized_write": false
+    }
+  ],
+  "chosen_repair": {
+    "id": "CR01",
+    "choice_type": "NEXT_SAFE_MEASUREMENT_STEP_NOT_DATABASE_REPAIR",
+    "rationale": "The cron entry relationship is concrete, the worker's internal edges are already inventoried, and the inspected collectors and drift views exclude scheduled-job relationships. A read-only reconciliation tests the exact incremental gap without duplicating stored edges or changing production state.",
+    "limits": [
+      "Do not insert, update, deactivate, or backfill inventory edges.",
+      "Do not execute cron jobs or governance functions.",
+      "Do not infer P0 scheduler state.",
+      "Do not interpret lexical matches as verified runtime calls.",
+      "Do not assign unmeasured probability or benefit."
+    ],
+    "implementation_authorized": false,
+    "repair_required": false,
+    "measured_cost": "NO_MEDIDO",
+    "measured_benefit": "NO_MEDIDO"
+  },
+  "rejected_alternatives": [
+    {
+      "candidate": "Grant authenticated SELECT on metadata relations or USAGE on programacion",
+      "reason": "Would broaden access against explicit client-deny policies without an established supported-use defect."
+    },
+    {
+      "candidate": "Convert the lf_ops contracts to SECURITY DEFINER",
+      "reason": "Would change the authority boundary and potentially expose substantial metadata without contract-specific proof."
+    },
+    {
+      "candidate": "Disable or relax row-level security",
+      "reason": "Contradicts the observed least-privilege posture and is not necessary for read-only verification."
+    },
+    {
+      "candidate": "Replace the existing dependency inventory",
+      "reason": "Existing object, dependency, trigger, source-evidence, and snapshot structures already support most required classifications."
+    },
+    {
+      "candidate": "Automatically backfill all 11 cron jobs",
+      "reason": "Includes inactive jobs, inventory-namespace exclusions, and command-parsing uncertainty; no write authorization exists."
+    },
+    {
+      "candidate": "Reinsert worker-to-dispatcher or dispatcher-to-governance calls",
+      "reason": "Existing dependencies 203890 and 222378-222383 already represent the examined relationships."
+    },
+    {
+      "candidate": "Declare a performance regression or optimize the validator immediately",
+      "reason": "The CURRENT sample is two qualified runs; workload comparability and reliable run-level elapsed measures are absent."
+    },
+    {
+      "candidate": "Treat all lexical caller references as executable edges",
+      "reason": "The source census includes known false positives and cannot prove behavior solely from text occurrence."
+    },
+    {
+      "candidate": "Treat scheduler success, queue DONE, run COMPLETED, and governance READY as one outcome",
+      "reason": "Q30-Q31 establish that these are non-equivalent states."
+    }
+  ],
+  "omissions_searched": [
+    {
+      "class": "Historical P0 declared function callers and callees",
+      "result": "38 callers and 76 declared edges preserved as historical evidence; current identity and source differences checked.",
+      "query_ids": ["Q1", "Q2", "Q3"]
+    },
+    {
+      "class": "CURRENT reverse function-source consumers",
+      "result": "446 lexical occurrences across 216 consumers, including original-caller, outside-inventory, and false-positive categories.",
+      "query_ids": ["Q4", "Q6", "Q7", "Q8"]
+    },
+    {
+      "class": "Relevant DML triggers",
+      "result": "16 configured triggers and 11 target functions.",
+      "query_ids": ["Q25"]
+    },
+    {
+      "class": "SQL rules matching selected governance patterns",
+      "result": "Zero under the tested patterns; no global absence claim.",
+      "query_ids": ["Q25"]
+    },
+    {
+      "class": "Cron schedule and stored attempts",
+      "result": "11 jobs; job 45 has post-P0 execution records and eight DONE queue requests.",
+      "query_ids": ["Q26", "Q27", "Q30", "Q31"]
+    },
+    {
+      "class": "DDL event triggers",
+      "result": "Six enabled extension/DDL-related event triggers, without a directly identified governance target.",
+      "query_ids": ["Q32R"]
+    },
+    {
+      "class": "Foreign tables",
+      "result": "Zero registered foreign tables in the tested CURRENT catalog.",
+      "query_ids": ["Q32R"]
+    },
+    {
+      "class": "Queue function and table entry privileges",
+      "result": "Controlled service-role public wrappers; no direct application-role queue-table access.",
+      "query_ids": ["Q33", "Q34R"]
+    },
+    {
+      "class": "Existing inventory classifications",
+      "result": "34 populated dependency-class combinations; worker internal edges present.",
+      "query_ids": ["Q35", "Q36", "Q37", "Q38"]
+    },
+    {
+      "class": "Cron representation in existing inventory",
+      "result": "No explicit cron-job-to-function dependency under tested predicates; inspected collectors and drift views exclude cron-job coverage.",
+      "query_ids": ["Q39", "Q40", "Q41", "Q43"]
+    },
+    {
+      "class": "Inventory refresh/currentness evidence",
+      "result": "Recent stored stage heartbeats and external currentness snapshots; complete dependency refresh not independently certified.",
+      "query_ids": ["Q42"]
+    },
+    {
+      "class": "External application and Edge consumers",
+      "result": "Some repository and runtime inventory references were identified, but external runtime coverage and contemporary source equivalence remain unverified.",
+      "query_ids": ["Q37", "Q38", "Q42"]
+    }
+  ],
+  "negative_falsifiers": [
+    {
+      "id": "NF01",
+      "observation": "No unrestricted PUBLIC schema-and-function access combination among the examined functions.",
+      "query_ids": ["Q15R", "Q16"]
+    },
+    {
+      "id": "NF02",
+      "observation": "No authenticated direct SELECT on the 26 examined metadata relations.",
+      "query_ids": ["Q22", "Q24"]
+    },
+    {
+      "id": "NF03",
+      "observation": "No authenticated direct SELECT on lf_ops.v_b2b_backoffice_login_contract.",
+      "query_ids": ["Q20"]
+    },
+    {
+      "id": "NF04",
+      "observation": "No anon, authenticated, or service_role direct DML access to ig_direct_requests_v1.",
+      "query_ids": ["Q34R"]
+    },
+    {
+      "id": "NF05",
+      "observation": "No demonstrated privilege escalation, unauthorized production authorization, or direct queue-table exposure.",
+      "query_ids": ["Q16", "Q24", "Q29", "Q31", "Q34R"]
+    },
+    {
+      "id": "NF06",
+      "observation": "No proven causal runtime-performance regression.",
+      "query_ids": ["Q9", "Q10", "Q11", "Q12", "Q13", "Q14"]
+    },
+    {
+      "id": "NF07",
+      "observation": "Worker and dispatcher call edges are not absent from the existing inventory.",
+      "query_ids": ["Q38"]
+    },
+    {
+      "id": "NF08",
+      "observation": "No historical P0 cron activation is established by the CURRENT scheduler records.",
+      "query_ids": ["Q27", "Q30", "Q31"]
+    }
+  ],
+  "constraints_preserved": [
+    "READ_ONLY: no database writes, role switching, scheduler invocation, refresh execution, or schema changes by the auditor.",
+    "The five frozen role reports are immutable and are the sole substantive input to this synthesis.",
+    "P0_HISTORICAL and CURRENT observations are not merged.",
+    "Individual material edge identities and their source evidence remain distinct.",
+    "Lexical false positives remain classified as non-invocation witnesses.",
+    "Function-source calls, catalog dependencies, trigger targets, scheduled commands, recorded scheduler attempts, queue outcomes, and authority privileges are separate evidence classes.",
+    "Least privilege, client-deny RLS, and privileged wrapper boundaries are preserved.",
+    "Governance readiness is not promotion or production authorization.",
+    "No measured performance improvement or estimated information-gain probability is asserted.",
+    "No self-score or independent blind-role attestation is claimed.",
+    "No GDE hitting set or BARINEL result is invented."
+  ],
+  "unresolved": [
+    {
+      "id": "U01",
+      "question": "Do the two lf_ops SECURITY INVOKER metadata contracts explicitly support authenticated callers, and what is their observed behavior in that role?",
+      "verification": "Contract-specific, independently authorized compatibility test; do not change permissions first.",
+      "query_ids": ["Q15R", "Q16", "Q18", "Q22", "Q23", "Q24"]
+    },
+    {
+      "id": "U02",
+      "question": "Does other authorized contract documentation identify supported consumers of the two lf_ops contracts?",
+      "verification": "The proposed Q44 comment-inspection query was denied before execution because synthesis cannot admit new evidence. Record the question only.",
+      "query_id": "Q44",
+      "query_status": "DENIED_NOT_EXECUTED"
+    },
+    {
+      "id": "U03",
+      "question": "What cron jobs, privileges, and executable functions existed at historical P0?",
+      "verification": "Requires independent historical artifacts; CURRENT observations cannot answer."
+    },
+    {
+      "id": "U04",
+      "question": "Do external application services correctly authorize service_role submissions and OIDC request identifiers?",
+      "verification": "Requires authorized external integration evidence."
+    },
+    {
+      "id": "U05",
+      "question": "Are all relevant dynamic SQL, external runtime paths, and unexamined schema consumers captured?",
+      "verification": "Requires expanded, separately scoped evidence collection."
+    },
+    {
+      "id": "U06",
+      "question": "Does the inventory's governing specification require cron-job dependencies?",
+      "verification": "Compare intended coverage contract with observed collector scope before classifying the limitation as a defect."
+    },
+    {
+      "id": "U07",
+      "question": "What is the true effect of workload differences on CURRENT versus PRE_CUTOFF validator timing?",
+      "verification": "Requires more comparable qualified runs and reliable phase-level measurements."
+    },
+    {
+      "id": "U08",
+      "question": "Can the unverified hand-transcribed Q42 digests be independently validated?",
+      "verification": "Do not promote them to integrity anchors without source verification."
+    },
+    {
+      "id": "U09",
+      "question": "Can strict role blindness and causal independence be attested?",
+      "verification": "Not within the shared conversation that generated these frozen reports."
+    }
+  ],
+  "next_safe_step": {
+    "action": "Independently review a read-only specification for cron-to-function inventory reconciliation, using CURRENT catalog job identities and existing inventory dependency identities without mutating either source.",
+    "secondary_action": "Separately determine the authorized consumer contract for the two lf_ops metadata interfaces before any runtime compatibility check or privilege proposal.",
+    "execution": "NOT_AUTHORIZED",
+    "database_mutation": false,
+    "expected_cost": "NO_MEDIDO",
+    "expected_benefit": "NO_MEDIDO",
+    "decision_state": "MEASURE_FIRST"
+  },
+  "provenance": {
+    "producer_packet": "PRODUCER_PACKET_B18.md",
+    "case_id": "PE10-IG-M107-M109-P0",
+    "frozen_reports": [
+      "ARCHITECTURE",
+      "PERFORMANCE",
+      "AUTHORITY",
+      "COVERAGE",
+      "INNOVATION"
+    ],
+    "historical_snapshot": {
+      "source": "public.lf_eventos.id=20161",
+      "created_at": "2026-10-04T05:14:40.880842Z",
+      "sha256": "5ed03a1274444b49c630124ab26ed183ac964df503ba80b9baa5a0c9d95ae6cd"
+    },
+    "reference_digests": {
+      "envelope": "93d4f5cba4564ddb0cc46f731375d5d83d81b724e195dfc213b2d98fc9ebc090",
+      "overlay": "c450070e7f332a74e5c91115f87df7ad722aa06c81a41b550ba54cf68794bd9b",
+      "contract": "0a36c488883b8c0e47a166db6dd859f20df92618cb81307d934af891e047fb5c"
+    },
+    "ekb_codes": [
+      "IG-M107-CP2-READ-ROLE-CURRENTNESS-001",
+      "IG-M107-SOAK-CRITERION-DRIFT-001"
+    ],
+    "query_error_history": [
+      {
+        "query_id": "Q15",
+        "resolution": "Q15R",
+        "classification": "QUERY_CONSTRUCTION_ERROR"
+      },
+      {
+        "query_id": "Q32",
+        "resolution": "Q32R",
+        "classification": "QUERY_CONSTRUCTION_ERROR"
+      },
+      {
+        "query_id": "Q34",
+        "resolution": "Q34R",
+        "classification": "QUERY_CONSTRUCTION_ERROR"
+      },
+      {
+        "query_id": "Q44",
+        "resolution": "NONE",
+        "classification": "DENIED_NOT_EXECUTED"
+      }
+    ],
+    "individual_material_edges": [
+      {
+        "id": "E01",
+        "source": "lf_ops.fn_b2b_backoffice_login_contract(text,text,text)",
+        "source_oid": 49427,
+        "target": "programacion.fn_input_effective_rule_links_v1(integer,text)",
+        "target_oid": 142747,
+        "edge_type": "CURRENT_SOURCE_REFERENCE",
+        "query_ids": ["Q8", "Q18"]
+      },
+      {
+        "id": "E02",
+        "source": "lf_ops.fn_screen_contract_v1(text,text,text)",
+        "source_oid": 275398,
+        "target": "programacion.fn_input_effective_rule_links_v1(integer,text)",
+        "target_oid": 142747,
+        "edge_type": "CURRENT_SOURCE_REFERENCE",
+        "query_ids": ["Q8", "Q18"]
+      },
+      {
+        "id": "E03",
+        "source": "private.fn_lf_ig_human_decision_live_disposition_v1",
+        "source_oid": 243263,
+        "target": "programacion.fn_input_governance_bootstrap_classify_v2",
+        "edge_type": "CURRENT_SOURCE_REFERENCE",
+        "query_ids": ["Q8"]
+      },
+      {
+        "id": "E04",
+        "source": "lf_ops.v_b2b_backoffice_login_contract",
+        "source_oid": 49429,
+        "source_rule_oid": 49432,
+        "target": "lf_ops.fn_b2b_backoffice_login_contract(text,text,text)",
+        "target_oid": 49427,
+        "edge_type": "PG_REWRITE_NORMAL_DEPENDENCY",
+        "query_ids": ["Q19", "Q20", "Q21"]
+      },
+      {
+        "id": "E05",
+        "source": "cron.job",
+        "source_jobid": 45,
+        "source_jobname": "ig-direct-sql-worker-v1",
+        "target": "programacion.fn_input_governance_queue_worker_v1()",
+        "target_oid": 242617,
+        "target_inventory_object_id": 163963,
+        "edge_type": "CURRENT_SCHEDULED_COMMAND",
+        "query_ids": ["Q27", "Q28", "Q30", "Q41"]
+      },
+      {
+        "id": "E06",
+        "source": "programacion.fn_input_governance_queue_worker_v1()",
+        "source_oid": 242617,
+        "source_inventory_object_id": 163963,
+        "target": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "target_oid": 242597,
+        "target_inventory_object_id": 163739,
+        "inventory_dependency_id": 203890,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q28", "Q38"]
+      },
+      {
+        "id": "E07",
+        "source": "programacion.fn_input_governance_queue_worker_v1()",
+        "source_oid": 242617,
+        "target": "programacion.ig_direct_requests_v1",
+        "target_relation_oid": 242601,
+        "inventory_dependency_id": 203780,
+        "edge_type": "CURRENT_QUEUE_READ_WRITE_SOURCE_AND_INVENTORY_WRITE",
+        "query_ids": ["Q28", "Q34R", "Q38"]
+      },
+      {
+        "id": "E08",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_input_governance_execute",
+        "target_inventory_object_id": 1166,
+        "inventory_dependency_id": 222378,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E09",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_input_governance_validator_validate_handoff_v1",
+        "target_inventory_object_id": 156498,
+        "inventory_dependency_id": 222379,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E10",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_ig_timing_receipts_emit_v1",
+        "inventory_dependency_id": 222380,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E11",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_ig_causal_lineage_receipts_emit_v1",
+        "inventory_dependency_id": 222381,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E12",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_ig_validator_timing_receipt_emit_v1",
+        "inventory_dependency_id": 222382,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E13",
+        "source": "programacion.fn_input_governance_direct_step_v1(integer,text)",
+        "source_oid": 242597,
+        "target": "programacion.fn_input_governance_curator_materialize_v1",
+        "target_inventory_object_id": 809,
+        "inventory_dependency_id": 222383,
+        "edge_type": "CURRENT_DIRECT_CALL_AND_INVENTORIED_CALLS",
+        "query_ids": ["Q29", "Q38"]
+      },
+      {
+        "id": "E14",
+        "source": "public.fn_input_governance_queue_submit_v1",
+        "source_oid": 242618,
+        "target": "programacion.fn_input_governance_queue_submit_v1",
+        "target_oid": 242615,
+        "edge_type": "CURRENT_SECURITY_DEFINER_WRAPPER_CALL",
+        "query_ids": ["Q33"]
+      },
+      {
+        "id": "E15",
+        "source": "public.fn_input_governance_queue_read_v1",
+        "source_oid": 242619,
+        "target": "programacion.fn_input_governance_queue_read_v1",
+        "target_oid": 242616,
+        "edge_type": "CURRENT_SECURITY_DEFINER_WRAPPER_CALL",
+        "query_ids": ["Q33"]
+      },
+      {
+        "id": "E16",
+        "source": "public.fn_input_governance_queue_submit_oidc_v1",
+        "source_oid": 243556,
+        "target": "programacion.fn_input_governance_queue_submit_oidc_v1",
+        "target_oid": 243554,
+        "edge_type": "CURRENT_SECURITY_DEFINER_WRAPPER_CALL",
+        "query_ids": ["Q33"]
+      },
+      {
+        "id": "E17",
+        "source": "public.fn_input_governance_queue_poll_oidc_v1",
+        "source_oid": 243557,
+        "target": "programacion.fn_input_governance_queue_poll_oidc_v1",
+        "target_oid": 243555,
+        "edge_type": "CURRENT_SECURITY_DEFINER_WRAPPER_CALL",
+        "query_ids": ["Q33"]
+      },
+      {
+        "id": "E18",
+        "source": "programacion.fn_input_governance_queue_poll_oidc_v1",
+        "source_oid": 243555,
+        "target": "programacion.fn_input_governance_queue_read_v1",
+        "target_oid": 242616,
+        "edge_type": "CURRENT_SOURCE_DIRECT_CALL",
+        "query_ids": ["Q33"]
+      },
+      {
+        "id": "E19",
+        "source": "public.fn_input_governance_curator_materialize_v1",
+        "target": "programacion.fn_input_governance_curator_materialize_v1",
+        "inventory_dependency_id": 74083,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E20",
+        "source": "public.fn_input_governance_execute",
+        "target": "programacion.fn_input_governance_execute",
+        "inventory_dependency_id": 74107,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E21",
+        "source": "public.fn_input_governance_validator_validate_handoff_v1",
+        "target": "programacion.fn_input_governance_validator_validate_handoff_v1",
+        "inventory_dependency_id": 203868,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E22",
+        "source": "programacion.fn_input_governance_validator_validate_handoff_v1",
+        "target": "programacion.fn_input_governance_validator_handoff_assert_v1",
+        "inventory_dependency_id": 196265,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E23",
+        "source": "programacion.fn_input_governance_validator_validate_handoff_v1",
+        "target": "programacion.fn_input_governance_validator_validate_v1",
+        "inventory_dependency_id": 196266,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E24",
+        "source": "programacion.fn_input_live_compare_run_v1",
+        "target": "programacion.fn_input_governance_curator_materialize_v1",
+        "inventory_dependency_id": 218691,
+        "edge_type": "INVENTORIED_CALLS",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E25",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_v09_sha256_jsonb",
+        "inventory_dependency_id": 116544,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E26",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_freshness_delta",
+        "inventory_dependency_id": 116545,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E27",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_proposal_summary",
+        "inventory_dependency_id": 116546,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E28",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_governance_ekb_checkpoint",
+        "inventory_dependency_id": 116547,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E29",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_stage_gate_summary_known_current_v1",
+        "inventory_dependency_id": 116548,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E30",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_evaluation_outcome_summary_known_current_v1",
+        "inventory_dependency_id": 116549,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E31",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_internal_remediation_summary_known_current_v1",
+        "inventory_dependency_id": 116550,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E32",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_governance_worker_spec_known_current_v1",
+        "inventory_dependency_id": 116551,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E33",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_readiness_run_is_current_cached_v1",
+        "inventory_dependency_id": 116552,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E34",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_context_manifest_known_current_v1",
+        "inventory_dependency_id": 116553,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E35",
+        "source": "programacion.fn_input_governance_execute",
+        "source_inventory_object_id": 1166,
+        "target": "programacion.fn_input_governance_worker_spec_known_no_current_v1",
+        "inventory_dependency_id": 116554,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E36",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_v09_sha256_jsonb",
+        "inventory_dependency_id": 211330,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E37",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_bootstrap_materialize_v2",
+        "inventory_dependency_id": 211331,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E38",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_recurate_v2",
+        "inventory_dependency_id": 211332,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E39",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_screen_canonical_graph",
+        "inventory_dependency_id": 211333,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E40",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_curator_plan_v1",
+        "inventory_dependency_id": 211334,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E41",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_curator_handoff_receipt_v1",
+        "inventory_dependency_id": 211335,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E42",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_validator_handoff_assert_v1",
+        "inventory_dependency_id": 211336,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E43",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_curator_rebind_v1",
+        "inventory_dependency_id": 211337,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E44",
+        "source": "programacion.fn_input_governance_curator_materialize_v1",
+        "source_inventory_object_id": 809,
+        "target": "programacion.fn_input_governance_recurate_source_stale_v1",
+        "inventory_dependency_id": 211338,
+        "edge_type": "INVENTORIED_LEXICAL_CALL",
+        "query_ids": ["Q38"]
+      },
+      {
+        "id": "E45",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_00_execution_insert",
+        "trigger_oid": 61794,
+        "target": "programacion.fn_guard_input_family_execution_insert",
+        "target_oid": 61792,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E46",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_00_execution_update",
+        "trigger_oid": 61795,
+        "target": "programacion.fn_guard_input_family_execution_update",
+        "target_oid": 61793,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E47",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_00a_continuation_currentness_update",
+        "trigger_oid": 156953,
+        "target": "programacion.fn_guard_input_governance_continuation_currentness_v1",
+        "target_oid": 156952,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E48",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_00b_semantic_coherence_update",
+        "trigger_oid": 67547,
+        "target": "programacion.fn_guard_input_validator_semantic_coherence_v512",
+        "target_oid": 67546,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E49",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_01_semantic_depth_insert",
+        "trigger_oid": 62110,
+        "target": "programacion.fn_guard_input_family_semantic_depth",
+        "target_oid": 62109,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E50",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_01_semantic_depth_update",
+        "trigger_oid": 62111,
+        "target": "programacion.fn_guard_input_family_semantic_depth",
+        "target_oid": 62109,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E51",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_01a_semantic_depth_v510_insert",
+        "trigger_oid": 62837,
+        "target": "programacion.fn_guard_input_family_semantic_depth_v510",
+        "target_oid": 62836,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E52",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_01a_semantic_depth_v510_update",
+        "trigger_oid": 62838,
+        "target": "programacion.fn_guard_input_family_semantic_depth_v510",
+        "target_oid": 62836,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E53",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_insert",
+        "trigger_oid": 59597,
+        "target": "programacion.fn_guard_input_family_assessment_insert",
+        "target_oid": 59596,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E54",
+        "source": "programacion.input_family_assessments.trg_input_family_assessment_update",
+        "trigger_oid": 59599,
+        "target": "programacion.fn_guard_input_family_assessment_update",
+        "target_oid": 59598,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E55",
+        "source": "programacion.input_gap_proposals.trg_input_gap_proposal_00_continuation_currentness_update",
+        "trigger_oid": 156954,
+        "target": "programacion.fn_guard_input_governance_continuation_currentness_v1",
+        "target_oid": 156952,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E56",
+        "source": "programacion.input_readiness_runs.trg_input_readiness_run_00_m67_successor_lineage",
+        "trigger_oid": 238684,
+        "target": "programacion.fn_input_successor_lineage_guard_m67_v1",
+        "target_oid": 238683,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E57",
+        "source": "programacion.input_readiness_runs.trg_input_readiness_run_insert",
+        "trigger_oid": 59601,
+        "target": "programacion.fn_guard_input_readiness_run",
+        "target_oid": 59600,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E58",
+        "source": "programacion.input_readiness_runs.trg_input_readiness_run_latch_predecessor",
+        "trigger_oid": 61696,
+        "target": "programacion.fn_input_latch_predecessor_invalidation",
+        "target_oid": 61695,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E59",
+        "source": "programacion.input_readiness_runs.trg_input_readiness_run_update",
+        "trigger_oid": 59602,
+        "target": "programacion.fn_guard_input_readiness_run",
+        "target_oid": 59600,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E60",
+        "source": "programacion.input_validator_chunk_timings.trg_input_validator_chunk_timing_00_currentness_insert",
+        "trigger_oid": 156955,
+        "target": "programacion.fn_guard_input_governance_continuation_currentness_v1",
+        "target_oid": 156952,
+        "edge_type": "CURRENT_DML_TRIGGER_TARGET",
+        "query_ids": ["Q25"]
+      },
+      {
+        "id": "E61",
+        "source": "extensions.issue_graphql_placeholder",
+        "event_trigger_oid": 16575,
+        "target": "extensions.set_graphql_placeholder",
+        "target_oid": 16574,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E62",
+        "source": "extensions.issue_pg_cron_access",
+        "event_trigger_oid": 16654,
+        "target": "extensions.grant_pg_cron_access",
+        "target_oid": 16551,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E63",
+        "source": "extensions.issue_pg_graphql_access",
+        "event_trigger_oid": 16666,
+        "target": "extensions.grant_pg_graphql_access",
+        "target_oid": 16572,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E64",
+        "source": "extensions.issue_pg_net_access",
+        "event_trigger_oid": 16657,
+        "target": "extensions.grant_pg_net_access",
+        "target_oid": 16553,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E65",
+        "source": "extensions.pgrst_ddl_watch",
+        "event_trigger_oid": 16576,
+        "target": "extensions.pgrst_ddl_watch",
+        "target_oid": 16563,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E66",
+        "source": "extensions.pgrst_drop_watch",
+        "event_trigger_oid": 16577,
+        "target": "extensions.pgrst_drop_watch",
+        "target_oid": 16564,
+        "edge_type": "CURRENT_DDL_EVENT_TRIGGER_TARGET",
+        "query_ids": ["Q32R"]
+      },
+      {
+        "id": "E67",
+        "source": "programacion.fn_input_validator_compaction_batch_v1",
+        "source_oid": 219907,
+        "target_text": "programacion.fn_guard_input_family_assessment_update()",
+        "target_oid": 59598,
+        "edge_type": "LEXICAL_FALSE_POSITIVE_REGPROCEDURE_DEFINITION_HASH_LOOKUP",
+        "is_runtime_call": false,
+        "query_ids": ["Q8"]
+      },
+      {
+        "id": "E68",
+        "source": "private.fn_evaluate_architecture_alerts_v3",
+        "target": "private.fn_latest_cron_status_v3",
+        "inventory_dependency_id": 74227,
+        "edge_type": "INVENTORIED_LEXICAL_CALL_NOT_SCHEDULED_EDGE",
+        "query_ids": ["Q39"]
+      },
+      {
+        "id": "E69",
+        "source": "private.fn_probe_architecture_control_v3",
+        "target": "private.fn_latest_cron_status_v3",
+        "inventory_dependency_id": 74237,
+        "edge_type": "INVENTORIED_LEXICAL_CALL_NOT_SCHEDULED_EDGE",
+        "query_ids": ["Q39"]
+      },
+      {
+        "id": "E70",
+        "source": "private.fn_evaluate_architecture_alerts_v4",
+        "target": "private.fn_latest_cron_status_v3",
+        "inventory_dependency_id": 74247,
+        "edge_type": "INVENTORIED_LEXICAL_CALL_NOT_SCHEDULED_EDGE",
+        "query_ids": ["Q39"]
+      }
+    ],
+    "material_edge_preservation_limit": "The synthesis retains the material identities explicitly available in the five frozen reports and their cited query evidence. The full 76-edge P0 declaration and 446-occurrence CURRENT lexical census remain authoritative at their original query IDs; they are not reconstructed from aggregate counts or treated as a newly enumerated complete edge list.",
+    "integrity_notes": [
+      "Q40 reports five of five exact source-body MD5 matches.",
+      "Q42 digest values were hand-transcribed and were not independently verified.",
+      "Q44 was denied and not executed.",
+      "No synthesis-stage evidence was admitted."
+    ],
+    "final_status": "RAW_FROZEN_UNGRADED"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "PE10_E2_C4_EVALUATION_SUMMARY_V1",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "authorship": "COORDINATOR_SUMMARY_DERIVED_FROM_EVALUATOR_RAW_NOT_THE_RAW_ITSELF",
+  "evaluator_raw": {
+    "chars": 39441,
+    "sha256": "6c0fc0c270cbeea246be704d4115016f13c02db1fb2e6508047beaa51bf5d5b4",
+    "archived_in_repo": "PREFIX_ONLY",
+    "archived_prefix_file": "EVALUATOR_RAW_VERIFIED_PREFIX_0_20700.txt",
+    "archived_prefix_chars": 20700,
+    "archive_note": "Full RAW existed only in the evaluator chat session; hash taken in-browser. The first 20700 chars were archived and checked per 900-char slice against the in-browser slice hashes. The remaining 18741 chars are NOT archived."
+  },
+  "blinding": {"candidates": ["X1", "X2", "X3", "X4"], "mapping_file": "C4_BLIND_MAPPING_COORDINATOR_ONLY.json", "imperfect": true},
+  "evaluator_basis": {
+    "h1_h4_canonical_text_available": false,
+    "criteria_used": "R1-R4 reserved reference facts derived by the coordinator (disclosed)",
+    "provider_isolation_attested": false
+  },
+  "scores_0_18": {"X1": 13, "X2": 16, "X3": 17, "X4": 16},
+  "de_blinded": {
+    "B18_original": {"candidate": "X1", "score": 13},
+    "B18_evolved": {"candidate": "X2", "score": 16},
+    "B29_original": {"candidate": "X4", "score": 16},
+    "B29_evolved": {"candidate": "X3", "score": 17}
+  },
+  "pair_verdicts": {"B18": "NO_DEMOSTRADO", "B29": "NO_DEMOSTRADO"},
+  "reference_fact_states": {
+    "X1": {"R1": "FOUND_CORRECT", "R2": "FOUND_PARTIAL", "R3": "FOUND_PARTIAL", "R4": "FOUND_PARTIAL"},
+    "X2": {"R1": "MISATTRIBUTED", "R2": "FOUND_CORRECT", "R3": "FOUND_PARTIAL", "R4": "FOUND_PARTIAL"},
+    "X3": {"R1": "FOUND_PARTIAL", "R2": "FOUND_CORRECT", "R3": "FOUND_PARTIAL", "R4": "FOUND_PARTIAL"},
+    "X4": {"R1": "FOUND_CORRECT", "R2": "FOUND_PARTIAL", "R3": "NOT_FOUND", "R4": "FOUND_PARTIAL"}
+  },
+  "critical_false_positives": {"X1": 1, "X2": 1, "X3": 0, "X4": 0},
+  "costs": {"producer_tokens": "NO_MEDIDO", "wall_time": "NO_MEDIDO", "note": "Only producer-reported SQL observation counts exist; no measured tokens or wall time."},
+  "coordinator_check_of_evaluator_claim": {
+    "claim": "X2 reported 23 modified / 15 equal current definitions vs reserved 22/16",
+    "read_only_check": "38 functions joined by oid; md5(prosrc) vs P0 definition_md5 using the Q2 historical values",
+    "result": {"n": 38, "equal_prosrc": 16, "changed_prosrc": 22, "equal_functiondef": 0},
+    "conclusion": "CURRENT state matches 22/16, so the evaluator's critical false positive on X2 is confirmed by an independent read-only query.",
+    "performed_utc_date": "2026-10-20"
+  },
+  "limitations": [
+    "H1-H4 canonical text unavailable; R1-R4 are coordinator-derived",
+    "Provider isolation not attestable (temporary chat, shared context across the 5 roles of each arm)",
+    "Blinding imperfect",
+    "Full evaluator RAW not archived; only 20700-char verified prefix",
+    "Costs NO_MEDIDO",
+    "Sample is one case (single P0): no statistical claim"
+  ]
+}

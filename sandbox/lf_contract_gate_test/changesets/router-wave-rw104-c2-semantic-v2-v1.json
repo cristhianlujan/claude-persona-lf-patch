@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw104-c2-semantic-v2-v1",
+  "paths": {
+    "supabase/migrations/20261021010500_lf_router_rw104_c2_semantic_v2_implementation_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/router_wave/test_rw104_semantic_v2_source_v1.py": "ENGINEERING_CHECKPOINTS"
+  }
+}

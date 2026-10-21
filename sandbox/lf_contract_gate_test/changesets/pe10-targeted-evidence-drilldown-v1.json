@@ -1,0 +1,10 @@
+{
+  "solution_ref": "pe10-targeted-evidence-drilldown-v1",
+  "paths": {
+    "skills/profile_creator/validators/evidence_drilldown_v1.py": "TRANSVERSAL_ASSETS",
+    "skills/profile_creator/evals/test_evidence_drilldown_v1.py": "TRANSVERSAL_ASSETS",
+    "skills/profile_creator/contracts/targeted_evidence_drilldown_v1.md": "TRANSVERSAL_ASSETS",
+    "skills/profile_creator/SKILL.md": "TRANSVERSAL_ASSETS",
+    "sandbox/lf_contract_gate_test/changesets/pe10-targeted-evidence-drilldown-v1.json": "CHANGESET_MANIFEST"
+  }
+}

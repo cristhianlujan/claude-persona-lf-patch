@@ -1,0 +1,9 @@
+QUERY_RESULT Q21
+coordinator_note: read-only result of Q21 as returned by the database connector (6 rows, not truncated), re-rendered losslessly as pipe-delimited text in original order. Constant: observation_scope=CURRENT_CATALOG_DEPENDENCY_NOT_EXECUTION. Observation class: CURRENT.
+columns: record_type|dependent_catalog|dependent_oid|dependent_subid|referenced_catalog|referenced_oid|referenced_subid|dependency_type|dependent_object|referenced_object
+FUNCTION_CATALOG|pg_proc|142747|0|pg_namespace|49451|0|n|function programacion.fn_input_effective_rule_links_v1(integer,text)|schema programacion
+FUNCTION_CATALOG|pg_proc|275398|0|pg_namespace|22340|0|n|function lf_ops.fn_screen_contract_v1(text,text,text)|schema lf_ops
+FUNCTION_CATALOG|pg_proc|49427|0|pg_namespace|22340|0|n|function lf_ops.fn_b2b_backoffice_login_contract(text,text,text)|schema lf_ops
+FUNCTION_CATALOG|pg_rewrite|49432|0|pg_proc|49427|0|n|rule _RETURN on view lf_ops.v_b2b_backoffice_login_contract|function lf_ops.fn_b2b_backoffice_login_contract(text,text,text)
+VIEW_RULE|pg_rewrite|49432|0|pg_class|49429|0|i|rule _RETURN on view lf_ops.v_b2b_backoffice_login_contract|view lf_ops.v_b2b_backoffice_login_contract
+VIEW_RULE|pg_rewrite|49432|0|pg_proc|49427|0|n|rule _RETURN on view lf_ops.v_b2b_backoffice_login_contract|function lf_ops.fn_b2b_backoffice_login_contract(text,text,text)

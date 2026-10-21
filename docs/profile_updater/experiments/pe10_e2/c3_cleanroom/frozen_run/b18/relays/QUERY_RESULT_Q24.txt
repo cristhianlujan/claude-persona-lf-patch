@@ -1,0 +1,30 @@
+QUERY_RESULT Q24
+coordinator_note: read-only result of Q24 as returned by the database connector (26 rows = one policy row per relation, no relation without policy, not truncated), re-rendered losslessly with constant columns folded; original order (schema_name, relation_name). Observation class: CURRENT.
+Constant in all 26 rows: row_security_enabled=true; row_security_forced=false; policy_name=deny_direct_client_access; policy_permissive=true; policy_command=*; policy_roles={anon,authenticated}; using_expression=false; with_check_expression=false; observation_scope=CURRENT_RLS_POLICY_CATALOG_NOT_EXECUTION
+columns: schema_name|relation_name|relation_oid
+lf_design|color_tokens|23066
+lf_design|component_tokens|23115
+lf_design|design_systems|23055
+lf_design|spacing_tokens|23100
+lf_design|typography_tokens|23085
+lf_design|visual_decisions|23150
+lf_ops|analytics_eventos_definicion|24134
+lf_ops|analytics_eventos_parametros|24149
+lf_ops|app_shells|23561
+lf_ops|campos|22450
+lf_ops|campos_pantallas|22484
+lf_ops|campos_validaciones|22465
+lf_ops|errores_catalogo|24060
+lf_ops|errores_pantallas|24077
+lf_ops|modulos|23660
+lf_ops|pantalla_artefactos|23470
+lf_ops|pantalla_variantes|23935
+lf_ops|pantallas|22342
+lf_ops|pantallas_perfiles|24745
+lf_ops|perfiles|23785
+lf_ops|politicas_rate_limit|24293
+lf_ops|politicas_seguridad|24312
+lf_ops|politicas_sesion|24247
+lf_ops|politicas_timeout|24265
+lf_ops|reglas|22356
+lf_ops|reglas_pantallas|22371

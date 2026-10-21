@@ -1,0 +1,35 @@
+QUERY_RESULT Q4 (file form)
+coordinator_note: read-only result of Q4 as returned by the database connector: 8 rows, none truncated, original order. Delivered as a readable rendering; each row is a block. current_source_context is the exact text returned (JSON-unescaped, real line breaks; the database returned 400 characters for each non-null context; the two non-null contexts were verified byte-for-byte against the database by md5: oid 69023 e610305898ebfc81b1dbae3ebba1dd63, oid 70782 48388489fee887f8c0818c8dfa4836f6). All other values were typed by the coordinator from the connector output.
+Columns constant across all rows (omitted): current_call_token_found=false; observation_scope=CURRENT_COMPARED_TO_P0_HISTORICAL.
+Observation class: CURRENT_COMPARED_TO_P0_HISTORICAL.
+---BEGIN ROWS---
+===ROW inventory_position=6 historical_caller=programacion.fn_input_governance_bootstrap_classify_v2_cached_v1 historical_callee=fn_input_governance_bootstrap_classify_v1_cached_v1 current_oid=75208 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+===ROW inventory_position=6 historical_caller=programacion.fn_input_governance_bootstrap_classify_v2_cached_v1 historical_callee=fn_input_governance_semantic_probe_v3 current_oid=75208 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+===ROW inventory_position=11 historical_caller=programacion.fn_input_governance_curator_materialize_v1 historical_callee=fn_input_readiness_run_is_current_cached_v1 current_oid=68873 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+===ROW inventory_position=16 historical_caller=programacion.fn_input_governance_recurate_source_stale_v1 historical_callee=fn_input_governance_bootstrap_classify_v2_cached_v1 current_oid=75800 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+===ROW inventory_position=17 historical_caller=programacion.fn_input_governance_recurate_v2 historical_callee=fn_input_governance_bootstrap_classify_v2 current_oid=69023 first_identifier_position=3487 reconciliation_status=IDENTIFIER_PRESENT_WITHOUT_EXACT_CALL_TOKEN===
+current_source_context BEGIN>>>
+from jsonb_array_elements_text((select valor_config->'families' from lf_ops.reglas where codigo='B2B-RULE-STORY-READINESS-001')) loop
+    v_class:=programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(p_pantalla_id,v_family,v_version,v_graph);
+    v_freshness:=jsonb_build_object('mode','DB_MANIFEST_V'||v_contract_schema::text,'status','PENDING_RUN_SNAPSHOT');
+    v_subject:=case when v_
+<<<current_source_context END
+===ROW inventory_position=23 historical_caller=programacion.fn_input_governance_shadow_evaluate_v2 historical_callee=fn_input_governance_bootstrap_classify_v2 current_oid=70782 first_identifier_position=1467 reconciliation_status=IDENTIFIER_PRESENT_WITHOUT_EXACT_CALL_TOKEN===
+current_source_context BEGIN>>>
+op
+    v_family_count:=v_family_count+1;
+    v_spec:=programacion.fn_input_governance_shadow_family_spec_v2(v_family,p_version_id);
+    v_current:=programacion.fn_input_governance_bootstrap_classify_v2_ctx(p_pantalla_id,v_family,p_version_id,v_graph);
+
+    -- bootstrap_classify_v2 already invokes semantic_probe_v3 and copies its
+    -- handled result into the governed semantic rationale/probe. Reu
+<<<current_source_context END
+===ROW inventory_position=23 historical_caller=programacion.fn_input_governance_shadow_evaluate_v2 historical_callee=fn_input_governance_semantic_probe_v3 current_oid=70782 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+===ROW inventory_position=25 historical_caller=programacion.fn_input_governance_validate_v2 historical_callee=fn_input_governance_bootstrap_classify_v2 current_oid=69026 first_identifier_position=0 reconciliation_status=IDENTIFIER_ABSENT_FROM_CURRENT_BODY===
+current_source_context=NULL
+---END ROWS---

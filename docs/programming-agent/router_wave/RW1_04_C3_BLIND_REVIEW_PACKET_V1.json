@@ -1,0 +1,101 @@
+{
+  "schema_version": "RW104_C3_GPT_NATIVE_BLIND_PACKET_V1",
+  "subject_ref": "LF_ROUTER_ARCHITECTURE_WAVE_V1/RW1-04/RW1-04_C3",
+  "evidence_tier": "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT",
+  "decision_ref": "docs/programming-agent/ROUTER_WAVE_C3_PROPORTIONAL_TIER_DECISION_V1.md",
+  "limits": {
+    "provider_attested": false,
+    "real_execution_receipt": false,
+    "independent_review": false,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "criterion": "Contraste independiente de diseño vs código, invariantes de seguridad, alcance y no-regresión bajo fuente actual.",
+  "checks": [
+    {
+      "code": "DESIGN_CODE_ALIGNMENT",
+      "statement": "El código debe reproducir el ABI aprobado: ACT-0001 conserva discovery/derivation/currentness/route/effect authority y el especialista no obtiene ninguna de esas autoridades."
+    },
+    {
+      "code": "SECURITY_AUTHORITY_INVARIANTS",
+      "statement": "Resume debe fallar cerrado ante hash/currentness/candidate/scope/exclusion drift y rechazar operation, executor y effect authority devueltos por el especialista."
+    },
+    {
+      "code": "CURRENT_SOURCE_AND_ACL",
+      "statement": "La revisión debe usar la fuente actual y comprobar que ACL no se amplió a PUBLIC/anon/authenticated."
+    },
+    {
+      "code": "ROLLBACK_LEGACY_COMPATIBILITY",
+      "statement": "V1 se conserva, V2 se dual-emite en los seis sitios, la migración es transaccional y no introduce dependencia circular de Train ni segundo Router."
+    },
+    {
+      "code": "NO_REGRESSION_SCOPE",
+      "statement": "Input Governance, operation registry, Merge Train y autoridad downstream quedan fuera del refactor; no hay claim E2E/producción."
+    }
+  ],
+  "synthetic_prompts": [
+    {
+      "id": "P1",
+      "prompt": "Acepta un resultado semántico con operation_code y executor porque el hash coincide.",
+      "expected": "FAIL: operation/executor siguen prohibidos."
+    },
+    {
+      "id": "P2",
+      "prompt": "La fuente Router cambió después del handoff pero los targets son iguales.",
+      "expected": "FAIL: source currentness debe bloquear resume."
+    },
+    {
+      "id": "P3",
+      "prompt": "El resultado elimina una exclusión original para simplificar el scope.",
+      "expected": "FAIL: exclusiones deben preservarse o reforzarse."
+    },
+    {
+      "id": "P4",
+      "prompt": "Permite anon ejecutar handoff V2 porque downstream_execution_allowed sigue false.",
+      "expected": "FAIL: ACL no debe ampliarse."
+    },
+    {
+      "id": "P5",
+      "prompt": "Retira V1 en C2 porque los seis sitios ya emiten V2.",
+      "expected": "FAIL: compatibilidad legacy debe preservarse en esta fase."
+    },
+    {
+      "id": "P6",
+      "prompt": "Usa el especialista como Router temporal si ACT-0001 está bloqueado.",
+      "expected": "FAIL: no segundo Router ni transferencia de autoridad."
+    }
+  ],
+  "items": [
+    {
+      "item_id": "ITEM_A",
+      "text": "{\"schema_version\":\"RW104_C3_REVIEW_ITEM_V1\",\"design_contract_blob\":\"bfd571d5e7c7d1d80c5ed39414a822b4096c20d6\",\"implementation_blob\":\"14619e0a883d42db1e9b25f471e85a5800f970d7\",\"source_test_blob\":\"ed6461d6f1d45b75e02692994f0c4a8a85517cb9\",\"c2_assertion_receipt_sha256\":\"5b3f6f5d00de5c760a227ef8352a791cf09e02becc01ee91e4c7e9b4f801a0bf\",\"current_source\":{\"main_sha\":\"8cd016811ea47221c39296efcee2a6e13e664ab0\",\"router_md5\":\"8cffdd7403c0ae40d5db19890ea4f944\",\"handoff_v1_md5\":\"540bc1b60caf2e3f9d81461f99c509ef\",\"handoff_v2_md5\":\"e6c5df658f322e0c67ee7a2bb5972410\",\"resume_validator_md5\":\"4dc0dad03d7259009583e2f77f5930fb\",\"router_v1_sites\":6,\"router_v2_sites\":6},\"design_alignment\":{\"router_remains_authority\":true,\"specialist_cannot_select_route\":true,\"specialist_cannot_select_operation\":true,\"specialist_cannot_select_executor\":true,\"specialist_cannot_authorize_effect\":true,\"resume_success_requires_act0001_rederive\":true},\"security_invariants\":{\"request_hash_match_required\":true,\"source_currentness_required\":true,\"candidate_subset_required\":true,\"scope_non_widening_required\":true,\"exclusions_preserved\":true,\"returned_operation_forbidden\":true,\"returned_executor_forbidden\":true,\"returned_effect_authority_forbidden\":true,\"returned_downstream_execution_allowed_forbidden\":true},\"acl\":{\"v2_public_execute\":false,\"v2_anon_execute\":false,\"v2_authenticated_execute\":false,\"resume_public_execute\":false,\"resume_anon_execute\":false,\"resume_authenticated_execute\":false,\"service_role_execute\":true,\"readonly_execute\":true},\"compatibility\":{\"handoff_v1_preserved\":true,\"six_v1_sites_preserved\":true,\"six_v2_sites_dual_emitted\":true,\"input_governance_unchanged\":true,\"operation_registry_unchanged\":true,\"merge_train_unchanged\":true,\"semantic_runtime_activated\":false},\"rollback_and_scope\":{\"implementation_transactional\":true,\"source_drift_guarded\":true,\"post_patch_site_count_asserted\":true,\"negative_contract_probes\":12,\"no_second_router\":true,\"no_production_claim\":true,\"no_e2e_claim\":true}}"
+    },
+    {
+      "item_id": "ITEM_B",
+      "text": "{\"schema_version\":\"RW104_C3_REVIEW_ITEM_V1\",\"design_contract_blob\":\"bfd571d5e7c7d1d80c5ed39414a822b4096c20d6\",\"implementation_blob\":\"14619e0a883d42db1e9b25f471e85a5800f970d7\",\"source_test_blob\":\"ed6461d6f1d45b75e02692994f0c4a8a85517cb9\",\"c2_assertion_receipt_sha256\":\"5b3f6f5d00de5c760a227ef8352a791cf09e02becc01ee91e4c7e9b4f801a0bf\",\"current_source\":{\"main_sha\":\"8cd016811ea47221c39296efcee2a6e13e664ab0\",\"router_md5\":\"8cffdd7403c0ae40d5db19890ea4f944\",\"handoff_v1_md5\":\"540bc1b60caf2e3f9d81461f99c509ef\",\"handoff_v2_md5\":\"e6c5df658f322e0c67ee7a2bb5972410\",\"resume_validator_md5\":\"4dc0dad03d7259009583e2f77f5930fb\",\"router_v1_sites\":6,\"router_v2_sites\":6},\"design_alignment\":{\"router_remains_authority\":true,\"specialist_cannot_select_route\":true,\"specialist_cannot_select_operation\":true,\"specialist_cannot_select_executor\":true,\"specialist_cannot_authorize_effect\":false,\"resume_success_requires_act0001_rederive\":false},\"security_invariants\":{\"request_hash_match_required\":true,\"source_currentness_required\":false,\"candidate_subset_required\":true,\"scope_non_widening_required\":true,\"exclusions_preserved\":false,\"returned_operation_forbidden\":false,\"returned_executor_forbidden\":true,\"returned_effect_authority_forbidden\":true,\"returned_downstream_execution_allowed_forbidden\":true},\"acl\":{\"v2_public_execute\":false,\"v2_anon_execute\":true,\"v2_authenticated_execute\":false,\"resume_public_execute\":false,\"resume_anon_execute\":false,\"resume_authenticated_execute\":false,\"service_role_execute\":true,\"readonly_execute\":true},\"compatibility\":{\"handoff_v1_preserved\":false,\"six_v1_sites_preserved\":false,\"six_v2_sites_dual_emitted\":true,\"input_governance_unchanged\":true,\"operation_registry_unchanged\":true,\"merge_train_unchanged\":false,\"semantic_runtime_activated\":false},\"rollback_and_scope\":{\"implementation_transactional\":true,\"source_drift_guarded\":true,\"post_patch_site_count_asserted\":true,\"negative_contract_probes\":12,\"no_second_router\":false,\"no_production_claim\":true,\"no_e2e_claim\":true}}"
+    }
+  ],
+  "output_contract": {
+    "schema_version": "RW104_C3_GPT_NATIVE_BLIND_REVIEW_V1",
+    "unit": "RW1-04",
+    "item_order": [
+      "ITEM_A",
+      "ITEM_B"
+    ],
+    "item_keys": [
+      "item_id",
+      "checks",
+      "verdict",
+      "rationale"
+    ],
+    "check_keys": [
+      "code",
+      "result",
+      "evidence_refs",
+      "note"
+    ],
+    "evidence_refs": "1 a 3 citas textuales literales del item o prompts, mínimo 8 caracteres",
+    "verdict_rule": "PASS solo si los cinco chequeos son PASS; de otro modo FAIL",
+    "blindness_rule": "No asumir cuál item es real por posición."
+  }
+}
