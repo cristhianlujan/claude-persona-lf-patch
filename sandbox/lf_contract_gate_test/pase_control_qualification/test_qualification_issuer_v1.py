@@ -145,6 +145,22 @@ def main():
     expect_error(m, protected, review(m, protected), "ESCALATE_CONTROL_SYSTEM_SELF_CHANGE")
     checks += 1
 
+    # R5: future DB issuer wrapper migration is also a protected self-change.
+    protected_migration = copy.deepcopy(s)
+    protected_migration["changed_files"][0] = {
+        "path": "supabase/migrations/20261022000000_lf_ci_control_system_qualification_issuer_v1.sql",
+        "status": "added",
+        "blob_sha": "8" * 40,
+        "review_material": True,
+    }
+    expect_error(
+        m,
+        protected_migration,
+        review(m, protected_migration),
+        "ESCALATE_CONTROL_SYSTEM_SELF_CHANGE",
+    )
+    checks += 1
+
     # R6: reviewer disagreement BLOCKED never becomes recordable/PASS.
     blocked = review(m, s, verdict="REVIEW_BLOCK")
     got = m.build(s, blocked)

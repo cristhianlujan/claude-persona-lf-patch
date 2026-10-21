@@ -86,7 +86,18 @@ def _sha64(value: Any, code: str) -> str:
 
 
 def is_protected_path(path: str) -> bool:
-    return path in PROTECTED_EXACT or any(path.startswith(prefix) for prefix in PROTECTED_PREFIXES)
+    if path in PROTECTED_EXACT or any(path.startswith(prefix) for prefix in PROTECTED_PREFIXES):
+        return True
+    if path.startswith("supabase/migrations/"):
+        name = Path(path).name.lower()
+        issuer_tokens = (
+            "control_system_qualification_issuer",
+            "qualification_issuer",
+            "pase_control_qualification",
+            "pase_merge_gate",
+        )
+        return any(token in name for token in issuer_tokens)
+    return False
 
 
 def material_records(snapshot: Mapping[str, Any]) -> list[dict[str, str]]:
