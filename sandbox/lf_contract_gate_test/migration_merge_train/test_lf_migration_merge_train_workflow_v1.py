@@ -26,7 +26,7 @@ for marker in (
     "lf_migration_git_persist.py",
     "lf_migration_exact_apply.py",
     "lf_migration_orchestrated_saga.py",
-    "run_migration_source_parity_focal_v1.py",
+    "run_migration_source_parity_trusted_v1.py",
     'status=="READY_TO_APPLY"',
     "POST-APPLY STOP",
     "LF_MIGRATION_TRAIN_APP_ID",
