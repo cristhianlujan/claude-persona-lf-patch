@@ -1,0 +1,32 @@
+# C4 EXTERNAL EVALUATOR — instructions (read completely first)
+
+You are an independent, qualified external evaluator. You did not produce any candidate. Work only from the four attached candidate files (CANDIDATE_X1.md … CANDIDATE_X4.md) and from this file. Do not browse the web and do not assume access to any database; you cannot run queries. Any claim you cannot verify from the attached material must be marked UNVERIFIED, never guessed.
+
+## Case
+Same case for all candidates: `PE10-IG-M107-M109-P0` (historical snapshot: event 2026-10-04, cutoff 2026-10-15T00:00:00Z). Each candidate is one method family's output: five role reports (ARCHITECTURE, PERFORMANCE, AUTHORITY, COVERAGE, INNOVATION) plus one synthesis. Pair P = X1 and X2 (same method family, randomized order). Pair Q = X3 and X4 (same method family, randomized order). Within a pair one candidate is an original method run and the other a revised ("evolved") method run on the same case; you are NOT told which. Do not try to infer authorship from style; score what the text proves.
+
+## Observation classes (critical)
+Candidates may use CURRENT database observations made after the cutoff. CURRENT observations are admissible only when the candidate labels them CURRENT and does not present them as historical P0 state. Treat attributing a CURRENT fact to the P0 snapshot as a MISATTRIBUTION. Static presence of a call-shaped token in a function body is not proof of live execution; treat claims of live execution without runtime evidence as UNVERIFIED or MISATTRIBUTION.
+
+## Reference facts (evaluator-only; derived by the coordinator from the repository's existing evaluator-only material; the canonical H1–H4 text is not present in the repository, so these four reserved reference discoveries stand in for it)
+- R1 Body-drift comparison: of the 38 historical caller identities, comparing `md5(pg_proc.prosrc)` against the P0 `definition_md5` gives 16 equal and 22 modified. Using `md5(pg_get_functiondef())` changes the basis and yields a false 38/38 mismatch. A broad regex for callees produces false changes; an extractor-based count of seven changes in an older report is not revalidated.
+- R2 Reverse-consumer / topology omission: the P0 caller inventory is a frozen partial graph. A current reverse search finds consumers outside the P0 inventory, including a consumer outside the selected name-pattern vocabulary (cross-domain), plus declared historical edges that no longer match an exact current call token (8 exact-pattern misses in a prior diagnosis). Naive substring comparison produces false "retained" relations (2 of 76 pairs, e.g. a cached-version rename).
+- R3 Text reference vs live execution: `fn_input_governance_bootstrap_classify_v2_cached_v2` appears as a textual reference in `recurate_v2` and `recurate_source_stale_v1`; execution must not be attributed from text alone. A present call-shaped token does not demonstrate runtime execution.
+- R4 Performance / cost claims: an integral request measured 216.4 s against a 150 s reference with the Validator ~57.6% of it, n=1; variable sources prevent p90 and causality; a local Curator improvement does not prove an end-to-end request improvement; ACL 42501 is not a functional FAIL; material independence is not satisfied by a matching hash alone.
+A candidate "finds" a reference fact only if it states it with evidence in its own text; do not credit a candidate for facts it does not state. Do not penalize a candidate for omitting a fact that its method scope could not reach, but record it as an omission.
+
+## What to produce
+Return ONE JSON object only (inside a single fenced block), schema `PE10_E2_C4_EXTERNAL_EVALUATION_V1`:
+- `candidates`: for each of X1..X4:
+  - `reference_facts`: for R1..R4 a state in {FOUND_CORRECT, FOUND_PARTIAL, NOT_FOUND, MISATTRIBUTED} with a locator (file, role/synthesis) and a quote of fewer than 15 words.
+  - `false_positives`: list of claims that are wrong or unsupported (locator + why).
+  - `omissions`: material facts a careful reader should have found within the candidate's own evidence but did not.
+  - `misattributions`: CURRENT/P0 confusions, static-vs-runtime confusions, or evidence cited for a claim it does not support.
+  - `finding_classes`: counts of findings by OBSERVADO_P0, PREDICCION_FALSABLE, FUENTE_POSTERIOR_NO_ADMISIBLE, FALSO, DESCONOCIDO.
+  - `scores` (0–3 each, with one-sentence justification): material_discovery, causality_topology, statistics_and_cost_integrity, repair_quality_and_alternatives, falsification_and_recurrence, evidence_integrity; and `total_0_18`.
+  - `precision` and `coverage` computed only over adjudicated facts (state the counts), declare the reference set non-exhaustive.
+  - `critical_false_positives`: number.
+- `costs`: a table per candidate using only what is stated in the candidate text or listed below; anything else is `NO_MEDIDO`. Measured for the revised runs by the coordinator: producer tokens NO_MEDIDO; wall time NO_MEDIDO (coordinator relayed queries and the session included waiting); query requests: B18-family evolved run up to Q43 (retries Q32R, Q34R; one denied Q44), B29-family evolved run Q1–Q30 (one SQL error Q13). Do not invent token or time numbers.
+- `pair_comparisons`: for pair P and for pair Q: `original_candidate`, `evolved_candidate` (you must state which candidate you judge to be the original and which the evolved ONLY after freezing your scores; give it in a separate field `post_freeze_identification` with your confidence), `verdict` in {EVOLVED_SUPERIOR, ORIGINAL_SUPERIOR, EMPATE, NO_DEMOSTRADO}, `reasons`. Superiority requires at least one material incremental finding that is correctly supported, no critical false positive, proportionate cost and demonstrated isolation; isolation is NOT attested for any candidate (single shared model context per method run; one disclosed contamination event in one run), so isolation can lower confidence but must be explained, not assumed.
+- `limitations`: include that one case gives no statistical significance, that blinding is imperfect (formats differ), and that the reference set is coordinator-derived.
+Be strict and evidence-based. Reward falsifiable causal anticipation and safe mechanisms; penalize results that look like leaked recall; never give credit for narrative, structure or length alone. Your answer must be complete valid JSON; if it would be very long, keep justifications short rather than truncating.

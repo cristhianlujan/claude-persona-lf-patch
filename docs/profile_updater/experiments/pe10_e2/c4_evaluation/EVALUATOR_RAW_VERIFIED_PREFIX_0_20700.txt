@@ -1,0 +1,391 @@
+
+{
+  "schema": "PE10_E2_C4_EXTERNAL_EVALUATION_V1",
+  "case_id": "PE10-IG-M107-M109-P0",
+  "evaluation_type": "INDEPENDENT_EXTERNAL_EVALUATION",
+  "evidence_scope": [
+    "EVALUATOR_INSTRUCTIONS_C4.md",
+    "CANDIDATE_X1.md",
+    "CANDIDATE_X2.md",
+    "CANDIDATE_X3.md",
+    "CANDIDATE_X4.md"
+  ],
+  "evaluation_rules": {
+    "external_database_access": false,
+    "web_access": false,
+    "reference_set": "R1-R4",
+    "reference_set_exhaustive": false,
+    "unverified_claim_policy": "UNVERIFIED",
+    "current_observations": "Admissible only when distinguished from P0 historical state",
+    "static_execution_policy": "Call-shaped text is not proof of runtime execution",
+    "scoring_basis": "Material supported discoveries, causal discrimination, statistical integrity, safe repair reasoning, falsifiability, and evidence integrity",
+    "score_freeze": "Candidate scores assigned before pairwise original/evolved identification",
+    "counting_policy": "Finding classes count distinct material adjudicated findings and hypotheses, with repeated role/synthesis statements deduplicated. Counts exclude routine SQL metadata, formatting, and restatements. They are evaluator classifications, not database row counts.",
+    "precision_definition": "FOUND_CORRECT reference facts divided by FOUND_CORRECT plus adjudicated incorrect material findings; partial discoveries receive no full precision credit.",
+    "coverage_definition": "FOUND_CORRECT plus FOUND_PARTIAL reference facts divided by four reserved reference facts; this measures discovery breadth, not complete factual coverage."
+  },
+  "candidates": {
+    "X1": {
+      "reference_facts": {
+        "R1": {
+          "state": "FOUND_CORRECT",
+          "locator": "CANDIDATE_X1.md / ARCHITECTURE / M18_ARQ_F1",
+          "quote": "22/38 caller names have a different empirical md5(prosrc)",
+          "assessment": "Correctly identifies 16 matching and 22 modified bodies, preserving the empirical comparator limitation. Does not independently demonstrate the functiondef comparator trap."
+        },
+        "R2": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X1.md / INNOVATION / M18_INNOV_F2",
+          "quote": "70/76 historical callee tokens remain, while six historical edges no longer appear",
+          "assessment": "Recognizes frozen coverage and changing routes, but the claimed 70 retained and six absent lexical relations do not account for two substring false-retention cases. Cross-domain reverse consumers are not established."
+        },
+        "R3": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X1.md / INNOVATION / M18_INNOV_Q6",
+          "quote": "recurate_source_stale points to cached_v2",
+          "assessment": "Identifies a relevant CURRENT textual route and rejects runtime inference. Does not establish both specific recuration references required by R3."
+        },
+        "R4": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X1.md / AUTHORITY and SYNTHESIS / M18_SYN_F5",
+          "quote": "42501 is an authority/readback-path issue rather than demonstrated functional failure",
+          "assessment": "Correctly handles ACL failure, cohort confounding, and lack of causal optimization proof. Does not recover the specified 216.4-second integral measurement or Validator share."
+        }
+      },
+      "false_positives": [
+        {
+          "locator": "CANDIDATE_X1.md / INNOVATION / M18_INNOV_F2",
+          "claim": "70 of 76 historical callee relations remain.",
+          "status": "INCORRECT_AS_EXACT_EDGE_RETENTION",
+          "why": "R2 reserves eight exact-pattern misses and two substring false-retention cases. The six-missing count is not a reliable exact-edge reconciliation.",
+          "critical": true
+        },
+        {
+          "locator": "CANDIDATE_X1.md / ARCHITECTURE / M18_ARQ_F1",
+          "claim": "Different empirical hashes indicate changed definitions.",
+          "status": "QUALIFIED_NOT_FALSE",
+          "why": "The candidate explicitly recognizes the unverified historical hash serialization. The comparison is valid as empirical drift, not definitive historical semantic change.",
+          "critical": false
+        }
+      ],
+      "omissions": [
+        "No md5(pg_get_functiondef()) comparator substitution test establishing the false 38/38 mismatch.",
+        "No extractor-based verification of exact caller/callee tokens against substring collisions.",
+        "No complete reverse-consumer census identifying a confirmed cross-domain consumer outside the original vocabulary.",
+        "No complete paired recurate_v2 and recurate_source_stale_v1 textual-reference verification.",
+        "No integral 216.4-second request decomposition against the 150-second reference.",
+        "No explicit Validator 57.6-percent share of that integral request.",
+        "No demonstrated material independence of Curator and Validator from matching evidence alone."
+      ],
+      "misattributions": [
+        {
+          "locator": "CANDIDATE_X1.md / INNOVATION and SYNTHESIS",
+          "type": "LEXICAL_MATCH_CLASSIFICATION",
+          "assessment": "The 70/76 retention figure can misclassify version-prefix textual matches as surviving exact edges.",
+          "severity": "HIGH"
+        }
+      ],
+      "finding_classes": {
+        "OBSERVADO_P0": 3,
+        "PREDICCION_FALSABLE": 5,
+        "FUENTE_POSTERIOR_NO_ADMISIBLE": 0,
+        "FALSO": 1,
+        "DESCONOCIDO": 3
+      },
+      "scores": {
+        "material_discovery": {
+          "score": 2,
+          "justification": "Discovers genuine body drift, historical coverage limitations, authority distinctions, and confounded timing cohorts but misses exact topology discrepancies."
+        },
+        "causality_topology": {
+          "score": 2,
+          "justification": "Separates lexical structure from runtime causality but uses an insufficiently exact edge-retention comparison."
+        },
+        "statistics_and_cost_integrity": {
+          "score": 2,
+          "justification": "Rejects invalid causal speed conclusions and accounts for cohort differences, but does not recover integral request evidence."
+        },
+        "repair_quality_and_alternatives": {
+          "score": 3,
+          "justification": "Recommends targeted verification, preserves least privilege, and considers no-defect alternatives before repair."
+        },
+        "falsification_and_recurrence": {
+          "score": 2,
+          "justification": "Uses negative hypotheses and discriminating tests, although exact-token collision testing is missing."
+        },
+        "evidence_integrity": {
+          "score": 2,
+          "justification": "Generally preserves observation epochs and uncertainty but overstates exact lexical retention."
+        },
+        "total_0_18": 13
+      },
+      "precision": {
+        "correct_reference_facts": 1,
+        "partial_reference_facts": 3,
+        "incorrect_material_findings": 1,
+        "adjudicated_precision_denominator": 2,
+        "value": 0.5,
+        "note": "Strict full-credit reference precision; partial discoveries excluded from numerator."
+      },
+      "coverage": {
+        "correct": 1,
+        "partial": 3,
+        "not_found": 0,
+        "misattributed": 0,
+        "reference_total": 4,
+        "value": 1.0,
+        "fully_correct_coverage": 0.25,
+        "reference_set_exhaustive": false
+      },
+      "critical_false_positives": 1
+    },
+    "X2": {
+      "reference_facts": {
+        "R1": {
+          "state": "MISATTRIBUTED",
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE and SYNTHESIS / S01",
+          "quote": "23 current definitions differ by MD5 and 15 do not",
+          "assessment": "The candidate reports 23 modified and 15 equal instead of the reserved 22 and 16. It does not reconcile this difference or independently demonstrate the comparator substitution."
+        },
+        "R2": {
+          "state": "FOUND_CORRECT",
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE / Q4-Q8",
+          "quote": "Eight missing historical direct references",
+          "assessment": "Provides eight individual discrepancies, a broader reverse-consumer census, cross-domain examples, and explicit lexical false-positive exclusions."
+        },
+        "R3": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE / Q6-Q8",
+          "quote": "These explain plausible structural refactoring, not proven semantic equivalence",
+          "assessment": "Distinguishes source-level references, metadata literals, and executable relations. The precise two-function cached_v2 textual-reference finding is not fully established as a separately verified result."
+        },
+        "R4": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X2.md / PERFORMANCE / Q9-Q14",
+          "quote": "matching family counts and chunk counts do not prove equal computational work",
+          "assessment": "Soundly rejects causal timing comparisons and distinguishes application timing from query costs. Does not recover the specified integral measurement, Validator share, or complete independence requirement."
+        }
+      },
+      "false_positives": [
+        {
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE and SYNTHESIS / S01",
+          "claim": "23 modified and 15 unchanged current definitions.",
+          "status": "CONTRADICTED_BY_RESERVED_REFERENCE",
+          "why": "R1 specifies 22 modified and 16 equal using md5(prosrc) against the P0 definition_md5.",
+          "critical": true
+        },
+        {
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE / Q4",
+          "claim": "The complete reverse-consumer ledger is preserved by reference to an external query-result artifact.",
+          "status": "UNVERIFIED",
+          "why": "The purported 446-row QUERY_RESULT_Q4.txt is not one of the attached evaluator files; its complete independent contents and query execution cannot be inspected.",
+          "critical": false
+        },
+        {
+          "locator": "CANDIDATE_X2.md / INNOVATION / Q42",
+          "claim": "Hand-transcribed digest values provide independent integrity anchors.",
+          "status": "UNVERIFIED_NOT_PROMOTED",
+          "why": "The candidate itself disclaims independent verification of the transcribed digests; they receive no integrity credit.",
+          "critical": false
+        }
+      ],
+      "omissions": [
+        "No reconciliation explaining the 23/15 discrepancy relative to the reserved 22/16 body comparison.",
+        "No demonstrated md5(pg_get_functiondef()) false-38/38 comparator result.",
+        "No explicit integral 216.4-second request measurement or 57.6-percent Validator attribution.",
+        "No independently complete runtime execution proof for all static consumer candidates.",
+        "No independent verification of the referenced 446-row external ledger or Q42 digests from the supplied candidate files.",
+        "No provider-level independent role isolation despite detailed role investigations."
+      ],
+      "misattributions": [
+        {
+          "locator": "CANDIDATE_X2.md / ARCHITECTURE and SYNTHESIS",
+          "type": "HASH_COMPARISON_MISMATCH",
+          "assessment": "The 23/15 result conflicts with the stipulated 22/16 comparator result; its measurement basis cannot be independently adjudicated from the attached material.",
+          "severity": "CRITICAL"
+        }
+      ],
+      "finding_classes": {
+        "OBSERVADO_P0": 2,
+        "PREDICCION_FALSABLE": 7,
+        "FUENTE_POSTERIOR_NO_ADMISIBLE": 0,
+        "FALSO": 1,
+        "DESCONOCIDO": 5
+      },
+      "scores": {
+        "material_discovery": {
+          "score": 3,
+          "justification": "Identifies substantial reverse-consumer omissions, typed scheduler and queue paths, privilege boundaries, and a specific cron-inventory reconciliation gap."
+        },
+        "causality_topology": {
+          "score": 3,
+          "justification": "Differentiates lexical candidates, catalog paths, queue transitions, scheduled attempts, and runtime outcomes with concrete alternative explanations."
+        },
+        "statistics_and_cost_integrity": {
+          "score": 3,
+          "justification": "Uses explicit timing populations, identifies invalid historical elapsed baselines, and refuses unjustified causal or cost claims."
+        },
+        "repair_quality_and_alternatives": {
+          "score": 3,
+          "justification": "Proposes safe read-only reconciliation and avoids unsupported optimization or privilege changes."
+        },
+        "falsification_and_recurrence": {
+          "score": 3,
+          "justification": "Tests competing architecture, authority, timing, and execution-path hypotheses while preserving negative findings."
+        },
+        "evidence_integrity": {
+          "score": 1,
+          "justification": "Epoch separation is strong, but the material 23/15 contradiction and inaccessible supporting ledgers limit independent reproducibility."
+        },
+        "total_0_18": 16
+      },
+      "precision": {
+        "correct_reference_facts": 1,
+        "partial_reference_facts": 2,
+        "incorrect_material_findings": 1,
+        "adjudicated_precision_denominator": 2,
+        "value": 0.5,
+        "note": "R1 misattribution is the incorrect material finding; unverified external ledgers are not counted as demonstrated falsehoods."
+      },
+      "coverage": {
+        "correct": 1,
+        "partial": 2,
+        "not_found": 0,
+        "misattributed": 1,
+        "reference_total": 4,
+        "value": 0.75,
+        "fully_correct_coverage": 0.25,
+        "reference_set_exhaustive": false
+      },
+      "critical_false_positives": 1
+    },
+    "X3": {
+      "reference_facts": {
+        "R1": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X3.md / ARCHITECTURE / A2",
+          "quote": "22 function bodies have changed MD5 values and 16 have unchanged values",
+          "assessment": "Correctly identifies the reserved counts and warns against inferring defects, but does not independently demonstrate the functiondef comparator counterexample."
+        },
+        "R2": {
+          "state": "FOUND_CORRECT",
+          "locator": "CANDIDATE_X3.md / ARCHITECTURE / A3-A6",
+          "quote": "eight individually specified historical relationships without matching CURRENT exact-call tokens",
+          "assessment": "Identifies a broad CURRENT reverse census, eight exact-call misses, two version-prefix collisions, and static false-positive limitations."
+        },
+        "R3": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X3.md / ARCHITECTURE and INNOVATION",
+          "quote": "No relation is promoted to runtime execution from lexical evidence",
+          "assessment": "Applies the correct static-versus-runtime rule and examines cached variants, but does not present the exact two-recuration-function textual-reference discovery as a complete independently adjudicated finding."
+        },
+        "R4": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X3.md / PERFORMANCE and AUTHORITY",
+          "quote": "No valid baseline-to-optimized speedup ratio can be calculated",
+          "assessment": "Rejects incompatible performance cohorts and treats 42501 as an authority error. The reserved integral-request measurement and material-independence analysis remain incomplete."
+        }
+      },
+      "false_positives": [
+        {
+          "locator": "CANDIDATE_X3.md / ARCHITECTURE / A3",
+          "claim": "446 CURRENT static call candidates.",
+          "status": "UNVERIFIED_FULL_LEDGER",
+          "why": "The candidate describes a referenced 446-record ledger, but its independent source file is not attached. The aggregate is internally stated, not independently reproducible.",
+          "critical": false
+        },
+        {
+          "locator": "CANDIDATE_X3.md / INNOVATION / I5-I10",
+          "claim": "Current mechanisms implement guarded reuse and evidence compaction.",
+          "status": "SUPPORTED_AS_DESCRIBED_SOURCE_OBSERVATIONS_WITH_LIMIT",
+          "why": "The candidate supplies detailed source-derived mechanisms but not external runtime reproduction, measured performance benefit, or proof of post-P0 novelty.",
+          "critical": false
+        }
+      ],
+      "omissions": [
+        "No md5(pg_get_functiondef()) comparator transformation against the canonical 16/22 result.",
+        "No complete textual-context proof identifying both required recuration references to bootstrap_classify_v2_cached_v2.",
+        "No reserved 216.4-second end-to-end request comparison, 150-second reference, or Validator 57.6-percent contribution.",
+        "No proof that current cached or transaction-local reuse improves end-to-end latency.",
+        "No complete proof of privileged wrapper reachability and downstream guard sufficiency.",
+        "No independent provider-level isolation; a disclosed coordinator relay exposed previous-method SQL."
+      ],
+      "misattributions": [
+        {
+          "locator": "CANDIDATE_X3.md / PERFORMANCE / P7",
+          "type": "CROSS_METHOD_CONTAMINATION",
+          "assessment": "Three denylisted prior-method SQL samples were exposed by a coordinator relay. The candidate disclosed the event and excluded the samples, but isolation is not independently demonstrable.",
+          "severity": "METHODOLOGICAL"
+        }
+      ],
+      "finding_classes": {
+        "OBSERVADO_P0": 3,
+        "PREDICCION_FALSABLE": 8,
+        "FUENTE_POSTERIOR_NO_ADMISIBLE": 0,
+        "FALSO": 0,
+        "DESCONOCIDO": 5
+      },
+      "scores": {
+        "material_discovery": {
+          "score": 3,
+          "justification": "Identifies exact topology discrepancies, guarded continuation-currentness mechanisms, cache reuse behavior, and evidence-compaction controls."
+        },
+        "causality_topology": {
+          "score": 3,
+          "justification": "Builds explicit source-level causal paths while distinguishing historical provenance, current implementation, and actual runtime execution."
+        },
+        "statistics_and_cost_integrity": {
+          "score": 3,
+          "justification": "Rejects unmatched SQL-statement timing comparisons, acknowledges contaminated telemetry windows, and avoids fabricated speedups."
+        },
+        "repair_quality_and_alternatives": {
+          "score": 3,
+          "justification": "Falsifies a suspected missing currentness guard, preserves no-defect alternatives, and recommends controlled measurement rather than speculative changes."
+        },
+        "falsification_and_recurrence": {
+          "score": 3,
+          "justification": "Uses concrete negative tests, variant semantics, provenance dating, and counterexamples against unsupported novelty claims."
+        },
+        "evidence_integrity": {
+          "score": 2,
+          "justification": "Carefully labels CURRENT observations and transparently excludes exposed prior-method material, but documented contamination prevents full independence credit."
+        },
+        "total_0_18": 17
+      },
+      "precision": {
+        "correct_reference_facts": 1,
+        "partial_reference_facts": 3,
+        "incorrect_material_findings": 0,
+        "adjudicated_precision_denominator": 1,
+        "value": 1.0,
+        "note": "A single fully correct reference discovery forms the strict precision denominator; the other three are partial."
+      },
+      "coverage": {
+        "correct": 1,
+        "partial": 3,
+        "not_found": 0,
+        "misattributed": 0,
+        "reference_total": 4,
+        "value": 1.0,
+        "fully_correct_coverage": 0.25,
+        "reference_set_exhaustive": false
+      },
+      "critical_false_positives": 0
+    },
+    "X4": {
+      "reference_facts": {
+        "R1": {
+          "state": "FOUND_CORRECT",
+          "locator": "CANDIDATE_X4.md / ARCHITECTURE / M29-ARQ-F02-F03",
+          "quote": "equal_prosrc: 16, equal_functiondef: 0",
+          "assessment": "Correctly reproduces the 16/22 empirical comparison and shows that changing the hash representation creates a false all-mismatch result."
+        },
+        "R2": {
+          "state": "FOUND_PARTIAL",
+          "locator": "CANDIDATE_X4.md / COVERAGE / M29-COV-F03",
+          "quote": "75 candidates into 27 overlap+48 outside-P0",
+          "assessment": "Shows that the bounded selector and P0 inventory differ, but does not enumerate the exact eight missing edges, two substring collisions, or a verified cross-domain reverse consumer."
+        },
+        "R3": {
+          "state": "NOT_FOUND",
+          
