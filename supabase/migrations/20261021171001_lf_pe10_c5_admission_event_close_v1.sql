@@ -1,6 +1,6 @@
 -- PE10_C5: govern the exact admission event type, emit one source-bound
 -- preactivation admission event, execute the CURRENT C5 validator query, record
--- the assertion receipt and close only PE10_C5.
+-- the non-material checkpoint contract and close only PE10_C5.
 --
 -- This does NOT activate v0.2, does NOT activate steps 35/37, does NOT alter
 -- the active v0.1 policy/registry, and leaves PE10_C6/PE10_C7 pending.
@@ -38,7 +38,7 @@ DECLARE
   v_gate record;
   v_event_payload jsonb;
   v_event_id bigint;
-  v_assertion jsonb;
+  v_assertion_contract jsonb;
   v_transition jsonb;
 BEGIN
   SELECT work_item_id INTO STRICT v_work
@@ -284,24 +284,19 @@ BEGIN
       v_gate.admissible_events,v_gate.measured_benchmark_pairs,v_gate.event_candidates;
   END IF;
 
-  v_assertion:=programacion.fn_engineering_checkpoint_assertion_record_v1(
+  -- The authoritative action spec declares a non-material checkpoint.
+  -- Do not manufacture an assertion receipt for validation-only C5.
+  SELECT programacion.fn_engineering_action_spec_assertion_contract_v1(
     v_plan,v_unit,v_checkpoint,
-    jsonb_build_object(
-      'status','PASS',
-      'observed',jsonb_build_object(
-        'admissible_events',v_gate.admissible_events,
-        'measured_benchmark_pairs',v_gate.measured_benchmark_pairs,
-        'event_candidates',v_gate.event_candidates
-      ),
-      'evidence_ref','supabase://public/lf_eventos/'||v_event_id::text
-    ),
-    v_actor
-  );
+    programacion.fn_engineering_checkpoint_action_spec_v3(
+      v_plan,v_unit,v_checkpoint
+    )
+  ) INTO v_assertion_contract;
 
-  IF v_assertion->>'passed' IS DISTINCT FROM 'true'
-     OR coalesce(v_assertion->>'assertion_receipt_sha256','') !~ '^[0-9a-f]{64}$'
+  IF v_assertion_contract->>'status' IS DISTINCT FROM 'NOT_REQUIRED'
+     OR v_assertion_contract->>'reason' IS DISTINCT FROM 'NON_MATERIAL_CHECKPOINT'
   THEN
-    RAISE EXCEPTION 'PE10_C5_ASSERTION_RECEIPT_INVALID:%',v_assertion;
+    RAISE EXCEPTION 'PE10_C5_ASSERTION_CONTRACT_DRIFT:%',v_assertion_contract;
   END IF;
 
   v_transition:=programacion.fn_engineering_checkpoint_transition_v1(
@@ -326,11 +321,10 @@ BEGIN
      OR (SELECT count(*) FROM public.lf_eventos
          WHERE evento_tipo=v_event_type
            AND entidad_codigo='ACTUALIZACION_PERFIL_LF') <> 1
-     OR NOT EXISTS (
+     OR EXISTS (
        SELECT 1 FROM programacion.engineering_work_checkpoints
        WHERE work_item_id=v_work AND checkpoint_code='PE10_C5'
-         AND assertion_receipt->>'passed'='true'
-         AND assertion_receipt_sha256=programacion.fn_v09_sha256_jsonb(assertion_receipt))
+         AND (assertion_receipt IS NOT NULL OR assertion_receipt_sha256 IS NOT NULL))
      OR (SELECT count(*) FROM public.lf_operation_registry
          WHERE operation_code='ACTUALIZACION_PERFIL_LF'
            AND version='v0.1' AND status='PRODUCCION_CONTROLADA') <> 1
@@ -344,6 +338,25 @@ BEGIN
   THEN
     RAISE EXCEPTION 'PE10_C5_CLOSE_POSTSTATE_INVALID';
   END IF;
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-NON-MATERIAL-ASSERTION-MISMATCH-20261021-001',
+    'PROFILE_EVOLUTION',
+    'C5 NON_MATERIAL incompatible with engineering material assertion writer',
+    'Train run 39641371742 rolled back when the migration attempted to record an engineering assertion for checkpoint PE10_C5.',
+    'The action spec sets requires_material_execution=false. Its canonical assertion contract reports NOT_REQUIRED / NON_MATERIAL_CHECKPOINT, and the assertion writer correctly rejects the call.',
+    'A non-material checkpoint requires exact validator readback and evidence-backed transition, not a material assertion receipt.',
+    'Verify NOT_REQUIRED / NON_MATERIAL_CHECKPOINT then use the exact CURRENT validator and canonical transition. Keep the C5 assertion receipt and SHA NULL.',
+    'Supabase contract reports NOT_REQUIRED / NON_MATERIAL_CHECKPOINT; C3/C4 DONE have no assertion SHA; no C5 assertion is created.',
+    'HIGH',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3028'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-NON-MATERIAL-ASSERTION-MISMATCH-20261021-001'
+  );
 
   INSERT INTO public.lf_error_knowledge
     (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
