@@ -1,0 +1,63 @@
+{
+  "blocking_codes": [],
+  "capture_blob_sha": "ff057f4a0e590a258d9d5ba792eecaea1a628595",
+  "closure_effect": "RW1-05_C2_REMAINS_PENDING",
+  "cutover_eligible": false,
+  "downstream_authorized": false,
+  "execution_contract_sha256": "3e317ad624df0053b80354e40eca29d6e43f828022602db9a214fdd95498dfaf",
+  "execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+  "frozen_blob_sha": "4da686b3fabdcccb6c2a8aad828c67eabf27c931",
+  "input_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+  "model_call_count": 1,
+  "obligations": [
+    {
+      "expected": "RETURN_TO_SOURCE_FOR_READBACK",
+      "id": "STATUS_READBACK_REQUIRED",
+      "observed": "RETURN_TO_SOURCE_FOR_READBACK",
+      "pointer": "/status",
+      "result": "PASS"
+    },
+    {
+      "expected": "RETURN_TO_ORCHESTRATOR",
+      "id": "PIPELINE_RETURN",
+      "observed": "RETURN_TO_ORCHESTRATOR",
+      "pointer": "/routing/pipeline_action",
+      "result": "PASS"
+    },
+    {
+      "expected": "SOURCE_READBACK",
+      "id": "TARGET_SOURCE_READBACK",
+      "observed": "SOURCE_READBACK",
+      "pointer": "/routing/resolution_target",
+      "result": "PASS"
+    }
+  ],
+  "producer_context_reuse": false,
+  "producer_independence_proven": true,
+  "production_activation": false,
+  "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+  "profile_source_sha256": "9c27521f19d35331080b95af6cb57ddead5e69816be5550770f91125e5e48434",
+  "raw_blob_sha": "0f88af87aca7659c0a673f74b97fc4f7a46d6349",
+  "raw_output_sha256": "86cc34048f8436479acff5fe0830b03cc0a8bbaf6f98acfeb31e7d1c094def07",
+  "request_sha256": "27066018e09f84479c538f5fb2f815befacbdb0a9ec78368e6034abaf49cb3e2",
+  "review_mode": "INDEPENDENT_SEMANTIC_REVIEW",
+  "reviewer_is_producer": false,
+  "route_gate": {
+    "downstream_execution_allowed": false,
+    "expected_operation_code": "EJECUCION_PERFIL_LF",
+    "rederived_blocking_code": "BLOCK_SEMANTIC_RESUME_ROUTER_PROBE_UNEXPECTED",
+    "rederived_status": "BLOCKED",
+    "router_probe_action_code": "ASSET_INSPECTION",
+    "router_probe_operation_code": null,
+    "router_probe_status": "READY_INSPECTION",
+    "router_resume_allowed": true,
+    "semantic_resume_next_action": "ACT0001_REDERIVE_ROUTE_AND_AUTHORITY",
+    "semantic_resume_validation_status": "VALID"
+  },
+  "schema_version": "RW105_C2_GPT_NATIVE_INDEPENDENT_SEMANTIC_REVIEW_V1",
+  "semantic_basis": "Frozen profile requires unresolved direct source references to return for source readback rather than claim evidence; RAW does exactly that and preserves router/orchestrator authority.",
+  "status": "PASS",
+  "unsupported_claims": [],
+  "validator_status": "PASS",
+  "verdict": "PASS_INDEPENDENT_SEMANTIC"
+}

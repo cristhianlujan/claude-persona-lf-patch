@@ -39,6 +39,9 @@ on:
       - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
       - 'services/router_semantic_runtime/**'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw105_c2_gpt_native_frozen_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_SEMANTIC_RESUME_V2.json'
+      - 'docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_INDEPENDENT_SEMANTIC_REVIEW_V1.json'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - 'supabase/migrations/*lf_router_rw105_c2_profile_terminal_receipt_v1.sql'
@@ -265,3 +268,9 @@ jobs:
           python3 -m py_compile services/router_semantic_runtime/semantic_consumer.py
           python3 -m unittest -v services.router_semantic_runtime.tests.test_semantic_consumer
           python3 services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py
+
+      - name: Validate RW1-05 C2 frozen GPT Native bindings and independent review
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw105_c2_gpt_native_frozen_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw105_c2_gpt_native_frozen_v1.py
