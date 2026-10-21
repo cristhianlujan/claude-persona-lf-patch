@@ -186,7 +186,8 @@ BEGIN
       '/skills/profile_creator/evals/results/pe10_c6_same_chat_gpt_material_authoring_20261016.json',
     'LF_GITHUB_SOURCE_READBACK_V1',
     'GITHUB',
-    'github-api://repos/cristhianlujan/claude-persona-lf-patch/git/blobs/'||v_capture_blob,
+    'github-api://repos/cristhianlujan/claude-persona-lf-patch@'||v_readback_head||
+      '/contents/skills/profile_creator/evals/results/pe10_c6_same_chat_gpt_material_authoring_20261016.json',
     'GITHUB_API_READBACK_PLUS_OFFLINE_HASH',
     'VERIFIED',
     jsonb_build_object(
@@ -360,6 +361,25 @@ BEGIN
   WHERE NOT EXISTS (
     SELECT 1 FROM public.lf_error_knowledge
     WHERE codigo='LF-PE10-C5-NATIVE-SOURCE-SNAPSHOT-MISSING-20261021-001'
+  );
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-GITHUB-PROVIDER-REF-HEAD-MISMATCH-20261021-001',
+    'PROFILE_EVOLUTION',
+    'Evidence Ledger rejected GitHub provider reference without source-head binding',
+    'Migration Train run 39632655557 reached the exact apply step but the Evidence Ledger guard rejected the source anchor before ledger effect because provider_ref did not encode @source_head_sha.',
+    'The first candidate used a GitHub blob locator as provider_ref. The canonical guard requires provider_ref to contain @<40-char source_head_sha>/ so provider identity and frozen revision are cross-bound.',
+    'A provider URL may identify a real blob yet still be inadmissible when it does not bind the exact source revision required by the ledger guard.',
+    'For LF_GITHUB_SOURCE_READBACK_V1 always encode the exact source head in provider_ref and verify it matches source_head_sha before Train apply.',
+    'Failing Train receipt public.lf_eventos.id=21376 recorded APPLY_FAILED_BEFORE_LEDGER_EFFECT; corrected provider_ref binds @'||v_readback_head||'/ and the durable snapshot readback below must pass.',
+    'HIGH',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3016'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-GITHUB-PROVIDER-REF-HEAD-MISMATCH-20261021-001'
   );
 END
 $pe10_c5_source$;
