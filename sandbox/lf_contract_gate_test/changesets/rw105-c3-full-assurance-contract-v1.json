@@ -1,0 +1,9 @@
+{
+  "solution_ref": "rw105-c3-full-assurance-contract-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_05_C3_BLIND_REVIEW_HANDOFF_V1.md": "ENGINEERING_CHECKPOINTS",
+    "docs/programming-agent/router_wave/RW1_05_C3_BLIND_REVIEW_PACKET_V1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/rw105-c3-full-assurance-contract-v1.json": "CHANGESET_MANIFEST"
+  }
+}
