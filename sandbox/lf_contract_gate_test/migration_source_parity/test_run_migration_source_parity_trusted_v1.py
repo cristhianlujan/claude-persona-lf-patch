@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -189,6 +190,66 @@ def main() -> int:
         assert rc != 0 or summary["status"] == "PASS"  # fake ledger: adapter verdict itself is not under test
         assert os.environ.get("LF_MIGRATION_PARITY_DATA_ROOT") == str(cand.resolve())
         os.environ.pop("LF_MIGRATION_PARITY_DATA_ROOT", None)
+    checks += 1
+
+    # 8. FULL_CURRENT_STATE batches >200 source/ledger versions through the
+    # existing read-only snapshot, including remote-only identity in the union.
+    with tempfile.TemporaryDirectory() as tmp:
+        t=Path(tmp)
+        migrations=t/"supabase/migrations"
+        migrations.mkdir(parents=True)
+        versions=[str(20261021000000+i) for i in range(205)]
+        remote_only=str(20261021000999)
+        for version in versions:
+            (migrations/(version+"_lf_test_scope_v1.sql")).write_text("select 1;\n")
+        class StubFull:
+            CUTOVER="20260808031006"
+            CLASSIFICATION_BASELINE_END="20261005203801"
+            LEGACY_START="20260801063708"
+            LEGACY_END="20260801170332"
+            @staticmethod
+            def _load_parity_adapter():
+                class Adapter:
+                    FILENAME_RE=re.compile(r"^(\d{14})_(.+)\.sql$")
+                    @staticmethod
+                    def managed_source(path,version,name):
+                        return True
+                return Adapter()
+            @staticmethod
+            def _write_text(path,value,max_bytes=None):
+                assert max_bytes is None or len(value.encode())<=max_bytes
+                path.write_text(value,encoding="utf-8")
+            @staticmethod
+            def _build_external_owner_evidence(csv_path):
+                return {"schema_version":"lf-migration-external-owner-currentness/v1",
+                        "repository":"o/r","complete":True,"owners":[]}
+        calls=[]
+        def fake_full_psql(sql,*,env):
+            if sql.startswith("select version,coalesce(name,'') from supabase_migrations.schema_migrations"):
+                return m.render_rows([[v,"lf_test_scope_v1"] for v in versions]+
+                                     [[remote_only,"lf_ledger_only_v1"]])
+            arrays=re.findall(r"'\\{([^}]*)\\}'::text\\[\\]",sql)
+            assert len(arrays)==2,sql[:200]
+            requested=arrays[0].split(",") if arrays[0] else []
+            managed=arrays[1].split(",") if arrays[1] else []
+            calls.append((requested,managed))
+            snap={"schema_version":m.SNAPSHOT_SCHEMA,
+                  "post_cutover":[[v,"lf_ledger_only_v1" if v==remote_only else "lf_test_scope_v1",
+                                   "sha256:"+"0"*64] for v in requested],
+                  "statement_counts":[[v,"1"] for v in managed],
+                  "owners":[],"grandfathered":["796","frozen"],"legacy":["1","frozen"]}
+            return m.render_rows([[json.dumps(snap)]])
+        outputs,counts=m.prepare_full_current_inputs(
+            focal=None,full=StubFull(),output_dir=t/"out",data_root=t,
+            pg_env={"PGUSER":"lf_reconcile_readonly.test"},psql=fake_full_psql
+        )
+        assert counts["local_versions"]==205 and counts["ledger_versions"]==206
+        assert counts["union_versions"]==206 and counts["snapshot_batches"]==2
+        assert max(len(batch[0]) for batch in calls)<=150
+        assert any(remote_only in batch[0] for batch in calls)
+        assert len(list(__import__("csv").reader(outputs["post_cutover"].open())))==206
+        assert len(list(__import__("csv").reader(outputs["statement_counts"].open())))==205
+        assert json.loads((t/"out"/"full-current-input-scope.json").read_text())["scope"]=="FULL_CURRENT_STATE"
     checks += 1
 
     print(f"PASS_MIGRATION_SOURCE_PARITY_TRUSTED_RUNNER_V1 checks={checks}")
