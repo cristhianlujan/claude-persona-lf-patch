@@ -28,18 +28,24 @@ required=[
   "'cutover_eligible',false",
   "verification_queries,0",
   "v_gate.admissible_events IS DISTINCT FROM 1",
-  "fn_engineering_checkpoint_assertion_record_v1",
+  "fn_engineering_action_spec_assertion_contract_v1",
+  "NON_MATERIAL_CHECKPOINT",
+  "NOT_REQUIRED",
   "fn_engineering_checkpoint_transition_v1",
   "'DONE'",
   "PE10_C5_CLOSE_POSTSTATE_INVALID",
   "LF-PE10-C5-ADMISSION-EVENT-TYPE-MISSING-20261021-001",
   "LF-PE10-C5-VALIDATION-ACCEPTANCE-SCHEMA-MISMATCH-20261021-001",
+  "LF-PE10-C5-NON-MATERIAL-ASSERTION-MISMATCH-20261021-001",
+  "assertion_receipt IS NOT NULL OR assertion_receipt_sha256 IS NOT NULL",
 ]
 for item in required:
   assert item in src, f"MISSING:{item}"
 
 # It closes C5 only; deployment and step activation are explicit negatives.
 for forbidden in [
+  "fn_engineering_checkpoint_assertion_record_v1",
+  "PE10_C5_ASSERTION_RECEIPT_INVALID",
   "UPDATE public.lf_operation_registry",
   "UPDATE public.lf_policy_versions",
   "SET active=true",
