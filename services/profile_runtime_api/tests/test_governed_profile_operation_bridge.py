@@ -191,11 +191,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 claimed=claimed(),
                 governed={"execution_id": model_governance()["execution_id"]},
             )
-        reconcile.assert_called_once_with(
-            conn.cursor_obj,
-            claimed()["request_id"],
-            allow_missing_canonical=False,
-        )
+        reconcile.assert_not_called()
         params = conn.cursor_obj.params
         self.assertEqual(params[0], "BLOCKED")
         self.assertEqual(params[7], "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING")
@@ -220,14 +216,21 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             def __init__(self): self.cursor_obj = Cursor()
             def cursor(self): return self.cursor_obj
         conn = Conn()
-        with patch.object(
-            worker,
-            "_record_post_model_governance",
-            return_value={
-                "status": "READY_FOR_SEMANTIC_JUDGE",
-                "next_gate": "semantic_judge",
-                "execution_id": model_governance()["execution_id"],
-            },
+        with (
+            patch.object(
+                worker,
+                "_record_post_model_governance",
+                return_value={
+                    "status": "READY_FOR_SEMANTIC_JUDGE",
+                    "next_gate": "semantic_judge",
+                    "execution_id": model_governance()["execution_id"],
+                },
+            ),
+            patch.object(
+                worker,
+                "_reconcile_terminal_queue",
+                return_value={"result": "CANONICAL_TERMINAL_RECONCILED"},
+            ) as reconcile,
         ):
             worker._persist_success(
                 conn,
@@ -236,6 +239,11 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 claimed=claimed(),
                 governed={"execution_id": model_governance()["execution_id"]},
             )
+        reconcile.assert_called_once_with(
+            conn.cursor_obj,
+            claimed()["request_id"],
+            allow_missing_canonical=False,
+        )
         self.assertEqual(conn.cursor_obj.params[0], "BLOCKED")
         self.assertEqual(conn.cursor_obj.params[7], "PROFILE_CONTRACT_FAILED")
 
