@@ -1,0 +1,12 @@
+{
+  "solution_ref": "router-wave-rw105-c2-consumer-shadow-v1",
+  "paths": {
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "services/profile_runtime_api/scripts/hetzner_queue_worker.py": "SERVICE_RUNTIME",
+    "services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py": "SERVICE_RUNTIME",
+    "services/router_semantic_runtime/__init__.py": "SERVICE_RUNTIME",
+    "services/router_semantic_runtime/semantic_consumer.py": "SERVICE_RUNTIME",
+    "services/router_semantic_runtime/tests/test_semantic_consumer.py": "SERVICE_RUNTIME",
+    "supabase/migrations/20261021103500_lf_router_rw105_c2_profile_terminal_receipt_v1.sql": "MIGRATION"
+  }
+}
