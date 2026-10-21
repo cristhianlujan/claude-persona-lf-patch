@@ -2,7 +2,7 @@
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-SQL=ROOT/"supabase/migrations/20261021164500_lf_pe10_c5_native_semantic_review_pass_v1.sql"
+SQL=ROOT/"supabase/migrations/20261021165000_lf_pe10_c5_native_semantic_review_pass_v1.sql"
 src=SQL.read_text(encoding="utf-8")
 
 required=[
