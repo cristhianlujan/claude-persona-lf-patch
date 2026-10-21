@@ -26,6 +26,7 @@ DECLARE
   v_review_manifest jsonb;
   v_review_sha text;
   v_scope jsonb;
+  v_res jsonb;
   v_dispatch jsonb;
   v_begin jsonb;
   v_step1 jsonb;
@@ -158,6 +159,24 @@ BEGIN
 
   v_review_sha := encode(extensions.digest(
     convert_to(v_review_manifest::text,'UTF8'),'sha256'),'hex');
+
+  v_res := public.fn_lf_operation_reserve_execution_v1(
+    v_review_id,
+    'REVISION_INDEPENDIENTE_ESTRATEGIA_LF',
+    v_subject_type,
+    v_subject_ref,
+    'pe10c5:native-review:'||v_review_sha,
+    v_review_sha,
+    v_source_orch,
+    null,
+    null,
+    v_review_manifest);
+
+  IF v_res->>'status' IS DISTINCT FROM 'IN_PROGRESS'
+     OR v_res->>'execution_id' IS DISTINCT FROM v_review_id
+  THEN
+    RAISE EXCEPTION 'PE10_C5_INDEPENDENT_REVIEW_RESERVATION_REJECTED:%',v_res;
+  END IF;
 
   v_scope := jsonb_build_object(
     'schema','PE10_C5_NATIVE_REVIEW_DISPATCH_V1',
@@ -368,6 +387,25 @@ BEGIN
   THEN
     RAISE EXCEPTION 'PE10_C5_REVIEW_INIT_POSTSTATE_INVALID';
   END IF;
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-REVIEW-DISPATCH-BEFORE-CONSUMER-20261021-001',
+    'PROFILE_EVOLUTION',
+    'Independent review dispatch attempted before reviewer consumer reservation',
+    'Migration Train run 39634025961 failed before ledger effect with BLOCK_CONSUMER_EXECUTION_NOT_ACTIVE while initializing the C5 independent review.',
+    'The first C5 review-init migration issued fn_lf_orchestrator_dispatch_receipt_v1 before reserving the REVISION_INDEPENDIENTE_ESTRATEGIA_LF consumer execution. The canonical C3 pattern reserves the reviewer first.',
+    'A valid source/orchestrator is insufficient for dispatch: the target consumer execution must already exist and be IN_PROGRESS.',
+    'Reserve the exact reviewer execution before issuing INDEPENDENT_ASSURANCE dispatch, then call lf_independent_review_begin_v3 idempotently and read back the current binding.',
+    'Corrected migration requires fn_lf_operation_reserve_execution_v1 to return IN_PROGRESS for the reviewer before dispatch; Train must then pass exact apply and ledger readback.',
+    'HIGH',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3019'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-REVIEW-DISPATCH-BEFORE-CONSUMER-20261021-001'
+  );
 END
 $pe10_c5_review$;
 
