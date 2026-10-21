@@ -1,0 +1,39 @@
+{
+  "schema_version": "RW105_C2_GPT_NATIVE_SEMANTIC_RESUME_V2",
+  "checkpoint_code": "RW1-05_C2",
+  "execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+  "semantic_execution_id": "EXEC-RW105-C2-GPT-NATIVE-SEMANTIC-RESUME-20261021-001",
+  "producer_mode": "GPT_NATIVE",
+  "provider_identity": "OPENAI_CHATGPT_NATIVE",
+  "adapter_id": "chatgpt-native-current-context-v1",
+  "conversation_scope": "EXISTING_CONVERSATION_ONLY",
+  "purpose": "Resolve only target/scope for the frozen RW1-05_C2 request after ACT-0001 action-continuity repair. This artifact does not select action, operation, executor or effect authority and does not retroactively authorize the producer call.",
+  "frozen_input_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+  "semantic_result": {
+    "schema_version": "LF_ROUTER_SEMANTIC_RESULT_V1",
+    "request_sha256": "81a55cf5c0ff80bfea428b775f1cfc2b0fa70e907a89b81619d158061276833e",
+    "decision": "RESOLVED",
+    "positive_target_refs": [
+      "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF"
+    ],
+    "excluded_target_refs": [],
+    "allowed_scope": [
+      "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF"
+    ],
+    "forbidden_scope": [],
+    "conditions": [],
+    "material_ambiguities": [],
+    "clarification_question": null,
+    "semantic_receipt_sha256": "8d07f6aa8e55ec55110cab06abefe0c4dec4022c361a8798cc7abeccbadd7d28"
+  },
+  "authority_boundary": {
+    "route_authority": false,
+    "operation_authority": false,
+    "executor_authority": false,
+    "effect_authority": false,
+    "next_authority": "ACT-0001_REDERIVE_ROUTE_AND_AUTHORITY"
+  },
+  "model_call_count": 1,
+  "raw_regenerated": false,
+  "independent_judge_regenerated": false
+}
