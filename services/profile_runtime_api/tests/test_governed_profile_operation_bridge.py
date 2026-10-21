@@ -12,6 +12,12 @@ if importlib.util.find_spec("psycopg") is None:
     psycopg_stub.connect = lambda **_kwargs: None
     psycopg_types = types.ModuleType("psycopg.types")
     psycopg_json = types.ModuleType("psycopg.types.json")
+    psycopg_pq = types.ModuleType("psycopg.pq")
+
+    class TransactionStatus:
+        IDLE = "IDLE"
+
+    psycopg_pq.TransactionStatus = TransactionStatus
 
     class Jsonb:
         def __init__(self, value):
@@ -19,6 +25,7 @@ if importlib.util.find_spec("psycopg") is None:
 
     psycopg_json.Jsonb = Jsonb
     sys.modules["psycopg"] = psycopg_stub
+    sys.modules["psycopg.pq"] = psycopg_pq
     sys.modules["psycopg.types"] = psycopg_types
     sys.modules["psycopg.types.json"] = psycopg_json
 
