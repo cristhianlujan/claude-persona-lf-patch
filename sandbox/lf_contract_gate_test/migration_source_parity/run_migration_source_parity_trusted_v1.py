@@ -175,7 +175,7 @@ def parse_snapshot(psql_stdout: str) -> dict[str, object]:
     return snapshot
 
 
-def write_focal_inputs(*, output_dir: Path, snapshot: dict[str, object], full) -> dict[str, Path]:
+def write_focal_inputs(*, output_dir: Path, snapshot: dict[str, object], full, max_post_bytes: int = 131072, max_statements_bytes: int = 65536) -> dict[str, Path]:
     """Write the CSV/JSON files the focal runner produces, from one snapshot."""
     output_dir.mkdir(parents=True, exist_ok=True)
     post_cutover = output_dir / "lf-post-cutover-migrations-compact.csv"
@@ -184,8 +184,8 @@ def write_focal_inputs(*, output_dir: Path, snapshot: dict[str, object], full) -
     statement_counts = output_dir / "lf-migration-statement-counts.csv"
     owner_csv = output_dir / "lf-migration-owner-currentness.csv"
     owner_json = output_dir / "lf-migration-external-owner-currentness.json"
-    full._write_text(post_cutover, render_rows(snapshot["post_cutover"]), max_bytes=131072)
-    full._write_text(statement_counts, render_rows(snapshot["statement_counts"]), max_bytes=65536)
+    full._write_text(post_cutover, render_rows(snapshot["post_cutover"]), max_bytes=max_post_bytes)
+    full._write_text(statement_counts, render_rows(snapshot["statement_counts"]), max_bytes=max_statements_bytes)
     full._write_text(grandfathered, render_rows([snapshot["grandfathered"]]))
     full._write_text(legacy, render_rows([snapshot["legacy"]]))
     full._write_text(owner_csv, render_rows(snapshot["owners"]))
@@ -301,7 +301,8 @@ def prepare_full_current_inputs(*, focal, full, output_dir: Path, data_root: Pat
     if len(merged["statement_counts"])!=len(set(managed_versions)&set(remote_versions)):
         fail("FAIL_IG_M1013_FULL_MANAGED_COUNT_COVERAGE")
 
-    inputs=write_focal_inputs(output_dir=output_dir,snapshot=merged,full=full)
+    inputs=write_focal_inputs(output_dir=output_dir,snapshot=merged,full=full,
+                             max_post_bytes=524288,max_statements_bytes=131072)
     evidence={"local_versions":len(local_versions),"ledger_versions":len(remote_versions),
               "union_versions":len(full_versions),"managed_source_versions":len(managed_versions),
               "snapshot_batches":batch_count}
