@@ -1,0 +1,85 @@
+{
+  "schema_version": "RW105_C2_GPT_NATIVE_INDEPENDENT_SEMANTIC_JUDGE_V2",
+  "execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+  "executor_mode": "GPT_NATIVE",
+  "judge_invocation_kind": "NEW_INDEPENDENT_CURRENT_CHAT_GPT_NATIVE",
+  "prior_verdict_authority": "NOT_USED",
+  "status": "PASS",
+  "verdict": "PASS_INDEPENDENT_SEMANTIC",
+  "validator_status": "PASS",
+  "producer_independence_proven": true,
+  "model_call_count": 1,
+  "candidate_sha256": "473b56fcc21b7da9b0b7876231ca69c8873c6935eab9e5db7224cf5bdb326447",
+  "scope_packet_sha256": "bc61d675317a2cb8bb8eeb12d58c5d2de466a2b1e5440cc1db152f25665f336d",
+  "raw_output_sha256": "86cc34048f8436479acff5fe0830b03cc0a8bbaf6f98acfeb31e7d1c094def07",
+  "canonicalization_note": "candidate_sha256 is PostgreSQL jsonb::text SHA256; raw_output_sha256 is a different producer RAW canonicalization and is not compared to candidate_sha256",
+  "source_bindings": {
+    "frozen_raw": {
+      "path": "docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_CANARY_RAW_V1.json",
+      "git_blob": "0f88af87aca7659c0a673f74b97fc4f7a46d6349"
+    },
+    "frozen_bundle": {
+      "path": "docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_CANARY_FROZEN_V1.json",
+      "git_blob": "4da686b3fabdcccb6c2a8aad828c67eabf27c931"
+    },
+    "native_capture": {
+      "path": "docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_CANARY_CAPTURE_V1.json",
+      "git_blob": "ff057f4a0e590a258d9d5ba792eecaea1a628595"
+    },
+    "deterministic_output_validator": {
+      "path": "docs/programming-agent/router_wave/RW1_05_C2_EVIDENCE_LINEAGE_OUTPUT_VALIDATION_V1.json",
+      "git_blob": "cfdea49a82498e0fdc8f2f530519a3bf28356b7c"
+    },
+    "server_step_bindings": {
+      "input_validate": "scope_authority_packet_sha256",
+      "execute_profile": "candidate_digest"
+    }
+  },
+  "source_readback": {
+    "fake_revision": "0000000000000000000000000000000000000000",
+    "source_path": "docs/nonexistent.json",
+    "github_observation": "404 No commit found for the ref 0000000000000000000000000000000000000000",
+    "meaning": "UNRESOLVABLE; not authority",
+    "server_candidate_digest_recomputed_matches": true,
+    "server_scope_digest_recomputed_matches": true
+  },
+  "result": {
+    "verdict": "PASS_INDEPENDENT_SEMANTIC",
+    "candidate_sha256": "473b56fcc21b7da9b0b7876231ca69c8873c6935eab9e5db7224cf5bdb326447",
+    "scope_packet_sha256": "bc61d675317a2cb8bb8eeb12d58c5d2de466a2b1e5440cc1db152f25665f336d",
+    "unsupported_claims": [],
+    "blocking_codes": [],
+    "obligations": [
+      {
+        "id": "STATUS_READBACK_REQUIRED",
+        "pointer": "/status",
+        "expected": "RETURN_TO_SOURCE_FOR_READBACK",
+        "observed": "RETURN_TO_SOURCE_FOR_READBACK",
+        "result": "PASS"
+      },
+      {
+        "id": "PIPELINE_RETURN",
+        "pointer": "/routing/pipeline_action",
+        "expected": "RETURN_TO_ORCHESTRATOR",
+        "observed": "RETURN_TO_ORCHESTRATOR",
+        "result": "PASS"
+      },
+      {
+        "id": "TARGET_SOURCE_READBACK",
+        "pointer": "/routing/resolution_target",
+        "expected": "SOURCE_READBACK",
+        "observed": "SOURCE_READBACK",
+        "result": "PASS"
+      }
+    ],
+    "semantic_rationale": "The claim of current and applied artifact is not accepted: its only supplied GitHub revision is unresolved, direct independent evidence is absent within frozen scope, no authority was fabricated and the output explicitly defers to source readback. SOURCE_REF_UNRESOLVABLE in RAW is a legitimate profile finding, not a failure of this judge."
+  },
+  "producer_capture_runtime_provider_attested": false,
+  "production_activation": false,
+  "cutover_eligible": false,
+  "db_persistence_status": "NOT_YET_APPLIED",
+  "terminal_authority_receipt_status": "NOT_YET_ATTACHED",
+  "checkpoint_status": "PENDING_UNTIL_GOVERNED_READBACK"
+}
