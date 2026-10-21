@@ -228,7 +228,7 @@ def main() -> int:
             if sql.startswith("select version,coalesce(name,'') from supabase_migrations.schema_migrations"):
                 return m.render_rows([[v,"lf_test_scope_v1"] for v in versions]+
                                      [[remote_only,"lf_ledger_only_v1"]])
-            arrays=re.findall(r"'\\{([^}]*)\\}'::text\\[\\]",sql)
+            arrays=re.findall(r"'\{([^}]*)\}'::text\[\]",sql)
             assert len(arrays)==2,sql[:200]
             requested=arrays[0].split(",") if arrays[0] else []
             managed=arrays[1].split(",") if arrays[1] else []
