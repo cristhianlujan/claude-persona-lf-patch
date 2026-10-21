@@ -1,0 +1,228 @@
+QUERY_RESULT Q8 (file form)
+coordinator_note: read-only result of Q8 as returned by the database connector: 27 rows, none truncated (below the LIMIT 200), original order preserved (total_exec_time descending). The raw result was large, so it is delivered as a pipe-delimited rendering (one row per line; NULL = SQL NULL; query_sample is the connector's left(query,500) text and contains real line breaks, so one row may span several physical lines: every row starts with a userid value (16388 or 16486) followed by a signed integer queryid). Observation class: CURRENT.
+Coordinator verification: the connector returned this result inline only (no file), so it was typed by the coordinator; each row's query_sample was verified against the database by md5(left(query,500)) per queryid (27 of 27 match) and each row's userid and numeric fields by an md5 over the concatenated values (26 of 27 match; the exception is row 1, the 30-second queue worker, whose counters keep advancing in the live database [calls 23811 at relay time, 23815 at verification], so its numeric values are the coordinator's reading of the original result and are not re-verifiable).
+Columns (in order): userid|queryid|calls|total_exec_time|mean_exec_time|min_exec_time|max_exec_time|stddev_exec_time|rows|shared_blks_hit|shared_blks_read|temp_blks_read|temp_blks_written|query_sample
+Columns constant across all rows (omitted from every row): {"database_name": "postgres", "function_tracking": "none", "statement_tracking": "top", "statement_stats_reset": "2026-10-10 02:45:35.862139+00", "database_stats_reset": null, "matching_statement_count": 27, "dbid": "5", "observation_scope": "CURRENT_AGGREGATE_NOT_P0_BASELINE"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 1975b0b10305724861a583e7b53995653c2275739b7fe7a57e35bd470ac9ad42
+---BEGIN ROWS---
+16388|-6121712835719537967|23811|1386716.33689401|58.2384753640751|1.827786|68629.953017|1543.67645301543|23811|43037817|7248|0|0|select programacion.fn_input_governance_queue_worker_v1()
+16388|8711451024423911529|6|290301.095361|48383.5158935|20289.857497|74477.000076|16234.5521993362|0|8712745|405|0|0|DO $m93_validator_loop$
+      DECLARE v_run_id bigint;
+              v_status text;
+              v_chunk integer:=0;
+              v_payload jsonb;
+      BEGIN
+        SELECT (j->>'run_id')::bigint INTO v_run_id FROM m93_curator
+          WHERE jsonb_typeof(j->'run_id')='number';
+        IF v_run_id IS NOT NULL THEN
+          LOOP
+            SELECT j->>'status' INTO v_status FROM m93_validator;
+            EXIT WHEN v_status NOT IN
+              ('VALIDATOR_CONTINUE_REQUIRED','VALIDATOR_RESUME
+16388|-1190413845958252360|7|231322.944686|33046.1349551429|8991.760629|57740.554897|16793.5307294146|7|565230|430|0|0|CREATE TEMP TABLE m93_curator AS SELECT
+        programacion.fn_input_governance_curator_materialize_v1(
+          $1,$2,$3,$4) AS j
+16388|7449522366925707013|1|74312.25033|74312.25033|74312.25033|74312.25033|0|0|193581|21|0|0|DO $measure$
+DECLARE
+ v_id bigint; v_identity text; v_out jsonb; v_spans jsonb;
+ v_baseline_deterministic_ms numeric; v_curator_ms numeric;
+ v_deterministic_ms numeric; v_semantic_ms numeric;
+ v_source_sha text; v_parent_sha text;
+ v_before_count int; v_family_count int; v_positive int;
+ v_t0 timestamptz; v_wall_ms numeric;
+ v_rollback boolean:=false;
+BEGIN
+ IF EXISTS (SELECT 1 FROM public.lf_error_knowledge
+  WHERE codigo='IG-M107-G-POSTFASTPATH-CURATOR-TIMING-042') THEN
+  RAISE EXCEPTION 'IG_M
+16388|3120726644697259216|7|44457.222778|6351.03182542857|5316.601892|8450.461643|1157.14840118392|7|2527886|78|0|0|CREATE TEMP TABLE m93_semantics AS SELECT
+        programacion.fn_input_governance_shadow_evaluate_v2($1,$2) AS j
+16388|-7816028040323568810|4|4957.80753|1239.4518825|403.968829|2105.406994|639.98309036666|4|92240|0|0|0|SELECT programacion.fn_input_governance_curator_plan_v1($1,$2,$3) AS plan
+
+-- source: POST /mcp
+-- user: oauth:a3ff2237-4e0a-41de-982f-079176f54599
+-- date: 2026-10-11T06:08:04.864Z
+16388|3233580257646498887|1|2863.356775|2863.356775|2863.356775|2863.356775|0|0|32249|2|0|0|DO $bench$
+DECLARE
+ v_current jsonb; v_admission jsonb; v_submit jsonb; v_request_id bigint;
+ v_prior bigint; v_last bigint;
+BEGIN
+  IF (SELECT count(*) FROM cron.job WHERE jobname='ig-direct-sql-worker-v1'
+          AND active AND schedule='30 seconds'
+          AND command='select programacion.fn_input_governance_queue_worker_v1();')<>1 THEN
+    RAISE EXCEPTION 'M107_BENCH_SQL_WORKER_NOT_GOVERNED';
+  END IF;
+  IF EXISTS (SELECT 1 FROM programacion.ig_direct_requests_v1
+      WHERE status='QUEU
+16388|-7308964418415627830|1|1309.429104|1309.429104|1309.429104|1309.429104|0|0|23175|29|0|0|DO $m01_close$
+DECLARE
+ v_exec text;
+ v_raw text := $m01_raw${
+  "schema": "PE10_METHOD_RAW_V2",
+  "method_code": "PE10_M01",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "base_code": "A",
+  "algorithm_codes": [],
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "scope": "HISTORICAL_READ_ONLY_NO_REPAIR",
+  "method_contract": "PE10_METHOD_V1 SRCR_BASELINE",
+  "original_raw_preserved": {
+    "path": "chatgpt-file://file_000000004e48820e8414025654581746/prior_originals/PE10_M01_RAW.json",
+    "sha256": "586
+16388|-4914870525728907022|1|1170.357222|1170.357222|1170.357222|1170.357222|0|0|26097|0|0|0|DO $m18_close$
+DECLARE
+ v_exec text;
+ v_raw text:=$m18_raw${
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M18",
+  "base_code": "B",
+  "algorithm_codes": [
+    "D"
+  ],
+  "method_catalog": "PE10_METHOD_V1",
+  "source_cutoff": "2026-10-15T00:00:00Z",
+  "original_preserved": {
+    "ref": "chatgpt-file://file_000000004e48820e8414025654581746/methods/PE10_M18.json",
+    "sha256": "ea756fb0573ff82a29d1d9c9bdeff65c2ab0723420859e43b11ac0930179e379"
+  },
+
+16388|-7760600235700080428|1|768.398209|768.398209|768.398209|768.398209|0|0|10819|9|0|0|DO $m03_close$
+DECLARE
+ v_exec text;
+ v_event_id bigint;
+ v_raw text := $m03_raw_json${
+  "schema": "PE10_METHOD_RAW_V2",
+  "case_ref": "PE10-IG-M107-M109-P0",
+  "method_code": "PE10_M03",
+  "base_code": "A",
+  "algorithm_codes": [
+    "M"
+  ],
+  "source_frozen_at_utc": "2026-10-15T00:00:00Z",
+  "source_case": "P0_ORIGINAL.md (original), without post-cutoff method solutions",
+  "method_contract": "PE10_METHOD_V1 DRAFT / SRCR_SINGLE / ATMS M only",
+  "execution_mode_actual": "ONE_GPT_CONTEXT_READ
+16486|-8601790850859135424|65|458.513734|7.05405744615385|0.380467|81.721788|13.9475726466723|65|1004|0|0|0|WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_request_id", "p_oidc_run_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_request_id" bigint, "p_oidc_run_id" text) LIMIT $4) pgrst_body , LATERAL (SELECT "public"."fn_input_governance_queue_poll_oidc_v1"("p_request_id" := pgrst_body."p_request_id", "p_oidc_run_id" := pgrst_body."p_oidc_run_id") pgrst_scalar) pgrst_call) SELECT $5::bigint AS total_result_set, $6 AS page_to
+16388|5480795615858155433|2|295.694351|147.8471755|21.578395|274.115956|126.2687805|0|5882|0|0|0|DO $m93$ DECLARE receipt jsonb; negative jsonb; BEGIN
+ receipt:=programacion.fn_input_governance_shadow_receipt_gate_v1(
+  'db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f',
+  '329416a1e3bf23bc239942135b3e785ad3b6c12ab58bc4606869cb354fabe5f2',
+  '89b9fd806f2c776ddd92fb61b6a2f2d9e7af16b69a9620ef730ddacd308e9881');
+ negative:=programacion.fn_input_governance_shadow_receipt_gate_v1(
+  'db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f',
+  '329416a1e3bf23bc239942135b3
+16486|274137597043754700|3|116.127875|38.7092916666667|26.575603|52.879847|10.8348183330784|3|1238|9|0|0|WITH pgrst_source AS (SELECT pgrst_call.pgrst_scalar FROM (SELECT $1 AS json_data) pgrst_payload, LATERAL (SELECT "p_pantalla_id", "p_consumer", "p_oidc_run_id" FROM json_to_record(pgrst_payload.json_data) AS _("p_pantalla_id" integer, "p_consumer" text, "p_oidc_run_id" text) LIMIT $4) pgrst_body , LATERAL (SELECT "public"."fn_input_governance_queue_submit_oidc_v1"("p_pantalla_id" := pgrst_body."p_pantalla_id", "p_consumer" := pgrst_body."p_consumer", "p_oidc_run_id" := pgrst_body."p_oidc_run_id
+16388|-4404790859720030442|2|58.183654|29.091827|23.847488|34.336166|5.244339|0|530|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_candidate_field_gate_v2(p_id uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
+DECLARE r record; pol jsonb; c jsonb; d jsonb; s jsonb; ok boolean; did uuid; producer jsonb; n int; k int; ord int:=0; current_source jsonb; historical_map jsonb; original_adr text;
+BEGIN
+ IF p_id IS NULL THEN RETURN jsonb_build_object('status','BLOCKED','reason','PER_FIELD_RECEIPT_MISSING'); END IF;
+ SELECT receipt_id
+16388|3023983891891153280|2|52.73524|26.36762|9.615542|43.119698|16.752078|0|511|0|0|0|-- M9.6: nondecisional field-difference projection from the canonical shadow.
+CREATE OR REPLACE FUNCTION programacion.fn_ig_m96_shadow_field_probe_v1(p_screen_id integer,p_version_id bigint)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog'
+AS $probe$
+DECLARE j jsonb; f jsonb; a jsonb:='[]'::jsonb; n int:=0; oc int:=0; nd int:=0;
+ cur text; alt text; fam text; ref text; diff jsonb;
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM lf_ops.pantallas WHERE id=p_screen_id AND a
+16388|-2822513402398477009|2|52.722873|26.3614365|17.986226|34.736647|8.3752105|2|953|3|0|0|SELECT programacion.fn_input_governance_queue_submit_v1($1,$2) AS submission
+16388|-613441284998255228|2|46.819433|23.4097165|22.306128|24.513305|1.1035885|0|414|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_gate_readback_v2(
+ p_run bigint,p_screen integer,p_mutation uuid,p_divergence uuid,p_bundle text,p_field uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
+DECLARE b jsonb;t jsonb;hist_bundle jsonb;hm jsonb;obs jsonb;mapping_ok boolean:=false;mapping_count integer:=0;unique_count integer:=0;v_run record;hist_n integer;hist_total integer;hold_n integer;family_n integer;row_n integer;
+ hist_ok boolea
+16388|1664432751451387277|1|39.522933|39.522933|39.522933|39.522933|0|0|148|0|0|0|CREATE OR REPLACE FUNCTION public.lf_router_resolve_v1(p_request_text text, p_target_hint text DEFAULT NULL::text, p_action_hint text DEFAULT NULL::text, p_asset_type_hint text DEFAULT NULL::text, p_distribution_mode text DEFAULT 'ROUTER'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+declare
+  v_req text;
+  v_executor_candidates jsonb := '[]'::jsonb;
+  v_screen_subjects jsonb := '[]'::jsonb;
+  v_screen_subject_count integer := 0;
+  v_tar
+16388|-7913732133676006531|4|30.688409|7.67210225|2.469482|11.464825|3.5366094008633|0|2613|1|0|0|-- M9.3 lessons after DONE; EKB-first, append-only/idempotent by code. No domain mutation.
+DO $m93ekb$
+DECLARE n integer;
+BEGIN
+ PERFORM pg_advisory_xact_lock(hashtext('IG_M9_3_EKB_LESSONS_20261011'));
+ SELECT count(*) INTO n FROM public.lf_error_knowledge WHERE codigo='IG-M9-4-GOVERNED-COHORTS-001';
+ IF n<>1 THEN RAISE EXCEPTION 'M93_EKB_PREEXISTING_AUTHORITY_COUNT_INVALID:%',n; END IF;
+ IF EXISTS (SELECT 1 FROM public.lf_error_knowledge WHERE codigo IN ('IG-M9-3-OBSERVATION-TERMINAL-CONFLATION
+16388|4469894375657810230|1|29.634669|29.634669|29.634669|29.634669|0|0|184|0|0|0|CREATE OR REPLACE FUNCTION public.lf_router_resolve_v1(p_request_text text, p_target_hint text DEFAULT NULL::text, p_action_hint text DEFAULT NULL::text, p_asset_type_hint text DEFAULT NULL::text, p_distribution_mode text DEFAULT 'ROUTER'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+declare
+  v_req text;
+  v_executor_candidates jsonb := '[]'::jsonb;
+  v_screen_subjects jsonb := '[]'::jsonb;
+  v_screen_subject_count integer := 0;
+  v_tar
+16388|-3153744600968105957|3|26.503966|8.83465533333333|3.459338|13.888155|4.26362372970898|0|305|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_gate_readback_v2(
+ p_run bigint,p_screen integer,p_mutation uuid,p_divergence uuid,p_bundle text,p_field uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
+DECLARE b jsonb;t jsonb;hist_bundle jsonb;v_run record;hist_n integer;hist_total integer;hold_n integer;family_n integer;row_n integer;
+ hist_ok boolean;scope_ok boolean;gate_states text[];v_codes text[]:=ARRAY['ZERO_ERRORS','D4_EXPLAINED_NO_HOL
+16388|-3688220462563370674|2|15.611817|7.8059085|7.782082|7.829735|0.0238265000000002|0|429|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_engineering_action_spec_sanitize_v1(p_plan_code text, p_unit_code text, p_checkpoint_code text, p_spec jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'programacion', 'public', 'pg_catalog'
+AS $function$
+declare
+  v_meta jsonb;
+  v_explicit boolean := false;
+  v_tx jsonb;
+  v_kind text := coalesce(p_spec->>'action_kind','');
+  v_material boolean := coalesce((p_spec->>'requires_material_execution')::boolean,false);
+  v_verification_co
+16388|-1706654632834377595|1|15.475793|15.475793|15.475793|15.475793|0|0|80|0|0|0|CREATE OR REPLACE FUNCTION public.lf_router_resolve_v1(p_request_text text, p_target_hint text DEFAULT NULL::text, p_action_hint text DEFAULT NULL::text, p_asset_type_hint text DEFAULT NULL::text, p_distribution_mode text DEFAULT 'ROUTER'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+declare
+  v_req text;
+  v_executor_candidates jsonb := '[]'::jsonb;
+  v_screen_subjects jsonb := '[]'::jsonb;
+  v_screen_subject_count integer := 0;
+  v_tar
+16388|-5562634691713380879|2|13.041951|6.5209755|4.189036|8.852915|2.3319395|0|585|0|0|0|-- M9.3 exact governed T-EQUIV test identity; retain legacy test identities unchanged.
+-- An opt-in consumer gets a globally distinct deterministic test_code.
+CREATE OR REPLACE FUNCTION programacion.fn_engineering_action_spec_sanitize_v1(p_plan_code text, p_unit_code text, p_checkpoint_code text, p_spec jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'programacion', 'public', 'pg_catalog'
+AS $function$
+declare
+  v_meta jsonb;
+  v_explicit boolean := false;
+  v_tx jsonb;
+  v_k
+16388|-4380378235216273234|3|9.411711|3.137237|0.659157|7.149266|2.86299707287323|0|207|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_gate_readback_v2(
+ p_run bigint,p_screen integer,p_mutation uuid,p_divergence uuid,p_bundle text,p_field uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
+DECLARE b jsonb;t jsonb;hist_bundle jsonb;v_run record;hist_n integer;hold_n integer;family_n integer;row_n integer;
+ hist_ok boolean;scope_ok boolean;gate_states text[];v_codes text[]:=ARRAY['ZERO_ERRORS','D4_EXPLAINED_NO_HOLD','ZERO_UNRESOLVED
+16388|6846387957446540197|3|6.531759|2.177253|1.785889|2.765025|0.423169708644968|0|872|0|0|0|CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_engineering_assurance_v7(
+ p_run bigint,p_screen integer,p_mutation uuid,p_divergence uuid,p_bundle text,p_field uuid DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $v$
+DECLARE g jsonb; pol jsonb; current_ok boolean; n int; baseline int; held int;
+BEGIN
+ SELECT status='COMPLETED' AND pantalla_id=p_screen AND programacion.fn_input_readiness_run_is_current(id)
+ INTO current_ok FROM programaci
+16388|-6898516364355511852|2|1.547033|0.7735165|0.708216|0.838817|0.0653005000000001|0|78|0|0|0|-- Follow-up to the unapplied 20261011035001 source: historical evidence and effective holds are different authorities.
+-- Two mutually exclusive counts are NOT compared when evaluating historical suite explanations.
+CREATE OR REPLACE FUNCTION programacion.fn_ig_m98_gate_readback_v2(
+ p_run bigint,p_screen integer,p_mutation uuid,p_divergence uuid,p_bundle text,p_field uuid)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog' AS $f$
+DECLARE b jsonb;t jsonb;hist

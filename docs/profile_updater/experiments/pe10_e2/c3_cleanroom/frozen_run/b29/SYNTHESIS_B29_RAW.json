@@ -1,0 +1,182 @@
+{
+"case_id": "PE10-IG-M107-M109-P0",
+"method": "PE10_M29_E2",
+"algorithms": ["C", "E"],
+"status": "RAW_FROZEN_UNGRADED",
+"provenance": {
+"mode": "READ_ONLY",
+"isolation": "CONTAMINATED_COORDINATOR_CAUSED_DENYLIST_EXPOSURE",
+"provider_independent_agent_isolation": "UNPROVEN",
+"denylisted_material_used_as_evidence": false,
+"note": "Q8 coordinator relay exposed denylisted previous-method SQL text. That material is excluded from evidentiary reasoning. The five roles were executed sequentially in one shared model context, so strict independent-agent isolation is not attested."
+},
+"role_dispositions": {
+"ARCHITECTURE": "NEEDS_MORE_EVIDENCE",
+"PERFORMANCE": "NEEDS_MORE_EVIDENCE",
+"AUTHORITY": "NEEDS_MORE_EVIDENCE",
+"COVERAGE": "NEEDS_MORE_EVIDENCE",
+"INNOVATION": "NEEDS_MORE_EVIDENCE"
+},
+"material_edges": [
+{
+"id": "SYN-A1",
+"role": "ARCHITECTURE",
+"evidence": ["Q1", "Q2"],
+"finding": "All 38 historical caller identities still resolve to the same CURRENT schema/name/OID identities, but 22 of 38 bodies changed and 16 remain body-identical. OID continuity therefore does not establish behavioral continuity."
+},
+{
+"id": "SYN-A2",
+"role": "ARCHITECTURE",
+"evidence": ["Q3", "Q4", "Q5", "Q6"],
+"finding": "The CURRENT lexical census is materially broader than the historical inventory: 446 candidate rows split into 68 historical-declared edges, 102 CURRENT edges outside P0 declarations, and 276 consumers outside the P0 inventory. Eight historical exact-call declarations no longer have the same exact current call token. Variant routing is visible, but semantic equivalence of old/new variants is not established."
+},
+{
+"id": "SYN-A3",
+"role": "ARCHITECTURE",
+"evidence": ["Q6"],
+"finding": "At least one apparent recursive lexical candidate is a JSON/string occurrence rather than an executable edge. Lexical matches are therefore not promoted to runtime dependencies without source-context resolution."
+},
+{
+"id": "SYN-P1",
+"role": "PERFORMANCE",
+"evidence": ["Q7"],
+"finding": "pg_stat_statements is available, but track_functions is disabled, planning statistics are off, and I/O timing is off. The available telemetry cannot attribute per-function cost or full planning/I/O behavior."
+},
+{
+"id": "SYN-P2",
+"role": "PERFORMANCE",
+"evidence": ["Q8", "Q9"],
+"finding": "Measured CURRENT aggregate SQL cohorts exist, including queue-worker, curator, shadow, and validator statements, but the statistics window straddles P0 and the cohorts are not matched equivalent workloads. No valid optimization speedup ratio can be derived."
+},
+{
+"id": "SYN-P3",
+"role": "PERFORMANCE",
+"evidence": ["Q8"],
+"exclusion": "Coordinator-relayed denylisted previous-method query text was observed in query samples and excluded from evidence."
+},
+{
+"id": "SYN-AU1",
+"role": "AUTHORITY",
+"evidence": ["Q10", "Q11"],
+"finding": "For the inspected CURRENT functions, anon and authenticated have no effective direct-call route. service_role has effective direct access to a limited public surface while internal programacion helpers are not directly callable because schema usage prevents effective direct invocation."
+},
+{
+"id": "SYN-AU2",
+"role": "AUTHORITY",
+"evidence": ["Q12"],
+"finding": "Several public SECURITY DEFINER wrappers delegate directly into internal governance functions without independent wrapper-level identity predicates. Their safety therefore depends on downstream caller-context and governance guards; the inspected downstream sources contain substantial run, identity, freshness, receipt, and graph checks, but complete route proof remains unresolved."
+},
+{
+"id": "SYN-AU3",
+"role": "AUTHORITY",
+"evidence": ["Q13"],
+"exclusion": "Q13 failed with SQLSTATE 42883 due to an invalid digest(text, unknown) construction and contributes no database evidence."
+},
+{
+"id": "SYN-AU4",
+"role": "AUTHORITY",
+"evidence": ["Q14"],
+"finding": "Both contract-authorized historical EKB records were retrieved with the expected hashes. They document a prior unauthorized-read failure and SOAK/currentness criteria; their historical claims were not independently rerun as CURRENT execution."
+},
+{
+"id": "SYN-C1",
+"role": "COVERAGE",
+"evidence": ["Q15", "Q16"],
+"finding": "CURRENT execution/enforcement surfaces extend beyond the historical function-body inventory, including an active scheduled queue worker and 13 enabled governance-related row triggers."
+},
+{
+"id": "SYN-C2",
+"role": "COVERAGE",
+"evidence": ["Q17", "Q18", "Q19"],
+"finding": "The initially suspicious assessment/proposal UPDATE currentness path intentionally delegates from a specialized currentness trigger to broader final UPDATE guards. Those final guards explicitly reject unless continuation currentness and full-manifest currentness hold. The hypothesized missing UPDATE-currentness control is therefore not demonstrated."
+},
+{
+"id": "SYN-C3",
+"role": "COVERAGE",
+"evidence": ["Q20", "Q21", "Q22"],
+"finding": "Both final-guard paths converge on shared manifest reconstruction/currentness helpers. The manifest is freshly rebuilt from canonical graph/source references; full-manifest currentness requires exact JSON and digest equality with the pinned run snapshot; continuation currentness separately evaluates contract, policy, manifest and status-dependent authority dimensions."
+},
+{
+"id": "SYN-C4",
+"role": "COVERAGE",
+"evidence": ["Q22", "Q23"],
+"finding": "VALIDATING continuation uses a narrower currentness decision than COMPLETED lifecycle currentness, but Q23 found zero CURRENT VALIDATING rows and the run guard constrains invalidation, manifest mutation, transitions and completion freshness. No reachable CURRENT stale-VALIDATING counterexample was demonstrated."
+},
+{
+"id": "SYN-I1",
+"role": "INNOVATION",
+"evidence": ["Q24", "Q25", "Q26"],
+"finding": "CURRENT source implements SHA-bound request/transaction-local canonical-graph reuse and identity-keyed freshness-delta reuse with recomputation on cache-key mismatch and explicit cleanup/counters. These are implementation-proven mechanisms, not inferred from cached-function names."
+},
+{
+"id": "SYN-I2",
+"role": "INNOVATION",
+"evidence": ["Q27", "Q28"],
+"finding": "Validator-evidence compaction is content-addressed and representation-only by checked rehydration equivalence. Its observed migration completed VERIFIED over 10131 baseline-eligible assessments with exhaustive verification and zero unmatched receipt hashes."
+},
+{
+"id": "SYN-I3",
+"role": "INNOVATION",
+"evidence": ["Q27", "Q28", "Q29"],
+"finding": "The bounded queue mechanism is operational. Eight observed requests are DONE at the queue layer, with six final BLOCKED and two READY outcomes and no recorded error codes. Their heterogeneous wall times are observations, not a speed benchmark."
+},
+{
+"id": "SYN-I4",
+"role": "INNOVATION",
+"evidence": ["Q28", "Q29", "Q30"],
+"finding": "Queue operation and verified compaction both predate the P0 cutoff. Several cached/recuration function names are positively present in the P0 event. Request-local-state tokens are absent from that event, but absence cannot establish post-P0 creation because queue/compaction provide a direct counterexample to event-token completeness."
+}
+],
+"demonstrated_defects": [],
+"repair_required": false,
+"critical_exposure": {
+"demonstrated": false,
+"reason": "A public/service_role delegation surface exists, but the frozen authority evidence does not demonstrate an unguarded successful critical route. Downstream guards are materially present and complete reachable-route proof remains unresolved."
+},
+"performance": {
+"speedup_claim_supported": false,
+"speedup": "NO_MEDIDO",
+"resource_savings": "NO_MEDIDO",
+"reason": "Available observations are aggregate, unmatched, heterogeneous, or mechanism-level. No valid before/after equivalent cohort establishes causal latency, CPU, I/O, throughput, or storage-byte improvement."
+},
+"innovation": {
+"mechanisms_demonstrated": [
+"SHA-bound request/transaction-local canonical graph reuse",
+"run/screen-keyed freshness-delta reuse with fallback recomputation",
+"bounded scheduled continuation queue",
+"content-addressed Validator-evidence compaction with rehydration equivalence"
+],
+"post_p0_novelty_supported": false,
+"causal_benefit_supported": false
+},
+"s2_decision": {
+"label": "MEASURE_FIRST",
+"ordering_rule": [
+"REPAIR_REQUIRED",
+"MEASURE_FIRST",
+"VERIFY_CRITICAL",
+"CLEAR_NO_ACTION",
+"VERIFY_MINOR"
+],
+"rationale": "No demonstrated defect satisfies REPAIR_REQUIRED. The principal unresolved claim is whether the evolved mechanisms deliver a causal optimization benefit; current telemetry cannot establish that. Because S2 orders MEASURE_FIRST ahead of VERIFY_CRITICAL and no actual critical exposure route is demonstrated, MEASURE_FIRST is the governing disposition."
+},
+"minimal_safe_next_action": {
+"action": "Obtain authorized matched governed measurements for equivalent workloads using existing timing/receipt surfaces, with explicit P0-comparable cohort definition where available.",
+"constraints": [
+"READ_ONLY evidence collection unless separately authorized",
+"do not elevate EXECUTE/schema privileges",
+"do not alter triggers, schedules, guards, or governance state merely to manufacture a benchmark",
+"do not infer runtime edges from lexical references",
+"keep historical P0 evidence distinct from CURRENT catalog/runtime evidence",
+"exclude coordinator-relayed denylisted material"
+]
+},
+"unresolved": [
+"Matched P0-versus-CURRENT performance equivalence",
+"Creation/deployment provenance for request-local reuse mechanisms",
+"Complete dynamic/remote/Edge execution routes",
+"End-to-end effective caller identity binding through every public wrapper",
+"Historical semantic equivalence of changed routing variants",
+"Provider-level independent-agent isolation"
+]
+}

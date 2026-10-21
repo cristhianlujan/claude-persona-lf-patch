@@ -1,0 +1,95 @@
+QUERY_RESULT Q43 (file form; lossless re-rendering by coordinator, hand-transcribed, no source checksum)
+coordinator_note: read-only result of Q43 as returned by the database connector: 2 rows, not truncated, ORDER BY relname. Constants for both rows: schema_name=inventory; owner_name=postgres; reloptions={security_invoker=true}; view_comment=NULL; observation_scope=CURRENT_DRIFT_VIEW_SOURCE_NOT_EXECUTION. view_definition is given between markers exactly as returned (begins with one space; no trailing newline). In the second view the identical 14-schema exclusion list appears five times; it is written out each time. Observation class: CURRENT.
+
+===ROW view_name=v_managed_currentness_v1 view_oid=136146===
+===view_definition BEGIN===
+ WITH latest AS (
+         SELECT s.snapshot_id,
+            s.snapshot_code,
+            s.source_system,
+            s.scope,
+            s.started_at,
+            s.completed_at,
+            s.status,
+            s.object_count,
+            s.dependency_count,
+            s.metadata
+           FROM inventory.snapshots s
+          WHERE s.source_system = 'INVENTORY_STAGED_REFRESH_V1'::text AND s.scope = 'DATABASE_AND_REGISTRIES'::text
+          ORDER BY s.completed_at DESC NULLS LAST
+         LIMIT 1
+        ), sources(source_system, currentness_source) AS (
+         VALUES ('SUPABASE_PG_CATALOG'::text,'PG_CATALOG_REFRESH'::text), ('LF_ACTIVOS'::text,'LF_REGISTRY_REFRESH'::text), ('PROGRAMACION_CONTRATOS'::text,'LF_REGISTRY_REFRESH'::text), ('LF_OPERATION_REGISTRY'::text,'LF_REGISTRY_REFRESH'::text)
+        )
+ SELECT src.source_system,
+    src.currentness_source,
+    l.snapshot_code,
+    l.completed_at AS observed_at,
+    inventory.fn_managed_currentness_eval_v1(src.source_system, l.completed_at, l.status, NULLIF(l.metadata ->> 'pg_catalog_drift'::text, ''::text)::integer, l.metadata #>> '{registries,status}'::text[], now()) AS currentness
+   FROM sources src
+     LEFT JOIN latest l ON true;
+===view_definition END===
+
+===ROW view_name=v_pg_catalog_drift_v1 view_oid=128480===
+===view_definition BEGIN===
+ WITH current_objects AS (
+         SELECT (('db://'::text || n.nspname::text) || '.'::text) || c.relname::text AS object_ref,
+                CASE c.relkind
+                    WHEN 'r'::"char" THEN 'DB_TABLE'::text
+                    WHEN 'p'::"char" THEN 'DB_PARTITIONED_TABLE'::text
+                    WHEN 'v'::"char" THEN 'DB_VIEW'::text
+                    WHEN 'm'::"char" THEN 'DB_MATERIALIZED_VIEW'::text
+                    ELSE NULL::text
+                END AS object_type
+           FROM pg_class c
+             JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE (c.relkind = ANY (ARRAY['r'::"char", 'p'::"char", 'v'::"char", 'm'::"char"])) AND (n.nspname <> ALL (ARRAY['pg_catalog'::name, 'information_schema'::name, 'pg_toast'::name, 'auth'::name, 'storage'::name, 'realtime'::name, 'extensions'::name, 'cron'::name, 'net'::name, 'vault'::name, 'graphql_public'::name, 'pgbouncer'::name, 'supabase_migrations'::name, 'inventory'::name])) AND n.nspname !~~ 'pg_%'::text
+        UNION ALL
+         SELECT ((((('dbfunc://'::text || n.nspname::text) || '.'::text) || p.proname::text) || '('::text) || inventory.fn_function_identity_args_stable(p.oid)) || ')'::text,
+                CASE p.prokind
+                    WHEN 'p'::"char" THEN 'DB_PROCEDURE'::text
+                    ELSE 'DB_FUNCTION'::text
+                END AS "case"
+           FROM pg_proc p
+             JOIN pg_namespace n ON n.oid = p.pronamespace
+          WHERE (p.prokind = ANY (ARRAY['f'::"char", 'p'::"char"])) AND (n.nspname <> ALL (ARRAY['pg_catalog'::name, 'information_schema'::name, 'pg_toast'::name, 'auth'::name, 'storage'::name, 'realtime'::name, 'extensions'::name, 'cron'::name, 'net'::name, 'vault'::name, 'graphql_public'::name, 'pgbouncer'::name, 'supabase_migrations'::name, 'inventory'::name])) AND n.nspname !~~ 'pg_%'::text
+        UNION ALL
+         SELECT (((('trigger://'::text || n.nspname::text) || '.'::text) || c.relname::text) || '/'::text) || t.tgname::text,
+            'DB_TRIGGER'::text
+           FROM pg_trigger t
+             JOIN pg_class c ON c.oid = t.tgrelid
+             JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE NOT t.tgisinternal AND (n.nspname <> ALL (ARRAY['pg_catalog'::name, 'information_schema'::name, 'pg_toast'::name, 'auth'::name, 'storage'::name, 'realtime'::name, 'extensions'::name, 'cron'::name, 'net'::name, 'vault'::name, 'graphql_public'::name, 'pgbouncer'::name, 'supabase_migrations'::name, 'inventory'::name])) AND n.nspname !~~ 'pg_%'::text
+        UNION ALL
+         SELECT (((('policy://'::text || p.schemaname::text) || '.'::text) || p.tablename::text) || '/'::text) || p.policyname::text,
+            'RLS_POLICY'::text
+           FROM pg_policies p
+          WHERE (p.schemaname <> ALL (ARRAY['pg_catalog'::name, 'information_schema'::name, 'pg_toast'::name, 'auth'::name, 'storage'::name, 'realtime'::name, 'extensions'::name, 'cron'::name, 'net'::name, 'vault'::name, 'graphql_public'::name, 'pgbouncer'::name, 'supabase_migrations'::name, 'inventory'::name])) AND p.schemaname !~~ 'pg_%'::text
+        UNION ALL
+         SELECT (((('dbindex://'::text || n.nspname::text) || '.'::text) || tc.relname::text) || '/'::text) || ic.relname::text,
+            'DB_INDEX'::text
+           FROM pg_index i
+             JOIN pg_class tc ON tc.oid = i.indrelid
+             JOIN pg_namespace n ON n.oid = tc.relnamespace
+             JOIN pg_class ic ON ic.oid = i.indexrelid
+          WHERE (n.nspname <> ALL (ARRAY['pg_catalog'::name, 'information_schema'::name, 'pg_toast'::name, 'auth'::name, 'storage'::name, 'realtime'::name, 'extensions'::name, 'cron'::name, 'net'::name, 'vault'::name, 'graphql_public'::name, 'pgbouncer'::name, 'supabase_migrations'::name, 'inventory'::name])) AND n.nspname !~~ 'pg_%'::text
+        ), inv AS (
+         SELECT objects.object_ref,
+            objects.object_type
+           FROM inventory.objects
+          WHERE objects.active AND objects.source_system = 'SUPABASE_PG_CATALOG'::text
+        )
+ SELECT c.object_ref,
+    c.object_type,
+    'MISSING_FROM_INVENTORY'::text AS drift_state
+   FROM current_objects c
+     LEFT JOIN inv i USING (object_ref)
+  WHERE i.object_ref IS NULL
+UNION ALL
+ SELECT i.object_ref,
+    i.object_type,
+    'NO_LONGER_IN_PG_CATALOG'::text AS drift_state
+   FROM inv i
+     LEFT JOIN current_objects c USING (object_ref)
+  WHERE c.object_ref IS NULL;
+===view_definition END===

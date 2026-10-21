@@ -1,0 +1,20 @@
+QUERY_RESULT Q15 (file form)
+coordinator_note: read-only result of Q15 as returned by the database connector: 14 rows (1 CRON, 13 TRIGGER, 0 VIEW), none truncated, original order of the query's ORDER BY. The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: an md5 over the canonical text of all 14 rows (6 columns, NULL written as NULL, ordered as the query orders them) computed in the database equals the md5 of this file's body: 45de85aef6358630fa1906a296650e23. Observation class: CURRENT.
+Columns (in order): surface_type|owning_object|surface_name|target_identity|enabled_state|source_excerpt
+Columns constant across all rows (omitted from every row): {"observation_scope": "CURRENT_NON_FUNCTION_SURFACE_CENSUS"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): deb35011f7fd9c9a1d60094926c12535c15e99d7e85a92361ab74b8301013b52
+---BEGIN ROWS---
+CRON|cron.job|ig-direct-sql-worker-v1|NULL|true|select programacion.fn_input_governance_queue_worker_v1();
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_00_execution_insert|programacion.fn_guard_input_family_execution_insert()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_00_execution_update|programacion.fn_guard_input_family_execution_update()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_00a_continuation_currentness_update|programacion.fn_guard_input_governance_continuation_currentness_v1()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_01_semantic_depth_insert|programacion.fn_guard_input_family_semantic_depth()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_01_semantic_depth_update|programacion.fn_guard_input_family_semantic_depth()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_01a_semantic_depth_v510_insert|programacion.fn_guard_input_family_semantic_depth_v510()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_01a_semantic_depth_v510_update|programacion.fn_guard_input_family_semantic_depth_v510()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_insert|programacion.fn_guard_input_family_assessment_insert()|O|NULL
+TRIGGER|programacion.input_family_assessments|trg_input_family_assessment_update|programacion.fn_guard_input_family_assessment_update()|O|NULL
+TRIGGER|programacion.input_gap_proposals|trg_input_gap_proposal_00_continuation_currentness_update|programacion.fn_guard_input_governance_continuation_currentness_v1()|O|NULL
+TRIGGER|programacion.input_readiness_runs|trg_input_readiness_run_insert|programacion.fn_guard_input_readiness_run()|O|NULL
+TRIGGER|programacion.input_readiness_runs|trg_input_readiness_run_update|programacion.fn_guard_input_readiness_run()|O|NULL
+TRIGGER|programacion.input_validator_chunk_timings|trg_input_validator_chunk_timing_00_currentness_insert|programacion.fn_guard_input_governance_continuation_currentness_v1()|O|NULL

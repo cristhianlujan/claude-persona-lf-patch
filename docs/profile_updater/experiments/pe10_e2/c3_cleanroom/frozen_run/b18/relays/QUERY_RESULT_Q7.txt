@@ -1,0 +1,1020 @@
+QUERY_RESULT Q7 (file form)
+coordinator_note: read-only result of Q7 as returned by the database connector: 4 rows, not truncated. Raw JSON was 51824 characters, so it is delivered as a file: for each row the scalar fields followed by current_source_body exactly as returned (JSON-unescaped, byte-for-byte). Observation class: CURRENT. observation_scope for every row: CURRENT_SOURCE_NOT_P0_HISTORICAL_EXECUTION.
+Raw JSON sha256 prefix: c2ddf91499ef6025
+
+===ROW schema_name=programacion function_name=fn_input_governance_bootstrap_classify_v2_cached_v2 current_oid=91138 identity_args=(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb) current_definition_md5=7257b9bbc86b1f61e5435a37479d63a1===
+===current_source_body BEGIN===
+
+declare
+  v jsonb;
+  v_blockers jsonb;
+  v_b jsonb;
+  v_new_blockers jsonb:='[]'::jsonb;
+  v_required int:=0;
+  v_resolved int:=0;
+  v_na int:=0;
+  v_pending int:=0;
+  v_unresolved int:=0;
+  v_sem jsonb;
+  v_level text;
+  v_blocker text;
+  v_api jsonb;
+  v_otp_rule jsonb;
+  v_otp_operation text;
+  v_otp_field text;
+  v_otp_operation_ok boolean:=false;
+  v_otp_field_ok boolean:=false;
+begin
+  v:=programacion.fn_input_governance_bootstrap_classify_v1_cached_v2(p_pantalla_id,p_family_code,p_version_id,p_graph);
+
+  if p_family_code='DESIGN_SYSTEM' and v->>'applicability'<>'NOT_APPLICABLE' then
+    select
+      count(*) filter(where required_for_implementation),
+      count(*) filter(where required_for_implementation and semantic_binding_status='RESOLVED_ID' and component_token_id is not null),
+      count(*) filter(where required_for_implementation and semantic_binding_status='NOT_APPLICABLE'),
+      count(*) filter(where required_for_implementation and semantic_binding_status='PENDING_SEMANTIC_COMPONENT'),
+      count(*) filter(where required_for_implementation and (
+        semantic_binding_status='PENDING_SEMANTIC_COMPONENT'
+        or semantic_binding_status not in ('RESOLVED_ID','NOT_APPLICABLE')
+        or (semantic_binding_status='RESOLVED_ID' and component_token_id is null)
+      ))
+    into v_required,v_resolved,v_na,v_pending,v_unresolved
+    from lf_ops.pantalla_elementos
+    where pantalla_id=p_pantalla_id and status<>'DEPRECATED';
+
+    v:=jsonb_set(
+      v,'{probe,summary}',
+      coalesce(v->'probe'->'summary','{}'::jsonb)
+      || jsonb_build_object(
+        'element_required_semantic_resolved_count',v_resolved,
+        'element_required_semantic_not_applicable_count',v_na,
+        'element_required_semantic_pending_count',v_pending,
+        'element_required_semantic_unresolved_count',v_unresolved,
+        'element_required_count',v_required,
+        'element_required_missing_component_count',v_unresolved,
+        'semantic_gap_contract','DESIGN_ELEMENT_BINDING_SEMANTICS_V1'
+      ),true
+    );
+
+    v_blockers:=coalesce(v->'blockers','[]'::jsonb);
+    for v_b in select value from jsonb_array_elements(v_blockers) loop
+      if v_b->>'code'<>'ELEMENT_REQUIRED_COMPONENT_BINDING_MISSING' then
+        v_new_blockers:=v_new_blockers||jsonb_build_array(v_b);
+      end if;
+    end loop;
+    if v_unresolved>0 then
+      v_new_blockers:=v_new_blockers||jsonb_build_array(jsonb_build_object(
+        'code','ELEMENT_REQUIRED_SEMANTIC_COMPONENT_UNRESOLVED',
+        'count',v_unresolved,
+        'not_applicable_count',v_na,
+        'pending_semantic_component_count',v_pending
+      ));
+    end if;
+    v:=jsonb_set(v,'{blockers}',v_new_blockers,true);
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE' and p_family_code='API_DATA_CONTRACT' then
+    v_api:=programacion.fn_input_api_contract_resolution(p_pantalla_id);
+
+    if coalesce((v_api->>'has_behavioral_contract')::boolean,false)
+       and coalesce((v_api->>'broken_contract_ref_count')::integer,0)=0 then
+
+      if coalesce((v_api->>'has_resolvable_operation_schema_authority')::boolean,false) then
+        v:=jsonb_set(v,'{probe}',v_api,true);
+        v:=jsonb_set(v,'{bootstrap_level}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+
+        if coalesce((v_api->>'has_executable_binding_authority')::boolean,false) then
+          v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+          v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+        else
+          v:=jsonb_set(v,'{severity}','"P1"'::jsonb,true);
+          v:=jsonb_set(v,'{implementation_ready_status}','"NOT_READY"'::jsonb,true);
+          v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+          v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+          v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+            'code','API_EXECUTABLE_IDENTITY_BINDING_PENDING',
+            'family_code',p_family_code,
+            'bootstrap_level','COMPLETE',
+            'earliest_blocking_stage','IMPLEMENTATION'
+          )),true);
+        end if;
+
+        v:=jsonb_set(v,'{rationale}',to_jsonb(
+          'Provider-agnostic logical LF_AUTH_BOUNDARY request/response schema is canonical and fail-closed. Executable endpoint/grant/provider binding remains independently required for Implementation.'::text
+        ),true);
+
+      else
+        v:=jsonb_set(v,'{probe}',v_api,true);
+        v:=jsonb_set(v,'{bootstrap_level}','"PARTIAL"'::jsonb,true);
+        v:=jsonb_set(v,'{severity}','"P1"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"PARTIAL"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"NOT_READY"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+          'code','API_OPERATION_SCHEMA_SOURCE_INCOMPLETE',
+          'family_code',p_family_code,
+          'bootstrap_level','PARTIAL',
+          'earliest_blocking_stage','IMPLEMENTATION'
+        )),true);
+      end if;
+    end if;
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE' and p_family_code='MFA_OTP_SSO' then
+    select r into v_otp_rule
+    from jsonb_array_elements(
+      coalesce(p_graph->'canonical_contract'->'rules','[]'::jsonb)
+    ) r
+    where r->>'status'='VIGENTE'
+      and r->>'rule_code'='REG_CLIENT_RECOVERY_PHONE_CONTROL_001'
+      and nullif(r->'config'->>'old_phone_otp_operation','') is not null
+      and nullif(r->'config'->>'old_phone_otp_field_code','') is not null
+    limit 1;
+
+    v_otp_operation:=v_otp_rule->'config'->>'old_phone_otp_operation';
+    v_otp_field:=v_otp_rule->'config'->>'old_phone_otp_field_code';
+
+    if v_otp_operation is not null then
+      select exists(
+        select 1
+        from lf_ops.otp_operaciones o
+        join lf_ops.otp_politicas p on p.id=o.politica_id
+        where o.codigo=v_otp_operation
+          and o.estado='ACTIVO'
+          and p.estado='ACTIVO'
+          and p.longitud is not null
+          and p.max_intentos is not null
+          and p.max_reenvios is not null
+          and p.bloqueo_reenvio_min is not null
+      ) into v_otp_operation_ok;
+    end if;
+
+    if v_otp_field is not null then
+      select exists(
+        select 1 from lf_ops.campos c
+        where c.codigo=v_otp_field
+          and c.estado='ACTIVO'
+          and c.es_sensible
+      ) into v_otp_field_ok;
+    end if;
+
+    if v_otp_operation_ok and v_otp_field_ok then
+      v:=jsonb_set(v,'{probe}',jsonb_build_object(
+        'resolution_contract','CLIENT_RECOVERY_OTP_SEMANTICS_V1',
+        'authority_rule','REG_CLIENT_RECOVERY_PHONE_CONTROL_001',
+        'otp_operation_code',v_otp_operation,
+        'otp_operation_active',v_otp_operation_ok,
+        'otp_field_code',v_otp_field,
+        'otp_field_catalog_active_sensitive',v_otp_field_ok,
+        'otp_role','RECOVERY_PROOF_NOT_MFA',
+        'mfa_satisfied_by_recovery_otp',false
+      ),true);
+      v:=jsonb_set(v,'{bootstrap_level}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+      v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+      v:=jsonb_set(v,'{rationale}',to_jsonb(
+        'Direct VIGENTE Client recovery rule binds an active governed recovery OTP operation and active sensitive OTP field catalog. The OTP is a recovery proof and does not satisfy MFA.'::text
+      ),true);
+    end if;
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE'
+     and not (p_family_code='API_DATA_CONTRACT' and v->>'story_ready_status'='READY')
+     and not (p_family_code='MFA_OTP_SSO' and v->>'bootstrap_level'='COMPLETE') then
+    v_sem:=programacion.fn_input_governance_semantic_probe_v3_cached_v1(p_pantalla_id,p_family_code,p_version_id,p_graph);
+    if coalesce((v_sem->>'handled')::boolean,false) then
+      v_level:=v_sem->>'level';
+      v_blocker:=v_sem->>'blocker_code';
+      v:=jsonb_set(v,'{probe}',v_sem->'probe',true);
+      v:=jsonb_set(v,'{bootstrap_level}',to_jsonb(v_level),true);
+      v:=jsonb_set(v,'{rationale}',to_jsonb(
+        'Governed semantic resolution '||coalesce(v_sem->'probe'->>'resolution_contract','SEMANTIC_PROBE_V1')||': '||
+        p_family_code||'='||v_level||' from direct canonical source readback; absence never implies N/A.'
+      ),true);
+      if v_level='COMPLETE' then
+        v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+      else
+        v:=jsonb_set(v,'{severity}','"P0"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}',to_jsonb(case when v_level='PARTIAL' then 'PARTIAL' else 'MISSING' end),true);
+        v:=jsonb_set(v,'{well_defined_status}',to_jsonb(case when v_level='PARTIAL' then 'PARTIAL' else 'MISSING' end),true);
+        v:=jsonb_set(v,'{story_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+          'code',v_blocker,'family_code',p_family_code,'bootstrap_level',v_level
+        )),true);
+      end if;
+      if jsonb_typeof(v_sem->'stage_statuses')='object' then
+        v:=jsonb_set(v,'{severity}',to_jsonb(coalesce(v_sem->>'severity',v->>'severity')),true);
+        v:=jsonb_set(v,'{story_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'story',v->>'story_ready_status')),true);
+        v:=jsonb_set(v,'{implementation_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'implementation',v->>'implementation_ready_status')),true);
+        v:=jsonb_set(v,'{qa_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'qa',v->>'qa_ready_status')),true);
+        v:=jsonb_set(v,'{production_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'production',v->>'production_ready_status')),true);
+        v:=jsonb_set(v,'{blockers}',coalesce(v_sem->'stage_blockers','[]'::jsonb),true);
+      end if;
+    end if;
+  end if;
+
+
+  if p_family_code='PERMISSIONS'
+     and v->>'applicability'='NOT_APPLICABLE'
+     and v#>>'{probe,authority_kind}'='EXPLICIT_CANONICAL_EXCLUSION'
+     and jsonb_typeof(v#>'{probe,rule_codes}')='array' then
+    v:=jsonb_set(
+      v,
+      '{source_refs}',
+      coalesce(v->'source_refs','[]'::jsonb)
+      || coalesce((
+        select jsonb_agg(
+          jsonb_build_object('kind','RULE','codigo',x.value)
+          order by x.value
+        )
+        from jsonb_array_elements_text(v#>'{probe,rule_codes}') x(value)
+        where not coalesce(v->'source_refs','[]'::jsonb)
+          @> jsonb_build_array(jsonb_build_object('kind','RULE','codigo',x.value))
+      ),'[]'::jsonb),
+      true
+    );
+  elsif p_family_code='VISUAL_EVIDENCE'
+        and exists (
+          select 1
+          from lf_ops.pantalla_artefactos pa
+          where pa.pantalla_id=p_pantalla_id
+            and pa.is_current=true
+        )
+        and not coalesce(v->'source_refs','[]'::jsonb)
+          @> jsonb_build_array(
+            jsonb_build_object('kind','CURRENT_VISUAL_ARTIFACT','pantalla_id',p_pantalla_id)
+          ) then
+    v:=jsonb_set(
+      v,
+      '{source_refs}',
+      coalesce(v->'source_refs','[]'::jsonb)
+      || jsonb_build_array(
+        jsonb_build_object('kind','CURRENT_VISUAL_ARTIFACT','pantalla_id',p_pantalla_id)
+      ),
+      true
+    );
+  end if;
+
+  v:=programacion.fn_input_apply_stage_authority_v2(v,p_pantalla_id,p_family_code,p_version_id);
+
+  -- M3.6: every emitted semantic blocker is explicit and fail-closed.
+  if jsonb_typeof(v->'blockers')='array' and jsonb_array_length(v->'blockers')>0 then
+    select coalesce(jsonb_agg(
+      b.value || jsonb_build_object(
+        'state',typed.state,
+        'uncertainty_type',typed.uncertainty_type,
+        'blocking_stage',typed.blocking_stage,
+        'evidence',jsonb_build_object(
+          'assessment_id',null,
+          'run_id',null,
+          'family_code',p_family_code,
+          'pantalla_id',p_pantalla_id,
+          'version_id',p_version_id,
+          'original_blocker_payload',b.value,
+          'source_refs',coalesce(v->'source_refs','[]'::jsonb),
+          'probe',coalesce(v->'probe','{}'::jsonb),
+          'evidence_phase','SEMANTIC_PRE_PERSISTENCE',
+          'persistence_identity_status','DEFERRED_TO_CURATOR'
+        )
+      ) order by b.ordinality
+    ),'[]'::jsonb)
+    into v_blockers
+    from jsonb_array_elements(v->'blockers') with ordinality b(value,ordinality)
+    cross join lateral (
+      select case
+        when upper(coalesce(b.value->>'code','')) in ('R3_SEMANTIC_FAIL_CLOSED_RECLASSIFICATION','V59_STAGE_SPECIFIC_RECLASSIFICATION')
+          then 'POLICY_RECLASSIFICATION'
+        when upper(coalesce(b.value->>'status',''))='HUMAN_DECISION_REQUIRED'
+          or upper(coalesce(b.value->>'code','')) like '%DECISION_REQUIRED%'
+          or coalesce((b.value->>'human_decision_required')::boolean,false)
+          or b.value ? 'required_decision'
+          then 'HUMAN_DECISION_REQUIRED'
+        when upper(coalesce(b.value->>'code','')) ~ '(CONFLICT|RECONCILIATION)'
+          then 'SOURCE_CONFLICT'
+        when upper(coalesce(b.value->>'code',''))='PRODUCTION_NOT_AUTHORIZED'
+          then 'PRODUCTION_AUTHORIZATION_MISSING'
+        when upper(coalesce(b.value->>'code','')) ~ '(CANDIDATE|NOT_IMPLEMENTATION_READY)'
+          then 'CANDIDATE_AUTHORITY'
+        when upper(coalesce(b.value->>'code','')) ~ '(BINARY|VISUAL|ARTIFACT).*(UNRESOLVED|MISSING|PENDING|NOT_READY)'
+          then 'EXTERNAL_ARTIFACT_UNRESOLVED'
+        when upper(coalesce(b.value->>'code','')) ~ '(APPLICABILITY|SCOPE).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY)'
+          then 'APPLICABILITY_AUTHORITY_MISSING'
+        when upper(coalesce(b.value->>'code','')) ~ '(SEMANTIC|SUBJECT|THREAT|COMPONENT).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY|REVIEW_REQUIRED)'
+          then 'UNRESOLVED_SEMANTIC'
+        when upper(coalesce(b.value->>'code','')) ~ '(BINDING|PROVIDER|RUNTIME|PLATFORM).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY|NOT_AUTHORIZED)'
+          then 'IMPLEMENTATION_DEPENDENCY'
+        when upper(coalesce(b.value->>'code','')) ~ '(QA|E2E|VALIDATION|TEST).*(REQUIRED|PENDING|MISSING|INCOMPLETE|NOT_READY)'
+          then 'QA_EVIDENCE_PENDING'
+        when upper(coalesce(b.value->>'code',''))='SCREEN_STATE_SET_EMPTY'
+          then 'MISSING_SOURCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)'
+          then 'MISSING_SOURCE'
+        when upper(coalesce(b.value->>'code',''))='CANONICAL_TRANSITIONS_INSUFFICIENT'
+          then 'INCOMPLETE_EVIDENCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(PARTIAL|INCOMPLETE)'
+          then 'INCOMPLETE_EVIDENCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(PENDING|NOT_READY|NOT_AUTHORIZED)'
+          then 'DELIVERY_DEPENDENCY'
+        else null
+      end as uncertainty_type
+    ) u
+    cross join lateral (
+      select
+        case
+          when u.uncertainty_type='POLICY_RECLASSIFICATION' then 'INFORMATIONAL'
+          when u.uncertainty_type in ('IMPLEMENTATION_DEPENDENCY','QA_EVIDENCE_PENDING','DELIVERY_DEPENDENCY')
+            and coalesce(nullif(b.value->>'dependency_ref',''),nullif(b.value->>'work_item_ref',''),nullif(b.value->>'platform_work_ref','')) is not null
+            then 'READY_WITH_DEPENDENCY'
+          when u.uncertainty_type is not null then 'BLOCKED'
+          else null
+        end as state,
+        case
+          when upper(coalesce(b.value->>'earliest_blocking_stage','')) in ('STORY','IMPLEMENTATION','QA','PRODUCTION','NONE')
+            then upper(b.value->>'earliest_blocking_stage')
+          when coalesce((b.value->>'blocks_story')::boolean,false) then 'STORY'
+          when coalesce((b.value->>'blocks_implementation')::boolean,false) then 'IMPLEMENTATION'
+          when coalesce((b.value->>'blocks_qa')::boolean,false) then 'QA'
+          when coalesce((b.value->>'blocks_production')::boolean,false) then 'PRODUCTION'
+          when u.uncertainty_type='POLICY_RECLASSIFICATION' then 'NONE'
+          when u.uncertainty_type='PRODUCTION_AUTHORIZATION_MISSING' then 'PRODUCTION'
+          when u.uncertainty_type='QA_EVIDENCE_PENDING' then 'QA'
+          when u.uncertainty_type in ('CANDIDATE_AUTHORITY','IMPLEMENTATION_DEPENDENCY') then 'IMPLEMENTATION'
+          when u.uncertainty_type='APPLICABILITY_AUTHORITY_MISSING' then 'STORY'
+          when u.uncertainty_type='EXTERNAL_ARTIFACT_UNRESOLVED' then 'QA'
+          when upper(coalesce(v->>'story_ready_status','')) in ('BLOCKED','NOT_READY') then 'STORY'
+          when upper(coalesce(v->>'implementation_ready_status','')) in ('BLOCKED','NOT_READY') then 'IMPLEMENTATION'
+          when upper(coalesce(v->>'qa_ready_status','')) in ('BLOCKED','NOT_READY') then 'QA'
+          when upper(coalesce(v->>'production_ready_status','')) in ('BLOCKED','NOT_READY') then 'PRODUCTION'
+          else null
+        end as blocking_stage,
+        u.uncertainty_type
+    ) typed;
+
+    v:=jsonb_set(v,'{blockers}',v_blockers,true);
+
+    if exists (
+      select 1 from jsonb_array_elements(v->'blockers') x(value)
+      where nullif(x.value->>'uncertainty_type','') is null
+         or nullif(x.value->>'state','') is null
+         or nullif(x.value->>'blocking_stage','') is null
+         or jsonb_typeof(x.value->'evidence')<>'object'
+    ) then
+      raise exception 'M36_UNTYPED_BLOCKER:%',p_family_code;
+    end if;
+  end if;
+
+  if v->>'bootstrap_level'='PARTIAL'
+     and jsonb_array_length(coalesce(v->'blockers','[]'::jsonb))=0 then
+    raise exception 'M36_PARTIAL_WITHOUT_TYPED_BLOCKER:%',p_family_code;
+  end if;
+
+
+  if not exists (select 1 from programacion.contratos c where c.version_id=p_version_id and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY' and c.fail_closed and c.estado='defined' and c.especificacion->'families' ? p_family_code and upper(coalesce(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by','')) in ('STORY','IMPLEMENTATION','QA','PRODUCTION')) then raise exception 'INPUT_FAMILY_POLICY_REGISTRY_ENTRY_INVALID:%:%',p_version_id,p_family_code; end if;
+  v:=v || (select jsonb_build_object('eligibility',case when coalesce(v->>'applicability','')='NOT_APPLICABLE' then 'NOT_REQUIRED' when upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by')='STORY' then 'REQUIRED' else 'CONDITIONAL' end,'execution_state',case when coalesce(v->>'applicability','')='NOT_APPLICABLE' then 'NOT_REQUIRED' when coalesce(v->>'coverage_status','')='COMPLETE' then 'DONE' when upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by')='STORY' then 'BLOCKED' else 'PENDING' end,'eligibility_source',jsonb_build_object('contract','INPUT_FAMILY_POLICY_REGISTRY','version_id',p_version_id,'coverage_required_by',upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by'),'authority',c.especificacion->'families'->p_family_code->'stage_policy'->>'authority')) from programacion.contratos c where c.version_id=p_version_id and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY' and c.fail_closed and c.estado='defined');
+
+  v:=v-'classifier_sha256';
+  return v||jsonb_build_object('classifier_sha256',programacion.fn_v09_sha256_jsonb(v));
+end;
+
+===current_source_body END===
+
+===ROW schema_name=programacion function_name=fn_input_governance_bootstrap_classify_v2_ctx current_oid=173868 identity_args=(p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb) current_definition_md5=11bd4af470dffc3d2ae8c1316774c1ba===
+===current_source_body BEGIN===
+
+declare
+  v jsonb;
+  v_blockers jsonb;
+  v_b jsonb;
+  v_new_blockers jsonb:='[]'::jsonb;
+  v_required int:=0;
+  v_resolved int:=0;
+  v_na int:=0;
+  v_pending int:=0;
+  v_unresolved int:=0;
+  v_sem jsonb;
+  v_level text;
+  v_blocker text;
+  v_api jsonb;
+  v_otp_rule jsonb;
+  v_otp_operation text;
+  v_otp_field text;
+  v_otp_operation_ok boolean:=false;
+  v_otp_field_ok boolean:=false;
+begin
+  v:=programacion.fn_input_governance_bootstrap_classify_v1_ctx(p_pantalla_id,p_family_code,p_version_id,p_graph);
+
+  if p_family_code='DESIGN_SYSTEM' and v->>'applicability'<>'NOT_APPLICABLE' then
+    select
+      count(*) filter(where required_for_implementation),
+      count(*) filter(where required_for_implementation and semantic_binding_status='RESOLVED_ID' and component_token_id is not null),
+      count(*) filter(where required_for_implementation and semantic_binding_status='NOT_APPLICABLE'),
+      count(*) filter(where required_for_implementation and semantic_binding_status='PENDING_SEMANTIC_COMPONENT'),
+      count(*) filter(where required_for_implementation and (
+        semantic_binding_status='PENDING_SEMANTIC_COMPONENT'
+        or semantic_binding_status not in ('RESOLVED_ID','NOT_APPLICABLE')
+        or (semantic_binding_status='RESOLVED_ID' and component_token_id is null)
+      ))
+    into v_required,v_resolved,v_na,v_pending,v_unresolved
+    from lf_ops.pantalla_elementos
+    where pantalla_id=p_pantalla_id and status<>'DEPRECATED';
+
+    v:=jsonb_set(
+      v,'{probe,summary}',
+      coalesce(v->'probe'->'summary','{}'::jsonb)
+      || jsonb_build_object(
+        'element_required_semantic_resolved_count',v_resolved,
+        'element_required_semantic_not_applicable_count',v_na,
+        'element_required_semantic_pending_count',v_pending,
+        'element_required_semantic_unresolved_count',v_unresolved,
+        'element_required_count',v_required,
+        'element_required_missing_component_count',v_unresolved,
+        'semantic_gap_contract','DESIGN_ELEMENT_BINDING_SEMANTICS_V1'
+      ),true
+    );
+
+    v_blockers:=coalesce(v->'blockers','[]'::jsonb);
+    for v_b in select value from jsonb_array_elements(v_blockers) loop
+      if v_b->>'code'<>'ELEMENT_REQUIRED_COMPONENT_BINDING_MISSING' then
+        v_new_blockers:=v_new_blockers||jsonb_build_array(v_b);
+      end if;
+    end loop;
+    if v_unresolved>0 then
+      v_new_blockers:=v_new_blockers||jsonb_build_array(jsonb_build_object(
+        'code','ELEMENT_REQUIRED_SEMANTIC_COMPONENT_UNRESOLVED',
+        'count',v_unresolved,
+        'not_applicable_count',v_na,
+        'pending_semantic_component_count',v_pending
+      ));
+    end if;
+    v:=jsonb_set(v,'{blockers}',v_new_blockers,true);
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE' and p_family_code='API_DATA_CONTRACT' then
+    v_api:=programacion.fn_input_api_contract_resolution(p_pantalla_id);
+
+    if coalesce((v_api->>'has_behavioral_contract')::boolean,false)
+       and coalesce((v_api->>'broken_contract_ref_count')::integer,0)=0 then
+
+      if coalesce((v_api->>'has_resolvable_operation_schema_authority')::boolean,false) then
+        v:=jsonb_set(v,'{probe}',v_api,true);
+        v:=jsonb_set(v,'{bootstrap_level}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+
+        if coalesce((v_api->>'has_executable_binding_authority')::boolean,false) then
+          v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+          v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+          v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+        else
+          v:=jsonb_set(v,'{severity}','"P1"'::jsonb,true);
+          v:=jsonb_set(v,'{implementation_ready_status}','"NOT_READY"'::jsonb,true);
+          v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+          v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+          v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+            'code','API_EXECUTABLE_IDENTITY_BINDING_PENDING',
+            'family_code',p_family_code,
+            'bootstrap_level','COMPLETE',
+            'earliest_blocking_stage','IMPLEMENTATION'
+          )),true);
+        end if;
+
+        v:=jsonb_set(v,'{rationale}',to_jsonb(
+          'Provider-agnostic logical LF_AUTH_BOUNDARY request/response schema is canonical and fail-closed. Executable endpoint/grant/provider binding remains independently required for Implementation.'::text
+        ),true);
+
+      else
+        v:=jsonb_set(v,'{probe}',v_api,true);
+        v:=jsonb_set(v,'{bootstrap_level}','"PARTIAL"'::jsonb,true);
+        v:=jsonb_set(v,'{severity}','"P1"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"PARTIAL"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"NOT_READY"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+          'code','API_OPERATION_SCHEMA_SOURCE_INCOMPLETE',
+          'family_code',p_family_code,
+          'bootstrap_level','PARTIAL',
+          'earliest_blocking_stage','IMPLEMENTATION'
+        )),true);
+      end if;
+    end if;
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE' and p_family_code='MFA_OTP_SSO' then
+    select r into v_otp_rule
+    from jsonb_array_elements(
+      coalesce(p_graph->'canonical_contract'->'rules','[]'::jsonb)
+    ) r
+    where r->>'status'='VIGENTE'
+      and r->>'rule_code'='REG_CLIENT_RECOVERY_PHONE_CONTROL_001'
+      and nullif(r->'config'->>'old_phone_otp_operation','') is not null
+      and nullif(r->'config'->>'old_phone_otp_field_code','') is not null
+    limit 1;
+
+    v_otp_operation:=v_otp_rule->'config'->>'old_phone_otp_operation';
+    v_otp_field:=v_otp_rule->'config'->>'old_phone_otp_field_code';
+
+    if v_otp_operation is not null then
+      select exists(
+        select 1
+        from lf_ops.otp_operaciones o
+        join lf_ops.otp_politicas p on p.id=o.politica_id
+        where o.codigo=v_otp_operation
+          and o.estado='ACTIVO'
+          and p.estado='ACTIVO'
+          and p.longitud is not null
+          and p.max_intentos is not null
+          and p.max_reenvios is not null
+          and p.bloqueo_reenvio_min is not null
+      ) into v_otp_operation_ok;
+    end if;
+
+    if v_otp_field is not null then
+      select exists(
+        select 1 from lf_ops.campos c
+        where c.codigo=v_otp_field
+          and c.estado='ACTIVO'
+          and c.es_sensible
+      ) into v_otp_field_ok;
+    end if;
+
+    if v_otp_operation_ok and v_otp_field_ok then
+      v:=jsonb_set(v,'{probe}',jsonb_build_object(
+        'resolution_contract','CLIENT_RECOVERY_OTP_SEMANTICS_V1',
+        'authority_rule','REG_CLIENT_RECOVERY_PHONE_CONTROL_001',
+        'otp_operation_code',v_otp_operation,
+        'otp_operation_active',v_otp_operation_ok,
+        'otp_field_code',v_otp_field,
+        'otp_field_catalog_active_sensitive',v_otp_field_ok,
+        'otp_role','RECOVERY_PROOF_NOT_MFA',
+        'mfa_satisfied_by_recovery_otp',false
+      ),true);
+      v:=jsonb_set(v,'{bootstrap_level}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+      v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+      v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+      v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+      v:=jsonb_set(v,'{rationale}',to_jsonb(
+        'Direct VIGENTE Client recovery rule binds an active governed recovery OTP operation and active sensitive OTP field catalog. The OTP is a recovery proof and does not satisfy MFA.'::text
+      ),true);
+    end if;
+  end if;
+
+  if v->>'applicability'<>'NOT_APPLICABLE'
+     and not (p_family_code='API_DATA_CONTRACT' and v->>'story_ready_status'='READY')
+     and not (p_family_code='MFA_OTP_SSO' and v->>'bootstrap_level'='COMPLETE') then
+    v_sem:=programacion.fn_input_governance_semantic_probe_v3_ctx(p_pantalla_id,p_family_code,p_version_id,p_graph);
+    if coalesce((v_sem->>'handled')::boolean,false) then
+      v_level:=v_sem->>'level';
+      v_blocker:=v_sem->>'blocker_code';
+      v:=jsonb_set(v,'{probe}',v_sem->'probe',true);
+      v:=jsonb_set(v,'{bootstrap_level}',to_jsonb(v_level),true);
+      v:=jsonb_set(v,'{rationale}',to_jsonb(
+        'Governed semantic resolution '||coalesce(v_sem->'probe'->>'resolution_contract','SEMANTIC_PROBE_V1')||': '||
+        p_family_code||'='||v_level||' from direct canonical source readback; absence never implies N/A.'
+      ),true);
+      if v_level='COMPLETE' then
+        v:=jsonb_set(v,'{severity}','"P4"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{well_defined_status}','"COMPLETE"'::jsonb,true);
+        v:=jsonb_set(v,'{story_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"READY"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}','[]'::jsonb,true);
+      else
+        v:=jsonb_set(v,'{severity}','"P0"'::jsonb,true);
+        v:=jsonb_set(v,'{coverage_status}',to_jsonb(case when v_level='PARTIAL' then 'PARTIAL' else 'MISSING' end),true);
+        v:=jsonb_set(v,'{well_defined_status}',to_jsonb(case when v_level='PARTIAL' then 'PARTIAL' else 'MISSING' end),true);
+        v:=jsonb_set(v,'{story_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{implementation_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{qa_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{production_ready_status}','"BLOCKED"'::jsonb,true);
+        v:=jsonb_set(v,'{blockers}',jsonb_build_array(jsonb_build_object(
+          'code',v_blocker,'family_code',p_family_code,'bootstrap_level',v_level
+        )),true);
+      end if;
+      if jsonb_typeof(v_sem->'stage_statuses')='object' then
+        v:=jsonb_set(v,'{severity}',to_jsonb(coalesce(v_sem->>'severity',v->>'severity')),true);
+        v:=jsonb_set(v,'{story_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'story',v->>'story_ready_status')),true);
+        v:=jsonb_set(v,'{implementation_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'implementation',v->>'implementation_ready_status')),true);
+        v:=jsonb_set(v,'{qa_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'qa',v->>'qa_ready_status')),true);
+        v:=jsonb_set(v,'{production_ready_status}',to_jsonb(coalesce(v_sem->'stage_statuses'->>'production',v->>'production_ready_status')),true);
+        v:=jsonb_set(v,'{blockers}',coalesce(v_sem->'stage_blockers','[]'::jsonb),true);
+      end if;
+    end if;
+  end if;
+
+
+  if p_family_code='PERMISSIONS'
+     and v->>'applicability'='NOT_APPLICABLE'
+     and v#>>'{probe,authority_kind}'='EXPLICIT_CANONICAL_EXCLUSION'
+     and jsonb_typeof(v#>'{probe,rule_codes}')='array' then
+    v:=jsonb_set(
+      v,
+      '{source_refs}',
+      coalesce(v->'source_refs','[]'::jsonb)
+      || coalesce((
+        select jsonb_agg(
+          jsonb_build_object('kind','RULE','codigo',x.value)
+          order by x.value
+        )
+        from jsonb_array_elements_text(v#>'{probe,rule_codes}') x(value)
+        where not coalesce(v->'source_refs','[]'::jsonb)
+          @> jsonb_build_array(jsonb_build_object('kind','RULE','codigo',x.value))
+      ),'[]'::jsonb),
+      true
+    );
+  elsif p_family_code='VISUAL_EVIDENCE'
+        and exists (
+          select 1
+          from lf_ops.pantalla_artefactos pa
+          where pa.pantalla_id=p_pantalla_id
+            and pa.is_current=true
+        )
+        and not coalesce(v->'source_refs','[]'::jsonb)
+          @> jsonb_build_array(
+            jsonb_build_object('kind','CURRENT_VISUAL_ARTIFACT','pantalla_id',p_pantalla_id)
+          ) then
+    v:=jsonb_set(
+      v,
+      '{source_refs}',
+      coalesce(v->'source_refs','[]'::jsonb)
+      || jsonb_build_array(
+        jsonb_build_object('kind','CURRENT_VISUAL_ARTIFACT','pantalla_id',p_pantalla_id)
+      ),
+      true
+    );
+  end if;
+
+  v:=programacion.fn_input_apply_stage_authority_v2(v,p_pantalla_id,p_family_code,p_version_id);
+
+  -- M3.6: every emitted semantic blocker is explicit and fail-closed.
+  if jsonb_typeof(v->'blockers')='array' and jsonb_array_length(v->'blockers')>0 then
+    select coalesce(jsonb_agg(
+      b.value || jsonb_build_object(
+        'state',typed.state,
+        'uncertainty_type',typed.uncertainty_type,
+        'blocking_stage',typed.blocking_stage,
+        'evidence',jsonb_build_object(
+          'assessment_id',null,
+          'run_id',null,
+          'family_code',p_family_code,
+          'pantalla_id',p_pantalla_id,
+          'version_id',p_version_id,
+          'original_blocker_payload',b.value,
+          'source_refs',coalesce(v->'source_refs','[]'::jsonb),
+          'probe',coalesce(v->'probe','{}'::jsonb),
+          'evidence_phase','SEMANTIC_PRE_PERSISTENCE',
+          'persistence_identity_status','DEFERRED_TO_CURATOR'
+        )
+      ) order by b.ordinality
+    ),'[]'::jsonb)
+    into v_blockers
+    from jsonb_array_elements(v->'blockers') with ordinality b(value,ordinality)
+    cross join lateral (
+      select case
+        when upper(coalesce(b.value->>'code','')) in ('R3_SEMANTIC_FAIL_CLOSED_RECLASSIFICATION','V59_STAGE_SPECIFIC_RECLASSIFICATION')
+          then 'POLICY_RECLASSIFICATION'
+        when upper(coalesce(b.value->>'status',''))='HUMAN_DECISION_REQUIRED'
+          or upper(coalesce(b.value->>'code','')) like '%DECISION_REQUIRED%'
+          or coalesce((b.value->>'human_decision_required')::boolean,false)
+          or b.value ? 'required_decision'
+          then 'HUMAN_DECISION_REQUIRED'
+        when upper(coalesce(b.value->>'code','')) ~ '(CONFLICT|RECONCILIATION)'
+          then 'SOURCE_CONFLICT'
+        when upper(coalesce(b.value->>'code',''))='PRODUCTION_NOT_AUTHORIZED'
+          then 'PRODUCTION_AUTHORIZATION_MISSING'
+        when upper(coalesce(b.value->>'code','')) ~ '(CANDIDATE|NOT_IMPLEMENTATION_READY)'
+          then 'CANDIDATE_AUTHORITY'
+        when upper(coalesce(b.value->>'code','')) ~ '(BINARY|VISUAL|ARTIFACT).*(UNRESOLVED|MISSING|PENDING|NOT_READY)'
+          then 'EXTERNAL_ARTIFACT_UNRESOLVED'
+        when upper(coalesce(b.value->>'code','')) ~ '(APPLICABILITY|SCOPE).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY)'
+          then 'APPLICABILITY_AUTHORITY_MISSING'
+        when upper(coalesce(b.value->>'code','')) ~ '(SEMANTIC|SUBJECT|THREAT|COMPONENT).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY|REVIEW_REQUIRED)'
+          then 'UNRESOLVED_SEMANTIC'
+        when upper(coalesce(b.value->>'code','')) ~ '(BINDING|PROVIDER|RUNTIME|PLATFORM).*(UNRESOLVED|MISSING|PENDING|INCOMPLETE|NOT_READY|NOT_AUTHORIZED)'
+          then 'IMPLEMENTATION_DEPENDENCY'
+        when upper(coalesce(b.value->>'code','')) ~ '(QA|E2E|VALIDATION|TEST).*(REQUIRED|PENDING|MISSING|INCOMPLETE|NOT_READY)'
+          then 'QA_EVIDENCE_PENDING'
+        when upper(coalesce(b.value->>'code',''))='SCREEN_STATE_SET_EMPTY'
+          then 'MISSING_SOURCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(MISSING|NOT_LINKED|SOURCE.*INCOMPLETE|SOURCE_IDENTIFICATION|CANONICAL.*MISSING|REQUIREMENT.*MISSING|REFERENCE_UNRESOLVED)'
+          then 'MISSING_SOURCE'
+        when upper(coalesce(b.value->>'code',''))='CANONICAL_TRANSITIONS_INSUFFICIENT'
+          then 'INCOMPLETE_EVIDENCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(PARTIAL|INCOMPLETE)'
+          then 'INCOMPLETE_EVIDENCE'
+        when upper(coalesce(b.value->>'code','')) ~ '(PENDING|NOT_READY|NOT_AUTHORIZED)'
+          then 'DELIVERY_DEPENDENCY'
+        else null
+      end as uncertainty_type
+    ) u
+    cross join lateral (
+      select
+        case
+          when u.uncertainty_type='POLICY_RECLASSIFICATION' then 'INFORMATIONAL'
+          when u.uncertainty_type in ('IMPLEMENTATION_DEPENDENCY','QA_EVIDENCE_PENDING','DELIVERY_DEPENDENCY')
+            and coalesce(nullif(b.value->>'dependency_ref',''),nullif(b.value->>'work_item_ref',''),nullif(b.value->>'platform_work_ref','')) is not null
+            then 'READY_WITH_DEPENDENCY'
+          when u.uncertainty_type is not null then 'BLOCKED'
+          else null
+        end as state,
+        case
+          when upper(coalesce(b.value->>'earliest_blocking_stage','')) in ('STORY','IMPLEMENTATION','QA','PRODUCTION','NONE')
+            then upper(b.value->>'earliest_blocking_stage')
+          when coalesce((b.value->>'blocks_story')::boolean,false) then 'STORY'
+          when coalesce((b.value->>'blocks_implementation')::boolean,false) then 'IMPLEMENTATION'
+          when coalesce((b.value->>'blocks_qa')::boolean,false) then 'QA'
+          when coalesce((b.value->>'blocks_production')::boolean,false) then 'PRODUCTION'
+          when u.uncertainty_type='POLICY_RECLASSIFICATION' then 'NONE'
+          when u.uncertainty_type='PRODUCTION_AUTHORIZATION_MISSING' then 'PRODUCTION'
+          when u.uncertainty_type='QA_EVIDENCE_PENDING' then 'QA'
+          when u.uncertainty_type in ('CANDIDATE_AUTHORITY','IMPLEMENTATION_DEPENDENCY') then 'IMPLEMENTATION'
+          when u.uncertainty_type='APPLICABILITY_AUTHORITY_MISSING' then 'STORY'
+          when u.uncertainty_type='EXTERNAL_ARTIFACT_UNRESOLVED' then 'QA'
+          when upper(coalesce(v->>'story_ready_status','')) in ('BLOCKED','NOT_READY') then 'STORY'
+          when upper(coalesce(v->>'implementation_ready_status','')) in ('BLOCKED','NOT_READY') then 'IMPLEMENTATION'
+          when upper(coalesce(v->>'qa_ready_status','')) in ('BLOCKED','NOT_READY') then 'QA'
+          when upper(coalesce(v->>'production_ready_status','')) in ('BLOCKED','NOT_READY') then 'PRODUCTION'
+          else null
+        end as blocking_stage,
+        u.uncertainty_type
+    ) typed;
+
+    v:=jsonb_set(v,'{blockers}',v_blockers,true);
+
+    if exists (
+      select 1 from jsonb_array_elements(v->'blockers') x(value)
+      where nullif(x.value->>'uncertainty_type','') is null
+         or nullif(x.value->>'state','') is null
+         or nullif(x.value->>'blocking_stage','') is null
+         or jsonb_typeof(x.value->'evidence')<>'object'
+    ) then
+      raise exception 'M36_UNTYPED_BLOCKER:%',p_family_code;
+    end if;
+  end if;
+
+  if v->>'bootstrap_level'='PARTIAL'
+     and jsonb_array_length(coalesce(v->'blockers','[]'::jsonb))=0 then
+    raise exception 'M36_PARTIAL_WITHOUT_TYPED_BLOCKER:%',p_family_code;
+  end if;
+
+
+  if not exists (select 1 from programacion.contratos c where c.version_id=p_version_id and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY' and c.fail_closed and c.estado='defined' and c.especificacion->'families' ? p_family_code and upper(coalesce(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by','')) in ('STORY','IMPLEMENTATION','QA','PRODUCTION')) then raise exception 'INPUT_FAMILY_POLICY_REGISTRY_ENTRY_INVALID:%:%',p_version_id,p_family_code; end if;
+  v:=v || (select jsonb_build_object('eligibility',case when coalesce(v->>'applicability','')='NOT_APPLICABLE' then 'NOT_REQUIRED' when upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by')='STORY' then 'REQUIRED' else 'CONDITIONAL' end,'execution_state',case when coalesce(v->>'applicability','')='NOT_APPLICABLE' then 'NOT_REQUIRED' when coalesce(v->>'coverage_status','')='COMPLETE' then 'DONE' when upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by')='STORY' then 'BLOCKED' else 'PENDING' end,'eligibility_source',jsonb_build_object('contract','INPUT_FAMILY_POLICY_REGISTRY','version_id',p_version_id,'coverage_required_by',upper(c.especificacion->'families'->p_family_code->'stage_policy'->>'coverage_required_by'),'authority',c.especificacion->'families'->p_family_code->'stage_policy'->>'authority')) from programacion.contratos c where c.version_id=p_version_id and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY' and c.fail_closed and c.estado='defined');
+
+  v:=v-'classifier_sha256';
+  return v||jsonb_build_object('classifier_sha256',programacion.fn_v09_sha256_jsonb(v));
+end;
+
+===current_source_body END===
+
+===ROW schema_name=programacion function_name=fn_input_governance_curator_plan_v1 current_oid=236990 identity_args=(p_pantalla_id integer, p_force_selftest boolean, p_completed_run_id bigint) current_definition_md5=d832e7982d3d642fbcbb5bc3e22d1cd2===
+===current_source_body BEGIN===
+
+declare
+  v_completed bigint;
+  v_scope jsonb;
+  v_mode text;
+  v_delta jsonb;
+  v_changed_sources integer:=0;
+  v_affected_families integer:=0;
+  v_successor_required boolean:=false;
+  v_resolution_errors integer:=0;
+  v_run_state text;
+  v_current boolean:=false;
+  v_strategy text;
+  v_reason text;
+begin
+  if p_completed_run_id is not null then
+    select id,scope
+      into v_completed,v_scope
+    from programacion.input_readiness_runs
+    where id=p_completed_run_id
+      and pantalla_id=p_pantalla_id
+      and status='COMPLETED'
+      and version_id=public.fn_lf_version_compatibility_current_version_id_v1(
+        'PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT'
+      );
+  else
+    select id,scope
+      into v_completed,v_scope
+    from programacion.input_readiness_runs
+    where version_id=public.fn_lf_version_compatibility_current_version_id_v1(
+            'PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT'
+          )
+      and pantalla_id=p_pantalla_id
+      and status='COMPLETED'
+    order by id desc
+    limit 1;
+  end if;
+
+  if v_completed is null then
+    return jsonb_build_object(
+      'schema_version','INPUT_GOVERNANCE_CURATOR_STRATEGY_PLAN_V1',
+      'strategy','BOOTSTRAP',
+      'reason','NO_COMPLETED_RUN',
+      'completed_run_id',null,
+      'write_performed',false
+    );
+  end if;
+
+  if p_force_selftest then
+    return jsonb_build_object(
+      'schema_version','INPUT_GOVERNANCE_CURATOR_STRATEGY_PLAN_V1',
+      'strategy','REBIND',
+      'reason','FORCE_SELFTEST',
+      'completed_run_id',v_completed,
+      'write_performed',false
+    );
+  end if;
+
+  v_mode:=coalesce(v_scope->>'mode','');
+  if v_mode not in (
+    'GOVERNED_CANONICAL_BOOTSTRAP_V1',
+    'RUNTIME_GOVERNED_RECURATION_V2',
+    'RUNTIME_ASSERTION_REBIND_SAFE_SUCCESSOR_V1'
+  ) then
+    return jsonb_build_object(
+      'schema_version','INPUT_GOVERNANCE_CURATOR_STRATEGY_PLAN_V1',
+      'strategy','BLOCK',
+      'reason','AMBIGUOUS_OR_UNSUPPORTED_SCOPE_MODE',
+      'completed_run_id',v_completed,
+      'scope_mode',v_mode,
+      'write_performed',false
+    );
+  end if;
+
+  v_delta:=programacion.fn_input_freshness_delta(v_completed);
+  -- Reuse exact plan delta for the selected writer; the request identity is checked downstream.
+  if nullif(current_setting('lf.input_request_context_v1',true),'') is not null then
+    perform set_config('lf.input_request_freshness_delta_cached_v1',
+      jsonb_build_object('run_id',v_completed,'pantalla_id',p_pantalla_id,'delta',v_delta)::text,true);
+  end if;
+  v_run_state:=coalesce(v_delta->>'run_state','');
+  v_changed_sources:=coalesce((v_delta#>>'{summary,changed_source_count}')::integer,0);
+  v_affected_families:=coalesce((v_delta#>>'{summary,affected_family_count}')::integer,0);
+  v_successor_required:=coalesce((v_delta#>>'{summary,use_successor_required}')::boolean,false);
+
+  select count(*)
+    into v_resolution_errors
+  from jsonb_array_elements(coalesce(v_delta->'source_changes','[]'::jsonb)) x(value)
+  where x.value->>'state'='RESOLUTION_ERROR';
+
+  if v_resolution_errors>0 then
+    v_strategy:='BLOCK';
+    v_reason:='SOURCE_RESOLUTION_ERROR';
+  elsif v_run_state='STALE' then
+    if v_changed_sources<=0 then
+      v_strategy:='BLOCK';
+      v_reason:='AMBIGUOUS_STALE_WITHOUT_CHANGED_SOURCE';
+    elsif v_successor_required then
+      v_strategy:='FULL_RECURATE';
+      v_reason:='STALE_SUCCESSOR_REQUIRED';
+    elsif v_affected_families=0 then
+      v_strategy:='REBIND';
+      v_reason:='STALE_NON_SEMANTIC_SOURCE_CHANGE';
+    else
+      v_strategy:='SOURCE_STALE_RECURATE';
+      v_reason:='STALE_AFFECTED_FAMILIES';
+    end if;
+  elsif v_run_state='CURRENT' then
+    v_current:=programacion.fn_input_readiness_run_is_current_cached_v1(v_completed);
+    if v_current then
+      v_strategy:='NOOP';
+      v_reason:='COMPLETED_RUN_CURRENT';
+    else
+      v_strategy:='FULL_RECURATE';
+      v_reason:='CURRENT_FRESHNESS_BUT_AUTHORITY_NOT_CURRENT';
+    end if;
+  else
+    v_strategy:='BLOCK';
+    v_reason:='AMBIGUOUS_RUN_STATE';
+  end if;
+
+  return jsonb_build_object(
+    'schema_version','INPUT_GOVERNANCE_CURATOR_STRATEGY_PLAN_V1',
+    'strategy',v_strategy,
+    'reason',v_reason,
+    'completed_run_id',v_completed,
+    'scope_mode',v_mode,
+    'run_state',v_run_state,
+    'changed_source_count',v_changed_sources,
+    'affected_family_count',v_affected_families,
+    'successor_required',v_successor_required,
+    'resolution_error_count',v_resolution_errors,
+    'run_current',v_current,
+    'write_performed',false
+  );
+end;
+
+===current_source_body END===
+
+===ROW schema_name=programacion function_name=fn_input_validator_semantic_scope_v1 current_oid=251422 identity_args=(p_run_id bigint) current_definition_md5=6a1ca22e1338c294da284b701d664071===
+===current_source_body BEGIN===
+
+DECLARE
+  v_scope jsonb;
+  v_selection jsonb;
+  v_version bigint;
+  v_families jsonb;
+  v_result text[]:=ARRAY[]::text[];
+  v_code text;
+  v_mode text;
+BEGIN
+  SELECT r.scope,r.version_id INTO v_scope,v_version
+  FROM programacion.input_readiness_runs r WHERE r.id=p_run_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'VALIDATOR_SCOPE_RUN_NOT_FOUND:%',p_run_id;
+  END IF;
+
+  -- Every run must state its intended validation mode. Absence is not
+  -- equivalent to "no independent semantic proof needed".
+  -- SOURCE_INTEGRITY_ONLY is an explicit, non-promotable test mode.
+  -- SELECTED_SEMANTIC_COMPARISON must enumerate the selected families.
+  -- Neither mode grants APPLIED / N/A or production readiness.
+  v_mode:=v_scope->>'validator_semantic_mode';
+  v_selection:=v_scope->'validator_semantic_comparison_families';
+  IF v_mode IS NULL OR v_selection IS NULL THEN
+    RAISE EXCEPTION 'VALIDATOR_SEMANTIC_SCOPE_UNDECLARED:%',p_run_id;
+  END IF;
+  IF v_mode NOT IN ('SOURCE_INTEGRITY_ONLY','SELECTED_SEMANTIC_COMPARISON')
+      OR jsonb_typeof(v_selection) IS DISTINCT FROM 'array'
+      OR v_scope->>'semantic_promotion_authorized' IS DISTINCT FROM 'false' THEN
+    RAISE EXCEPTION 'VALIDATOR_SEMANTIC_SCOPE_MODE_INVALID:%',p_run_id;
+  END IF;
+  IF v_mode='SOURCE_INTEGRITY_ONLY' AND jsonb_array_length(v_selection)<>0 THEN
+    RAISE EXCEPTION 'VALIDATOR_SOURCE_ONLY_SCOPE_MUST_BE_EMPTY:%',p_run_id;
+  END IF;
+  IF v_mode='SELECTED_SEMANTIC_COMPARISON'
+     AND jsonb_array_length(v_selection)=0 THEN
+    RAISE EXCEPTION 'VALIDATOR_SELECTED_SEMANTIC_FAMILIES_REQUIRED:%',p_run_id;
+  END IF;
+
+  SELECT c.especificacion->'families' INTO v_families
+  FROM programacion.contratos c
+  WHERE c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY'
+    AND c.version_id=v_version AND c.estado='defined'
+  ORDER BY c.id DESC LIMIT 1;
+  IF v_families IS NULL OR jsonb_typeof(v_families)<>'object' THEN
+    RAISE EXCEPTION 'VALIDATOR_SEMANTIC_FAMILY_REGISTRY_MISSING:%',p_run_id;
+  END IF;
+
+  IF EXISTS(
+    SELECT 1 FROM jsonb_array_elements(v_selection) t(value)
+    WHERE jsonb_typeof(value)<>'string'
+       OR value#>>'{}' !~ '^[A-Z][A-Z0-9_]*$'
+  ) THEN
+    RAISE EXCEPTION 'VALIDATOR_SEMANTIC_COMPARISON_FAMILY_INVALID:%',p_run_id;
+  END IF;
+  FOR v_code IN SELECT x.value FROM jsonb_array_elements_text(v_selection) x(value) LOOP
+    IF v_code=ANY(v_result) THEN
+      RAISE EXCEPTION 'VALIDATOR_SEMANTIC_COMPARISON_DUPLICATE:%',v_code;
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM programacion.input_family_assessments a
+      WHERE a.run_id=p_run_id AND a.family_code=v_code
+    ) OR coalesce(v_families->v_code->'validator_oracle_strategy'->>'strategy','')='' THEN
+      RAISE EXCEPTION 'VALIDATOR_SEMANTIC_COMPARISON_FAMILY_UNREGISTERED:%',v_code;
+    END IF;
+    v_result:=array_append(v_result,v_code);
+  END LOOP;
+  RETURN v_result;
+END;
+
+===current_source_body END===

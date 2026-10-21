@@ -1,0 +1,148 @@
+QUERY_RESULT Q19 (file form)
+coordinator_note: read-only result of Q19 as returned by the database connector: 2 rows (function_oid 59598 and 67592, in ORDER BY s.oid order), none truncated. The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: (a) md5 and length of each function_source text equal the returned source_md5 / source_length (0b8363aec1efe57a04f504774a375983 / 9386 and 12d651c3f73c8edf4a19f244ccdce225 / 5367); (b) an md5 over the canonical text of both rows (6 columns; lexical_call_tokens as jsonb text, elements ordered by called_name; function_source multi-line, as stored) computed in the database equals the md5 of this file's body: 038f5997c396ad008dca65d8d44babdc. Observation class: CURRENT.
+Columns (in order): function_oid|function_identity|source_md5|source_length|lexical_call_tokens|function_source
+Columns constant across all rows (omitted from every row): {"observation_scope": "CURRENT_FINAL_UPDATE_GUARD_SOURCE_NOT_EXECUTION"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 43127dbd7df78cab3770ee34847cb5942f02819fe69b157f86d8533bafb42004
+---BEGIN ROWS---
+59598|programacion.fn_guard_input_family_assessment_update()|0b8363aec1efe57a04f504774a375983|9386|[{"called_name": "fn_ig_m107_manifest_guard_bundle_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_assertion_is_relevant", "explicit_schema": "programacion"}, {"called_name": "fn_input_evaluate_assertion", "explicit_schema": "programacion"}, {"called_name": "fn_input_governance_assertion_relevant", "explicit_schema": "programacion"}, {"called_name": "fn_input_validator_evidence_rehydrate_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_validator_storage_compaction_check_v1", "explicit_schema": "programacion"}, {"called_name": "fn_v09_sha256_jsonb", "explicit_schema": "programacion"}]|
+declare
+  v_logical_validator_evidence jsonb;
+  v_storage_compaction jsonb;
+  v_payload jsonb; v_run_status text; v_run_sha text; v_curator_identity text; v_validator_identity text; v_validator_component_id bigint;
+  v_version_id bigint; v_pantalla_id integer; v_run_contract_revision text; v_run_contract_sha text;
+  v_contract_revision text; v_contract_payload jsonb; v_contract_sha text;
+  v_bundle jsonb; v_bad_assertions integer; v_assertion jsonb; v_eval jsonb; v_expected_result text; v_governance_family boolean;
+begin
+  -- R5-C: terminal receipts remain immutable except for exact representation-only STORAGE_COMPACTION.
+  if old.validator_outcome<>'PENDING'
+     and new.validator_evidence is distinct from old.validator_evidence then
+    v_storage_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
+      to_jsonb(old),to_jsonb(new)
+    );
+    if coalesce((v_storage_compaction->>'allowed')::boolean,false) is true then
+      return new;
+    end if;
+    raise exception 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
+      old.family_code,
+      coalesce(v_storage_compaction->>'code','STORAGE_COMPACTION_REJECTED');
+  end if;
+
+  if new.run_id is distinct from old.run_id or new.family_code is distinct from old.family_code or new.severity is distinct from old.severity or new.applicability is distinct from old.applicability or new.coverage_status is distinct from old.coverage_status or new.well_defined_status is distinct from old.well_defined_status or new.story_ready_status is distinct from old.story_ready_status or new.implementation_ready_status is distinct from old.implementation_ready_status or new.qa_ready_status is distinct from old.qa_ready_status or new.production_ready_status is distinct from old.production_ready_status or new.source_refs is distinct from old.source_refs or new.rationale is distinct from old.rationale or new.blockers is distinct from old.blockers or new.negative_requirements is distinct from old.negative_requirements or new.test_obligations is distinct from old.test_obligations or new.freshness is distinct from old.freshness or new.curator_evidence is distinct from old.curator_evidence or new.curator_sha256 is distinct from old.curator_sha256 or new.subject_coverage is distinct from old.subject_coverage or new.threat_coverage is distinct from old.threat_coverage or new.semantic_depth_sha256 is distinct from old.semantic_depth_sha256 or new.created_at is distinct from old.created_at then raise exception 'CURATOR_FIELDS_IMMUTABLE:%',old.family_code; end if;
+  if old.validator_outcome<>'PENDING' then raise exception 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code; end if;
+  if new.validator_outcome='PENDING' then raise exception 'VALIDATOR_UPDATE_MUST_BE_TERMINAL:%',old.family_code; end if;
+  v_bundle:=programacion.fn_ig_m107_manifest_guard_bundle_v1(old.run_id);
+  IF coalesce((v_bundle#>>'{g1,continuation_current}')::boolean,false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'INPUT_GOVERNANCE_CONTINUATION_CURRENTNESS_BLOCKED:table=%:run=%:code=%',
+      TG_TABLE_NAME,old.run_id,coalesce(v_bundle#>>'{g1,code}','CURRENTNESS_UNKNOWN');
+  END IF;
+  v_logical_validator_evidence:=programacion.fn_input_validator_evidence_rehydrate_v1(new.validator_evidence);
+  select r.status,r.source_snapshot_sha256,r.curator_identity,r.validator_identity,r.validator_component_id,r.version_id,r.pantalla_id,r.contract_revision,r.contract_snapshot_sha256 into v_run_status,v_run_sha,v_curator_identity,v_validator_identity,v_validator_component_id,v_version_id,v_pantalla_id,v_run_contract_revision,v_run_contract_sha from programacion.input_readiness_runs r where r.id=old.run_id;
+  if v_run_status<>'VALIDATING' then raise exception 'VALIDATOR_REQUIRES_VALIDATING_RUN:%',old.family_code; end if;
+  if v_validator_component_id is null then raise exception 'RUN_VALIDATOR_COMPONENT_REQUIRED'; end if;
+  if v_validator_identity is null or v_validator_identity=v_curator_identity then raise exception 'VALIDATOR_IDENTITY_NOT_INDEPENDENT'; end if;
+  if new.validator_identity is distinct from v_validator_identity then raise exception 'VALIDATOR_IDENTITY_MISMATCH:%',old.family_code; end if;
+  select c.especificacion->>'contract_revision',jsonb_build_object('id',c.id,'version_id',c.version_id,'contrato_codigo',c.contrato_codigo,'fail_closed',c.fail_closed,'estado',c.estado,'especificacion',c.especificacion) into v_contract_revision,v_contract_payload from programacion.contratos c where c.version_id=v_version_id and c.contrato_codigo='INPUT_READINESS_CONTRACT';
+  v_contract_sha:=programacion.fn_v09_sha256_jsonb(v_contract_payload);
+  if v_run_contract_revision is distinct from v_contract_revision or v_run_contract_sha is distinct from v_contract_sha then raise exception 'INPUT_READINESS_CONTRACT_PIN_STALE_DURING_VALIDATION:%',old.family_code; end if;
+  if new.validator_assessed_at is null then new.validator_assessed_at:=now(); end if;
+  if jsonb_typeof(v_logical_validator_evidence)<>'object' or v_logical_validator_evidence='{}'::jsonb then raise exception 'VALIDATOR_EVIDENCE_REQUIRED:%',old.family_code; end if;
+  if v_logical_validator_evidence->>'source_snapshot_sha256' is distinct from v_run_sha then raise exception 'VALIDATOR_EVIDENCE_SOURCE_SNAPSHOT_MISMATCH:%',old.family_code; end if;
+  if v_logical_validator_evidence->>'curator_sha256' is distinct from old.curator_sha256 then raise exception 'VALIDATOR_EVIDENCE_CURATOR_HASH_MISMATCH:%',old.family_code; end if;
+  if coalesce((v_logical_validator_evidence->>'direct_source_readback')::boolean,false) is not true then raise exception 'VALIDATOR_DIRECT_SOURCE_READBACK_REQUIRED:%',old.family_code; end if;
+  if v_logical_validator_evidence->>'execution_mode'<>'INDEPENDENT_VALIDATOR' then raise exception 'VALIDATOR_EXECUTION_MODE_REQUIRED:%',old.family_code; end if;
+  if coalesce(v_logical_validator_evidence->>'contract_revision','')<>v_contract_revision then raise exception 'VALIDATOR_EVIDENCE_CONTRACT_REVISION_MISMATCH:%',old.family_code; end if;
+  if v_contract_revision in ('5.7','5.8','5.9') and v_logical_validator_evidence->>'semantic_depth_sha256' is distinct from old.semantic_depth_sha256 then raise exception 'VALIDATOR_EVIDENCE_SEMANTIC_DEPTH_MISMATCH:%',old.family_code; end if;
+  if jsonb_typeof(v_logical_validator_evidence->'assertions')<>'array' or jsonb_array_length(v_logical_validator_evidence->'assertions')=0 then raise exception 'VALIDATOR_ASSERTIONS_REQUIRED:%',old.family_code; end if;
+  select count(*) into v_bad_assertions from jsonb_array_elements(v_logical_validator_evidence->'assertions') a where jsonb_typeof(a)<>'object' or not (a?'actual') or not (a?'expected') or not (a?'operator') or not (a?'source_ref') or not (a?'path');
+  if v_bad_assertions>0 then raise exception 'VALIDATOR_ASSERTION_SCHEMA_INVALID:%',old.family_code; end if;
+  v_governance_family:=old.family_code in ('SOURCE_AUTHORITY_PROVENANCE','FRESHNESS_INVALIDATION','NEGATIVE_REQUIREMENTS','CONFLICT_PRECEDENCE','APPLICABILITY_READINESS');
+  for v_assertion in select value from jsonb_array_elements(v_logical_validator_evidence->'assertions') loop
+    if v_assertion->'source_ref'->>'kind' in ('SCREEN','SCREEN_RULE_SET','SCREEN_STATE_SET','CURRENT_VISUAL_ARTIFACT','CAPABILITY_ABSENCE','SCREEN_CANONICAL_GRAPH') then if not (v_assertion->'source_ref'?'pantalla_id') or (v_assertion->'source_ref'->>'pantalla_id')::integer<>v_pantalla_id then raise exception 'VALIDATOR_SCREEN_SOURCE_REF_REQUIRES_EXPLICIT_PANTALLA_ID:%',old.family_code; end if; end if;
+    if v_governance_family then if not programacion.fn_input_governance_assertion_relevant(old.family_code,v_assertion->'source_ref',v_assertion->'path') then raise exception 'GOVERNANCE_VALIDATOR_ASSERTION_REQUIRES_INDEPENDENT_AUTHORITY:%',old.family_code; end if; else if not programacion.fn_input_assertion_is_relevant(old.family_code,v_assertion->'source_ref',v_assertion->'path') then raise exception 'VALIDATOR_ASSERTION_NOT_RELEVANT:%',old.family_code; end if; end if;
+    -- Same source evaluator and independent relevance gate, but one SQL resolution.
+    v_eval:=programacion.fn_input_evaluate_assertion(old.run_id,old.family_code,v_assertion);
+    v_expected_result:=case when coalesce((v_eval->>'passed')::boolean,false) then 'PASS' else 'FAIL' end;
+    if upper(v_assertion->>'result')<>v_expected_result then raise exception 'ASSERTION_STORED_RESULT_MISMATCH:%',old.family_code; end if;
+    if v_assertion->>'source_observed_sha256' is distinct from v_eval->>'source_observed_sha256' then raise exception 'ASSERTION_STORED_SOURCE_SHA_MISMATCH:%',old.family_code; end if;
+    if new.validator_outcome='PASS' and v_expected_result<>'PASS' then raise exception 'VALIDATOR_PASS_CONTAINS_FAILED_ASSERTION:%',old.family_code; end if;
+  end loop;
+  IF coalesce((v_bundle->>'full_manifest_current')::boolean,false) IS NOT TRUE THEN raise exception 'SOURCE_SNAPSHOT_STALE_DURING_VALIDATION:%',old.family_code; END IF;
+  v_payload:=jsonb_build_object('curator_sha256',old.curator_sha256,'semantic_depth_sha256',old.semantic_depth_sha256,'source_snapshot_sha256',v_run_sha,'validator_outcome',new.validator_outcome,'validator_findings',new.validator_findings,'validator_evidence',v_logical_validator_evidence,'validator_identity',new.validator_identity,'validator_assessed_at',new.validator_assessed_at); new.validator_sha256:=programacion.fn_v09_sha256_jsonb(v_payload); return new;
+end;
+
+67592|programacion.fn_guard_input_gap_proposal_update_v512()|12d651c3f73c8edf4a19f244ccdce225|5367|[{"called_name": "fn_ig_m107_d_proposal_bundle_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_resolve_source_ref", "explicit_schema": "programacion"}, {"called_name": "fn_v09_sha256_jsonb", "explicit_schema": "programacion"}]|
+declare
+  v_run record;
+  v_payload jsonb;
+  v_ref jsonb;
+  v_observed jsonb;
+  v_readbacks jsonb := '[]'::jsonb;
+  v_bundle jsonb;
+  v_graph_sha text;
+  v_graph_count integer;
+  v_direct_mode boolean;
+begin
+  if new.run_id is distinct from old.run_id or new.assessment_id is distinct from old.assessment_id or new.family_code is distinct from old.family_code or new.gap_code is distinct from old.gap_code or new.proposal_kind is distinct from old.proposal_kind or new.proposed_payload is distinct from old.proposed_payload or new.canonical_target is distinct from old.canonical_target or new.source_refs is distinct from old.source_refs or new.evidence_refs is distinct from old.evidence_refs or new.confidence is distinct from old.confidence or new.stage_impact is distinct from old.stage_impact or new.contradictions_checked is distinct from old.contradictions_checked or new.curator_identity is distinct from old.curator_identity or new.curator_execution_id is distinct from old.curator_execution_id or new.curator_sha256 is distinct from old.curator_sha256 or new.created_at is distinct from old.created_at then
+    raise exception 'V512_PROPOSAL_CURATOR_FIELDS_IMMUTABLE:%',old.id;
+  end if;
+  if old.validator_outcome<>'PENDING' then raise exception 'V512_PROPOSAL_VALIDATOR_RECEIPT_IMMUTABLE:%',old.id; end if;
+  v_bundle:=programacion.fn_ig_m107_d_proposal_bundle_v1(old.run_id);
+  IF coalesce((v_bundle#>>'{g1,continuation_current}')::boolean,false) IS NOT TRUE THEN
+    RAISE EXCEPTION 'INPUT_GOVERNANCE_CONTINUATION_CURRENTNESS_BLOCKED:table=%:run=%:code=%',
+      TG_TABLE_NAME,old.run_id,coalesce(v_bundle#>>'{g1,code}','CURRENTNESS_UNKNOWN');
+  END IF;
+  if new.validator_outcome='PENDING' then raise exception 'V512_PROPOSAL_VALIDATION_MUST_BE_TERMINAL:%',old.id; end if;
+  select * into v_run from programacion.input_readiness_runs where id=old.run_id;
+  if v_run.status<>'VALIDATING' then raise exception 'V512_PROPOSAL_VALIDATOR_REQUIRES_VALIDATING_RUN:%',old.run_id; end if;
+  if new.validator_identity is null or new.validator_identity=v_run.curator_identity or new.validator_identity is distinct from v_run.validator_identity then
+    raise exception 'V512_PROPOSAL_VALIDATOR_NOT_INDEPENDENT:%',old.id;
+  end if;
+  if new.validator_evidence='{}'::jsonb then raise exception 'V512_PROPOSAL_VALIDATOR_EVIDENCE_REQUIRED:%',old.id; end if;
+  if coalesce((new.validator_evidence->>'direct_source_readback')::boolean,false) is not true then raise exception 'V512_PROPOSAL_DIRECT_SOURCE_READBACK_REQUIRED:%',old.id; end if;
+  if new.validator_evidence->>'source_snapshot_sha256' is distinct from v_run.source_snapshot_sha256 then raise exception 'V512_PROPOSAL_SOURCE_SNAPSHOT_MISMATCH:%',old.id; end if;
+
+  if coalesce((v_bundle->>'full_manifest_current')::boolean,false) IS NOT TRUE then
+    raise exception 'V512_PROPOSAL_SOURCE_SNAPSHOT_STALE:%',old.id;
+  end if;
+
+  v_direct_mode:=coalesce(new.validator_evidence->>'source_readback_scheme','LEGACY')='DIRECT_GRAPH_SHA_V1';
+  if new.validator_evidence ? 'source_readback_scheme' and not v_direct_mode then
+    raise exception 'V512_PROPOSAL_SOURCE_READBACK_SCHEME_UNSUPPORTED:%',old.id;
+  end if;
+  if v_direct_mode then
+    select count(*),max(e->>'observed_sha256') into v_graph_count,v_graph_sha
+    from jsonb_array_elements(v_bundle->'manifest_receipts') e
+    where e->'ref'='{"kind":"SCREEN_CANONICAL_GRAPH"}'::jsonb;
+    if v_graph_count<>1 or v_graph_sha !~ '^[0-9a-f]{64}$' then
+      raise exception 'V512_PROPOSAL_GRAPH_RECEIPT_MISSING:%',old.id;
+    end if;
+  end if;
+  for v_ref in select value from jsonb_array_elements(old.source_refs)
+  loop
+    if coalesce(v_ref->>'kind','')='INPUT_GAP_PROPOSAL' then raise exception 'V512_PROPOSAL_CANNOT_VALIDATE_FROM_PROPOSAL_SOURCE:%',old.id; end if;
+    if v_direct_mode and v_ref->>'kind'='SCREEN_CANONICAL_GRAPH' then
+      if not (v_ref?'pantalla_id')
+        or (v_ref->>'pantalla_id')::integer is distinct from v_run.pantalla_id then
+        raise exception 'SCREEN_CANONICAL_GRAPH_REQUIRES_EXPLICIT_PANTALLA_ID:%',v_run.pantalla_id;
+      end if;
+    else
+      v_observed:=programacion.fn_input_resolve_source_ref(v_ref,v_run.pantalla_id,v_run.version_id);
+    end if;
+    v_readbacks:=v_readbacks || jsonb_build_array(jsonb_build_object(
+      'source_ref',v_ref,
+      'source_observed_sha256',case when v_direct_mode and v_ref->>'kind'='SCREEN_CANONICAL_GRAPH'
+      then v_graph_sha else programacion.fn_v09_sha256_jsonb(v_observed) end
+    ));
+  end loop;
+  if new.validator_evidence->'source_readbacks' is distinct from v_readbacks then
+    raise exception 'V512_PROPOSAL_SOURCE_READBACK_DIGEST_MISMATCH:%',old.id;
+  end if;
+
+  if new.validator_outcome='PASS' and new.status not in ('VALIDATED','HUMAN_DECISION_REQUIRED') then raise exception 'V512_PROPOSAL_PASS_STATUS_INVALID:%',old.id; end if;
+  if new.validator_outcome='FAIL' and new.status<>'REJECTED' then raise exception 'V512_PROPOSAL_FAIL_STATUS_INVALID:%',old.id; end if;
+  new.validated_at:=coalesce(new.validated_at,now());
+  v_payload:=jsonb_build_object('curator_sha256',old.curator_sha256,'validator_identity',new.validator_identity,'validator_outcome',new.validator_outcome,'validator_evidence',new.validator_evidence,'status',new.status,'validated_at',new.validated_at);
+  new.validator_sha256:=programacion.fn_v09_sha256_jsonb(v_payload);
+  return new;
+end;
+

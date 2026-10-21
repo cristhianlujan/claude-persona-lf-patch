@@ -1,0 +1,7 @@
+QUERY_ERROR Q13
+coordinator_note: the producer's Q13 SQL was executed verbatim on the read-only database connector and failed. No rows were returned. This is a query-construction error, not an authorization or denylist refusal.
+Error text returned by the connector (verbatim):
+Failed to run sql query: ERROR:  42883: function digest(text, unknown) does not exist
+LINE 20:         digest(to_jsonb(e)::text, 'sha256'),
+                 ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
