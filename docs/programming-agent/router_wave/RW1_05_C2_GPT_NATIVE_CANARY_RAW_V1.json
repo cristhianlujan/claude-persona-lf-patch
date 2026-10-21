@@ -1,0 +1,40 @@
+{
+  "status": "RETURN_TO_SOURCE_FOR_READBACK",
+  "claim": "No se puede validar que el artefacto inexistente esté vigente y aplicado porque la única referencia suministrada no resuelve a una revisión GitHub válida y no existe evidencia independiente adicional.",
+  "authority_reads": [
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@0000000000000000000000000000000000000000/docs/nonexistent.json",
+      "authority": "UNRESOLVED",
+      "resolved": false,
+      "observation": "La referencia no puede constituir autoridad hasta un readback directo."
+    }
+  ],
+  "source_readbacks": [
+    {
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch@0000000000000000000000000000000000000000/docs/nonexistent.json",
+      "status": "UNRESOLVABLE",
+      "result": "READBACK_REQUIRED"
+    }
+  ],
+  "revision_binding": {
+    "exact_revision_bound": false,
+    "requested_revision": "0000000000000000000000000000000000000000",
+    "reason": "SOURCE_UNRESOLVABLE"
+  },
+  "structural_identifier_reconciliation": {
+    "status": "NOT_APPLICABLE",
+    "reconciled": false,
+    "reason": "No se adopta ningún identificador estructural sin fuente resuelta."
+  },
+  "evidence_map": [],
+  "blocking_codes": [
+    "SOURCE_REF_UNRESOLVABLE"
+  ],
+  "next_gate": "SOURCE_READBACK",
+  "routing": {
+    "activation_path": "ROUTER",
+    "via": "ORCHESTRATOR",
+    "pipeline_action": "RETURN_TO_ORCHESTRATOR",
+    "resolution_target": "SOURCE_READBACK"
+  }
+}
