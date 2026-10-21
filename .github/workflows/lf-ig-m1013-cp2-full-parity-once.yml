@@ -1,0 +1,118 @@
+name: LF IG M10.13 CP2 Full Parity Evidence (one shot)
+
+# Diagnostic only: no required status, deployment, production activation,
+# domain write, or independent closure gate. Trigger only when THIS file changes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lf-ig-m1013-cp2-full-parity-once.yml'
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: lf-ig-m1013-cp2-full-parity-once
+  cancel-in-progress: false
+
+jobs:
+  full-current-parity-readonly:
+    name: M10.13 CP2 actual FULL_CURRENT_STATE parity
+    runs-on: ubuntu-latest
+    environment: lf-merge-train
+    timeout-minutes: 24
+    steps:
+      - name: Checkout trusted current main
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up canonical runner Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify exact live main and canonical runner self-tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          actual="$(git rev-parse HEAD)"
+          live="$(git rev-parse refs/remotes/origin/main)"
+          [ "$actual" = "$live" ] || {
+            echo "BLOCK_CP2_HEAD_STALE actual=$actual live=$live"
+            exit 2
+          }
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py --self-test
+          echo "CP2_EXECUTION_SOURCE_SHA=$actual" >> "$GITHUB_ENV"
+          echo "PASS_CP2_EXACT_MAIN_CURRENTNESS head=$actual"
+
+      - name: Run actual canonical FULL_CURRENT_STATE capability
+        id: parity
+        env:
+          LF_SUPABASE_DB_PASSWORD: ${{ secrets.LF_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: mhwmirqcgxxukpctffuv
+          SUPABASE_POOLER_HOST: aws-1-us-east-1.pooler.supabase.com
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$LF_SUPABASE_DB_PASSWORD" ] || {
+            echo "BLOCK_CP2_DB_SECRET_UNAVAILABLE"
+            exit 2
+          }
+          mkdir -p .lf_ig_m1013_cp2_full_parity
+          python3 sandbox/lf_contract_gate_test/migration_source_parity/run_migration_source_parity_flow_v1.py \
+            --repo-root . \
+            --base-sha "$CP2_EXECUTION_SOURCE_SHA" \
+            --head-sha "$CP2_EXECUTION_SOURCE_SHA" \
+            --base-ref main \
+            --event-name push \
+            --output-dir .lf_ig_m1013_cp2_full_parity \
+            2>&1 | tee .lf_ig_m1013_cp2_full_parity/runner-output.txt
+
+      - name: Material execution metadata
+        if: always()
+        env:
+          PARITY_OUTCOME: ${{ steps.parity.outcome }}
+          CP2_SHA: ${{ env.CP2_EXECUTION_SOURCE_SHA }}
+        shell: bash
+        run: |
+          mkdir -p .lf_ig_m1013_cp2_full_parity
+          python3 - <<'PY'
+          import json, os, pathlib
+          dest=pathlib.Path(".lf_ig_m1013_cp2_full_parity/execution-metadata.json")
+          metadata={
+            "schema_version":"ig-m1013-cp2-full-current-parity-evidence/v1",
+            "plan_code":"IG_CURATOR_VALIDATOR_REFACTOR_V2",
+            "unit_code":"M10.13",
+            "checkpoint_code":"GIT_RUNTIME_PARITY",
+            "scope":"FULL_CURRENT_STATE",
+            "capability":"MIGRATION_SOURCE_PARITY",
+            "source_sha":os.environ.get("CP2_SHA",""),
+            "github_run_id":os.environ.get("GITHUB_RUN_ID",""),
+            "github_run_attempt":os.environ.get("GITHUB_RUN_ATTEMPT",""),
+            "parity_step_outcome":os.environ.get("PARITY_OUTCOME","NOT_EXECUTED"),
+            "production_activated":False,
+            "checkpoint_marked_done":False
+          }
+          dest.write_text(json.dumps(metadata,sort_keys=True,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(metadata,sort_keys=True))
+          PY
+
+      - name: Upload bounded execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-ig-m1013-cp2-full-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .lf_ig_m1013_cp2_full_parity/runner-output.txt
+            .lf_ig_m1013_cp2_full_parity/run-summary.json
+            .lf_ig_m1013_cp2_full_parity/execution-metadata.json
+          if-no-files-found: warn
+          retention-days: 90
