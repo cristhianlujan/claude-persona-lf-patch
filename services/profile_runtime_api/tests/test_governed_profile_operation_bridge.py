@@ -12,6 +12,12 @@ if importlib.util.find_spec("psycopg") is None:
     psycopg_stub.connect = lambda **_kwargs: None
     psycopg_types = types.ModuleType("psycopg.types")
     psycopg_json = types.ModuleType("psycopg.types.json")
+    psycopg_pq = types.ModuleType("psycopg.pq")
+
+    class TransactionStatus:
+        IDLE = 0
+
+    psycopg_pq.TransactionStatus = TransactionStatus
 
     class Jsonb:
         def __init__(self, value):
@@ -21,6 +27,7 @@ if importlib.util.find_spec("psycopg") is None:
     sys.modules["psycopg"] = psycopg_stub
     sys.modules["psycopg.types"] = psycopg_types
     sys.modules["psycopg.types.json"] = psycopg_json
+    sys.modules["psycopg.pq"] = psycopg_pq
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "services/profile_runtime_api/scripts/hetzner_queue_worker.py"
@@ -161,14 +168,17 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             def __init__(self): self.cursor_obj = Cursor()
             def cursor(self): return self.cursor_obj
         conn = Conn()
-        with patch.object(
-            worker,
-            "_record_post_model_governance",
-            return_value={
-                "status": "READY_FOR_SEMANTIC_JUDGE",
-                "next_gate": "semantic_judge",
-                "execution_id": model_governance()["execution_id"],
-            },
+        with (
+            patch.object(
+                worker,
+                "_record_post_model_governance",
+                return_value={
+                    "status": "READY_FOR_SEMANTIC_JUDGE",
+                    "next_gate": "semantic_judge",
+                    "execution_id": model_governance()["execution_id"],
+                },
+            ),
+            patch.object(worker, "_reconcile_terminal_queue") as reconcile,
         ):
             worker._persist_success(
                 conn,
@@ -177,6 +187,7 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 claimed=claimed(),
                 governed={"execution_id": model_governance()["execution_id"]},
             )
+        reconcile.assert_not_called()
         params = conn.cursor_obj.params
         self.assertEqual(params[0], "BLOCKED")
         self.assertEqual(params[7], "HETZNER_GOVERNED_SEMANTIC_JUDGE_PENDING")
@@ -201,14 +212,21 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             def __init__(self): self.cursor_obj = Cursor()
             def cursor(self): return self.cursor_obj
         conn = Conn()
-        with patch.object(
-            worker,
-            "_record_post_model_governance",
-            return_value={
-                "status": "READY_FOR_SEMANTIC_JUDGE",
-                "next_gate": "semantic_judge",
-                "execution_id": model_governance()["execution_id"],
-            },
+        with (
+            patch.object(
+                worker,
+                "_record_post_model_governance",
+                return_value={
+                    "status": "READY_FOR_SEMANTIC_JUDGE",
+                    "next_gate": "semantic_judge",
+                    "execution_id": model_governance()["execution_id"],
+                },
+            ),
+            patch.object(
+                worker,
+                "_reconcile_terminal_queue",
+                return_value={"result": "CANONICAL_TERMINAL_RECONCILED"},
+            ) as reconcile,
         ):
             worker._persist_success(
                 conn,
@@ -217,6 +235,11 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
                 claimed=claimed(),
                 governed={"execution_id": model_governance()["execution_id"]},
             )
+        reconcile.assert_called_once_with(
+            conn.cursor_obj,
+            claimed()["request_id"],
+            allow_missing_canonical=False,
+        )
         self.assertEqual(conn.cursor_obj.params[0], "BLOCKED")
         self.assertEqual(conn.cursor_obj.params[7], "PROFILE_CONTRACT_FAILED")
 
@@ -259,10 +282,27 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
             def cursor(self): return self.cursor_obj
             def commit(self): self.commits += 1
         conn = Conn()
-        self.assertEqual(worker._reconcile_governed_pending(conn), 1)
+        terminal = {
+            "result": "TERMINAL_AUTHORITY_RECEIPT_ATTACHED",
+            "terminal_authority_receipt": {
+                "schema_version": "LF_PROFILE_RUNTIME_TERMINAL_AUTHORITY_RECEIPT_V1",
+                "canonical_execution_id": model_governance()["execution_id"],
+            },
+            "terminal_authority_receipt_sha256": "sha256:" + "f" * 64,
+        }
+        with patch.object(worker, "_fetch_json_scalar", return_value=terminal) as attach:
+            self.assertEqual(worker._reconcile_governed_pending(conn), 1)
+        attach.assert_called_once()
         self.assertTrue(
             any("set status='SUCCEEDED'" in query for query, _params in conn.cursor_obj.calls)
         )
+        update_call = next(
+            (params for query, params in conn.cursor_obj.calls if "set status='SUCCEEDED'" in query),
+            None,
+        )
+        self.assertIsNotNone(update_call)
+        self.assertEqual(update_call[0].obj["terminal_authority_receipt_sha256"], "sha256:" + "f" * 64)
+        self.assertEqual(update_call[1].obj["terminal_authority_receipt_sha256"], "sha256:" + "f" * 64)
         self.assertEqual(conn.commits, 1)
 
     def test_reconcile_never_promotes_in_progress_or_failed_judge(self) -> None:
@@ -325,6 +365,51 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertIn('"scope_authority_packet": scope_packet["scope_authority_packet"]', source)
         self.assertIn('"scope_authority_packet_sha256": scope_packet["scope_packet_sha256"]', source)
         self.assertIn("HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY", source)
+
+    def test_pre_model_persists_full_router_authority_receipt(self) -> None:
+        source = Path(worker.__file__).read_text()
+        self.assertIn('"router_result": route', source)
+        self.assertIn('"input_literal_sha256": input_digest', source)
+        self.assertIn("route.get(\"operation_code\") != \"EJECUCION_PERFIL_LF\"", source)
+
+    def test_terminal_failure_reconciler_accepts_only_canonical_outcomes(self) -> None:
+        request_id = claimed()["request_id"]
+        class Cursor:
+            pass
+        cur = Cursor()
+        with patch.object(
+            worker,
+            "_fetch_json_scalar",
+            return_value={"result": "CANONICAL_TERMINAL_RECONCILED"},
+        ):
+            result = worker._reconcile_terminal_queue(
+                cur, request_id, allow_missing_canonical=False
+            )
+        self.assertEqual(result["result"], "CANONICAL_TERMINAL_RECONCILED")
+
+        with patch.object(
+            worker,
+            "_fetch_json_scalar",
+            return_value={"result": "NO_CANONICAL_EXECUTION"},
+        ):
+            result = worker._reconcile_terminal_queue(
+                cur, request_id, allow_missing_canonical=True
+            )
+        self.assertEqual(result["result"], "NO_CANONICAL_EXECUTION")
+
+        with patch.object(
+            worker,
+            "_fetch_json_scalar",
+            return_value={
+                "result": "CANONICAL_TERMINAL_CONFLICT",
+                "blocking_code": "PROFILE_EXECUTION_TERMINALITY_RECONCILIATION_FAILED",
+            },
+        ):
+            with self.assertRaisesRegex(RuntimeError, "HETZNER_QUEUE_TERMINAL_RECONCILE_FAILED"):
+                worker._reconcile_terminal_queue(
+                    cur, request_id, allow_missing_canonical=False
+                )
+
 
     def test_execution_identity_is_stable(self) -> None:
         request_id = claimed()["request_id"]
