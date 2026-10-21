@@ -142,12 +142,9 @@ BEGIN
     'hex'
   );
 
-  v_event_id:=nextval('public.lf_eventos_id_seq');
-
   INSERT INTO public.lf_eventos(
-    id,evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
+    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,payload,origen,created_by_execution_id
   ) VALUES (
-    v_event_id,
     'RW105_C2_GPT_NATIVE_CANARY_CAPTURED',
     'ENGINEERING_WORK_CHECKPOINT',
     v_cp,
@@ -194,7 +191,7 @@ BEGIN
     ),
     'GPT_NATIVE_CURRENT_CHAT',
     'RW1-05_C2-GPT-NATIVE-CANARY'
-  );
+  ) RETURNING id INTO v_event_id;
 
   v_source:=v_old#>'{source_pack_v2,checkpoint_inputs,RW1-05_C2}';
   v_source:=jsonb_set(
