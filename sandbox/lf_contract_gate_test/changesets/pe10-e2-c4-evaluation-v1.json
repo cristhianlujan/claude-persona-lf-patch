@@ -1,0 +1,19 @@
+{
+  "solution_ref": "pe10-e2-c4-evaluation-v1",
+  "paths": {
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/C4_BLIND_MAPPING_COORDINATOR_ONLY.json": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/C4_EVALUATION_MANIFEST_V1.json": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/C4_EVALUATION_RECEIPT_V1.json": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/C4_EVALUATION_SUMMARY_V1.json": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/CANDIDATE_X1.md": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/CANDIDATE_X2.md": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/CANDIDATE_X3.md": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/CANDIDATE_X4.md": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/EVALUATOR_INSTRUCTIONS_C4.md": "PE10_C3_CLEANROOM_INPUTS",
+    "docs/profile_updater/experiments/pe10_e2/c4_evaluation/EVALUATOR_RAW_VERIFIED_PREFIX_0_20700.txt": "PE10_C3_CLEANROOM_INPUTS",
+    "sandbox/lf_contract_gate_test/changesets/pe10-e2-c4-evaluation-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/pe10_e2/test_validate_c4_evaluation_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/pe10_e2/validate_c4_evaluation_v1.py": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261021000200_lf_pe10_e2_c4_governed_close_v1.sql": "MIGRATION"
+  }
+}

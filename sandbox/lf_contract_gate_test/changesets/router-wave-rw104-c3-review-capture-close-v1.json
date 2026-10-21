@@ -1,0 +1,6 @@
+{
+  "solution_ref": "router-wave-rw104-c3-review-capture-close-v1",
+  "paths": {
+    "supabase/migrations/20261021063500_lf_router_rw104_c3_gpt_capture_close_v1.sql": "MIGRATION"
+  }
+}

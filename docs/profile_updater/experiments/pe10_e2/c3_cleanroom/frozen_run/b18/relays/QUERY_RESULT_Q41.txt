@@ -1,0 +1,90 @@
+QUERY_RESULT Q41 (file form; lossless re-rendering by coordinator, no source checksum)
+coordinator_note: read-only result of Q41 as returned by the database connector: 11 rows (one per cron job; no job matched more than one inventory function), not truncated, ORDER BY jobid, object_ref. Constants for all rows: execution_role=postgres; observation_scope=CURRENT_CRON_TO_INVENTORY_LEXICAL_RECONCILIATION. NULL = SQL NULL. scheduled_command is given exactly as returned between markers (for job 4 it begins and ends with a newline). Observation class: CURRENT.
+columns per row: jobid|jobname|job_active|schedule|matched_inventory_object_id|matched_inventory_function_ref|matched_inventory_object_active|lexical_reference|explicit_cron_dependency_found
+
+===ROW 3|lf-architecture-v4-monitor|false|*/15 * * * *|919|dbfunc://private.fn_run_architecture_monitor_v4(p_execution_id text)|true|true|false===
+===scheduled_command BEGIN===
+select private.fn_run_architecture_monitor_v4('CRON-ARCH-V4-'||to_char(clock_timestamp(),'YYYYMMDDHH24MISS'));===scheduled_command END===
+
+===ROW 4|lf-architecture-alert-delivery-v4|false|*/2 * * * *|938|dbfunc://private.fn_dispatch_architecture_outbox_v4(p_execution_id text, p_limit integer)|true|true|false===
+===scheduled_command BEGIN===
+
+select case
+  when not exists (
+    select 1
+    from private.lf_architecture_delivery_config_v6
+    where config_id = 1 and enabled
+  ) then private.fn_dispatch_architecture_outbox_v4(
+    'CRON-ALERT-V4-' || to_char(clock_timestamp(),'YYYYMMDDHH24MISS'), 20
+  )
+  when not exists (
+    select 1
+    from private.lf_architecture_delivery_secrets_v4
+    where is_active
+      and not_before <= clock_timestamp()
+      and (not_after is null or clock_timestamp() < not_after)
+  ) then private.fn_dispatch_architecture_outbox_v4(
+    'CRON-ALERT-V4-' || to_char(clock_timestamp(),'YYYYMMDDHH24MISS'), 20
+  )
+  when exists (
+    select 1
+    from private.lf_architecture_notification_attempts_v4
+    where completed_at is null
+      and attempt_status in ('PENDING','SUBMITTED')
+  ) then private.fn_dispatch_architecture_outbox_v4(
+    'CRON-ALERT-V4-' || to_char(clock_timestamp(),'YYYYMMDDHH24MISS'), 20
+  )
+  when (
+    select count(*)
+    from private.lf_architecture_notification_outbox_v4
+    where channel = 'EXTERNAL_HTTP'
+  ) <> (
+    select count(distinct a.outbox_id)
+    from private.lf_architecture_notification_attempts_v4 a
+    join private.lf_architecture_notification_outbox_v4 o
+      on o.id = a.outbox_id
+     and o.channel = 'EXTERNAL_HTTP'
+    where a.delivery_schema_version = 'lf-architecture-alert-delivery/v6'
+      and a.attempt_status = 'DELIVERED'
+  ) then private.fn_dispatch_architecture_outbox_v4(
+    'CRON-ALERT-V4-' || to_char(clock_timestamp(),'YYYYMMDDHH24MISS'), 20
+  )
+  else 0
+end;
+===scheduled_command END===
+
+===ROW 7|lf-p0-evidence-retention-v1|true|17 8 * * *|1062|dbfunc://private.fn_lf_p0_evidence_retention_guard_v1(p_apply boolean, p_now timestamp with time zone)|true|true|false===
+===scheduled_command BEGIN===
+select private.fn_lf_p0_evidence_retention_guard_v1(true);===scheduled_command END===
+
+===ROW 20|lf-global-inventory-catalog-v2|true|17 */6 * * *|NULL|NULL|NULL|NULL|false===
+===scheduled_command BEGIN===
+select inventory.fn_refresh_catalog_v2();===scheduled_command END===
+
+===ROW 21|lf-global-inventory-details-v2|true|22 */6 * * *|NULL|NULL|NULL|NULL|false===
+===scheduled_command BEGIN===
+select inventory.fn_refresh_db_details_v2();===scheduled_command END===
+
+===ROW 22|lf-global-inventory-exact-deps-v1|true|27 */6 * * *|NULL|NULL|NULL|NULL|false===
+===scheduled_command BEGIN===
+select inventory.fn_refresh_dependencies_exact_v1();===scheduled_command END===
+
+===ROW 23|lf-global-inventory-static-incremental-v1|true|32 */6 * * *|NULL|NULL|NULL|NULL|false===
+===scheduled_command BEGIN===
+select inventory.fn_refresh_static_incremental_v1();===scheduled_command END===
+
+===ROW 24|lf-global-inventory-finalize-v1|true|37 */6 * * *|NULL|NULL|NULL|NULL|false===
+===scheduled_command BEGIN===
+select inventory.fn_finalize_refresh_v1();===scheduled_command END===
+
+===ROW 28|lf-operational-retention-v1|true|43 8 * * *|118369|dbfunc://private.fn_operational_retention_v1(p_apply boolean, p_now timestamp with time zone)|true|true|false===
+===scheduled_command BEGIN===
+select private.fn_operational_retention_v1(true);===scheduled_command END===
+
+===ROW 29|lf-db-size-snapshot-v1|true|53 8 * * *|129296|dbfunc://private.fn_capture_db_size_snapshot_v1()|true|true|false===
+===scheduled_command BEGIN===
+select private.fn_capture_db_size_snapshot_v1();===scheduled_command END===
+
+===ROW 45|ig-direct-sql-worker-v1|true|30 seconds|163963|dbfunc://programacion.fn_input_governance_queue_worker_v1()|true|true|false===
+===scheduled_command BEGIN===
+select programacion.fn_input_governance_queue_worker_v1();===scheduled_command END===

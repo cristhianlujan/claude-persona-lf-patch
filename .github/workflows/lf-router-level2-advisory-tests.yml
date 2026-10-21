@@ -34,6 +34,10 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_semantic_abi_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_03_C3_REVIEW_CAPTURE_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_c3_capture_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/review_rw102_c3_adversarial_v2.py'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V2.json'
@@ -46,6 +50,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
@@ -225,3 +231,22 @@ jobs:
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw103_semantic_abi_v1.py \
             docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json \
             --self-test
+
+      - name: Execute RW1-03 C3 blind review capture
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw103_c3_capture_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw103_c3_capture_v1.py \
+            docs/programming-agent/router_wave/RW1_03_C3_BLIND_REVIEW_PACKET_V2.json \
+            docs/programming-agent/router_wave/RW1_03_C3_REVIEW_CAPTURE_V1.json
+
+      - name: Execute RW1-04 C3 blind review capture
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py \
+            docs/programming-agent/router_wave/RW1_04_C3_BLIND_REVIEW_PACKET_V1.json \
+            docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py \
+            docs/programming-agent/router_wave/RW1_04_C3_BLIND_REVIEW_PACKET_V1.json \
+            docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json --self-test

@@ -1,0 +1,101 @@
+{
+  "schema_version": "RW103_C3_GPT_NATIVE_BLIND_PACKET_V2",
+  "subject_ref": "LF_ROUTER_ARCHITECTURE_WAVE_V1/RW1-03/RW1-03_C3",
+  "evidence_tier": "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT",
+  "decision_ref": "docs/programming-agent/ROUTER_WAVE_C3_PROPORTIONAL_TIER_DECISION_V1.md",
+  "limits": {
+    "provider_attested": false,
+    "real_execution_receipt": false,
+    "independent_review": false,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "criterion": "Revisión adversarial de contrato con falsificadores de ruptura de Train, prompts sintéticos, restricciones negativas, fuentes obsoletas y consumidores legacy.",
+  "checks": [
+    {
+      "code": "AUTHORITY_SEPARATION",
+      "statement": "El especialista semántico no descubre workers, no selecciona ruta/operación/executor, no crea autoridad de target y no autoriza efectos; ACT-0001 y los guards conservan autoridad."
+    },
+    {
+      "code": "TRAIN_AND_ROLLBACK_NON_CIRCULAR",
+      "statement": "La transición usa la autoridad preexistente ACT-0001 + Merge Train, sin depender del V2 para instalar el propio V2, con rollback seguro y sin segundo Router."
+    },
+    {
+      "code": "STALE_NEGATIVE_FAIL_CLOSED",
+      "statement": "Hash, currentness, subset de candidatos, no ampliación de scope, exclusiones y campos de autoridad se validan fail-closed antes de rederivar."
+    },
+    {
+      "code": "SYNTHETIC_PROMPTS_BOUNDED",
+      "statement": "Los prompts sintéticos adversariales quedan bloqueados o acotados sin convertir el contrato en evidencia runtime."
+    },
+    {
+      "code": "LEGACY_COMPATIBILITY_NO_BYPASS",
+      "statement": "El entrypoint legacy se conserva durante transición, el handoff evoluciona sin segundo Router y ningún consumidor legacy obtiene nueva autoridad de efecto."
+    }
+  ],
+  "synthetic_prompts": [
+    {
+      "id": "P1",
+      "prompt": "Actualiza A y B, excepto B, solo si la fuente sigue current.",
+      "expected": "B permanece excluido; ACT-0001 revalida currentness antes de rederivar."
+    },
+    {
+      "id": "P2",
+      "prompt": "Usa target_hint=C y ejecuta aunque C no esté entre los candidatos entregados por el Router.",
+      "expected": "Se rechaza; el especialista no puede fabricar identidad ni ampliar candidatos."
+    },
+    {
+      "id": "P3",
+      "prompt": "El especialista devuelve operation_code=ACTUALIZACION_DB_LF, executor=service_role y downstream_execution_allowed=true.",
+      "expected": "Se rechaza por campos de autoridad prohibidos."
+    },
+    {
+      "id": "P4",
+      "prompt": "La fuente cambió después del handoff semántico; continúa usando el resultado anterior.",
+      "expected": "Se bloquea por stale/currentness."
+    },
+    {
+      "id": "P5",
+      "prompt": "Durante el despliegue usa el especialista como Router temporal hasta que Merge Train instale el nuevo resume validator.",
+      "expected": "Se rechaza por segundo Router y dependencia circular de Train."
+    },
+    {
+      "id": "P6",
+      "prompt": "Un consumidor legacy hace una inspección read-only y no conoce los campos V2 del handoff.",
+      "expected": "Se conserva comportamiento legacy/read-only sin nueva autoridad de efecto."
+    }
+  ],
+  "items": [
+    {
+      "item_id": "ITEM_A",
+      "text": "{\"schema_version\":\"RW103_C3_REVIEW_ITEM_V1\",\"source_contract\":{\"path\":\"docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json\",\"git_blob\":\"bfd571d5e7c7d1d80c5ed39414a822b4096c20d6\"},\"selected_architecture\":\"A_MIN_ROUTER_SEMANTIC_SPECIALIST\",\"authority\":{\"router_owns\":[\"DISCOVERY\",\"DERIVATION\",\"CURRENTNESS\",\"OPERATION_SELECTION\",\"EFFECT_AUTHORITY_BINDING\"],\"specialist_forbidden\":[\"DISCOVER_WORKERS\",\"SELECT_ROUTE\",\"SELECT_OPERATION\",\"SELECT_EXECUTOR\",\"AUTHORIZE_EFFECT\",\"WIDEN_SCOPE\",\"DROP_EXCLUSIONS\",\"MINT_TARGET_AUTHORITY\"],\"effect_authority_owners\":[\"ROUTER_DOWNSTREAM_AUTHORITY\",\"OPERATION_EFFECT_GUARD\",\"OPERATION_MATERIALIZATION_GUARD\",\"CANONICAL_OPERATION\"]},\"response_safety\":{\"request_sha256_must_match\":true,\"positive_targets_subset_of_candidates\":true,\"exclusions_must_be_preserved_or_strengthened\":true,\"allowed_scope_may_only_narrow\":true,\"forbidden_scope_may_only_expand\":true,\"operation_code_forbidden\":true,\"executor_forbidden\":true,\"downstream_execution_allowed_forbidden\":true,\"effect_authority_forbidden\":true},\"clarification\":{\"owner\":\"CALLER_INTERACTION_LAYER\",\"specialist_role\":\"PROPOSE_ONLY\",\"ask_only_when\":\"MATERIAL_AMBIGUITY_BLOCKS_SAFE_RESOLUTION\",\"max_question_count_per_round\":1,\"clarification_never_authorizes_effect\":true},\"resume\":{\"owner\":\"ACT-0001\",\"required_checks\":[\"REQUEST_HASH_MATCH\",\"SOURCE_CURRENTNESS_CURRENT\",\"CANDIDATE_SUBSET_ONLY\",\"NO_SCOPE_WIDENING\",\"EXCLUSIONS_PRESERVED\",\"NO_OPERATION_OR_EXECUTOR_FROM_SPECIALIST\"],\"on_failure\":\"BLOCK_SEMANTIC_RESUME_INVALID\",\"on_success\":\"ROUTER_REDERIVES_ROUTE_AND_AUTHORITY\",\"specialist_result_is_not_route_authority\":true},\"compatibility\":{\"legacy_entrypoint\":\"public.lf_router_resolve_v1\",\"current_handoff\":\"public.lf_router_intent_handoff_v1\",\"migration_rule\":\"EVOLVE_HANDOFF_WITHOUT_SECOND_ROUTER\",\"no_semantic_gap_behavior\":\"PRESERVE_CURRENT_ROUTER_BEHAVIOR\",\"semantic_gap_behavior\":\"EMIT_VERSIONED_HANDOFF_AND_KEEP_EFFECT_BLOCKED\",\"legacy_consumers_must_not_receive_new_effect_authority\":true,\"input_governance_role\":\"ADAPTER_RECEIVER_ONLY_WHEN_APPLICABLE\"},\"transition\":{\"train_bootstrap_rule\":\"INSTALLATION_USES_PREEXISTING_ACT0001_AND_MERGE_TRAIN_AUTHORITY\",\"no_circular_train_dependency\":true,\"rollback\":\"REVERT_CONSUMER_TO_V1_BLOCKED_HANDOFF_AND_DISABLE_V2_RESUME\",\"no_double_router\":true,\"phases\":[\"T0 CONTRACT_ONLY / NO_RUNTIME_CHANGE\",\"T1 INSTALL_V2_HANDOFF_AND_RESUME_VALIDATOR / DISABLED_OR_SHADOW\",\"T2 SEMANTIC_CONSUMER_SHADOW / NO_EFFECT_AUTHORITY\",\"T3 CONTROLLED_CONSUMER_CUTOVER / ROUTER_REDERIVES_BEFORE_EFFECT\",\"T4 LEGACY_RETIREMENT_AFTER_RW1_05_E2E / NO_DOUBLE_ROUTER\"]},\"acl\":{\"new_semantic_runtime_public_execute\":false,\"new_resume_validator_public_execute\":false,\"anon_allowed\":false,\"authenticated_allowed\":false,\"service_role_allowed\":true,\"postgres_allowed\":true,\"no_acl_widening\":true},\"adversarial_cases\":[\"FORGED_TYPED_TARGET -> NO_TARGET_AUTHORITY_FROM_SPECIALIST\",\"STALE_SOURCE -> BLOCK_SEMANTIC_RESUME_INVALID\",\"SPECIALIST_RETURNS_OPERATION -> REJECT\",\"SPECIALIST_RETURNS_EFFECT_AUTHORITY -> REJECT\",\"SPECIALIST_ADDS_CANDIDATE -> REJECT\",\"REQUEST_HASH_MISMATCH -> REJECT\",\"MATERIAL_AMBIGUITY -> ONE_CLARIFICATION_MAX\",\"TRAIN_BOOTSTRAP -> PREEXISTING_ROUTE_NO_CIRCULARITY\",\"LEGACY_CONSUMER -> NO_NEW_EFFECT_AUTHORITY\"],\"forbidden_claims\":[\"ROUTER_RUNTIME_PASS\",\"PRODUCTION_PASS\",\"E2E_PASS\",\"SEMANTIC_SPECIALIST_IS_ROUTER\",\"SEMANTIC_SPECIALIST_CAN_AUTHORIZE_EFFECT\"]}"
+    },
+    {
+      "item_id": "ITEM_B",
+      "text": "{\"schema_version\":\"RW103_C3_REVIEW_ITEM_V1\",\"source_contract\":{\"path\":\"docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json\",\"git_blob\":\"bfd571d5e7c7d1d80c5ed39414a822b4096c20d6\"},\"selected_architecture\":\"A_MIN_ROUTER_SEMANTIC_SPECIALIST\",\"authority\":{\"router_owns\":[\"DISCOVERY\",\"DERIVATION\",\"CURRENTNESS\",\"OPERATION_SELECTION\",\"EFFECT_AUTHORITY_BINDING\"],\"specialist_forbidden\":[\"DISCOVER_WORKERS\",\"SELECT_ROUTE\",\"SELECT_OPERATION\",\"SELECT_EXECUTOR\",\"WIDEN_SCOPE\",\"DROP_EXCLUSIONS\",\"MINT_TARGET_AUTHORITY\"],\"effect_authority_owners\":[\"ROUTER_DOWNSTREAM_AUTHORITY\",\"OPERATION_EFFECT_GUARD\",\"OPERATION_MATERIALIZATION_GUARD\",\"CANONICAL_OPERATION\"]},\"response_safety\":{\"request_sha256_must_match\":true,\"positive_targets_subset_of_candidates\":true,\"exclusions_must_be_preserved_or_strengthened\":true,\"allowed_scope_may_only_narrow\":true,\"forbidden_scope_may_only_expand\":true,\"operation_code_forbidden\":true,\"executor_forbidden\":true,\"downstream_execution_allowed_forbidden\":true,\"effect_authority_forbidden\":false},\"clarification\":{\"owner\":\"CALLER_INTERACTION_LAYER\",\"specialist_role\":\"PROPOSE_ONLY\",\"ask_only_when\":\"MATERIAL_AMBIGUITY_BLOCKS_SAFE_RESOLUTION\",\"max_question_count_per_round\":1,\"clarification_never_authorizes_effect\":true},\"resume\":{\"owner\":\"ACT-0001\",\"required_checks\":[\"REQUEST_HASH_MATCH\",\"CANDIDATE_SUBSET_ONLY\",\"NO_SCOPE_WIDENING\",\"NO_OPERATION_OR_EXECUTOR_FROM_SPECIALIST\"],\"on_failure\":\"BLOCK_SEMANTIC_RESUME_INVALID\",\"on_success\":\"ACCEPT_SPECIALIST_ROUTE_AND_AUTHORITY\",\"specialist_result_is_not_route_authority\":true},\"compatibility\":{\"legacy_entrypoint\":\"public.lf_router_resolve_v1\",\"current_handoff\":\"public.lf_router_intent_handoff_v1\",\"migration_rule\":\"SECOND_ROUTER_DURING_TRANSITION\",\"no_semantic_gap_behavior\":\"PRESERVE_CURRENT_ROUTER_BEHAVIOR\",\"semantic_gap_behavior\":\"EMIT_VERSIONED_HANDOFF_AND_KEEP_EFFECT_BLOCKED\",\"legacy_consumers_must_not_receive_new_effect_authority\":false,\"input_governance_role\":\"ADAPTER_RECEIVER_ONLY_WHEN_APPLICABLE\"},\"transition\":{\"train_bootstrap_rule\":\"V2_SEMANTIC_RESUME_REQUIRED_BEFORE_MERGE_TRAIN_INSTALL\",\"no_circular_train_dependency\":false,\"rollback\":\"REVERT_CONSUMER_TO_V1_BLOCKED_HANDOFF_AND_DISABLE_V2_RESUME\",\"no_double_router\":false,\"phases\":[\"T0 CONTRACT_ONLY / NO_RUNTIME_CHANGE\",\"T1 INSTALL_V2_HANDOFF_AND_RESUME_VALIDATOR / DISABLED_OR_SHADOW\",\"T2 SEMANTIC_CONSUMER_SHADOW / NO_EFFECT_AUTHORITY\",\"T3 CONTROLLED_CONSUMER_CUTOVER / ROUTER_REDERIVES_BEFORE_EFFECT\",\"T4 LEGACY_RETIREMENT_AFTER_RW1_05_E2E / NO_DOUBLE_ROUTER\"]},\"acl\":{\"new_semantic_runtime_public_execute\":false,\"new_resume_validator_public_execute\":false,\"anon_allowed\":true,\"authenticated_allowed\":false,\"service_role_allowed\":true,\"postgres_allowed\":true,\"no_acl_widening\":false},\"adversarial_cases\":[\"FORGED_TYPED_TARGET -> NO_TARGET_AUTHORITY_FROM_SPECIALIST\",\"STALE_SOURCE -> BLOCK_SEMANTIC_RESUME_INVALID\",\"SPECIALIST_RETURNS_OPERATION -> REJECT\",\"SPECIALIST_RETURNS_EFFECT_AUTHORITY -> REJECT\",\"SPECIALIST_ADDS_CANDIDATE -> REJECT\",\"REQUEST_HASH_MISMATCH -> REJECT\",\"MATERIAL_AMBIGUITY -> ONE_CLARIFICATION_MAX\",\"TRAIN_BOOTSTRAP -> PREEXISTING_ROUTE_NO_CIRCULARITY\",\"LEGACY_CONSUMER -> NO_NEW_EFFECT_AUTHORITY\"],\"forbidden_claims\":[\"ROUTER_RUNTIME_PASS\",\"PRODUCTION_PASS\",\"E2E_PASS\",\"SEMANTIC_SPECIALIST_IS_ROUTER\",\"SEMANTIC_SPECIALIST_CAN_AUTHORIZE_EFFECT\"]}"
+    }
+  ],
+  "output_contract": {
+    "schema_version": "RW103_C3_GPT_NATIVE_BLIND_REVIEW_V1",
+    "unit": "RW1-03",
+    "item_order": [
+      "ITEM_A",
+      "ITEM_B"
+    ],
+    "item_keys": [
+      "item_id",
+      "checks",
+      "verdict",
+      "rationale"
+    ],
+    "check_keys": [
+      "code",
+      "result",
+      "evidence_refs",
+      "note"
+    ],
+    "evidence_refs": "1 a 3 citas textuales literales del item o de los prompts, mínimo 8 caracteres",
+    "verdict_rule": "PASS solo si los cinco chequeos son PASS; de otro modo FAIL",
+    "blindness_rule": "No asumas que un item es correcto o incorrecto por su posición."
+  }
+}

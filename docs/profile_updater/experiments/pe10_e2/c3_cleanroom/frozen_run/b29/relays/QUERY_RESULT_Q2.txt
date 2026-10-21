@@ -1,0 +1,45 @@
+QUERY_RESULT Q2 (file form)
+coordinator_note: read-only result of Q2 as returned by the database connector: 38 rows (one per inventory_position 1..38, each with exactly one current name match), none truncated, original order. Delivered as a lossless pipe-delimited rendering typed by the coordinator and verified against the database by md5 of the canonical line text (below).
+Line format: inventory_position|historical_oid (= current_oid in every row)|historical_definition_md5|current_definition_md5|identity_args|prosecdef|comparison_status
+Columns constant across all rows (omitted from each line): prokind=f; name_match_count=1; identity_resolution=SINGLE_CURRENT_NAME_MATCH; observation_scope=CURRENT_COMPARED_TO_P0_HISTORICAL. historical_caller and historical_callees are identical to the same inventory_position of QUERY_RESULT Q1 and are omitted; schema_name.function_name equals historical_caller (case-insensitive) in every row. current_oid equals historical_oid in every row (verified by the database).
+Body md5 (lines after ---BEGIN ROWS---, joined by \n, no trailing newline): 9bf64f28f70b7426633659d549304e22 (computed by the database over the same canonical text and matched to this file by the coordinator)
+Observation class: CURRENT_COMPARED_TO_P0_HISTORICAL (current pg_proc state vs. stored P0 values).
+---BEGIN ROWS---
+1|59598|2438ec2062fa0834709e70833253151f|0b8363aec1efe57a04f504774a375983||true|SAME_OID_BODY_CHANGED
+2|70664|3acdfd13a72a049612d748bec45cd9c5|3acdfd13a72a049612d748bec45cd9c5|p_run_id bigint|true|OID_AND_BODY_MATCH
+3|60839|d295852d23e1e29f17f04e2626efe733|fc21baeac6667afd41b35ddbcad28514|p_run_id bigint|true|SAME_OID_BODY_CHANGED
+4|70576|247d524093fa754701c4c4c137c9ec3b|247d524093fa754701c4c4c137c9ec3b|p_run_id bigint|true|OID_AND_BODY_MATCH
+5|69014|df1415d143291f6bed6f65f2dab5f48e|f991bf655a7b4f2a89d68138c6862012|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|SAME_OID_BODY_CHANGED
+6|75208|d2069b41cec7fe5f540dfcfc9076172b|5b0012dd443674ec0a94fe18ef0792e9|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|SAME_OID_BODY_CHANGED
+7|91138|1b85e374531120adb80674ee41d8f827|7257b9bbc86b1f61e5435a37479d63a1|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|SAME_OID_BODY_CHANGED
+8|68870|a0d52912fbc32fec7e22ef72edb295eb|bfd85f25b23fb127ca67f0dcd6bba668|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|SAME_OID_BODY_CHANGED
+9|69021|ce79cfbc47dc507bb1ad861126192435|6760c7c0e1c8e27c3e6bdfb25a8b13ba|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|SAME_OID_BODY_CHANGED
+10|68874|d56c17453ef549b0907630b337d215e0|158bbe28dadac194b22d4cb8941be59e|p_run_id bigint, p_validator_identity text|true|SAME_OID_BODY_CHANGED
+11|68873|db481cfbb2d38ed7a8cda7d9ea3364c8|a5276b80adf117ebf00a6a53c7223609|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|SAME_OID_BODY_CHANGED
+12|68595|e6179b742c096d437e0fd5ffd374c716|f208773051c19e59df0a93998dcc1182|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|SAME_OID_BODY_CHANGED
+13|68550|388622e4e8055cf6713c8e4fd3b6d664|388622e4e8055cf6713c8e4fd3b6d664|p_pantalla_id integer, p_consumer text|true|OID_AND_BODY_MATCH
+14|143640|24779557f42dd07703f298e83cd1cbc1|24779557f42dd07703f298e83cd1cbc1|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|OID_AND_BODY_MATCH
+15|60871|337b04bdbc5aff305df63082d1cdd8ff|337b04bdbc5aff305df63082d1cdd8ff|p_version_id bigint, p_module_code text|true|OID_AND_BODY_MATCH
+16|75800|3beb9e4b015eb87aff07feacecd2fb68|0b9449ee5fe6867262702d5a05be7dfc|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_parent_run_id bigint|true|SAME_OID_BODY_CHANGED
+17|69023|1bd40ecd813bf70de7a3002c81e817e9|a6aea69926e51e6e208636946f6dce94|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|SAME_OID_BODY_CHANGED
+18|70437|c2832adc0b4d9e510b83bf4e3e533256|c2832adc0b4d9e510b83bf4e3e533256|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|OID_AND_BODY_MATCH
+19|91133|05d39a40acfbe0619b6c32253bf45d97|05d39a40acfbe0619b6c32253bf45d97|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|OID_AND_BODY_MATCH
+20|70497|90d680bbc36900576aad02c1080df542|1026907fd0e26ae30f0777e67ef4600e|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|SAME_OID_BODY_CHANGED
+21|91134|e1047708134aa796c68ebe5a62d57cb6|ff726ab1c658769389b65c8479af84fb|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|SAME_OID_BODY_CHANGED
+22|70757|ca597480e55bbda88742744589156e0f|ca597480e55bbda88742744589156e0f|p_pantalla_id integer, p_version_id bigint|true|OID_AND_BODY_MATCH
+23|70782|f845a5b9a5ea90a1ad21c57eb6c246a0|f46f7a45ac21930a84b6792f743365dc|p_pantalla_id integer, p_version_id bigint|true|SAME_OID_BODY_CHANGED
+24|70784|e2bd83ca60f56f6c3aba48a4ac615979|13535a493479382084dd6ca1213ee12a|p_version_id bigint|true|SAME_OID_BODY_CHANGED
+25|69026|880397a80a071940f23dd76bb4653cca|1a7a662fcd586e8eaac70ef3717a84a5|p_run_id bigint, p_validator_identity text|true|SAME_OID_BODY_CHANGED
+26|68597|0fb35da40fa92dee086ff33aa6a94e5a|7c320bb3fe5f1d3c188218daa3369c0b|p_run_id bigint, p_validator_identity text|true|SAME_OID_BODY_CHANGED
+27|68877|e68efd3ac454aa886ed42b8c4d9f6f21|e1c2f8d2d8411b5c5bfcb2ce5ff55eba|p_run_id bigint, p_validator_identity text|true|SAME_OID_BODY_CHANGED
+28|68574|38c93ab6d757be08ddc0e63e74b32029|4bef8fe66d9fed5a567cbaaea5f33b63|p_pantalla_id integer, p_consumer text|true|SAME_OID_BODY_CHANGED
+29|74994|3ef7cc59c82bc3b9cb383743bbb47768|859b37b1b5959e3332ca917328016177|p_pantalla_id integer, p_consumer text, p_current_run_id bigint|true|SAME_OID_BODY_CHANGED
+30|146074|44a7f21a3c01411662ab568af58c4091|44a7f21a3c01411662ab568af58c4091|p_run_id bigint|true|OID_AND_BODY_MATCH
+31|60868|f723008533319dcd20f6cb194bebffef|f723008533319dcd20f6cb194bebffef|p_run_id bigint|true|OID_AND_BODY_MATCH
+32|74557|5314ae5a6d40afbe1eeaad466efafe50|935f4b4e88d2304a636607d9b3e488be|p_request_text text, p_adapters jsonb, p_consumer text|true|SAME_OID_BODY_CHANGED
+33|68598|65107a96b2e9df4794b83bc02e177ce5|65107a96b2e9df4794b83bc02e177ce5|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|OID_AND_BODY_MATCH
+34|68668|1ed9278892c5c2acad7345c2763e5e1e|1ed9278892c5c2acad7345c2763e5e1e|p_pantalla_id integer, p_consumer text|true|OID_AND_BODY_MATCH
+35|70496|1a5042545d01ec819a3b6ae8253b0688|1a5042545d01ec819a3b6ae8253b0688|p_run_id bigint|true|OID_AND_BODY_MATCH
+36|68599|b3f7a677140364f19e82a0c04972d910|b3f7a677140364f19e82a0c04972d910|p_run_id bigint, p_validator_identity text|true|OID_AND_BODY_MATCH
+37|95383|774d76c9a2090b183a5984c5a67ca9a3|774d76c9a2090b183a5984c5a67ca9a3|p_exploration_id uuid, p_completed_payload jsonb, p_consumer text, p_actor_execution_id text|false|OID_AND_BODY_MATCH
+38|95379|ff02413e4ea3dfd3a71192ba04b78697|ff02413e4ea3dfd3a71192ba04b78697|p_exploration_id uuid, p_consumer text|false|OID_AND_BODY_MATCH

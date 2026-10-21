@@ -1,0 +1,137 @@
+{
+  "schema_version": "RW104_C3_GPT_NATIVE_CAPTURE_V1",
+  "subject_ref": "LF_ROUTER_ARCHITECTURE_WAVE_V1/RW1-04/RW1-04_C3",
+  "packet_git_blob": "7a5c0e9048ebd3029efe258ade9a352ddaacc7ee",
+  "capture_method": "USER_PROVIDED_DIRECT_COPY_FROM_SEPARATE_GPT_NATIVE_CHAT",
+  "evidence_tier": "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT",
+  "separate_chat_required": true,
+  "separate_chat_reference_verified": false,
+  "isolation_provable": false,
+  "owner_provided_capture": true,
+  "provider_attested": false,
+  "real_execution_receipt": false,
+  "independent_review": false,
+  "runtime_activation": false,
+  "production_activation": false,
+  "normalized_output_sha256": "cc6682cafa121634e797b9465bff38c8f35c3f89a21ad13e0c774daeea1a3fd5",
+  "raw_output": {
+    "schema_version": "RW104_C3_GPT_NATIVE_BLIND_REVIEW_V1",
+    "unit": "RW1-04",
+    "items": [
+      {
+        "item_id": "ITEM_A",
+        "checks": [
+          {
+            "code": "DESIGN_CODE_ALIGNMENT",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"router_remains_authority\":true",
+              "\"specialist_cannot_authorize_effect\":true",
+              "\"resume_success_requires_act0001_rederive\":true"
+            ],
+            "note": "El item declara que ACT-0001 conserva la autoridad de routing y efectos. El especialista no puede seleccionar ruta, operación, ejecutor ni autorizar efectos. Resume exige rederivación por ACT-0001."
+          },
+          {
+            "code": "SECURITY_AUTHORITY_INVARIANTS",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"source_currentness_required\":true",
+              "\"exclusions_preserved\":true",
+              "\"returned_operation_forbidden\":true"
+            ],
+            "note": "El item declara validaciones de hash, vigencia de fuente, subconjunto de candidatos, scope no expansivo y preservación de exclusiones. Prohíbe autoridades de operación, ejecutor, efectos y ejecución downstream."
+          },
+          {
+            "code": "CURRENT_SOURCE_AND_ACL",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"main_sha\":\"8cd016811ea47221c39296efcee2a6e13e664ab0\"",
+              "\"v2_anon_execute\":false",
+              "\"resume_authenticated_execute\":false"
+            ],
+            "note": "El item incluye identidad de fuente y fingerprints, y declara ausencia de permisos de ejecución PUBLIC, anon y authenticated para V2 y Resume. La correspondencia externa de los fingerprints no está verificada independientemente."
+          },
+          {
+            "code": "ROLLBACK_LEGACY_COMPATIBILITY",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"handoff_v1_preserved\":true",
+              "\"six_v2_sites_dual_emitted\":true",
+              "\"implementation_transactional\":true"
+            ],
+            "note": "El item declara preservación de V1 en seis sitios, emisión dual de V2, implementación transaccional, controles de drift y conteo posterior. También declara ausencia de segundo Router."
+          },
+          {
+            "code": "NO_REGRESSION_SCOPE",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"input_governance_unchanged\":true",
+              "\"merge_train_unchanged\":true",
+              "\"no_e2e_claim\":true"
+            ],
+            "note": "El item mantiene fuera del refactor Input Governance, operation registry y Merge Train. No declara activación semántica, ejecución E2E ni producción."
+          }
+        ],
+        "verdict": "PASS",
+        "rationale": "Los cinco chequeos satisfacen los invariantes declarados en el paquete congelado. Los escenarios P1-P6 quedan cubiertos por las restricciones afirmadas. PASS corresponde únicamente a la consistencia del item frente al contrato suministrado; no constituye verificación independiente del código, atestación del proveedor, recibo real de ejecución ni aceptación de producción."
+      },
+      {
+        "item_id": "ITEM_B",
+        "checks": [
+          {
+            "code": "DESIGN_CODE_ALIGNMENT",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"specialist_cannot_authorize_effect\":false",
+              "\"resume_success_requires_act0001_rederive\":false",
+              "\"no_second_router\":false"
+            ],
+            "note": "Viola el ABI aprobado: el especialista puede adquirir autoridad sobre efectos, Resume no exige rederivación por ACT-0001 y no se garantiza un Router único. Contradice P6."
+          },
+          {
+            "code": "SECURITY_AUTHORITY_INVARIANTS",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"source_currentness_required\":false",
+              "\"exclusions_preserved\":false",
+              "\"returned_operation_forbidden\":false"
+            ],
+            "note": "Resume no exige vigencia de fuente, no preserva las exclusiones y permite autoridad de operación devuelta por el especialista. Contradice P1, P2 y P3. La coincidencia del hash no compensa estas violaciones."
+          },
+          {
+            "code": "CURRENT_SOURCE_AND_ACL",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"v2_anon_execute\":true",
+              "\"source_currentness_required\":false",
+              "\"source_drift_guarded\":true"
+            ],
+            "note": "V2 amplía ejecución a anon. Además, la afirmación genérica de protección contra drift no compensa la ausencia del requisito explícito de source currentness. Contradice P2 y P4."
+          },
+          {
+            "code": "ROLLBACK_LEGACY_COMPATIBILITY",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"handoff_v1_preserved\":false",
+              "\"six_v1_sites_preserved\":false",
+              "\"no_second_router\":false"
+            ],
+            "note": "No conserva V1 ni sus seis sitios legacy y tampoco garantiza Router único. La transaccionalidad y la emisión de V2 no compensan la pérdida de compatibilidad. Contradice P5 y P6."
+          },
+          {
+            "code": "NO_REGRESSION_SCOPE",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"merge_train_unchanged\":false",
+              "\"no_second_router\":false",
+              "\"semantic_runtime_activated\":false"
+            ],
+            "note": "El item reconoce modificación de Merge Train y ausencia de garantía contra un segundo Router, ambas fuera del alcance permitido. No declarar activación runtime no elimina estas regresiones."
+          }
+        ],
+        "verdict": "FAIL",
+        "rationale": "Falla los cinco chequeos por violaciones explícitas de autoridad, seguridad, ACL, compatibilidad legacy y límites del refactor. Los escenarios adversariales P1-P6 identifican restricciones incumplidas. Los controles positivos restantes, los doce probes declarados y la transaccionalidad no compensan estas fallas. FAIL es definitivo para el item presentado, sin inferir identidad de implementación real ni ejecutar validación externa."
+      }
+    ]
+  }
+}

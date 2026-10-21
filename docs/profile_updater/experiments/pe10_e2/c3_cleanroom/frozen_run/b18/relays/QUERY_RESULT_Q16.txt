@@ -1,0 +1,147 @@
+QUERY_RESULT Q16 (file form)
+coordinator_note: read-only result of Q16 as returned by the database connector: 140 rows, none truncated. The raw JSON was 66881 characters, so it is delivered as a lossless pipe-delimited rendering (one row per line, original order preserved; NULL = SQL NULL; nested JSON values written compactly). Observation class: CURRENT.
+Columns (in order): role_name|rolinherit|rolbypassrls|schema_name|function_name|function_oid|identity_args|security_definer|effective_schema_usage|effective_function_execute|effective_direct_call_candidate
+Columns constant across all rows (omitted from every row): {"role_exists": true, "rolcanlogin": false, "observation_scope": "CURRENT_PRIVILEGES_NOT_ACTUAL_INVOCATION"}
+Raw JSON sha256 prefix: f1a544d88ae05096
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): dd5bd01c6753c3118fb5244049a6947b5c99f154743c720bc6f28f0478ee48a1
+---BEGIN ROWS---
+anon|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+anon|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+anon|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+anon|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|false|false|false
+anon|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|false|false
+anon|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|false|false|false
+anon|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|false|false|false
+anon|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|false|false|false
+anon|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+anon|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|false|false|false
+anon|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|false|false|false
+anon|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+anon|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+anon|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+authenticated|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|true|true|true
+authenticated|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|true|true|true
+authenticated|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+authenticated|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|false|false|false
+authenticated|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|false|false
+authenticated|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|false|false|false
+authenticated|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|false|false|false
+authenticated|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|false|false|false
+authenticated|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+authenticated|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|false|false|false
+authenticated|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|false|false|false
+authenticated|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+authenticated|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+authenticated|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+lf_governance_owner_v3|false|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+lf_governance_owner_v3|false|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+lf_governance_owner_v3|false|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|true|false|false
+lf_governance_owner_v3|false|false|programacion|fn_guard_input_family_assessment_update|59598||true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+lf_governance_owner_v3|false|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|false|false|false
+lf_governance_owner_v3|false|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|false|false|false
+lf_governance_owner_v3|false|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+lf_governance_owner_v3|false|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+lf_governance_owner_v3|false|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+lf_writer_verifier_v7|false|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+lf_writer_verifier_v7|false|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+lf_writer_verifier_v7|false|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|true|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_guard_input_family_assessment_update|59598||true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|false|false|false
+lf_writer_verifier_v7|false|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|false|false|false
+lf_writer_verifier_v7|false|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+lf_writer_verifier_v7|false|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+lf_writer_verifier_v7|false|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_auditor|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_auditor|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_auditor|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+programacion_auditor|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|true|true
+programacion_auditor|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_auditor|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|true|false|false
+programacion_auditor|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+programacion_auditor|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_auditor|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_builder|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_builder|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_builder|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+programacion_builder|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|true|false|false
+programacion_builder|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|false|false
+programacion_builder|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|true|false|false
+programacion_builder|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|true|false|false
+programacion_builder|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_builder|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|true|true
+programacion_builder|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_builder|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|true|false|false
+programacion_builder|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+programacion_builder|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_builder|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_human_authority|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_human_authority|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_human_authority|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+programacion_human_authority|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|true|true
+programacion_human_authority|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_human_authority|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|true|false|false
+programacion_human_authority|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+programacion_human_authority|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_human_authority|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_promoter|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_promoter|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_promoter|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+programacion_promoter|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|true|true
+programacion_promoter|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_promoter|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|true|false|false
+programacion_promoter|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+programacion_promoter|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_promoter|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_verifier|true|false|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_verifier|true|false|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+programacion_verifier|true|false|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|false|false|false
+programacion_verifier|true|false|programacion|fn_guard_input_family_assessment_update|59598||true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|true|true|true
+programacion_verifier|true|false|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|true|false|false
+programacion_verifier|true|false|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|true|false|false
+programacion_verifier|true|false|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|false|false
+programacion_verifier|true|false|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|false|false
+programacion_verifier|true|false|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|false|false
+service_role|true|true|lf_ops|fn_b2b_backoffice_login_contract|49427|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+service_role|true|true|lf_ops|fn_screen_contract_v1|275398|p_app_shell_code text, p_module_code text, p_screen_code text|false|false|true|false
+service_role|true|true|private|fn_lf_ig_human_decision_live_disposition_v1|243263|p_proposal_id bigint|true|true|false|false
+service_role|true|true|programacion|fn_guard_input_family_assessment_update|59598||true|false|false|false
+service_role|true|true|programacion|fn_input_governance_bootstrap_classify_v2|69014|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+service_role|true|true|programacion|fn_input_governance_bootstrap_classify_v2_cached_v2|91138|p_pantalla_id integer, p_family_code text, p_version_id bigint, p_graph jsonb|true|false|true|false
+service_role|true|true|programacion|fn_input_governance_curator_materialize_v1|68873|p_pantalla_id integer, p_consumer text, p_curator_identity text, p_force_selftest boolean|true|false|true|false
+service_role|true|true|programacion|fn_input_governance_execute|68550|p_pantalla_id integer, p_consumer text|true|false|true|false
+service_role|true|true|programacion|fn_input_governance_semantic_probe_v3|70497|p_pantalla_id integer, p_family_code text, p_version_id bigint|true|false|true|false
+service_role|true|true|programacion|fn_input_governance_validate_v2|69026|p_run_id bigint, p_validator_identity text|true|false|false|false
+service_role|true|true|programacion|fn_input_validator_compaction_batch_v1|219907|p_limit integer|true|false|false|false
+service_role|true|true|public|fn_input_governance_curator_materialize_v1|68598|p_pantalla_id integer, p_consumer text, p_curator_identity text|true|true|true|true
+service_role|true|true|public|fn_input_governance_execute|68668|p_pantalla_id integer, p_consumer text|true|true|true|true
+service_role|true|true|public|fn_input_governance_validator_validate_v1|68599|p_run_id bigint, p_validator_identity text|true|true|true|true

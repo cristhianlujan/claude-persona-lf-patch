@@ -1,0 +1,20 @@
+QUERY_RESULT Q20 (file form)
+coordinator_note: read-only result of Q20 as returned by the database connector: 2 rows (ORDER BY function_identity), none truncated. The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: (a) md5 and length of each function_source equal the returned source_md5 / source_length (d61ce63bfb23503a3b1e5fa74a4ff5b0 / 273 and b32c8bdc068757b5793b4a7a4f4ccfbd / 183; the second source ends with the characters "END" followed by one space and no newline); (b) an md5 over the canonical text of both rows (6 columns; lexical_call_tokens as jsonb text, elements ordered by called_name; function_source multi-line, as stored) computed in the database equals the md5 of this file's body: bca42c9f6c3be9e4d37027e4a2889849. Observation class: CURRENT.
+Columns (in order): function_oid|function_identity|source_md5|source_length|lexical_call_tokens|function_source
+Columns constant across all rows (omitted from every row): {"observation_scope": "CURRENT_GUARD_BUNDLE_SOURCE_NOT_EXECUTION"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): f4f328d4476b4d1bab2d204db90e47463dbad77b46a2a8ee4c92fde1b9811fc2
+---BEGIN ROWS---
+297334|programacion.fn_ig_m107_d_proposal_bundle_v1(p_run_id bigint)|d61ce63bfb23503a3b1e5fa74a4ff5b0|273|[{"called_name": "fn_ig_m107_bundle_from_manifest_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_build_source_manifest", "explicit_schema": "programacion"}]|
+DECLARE v_manifest jsonb; v_bundle jsonb;
+BEGIN
+ v_manifest:=programacion.fn_input_build_source_manifest(p_run_id);
+ v_bundle:=programacion.fn_ig_m107_bundle_from_manifest_v1(p_run_id,v_manifest);
+ RETURN v_bundle||jsonb_build_object('manifest_receipts',v_manifest);
+END;
+
+296647|programacion.fn_ig_m107_manifest_guard_bundle_v1(p_run_id bigint)|b32c8bdc068757b5793b4a7a4f4ccfbd|183|[{"called_name": "fn_ig_m107_bundle_from_manifest_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_build_source_manifest", "explicit_schema": "programacion"}]|
+DECLARE v_manifest jsonb;
+BEGIN
+ v_manifest:=programacion.fn_input_build_source_manifest(p_run_id);
+ RETURN programacion.fn_ig_m107_bundle_from_manifest_v1(p_run_id,v_manifest);
+END 

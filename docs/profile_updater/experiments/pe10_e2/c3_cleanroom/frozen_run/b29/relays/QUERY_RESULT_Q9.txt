@@ -1,0 +1,11 @@
+QUERY_RESULT Q9 (file form)
+coordinator_note: read-only result of Q9 as returned by the database connector: 4 rows, none truncated. The raw JSON was 1944 characters, so it is delivered as a lossless pipe-delimited rendering (one row per line, original order preserved; NULL = SQL NULL; nested JSON values written compactly). Observation class: CURRENT.
+Coordinator verification: the connector returned this result inline only, so it was typed by the coordinator. The numeric fields of the three static rows (curator, shadow, validator) were verified against the database by md5 (3 of 3 match). The QUEUE_WORKER row advances every 30 seconds (calls 23819 at relay time, 23820 at verification), so it is the coordinator's reading of the original result and is not re-verifiable. Constant columns omitted from rows are listed below.
+Columns (in order): query_id|measurement_class|calls|total_exec_time|mean_exec_time|min_exec_time|max_exec_time|stddev_exec_time|rows|shared_blks_hit|shared_blks_read
+Columns constant across all rows (omitted from every row): {"temp_blks_read": 0, "temp_blks_written": 0, "stats_reset": "2026-10-10 02:45:35.862139+00", "statement_tracking_scope": "top", "observation_scope": "CURRENT_AGGREGATE_NOT_P0_BASELINE"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 9354285241682cadedba620a732ef1e45112664eaa388ce919353e3578ff725b
+---BEGIN ROWS---
+-1190413845958252360|CURATOR_MATERIALIZATION_COMPOUND|7|231322.944686|33046.1349551429|8991.760629|57740.554897|16793.5307294146|7|565230|430
+-6121712835719537967|QUEUE_WORKER|23819|1386758.63971901|58.2206910331665|1.827786|68629.953017|1543.41750252984|23819|43041977|7248
+3120726644697259216|SHADOW_EVALUATION_COMPOUND|7|44457.222778|6351.03182542857|5316.601892|8450.461643|1157.14840118392|7|2527886|78
+8711451024423911529|VALIDATOR_LOOP_COMPOUND|6|290301.095361|48383.5158935|20289.857497|74477.000076|16234.5521993362|0|8712745|405

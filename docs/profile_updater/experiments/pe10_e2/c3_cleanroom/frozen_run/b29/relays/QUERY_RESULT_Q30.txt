@@ -1,0 +1,19 @@
+QUERY_RESULT Q30 (file form)
+coordinator_note: read-only result of Q30 as returned by the database connector: 13 rows, none truncated (ORDER BY token_class, token). Lossless pipe-delimited rendering. Verification: aggregate md5 of the rows (joined by \n) computed database-side equals the md5 of the delivered rows (074ba8022b9437283e909aede3a089c1, 13 rows). Observation class: P0_HISTORICAL (the query reads only public.lf_eventos id 20161; token presence in that event row text only).
+Columns (in order): token_class|token|token_present_in_historical_event|token_occurrence_count
+Columns constant across all rows (omitted from every row): {"event_id": "20161", "observation_scope": "HISTORICAL_P0_EVENT_TOKEN_PRESENCE_NOT_DATABASE_EXISTENCE_PROOF"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): fd3b1ba523278948d2972b14830b7e4b94c8f5c1080465e002ce31ece72358dd
+---BEGIN ROWS---
+FUNCTION|fn_ig_m107_trusted_run_data_v1|false|0
+FUNCTION|fn_input_governance_bootstrap_classify_v2_cached_v2|true|3
+FUNCTION|fn_input_governance_curator_plan_v1|false|0
+FUNCTION|fn_input_governance_queue_worker_v1|false|0
+FUNCTION|fn_input_governance_recurate_source_stale_v1|true|3
+FUNCTION|fn_input_readiness_run_is_current_cached_v1|true|2
+FUNCTION|fn_input_screen_canonical_graph|false|0
+FUNCTION|fn_input_validator_compaction_batch_v1|false|0
+FUNCTION|fn_input_validator_storage_compaction_check_v1|false|0
+REQUEST_STATE|lf.input_request_context_v1|false|0
+REQUEST_STATE|lf.input_request_freshness_count_v1|false|0
+REQUEST_STATE|lf.input_request_freshness_delta_cached_v1|false|0
+REQUEST_STATE|lf.input_request_graph_build_count_v1|false|0
