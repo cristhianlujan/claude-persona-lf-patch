@@ -1,0 +1,113 @@
+{
+  "schema_version": "M10_7_NO_FALSE_PASS_GPT_NATIVE_EXECUTION_PACKET_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M10.7",
+  "checkpoint_code": "NO_FALSE_PASS",
+  "executor": {
+    "mode": "GPT_NATIVE",
+    "adapter_id": "chatgpt-native-current-context-v1",
+    "provider_identity": "OPENAI_CHATGPT_NATIVE",
+    "conversation_scope": "EXISTING_CONVERSATION_ONLY",
+    "native_api_invocation": false,
+    "native_session_creation": false,
+    "remote_api_fallback": "FORBIDDEN",
+    "host_execution": "FORBIDDEN",
+    "provider_attested": false
+  },
+  "source": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "main_sha": "97ccdc015d4714cb86a58d62ccf7172d0f56a4ec",
+    "test_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_7/no_false_pass.py",
+    "git_blob_sha1": "635cf2bcae96712c6150c4accadcafe68296c257"
+  },
+  "input_sha256": "fb290a3aaea348a3ea64b098453f579e475256becad6cf205dd6a29e5f233aac",
+  "input": {
+    "schema_version": "M10_7_NO_FALSE_PASS_INPUT_V2",
+    "historical_receipt": {
+      "receipt_sha256": "17e949addd09caa82add52c0d792e91d0460435d1b6f77ef7910ff76c431c972",
+      "payload": {
+        "pass": true,
+        "head_sha": "a14a835240a990b0154b4fd78bfbc3afc8981d99",
+        "subject_ref": "plan://IG_CURATOR_VALIDATOR_REFACTOR_V2/M9.11/SOAK_OBSERVATION_HISTORY_V2",
+        "subject_type": "ig_soak_observation_history",
+        "screens_total": 13,
+        "unresolved_d4": 0,
+        "families_total": 47,
+        "schema_version": "SOAK_OBSERVATION_HISTORY_V2",
+        "subject_sha256": "05bff5fcf6acb6cd3d4f51e9b174fc2407d469217b120aed9826a2cd73fee2ec",
+        "screens_below_2": 0,
+        "families_below_2": 0,
+        "verifier_identity": "SUPABASE:SOAK_OBSERVATION_HISTORY_V2",
+        "verification_status": "VERIFIED",
+        "min_family_observations": 189,
+        "min_screen_observations": 4,
+        "known_false_pass_signals": 0
+      }
+    },
+    "window": {
+      "status": "FROZEN_VERIFIED",
+      "sample_policy": "RUN_HISTORY_EFFECTIVENESS_SAMPLE_V1",
+      "source_ref": "supabase://programacion.input_readiness_runs+input_family_assessments+input_validator_chunk_timings?run_id=930,931,944",
+      "frozen_run_ids": [
+        930,
+        931,
+        944
+      ],
+      "sha256": "5dfa11c2ab8b47e205c1e5a03b5f28a42c2cae969643443690c539cbb1e52466"
+    },
+    "runs": [
+      {
+        "run_id": 930,
+        "pantalla_id": 58,
+        "status": "COMPLETED",
+        "validator_duration_ms": 115551,
+        "family_count": 47,
+        "validator_pass_count": 47,
+        "explicit_timeout_signal": false,
+        "currentness_authority": "CURRENTNESS_AUTHORITY",
+        "source_current": true,
+        "lifecycle_current": true,
+        "source_manifest_current": true,
+        "execution_policy_current": true,
+        "readiness_contract_current": true,
+        "source_snapshot_sha256": "e25a12fc30aeb4d0edd19875b391f90d64a78e2f0069cf5fafd29ea21bf06ef3",
+        "universe_snapshot_sha256": "60669dcf9a90861f88318eaffe47612b9a611c9a3a35291d66d470d030e03812"
+      },
+      {
+        "run_id": 931,
+        "pantalla_id": 1,
+        "status": "COMPLETED",
+        "validator_duration_ms": 120015,
+        "family_count": 47,
+        "validator_pass_count": 47,
+        "explicit_timeout_signal": false,
+        "currentness_authority": "CURRENTNESS_AUTHORITY",
+        "source_current": true,
+        "lifecycle_current": true,
+        "source_manifest_current": true,
+        "execution_policy_current": true,
+        "readiness_contract_current": true,
+        "source_snapshot_sha256": "66d8edb2ac9471212ecab564cb639d39d317fe5d35a6362866dd701c7f98a2b9",
+        "universe_snapshot_sha256": "60669dcf9a90861f88318eaffe47612b9a611c9a3a35291d66d470d030e03812"
+      },
+      {
+        "run_id": 944,
+        "pantalla_id": 43,
+        "status": "COMPLETED",
+        "validator_duration_ms": 124635,
+        "family_count": 47,
+        "validator_pass_count": 47,
+        "explicit_timeout_signal": false,
+        "currentness_authority": "CURRENTNESS_AUTHORITY",
+        "source_current": true,
+        "lifecycle_current": true,
+        "source_manifest_current": true,
+        "execution_policy_current": true,
+        "readiness_contract_current": true,
+        "source_snapshot_sha256": "1869631aa0dbbed93b56ceaf12919a571b101013407d7b684a37b1f056189a57",
+        "universe_snapshot_sha256": "60669dcf9a90861f88318eaffe47612b9a611c9a3a35291d66d470d030e03812"
+      }
+    ]
+  },
+  "closure_effect": "NONE_PACKET_ONLY"
+}
