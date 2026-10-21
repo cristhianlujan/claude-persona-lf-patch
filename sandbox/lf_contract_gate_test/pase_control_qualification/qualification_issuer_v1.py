@@ -261,7 +261,12 @@ def build(snapshot: Mapping[str, Any], review: Mapping[str, Any] | None) -> dict
     }
     request_sha = sha256_obj(request_material)
     source_execution_id = f"EXEC-PASE-CONTROL-QUAL-PR{ident['pr_number']}-{ident['head_sha'][:12]}"
-    idempotency_key = f"pase-control-qual:{ident['repository']}:{ident['candidate_id']}:{ident['head_sha']}"
+    identity_digest = sha256_obj({
+        "repository": ident["repository"],
+        "candidate_id": ident["candidate_id"],
+        "head_sha": ident["head_sha"],
+    })
+    idempotency_key = f"pase-control-qual:{identity_digest}"
 
     return {
         "schema_version": "lf-pase-control-qualification-issuer-dry-run/v1",
