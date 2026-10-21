@@ -73,7 +73,7 @@ def audit(p):
                 if re.search(pattern,code_only(source),re.I):
                     state="CALLSITE_LEXICAL_NOT_EXECUTION"; call+=1
                 elif name.lower() in source.lower():
-                    state="TEXT_ONLY_NOT_CALL"; string_only+=1
+                    state="TEXT_OR_DYNAMIC_SQL_UNRESOLVED"; string_only+=1
                 else: state="NO_CALLSITE"; missing_edge+=1
             evidence.append({"caller":item.get("caller"),"callee":callee,"state":state})
     readers=[]
@@ -108,7 +108,7 @@ def audit(p):
     if perf["status"] in ("NOT_MEASURED","NO_CONCLUYENTE"): blockers.append("PERFORMANCE_NOT_CONCLUSIVE")
     return {"schema":"LF_PROFILE_DEPENDENCY_MEASUREMENT_V1","operation":p["operation_code"],"source_ref":p["source_ref"],
       "temporal_scope":p["temporal_scope"],"hash_method":"md5(prosrc)","hash_equal":equal,"hash_changed":changed,"hash_unknown":unknown,
-      "conexiones_exactas":{"declared":edges,"callsite_candidates":call,"text_only":string_only,"without_callsite":missing_edge,
+      "conexiones_exactas":{"declared":edges,"callsite_candidates":call,"text_or_dynamic_unresolved":string_only,"without_callsite":missing_edge,
                             "scope":"STATIC_LEXICAL_NOT_EXECUTION"},"edge_evidence":evidence,
       "definicion_leida":readers,"other_consumers":external,"performance":perf,"missing_versions":gaps,
       "critical_priority":priority,"zero_consumers_semantics":"UNKNOWN_UNLESS_SCOPE_AND_EXECUTION_VERIFIED",
