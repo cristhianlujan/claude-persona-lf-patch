@@ -34,6 +34,7 @@ def main():
         ('PROFILE_EVIDENCE_DRILLDOWN', [sys.executable, str(root/'evals/test_evidence_drilldown_v1.py')]),
         ('PROFILE_DEPENDENCY_CONSUMER_MEASUREMENT', [sys.executable, str(root/'evals/test_measure_dependencies_v1.py')]),
         ('PROFILE_EVOLUTION_PLANNER_DISPATCH_READBACK', [sys.executable, str(root/'evals/test_pe10_planner_dispatch_qualified_readback_v1.py')]),
+        ('PE10_C6_SOURCE_ONLY_REGRESSION', [sys.executable, str(root.parents[1]/'sandbox/lf_contract_gate_test/engineering_checkpoints/pe10_c6_transactional_dry_run_v1.py')]),
         ('S26_PROFILE_BASELINE_MATRIX', [sys.executable, str(root/'evals/s26_profile_baseline_matrix.py')]),
         ('S26_LEARNING_PREFLIGHT_MATRIX', [sys.executable, str(root/'evals/s26_learning_preflight_matrix.py')]),
     ]
