@@ -1,0 +1,32 @@
+{
+  "schema_version": "RW105_C2_EVIDENCE_LINEAGE_OUTPUT_VALIDATION_V1",
+  "execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+  "profile_code": "PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF",
+  "profile_slug": "evidence_lineage_reviewer_lf",
+  "raw_ref": "docs/programming-agent/router_wave/RW1_05_C2_GPT_NATIVE_CANARY_RAW_V1.json",
+  "raw_git_blob": "0f88af87aca7659c0a673f74b97fc4f7a46d6349",
+  "raw_output_sha256": "86cc34048f8436479acff5fe0830b03cc0a8bbaf6f98acfeb31e7d1c094def07",
+  "schema_ref": "profiles/evidence_lineage_reviewer_lf/schemas/output.schema.json",
+  "schema_git_blob": "f5957bde7fad49fa4e03ccc8bb5566faacd4adcf",
+  "routing_validator_ref": "profiles/evidence_lineage_reviewer_lf/validators/validate_routing.py",
+  "routing_validator_git_blob": "06cc4bd28a44f5cee671decaaae520037db698dd",
+  "validation": {
+    "schema_engine": "JSON_SCHEMA_DRAFT_2020_12",
+    "schema_status": "PASS",
+    "required_fields_status": "PASS",
+    "conditional_routing_status": "PASS",
+    "profile_validator": "validate_routing.py",
+    "validator_exit_code": 0,
+    "validator_result": {
+      "valid": true,
+      "errors": []
+    },
+    "raw_sha256_recomputed_matches": true
+  },
+  "output_contract_result": "PASS",
+  "deterministic_validation": "PASS",
+  "independent_review_executed": false,
+  "provider_attested": false,
+  "production_activation": false,
+  "cutover_eligible": false
+}
