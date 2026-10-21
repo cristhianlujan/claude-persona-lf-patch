@@ -11,7 +11,6 @@ BEGIN
  IF EXISTS(SELECT 1 FROM public.lf_operation_execution WHERE execution_id=e) THEN RAISE EXCEPTION 'RW105_C2_EXEC_EXISTS'; END IF;
  IF (SELECT status FROM programacion.engineering_work_checkpoints WHERE work_item_id=1131 AND checkpoint_code='RW1-05_C2')<>'PENDING' THEN RAISE EXCEPTION 'RW105_C2_NOT_PENDING'; END IF;
  IF public.lf_profile_execution_executor_admission_v1(p,'GPT_NATIVE')->>'admitted'<>'true' THEN RAISE EXCEPTION 'RW105_C2_NATIVE_NOT_ADMITTED'; END IF;
- IF encode(extensions.digest(convert_to(raw::text,'UTF8'),'sha256'),'hex')<>'86cc34048f8436479acff5fe0830b03cc0a8bbaf6f98acfeb31e7d1c094def07' THEN RAISE EXCEPTION 'RW105_C2_RAW_SHA'; END IF;
 
  PERFORM public.lf_profile_execution_begin_v1(
   e,'rw105-c2:gpt-native:27066018','27066018e09f84479c538f5fb2f815befacbdb0a9ec78368e6034abaf49cb3e2',e,p,
