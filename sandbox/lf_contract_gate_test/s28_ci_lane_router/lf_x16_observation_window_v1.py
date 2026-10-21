@@ -18,6 +18,7 @@ from typing import Any, Mapping
 CHECK_ALIASES = {
     "pase": "pase",
     "pase-merge-gate": "pase-merge-gate",
+    "migration-source-parity": "pase-migration-source-parity",
     "pase / migration_source_parity": "pase-migration-source-parity",
     "pase-migration-source-parity": "pase-migration-source-parity",
 }
@@ -39,13 +40,31 @@ def canonical_check(value: str) -> str:
     return CHECK_ALIASES[normalized]
 
 
+def normalized_check_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
+
+
 def check_matches(name: str, check: str) -> bool:
-    value = re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
+    value = normalized_check_name(name)
     if check == "pase":
         return value in {"pase", "lf-independent-change-admission", "lf-independent-change-admission-pase"}
     if check == "pase-merge-gate":
         return "pase-merge-gate" in value
-    return "pase" in value and "migration-source-parity" in value
+    return value in {"migration-source-parity", "pase-migration-source-parity"}
+
+
+def prefer_current_check_name(
+    runs: list[Mapping[str, Any]], check: str,
+) -> list[Mapping[str, Any]]:
+    if check != "pase-migration-source-parity":
+        return runs
+    current = [
+        run for run in runs
+        if normalized_check_name(
+            str(run.get("name") or run.get("check_name") or run.get("workflow_name") or "")
+        ) == "migration-source-parity"
+    ]
+    return current or runs
 
 
 def _parse_optional_time(value: Any) -> datetime | None:
@@ -88,6 +107,7 @@ def analyze_window(
                 qualifying.append(run)
         if not qualifying:
             continue
+        qualifying = prefer_current_check_name(qualifying, selected_check)
         qualifying.sort(key=lambda row: _parse_optional_time(row.get("started_at") or row.get("created_at")) or start)
         latest = qualifying[-1]
         conclusion = latest.get("conclusion") or ("in_progress" if latest.get("status") != "completed" else "unknown")
@@ -276,7 +296,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
-    parser.add_argument("--check", required=True, help="PASE, pase-merge-gate, or PASE / MIGRATION_SOURCE_PARITY")
+    parser.add_argument("--check", required=True, help="PASE, pase-merge-gate, or migration-source-parity")
     parser.add_argument("--since", required=True, help="ISO-8601 timestamp with timezone")
     parser.add_argument("--format", choices=("json", "markdown"), default="markdown")
     parser.add_argument("--output")
