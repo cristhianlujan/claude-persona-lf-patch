@@ -316,6 +316,25 @@ BEGIN
     SELECT 1 FROM public.lf_error_knowledge
     WHERE codigo='LF-PE10-C5-SEMANTIC-REVIEW-WAS-PENDING-20261021-001'
   );
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-MIGRATION-VERSION-COLLISION-20261021-001',
+    'PROFILE_EVOLUTION',
+    'C5 semantic review migration version collided with an already applied migration',
+    'Merge Train run 39637151193 stopped before APPLY because version 20261021164500 already belonged to lf_ig_m107_native_executor_route_correction_v1 in the Supabase migration ledger.',
+    'A fixed timestamp was authored before the Train compared the candidate against the live migration ledger; another concurrent governed migration acquired the same version first.',
+    'A syntactically valid new migration can still be inadmissible when its 14-digit version is no longer unique at Train pre-apply time.',
+    'On PRE-APPLY identity collision, do not overwrite or replay the applied ledger entry; retimestamp the unapplied candidate to a free version, update bound tests/source refs, and re-run the same Train.',
+    'Corrected source uses version 20261021165000; the prior 20261021164500 candidate was never applied and Train reported no DB apply or merge.',
+    'MEDIUM',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3023'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-MIGRATION-VERSION-COLLISION-20261021-001'
+  );
 END
 $pe10_c5_semantic$;
 
