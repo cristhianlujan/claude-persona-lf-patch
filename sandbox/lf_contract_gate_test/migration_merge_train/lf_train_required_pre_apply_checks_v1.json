@@ -3,6 +3,7 @@
   "required_checks": [
     "lf-independent-change-admission",
     "ig-runtime-candidate-judge",
-    "PASE"
+    "PASE",
+    "migration-source-parity"
   ]
 }
