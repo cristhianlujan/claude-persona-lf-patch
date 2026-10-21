@@ -227,3 +227,7 @@ Before concluding a material diagnosis in `CREACION_PERFIL_LF` or `ACTUALIZACION
 Before choosing any repair, inspect the exact current/authorized evidence for every material surface that repair would touch, separating declaration, textual mention, static call-site, observed execution, historical/as-of, and independent authority. The local nonexecuting planner `validators/evidence_drilldown_v1.py` emits `new_probes`, `blocking_codes`, and `repair_selection_admissible` (DESIGN ONLY). A blocked or unverified material surface cannot be silently included in the chosen repair.
 
 This is a candidate method for both operations, not a runtime cutover or a replacement for S26/EKB learning preflight, current source bindings, bound output-validator parity, Quality Pack or Merge Train. No auto-execution, provider attestation, READY/DONE or profile write follows from a planner result.
+
+## Medición de consumidores y lecturas de definición — Creator/Updater
+
+Ante cambios materialmente vinculados a funciones, ejecutar el análisis de fuentes read-only de validators/measure_dependencies_v1.py conforme a contracts/dependency_consumer_measurement_v1.md. Diferenciar llamada de lectura de definición, arista declarada de arista léxica, y no equiparar 0 consumidores con bajo riesgo. No obliga a un censo global en cambios locales; la adquisición es focal y sujeta a EKB/autoridad. Esta capacidad es candidata, no habilita runtime ni reemplaza el planificador de profundización o los gates existentes.
