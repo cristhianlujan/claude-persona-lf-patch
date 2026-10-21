@@ -27,10 +27,16 @@ structured evidence. The issuer validates that evidence mechanically.
 4. Therefore the approved implementation needs one bounded SECURITY DEFINER wrapper,
    installed only by Merge Train, that creates/completes the source execution and invokes
    the existing canonical producer atomically and idempotently.
-5. `ig-runtime-candidate-judge` is not reusable as this issuer. It is specific to
+5. Under current F0/CLAUDE governance, every database write is still restricted to
+   `ACTUALIZACION_DB_LF -> Migration Merge Train`. A separate CI issuer that persists a
+   qualification receipt is therefore **not currently authorized**, even with a least-
+   privilege role. Owner approval must explicitly establish a bounded canonical write route
+   (and its Router/policy identity) before the issuer can leave dry-run mode. Installing the
+   role/wrapper through Train alone does not authorize later CI writes through it.
+6. `ig-runtime-candidate-judge` is not reusable as this issuer. It is specific to
    `sandbox/ig_cv/n9_requests/request.json`, uses the IG judge contract, and currently
    consumes a different database path/credential model.
-6. Router-wave C3 demonstrates a useful evidence pattern: freeze a blind review packet,
+7. Router-wave C3 demonstrates a useful evidence pattern: freeze a blind review packet,
    bind the review to immutable material identity, capture the independent verdict
    separately, and validate the capture mechanically before promotion.
 
@@ -398,7 +404,16 @@ receipt only.
 Nothing in this document authorizes:
 - creating the DB role/wrapper migration;
 - creating/modifying a workflow;
+- establishing a new DB-write route outside the current F0 Train-only policy;
 - issuing a real receipt;
 - changing Train, ruleset or required checks;
 - merging the design PR;
 - touching #2988.
+
+Before persistence can be implemented, Cristhian must explicitly choose one:
+1. amend canonical Router/F0 governance to authorize the bounded qualification-issuer
+   operation and role; or
+2. reject direct CI persistence and redesign issuance so every receipt write is still
+   executed through an authorized Train-mediated route.
+
+Until that decision exists, the issuer remains dry-run only.
