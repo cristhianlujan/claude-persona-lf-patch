@@ -160,7 +160,7 @@ BEGIN
     'rationale',
       'Preactivation admission of the single dynamic Profile Updater v0.2 only after exact frozen benchmarks, provider-bound SAFE_CHANGE_ADMISSION and exact native reviewer/selection evidence. This event permits C6 transactional cutover testing but never authorizes production activation by itself.',
     'contract_mode','VALIDATION_ACCEPTANCE',
-    'allowed_evidence_schemas',jsonb_build_array('architecture-gate-test/v1')
+    'allowed_evidence_schemas',jsonb_build_array('architecture-closure/v2')
   );
 
   IF NOT EXISTS (
@@ -204,14 +204,14 @@ BEGIN
     WHERE event_type=v_event_type
       AND active=true
       AND contract_mode='VALIDATION_ACCEPTANCE'
-      AND allowed_evidence_schemas=ARRAY['architecture-gate-test/v1']::text[]
+      AND allowed_evidence_schemas=ARRAY['architecture-closure/v2']::text[]
       AND governance_state='GOVERNED_V2'
   ) THEN
     RAISE EXCEPTION 'PE10_C5_ADMISSION_EVENT_CONTRACT_NOT_GOVERNED';
   END IF;
 
   v_event_payload:=jsonb_build_object(
-    'evidence_schema_version','architecture-gate-test/v1',
+    'evidence_schema_version','architecture-closure/v2',
     'all_confirmed',true,
     'probe_persistence',true,
     'positive_control_count',4,
@@ -248,12 +248,6 @@ BEGIN
     'next_gate','PE10_C6_TRANSACTIONAL_CUTOVER_VALIDATION',
     'scope','PREACTIVATION_C5_ADMISSION_ONLY'
   );
-
-  IF private.fn_lf_typed_evidence_payload_valid_v3(
-       'architecture-gate-test/v1',v_event_payload) IS NOT TRUE
-  THEN
-    RAISE EXCEPTION 'PE10_C5_ADMISSION_EVENT_TYPED_EVIDENCE_INVALID';
-  END IF;
 
   INSERT INTO public.lf_eventos(
     evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,
@@ -350,6 +344,25 @@ BEGIN
   THEN
     RAISE EXCEPTION 'PE10_C5_CLOSE_POSTSTATE_INVALID';
   END IF;
+
+  INSERT INTO public.lf_error_knowledge
+    (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
+     severidad,frecuencia,primera_vez,ultima_vez,lote_origen,estado,source_ref)
+  SELECT
+    'LF-PE10-C5-VALIDATION-ACCEPTANCE-SCHEMA-MISMATCH-20261021-001',
+    'PROFILE_EVOLUTION',
+    'C5 acceptance event used a typed-evidence schema unsupported by VALIDATION_ACCEPTANCE',
+    'Train run 39640812336 reached exact APPLY and rolled back when PROFILE_EVOLUTION_CUTOVER_ADMITTED used architecture-gate-test/v1 under a VALIDATION_ACCEPTANCE event contract.',
+    'The event-type contract allowed architecture-gate-test/v1, but the transversal validation-acceptance trigger only admits test-evidence/v2, closure-evidence/v2, architecture-closure/v2 or external-ci-verification/v3.',
+    'Event-type allowed_evidence_schemas and the global contract-mode trigger must both accept the same schema; satisfying only the event-type registry is insufficient.',
+    'For deliberate admission decisions, use VALIDATION_ACCEPTANCE with architecture-closure/v2 and do not route that payload through the TYPED_EVIDENCE registry validator.',
+    'Corrected source requires architecture-closure/v2 in both contract and event payload; prior failed Train transaction left no event contract, event, migration ledger row or C5 transition.',
+    'HIGH',1,clock_timestamp(),clock_timestamp(),'PE10_C5','ACTIVO',
+    'github://cristhianlujan/claude-persona-lf-patch/pull/3028'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.lf_error_knowledge
+    WHERE codigo='LF-PE10-C5-VALIDATION-ACCEPTANCE-SCHEMA-MISMATCH-20261021-001'
+  );
 
   INSERT INTO public.lf_error_knowledge
     (codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
