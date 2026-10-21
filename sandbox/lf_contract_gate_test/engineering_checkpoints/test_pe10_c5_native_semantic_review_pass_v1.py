@@ -2,7 +2,9 @@
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
-SQL=ROOT/"supabase/migrations/20261021165000_lf_pe10_c5_native_semantic_review_pass_v1.sql"
+matches=list((ROOT/"supabase/migrations").glob("*_lf_pe10_c5_native_semantic_review_pass_v1.sql"))
+assert len(matches)==1, f"EXPECTED_ONE_C5_SEMANTIC_MIGRATION:{matches}"
+SQL=matches[0]
 src=SQL.read_text(encoding="utf-8")
 
 required=[
