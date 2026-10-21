@@ -33,6 +33,7 @@ def main():
         ('PROFILE_EXECUTION_RESEARCH_BASELINE', [sys.executable, str(root/'evals/profile_execution_research_baseline_contract.py')]),
         ('PROFILE_EVIDENCE_DRILLDOWN', [sys.executable, str(root/'evals/test_evidence_drilldown_v1.py')]),
         ('PROFILE_DEPENDENCY_CONSUMER_MEASUREMENT', [sys.executable, str(root/'evals/test_measure_dependencies_v1.py')]),
+        ('PROFILE_EVOLUTION_PLANNER_DISPATCH_READBACK', [sys.executable, str(root/'evals/test_pe10_planner_dispatch_qualified_readback_v1.py')]),
         ('S26_PROFILE_BASELINE_MATRIX', [sys.executable, str(root/'evals/s26_profile_baseline_matrix.py')]),
         ('S26_LEARNING_PREFLIGHT_MATRIX', [sys.executable, str(root/'evals/s26_learning_preflight_matrix.py')]),
     ]
