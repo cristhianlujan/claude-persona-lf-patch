@@ -1,0 +1,35 @@
+{
+ "case_ref": "PE10-IG-M107-M109-P0",
+ "checkpoint_effect": "C4_EVALUATION_EVIDENCE",
+ "disclosed_limitations": [
+  "H1-H4 canonical text unavailable; evaluator used coordinator-derived R1-R4.",
+  "Provider isolation not attestable (temporary chat; one shared context for the five roles of each arm).",
+  "Blinding imperfect.",
+  "Full evaluator RAW (39441 chars) is NOT archived in the repo: only a 20700-char verified prefix plus the in-browser sha256.",
+  "Producer tokens and wall time NO_MEDIDO; no cost proportionality can be claimed.",
+  "Single P0 case: scores are not statistical evidence. Both pair verdicts NO_DEMOSTRADO.",
+  "Coordinator read-only check on 2026-10-20 confirmed 22 changed / 16 equal (md5 prosrc), supporting the evaluator's critical false positive on X2 (23/15)."
+ ],
+ "evaluator_raw_archived": "PREFIX_ONLY_20700_OF_39441",
+ "evaluator_raw_sha256": "6c0fc0c270cbeea246be704d4115016f13c02db1fb2e6508047beaa51bf5d5b4",
+ "invariants": {
+  "c1_c2_rerun": false,
+  "original_work_unchanged": true,
+  "p0_changed": false,
+  "runtime_modified": false,
+  "s2_activated": false,
+  "source_cutoff_unchanged": true
+ },
+ "manifest_sha256": "08a408e90380e061c6ff419216b0a13c823eb9bf6dc57ee81091d061484c89ad",
+ "schema": "PE10_E2_C4_EVALUATION_RECEIPT_V1",
+ "source_cutoff_utc": "2026-10-15T00:00:00Z",
+ "source_event_id": 20161,
+ "status": "EVALUATED_VERDICT_NO_DEMOSTRADO_BOTH_PAIRS",
+ "validator_git_blob_sha1": "61722927c6d22a782f8f7dd82e7f831d16c14401",
+ "validator_test_git_blob_sha1": "6d66dfeb27248fe467de6a342204e13711aabcc1",
+ "validator_tests": {
+  "executed": 5,
+  "failed": 0,
+  "passed": 5
+ }
+}
