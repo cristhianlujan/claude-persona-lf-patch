@@ -12,3 +12,5 @@ Aplica a CREACION_PERFIL_LF y ACTUALIZACION_PERFIL_LF cuando una decisión alter
 
 Ejecutable sin DB: python3 skills/profile_creator/validators/measure_dependencies_v1.py <snapshot.json>.
 El CLI analiza bytes de fuente ya leídos; el consumidor debe adquirirlos por una ruta autorizada y conservar evidencia. Ni tests sintéticos ni este módulo demuestran consumo operativo por el runtime.
+
+No aplicar el enfoque descartado de eliminar texto entre comillas para inferir ausencia de dependencias: coincidencias en cadenas y SQL dinámico quedan TEXT_OR_DYNAMIC_SQL_UNRESOLVED hasta una inspección específica. El control solo identifica llamadas estáticas evidentes; la ejecución debe verificarse con evidencia distinta.

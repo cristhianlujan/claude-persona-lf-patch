@@ -13,7 +13,7 @@ for operation in ("CREACION_PERFIL_LF","ACTUALIZACION_PERFIL_LF"):
  o=m.audit(p)
  assert o["hash_equal"]==1
  assert o["conexiones_exactas"]["callsite_candidates"]==1
- assert o["conexiones_exactas"]["text_only"]==1
+ assert o["conexiones_exactas"]["text_or_dynamic_unresolved"]==1
  assert len(o["definicion_leida"])==1 and o["definicion_leida"][0]["execution_verified"] is False
  assert o["other_consumers"]["cron"]["status"]=="UNKNOWN_NOT_SCANNED"
  p["historical_callers"][0]["definition_md5"]="0"*32
@@ -31,4 +31,12 @@ assert o["other_consumers"]["views"]["count"]==0
 p["performance"]["runs"]=[{"duration_ms":12}]*8
 assert m.audit(p)["performance"]["status"]=="MUESTRA_SIN_CAUSALIDAD"
 assert "fn_target_v1" not in m.code_only("'fn_target_v1(1)' -- fn_target_v1(4)")
-print("PASS: SOURCE_DEPENDENCY_MEASUREMENT both operations, positive/negative")
+# A quoted SQL fragment may be executable dynamically. Keep it unresolved.
+dynamic={"operation_code":"CREACION_PERFIL_LF","source_ref":"fixture://dynamic","temporal_scope":"CURRENT",
+"scopes_scanned":["pg_proc"],
+"historical_callers":[{"caller":"programacion.dynamic","callees":["fn_target_v1"],"definition_md5":"0"*32}],
+"live_functions":[{"caller":"programacion.dynamic","prosrc":"execute 'select programacion.fn_target_v1(1)';"}]}
+dyn=m.audit(dynamic)
+assert dyn["conexiones_exactas"]["callsite_candidates"]==0
+assert dyn["edge_evidence"][0]["state"]=="TEXT_OR_DYNAMIC_SQL_UNRESOLVED"
+print("PASS: SOURCE_DEPENDENCY_MEASUREMENT both operations, positive/negative and dynamic SQL uncertainty")
