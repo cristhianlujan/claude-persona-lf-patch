@@ -1,0 +1,10 @@
+{
+  "solution_ref": "pase-control-qualification-issuer-design-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/pase_control_qualification/ISSUER_DESIGN_V1.md": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/pase_control_qualification/qualification_issuer_v1.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/pase_control_qualification/validate_independent_review_v1.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/pase_control_qualification/test_qualification_issuer_v1.py": "PASE_SUPPORT",
+    "sandbox/lf_contract_gate_test/changesets/pase-control-qualification-issuer-design-v1.json": "CHANGESET_MANIFEST"
+  }
+}
