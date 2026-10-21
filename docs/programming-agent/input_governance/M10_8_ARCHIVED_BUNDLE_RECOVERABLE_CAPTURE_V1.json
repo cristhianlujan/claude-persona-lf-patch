@@ -1,0 +1,42 @@
+{
+  "schema_version": "M10_8_ARCHIVED_BUNDLE_RECOVERABLE_CAPTURE_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M10.8",
+  "checkpoint_code": "ARCHIVED_BUNDLE_RECOVERABLE",
+  "upstream": {
+    "producer_unit": "M9.0",
+    "receipt_id": 187,
+    "receipt_sha256": "fafd3ac20510d7a802cea9dead8106abf9c11157823c85845f04e8639912c292",
+    "receipt_verification_status": "VERIFIED",
+    "bundle_sha256": "db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f",
+    "bundle_manifest_assertion_receipt_sha256": "07b2ae7ad563bae072845d6b7177b9db99d7a38cdb561e7c724b8566da4adbd8",
+    "drift_negative_assertion_receipt_sha256": "607a972948d8d94d1af4232ec3d9786f677e63eaffe00f6147e08e467fcd4311"
+  },
+  "git_readback": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "ref": "5a8ff982539bc5f9f102c16c1c5d4661c66e26a0",
+    "commit_retrievable": true,
+    "commit_signature_verified": true,
+    "files": [
+      {
+        "path": "supabase/functions/input-governance-agent-v1/index.ts",
+        "retrievable": true,
+        "git_blob_sha1": "326a5c492c84cceccb45ea8d6a0f39a1d5305637"
+      },
+      {
+        "path": "supabase/functions/input-governance-curator-v1/index.ts",
+        "retrievable": true,
+        "git_blob_sha1": "bd43f469d5d508f64dbee21eea7be611e7d2e780"
+      },
+      {
+        "path": "supabase/functions/input-governance-validator-v1/index.ts",
+        "retrievable": true,
+        "git_blob_sha1": "31a77e43c02f714479e5ed2f1fdb615fbe38eead"
+      }
+    ]
+  },
+  "claim_boundary": "RECOVERABILITY_ONLY_NOT_CURRENT_RUNTIME_PARITY",
+  "rebuild_performed": false,
+  "production_authorized": false,
+  "result": "PASS"
+}
