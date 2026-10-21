@@ -52,8 +52,8 @@ BEGIN
      OR v_receipt.subject_type IS DISTINCT FROM 'input_governance_release_bundle'
      OR v_receipt.receipt_sha256 IS DISTINCT FROM 'fafd3ac20510d7a802cea9dead8106abf9c11157823c85845f04e8639912c292'
      OR v_receipt.payload->>'verification_status' IS DISTINCT FROM 'VERIFIED'
-     OR v_receipt.payload#>>'{payload,head_sha}' IS DISTINCT FROM '5a8ff982539bc5f9f102c16c1c5d4661c66e26a0'
-     OR v_receipt.payload#>>'{payload,bundle_sha256}' IS DISTINCT FROM 'db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f'
+     OR v_receipt.payload->>'head_sha' IS DISTINCT FROM '5a8ff982539bc5f9f102c16c1c5d4661c66e26a0'
+     OR v_receipt.payload#>>'{manifest,bundle_sha256}' IS DISTINCT FROM 'db84f4ab3cdcc0fe3dcdd463be70ad9b4c96ec7beb9be9cc56b9d344793e7f2f'
   THEN
     RAISE EXCEPTION 'M108_ARCHIVED_BUNDLE_RECEIPT_FAIL:%',row_to_json(v_receipt);
   END IF;
