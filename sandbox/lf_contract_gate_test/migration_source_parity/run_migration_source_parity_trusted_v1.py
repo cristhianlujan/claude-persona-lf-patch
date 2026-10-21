@@ -246,6 +246,72 @@ def bind_data_root(*, entry, data_root: Path, event_name: str, psql, pg_env: dic
     focal._prepare_focal_inputs = prepare
 
 
+def prepare_full_current_inputs(*, focal, full, output_dir: Path, data_root: Path, pg_env: dict[str,str], psql) -> tuple[dict[str,Path],dict[str,int]]:
+    """Entire post-baseline Git + ledger, using only the existing read-only
+    capability snapshot in bounded <=150-version batches. Never mutate either source.
+    Unlike CHANGESET_SCOPED, include ledger-only versions in the comparison.
+    """
+    import io
+    index_query = (
+        "select version,coalesce(name,'') from supabase_migrations.schema_migrations "
+        f"where version > '{full.CLASSIFICATION_BASELINE_END}' order by version"
+    )
+    ledger_index = [row for row in csv.reader(io.StringIO(psql(index_query,env=pg_env))) if row]
+    if any(len(row)!=2 or VERSION_RE.fullmatch(row[0]) is None for row in ledger_index):
+        fail("FAIL_IG_M1013_FULL_LEDGER_INDEX_INVALID")
+    remote_versions = [row[0] for row in ledger_index]
+    if len(remote_versions)!=len(set(remote_versions)):
+        fail("FAIL_IG_M1013_FULL_LEDGER_INDEX_DUPLICATE")
+
+    adapter = full._load_parity_adapter()
+    local_versions: list[str] = []
+    managed_versions: set[str] = set()
+    for file in sorted((data_root/"supabase/migrations").glob("*.sql")):
+        match = adapter.FILENAME_RE.fullmatch(file.name)
+        if match is None or match.group(1) <= full.CLASSIFICATION_BASELINE_END:
+            continue
+        version, name = match.groups()
+        local_versions.append(version)
+        if adapter.managed_source(file,version,name):
+            managed_versions.add(version)
+    if len(local_versions)!=len(set(local_versions)) or not local_versions or not remote_versions:
+        fail("FAIL_IG_M1013_FULL_SOURCE_INDEX_INVALID")
+
+    full_versions = sorted(set(local_versions)|set(remote_versions))
+    merged={"schema_version":SNAPSHOT_SCHEMA,"post_cutover":[],"statement_counts":[],
+            "owners":[],"grandfathered":None,"legacy":None}
+    batch_count=0
+    for start in range(0,len(full_versions),150):
+        batch = full_versions[start:start+150]
+        current_managed = sorted(set(batch)&managed_versions)
+        snap = parse_snapshot(psql(snapshot_sql(context_versions=batch,
+                                managed_versions=current_managed,full=full),env=pg_env))
+        for key in ("grandfathered","legacy"):
+            if merged[key] is None:
+                merged[key]=snap[key]
+            elif merged[key]!=snap[key]:
+                fail("FAIL_IG_M1013_FULL_HISTORICAL_SNAPSHOT_DRIFT",key)
+        for key in ("post_cutover","statement_counts","owners"):
+            merged[key].extend(snap[key])
+        batch_count+=1
+
+    if len(merged["post_cutover"])!=len(remote_versions):
+        fail("FAIL_IG_M1013_FULL_REMOTE_COVERAGE",
+             f"expected={len(remote_versions)} actual={len(merged['post_cutover'])}")
+    if len(merged["statement_counts"])!=len(set(managed_versions)&set(remote_versions)):
+        fail("FAIL_IG_M1013_FULL_MANAGED_COUNT_COVERAGE")
+
+    inputs=write_focal_inputs(output_dir=output_dir,snapshot=merged,full=full)
+    evidence={"local_versions":len(local_versions),"ledger_versions":len(remote_versions),
+              "union_versions":len(full_versions),"managed_source_versions":len(managed_versions),
+              "snapshot_batches":batch_count}
+    (output_dir/"full-current-input-scope.json").write_text(
+        json.dumps({"schema_version":"ig-m1013-full-current-scope/v1",
+                    "scope":"FULL_CURRENT_STATE","coverage":evidence,
+                    "source":"CURRENT_MAIN","ledger":"LIVE_READ_ONLY"},sort_keys=True)+"\n",encoding="utf-8")
+    return inputs,evidence
+
+
 def run(argv: list[str] | None = None, *, psql=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", required=True)
@@ -257,6 +323,7 @@ def run(argv: list[str] | None = None, *, psql=None) -> int:
     parser.add_argument("--control-maturity", default="CUTOVER")
     parser.add_argument("--evaluation-scope", default="CHANGESET_SCOPED")
     parser.add_argument("--historical-debt-disposition", default="RECONCILIATION_WORK_ITEM")
+    parser.add_argument("--full-current", action="store_true", help="M10.13 official Train-only entire live parity")
     args = parser.parse_args(argv)
 
     scrub_environment()
@@ -275,7 +342,6 @@ def run(argv: list[str] | None = None, *, psql=None) -> int:
     bind_data_root(entry=entry, data_root=data_root, event_name=args.event_name, psql=psql or full._psql, pg_env=pg_env)
 
     maturity = focal._require_exact(args.control_maturity, focal.EXPECTED_MATURITY, "CONTROL_MATURITY")
-    scope = focal._require_exact(args.evaluation_scope, focal.EXPECTED_SCOPE, "EVALUATION_SCOPE")
     disposition = focal._require_exact(
         args.historical_debt_disposition, focal.EXPECTED_HISTORICAL_DISPOSITION, "HISTORICAL_DEBT_DISPOSITION"
     )
@@ -289,32 +355,51 @@ def run(argv: list[str] | None = None, *, psql=None) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     # Same path as the focal runner, including PRs without migration changes
     # (bounded checkpoint/grandfathered/legacy attestation still runs).
-    changed_paths = focal._changed_migration_paths(base_sha, head_sha)
-    scoped, focal_versions, managed_versions = focal._build_scoped_snapshot(
-        output_dir=output_dir, changed_paths=changed_paths
-    )
-    focal._write_scope_manifest(
-        output_dir=output_dir, base_sha=base_sha, head_sha=head_sha, changed_paths=changed_paths,
-        focal_versions=focal_versions, maturity=maturity, evaluation_scope=scope,
-        historical_disposition=disposition,
-    )
-    inputs = focal._prepare_focal_inputs(
-        output_dir=output_dir, focal_versions=focal_versions, managed_versions=managed_versions
-    )
-    rc = full._run_parity(
-        migrations=scoped, inputs=inputs, output_dir=output_dir,
-        event_name=args.event_name, base_ref=base_ref,
-    )
-    focal._enrich_run_summary(
-        output_dir=output_dir, maturity=maturity, evaluation_scope=scope,
-        historical_disposition=disposition, changed_paths=changed_paths,
-    )
+    if args.full_current:
+        if (args.evaluation_scope!="FULL_CURRENT_STATE" or args.event_name!="push"
+            or base_ref!="main" or base_sha!=head_sha
+            or pg_env.get("PGUSER","").split(".",1)[0]!="lf_reconcile_readonly"):
+            fail("BLOCK_IG_M1013_FULL_CURRENT_SCOPE_OR_ROLE")
+        inputs,coverage=prepare_full_current_inputs(
+            focal=focal,full=full,output_dir=output_dir,data_root=data_root,
+            pg_env=pg_env,psql=psql or full._psql
+        )
+        rc=full._run_parity(
+            migrations=data_root/"supabase/migrations",inputs=inputs,
+            output_dir=output_dir,event_name=args.event_name,base_ref=base_ref
+        )
+        full._verify_exact_context(base_sha,head_sha,base_ref)
+    else:
+        scope = focal._require_exact(args.evaluation_scope, focal.EXPECTED_SCOPE, "EVALUATION_SCOPE")
+        changed_paths = focal._changed_migration_paths(base_sha, head_sha)
+        scoped, focal_versions, managed_versions = focal._build_scoped_snapshot(
+            output_dir=output_dir, changed_paths=changed_paths
+        )
+        focal._write_scope_manifest(
+            output_dir=output_dir, base_sha=base_sha, head_sha=head_sha, changed_paths=changed_paths,
+            focal_versions=focal_versions, maturity=maturity, evaluation_scope=scope,
+            historical_disposition=disposition,
+        )
+        inputs = focal._prepare_focal_inputs(
+            output_dir=output_dir, focal_versions=focal_versions, managed_versions=managed_versions
+        )
+        rc = full._run_parity(
+            migrations=scoped, inputs=inputs, output_dir=output_dir,
+            event_name=args.event_name, base_ref=base_ref,
+        )
+        focal._enrich_run_summary(
+            output_dir=output_dir, maturity=maturity, evaluation_scope=scope,
+            historical_disposition=disposition, changed_paths=changed_paths,
+        )
     summary_path = output_dir / "run-summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     summary["runner"] = "TRUSTED_READ_ONLY_V1"
+    if args.full_current:
+        summary.update({"evaluation_scope":"FULL_CURRENT_STATE","current_main_sha":head_sha,
+                        "coverage":coverage,"checkpoint":"IG_CURATOR_VALIDATOR_REFACTOR_V2:M10.13:GIT_RUNTIME_PARITY"})
     summary_path.write_text(json.dumps(summary, sort_keys=True) + "\n", encoding="utf-8")
     if rc == 0:
-        print(f"PASS_MIGRATION_SOURCE_PARITY_TRUSTED_READ_ONLY head={head_sha} migrations={len(focal_versions)}")
+        print(f"PASS_MIGRATION_SOURCE_PARITY_TRUSTED_READ_ONLY head={head_sha} migrations={coverage['local_versions'] if args.full_current else len(focal_versions)}")
     return rc
 
 
