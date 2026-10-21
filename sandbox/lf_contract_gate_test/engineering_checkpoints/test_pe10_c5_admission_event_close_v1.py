@@ -9,7 +9,7 @@ src=matches[0].read_text(encoding="utf-8")
 required=[
   "PROFILE_EVOLUTION_CUTOVER_ADMITTED",
   "'contract_mode','VALIDATION_ACCEPTANCE'",
-  "'architecture-gate-test/v1'",
+  "'architecture-closure/v2'",
   "fn_create_lf_event_type_contract_request_v2",
   "EVENT_TYPE_CONTRACT_CHANGE_APPROVED",
   "fn_approve_lf_event_type_contract_request_v2",
@@ -33,6 +33,7 @@ required=[
   "'DONE'",
   "PE10_C5_CLOSE_POSTSTATE_INVALID",
   "LF-PE10-C5-ADMISSION-EVENT-TYPE-MISSING-20261021-001",
+  "LF-PE10-C5-VALIDATION-ACCEPTANCE-SCHEMA-MISMATCH-20261021-001",
 ]
 for item in required:
   assert item in src, f"MISSING:{item}"
@@ -54,3 +55,5 @@ assert "version='v0.2'" in src
 assert "step_id IN ('method_selection','evolution_decision')" in src
 assert "AND active) <> 0" in src
 print("PASS PE10_C5_ADMISSION_EVENT_CLOSE_SOURCE_GUARDS")
+
+assert "fn_lf_typed_evidence_payload_valid_v3" not in src
