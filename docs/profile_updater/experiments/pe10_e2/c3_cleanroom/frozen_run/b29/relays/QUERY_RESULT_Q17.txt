@@ -1,0 +1,96 @@
+QUERY_RESULT Q17 (file form)
+coordinator_note: read-only result of Q17 as returned by the database connector: 47 rows (1 GUARD_FUNCTION, 46 TABLE_CONSTRAINT) in the query's order, none truncated. The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: (a) md5(definition) of each of the 46 constraint rows equals its returned source_md5; (b) the md5 of the guard function source text equals the returned source_md5 ac06b635bd7c4ca5be3f9c8acfd6e9c6 (the text contains line breaks; it is the last field's multi-line value in row 1); (c) an md5 over the canonical text of the 46 constraint rows (6 columns, ordered by object_identity, C collation) computed in the database equals the md5 of those rows here: 8fe61aab0013f19c854b7101d6020921. Observation class: CURRENT.
+Columns (in order): evidence_type|object_identity|object_oid|source_md5|definition|observation_class
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 078af53a8fa5ae020118b58e433fd0c1e430f90a0f927e90623467ae200b96fd
+---BEGIN ROWS---
+GUARD_FUNCTION|programacion.fn_guard_input_governance_continuation_currentness_v1()|156952|ac06b635bd7c4ca5be3f9c8acfd6e9c6|
+DECLARE
+  v_admission jsonb;
+  v_compaction jsonb;
+BEGIN
+  IF tg_op='UPDATE'
+     AND tg_table_schema='programacion'
+     AND tg_table_name='input_family_assessments' THEN
+    IF old.validator_outcome<>'PENDING'
+       AND (
+         old.validator_outcome IS DISTINCT FROM new.validator_outcome
+         OR old.validator_findings IS DISTINCT FROM new.validator_findings
+         OR old.validator_evidence IS DISTINCT FROM new.validator_evidence
+         OR old.validator_identity IS DISTINCT FROM new.validator_identity
+         OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256
+         OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at
+       ) THEN
+      IF old.validator_evidence IS DISTINCT FROM new.validator_evidence THEN
+        v_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
+          to_jsonb(old),to_jsonb(new)
+        );
+        IF coalesce((v_compaction->>'allowed')::boolean,false) IS TRUE THEN
+          RETURN new;
+        END IF;
+        RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
+          old.family_code,coalesce(v_compaction->>'code','STORAGE_COMPACTION_REJECTED');
+      END IF;
+      RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code;
+    END IF;
+  END IF;
+
+  -- Only defer UPDATE admission to the mandatory final BEFORE UPDATE guard.
+  -- The INSERT path (including chunk timings) retains full currentness here.
+  IF TG_OP='UPDATE' AND TG_TABLE_SCHEMA='programacion'
+    AND TG_TABLE_NAME IN ('input_family_assessments','input_gap_proposals') THEN
+    RETURN NEW;
+  END IF;
+  v_admission:=programacion.fn_input_governance_continuation_currentness_v1(new.run_id);
+  IF NOT coalesce((v_admission->>'continuation_current')::boolean,false) THEN
+    RAISE EXCEPTION 'INPUT_GOVERNANCE_CONTINUATION_CURRENTNESS_BLOCKED:table=%:run=%:code=%',
+      tg_table_name,new.run_id,coalesce(v_admission->>'code','CURRENTNESS_UNKNOWN');
+  END IF;
+  RETURN new;
+END;
+|CURRENT_GUARD_SOURCE
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_applicability_check|59561|7b30c1e8631c136f54b25854060a83a5|CHECK (applicability = ANY (ARRAY['APPLICABLE'::text, 'NOT_APPLICABLE'::text, 'UNRESOLVED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_blockers_check|59570|eefc1aed1c8fbc198fb3f97b062ac884|CHECK (jsonb_typeof(blockers) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_check|59580|24203da2c5c41e588e3f0d2e8500f58d|CHECK (applicability <> 'NOT_APPLICABLE'::text OR coverage_status = 'NOT_APPLICABLE'::text AND well_defined_status = 'NOT_APPLICABLE'::text AND story_ready_status = 'NOT_APPLICABLE'::text AND implementation_ready_status = 'NOT_APPLICABLE'::text AND qa_ready_status = 'NOT_APPLICABLE'::text AND production_ready_status = 'NOT_APPLICABLE'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_check1|59581|f946f6ac8045a559d458ee29b772c12b|CHECK (validator_outcome = 'PENDING'::text AND validator_identity IS NULL AND validator_assessed_at IS NULL AND validator_sha256 IS NULL OR validator_outcome <> 'PENDING'::text AND validator_identity IS NOT NULL AND validator_assessed_at IS NOT NULL AND validator_sha256 IS NOT NULL)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_coverage_status_check|59562|feb3f37d326f0b002d230fe5fd6dcaa4|CHECK (coverage_status = ANY (ARRAY['COMPLETE'::text, 'PARTIAL'::text, 'MISSING'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_curator_evidence_check|59574|38ce28b3456698c3ba1c4b365f80f5df|CHECK (jsonb_typeof(curator_evidence) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_curator_sha256_check|59575|ae3511e0c5da6c23bb5779a495459fbb|CHECK (curator_sha256 ~ '^[0-9a-f]{64}$'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_freshness_check|59573|16e540be5583b6e41441e9f273b9b8e9|CHECK (jsonb_typeof(freshness) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_implementation_ready_status_check|59565|5ef82c3206e65edc128145d2c22aa48b|CHECK (implementation_ready_status = ANY (ARRAY['READY'::text, 'NOT_READY'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_negative_requirements_check|59571|6786bd46ec601c9ef9a8d35d56b1a659|CHECK (jsonb_typeof(negative_requirements) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_pkey|59585|4c6419b3704337bbfe50f018842a9ad3|PRIMARY KEY (id)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_production_ready_status_check|59567|f20cbe76af0cb0d449770c75adfd8785|CHECK (production_ready_status = ANY (ARRAY['READY'::text, 'NOT_READY'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_qa_ready_status_check|59566|8bd453e2d197cc8f2894e04af5480656|CHECK (qa_ready_status = ANY (ARRAY['READY'::text, 'NOT_READY'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_rationale_check|59569|ac568ebdfcf3ad970fc2bf283b61519b|CHECK (length(btrim(rationale)) > 0)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_run_id_family_code_key|59587|7925e3708c9f146ea080c6f9c88a71a5|UNIQUE (run_id, family_code)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_run_id_fkey|59588|66932aab8a2094ffa1dae6fb5e83a131|FOREIGN KEY (run_id) REFERENCES programacion.input_readiness_runs(id) ON DELETE CASCADE|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_severity_check|59612|17fa25c21390b2aaf71d799579fcb51c|CHECK (severity = ANY (ARRAY['P0'::text, 'P1'::text, 'P2'::text, 'P3'::text, 'P4'::text, 'UNRESOLVED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_source_refs_check|59568|472c618a488953f4ba0e5556cc5a3719|CHECK (jsonb_typeof(source_refs) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_story_ready_status_check|59564|9b5b9f233d3acf7577af494fb8361bf8|CHECK (story_ready_status = ANY (ARRAY['READY'::text, 'NOT_READY'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_test_obligations_check|59572|af3deff4899ad6415a7cd412afefe236|CHECK (jsonb_typeof(test_obligations) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_validator_evidence_check|59578|6f29c4438b00ab218745b04c29caf88b|CHECK (jsonb_typeof(validator_evidence) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_validator_findings_check|59577|6ecb2dc498e37ed234e73297afa3b146|CHECK (jsonb_typeof(validator_findings) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_validator_outcome_check|59576|472fc1798a1595770707ce4d07daf48d|CHECK (validator_outcome = ANY (ARRAY['PENDING'::text, 'PASS'::text, 'FAIL'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_validator_sha256_check|59579|f7b4c00a06839601d95a32e9a8ae9a5c|CHECK (validator_sha256 IS NULL OR validator_sha256 ~ '^[0-9a-f]{64}$'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_family_assessments:input_family_assessments_well_defined_status_check|59563|aeaff06733a9161cae8b19a7d75c42d1|CHECK (well_defined_status = ANY (ARRAY['COMPLETE'::text, 'PARTIAL'::text, 'MISSING'::text, 'NOT_APPLICABLE'::text, 'PENDING'::text, 'BLOCKED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_assessment_id_fkey|67584|6c96950ff8b8f7e445cf6693c47f8782|FOREIGN KEY (assessment_id) REFERENCES programacion.input_family_assessments(id)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_canonical_target_check|67564|1d6744bc24d0ba34b2348228ef5b646a|CHECK (jsonb_typeof(canonical_target) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_confidence_check|67567|80afc37ece010acbcde529e17c7cf959|CHECK (confidence IS NULL OR confidence >= 0::numeric AND confidence <= 1::numeric)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_contradictions_checked_check|67569|346442e11a49f8d98118441936d721b5|CHECK (jsonb_typeof(contradictions_checked) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_evidence_refs_check|67566|58609819c95bbbd1e11ccb09ef42728d|CHECK (jsonb_typeof(evidence_refs) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_pkey|67576|4c6419b3704337bbfe50f018842a9ad3|PRIMARY KEY (id)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_proposal_kind_check|67562|09797f02c653130e6f8b441cdde90f78|CHECK (proposal_kind = ANY (ARRAY['RESEARCH_EVIDENCED_PROPOSAL'::text, 'BEST_PRACTICE_PROPOSAL'::text, 'HUMAN_DECISION_REQUIRED'::text, 'RESEARCH_REQUIRED'::text, 'SOURCE_INCOMPLETE'::text, 'SOURCE_CONFLICT'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_proposed_payload_check|67563|51c08a5d7fda5e541079fa58f63974da|CHECK (jsonb_typeof(proposed_payload) = 'object'::text AND proposed_payload <> '{}'::jsonb)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_run_id_family_code_gap_code_key|67578|1a818fe6dba2818f325542851f79e869|UNIQUE (run_id, family_code, gap_code)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_run_id_fkey|67579|6e0899f454696116884a9102846de582|FOREIGN KEY (run_id) REFERENCES programacion.input_readiness_runs(id)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_source_refs_check|67565|472c618a488953f4ba0e5556cc5a3719|CHECK (jsonb_typeof(source_refs) = 'array'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_stage_impact_check|67568|a993fdf40d5ddaa5c714f5b55dbb7e80|CHECK (jsonb_typeof(stage_impact) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_status_check|67570|af7d61fc576c64e8e2046e91db2f8253|CHECK (status = ANY (ARRAY['PROPOSED'::text, 'VALIDATED'::text, 'REJECTED'::text, 'HUMAN_DECISION_REQUIRED'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_validator_evidence_check|67572|6f29c4438b00ab218745b04c29caf88b|CHECK (jsonb_typeof(validator_evidence) = 'object'::text)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_gap_proposals:input_gap_proposals_validator_outcome_check|67571|84f79733711b55eae9232d1ee5d766c8|CHECK (validator_outcome = ANY (ARRAY['PENDING'::text, 'PASS'::text, 'FAIL'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_chunk_no_check|135573|737b9b4b8ffbf9068822cd214a9928a4|CHECK (chunk_no > 0)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_duration_ms_check|135575|4a7d95b9d140a467310049c1524ca832|CHECK (duration_ms >= 0)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_pkey|135579|4c6419b3704337bbfe50f018842a9ad3|PRIMARY KEY (id)|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_route_check|135574|09bdc24540ab64ca7d8dae9c2c43e176|CHECK (route = ANY (ARRAY['VALIDATE_V2'::text, 'BOOTSTRAP_VALIDATE_V1'::text, 'VALIDATOR_REBIND_V1'::text]))|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_run_id_fkey|135582|96d04e9274277293629894ece45621d7|FOREIGN KEY (run_id) REFERENCES programacion.input_readiness_runs(id) ON DELETE RESTRICT|CURRENT_TABLE_CONSTRAINT
+TABLE_CONSTRAINT|programacion.input_validator_chunk_timings:input_validator_chunk_timings_run_id_validator_identity_chu_key|135581|9308de0e9d2277349cafa36240155a10|UNIQUE (run_id, validator_identity, chunk_no)|CURRENT_TABLE_CONSTRAINT

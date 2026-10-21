@@ -1,0 +1,102 @@
+QUERY_RESULT Q18 (file form)
+coordinator_note: read-only result of Q18 as returned by the database connector: 8 rows (6 on programacion.input_family_assessments, 2 on programacion.input_gap_proposals), none truncated, in the query's ORDER BY order (table_identity, trigger_name). The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: an md5 over the canonical text of all 8 rows (13 columns; boolean as true/false; currentness_candidate_full_source NULL written as NULL; the two non-NULL values are the multi-line guard function source, 1958 bytes, md5 ac06b635bd7c4ca5be3f9c8acfd6e9c6 as in each row's function_source_md5) computed in the database equals the md5 of this file's body: ee8ca9bd83550054367517adf33fac41. Observation class: CURRENT.
+Columns (in order): table_identity|trigger_name|trigger_oid|enabled_state|trigger_definition|function_oid|function_identity|function_source_md5|function_source_length|has_direct_continuation_call_token|has_readiness_currentness_call_token|has_currentness_related_text|currentness_candidate_full_source
+Columns constant across all rows (omitted from every row): {"observation_scope": "CURRENT_UPDATE_TRIGGER_COVERAGE_NOT_EXECUTION"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 69366078abdf28b1dd4ea6bb66b6d7b4515d4568324ffa671c4c343c55f60c9b
+---BEGIN ROWS---
+programacion.input_family_assessments|trg_input_family_assessment_00_execution_update|61795|O|CREATE TRIGGER trg_input_family_assessment_00_execution_update BEFORE UPDATE ON programacion.input_family_assessments FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_family_execution_update()|61793|programacion.fn_guard_input_family_execution_update()|1be731b9a6ece404244ffbfd9b2fe382|2167|false|false|false|NULL
+programacion.input_family_assessments|trg_input_family_assessment_00a_continuation_currentness_update|156953|O|CREATE TRIGGER trg_input_family_assessment_00a_continuation_currentness_update BEFORE UPDATE OF validator_outcome, validator_findings, validator_evidence, validator_identity, validator_sha256, validator_assessed_at ON programacion.input_family_assessments FOR EACH ROW WHEN (old.validator_outcome IS DISTINCT FROM new.validator_outcome OR old.validator_findings IS DISTINCT FROM new.validator_findings OR old.validator_evidence IS DISTINCT FROM new.validator_evidence OR old.validator_identity IS DISTINCT FROM new.validator_identity OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256 OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at) EXECUTE FUNCTION programacion.fn_guard_input_governance_continuation_currentness_v1()|156952|programacion.fn_guard_input_governance_continuation_currentness_v1()|ac06b635bd7c4ca5be3f9c8acfd6e9c6|1958|true|false|true|
+DECLARE
+  v_admission jsonb;
+  v_compaction jsonb;
+BEGIN
+  IF tg_op='UPDATE'
+     AND tg_table_schema='programacion'
+     AND tg_table_name='input_family_assessments' THEN
+    IF old.validator_outcome<>'PENDING'
+       AND (
+         old.validator_outcome IS DISTINCT FROM new.validator_outcome
+         OR old.validator_findings IS DISTINCT FROM new.validator_findings
+         OR old.validator_evidence IS DISTINCT FROM new.validator_evidence
+         OR old.validator_identity IS DISTINCT FROM new.validator_identity
+         OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256
+         OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at
+       ) THEN
+      IF old.validator_evidence IS DISTINCT FROM new.validator_evidence THEN
+        v_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
+          to_jsonb(old),to_jsonb(new)
+        );
+        IF coalesce((v_compaction->>'allowed')::boolean,false) IS TRUE THEN
+          RETURN new;
+        END IF;
+        RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
+          old.family_code,coalesce(v_compaction->>'code','STORAGE_COMPACTION_REJECTED');
+      END IF;
+      RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code;
+    END IF;
+  END IF;
+
+  -- Only defer UPDATE admission to the mandatory final BEFORE UPDATE guard.
+  -- The INSERT path (including chunk timings) retains full currentness here.
+  IF TG_OP='UPDATE' AND TG_TABLE_SCHEMA='programacion'
+    AND TG_TABLE_NAME IN ('input_family_assessments','input_gap_proposals') THEN
+    RETURN NEW;
+  END IF;
+  v_admission:=programacion.fn_input_governance_continuation_currentness_v1(new.run_id);
+  IF NOT coalesce((v_admission->>'continuation_current')::boolean,false) THEN
+    RAISE EXCEPTION 'INPUT_GOVERNANCE_CONTINUATION_CURRENTNESS_BLOCKED:table=%:run=%:code=%',
+      tg_table_name,new.run_id,coalesce(v_admission->>'code','CURRENTNESS_UNKNOWN');
+  END IF;
+  RETURN new;
+END;
+
+programacion.input_family_assessments|trg_input_family_assessment_00b_semantic_coherence_update|67547|O|CREATE TRIGGER trg_input_family_assessment_00b_semantic_coherence_update BEFORE UPDATE ON programacion.input_family_assessments FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_validator_semantic_coherence_v512()|67546|programacion.fn_guard_input_validator_semantic_coherence_v512()|1a08337f6fb4034b1ad63d7f9e8d08b6|7641|false|false|true|NULL
+programacion.input_family_assessments|trg_input_family_assessment_01_semantic_depth_update|62111|O|CREATE TRIGGER trg_input_family_assessment_01_semantic_depth_update BEFORE UPDATE ON programacion.input_family_assessments FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_family_semantic_depth()|62109|programacion.fn_guard_input_family_semantic_depth()|6d90a8bbe280318a687547ac3f7bb167|4117|false|false|true|NULL
+programacion.input_family_assessments|trg_input_family_assessment_01a_semantic_depth_v510_update|62838|O|CREATE TRIGGER trg_input_family_assessment_01a_semantic_depth_v510_update BEFORE UPDATE ON programacion.input_family_assessments FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_family_semantic_depth_v510()|62836|programacion.fn_guard_input_family_semantic_depth_v510()|be42b168c8a044c7ea4b5deb20b9d0af|4132|false|false|true|NULL
+programacion.input_family_assessments|trg_input_family_assessment_update|59599|O|CREATE TRIGGER trg_input_family_assessment_update BEFORE UPDATE ON programacion.input_family_assessments FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_family_assessment_update()|59598|programacion.fn_guard_input_family_assessment_update()|0b8363aec1efe57a04f504774a375983|9386|false|false|true|NULL
+programacion.input_gap_proposals|trg_input_gap_proposal_00_continuation_currentness_update|156954|O|CREATE TRIGGER trg_input_gap_proposal_00_continuation_currentness_update BEFORE UPDATE OF validator_identity, validator_outcome, validator_evidence, validator_sha256, validated_at ON programacion.input_gap_proposals FOR EACH ROW WHEN (old.validator_identity IS DISTINCT FROM new.validator_identity OR old.validator_outcome IS DISTINCT FROM new.validator_outcome OR old.validator_evidence IS DISTINCT FROM new.validator_evidence OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256 OR old.validated_at IS DISTINCT FROM new.validated_at) EXECUTE FUNCTION programacion.fn_guard_input_governance_continuation_currentness_v1()|156952|programacion.fn_guard_input_governance_continuation_currentness_v1()|ac06b635bd7c4ca5be3f9c8acfd6e9c6|1958|true|false|true|
+DECLARE
+  v_admission jsonb;
+  v_compaction jsonb;
+BEGIN
+  IF tg_op='UPDATE'
+     AND tg_table_schema='programacion'
+     AND tg_table_name='input_family_assessments' THEN
+    IF old.validator_outcome<>'PENDING'
+       AND (
+         old.validator_outcome IS DISTINCT FROM new.validator_outcome
+         OR old.validator_findings IS DISTINCT FROM new.validator_findings
+         OR old.validator_evidence IS DISTINCT FROM new.validator_evidence
+         OR old.validator_identity IS DISTINCT FROM new.validator_identity
+         OR old.validator_sha256 IS DISTINCT FROM new.validator_sha256
+         OR old.validator_assessed_at IS DISTINCT FROM new.validator_assessed_at
+       ) THEN
+      IF old.validator_evidence IS DISTINCT FROM new.validator_evidence THEN
+        v_compaction:=programacion.fn_input_validator_storage_compaction_check_v1(
+          to_jsonb(old),to_jsonb(new)
+        );
+        IF coalesce((v_compaction->>'allowed')::boolean,false) IS TRUE THEN
+          RETURN new;
+        END IF;
+        RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%:%',
+          old.family_code,coalesce(v_compaction->>'code','STORAGE_COMPACTION_REJECTED');
+      END IF;
+      RAISE EXCEPTION 'VALIDATOR_RECEIPT_IMMUTABLE:%',old.family_code;
+    END IF;
+  END IF;
+
+  -- Only defer UPDATE admission to the mandatory final BEFORE UPDATE guard.
+  -- The INSERT path (including chunk timings) retains full currentness here.
+  IF TG_OP='UPDATE' AND TG_TABLE_SCHEMA='programacion'
+    AND TG_TABLE_NAME IN ('input_family_assessments','input_gap_proposals') THEN
+    RETURN NEW;
+  END IF;
+  v_admission:=programacion.fn_input_governance_continuation_currentness_v1(new.run_id);
+  IF NOT coalesce((v_admission->>'continuation_current')::boolean,false) THEN
+    RAISE EXCEPTION 'INPUT_GOVERNANCE_CONTINUATION_CURRENTNESS_BLOCKED:table=%:run=%:code=%',
+      tg_table_name,new.run_id,coalesce(v_admission->>'code','CURRENTNESS_UNKNOWN');
+  END IF;
+  RETURN new;
+END;
+
+programacion.input_gap_proposals|trg_input_gap_proposal_update_v512|67594|O|CREATE TRIGGER trg_input_gap_proposal_update_v512 BEFORE UPDATE ON programacion.input_gap_proposals FOR EACH ROW EXECUTE FUNCTION programacion.fn_guard_input_gap_proposal_update_v512()|67592|programacion.fn_guard_input_gap_proposal_update_v512()|12d651c3f73c8edf4a19f244ccdce225|5367|false|false|true|NULL

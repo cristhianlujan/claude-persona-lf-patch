@@ -1,0 +1,103 @@
+QUERY_RESULT Q36 (file form)
+coordinator_note: read-only result of Q36 as returned by the database connector: 100 rows (80 COLUMN, 20 CONSTRAINT) across 7 relations, not truncated, re-rendered losslessly as pipe-delimited text in the original ORDER BY (schema_name, relation_name, record_type, ordinal NULLS LAST, item_name). Constants for all rows: schema_name=inventory; observation_scope=CURRENT_INVENTORY_STRUCTURE_NOT_EXECUTION; NULL = SQL NULL. Observation class: CURRENT. Coordinator re-rendering; no source checksum available.
+columns: record_type|relation_name|relation_oid|ordinal|item_name|item_definition
+COLUMN|dependencies|128131|1|dependency_id|bigint
+COLUMN|dependencies|128131|2|source_object_id|bigint
+COLUMN|dependencies|128131|3|target_object_id|bigint
+COLUMN|dependencies|128131|4|target_ref|text
+COLUMN|dependencies|128131|5|relation_type|text
+COLUMN|dependencies|128131|6|evidence_type|text
+COLUMN|dependencies|128131|7|evidence|text
+COLUMN|dependencies|128131|8|confidence|numeric(5,4)
+COLUMN|dependencies|128131|9|source_system|text
+COLUMN|dependencies|128131|10|metadata|jsonb
+COLUMN|dependencies|128131|11|first_seen_at|timestamp with time zone
+COLUMN|dependencies|128131|12|last_verified_at|timestamp with time zone
+COLUMN|dependencies|128131|13|active|boolean
+COLUMN|dependencies|128131|14|dependency_key|text
+CONSTRAINT|dependencies|128131|NULL|dependencies_confidence_check|CHECK (confidence >= 0::numeric AND confidence <= 1::numeric)
+CONSTRAINT|dependencies|128131|NULL|dependencies_dependency_key_key|UNIQUE (dependency_key)
+CONSTRAINT|dependencies|128131|NULL|dependencies_pkey|PRIMARY KEY (dependency_id)
+CONSTRAINT|dependencies|128131|NULL|dependencies_source_object_id_fkey|FOREIGN KEY (source_object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE
+CONSTRAINT|dependencies|128131|NULL|dependencies_target_object_id_fkey|FOREIGN KEY (target_object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE
+COLUMN|functions|128075|1|object_id|bigint
+COLUMN|functions|128075|2|identity_arguments|text
+COLUMN|functions|128075|3|result_type|text
+COLUMN|functions|128075|4|language|text
+COLUMN|functions|128075|5|function_kind|text
+COLUMN|functions|128075|6|volatility|text
+COLUMN|functions|128075|7|parallel_safety|text
+COLUMN|functions|128075|8|security_definer|boolean
+COLUMN|functions|128075|9|is_strict|boolean
+COLUMN|functions|128075|10|definition_sha256|text
+COLUMN|functions|128075|11|definition_bytes|integer
+COLUMN|functions|128075|12|metadata|jsonb
+COLUMN|functions|128075|13|updated_at|timestamp with time zone
+CONSTRAINT|functions|128075|NULL|functions_object_id_fkey|FOREIGN KEY (object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE
+CONSTRAINT|functions|128075|NULL|functions_pkey|PRIMARY KEY (object_id)
+COLUMN|objects|128004|1|object_id|bigint
+COLUMN|objects|128004|2|object_ref|text
+COLUMN|objects|128004|3|object_type|text
+COLUMN|objects|128004|4|schema_name|text
+COLUMN|objects|128004|5|object_name|text
+COLUMN|objects|128004|6|parent_object_id|bigint
+COLUMN|objects|128004|7|domain|text
+COLUMN|objects|128004|8|source_system|text
+COLUMN|objects|128004|9|source_of_truth|boolean
+COLUMN|objects|128004|10|status|text
+COLUMN|objects|128004|11|definition_sha256|text
+COLUMN|objects|128004|12|source_version|text
+COLUMN|objects|128004|13|metadata|jsonb
+COLUMN|objects|128004|14|first_seen_at|timestamp with time zone
+COLUMN|objects|128004|15|last_seen_at|timestamp with time zone
+COLUMN|objects|128004|16|active|boolean
+COLUMN|objects|128004|17|created_at|timestamp with time zone
+COLUMN|objects|128004|18|updated_at|timestamp with time zone
+COLUMN|objects|128004|19|currentness|text
+COLUMN|objects|128004|20|currentness_source|text
+COLUMN|objects|128004|21|observed_at|timestamp with time zone
+COLUMN|objects|128004|22|observed_main_sha|text
+COLUMN|objects|128004|23|source_traceability_state|text
+CONSTRAINT|objects|128004|NULL|inventory_objects_currentness_ck|CHECK (currentness IS NULL OR (currentness = ANY (ARRAY['CURRENT'::text, 'STALE'::text, 'MISSING'::text, 'NEW'::text, 'UNKNOWN'::text])))
+CONSTRAINT|objects|128004|NULL|inventory_objects_source_traceability_state_ck|CHECK (source_traceability_state IS NULL OR (source_traceability_state = ANY (ARRAY['SOURCE_PRESENT'::text, 'RUNTIME_WITHOUT_SOURCE'::text, 'UNKNOWN'::text])))
+CONSTRAINT|objects|128004|NULL|objects_object_ref_key|UNIQUE (object_ref)
+CONSTRAINT|objects|128004|NULL|objects_parent_object_id_fkey|FOREIGN KEY (parent_object_id) REFERENCES inventory.objects(object_id) ON DELETE SET NULL
+CONSTRAINT|objects|128004|NULL|objects_pkey|PRIMARY KEY (object_id)
+COLUMN|reconciliation|128201|1|reconciliation_id|bigint
+COLUMN|reconciliation|128201|2|object_id|bigint
+COLUMN|reconciliation|128201|3|compared_source|text
+COLUMN|reconciliation|128201|4|compared_at|timestamp with time zone
+COLUMN|reconciliation|128201|5|state|text
+COLUMN|reconciliation|128201|6|baseline_ref|text
+COLUMN|reconciliation|128201|7|current_ref|text
+COLUMN|reconciliation|128201|8|details|jsonb
+CONSTRAINT|reconciliation|128201|NULL|reconciliation_object_id_fkey|FOREIGN KEY (object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE
+CONSTRAINT|reconciliation|128201|NULL|reconciliation_pkey|PRIMARY KEY (reconciliation_id)
+COLUMN|refresh_heartbeats_v1|220016|1|refresh_key|text
+COLUMN|refresh_heartbeats_v1|220016|2|source_system|text
+COLUMN|refresh_heartbeats_v1|220016|3|last_success_at|timestamp with time zone
+COLUMN|refresh_heartbeats_v1|220016|4|metadata|jsonb
+COLUMN|refresh_heartbeats_v1|220016|5|updated_at|timestamp with time zone
+CONSTRAINT|refresh_heartbeats_v1|220016|NULL|refresh_heartbeats_v1_pkey|PRIMARY KEY (refresh_key)
+COLUMN|snapshots|128187|1|snapshot_id|bigint
+COLUMN|snapshots|128187|2|snapshot_code|text
+COLUMN|snapshots|128187|3|source_system|text
+COLUMN|snapshots|128187|4|scope|text
+COLUMN|snapshots|128187|5|started_at|timestamp with time zone
+COLUMN|snapshots|128187|6|completed_at|timestamp with time zone
+COLUMN|snapshots|128187|7|status|text
+COLUMN|snapshots|128187|8|object_count|bigint
+COLUMN|snapshots|128187|9|dependency_count|bigint
+COLUMN|snapshots|128187|10|metadata|jsonb
+CONSTRAINT|snapshots|128187|NULL|snapshots_pkey|PRIMARY KEY (snapshot_id)
+CONSTRAINT|snapshots|128187|NULL|snapshots_snapshot_code_key|UNIQUE (snapshot_code)
+COLUMN|triggers|128092|1|object_id|bigint
+COLUMN|triggers|128092|2|table_object_id|bigint
+COLUMN|triggers|128092|3|enabled_state|text
+COLUMN|triggers|128092|4|trigger_definition|text
+COLUMN|triggers|128092|5|function_ref|text
+COLUMN|triggers|128092|6|metadata|jsonb
+COLUMN|triggers|128092|7|updated_at|timestamp with time zone
+CONSTRAINT|triggers|128092|NULL|triggers_object_id_fkey|FOREIGN KEY (object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE
+CONSTRAINT|triggers|128092|NULL|triggers_pkey|PRIMARY KEY (object_id)
+CONSTRAINT|triggers|128092|NULL|triggers_table_object_id_fkey|FOREIGN KEY (table_object_id) REFERENCES inventory.objects(object_id) ON DELETE CASCADE

@@ -1,0 +1,20 @@
+QUERY_RESULT Q7 (file form)
+coordinator_note: read-only result of Q7 as returned by the database connector: 13 rows, none truncated. The raw JSON was 1405 characters, so it is delivered as a lossless pipe-delimited rendering (one row per line, original order preserved; NULL = SQL NULL; nested JSON values written compactly). Observation class: CURRENT.
+Columns (in order): record_type|name|value|detail
+Columns constant across all rows (omitted from every row): {}
+Raw JSON sha256 prefix: 303f2c171abccf7a
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): fa8766f09943daa4764bc748c6960cac7588276b7f9ba74fc91e79dfd7f5d9d4
+---BEGIN ROWS---
+EXTENSION|pg_stat_statements|1.11|NULL
+SETTING|compute_query_id|auto||source=default
+SETTING|pg_stat_statements.track|top||source=default
+SETTING|pg_stat_statements.track_planning|off||source=default
+SETTING|shared_preload_libraries|pg_stat_statements, pgaudit, plpgsql, plpgsql_check, pg_cron, pg_net, pgsodium, auto_explain, pg_tle, plan_filter, supabase_vault||source=configuration file
+SETTING|track_activities|on||source=default
+SETTING|track_counts|on||source=default
+SETTING|track_functions|none||source=default
+SETTING|track_io_timing|off||source=default
+STATISTICS_OBJECT|extensions.pg_stat_statements|v|NULL
+STATISTICS_OBJECT|extensions.pg_stat_statements_info|v|NULL
+STATISTICS_OBJECT|pg_catalog.pg_stat_database|v|NULL
+STATISTICS_OBJECT|pg_catalog.pg_stat_user_functions|v|NULL

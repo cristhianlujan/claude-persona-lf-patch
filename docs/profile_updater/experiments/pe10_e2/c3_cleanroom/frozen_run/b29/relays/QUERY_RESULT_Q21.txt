@@ -1,0 +1,29 @@
+QUERY_RESULT Q21 (file form)
+coordinator_note: read-only result of Q21 as returned by the database connector: 2 rows (ORDER BY function_identity), none truncated. The connector returned the result inline only, so it is delivered as a pipe-delimited rendering typed by the coordinator and verified against the database: (a) md5 and length of each function_source equal the returned source_md5 / source_length (f71479ba196f96216347874abb813ae7 / 1194 and 0846dc6a5ae2f34b1167bf645ed58bb8 / 73; the first source ends with the characters "END" followed by one space and no newline); (b) an md5 over the canonical text of both rows (6 columns; lexical_call_tokens as jsonb text, elements ordered by called_name; function_source multi-line, as stored) computed in the database equals the md5 of this file's body: 611bca60a5c9cd5ffe1e6d81c657a9fb. Observation class: CURRENT.
+Columns (in order): function_oid|function_identity|source_md5|source_length|lexical_call_tokens|function_source
+Columns constant across all rows (omitted from every row): {"observation_scope": "CURRENT_SHARED_MANIFEST_DERIVATION_SOURCE_NOT_EXECUTION"}
+Body sha256 (lines after ---BEGIN ROWS---, joined by \n): 5c55f5de9f4193e36aa27afec73ae17a2285bf368af4424ebdd14bdfb4ec3f63
+---BEGIN ROWS---
+296646|programacion.fn_ig_m107_bundle_from_manifest_v1(p_run_id bigint, p_manifest jsonb)|f71479ba196f96216347874abb813ae7|1194|[{"called_name": "fn_ig_m107_currentness_from_manifest_v1", "explicit_schema": "programacion"}, {"called_name": "fn_input_governance_continuation_currentness_decide_v1", "explicit_schema": "programacion"}, {"called_name": "fn_v09_sha256_jsonb", "explicit_schema": "programacion"}]|
+DECLARE v_run record; v_authority jsonb; v_decision jsonb; v_g1 jsonb; v_sha text; v_full boolean;
+BEGIN
+ SELECT r.id,r.status,r.source_manifest,r.source_snapshot_sha256 INTO v_run
+ FROM programacion.input_readiness_runs r WHERE r.id=p_run_id;
+ IF NOT FOUND OR v_run.status NOT IN ('VALIDATING','COMPLETED') THEN
+ RAISE EXCEPTION 'IG_M107_B_BUNDLE_RUN_NOT_ELIGIBLE:%',p_run_id; END IF;
+ IF jsonb_typeof(p_manifest)<>'array' THEN
+ RAISE EXCEPTION 'IG_M107_B_BUNDLE_MANIFEST_INVALID'; END IF;
+ v_authority:=programacion.fn_ig_m107_currentness_from_manifest_v1(p_run_id,p_manifest);
+ v_decision:=programacion.fn_input_governance_continuation_currentness_decide_v1(v_run.status,v_authority);
+ v_g1:=v_decision || jsonb_build_object('schema_version','IG_CONTINUATION_CURRENTNESS_V1',
+    'run_id',p_run_id,'authority_readback',v_authority);
+ v_sha:=programacion.fn_v09_sha256_jsonb(p_manifest);
+ v_full:=(v_sha IS NOT DISTINCT FROM v_run.source_snapshot_sha256
+    AND p_manifest IS NOT DISTINCT FROM v_run.source_manifest);
+ RETURN jsonb_build_object('schema_version','IG_M107_B_MANIFEST_BUNDLE_V1',
+ 'run_id',p_run_id,'g1',v_g1,'full_manifest_current',v_full,
+ 'full_manifest_sha256',v_sha);
+END 
+59639|programacion.fn_input_build_source_manifest(p_run_id bigint)|0846dc6a5ae2f34b1167bf645ed58bb8|73|[{"called_name": "fn_input_build_source_manifest_safe_v1", "explicit_schema": "programacion"}]|
+  select programacion.fn_input_build_source_manifest_safe_v1(p_run_id);
+

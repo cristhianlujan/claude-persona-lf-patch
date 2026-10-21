@@ -1,0 +1,71 @@
+{
+ "arms": {
+  "b18": {
+   "five_role_raw_sha256": {
+    "ARCHITECTURE": "802ba743515df9a9afe748ce128ba8396d4ba5ff7614024ec4644a0b38c65d09",
+    "AUTHORITY": "f75c2939b390dfaf8dd212cae5d2f58ca52cca77c4efde4958e21405066ab970",
+    "COVERAGE": "10735ec1d1d6fb669c3c546711eba3a6c62bf18c826a45ac215cec5ece9154fc",
+    "INNOVATION": "e7aeaa117fbedf3189f38e56cf31aab517cef7b8256a6c07a2700815e0abea50",
+    "PERFORMANCE": "1d909bce4897df09e70535b21095512670192d0a291b8c4e4cfd57cb134ff1cd"
+   },
+   "synthesis_sha256": "81b887b5e4150aafcee161e5f0122e4e1f0cd3cb4cfc0a0460aa91faf8b47b33"
+  },
+  "b29": {
+   "five_role_raw_sha256": {
+    "ARCHITECTURE": "d71e18effe80f0122393b3a55e28562a45b22c4f06f808505bf4f15dcde90547",
+    "AUTHORITY": "b8abcff018d5bee577fa5b21c2dd1499e770a22ea63461cf8985792009d24126",
+    "COVERAGE": "2fd148ee67fb0a17a01a02fb4bff4b2bca7428a702b970f9acbe3a1947df0170",
+    "INNOVATION": "60280da60d59ef83b691a87c0456e7d3f76660ef7ec6c6ccac4c18678b7f4787",
+    "PERFORMANCE": "2ea2674dbacb0661ba477dfca4e3d27287053e53b61c54d430db292eb84ed3ab"
+   },
+   "synthesis_sha256": "2231be8e22b5b1e00e49ab14c425dab6180d97d35f47cb93b443845ec9e9c64e"
+  }
+ },
+ "case_ref": "PE10-IG-M107-M109-P0",
+ "checkpoint_effect": "C3_EVIDENCE_ONLY_NO_GRADING",
+ "common_envelope_sha256": "93d4f5cba4564ddb0cc46f731375d5d83d81b724e195dfc213b2d98fc9ebc090",
+ "disclosed_limitations": [
+  "Provider-level isolation is NOT attested: each arm ran in one temporary ChatGPT chat with one shared context for its five roles.",
+  "B29 Q8 relay exposed query text of the previous-method run (coordinator error); the producer flagged CONTAMINATED_DENYLIST_EXPOSURE and excluded it from evidence.",
+  "Relayed query results are coordinator re-renderings of read-only connector results; most were verified by database-side md5 or mechanical rendering, a subset of B18 items (Q38, Q42, Q43 and inline B18 relays) is not fully verifiable.",
+  "Producers issued queries beyond the packet; all were read-only and relayed verbatim except where denied.",
+  "B18 synthesis was re-emitted once after an output truncation (same five frozen RAWs, no new evidence).",
+  "Several B18 inline relays are not preserved as files.",
+  "B29 final two relays (Q26, Q27) used a padded transport variant to obtain mechanical rendering; padding excluded from delivered rows.",
+  "Content correctness, scoring and original-vs-evolved comparison are NOT assessed here (C4)."
+ ],
+ "invariants": {
+  "current_replay_as_historical_p0": false,
+  "evaluator_outputs_in_producer_packets": false,
+  "original_work_unchanged": true,
+  "other_arm_outputs_in_producer_packets": false,
+  "overlays_distinct": true,
+  "raw_ungraded_no_self_grading": true,
+  "same_common_p0_envelope": true,
+  "source_cutoff_unchanged": true
+ },
+ "manifest_sha256": "db33d741b27bf76ae54b9d03229879b6c66da51f74d56d68ce9ca6673d864a21",
+ "relay_summary": {
+  "body_hashes_rechecked": 23,
+  "class_counts": {
+   "CURRENT": 48,
+   "CURRENT_COMPARED_TO_P0_HISTORICAL": 2,
+   "HISTORICAL_EKB_ALLOWED_ROW_CURRENT_READBACK": 1,
+   "P0_HISTORICAL": 2
+  },
+  "relays_without_class_line": [
+   "b18/QUERY_RESULT_Q17.txt"
+  ]
+ },
+ "schema": "PE10_E2_C3_FROZEN_RUN_RECEIPT_V1",
+ "source_cutoff_utc": "2026-10-15T00:00:00Z",
+ "source_event_id": 20161,
+ "status": "RAW_FROZEN_UNGRADED_BOTH_ARMS",
+ "validator_git_blob_sha1": "e204e1306c26926ed72c31dcf80b21671be8c931",
+ "validator_test_git_blob_sha1": "74b833caf6ef370d126749ad9179660c0a93dc00",
+ "validator_tests": {
+  "executed": 5,
+  "failed": 0,
+  "passed": 5
+ }
+}
