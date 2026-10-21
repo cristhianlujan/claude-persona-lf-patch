@@ -128,7 +128,7 @@ VALUES(
   'GPT Native capture blob a62528e6c8a5db73b0f5e2a94aa1e1c94c37810a; packet blob 4b7e1c84d7851b65fe8c4bef734538b2a795fc2c; source main ffd3e4be01129e7700d035abdc9fde746952ef57; test blob 635cf2bcae96712c6150c4accadcafe68296c257; stdout sha256 689a532d5cb47a8bdad173f010164fcca658f722bf94a36e25c0f6949cdff18c.',
   'EXECUTION',
   array['INPUT_GOVERNANCE','ENGINEERING_EXECUTOR']::text[],
-  'VALIDATED_MATERIAL_EXECUTION','LOUD_EARLY',
+  'R5_EROSION_PROCESO','LOUD_EARLY',
   'M10.7 NO_FALSE_PASS material GPT Native closure',
   'github://cristhianlujan/claude-persona-lf-patch/docs/programming-agent/input_governance/M10_7_NO_FALSE_PASS_GPT_NATIVE_CAPTURE_V1.json#blob:a62528e6c8a5db73b0f5e2a94aa1e1c94c37810a'
 )
