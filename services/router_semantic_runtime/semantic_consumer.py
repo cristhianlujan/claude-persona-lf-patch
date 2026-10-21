@@ -49,7 +49,7 @@ class SemanticSpecialist(Protocol):
 
 
 ResumeValidator = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
-RouterRederiver = Callable[[str], dict[str, Any]]
+RouterResume = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
 
 
 def canonical_sha256(value: Any) -> str:
@@ -219,7 +219,7 @@ def consume_shadow(
     *,
     specialist: SemanticSpecialist,
     resume_validator: ResumeValidator,
-    router_rederive: RouterRederiver,
+    router_resume: RouterResume,
 ) -> dict[str, Any]:
     """Run T2 shadow. No result from this function authorizes an effect."""
     validate_request(request)
@@ -263,15 +263,28 @@ def consume_shadow(
     ):
         raise SemanticConsumerBlocked("SEMANTIC_RESUME_AUTHORITY_CONTRACT_MISMATCH")
 
-    # The specialist result is never the route. ACT-0001 must resolve the literal again.
-    route = router_rederive(request["literal_request"])
-    if not isinstance(route, dict):
+    # The specialist result is never the route. The DB resume bridge validates
+    # request+result again and re-enters the SAME ACT-0001 Router.
+    route_resume = router_resume(request, result)
+    if not isinstance(route_resume, dict):
+        raise SemanticConsumerBlocked("ACT0001_RESUME_RESPONSE_INVALID")
+    if (
+        route_resume.get("schema_version") != "LF_ROUTER_SEMANTIC_ROUTE_RESUME_V1"
+        or route_resume.get("status") != "ROUTER_REDERIVED"
+        or route_resume.get("semantic_result_route_authority") is not False
+        or route_resume.get("semantic_result_effect_authority") is not False
+        or route_resume.get("downstream_execution_allowed") is not False
+    ):
+        raise SemanticConsumerBlocked("ACT0001_RESUME_AUTHORITY_CONTRACT_MISMATCH")
+    route = route_resume.get("router_result")
+    if not isinstance(route, dict) or route.get("router") != "ACT-0001":
         raise SemanticConsumerBlocked("ACT0001_REDERIVE_RESPONSE_INVALID")
     return {
         **base,
         "status": "SHADOW_REDERIVED",
         "next_action": "OBSERVE_ONLY_NO_EFFECT",
         "router_rederived": True,
+        "router_resume_receipt": route_resume,
         "router_result": route,
         "route_authority": False,
         "effect_authority": False,

@@ -77,19 +77,34 @@ class SemanticShadowConsumerTest(unittest.TestCase):
                 "next_action": "ACT0001_REDERIVE_ROUTE_AND_AUTHORITY",
             }
 
-        def rederive(literal):
-            route_calls.append(literal)
-            return {"status": "READY_TO_EXECUTE", "router": "ACT-0001", "operation_code": "TEST_ONLY"}
+        def router_resume(req, result):
+            route_calls.append((req["literal_request"], result["positive_target_refs"]))
+            return {
+                "schema_version": "LF_ROUTER_SEMANTIC_ROUTE_RESUME_V1",
+                "status": "ROUTER_REDERIVED",
+                "semantic_result_route_authority": False,
+                "semantic_result_effect_authority": False,
+                "downstream_execution_allowed": False,
+                "router_result": {
+                    "status": "READY_TO_EXECUTE",
+                    "router": "ACT-0001",
+                    "operation_code": "TEST_ONLY",
+                },
+            }
 
         out = consume_shadow(
-            request, specialist=specialist, resume_validator=resume, router_rederive=rederive
+            request, specialist=specialist, resume_validator=resume, router_resume=router_resume
         )
         self.assertEqual(out["status"], "SHADOW_REDERIVED")
         self.assertEqual(out["next_action"], "OBSERVE_ONLY_NO_EFFECT")
         self.assertFalse(out["route_authority"])
         self.assertFalse(out["effect_authority"])
         self.assertFalse(out["downstream_execution_allowed"])
-        self.assertEqual(route_calls, [request["literal_request"]])
+        self.assertEqual(route_calls, [(request["literal_request"], ["ACT-0053"])])
+        self.assertEqual(
+            out["router_resume_receipt"]["schema_version"],
+            "LF_ROUTER_SEMANTIC_ROUTE_RESUME_V1",
+        )
         self.assertEqual(len(resume_calls), 1)
         self.assertEqual(specialist.calls, 1)
         self.assertEqual(len(out["semantic_result"]["semantic_receipt_sha256"]), 64)
@@ -115,7 +130,7 @@ class SemanticShadowConsumerTest(unittest.TestCase):
                 "downstream_execution_allowed": False,
                 "next_action": "CALLER_INTERACTION_REQUIRED",
             },
-            router_rederive=lambda literal: route_calls.append(literal) or {},
+            router_resume=lambda req, result: route_calls.append((req, result)) or {},
         )
         self.assertEqual(out["status"], "WAITING_CLARIFICATION")
         self.assertEqual(out["caller_interaction"]["question_count"], 1)
@@ -158,7 +173,7 @@ class SemanticShadowConsumerTest(unittest.TestCase):
                 request,
                 specialist=specialist,
                 resume_validator=lambda _q, _r: {},
-                router_rederive=lambda _literal: {},
+                router_resume=lambda _req, _result: {},
             )
         self.assertEqual(specialist.calls, 0)
 
@@ -175,7 +190,7 @@ class SemanticShadowConsumerTest(unittest.TestCase):
                 "downstream_execution_allowed": False,
                 "next_action": "STAY_BLOCKED",
             },
-            router_rederive=lambda literal: calls.append(literal) or {},
+            router_resume=lambda req, result: calls.append((req, result)) or {},
         )
         self.assertEqual(out["status"], "BLOCKED")
         self.assertEqual(calls, [])
@@ -193,7 +208,32 @@ class SemanticShadowConsumerTest(unittest.TestCase):
                     "downstream_execution_allowed": False,
                     "next_action": "ACT0001_REDERIVE_ROUTE_AND_AUTHORITY",
                 },
-                router_rederive=lambda _literal: {},
+                router_resume=lambda _req, _result: {},
+            )
+
+    def test_router_resume_cannot_claim_semantic_authority(self) -> None:
+        with self.assertRaisesRegex(
+            SemanticConsumerBlocked, "ACT0001_RESUME_AUTHORITY_CONTRACT_MISMATCH"
+        ):
+            consume_shadow(
+                request_fixture(),
+                specialist=Specialist(resolved_draft()),
+                resume_validator=lambda _q, _r: {
+                    "status": "VALID",
+                    "router_resume_allowed": True,
+                    "route_authority": False,
+                    "effect_authority": False,
+                    "downstream_execution_allowed": False,
+                    "next_action": "ACT0001_REDERIVE_ROUTE_AND_AUTHORITY",
+                },
+                router_resume=lambda _req, _result: {
+                    "schema_version": "LF_ROUTER_SEMANTIC_ROUTE_RESUME_V1",
+                    "status": "ROUTER_REDERIVED",
+                    "semantic_result_route_authority": True,
+                    "semantic_result_effect_authority": False,
+                    "downstream_execution_allowed": False,
+                    "router_result": {"router": "ACT-0001", "status": "READY_TO_EXECUTE"},
+                },
             )
 
     def test_conditions_cannot_be_weakened(self) -> None:
