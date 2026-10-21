@@ -81,7 +81,13 @@ BEGIN
     RAISE EXCEPTION 'M108_GATE_READBACK_SPEC_FAIL:%',v_spec;
   END IF;
 
-  v_packet := programacion.fn_engineering_execution_packet_from_spec_v1(v_spec);
+  v_packet := programacion.fn_engineering_execution_packet_from_spec_v1(
+    'IG_CURATOR_VALIDATOR_REFACTOR_V2',
+    'M10.8',
+    'GATE_READBACK',
+    v_spec,
+    '{}'::jsonb
+  );
 
   IF v_packet->>'status' IS DISTINCT FROM 'READY'
      OR v_packet->>'execution_capability' IS DISTINCT FROM 'READ'
