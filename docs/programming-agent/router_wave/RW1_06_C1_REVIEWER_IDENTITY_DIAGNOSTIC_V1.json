@@ -1,0 +1,42 @@
+{
+  "schema_version": "RW106_C1_REVIEWER_IDENTITY_DIAGNOSTIC_V1",
+  "checkpoint": "RW1-06_C1",
+  "status": "GAP",
+  "reviewer_reference": "REVIEWER_REFERENCE_UNAVAILABLE",
+  "reviewer_separation": "NOT_YET_ATTESTED",
+  "causes": [
+    {
+      "field": "reviewer_reference",
+      "reason": "No está disponible un identificador o enlace auténtico y estable de esta conversación GPT Native."
+    },
+    {
+      "field": "reviewer_separation",
+      "reason": "No puede acreditarse separación material. Esta conversación contiene compromisos anteriores y el contexto compartido del proyecto incluye información de otras conversaciones. No existe evidencia verificable de aislamiento respecto del productor."
+    }
+  ],
+  "required_actions": [
+    "Obtener desde la interfaz de ChatGPT una referencia auténtica y estable de la conversación revisora.",
+    "Acreditar mediante evidencia externa que la revisión se realizó en una conversación materialmente separada del productor.",
+    "No establecer OWNER_PROVIDED_SEPARATE_CHAT_UNATTESTED sin sustento documental."
+  ],
+  "existing_commitment": {
+    "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+    "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+    "holdout_counts": {
+      "valid": 13,
+      "invalid": 26,
+      "novel_falsifiers": 2
+    },
+    "holdout_manifest_sha256": "a9bf6f0ee9b9b92838eeb2eebf7a585ba87169bf196c8ed21c0ede84a6dd4158",
+    "holdout_content_sha256": "d615d0ad986835f6486752934c90ec979975f8c4213ec7060ce6a34fbbadcd48",
+    "digests_reverified": false,
+    "committed_at_utc": "2026-10-22T01:31:06Z",
+    "timestamp_status": "HISTORICAL_UNCHANGED"
+  },
+  "corpus_regenerated": false,
+  "case_bodies_revealed": false,
+  "producer_consulted": false,
+  "provider_attested": false,
+  "independent_review_verified": false,
+  "checkpoint_done": false
+}
