@@ -199,6 +199,7 @@ BEGIN
     'acceptance_declared',false,
     'execution_id',v_actor,
     'producer','LF_MIGRATION_TRAIN_PE10_C6_GUARD_PROBE',
+    'purpose','Reversible guard checks with real profile assessment; no cutover acceptance',
     'occurred_at',clock_timestamp(),
     'plan_code','PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1',
     'checkpoint_code','PE10_C6',
