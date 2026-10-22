@@ -97,18 +97,20 @@ def prepare_profile_assessment(
     if not isinstance(raw_evidence, dict) or not isinstance(normalized.get("signals"), dict):
         return _block("PROFILE_ASSESSMENT_EVIDENCE_SHAPE_INVALID")
     checked: dict[str, Any] = {}
-    source_ref = "github://" + source["source_path"] + "@" + source_head_sha
-    # S26 is an evaluated structural result, not an assertion from the caller.
+    # EXACT SAME structural overlay used by plan_profile_evolution.py, so
+    # assessment_input_sha256 cannot drift between producer and planner.
     if structure["decision"] == "NO_UPDATE_REQUIRED":
         checked["structural_compatibility"] = {
-            "status": "PASS", "refs": [source_ref + "#s26-structural-13-of-13"],
+            "status": "PASS", "refs": ["s26://13-of-13"],
         }
     elif structure["decision"] == "UPDATE_REQUIRED":
         checked["structural_compatibility"] = {
-            "status": "FAIL", "refs": [source_ref + "#s26-update-required"],
+            "status": "FAIL", "refs": structure.get("repair_actions", []),
         }
     else:
-        checked["structural_compatibility"] = {"status": "UNKNOWN", "refs": []}
+        checked["structural_compatibility"] = {
+            "status": "UNKNOWN", "refs": structure.get("blocking_codes", []),
+        }
 
     verified_refs: list[dict[str, str]] = []
     rejected_refs: list[str] = []
