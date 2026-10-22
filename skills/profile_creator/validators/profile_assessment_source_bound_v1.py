@@ -79,6 +79,15 @@ def prepare_profile_assessment(
         or source.get("resolver_active") is not True
         or source.get("resolver_trust_level") != "TRUSTED_PROVIDER_BOUND"):
         return _block("PROFILE_SOURCE_NOT_PROVIDER_VERIFIED")
+    # S26 runs against local checkout: bind its exact SKILL bytes to the
+    # provider-verified GitHub source before accepting structural results.
+    try:
+        local = (repo / expected_path).resolve(strict=True)
+        local.relative_to(repo.resolve())
+        if hashlib.sha256(local.read_bytes()).hexdigest() != source["source_sha256"]:
+            return _block("PROFILE_LOCAL_SOURCE_DIGEST_DRIFT")
+    except (OSError, ValueError):
+        return _block("PROFILE_LOCAL_SOURCE_UNAVAILABLE")
     try:
         structure = evaluate_structural(repo, profile_slug)
     except Exception:
