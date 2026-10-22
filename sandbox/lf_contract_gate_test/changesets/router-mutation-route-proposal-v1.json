@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-mutation-route-proposal-v1",
+  "paths": {
+    "supabase/migrations/20261022200000_lf_router_mutation_route_proposal_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-mutation-route-proposal-v1.json": "CHANGESET_MANIFEST"
+  }
+}
