@@ -1,0 +1,142 @@
+{
+  "schema_version": "ig-m1013-cp3-governed-retirement-intake/v1",
+  "scope": {
+    "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit_code": "M10.13",
+    "checkpoint_code": "ZERO_LEGACY_CALLERS",
+    "source_pack_cleanup_pr": 3081,
+    "checkpoint_can_close": false
+  },
+  "lifecycle_capability": {
+    "code": "ASSET_RETIREMENT_GOVERNANCE",
+    "version": "1.0.0",
+    "release_state": "RELEASED",
+    "intake_phase": "MAP_CONSUMERS",
+    "not_completed": [
+      "CLASSIFY_RESPONSIBILITIES",
+      "DISCONNECT",
+      "REHOME",
+      "GUARD",
+      "PROMOTE",
+      "POST_PROMOTION_READBACK",
+      "CLOSE"
+    ]
+  },
+  "baseline_authority": {
+    "git_main_sha": "2b772ec5b4e04709d6c6871b0f33fa6adde1d4e1",
+    "sql": "Supabase live pg_catalog.pg_proc",
+    "historical_m109_event_id": 20161,
+    "historical_m1010_event_id": 20193,
+    "ekb": [
+      "IG-M1011-HISTORICAL-UNREFERENCED-LIVE-SQL-CALLER-001",
+      "GOV-ASSET-RETIREMENT-GOVERNANCE-V1-001",
+      "IG-M104-LEGACY-ACTIVE-FREEZE-SCOPE-001"
+    ]
+  },
+  "consumer_map": {
+    "sql_source_names_checked": true,
+    "sql_direct_callers_for_candidates": 0,
+    "sql_triggers": 0,
+    "sql_views": 0,
+    "sql_matviews": 0,
+    "sql_policies": 0,
+    "router_action_direct_mentions": 0,
+    "router_adapter_binding_direct_mentions": 0,
+    "supabase_lf_activo_relaciones_direct_mentions": 0,
+    "canonical_dependencies_direct_mentions": 0,
+    "edge": {
+      "active_deployments_read": 39,
+      "live_deployed_source_files_read": 56,
+      "explicit_source_name_mentions": 0,
+      "reader": "Supabase get_edge_function for every ACTIVE slug",
+      "observation_scope": "literal function identifiers, not indirect/dynamic external API calls",
+      "absence_of_external_runtime_calls_proven": false
+    },
+    "source_control": {
+      "historical_migration_mentions": true,
+      "legacy_test_and_frozen_contract_mentions": true,
+      "open_descendant_pr_audit": "NOT_VERIFIED",
+      "external_api_callers": "NOT_VERIFIED"
+    },
+    "result_scope": "DIRECT_REFERENCE_READBACK_ONLY"
+  },
+  "candidates": [
+    {
+      "identity": "programacion.fn_input_governance_bootstrap_materialize_v1(integer,text,text)",
+      "historical_class": "LEGACY_UNREFERENCED",
+      "runtime_source_prosrc_md5": "bfd85f25b23fb127ca67f0dcd6bba668",
+      "sql_source_callers": 0,
+      "acl": {
+        "anon_execute": false,
+        "authenticated_execute": false,
+        "service_role_execute": false
+      },
+      "asset_binding": {
+        "asset_id": 289,
+        "asset_code": "PROGRAMACION_FN_INPUT_GOVERNANCE_CURATION_SET",
+        "membership": "PRESENT_IN_RAW_PAYLOAD",
+        "asset_state": "CANDIDATE_READ_ONLY"
+      },
+      "responsibility": {
+        "current_function": "historical bootstrap materialization",
+        "possible_successor": "programacion.fn_input_governance_bootstrap_materialize_v2(integer,text,text)",
+        "equivalence": "NOT_PROVEN_FOR_EXTERNAL_OR_FROZEN_TESTS"
+      },
+      "blockers": [
+        "EXISTING_CANONICAL_ASSET_MEMBER",
+        "FROZEN_M10_4_SOURCE_IDENTITY",
+        "LEGACY_TEST_ASSERTS_EXACT_DEFINITION",
+        "OPEN_DESCENDANT_PR_AUDIT_PENDING"
+      ],
+      "disposition": "KEEP_BLOCKED_NO_DROP"
+    },
+    {
+      "identity": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+      "historical_class": "LEGACY_UNREFERENCED",
+      "runtime_source_prosrc_md5": "44a7f21a3c01411662ab568af58c4091",
+      "sql_source_callers": 0,
+      "acl": {
+        "anon_execute": true,
+        "authenticated_execute": true,
+        "service_role_execute": true,
+        "authorization_source": "DEFAULT_PUBLIC_EXECUTE"
+      },
+      "responsibility": {
+        "current_function": "source-current semantic revalidation probe",
+        "equivalent_replacement": "NOT_ESTABLISHED"
+      },
+      "blockers": [
+        "DEFAULT_PUBLIC_EXECUTE_EXTERNAL_CONSUMERS_UNPROVEN",
+        "HISTORICAL_TEST_REFERENCES",
+        "EQUIVALENT_OWNER_NOT_PROVEN",
+        "OPEN_DESCENDANT_PR_AUDIT_PENDING"
+      ],
+      "disposition": "KEEP_BLOCKED_NO_DROP_OR_REVOKE"
+    }
+  ],
+  "retained_referenced_runtime_dependencies": [
+    "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+    "programacion.fn_input_governance_semantic_probe_v2_cached_v1(integer,text,bigint,jsonb)",
+    "programacion.fn_input_governance_semantic_probe_v3_cached_v1(integer,text,bigint,jsonb)"
+  ],
+  "responsibility_map": {
+    "valid_active_paths": "KEEP",
+    "referenced_cached_dependencies": "REHOME_ONLY_AFTER_PARITY_AND_PERFORMANCE_PROOF",
+    "two_retirement_candidates": "DO_NOT_DELETE_BEFORE_ALL_GOVERNANCE_GATES"
+  },
+  "cleanup_actions_performed": [
+    "exact caller classification via PR 3081",
+    "live SQL, Router, Edge source and asset registry readback",
+    "retirement blockers identified for two exact signatures"
+  ],
+  "cleanup_actions_not_authorized": [
+    "DROP_FUNCTION",
+    "REVOKE_EXECUTE",
+    "REPLACE_FUNCTION_BODY",
+    "DEPLOY_EDGE_FUNCTION",
+    "BYPASS_M10_4_FREEZE",
+    "MARK_CP3_DONE"
+  ],
+  "closure_verdict": "BLOCKED_NOT_REMOVE_READY",
+  "reason": "Two candidates lack complete release-safe retirement proof; live referenced cached functions are in active dependency paths. Zero direct lexical callers does not prove zero external/dynamic consumers."
+}
