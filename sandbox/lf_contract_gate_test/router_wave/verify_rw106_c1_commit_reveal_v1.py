@@ -551,8 +551,18 @@ def _expect(code, func, *args):
     raise AssertionError("FALSE_ACCEPT:" + code)
 
 
+def _expect_any(func, *args):
+    """The call must be rejected; returns the rejection code (used where the code is Git-derived)."""
+    try:
+        func(*args)
+    except CommitRevealGap as exc:
+        return str(exc)
+    raise AssertionError("FALSE_ACCEPT:expect_rejection")
+
+
 def self_test() -> dict:
     rejected = {}
+    c1_named = {}
     with tempfile.TemporaryDirectory(prefix="rw106_commit_reveal_") as tmp:
         root = Path(tmp)
 
@@ -694,6 +704,27 @@ def self_test() -> dict:
         rejected["attempt_ref_to_tampered_attempt"] = _expect(
             "ATTEMPT_SOURCE_OR_STAGE_INVALID", check_commitment, root, lineage_sha, lineage_path)
 
+        # The three named C1 controls of the bound contract, each driven through check_commitment.
+        missing_ref = f"github://{REPO}@{'a' * 40}/{ATTEMPT_PATH}"
+        missing_commit = commit_file(
+            pre.PREFIX + "RW1_06_C1_FIXTURE_MISSING_SOURCE.json",
+            _commitment(missing_ref, corpus, manifest, block["holdout_counts"]), "missing source")
+        c1_named["missing_source"] = _expect_any(
+            check_commitment, root, missing_commit, pre.PREFIX + "RW1_06_C1_FIXTURE_MISSING_SOURCE.json")
+        stale = _commitment(attempt_ref, corpus, manifest, block["holdout_counts"])
+        stale["source_snapshot_commit"] = "0" * 40
+        stale_path = pre.PREFIX + "RW1_06_C1_FIXTURE_STALE_SOURCE.json"
+        stale_commit = commit_file(stale_path, stale, "stale source")
+        c1_named["stale_source"] = _expect(
+            "SOURCE_POLICY_MISMATCH", check_commitment, root, stale_commit, stale_path)
+        cross_path = pre.PREFIX + "RW1_06_C1_FIXTURE_CROSS_PROJECT.json"
+        cross_commit = commit_file(cross_path, _commitment(
+            f"github://someone-else/other-project@{attempt_sha}/{ATTEMPT_PATH}",
+            corpus, manifest, block["holdout_counts"]), "cross project")
+        c1_named["cross_project"] = _expect(
+            "ATTEMPT_REF_INVALID", check_commitment, root, cross_commit, cross_path)
+        rejected.update({"c1_" + k: v for k, v in c1_named.items()})
+
         # Integrity negatives (reveal after RAW).
         tampered = copy.deepcopy(corpus)
         tampered["cases"][0]["input"] += " "
@@ -829,6 +860,7 @@ def self_test() -> dict:
         "selftest": "PASS_SYNTHETIC_ONLY",
         "negatives_rejected": rejected,
         "negative_count": len(rejected),
+        "c1_named_negatives": c1_named,
         "reviewer_snippet_roundtrip_with_verifier": True,
         "pinned_source_blobs": pinned_blobs_status(),
         "real_holdout_created": False,
