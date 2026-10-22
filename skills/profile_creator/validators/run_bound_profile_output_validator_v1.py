@@ -13,7 +13,6 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from profile_output_shape_preflight_v1 import validate_shape
 
 SCHEMA = "PROFILE_OUTPUT_VALIDATION_BINDING_V1"
 SLUG = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -54,6 +53,29 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
         return block("EXPECTED_VALIDITY_NOT_TYPED")
     root = root.resolve()
     contents = {}
+    # A profile declares its actual canonical schema/validator, rather than
+    # forcing all profiles to rename their validator to validate_*.py.
+    binding_path = root / f"profiles/{slug}/contracts/runtime_binding.json"
+    declared_binding = None
+    if binding_path.is_file():
+        try:
+            declared_binding = json.loads(binding_path.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            return block("RUNTIME_BINDING_UNREADABLE")
+        if not isinstance(declared_binding, dict) or declared_binding.get("profile_slug") != slug:
+            return block("RUNTIME_BINDING_IDENTITY_INVALID")
+        schema_rel = declared_binding.get("runtime_schema", {}).get("default")
+        validator_decl = declared_binding.get("canonical_validator")
+        if (not isinstance(schema_rel, str) or not isinstance(validator_decl, dict)
+                or not isinstance(validator_decl.get("path"), str)
+                or validator_decl.get("callable") != "validate"):
+            return block("RUNTIME_BINDING_CANONICAL_TARGET_INVALID")
+        if (packet.get("schema_ref") != f"profiles/{slug}/{schema_rel}"
+                or packet.get("validator_ref") != f"profiles/{slug}/{validator_decl['path']}"):
+            return block("RUNTIME_BINDING_SOURCE_NOT_CANONICAL")
+        if packet.get("runtime_binding_sha256") != sha(binding_path.read_bytes()):
+            return block("RUNTIME_BINDING_DIGEST_MISMATCH")
+        result["runtime_binding_sha256"] = packet["runtime_binding_sha256"]
     for key in ("schema", "validator", "raw_output"):
         ref = packet.get(key + "_ref")
         digest = packet.get(key + "_sha256")
@@ -69,7 +91,8 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
             return block("SCHEMA_PROFILE_SCOPE_MISMATCH")
         if key == "validator" and (
             not rel.startswith(f"profiles/{slug}/validators/") or
-            not path.name.startswith("validate_") or not path.name.endswith(".py")
+            not path.name.endswith(".py") or
+            (declared_binding is None and not path.name.startswith("validate_"))
         ):
             return block("VALIDATOR_PROFILE_SCOPE_MISMATCH")
         try:
@@ -84,16 +107,33 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
         k: packet[k + "_ref"] for k in contents
     }
     result["raw_output_sha256"] = packet["raw_output_sha256"]
+    # The light shape preflight cannot handle $ref/oneOf/allOf/if/then/else.
+    # The entire canonical JSON Schema MUST be evaluated, never skipped.
     try:
-        shape = validate_shape(
-            json.loads(contents["schema"][1]),
-            json.loads(contents["raw_output"][1]),
+        from jsonschema import Draft202012Validator
+        from jsonschema.exceptions import SchemaError
+    except ImportError:
+        return block("CANONICAL_JSON_SCHEMA_ENGINE_UNAVAILABLE")
+    try:
+        canonical_schema = json.loads(contents["schema"][1])
+        candidate = json.loads(contents["raw_output"][1])
+        Draft202012Validator.check_schema(canonical_schema)
+        errors = sorted(
+            Draft202012Validator(canonical_schema).iter_errors(candidate),
+            key=lambda err: (tuple(str(x) for x in err.absolute_path), err.validator or ""),
         )
     except (ValueError, UnicodeError):
         return block("OUTPUT_JSON_INVALID")
+    except SchemaError:
+        return block("CANONICAL_JSON_SCHEMA_INVALID")
     result["structural_check_executed"] = True
-    result["shape_errors"] = shape["blocking_codes"]
-    if shape["status"] != "PASS":
+    result["canonical_json_schema_executed"] = True
+    result["shape_errors"] = [
+        {"code": "CANONICAL_JSON_SCHEMA_REJECTED:" + str(e.validator),
+         "path": "$" + "".join(f"[{x!r}]" for x in e.absolute_path)}
+        for e in errors[:30]
+    ]
+    if errors:
         if packet["expected_valid"] is False:
             result["status"] = "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE"
             return result
