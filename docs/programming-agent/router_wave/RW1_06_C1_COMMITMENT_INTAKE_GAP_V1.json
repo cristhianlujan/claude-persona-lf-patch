@@ -1,0 +1,68 @@
+{
+  "schema_version": "RW106_C1_HOLDOUT_COMMITMENT_INTAKE_GAP_V1",
+  "unit": "RW1-06",
+  "checkpoint": "RW1-06_C1",
+  "status": "STRUCTURAL_REJECTED_INCOMPLETE_IDENTITY",
+  "source": "OWNER_PROVIDED_COMMITMENT_PUBLIC_FIELDS_ONLY",
+  "received_commitment": {
+    "schema_version": "RW106_C1_INDEPENDENT_HOLDOUT_COMMITMENT_V1",
+    "checkpoint": "RW1-06_C1",
+    "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+    "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+    "reviewer_method": "GPT_NATIVE_NEW_CHAT",
+    "reviewer_reference": null,
+    "reviewer_separation": "NOT_YET_ATTESTED",
+    "holdout_counts": {
+      "valid": 13,
+      "invalid": 26,
+      "novel_falsifiers": 2
+    },
+    "holdout_manifest_sha256": "a9bf6f0ee9b9b92838eeb2eebf7a585ba87169bf196c8ed21c0ede84a6dd4158",
+    "holdout_content_sha256": "d615d0ad986835f6486752934c90ec979975f8c4213ec7060ce6a34fbbadcd48",
+    "committed_at_utc": "2026-10-22T01:31:06Z",
+    "committed_before_evaluation": true,
+    "case_bodies_revealed": false,
+    "producer_raw_observed": false,
+    "provider_attested": false,
+    "checkpoint_done": false
+  },
+  "validation": {
+    "validator_blob": "72d3c4f98aeedbf63c21334b06b9c091b0fa9a99",
+    "validator_expected_first_error": "REVIEWER_REFERENCE_MISSING",
+    "checks": {
+      "schema_and_scope": "PASS",
+      "exact_source_policy": "PASS",
+      "declared_minimums": "PASS_CLAIM_ONLY",
+      "digest_syntax": "PASS_FORMAT_ONLY_CONTENT_UNVERIFIED",
+      "reviewer_reference": "REJECTED_REVIEWER_REFERENCE_MISSING",
+      "reviewer_separation": "REJECTED_INDEPENDENCE_UNSUPPORTED",
+      "chronology": "CLAIM_ONLY_NOT_INDEPENDENTLY_VERIFIED",
+      "holdout_contents": "NOT_AVAILABLE_NOT_DISCLOSED",
+      "sealed_digest_content": "NOT_VERIFIED",
+      "reviewer_provider_attestation": "NOT_CLAIMED",
+      "checkpoint_done": "NOT_CLAIMED"
+    },
+    "next_required": [
+      "NON_NULL_STABLE_GPT_NATIVE_SEPARATE_REVIEWER_REFERENCE",
+      "REVIEWER_SEPARATION_DECLARED_OWNER_PROVIDED_SEPARATE_CHAT_UNATTESTED",
+      "INDEPENDENT_SEALED_CORPUS_AND_MANIFEST_CONTENT_CHECK_LATER",
+      "PRE_EVALUATION_CHRONOLOGY_ORIGIN_CHECK",
+      "GOVERNED_SOURCE_AND_SPEC_BINDING_THROUGH_MIGRATION_TRAIN"
+    ]
+  },
+  "currentness_note": {
+    "prior_snapshot": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+    "observed_main": "56467fdde7f427e57133b0564a99d01bd904657f",
+    "main_advanced": true,
+    "related_delta": "skills/profile_creator/evals/test_gpt_native_in_chat_capture_v1.py and a profile-updater assessment-identity migration added; currentness recheck before Train admission"
+  },
+  "limits": {
+    "not_independent_reviewer_attestation": true,
+    "no_provider_attestation": true,
+    "no_corpus_exposed": true,
+    "no_holdout_content_verified": true,
+    "no_C1_closure": true,
+    "no_runtime_or_production_activation": true,
+    "no_db_mutation": true
+  }
+}
