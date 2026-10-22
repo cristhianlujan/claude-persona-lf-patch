@@ -12,6 +12,7 @@
     "docs/programming-agent/router_wave/RW1_06_C1_SECOND_REVIEW_COMMITMENT_GAP_V1.json": "ENGINEERING_CHECKPOINTS",
     "docs/programming-agent/router_wave/RW1_06_C1_SOURCE_POLICY_FREEZE_V1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c1-source-freeze-v1.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py": "ENGINEERING_CHECKPOINTS",
