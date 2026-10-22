@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-regla-create-receiver-preflight-v1",
+  "paths": {
+    "supabase/migrations/20261022210000_lf_regla_create_receiver_preflight_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-regla-create-receiver-preflight-v1.json": "CHANGESET_MANIFEST"
+  }
+}
