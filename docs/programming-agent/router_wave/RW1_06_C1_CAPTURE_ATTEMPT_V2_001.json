@@ -1,0 +1,13 @@
+{
+  "schema_version": "RW106_C1_CAPTURE_ATTEMPT_V2",
+  "checkpoint": "RW1-06_C1",
+  "attempt_key": "RW106-C1-V2-001",
+  "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+  "status": "PREPARATION_ONLY",
+  "custody_status": "PENDING",
+  "reviewer_status": "PENDING",
+  "holdout_generated": false,
+  "precommit_persisted": false,
+  "checkpoint_done": false
+}
