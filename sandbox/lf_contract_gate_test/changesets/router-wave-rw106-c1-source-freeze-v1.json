@@ -2,6 +2,7 @@
   "solution_ref": "router-wave-rw106-c1-source-freeze-v1",
   "paths": {
     ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "docs/programming-agent/router_wave/RW1_06_C1_COMMITMENT_INTAKE_GAP_V1.json": "ENGINEERING_CHECKPOINTS",
     "docs/programming-agent/router_wave/RW1_06_C1_INDEPENDENT_HOLDOUT_HANDOFF_V1.md": "ENGINEERING_CHECKPOINTS",
     "docs/programming-agent/router_wave/RW1_06_C1_SOURCE_POLICY_FREEZE_V1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c1-source-freeze-v1.json": "CHANGESET_MANIFEST",
