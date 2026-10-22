@@ -43,6 +43,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py'
       - 'docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json'
       - 'docs/programming-agent/router_wave/RW1_06_C1_CUSTODY_CAPABILITY_READBACK_V2.json'
       - 'docs/programming-agent/router_wave/RW1_06_C1_REVIEW_CAPTURE_REDESIGN_V2.md'
@@ -75,6 +76,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py'
       - 'docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json'
       - 'docs/programming-agent/router_wave/RW1_06_C1_CUSTODY_CAPABILITY_READBACK_V2.json'
       - 'docs/programming-agent/router_wave/RW1_06_C1_REVIEW_CAPTURE_REDESIGN_V2.md'
@@ -331,3 +333,10 @@ jobs:
           assert receipt["git_readback"] == "PASS_LOCAL_GIT_OBJECT_ONLY"
           print("RW106_C1_ATTEMPT_GIT_OBJECT_READBACK_PASS_NO_REVIEWER_PROOF")
           PY
+
+
+      - name: Execute RW1-06 C1 V2 independent GPG custody transport synthetic test
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py
+          python3 sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py --self-test
