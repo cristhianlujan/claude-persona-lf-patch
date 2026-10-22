@@ -98,7 +98,7 @@ def verify_attempt_git(repo_root: Path, attempt_ref: str, expected_repo: str) ->
     """Inspect a real local Git object. This is not reviewer-isolation proof."""
     m = re.fullmatch(
         r"github://([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})/"
-        r"(docs/programming-agent/router_wave/[A-Za-z0-9_/-]+\\.json)",
+        r"(docs/programming-agent/router_wave/[A-Za-z0-9_/-]+\.json)",
         attempt_ref,
     )
     check(m is not None, "GIT_ATTEMPT_URI_MALFORMED")
@@ -145,7 +145,7 @@ def git_selftest() -> dict:
                     "source_snapshot_commit":SOURCE,"source_policy_git_blob":POLICY,
                     "status":"PREPARATION_ONLY","holdout_generated":False,
                     "checkpoint_done":False}
-        target.write_text(json.dumps(template)+"\\n", encoding="utf-8")
+        target.write_text(json.dumps(template)+"\n", encoding="utf-8")
         run("add", path)
         run("-c", "user.name=RW106-CI", "-c", "user.email=ci@example.invalid",
             "commit", "-qm", "attempt-test")
