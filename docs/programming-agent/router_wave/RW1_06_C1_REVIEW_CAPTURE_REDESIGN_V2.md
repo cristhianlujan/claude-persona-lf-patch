@@ -108,3 +108,14 @@ The pre-existing LF private review evidence folder is a possible custody carrier
 This establishes **READ_ONLY_EXISTING_PRIVATE_FILE_READBACK_PASS** only. No RW1-06 sealed corpus exists in that folder; creating a child folder was blocked by tool safety. The access-controlled write path, post-upload round-trip, explicit producer ACL denial, independent reviewer custody access and reliable long-term secret retention are **NOT VERIFIED**. Hence `CUSTODY_PREFLIGHT_GAP` and `RW1-06_C1=PENDING` remain; do not generate another holdout.
 
 No privileged or production action was performed. This evidence does not imply storage authorization, issuer identity, reviewer independence, provider attestation or checkpoint closure.
+
+
+## Security clarification — same-principal private Drive is NOT secret holdout custody
+
+Capability evidence: `RW1_06_C1_CUSTODY_CAPABILITY_READBACK_V2.json` records a real owner-only Google Drive folder, actual JSON file copy, two matching readbacks and a SHA-256. **The producer-side connected Google Drive tool was itself able to read the copied bytes.** Therefore owner-only Drive permissions are not proof of access separation between GPT producer and GPT reviewer when they operate with the same OAuth principal.
+
+- This Drive folder is admitted solely as a **non-secret transport/readback capability**. Its current producer principal MUST NOT store plaintext sealed holdout cases, seeds, oracle answers or custodian decryption keys.
+- A valid secret custody route is an independently controlled storage principal with explicit producer-denial evidence, or encrypted durable ciphertext where the producer has no decryption capability and an independent custodian performs the ciphertext/plaintext readback against committed digests without revealing plaintext to the producer.
+- V2 preflight rejects `producer_can_read_plaintext=true` and requires a separately evidenced custodian principal or inaccessible decryption key. A fabricated `false` flag still cannot count as material attestation: verify using actual principal grants and custodian behavior.
+- The currently verified Drive copy is a **test of persistence, not an independence or C1 PASS**. Do not replace private custody requirements with owner-only metadata or allow GPT to infer denial from `shared=false`.
+- Do not regenerate a holdout while confidential custody is unavailable. The existing two corpus commitments remain historical `GAP`.
