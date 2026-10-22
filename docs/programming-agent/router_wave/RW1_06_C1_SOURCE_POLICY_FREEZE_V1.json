@@ -1,0 +1,214 @@
+{
+  "schema_version": "RW106_C1_SOURCE_POLICY_FREEZE_V1",
+  "plan_code": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "unit_code": "RW1-06",
+  "checkpoint_code": "RW1-06_C1",
+  "work_item_id": 1132,
+  "scope": "ACT-0001 LF independent final assurance; no SALY; no T3/T4, production, ACL or runtime activation",
+  "freeze_kind": "EXACT_SOURCE_AND_PRE_REGISTERED_TEST_POLICY_ONLY",
+  "status": "CANDIDATE_FOR_GOVERNED_BINDING_NOT_C1_DONE",
+  "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "source_history": [
+    {
+      "commit": "7a0bb64b4d7dd94389921ef551e44a449508fc91",
+      "pr": 3066,
+      "reason": "RW1-05_C3 Train governed closure"
+    },
+    {
+      "commit": "0cb13e136f101c83db12e48199182de1ff78cf2a",
+      "pr": 3067,
+      "impact": "five profile_creator files; profile assessment source-bound evidence, no direct Router ABI or migration"
+    },
+    {
+      "commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+      "pr": 3068,
+      "impact": "parity runner and regression source only; verify no Train bypass"
+    }
+  ],
+  "source_blobs": {
+    "docs/programming-agent/LF_ROUTER_ARCHITECTURE_WAVE_V1.md": "4bb64d568c3f005cf454fb223b4a5ed699c34504",
+    "docs/programming-agent/ROUTER_WAVE_C3_PROPORTIONAL_TIER_DECISION_V1.md": "9d80848dca36c94ba901028a4c27a1c58e425cb4",
+    "docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json": "55c09eb0fc6ddffa7a41d66eddf9c254e061f566",
+    "docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json": "bfd571d5e7c7d1d80c5ed39414a822b4096c20d6",
+    "docs/programming-agent/router_wave/RW1_05_C1_CONSUMER_RECEIPT_GAP_BASELINE_V1.md": "6494b7b5d40649e629b9c60ec7e751e308e49876",
+    "docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json": "da02bc075aa45f0ef5f3c81dfc310c6488b3ab63"
+  },
+  "runtime_definition_md5": {
+    "public.lf_router_resolve_v1": "d54120efc72b215ea8c5692fc4efb76a",
+    "public.lf_router_intent_handoff_v1": "540bc1b60caf2e3f9d81461f99c509ef",
+    "public.lf_router_intent_handoff_v2": "e6c5df658f322e0c67ee7a2bb5972410",
+    "public.lf_router_semantic_resume_validate_v1": "42e385535e5a8f32d31cc7447a62b860",
+    "public.lf_router_semantic_resume_route_v1": "461b8f5e0e3f6fabcef5a4786bcf9ba8",
+    "public.lf_profile_execution_terminal_authority_receipt_v1": "6e81929dad0b0952d7ae94a80738a5ff",
+    "public.lf_profile_execution_executor_admission_v1": "e584b781c5df3fd58983706830f491f4"
+  },
+  "dependency_readback": {
+    "rw105_unit": "DONE",
+    "rw105_c1": "DONE",
+    "rw105_c2": "DONE",
+    "rw105_c3": "DONE",
+    "rw105_c3_assertion_sha256": "e102a097ac005f598f572ced6b60c0dc92e306e4eeb30a24cb9d7535def5b393",
+    "rw105_c2_canary_execution_id": "EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001",
+    "rw105_c2_terminal": "READY",
+    "rw106_unit": "BACKLOG",
+    "rw106_c1": "PENDING",
+    "rw106_c2": "PENDING",
+    "rw106_c3": "PENDING"
+  },
+  "test_families": [
+    {
+      "id": "F01",
+      "family": "EXPLORATORY_READ_ONLY",
+      "oracle": "derived next step, no effect authority"
+    },
+    {
+      "id": "F02",
+      "family": "DEMO_PARTIAL_COMPLETE",
+      "oracle": "correct partial/full mode without inferred write"
+    },
+    {
+      "id": "F03",
+      "family": "MULTI_OBJECT_NEGATION_EXCLUSION",
+      "oracle": "candidate subset and exclusions, third object blocked"
+    },
+    {
+      "id": "F04",
+      "family": "NEW_UNKNOWN_ASSET",
+      "oracle": "discovery grounded or capability GAP, never fabricated worker"
+    },
+    {
+      "id": "F05",
+      "family": "TYPED_INTENT_NOT_ATTESTED",
+      "oracle": "no effect authority from typed hints or semantic PASS"
+    },
+    {
+      "id": "F06",
+      "family": "STALE_OR_WRONG_HASH",
+      "oracle": "reject stale source and literal/hash mismatch"
+    },
+    {
+      "id": "F07",
+      "family": "HOSTILE_SPECIALIST_RESULT",
+      "oracle": "reject route, operation, executor, effect and scope widening"
+    },
+    {
+      "id": "F08",
+      "family": "CLARIFICATION_DISCIPLINE",
+      "oracle": "zero redundant questions, at most one material question"
+    },
+    {
+      "id": "F09",
+      "family": "GPT_NATIVE_PROFILE_E2E",
+      "oracle": "same-request RAW, digest, 11/11, semantic judge, terminal receipt"
+    },
+    {
+      "id": "F10",
+      "family": "EXECUTOR_MODES",
+      "oracle": "native modes separate from REMOTE_API runtime admission"
+    },
+    {
+      "id": "F11",
+      "family": "MERGE_TRAIN",
+      "oracle": "reserve, CI/PASE, apply, parity, close, readback; no direct SQL"
+    },
+    {
+      "id": "F12",
+      "family": "LEGACY_AND_INPUT_GOVERNANCE",
+      "oracle": "single Router; legacy effects unchanged; adapter conditional"
+    },
+    {
+      "id": "F13",
+      "family": "OVERHEAD",
+      "oracle": "same source/input; calls, retries, latencies, token/provider cost if exposed"
+    }
+  ],
+  "holdout_protocol": {
+    "required": "NEW_MATERIALLY_SEPARATE_REVIEWER_AFTER_SOURCE_FREEZE",
+    "minimum": {
+      "valid": 12,
+      "invalid": 24,
+      "novel_falsifiers": 2
+    },
+    "precommit": "manifest_sha256 plus holdout_content_sha256 fixed BEFORE observing producer RAW and evaluation",
+    "seed_and_nonce": "confidential to independent reviewer until producer RAW commitment",
+    "legacy_holdouts": "RW1-01 H01-H12 burned and cannot be reused as independent",
+    "reviewer_role": "not implementer or checker author",
+    "material_evidence": "case-level expected outcome, run result and exact binding to source/manifest",
+    "status": "NOT_GENERATED_NOT_COMMITTED"
+  },
+  "decision_gates": {
+    "verdicts": [
+      "PASS",
+      "FAIL",
+      "GAP"
+    ],
+    "hard_fail": [
+      "effect granted by semantic PASS",
+      "Router bypass",
+      "direct SQL outside Train",
+      "candidate or allowed scope widened",
+      "exclusion dropped",
+      "stale source accepted",
+      "same-request literal/hash corrupted",
+      "unauthorized REMOTE_API",
+      "READ_ONLY write authority",
+      "redundant material question or more than one per round",
+      "terminal receipt fabricated",
+      "unbound holdout result",
+      "same producer presented as independent"
+    ],
+    "minimum_valid": "12/12 correct on new valid holdouts",
+    "minimum_invalid": "24/24 correctly rejected on new invalid holdouts",
+    "minimum_falsifiers": "2/2 rejected",
+    "material_trace": "one contemporary same-request run for each applicable consumer, no historical substitute",
+    "overhead": {
+      "record": [
+        "router_calls",
+        "semantic_calls",
+        "question_count",
+        "wall_time_ms",
+        "provider_tokens_if_available",
+        "db_roundtrips_if_available"
+      ],
+      "compare": "same source snapshot and equivalent routing paths; report median p95 dispersion sample count",
+      "numeric_budget": "UNDEFINED_BY_CURRENT_AUTHORITY_GAP_NOT_PASS",
+      "missing_telemetry": "GAP_NOT_PASS",
+      "unsupported_improvement_claim": "FAIL"
+    }
+  },
+  "required_negative_controls": {
+    "C1": [
+      "missing_source",
+      "stale_source",
+      "cross_project"
+    ],
+    "C2": [
+      "fixture_only",
+      "self_attested_completion",
+      "missing_producer"
+    ],
+    "C3": [
+      "same_producer_review",
+      "missing_negative_case",
+      "unsupported_PASS"
+    ]
+  },
+  "limitations": {
+    "provider_attested": false,
+    "independent_review": false,
+    "independent_holdout_frozen": false,
+    "rw105_c3_capture_isolation_provable": false,
+    "production_activation": false,
+    "runtime_activation": false,
+    "golden_promoted": false,
+    "c1_checkpoint_done": false
+  },
+  "pending": [
+    "generate independent secret holdouts and commit digests",
+    "CI/PASE evidence and registered test provider",
+    "governed DB source/spec binding via Train",
+    "fresh exact-main and DB readback",
+    "numeric SLO decision or explicit GAP for overhead"
+  ],
+  "no_lifecycle_transition_in_this_artifact": true
+}
