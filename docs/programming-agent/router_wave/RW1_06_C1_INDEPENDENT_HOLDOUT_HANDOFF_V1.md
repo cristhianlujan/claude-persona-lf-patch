@@ -22,16 +22,31 @@
   "schema_version": "RW106_C1_INDEPENDENT_HOLDOUT_COMMITMENT_V1",
   "checkpoint": "RW1-06_C1",
   "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+  "reviewer_method": "GPT_NATIVE_NEW_CHAT",
+  "reviewer_reference": null,
   "reviewer_separation": "NOT_YET_ATTESTED",
-  "holdout_counts": {"valid": null, "invalid": null, "novel_falsifiers": null},
+  "holdout_counts": {
+    "valid": null,
+    "invalid": null,
+    "novel_falsifiers": null
+  },
   "holdout_manifest_sha256": null,
   "holdout_content_sha256": null,
+  "committed_at_utc": null,
   "committed_before_evaluation": false,
   "case_bodies_revealed": false,
+  "producer_raw_observed": false,
   "provider_attested": false,
   "checkpoint_done": false
 }
 ```
+
+## Mechanical receipt verification (not independence proof)
+- When the reviewer emits a non-template commitment, run `python3 sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py <commitment.json>`.
+- Requires `reviewer_separation=OWNER_PROVIDED_SEPARATE_CHAT_UNATTESTED`, a genuine reviewer chat reference, UTC timestamp, and 12 valid + 24 invalid + 2 novel holdouts. The reviewer must keep every case body, seed, nonce and oracle answer secret until the governed reveal.
+- Validator `STRUCTURAL_PASS_INDEPENDENCE_NOT_PROVEN` is **never** independent attestation, an actual holdout content-hash verification, or C1 DONE.
+- Persist the commitment before any C2 producer output, then verify its Git blob and ordering in a separate readback.
 
 ## Contract boundary
 This handoff is an *instruction and commitment template*, not a generated holdout, provider receipt, source admission, merge authorization, checkpoint completion or production activation. A real independent reviewer must produce distinct material evidence in a separate invocation.
