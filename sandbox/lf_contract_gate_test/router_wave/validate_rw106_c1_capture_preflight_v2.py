@@ -10,6 +10,8 @@ import argparse
 import copy
 import json
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 
 SOURCE = "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024"
@@ -89,6 +91,83 @@ def validate(data: object) -> dict:
             "V2 identity replacement requires explicit governed spec and validator change",
         ],
     }
+
+
+
+def verify_attempt_git(repo_root: Path, attempt_ref: str, expected_repo: str) -> dict:
+    """Inspect a real local Git object. This is not reviewer-isolation proof."""
+    m = re.fullmatch(
+        r"github://([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})/"
+        r"(docs/programming-agent/router_wave/[A-Za-z0-9_/-]+\\.json)",
+        attempt_ref,
+    )
+    check(m is not None, "GIT_ATTEMPT_URI_MALFORMED")
+    check(m.group(1) == expected_repo, "GIT_ATTEMPT_REPO_MISMATCH")
+    check(".." not in m.group(3), "GIT_ATTEMPT_PATH_INVALID")
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "show", m.group(2) + ":" + m.group(3)],
+            check=False, capture_output=True, timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired) as e:
+        raise PreflightError("GIT_READBACK_UNAVAILABLE") from e
+    check(result.returncode == 0, "GIT_OBJECT_MISSING")
+    try:
+        item = json.loads(result.stdout.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as e:
+        raise PreflightError("GIT_ATTEMPT_INVALID_JSON") from e
+    check(isinstance(item, dict) and item.get("schema_version") ==
+          "RW106_C1_CAPTURE_ATTEMPT_V2", "GIT_ATTEMPT_SCHEMA_MISMATCH")
+    check(item.get("checkpoint") == "RW1-06_C1"
+          and item.get("source_snapshot_commit") == SOURCE
+          and item.get("source_policy_git_blob") == POLICY, "GIT_ATTEMPT_SOURCE_MISMATCH")
+    check(item.get("status") == "PREPARATION_ONLY"
+          and item.get("holdout_generated") is False
+          and item.get("checkpoint_done") is False, "GIT_ATTEMPT_FALSE_COMPLETION")
+    return {"git_readback": "PASS_LOCAL_GIT_OBJECT_ONLY",
+            "independence_proven": False, "custody_proven": False}
+
+
+def git_selftest() -> dict:
+    """One actual temporary Git commit and four fail-closed mutations."""
+    with tempfile.TemporaryDirectory(prefix="rw106_git_fixture_") as directory:
+        root = Path(directory)
+        def run(*arguments: str) -> str:
+            p = subprocess.run(["git", "-C", str(root), *arguments],
+                               capture_output=True, check=True, text=True, timeout=10)
+            return p.stdout.strip()
+        run("init", "-q")
+        path = "docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_FIXTURE.json"
+        target = root / path
+        target.parent.mkdir(parents=True)
+        template = {"schema_version":"RW106_C1_CAPTURE_ATTEMPT_V2",
+                    "checkpoint":"RW1-06_C1",
+                    "source_snapshot_commit":SOURCE,"source_policy_git_blob":POLICY,
+                    "status":"PREPARATION_ONLY","holdout_generated":False,
+                    "checkpoint_done":False}
+        target.write_text(json.dumps(template)+"\\n", encoding="utf-8")
+        run("add", path)
+        run("-c", "user.name=RW106-CI", "-c", "user.email=ci@example.invalid",
+            "commit", "-qm", "attempt-test")
+        commit = run("rev-parse", "HEAD")
+        uri = "github://example/repo@" + commit + "/" + path
+        check(verify_attempt_git(root, uri, "example/repo")["git_readback"] ==
+              "PASS_LOCAL_GIT_OBJECT_ONLY", "GIT_POSITIVE_FIXTURE_FAILED")
+        mutations = {
+            "wrong_repo": (uri, "wrong/repo"),
+            "unknown_commit": ("github://example/repo@" + "0" * 40 + "/" + path, "example/repo"),
+            "path_traversal": ("github://example/repo@" + commit + "/docs/programming-agent/router_wave/../wrong.json", "example/repo"),
+            "wrong_path": ("github://example/repo@" + commit + "/docs/programming-agent/router_wave/missing.json", "example/repo")
+        }
+        caught={}
+        for name,(value,expected) in mutations.items():
+            try:
+                verify_attempt_git(root,value,expected)
+            except PreflightError as e:
+                caught[name] = str(e)
+            else:
+                raise AssertionError("GIT_FALSE_ACCEPT:" + name)
+        return {"git_selftest":"PASS_SYNTHETIC_ONLY","git_negatives_rejected":caught}
 
 
 def selftest() -> dict:
@@ -174,6 +253,7 @@ def selftest() -> dict:
         "external_storage_verified": False,
         "independent_review_verified": False,
         "checkpoint_done": False,
+        **git_selftest(),
     }
 
 
@@ -181,14 +261,21 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("record", type=Path, nargs="?")
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--git-root", type=Path)
+    parser.add_argument("--repo-full-name")
     args = parser.parse_args()
     if args.self_test:
         print(json.dumps(selftest(), sort_keys=True))
     else:
         if args.record is None:
             parser.error("record path is required without --self-test")
-        print(json.dumps(validate(json.loads(args.record.read_text(encoding="utf-8"))),
-                         sort_keys=True))
+        if args.git_root is None or args.repo_full_name is None:
+            parser.error("--git-root and --repo-full-name required for non-synthetic run")
+        obj = json.loads(args.record.read_text(encoding="utf-8"))
+        output = validate(obj)
+        output["git_object_evidence"] = verify_attempt_git(
+            args.git_root, obj["attempt"]["issued_ref"], args.repo_full_name)
+        print(json.dumps(output, sort_keys=True))
 
 
 if __name__ == "__main__":
