@@ -147,6 +147,14 @@ $spec$::jsonb;
       "SELECT public.lf_profile_execution_terminal_authority_receipt_v1('EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001')->>'status' AS terminal_status"
     ]
   },
+  "residual_gaps": [
+    {
+      "code": "OVERHEAD_NUMERIC_SLO_UNDEFINED",
+      "disposition": "GAP_FOR_C3_DECISION_NOT_C1_HOLDOUT_FREEZE_BLOCKER",
+      "pass_claim": false,
+      "action": "MEASURE_ACTUAL_OVERHEAD_AND_REPORT_GAP_UNTIL_GOVERNED_SLO_EXISTS"
+    }
+  ],
   "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
   "source_git_blobs": {
     "rw106_freeze": "138efc3285ee5226c107827c66f84ced6be4afcb",
@@ -163,13 +171,11 @@ $spec$::jsonb;
   },
   "missing": [
     "INDEPENDENT_SEALED_HOLDOUT_NOT_COMMITTED",
-    "PROVIDER_RUN_NOT_OBSERVED",
-    "NUMERIC_OVERHEAD_SLO_NOT_DEFINED"
+    "PROVIDER_RUN_NOT_OBSERVED"
   ],
   "missing_typed": [
     "INDEPENDENT_SEALED_HOLDOUT_NOT_COMMITTED",
-    "PROVIDER_RUN_NOT_OBSERVED",
-    "NUMERIC_OVERHEAD_SLO_NOT_DEFINED"
+    "PROVIDER_RUN_NOT_OBSERVED"
   ],
   "observed": {
     "rw105_c3": "DONE",
