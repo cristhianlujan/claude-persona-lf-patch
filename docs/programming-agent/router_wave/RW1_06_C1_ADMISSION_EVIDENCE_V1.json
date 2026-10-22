@@ -1,0 +1,66 @@
+{
+  "c1_named_negatives_rejected": {
+    "cross_project": "ATTEMPT_REF_INVALID",
+    "missing_source": "GIT_READBACK_UNAVAILABLE",
+    "stale_source": "SOURCE_POLICY_MISMATCH"
+  },
+  "checkpoint": "RW1-06_C1",
+  "claims": {
+    "c2_started": false,
+    "c3_full_required": true,
+    "holdout_content_integrity_checked": false,
+    "independent_review": false,
+    "production_activation": false,
+    "provider_attested": false,
+    "runtime_activation": false,
+    "separate_reviewer_evidence_verified": false
+  },
+  "commitment": {
+    "attempt_commit": "76924bbb8a1ede147412cdd1be8f98619b659776",
+    "commit": "bc77301d419be28df99230f7f591be357c5cb38c",
+    "committed_before_any_producer_raw": true,
+    "holdout_content_sha256": "ab321fcd78a44053c982c33245cd8ec54be18a0758ad2963a4d33c27bae5bd36",
+    "holdout_counts": {
+      "invalid": 26,
+      "novel_falsifiers": 2,
+      "valid": 13
+    },
+    "holdout_manifest_sha256": "c93fab1ecd9d27cded416065e4e37584bdab432f4b51c1fd4f528091d6dbefe0",
+    "path": "docs/programming-agent/router_wave/RW1_06_C1_COMMIT_REVEAL_COMMITMENT_V1_001.json",
+    "producer_raw_exists": false
+  },
+  "git_blobs_on_main": {
+    "commitment": "f26d3001b42a86e5617b915f24e0e07a405b920c",
+    "decision_d1": "a6e012affee7151e7125f34ea8bcb6ee2a86f5ea",
+    "verifier": "a3f973de0f70d348170cf386537f8dce324b8062"
+  },
+  "independent_review_of_evidence_chain": {
+    "actions": "PR #3089 and PR #3090",
+    "performed_by": "separate ChatGPT chat",
+    "verdict": "FAIL_THEN_REMEDIATED"
+  },
+  "main_commit_inspected": "ca3950e3c518e34275291950860ddc1ed138542b",
+  "owner_decision": {
+    "accepted_limitations": [
+      "separation_of_reviewer_is_owner_declared_not_provider_attested",
+      "git_ancestry_does_not_authenticate_first_producer_output",
+      "shared_chat_link_existed_briefly_and_was_deleted_by_owner",
+      "handshake_nonce_reused_across_two_chats",
+      "holdout_content_integrity_checked_only_at_reveal"
+    ],
+    "decision": "D1_B",
+    "owner_declaration_sha256": "7c3509c1d93c98114fa9473c1a4265f590e2c60cb1e00734e653acdd8fc005a5",
+    "recorded_at_lima": "2026-10-22T04:19:00-05:00",
+    "reviewer_locator_sha256": "4c410ef81e4765bf22a3e07b91239732f8cb7f7f7012228d25eacc6fba7a97bf"
+  },
+  "plan": "LF_ROUTER_ARCHITECTURE_WAVE_V1",
+  "schema_version": "RW106_C1_ADMISSION_EVIDENCE_V1",
+  "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+  "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "status": "OWNER_ACCEPTED_D1_B_NOT_PROVIDER_ATTESTED",
+  "verifier_selftest": {
+    "negative_count": 45,
+    "synthetic_only": true,
+    "verdict": "PASS_SYNTHETIC_ONLY"
+  }
+}
