@@ -364,6 +364,56 @@ def pinned_blobs_status() -> str:
     return "VERIFIED_AGAINST_GIT"
 
 
+SOURCE_OPEN, SOURCE_CLOSE = "<<<FUENTE", "<<<FIN_FUENTE>>>"
+
+
+def pinned_available(root=None) -> bool:
+    root = Path(root) if root else HERE.parents[2]
+    return subprocess.run(["git", "-C", str(root), "cat-file", "-e", PINNED + "^{commit}"],
+                          capture_output=True, check=False).returncode == 0
+
+
+def source_pack_text(root=None) -> str:
+    """Public sources as readable text, each blob re-verified against Git here, so the
+    reviewer (whose Python sandbox has no network) needs no download."""
+    root = Path(root) if root else HERE.parents[2]
+    blocks = []
+    for path, blob in PINNED_SOURCES:
+        shown = subprocess.run(["git", "-C", str(root), "show", f"{PINNED}:{path}"],
+                               capture_output=True, check=False)
+        check(shown.returncode == 0, "PINNED_SOURCES_UNAVAILABLE")
+        raw = shown.stdout
+        check(hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest() == blob,
+              "PINNED_SOURCE_BLOB_MISMATCH:" + path)
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeError as exc:
+            raise CommitRevealGap("PINNED_SOURCE_NOT_UTF8:" + path) from exc
+        check(SOURCE_OPEN not in text and SOURCE_CLOSE not in text,
+              "SOURCE_DELIMITER_COLLISION:" + path)
+        body = text if text.endswith("\n") else text + "\n"
+        blocks.append(f"{SOURCE_OPEN} ruta={path} git_blob={blob} bytes={len(raw)}>>>\n"
+                      f"{body}{SOURCE_CLOSE}")
+    return "\n".join(blocks)
+
+
+def parse_source_pack(text: str) -> dict:
+    """Parse the inline source pack and re-derive each git blob sha1 from the text."""
+    found = {}
+    pattern = re.compile(re.escape(SOURCE_OPEN) + r" ruta=(\S+) git_blob=([0-9a-f]{40}) bytes=(\d+)>>>\n"
+                         r"(.*?)" + re.escape(SOURCE_CLOSE), re.S)
+    for path, blob, size, body in pattern.findall(text):
+        raw = body.encode("utf-8")
+        check(len(raw) >= int(size) and len(raw) <= int(size) + 1, "SOURCE_PACK_SIZE_MISMATCH:" + path)
+        for candidate in (raw, raw[:-1]):  # trailing newline added when the file lacked one
+            if hashlib.sha1(b"blob %d\0" % len(candidate) + candidate).hexdigest() == blob:
+                found[path] = blob
+                break
+        else:
+            raise CommitRevealGap("SOURCE_PACK_BLOB_MISMATCH:" + path)
+    return found
+
+
 def build_prompt(stage: str, nonce: str = "", attempt_ref: str = "") -> str:
     if stage == "handshake":
         check(re.fullmatch(r"[0-9a-f]{32}", nonce or "") is not None, "NONCE_REQUIRED")
@@ -377,13 +427,11 @@ def build_prompt(stage: str, nonce: str = "", attempt_ref: str = "") -> str:
         )
     check(stage == "generate", "UNKNOWN_PROMPT_STAGE")
     check(seal.ATTEMPT.fullmatch(attempt_ref or "") is not None, "ATTEMPT_REF_INVALID")
-    sources = "\n".join(
-        f"- https://raw.githubusercontent.com/{REPO}/{PINNED}/{p}  (git blob {b})"
-        for p, b in PINNED_SOURCES)
+    sources = source_pack_text()
     return f"""Eres el REVISOR INDEPENDIENTE del checkpoint RW1-06_C1 en una conversación aislada.
 Reglas de aislamiento: no uses ni pidas contexto de otras conversaciones; si ves contexto de un proyecto LF, memoria o chats previos, responde solo CONTEXTO_CONTAMINADO y detente. No conoces al productor ni sus salidas.
 
-1. Lee SOLO estas fuentes públicas fijadas por commit y verifica el blob de cada una (git blob sha1 = sha1(b"blob <bytes>\\0"+contenido)). Si algún blob no coincide o no puedes leerla, responde FUENTE_NO_VERIFICADA y detente (si no tienes navegación, pide al propietario que pegue el archivo):
+1. FUENTES. Usa SOLO las tres fuentes públicas de abajo (repositorio {REPO}, commit fijado {PINNED}). El productor ya verificó el blob git de cada una contra el repositorio; tu herramienta de Python no tiene internet y no necesitas descargar nada. Léelas completas. Si el bloque falta, está cortado o no puedes leerlo, responde FUENTE_NO_VERIFICADA y detente.
 {sources}
 2. Redacta un corpus NUEVO y SECRETO (mínimo 13 VALID, 26 INVALID, 2 FALSIFIER novedosos; cubre las 13 familias F01-F13 del archivo de política) y un manifiesto de oráculos con la acción esperada y severidad por caso, definidos ANTES de que exista cualquier salida del productor. No reutilices casos H01-H12 de RW1-01.
 3. Esquemas exactos (JSON): corpus = {{"schema_version":"RW106_C1_CORPUS_PRIVATE_V2","source_snapshot_commit":"{SOURCE}","source_policy_git_blob":"{POLICY}","attempt_ref":"{attempt_ref}","cases":[{{"case_id":"...","family_id":"F01","kind":"VALID|INVALID|FALSIFIER","input":"..."}}]}}; manifiesto = {{"schema_version":"RW106_C1_MANIFEST_PRIVATE_V2","source_snapshot_commit":"{SOURCE}","source_policy_git_blob":"{POLICY}","attempt_ref":"{attempt_ref}","private_nonce":"<secrets.token_hex(16)>","oracles_declared_before_producer_raw":true,"producer_raw_observed":false,"oracles":[{{"case_id":"...","expected_action":"...","severity":"LOW|MEDIUM|HIGH|CRITICAL"}}]}}. Solo enteros, sin números decimales.
@@ -661,6 +709,17 @@ def self_test() -> dict:
     gen = build_prompt("generate", attempt_ref=ref)
     for path, blob in PINNED_SOURCES:
         check(path in gen and blob in gen, "GENERATE_PROMPT_SOURCE_MISSING")
+    check(parse_source_pack(gen) == dict(PINNED_SOURCES), "GENERATE_PROMPT_SOURCE_PACK_INCOMPLETE")
+    check("raw.githubusercontent.com" not in gen, "GENERATE_PROMPT_STILL_NEEDS_NETWORK")
+    pos = gen.index(SOURCE_CLOSE) - 40
+    tampered = gen[:pos] + ("X" if gen[pos] != "X" else "Y") + gen[pos + 1:]
+    first_path = PINNED_SOURCES[0][0]
+    rejected["source_pack_tampered"] = _expect(
+        "SOURCE_PACK_BLOB_MISMATCH:" + first_path, parse_source_pack, tampered)
+    rejected["source_pack_truncated"] = _expect(
+        "GENERATE_PROMPT_SOURCE_PACK_INCOMPLETE", lambda t: check(
+            parse_source_pack(t) == dict(PINNED_SOURCES), "GENERATE_PROMPT_SOURCE_PACK_INCOMPLETE"),
+        gen[:gen.rindex(SOURCE_OPEN)])
     code = gen.split("```python\n", 1)[1].split("\n```", 1)[0]
     scope = {}
     exec(compile(code, "prompt_code_block", "exec"), scope)  # the block the reviewer runs
