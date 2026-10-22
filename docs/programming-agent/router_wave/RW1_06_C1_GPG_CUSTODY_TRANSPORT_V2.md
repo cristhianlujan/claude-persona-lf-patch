@@ -66,3 +66,13 @@ No actualizar esas banderas hasta contar con pruebas materiales y con la autorid
 | Acciones/efectos por aprobación semántica del especialista | BLOCK, permanece ACT-0001 |
 
 Este diseño no habilita ejecución del perfil, migración, runtime, producción ni cierre C1/C2/C3. RW1-06_C3 conserva nivel FULL.
+
+## Custodian verification CLI
+
+Only from the separately controlled custodian host, with the custodian's local GPG home configured and access to the three encrypted-delivery files:
+
+```sh
+python3 sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py --custodian-home PATH_TO_CUSTODIAN_GNUPG_HOME --output-dir PATH_TO_ENCRYPTED_DELIVERY
+```
+
+The verifier checks both ciphertext digests against the public candidate, decrypts locally and checks both original plaintext SHA-256 values without printing the secrets. A tampered ciphertext is rejected. Its JSON readback is cryptographic integrity evidence only; it does not attest that the real custodian or reviewer was independent.
