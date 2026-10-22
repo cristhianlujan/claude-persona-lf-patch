@@ -182,6 +182,29 @@ def test_real_profile_assessment_source_revision():
         normalized, sort_keys=True, separators=(",", ":"),
     ).encode("utf-8")).hexdigest() == assessment_sha
 
+    # The real structural PATCH has no typed signal/precondition supporting
+    # an optional method. This is a justified EMPTY selection, not a claim
+    # that any of the eight catalog methods is qualified for execution.
+    method_dir = root / "sandbox/lf_contract_gate_test/transversal_assets/capability_selector"
+    if str(method_dir) not in sys.path:
+        sys.path.insert(0, str(method_dir))
+    from capability_selector_v2 import compose_capabilities
+    registry = json.loads((root /
+        "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v1.json"
+    ).read_text(encoding="utf-8"))
+    composed = compose_capabilities(
+        {"profile_gaps": assessment["profile_gaps"]},
+        [], {"fallback_capabilities": []}, registry,
+    )
+    qualified = [x for x in composed["method_requirements"]
+                 if x["eligible_for_composition"]]
+    assert qualified == [], "S26_STRUCTURAL_PATCH_MUST_NOT_INVENT_QUALIFIED_METHOD"
+    assert composed["execution_authorized"] is False
+    print("PROFILE_METHOD_SELECTION_REAL_STRUCTURAL_PATCH",
+          "selected_methods=[]",
+          "empty_selection_reason=S26_STRUCTURAL_BINDINGS_PATCH",
+          "unqualified_method_execution=false")
+
 
 def test_existing_planner_assessment_regression():
     """Run the actual code suite in this existing allowed CI entrypoint."""
