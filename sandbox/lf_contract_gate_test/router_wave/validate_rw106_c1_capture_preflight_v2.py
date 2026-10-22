@@ -63,6 +63,11 @@ def validate(data: object) -> dict:
     check(custody.get("store_type") in
           {"ACCESS_CONTROLLED_PRIVATE_STORE", "ENCRYPTED_DURABLE_VAULT"}, "STORE_NOT_DURABLE")
     check(custody.get("ephemeral_storage_only") is False, "SESSION_LOCAL_CUSTODY_FORBIDDEN")
+    check(custody.get("producer_can_read_plaintext") is False,
+          "PRODUCER_PLAINTEXT_ACCESS_FORBIDDEN")
+    check(custody.get("separate_custodian_principal") is True
+          or custody.get("producer_decryption_key_unavailable") is True,
+          "CUSTODY_ISOLATION_BOUNDARY_MISSING")
     check(ref(custody.get("test_upload_retrieve_evidence_ref")), "RETRIEVAL_EVIDENCE_MISSING")
     check(ref(custody.get("producer_acl_denial_evidence_ref")), "ACL_EVIDENCE_MISSING")
     check(custody.get("durable_readback_verified") is True, "DURABLE_READBACK_GAP")
@@ -192,6 +197,9 @@ def selftest() -> dict:
         "custody": {
             "store_type": "ENCRYPTED_DURABLE_VAULT",
             "ephemeral_storage_only": False,
+            "producer_can_read_plaintext": False,
+            "separate_custodian_principal": True,
+            "producer_decryption_key_unavailable": False,
             "test_upload_retrieve_evidence_ref": "vault-evidence://mock-upload-retrieve-fixture",
             "producer_acl_denial_evidence_ref": "vault-evidence://mock-producer-denial-fixture",
             "durable_readback_verified": True,
@@ -235,6 +243,14 @@ def selftest() -> dict:
         "missing_retrieval": ("custody", {
             **sample["custody"], "durable_readback_verified": False,
         }),
+        "producer_plaintext_access": ("custody", {
+            **sample["custody"], "producer_can_read_plaintext": True,
+        }),
+        "no_key_or_principal_isolation": ("custody", {
+            **sample["custody"], "separate_custodian_principal": False,
+            "producer_decryption_key_unavailable": False,
+        }),
+
     }
     rejected = {}
     for name, (key, value) in mutations.items():
