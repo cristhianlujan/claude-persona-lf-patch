@@ -8,6 +8,6 @@
     "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c1-source-freeze-v1.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py": "ENGINEERING_CHECKPOINTS",
-    "supabase/migrations/20261022013000_lf_router_rw106_c1_source_contract_bind_v1.sql": "MIGRATION"
+    "supabase/migrations/20261022013100_lf_router_rw106_c1_source_contract_bind_v1.sql": "MIGRATION"
   }
 }
