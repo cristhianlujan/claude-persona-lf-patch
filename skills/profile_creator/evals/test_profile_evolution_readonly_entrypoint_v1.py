@@ -58,11 +58,17 @@ class ReadOnlyBindingTests(unittest.TestCase):
                         "subject_ref": "quality_pack",
                         "subject_sha256": ASSESSMENT_DIGEST,
                         "source_head_sha": "a" * 40,
+                        "receipt_kind": "PROFILE_ASSESSMENT_RESULT",
                         "verification_state": "VERIFIED",
-                        "resolver_id": "LF_SUPABASE_READBACK_V1",
+                        "provider": "GITHUB",
+                        "provider_ref": "github-api://repos/owner/repo@" + "a" * 40 + "/actions/runs/1",
+                        "verification_method": "GITHUB_API_READBACK_PLUS_OFFLINE_HASH",
+                        "receipt_sha256": "d" * 64,
+                        "verified_at": "2026-10-22T01:29:16Z",
+                        "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
                         "resolver_active": True,
                         "resolver_trust_level": "TRUSTED_PROVIDER_BOUND",
-                        "receipt_id": "fixture://not-real"
+                        "receipt_id": "9f758577-c9f6-4744-852b-a03827b466f6"
                     }
                 else:
                     raise AssertionError("Only two SELECTs expected with empty portfolio")

@@ -20,10 +20,16 @@ METHOD_RECEIPT = {"subject_type": "METHOD_QUALIFICATION",
                   "resolver_active": True, "resolver_trust_level": "TRUSTED_PROVIDER_BOUND",
                   "receipt_id": "method-receipt"}
 RECEIPT = {"subject_type": "PROFILE_ASSESSMENT", "subject_ref": "quality_pack",
+           "receipt_kind": "PROFILE_ASSESSMENT_RESULT",
            "source_head_sha": "a" * 40,
            "subject_sha256": D, "verification_state": "VERIFIED",
+           "provider": "SUPABASE",
+           "verification_method": "SUPABASE_SQL_READBACK_PLUS_DB_DIGEST",
+           "provider_ref": "supabase://verified-profile-assessment",
+           "receipt_sha256": "d" * 64, "verified_at": "2026-10-22T01:29:16Z",
            "resolver_id": "LF_SUPABASE_READBACK_V1", "resolver_active": True,
-           "resolver_trust_level": "TRUSTED_PROVIDER_BOUND", "receipt_id": "fixture-receipt"}
+           "resolver_trust_level": "TRUSTED_PROVIDER_BOUND",
+           "receipt_id": "9f758577-c9f6-4744-852b-a03827b466f6"}
 
 
 class TestTrustedReadback(unittest.TestCase):
@@ -38,6 +44,42 @@ class TestTrustedReadback(unittest.TestCase):
         self.assertEqual(result["qualified_method_ids"], ["SELF_REFINE"])
         self.assertTrue(result["method_catalog_released"])
         self.assertEqual(result["assessment_source_head_sha"], "a" * 40)
+
+    def test_real_github_resolver_contract_with_empty_portfolio(self):
+        # Fixture modeled on existing provider receipt; not a live SQL verification.
+        empty = {**REG, "manifest": {
+            "catalog_payload_sha256": D, "qualified_method_portfolio": []}}
+        valid = {**RECEIPT,
+                 "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+                 "provider": "GITHUB",
+                 "verification_method": "GITHUB_API_READBACK_PLUS_OFFLINE_HASH",
+                 "provider_ref": "github-api://repos/owner/repo@" + "a" * 40 + "/actions/runs/1"}
+        result = self.make(cap=empty, evidence=valid)("quality_pack", D, D)
+        self.assertEqual(result["status"], "VERIFIED_CURRENT")
+        self.assertEqual(result["qualified_method_ids"], [])
+        self.assertEqual(result["assessment_receipt_ref"], valid["receipt_id"])
+        self.assertEqual(result["assessment_source_head_sha"], "a" * 40)
+
+    def test_unmatched_github_resolver_provider_or_revision_blocks(self):
+        valid = {**RECEIPT, "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+                 "provider": "GITHUB",
+                 "verification_method": "GITHUB_API_READBACK_PLUS_OFFLINE_HASH",
+                 "provider_ref": "github-api://repos/owner/repo@" + "a" * 40 + "/actions/runs/1"}
+        bad = (
+            {**valid, "provider": "SUPABASE"},
+            {**valid, "verification_method": "OTHER"},
+            {**valid, "provider_ref": "github-api://repos/owner/repo@" + "b" * 40 + "/actions/runs/1"},
+            {**valid, "source_head_sha": "b" * 40},
+            {**valid, "receipt_sha256": "wrong"},
+            {**valid, "verified_at": None},
+            {**valid, "resolver_active": False},
+            {**valid, "receipt_kind": "SOURCE_SNAPSHOT"},
+            {**valid, "receipt_id": "not-a-uuid"},
+        )
+        for receipt in bad:
+            with self.subTest(receipt=receipt):
+                result = self.make(evidence=receipt)("quality_pack", D, D)
+                self.assertEqual(result["reason"], "ASSESSMENT_RECEIPT_INVALID_OR_UNTRUSTED")
 
     def test_absent_registry(self):
         self.assertEqual(self.make(None)("quality_pack", D, D)["reason"], "METHOD_REGISTRY_NOT_REGISTERED")

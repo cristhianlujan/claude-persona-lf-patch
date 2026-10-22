@@ -84,11 +84,32 @@ def check_inventory(local: dict, remote: dict, counts: dict, registry_text: str,
               "FAIL_IG_M1013_ORIGINAL_MISSING",duplicate)
         check(remote[duplicate][0]==original+"_"+remote[original][0],
               "FAIL_IG_M1013_DUPLICATE_NAME",duplicate)
+        # Snapshot returns CANONICAL SQL hashes (comments stripped), while
+        # sha16 from the immutable registry pins RAW stored SQL bytes. Do not
+        # compare one representation against the other; raw is checked below.
         check(remote[duplicate][1]==remote[original][1] and
-              remote[duplicate][1].startswith("sha256:"+sha16) and
+              re.fullmatch(r"sha256:[0-9a-f]{64}",remote[duplicate][1]) is not None and
               counts[duplicate]==counts[original],
               "FAIL_IG_M1013_DUPLICATE_SQL",duplicate)
         check(duplicate in registry_text, "FAIL_IG_M1013_DUPLICATE_UNDOCUMENTED",duplicate)
+
+def check_raw_duplicates(raw: dict[str, tuple[str, int]]) -> None:
+    """Prove exact raw stored statement bytes against the pinned ledger digest.
+
+    The snapshot strips comment lines for transport matching. The known-drift
+    registry records SHA-256 over original stored SQL; both are independently
+    required before accepting any historical duplicate.
+    """
+    expected=set(DUPLICATES)|{original for original,_ in DUPLICATES.values()}
+    check(set(raw)==expected,"FAIL_IG_M1013_DUPLICATE_RAW_COVERAGE")
+    for duplicate,(original,sha16) in DUPLICATES.items():
+        dupe_digest,dupe_count=raw[duplicate]
+        orig_digest,orig_count=raw[original]
+        check(re.fullmatch(r"[0-9a-f]{64}",dupe_digest) is not None and
+              dupe_digest==orig_digest and dupe_digest.startswith(sha16) and
+              dupe_count==orig_count and dupe_count>0,
+              "FAIL_IG_M1013_DUPLICATE_RAW_SQL",duplicate)
+
 
 def evaluate(*, data_root: Path, inputs: dict, full, pg_env: dict, psql, output_dir: Path) -> dict:
     registry_path=data_root/"docs/reconcile/KNOWN_DRIFT_REGISTRY.md"
@@ -116,6 +137,30 @@ def evaluate(*, data_root: Path, inputs: dict, full, pg_env: dict, psql, output_
               "FAIL_IG_M1013_COUNT_INVALID",version)
         counts[version]=int(count)
     check_inventory(local,remote,counts,registry,registry_blob)
+
+    # Independent raw-SQL attestation. The snapshot returns normalized hashes,
+    # so recover EXACT historical raw stored bytes via a read-only SQL digest.
+    duplicate_versions=sorted(set(DUPLICATES)|
+                              {original for original,_ in DUPLICATES.values()})
+    array_literal="{"+",".join(duplicate_versions)+"}"
+    # Built-in pg_catalog.sha256 is accessible to lf_reconcile_readonly.
+    # extensions.digest has EXECUTE privilege but schema extensions lacks USAGE.
+    raw_sql=("select version,"
+             "encode(pg_catalog.sha256(convert_to("
+             "coalesce(array_to_string(statements,chr(10)),''),'UTF8')),"
+             "'hex'),"
+             "coalesce(cardinality(statements),0)::text "
+             "from supabase_migrations.schema_migrations "
+             "where version=any('"+array_literal+"'::text[]) order by version")
+    raw={}
+    for version,digest,count in read_csv_stream(psql(raw_sql,env=pg_env),3):
+        check(version in duplicate_versions and version not in raw and
+              count.isdigit(),"FAIL_IG_M1013_DUPLICATE_RAW_ROW",version)
+        raw[version]=(digest,int(count))
+    check_raw_duplicates(raw)
+    for version,(_digest,statement_count) in raw.items():
+        check(statement_count==counts[version],
+              "FAIL_IG_M1013_DUPLICATE_RAW_CARDINALITY",version)
 
     # Four historical representation pointers must bind to current Git blob
     # AND the source blob at the immutable historical commit recorded by the ledger.
@@ -179,6 +224,8 @@ def evaluate(*, data_root: Path, inputs: dict, full, pg_env: dict, psql, output_
            "pointer_matches":len(POINTERS),
            "documented_exceptions":len(DUPLICATES)+len(LOCAL_ONLY),
            "ledger_duplicates_hash_and_count_equal":len(DUPLICATES),
+           "raw_ledger_duplicates_verified":len(DUPLICATES),
+           "raw_vs_snapshot_hash_representation":"INDEPENDENT",
            "registry_blob":registry_blob,
            "unregistered_drift_count":0,
            "grandfathered":"MATCH","legacy":"MATCH",

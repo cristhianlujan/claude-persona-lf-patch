@@ -94,17 +94,34 @@ def make_trusted_profile_readback(
             qualified.append(mid)
         if not isinstance(receipt, dict):
             return fail("ASSESSMENT_RECEIPT_MISSING")
+        # Existing Ledger registers real PROFILE_ASSESSMENT evidence through
+        # either the GitHub or Supabase provider resolver. A reader MUST bind
+        # the resolver to its actual provider/method (not assume Supabase).
+        verified_resolvers = {
+            "LF_GITHUB_SOURCE_READBACK_V1": ("GITHUB", "GITHUB_API_READBACK_PLUS_OFFLINE_HASH"),
+            "LF_SUPABASE_READBACK_V1": ("SUPABASE", "SUPABASE_SQL_READBACK_PLUS_DB_DIGEST"),
+        }
+        resolver = verified_resolvers.get(receipt.get("resolver_id"))
+        head = receipt.get("source_head_sha")
         if (receipt.get("subject_type") != "PROFILE_ASSESSMENT"
+                or receipt.get("receipt_kind") != "PROFILE_ASSESSMENT_RESULT"
                 or receipt.get("subject_ref") != profile_slug
                 or receipt.get("subject_sha256") != assessment_sha256
-                or not isinstance(receipt.get("source_head_sha"), str)
-                or not re.fullmatch(r"[0-9a-f]{40}", receipt["source_head_sha"])
+                or not isinstance(head, str)
+                or not re.fullmatch(r"[0-9a-f]{40}", head)
                 or receipt.get("verification_state") != "VERIFIED"
-                or receipt.get("resolver_id") != "LF_SUPABASE_READBACK_V1"
+                or resolver is None
+                or (receipt.get("provider"), receipt.get("verification_method")) != resolver
                 or receipt.get("resolver_active") is not True
                 or receipt.get("resolver_trust_level") != "TRUSTED_PROVIDER_BOUND"
+                or not isinstance(receipt.get("receipt_sha256"), str)
+                or not _SHA.fullmatch(receipt["receipt_sha256"])
+                or receipt.get("verified_at") is None
+                or not isinstance(receipt.get("provider_ref"), str)
+                or not receipt["provider_ref"].strip()
+                or (resolver[0] == "GITHUB" and "@" + head not in receipt["provider_ref"])
                 or not isinstance(receipt.get("receipt_id"), str)
-                or not receipt["receipt_id"]):
+                or not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", receipt["receipt_id"])):
             return fail("ASSESSMENT_RECEIPT_INVALID_OR_UNTRUSTED")
         return {
             "status": "VERIFIED_CURRENT",
@@ -139,13 +156,19 @@ WHERE r.capability_code = %s
 
 PROFILE_ASSESSMENT_RECEIPT_SQL = """
 SELECT l.receipt_id::text AS receipt_id,
-       l.subject_type, l.subject_ref, l.subject_sha256, l.source_head_sha,
-       l.verification_state, l.resolver_id,
+       l.receipt_kind, l.subject_type, l.subject_ref,
+       l.subject_sha256, l.source_head_sha,
+       l.verification_state, l.resolver_id, l.provider, l.provider_ref,
+       l.verification_method, l.receipt_sha256, l.verified_at,
        rr.active AS resolver_active,
        rr.trust_level AS resolver_trust_level
 FROM private.lf_evidence_ledger_v1 l
 JOIN private.lf_evidence_resolver_registry_v1 rr
   ON rr.resolver_id = l.resolver_id
+ AND rr.provider = l.provider
+ AND rr.verification_method = l.verification_method
+ AND rr.active IS TRUE
+ AND rr.trust_level = 'TRUSTED_PROVIDER_BOUND'
 WHERE l.subject_type = 'PROFILE_ASSESSMENT'
   AND l.subject_ref = %s
   AND l.subject_sha256 = %s
