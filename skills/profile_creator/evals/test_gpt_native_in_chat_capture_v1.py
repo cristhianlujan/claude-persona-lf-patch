@@ -229,8 +229,37 @@ def test_existing_planner_assessment_regression():
         print("PASS_PROFILE_ASSESSMENT_EXISTING_SUITE", name, result.testsRun)
 
 
+def test_pe10_c6_github_provider_output_source_bound_evidence():
+    """Real canonical runner results emitted from an exact GitHub PR HEAD.
+
+    The fixtures prove validation behavior, NOT an evolved output or a
+    Ledger VERIFIED receipt. Any failure breaks this provider job.
+    """
+    import subprocess
+    import sys
+    producer = (Path(__file__).resolve().parent /
+                "produce_pe10_c6_source_bound_output_evidence_v1.py")
+    p = subprocess.run(
+        [sys.executable, str(producer)],
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=False, timeout=155,
+    )
+    assert p.returncode == 0, "PE10_C6_SOURCE_PRODUCER_FAILED:" + p.stderr[-4000:]
+    prefix = "PE10_C6_PROVIDER_OUTPUT_EVIDENCE_V1="
+    lines = [x for x in p.stdout.splitlines() if x.startswith(prefix)]
+    assert len(lines) == 1, "PE10_C6_MISSING_SINGLE_TYPED_PRODUCER_RECEIPT"
+    evidence = json.loads(lines[0][len(prefix):])
+    assert evidence["evidence_scope"] == "PROFILE_CANONICAL_EXAMPLES_NOT_EVOLVED_CANDIDATE"
+    assert evidence["positive_result"]["status"] == "CANDIDATE_OUTPUT_PARITY_OBSERVED"
+    assert evidence["negative_result"]["status"].startswith("EXPECTED_NEGATIVE_")
+    assert evidence["receipt_issued"] is False
+    assert evidence["production_activation"] is False
+    print(lines[0], flush=True)
+
+
 if __name__ == "__main__":
     main()
     test_native_material_pre_admission_suite()
     test_real_profile_assessment_source_revision()
     test_existing_planner_assessment_regression()
+    test_pe10_c6_github_provider_output_source_bound_evidence()
