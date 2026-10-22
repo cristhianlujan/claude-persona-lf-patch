@@ -5,6 +5,7 @@ Only source-only, synthetic evidence. No runtime/model invocation or authority w
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import sys
 import tempfile
