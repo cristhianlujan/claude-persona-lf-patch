@@ -1,0 +1,418 @@
+{
+ "attempt_ref": "github://cristhianlujan/claude-persona-lf-patch@76924bbb8a1ede147412cdd1be8f98619b659776/docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json",
+ "case_count": 41,
+ "checkpoint": "RW1-06_C2",
+ "corpus_content_sha256": "ab321fcd78a44053c982c33245cd8ec54be18a0758ad2963a4d33c27bae5bd36",
+ "corpus_hash_verified_against_commitment": true,
+ "limitations": [
+  "Only lf_router_resolve_v1 and declared-artifact-candidates were exercised; input-governance resolver was permission-denied on the read-only connector.",
+  "No consumer, specialist, GPT Native, Merge Train or overhead telemetry was exercised: families F05,F07,F09,F10,F11,F12,F13 and much of F03/F04/F06/F08 cannot be demonstrated by this RAW alone.",
+  "Fields are a literal extraction of the tool output (verbatim values); semantic_handoff bodies were not copied except the listed state fields.",
+  "Every request_sha256 was recomputed in SQL over the input text and equals the sha256 of the corpus input."
+ ],
+ "manifest_received_before_this_raw": false,
+ "method": "public.lf_router_resolve_v1(input,null,null,null,null) and public.lf_router_declared_artifact_candidates_v1(input) via read-only SQL connector, one call per case, single batch",
+ "produced_utc": "2026-10-22T17:04:14Z",
+ "producer": "Claude (no access to manifest/oracles when run)",
+ "results": [
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I01",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "89f63e22b680bb05f4efe5ded1384b88f35f0bcd57641c62b48c74972a316e6d",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "CREATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I02",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "583afefe209beba21546017505448ae30c170eda2850a21b3f105a73985a2ec9",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I03",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "538f012f5f3f83c1beac7dbd5bb5db2c51140d9f80f525450e2f818a019e42e5",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I04",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "180052beb4b872e2731b098dc233d4171876577c7881f5ab85ab277bbbf0c321",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I05",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "8762cdfab4b1e9f84328be342a6b92deccd68a9ca086a4f4dba7dbd72d4986c3",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I06",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "18cb5d2be4fce57fde76217bde9303c082c250f6946dd07dfdcd7d9b735c77fb",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I07",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "5f3191aca499c23897622e40f0e29ba04449680331f90b1e366cc4c07ac6073a",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I08",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "741c1dc31d0e1943691e44687273c656e3399ca098bef402ec296af5dba5c527",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "UPDATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I09",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "6c8a78d223970443472591821a0f54b43053809137fab9c9fb1e00b4a4359a97",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I10",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "6b8909fed586980656da2f6d15fac0ad46e5956f5806d8a727a20c89bf2511a8",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "REGLA",
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I11",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "2ef58a9aea54976b0a4ddd527055bd1ad5454a1649a3084c29d7ba4521ce67d1",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I12",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "f0a7c7872836e4abca919a86fa6cf23abaea1323dd70f9a318f4ede7c081e0b3",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I13",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "d28899e5d83ede4b8fe2b2878562e7641618efadcdcadaddedf6f5e60f7a970a",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "DOC",
+   "blocking_code": null,
+   "case_id": "RW106-I14",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "55f8fadfece3739c3a63dd51457048af2762167efa206cb93c93689009b1c151",
+   "router_status": "READY_INSPECTION"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I15",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "1127d18eb05df8e320e9e85c7f501296703fd41b949165fb99b61b96ec8e85d5",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I16",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "1b61a261d3769b1056db05233dd5e318fd0115bfe47c1caca0e7738024d4302f",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "CREATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I17",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "1edce4d449957e3efe74e452534ff9d649e6005bd37d4f9a3172183d4e0c323f",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I18",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "c01ab0235ac4c1795143f1fd57d6fe0205095199f7ad5328eb70950de8fd80a1",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I19",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "36a61010474bed782e35a494c809c9ecb525855db3788ed0a121c6394a81e199",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I20",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "a399613f4dd95bb6880bd723853b535fa5d203746a8280b19ecb27b87d644568",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I21",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "66ced747dc5b80b2c595b97f52e19f581c3ab69dae364502ede2e511bb8b7877",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I22",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "d037cdc5c83e5002135dea34908531e3fb9487d4c103d6369aff37a98fb2f0cb",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I23",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "812156c06c21d6c69e501965788d85c9df30a874a84b5a39432ab585a572bf0e",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "ADAPTER",
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I24",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "c9d590af87c5b147fdb26dcd814baeed92021fa3f7b99d565a36b039f83be560",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "REGLA",
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I25",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "1b65eda1eb4a3fd58dbc340888907f103a3a754dc5a65d70efbd69f6fbbfea7d",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I26",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "795091b6d983dddb2d3fe82de292aa6e2b061586d8313dd0532e904ac57a65c8",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "DOC",
+   "blocking_code": null,
+   "case_id": "RW106-V01",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "cf20202fd4994f95763724bbed413d726ac5b904d8cf99659641d459fca253f2",
+   "router_status": "READY_INSPECTION"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V02",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "0b91a41b98eb844a62d2fd1c9dbdce6f4cdb7f6e511b8b4da1cd69dbf58107d0",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V03",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "f4098468b7e9025bba7f6263f6cb00bce46b1ab47bc0ad6e6fed5b8f6e673381",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "CREATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-V04",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "499cf42c23a4f98a42d78a911d2cd6ca250994f10a69c1c3a242995accbbd691",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V05",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "e8d68a0d3f851b0c2a8aa249987638f2cc4a9a28611bd05f5a2ebd03b5b67d06",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V06",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "3318a81f3785a9c88efc0e7d1b33409bd26a70c371689158a64269c56739d620",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V07",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "732392e6475bf95953207904bafc46307f61add317aa73f4d59d2d428fdae33e",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V08",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "aa17a8b2c3df99739c54d8699e743546c660ad4723f0b6397dea34398206a283",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "PROFILE_CREATE",
+   "asset_type": "PERFIL",
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-V09",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "b383ac2526e1124b8eec25efac246063b1e745927ea841616f8693437730f39d",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V10",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "112ad57a7e48229083bd7d3170419981131bb43f9f013321a0cc2f34578163b1",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V11",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "1a3a3a268d5cd7c043c12dd85dfa0268d75be319ad3e45cb8565847163cd1a96",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": "DOC",
+   "blocking_code": null,
+   "case_id": "RW106-V12",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "7bb82c5e884868b9b5fba89c389fad389f68e989f9e8af588f6c77bf43c5c6b1",
+   "router_status": "READY_INSPECTION"
+  },
+  {
+   "action_code": "ASSET_INSPECTION",
+   "asset_type": null,
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V13",
+   "declared_artifact_candidates_match_count": 0,
+   "request_sha256": "7a2a52956c324fe787323dfedf90a2f2d0363fbd361550d01a45c767b2f51c4b",
+   "router_status": "BLOCKED"
+  },
+  {
+   "action_code": "CREATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-X01",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "8f65aad2eb0c25fe888e6751d3c5848225b6ec86cc6314b9523045de3ea1753d",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  },
+  {
+   "action_code": "CREATE",
+   "asset_type": null,
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-X02",
+   "declared_artifact_candidates_match_count": 0,
+   "downstream_execution_allowed": false,
+   "executor_selection_state": "NOT_SELECTED",
+   "request_sha256": "1ef3e62c9a65cf0e79ec3ead64d9b25ca027c0a2facb7289165a0fd1aa17c4b0",
+   "router_status": "BLOCKED",
+   "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+   "subject_binding_state": "UNRESOLVED"
+  }
+ ],
+ "router_source_md5": "d54120efc72b215ea8c5692fc4efb76a",
+ "schema_version": "RW106_C2_PRODUCER_RAW_V1"
+}
