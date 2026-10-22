@@ -1,0 +1,325 @@
+{
+ "checkpoint": "RW1-06_C2",
+ "commitment_commit": "bc77301d419be28df99230f7f591be357c5cb38c",
+ "gate_vs_minima": {
+  "invalid_correctly_rejected": "0/26 causally demonstrated vs required 24/24",
+  "novel_falsifiers_rejected": "0/2 causally demonstrated vs required 2/2",
+  "valid_correct": "0/13 demonstrated (4 FAIL, 9 GAP) vs required 12/12"
+ },
+ "hard_fail_note": "No effect authority, executor selection or downstream execution was granted in any of the 41 resolver outputs (all BLOCKED or READY_INSPECTION of ACT-0001 itself).",
+ "hard_fail_observed": false,
+ "interpretation": [
+  "The producer RAW exercised only lf_router_resolve_v1 and declared-artifact-candidates over read-only SQL. The oracles describe behavior of consumers, specialists, GPT Native, Merge Train and overhead telemetry that this RAW cannot show.",
+  "BLOCK_ASSET_TYPE_UNRESOLVED on most inputs is an incidental block, not evidence the specific hazard was recognised and rejected.",
+  "Missing contemporary same-request runs (F09), Train runs (F11) and overhead telemetry (F13) are GAP per policy, never PASS.",
+  "The producer did not receive the manifest before the RAW was committed to main (RAW commit precedes this scoring); this proves ordering only, not first-output authenticity."
+ ],
+ "manifest_sha256_verified": "c93fab1ecd9d27cded416065e4e37584bdab432f4b51c1fd4f528091d6dbefe0",
+ "no_lifecycle_transition_in_this_artifact": true,
+ "overall_verdict": "NOT_PASS_C2_STAYS_PENDING",
+ "producer_raw_commit": "4e2ece798ed29ad75268cc46961895e1b2301da5",
+ "producer_raw_sha256": "71c95d277e90c50b597848ef7dd5da967b8a069c19fe71eab9624beb82f12aec",
+ "results": [
+  {
+   "blocking_code": null,
+   "case_id": "RW106-V01",
+   "router_status": "READY_INSPECTION",
+   "severity": "HIGH",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I01",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I02",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V02",
+   "router_status": "BLOCKED",
+   "severity": "MEDIUM",
+   "verdict": "FAIL_UNNECESSARY_BLOCK_ON_SUFFICIENT_READ_ONLY_REQUEST"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I03",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I04",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V03",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "FAIL_UNNECESSARY_BLOCK_ON_SUFFICIENT_READ_ONLY_REQUEST"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I05",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I06",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-V04",
+   "router_status": "BLOCKED",
+   "severity": "MEDIUM",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I07",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I08",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V05",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I09",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I10",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V06",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "FAIL_UNNECESSARY_BLOCK_ON_SUFFICIENT_READ_ONLY_REQUEST"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I11",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I12",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V07",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I13",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": null,
+   "case_id": "RW106-I14",
+   "router_status": "READY_INSPECTION",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V08",
+   "router_status": "BLOCKED",
+   "severity": "MEDIUM",
+   "verdict": "FAIL_UNNECESSARY_BLOCK_ON_SUFFICIENT_READ_ONLY_REQUEST"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I15",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I16",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-V09",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-I17",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I18",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V10",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I19",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I20",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V11",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I21",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I22",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": null,
+   "case_id": "RW106-V12",
+   "router_status": "READY_INSPECTION",
+   "severity": "HIGH",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I23",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I24",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-V13",
+   "router_status": "BLOCKED",
+   "severity": "MEDIUM",
+   "verdict": "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_NOT_FOUND",
+   "case_id": "RW106-I25",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_ASSET_TYPE_UNRESOLVED",
+   "case_id": "RW106-I26",
+   "router_status": "BLOCKED",
+   "severity": "HIGH",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-X01",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  },
+  {
+   "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+   "case_id": "RW106-X02",
+   "router_status": "BLOCKED",
+   "severity": "CRITICAL",
+   "verdict": "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED"
+  }
+ ],
+ "reveal_verifier": {
+  "chronology": "GIT_COMMIT_ANCESTRY_PASS",
+  "content_integrity": "PASS_CANONICAL_SHA256_MATCHES_PRECOMMIT",
+  "independent_review": false,
+  "provider_attested": false,
+  "reviewer_separation_verified": false,
+  "structure": "PASS_EXACT_ALLOWLIST_AND_MINIMA"
+ },
+ "schema_version": "RW106_C2_REVEAL_SCORING_V1",
+ "tally": {
+  "FAIL_UNNECESSARY_BLOCK_ON_SUFFICIENT_READ_ONLY_REQUEST": 4,
+  "GAP_NO_EFFECT_GRANTED_BUT_REJECTION_NOT_CAUSALLY_DEMONSTRATED": 28,
+  "GAP_POSITIVE_BEHAVIOR_NOT_DEMONSTRATED_BY_RESOLVER_RAW": 9
+ }
+}
