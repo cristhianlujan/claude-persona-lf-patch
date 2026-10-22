@@ -42,6 +42,8 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_06_C1_REVIEW_CAPTURE_REDESIGN_V2.md'
       - 'docs/programming-agent/router_wave/RW1_06_C1_SOURCE_POLICY_FREEZE_V1.json'
       - 'supabase/migrations/*lf_router_rw106_c1_source_contract_bind_v1.sql'
       - 'services/router_semantic_runtime/**'
@@ -70,6 +72,8 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_source_freeze_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py'
+      - 'docs/programming-agent/router_wave/RW1_06_C1_REVIEW_CAPTURE_REDESIGN_V2.md'
       - 'docs/programming-agent/router_wave/RW1_06_C1_SOURCE_POLICY_FREEZE_V1.json'
       - 'supabase/migrations/*lf_router_rw106_c1_source_contract_bind_v1.sql'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
@@ -301,3 +305,9 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py --self-test
+
+      - name: Execute RW1-06 C1 V2 pre-generation capacity negative guards (advisory)
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_capture_preflight_v2.py --self-test
