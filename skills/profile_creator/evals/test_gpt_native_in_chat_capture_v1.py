@@ -185,10 +185,10 @@ def test_real_profile_assessment_source_revision():
     # The real structural PATCH has no typed signal/precondition supporting
     # an optional method. This is a justified EMPTY selection, not a claim
     # that any of the eight catalog methods is qualified for execution.
-    from capability_selector_v2 import compose_capabilities
     method_dir = root / "sandbox/lf_contract_gate_test/transversal_assets/capability_selector"
     if str(method_dir) not in sys.path:
         sys.path.insert(0, str(method_dir))
+    from capability_selector_v2 import compose_capabilities
     registry = json.loads((root /
         "sandbox/lf_contract_gate_test/transversal_assets/method_pack_registry/method_pack_registry_v1.json"
     ).read_text(encoding="utf-8"))
