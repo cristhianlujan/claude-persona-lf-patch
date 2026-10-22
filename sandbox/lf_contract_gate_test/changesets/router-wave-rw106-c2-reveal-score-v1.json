@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw106-c2-reveal-score-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_06_C2_REVEAL_SCORING_V1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c2-reveal-score-v1.json": "CHANGESET_MANIFEST"
+  }
+}
