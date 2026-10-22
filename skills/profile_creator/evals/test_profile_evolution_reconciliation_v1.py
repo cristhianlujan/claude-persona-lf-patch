@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -187,6 +188,65 @@ class AuthorityReadbackRegression(unittest.TestCase):
         result = self._plan(reader=fake_reader, mutate_data=data)
         self.assertIn("METHOD_AND_ASSESSMENT_AUTHORITY_UNRESOLVED", result["blocking_codes"])
         self.assertFalse(result["candidate_materialization_allowed"])
+
+
+
+class SourceBoundEvidenceRegression(unittest.TestCase):
+    """Source/evidence callbacks are simulated; never real Ledger receipts."""
+
+    def test_bound_assessment_and_rejection_of_stale_refs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            skill = repo / "profiles/quality_pack/SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# source under test\n", encoding="utf-8")
+            sha = hashlib.sha256(skill.read_bytes()).hexdigest()
+            head = "a" * 40
+            def src(slug, revision):
+                return {"status": "VERIFIED_CURRENT", "profile_slug": slug,
+                        "source_head_sha": revision,
+                        "source_path": "profiles/quality_pack/SKILL.md",
+                        "source_sha256": sha,
+                        "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+                        "resolver_active": True,
+                        "resolver_trust_level": "TRUSTED_PROVIDER_BOUND"}
+            def proof(ref, slug, revision):
+                return {"status": "VERIFIED", "ref": ref,
+                        "profile_slug": slug, "source_head_sha": revision,
+                        "observed_status": "FAIL",
+                        "resolver_id": "LF_GITHUB_SOURCE_READBACK_V1",
+                        "resolver_active": True,
+                        "resolver_trust_level": "TRUSTED_PROVIDER_BOUND"}
+            data = {"evidence": {
+                "structural_compatibility": {"status": "PASS", "refs": ["s26://13-of-13"]},
+                "domain_task_uplift": {"status": "FAIL", "refs": ["proof://domain"]},
+                "architecture_fit": {"status": "PASS", "refs": ["proof://arch"]}},
+                "signals": {"risk": "MEDIUM"}}
+            normalized, candidate = planner._verify_assessment_input(
+                repo, "quality_pack", head, data, src, proof)
+            self.assertEqual(candidate["status"], "EVIDENCE_CHECKED")
+            self.assertEqual(normalized["evidence"]["domain_task_uplift"]["status"], "FAIL")
+            self.assertFalse(candidate["receipt_issued"])
+            self.assertFalse(candidate["ledger_write_performed"])
+            self.assertEqual(candidate["subject_type"], "PROFILE_ASSESSMENT")
+            self.assertIn("architecture_fit", candidate["unknown_dimensions"])
+            invalid = lambda ref, slug, revision: {**proof(ref,slug,revision),
+                "source_head_sha": "b"*40}
+            norm, _ = planner._verify_assessment_input(
+                repo, "quality_pack", head, data, src, invalid)
+            self.assertEqual(norm["evidence"]["domain_task_uplift"]["status"], "UNKNOWN")
+            self.assertEqual(norm["evidence"]["domain_task_uplift"]["refs"], [])
+            skill.write_text("altered", encoding="utf-8")
+            _, stale = planner._verify_assessment_input(
+                repo, "quality_pack", head, data, src, proof)
+            self.assertEqual(stale["reason"], "PROFILE_SOURCE_NOT_VERIFIED")
+
+    def test_missing_trusted_reader_cannot_issue_receipt(self):
+        normalized, result = planner._verify_assessment_input(
+            ROOT, "quality_pack", "a"*40, {"evidence": {}, "signals": {}}, None, None)
+        self.assertEqual(result["status"], "UNVERIFIED")
+        self.assertFalse(result["receipt_issued"])
+        self.assertFalse(result["ledger_write_performed"])
 
 
 if __name__ == "__main__":
