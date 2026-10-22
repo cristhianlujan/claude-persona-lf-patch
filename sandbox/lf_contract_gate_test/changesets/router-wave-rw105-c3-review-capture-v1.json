@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw105-c3-review-capture-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json": "ENGINEERING_CHECKPOINTS",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+  }
+}
