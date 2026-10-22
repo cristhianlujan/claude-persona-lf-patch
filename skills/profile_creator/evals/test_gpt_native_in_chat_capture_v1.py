@@ -196,7 +196,6 @@ def test_existing_planner_assessment_regression():
     for name in suites:
         suite = unittest.defaultTestLoader.discover(
             start_dir=str(directory), pattern=name,
-            top_level_dir=str(root),
         )
         assert suite.countTestCases() > 0, "ASSESSMENT_SUITE_NOT_FOUND:" + name
         result = unittest.TextTestRunner(verbosity=1).run(suite)
