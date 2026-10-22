@@ -397,6 +397,34 @@ def source_pack_text(root=None) -> str:
     return "\n".join(blocks)
 
 
+PART_LIMIT = 15000  # ChatGPT truncated a single 30 KB paste at exactly 20,000 chars
+
+
+def build_generate_parts(attempt_ref: str) -> list:
+    """Same generate prompt split into 3 messages that each stay far below the paste limit."""
+    full = build_prompt("generate", attempt_ref=attempt_ref)
+    third = full.index(SOURCE_OPEN, full.index(SOURCE_OPEN, full.index(SOURCE_OPEN) + 1) + 1)
+    step2 = full.index("\n2. Redacta")
+    cuts = [full[:third], full[third:step2], full[step2:]]
+    total = len(cuts)
+    out = []
+    for i, body in enumerate(cuts, 1):
+        if i < total:
+            head = (f"PARTE {i}/{total} de un único encargo. SOLO recíbela: no ejecutes nada ni redactes "
+                    f"casos todavía. Comprueba que el texto termina con el marcador "
+                    f"<<<FIN_PARTE {i}/{total}>>>; si falta o está cortado responde PARTE_{i}_TRUNCADA. "
+                    f"Si no, responde únicamente RECIBIDA_{i}_DE_{total}.\n\n")
+        else:
+            head = (f"PARTE {i}/{total} (final). Comprueba que el texto termina con <<<FIN_PARTE {i}/{total}>>> "
+                    f"y que tienes las PARTES 1 y 2 completas (las tres fuentes con su <<<FIN_FUENTE>>>). "
+                    f"Si algo falta o está cortado responde PARTE_TRUNCADA o FUENTE_NO_VERIFICADA y detente. "
+                    f"Si todo está completo, ejecuta el encargo completo (reglas y pasos 1-5).\n\n")
+        text = head + body.rstrip("\n") + f"\n<<<FIN_PARTE {i}/{total}>>>\n"
+        check(len(text) < PART_LIMIT, f"PART_{i}_TOO_LONG:{len(text)}")
+        out.append(text)
+    return out
+
+
 def parse_source_pack(text: str) -> dict:
     """Parse the inline source pack and re-derive each git blob sha1 from the text."""
     found = {}
@@ -720,6 +748,12 @@ def self_test() -> dict:
         "GENERATE_PROMPT_SOURCE_PACK_INCOMPLETE", lambda t: check(
             parse_source_pack(t) == dict(PINNED_SOURCES), "GENERATE_PROMPT_SOURCE_PACK_INCOMPLETE"),
         gen[:gen.rindex(SOURCE_OPEN)])
+    pieces = build_generate_parts(ref)
+    check(len(pieces) == 3 and all(len(p) < PART_LIMIT for p in pieces), "PARTS_COUNT_OR_SIZE")
+    check(parse_source_pack("".join(pieces)) == dict(PINNED_SOURCES), "PARTS_SOURCE_PACK_INCOMPLETE")
+    check("```python" in pieces[2] and "<<<FIN_PARTE 3/3>>>" in pieces[2], "PARTS_FINAL_INCOMPLETE")
+    check(all(f"<<<FIN_PARTE {i}/3>>>" in p for i, p in enumerate(pieces, 1)), "PARTS_MARKER_MISSING")
+    check("\n".join(p.split("\n\n", 1)[1] for p in pieces).count("Redacta un corpus") == 1, "PARTS_STEP2_DUP")
     code = gen.split("```python\n", 1)[1].split("\n```", 1)[0]
     scope = {}
     exec(compile(code, "prompt_code_block", "exec"), scope)  # the block the reviewer runs
@@ -755,6 +789,7 @@ def main() -> None:
     prompt.add_argument("stage", choices=["handshake", "generate"])
     prompt.add_argument("--nonce", default="")
     prompt.add_argument("--attempt-ref", default="")
+    prompt.add_argument("--part", type=int, default=0, help="generate only: print part N of 3 (0 = whole)")
     chk = sub.add_parser("check-commitment")
     rev = sub.add_parser("verify-reveal")
     for item in (chk, rev):
@@ -770,7 +805,12 @@ def main() -> None:
         elif args.command == "challenge":
             result = challenge()
         elif args.command == "prompt":
-            print(build_prompt(args.stage, args.nonce, args.attempt_ref))
+            if args.stage == "generate" and args.part:
+                pieces = build_generate_parts(args.attempt_ref)
+                check(1 <= args.part <= len(pieces), "PART_OUT_OF_RANGE")
+                print(pieces[args.part - 1], end="")
+            else:
+                print(build_prompt(args.stage, args.nonce, args.attempt_ref))
             return
         elif args.command == "check-commitment":
             result = check_commitment(args.git_root, args.commit, args.path,
