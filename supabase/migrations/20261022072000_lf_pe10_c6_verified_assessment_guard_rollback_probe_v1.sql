@@ -1,5 +1,5 @@
 -- PE10: material verification of the real PROFILE_ASSESSMENT receipt at step 35.
--- NO v0.2 activation, NO method qualification, NO positive step 37 or C6 PASS.
+-- NO DURABLE v0.2 activation, NO method qualification or C6 PASS.
 -- The temporary execution is a TRANSACTIONAL TEST FIXTURE, not an authority
 -- receipt, certified provider execution, or production invocation.
 -- DB apply exclusively via ACTUALIZACION_DB_LF / LF Migration Merge Train.
@@ -74,8 +74,40 @@ BEGIN
   -- PostgreSQL PL/pgSQL exception subtransaction rolls back ALL actor and
   -- init-step effects after the actual deployed begin RPC and guard calls.
   BEGIN
+    -- A fully isolated subtransaction temporarily stages the candidate state.
+    -- Other sessions never see this uncommitted state; the intentional
+    -- exception below reverses all policy, step and execution changes.
+    UPDATE public.lf_policy_versions SET status='CANDIDATE'
+      WHERE policy_code='POL-PROFILE-UPDATE-PASS'
+        AND policy_version='v1.1' AND status='ACTIVE';
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>1 THEN RAISE EXCEPTION 'PE10_C6_ACTIVE_POLICY_NOT_UNIQUE'; END IF;
+    UPDATE public.lf_policy_versions SET status='ACTIVE'
+      WHERE policy_code='POL-PROFILE-UPDATE-PASS'
+        AND policy_version='v1.4-evolved-routing-candidate' AND status='CANDIDATE';
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>1 THEN RAISE EXCEPTION 'PE10_C6_CANDIDATE_POLICY_NOT_UNIQUE'; END IF;
+    UPDATE public.lf_operation_steps SET active=true
+      WHERE operation_code=v_operation
+        AND step_id IN ('method_selection','evolution_decision')
+        AND required AND NOT active;
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>2 THEN RAISE EXCEPTION 'PE10_C6_STAGED_STEPS_NOT_EXACT'; END IF;
+    UPDATE public.lf_operation_step_contracts SET status='ACTIVE_ENFORCEMENT'
+      WHERE operation_code=v_operation
+        AND step_id IN ('method_selection','evolution_decision')
+        AND status='CANDIDATE';
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>2 THEN RAISE EXCEPTION 'PE10_C6_STAGED_CONTRACTS_NOT_EXACT'; END IF;
+    UPDATE public.lf_operation_step_judge_bindings SET status='ACTIVE_ENFORCEMENT'
+      WHERE operation_code=v_operation
+        AND step_id IN ('method_selection','evolution_decision')
+        AND status='CANDIDATE';
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>2 THEN RAISE EXCEPTION 'PE10_C6_STAGED_BINDINGS_NOT_EXACT'; END IF;
+
     SELECT public.lf_profile_update_begin_v1(
-      v_exec,'PERFIL-PE10-C6-ROLLBACK-PROBE',
+      v_exec,'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF',
       'cristhianlujan/claude-persona-lf-patch',
       'profiles/systemic_root_cause_repair_lf',
       repeat('c',64),'pe10-c6-real-assessment-subtx-20261022-v1',
@@ -130,9 +162,9 @@ BEGIN
     IF v_result IS DISTINCT FROM 'EVOLUTION_SELECTION_STEP_NOT_CLEAN'
     THEN RAISE EXCEPTION 'PE10_C6_UNRECORDED_SELECTION_NOT_REJECTED:%',v_result; END IF;
     SELECT public.lf_profile_update_effective_route_v1(v_exec) INTO v_route;
-    IF v_route->>'outcome' IS DISTINCT FROM 'BLOCKED'
-      OR v_route->>'code' IS DISTINCT FROM 'FROZEN_REQUIRED_STEPS_INVALID'
-    THEN RAISE EXCEPTION 'PE10_C6_INACTIVE_V02_ROUTE_DID_NOT_FAIL_CLOSED:%',v_route; END IF;
+    IF v_route->>'outcome' IS DISTINCT FROM 'AWAITING_EVOLUTION_DECISION'
+      OR jsonb_array_length(v_route->'effective_steps')<>6
+    THEN RAISE EXCEPTION 'PE10_C6_CANDIDATE_PREFIX_ROUTE_INVALID:%',v_route; END IF;
     RAISE EXCEPTION 'PE10_C6_EXPECTED_SUBTRANSACTION_ROLLBACK';
   EXCEPTION WHEN SQLSTATE 'P0001' THEN
     IF SQLERRM<>'PE10_C6_EXPECTED_SUBTRANSACTION_ROLLBACK' THEN RAISE; END IF;
@@ -145,6 +177,20 @@ BEGIN
            AND NOT active)<>2
      OR (SELECT count(*) FROM public.lf_operation_execution
          WHERE operation_code=v_operation AND status='IN_PROGRESS')<>0
+     OR (SELECT count(*) FROM public.lf_policy_versions
+         WHERE policy_code='POL-PROFILE-UPDATE-PASS'
+           AND policy_version='v1.1' AND status='ACTIVE')<>1
+     OR (SELECT count(*) FROM public.lf_policy_versions
+         WHERE policy_code='POL-PROFILE-UPDATE-PASS'
+           AND policy_version='v1.4-evolved-routing-candidate' AND status='CANDIDATE')<>1
+     OR (SELECT count(*) FROM public.lf_operation_step_contracts
+         WHERE operation_code=v_operation
+           AND step_id IN ('method_selection','evolution_decision')
+           AND status='CANDIDATE')<>2
+     OR (SELECT count(*) FROM public.lf_operation_step_judge_bindings
+         WHERE operation_code=v_operation
+           AND step_id IN ('method_selection','evolution_decision')
+           AND status='CANDIDATE')<>2
   THEN RAISE EXCEPTION 'PE10_C6_TRANSACTIONAL_RESIDUE'; END IF;
 
   -- Durable evidence of a bounded guard test ONLY. Not a C6 acceptance receipt.
@@ -163,7 +209,8 @@ BEGIN
     'guard_real_receipt_empty_selection_pass',true,
     'negative_guard_cases',jsonb_build_array(
       'EMPTY_REASON','METHOD_PERMISSION','STALE_SOURCE','UNVERIFIED_RECEIPT',
-      'DECISION_WITHOUT_RECORDED_SELECTION','INACTIVE_V02_ROUTE'),
+      'DECISION_WITHOUT_RECORDED_SELECTION','AWAITING_EVOLUTION_DECISION_PREFIX'),
+    'temporary_candidate_policy_and_steps_staged',true,
     'transactional_rollback_verified',true,
     'positive_recorder_and_route_verified',false,
     'checkpoint_pass',false,
