@@ -199,6 +199,7 @@ DECLARE
   v_event_id bigint;
   v_expected_error text;
   v_expected_count integer;
+  v_guard_error text;
 BEGIN
   IF position('lf_profile_update_evolution_step_guard_v1' in
       pg_get_functiondef('public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text)'::regprocedure))=0
@@ -303,20 +304,27 @@ BEGIN
           'current_selector','method_execution_permitted_false'),
         'hard_fails_checked','[]'::jsonb);
 
-      SELECT public.lf_record_profile_operation_step_v1(
-         v_exec,'method_selection','pe10-c6://rollback-only-negative',
-         v_payload-'empty_selection_reason',v_actor) INTO v_result;
-      IF v_result->>'outcome' <> 'BLOCKED'
-        OR v_result->>'code' <> 'EVOLUTION_EMPTY_METHOD_UNJUSTIFIED'
-        OR v_result->>'retryable' <> 'true'
-      THEN RAISE EXCEPTION 'PE10_C6_RECORDER_MISSING_REASON_ACCEPTED:%',v_result; END IF;
+      -- Negative purity check: call the deterministic guard directly.
+      -- A synthetic BLOCKED row would dispatch PRE_EKB_GATE as a real
+      -- remediation and is not valid within this isolated test fixture.
+      SELECT public.lf_profile_update_evolution_step_guard_v1(
+         v_exec,'method_selection',v_payload-'empty_selection_reason')
+         INTO v_guard_error;
+      IF v_guard_error IS DISTINCT FROM 'EVOLUTION_EMPTY_METHOD_UNJUSTIFIED'
+      THEN RAISE EXCEPTION 'PE10_C6_GUARD_MISSING_REASON_ACCEPTED:%',v_guard_error; END IF;
+      SELECT public.lf_profile_update_evolution_step_guard_v1(
+         v_exec,'method_selection',v_payload||jsonb_build_object(
+           'profile_assessment_receipt_id','00000000-0000-0000-0000-000000000000'))
+         INTO v_guard_error;
+      IF v_guard_error IS DISTINCT FROM 'EVOLUTION_PROFILE_ASSESSMENT_NOT_VERIFIED'
+      THEN RAISE EXCEPTION 'PE10_C6_GUARD_FALSE_ASSESSMENT_ACCEPTED:%',v_guard_error; END IF;
 
       SELECT public.lf_record_profile_operation_step_v1(
          v_exec,'method_selection','supabase://private/lf_evidence_ledger_v1/'||v_receipt,
          v_payload,v_actor) INTO v_result;
       IF v_result->>'outcome' <> 'STEP_RECORDED'
          OR v_result->>'status' <> 'STEP_PASS_WITH_EVIDENCE'
-         OR v_result->>'resumed_from_blocked' <> 'true'
+         OR v_result->>'resumed_from_blocked' <> 'false'
       THEN RAISE EXCEPTION 'PE10_C6_RECORDER_SELECTION_NOT_CLEAN:%',v_result; END IF;
 
       IF NOT EXISTS (
@@ -324,7 +332,7 @@ BEGIN
         WHERE execution_id=v_exec AND step_id='method_selection'
           AND status='STEP_PASS_WITH_EVIDENCE'
           AND evidence_payload->>'recorded_by_rpc'='lf_record_profile_operation_step_v1'
-          AND jsonb_array_length(evidence_payload->'attempt_history')=1
+          AND jsonb_array_length(evidence_payload->'attempt_history')=0
       ) THEN RAISE EXCEPTION 'PE10_C6_SELECTION_READBACK_FAILED'; END IF;
 
       v_decision := jsonb_build_object(
@@ -339,24 +347,22 @@ BEGIN
             'clean_method_selection','typed_decision_mode','frozen_route_consistency'),
          'hard_fails_checked','[]'::jsonb
       );
-      SELECT public.lf_record_profile_operation_step_v1(
-        v_exec,'evolution_decision','pe10-c6://rollback-only-negative',
-        v_decision||jsonb_build_object(
-          'evolution_mode',CASE WHEN v_mode='UPDATE' THEN 'NO_CHANGE' ELSE 'PATCH' END),
-        v_actor
-      ) INTO v_result;
       v_expected_error := CASE WHEN v_mode='UPDATE'
         THEN 'EVOLUTION_UPDATE_MODE_INVALID' ELSE 'EVOLUTION_NO_CHANGE_MODE_INVALID' END;
-      IF v_result->>'outcome' <> 'BLOCKED'
-         OR v_result->>'code' IS DISTINCT FROM v_expected_error
-      THEN RAISE EXCEPTION 'PE10_C6_RECORDER_DECISION_MISMATCH_ACCEPTED:%',v_result; END IF;
+      SELECT public.lf_profile_update_evolution_step_guard_v1(
+        v_exec,'evolution_decision',
+        v_decision||jsonb_build_object(
+          'evolution_mode',CASE WHEN v_mode='UPDATE' THEN 'NO_CHANGE' ELSE 'PATCH' END))
+        INTO v_guard_error;
+      IF v_guard_error IS DISTINCT FROM v_expected_error
+      THEN RAISE EXCEPTION 'PE10_C6_GUARD_DECISION_MISMATCH_ACCEPTED:%',v_guard_error; END IF;
 
       SELECT public.lf_record_profile_operation_step_v1(
         v_exec,'evolution_decision','pe10-c6://rollback-only-decision-fixture',
         v_decision,v_actor) INTO v_result;
       IF v_result->>'outcome' <> 'STEP_RECORDED'
          OR v_result->>'status' <> 'STEP_PASS_WITH_EVIDENCE'
-         OR v_result->>'resumed_from_blocked'<>'true'
+         OR v_result->>'resumed_from_blocked'<>'false'
       THEN RAISE EXCEPTION 'PE10_C6_RECORDER_DECISION_NOT_CLEAN:%',v_result; END IF;
 
       SELECT public.lf_profile_update_effective_route_v1(v_exec) INTO v_route;
@@ -373,11 +379,8 @@ BEGIN
            OR v_result->>'durable'<>'false'
         THEN RAISE EXCEPTION 'PE10_C6_NO_CHANGE_WRITE_ADMITTED:%',v_result; END IF;
       ELSE
-        SELECT public.lf_record_profile_operation_step_v1(
-          v_exec,'github_write','pe10-c6://premature-write-fixture',
-          '{}'::jsonb,v_actor) INTO v_result;
-        IF v_result->>'code'<>'PRIOR_REQUIRED_STEP_NOT_CLEAN'
-        THEN RAISE EXCEPTION 'PE10_C6_UPDATE_WRITE_PREMATURELY_ADMITTED:%',v_result; END IF;
+        IF NOT (v_route->'effective_steps' ? 'github_write')
+        THEN RAISE EXCEPTION 'PE10_C6_UPDATE_ROUTE_MISSING_GITHUB_WRITE'; END IF;
       END IF;
     END LOOP;
     RAISE EXCEPTION 'PE10_C6_EXPECTED_RECORDER_ROLLBACK';
@@ -418,9 +421,10 @@ BEGIN
      'recorder_transactional_fixture_pass',true,
      'recorder_fixture_synthetic_prefix',true,
      'decision_paths_tested',jsonb_build_array('UPDATE','NO_CHANGE'),
-     'negative_cases_tested',jsonb_build_array('MISSING_EMPTY_REASON',
-        'DECISION_MODE_MISMATCH','NO_CHANGE_FORBIDS_GITHUB_WRITE',
-        'UPDATE_PREMATURE_WRITE_BLOCKED'),
+     'negative_guard_cases_tested',jsonb_build_array('MISSING_EMPTY_REASON',
+        'FALSE_ASSESSMENT_RECEIPT','DECISION_MODE_MISMATCH'),
+     'negative_non_durable_route_cases',jsonb_build_array('NO_CHANGE_FORBIDS_GITHUB_WRITE'),
+     'blocked_step_retry_fixture_excluded_due_to_ekb_autopersist',true,
      'transactional_rollback_verified',true,
      'legacy_v01_kept_active',true,
      'checkpoint_pass',false,'production_activation',false,
