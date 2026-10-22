@@ -1,0 +1,37 @@
+{
+  "schema_version": "RW106_C1_CUSTODIAN_ENROLLMENT_REQUEST_V1",
+  "checkpoint": "RW1-06_C1",
+  "status": "AWAITING_EXTERNAL_PUBLIC_KEY_AND_SEPARATION_EVIDENCE",
+  "attempt_key": "RW106-C1-V2-001",
+  "attempt_git_commit": "76924bbb8a1ede147412cdd1be8f98619b659776",
+  "attempt_git_blob": "9e0d069de56e61ad3c60a3f117a5956daa4fce35",
+  "attempt_path": "docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json",
+  "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+  "instruction_file": "docs/programming-agent/router_wave/RW1_06_C1_CUSTODIAN_ENROLLMENT_PACKET_V1.md",
+  "credential_requirements": {
+    "public_key_only": true,
+    "public_key_format": "ASCII_ARMORED_OPENPGP_PUBLIC_KEY",
+    "custodian_fingerprint_hex_length": 40,
+    "private_key_in_producer_context_forbidden": true,
+    "producer_connected_drive_is_ciphertext_transport_only": true,
+    "external_custodian_separation_evidence_required": true,
+    "synthetic_ciphertext_roundtrip_required": true,
+    "provider_attestation_not_inferred": true
+  },
+  "missing": {
+    "custodian_public_key_sha256": null,
+    "custodian_fingerprint": null,
+    "independent_custodian_separation_reference": null,
+    "independent_custodian_ciphertext_readback_reference": null,
+    "explicit_governance_acceptance_v2_reference": null
+  },
+  "private_key_observed": false,
+  "real_custodian_enrolled": false,
+  "real_holdout_generated": false,
+  "reviewer_separation_verified": false,
+  "custodian_independence_verified": false,
+  "provider_attested": false,
+  "independent_review": false,
+  "checkpoint_done": false
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "RW106_C1_CUSTODY_CAPABILITY_READBACK_V2",
+  "checkpoint": "RW1-06_C1",
+  "status": "CAPABILITY_VERIFIED_NOT_CORPUS_ADMISSION",
+  "tested_provider": "GOOGLE_DRIVE",
+  "test_kind": "EXISTING_JSON_PRIVATE_FILE_COPY",
+  "private_root_id_sha256": "6ed19570b6ce4c1604bd2eb9d5167e2023287822cd85491251bc78abed42d0fb",
+  "private_test_folder_id_sha256": "6344155e53b73f351984e558749a44929bd634bed66d8baede7dbd441555ef8f",
+  "copied_test_file_id_sha256": "88837f6c00fee4bce3b0877622026b54adc8f1a25e233e9356d2eb84586daf7a",
+  "source_test_file_id_sha256": "01de1c13ad9b6445819a207f39571a8aa1b4b5acf674e8c7e4027d73ec864657",
+  "test_file_size_bytes": 5881,
+  "test_file_sha256": "b090c31e0d753530293d3fe009e683953fe3b55be39f6b807ba708af67d36226",
+  "provider_readback": {
+    "test_folder_created": true,
+    "test_file_copied": true,
+    "destination_parent_checked": true,
+    "destination_not_shared": true,
+    "permission_metadata_available": true,
+    "destination_permission_types": [
+      "user:owner"
+    ],
+    "original_and_copy_base64_equal": true,
+    "copy_read_twice_equal": true,
+    "local_sha256_equal": true
+  },
+  "limitations": {
+    "test_file_not_rw106_holdout": true,
+    "upload_of_new_arbitrary_json_not_verified": true,
+    "no_producer_acl_denial_test": true,
+    "reviewer_separation_not_attested": true,
+    "no_corpus_material_integrity_proven": true,
+    "no_public_precommit_for_new_holdout": true,
+    "no_C1_closure": true,
+    "no_Train_or_DB_effect": true,
+    "same_connected_producer_principal_could_read_test_file": true,
+    "plaintext_secret_holdout_custody_in_this_folder_admissible": false,
+    "required_forward_path": "SEPARATE_CUSTODIAN_PRINCIPAL_OR_ENCRYPTED_CIPHERTEXT_WITH_KEY_WITHHELD_FROM_PRODUCER"
+  },
+  "evidence_interpretation": "PERSISTENCE_AND_BYTE_IDENTITY_ONLY_NOT_PRODUCER_DENIAL_OR_SECRET_ISOLATION"
+}

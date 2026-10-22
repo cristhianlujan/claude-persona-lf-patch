@@ -1,0 +1,28 @@
+{
+  "attempt_ref": "github://cristhianlujan/claude-persona-lf-patch@76924bbb8a1ede147412cdd1be8f98619b659776/docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json",
+  "canonicalization": "JSON_SORTED_COMPACT_ASCII_V1",
+  "case_bodies_revealed": false,
+  "checkpoint": "RW1-06_C1",
+  "checkpoint_done": false,
+  "handshake_nonce": "5768bd3060826a50c08869bf01a0e08e",
+  "handshake_sha256": "3be974e3d6671a084f3340885fd9265cca48678078ac5d2d3f4919010b920edd",
+  "holdout_content_sha256": "ab321fcd78a44053c982c33245cd8ec54be18a0758ad2963a4d33c27bae5bd36",
+  "holdout_counts": {
+    "invalid": 26,
+    "novel_falsifiers": 2,
+    "valid": 13
+  },
+  "holdout_manifest_sha256": "c93fab1ecd9d27cded416065e4e37584bdab432f4b51c1fd4f528091d6dbefe0",
+  "independent_review": false,
+  "owner_declaration_sha256": "7c3509c1d93c98114fa9473c1a4265f590e2c60cb1e00734e653acdd8fc005a5",
+  "producer_raw_observed": false,
+  "provider_attested": false,
+  "reviewer_channel": "GPT_NATIVE_NEW_CHAT_OUTSIDE_LF_PROJECT",
+  "reviewer_locator_sha256": "4c410ef81e4765bf22a3e07b91239732f8cb7f7f7012228d25eacc6fba7a97bf",
+  "reviewer_reported_utc": "2026-10-22T09:57:33Z",
+  "schema_version": "RW106_C1_COMMIT_REVEAL_COMMITMENT_V1",
+  "separate_reviewer_evidence_verified": false,
+  "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+  "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+  "status": "COMMITTED_AWAITING_PRODUCER_RAW"
+}
