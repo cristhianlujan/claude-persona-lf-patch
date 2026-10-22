@@ -245,6 +245,15 @@ BEGIN
        AND status='CANDIDATE';
     GET DIAGNOSTICS v_count=ROW_COUNT;
     IF v_count<>2 THEN RAISE EXCEPTION 'PE10_C6_CANDIDATE_BINDINGS_NOT_EXACT'; END IF;
+    -- The step enforcement trigger requires ACTIVE_ENFORCEMENT judges,
+    -- not merely active bindings. This activation is rollback-only.
+    UPDATE public.lf_operation_judges SET status='ACTIVE_ENFORCEMENT'
+     WHERE operation_code=v_operation
+       AND judge_code IN ('JUDGE-PE10-V02-METHOD-SELECTION',
+                          'JUDGE-PE10-V02-EVOLUTION-DECISION')
+       AND status='CANDIDATO_READ_ONLY';
+    GET DIAGNOSTICS v_count=ROW_COUNT;
+    IF v_count<>2 THEN RAISE EXCEPTION 'PE10_C6_CANDIDATE_JUDGES_NOT_EXACT'; END IF;
 
     FOREACH v_mode IN ARRAY ARRAY['UPDATE','NO_CHANGE'] LOOP
       v_exec := 'EXEC-PE10-C6-RECORDER-SUBTX-'||v_mode||'-20261022-V1';
@@ -401,6 +410,10 @@ BEGIN
      OR (SELECT count(*) FROM public.lf_operation_step_judge_bindings
          WHERE operation_code=v_operation AND step_id IN ('method_selection','evolution_decision')
            AND status='CANDIDATE')<>2
+     OR (SELECT count(*) FROM public.lf_operation_judges
+         WHERE operation_code=v_operation AND judge_code IN
+           ('JUDGE-PE10-V02-METHOD-SELECTION','JUDGE-PE10-V02-EVOLUTION-DECISION')
+           AND status='CANDIDATO_READ_ONLY')<>2
      OR (SELECT count(*) FROM public.lf_policy_versions
          WHERE policy_code='POL-PROFILE-UPDATE-PASS'
            AND policy_version='v1.1' AND status='ACTIVE')<>1
