@@ -121,9 +121,11 @@ BEGIN
     'github://cristhianlujan/claude-persona-lf-patch/blob/'||v_head||
      '/profiles/'||v_slug||'/SKILL.md',
     'LF_GITHUB_SOURCE_READBACK_V1','GITHUB',
-    'github-actions://cristhianlujan/claude-persona-lf-patch/runs/39705018628',
+    'github-api://repos/cristhianlujan/claude-persona-lf-patch@'||v_head||'/actions/runs/39705018628',
     'GITHUB_API_READBACK_PLUS_OFFLINE_HASH','VERIFIED',
     jsonb_build_object(
+      'provider_readback_verified',true,
+      'digest_recomputed',true,
       'github_commit_provider_readback',true,
       'github_source_blob_readback',v_blob,
       'github_source_sha256',v_source_sha,
