@@ -197,6 +197,7 @@ def build_evolution_plan(
                 and receipt.get("status") == "VERIFIED_CURRENT"
                 and receipt.get("registry_sha256") == registry_digest
                 and receipt.get("assessment_sha256") == assessment_digest
+                and (current_revision is None or receipt.get("assessment_source_head_sha") == current_revision)
                 and isinstance(receipt.get("registry_version"), str)
                 and bool(receipt["registry_version"].strip())
                 and isinstance(receipt.get("authority_ref"), str)
