@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-search-v1",
+  "paths": {
+    "supabase/migrations/20261023100000_lf_router_search_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-search-v1.json": "CHANGESET_MANIFEST"
+  }
+}
