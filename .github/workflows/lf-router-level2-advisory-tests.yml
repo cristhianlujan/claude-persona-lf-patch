@@ -38,6 +38,8 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_c3_capture_v1.py'
       - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py'
       - 'services/router_semantic_runtime/**'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
@@ -60,6 +62,8 @@ on:
       - 'supabase/migrations/*lf_router_rw105_c2_profile_terminal_receipt_v1.sql'
       - 'docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py'
+      - 'docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json'
+      - 'sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v1.py'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw101_needs_corpus_v2.py'
       - 'sandbox/lf_contract_gate_test/router_wave/generate_rw101_c3_holdout_v2.py'
@@ -258,6 +262,17 @@ jobs:
           python3 sandbox/lf_contract_gate_test/router_wave/validate_rw104_c3_capture_v1.py \
             docs/programming-agent/router_wave/RW1_04_C3_BLIND_REVIEW_PACKET_V1.json \
             docs/programming-agent/router_wave/RW1_04_C3_REVIEW_CAPTURE_V1.json --self-test
+
+      - name: Execute RW1-05 C3 blind review capture
+        run: |
+          set -euo pipefail
+          python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py \
+            docs/programming-agent/router_wave/RW1_05_C3_BLIND_REVIEW_PACKET_V1.json \
+            docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json
+          python3 sandbox/lf_contract_gate_test/router_wave/validate_rw105_c3_capture_v1.py \
+            docs/programming-agent/router_wave/RW1_05_C3_BLIND_REVIEW_PACKET_V1.json \
+            docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json --self-test
 
       - name: Execute RW1-05 C2 semantic consumer and Profile Runtime bridge tests
         run: |

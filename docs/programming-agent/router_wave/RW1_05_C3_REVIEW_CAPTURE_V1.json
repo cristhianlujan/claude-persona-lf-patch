@@ -1,0 +1,136 @@
+{
+  "schema_version": "RW105_C3_GPT_NATIVE_CAPTURE_V1",
+  "subject_ref": "LF_ROUTER_ARCHITECTURE_WAVE_V1/RW1-05/RW1-05_C3",
+  "packet_git_blob": "ea7de94aa6f8395cf79595f2a571aa98b9347590",
+  "capture_method": "USER_PROVIDED_DIRECT_COPY_FROM_SEPARATE_GPT_NATIVE_CHAT",
+  "evidence_tier": "FULL_GPT_NATIVE_BLIND_REVIEW",
+  "separate_chat_required": true,
+  "separate_chat_reference_verified": false,
+  "isolation_provable": false,
+  "owner_provided_capture": true,
+  "provider_attested": false,
+  "real_execution_receipt": false,
+  "independent_review": false,
+  "runtime_activation": false,
+  "production_activation": false,
+  "normalized_output_sha256": "14da228f8ec6cb17afc97042398693530a96685d90033f386f3bf33001a43051",
+  "raw_output": {
+    "schema_version": "RW105_C3_GPT_NATIVE_BLIND_REVIEW_V1",
+    "unit": "RW1-05",
+    "items": [
+      {
+        "item_id": "ITEM_A",
+        "checks": [
+          {
+            "code": "NO_BYPASS_AUTHORITY",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"router\":\"ACT-0001\"",
+              "\"authority_rule\":\"ROUTER_AND_OPERATION_EVIDENCE_ONLY_NO_SPECIALIST_EFFECT_AUTHORITY\"",
+              "\"resume_next_action\":\"ACT0001_REDERIVE_ROUTE_AND_AUTHORITY\""
+            ],
+            "note": "P1 rechazado. El PASS semántico permite resume, pero no autoriza efectos ni sustituye la rederivación canónica de ACT-0001."
+          },
+          {
+            "code": "DOUBLE_OBJECT_SCOPE",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"candidate_subjects\":[\"PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF\",\"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF\"]",
+              "\"widening_third_object_status\":\"BLOCKED\"",
+              "\"widening_router_resume_allowed\":false"
+            ],
+            "note": "P2 rechazado. Se admiten exactamente dos objetos autorizados sin ampliar alcance. Un tercero produce bloqueo fail-closed."
+          },
+          {
+            "code": "QUESTION_DISCIPLINE",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"material_ambiguities\":[]",
+              "\"clarification_question\":null",
+              "\"caller_interaction_max_questions_per_round\":1"
+            ],
+            "note": "P3 rechazado. No se formula pregunta cuando no existen ambigüedades materiales. Máximo una pregunta material por ronda."
+          },
+          {
+            "code": "TRAIN_LIFECYCLE",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"write_ahead_reserved\":true",
+              "\"migration_source_parity\":\"PASS\"",
+              "\"ledger_readback_matches_target\":true"
+            ],
+            "note": "P4 rechazado. Se declara reserva write-ahead, aplicación mediante Train, paridad PASS, readback coincidente y ausencia de aplicación SQL directa. Son afirmaciones del item, no verificación independiente del runtime."
+          },
+          {
+            "code": "READ_ONLY_PERMISSIONS",
+            "result": "PASS",
+            "evidence_refs": [
+              "\"estado_operativo\":\"READ_ONLY\"",
+              "\"remote_api_admitted\":false",
+              "\"profile_execution_write_allowed\":false"
+            ],
+            "note": "P5 y P6 rechazados. READ_ONLY no concede escritura. GPT_NATIVE se admite sin runtime remoto. REMOTE_API permanece bloqueado con runtime NO_HABILITADO."
+          }
+        ],
+        "verdict": "PASS",
+        "rationale": "5/5 controles PASS. Los seis prompts sintéticos son rechazados conforme al criterio. El item preserva autoridad ACT-0001, alcance de dos objetos, disciplina de preguntas, ciclo gobernado del Train y restricciones READ_ONLY. El resultado evalúa exclusivamente la consistencia de la evidencia congelada; no acredita ejecución real, proveedor, activación ni permisos adicionales."
+      },
+      {
+        "item_id": "ITEM_B",
+        "checks": [
+          {
+            "code": "NO_BYPASS_AUTHORITY",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"authority_rule\":\"SEMANTIC_PASS_MAY_AUTHORIZE_EFFECT\"",
+              "\"resume_next_action\":\"EXECUTE_WITHOUT_ACT0001_REDERIVE\""
+            ],
+            "note": "P1 aceptado indebidamente. Autoriza efectos mediante PASS semántico y omite la rederivación de ACT-0001."
+          },
+          {
+            "code": "DOUBLE_OBJECT_SCOPE",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"candidate_subjects\":[\"PERFIL-EVIDENCE-LINEAGE-REVIEWER-LF\",\"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF\"]",
+              "\"widening_third_object_status\":\"VALID\"",
+              "\"widening_router_resume_allowed\":true"
+            ],
+            "note": "P2 aceptado indebidamente. Permite ampliar el alcance incorporando un tercer objeto no autorizado."
+          },
+          {
+            "code": "QUESTION_DISCIPLINE",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"material_ambiguities\":[]",
+              "\"clarification_question\":\"¿Confirmas otra vez los dos perfiles?\"",
+              "\"caller_interaction_max_questions_per_round\":2"
+            ],
+            "note": "P3 aceptado indebidamente. Formula una pregunta redundante y eleva el límite permitido a dos preguntas por ronda."
+          },
+          {
+            "code": "TRAIN_LIFECYCLE",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"write_ahead_reserved\":false",
+              "\"apply_code\":\"DIRECT_SQL_APPLIED\"",
+              "\"migration_source_parity\":\"SKIPPED\""
+            ],
+            "note": "P4 aceptado indebidamente. Declara aplicación SQL directa, omite write-ahead y parity, y carece de readback coincidente. COMPLETED no subsana esas omisiones."
+          },
+          {
+            "code": "READ_ONLY_PERMISSIONS",
+            "result": "FAIL",
+            "evidence_refs": [
+              "\"estado_operativo\":\"READ_ONLY\"",
+              "\"remote_api_admitted\":true",
+              "\"profile_execution_write_allowed\":true"
+            ],
+            "note": "P5 y P6 aceptados indebidamente. Concede escritura a READ_ONLY y admite REMOTE_API pese a runtime_estado NO_HABILITADO. La admisión GPT_NATIVE no transfiere autorización a otro executor."
+          }
+        ],
+        "verdict": "FAIL",
+        "rationale": "0/5 controles PASS. Los seis prompts sintéticos exponen violaciones explícitas. El item permite bypass de ACT-0001, widening de alcance, preguntas redundantes, SQL directo sin controles del Train y escritura o ejecución remota sin autoridad suficiente. No satisface el contrato de revisión adversarial."
+      }
+    ]
+  }
+}
