@@ -283,7 +283,7 @@ def prepare_full_current_inputs(*, focal, full, output_dir: Path, data_root: Pat
     batch_count=0
     for start in range(0,len(full_versions),150):
         batch = full_versions[start:start+150]
-        current_managed = sorted(set(batch)&managed_versions)
+        current_managed = batch  # Full-current requires ledger statement counts for every version
         snap = parse_snapshot(psql(snapshot_sql(context_versions=batch,
                                 managed_versions=current_managed,full=full),env=pg_env))
         for key in ("grandfathered","legacy"):
@@ -298,8 +298,13 @@ def prepare_full_current_inputs(*, focal, full, output_dir: Path, data_root: Pat
     if len(merged["post_cutover"])!=len(remote_versions):
         fail("FAIL_IG_M1013_FULL_REMOTE_COVERAGE",
              f"expected={len(remote_versions)} actual={len(merged['post_cutover'])}")
-    if len(merged["statement_counts"])!=len(set(managed_versions)&set(remote_versions)):
+    if len(merged["statement_counts"])!=len(remote_versions):
         fail("FAIL_IG_M1013_FULL_MANAGED_COUNT_COVERAGE")
+
+    # Live ledger must not change across paginated snapshots.
+    recheck = [row for row in csv.reader(io.StringIO(psql(index_query,env=pg_env))) if row]
+    if recheck != ledger_index:
+        fail("FAIL_IG_M1013_FULL_LEDGER_MOVED_DURING_READ")
 
     inputs=write_focal_inputs(output_dir=output_dir,snapshot=merged,full=full,
                              max_post_bytes=524288,max_statements_bytes=131072)
@@ -365,11 +370,28 @@ def run(argv: list[str] | None = None, *, psql=None) -> int:
             focal=focal,full=full,output_dir=output_dir,data_root=data_root,
             pg_env=pg_env,psql=psql or full._psql
         )
-        rc=full._run_parity(
-            migrations=data_root/"supabase/migrations",inputs=inputs,
-            output_dir=output_dir,event_name=args.event_name,base_ref=base_ref
-        )
+        # Full-current only: reuse the separately tested IG exception verifier.
+        # Ordinary CHANGESET_SCOPED continues through the canonical adapter.
+        verifier = _load(HERE/"ig_m1013_full_current_validation_v1.py",
+                         "ig_m1013_trusted_full_current_verifier")
+        try:
+            proof = verifier.evaluate(
+                data_root=data_root, inputs=inputs, full=full, pg_env=pg_env,
+                psql=psql or full._psql, output_dir=output_dir,
+            )
+        except (verifier.FullParityError, verifier.core.ParityCoreError) as exc:
+            fail("FAIL_IG_M1013_FULL_MATERIAL_PARITY",str(exc))
         full._verify_exact_context(base_sha,head_sha,base_ref)
+        (output_dir/"run-summary.json").write_text(
+            json.dumps({
+                "schema_version":"lf-migration-source-parity-run/v1",
+                "status":"PASS","returncode":0,
+                "delegated_adapter":"migration_source_parity_core.evaluate_exact_parity",
+                "functional_core_duplicated":False,
+                "material_proof":proof,
+            },sort_keys=True)+"\n",encoding="utf-8",
+        )
+        rc=0
     else:
         scope = focal._require_exact(args.evaluation_scope, focal.EXPECTED_SCOPE, "EVALUATION_SCOPE")
         changed_paths = focal._changed_migration_paths(base_sha, head_sha)
