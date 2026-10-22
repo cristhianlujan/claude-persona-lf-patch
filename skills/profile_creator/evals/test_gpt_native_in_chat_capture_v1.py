@@ -187,6 +187,9 @@ def test_existing_planner_assessment_regression():
     """Run the actual code suite in this existing allowed CI entrypoint."""
     import unittest
     root = Path(__file__).resolve().parents[3]
+    import sys
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
     directory = root / "skills/profile_creator/evals"
     suites = (
         "test_profile_evolution_reconciliation_v1.py",
