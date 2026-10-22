@@ -1,0 +1,6 @@
+{
+  "solution_ref": "router-wave-rw105-c3-governed-checkpoint-close-v1",
+  "paths": {
+    "supabase/migrations/20261022010000_lf_router_rw105_c3_governed_checkpoint_close_v1.sql": "MIGRATION"
+  }
+}
