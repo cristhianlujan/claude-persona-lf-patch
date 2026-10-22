@@ -61,6 +61,6 @@ No cambia: ACT-0001 como autoridad del Router; Migration Merge Train para cualqu
 
 ## Registro de decisión del propietario
 
-[ ] A  [ ] B  [ ] C  [ ] B con cambios: ______    Fecha: ________
+[ ] A  [x] B  [ ] C  [ ] B con cambios: ______    Fecha: 2026-10-22 04:19 (Lima), indicada por el propietario en el chat de la sesión
 
 Hasta que esté marcada, `RW1-06_C1` permanece `PENDING` y no se emite ningún prompt al revisor.
