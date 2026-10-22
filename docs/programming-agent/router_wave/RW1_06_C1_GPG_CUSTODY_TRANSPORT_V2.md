@@ -76,3 +76,19 @@ python3 sandbox/lf_contract_gate_test/router_wave/seal_rw106_c1_gpg_v2.py --cust
 ```
 
 The verifier checks both ciphertext digests against the public candidate, decrypts locally and checks both original plaintext SHA-256 values without printing the secrets. A tampered ciphertext is rejected. Its JSON readback is cryptographic integrity evidence only; it does not attest that the real custodian or reviewer was independent.
+
+
+## Custodian enrollment — external separation prerequisite
+
+This procedure is a **request to a genuinely separate custodian**, not an action for the producer or the connected Drive principal. It must be carried out on a machine or account unavailable to the producer. No secret case corpus is needed at enrollment time.
+
+1. Custodian creates or selects a dedicated encryption-capable GnuPG key, protected by an uncompromised private key and custodian-controlled passphrase; no generation/import of the private key in CI, a producer chat, this Git repository or its connected Google Drive account.
+2. Custodian exports **the public key only** as `rw106-c1-custodian-public.asc`, obtains its full 40-hex fingerprint from GPG and transmits them over the approved public evidence channel. An accountable reviewer/custodian identity statement, independent principal record and restricted key access evidence are provided **separately and privately**; neither the exported public key nor a Git commit proves separation.
+3. The coordinator verifies the public-key fingerprint and source binding, and publishes only the allowed public metadata (key fingerprint and public-key SHA-256, explicit attempt Git reference). **Never publish or paste private keys, passphrases, secret corpus bytes or oracle answers.**
+4. Before corpus generation, perform a synthetic encrypted-file delivery and recovery under the custodial key: ciphertext transport through permitted Drive, real custodian decryption/readback, SHA-256 parity and an opaque receipt. A readback by the producer's connected Drive account alone is not a valid custodial proof.
+5. The owner applies the governed V2 equivalence decision to the identity/separation evidence, or leaves `GAP`. A fake chat URL, `owner_attestation_ref` string without backing evidence, or the Git attempt SHA must never be treated as provider attestation.
+6. Only when all of the above are verified should a new and separate reviewer generate a fresh sealed holdout **once**. Any new corpus must be committed before C2 RAW under the public-precommit validator.
+
+Precommit verifier: `sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_precommit_order_v2.py`. It checks a real Git commitment, exact allowlisted public fields, 12/24/2 minima, hash formats, attempt lineage and optional Git ancestry to the C2 producer commit. It **does not** verify actual corpus bytes, authenticate the custodian, attest model independence or authorize C1 DONE. When no C2 RAW exists, chronological readiness is `PENDING_NO_PRODUCER_RAW`, not PASS.
+
+**Operational status:** real custodian key and separation proof are not yet present; only synthetic GPG and Git tests pass. Continue with `RW1-06_C1=PENDING`, `provider_attested=false`, `independent_review=false`, and no Merge Train apply.
