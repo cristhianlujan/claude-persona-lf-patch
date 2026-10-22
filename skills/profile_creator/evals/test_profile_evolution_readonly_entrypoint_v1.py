@@ -57,6 +57,7 @@ class ReadOnlyBindingTests(unittest.TestCase):
                         "subject_type": "PROFILE_ASSESSMENT",
                         "subject_ref": "quality_pack",
                         "subject_sha256": ASSESSMENT_DIGEST,
+                        "source_head_sha": "a" * 40,
                         "verification_state": "VERIFIED",
                         "resolver_id": "LF_SUPABASE_READBACK_V1",
                         "resolver_active": True,
