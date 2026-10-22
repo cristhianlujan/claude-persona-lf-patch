@@ -28,7 +28,7 @@ INSERT INTO public.lf_error_knowledge(
  'El PR #3084 eliminó el workflow no autorizado, preservó la fuente del workflow anterior sin diferencias y PASE exact-head SUCCESS; Train #39767493192 mergeado. Test real de canónico PASS en run 39767069689 previo a retirar el nuevo workflow.',
  'MEDIUM',2,'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1/PE10_C6',3084,'ACTIVO',
  'https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3084',
- 'construction','UNAUTHORIZED_CI_ENTRYPOINT','LOUD_EARLY',
+ 'construction','R2_NO_VE','LOUD_EARLY',
  'PE10_C6_PASE_CI_WORKFLOW_GOVERNANCE_PR3084_20261022'
 );
 DO $positive$
@@ -59,7 +59,7 @@ INSERT INTO public.lf_error_knowledge(
  'PR #3084 mergeado Train #39767493192; PASE verde después de retirar todos los cambios bajo .github/workflows. La prueba fuente anterior corrió GREEN en #39767069689.',
  'MEDIUM',2,'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1/PE10_C6',3084,'ACTIVO',
  'https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3084',
- 'construction','UNAUTHORIZED_CI_ENTRYPOINT','LOUD_EARLY',
+ 'construction','R2_NO_VE','LOUD_EARLY',
  'PE10_C6_PASE_CI_WORKFLOW_GOVERNANCE_PR3084_20261022'
 );
 DO $readback$
