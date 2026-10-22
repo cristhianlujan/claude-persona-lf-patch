@@ -20,6 +20,7 @@ METHOD_RECEIPT = {"subject_type": "METHOD_QUALIFICATION",
                   "resolver_active": True, "resolver_trust_level": "TRUSTED_PROVIDER_BOUND",
                   "receipt_id": "method-receipt"}
 RECEIPT = {"subject_type": "PROFILE_ASSESSMENT", "subject_ref": "quality_pack",
+           "source_head_sha": "a" * 40,
            "subject_sha256": D, "verification_state": "VERIFIED",
            "resolver_id": "LF_SUPABASE_READBACK_V1", "resolver_active": True,
            "resolver_trust_level": "TRUSTED_PROVIDER_BOUND", "receipt_id": "fixture-receipt"}
@@ -36,6 +37,7 @@ class TestTrustedReadback(unittest.TestCase):
         self.assertEqual(result["status"], "VERIFIED_CURRENT")
         self.assertEqual(result["qualified_method_ids"], ["SELF_REFINE"])
         self.assertTrue(result["method_catalog_released"])
+        self.assertEqual(result["assessment_source_head_sha"], "a" * 40)
 
     def test_absent_registry(self):
         self.assertEqual(self.make(None)("quality_pack", D, D)["reason"], "METHOD_REGISTRY_NOT_REGISTERED")

@@ -24,6 +24,96 @@ from profile_output_shape_preflight_v1 import candidate_output_gate
 from capability_selector_v2 import compose_capabilities
 
 
+def _verify_assessment_input(
+    repo: Path, slug: str, current_revision: str | None,
+    normalized: dict[str, Any],
+    trusted_profile_source: Callable[[str, str], dict[str, Any] | None] | None,
+    trusted_evidence: Callable[[str, str, str], dict[str, Any] | None] | None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Source-bound candidate for Evidence Ledger, not a receipt or a new engine.
+
+    Without both independent readers, all caller PASS/FAIL claims in the
+    admission candidate are UNKNOWN. Existing shadow diagnostics remain
+    backwards compatible. The host must own the authenticated readers.
+    """
+    candidate = copy.deepcopy(normalized)
+    proof = {"schema": "PROFILE_ASSESSMENT_EVIDENCE_V1",
+             "status": "UNVERIFIED", "receipt_issued": False,
+             "ledger_write_performed": False, "production_activated": False}
+    if (not isinstance(current_revision, str) or len(current_revision) != 40
+        or any(x not in "0123456789abcdef" for x in current_revision)
+        or not callable(trusted_profile_source)
+        or not callable(trusted_evidence)):
+        return candidate, {**proof, "reason": "TRUSTED_READBACK_REQUIRED"}
+    try:
+        readback = trusted_profile_source(slug, current_revision)
+        source_path = repo / "profiles" / slug / "SKILL.md"
+        actual_sha = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    except (OSError, ValueError, TypeError):
+        return candidate, {**proof, "reason": "SOURCE_READBACK_FAILED"}
+    if (not isinstance(readback, dict)
+        or readback.get("status") != "VERIFIED_CURRENT"
+        or readback.get("profile_slug") != slug
+        or readback.get("source_head_sha") != current_revision
+        or readback.get("source_path") != "profiles/" + slug + "/SKILL.md"
+        or readback.get("source_sha256") != actual_sha
+        or readback.get("resolver_id") != "LF_GITHUB_SOURCE_READBACK_V1"
+        or readback.get("resolver_active") is not True
+        or readback.get("resolver_trust_level") != "TRUSTED_PROVIDER_BOUND"):
+        return candidate, {**proof, "reason": "PROFILE_SOURCE_NOT_VERIFIED"}
+    # S26 structural evidence is calculated locally from the exact source
+    # revision; the upstream builder already overwrote caller assertions.
+    gaps = []
+    evidence = candidate.get("evidence", {})
+    if not isinstance(evidence, dict):
+        return candidate, {**proof, "reason": "EVIDENCE_INVALID"}
+    for dimension in (
+        "architecture_fit", "domain_task_uplift", "strategy_routing",
+        "expert_holdout", "repeated_optimization", "optimization_opportunity",
+    ):
+        item = evidence.get(dimension, {})
+        status = item.get("status", "UNKNOWN") if isinstance(item, dict) else "UNKNOWN"
+        refs = item.get("refs", []) if isinstance(item, dict) else []
+        verified = status in ("PASS", "FAIL") and isinstance(refs, list) and bool(refs)
+        if verified:
+            for ref in refs:
+                if not isinstance(ref, str) or not ref:
+                    verified = False
+                    break
+                try:
+                    row = trusted_evidence(ref, slug, current_revision)
+                except Exception:
+                    row = None
+                if (not isinstance(row, dict)
+                    or row.get("ref") != ref or row.get("status") != "VERIFIED"
+                    or row.get("observed_status") != status
+                    or row.get("profile_slug") != slug
+                    or row.get("source_head_sha") != current_revision
+                    or row.get("resolver_id") not in (
+                        "LF_GITHUB_SOURCE_READBACK_V1", "LF_SUPABASE_READBACK_V1")
+                    or row.get("resolver_active") is not True
+                    or row.get("resolver_trust_level") != "TRUSTED_PROVIDER_BOUND"):
+                    verified = False
+                    break
+        if not verified:
+            candidate["evidence"][dimension] = {"status": "UNKNOWN", "refs": []}
+            gaps.append(dimension)
+    sha = hashlib.sha256(json.dumps(
+        candidate, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return candidate, {
+        **proof, "status": "EVIDENCE_CHECKED",
+        "source_head_sha": current_revision,
+        "source_sha256": actual_sha,
+        "profile_slug": slug,
+        "subject_type": "PROFILE_ASSESSMENT",
+        "subject_ref": slug,
+        "subject_sha256": sha,
+        "unknown_dimensions": gaps,
+        "receipt_required": True,
+    }
+
+
 def build_evolution_plan(
     repo: Path,
     slug: str,
@@ -35,6 +125,8 @@ def build_evolution_plan(
     *,
     current_revision: str | None = None,
     trusted_source_readback: Callable[[str, str, str], dict[str, Any]] | None = None,
+    trusted_profile_source: Callable[[str, str], dict[str, Any] | None] | None = None,
+    trusted_evidence: Callable[[str, str, str], dict[str, Any] | None] | None = None,
 ) -> dict[str, Any]:
     structural = evaluate_s26(repo, slug)
     learning = evaluate_learning_preflight(
@@ -61,7 +153,20 @@ def build_evolution_plan(
             "refs": structural.get("blocking_codes", []),
         }
 
+    # The current evaluator remains the single producer. A source/evidence
+    # readback is required to offer a ledger-ready candidate. No adapter.
+    verified_input, assessment_evidence = _verify_assessment_input(
+        repo, slug, current_revision, normalized, trusted_profile_source,
+        trusted_evidence,
+    )
+    if assessment_evidence["status"] == "EVIDENCE_CHECKED":
+        normalized = verified_input
     assessment = assess_profile(normalized)
+    assessment_evidence["assessment_status"] = assessment["assessment_status"]
+    assessment_evidence["eligible_for_ledger_review"] = (
+        assessment_evidence["status"] == "EVIDENCE_CHECKED"
+        and assessment["assessment_status"] == "EVIDENCE_SUFFICIENT"
+    )
     composition = compose_capabilities(
         {
             **normalized.get("signals", {}),
@@ -92,6 +197,7 @@ def build_evolution_plan(
                 and receipt.get("status") == "VERIFIED_CURRENT"
                 and receipt.get("registry_sha256") == registry_digest
                 and receipt.get("assessment_sha256") == assessment_digest
+                and (current_revision is None or receipt.get("assessment_source_head_sha") == current_revision)
                 and isinstance(receipt.get("registry_version"), str)
                 and bool(receipt["registry_version"].strip())
                 and isinstance(receipt.get("authority_ref"), str)
@@ -156,6 +262,7 @@ def build_evolution_plan(
         ),
         "learning_preflight": learning,
         "profile_assessment": assessment,
+        "profile_assessment_evidence": assessment_evidence,
         "evolution_mode": mode,
         "selection": composition,
         "source_readback": source_status,

@@ -97,6 +97,8 @@ def make_trusted_profile_readback(
         if (receipt.get("subject_type") != "PROFILE_ASSESSMENT"
                 or receipt.get("subject_ref") != profile_slug
                 or receipt.get("subject_sha256") != assessment_sha256
+                or not isinstance(receipt.get("source_head_sha"), str)
+                or not re.fullmatch(r"[0-9a-f]{40}", receipt["source_head_sha"])
                 or receipt.get("verification_state") != "VERIFIED"
                 or receipt.get("resolver_id") != "LF_SUPABASE_READBACK_V1"
                 or receipt.get("resolver_active") is not True
@@ -111,6 +113,7 @@ def make_trusted_profile_readback(
             "registry_version": cap["version"],
             "authority_ref": "supabase://lf_capability_current/METHOD_PACK_REGISTRY/" + cap["version"],
             "assessment_receipt_ref": receipt["receipt_id"],
+            "assessment_source_head_sha": receipt["source_head_sha"],
             "qualified_method_ids": sorted(qualified),
             "method_catalog_released": True,
             "assessment_evidence_verified": True,
@@ -136,7 +139,7 @@ WHERE r.capability_code = %s
 
 PROFILE_ASSESSMENT_RECEIPT_SQL = """
 SELECT l.receipt_id::text AS receipt_id,
-       l.subject_type, l.subject_ref, l.subject_sha256,
+       l.subject_type, l.subject_ref, l.subject_sha256, l.source_head_sha,
        l.verification_state, l.resolver_id,
        rr.active AS resolver_active,
        rr.trust_level AS resolver_trust_level
