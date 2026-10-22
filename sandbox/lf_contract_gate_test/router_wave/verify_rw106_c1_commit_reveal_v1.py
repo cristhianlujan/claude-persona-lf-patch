@@ -379,9 +379,16 @@ def source_pack_text(root=None) -> str:
     root = Path(root) if root else HERE.parents[2]
     blocks = []
     for path, blob in PINNED_SOURCES:
-        shown = subprocess.run(["git", "-C", str(root), "show", f"{PINNED}:{path}"],
-                               capture_output=True, check=False)
-        check(shown.returncode == 0, "PINNED_SOURCES_UNAVAILABLE")
+        # The pinned commit may be absent in a shallow CI checkout; the blob hash below is
+        # the real check, so HEAD is an acceptable fallback source for the same blob.
+        for ref in (PINNED, "HEAD"):
+            shown = subprocess.run(["git", "-C", str(root), "show", f"{ref}:{path}"],
+                                   capture_output=True, check=False)
+            if shown.returncode == 0 and hashlib.sha1(
+                    b"blob %d\0" % len(shown.stdout) + shown.stdout).hexdigest() == blob:
+                break
+        else:
+            raise CommitRevealGap("PINNED_SOURCES_UNAVAILABLE:" + path)
         raw = shown.stdout
         check(hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest() == blob,
               "PINNED_SOURCE_BLOB_MISMATCH:" + path)
