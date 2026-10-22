@@ -66,6 +66,43 @@ class TestExactRegisteredDrift(unittest.TestCase):
     def test_registry_pin_drift_blocks(self):
         with self.assertRaisesRegex(m.FullParityError,"REGISTRY_BLOB"):
             self.verify(pin="f"*40)
+    def raw_fixture(self):
+        proof={}
+        for duplicate,(original,sha16) in m.DUPLICATES.items():
+            full_digest=sha16+"0"*(64-len(sha16))
+            proof[duplicate]=(full_digest,1)
+            proof[original]=(full_digest,1)
+        return proof
+
+    def test_snapshot_canonical_hash_can_differ_from_raw(self):
+        local,remote,counts,registry=self.fixture()
+        for version,(original,_pin) in m.DUPLICATES.items():
+            canonical="sha256:"+"f"*64
+            remote[version]=(remote[version][0],canonical)
+            remote[original]=(remote[original][0],canonical)
+        m.check_inventory(local,remote,counts,registry,m.REGISTRY_GIT_BLOB)
+        m.check_raw_duplicates(self.raw_fixture())
+
+    def test_raw_digest_pin_mismatch_rejected(self):
+        proof=self.raw_fixture()
+        first=next(iter(m.DUPLICATES))
+        proof[first]=("f"*64,1)
+        with self.assertRaisesRegex(m.FullParityError,"DUPLICATE_RAW_SQL"):
+            m.check_raw_duplicates(proof)
+
+    def test_raw_cardinality_mismatch_rejected(self):
+        proof=self.raw_fixture()
+        first=next(iter(m.DUPLICATES))
+        proof[first]=(proof[first][0],2)
+        with self.assertRaisesRegex(m.FullParityError,"DUPLICATE_RAW_SQL"):
+            m.check_raw_duplicates(proof)
+
+    def test_missing_raw_pair_rejected(self):
+        proof=self.raw_fixture()
+        proof.pop(next(iter(proof)))
+        with self.assertRaisesRegex(m.FullParityError,"DUPLICATE_RAW_COVERAGE"):
+            m.check_raw_duplicates(proof)
+
     def test_pointer_syntax_strict(self):
         version="20261009172500"
         good=("github://cristhianlujan/claude-persona-lf-patch@"+("a"*40)+
