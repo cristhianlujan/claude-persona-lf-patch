@@ -167,6 +167,66 @@ def seal(corpus_path, manifest_path, public_key_path, output_dir, fingerprint, a
     return candidate
 
 
+
+def verify_custodian(ciphertext_dir, custodian_home):
+    """Run ONLY under the isolated custodian keyring; never in producer context.
+
+    Compares stored ciphertext and decrypted plaintext bytes against an existing
+    commitment candidate. Returns non-secret status, not the cases or answers.
+    """
+    require(ciphertext_dir.is_dir() and not ciphertext_dir.is_symlink(),
+            "CIPHERTEXT_DIRECTORY_INVALID")
+    require(custodian_home.is_dir() and not custodian_home.is_symlink(),
+            "CUSTODIAN_KEYRING_INVALID")
+    receipt_path = ciphertext_dir / "commitment_candidate.json"
+    require(receipt_path.is_file(), "COMMITMENT_CANDIDATE_MISSING")
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeError) as exc:
+        raise SealError("PUBLIC_RECEIPT_INVALID") from exc
+    require(isinstance(receipt, dict)
+            and receipt.get("schema_version") ==
+            "RW106_C1_ENCRYPTED_COMMITMENT_CANDIDATE_V2",
+            "PUBLIC_RECEIPT_SCHEMA_INVALID")
+    require(receipt.get("source_snapshot_commit") == SOURCE
+            and receipt.get("source_policy_git_blob") == POLICY,
+            "PUBLIC_RECEIPT_SOURCE_MISMATCH")
+    fingerprint = receipt.get("recipient_fingerprint")
+    require(isinstance(fingerprint, str)
+            and FPR.fullmatch(fingerprint) is not None,
+            "PUBLIC_RECIPIENT_FINGERPRINT_INVALID")
+    secrets = gpg(custodian_home, "--with-colons", "--fingerprint",
+                  "--list-secret-keys").decode()
+    secret_fprs = {x.split(":")[9].upper() for x in secrets.splitlines()
+                   if x.startswith("fpr:")}
+    require(fingerprint in secret_fprs, "CUSTODIAN_RECIPIENT_KEY_UNAVAILABLE")
+    checks = (
+        ("corpus.gpg", "corpus_ciphertext_sha256", "holdout_content_sha256"),
+        ("manifest.gpg", "manifest_ciphertext_sha256", "holdout_manifest_sha256"),
+    )
+    for name, ciphertext_field, plaintext_field in checks:
+        path = ciphertext_dir / name
+        require(path.is_file() and not path.is_symlink(),
+                "CIPHERTEXT_FILE_MISSING")
+        require(isinstance(receipt.get(ciphertext_field), str)
+                and digest(path.read_bytes()) == receipt[ciphertext_field],
+                "CIPHERTEXT_DIGEST_MISMATCH")
+        recovered = gpg(custodian_home, "--decrypt", str(path))
+        require(isinstance(receipt.get(plaintext_field), str)
+                and digest(recovered) == receipt[plaintext_field],
+                "PLAINTEXT_DIGEST_MISMATCH")
+    return {
+        "validation": "CUSTODIAN_CIPHERTEXT_AND_PLAINTEXT_HASH_READBACK",
+        "checkpoint": "RW1-06_C1",
+        "cryptographic_integrity": "PASS_LOCAL",
+        "producer_plaintext_access_denied_evidence": "NOT_PROVEN",
+        "custodian_independence_evidence": "NOT_PROVEN",
+        "external_precommit_persisted": False,
+        "provider_attested": False,
+        "checkpoint_done": False,
+    }
+
+
 def selftest():
     with tempfile.TemporaryDirectory(prefix="rw106_gpg_fixture_") as temp:
         root = Path(temp)
@@ -200,10 +260,20 @@ def selftest():
         cpath.write_text(json.dumps(c), encoding="utf-8")
         mpath.write_text(json.dumps(m), encoding="utf-8")
         receipt = seal(cpath, mpath, pub, output, fingerprint, attempt)
-        for source, name in ((cpath, "corpus.gpg"), (mpath, "manifest.gpg")):
-            recovered = gpg(custodian, "--decrypt", str(output / name))
-            require(digest(recovered) == digest(source.read_bytes()),
-                    "CUSTODIAN_DECRYPT_READBACK_MISMATCH")
+        verify = verify_custodian(output, custodian)
+        require(verify["cryptographic_integrity"] == "PASS_LOCAL",
+                "CUSTODIAN_DECRYPT_READBACK_MISMATCH")
+        encrypted_path = output / "corpus.gpg"
+        encrypted_original = encrypted_path.read_bytes()
+        encrypted_path.write_bytes(encrypted_original + b"X")
+        try:
+            verify_custodian(output, custodian)
+        except SealError as exc:
+            require(str(exc) == "CIPHERTEXT_DIGEST_MISMATCH",
+                    "UNEXPECTED_TAMPER_ERROR")
+        else:
+            raise AssertionError("FALSE_ACCEPT:TAMPERED_CIPHERTEXT")
+        encrypted_path.write_bytes(encrypted_original)
         public = (output / "commitment_candidate.json").read_text()
         require("Private synthetic input" not in public
                 and "SYNTHETIC_NONCE_NO_REAL_HOLDOUT" not in public
@@ -229,6 +299,7 @@ def selftest():
         return {
             "selftest": "PASS_SYNTHETIC_ONLY", "negatives_rejected": negatives,
             "two_ciphertexts_decrypted_in_distinct_keyring": True,
+            "tampered_ciphertext_rejected": True,
             "public_receipt_contains_no_synthetic_private_cases": True,
             "real_holdout_created": False, "provider_attested": False,
             "checkpoint_done": False,
@@ -238,6 +309,7 @@ def selftest():
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--self-test", action="store_true")
+    p.add_argument("--custodian-home", type=Path)
     p.add_argument("--corpus", type=Path)
     p.add_argument("--manifest", type=Path)
     p.add_argument("--public-key", type=Path)
@@ -247,6 +319,12 @@ def main():
     a = p.parse_args()
     if a.self_test:
         print(json.dumps(selftest(), sort_keys=True))
+        return
+    if a.custodian_home is not None:
+        if a.output_dir is None:
+            p.error("--output-dir required with --custodian-home")
+        print(json.dumps(verify_custodian(a.output_dir, a.custodian_home),
+                         sort_keys=True))
         return
     if any(x is None for x in (a.corpus, a.manifest, a.public_key,
                                a.output_dir, a.recipient_fingerprint, a.attempt_ref)):
