@@ -82,6 +82,21 @@ def validate_commitment(obj):
           obj.get("source_policy_git_blob") == POLICY,
           "SOURCE_POLICY_MISMATCH")
     check(not secret_key_in_public(obj), "SECRET_MATERIAL_IN_PUBLIC_GIT")
+    # Explicit allowlist: unknown top-level fields could contain undisclosed
+    # private material under aliases that a denylist alone cannot recognize.
+    public_fields = {
+        "schema_version", "checkpoint", "status", "attempt_ref",
+        "source_snapshot_commit", "source_policy_git_blob", "holdout_counts",
+        "holdout_content_sha256", "holdout_manifest_sha256",
+        "corpus_ciphertext_sha256", "manifest_ciphertext_sha256",
+        "recipient_fingerprint", "recipient_public_key_sha256",
+        "external_precommit_persisted",
+        "custodian_independent_readback_verified",
+        "separate_reviewer_evidence_verified",
+        "provider_attested", "independent_review", "producer_raw_observed",
+        "checkpoint_done",
+    }
+    check(set(obj) == public_fields, "PUBLIC_COMMITMENT_FIELDS_NOT_ALLOWLISTED")
     counts = obj.get("holdout_counts")
     check(isinstance(counts, dict), "COUNT_CONTRACT_MISSING")
     for field, minimum in (("valid", 12), ("invalid", 24),
@@ -209,6 +224,7 @@ def selftest():
                 "valid": 11, "invalid": 26, "novel_falsifiers": 2}},
             "missing_hash": {"holdout_manifest_sha256": None},
             "secret_in_public": {"cases": [{"input": "secret"}]},
+            "secret_alias_in_public": {"secret_bundle": "leaked-private-content"},
             "false_provider_attestation": {"provider_attested": True},
             "premature_done": {"checkpoint_done": True},
             "wrong_attempt_identity": {"attempt_ref": "github://" + REPO +
@@ -234,7 +250,7 @@ def selftest():
                 negatives[name] = str(exc)
             else:
                 raise AssertionError("FALSE_ACCEPT:" + name)
-        check(len(negatives) == 8, "NEGATIVES_INCOMPLETE")
+        check(len(negatives) == 9, "NEGATIVES_INCOMPLETE")
         return {
             "selftest": "PASS_SYNTHETIC_ONLY",
             "negative_count": len(negatives),
