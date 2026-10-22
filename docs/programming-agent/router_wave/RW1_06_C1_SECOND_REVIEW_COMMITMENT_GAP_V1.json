@@ -1,0 +1,81 @@
+{
+  "schema_version": "RW106_C1_SECOND_REVIEW_PUBLIC_COMMITMENT_CAPTURE_V1",
+  "source_kind": "OWNER_FORWARDED_UNATTESTED_GPT_NATIVE_RECEIPT",
+  "status": "PUBLIC_CAPTURE_OF_CLAIMS_NOT_ADMITTED",
+  "captured_commitment": {
+    "schema_version": "RW106_C1_INDEPENDENT_HOLDOUT_COMMITMENT_V1",
+    "checkpoint": "RW1-06_C1",
+    "status": "GAP",
+    "source_snapshot_commit": "ec5d8ce5637c2d118941cfe4b3c88ae4fd325024",
+    "source_policy_git_blob": "138efc3285ee5226c107827c66f84ced6be4afcb",
+    "source_verification": {
+      "snapshot_exists": true,
+      "authorized_blobs_verified": 6,
+      "blob_mismatches": 0,
+      "prior_review_capture_content_read": false
+    },
+    "reviewer_method": "GPT_NATIVE_CHAT_UNATTESTED",
+    "reviewer_reference": null,
+    "reviewer_separation": "NOT_YET_ATTESTED",
+    "holdout_counts": {
+      "valid": 13,
+      "invalid": 26,
+      "novel_falsifiers": 2
+    },
+    "holdout_manifest_sha256": "30e8e133823209599a61f2091d12c84763844ab83660fc0f5e36d9320fcadd7b",
+    "holdout_content_sha256": "cd1fb3f4bbeaf6ba4fabd1564673a8104e2e7d60bd9b706516942d07b61e38e3",
+    "committed_at_utc": "2026-10-22T03:00:45Z",
+    "committed_before_evaluation": true,
+    "local_evidence": {
+      "private_files_created": 2,
+      "hash_readback_verified": true,
+      "cases_with_preregistered_oracles": 41,
+      "test_families_covered": 13,
+      "private_corpus_path": "/mnt/data/.rw106_c1_sealed/corpus.private.json",
+      "private_manifest_path": "/mnt/data/.rw106_c1_sealed/manifest.private.json",
+      "external_precommit_persisted": false,
+      "durable_provider_isolation_verified": false
+    },
+    "case_bodies_revealed": false,
+    "producer_raw_observed": false,
+    "provider_attested": false,
+    "independent_review": false,
+    "checkpoint_done": false,
+    "gaps": [
+      {
+        "code": "REVIEWER_REFERENCE_UNAVAILABLE",
+        "action": "Obtener referencia auténtica desde interfaz de ChatGPT"
+      },
+      {
+        "code": "MATERIAL_SEPARATION_NOT_ATTESTED",
+        "action": "Acreditar separación respecto del productor"
+      },
+      {
+        "code": "EXTERNAL_PRECOMMIT_NOT_PERSISTED",
+        "action": "Persistir y verificar compromiso público antes de C2"
+      },
+      {
+        "code": "SEALED_STORAGE_NOT_DURABLY_ISOLATED",
+        "action": "Conservar corpus en almacenamiento privado con aislamiento verificable"
+      }
+    ]
+  },
+  "capture_clarifications": {
+    "expected_mechanical_validator_result": "REVIEWER_MODE_MISMATCH",
+    "external_git_record": "PERSISTED_ON_THIS_BRANCH_BY_THIS_COMMIT_AS_PUBLIC_INTAKE_ONLY",
+    "original_report_external_precommit_persisted": false,
+    "chronological_proof": "NOT_VERIFIED",
+    "sealed_content_read_back": "NOT_PERFORMED_OR_POSSIBLE_IN_THIS_CHAT",
+    "digest_content_verified": false,
+    "reviewer_reference_attested": false,
+    "reviewer_separation_attested": false,
+    "material_provider_isolation": false,
+    "private_corpus_durable": false,
+    "actual_holdout_validity_verified": false,
+    "producer_raw_observed": false,
+    "did_not_modify_original_claims": true,
+    "authorized_for_c2": false,
+    "checkpoint_done": false,
+    "rule": "Git publication of this receipt is an independent durable public capture, NOT confirmation of original timestamp/order, reviewer separation, confidential material, or successful holdout."
+  }
+}
