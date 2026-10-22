@@ -100,8 +100,30 @@ def packet(raw: Path, expected_valid: bool) -> dict:
     return p
 
 
+def ensure_declared_schema_engine() -> None:
+    """Provision only the already-pinned runtime dependency in ephemeral CI."""
+    from importlib.metadata import PackageNotFoundError, version
+    requirements = (ROOT / "services/profile_runtime_api/requirements.in").read_text(encoding="utf-8")
+    if "jsonschema==4.26.0" not in requirements.splitlines():
+        raise ValueError("CANONICAL_SCHEMA_ENGINE_RUNTIME_PIN_CHANGED")
+    try:
+        installed = version("jsonschema")
+    except PackageNotFoundError:
+        installed = None
+    if installed != "4.26.0":
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install",
+             "--disable-pip-version-check", "jsonschema==4.26.0"],
+            check=True, timeout=90,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+    if version("jsonschema") != "4.26.0":
+        raise ValueError("CANONICAL_SCHEMA_ENGINE_RUNTIME_VERSION_MISMATCH")
+
+
 def main() -> dict:
     head = resolve_github_head()
+    ensure_declared_schema_engine()
     positive = validate_bound_output(ROOT, packet(REFS["positive_raw_output"], True))
     negative = validate_bound_output(ROOT, packet(REFS["negative_raw_output"], False))
     if (positive["status"] != "CANDIDATE_OUTPUT_PARITY_OBSERVED"
