@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-unresolved-semantic-handoff-v1",
+  "paths": {
+    "supabase/migrations/20261022170000_lf_router_resolve_unresolved_semantic_handoff_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-unresolved-semantic-handoff-v1.json": "CHANGESET_MANIFEST"
+  }
+}
