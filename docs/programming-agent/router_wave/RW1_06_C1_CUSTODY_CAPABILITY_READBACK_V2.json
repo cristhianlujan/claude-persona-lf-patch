@@ -31,6 +31,10 @@
     "no_corpus_material_integrity_proven": true,
     "no_public_precommit_for_new_holdout": true,
     "no_C1_closure": true,
-    "no_Train_or_DB_effect": true
-  }
+    "no_Train_or_DB_effect": true,
+    "same_connected_producer_principal_could_read_test_file": true,
+    "plaintext_secret_holdout_custody_in_this_folder_admissible": false,
+    "required_forward_path": "SEPARATE_CUSTODIAN_PRINCIPAL_OR_ENCRYPTED_CIPHERTEXT_WITH_KEY_WITHHELD_FROM_PRODUCER"
+  },
+  "evidence_interpretation": "PERSISTENCE_AND_BYTE_IDENTITY_ONLY_NOT_PRODUCER_DENIAL_OR_SECRET_ISOLATION"
 }
