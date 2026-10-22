@@ -197,6 +197,8 @@ DECLARE
   v_audit jsonb;
   v_count integer;
   v_event_id bigint;
+  v_expected_error text;
+  v_expected_count integer;
 BEGIN
   IF position('lf_profile_update_evolution_step_guard_v1' in
       pg_get_functiondef('public.lf_record_profile_operation_step_v1(text,text,text,jsonb,text)'::regprocedure))=0
@@ -343,9 +345,10 @@ BEGIN
           'evolution_mode',CASE WHEN v_mode='UPDATE' THEN 'NO_CHANGE' ELSE 'PATCH' END),
         v_actor
       ) INTO v_result;
+      v_expected_error := CASE WHEN v_mode='UPDATE'
+        THEN 'EVOLUTION_UPDATE_MODE_INVALID' ELSE 'EVOLUTION_NO_CHANGE_MODE_INVALID' END;
       IF v_result->>'outcome' <> 'BLOCKED'
-         OR v_result->>'code' <> CASE WHEN v_mode='UPDATE'
-             THEN 'EVOLUTION_UPDATE_MODE_INVALID' ELSE 'EVOLUTION_NO_CHANGE_MODE_INVALID' END
+         OR v_result->>'code' IS DISTINCT FROM v_expected_error
       THEN RAISE EXCEPTION 'PE10_C6_RECORDER_DECISION_MISMATCH_ACCEPTED:%',v_result; END IF;
 
       SELECT public.lf_record_profile_operation_step_v1(
@@ -357,9 +360,9 @@ BEGIN
       THEN RAISE EXCEPTION 'PE10_C6_RECORDER_DECISION_NOT_CLEAN:%',v_result; END IF;
 
       SELECT public.lf_profile_update_effective_route_v1(v_exec) INTO v_route;
+      v_expected_count := CASE WHEN v_mode='UPDATE' THEN 17 ELSE 10 END;
       IF v_route->>'outcome' <> v_mode
-         OR jsonb_array_length(v_route->'effective_steps') <>
-            CASE WHEN v_mode='UPDATE' THEN 17 ELSE 10 END
+         OR jsonb_array_length(v_route->'effective_steps') <> v_expected_count
       THEN RAISE EXCEPTION 'PE10_C6_EFFECTIVE_ROUTE_NOT_FROZEN:%',v_route; END IF;
 
       IF v_mode='NO_CHANGE' THEN
