@@ -103,6 +103,109 @@ def test_native_material_pre_admission_suite():
     print(f"PASS_NATIVE_MATERIAL_PRE_ADMISSION_TESTS count={result.testsRun}")
 
 
+def test_real_profile_assessment_source_revision():
+    """Real canonical SRCR S26 diagnosis, no fixtures or claimed ledger receipts.
+
+    Provider-bound verification and Ledger anchoring remain separate.
+    """
+    import subprocess
+    import sys
+    root = Path(__file__).resolve().parents[3]
+    slug = "systemic_root_cause_repair_lf"
+    skill_rel = "profiles/" + slug + "/SKILL.md"
+    head = subprocess.check_output(
+        ["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    assert len(head) == 40 and all(c in "0123456789abcdef" for c in head)
+    skill_bytes = (root / skill_rel).read_bytes()
+    frozen_bytes = subprocess.check_output(
+        ["git", "-C", str(root), "show", "HEAD:" + skill_rel])
+    assert skill_bytes == frozen_bytes, "PROFILE_SOURCE_HEAD_DRIFT"
+    blob = subprocess.check_output(
+        ["git", "-C", str(root), "hash-object", skill_rel], text=True).strip()
+    source_sha = hashlib.sha256(skill_bytes).hexdigest()
+    s26dir = root / "skills/profile_creator/validators"
+    assessment_dir = root / "sandbox/lf_contract_gate_test/transversal_assets/profile_assessment"
+    for directory in (s26dir, assessment_dir):
+        if str(directory) not in sys.path:
+            sys.path.insert(0, str(directory))
+    from evaluate_s26_profile_baseline import evaluate as evaluate_s26
+    from profile_assessment_v1 import assess_profile
+    structural = evaluate_s26(root, slug)
+    assert structural["profile_slug"] == slug
+    assert structural["required"] == 13
+    assert len(structural["dimensions"]) == 13
+    assert structural["decision"] == "UPDATE_REQUIRED", structural
+    assert not structural["blocking_codes"], structural
+    # The actual canonical profile is missing runtime execution partition
+    # and budget bindings, so S26 reports a repairable structural gap.
+    assert structural["dimensions"]["B12_EXECUTION_PARTITION"]["pass"] is False
+    assert structural["dimensions"]["B13_EXECUTION_BUDGET"]["pass"] is False
+    normalized = {
+        "evidence": {
+            "structural_compatibility": {
+                "status": "FAIL",
+                "refs": structural["repair_actions"],
+            },
+        },
+        "signals": {},
+    }
+    assessment = assess_profile(normalized)
+    assert assessment["assessment_status"] == "EVIDENCE_SUFFICIENT"
+    assert assessment["evolution_mode"] == "PATCH"
+    assert assessment["write_authorized"] is False
+    assert assessment["admission_required"] is True
+    assessment_sha = hashlib.sha256(json.dumps(
+        normalized, sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).hexdigest()
+    print("PROFILE_ASSESSMENT_REAL_S26_READBACK", json.dumps({
+        "schema": "PROFILE_ASSESSMENT_SOURCE_ONLY_V1",
+        "profile_slug": slug,
+        "source_head_sha": head,
+        "source_path": skill_rel,
+        "source_blob_sha1": blob,
+        "source_sha256": source_sha,
+        "subject_sha256": assessment_sha,
+        "s26_score": structural["score"],
+        "s26_total": structural["required"],
+        "s26_decision": structural["decision"],
+        "s26_failed_dimensions": sorted(
+            k for k,v in structural["dimensions"].items() if not v["pass"]),
+        "structural_repair_actions": structural["repair_actions"],
+        "assessment_status": assessment["assessment_status"],
+        "evolution_mode": assessment["evolution_mode"],
+        "ledger_verified_receipt_issued": False,
+        "runtime_activated": False,
+    }, sort_keys=True))
+    # Re-run once to detect nondeterministic assessment output.
+    assert assess_profile(normalized) == assessment
+    assert hashlib.sha256(json.dumps(
+        normalized, sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).hexdigest() == assessment_sha
+
+
+def test_existing_planner_assessment_regression():
+    """Run the actual code suite in this existing allowed CI entrypoint."""
+    import unittest
+    root = Path(__file__).resolve().parents[3]
+    directory = root / "skills/profile_creator/evals"
+    suites = (
+        "test_profile_evolution_reconciliation_v1.py",
+        "test_profile_evolution_trusted_readback_v1.py",
+        "test_profile_evolution_readonly_entrypoint_v1.py",
+    )
+    for name in suites:
+        suite = unittest.defaultTestLoader.discover(
+            start_dir=str(directory), pattern=name,
+            top_level_dir=str(root),
+        )
+        assert suite.countTestCases() > 0, "ASSESSMENT_SUITE_NOT_FOUND:" + name
+        result = unittest.TextTestRunner(verbosity=1).run(suite)
+        assert result.wasSuccessful(), "ASSESSMENT_EXISTING_REGRESSION_FAILED:" + name
+        print("PASS_PROFILE_ASSESSMENT_EXISTING_SUITE", name, result.testsRun)
+
+
 if __name__ == "__main__":
     main()
     test_native_material_pre_admission_suite()
+    test_real_profile_assessment_source_revision()
+    test_existing_planner_assessment_regression()
