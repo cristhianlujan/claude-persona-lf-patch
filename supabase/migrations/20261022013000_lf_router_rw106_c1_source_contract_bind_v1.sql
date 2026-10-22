@@ -44,6 +44,18 @@ DECLARE
         "role": "EVIDENCE",
         "purpose": "SOURCE_AND_PREREGISTERED_HOLDOUT_POLICY",
         "target_kind": "EXACT_EXISTING_FILE"
+      },
+      {
+        "path": "cristhianlujan/claude-persona-lf-patch:sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py",
+        "role": "EVIDENCE",
+        "purpose": "SEALED_HOLDOUT_COMMITMENT_VALIDATOR",
+        "target_kind": "EXACT_EXISTING_FILE"
+      },
+      {
+        "path": "cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_06_C1_INDEPENDENT_HOLDOUT_HANDOFF_V1.md",
+        "role": "EVIDENCE",
+        "purpose": "SEPARATE_REVIEWER_HANDOFF",
+        "target_kind": "EXACT_EXISTING_FILE"
       }
     ],
     "evidence_artifacts": [
@@ -51,6 +63,18 @@ DECLARE
         "path": "cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_06_C1_SOURCE_POLICY_FREEZE_V1.json",
         "role": "EVIDENCE",
         "purpose": "SOURCE_POLICY_FREEZE",
+        "target_kind": "EXACT_EXISTING_FILE"
+      },
+      {
+        "path": "cristhianlujan/claude-persona-lf-patch:sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py",
+        "role": "EVIDENCE",
+        "purpose": "SEALED_HOLDOUT_COMMITMENT_VALIDATOR",
+        "target_kind": "EXACT_EXISTING_FILE"
+      },
+      {
+        "path": "cristhianlujan/claude-persona-lf-patch:docs/programming-agent/router_wave/RW1_06_C1_INDEPENDENT_HOLDOUT_HANDOFF_V1.md",
+        "role": "EVIDENCE",
+        "purpose": "SEPARATE_REVIEWER_HANDOFF",
         "target_kind": "EXACT_EXISTING_FILE"
       }
     ],
@@ -139,7 +163,9 @@ $spec$::jsonb;
       "docs/programming-agent/LF_ROUTER_ARCHITECTURE_WAVE_V1.md",
       "docs/programming-agent/router_wave/RW1_01_C3_NEEDS_ACCEPTANCE_CORPUS_V2.json",
       "docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json",
-      "docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json"
+      "docs/programming-agent/router_wave/RW1_05_C3_REVIEW_CAPTURE_V1.json",
+      "sandbox/lf_contract_gate_test/router_wave/validate_rw106_c1_holdout_commitment_v1.py",
+      "docs/programming-agent/router_wave/RW1_06_C1_INDEPENDENT_HOLDOUT_HANDOFF_V1.md"
     ],
     "queries": [
       "SELECT checkpoint_code,status,evidence_ref,assertion_receipt_sha256 FROM programacion.engineering_work_checkpoints WHERE work_item_id=1132 ORDER BY sequence_no",
@@ -161,7 +187,9 @@ $spec$::jsonb;
     "wave": "4bb64d568c3f005cf454fb223b4a5ed699c34504",
     "rw101_corpus": "55c09eb0fc6ddffa7a41d66eddf9c254e061f566",
     "rw103_abi": "bfd571d5e7c7d1d80c5ed39414a822b4096c20d6",
-    "rw105_c3_capture": "da02bc075aa45f0ef5f3c81dfc310c6488b3ab63"
+    "rw105_c3_capture": "da02bc075aa45f0ef5f3c81dfc310c6488b3ab63",
+    "sealed_holdout_commitment_validator": "72d3c4f98aeedbf63c21334b06b9c091b0fa9a99",
+    "separate_reviewer_handoff": "d0ae33254f875f45081b56cfbe7506bdadfef477"
   },
   "db_source_md5": {
     "lf_router_resolve_v1": "d54120efc72b215ea8c5692fc4efb76a",
