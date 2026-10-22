@@ -143,10 +143,12 @@ def evaluate(*, data_root: Path, inputs: dict, full, pg_env: dict, psql, output_
     duplicate_versions=sorted(set(DUPLICATES)|
                               {original for original,_ in DUPLICATES.values()})
     array_literal="{"+",".join(duplicate_versions)+"}"
+    # Built-in pg_catalog.sha256 is accessible to lf_reconcile_readonly.
+    # extensions.digest has EXECUTE privilege but schema extensions lacks USAGE.
     raw_sql=("select version,"
-             "encode(extensions.digest(convert_to("
-             "coalesce(array_to_string(statements,chr(10)),''),'UTF8'),"
-             "'sha256'),'hex'),"
+             "encode(pg_catalog.sha256(convert_to("
+             "coalesce(array_to_string(statements,chr(10)),''),'UTF8')),"
+             "'hex'),"
              "coalesce(cardinality(statements),0)::text "
              "from supabase_migrations.schema_migrations "
              "where version=any('"+array_literal+"'::text[]) order by version")
