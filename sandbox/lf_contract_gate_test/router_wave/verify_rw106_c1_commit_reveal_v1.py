@@ -217,7 +217,25 @@ def _is_ancestor(root, older, newer) -> bool:
         capture_output=True, timeout=10, check=False).returncode == 0
 
 
-def check_commitment(root, commit, path, raw_commit=None):
+DECISION_PATH = "docs/programming-agent/router_wave/RW1_06_C1_SEPARATION_EVIDENCE_DECISION_V1.md"
+D1_LINE = re.compile(r"^\[( |x)\] A  \[( |x)\] B  \[( |x)\] C  \[( |x)\] B con cambios:", re.M)
+
+
+def decision_state(root, decision_commit) -> str:
+    """D1 as recorded in Git by the owner: only a lone [x] B counts. Never implies closure."""
+    if decision_commit is None:
+        return "GAP_PENDING_OWNER_DECISION_D1"
+    check(SHA40.fullmatch(decision_commit or "") is not None, "DECISION_COMMIT_INVALID")
+    shown = subprocess.run(["git", "-C", str(root), "show", f"{decision_commit}:{DECISION_PATH}"],
+                           capture_output=True, check=False)
+    check(shown.returncode == 0, "DECISION_DOCUMENT_UNAVAILABLE")
+    line = D1_LINE.search(shown.stdout.decode("utf-8"))
+    if line is None or line.groups() != (" ", "x", " ", " "):
+        return "GAP_PENDING_OWNER_DECISION_D1"
+    return "D1_B_RECORDED_BY_OWNER_NO_PROVIDER_ATTESTATION"
+
+
+def check_commitment(root, commit, path, raw_commit=None, decision_commit=None):
     """Return (verdict, commitment). Reads the exact Git blob; trusts no timestamp."""
     try:
         obj = pre.read_git_json(root, commit, path)
@@ -258,7 +276,7 @@ def check_commitment(root, commit, path, raw_commit=None):
         "provider_attested": False,
         "independent_review": False,
         "checkpoint_done": False,
-        "material_admission": "GAP_PENDING_OWNER_DECISION_D1",
+        "material_admission": decision_state(root, decision_commit),
     }
     return verdict, obj
 
@@ -601,6 +619,32 @@ def self_test() -> dict:
         check(verdict["chronology"] == "PENDING_NO_PRODUCER_RAW", "POSITIVE_PENDING_FAILED")
         verdict, _ = check_commitment(root, commit_sha, public_path, raw_sha)
         check(verdict["chronology"] == "GIT_COMMIT_ANCESTRY_PASS", "POSITIVE_ORDER_FAILED")
+        def decision_commit_with(boxes):
+            target = root / DECISION_PATH
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(f"# x\n\n{boxes}    Fecha: t\n", encoding="utf-8")
+            git("add", DECISION_PATH)
+            git("commit", "-qm", "decision " + boxes[:12])
+            return git("rev-parse", "HEAD")
+
+        pend = "[ ] A  [ ] B  [ ] C  [ ] B con cambios: __"
+        rec = "[ ] A  [x] B  [ ] C  [ ] B con cambios: __"
+        two = "[x] A  [x] B  [ ] C  [ ] B con cambios: __"
+        check(check_commitment(root, commit_sha, public_path)[0]["material_admission"]
+              == "GAP_PENDING_OWNER_DECISION_D1", "ADMISSION_DEFAULT_NOT_GAP")
+        check(decision_state(root, decision_commit_with(pend)) == "GAP_PENDING_OWNER_DECISION_D1",
+              "D1_UNCHECKED_ACCEPTED")
+        check(decision_state(root, decision_commit_with(two)) == "GAP_PENDING_OWNER_DECISION_D1",
+              "D1_AMBIGUOUS_ACCEPTED")
+        d1 = decision_commit_with(rec)
+        verdict, _ = check_commitment(root, commit_sha, public_path, None, d1)
+        check(verdict["material_admission"] == "D1_B_RECORDED_BY_OWNER_NO_PROVIDER_ATTESTATION"
+              and verdict["checkpoint_done"] is False and verdict["independent_review"] is False
+              and verdict["reviewer_separation_verified"] is False, "D1_RECORDED_BAD_VERDICT")
+        rejected["decision_commit_invalid"] = _expect(
+            "DECISION_COMMIT_INVALID", decision_state, root, "nothex")
+        rejected["decision_document_missing"] = _expect(
+            "DECISION_DOCUMENT_UNAVAILABLE", decision_state, root, commit_sha)
         final = verify_reveal(root, commit_sha, public_path, raw_sha, bundle_text)
         check(final["content_integrity"].startswith("PASS")
               and final["revealed_counts"] == {"valid": 13, "invalid": 26,
@@ -804,6 +848,7 @@ def main() -> None:
         item.add_argument("--commit", required=True)
         item.add_argument("--path", required=True)
         item.add_argument("--raw-commit")
+        item.add_argument("--decision-commit")
     rev.add_argument("--bundle", type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -821,7 +866,7 @@ def main() -> None:
             return
         elif args.command == "check-commitment":
             result = check_commitment(args.git_root, args.commit, args.path,
-                                      args.raw_commit)[0]
+                                      args.raw_commit, args.decision_commit)[0]
         else:
             result = verify_reveal(args.git_root, args.commit, args.path, args.raw_commit,
                                    args.bundle.read_text(encoding="ascii", errors="strict"))
