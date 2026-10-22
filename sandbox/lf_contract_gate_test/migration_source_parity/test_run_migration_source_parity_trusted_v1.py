@@ -247,8 +247,9 @@ def main() -> int:
         assert counts["union_versions"]==206 and counts["snapshot_batches"]==2
         assert max(len(batch[0]) for batch in calls)<=150
         assert any(remote_only in batch[0] for batch in calls)
+        assert any(remote_only in batch[1] for batch in calls), "full-current must read ledger-only statement counts"
         assert len(list(__import__("csv").reader(outputs["post_cutover"].open())))==206
-        assert len(list(__import__("csv").reader(outputs["statement_counts"].open())))==205
+        assert len(list(__import__("csv").reader(outputs["statement_counts"].open())))==206
         assert json.loads((t/"out"/"full-current-input-scope.json").read_text())["scope"]=="FULL_CURRENT_STATE"
     checks += 1
 
