@@ -128,8 +128,11 @@ def decode_bundle(text: str, kind: str):
     """Whitespace, CRLF and indentation are tolerated; every line is CRC checked."""
     rows, total = {}, None
     for line in text.splitlines():
+        if not line.strip():
+            continue
         match = BUNDLE_LINE.fullmatch(line.strip())
-        if match is None or match.group(1) != kind:
+        check(match is not None, "BUNDLE_FOREIGN_LINE")  # no unhashed bytes in the container
+        if match.group(1) != kind:
             continue
         index, count, chunk, crc = (int(match.group(2)), int(match.group(3)),
                                     match.group(4), match.group(5))
@@ -281,9 +284,9 @@ def check_commitment(root, commit, path, raw_commit=None, decision_commit=None):
     return verdict, obj
 
 
-def verify_reveal(root, commit, path, raw_commit, bundle_text):
+def verify_reveal(root, commit, path, raw_commit, bundle_text, decision_commit=None):
     check(raw_commit is not None, "REVEAL_REQUIRES_RAW_AFTER_COMMITMENT")
-    verdict, obj = check_commitment(root, commit, path, raw_commit)
+    verdict, obj = check_commitment(root, commit, path, raw_commit, decision_commit)
     corpus = decode_bundle(bundle_text, "corpus")
     manifest = decode_bundle(bundle_text, "manifest")
     check(canonical_digest(corpus) == obj["holdout_content_sha256"],
@@ -641,6 +644,12 @@ def self_test() -> dict:
         check(verdict["material_admission"] == "D1_B_RECORDED_BY_OWNER_NO_PROVIDER_ATTESTATION"
               and verdict["checkpoint_done"] is False and verdict["independent_review"] is False
               and verdict["reviewer_separation_verified"] is False, "D1_RECORDED_BAD_VERDICT")
+        revealed = verify_reveal(root, commit_sha, public_path, raw_sha, bundle_text, d1)
+        check(revealed["material_admission"] == "D1_B_RECORDED_BY_OWNER_NO_PROVIDER_ATTESTATION"
+              and revealed["checkpoint_done"] is False, "REVEAL_DROPS_DECISION_COMMIT")
+        rejected["bundle_foreign_line"] = _expect(
+            "BUNDLE_FOREIGN_LINE", verify_reveal, root, commit_sha, public_path, raw_sha,
+            bundle_text + "\nunhashed smuggled line\n")
         rejected["decision_commit_invalid"] = _expect(
             "DECISION_COMMIT_INVALID", decision_state, root, "nothex")
         rejected["decision_document_missing"] = _expect(
@@ -869,7 +878,8 @@ def main() -> None:
                                       args.raw_commit, args.decision_commit)[0]
         else:
             result = verify_reveal(args.git_root, args.commit, args.path, args.raw_commit,
-                                   args.bundle.read_text(encoding="ascii", errors="strict"))
+                                   args.bundle.read_text(encoding="ascii", errors="strict"),
+                                   args.decision_commit)
     except CommitRevealGap as exc:
         print(json.dumps({"verdict": "GAP", "code": str(exc), "checkpoint_done": False},
                          sort_keys=True))

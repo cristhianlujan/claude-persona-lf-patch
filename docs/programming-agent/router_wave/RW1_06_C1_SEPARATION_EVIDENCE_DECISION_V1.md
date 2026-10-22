@@ -1,6 +1,6 @@
 # RW1-06_C1 — Decisión D1: evidencia de separación del revisor sin GnuPG (V1)
 
-**Estado:** PROPUESTA PARA DECISIÓN DEL PROPIETARIO. No está aprobada ni activa. No cambia contratos, validadores existentes, base de datos, C2 ni C3.
+**Estado:** D1 = B REGISTRADA por el propietario (2026-10-22). El mecanismo es candidato y advisory: la independencia sigue atestada solo por el propietario, no por el proveedor; no admite C1 ni cierra ningún checkpoint. No cambia validadores existentes, C2 ni C3.
 **Ancla:** repo `cristhianlujan/claude-persona-lf-patch`, PR #3070 (Draft), snapshot `ec5d8ce5637c2d118941cfe4b3c88ae4fd325024`, source policy blob `138efc3285ee5226c107827c66f84ced6be4afcb`, intento `RW106-C1-V2-001` (`github://cristhianlujan/claude-persona-lf-patch@76924bbb8a1ede147412cdd1be8f98619b659776/docs/programming-agent/router_wave/RW1_06_C1_CAPTURE_ATTEMPT_V2_001.json`).
 
 ## Diagnóstico
@@ -46,6 +46,8 @@ No cambia: ACT-0001 como autoridad del Router; Migration Merge Train para cualqu
 - «No estoy en un Proyecto» es autodeclaración del revisor; sin atestación del proveedor.
 - Si el archivo se pierde antes del RAW, se rehace con otro intento: no se quema nada. Después del RAW, un fallo de integridad es `HOLDOUT_INTEGRITY_GAP`.
 - Los mínimos y la estructura no prueban la calidad del corpus; eso lo sigue juzgando C3 FULL.
+- El orden de commits en Git no autentica cuándo el productor vio realmente una salida ni que el commit RAW sea su primera salida real: un productor podría observar una salida fuera de Git, comprometer y registrar después un RAW descendiente. `GIT_COMMIT_ANCESTRY_PASS` prueba solo ancestría, no primera aparición. Mitigación parcial: el RAW debe ser el contenido íntegro de la ejecución con su hash, y el revisor externo (C3) lo contrasta; sin atestación del proveedor sigue siendo control de proceso. (Hallazgo de la revisión independiente de ChatGPT, 2026-10-22.)
+- El contenedor del bundle solo admite líneas `RW106B|…` con CRC; cualquier otra línea se rechaza. Los hashes comprometidos cubren el JSON canónico, no los bytes del archivo.
 
 ## Declaración del propietario (plantilla; el hash del texto exacto va al commitment)
 
@@ -63,4 +65,4 @@ No cambia: ACT-0001 como autoridad del Router; Migration Merge Train para cualqu
 
 [ ] A  [x] B  [ ] C  [ ] B con cambios: ______    Fecha: 2026-10-22 04:19 (Lima), indicada por el propietario en el chat de la sesión
 
-Hasta que esté marcada, `RW1-06_C1` permanece `PENDING` y no se emite ningún prompt al revisor.
+`RW1-06_C1` permanece `PENDING`: esta decisión registra la elección, no admite ni cierra el checkpoint.

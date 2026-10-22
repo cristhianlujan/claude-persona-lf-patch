@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-wave-rw106-c1-review-fixes-v1",
+  "paths": {
+    "docs/programming-agent/router_wave/RW1_06_C1_SEPARATION_EVIDENCE_DECISION_V1.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c1-review-fixes-v1.json": "CHANGESET_MANIFEST"
+  }
+}
