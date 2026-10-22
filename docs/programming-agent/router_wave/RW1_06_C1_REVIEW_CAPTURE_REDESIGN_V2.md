@@ -99,3 +99,12 @@ E. If no supported clean context or private custody can be verified, stop with a
 ## Outside scope
 
 No disclosure of confidential holdouts, no merged PR or DB mutation, no C1 PASS, no provider isolation guarantee, no runtime/production changes, no bypass of direct SQL/Train, no invented overhead SLO and no material effect authorization from semantic PASS.
+
+
+## P0 read-only custody capability inspection (2026-10-22)
+
+The pre-existing LF private review evidence folder is a possible custody carrier, not a newly provisioned RW1-06 vault. Its Google Drive metadata returned `shared=false`, `permission_metadata_available`, and a single owner-role permission. A previously stored 5,881-byte JSON fixture was read twice through the connected Drive provider; both retrieved byte streams were identical and matched the reported size. Its local SHA-256 was computed after retrieval. **The fixture itself and its sensitive content are not reproduced in this public artifact.**
+
+This establishes **READ_ONLY_EXISTING_PRIVATE_FILE_READBACK_PASS** only. No RW1-06 sealed corpus exists in that folder; creating a child folder was blocked by tool safety. The access-controlled write path, post-upload round-trip, explicit producer ACL denial, independent reviewer custody access and reliable long-term secret retention are **NOT VERIFIED**. Hence `CUSTODY_PREFLIGHT_GAP` and `RW1-06_C1=PENDING` remain; do not generate another holdout.
+
+No privileged or production action was performed. This evidence does not imply storage authorization, issuer identity, reviewer independence, provider attestation or checkpoint closure.
