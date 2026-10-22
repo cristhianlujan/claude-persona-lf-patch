@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-estado-en-curso-read-v1",
+  "paths": {
+    "supabase/migrations/20261022220000_lf_estado_en_curso_read_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-estado-en-curso-read-v1.json": "CHANGESET_MANIFEST"
+  }
+}
