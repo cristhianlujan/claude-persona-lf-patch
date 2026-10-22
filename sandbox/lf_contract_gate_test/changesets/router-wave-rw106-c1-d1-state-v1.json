@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-wave-rw106-c1-d1-state-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-wave-rw106-c1-d1-state-v1.json": "CHANGESET_MANIFEST"
+  }
+}
