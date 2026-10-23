@@ -1,0 +1,201 @@
+{
+  "schema_version": "LF_PASE_F09_X17_PLAN_DELTA_CANDIDATE_V1",
+  "status": "PROPOSED_NOT_MATERIALIZED",
+  "plan_code": "LF_PASE_POST_PASE_GLOBAL_ARCHITECTURE_V1",
+  "work": {
+    "work_code": "PASE-ATOM-F09-X17",
+    "workstream_parent": "PASE-GLOBAL-09-E2E",
+    "status": "BACKLOG",
+    "work_type": "INTEGRATION",
+    "priority": "P1",
+    "assignee_type": "AGENT",
+    "assignee_ref": "CHATGPT_SUPER_ADMIN",
+    "target_domain": "SUPER_ADMIN",
+    "target_repo": "cristhianlujan/claude-persona-lf-patch",
+    "title": "Late cross-unit integration, transport, coordination and as-of consistency qualification",
+    "objective": "Only verify handoff/coordination/transport/cross-unit causal continuity and historical as-of contract consistency after owning units issue their local verdicts. Reuse existing admitted transversal capabilities; never re-execute local owners.",
+    "expected_result": "One exact-head integration PASS|BLOCKED|UNKNOWN receipt for applicable producer/consumer boundaries, without duplicating local checks; F09-016 consumes it as required input.",
+    "source_ref": "github://cristhianlujan/claude-persona-lf-patch/issues/2049",
+    "acceptance_criteria": [
+      "REUSE_EXISTING:CONSUMER_ADMISSION,CAUSAL_EFFECT_LINEAGE,DECISION_CONTEXT_ASOF,CURRENTNESS_AUTHORITY,EVIDENCE_LEDGER,FINAL_EVIDENCE",
+      "ONLY_CROSS_UNIT:transport_identity,coordination,causality,version_asof,producer_receiver_receipts",
+      "NO_LOCAL_JUDGE_REEXECUTION",
+      "RULE_HAS_IMPLEMENTATION_AND_RESOLUTION_ROUTE_OR_BLOCK",
+      "REQUIRED_UNKNOWN_NE_PASS",
+      "NO_HISTORICAL_PASS_REUSE",
+      "FRESH_EXACT_RUN_HEAD_DIGEST_RECEIPTS",
+      "NEGATIVE_CASE_STALE_CROSS_UNIT_AND_CYCLE_TEST",
+      "NO_NEW_ORCHESTRATOR_NO_NEW_CAPABILITY_WITHOUT_MEASURED_GAP",
+      "NO_WORKFLOW_REQUIRED_CHECK_DDL_DEPLOY_PRODUCTION_EFFECT",
+      "F09_016_CONSUMES_CURRENT_TYPED_INTEGRATION_VERDICT"
+    ]
+  },
+  "plan_unit": {
+    "unit_code": "PASE-ATOM-F09-X17",
+    "lot_code": "F09",
+    "lot_from": 9,
+    "lot_to": 9,
+    "unit_class": "ATOMIC_WORK",
+    "title": "Late transversal producer/receiver integration qualification",
+    "capability_ref": "PASE_POST_PASE_E2E",
+    "exit_criterion": "Coherent exact-current producer/receiver handoff, as-of version, transport, coordination, causal lineage and receipts; no required BLOCK/HOLD/UNKNOWN; one typed terminal receipt consumed by F09-016; no duplicate local checks.",
+    "unit_metadata": {
+      "rules": [
+        "REUSE_BEFORE_CREATE",
+        "LOCAL_JUDGES_ONLY_LOCAL_SCOPE",
+        "CROSS_UNIT_LATE_ONLY",
+        "FRESH_EXACT_HEAD",
+        "NO_FALSE_DONE",
+        "NO_ZIP_AS_AUTHORITY",
+        "NO_PRODUCTION_ACTIVATION"
+      ],
+      "checkpoints": [
+        "C0_EKB_PREFLIGHT",
+        "C1_AS_IS_AUTHORITY",
+        "C2_BOUNDED_EXECUTION",
+        "C3_DETERMINISTIC_VERIFICATION",
+        "C4_INDEPENDENT_JUDGE_IF_APPLICABLE",
+        "C5_TERMINAL_READBACK"
+      ],
+      "authority_bindings": [
+        "CONSUMER_ADMISSION",
+        "CAUSAL_EFFECT_LINEAGE",
+        "DECISION_CONTEXT_ASOF",
+        "CURRENTNESS_AUTHORITY",
+        "EVIDENCE_LEDGER",
+        "FINAL_EVIDENCE"
+      ],
+      "reuse_contract": "F09-X17 owns only late integration evaluation within PASE_POST_PASE_E2E; CONSUMER_ADMISSION and other transversal capabilities remain separate invoked authorities, not assigned implementation ownership."
+    }
+  },
+  "dependency_edges": [
+    {
+      "unit": "PASE-ATOM-F09-X17",
+      "requires": "PASE-ATOM-F09-015"
+    },
+    {
+      "unit": "PASE-ATOM-F09-X17",
+      "requires": "PASE-ATOM-F07-X01"
+    },
+    {
+      "unit": "PASE-ATOM-F09-X17",
+      "requires": "PASE-ATOM-F07-X02"
+    },
+    {
+      "unit": "PASE-ATOM-F09-X17",
+      "requires": "PASE-ATOM-F07-X03"
+    },
+    {
+      "unit": "PASE-ATOM-F09-016",
+      "requires": "PASE-ATOM-F09-X17"
+    }
+  ],
+  "qualification": {
+    "method": "READ_ONLY_SELECT_EXISTING_PROGRAMACION_FUNCTION",
+    "fn": "programacion.fn_programming_dag_validate_edges_v1",
+    "same_plan_mapped_edge_count": 193,
+    "proposed_edge_count": 5,
+    "positive": {
+      "valid": true,
+      "reason": "DAG_VALID",
+      "edge_count": 198
+    },
+    "negative": {
+      "valid": false,
+      "reason": "CIRCULAR_DEPENDENCY",
+      "cycle_path": [
+        "PASE-ATOM-F09-015",
+        "PASE-ATOM-F09-X17",
+        "PASE-ATOM-F09-015"
+      ]
+    },
+    "baseline_simple_admission": {
+      "valid": false,
+      "reason": "CROSS_PLAN_OR_UNMAPPED_REQUIREMENT",
+      "unmapped": [
+        "PASE-ATOM-F04-SQ01",
+        "PASE-ATOM-F07-X02-R01",
+        "PASE-ATOM-F07-X02-R02",
+        "PASE-ATOM-F07-X02-R03",
+        "PASE-ATOM-F07-X02-R04"
+      ]
+    },
+    "interpretation": "DAG_VALID is proved for mapped same-plan edges only, not blanket SIMPLE_EXECUTOR admission or full contractual readiness.",
+    "consumer_admission_unit_probes": {
+      "function": "public.lf_consumer_admission_aggregate_v1",
+      "mode": "READ_ONLY_IMMUTABLE",
+      "positive": [
+        {
+          "name": "REQUIRED_PASS_OPTIONAL_HOLD",
+          "expected": "PASS",
+          "observed": "PASS"
+        }
+      ],
+      "negative": [
+        {
+          "name": "REQUIRED_UNKNOWN",
+          "expected": "BLOCK",
+          "observed": "BLOCK",
+          "code": "REQUIRED_UNKNOWN_FAIL_CLOSED"
+        },
+        {
+          "name": "REQUIRED_HOLD",
+          "expected": "HOLD",
+          "observed": "HOLD",
+          "code": "REQUIRED_CONSUMER_HOLD"
+        },
+        {
+          "name": "OPTIONAL_POLICY_VETO_WITHOUT_PROOF",
+          "expected": "BLOCK",
+          "observed": "BLOCK",
+          "code": "OPTIONAL_VETO_POLICY_PROOF_REQUIRED"
+        }
+      ],
+      "eval_negative": {
+        "function": "public.lf_consumer_admission_evaluate_v1",
+        "input": "NOT_APPLICABLE + REQUIRED",
+        "expected": "UNKNOWN",
+        "observed": "UNKNOWN",
+        "code": "APPLICABILITY_REQUIREDNESS_CONTRADICTION"
+      },
+      "summary": "5/5 PASS; these qualify reuse of existing procedures with synthetic input, not F09-X17 real E2E terminal verdict"
+    },
+    "test_disposition": "PROCEDURE_TESTS_PASSED_IN_READ_ONLY; PLAN_UNIT_NOT_MATERIALIZED; CROSS_LAYER_REAL_RECEIPTS_NOT_TESTED",
+    "structural_projection": {
+      "source_path": "sandbox/lf_contract_gate_test/pase_plan_delta/f09_x17_d6_structural_projection_readonly_v1.sql",
+      "schema_version": "PASE_STRUCTURAL_PROJECTION_ONLY_V1",
+      "current_plan_units": 145,
+      "candidate_plan_units": 146,
+      "current_requires": 198,
+      "candidate_requires": 200,
+      "current_structural_projection_sha256": "c16fa42bf86c019a769852d773c30bcf650bb62d660d6dcd2137b6675a7c4064",
+      "candidate_structural_projection_sha256": "07d87bc0344644da863a8d4526d41ad4c5e27b061823c3a63372ba2a74b9dea0",
+      "decision_bound": true,
+      "debt_edges_scoped": true,
+      "late_gate_fanin_scoped": true,
+      "projection_consistent": true,
+      "plan_delta_authorized": false,
+      "warning": "COMPARISON_HASHES_ONLY; NOT canonical plan_digest, NOT event authorization, NOT an authorization receipt. Recompute on live current state before any governed materialization."
+    }
+  },
+  "apply_preconditions": [
+    "Governed Programación plan-delta owner operation/approval identified and bound.",
+    "Current work item and plan unit F09-X17 absent; no conflicting identity.",
+    "Fresh live status and current plan readback before materialization.",
+    "All dependency identities exist; stale D6 debt-edge issue separately resolved or explicitly disposed.",
+    "Materialization through supported governed operation and idempotent readback; no direct ungoverned INSERT."
+  ],
+  "guardrails": [
+    "NO_DIRECT_SUPABASE_SQL_MUTATION_BY_THIS_PR",
+    "NO_PASE_ACTIVATION",
+    "NO_REQUIRED_CHECK_EDITS",
+    "NO_EXISTING_DONE_REOPEN",
+    "NO_SILENT_D6_DEPENDENCY_REPAIR"
+  ],
+  "refs": [
+    "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2049",
+    "https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2050",
+    "lf_eventos://20583"
+  ],
+  "additional_remediation_ticket": "https://github.com/cristhianlujan/claude-persona-lf-patch/issues/2056"
+}
