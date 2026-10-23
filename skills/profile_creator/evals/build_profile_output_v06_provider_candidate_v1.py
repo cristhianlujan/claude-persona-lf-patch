@@ -255,24 +255,28 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
             SNAPSHOT["executor_event_sha256"], OBSERVED_AT
         ),
         "EV-E-PRODUCER": (
-            f"git:skills/profile_creator/evals/build_profile_output_v06_provider_candidate_v1.py@{source_head_sha}",
+            "git-sha256:skills/profile_creator/evals/build_profile_output_v06_provider_candidate_v1.py@"
+            + _sha_file("skills/profile_creator/evals/build_profile_output_v06_provider_candidate_v1.py"),
             _sha_file("skills/profile_creator/evals/build_profile_output_v06_provider_candidate_v1.py"),
-            source_head_sha
+            _sha_file("skills/profile_creator/evals/build_profile_output_v06_provider_candidate_v1.py")
         ),
         "EV-E-TRANSPORT": (
-            f"git:skills/profile_creator/validators/run_bound_profile_output_validator_v1.py@{source_head_sha}",
+            "git-sha256:skills/profile_creator/validators/run_bound_profile_output_validator_v1.py@"
+            + _sha_file("skills/profile_creator/validators/run_bound_profile_output_validator_v1.py"),
             _sha_file("skills/profile_creator/validators/run_bound_profile_output_validator_v1.py"),
-            source_head_sha
+            _sha_file("skills/profile_creator/validators/run_bound_profile_output_validator_v1.py")
         ),
         "EV-E-CONSUMER": (
-            f"git:skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql@{source_head_sha}",
+            "git-sha256:skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql@"
+            + _sha_file("skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql"),
             _sha_file("skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql"),
-            source_head_sha
+            _sha_file("skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql")
         ),
         "EV-E-ENFORCEMENT": (
-            f"git:profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json@{source_head_sha}",
+            "git-sha256:profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json@"
+            + _sha_file("profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json"),
             _sha_file("profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json"),
-            source_head_sha
+            _sha_file("profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json")
         ),
         "EV-E-READBACK": (
             LEDGER_LOCATOR, SNAPSHOT["output_receipt_snapshot_sha256"], OBSERVED_AT
@@ -293,9 +297,10 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
             SNAPSHOT["executor_event_sha256"], OBSERVED_AT
         ),
         "EV-E-IDENTITY": (
-            f"git:profiles/systemic_root_cause_repair_lf/manifest.json@{source_head_sha}",
+            "git-sha256:profiles/systemic_root_cause_repair_lf/manifest.json@"
+            + _sha_file("profiles/systemic_root_cause_repair_lf/manifest.json"),
             _sha_file("profiles/systemic_root_cause_repair_lf/manifest.json"),
-            source_head_sha
+            _sha_file("profiles/systemic_root_cause_repair_lf/manifest.json")
         ),
         "EV-E-ROLLBACK": (
             "supabase://public/lf_eventos/21513",
@@ -323,10 +328,7 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
     evidence["observed_at"] = OBSERVED_AT
     evidence["producer"] = {
         "kind": "GPT_NATIVE_CURRENT_CHAT_SOURCE_AUTHORED",
-        "resolver_ref": (
-            "github-actions://Profile-GPT-Native-Capture-Regression/"
-            f"exact-head/{source_head_sha}"
-        ),
+        "resolver_ref": "github-actions://Profile-GPT-Native-Capture-Regression/exact-pr-head",
     }
     evidence["bundle_digest"] = closure_proof.canonical_evidence_bundle_digest(evidence)
     return candidate, evidence
