@@ -1,0 +1,862 @@
+{
+  "status": "LOCAL_FOUNDATION_TESTS_COMPLETED",
+  "evidence_tier": "LOCAL_POSTGRES_CANONICAL_FUNCTIONS_SYNTHETIC_CATALOG",
+  "provider_attested": false,
+  "pg01_runtime_verified": false,
+  "hosted_database_touched": false,
+  "independent_review": false,
+  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "image": "postgres:17.6",
+  "migration": "supabase/migrations/20261023221300_programming_context_snapshot_runtime_guard_pg01_receiver_base_v1.sql",
+  "migration_sha256": "fa6c24cccdd0a5a609f4e40229fa44ce2d70ce094d5dd7984a37d06d36c1059c",
+  "dependency_source": "supabase/migrations/20261004144500_t_decctx_decision_context_asof_v1.sql",
+  "dependency_source_sha256": "f65a1a2288c69c847e8f0434834a4ca62ffda8d8f5b59c49e30212c22376d9a0",
+  "assertions": 41,
+  "results": [
+    {
+      "case": "foundation_functions_before",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "ddl_rollback_restores_absence",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "ddl_rollback_restores_original_guard",
+      "actual": "2e9cba77a6a67039088a4e3cb971015d",
+      "expected": "2e9cba77a6a67039088a4e3cb971015d",
+      "matched": true
+    },
+    {
+      "case": "guard_acl_preserved",
+      "actual": "DEFAULT",
+      "expected": "DEFAULT",
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_snapshot_validate_v1(jsonb)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_record_v1(jsonb,text)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_resolve_v1(text,text,timestamptz)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "valid_synthetic_payload",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "record_positive",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "record_idempotency",
+      "actual": [
+        "64873fad-e7ba-4ac3-b4e3-d30d1fb5c565",
+        "3db4a067e23bcb4a0a58cbddbf05fb3a34209948819aa09b1408b384a991013c",
+        "IDEMPOTENT_REPLAY"
+      ],
+      "expected": [
+        "64873fad-e7ba-4ac3-b4e3-d30d1fb5c565",
+        "3db4a067e23bcb4a0a58cbddbf05fb3a34209948819aa09b1408b384a991013c",
+        "IDEMPOTENT_REPLAY"
+      ],
+      "matched": true
+    },
+    {
+      "case": "resolve_positive",
+      "actual": "RESOLVED",
+      "expected": "RESOLVED",
+      "matched": true
+    },
+    {
+      "case": "resolve_repeat_identical",
+      "actual": {
+        "code": "HISTORICAL_CONTEXT",
+        "state": "RESOLVED",
+        "context": {
+          "times": {
+            "decided_at": "2026-10-01T00:00:00Z",
+            "effective_at": "2026-10-01T00:00:00Z"
+          },
+          "subject": {
+            "ref": "fixture://pg01/subject",
+            "version": "1"
+          },
+          "governing": {
+            "terms_ref": "fixture://terms",
+            "policy_ref": "fixture://policy",
+            "terms_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "terms_version": "1",
+            "policy_version": "1"
+          },
+          "extensions": {
+            "programming_context_snapshot": {
+              "target": {
+                "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "repo_full_name": "fixture/local",
+                "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "preserve": [],
+              "objective": "Read-only synthetic SQL foundation fixture",
+              "source_refs": [
+                "fixture://source"
+              ],
+              "requirements": [
+                "REQ1"
+              ],
+              "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+              "authority_state": "EXISTING",
+              "scope_readiness": [
+                {
+                  "reason": "synthetic closed scope",
+                  "status": "READY",
+                  "blockers": [],
+                  "scope_id": "S1",
+                  "scope_kind": "COMPONENT",
+                  "authority_refs": [
+                    "fixture://source"
+                  ],
+                  "material_front_refs": [
+                    "F1"
+                  ],
+                  "depends_on_scope_ids": []
+                }
+              ],
+              "applicable_rules": [],
+              "currentness_refs": [
+                "fixture://source"
+              ],
+              "decision_context": {
+                "status": "STABLE",
+                "adr_ref": null,
+                "rationale": "fixture",
+                "scope_refs": [
+                  "S1"
+                ],
+                "decision_id": "D1",
+                "subject_ref": "fixture://pg01",
+                "evidence_refs": [
+                  "fixture://source"
+                ],
+                "authority_refs": [
+                  "fixture://source"
+                ],
+                "schema_version": "ANALYSIS_DECISION_CONTEXT_V1",
+                "adr_disposition": "NOT_REQUIRED",
+                "persistence_ref": "fixture://D1",
+                "currentness_refs": [
+                  "fixture://source"
+                ],
+                "material_question": "fixture question",
+                "options_considered": [
+                  "O1"
+                ],
+                "selected_option_ref": "O1",
+                "unresolved_questions": [],
+                "decision_fingerprint_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "decision_resolution_receipt": {
+                  "scope_refs": [
+                    "S1"
+                  ],
+                  "lookup_refs": [
+                    "fixture://source"
+                  ],
+                  "subject_ref": "fixture://pg01",
+                  "evidence_refs": [
+                    "fixture://source"
+                  ],
+                  "schema_version": "ANALYSIS_DECISION_RESOLUTION_RECEIPT_V1",
+                  "currentness_refs": [
+                    "fixture://source"
+                  ],
+                  "resolution_state": "CURRENT_AUTHORITY_RESOLVED",
+                  "reused_decision_ref": "fixture://D1",
+                  "material_question_fingerprint_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                }
+              },
+              "package_readiness": "READY",
+              "analysis_stop_rule": {
+                "reason": "fixture closed",
+                "decision": "STOP",
+                "evidence_refs": [
+                  "fixture://source"
+                ],
+                "decision_stable": true,
+                "material_front_coverage_ref": "fixture://front",
+                "all_material_fronts_accounted": true,
+                "unresolved_decision_changing_questions": [],
+                "additional_available_evidence_capable_of_changing_material_decision": []
+              },
+              "authority_bindings": [
+                "fixture://source"
+              ],
+              "scope_front_matrix": [
+                {
+                  "reason": "synthetic material evidence",
+                  "front_id": "F1",
+                  "scope_id": "S1",
+                  "front_status": "REQUIRED",
+                  "evidence_refs": [
+                    "fixture://source"
+                  ],
+                  "front_closure": "CLOSED",
+                  "effect_on_scope": "PRESERVE"
+                }
+              ],
+              "target_granularity": "COMPONENT",
+              "human_decision_queue": [],
+              "implementation_state": "EXISTING",
+              "applicable_invariants": [],
+              "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "implementability_schema": {
+                "source_refs": [
+                  "fixture://source"
+                ],
+                "requirements": [
+                  {
+                    "outcome": "Preserve read-only behavior",
+                    "blockers": [],
+                    "scope_refs": [
+                      "S1"
+                    ],
+                    "evidence_refs": [
+                      "fixture://source"
+                    ],
+                    "preconditions": [],
+                    "authority_refs": [
+                      "fixture://source"
+                    ],
+                    "requirement_id": "REQ1",
+                    "obligation_mode": "MUST_PRESERVE_SEMANTICS",
+                    "permission_refs": [
+                      "fixture://source"
+                    ],
+                    "currentness_refs": [
+                      "fixture://source"
+                    ],
+                    "side_effect_class": "READ",
+                    "acceptance_signals": [
+                      "fixture://source"
+                    ],
+                    "error_behavior_refs": [
+                      "fixture://source"
+                    ],
+                    "input_contract_refs": [
+                      "fixture://source"
+                    ],
+                    "state_contract_refs": [
+                      "fixture://source"
+                    ],
+                    "output_contract_refs": [
+                      "fixture://source"
+                    ]
+                  }
+                ],
+                "schema_version": "IMPLEMENTABILITY_SCHEMA_V1",
+                "currentness_refs": [
+                  "fixture://source"
+                ],
+                "unresolved_material_items": [],
+                "canonical_implementation_bindings": [],
+                "implementability_fingerprint_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+              },
+              "material_front_coverage": {
+                "schema_version": "MATERIAL_FRONT_COVERAGE_V1",
+                "material_fronts": [
+                  {
+                    "reason": "fixture",
+                    "status": "REQUIRED",
+                    "closure": "CLOSED",
+                    "blockers": [],
+                    "front_id": "F1",
+                    "front_kind": "UI_RULE",
+                    "scope_refs": [
+                      "S1"
+                    ],
+                    "evidence_refs": [
+                      "fixture://source"
+                    ],
+                    "authority_refs": [
+                      "fixture://source"
+                    ],
+                    "currentness_refs": [
+                      "fixture://source"
+                    ],
+                    "source_signal_refs": [
+                      "fixture://source"
+                    ]
+                  }
+                ],
+                "all_material_fronts_accounted": true
+              },
+              "unresolved_material_items": [],
+              "authority_fingerprint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8"
+            }
+          },
+          "decision_ref": "fixture://pg01/decision/1",
+          "consumer_code": "PG01_LOCAL_FIXTURE",
+          "authority_refs": [
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://CURRENTNESS_AUTHORITY",
+              "capability_code": "CURRENTNESS_AUTHORITY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://CAPABILITY_VERSION_COMPATIBILITY",
+              "capability_code": "CAPABILITY_VERSION_COMPATIBILITY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://TYPED_EVIDENCE_REGISTRY",
+              "capability_code": "TYPED_EVIDENCE_REGISTRY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ],
+          "schema_version": "LF_DECISION_CONTEXT_ASOF_INPUT_V1",
+          "actor_authority": {
+            "actor_ref": "fixture://actor",
+            "authority_ref": "fixture://authority",
+            "authority_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "authority_version": "1"
+          }
+        },
+        "context_id": "64873fad-e7ba-4ac3-b4e3-d30d1fb5c565",
+        "decided_at": "2026-10-01T00:00:00+00:00",
+        "subject_ref": "fixture://pg01/subject",
+        "decision_ref": "fixture://pg01/decision/1",
+        "effective_at": "2026-10-01T00:00:00+00:00",
+        "consumer_code": "PG01_LOCAL_FIXTURE",
+        "context_sha256": "3db4a067e23bcb4a0a58cbddbf05fb3a34209948819aa09b1408b384a991013c",
+        "schema_version": "LF_DECISION_CONTEXT_ASOF_RESOLUTION_V1",
+        "subject_version": "1",
+        "resolution_basis": "IMMUTABLE_RECORDED_CONTEXT",
+        "latest_reinterpreted": false,
+        "programming_context_validation": {
+          "code": "PROGRAMMING_CONTEXT_VALID",
+          "state": "VALID",
+          "subject_ref": "fixture://pg01/subject",
+          "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_VALIDATION_V1",
+          "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8"
+        }
+      },
+      "expected": {
+        "code": "HISTORICAL_CONTEXT",
+        "state": "RESOLVED",
+        "context": {
+          "times": {
+            "decided_at": "2026-10-01T00:00:00Z",
+            "effective_at": "2026-10-01T00:00:00Z"
+          },
+          "subject": {
+            "ref": "fixture://pg01/subject",
+            "version": "1"
+          },
+          "governing": {
+            "terms_ref": "fixture://terms",
+            "policy_ref": "fixture://policy",
+            "terms_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "terms_version": "1",
+            "policy_version": "1"
+          },
+          "extensions": {
+            "programming_context_snapshot": {
+              "target": {
+                "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "repo_full_name": "fixture/local",
+                "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "preserve": [],
+              "objective": "Read-only synthetic SQL foundation fixture",
+              "source_refs": [
+                "fixture://source"
+              ],
+              "requirements": [
+                "REQ1"
+              ],
+              "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+              "authority_state": "EXISTING",
+              "scope_readiness": [
+                {
+                  "reason": "synthetic closed scope",
+                  "status": "READY",
+                  "blockers": [],
+                  "scope_id": "S1",
+                  "scope_kind": "COMPONENT",
+                  "authority_refs": [
+                    "fixture://source"
+                  ],
+                  "material_front_refs": [
+                    "F1"
+                  ],
+                  "depends_on_scope_ids": []
+                }
+              ],
+              "applicable_rules": [],
+              "currentness_refs": [
+                "fixture://source"
+              ],
+              "decision_context": {
+                "status": "STABLE",
+                "adr_ref": null,
+                "rationale": "fixture",
+                "scope_refs": [
+                  "S1"
+                ],
+                "decision_id": "D1",
+                "subject_ref": "fixture://pg01",
+                "evidence_refs": [
+                  "fixture://source"
+                ],
+                "authority_refs": [
+                  "fixture://source"
+                ],
+                "schema_version": "ANALYSIS_DECISION_CONTEXT_V1",
+                "adr_disposition": "NOT_REQUIRED",
+                "persistence_ref": "fixture://D1",
+                "currentness_refs": [
+                  "fixture://source"
+                ],
+                "material_question": "fixture question",
+                "options_considered": [
+                  "O1"
+                ],
+                "selected_option_ref": "O1",
+                "unresolved_questions": [],
+                "decision_fingerprint_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "decision_resolution_receipt": {
+                  "scope_refs": [
+                    "S1"
+                  ],
+                  "lookup_refs": [
+                    "fixture://source"
+                  ],
+                  "subject_ref": "fixture://pg01",
+                  "evidence_refs": [
+                    "fixture://source"
+                  ],
+                  "schema_version": "ANALYSIS_DECISION_RESOLUTION_RECEIPT_V1",
+                  "currentness_refs": [
+                    "fixture://source"
+                  ],
+                  "resolution_state": "CURRENT_AUTHORITY_RESOLVED",
+                  "reused_decision_ref": "fixture://D1",
+                  "material_question_fingerprint_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                }
+              },
+              "package_readiness": "READY",
+              "analysis_stop_rule": {
+                "reason": "fixture closed",
+                "decision": "STOP",
+                "evidence_refs": [
+                  "fixture://source"
+                ],
+                "decision_stable": true,
+                "material_front_coverage_ref": "fixture://front",
+                "all_material_fronts_accounted": true,
+                "unresolved_decision_changing_questions": [],
+                "additional_available_evidence_capable_of_changing_material_decision": []
+              },
+              "authority_bindings": [
+                "fixture://source"
+              ],
+              "scope_front_matrix": [
+                {
+                  "reason": "synthetic material evidence",
+                  "front_id": "F1",
+                  "scope_id": "S1",
+                  "front_status": "REQUIRED",
+                  "evidence_refs": [
+                    "fixture://source"
+                  ],
+                  "front_closure": "CLOSED",
+                  "effect_on_scope": "PRESERVE"
+                }
+              ],
+              "target_granularity": "COMPONENT",
+              "human_decision_queue": [],
+              "implementation_state": "EXISTING",
+              "applicable_invariants": [],
+              "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "implementability_schema": {
+                "source_refs": [
+                  "fixture://source"
+                ],
+                "requirements": [
+                  {
+                    "outcome": "Preserve read-only behavior",
+                    "blockers": [],
+                    "scope_refs": [
+                      "S1"
+                    ],
+                    "evidence_refs": [
+                      "fixture://source"
+                    ],
+                    "preconditions": [],
+                    "authority_refs": [
+                      "fixture://source"
+                    ],
+                    "requirement_id": "REQ1",
+                    "obligation_mode": "MUST_PRESERVE_SEMANTICS",
+                    "permission_refs": [
+                      "fixture://source"
+                    ],
+                    "currentness_refs": [
+                      "fixture://source"
+                    ],
+                    "side_effect_class": "READ",
+                    "acceptance_signals": [
+                      "fixture://source"
+                    ],
+                    "error_behavior_refs": [
+                      "fixture://source"
+                    ],
+                    "input_contract_refs": [
+                      "fixture://source"
+                    ],
+                    "state_contract_refs": [
+                      "fixture://source"
+                    ],
+                    "output_contract_refs": [
+                      "fixture://source"
+                    ]
+                  }
+                ],
+                "schema_version": "IMPLEMENTABILITY_SCHEMA_V1",
+                "currentness_refs": [
+                  "fixture://source"
+                ],
+                "unresolved_material_items": [],
+                "canonical_implementation_bindings": [],
+                "implementability_fingerprint_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+              },
+              "material_front_coverage": {
+                "schema_version": "MATERIAL_FRONT_COVERAGE_V1",
+                "material_fronts": [
+                  {
+                    "reason": "fixture",
+                    "status": "REQUIRED",
+                    "closure": "CLOSED",
+                    "blockers": [],
+                    "front_id": "F1",
+                    "front_kind": "UI_RULE",
+                    "scope_refs": [
+                      "S1"
+                    ],
+                    "evidence_refs": [
+                      "fixture://source"
+                    ],
+                    "authority_refs": [
+                      "fixture://source"
+                    ],
+                    "currentness_refs": [
+                      "fixture://source"
+                    ],
+                    "source_signal_refs": [
+                      "fixture://source"
+                    ]
+                  }
+                ],
+                "all_material_fronts_accounted": true
+              },
+              "unresolved_material_items": [],
+              "authority_fingerprint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8"
+            }
+          },
+          "decision_ref": "fixture://pg01/decision/1",
+          "consumer_code": "PG01_LOCAL_FIXTURE",
+          "authority_refs": [
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://CURRENTNESS_AUTHORITY",
+              "capability_code": "CURRENTNESS_AUTHORITY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://CAPABILITY_VERSION_COMPATIBILITY",
+              "capability_code": "CAPABILITY_VERSION_COMPATIBILITY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "version": "1.0.0",
+              "authority_ref": "fixture://TYPED_EVIDENCE_REGISTRY",
+              "capability_code": "TYPED_EVIDENCE_REGISTRY",
+              "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+          ],
+          "schema_version": "LF_DECISION_CONTEXT_ASOF_INPUT_V1",
+          "actor_authority": {
+            "actor_ref": "fixture://actor",
+            "authority_ref": "fixture://authority",
+            "authority_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "authority_version": "1"
+          }
+        },
+        "context_id": "64873fad-e7ba-4ac3-b4e3-d30d1fb5c565",
+        "decided_at": "2026-10-01T00:00:00+00:00",
+        "subject_ref": "fixture://pg01/subject",
+        "decision_ref": "fixture://pg01/decision/1",
+        "effective_at": "2026-10-01T00:00:00+00:00",
+        "consumer_code": "PG01_LOCAL_FIXTURE",
+        "context_sha256": "3db4a067e23bcb4a0a58cbddbf05fb3a34209948819aa09b1408b384a991013c",
+        "schema_version": "LF_DECISION_CONTEXT_ASOF_RESOLUTION_V1",
+        "subject_version": "1",
+        "resolution_basis": "IMMUTABLE_RECORDED_CONTEXT",
+        "latest_reinterpreted": false,
+        "programming_context_validation": {
+          "code": "PROGRAMMING_CONTEXT_VALID",
+          "state": "VALID",
+          "subject_ref": "fixture://pg01/subject",
+          "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_VALIDATION_V1",
+          "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8"
+        }
+      },
+      "matched": true
+    },
+    {
+      "case": "exact_guard_positive",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "unknown_subject",
+      "actual": "UNKNOWN",
+      "expected": "UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "partial_ready_shape_preserves_independent_ready_scope",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "missing_required_field",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+      ],
+      "matched": true
+    },
+    {
+      "case": "missing_required_field_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "empty_scope_front_matrix",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+      ],
+      "matched": true
+    },
+    {
+      "case": "empty_scope_front_matrix_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "blocked_front_hidden_as_preserve",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+      ],
+      "matched": true
+    },
+    {
+      "case": "blocked_front_hidden_as_preserve_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "a6_permission_field_missing",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+      ],
+      "matched": true
+    },
+    {
+      "case": "a6_permission_field_missing_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "inner_snapshot_wrong_version",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_VERSION"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_VERSION"
+      ],
+      "matched": true
+    },
+    {
+      "case": "inner_snapshot_wrong_version_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "ready_scope_has_blocker",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ready_scope_has_blocker_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "negative_record_leaves_one_row",
+      "actual": 1,
+      "expected": 1,
+      "matched": true
+    },
+    {
+      "case": "id_mismatch",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "reported_hash_mismatch",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "not_resolved",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "mutable_resolution",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "latest_reinterpreted",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "authority_payload_tamper",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "wrong_expected_snapshot_version",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_id",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_hash",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_schema",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "zero_ready_is_only_shape_valid",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "record_dependency_drift",
+      "actual": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+      "expected": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+      "matched": true
+    },
+    {
+      "case": "historical_guard_not_currentness_admission",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    }
+  ],
+  "pending_admission_families": [
+    "zero_ready",
+    "stale_currentness",
+    "self_consistent_authority_drift",
+    "requested_scope_mismatch",
+    "lossy_projection"
+  ],
+  "receipt_emitter_implemented": false,
+  "runner_sha256": "3bea1fff38b6375f3fd6d0424ee5e51c383f99182ff2e695507d47905b4d313b"
+}

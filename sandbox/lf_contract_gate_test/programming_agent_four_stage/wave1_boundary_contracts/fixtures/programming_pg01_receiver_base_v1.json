@@ -1,0 +1,256 @@
+{
+  "evidence_tier": "SYNTHETIC_LOCAL_SQL_FOUNDATION",
+  "historical_snapshot": false,
+  "context": {
+    "schema_version": "LF_DECISION_CONTEXT_ASOF_INPUT_V1",
+    "decision_ref": "fixture://pg01/decision/1",
+    "consumer_code": "PG01_LOCAL_FIXTURE",
+    "subject": {
+      "ref": "fixture://pg01/subject",
+      "version": "1"
+    },
+    "actor_authority": {
+      "actor_ref": "fixture://actor",
+      "authority_ref": "fixture://authority",
+      "authority_version": "1",
+      "authority_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "governing": {
+      "policy_ref": "fixture://policy",
+      "policy_version": "1",
+      "policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "terms_ref": "fixture://terms",
+      "terms_version": "1",
+      "terms_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "times": {
+      "decided_at": "2026-10-01T00:00:00Z",
+      "effective_at": "2026-10-01T00:00:00Z"
+    },
+    "authority_refs": [
+      {
+        "capability_code": "CURRENTNESS_AUTHORITY",
+        "version": "1.0.0",
+        "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authority_ref": "fixture://CURRENTNESS_AUTHORITY"
+      },
+      {
+        "capability_code": "CAPABILITY_VERSION_COMPATIBILITY",
+        "version": "1.0.0",
+        "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authority_ref": "fixture://CAPABILITY_VERSION_COMPATIBILITY"
+      },
+      {
+        "capability_code": "TYPED_EVIDENCE_REGISTRY",
+        "version": "1.0.0",
+        "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authority_ref": "fixture://TYPED_EVIDENCE_REGISTRY"
+      }
+    ],
+    "extensions": {
+      "programming_context_snapshot": {
+        "schema_version": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+        "objective": "Read-only synthetic SQL foundation fixture",
+        "target": {
+          "repo_full_name": "fixture/local",
+          "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        "target_granularity": "COMPONENT",
+        "authority_state": "EXISTING",
+        "implementation_state": "EXISTING",
+        "requirements": [
+          "REQ1"
+        ],
+        "authority_bindings": [
+          "fixture://source"
+        ],
+        "applicable_rules": [],
+        "applicable_invariants": [],
+        "preserve": [],
+        "scope_readiness": [
+          {
+            "scope_id": "S1",
+            "scope_kind": "COMPONENT",
+            "status": "READY",
+            "depends_on_scope_ids": [],
+            "material_front_refs": [
+              "F1"
+            ],
+            "authority_refs": [
+              "fixture://source"
+            ],
+            "blockers": [],
+            "reason": "synthetic closed scope"
+          }
+        ],
+        "scope_front_matrix": [
+          {
+            "scope_id": "S1",
+            "front_id": "F1",
+            "front_status": "REQUIRED",
+            "front_closure": "CLOSED",
+            "effect_on_scope": "PRESERVE",
+            "evidence_refs": [
+              "fixture://source"
+            ],
+            "reason": "synthetic material evidence"
+          }
+        ],
+        "human_decision_queue": [],
+        "package_readiness": "READY",
+        "unresolved_material_items": [],
+        "source_refs": [
+          "fixture://source"
+        ],
+        "currentness_refs": [
+          "fixture://source"
+        ],
+        "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "authority_fingerprint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "material_front_coverage": {
+          "schema_version": "MATERIAL_FRONT_COVERAGE_V1",
+          "all_material_fronts_accounted": true,
+          "material_fronts": [
+            {
+              "front_id": "F1",
+              "front_kind": "UI_RULE",
+              "status": "REQUIRED",
+              "closure": "CLOSED",
+              "source_signal_refs": [
+                "fixture://source"
+              ],
+              "scope_refs": [
+                "S1"
+              ],
+              "authority_refs": [
+                "fixture://source"
+              ],
+              "evidence_refs": [
+                "fixture://source"
+              ],
+              "currentness_refs": [
+                "fixture://source"
+              ],
+              "blockers": [],
+              "reason": "fixture"
+            }
+          ]
+        },
+        "implementability_schema": {
+          "schema_version": "IMPLEMENTABILITY_SCHEMA_V1",
+          "requirements": [
+            {
+              "requirement_id": "REQ1",
+              "scope_refs": [
+                "S1"
+              ],
+              "outcome": "Preserve read-only behavior",
+              "obligation_mode": "MUST_PRESERVE_SEMANTICS",
+              "side_effect_class": "READ",
+              "authority_refs": [
+                "fixture://source"
+              ],
+              "evidence_refs": [
+                "fixture://source"
+              ],
+              "currentness_refs": [
+                "fixture://source"
+              ],
+              "input_contract_refs": [
+                "fixture://source"
+              ],
+              "output_contract_refs": [
+                "fixture://source"
+              ],
+              "state_contract_refs": [
+                "fixture://source"
+              ],
+              "error_behavior_refs": [
+                "fixture://source"
+              ],
+              "permission_refs": [
+                "fixture://source"
+              ],
+              "acceptance_signals": [
+                "fixture://source"
+              ],
+              "preconditions": [],
+              "blockers": []
+            }
+          ],
+          "canonical_implementation_bindings": [],
+          "unresolved_material_items": [],
+          "source_refs": [
+            "fixture://source"
+          ],
+          "currentness_refs": [
+            "fixture://source"
+          ],
+          "implementability_fingerprint_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        },
+        "decision_context": {
+          "schema_version": "ANALYSIS_DECISION_CONTEXT_V1",
+          "decision_id": "D1",
+          "subject_ref": "fixture://pg01",
+          "scope_refs": [
+            "S1"
+          ],
+          "material_question": "fixture question",
+          "status": "STABLE",
+          "options_considered": [
+            "O1"
+          ],
+          "selected_option_ref": "O1",
+          "rationale": "fixture",
+          "authority_refs": [
+            "fixture://source"
+          ],
+          "evidence_refs": [
+            "fixture://source"
+          ],
+          "currentness_refs": [
+            "fixture://source"
+          ],
+          "unresolved_questions": [],
+          "decision_resolution_receipt": {
+            "schema_version": "ANALYSIS_DECISION_RESOLUTION_RECEIPT_V1",
+            "material_question_fingerprint_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "subject_ref": "fixture://pg01",
+            "scope_refs": [
+              "S1"
+            ],
+            "lookup_refs": [
+              "fixture://source"
+            ],
+            "resolution_state": "CURRENT_AUTHORITY_RESOLVED",
+            "reused_decision_ref": "fixture://D1",
+            "evidence_refs": [
+              "fixture://source"
+            ],
+            "currentness_refs": [
+              "fixture://source"
+            ]
+          },
+          "adr_disposition": "NOT_REQUIRED",
+          "adr_ref": null,
+          "persistence_ref": "fixture://D1",
+          "decision_fingerprint_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        },
+        "analysis_stop_rule": {
+          "decision": "STOP",
+          "decision_stable": true,
+          "material_front_coverage_ref": "fixture://front",
+          "all_material_fronts_accounted": true,
+          "unresolved_decision_changing_questions": [],
+          "additional_available_evidence_capable_of_changing_material_decision": [],
+          "evidence_refs": [
+            "fixture://source"
+          ],
+          "reason": "fixture closed"
+        }
+      }
+    }
+  }
+}
