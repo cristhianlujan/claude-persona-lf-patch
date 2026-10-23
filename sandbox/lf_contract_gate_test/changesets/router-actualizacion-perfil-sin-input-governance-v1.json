@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-actualizacion-perfil-sin-input-governance-v1",
+  "paths": {
+    "supabase/migrations/20261023110000_lf_router_actualizacion_perfil_sin_input_governance_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-actualizacion-perfil-sin-input-governance-v1.json": "CHANGESET_MANIFEST"
+  }
+}
