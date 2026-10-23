@@ -1,0 +1,9 @@
+{
+  "solution_ref": "pe10-e2-c3-producer-input-v1",
+  "paths": {
+    "docs/profile_updater/experiments/pe10_e2/producer_only/C3_COMMON_P0_POINTER_V1.json": "PE10_PRODUCER_INPUT_CONTRACT",
+    "docs/profile_updater/experiments/pe10_e2/producer_only/C3_B18_INPUT_V1.json": "PE10_PRODUCER_INPUT_CONTRACT",
+    "docs/profile_updater/experiments/pe10_e2/producer_only/C3_B29_INPUT_V1.json": "PE10_PRODUCER_INPUT_CONTRACT",
+    "sandbox/lf_contract_gate_test/changesets/pe10-e2-c3-producer-input-v1.json": "CHANGESET_MANIFEST"
+  }
+}
