@@ -1,0 +1,7 @@
+{
+  "solution_ref": "pantalla-elementos-label-visible-v1",
+  "paths": {
+    "supabase/migrations/20261023090000_lf_pantalla_elementos_label_visible_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/pantalla-elementos-label-visible-v1.json": "CHANGESET_MANIFEST"
+  }
+}
