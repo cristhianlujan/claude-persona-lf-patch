@@ -1,0 +1,149 @@
+{
+  "schema_version": "INTELLIGENCE_METHOD_QUALIFICATION_PROTOCOL_V1",
+  "owner_scope": "SUPER_ADMIN",
+  "purpose": "Qualify exact intelligence methods and method mixes before they may become current, Champion, Challenger or Robust Default for a decision family.",
+  "principles": [
+    "EXACT_METHOD_VERSION_ONLY",
+    "CURRENT_SOURCE_AND_POLICY_REQUIRED",
+    "NO_HISTORICAL_METHOD_AS_ACTIVE_CANDIDATE",
+    "CHAMPION_IS_PER_DECISION_FAMILY",
+    "NO_WINNER_TAKE_ALL_BY_DEFAULT",
+    "NO_ARBITRARY_NUMERIC_WEIGHTS",
+    "SHARED_EVIDENCE_BASE_WHERE_POSSIBLE",
+    "FINAL_JUDGE_SEPARATE_FROM_SELECTOR",
+    "SELECTION_IS_NOT_EXECUTION_PERMISSION"
+  ],
+  "qualification_stages": [
+    {
+      "stage": "IDENTITY_AND_CURRENTNESS",
+      "requires": [
+        "method_code",
+        "exact_version",
+        "source_ref",
+        "validator_ref",
+        "output_contract_ref",
+        "release_state=RELEASED",
+        "source_currentness_proven"
+      ]
+    },
+    {
+      "stage": "CONTRACT_AND_BOUNDARY",
+      "requires": [
+        "accepted_signals_declared",
+        "output_contract_typed",
+        "failure_states_declared",
+        "execution_permission_not_owned_unless_explicitly_authorized_by_separate_contract",
+        "decision_family_scope_declared"
+      ]
+    },
+    {
+      "stage": "DETERMINISTIC_AND_ADVERSARIAL_VALIDATION",
+      "requires": [
+        "positive_cases",
+        "negative_cases",
+        "contradictory_input_cases",
+        "no_signal_cases",
+        "stale_or_wrong_version_cases",
+        "false_pass_checks"
+      ]
+    },
+    {
+      "stage": "FAMILY_BENCHMARK",
+      "requires": [
+        "representative_family_dataset",
+        "baseline_or_existing_method_when_available",
+        "quality_metrics",
+        "latency_and_token_or_compute_cost_when_applicable",
+        "benchmark_digest"
+      ]
+    },
+    {
+      "stage": "HOLDOUT_OR_JUSTIFIED_NA",
+      "requires": [
+        "unseen_holdout_evidence_or_explicit_na_reason",
+        "no_training_or_tuning_leakage_into_holdout",
+        "holdout_result_bound_to_exact_method_version"
+      ]
+    },
+    {
+      "stage": "PROMOTION_DECISION",
+      "requires": [
+        "no_hard_invariant_regression",
+        "family_specific_acceptance_floor_met",
+        "qualification_ref",
+        "benchmark_ref",
+        "qualification_digest",
+        "benchmark_digest"
+      ]
+    }
+  ],
+  "metric_families": {
+    "quality": [
+      "correct_decision_rate_when_ground_truth_exists",
+      "false_pass_rate",
+      "false_block_rate",
+      "material_omission_rate",
+      "contradiction_detection_rate",
+      "traceability_completeness"
+    ],
+    "robustness": [
+      "stale_input_rejection",
+      "unknown_input_behavior",
+      "adversarial_case_detection",
+      "repeatability_or_stability"
+    ],
+    "efficiency": [
+      "input_tokens_when_model_based",
+      "output_tokens_when_model_based",
+      "latency",
+      "tool_calls_or_queries",
+      "duplicate_reads",
+      "retries"
+    ]
+  },
+  "champion_promotion": {
+    "existing_champion": "Candidate must improve or materially complement the current Champion on family-specific metrics without regressing hard invariants. A newer version alone is never sufficient.",
+    "no_existing_champion": "Candidate must meet the absolute family acceptance floor plus adversarial and holdout requirements before first Champion promotion.",
+    "challenger": "May run only in shadow/holdout or other non-authoritative comparison mode until promotion evidence is complete.",
+    "robust_default": "Must be separately qualified for low-signal/contradictory cases and must not reduce coverage or silently convert unknown into PASS."
+  },
+  "mix_qualification": {
+    "required": [
+      "each_component_method_individually_eligible",
+      "mix_mode_declared",
+      "complementarity_or_consensus_reason_declared",
+      "correlated_error_risk_evaluated",
+      "contradictions_preserved",
+      "per_method_provenance_preserved",
+      "mixed_output_contract_validated",
+      "mix_benchmark_and_holdout_evidence"
+    ],
+    "allowed_modes": [
+      "UNION_COMPLEMENTARY",
+      "CONSENSUS_REQUIRED",
+      "AUTHORITY_PRIORITY",
+      "HARD_INVARIANT_VETO",
+      "BOUNDED_ALTERNATIVES"
+    ],
+    "numeric_weights": "FORBIDDEN_UNLESS_SEPARATE_EMPIRICAL_CALIBRATION_CONTRACT"
+  },
+  "requalification_triggers": [
+    "METHOD_SOURCE_OR_VERSION_CHANGE",
+    "MODEL_PROFILE_CHANGE",
+    "PROMPT_OR_REASONING_PROTOCOL_CHANGE",
+    "INPUT_SCHEMA_OR_FINGERPRINT_CHANGE",
+    "OUTPUT_CONTRACT_CHANGE",
+    "POLICY_CHANGE",
+    "CURRENTNESS_DRIFT",
+    "BENCHMARK_DATASET_CHANGE",
+    "QUALITY_DEGRADATION",
+    "NEW_MATERIAL_FAILURE_MODE"
+  ],
+  "terminal_states": [
+    "QUALIFIED",
+    "UNQUALIFIED",
+    "FAILED",
+    "SUPERSEDED",
+    "RETIRED"
+  ]
+}

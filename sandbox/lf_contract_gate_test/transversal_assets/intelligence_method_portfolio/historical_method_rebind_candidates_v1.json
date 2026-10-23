@@ -1,0 +1,101 @@
+{
+  "schema_version": "HISTORICAL_SELECTION_METHOD_REBIND_CANDIDATES_V1",
+  "purpose": "Create exact, version-bound candidate contracts for historically benchmarked IG00..IG06 behavior without promoting them as current methods.",
+  "common_output_contract": {
+    "schema": "SELECTION_METHOD_RESULT_V1",
+    "required": ["method_ref", "decision_family", "selected_options", "reasons", "evidence_refs", "unknowns", "contradictions", "fallback", "execution_permission"],
+    "execution_permission_constant": false
+  },
+  "candidates": [
+    {
+      "historical_id": "IG00",
+      "method_ref": "SRCR_CONTROL@0.2-candidate+f9087d98235947a9",
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/f9087d98235947a99399f366f045ad66ce54e3d8/sandbox/srcr_benchmark/models/m11_reconstructed_srcr_v0_2/SKILL.md",
+      "source_version": "f9087d98235947a99399f366f045ad66ce54e3d8",
+      "source_currentness": "HISTORICAL_EXACT_SOURCE",
+      "release_state": "CANDIDATE",
+      "behavior": ["causal_reconstruction", "multiple_hypotheses", "falsification", "reuse_before_create", "rollback_and_readback_discipline"],
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false
+    },
+    {
+      "historical_id": "IG01",
+      "method_ref": "RIG_LF_SELECTION@2.0.0-candidate",
+      "source_ref": "https://arxiv.org/abs/2601.10112v1",
+      "source_version": "arXiv:2601.10112v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE",
+      "release_state": "CANDIDATE",
+      "behavior": ["build_evidence_backed_entity_relation_graph", "provenance_per_edge", "explicit_unknown_edges", "upstream_downstream_dependency_reasoning", "reuse_before_create"],
+      "lf_boundary": "Graph evidence is advisory context for selection; project authorities remain canonical and graph presence never establishes semantic truth by itself.",
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false
+    },
+    {
+      "historical_id": "IG02",
+      "method_ref": "MAAD_LF_SELECTION@2.0.0-candidate",
+      "source_ref": "https://arxiv.org/abs/2606.01385v1",
+      "source_version": "arXiv:2606.01385v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE",
+      "release_state": "CANDIDATE",
+      "behavior": ["analyst_extracts_objectives_constraints_quality_attributes", "modeler_connects_processes_and_dependencies", "designer_generates_reuse_first_options", "evaluator_compares_options_against_authority_impact_compatibility_cost", "hierarchical_decision_memory_with_stale_unknown_marking"],
+      "lf_boundary": "External standards and patterns are evidence only; they never become LF authority merely because the method suggests them.",
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false
+    },
+    {
+      "historical_id": "IG03",
+      "method_ref": "TRACEDEV_LF_SELECTION@2.0.0-candidate",
+      "source_ref": "https://arxiv.org/abs/2607.18886v1",
+      "source_version": "arXiv:2607.18886v1",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE",
+      "release_state": "CANDIDATE",
+      "behavior": ["backward_trace_need_to_evidence", "forward_trace_to_consumer_and_effect", "orphan_detection", "contradiction_detection", "coverage_gap_detection"],
+      "lf_boundary": "Trace edges require evidence locators; ambiguous requirements remain hypotheses rather than facts.",
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false
+    },
+    {
+      "historical_id": "IG04",
+      "method_ref": "MNEMOSYNE_LF_SELECTION@2.0.0-candidate",
+      "source_ref": "https://arxiv.org/abs/2607.00269v3",
+      "source_version": "arXiv:2607.00269v3",
+      "source_currentness": "CURRENT_PRIMARY_SOURCE",
+      "release_state": "CANDIDATE",
+      "behavior": ["treat_generated_choice_as_untrusted_proposal", "deterministic_admission_constraints", "append_only_decision_trail", "bounded_repair_or_fallback", "authority_separation"],
+      "lf_boundary": "Selection proposals are admitted only against current LF evidence and policy; confidence is never permission.",
+      "historical_adapter_refresh_reason": "Historical adapter did not bind the exact arXiv source revision; this candidate explicitly binds current v3.",
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false
+    },
+    {
+      "historical_id": "IG05",
+      "method_ref": "RIG_THEN_MAAD_LF@2.0.0-candidate",
+      "source_version": "RIG_LF_SELECTION@2.0.0-candidate+MAAD_LF_SELECTION@2.0.0-candidate",
+      "components": ["RIG_LF_SELECTION@2.0.0-candidate", "MAAD_LF_SELECTION@2.0.0-candidate"],
+      "mix_mode": "UNION_COMPLEMENTARY",
+      "release_state": "CANDIDATE",
+      "behavior": ["freeze_evidence_graph_first", "derive_business_future_options_second", "second_phase_cannot_rewrite_evidence_to_fit_conclusion"],
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false,
+      "promotion_precondition": "COMPONENTS_MUST_BE_INDIVIDUALLY_QUALIFIED"
+    },
+    {
+      "historical_id": "IG06",
+      "method_ref": "TRACEDEV_THEN_MNEMOSYNE_LF@2.0.0-candidate",
+      "source_version": "TRACEDEV_LF_SELECTION@2.0.0-candidate+MNEMOSYNE_LF_SELECTION@2.0.0-candidate",
+      "components": ["TRACEDEV_LF_SELECTION@2.0.0-candidate", "MNEMOSYNE_LF_SELECTION@2.0.0-candidate"],
+      "mix_mode": "UNION_COMPLEMENTARY",
+      "release_state": "CANDIDATE",
+      "behavior": ["freeze_material_trace_first", "admit_or_reject_selected_options_against_current_constraints", "preserve_contradictions_and_unknowns"],
+      "eligible_for_family_benchmark": true,
+      "eligible_for_runtime_selection": false,
+      "promotion_precondition": "COMPONENTS_MUST_BE_INDIVIDUALLY_QUALIFIED"
+    }
+  ],
+  "result": {
+    "exact_candidate_contracts": 7,
+    "runtime_eligible": 0,
+    "champions_promoted": 0,
+    "next_gate": "DETERMINISTIC_AND_ADVERSARIAL_VALIDATION"
+  }
+}

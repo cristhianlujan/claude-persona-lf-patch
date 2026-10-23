@@ -1,0 +1,141 @@
+{
+  "schema_version": "WAVE2_SELECTION_METHOD_QUALIFICATION_BATCH_V2",
+  "supersedes": "WAVE2_METHOD_QUALIFICATION_BATCH_V1",
+  "inventory_ref": "method_candidate_inventory_v3.json",
+  "prior_art_ref": "selection_method_prior_art_v1.json",
+  "protocol_ref": "method_qualification_protocol_v1.json",
+  "scope_units": ["A6", "A7", "A9", "PG-02", "PG-03", "PG-04", "TST-07", "TST-08", "TST-09", "TST-10"],
+  "decision_family_count": 10,
+  "core_boundary": {
+    "selection_methods_compete_or_mix": true,
+    "domain_options_are_outputs_not_champion_methods": true,
+    "selector_infrastructure": "CAPABILITY_SELECTOR@CURRENT",
+    "selection_is_execution_permission": false,
+    "winner_take_all_forbidden": true,
+    "shared_evidence_base_required": true,
+    "final_judge_separate": true
+  },
+  "historical_prior_art": {
+    "methods": ["IG00", "IG01", "IG02", "IG03", "IG04", "IG05", "IG06"],
+    "identity_status": "HISTORICAL_ONLY_UNTIL_EXACT_SOURCE_VERSION_CURRENTNESS_REBOUND",
+    "benchmark": {
+      "IG05_avg": 97.92,
+      "IG05_wins_vs_best_component": "11/12",
+      "IG06_avg": 98.13,
+      "IG06_wins_vs_best_component": "11/12",
+      "selector_plus_fallback_coverage": "24/24",
+      "selector_plus_fallback_depth_units": 25,
+      "full_safe_mix_depth_units": 32,
+      "critical_false_green": 0,
+      "stress_route_match": "8/8",
+      "forced_misclassification_critical_false_green": 0,
+      "out_of_distribution_critical_false_green": 0
+    },
+    "evidence_refs": ["lf_eventos://20151", "lf_eventos://20167", "lf_eventos://20168"],
+    "independence_limit": "Same assistant runtime; fresh family qualification must add exact identity/currentness and sealed holdout/independent assurance as applicable."
+  },
+  "benchmark_protocol": {
+    "candidate_freeze_before_holdout": true,
+    "case_layers": ["HISTORICAL_REPRESENTATIVE", "SYNTHETIC_BOUNDARY", "ADVERSARIAL", "SEALED_HOLDOUT"],
+    "quality_metrics": ["correct_decision_rate_when_ground_truth_exists", "false_pass_rate", "false_block_rate", "material_omission_rate", "contradiction_detection_rate", "traceability_completeness", "stability"],
+    "efficiency_metrics": ["input_tokens", "output_tokens", "latency", "tool_calls_or_queries", "duplicate_reads", "retries"],
+    "token_budget": "DYNAMIC_FROM_MODEL_PROFILE_WITH_GOVERNANCE_TOOL_OUTPUT_AND_RECOVERY_RESERVES",
+    "full_context_window_consumption_forbidden": true,
+    "no_zip": true,
+    "no_full_repo_payload": true,
+    "promotion_requires": ["EXACT_METHOD_VERSION", "CURRENT_SOURCE", "TYPED_CONTRACT", "ADVERSARIAL_PASS", "FAMILY_BENCHMARK", "SEALED_HOLDOUT_OR_JUSTIFIED_NA", "NO_HARD_INVARIANT_REGRESSION"]
+  },
+  "families": [
+    {
+      "family": "ANALYSIS_REQUIREMENT_SYNTHESIS",
+      "unit": "A6",
+      "selection_method_candidates": ["IG02", "IG05", "IG01"],
+      "decision_options": ["OUTCOME_FIRST_SYNTHESIS", "CONTRACT_FIRST_SYNTHESIS", "SPECIALIST_SECTION_COMPOSITION"],
+      "expected_mix_hypothesis": "IG01_EVIDENCE_FREEZE_THEN_IG02_OR_IG05_INFERENCE",
+      "hard_invariants": ["MATERIAL_REQUIREMENT_HAS_AUTHORITY_OR_EXPLICIT_BLOCKER", "LOSSLESS_SPECIALIST_PROVENANCE", "NO_TEST_METHOD_SELECTION_IN_ANALYSIS"],
+      "status": "REQUALIFY_PRIOR_ART_PER_FAMILY"
+    },
+    {
+      "family": "ANALYSIS_RISK_QUALITY_SIGNAL_DERIVATION",
+      "unit": "A7",
+      "selection_method_candidates": ["IG00", "IG03", "IG06", "NEW:DETERMINISTIC_INVARIANT_VETO@0.1.0-candidate"],
+      "decision_options": ["INVARIANT_FIRST", "IMPACT_PROBABILITY_REVERSIBILITY", "MULTI_SIGNAL_RISK_SYNTHESIS"],
+      "hard_invariants": ["UNKNOWN_MATERIAL_RISK_NEVER_DOWNGRADED", "MATERIAL_INVARIANT_NOT_OMITTED", "REASON_AND_EVIDENCE_REQUIRED"],
+      "status": "PRIOR_ART_REQUALIFICATION_PLUS_NEW_CHALLENGER_SPEC"
+    },
+    {
+      "family": "ANALYSIS_PACKAGE_QUALIFICATION",
+      "unit": "A9",
+      "selection_method_candidates": ["IG04", "IG06", "ASSURANCE_EVALUATOR@1.0.0", "INDEPENDENT_ASSURANCE@1.0.0"],
+      "decision_options": ["READY", "NEED_MORE_EVIDENCE", "REQUIRES_DECISION", "BLOCKED"],
+      "hard_invariants": ["BUILDER_NOT_OWN_JUDGE", "REQUIRED_MATERIAL_PRECONDITION_BLOCKS_READY", "OPEN_DECISIONS_PRESERVED"],
+      "status": "SUPPORTING_CURRENT_PROVIDERS_EXIST_FAMILY_HOLDOUT_REQUIRED"
+    },
+    {
+      "family": "PROGRAMMING_CHANGE_CLASSIFICATION",
+      "unit": "PG-02",
+      "selection_method_candidates": ["IG00", "IG01", "NEW:DETERMINISTIC_SIGNAL_RULE_CLASSIFIER@0.1.0-candidate", "NEW:HYBRID_RULE_FIRST_SEMANTIC_CLASSIFIER@0.1.0-candidate"],
+      "decision_options": ["BUG", "FEATURE", "REFACTOR", "API", "DB_MIGRATION", "INTEGRATION", "RUNTIME", "MECHANICAL", "OTHER_MATERIAL"],
+      "hard_invariants": ["CLASSIFICATION_SEPARATE_FROM_STRATEGY", "DB_MIGRATION_SIGNAL_NOT_LOST", "RUNTIME_SIGNAL_NOT_LOST", "UNKNOWN_MATERIAL_EXPLICIT"],
+      "status": "FRESH_FAMILY_BENCHMARK_REQUIRED"
+    },
+    {
+      "family": "PROGRAMMING_IMPLEMENTATION_STRATEGY",
+      "unit": "PG-03",
+      "selection_method_candidates": ["IG02", "IG04", "IG05", "IG06", "NEW:CONSTRAINT_ELIMINATION@0.1.0-candidate"],
+      "decision_options": ["REPRODUCE_FIRST_TDD", "CONTRACT_FIRST", "MIGRATION_COMPATIBILITY_FIRST", "REFACTOR_PRESERVING", "BOUNDED_TRANSFORMATION", "STAGED_IMPLEMENTATION"],
+      "hard_invariants": ["NO_UNIVERSAL_STRATEGY", "STRATEGY_REASON_AND_FALLBACK_REQUIRED", "MIGRATION_COMPATIBILITY_PRECONDITIONS_PRESERVED"],
+      "status": "FRESH_FAMILY_BENCHMARK_REQUIRED"
+    },
+    {
+      "family": "PROGRAMMING_PARTITION_STRATEGY",
+      "unit": "PG-04",
+      "selection_method_candidates": ["IG02", "IG03", "IG05", "IG06", "NEW:DEPENDENCY_CONSTRAINT_PARTITION_SELECTOR@0.1.0-candidate"],
+      "decision_options": ["VERTICAL_SOLUTION", "DOMAIN_CAPABILITY", "TECHNICAL_LAYER", "CONTRACT_API", "RISK_ISOLATION", "DEPENDENCY_DAG", "TRANSVERSAL_BULK"],
+      "historical_option_prior_art": "STORY_CREATOR_J02_DECOMPOSITION",
+      "hard_invariants": ["FUNCTIONAL_ATOMICITY", "NO_FIXED_FRONTEND_BACKEND_SPLIT", "DEPENDENCIES_PRESERVED", "WRITE_CONFLICT_EXPLICIT", "CONTEXT_BUDGET_FIT_OR_REPARTITION"],
+      "status": "J02_CORE_EXTRACTION_PLUS_SELECTION_METHOD_BENCHMARK"
+    },
+    {
+      "family": "TEST_FAMILY_SELECTION",
+      "unit": "TST-07",
+      "selection_method_candidates": ["IG00", "IG03", "IG04", "IG06"],
+      "decision_options": ["REQUIRED", "OPTIONAL", "NOT_REQUIRED"],
+      "hard_invariants": ["MATERIAL_OBLIGATION_NEVER_NOT_REQUIRED", "UNCERTAINTY_NEVER_REDUCES_COVERAGE", "REASON_TRACEABLE"],
+      "status": "REQUALIFY_PRIOR_ART_PER_TEST_FAMILY"
+    },
+    {
+      "family": "TEST_METHOD_SELECTION",
+      "unit": "TST-08",
+      "selection_method_candidates": ["IG02", "IG04", "IG05", "IG06", "NEW:CLAIM_METHOD_CONSTRAINT_SELECTOR@0.1.0-candidate"],
+      "decision_options": ["PROPERTY_BASED", "STATE_MACHINE", "BENCHMARK", "LOAD", "STRESS", "SOAK", "MODEL_BASED"],
+      "hard_invariants": ["METHOD_MATCHES_CLAIM", "FAMILY_AND_METHOD_SEPARATE", "METHOD_NOT_SELECTED_BY_EXISTENCE_ONLY"],
+      "status": "FRESH_FAMILY_BENCHMARK_REQUIRED"
+    },
+    {
+      "family": "TEST_DEPTH_BUDGET_ESCALATION",
+      "unit": "TST-09",
+      "selection_method_candidates": ["IG04", "IG06", "NEW:OBLIGATION_PRESERVING_BUDGET@0.1.0-candidate", "NEW:ADAPTIVE_EVIDENCE_ESCALATION@0.1.0-candidate"],
+      "decision_options": ["DEPTH_TIER", "TOKEN_BUDGET", "LATENCY_BUDGET", "ESCALATE_EVIDENCE", "ESCALATE_COVERAGE"],
+      "supporting_providers": ["TIMEOUT_PHASE_BUDGET_POLICY@1.0.0", "PERFORMANCE_EXACT_SOURCE_BENCHMARK@1.0.0"],
+      "hard_invariants": ["COST_REDUCTION_NEVER_REMOVES_MATERIAL_OBLIGATION", "UNCERTAINTY_ESCALATES_NOT_DEESCALATES"],
+      "status": "NEW_CHALLENGER_SPECS_PLUS_BENCHMARK_REQUIRED"
+    },
+    {
+      "family": "TEST_SAFE_FALLBACK",
+      "unit": "TST-10",
+      "selection_method_candidates": ["IG05", "IG06", "FULL_SAFE_MIX_V1_CANDIDATE"],
+      "decision_options": ["TARGETED_EVIDENCE_THEN_RESELECT", "QUALIFIED_ROBUST_DEFAULT", "FULL_SAFE_MIX", "BLOCK"],
+      "historical_selector_evidence": ["lf_eventos://20167", "lf_eventos://20168"],
+      "hard_invariants": ["NO_SIGNAL_NEVER_SILENT_PASS", "CONTRADICTION_PRESERVED", "MIX_COMPONENTS_INDIVIDUALLY_ELIGIBLE", "MIX_PROVENANCE_PRESERVED"],
+      "status": "STRONG_PRIOR_ART_NOT_CHAMPION_UNTIL_FRESH_EXACT_IDENTITY_AND_HOLDOUT"
+    }
+  ],
+  "current_result": {
+    "champions_promoted": 0,
+    "challengers_promoted": 0,
+    "robust_defaults_promoted": 0,
+    "corrected_error": "Previous batch incorrectly treated domain decision options such as TDD, vertical partition or property-based testing as if they were Champion selection methods.",
+    "next_action": "Freeze exact current identities for reusable IG00..IG06 behaviors or reimplement them as versioned current candidates, materialize new challenger contracts, then execute per-family benchmark and sealed holdout."
+  }
+}
