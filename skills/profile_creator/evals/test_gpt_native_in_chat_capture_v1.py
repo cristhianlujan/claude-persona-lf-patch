@@ -257,9 +257,53 @@ def test_pe10_c6_github_provider_output_source_bound_evidence():
     print(lines[0], flush=True)
 
 
+def test_pe10_c6_declared_source_suite_in_current_ci():
+    """The actual C6 declared test, not a synthetic substitute for DB gates.
+
+    Exact source is the canonical engineering checkpoint script. Its verdict
+    is deliberately SOURCE_PROBES_PASS_DB_TRANSACTION_NOT_CLAIMED; a CI GREEN
+    may bind a test executor, never a PostgreSQL-cutover PASS.
+    """
+    import subprocess
+    import sys
+    root = Path(__file__).resolve().parents[3]
+    declared = root / (
+        "sandbox/lf_contract_gate_test/engineering_checkpoints/"
+        "pe10_c6_transactional_dry_run_v1.py"
+    )
+    assert declared.is_file(), "PE10_C6_DECLARED_SOURCE_NOT_FOUND"
+    proc = subprocess.run([sys.executable, str(declared)], cwd=root,
+        text=True, capture_output=True, timeout=180, check=False)
+    assert proc.returncode == 0, "PE10_C6_DECLARED_SOURCE_FAIL:" + (proc.stdout + proc.stderr)[-4000:]
+    receipt = json.loads(proc.stdout)
+    expected_schema = "PE10_C6_SOURCE_AND_NATIVE_CHAT_TEST_V1"
+    assert receipt["schema"] == expected_schema
+    assert receipt["status"] == "SOURCE_PROBES_PASS_DB_TRANSACTION_NOT_CLAIMED"
+    assert receipt["requires_governed_postgres_probes"] is True
+    assert receipt["checkpoint_closed"] is False
+    assert receipt["production_activated"] is False
+    assert receipt["total_cases"] == 57
+    assert hashlib.sha256(json.dumps(
+        {k: v for k, v in receipt.items() if k != "receipt_sha256"},
+        sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")).hexdigest() == receipt["receipt_sha256"]
+    print("PE10_C6_DECLARED_SOURCE_TEST_V1=" + json.dumps({
+        "schema": expected_schema,
+        "status": receipt["status"],
+        "total_cases": receipt["total_cases"],
+        "receipt_sha256": receipt["receipt_sha256"],
+        "canonical_source_path": declared.relative_to(root).as_posix(),
+        "source_sha256": hashlib.sha256(declared.read_bytes()).hexdigest(),
+        "database_transaction_pass": False,
+        "checkpoint_closed": False,
+        "production_activated": False,
+    }, sort_keys=True), flush=True)
+
+
 if __name__ == "__main__":
     main()
     test_native_material_pre_admission_suite()
     test_real_profile_assessment_source_revision()
     test_existing_planner_assessment_regression()
     test_pe10_c6_github_provider_output_source_bound_evidence()
+    test_pe10_c6_declared_source_suite_in_current_ci()
