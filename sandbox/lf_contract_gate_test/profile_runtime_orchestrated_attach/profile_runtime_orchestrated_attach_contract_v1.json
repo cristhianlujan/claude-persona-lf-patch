@@ -1,0 +1,102 @@
+{
+  "schema_version": "LF_PROFILE_RUNTIME_ORCHESTRATED_ATTACH_CONTRACT_V1",
+  "solution_code": "PROFILE_RUNTIME_ORCHESTRATED_ATTACH_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "purpose": "Allow the existing Profile Runtime worker to attach to a child EJECUCION_PERFIL_LF that was already reserved by a governed Skill orchestrator, without a second begin and without relaxing standalone Profile source rules.",
+  "trigger": {
+    "runtime_request_envelope_schema": "LF_PROFILE_RUNTIME_ORCHESTRATED_REQUEST_V2",
+    "attach_existing_child_execution": true,
+    "capability_code": "PROFILE_EXECUTION_RUNTIME"
+  },
+  "required_envelope_fields": [
+    "orchestrator_execution_id",
+    "consumer_execution_id",
+    "capability_code",
+    "plan_digest",
+    "task_packet_work_digest",
+    "final_task_packet_digest",
+    "dispatch_receipt_id",
+    "dispatch_receipt_sha256",
+    "entry_guard",
+    "profile_source_digest",
+    "source_revision",
+    "attach_existing_child_execution"
+  ],
+  "existing_child_readback": {
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "status": "IN_PROGRESS",
+    "execution_id_must_equal": "runtime_request_envelope.consumer_execution_id",
+    "manifest_crossbind_fields": [
+      "orchestrator_execution_id",
+      "plan_digest",
+      "capability_code",
+      "task_packet_work_digest",
+      "profile_source_digest",
+      "source_revision"
+    ],
+    "request_id_binding": "EXEC-PROFILE-RUNTIME-<queue.request_id-lowercase>"
+  },
+  "receipt_guard_readback": {
+    "receipt_table": "private.lf_orchestrator_dispatch_receipts_v1",
+    "receipt_id_must_equal": "runtime_request_envelope.dispatch_receipt_id",
+    "receipt_sha256_must_equal": "runtime_request_envelope.dispatch_receipt_sha256",
+    "consumer_execution_id_must_equal": "runtime_request_envelope.consumer_execution_id",
+    "orchestrator_execution_id_must_equal": "runtime_request_envelope.orchestrator_execution_id",
+    "capability_code_must_equal": "PROFILE_EXECUTION_RUNTIME",
+    "plan_digest_must_equal": "runtime_request_envelope.plan_digest",
+    "entry_guard_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "entry_guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1"
+  },
+  "task_packet_contract": {
+    "queue_input_literal": "final Task Packet canonical JSON",
+    "final_task_packet_digest_must_equal": "sha256(queue.input_literal)",
+    "worker_binding_must_match_envelope": true,
+    "static_projection_must_equal": "task_packet_work_digest",
+    "dynamic_worker_binding_fields": [
+      "orchestrator_execution_id",
+      "dispatch_receipt_ref",
+      "entry_guard_code",
+      "entry_guard_decision"
+    ]
+  },
+  "task_runtime_binding_contract": {
+    "optional_for_standalone_profiles": true,
+    "required_for_embedded_skill_profile": true,
+    "resolution_schema": "LF_PROFILE_TASK_RUNTIME_BINDING_V1",
+    "binding_digest_required": true,
+    "profile_code_and_slug_must_match_queue": true,
+    "source_revision_must_equal_runtime_source_revision": true,
+    "source_mode_embedded": "EMBEDDED_SKILL_PROFILE"
+  },
+  "worker_behavior": {
+    "second_lf_profile_execution_begin_v1": "FORBIDDEN_IN_ORCHESTRATED_ATTACH_MODE",
+    "standalone_mode_unchanged": true,
+    "legacy_profile_source_prefix_rule_unchanged_for_standalone": true,
+    "embedded_source_allowed_only_with_verified_task_runtime_binding": true,
+    "model_execution_uses_existing_profile_runtime": true,
+    "output_validate_uses_task_bound_exact_schema_when_present": true,
+    "independent_step_judge_remains_external": true
+  },
+  "fail_closed": {
+    "envelope_missing_or_invalid": "BLOCK",
+    "existing_child_missing_or_terminal": "BLOCK",
+    "child_manifest_crossbind_mismatch": "BLOCK",
+    "receipt_or_guard_mismatch": "BLOCK",
+    "task_packet_digest_mismatch": "BLOCK",
+    "static_projection_drift": "BLOCK",
+    "embedded_source_without_task_binding": "BLOCK",
+    "task_binding_profile_or_revision_mismatch": "BLOCK",
+    "attempted_second_begin": "BLOCK"
+  },
+  "boundaries": {
+    "new_queue": false,
+    "new_operation": false,
+    "new_runtime": false,
+    "new_profile_registry": false,
+    "standalone_profile_behavior_changed": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "pase_modified": false,
+    "post_pase_modified": false
+  }
+}
