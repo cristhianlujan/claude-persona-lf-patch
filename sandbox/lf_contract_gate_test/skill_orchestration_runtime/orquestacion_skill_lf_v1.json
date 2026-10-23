@@ -1,0 +1,76 @@
+{
+  "schema_version": "LF_SKILL_ORCHESTRATION_OPERATION_V1",
+  "operation_code": "ORQUESTACION_SKILL_LF",
+  "version": "v0.1-candidate",
+  "status": "CANDIDATO_READ_ONLY",
+  "operation_family": "ORCHESTRATION",
+  "operation_domain": "SKILL_RUNTIME_CONTROL",
+  "operation_type": "CHILD_DISPATCH_SUPERVISED",
+  "applies_to_asset_type": "SKILL",
+  "lifecycle_state_code": "OP_CANDIDATE",
+  "purpose": "Coordinate delegated Skill steps using existing Router, currentness, worker resolution, child execution, dispatch receipt, Profile Runtime and independent step judges without becoming a second Skill or Profile runtime.",
+  "implementation": {
+    "runner": "sandbox/lf_contract_gate_test/skill_orchestration_runtime/skill_orchestration_runner_v1.py",
+    "execution_model": "FAIL_CLOSED_PORT_ADAPTER_STATE_MACHINE",
+    "ports_are_authority_adapters_not_new_authorities": true,
+    "runner_owns_ordering_not_external_effects": true,
+    "runtime_activation": false,
+    "production_activation": false
+  },
+  "parent_contract": {
+    "required_parent_operation": "EJECUCION_SKILL_LF",
+    "parent_status": "IN_PROGRESS",
+    "same_skill_identity_required": true,
+    "same_source_revision_required": true
+  },
+  "reused_components": [
+    "ACT-0001",
+    "CURRENTNESS_AUTHORITY",
+    "SKILL_WORKER_RESOLVER_V1",
+    "PROFILE_TASK_RUNTIME_BINDING_V1",
+    "PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1",
+    "PROFILE_EXECUTION_RUNTIME",
+    "EJECUCION_PERFIL_LF",
+    "CAPABILITY_EXECUTION_CONTRACT_V1",
+    "ORCHESTRATOR_EXECUTION_GUARD_V1"
+  ],
+  "steps": [
+    {"order":0,"step_id":"init_execution","required_evidence":["execution_id","parent_execution_id"]},
+    {"order":10,"step_id":"bind_parent_skill_execution","required_evidence":["parent_execution_id","parent_operation_code","skill_code","source_revision"]},
+    {"order":20,"step_id":"load_next_step_contract","required_evidence":["step_id","worker_role","allowed_worker_kinds","step_contract_digest"]},
+    {"order":30,"step_id":"resolve_worker","required_evidence":["worker_resolution_digest","worker_ref","worker_kind","binding_authority_ref","binding_revision"]},
+    {"order":40,"step_id":"resolve_task_runtime_binding","required_evidence":["task_binding_applicability","task_runtime_binding_digest"]},
+    {"order":50,"step_id":"build_task_packet_seed","required_evidence":["task_packet_work_digest","task_packet_seed_ref"]},
+    {"order":60,"step_id":"reserve_child_execution","required_evidence":["child_execution_id","child_request_sha256","child_manifest_digest"]},
+    {"order":70,"step_id":"issue_dispatch_receipt","required_evidence":["dispatch_receipt_ref","dispatch_receipt_sha256","plan_digest"]},
+    {"order":80,"step_id":"entry_guard_readback","required_evidence":["entry_guard_decision","entry_guard_code","dispatch_receipt_ref"]},
+    {"order":90,"step_id":"finalize_task_packet","required_evidence":["final_task_packet_digest","task_packet_work_digest","static_projection_match"]},
+    {"order":100,"step_id":"dispatch_worker","required_evidence":["worker_dispatch_ref","child_execution_id","worker_kind"]},
+    {"order":110,"step_id":"collect_worker_result","required_evidence":["worker_result_ref","child_execution_id","output_digest"]},
+    {"order":120,"step_id":"step_judge_handoff","required_evidence":["step_judge_ref","judge_execution_ref","judge_independent"]},
+    {"order":130,"step_id":"checkpoint_or_close","required_evidence":["checkpoint_digest","next_step_or_close","no_runtime_activation","no_production_activation"]}
+  ],
+  "fail_closed": {
+    "unresolved_or_ambiguous_worker": "BLOCK",
+    "stale_currentness": "BLOCK",
+    "child_missing_before_receipt": "BLOCK",
+    "receipt_or_guard_fabricated": "BLOCK",
+    "receipt_crossbind_mismatch": "BLOCK",
+    "task_packet_static_projection_drift": "BLOCK",
+    "worker_result_child_mismatch": "BLOCK",
+    "self_judging": "BLOCK",
+    "unsupported_worker_kind": "BLOCK"
+  },
+  "boundaries": {
+    "executes_models": false,
+    "owns_profile_runtime": false,
+    "owns_skill_runtime": false,
+    "owns_router": false,
+    "owns_currentness": false,
+    "creates_new_queue": false,
+    "production_enabled": false,
+    "runtime_activation_by_registration": false,
+    "pase_modified": false,
+    "post_pase_modified": false
+  }
+}
