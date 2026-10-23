@@ -23,7 +23,7 @@ OIDC = ROOT / "skills/profile_creator/validators/profile_evolution_oidc_recorder
 
 SUITES = [
     ("same_chat", "skills/profile_creator/evals/test_profile_updater_same_chat_v02.py", 17),
-    ("planner", "skills/profile_creator/evals/test_profile_evolution_reconciliation_v1.py", 11),
+    ("planner", "skills/profile_creator/evals/test_profile_evolution_reconciliation_v1.py", 13),
     ("dispatch", "skills/profile_creator/evals/test_execute_profile_evolution_v02.py", 10),
     ("oidc_transport", "skills/profile_creator/evals/test_profile_evolution_oidc_recorder_v02.py", 7),
     ("dynamic_selection", "skills/profile_creator/evals/test_pe10_c6_dynamic_selection_repro_v2.py", 10),
