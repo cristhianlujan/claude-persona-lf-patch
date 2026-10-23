@@ -1,0 +1,7 @@
+{
+  "solution_ref": "profile-update-init-governed-caller-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/profile-update-init-governed-caller-v1.json": "CHANGESET_MANIFEST"
+  }
+}
