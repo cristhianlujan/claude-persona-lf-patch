@@ -1,0 +1,57 @@
+{
+  "schema_version": "LF_STORY_J02_TASK_RUNTIME_SOURCE_PACK_V1",
+  "solution_code": "STORY_J02_TASK_RUNTIME_SOURCE_PACK_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "skill_code": "SKILL-CREATING-INTEGRAL-USER-STORIES",
+  "step_id": "SCREEN_DECOMPOSITION",
+  "worker_role": "SCREEN_DECOMPOSER",
+  "profile_code": "PERFIL-SCREEN-DECOMPOSER-LF",
+  "profile_slug": "screen_decomposer_lf",
+  "source_mode": "EMBEDDED_SKILL_PROFILE",
+  "source_root": "skills/creating-integral-user-stories",
+  "source_paths": [
+    "skills/creating-integral-user-stories/perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md",
+    "skills/creating-integral-user-stories/agents/screen-decomposer.md",
+    "skills/creating-integral-user-stories/schemas/screen-decomposition.schema.json",
+    "skills/creating-integral-user-stories/scripts/validate_screen_decomposition_visual.py",
+    "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
+    "skills/creating-integral-user-stories/references/screen-decomposition-protocol.md"
+  ],
+  "runtime_schema": {
+    "ref": "skills/creating-integral-user-stories/schemas/screen-decomposition.schema.json",
+    "selection_mode": "EXACT_REF"
+  },
+  "deterministic_validator": {
+    "ref": "skills/creating-integral-user-stories/scripts/validate_screen_decomposition_visual.py",
+    "invocation": "CLI"
+  },
+  "judge_binding": {
+    "judge_code": "J02_SCREEN_DECOMPOSITION",
+    "judge_version": "v0.8",
+    "ref": "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
+    "worker_must_not_execute_own_judge": true
+  },
+  "model_context": {
+    "source_refs": [
+      "skills/creating-integral-user-stories/perfiles/PERFIL_SCREEN_DECOMPOSER_LF.md",
+      "skills/creating-integral-user-stories/agents/screen-decomposer.md",
+      "skills/creating-integral-user-stories/references/screen-decomposition-protocol.md"
+    ],
+    "max_chars": 32000
+  },
+  "required_authority_refs": [
+    "profile_asset",
+    "story_manifest_artifact",
+    "j02_judge_registry",
+    "currentness_receipt"
+  ],
+  "invariants": {
+    "hashes_are_derived_from_exact_checkout": true,
+    "source_revision_is_input_not_hardcoded": true,
+    "profile_content_is_not_copied": true,
+    "schema_is_not_synthesized": true,
+    "validator_is_not_copied": true,
+    "judge_is_independent": true,
+    "authority_refs_must_have_revision_and_sha256_digest": true
+  }
+}
