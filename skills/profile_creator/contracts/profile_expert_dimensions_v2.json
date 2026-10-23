@@ -1,0 +1,153 @@
+{
+  "schema": "PROFILE_EXPERT_DIMENSIONS_V2_CONTRACT",
+  "status": "CANDIDATE_READ_ONLY_NO_ADMISSION",
+  "baseline": "PROFILE_EXPERT_BEHAVIOR_BENCHMARK_V1",
+  "purpose": "Evaluate the original five Profile Evolution improvements plus five candidate mathematical methods against independent, observable task outcomes; this document does not activate methods.",
+  "original_units": [
+    {
+      "unit": "PE1B",
+      "focus": "competency_assessment",
+      "dimensions": [
+        "domain_quality",
+        "complexity",
+        "transfer",
+        "preservation"
+      ]
+    },
+    {
+      "unit": "PE2B",
+      "focus": "method_registry",
+      "dimensions": [
+        "adaptation",
+        "efficiency",
+        "domain_quality"
+      ]
+    },
+    {
+      "unit": "PE3B",
+      "focus": "adaptive_selection",
+      "dimensions": [
+        "adaptation",
+        "robustness",
+        "efficiency"
+      ]
+    },
+    {
+      "unit": "PE7B",
+      "focus": "causal_learning_admission",
+      "dimensions": [
+        "longitudinal",
+        "transfer",
+        "preservation"
+      ]
+    },
+    {
+      "unit": "PE10E",
+      "focus": "expert_behavior_benchmark",
+      "dimensions": [
+        "domain_quality",
+        "complexity",
+        "robustness",
+        "adaptation",
+        "transfer",
+        "preservation",
+        "efficiency",
+        "longitudinal"
+      ]
+    }
+  ],
+  "additional_math_methods": [
+    {
+      "method": "CAUSAL_GRAPH_ANALYSIS",
+      "status": "CANDIDATE_NOT_AUTO_SELECTED",
+      "dimensions": [
+        "domain_quality",
+        "robustness"
+      ],
+      "reuse_first": [
+        "CAUSAL_EFFECT_LINEAGE"
+      ],
+      "test": "independent task outcome with graph method ablation"
+    },
+    {
+      "method": "OCHIAI_SUSPICIOUSNESS",
+      "status": "CANDIDATE_NOT_AUTO_SELECTED",
+      "dimensions": [
+        "robustness",
+        "efficiency"
+      ],
+      "reuse_first": [
+        "TYPED_EVIDENCE_REGISTRY"
+      ],
+      "test": "labeled failure matrix with non-leaking held-out root causes"
+    },
+    {
+      "method": "RECIPROCAL_RANK_FUSION",
+      "status": "CANDIDATE_NOT_AUTO_SELECTED",
+      "dimensions": [
+        "transfer",
+        "domain_quality",
+        "efficiency"
+      ],
+      "reuse_first": [
+        "CAPABILITY_SELECTOR",
+        "TARGETED_EVIDENCE_ACQUISITION"
+      ],
+      "test": "paired evidence retrieval relevance and downstream task result"
+    },
+    {
+      "method": "DELTA_DEBUGGING",
+      "status": "CANDIDATE_NOT_AUTO_SELECTED",
+      "dimensions": [
+        "robustness",
+        "efficiency"
+      ],
+      "reuse_first": [
+        "REVERSIBLE_CANDIDATE_VERIFICATION"
+      ],
+      "test": "preserved failure predicate under minimal reproducible subset"
+    },
+    {
+      "method": "MCNEMAR_AND_CONFIDENCE_INTERVALS",
+      "status": "CANDIDATE_NOT_AUTO_SELECTED",
+      "dimensions": [
+        "domain_quality",
+        "preservation",
+        "robustness"
+      ],
+      "reuse_first": [
+        "PERFORMANCE_EXACT_SOURCE_BENCHMARK"
+      ],
+      "test": "paired binary outcome McNemar where applicable; bootstrap paired CI for graded scores"
+    }
+  ],
+  "dimensions": [
+    "domain_quality",
+    "complexity",
+    "robustness",
+    "adaptation",
+    "transfer",
+    "preservation",
+    "efficiency",
+    "longitudinal"
+  ],
+  "scoring_adapter": "skills/profile_creator/evals/score_profile_expert_dimensions_v2.py",
+  "required_guards": [
+    "same frozen tasks across four arms A/B/C/D",
+    "exact execution source and blinded independent evaluator receipts",
+    "holdout not visible to producer",
+    "no estimated token or cost values",
+    "robustness requires explicitly flagged adversarial cases",
+    "efficiency requires bound per-arm provider telemetry and independent verification",
+    "longitudinal requires two or more nonidentical independent waves on comparable cohort",
+    "insufficient dimension evidence remains NOT_OBSERVED and never becomes zero or PASS",
+    "claim of verification in input is not provider authentication; external readback required",
+    "no automated selection, profile write, benchmark admission, promotion or cutover"
+  ],
+  "compatibility": {
+    "frozen_v1_scorer_unchanged": true,
+    "existing_v1_admission_thresholds_unchanged": true,
+    "no_runtime_or_database_changes": true
+  },
+  "next_gate": "Run exact new adapter and positive/negative tests; bind external authentic telemetry and reviewer provenance before authoritative admission."
+}
