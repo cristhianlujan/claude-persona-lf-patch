@@ -297,6 +297,34 @@ def test_current_v06_provider_candidate_contract():
             value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
         ).encode("utf-8")
 
+    frozen_candidate = Path(
+        "skills/profile_creator/evals/results/profile_output_v06_current_candidate_20261023.json"
+    )
+    frozen_manifest = Path(
+        "skills/profile_creator/evals/results/profile_output_v06_current_evidence_manifest_20261023.json"
+    )
+    frozen_negative = Path(
+        "skills/profile_creator/evals/results/profile_output_v06_current_candidate_negative_20261023.json"
+    )
+    expected_hashes = {
+        "candidate": "0b76b5a33e9ea7ececc157662c9196abecc581d3078fdb8fa048e8c6cc1ca9bb",
+        "manifest": "9538bd47a653725f045ae93cb60694b08947506d84dfd16fb1b4709af53e8517",
+        "negative": "d209a542a10bd6aedc097bbcbed9343060873ab85cfc6810123a8bb899663c60",
+    }
+    derived_negative = copy.deepcopy(candidate)
+    derived_negative.pop("status", None)
+    frozen = {
+        "candidate": (root / frozen_candidate).read_bytes(),
+        "manifest": (root / frozen_manifest).read_bytes(),
+        "negative": (root / frozen_negative).read_bytes(),
+    }
+    assert frozen["candidate"] == canonical_bytes(candidate), "FROZEN_V06_CANDIDATE_DRIFT"
+    assert frozen["manifest"] == canonical_bytes(evidence_manifest), "FROZEN_V06_MANIFEST_DRIFT"
+    assert frozen["negative"] == canonical_bytes(derived_negative), "FROZEN_V06_NEGATIVE_DRIFT"
+    assert {
+        name: hashlib.sha256(raw).hexdigest() for name, raw in frozen.items()
+    } == expected_hashes, "FROZEN_V06_HASH_DRIFT"
+
     profile = Path("profiles/systemic_root_cause_repair_lf")
     schema = profile / "schemas/output.schema.json"
     validator = profile / "validators/runtime_validate.py"
@@ -373,6 +401,44 @@ def test_current_v06_provider_candidate_contract():
             + json.dumps(envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
             flush=True,
         )
+
+    producer = root / "skills/profile_creator/evals/produce_pe10_c6_source_bound_output_evidence_v1.py"
+    provider_run = subprocess.run(
+        [sys.executable, str(producer), "--current-v06"],
+        cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=False, timeout=180,
+    )
+    assert provider_run.returncode == 0, (
+        "CURRENT_V06_PROVIDER_EXECUTION_FAILED:"
+        + (provider_run.stdout + provider_run.stderr)[-6000:]
+    )
+    provider_prefix = "PROFILE_OUTPUT_V06_GITHUB_PROVIDER_E2E_V1="
+    provider_lines = [
+        line for line in provider_run.stdout.splitlines()
+        if line.startswith(provider_prefix)
+    ]
+    assert len(provider_lines) == 1, "CURRENT_V06_PROVIDER_SINGLE_RECEIPT_MISSING"
+    provider = json.loads(provider_lines[0][len(provider_prefix):])
+    assert provider["source_head_sha"] == head
+    assert provider["evidence_scope"] == "CURRENT_V06_EVOLVED_CANDIDATE"
+    assert provider["candidate_output_provider_e2e_verified"] is True
+    assert provider["runtime_provider_attested"] is False
+    assert provider["receipt_issued"] is False
+    assert provider["ledger_verified"] is False
+    assert provider["cutover_authorized"] is False
+    assert provider["checkpoint_closed"] is False
+    assert provider["production_activation"] is False
+    assert provider["positive_result"]["raw_output_sha256"] == expected_hashes["candidate"]
+    assert provider["negative_result"]["raw_output_sha256"] == expected_hashes["negative"]
+    assert (
+        provider["positive_result"]["source_refs"]["evidence_manifest"]
+        == frozen_manifest.as_posix()
+    )
+    assert (
+        provider["negative_result"]["source_refs"]["evidence_manifest"]
+        == frozen_manifest.as_posix()
+    )
+    print(provider_lines[0], flush=True)
 
 
 def test_pe10_c6_declared_source_suite_in_current_ci():
