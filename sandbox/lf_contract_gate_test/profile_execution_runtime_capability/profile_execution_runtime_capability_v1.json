@@ -1,0 +1,56 @@
+{
+  "schema_version": "LF_PROFILE_EXECUTION_RUNTIME_CAPABILITY_V1",
+  "capability_code": "PROFILE_EXECUTION_RUNTIME",
+  "capability_name": "Profile Execution Runtime",
+  "capability_kind": "TRANSVERSAL_RUNTIME_LANE",
+  "status": "CANDIDATE_READ_ONLY",
+  "administrative_owner": "LF_GOVERNANCE",
+  "implementation": {
+    "operation_code": "EJECUCION_PERFIL_LF",
+    "begin_rpc": "public.lf_profile_execution_begin_v1",
+    "queue": "private.lf_profile_runtime_queue_v1",
+    "default_runtime_target": "HETZNER",
+    "existing_runtime_only": true
+  },
+  "entry_contract": {
+    "required": true,
+    "guard_code": "ORCHESTRATOR_EXECUTION_GUARD_V1",
+    "dispatch_rpc": "public.fn_lf_orchestrator_dispatch_receipt_v1",
+    "guard_rpc": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "binding_entrypoint": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "direct_or_unorchestrated_call_policy": "BLOCK"
+  },
+  "authority": {
+    "profile_identity": "public.lf_activos",
+    "profile_operation": "public.lf_operation_registry/EJECUCION_PERFIL_LF",
+    "profile_router": "ACT-0001",
+    "currentness": "CURRENTNESS_AUTHORITY",
+    "evidence": "existing EJECUCION_PERFIL_LF execution/evidence surfaces",
+    "runtime_source": "services/profile_runtime_api"
+  },
+  "invariants": {
+    "new_runtime_engine": false,
+    "new_operation": false,
+    "new_queue": false,
+    "new_profile_registry": false,
+    "new_receipt_store": false,
+    "new_evidence_ledger": false,
+    "profile_execution_operation_must_equal": "EJECUCION_PERFIL_LF",
+    "router_must_allow_downstream": true,
+    "currentness_required": true,
+    "orchestrator_receipt_required": true,
+    "runtime_activation_by_registration": false,
+    "production_activation_by_registration": false
+  },
+  "known_blockers_before_cutover": [
+    "Story profile source-root/package compatibility must be resolved without duplicating profile authority",
+    "Exact currentness and runtime binding for each target profile must be proven",
+    "Orchestrator consumer wiring must be independently qualified"
+  ],
+  "materialization": {
+    "registry_projection_in_this_solution": false,
+    "current_pointer_in_this_solution": false,
+    "supabase_apply_in_this_solution": false,
+    "runtime_cutover_in_this_solution": false
+  }
+}
