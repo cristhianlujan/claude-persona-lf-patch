@@ -70,3 +70,30 @@ Casos en `sandbox/lf_contract_gate_test/router_stage1/e2e_cases_v1.json`; búsqu
 - Identidad del llamador (actor + execution_id) para que las escrituras puedan pasar a PERMITIDO.
 - Frases reales del propietario para reemplazar los casos de borrador; los negativos quedan en el conjunto permanente.
 - C2/C3 de RW1-06 siguen PENDING hasta que el propietario los apruebe viendo las pruebas.
+
+
+## Manual de uso de la etapa 2 (`lf_router_route_v1`)
+
+Reglas para cualquier agente. Si algo no esta aqui, no se improvisa: se pregunta.
+
+1. **Un solo punto de entrada:** `public.lf_router_route_v1(stage1 jsonb, caller jsonb, nivel2_consentido boolean default false)`. No se llama a `lf_router_search_v1`, `lf_router_search_nivel2_v1` ni `lf_router_dispatch_v1` por separado para decidir una ruta.
+2. **Primero la etapa 1** (el modelo entiende la frase y llena `LF_ROUTER_STAGE1_V1`, ver `LF_ROUTER_STAGE1_CONTRACT_V1.md`). Si no cumple el contrato, la respuesta es `INVALID_STAGE1` con los codigos a corregir.
+3. **Cada respuesta trae `paso`, `motivo_es` y `siguiente_paso_es`. Se hace lo que dice `siguiente_paso_es`; un agente no se detiene ni inventa otro camino.**
+4. **Un estado BLOCKED no es un final.** Es un freno de permisos. Si el paso es `PROPUESTA_PERFIL`, el perfil trabaja en modo propuesta; si el paso es otro, se sigue su `siguiente_paso_es`.
+5. **El Router nunca ejecuta al perfil ni aplica cambios.** `downstream_execution_allowed` es siempre false. Aplicar es otra operacion gobernada.
+6. **Nivel 2 solo con aviso y consentimiento del usuario**, y solo si el nivel 1 no dio candidatos. Antes se pide un detalle al usuario; no se expanden sinonimos.
+
+| `paso` | Que hacer |
+|---|---|
+| `INVALID_STAGE1` | Rehacer la etapa 1 corrigiendo los codigos |
+| `DIRECT_ANSWER` | Responder directamente |
+| `ASK_USER` | Hacer esa unica pregunta y repetir la etapa 1 |
+| `SYSTEM_NOT_SUPPORTED` | Informar; solo LF por ahora |
+| `DISPATCHED` | Seguir lo que indica el despacho |
+| `PROPUESTA_PERFIL` | Entregar `instruccion_literal`, `alcance_permitido` y `perfil_candidato` al perfil en modo PROPUESTA (solo lectura); mostrar al usuario el cambio propuesto para su aprobacion; aplicar via ejecucion gobernada |
+| `CANDIDATO_UNICO` | Confirmar y pedir el despacho si corresponde |
+| `ELEGIR_O_PROFUNDIZAR` | Elegir, o leer los 3 primeros; si sigue la duda, una pregunta |
+| `NIVEL_2_CONSENTIMIENTO` | Hacer la pregunta; con el si, repetir con consentimiento |
+| `NIVEL_2_RESULTADO` | Pistas fuera del inventario, no permiso; pedir detalle si no sirven |
+
+Ejemplo de modificacion de pantalla ("Cambiar unicamente el texto del boton principal de Iniciar sesion B2B a Acceder, sin modificar autenticacion ni validaciones"): `lf_router_resolve_v1` resuelve la pantalla `B2B-AUTH-001` y el perfil `PERFIL-UI-ARCHITECT` (READ_ONLY) pero termina en `BLOCK_EXECUTOR_CAPABILITY_UNATTESTED`. Con la etapa 2 el resultado es `PROPUESTA_PERFIL`. Limitacion conocida: la continuacion semantica de `resolve_v1` rechaza pantallas (`BLOCK_SEMANTIC_RESUME_TARGET_NOT_CANONICAL_ASSET`); queda pendiente corregirla en el flujo central, con aprobacion del propietario.
