@@ -261,14 +261,21 @@ def test_pe10_c6_github_provider_output_source_bound_evidence():
 def test_current_v06_provider_candidate_contract():
     """Validate the current source-authored V0.6 candidate; no receipt/cutover."""
     import copy
+    import os
     import subprocess
     import sys
     import tempfile
 
     root = Path(__file__).resolve().parents[3]
-    head = subprocess.check_output(
-        ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
-    ).strip()
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+    if event_name == "pull_request" and event_path:
+        event = json.loads(Path(event_path).read_text(encoding="utf-8"))
+        head = event["pull_request"]["head"]["sha"]
+    else:
+        head = os.environ.get("GITHUB_SHA") or subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+        ).strip()
     assert len(head) == 40
     eval_dir = root / "skills/profile_creator/evals"
     validator_dir = root / "skills/profile_creator/validators"
