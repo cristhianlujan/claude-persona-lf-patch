@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-stage1-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router_stage1/stage1_validator_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_stage1/test_stage1_validator_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-stage1-v1.json": "CHANGESET_MANIFEST"
+  }
+}
