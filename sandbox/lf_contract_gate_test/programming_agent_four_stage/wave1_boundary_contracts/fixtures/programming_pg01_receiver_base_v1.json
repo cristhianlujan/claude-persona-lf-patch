@@ -136,7 +136,18 @@
               "blockers": [],
               "reason": "fixture"
             }
-          ]
+          ],
+          "front_candidate_refs": [
+            "F1"
+          ],
+          "unmapped_material_signals": [],
+          "source_refs": [
+            "fixture://source"
+          ],
+          "currentness_refs": [
+            "fixture://current"
+          ],
+          "coverage_fingerprint_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         },
         "implementability_schema": {
           "schema_version": "IMPLEMENTABILITY_SCHEMA_V1",

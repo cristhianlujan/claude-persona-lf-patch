@@ -48,6 +48,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--allow-local-docker", action="store_true", required=True)
     parser.add_argument("--sudo-docker", action="store_true")
+    parser.add_argument("--historical-input", type=Path, help="Optional exact RO export; consumed only by disposable local PG")
     args = parser.parse_args()
     docker = (["sudo"] if args.sudo_docker else []) + ["docker"]
     name = "lf-pg01-foundation-" + uuid.uuid4().hex[:12]
@@ -71,7 +72,10 @@ def main() -> None:
     def check(case: str, actual, expected) -> None:
         if actual != expected:
             raise AssertionError(f"{case}: expected {expected!r}, got {actual!r}")
-        results.append({"case": case, "actual": actual, "expected": expected, "matched": True})
+        def compact(value):
+            encoded = json.dumps(value, sort_keys=True)
+            return value if len(encoded) < 500 else {"sha256": hashlib.sha256(encoded.encode()).hexdigest(), "type": type(value).__name__}
+        results.append({"case": case, "actual": compact(actual), "expected": compact(expected), "matched": True})
 
     def validate(candidate):
         return query("programacion.fn_programming_context_snapshot_validate_v1(" + literal(candidate) + ")")
@@ -183,7 +187,17 @@ LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'LOCAL_TEST_TYPED_EVIDENCE_UNSUPPOR
         check("record_dependency_drift", query("programacion.fn_programming_context_record_v1(" + literal(drifted) + ",'LOCAL-PG01-DRIFT')").get("code"), "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT")
         check("historical_guard_not_currentness_admission", guard(query(resolve_expr), receipt["context_id"], receipt["context_sha256"]), True)
 
-        print(json.dumps({"status": "LOCAL_FOUNDATION_TESTS_COMPLETED", "evidence_tier": "LOCAL_POSTGRES_CANONICAL_FUNCTIONS_SYNTHETIC_CATALOG", "provider_attested": False, "pg01_runtime_verified": False, "hosted_database_touched": False, "independent_review": False, "postgres": sql("SELECT version();"), "image": IMAGE, "migration": str(migration.relative_to(ROOT)), "migration_sha256": hashlib.sha256(migration.read_bytes()).hexdigest(), "dependency_source": DEPENDENCY, "dependency_source_sha256": hashlib.sha256(dependency.encode()).hexdigest(), "assertions": len(results), "results": results, "pending_admission_families": ["zero_ready", "stale_currentness", "self_consistent_authority_drift", "requested_scope_mismatch", "lossy_projection"], "receipt_emitter_implemented": False}, indent=2))
+        sql("UPDATE public.lf_capability_current SET version='1.0.0' WHERE capability_code='CURRENTNESS_AUTHORITY';")
+        from test_programming_pg01_receiver_v1 import exercise_receiver
+        emitter_evidence = exercise_receiver(context=context, sql=sql, query=query, check=check, repo=ROOT)
+
+        historical_results = []
+        if args.historical_input:
+            from test_programming_pg01_receiver_v1 import exercise_historical
+            historical_results = exercise_historical(rows=json.loads(args.historical_input.read_text()), sql=sql, query=query, check=check, repo=ROOT)
+            emitter_evidence["historical_snapshots_executed"] = bool(historical_results)
+
+        print(json.dumps({"status": "LOCAL_FOUNDATION_TESTS_COMPLETED", "evidence_tier": "LOCAL_POSTGRES_CANONICAL_FUNCTIONS_SYNTHETIC_CATALOG", "provider_attested": False, "pg01_runtime_verified": False, "hosted_database_touched": False, "independent_review": False, "postgres": sql("SELECT version();"), "image": IMAGE, "migration": str(migration.relative_to(ROOT)), "migration_sha256": hashlib.sha256(migration.read_bytes()).hexdigest(), "dependency_source": DEPENDENCY, "dependency_source_sha256": hashlib.sha256(dependency.encode()).hexdigest(), "assertions": len(results), "results": results, "pending_operational_gates": ["PG-01_C4", "PG-01_C7", "durable_receipt", "trusted_currentness_provider_wiring"], "receipt_emitter_implemented": True, "emitter_evidence": emitter_evidence, "historical_results": historical_results}, indent=2))
     finally:
         subprocess.run(docker + ["rm", "-f", name], capture_output=True, timeout=30)
 

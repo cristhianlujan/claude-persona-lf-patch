@@ -1,80 +1,109 @@
-# PG-01 · Base SQL aislada del receptor
+# PG-01 · Base SQL y emisor de lectura candidato
 
-Estado: candidato de fuente, PR draft. No es cierre P1/I0 ni ejecución PG-01 real.
-La revisión de Claude previa al código fue dispensada por Paulo en la conversación del 23/10/2026. La revisión independiente sigue pendiente.
+Estado: candidato de fuente, PR draft #3135. Sin apply, merge o activación.
+Paulo autorizó continuar sin Claude el 23/10/2026. Revisión independiente pendiente.
 
-## Alcance
+## Estado del plan
 
-Una única migración crea las tres funciones de contexto de #1912 y reemplaza la guardia existente con la versión de #2306. Los cuerpos de las cuatro funciones conservan las fuentes exactas. Se excluye el resto de ambos PRs. Se añaden REVOKE EXECUTE FROM PUBLIC a las tres funciones nuevas para mantenerlas owner-only, sin habilitar llamadores. La ACL de la guardia existente se conserva.
+| Paso | Estado de esta entrega |
+|---|---|
+| 2A.a | Implementado como fuente: tres funciones #1912 y guardia corregida #2306 en una migración; no instaladas |
+| 2A.b | Ocho familias probadas con casos sintéticos locales; tres históricos exactos también rechazados. No acredita calificación operativa |
+| 2A.c | Emisor de lectura implementado; siete campos ACCEPT/BLOCK, sin persistencia |
+| 2A.d | Paridad del digest comprobada en el emisor; no sustituye el acuerdo C1 con el productor |
+| 2A.g | Positivo sintético ACCEPT de frontera; execution_allowed=false |
+| 2A.h | Resultado y recibo idénticos al repetir inputs/decisiones exactos, sin redescubrimiento |
+| C4 / 2A.e | Pendiente: marco técnico |
+| C7 / 2A.f | Pendiente: suficiencia |
+| C6 persistencia / I0 | Pendiente: D7 y positivo real admitido de PR2 |
+
+ACCEPT aquí significa únicamente SOURCE_ONLY_READ_ONLY_BOUNDARY. El resultado exterior conserva execution_allowed=false y pending_gates con C4, C7 y persistencia C6. No equivale a P1, autorización de programación, PG01_CONSUMED_AND_RECONCILED ni recibo operativo admitido.
+
+## Base SQL
+
+Una única migración extrae las tres funciones de contexto de #1912 y reemplaza la guardia con #2306. Conserva sus cuerpos exactos. REVOKE EXECUTE FROM PUBLIC sobre las tres funciones nuevas las mantiene owner-only. No añade llamadores; conserva ACL del guard original.
 
 Fuentes:
-- #1912 @ 78030d6b8ea51f61807b8bc005ee9386a901a82a, migración 20261007183500_programming_context_snapshot_runtime_guard_v1.sql; blob eae0d12e2d93f7d6e65be977c3c54541029c3ae6.
-- #2306 @ cb7f1564d48a01448589b04b8c1bb040e7fee291, migración 20261012094600_analysis_a9_pg01_receipt_digest_guard_fix_v1.sql; blob 1aaabfe817cccdbff6e025af0f1c3c648ffa295f.
-- Contratos main: programming_entry_contract_v1.json (SHA-256 d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8) y analysis_programming_handoff_parity_contract_v1.json.
+- #1912 @ 78030d6b8ea51f61807b8bc005ee9386a901a82a: 20261007183500_programming_context_snapshot_runtime_guard_v1.sql, blob eae0d12e2d93f7d6e65be977c3c54541029c3ae6.
+- #2306 @ cb7f1564d48a01448589b04b8c1bb040e7fee291: 20261012094600_analysis_a9_pg01_receipt_digest_guard_fix_v1.sql, blob 1aaabfe817cccdbff6e025af0f1c3c648ffa295f.
 
-La migración usa MANAGED_PREFIXES: programming_context_snapshot_runtime_guard_. Los paths están en las familias fijas MIGRATION y PROGRAMMING_AGENT_TESTS; confirmar con PASE sobre cada HEAD antes del push.
+Nombre con prefijo MANAGED_PREFIXES programming_context_snapshot_runtime_guard_. Paths con familias fijas MIGRATION y PROGRAMMING_AGENT_TESTS. No changeset manifest mientras el diff permanezca así.
 
-No cambia contracts SOURCE_ONLY_CANDIDATE, registry, Router, workflows, reglas de merge, paquete PG00 ni repositorio programming-agent. No instala emisor ni nueva persistencia. El wrapper record es para el productor A9; el consumidor de lectura no debe usarlo para guardar su recibo.
+El wrapper record pertenece al productor A9 y no es llamado por el emisor. No hay nuevo almacén, snapshot runtime, Router ni cambio de contracts SOURCE_ONLY_CANDIDATE.
 
-## Recorrido que la base permite probar
+## Emisor y puertos de lectura
 
-Contexto A9 → record canónico (solo prueba local) → resolve por consumidor/sujeto/as-of → validación del snapshot → guardia exacta contra id/hash/schema ESPERADOS DEL HANDOFF.
+programming_pg01_receiver_v1.py agrega ReadOnlyReceiver, SqlReadPort y CanonicalCurrentnessPort sobre las piezas existentes. No abre conexiones ni acepta credenciales/URL de DB. No activa un consumidor ni una operación.
 
-Resolve no recibe context_id: un resultado RESOLVED no autoriza aceptar otra identidad. La guardia verifica contexto inmutable, schema exterior LF_DECISION_CONTEXT_ASOF_INPUT_V1, schema interior de Programación, digest declarado y SHA-256 recalculado por PostgreSQL.
+SqlReadPort ejecuta una única SELECT fija parametrizada. El adaptador de DB debe usar conexión/transacción de solo lectura. La SELECT une resolve, validación y guardia en una sola lectura. No hay referencia a record como operación ejecutable del emisor.
 
-## Reproducción local
+El handoff esperado es independiente del readback: id, hash, digest del contrato, consumidor, sujeto y as-of. Resolve consulta por consumidor/sujeto/fecha, por lo que RESOLVED solo se usa después de la guardia y el cotejo de identidad exacta. Contextos ausentes, hash/schema distintos, campos desconocidos y payload inválido bloquean antes de emitir ACCEPT.
 
-Desde la raíz del repo:
+El emisor:
+1. Carga una vez los bytes del contrato y conserva el digest de esos mismos bytes.
+2. Resuelve y verifica el contexto exacto mediante la guardia SQL corregida, incluido digest PostgreSQL del contexto completo.
+3. Reutiliza validadores SQL y validate_programming_snapshot_payload_v1 de main.
+4. Verifica package READY/PARTIAL_READY, al menos un READY, scope SOLICITADO READY, dependencias READY y frentes limpios. Nunca sustituye un scope solicitado bloqueado por otro disponible.
+5. Delega vigencia a evaluate_authority de CURRENTNESS_AUTHORITY existente. El proveedor debe hidratar evidencia por contexto/scope desde fuentes confiables; no se acepta una decisión CURRENT escrita por quien llama.
+6. Exige raíces completas para contexto, esquema, autoridad y fuente. Autoridad/esquema/contexto cambiados requieren reconstrucción; bounded_validation_required bloquea. Un cambio de revisión Git por sí solo no causa stale.
+7. Produce una proyección conservadora con scope_id y el snapshot completo. Compara cualquier proyección propuesta contra esa representación exacta mediante el serializador/hash canónico existente; quitar una obligación o introducir cambios bloquea.
+8. Emite resultado determinista, con gates aún pendientes y sin permisos de ejecución.
+
+La proyección completa evita pérdida en esta versión; no es todavía la proyección mínima con presupuesto para el Worker. El proveedor operativo de currentness, su procedencia y wiring siguen pendientes: las pruebas usan el evaluador real con un proveedor de materiales sintéticos.
+
+## Recibo de siete campos
+
+schema_version identifica PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1. Los siete campos de negocio son:
+
+| Campo | Origen |
+|---|---|
+| context_id | Contexto que coincide con handoff A9 esperado |
+| context_sha256 | Hash completo comprobado/recomputado por SQL |
+| snapshot_schema_digest_sha256 | Digest del productor, cotejado contra bytes del contrato |
+| receiver_schema_digest_sha256 | Digest de la misma versión del contrato consumida |
+| material_projection_sha256 | Proyección completa validada con canonical_sha256 existente |
+| validated_material_paths | Rutas materiales realmente comprobadas |
+| verdict | ACCEPT o BLOCK |
+
+Digest de programming_entry_contract_v1.json: d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8. No es el hash del subobjeto JSON ni el del contexto persistido.
+
+Scope, diagnóstico, currentness, nivel de admisión y gates pendientes están en la envoltura separada PG01_READ_ONLY_BOUNDARY_RESULT_V1. El emisor no modifica el contrato de recibo de main.
+
+Un fallo temprano que impida identificar y validar el contexto devuelve BLOCK con receipt=null, sin hashes ficticios. Un fallo posterior sobre un contexto/proyección identificados produce un recibo BLOCK completo; su hash siempre identifica la proyección completa retenida, no una propuesta con pérdida. Ni la envoltura ni el recibo se persisten en BD.
+
+## Ocho familias negativas
+
+| Familia | Comprobación local |
+|---|---|
+| N1: campos obligatorios ausentes | Sintético con seis campos omitidos; histórico exacto del 06-oct también BLOCK |
+| N2: matriz vacía | Sintético aislado con matriz vacía BLOCK; histórico del 07-oct BLOCK en un control anterior |
+| N3: cero READY | Sintético de forma válida pero cero READY recibe NO_READY_SCOPE; histórico del 09-oct BLOCK en un control anterior |
+| N4: recibo esperado ausente | Id/hash/schema ausente o malformado bloquea; sin consulta si el esperado no es válido |
+| N5: stale | Evaluador canónico produce STALE_AFFECTED; UNKNOWN_FAIL_CLOSED y prueba compatible con validación acotada pendiente también bloquean |
+| N6: autoridad alterada | Hash esperado incompatible y fingerprint de autoridad cambiado (incluso compatibilidad declarada) bloquean |
+| N7: scope equivocado | Scope ajeno o S2 BLOCKED de un PARTIAL_READY no se acepta ni se sustituye por S1 |
+| N8: pérdida / recibo distinto | Proyección con obligación eliminada, id/hash/schema distinto o resolución mutable bloquean |
+
+Los tres históricos fueron obtenidos por Supabase RO y reproducidos exclusivamente en Postgres local. Sus context_sha256 originales se recomputaron y coincidieron antes del replay. Los tres fallan primero con PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING; no se atribuye al histórico 07-oct una ejecución aislada del guard de matriz ni al 09-oct la del guard cero READY. Esos controles se aíslan con sintéticos.
+
+Los bytes históricos no se incorporan al repo. La evidencia guarda id/hash/fecha/código; el export temporal es solo input externo de pruebas y se retira después de la ejecución.
+
+## Reproducir
 
 ```bash
 python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/run_programming_pg01_receiver_base_v1.py --allow-local-docker
 ```
 
-Añadir --sudo-docker únicamente cuando los permisos de Docker del host lo requieren. Usa la imagen existente postgres:17.6 en un contenedor único desechable, sin red externa ni puertos publicados, con datos tmpfs. No acepta URL ni credenciales de Supabase. El contenedor se elimina en finally.
+Agregar --sudo-docker solo si el host lo necesita. Para replay histórico, agregar --historical-input /ruta/export-ro.json con las filas exactas id/hash/decided_at/context_payload obtenidas por RO. Sin export se ejecuta la base y las ocho familias sintéticas; no se afirma replay histórico.
 
-Reutiliza cuerpos SQL canónicos de DECISION_CONTEXT_ASOF desde la migración de main 20261004144500_t_decctx_decision_context_asof_v1.sql. El catálogo de dependencias es sintético local. La rama de typed_evidence no está implementada en el entorno de prueba: su doble falla explícitamente si se invoca. No se declara integración con las autoridades vivas.
+Contenedor postgres:17.6 único, desechable, sin red externa ni puertos, datos tmpfs, eliminado en finally. Las SELECT del emisor se ejecutan bajo BEGIN READ ONLY. La preparación de fixtures y record se ejecutan solo en ese Postgres local.
 
-Prueba el rollback de las cuatro definiciones en la instancia local y comprueba restauración del cuerpo original de la guardia y ausencia de wrappers. Luego aplica la fuente completa en ese entorno desechable y prueba validación, errores, rechazo antes de record, readback, replay idempotente, ACL y hash. No retira COMMIT por regex: extrae la envoltura transaccional exterior exacta. BEGIN/ROLLBACK de DDL en Supabase sigue prohibido.
+Reutiliza cuerpos canónicos de DECISION_CONTEXT_ASOF de 20261004144500_t_decctx_decision_context_asof_v1.sql. El catálogo de autoridades es sintético. La rama typed_evidence no está soportada por el bootstrap y su doble falla explícitamente si se llama. Ninguna prueba califica el proveedor operativo de currentness.
 
-El archivo pg01_receiver_base_local_20261023.json conserva resultados locales y hashes de la migración y dependencias. Sus IDs son fixtures, no recibos operativos. El hash del runner se registra junto a esa evidencia.
+pg01_receiver_base_local_20261023.json contiene resultados y hashes de migración, runner, emisor, pruebas, fixture y dependencias. Los IDs sintéticos de pruebas no son recibos operativos. Las regresiones main se ejecutan aparte y no acreditan activación.
 
-## Ocho familias del plan: alcance real de esta entrega
+## Gobernanza
 
-| Familia | Evidencia de esta base | Pendiente del receptor |
-|---|---|---|
-| N1: seis campos faltantes / 06-oct | Fixture sintético con campo obligatorio omitido y record rechazado | Recuperar los bytes históricos y ejecutar la variante exacta; no se atribuye procedencia histórica al fixture |
-| N2: matriz vacía / 07-oct | Fixture sintético, PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE | Variante histórica exacta |
-| N3: cero READY / 09-oct | Caracterización: un snapshot NEED_MORE_EVIDENCE sin READY puede ser VALID en forma | Gate de admisión ≥1 READY; no tratar VALID como ACCEPT |
-| N4: recibo esperado ausente | Id, hash o schema esperado nulo → guardia false | Rechazo externo del emisor |
-| N5: stale | Canonical record rechaza dependency drift del catálogo local; guardia histórica puede seguir true | Consumir decisión de CURRENTNESS_AUTHORITY en admisión; no sustituirla por fecha antigua |
-| N6: autoridad alterada | Contexto alterado conservando hash → guardia false | Autoridad/fingerprint autoconsistente pero vencido requiere comprobación independiente |
-| N7: scope equivocado | Validador verifica matriz/depencias y preserva PARTIAL_READY válido | Gate del scope SOLICITADO, ausente de firmas SQL extraídas |
-| N8: pérdida / recibo distinto | Id/hash/schema distintos y latest mutable → guardia false | Proyección lossless y digest de la proyección |
+Solo desarrollo local y PR draft autorizados; no hosted apply, ready-to-merge, merge o activación. La ruta de la futura operación DB previamente devolvió BLOCK_SCOPE_SEMANTICS_UNATTESTED; no se usó como admisión y no se ejecutó ninguna escritura Supabase. Cualquier operación posterior necesita Router → ACTUALIZACION_DB_LF → PR → PASE → Merge Train.
 
-No se declara «8/8 del receptor». Los resultados de pruebas de forma/guardia no cierran las familias pendientes. Tampoco se consume un snapshot positivo real ni se persiste un recibo PG-01. Los prints PASS de las regresiones preexistentes, si se ejecutan, solo describen esas pruebas locales.
-
-## Emisor: diseño pendiente de implementación (2A.c)
-
-Un emisor de lectura debe consumir esta base junto con currentness, scope solicitado, paridad, C4 y suficiencia C7. ACCEPT solo después de todas las verificaciones; repetir con entradas y decisiones pinneadas debe conservar el recibo sin redescubrir.
-
-Siete campos requeridos de PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1:
-
-| Campo | Fuente |
-|---|---|
-| context_id | Resultado que coincide con el handoff exacto |
-| context_sha256 | Hash canónico del contexto completo, recomputado y cotejado |
-| snapshot_schema_digest_sha256 | Contrato pinneado por el productor |
-| receiver_schema_digest_sha256 | La misma versión contractual consumida por receptor; paridad obligatoria |
-| material_projection_sha256 | Proyección efectivamente validada y serialización reproducible |
-| validated_material_paths | Array de rutas realmente verificadas |
-| verdict | ACCEPT o BLOCK |
-
-schema_version identifica la envoltura; no es un octavo campo de negocio agregado. El marco técnico y la evidencia por scope requieren una envoltura revisada compatible, sin modificar silenciosamente el contrato de siete campos. No completar rechazos tempranos con hashes ficticios o null no autorizados; devolver diagnóstico tipado sin recibo completo cuando no pueda construirse legítimamente.
-
-D7 decide persistencia de I0. No crear otro almacén ni usar record_v1 como si guardara el recibo del consumidor: guarda snapshot A9.
-
-## Límites de gobernanza y siguiente paso
-
-Sin hosted apply, activación, ready-to-merge o merge. La consulta de encaminamiento de la futura operación DB devolvió BLOCK_SCOPE_SEMANTICS_UNATTESTED; no se ejecutó ninguna escritura DB ni se usó esa respuesta como admisión. El trabajo actual es preparación local y PR draft autorizado, admitido expresamente como desarrollo local por CLAUDE.md. Cualquier ejecución operativa posterior necesita la ruta canónica y sus gates.
-
-Próximo paso: implementar emisor y gates de admisión; C4, C6 y C7 siguen sin cerrar. Revisión independiente pendiente. No declarar P1/I0 ni PG01_CONSUMED_AND_RECONCILED por este PR.
+Siguiente paso: C4 y C7, proveedor operativo admitido de currentness y persistencia según D7. Revisión independiente pendiente; no cierre P1/I0.
