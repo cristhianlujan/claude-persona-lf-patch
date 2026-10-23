@@ -282,7 +282,7 @@ def test_pe10_c6_declared_source_suite_in_current_ci():
     assert receipt["requires_governed_postgres_probes"] is True
     assert receipt["checkpoint_closed"] is False
     assert receipt["production_activated"] is False
-    assert receipt["total_cases"] == 55
+    assert receipt["total_cases"] == 57
     assert hashlib.sha256(json.dumps(
         {k: v for k, v in receipt.items() if k != "receipt_sha256"},
         sort_keys=True, separators=(",", ":"), ensure_ascii=False
