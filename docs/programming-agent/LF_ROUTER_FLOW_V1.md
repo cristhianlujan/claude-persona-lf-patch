@@ -90,10 +90,12 @@ Reglas para cualquier agente. Si algo no esta aqui, no se improvisa: se pregunta
 | `ASK_USER` | Hacer esa unica pregunta y repetir la etapa 1 |
 | `SYSTEM_NOT_SUPPORTED` | Informar; solo LF por ahora |
 | `DISPATCHED` | Seguir lo que indica el despacho |
-| `PROPUESTA_PERFIL` | Entregar `instruccion_literal`, `alcance_permitido` y `perfil_candidato` al perfil en modo PROPUESTA (solo lectura); mostrar al usuario el cambio propuesto para su aprobacion; aplicar via ejecucion gobernada |
+| `PROPUESTA_PERFIL` | Entregar `instruccion_literal`, `alcance_permitido` y `perfil_candidato` al perfil en modo PROPUESTA (solo lectura); abrir `siguiente_operacion` (`EJECUCION_PERFIL_LF`, modo `GPT_NATIVE`, solo lectura, sin escribir; la politica POL-LF-ACTIVATION-ROUTING exige entrar por el Router); mostrar al usuario el cambio propuesto; aplicar es otra operacion que el usuario autoriza |
 | `CANDIDATO_UNICO` | Confirmar y pedir el despacho si corresponde |
 | `ELEGIR_O_PROFUNDIZAR` | Elegir, o leer los 3 primeros; si sigue la duda, una pregunta |
 | `NIVEL_2_CONSENTIMIENTO` | Hacer la pregunta; con el si, repetir con consentimiento |
 | `NIVEL_2_RESULTADO` | Pistas fuera del inventario, no permiso; pedir detalle si no sirven |
 
 Ejemplo de modificacion de pantalla ("Cambiar unicamente el texto del boton principal de Iniciar sesion B2B a Acceder, sin modificar autenticacion ni validaciones"): `lf_router_resolve_v1` resuelve la pantalla `B2B-AUTH-001` y el perfil `PERFIL-UI-ARCHITECT` (READ_ONLY) pero termina en `BLOCK_EXECUTOR_CAPABILITY_UNATTESTED`. Con la etapa 2 el resultado es `PROPUESTA_PERFIL`. Limitacion conocida: la continuacion semantica de `resolve_v1` rechaza pantallas (`BLOCK_SEMANTIC_RESUME_TARGET_NOT_CANONICAL_ASSET`); queda pendiente corregirla en el flujo central, con aprobacion del propietario.
+
+Un perfil `READ_ONLY`/`CANDIDATO` si puede trabajar en `EJECUCION_PERFIL_LF` con `executor_mode=GPT_NATIVE` (solo lectura): ya ocurrio en `EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001`. El BLOQUEADO de `lf_router_resolve_v1` solo dice que el Router no autoriza efectos, no que el perfil no pueda trabajar.
