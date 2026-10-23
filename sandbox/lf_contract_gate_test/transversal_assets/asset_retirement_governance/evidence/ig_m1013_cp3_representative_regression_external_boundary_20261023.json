@@ -60,7 +60,6 @@
     }
   },
   "open_pr_diff_audit": {
-    "audited_open_prs": 100,
     "exact_semantic_revalidation_refs": 0,
     "stale_related_findings": [
       {
@@ -89,7 +88,27 @@
         "classification": "STALE_OPEN_SOURCE_REINTRODUCTION_RISK_REVIEW_REQUIRED"
       }
     ],
-    "implication": "No open PR diff references semantic_revalidation_v1, but global ZERO_LEGACY_CALLERS cannot close while stale related runtime-source PRs remain unresolved."
+    "implication": "The 100-PR pre-candidate audit found zero semantic_revalidation_v1 refs. Duplicate stale PRs #1930/#1922 were closed after exact main-source proof. #1484 is a cached-path candidate, not a forbidden legacy consumer. CP3 still remains PENDING because full external-consumer absence and global forbidden-legacy closure are not yet proven.",
+    "audited_open_prs_before_candidate_pr": 100,
+    "cleanup_after_audit": [
+      {
+        "pr": 1930,
+        "status": "CLOSED_2026-10-23",
+        "disposition": "DUPLICATE_STALE_SUPERSEDED_BY_MAIN",
+        "main_source": "supabase/migrations/20261007193445_ig_m5_4_remove_legacy_resolver_calls.sql"
+      },
+      {
+        "pr": 1922,
+        "status": "CLOSED_2026-10-23",
+        "disposition": "DUPLICATE_STALE_SUPERSEDED_BY_MAIN",
+        "main_source": "supabase/migrations/20261007194445_ig_m5_5_explicit_fingerprint.sql"
+      },
+      {
+        "pr": 1484,
+        "status": "OPEN",
+        "disposition": "CACHED_ALLOWED_CANDIDATE_NOT_FORBIDDEN_LEGACY_REEVALUATE_SEPARATELY"
+      }
+    ]
   },
   "representative_regression": {
     "screens": 7,
