@@ -29,6 +29,16 @@ canonical artifact
 
 The normalized projection envelope is `ASSET_COMPOSITION_V1`. Source-specific adapters may produce that envelope, but they may not infer undeclared components. The envelope must bind to a canonical source ref + SHA/version.
 
+## Authority binding
+
+A composition payload is accepted only when its authority can be verified from structured inventory metadata. The validator fails closed unless `authority.source_ref` is active, `source_of_truth=true`, and its `definition_sha256` and `source_version` exactly match the payload. A syntactically valid but stale SHA is therefore rejected.
+
+Membership classes are also evidence-bound:
+
+- `CANONICAL_ARTIFACT` requires an `artifact://` inventory object with `source_of_truth=true`;
+- `CANDIDATE_OBJECT` must not use an `artifact://` ref and requires `source_of_truth=false`;
+- reference-only legacy inventory rows may still be indexed for discovery, but cannot prove canonical authority or canonical/candidate classification.
+
 ## Scope semantics
 
 - `COMPLETE_ASSET`: the payload declares the complete component set for the asset. `scope.component_codes` must be empty.
@@ -48,6 +58,6 @@ The pilot intentionally preserves mixed canonicality:
 
 ## Deterministic validator
 
-`validate_asset_composition_v1.py` is read-only. It accepts a composition payload plus an inventory snapshot and emits the derived component/dependency plan. It fails closed on missing asset/source/member refs, duplicate components/members, scope drift, invalid authority SHA or canonical/candidate class mismatch.
+`validate_asset_composition_v1.py` is read-only. It accepts a composition payload plus an inventory snapshot and emits the derived component/dependency plan. It fails closed on missing asset/source/member refs, duplicate components/members, scope drift, authority SHA/version drift, missing authority metadata, or canonical/candidate class mismatch.
 
 The validator performs no network, Supabase or GitHub write.
