@@ -1,0 +1,402 @@
+[
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "¿qué hora es en Lima?",
+  "es_operacion": false,
+  "respuesta_directa": true,
+  "sistema": null,
+  "accion": null,
+  "sujeto": null,
+  "correcciones": [],
+  "formas_busqueda": [],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "DIRECT_ANSWER"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "quiero tomar un café con mi equipo",
+  "es_operacion": false,
+  "respuesta_directa": true,
+  "sistema": null,
+  "accion": null,
+  "sujeto": null,
+  "correcciones": [],
+  "formas_busqueda": [],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "DIRECT_ANSWER"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "profile",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "perfil",
+  "correcciones": [],
+  "formas_busqueda": [
+   "perfil",
+   "profile"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "adapter",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "adaptador",
+  "correcciones": [],
+  "formas_busqueda": [
+   "adaptador",
+   "adapter"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "input governance",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "gobernanza de entrada",
+  "correcciones": [],
+  "formas_busqueda": [
+   "input governance",
+   "gobernanza de entrada"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "spec driving",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "spec-driven",
+  "correcciones": [
+   {
+    "de": "spec driving",
+    "a": "spec-driven"
+   }
+  ],
+  "formas_busqueda": [
+   "spec driven",
+   "specification driven",
+   "spec"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "crear history de usuario",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": "crear",
+  "sujeto": "historias de usuario",
+  "correcciones": [
+   {
+    "de": "history",
+    "a": "historias"
+   }
+  ],
+  "formas_busqueda": [
+   "historias de usuario",
+   "user stories"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "el creador de skills",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "creador de skills",
+  "correcciones": [],
+  "formas_busqueda": [
+   "creador de skills",
+   "skill creator"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "adaptador de experiencia de usuario del marketplace",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "adaptador UX del marketplace",
+  "correcciones": [],
+  "formas_busqueda": [
+   "adaptador de experiencia de usuario del marketplace",
+   "marketplace ux adapter"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "el perfil del director de producto",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "perfil director de producto",
+  "correcciones": [],
+  "formas_busqueda": [
+   "perfil del director de producto",
+   "product director profile"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "revisor de linaje de evidencia",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "revisor de linaje de evidencia",
+  "correcciones": [],
+  "formas_busqueda": [
+   "revisor de linaje de evidencia",
+   "evidence lineage reviewer"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "regla para no exponer el DNI en logs",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "DNI en logs",
+  "correcciones": [],
+  "formas_busqueda": [
+   "regla para no exponer el DNI en logs"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "Yape solo para el monto inicial",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "Yape monto inicial",
+  "correcciones": [],
+  "formas_busqueda": [
+   "Yape solo para el monto inicial"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "registrar paso de operación de tarjeta",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "paso de operación de tarjeta",
+  "correcciones": [],
+  "formas_busqueda": [
+   "registrar paso de operación de tarjeta"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "con qué termina el análisis de programación",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "entregable del análisis de programación",
+  "correcciones": [],
+  "formas_busqueda": [
+   "con qué termina el análisis de programación"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "ver el saldo de un cliente",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "saldo de cliente",
+  "correcciones": [],
+  "formas_busqueda": [
+   "saldo de un cliente"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "el perfil",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "perfil",
+  "correcciones": [],
+  "formas_busqueda": [
+   "perfil"
+  ],
+  "ambiguo": true,
+  "alternativas": [
+   "perfil de producto",
+   "perfil de UI",
+   "perfil de calidad"
+  ],
+  "pregunta_usuario": "¿Cuál perfil: producto, UI o calidad?",
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "ASK_USER"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "¿qué hay en curso ahora?",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": null,
+  "sujeto": "estado en curso",
+  "correcciones": [],
+  "formas_busqueda": [
+   "estado en curso"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": "ESTADO_EN_CURSO",
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "quiero crear una regla nueva para validar montos",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "LF",
+  "accion": "crear",
+  "sujeto": "regla de validación de montos",
+  "correcciones": [],
+  "formas_busqueda": [
+   "regla nueva para validar montos"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": "REGLA_CREAR",
+  "downstream_execution_allowed": false,
+  "_esperado": "LEVEL1_SEARCH"
+ },
+ {
+  "schema_version": "LF_ROUTER_STAGE1_V1",
+  "texto_original": "estado de la cuenta en Saly",
+  "es_operacion": true,
+  "respuesta_directa": false,
+  "sistema": "SALY",
+  "accion": null,
+  "sujeto": "cuenta",
+  "correcciones": [],
+  "formas_busqueda": [
+   "estado de la cuenta"
+  ],
+  "ambiguo": false,
+  "alternativas": [],
+  "pregunta_usuario": null,
+  "capability_hint": null,
+  "downstream_execution_allowed": false,
+  "_esperado": "SYSTEM_NOT_SUPPORTED"
+ }
+]

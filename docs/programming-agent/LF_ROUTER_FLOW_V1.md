@@ -10,7 +10,8 @@ Todo el flujo es de solo lectura; ningún resultado autoriza efectos (`downstrea
 1. ¿Es una operación o una pregunta que se responde sin inventario? ("¿qué hora es en Lima?" → se responde directo y termina.)
 2. Corregir lo mal dicho ("history" cerca de "usuario" = "historias"; "spec driving" = "spec-driven").
 3. Sistema (LF por ahora), acción y sujeto extraídos de la frase.
-4. Reformular el sujeto con las palabras del inventario (español e inglés) **solo en el nivel 1**.
+4. Reformular el sujeto con las palabras del inventario (español e inglés). Esas mismas formas, que el modelo ya produjo, se usan también en el nivel 1 y en la primera pasada del nivel 2; no se hace expansión adicional de sinónimos (medido en la prueba de punta a punta: en el nivel 2 la forma en inglés encontró lo que la forma en español no).
+5. Si la etapa 1 trae `capability_hint`, el despacho va primero; la búsqueda nivel 1 es para localizar activos, no capacidades (medido: "estado en curso" en el nivel 1 trae una regla B2B sin relación, mientras el despacho con la pista responde PERMITIDO).
 
 **Etapa 2 — Encaminar** (DB):
 - **Nivel 1 (construido, probado):** `lf_router_search_v1` sobre inventario de gobierno y reglas del producto. Entrega pistas, no decisiones.
@@ -45,6 +46,19 @@ Hoy el inventario no tiene el documento con el que termina el análisis de progr
 ## Medición actual (nivel 1)
 
 Antes de los aliases: reglas 8/10 en primer lugar, inventario 8/12. Con los aliases de la primera ronda, las frases probadas del propietario ("history de usuario", "creador de skills", adaptador UX, perfil de interfaz, perfil de producto, gobernanza de entrada) quedan en primer lugar en la base real. "spec driving", el café y el ajedrez siguen sin resultados.
+
+## Prueba de punta a punta (20 frases: las del propietario más inventadas; etapa 1 redactada por Claude, no medida con el modelo en vivo)
+
+Casos en `sandbox/lf_contract_gate_test/router_stage1/e2e_cases_v1.json`; búsquedas contra la base real el 2026-10-22.
+
+| Resultado | Frases |
+|---|---|
+| Responde directo / pregunta / sistema no soportado (3 de 3 correctos) | "qué hora es en Lima", el café; "el perfil" (ambiguo); Saly |
+| Activo correcto en primer lugar en el nivel 1 (8) | input governance, historias de usuario ("history"), creador de skills, adaptador UX del marketplace, perfil del director de producto, revisor de linaje, DNI en logs, Yape monto inicial |
+| Resuelto por el despacho con `capability_hint` (2) | estado en curso, crear regla (el nivel 1 solo trae ruido B2B) |
+| Varios candidatos válidos, decide quien elige (2) | "profile"/"perfil", "adapter"/"adaptador" |
+| No encontrado sin más detalle (3) | "spec driving" (nivel 2 con la palabra "spec" sola trae el contrato `SPEC_INPUT` y funciones `*_spec`: pistas, no certeza), "registrar paso de operación de tarjeta", "con qué termina el análisis de programación" |
+| Pista débil (1) | "ver el saldo de un cliente" trae reglas de pagos/reembolso: relacionadas, no la respuesta |
 
 ## Pendiente (no declarado como hecho)
 
