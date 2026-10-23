@@ -348,13 +348,21 @@ BEGIN
       'open_pr_audit_apply_time_currentness_proven',false,
       'external_consumer_absence_proven',false
     ),
-    'stale_open_pr_risks',jsonb_build_array(
-      jsonb_build_object('pr',1930,
-        'classification','STALE_RUNTIME_MUTATION_CONFLICT_REVIEW_REQUIRED'),
-      jsonb_build_object('pr',1922,
-        'classification','STALE_RUNTIME_MUTATION_CONFLICT_REVIEW_REQUIRED'),
-      jsonb_build_object('pr',1484,
-        'classification','STALE_OPEN_SOURCE_REINTRODUCTION_RISK_REVIEW_REQUIRED')
+    'open_pr_cleanup',jsonb_build_array(
+      jsonb_build_object(
+        'pr',1930,
+        'status','CLOSED_2026-10-23',
+        'disposition','DUPLICATE_STALE_SUPERSEDED_BY_MAIN',
+        'main_source','supabase/migrations/20261007193445_ig_m5_4_remove_legacy_resolver_calls.sql'),
+      jsonb_build_object(
+        'pr',1922,
+        'status','CLOSED_2026-10-23',
+        'disposition','DUPLICATE_STALE_SUPERSEDED_BY_MAIN',
+        'main_source','supabase/migrations/20261007194445_ig_m5_5_explicit_fingerprint.sql'),
+      jsonb_build_object(
+        'pr',1484,
+        'status','OPEN',
+        'disposition','CACHED_ALLOWED_CANDIDATE_NOT_FORBIDDEN_LEGACY_REEVALUATE_SEPARATELY')
     ),
     'overall_verdict',CASE
       WHEN v_error>0 THEN 'REPRESENTATIVE_ERRORS_NO_REHOME_AUTHORITY'
