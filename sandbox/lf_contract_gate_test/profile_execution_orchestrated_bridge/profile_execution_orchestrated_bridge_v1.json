@@ -1,0 +1,92 @@
+{
+  "schema_version": "LF_PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_CONTRACT_V2",
+  "solution_code": "PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "capability_code": "PROFILE_EXECUTION_RUNTIME",
+  "purpose": "Break the Profile Task Packet/dispatch-receipt circularity by separating a static work digest from dynamic execution authority, while reusing the existing Profile Runtime lane.",
+  "reused_authorities": {
+    "child_operation": "EJECUCION_PERFIL_LF",
+    "child_begin": "public.lf_profile_execution_begin_v1",
+    "dispatch_receipt": "public.fn_lf_orchestrator_dispatch_receipt_v1",
+    "entry_guard": "public.fn_lf_capability_orchestrator_entry_guard_v1",
+    "capability_binding": "public.fn_lf_capability_bind_from_orchestrator_v1",
+    "runtime_queue": "private.lf_profile_runtime_queue_v1",
+    "profile_authority": "public.lf_activos",
+    "router": "ACT-0001",
+    "currentness": "CURRENTNESS_AUTHORITY"
+  },
+  "two_phase_protocol": {
+    "phase_1_static_work": [
+      "BUILD_TASK_PACKET_SEED_WITHOUT_RECEIPT_OR_GUARD",
+      "COMPUTE_TASK_PACKET_WORK_DIGEST",
+      "BEGIN_CHILD_EXECUTION_BOUND_TO_WORK_DIGEST",
+      "ISSUE_REAL_DISPATCH_RECEIPT",
+      "BIND_AND_READBACK_ENTRY_GUARD"
+    ],
+    "phase_2_dynamic_authority": [
+      "FINALIZE_TASK_PACKET_WITH_REAL_RECEIPT_AND_ACCEPTED_GUARD",
+      "VERIFY_FINAL_PACKET_STATIC_PROJECTION_EQUALS_WORK_DIGEST",
+      "ENQUEUE_EXISTING_PROFILE_RUNTIME_WITH_AUTHORITY_ENVELOPE"
+    ]
+  },
+  "static_seed_contract": {
+    "worker_binding_requires": [
+      "resolution_mode",
+      "worker_ref",
+      "worker_kind",
+      "binding_authority_ref",
+      "binding_revision",
+      "binding_digest"
+    ],
+    "worker_binding_forbids_before_dispatch": [
+      "orchestrator_execution_id",
+      "dispatch_receipt_ref",
+      "entry_guard_code",
+      "entry_guard_decision"
+    ]
+  },
+  "final_packet_contract": {
+    "dynamic_fields_added_only_after_live_readback": [
+      "worker_binding.orchestrator_execution_id",
+      "worker_binding.dispatch_receipt_ref",
+      "worker_binding.entry_guard_code",
+      "worker_binding.entry_guard_decision"
+    ],
+    "entry_guard_decision": "ORCHESTRATOR_ENTRY_ACCEPTED",
+    "static_projection_digest_must_equal": "task_packet_work_digest"
+  },
+  "worker_attach_contract": {
+    "attach_existing_child_execution": true,
+    "worker_second_begin_forbidden": true,
+    "consumer_execution_identity": "EXEC-PROFILE-RUNTIME-<request_id-lowercase>",
+    "consumer_manifest_crossbinds": [
+      "orchestrator_execution_id",
+      "plan_digest",
+      "capability_code",
+      "task_packet_work_digest",
+      "profile_source_digest",
+      "source_revision"
+    ]
+  },
+  "invariants": {
+    "receipt_or_guard_in_static_seed_forbidden": true,
+    "fabricated_entry_guard_forbidden": true,
+    "consumer_execution_preexists_before_dispatch_receipt": true,
+    "real_receipt_required_before_final_task_packet": true,
+    "real_entry_guard_required_before_final_task_packet": true,
+    "final_static_projection_must_match_original_work_digest": true,
+    "existing_profile_runtime_is_reused": true,
+    "new_queue_forbidden": true,
+    "new_profile_operation_forbidden": true,
+    "direct_dispatch_without_entry_guard_forbidden": true
+  },
+  "boundaries": {
+    "database_calls": false,
+    "writes_state": false,
+    "runtime_activation": false,
+    "production_activation": false,
+    "registers_capability": false,
+    "modifies_pase": false,
+    "modifies_post_pase": false
+  }
+}
