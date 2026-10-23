@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-route-orden-v1",
+  "paths": {
+    "supabase/migrations/20261023040000_lf_router_route_orden_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-route-orden-v1.json": "CHANGESET_MANIFEST"
+  }
+}
