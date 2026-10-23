@@ -1,0 +1,213 @@
+{
+  "schema_version": "ig-m1013-cp3-representative-regression-external-boundary-plan/v1",
+  "produced_date": "2026-10-23",
+  "scope": {
+    "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit": "M10.13",
+    "work_item_id": 474,
+    "checkpoint": "ZERO_LEGACY_CALLERS",
+    "checkpoint_state_before": "PENDING",
+    "purpose": "Broaden cached-vs-alternative regression evidence and refresh external-consumer boundary evidence without authorizing retirement or checkpoint closure."
+  },
+  "authority": {
+    "ekb_read": [
+      "IG-M104-LEGACY-ACTIVE-FREEZE-SCOPE-001",
+      "IG-M1011-HISTORICAL-UNREFERENCED-LIVE-SQL-CALLER-001",
+      "GOV-ASSET-RETIREMENT-GOVERNANCE-V1-001",
+      "IG-M1013-REPOSITORY-REPAIR-POLICY-054"
+    ],
+    "main_sha": "0e082c68c092d65fca61a27aa7c7eaa2f5672f80",
+    "canonical_registry": {
+      "asset_type": "MIGRATION",
+      "action_code": "UPDATE",
+      "operation_code": "ACTUALIZACION_DB_LF",
+      "operation_status": "SANDBOX_ACTIVE"
+    },
+    "router_guard": {
+      "status": "BLOCKED",
+      "blocking_code": "BLOCK_SCOPE_SEMANTICS_UNATTESTED",
+      "semantic_gap_code": "POSITIVE_NEGATIVE_SCOPE_NOT_BOUND",
+      "reason": "The exact scoped request contains negative constraints; current ACT-0001 requires independent semantic scope attestation before downstream effects.",
+      "draft_source_authoring_only": true,
+      "train_effect_authorized": false
+    }
+  },
+  "runtime_snapshot": {
+    "semantic_revalidation": {
+      "signature": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+      "source_md5": "44a7f21a3c01411662ab568af58c4091",
+      "sql_callers": 0,
+      "view_refs": 0,
+      "matview_refs": 0,
+      "public_execute_effect": {
+        "anon_execute": true,
+        "authenticated_execute": true,
+        "anon_schema_usage_programacion": false,
+        "authenticated_schema_usage_programacion": false,
+        "service_role_schema_usage_programacion": false
+      },
+      "zero_external_consumers_proven": false,
+      "direct_public_api_client_invocation_indicated": "BLOCKED_BY_SCHEMA_USAGE_FOR_ANON_AND_AUTHENTICATED"
+    },
+    "source_pins": {
+      "semantic_v2_cached": "05d39a40acfbe0619b6c32253bf45d97",
+      "semantic_v2_alternative": "c2832adc0b4d9e510b83bf4e3e533256",
+      "semantic_v3_cached": "ff726ab1c658769389b65c8479af84fb",
+      "semantic_v3_alternative": "2eec94aaeafcd10ac38519d1ca0d53b0",
+      "classifier_v2_cached": "7257b9bbc86b1f61e5435a37479d63a1",
+      "classifier_v2_alternative": "f991bf655a7b4f2a89d68138c6862012",
+      "canonical_graph": "b107626672364dd5c832800b4f168f01"
+    }
+  },
+  "open_pr_diff_audit": {
+    "exact_semantic_revalidation_refs": 0,
+    "stale_related_findings": [
+      {
+        "pr": 1930,
+        "path": "supabase/migrations/20261007195000_ig_m5_4_remove_legacy_resolver_calls.sql",
+        "identities": [
+          "fn_input_governance_bootstrap_classify_v2_cached_v2"
+        ],
+        "classification": "STALE_RUNTIME_MUTATION_CONFLICT_REVIEW_REQUIRED"
+      },
+      {
+        "pr": 1922,
+        "path": "supabase/migrations/20261007192500_ig_m5_5_explicit_fingerprint.sql",
+        "identities": [
+          "fn_input_governance_bootstrap_materialize_v1",
+          "fn_input_governance_bootstrap_classify_v2_cached_v2"
+        ],
+        "classification": "STALE_RUNTIME_MUTATION_CONFLICT_REVIEW_REQUIRED"
+      },
+      {
+        "pr": 1484,
+        "path": "supabase/migrations/20261002083500_ig_cv_n8_validator_graph_once_per_chunk_v1.sql",
+        "identities": [
+          "fn_input_governance_bootstrap_classify_v2_cached_v2"
+        ],
+        "classification": "STALE_OPEN_SOURCE_REINTRODUCTION_RISK_REVIEW_REQUIRED"
+      }
+    ],
+    "implication": "The 100-PR pre-candidate audit found zero semantic_revalidation_v1 refs. Duplicate stale PRs #1930/#1922 were closed after exact main-source proof. #1484 is a cached-path candidate, not a forbidden legacy consumer. CP3 still remains PENDING because full external-consumer absence and global forbidden-legacy closure are not yet proven.",
+    "audited_open_prs_before_candidate_pr": 100,
+    "cleanup_after_audit": [
+      {
+        "pr": 1930,
+        "status": "CLOSED_2026-10-23",
+        "disposition": "DUPLICATE_STALE_SUPERSEDED_BY_MAIN",
+        "main_source": "supabase/migrations/20261007193445_ig_m5_4_remove_legacy_resolver_calls.sql"
+      },
+      {
+        "pr": 1922,
+        "status": "CLOSED_2026-10-23",
+        "disposition": "DUPLICATE_STALE_SUPERSEDED_BY_MAIN",
+        "main_source": "supabase/migrations/20261007194445_ig_m5_5_explicit_fingerprint.sql"
+      },
+      {
+        "pr": 1484,
+        "status": "OPEN",
+        "disposition": "CACHED_ALLOWED_CANDIDATE_NOT_FORBIDDEN_LEGACY_REEVALUATE_SEPARATELY"
+      }
+    ]
+  },
+  "representative_regression": {
+    "screens": 7,
+    "family_cases": 14,
+    "variant_pairs": 3,
+    "expected_comparisons": 42,
+    "graph_policy": "BUILD_ONCE_PER_SCREEN_AND_REUSE",
+    "cases": [
+      {
+        "cohort": "AUTH",
+        "screen_id": 51,
+        "version_id": 19,
+        "families": [
+          "MFA_OTP_SSO",
+          "SECURITY"
+        ]
+      },
+      {
+        "cohort": "FORMS",
+        "screen_id": 57,
+        "version_id": 19,
+        "families": [
+          "FIELDS",
+          "VALIDATIONS"
+        ]
+      },
+      {
+        "cohort": "NAVIGATION",
+        "screen_id": 4,
+        "version_id": 19,
+        "families": [
+          "ROUTING_NAVIGATION",
+          "ACTIONS"
+        ]
+      },
+      {
+        "cohort": "DESIGN",
+        "screen_id": 62,
+        "version_id": 19,
+        "families": [
+          "DESIGN_SYSTEM",
+          "RESPONSIVE"
+        ]
+      },
+      {
+        "cohort": "ONBOARDING",
+        "screen_id": 1,
+        "version_id": 19,
+        "families": [
+          "ACTIONS",
+          "FIELDS"
+        ]
+      },
+      {
+        "cohort": "RECOVERY",
+        "screen_id": 58,
+        "version_id": 19,
+        "families": [
+          "SECURITY",
+          "ROUTING_NAVIGATION"
+        ]
+      },
+      {
+        "cohort": "API",
+        "screen_id": 2,
+        "version_id": 19,
+        "families": [
+          "API_DATA_CONTRACT",
+          "ERRORS"
+        ]
+      }
+    ],
+    "variants": [
+      {
+        "label": "SEMANTIC_V2",
+        "current": "programacion.fn_input_governance_semantic_probe_v2_cached_v1(integer,text,bigint,jsonb)",
+        "alternative": "programacion.fn_input_governance_semantic_probe_v2(integer,text,bigint)"
+      },
+      {
+        "label": "SEMANTIC_V3",
+        "current": "programacion.fn_input_governance_semantic_probe_v3_cached_v1(integer,text,bigint,jsonb)",
+        "alternative": "programacion.fn_input_governance_semantic_probe_v3_ctx(integer,text,bigint,jsonb)"
+      },
+      {
+        "label": "CLASSIFIER_V2",
+        "current": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+        "alternative": "programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)"
+      }
+    ]
+  },
+  "constraints": [
+    "NO_DROP",
+    "NO_REVOKE",
+    "NO_RUNTIME_SOURCE_MODIFICATION",
+    "NO_ROUTER_MODIFICATION",
+    "NO_M10_4_FREEZE_MODIFICATION",
+    "NO_CP3_CLOSURE",
+    "NO_REHOME_AUTHORIZATION_FROM_THIS_SAMPLE",
+    "NO_READY_TO_MERGE_WHILE_ROUTER_SCOPE_GUARD_IS_BLOCKED"
+  ],
+  "expected_db_effect_if_later_authorized": "Write one observational evidence object under M10.13 unit_metadata and keep ZERO_LEGACY_CALLERS=PENDING."
+}
