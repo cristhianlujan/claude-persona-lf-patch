@@ -404,10 +404,30 @@ auxiliary_files:
 - AUDIT_CHECKLIST_R8.md
 - AUDIT_CHECKLIST_R8_62_ARTEFACTOS.xlsx
 workflow:
+  worker_resolution_contract:
+    schema_version: STORY_WORKER_ROLE_CONTRACT_V1
+    resolution_mode: ORCHESTRATOR_RESOLVED
+    binding_authority: ORCHESTRATOR
+    worker_identity_in_manifest: FORBIDDEN
+    capability_execution_contract: CAPABILITY_EXECUTION_CONTRACT_V1
+    unresolved_worker_policy: BLOCK
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
+    - SCRIPT
+    - SERVICE
+    - CAPABILITY
   pre_decomposition_gate:
     after: SOURCE_INTEGRITY
     before: SCREEN_DECOMPOSITION
     judge: J00_SCREEN_INGESTION
+    worker_role: SCREEN_INGESTOR
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
+    - SCRIPT
+    - SERVICE
+    - CAPABILITY
     promotion_status: CANDIDATE_CI_ONLY
   retry_limit: 2
   worker_self_approval: false
@@ -417,30 +437,66 @@ workflow:
     judge: J01_SOURCE_INTEGRITY
   - order: 2
     step_id: SCREEN_DECOMPOSITION
+    worker_role: SCREEN_DECOMPOSER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J02_SCREEN_DECOMPOSITION
   - order: 3
     step_id: STORY_CORE
+    worker_role: STORY_CORE_AUTHOR
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J03_STORY_CORE
   - order: 4
     step_id: FIELD_CONTRACTS
+    worker_role: FIELD_CONTRACT_AUTHOR_AUDITOR
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J04_FIELD_CONTRACTS
   - order: 5
     step_id: OBSERVATIONS_ERRORS
+    worker_role: CROSS_CUTTING_ENRICHER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J05_OBSERVATIONS_ERRORS
   - order: 6
     step_id: SECURITY_PRIVACY
+    worker_role: CROSS_CUTTING_ENRICHER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J06_SECURITY_PRIVACY
   - order: 7
     step_id: AUDIT_TRACEABILITY
+    worker_role: CROSS_CUTTING_ENRICHER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J07_AUDIT_TRACEABILITY
   - order: 8
     step_id: TOKENS_MESSAGES
+    worker_role: CROSS_CUTTING_ENRICHER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J08_TOKENS_MESSAGES
   - order: 9
     step_id: ANALYTICS_OBSERVABILITY
+    worker_role: CROSS_CUTTING_ENRICHER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J09_ANALYTICS_OBSERVABILITY
   - order: 10
     step_id: TEST_COVERAGE
+    worker_role: STORY_TEST_DERIVER
+    allowed_worker_kinds:
+    - PROFILE
+    - AGENT
     judge: J10_TEST_COVERAGE
   - order: 11
     step_id: SKILL_PACKAGE
