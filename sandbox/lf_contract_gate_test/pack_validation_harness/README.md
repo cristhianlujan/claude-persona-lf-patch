@@ -82,3 +82,29 @@ Expected: `PASS_PACK_VALIDATION_HARNESS_V1=11/11`.
 ## No duplication
 
 No shared imported validation core is introduced. Domain rules remain local. The shared surface is the externally validated contract and harness execution boundary.
+
+## Bounded Profile Updater v0.2 output-pair preflight (source only)
+
+The existing harness offers an opt-in, read-only mode for a single source-bound pair.
+It does not evaluate every profile or repeat the full inventory/floor campaign.
+
+Usage:
+    python sandbox/lf_contract_gate_test/pack_validation_harness/pack_validation_harness_v1.py --repo-root <exact-git-checkout> --output-pair-request <pair-request.json>
+
+The request schema is LF_PROFILE_OUTPUT_PAIR_REQUEST_V1 with profile_slug,
+candidate_head_sha, positive_binding_ref and negative_binding_ref.
+Each existing PROFILE_OUTPUT_VALIDATION_BINDING_V1 stays under evidence/.
+The positive expects true and negative false. Source HEAD, committed file
+contents, canonical validator and output SHAs are independently compared
+by the local harness, reusing run_bound_profile_output_validator_v1.py.
+
+Successful status is LOCAL_PAIR_VALIDATED_UNATTESTED, never VERIFIED.
+provider_readback_verified=false, provider_attested=false,
+ledger_receipts_created=0, candidate_admitted=false.
+To become authoritative the separately governed producer must obtain
+independent GitHub API output byte readback and use existing EVIDENCE_LEDGER
+through current orchestrator and capability bindings. This code never
+self-issues verified receipts or enables PACK_VALIDATION_HARNESS cutover.
+
+Bounded unit test:
+    python sandbox/lf_contract_gate_test/pack_validation_harness/test_output_pair_preflight_v1.py

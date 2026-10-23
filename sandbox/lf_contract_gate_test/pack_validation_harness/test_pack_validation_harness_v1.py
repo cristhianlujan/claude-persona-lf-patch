@@ -259,7 +259,13 @@ def test_clean_workflow_v1_regression():
         check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    assert "PASS_PACK_VALIDATION_CLEAN_WORKFLOW_V1=7/7" in completed.stdout, completed.stdout
+    # The downstream clean workflow can add further tests without breaking
+    # this independent harness regression. Confirm all discovered tests pass.
+    import re
+    outcome = re.search(r"PASS_PACK_VALIDATION_CLEAN_WORKFLOW_V1=(\d+)/(\d+)", completed.stdout)
+    assert outcome is not None, completed.stdout
+    passed, total = map(int, outcome.groups())
+    assert passed == total and total >= 7, completed.stdout
 
 
 def main() -> None:
