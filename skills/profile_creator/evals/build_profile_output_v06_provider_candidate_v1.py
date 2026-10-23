@@ -69,7 +69,7 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
     to_nonready = fixture["v05"]["to_nonready"]
 
     attempt = {
-        "surface": "PROFILE_OUTPUT_VALIDATION_LEDGER",
+        "surface": "SUPABASE_TABLE_OR_VIEW",
         "locator": LEDGER_LOCATOR,
         "result": "ABSENT",
         "observation": (
@@ -152,6 +152,7 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
 
     candidate["live_authority_packet"] = {
         "status": "COMPLETE",
+        "observed_at": OBSERVED_AT,
         "applicable_surfaces": [
             "PACK_VALIDATION_HARNESS",
             "ACTUALIZACION_PERFIL_LF",
@@ -184,7 +185,7 @@ def build(source_head_sha: str) -> tuple[dict, dict]:
     nodes[0]["node_id"] = "NODE-OUTPUT-CANDIDATE"
     nodes[0]["phase"] = "CURRENT_V06_CANDIDATE"
     nodes[0]["disposition"] = "REUSE_AS_IS"
-    nodes[0]["blocking_uncertainty_id"] = None
+    nodes[0].pop("blocking_uncertainty_id", None)
     nodes[1]["node_id"] = "NODE-VERIFIED-OUTPUT-RECEIPT"
     nodes[1]["phase"] = "PROVIDER_VERIFICATION_AND_LEDGER"
     nodes[1]["disposition"] = "DESIGN_BLOCKING"
