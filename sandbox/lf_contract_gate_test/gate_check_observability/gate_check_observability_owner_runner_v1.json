@@ -1,0 +1,50 @@
+{
+  "schema_version": "lf-gate-check-observability-owner-runner-contract/v1",
+  "durable_name": "GATE_CHECK_OBSERVABILITY_OWNER_RUNNER_V1",
+  "owner": "GATE_CHECK_OBSERVABILITY",
+  "purpose": "Provide one owner-local deterministic self-validation surface for the transversal GATE_CHECK_OBSERVABILITY capability so PASE can execute its own package checks without using Validate LF Packs as the execution owner.",
+  "input_contract": {
+    "required": ["repository_source"],
+    "applicability_authority": "UPSTREAM_PASE_ROUTER_OR_EQUIVALENT_CANONICAL_CALLER",
+    "must_not_decide_run_skip": true
+  },
+  "owned_execution": {
+    "runner": "sandbox/lf_contract_gate_test/gate_check_observability/run_gate_checks_v1.py",
+    "test_glob": "sandbox/lf_contract_gate_test/gate_check_observability/test_*.py",
+    "mode": "COLLECT_ALL",
+    "artifact_dir": ".lf_gate_diagnostics/gate_check_observability/control"
+  },
+  "excluded": [
+    "CI applicability or currentness",
+    "PACK_VALIDATION",
+    "PROFILE_RUNTIME_V3 execution",
+    "S30 bounded regressions",
+    "TRANSVERSAL_README validation",
+    "Contract Check",
+    "database or Supabase writes",
+    "Git writes",
+    "deployment",
+    "production activation"
+  ],
+  "qualification_boundary": {
+    "owner_self_validation": "IN_SCOPE",
+    "consumer_specific_claim_or_excel_qualification": "NOT_MOVED_BY_THIS_PR",
+    "reason": "Historical Validate LF Packs qualification is coupled to Profile Runtime evidence and must not be silently re-homed before an independent reusable contract is proven."
+  },
+  "ownership_invariants": [
+    "Applicability is decided upstream; this runner only executes the owner package checks.",
+    "The runner executes the canonical run_gate_checks_v1.py engine rather than creating a second gate-check engine.",
+    "The runner must not execute PROFILE_RUNTIME_V3, PACK_VALIDATION, S30, TRANSVERSAL_README, Contract Check, DB Regression or production actions.",
+    "Historical placement inside Validate LF Packs is not ownership authority.",
+    "Consumer-specific evidence qualification remains separately blocked until its reusable ownership contract is proven."
+  ],
+  "output_contract": {
+    "schema_version": "lf-gate-check-observability-owner-runner/v1",
+    "status_enum": ["PASS", "FAIL"],
+    "required_fields": ["owner", "status", "artifact_dir"]
+  },
+  "handoff": "PASE_ORCHESTRATOR_BIND_GATE_CHECK_OBSERVABILITY",
+  "merge_authorized": false,
+  "deployment_authorized": false,
+  "production_authorized": false
+}
