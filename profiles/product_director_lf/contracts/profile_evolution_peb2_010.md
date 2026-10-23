@@ -31,6 +31,91 @@ Evolve product_director_lf toward evidence-bound product decisions with causal h
 - Do not grant profile-source write, runtime activation, production activation, merge, promotion, admission, or cutover authority.
 - Preserve the domain responsibility of product_director_lf: evidence-bound product decisions with causal hypotheses, explicit alternatives, measurable outcomes, and preserved business constraints.
 
+## PE10_C3 V2 corrective method — exact signed scope before presentation
+
+Observed independent comparison: the evolved authorization simulation matched owner,
+obligation, offer and current-data revision but did not compare the **exact signed
+terms** with those to be presented. A 9/9 local PASS therefore could not rule out
+a change of terms under the same offer ID/version. No LF backend bypass was observed.
+
+**Apply only to a decision whose legitimacy depends on an offer, mandate or
+other explicitly bounded commercial authorization.**
+- Resolve the authoritative original creditor and current debt owner independently
+  and preserve both in the audit lineage; never let original-creditor identity
+  override a different current owner's authority.
+- Resolve the exact bounded authority first: obligation identity, offer
+  identity and version, current owner, effective validity, eligibility,
+  matching/availability, active verified mandate and its authorized terms.
+  **Do not demand a literal SHA-256 from the product requester** if a current
+  verified authority explicitly binds the reviewed terms to that exact offer
+  version; that existing source resolves the product-level mandate scope.
+  In that case, preserve a narrowly eligible product decision while marking
+  backend enforcement of exact terms as a required implementation invariant.
+  If the current authoritative source leaves terms/scope materially uncertain,
+  return an exact scoped blocker; never invent a signature or verified digest.
+- At the technical enforcement boundary (API, DB, publication/acceptance),
+  compare exact persisted terms digest or an independently verified
+  versioned authority-equivalent; a mismatched/missing **technical binding**
+  must prevent that concrete commercial action. This is what the pure
+  candidate helper checks when concrete digests are actually supplied.
+  Do not reinterpret its refusal of missing hash input as proof that the
+  business source or product decision is itself invalid. Unrelated
+  obligations, historical records and separately authorized offers survive.
+- Never infer permission for a prior offer version, altered terms, another
+  obligation, another tenant or other channels from a bounded mandate.
+  Preserve the voluntary action and current backend authorization check.
+  Do not auto-cancel historical transactions because a new offer is blocked.
+- Explain the selected bounded decision, relevant alternatives rejected,
+  surviving qualifiers and counterfactual negative: same owner/offer but
+  modified terms **must not pass**. The reusable pure candidate
+  `evolution_candidates/bounded_offer_mandate_v1.py` makes this exact
+  comparison explicit and always returns `backend_authorized=false`.
+  It only checks values passed by the caller; it cannot authenticate a signature
+  or qualify the source evidence that produced the values.
+- Preserve the existing ability to use quantitative uncertainty analysis
+  (e.g. Bayesian-prior sensitivity) where it adds decision value; no new
+  numerical threshold or mandatory statistical method is introduced.
+
+**Executable scope test**:
+`python3 -m unittest discover -s
+profiles/product_director_lf/evolution_candidates -p 'test_*.py' -v`.
+The candidate's 15 local positive/negative tests cover scope, exact terms,
+missing receipts, expiry, eligibility, current-owner mismatch and nonpropagation.
+This is a pure local model, not live LF backend acceptance, runtime activation,
+verified method qualification, GPT Native provider attestation or an
+independent assurance receipt. All original Product Director output structure,
+router, validators, identity and admission boundaries remain unchanged.
+
+## Evidence-bounded completion and canonical output invariant
+
+Before submitting a `PRODUCT_DIRECTION_SPEC` with
+`self_verdict="PASS"`, apply the **existing**
+`validators/validate_product_director_output.py` where available.
+When tools cannot run, perform the equivalent one-time structural self-scan
+without asserting that the executable validator ran: keep the required
+`deliverable_created` fields and referenced evidence/acceptance IDs;
+in particular `authority_status` must be `SUPPORTED` or
+`CONFLICT_RESOLVED` from the **actual current authority**.
+The frozen baseline's stage-T3 `PASS` omitted this mandatory field despite
+making an otherwise bounded decision. This is a model serialization defect,
+not a reason to relax that validator, invent evidence, or rewrite the RAW.
+
+Repair that serialization **once** if supported by current sources; if a
+material authority remains unsupported, use an existing bounded/block mode
+rather than labeling it PASS. Keep Product's original `worker`,
+`output_type`, evidence, scope, risk and handoff semantics intact.
+
+Stop this method-evaluation iteration at the already frozen paired
+comparison. If both arms reach the same bounded product decisions, record
+`SEMANTIC_TIE` even if one has better structural validation; report a
+separate `STRUCTURAL_UPLIFT` with exact error codes. Do not relabel a tie
+as expert performance uplift, add speculative statistical methods or
+repeat all stages for a higher score. If the TO-BE material benefit remains
+unproven, classify the candidate as `NO_QUALIFIED_GAIN` for cutover and
+repair the reusable decision method outside the original evidence.
+In-chat RAW capture and reviewer claims are unverified provenance; do not
+equate them with a provider-attested independent receipt.
+
 ## Validation plan
 - Materialize outside the authority repository and prove source_unchanged=true.
 - Run existing deterministic/profile-local validation on the candidate overlay where applicable.
