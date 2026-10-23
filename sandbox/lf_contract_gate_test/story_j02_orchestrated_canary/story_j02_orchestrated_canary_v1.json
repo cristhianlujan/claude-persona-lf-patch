@@ -1,0 +1,115 @@
+{
+  "schema_version": "LF_STORY_J02_ORCHESTRATED_CANARY_V1",
+  "solution_code": "STORY_J02_ORCHESTRATED_CANARY_V1",
+  "status": "CANDIDATE_READ_ONLY",
+  "purpose": "Prove one real SCREEN_DECOMPOSITION step through the generic Skill orchestration and existing Profile Runtime lane before expanding Story Creator to all workers.",
+  "scope": {
+    "skill_code": "SKILL-CREATING-INTEGRAL-USER-STORIES",
+    "parent_operation": "EJECUCION_SKILL_LF",
+    "orchestrator_operation": "ORQUESTACION_SKILL_LF",
+    "step_id": "SCREEN_DECOMPOSITION",
+    "worker_role": "SCREEN_DECOMPOSER",
+    "worker_kind": "PROFILE",
+    "profile_code": "PERFIL-SCREEN-DECOMPOSER-LF",
+    "judge_code": "J02_SCREEN_DECOMPOSITION",
+    "judge_path": "skills/creating-integral-user-stories/judges/screen-decomposition.yaml",
+    "validator_path": "skills/creating-integral-user-stories/scripts/validate_screen_decomposition_visual.py",
+    "schema_path": "skills/creating-integral-user-stories/schemas/screen-decomposition.schema.json"
+  },
+  "preconditions": [
+    "Story Creator currentness is clean for all J02 canary source refs",
+    "Task Packet current authority contains worker_binding v0.4 contract",
+    "PERFIL-SCREEN-DECOMPOSER-LF exists as READ_ONLY PERFIL asset and is CURRENT",
+    "PROFILE_EXECUTION_RUNTIME is registered/current with entry guard required",
+    "ORQUESTACION_SKILL_LF is an allowed non-production operational orchestrator for this canary",
+    "J02 registry path/SHA equals current J02 artifact/source",
+    "runtime remains non-production"
+  ],
+  "required_sequence": [
+    "PARENT_SKILL_EXECUTION_IN_PROGRESS",
+    "ORCHESTRATOR_EXECUTION_IN_PROGRESS",
+    "CURRENT_STEP_CONTRACT_READBACK",
+    "WORKER_RESOLUTION",
+    "TASK_RUNTIME_BINDING_RESOLUTION",
+    "TASK_PACKET_SEED",
+    "CHILD_PROFILE_EXECUTION_RESERVATION",
+    "REAL_DISPATCH_RECEIPT",
+    "ENTRY_GUARD_ACCEPTED",
+    "FINAL_TASK_PACKET",
+    "PROFILE_RUNTIME_ATTACH_EXISTING_CHILD",
+    "PROFILE_RUNTIME_COMPLETION",
+    "PROFILE_CONTRACT_VALIDATION",
+    "J02_INDEPENDENT_JUDGE",
+    "DOWNSTREAM_J02_OUTPUT_CONSUMPTION_READBACK"
+  ],
+  "required_components": {
+    "worker_role_contract": "STORY_WORKER_ROLE_CONTRACT_V1",
+    "worker_resolver": "SKILL_WORKER_RESOLVER_V1",
+    "task_runtime_binding": "PROFILE_TASK_RUNTIME_BINDING_V1",
+    "profile_bridge": "PROFILE_EXECUTION_ORCHESTRATED_BRIDGE_V1",
+    "profile_capability": "PROFILE_EXECUTION_RUNTIME",
+    "profile_attach": "PROFILE_RUNTIME_ORCHESTRATED_ATTACH_V1",
+    "profile_operation": "EJECUCION_PERFIL_LF",
+    "entry_guard": "ORCHESTRATOR_EXECUTION_GUARD_V1"
+  },
+  "evidence_contract": {
+    "exact_source_revision_required": true,
+    "required_refs": [
+      "parent_skill_execution_ref",
+      "orchestrator_execution_ref",
+      "currentness_receipt_ref",
+      "worker_resolution_ref",
+      "task_runtime_binding_ref",
+      "task_packet_work_digest",
+      "child_profile_execution_ref",
+      "dispatch_receipt_ref",
+      "entry_guard_ref",
+      "final_task_packet_digest",
+      "runtime_attach_ref",
+      "runtime_completion_ref",
+      "profile_contract_result_ref",
+      "j02_judge_result_ref",
+      "downstream_consumption_ref"
+    ],
+    "crossbind_dimensions": [
+      "source_revision",
+      "parent_execution_id",
+      "orchestrator_execution_id",
+      "child_execution_id",
+      "step_id",
+      "worker_ref",
+      "task_packet_work_digest",
+      "plan_digest",
+      "dispatch_receipt_id",
+      "output_digest",
+      "judge_code"
+    ]
+  },
+  "positive_close": {
+    "runtime_completion": "PASS",
+    "profile_contract_valid": "PASS",
+    "j02_result": "PASS_WITH_EVIDENCE",
+    "j02_version": "v0.8",
+    "validator_path_must_equal_scope": true,
+    "downstream_consumption_observed": true,
+    "receipt_and_guard_real": true,
+    "worker_judge_independence": true,
+    "source_and_head_exact": true
+  },
+  "mandatory_negative_controls": [
+    "UNRESOLVED_PROFILE_BINDING_BLOCKS_WITH_ZERO_DURABLE_QUEUE_EFFECT",
+    "STALE_J02_CURRENTNESS_BLOCKS_BEFORE_CHILD_DISPATCH",
+    "AMBIGUOUS_WORKER_BLOCKS_BEFORE_CHILD_DISPATCH",
+    "FABRICATED_GUARD_OR_RECEIPT_BLOCKS",
+    "STATIC_TASK_PACKET_DRIFT_AFTER_RECEIPT_BLOCKS",
+    "J02_SOURCE_OMISSION_RETURNS_TO_WORKER",
+    "WORKER_CANNOT_EXECUTE_OWN_JUDGE"
+  ],
+  "non_goals": [
+    "full J01-J13 Story Creator execution",
+    "production activation",
+    "runtime cutover beyond J02 canary",
+    "new queue or new model runtime",
+    "PASE or POST-PASE modification"
+  ]
+}
