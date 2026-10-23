@@ -1,0 +1,93 @@
+{
+  "schema_version": "ig-m1013-cp3-rehome-macro-proof/v1",
+  "scope": {
+    "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit": "M10.13",
+    "checkpoint": "ZERO_LEGACY_CALLERS",
+    "progress_before_pct": 35,
+    "expected_checkpoint_state_after": "PENDING",
+    "no_runtime_mutations": true
+  },
+  "retirement_governance": "ASSET_RETIREMENT_GOVERNANCE/1.0.0",
+  "precondition": {
+    "previous_disconnection": "PR3108",
+    "curation_asset_id": 289,
+    "member_count": 7,
+    "sha256": "124639d2ef4bd4d6d7af9739e12a523ecd309676c71f8d43215f30e240f05bf3",
+    "frozen_source_sha_check": "M10.4 unchanged"
+  },
+  "pilot_cases": [
+    {
+      "screen_id": 43,
+      "version_id": 19,
+      "family": "ACTIONS"
+    },
+    {
+      "screen_id": 43,
+      "version_id": 19,
+      "family": "ROUTING_NAVIGATION"
+    },
+    {
+      "screen_id": 2,
+      "version_id": 19,
+      "family": "DESIGN_SYSTEM"
+    },
+    {
+      "screen_id": 2,
+      "version_id": 19,
+      "family": "RESPONSIVE"
+    }
+  ],
+  "variants": [
+    {
+      "label": "SEMANTIC_V2",
+      "current": "fn_input_governance_semantic_probe_v2_cached_v1(integer,text,bigint,jsonb)",
+      "alternative": "fn_input_governance_semantic_probe_v2(integer,text,bigint)",
+      "source_md5_current": "05d39a40acfbe0619b6c32253bf45d97",
+      "source_md5_alternative": "c2832adc0b4d9e510b83bf4e3e533256"
+    },
+    {
+      "label": "SEMANTIC_V3",
+      "current": "fn_input_governance_semantic_probe_v3_cached_v1(integer,text,bigint,jsonb)",
+      "alternative": "fn_input_governance_semantic_probe_v3_ctx(integer,text,bigint,jsonb)",
+      "source_md5_current": "ff726ab1c658769389b65c8479af84fb",
+      "source_md5_alternative": "2eec94aaeafcd10ac38519d1ca0d53b0"
+    },
+    {
+      "label": "CLASSIFIER_V2",
+      "current": "fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+      "alternative": "fn_input_governance_bootstrap_classify_v2(integer,text,bigint)",
+      "source_md5_current": "7257b9bbc86b1f61e5435a37479d63a1",
+      "source_md5_alternative": "f991bf655a7b4f2a89d68138c6862012"
+    }
+  ],
+  "expected_output": "programacion.engineering_plan_units.unit_metadata.cp3_cached_rehome_macro_v1",
+  "metric_safety": {
+    "source_digest_pinning": true,
+    "pilot_only": true,
+    "real_current_screens": true,
+    "graph_materialized_once_per_screen_per_case": true,
+    "record_json_equality": true,
+    "record_elapsed_ms": true,
+    "do_not_rehome_solely_from_pilot": true,
+    "cache_performance_must_not_regress": true
+  },
+  "semantic_revalidation_v1": {
+    "source_md5": "44a7f21a3c01411662ab568af58c4091",
+    "security_definer": true,
+    "public_execute_default": true,
+    "source_name_search_callers": 0,
+    "pg_stat_statements_name_matches": 0,
+    "zero_external_consumers_proven": false,
+    "disposition": "RETAIN_EXTERNAL_BOUNDS_UNRESOLVED"
+  },
+  "constraints": [
+    "NO_DROP",
+    "NO_REVOKE",
+    "NO_RUNTIME_SOURCE_MODIFICATION",
+    "NO_M10_4_FREEZE_MODIFICATION",
+    "NO_CP3_CLOSURE",
+    "NO_NEW_ENGINE",
+    "PASE_MERGE_TRAIN_ONLY"
+  ]
+}
