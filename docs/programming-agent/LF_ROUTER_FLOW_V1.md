@@ -30,7 +30,7 @@ Todo el flujo es de solo lectura; ningún resultado autoriza efectos (`downstrea
 1. El Router avisa: "Busqué en el inventario y no lo encuentro. ¿Busco fuera (repo, tablas, historial; solo lectura)? Si puedes, dime un detalle: dónde está, cómo se llama más o menos o qué hace."
 2. Con el consentimiento, busca en dos capas y, si hace falta, en una **segunda pasada con las palabras del usuario**, sin expansión de sinónimos (medido: la expansión agrega ruido y tokens en el nivel 2).
    - **2a (construida):** `lf_router_search_nivel2_v1`, sobre el índice global existente `inventory.search_index` (no se creó un índice nuevo). Medido en la base real: funciones 3/5 sin detalle; con detalle del usuario 3/3; sin ruido en frases ajenas.
-   - **2b (no es función de base):** búsqueda directa en el repo por la capa llamadora, para lo que el índice no tiene. Simulada: 4/8 de los documentos solo-repo sin detalle; con detalle 4/6 de los que fallaban. La base no puede leer archivos.
+   - **2b (construida, no es función de base):** `sandbox/lf_contract_gate_test/router_stage1/repo_search_nivel2_v1.py`, búsqueda de solo lectura en los archivos versionados del repo, invocada por la capa llamadora (la base no puede leer archivos). Medida sobre el repo real con 15 frases (12 con archivo esperado): 6/12 dentro de los 10 primeros; "con qué termina el análisis de programación" llega al `ANALYSIS_PROCEDURE_V1.md` en el 2.º lugar de 60 candidatos. Fallan las frases en español contra documentos en inglés (profundización/drilldown) y puede traer ruido en frases ajenas (el café trae 4 pistas débiles): por eso el siguiente paso es pedir un detalle al usuario.
 3. Devuelve pocos candidatos (3 a 5) con ruta y por qué coinciden, siempre marcados fuera del inventario.
 4. Resultados: `ENCONTRADO_FUERA_DE_INVENTARIO`, `INCOMPLETO` o `NO_EXISTE`. Lo encontrado en el nivel 2 es evidencia, **no permiso**.
 5. Registra el hueco del inventario para decidir después si se agrega el activo o un alias.
@@ -70,3 +70,50 @@ Casos en `sandbox/lf_contract_gate_test/router_stage1/e2e_cases_v1.json`; búsqu
 - Identidad del llamador (actor + execution_id) para que las escrituras puedan pasar a PERMITIDO.
 - Frases reales del propietario para reemplazar los casos de borrador; los negativos quedan en el conjunto permanente.
 - C2/C3 de RW1-06 siguen PENDING hasta que el propietario los apruebe viendo las pruebas.
+
+
+## Manual de uso de la etapa 2 (`lf_router_route_v1`)
+
+Reglas para cualquier agente. Si algo no esta aqui, no se improvisa: se pregunta.
+
+1. **Un solo punto de entrada:** `public.lf_router_route_v1(stage1 jsonb, caller jsonb, nivel2_consentido boolean default false)`. No se llama a `lf_router_search_v1`, `lf_router_search_nivel2_v1` ni `lf_router_dispatch_v1` por separado para decidir una ruta.
+2. **Primero la etapa 1** (el modelo entiende la frase y llena `LF_ROUTER_STAGE1_V1`, ver `LF_ROUTER_STAGE1_CONTRACT_V1.md`). Si no cumple el contrato, la respuesta es `INVALID_STAGE1` con los codigos a corregir.
+3. **Cada respuesta trae `paso`, `motivo_es` y `siguiente_paso_es`. Se hace lo que dice `siguiente_paso_es`; un agente no se detiene ni inventa otro camino.**
+4. **Un estado BLOCKED no es un final.** Es un freno de permisos. Si el paso es `PROPUESTA_PERFIL`, el perfil trabaja en modo propuesta; si el paso es otro, se sigue su `siguiente_paso_es`.
+5. **El Router nunca ejecuta al perfil ni aplica cambios.** `downstream_execution_allowed` es siempre false. Aplicar es otra operacion gobernada.
+6. **Nivel 2 solo con aviso y consentimiento del usuario**, y solo si el nivel 1 no dio candidatos. Antes se pide un detalle al usuario; no se expanden sinonimos.
+
+| `paso` | Que hacer |
+|---|---|
+| `INVALID_STAGE1` | Rehacer la etapa 1 corrigiendo los codigos |
+| `DIRECT_ANSWER` | Responder directamente |
+| `ASK_USER` | Hacer esa unica pregunta y repetir la etapa 1 |
+| `SYSTEM_NOT_SUPPORTED` | Informar; solo LF por ahora |
+| `DISPATCHED` | Seguir lo que indica el despacho |
+| `PROPUESTA_PERFIL` | Entregar `instruccion_literal`, `alcance_permitido` y `perfil_candidato` al perfil en modo PROPUESTA (solo lectura); abrir `siguiente_operacion` (`EJECUCION_PERFIL_LF`, modo `GPT_NATIVE`, solo lectura, sin escribir; la politica POL-LF-ACTIVATION-ROUTING exige entrar por el Router); mostrar al usuario el cambio propuesto; aplicar es otra operacion que el usuario autoriza |
+| `CANDIDATO_UNICO` | Confirmar y pedir el despacho si corresponde |
+| `ELEGIR_O_PROFUNDIZAR` | Elegir, o leer los 3 primeros; si sigue la duda, una pregunta |
+| `NIVEL_2_CONSENTIMIENTO` | Hacer la pregunta; con el si, repetir con consentimiento |
+| `NIVEL_2_RESULTADO` | Pistas fuera del inventario, no permiso; pedir detalle si no sirven |
+
+Ejemplo de modificacion de pantalla ("Cambiar unicamente el texto del boton principal de Iniciar sesion B2B a Acceder, sin modificar autenticacion ni validaciones"): `lf_router_resolve_v1` resuelve la pantalla `B2B-AUTH-001` y el perfil `PERFIL-UI-ARCHITECT` (READ_ONLY) pero termina en `BLOCK_EXECUTOR_CAPABILITY_UNATTESTED`. Con la etapa 2 el resultado es `PROPUESTA_PERFIL`. Limitacion conocida: la continuacion semantica de `resolve_v1` rechaza pantallas (`BLOCK_SEMANTIC_RESUME_TARGET_NOT_CANONICAL_ASSET`); queda pendiente corregirla en el flujo central, con aprobacion del propietario.
+
+Un perfil `READ_ONLY`/`CANDIDATO` si puede trabajar en `EJECUCION_PERFIL_LF` con `executor_mode=GPT_NATIVE` (solo lectura): ya ocurrio en `EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001`. El BLOQUEADO de `lf_router_resolve_v1` solo dice que el Router no autoriza efectos, no que el perfil no pueda trabajar.
+
+
+## Retorno de un perfil al Router (`lf_router_worker_return_v1`)
+
+Principio: un perfil **no llama a otro perfil** (POL-LF-ACTIVATION-ROUTING: los perfiles se activan solo por el Router). Cuando un perfil no puede seguir, informa al Router y el Router decide.
+
+Contrato `LF_ROUTER_WORKER_RETURN_V1` (JSON): `schema_version`, `perfil`, `solicitud_literal`, `hasta_donde_llegue`, `lo_que_encontre[]`, `lo_que_no_existe[]`, `causa` (`DATO_FALTANTE` | `ENRUTAMIENTO_INCORRECTO` | `FUERA_DE_MI_ALCANCE`), `quien_deberia_verlo` (texto libre), `buscar_destino[]` (1 a 4 frases), `retorno_numero` (opcional, 1 por defecto) y `downstream_execution_allowed=false`.
+
+El Router valida el informe y busca destino con la busqueda de nivel 1, considerando solo activos que pueden trabajar (PERFIL, SKILL, ADAPTER, OPERATION_CODE, CAPABILITY, STRATEGY); las reglas nunca son destino.
+
+| `paso` | Significado |
+|---|---|
+| `RETORNO_INVALIDO` | El informe no cumple el contrato; rehacerlo con los codigos indicados |
+| `RETORNO_ENRUTADO` | Hay hasta 3 activos que pueden trabajar lo que falta (pistas, no decision); quien decide elige y vuelve a entrar por el Router |
+| `RETORNO_SIN_DESTINO` | No hay en el inventario a quien enviarlo; se muestra el informe al usuario, una sola pregunta y se registra el hueco |
+| `RETORNO_EXCEDIDO` | Segundo retorno para la misma solicitud; una sola pregunta al usuario (evita ciclos) |
+
+Alcance actual: la funcion del Router existe y esta probada. **Falta** que los perfiles emitan este informe (cambio en cada perfil por `ACTUALIZACION_PERFIL_LF`, empezando por UI Architect) y que el agente lo entregue al Router.
