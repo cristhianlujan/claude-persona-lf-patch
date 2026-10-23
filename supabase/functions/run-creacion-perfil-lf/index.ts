@@ -251,15 +251,25 @@ Deno.serve(async (req: Request) => {
         const code = error instanceof Error ? error.message : "PROFILE_UPDATE_RESEARCH_BASELINE_POLICY_INVALID";
         return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code }, 400);
       }
-      const router = await rpc("lf_router_resolve_v1", {
-        p_request_text: `Actualizar perfil ${targetCode}`,
-        p_target_hint: targetCode,
-        p_action_hint: "PROFILE_UPDATE",
-        p_asset_type_hint: "PERFIL",
-        p_distribution_mode: "ROUTER",
+      // ACT-0001 does not accept a mutation target from caller hints or plain text. A registered governed caller
+      // (public.lf_router_governed_callers) enters through the Router, which validates the OIDC identity against
+      // the registry and re-derives the route through the semantic-resume gates.
+      const governed = await rpc("lf_router_governed_caller_route_v1", {
+        p_caller: caller,
+        p_target_code: targetCode,
+        p_target_path: targetPath,
       });
-      if (router?.status !== "READY_TO_EXECUTE" || router?.operation_code !== "ACTUALIZACION_PERFIL_LF" || router?.action_code !== "PROFILE_UPDATE" || router?.next_step?.step_id !== "init_execution") {
-        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_UPDATE_NOT_AUTHORIZED", router }, 409);
+      const router = governed?.router_result;
+      if (
+        governed?.status !== "ROUTER_REDERIVED" ||
+        governed?.downstream_execution_allowed !== false ||
+        router?.status !== "READY_TO_EXECUTE" ||
+        router?.operation_code !== "ACTUALIZACION_PERFIL_LF" ||
+        router?.action_code !== "PROFILE_UPDATE" ||
+        router?.next_step?.step_id !== "init_execution" ||
+        !/^[0-9a-f]{64}$/.test(String(governed?.semantic_receipt_sha256 ?? ""))
+      ) {
+        return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: "ROUTER_UPDATE_NOT_AUTHORIZED", router: governed }, 409);
       }
 
       const asset = await one(
@@ -291,6 +301,9 @@ Deno.serve(async (req: Request) => {
         caller_workflow_ref: caller.workflow_ref,
         caller_run_id: caller.run_id,
         caller_workflow_sha: caller.workflow_sha,
+        router_governed_caller_code: governed.caller_code,
+        router_semantic_receipt_sha256: governed.semantic_receipt_sha256,
+        router_semantic_request: governed.semantic_request,
         runtime_write_executed: false,
         github_write_executed: false,
         production_authorized: false,

@@ -83,6 +83,8 @@ checks = {
     "workflow_accepts_canonical_v22_step_receipt": "result.get('step') or result.get('result')" in workflow and "status in ('STEP_CLEAN_PASS','STEP_PASS_WITH_EVIDENCE')" in workflow,
     "workflow_batch_binds_step_identity": "step.get('step_id')==item['step_id']" in workflow,
     "update_init_workflow_dispatch_exposed": "profile_update_init" in workflow and "GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS" in workflow,
+    "update_init_enters_router_by_registered_governed_caller": 'lf_router_governed_caller_route_v1' in runtime and 'p_caller: caller' in runtime and 'router_semantic_receipt_sha256: governed.semantic_receipt_sha256' in runtime,
+    "update_init_does_not_use_hint_based_router_call": 'p_request_text: `Actualizar perfil ${targetCode}`' not in runtime and 'p_action_hint: "PROFILE_UPDATE"' not in runtime,
     "update_init_oidc_identity_is_main_only": 'GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1' in caller and 'const UPDATE_REF = "refs/heads/main"' in caller,
     "update_init_governance_caller_delegates_to_runtime": 'body.action === "profile_update_init_v1"' in caller and 'action: "initialize_profile_update_v1"' in caller,
     "update_init_research_policy_workflow_inputs": "research_baseline_mode" in workflow and "research_baseline_contract_json" in workflow and "PRE_RESEARCH_ALWAYS" in workflow,
