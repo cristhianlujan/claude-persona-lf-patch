@@ -100,5 +100,18 @@ class Stage1(unittest.TestCase):
         self.assertEqual(validate([])["next_step"], "INVALID")
 
 
+class E2ECases(unittest.TestCase):
+    def test_e2e_cases_next_step(self):
+        import json
+        path = os.path.join(os.path.dirname(__file__), "e2e_cases_v1.json")
+        with open(path, encoding="utf-8") as f:
+            cases = json.load(f)
+        self.assertGreaterEqual(len(cases), 20)
+        for c in cases:
+            esperado = c["_esperado"]
+            r = validate({k: v for k, v in c.items() if k != "_esperado"})
+            self.assertEqual(r["next_step"], esperado, c["texto_original"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
