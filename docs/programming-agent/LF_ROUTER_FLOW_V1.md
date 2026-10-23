@@ -24,10 +24,12 @@ Todo el flujo es de solo lectura; ningún resultado autoriza efectos (`downstrea
 | Varios | Quien decide (el modelo) elige, o pide más detalle leyendo los candidatos (máximo 3 sondeos por duda; el 4.º requiere autorización del propietario; un sondeo discriminante de solo lectura; parar si no aporta). Si sigue la duda, **una** pregunta al usuario. |
 | Ninguno | Pasa al nivel 2 con consentimiento (abajo). No inventa candidatos. |
 
-## Nivel 2 — fuera del inventario (objetivo; **no construido**)
+## Nivel 2 — fuera del inventario (capa 2a construida y probada; capa 2b a cargo de la capa llamadora)
 
 1. El Router avisa: "Busqué en el inventario y no lo encuentro. ¿Busco fuera (repo, tablas, historial; solo lectura)? Si puedes, dime un detalle: dónde está, cómo se llama más o menos o qué hace."
-2. Con el consentimiento, busca en una **segunda pasada con las palabras del usuario**, sin expansión de sinónimos (medido: la expansión agrega ruido y tokens en el nivel 2).
+2. Con el consentimiento, busca en dos capas y, si hace falta, en una **segunda pasada con las palabras del usuario**, sin expansión de sinónimos (medido: la expansión agrega ruido y tokens en el nivel 2).
+   - **2a (construida):** `lf_router_search_nivel2_v1`, sobre el índice global existente `inventory.search_index` (no se creó un índice nuevo). Medido en la base real: funciones 3/5 sin detalle; con detalle del usuario 3/3; sin ruido en frases ajenas.
+   - **2b (no es función de base):** búsqueda directa en el repo por la capa llamadora, para lo que el índice no tiene. Simulada: 4/8 de los documentos solo-repo sin detalle; con detalle 4/6 de los que fallaban. La base no puede leer archivos.
 3. Devuelve pocos candidatos (3 a 5) con ruta y por qué coinciden, siempre marcados fuera del inventario.
 4. Resultados: `ENCONTRADO_FUERA_DE_INVENTARIO`, `INCOMPLETO` o `NO_EXISTE`. Lo encontrado en el nivel 2 es evidencia, **no permiso**.
 5. Registra el hueco del inventario para decidir después si se agrega el activo o un alias.
@@ -46,7 +48,8 @@ Antes de los aliases: reglas 8/10 en primer lugar, inventario 8/12. Con los alia
 
 ## Pendiente (no declarado como hecho)
 
-- Función del nivel 2 y registro de huecos del inventario.
+- Registro persistente de huecos del inventario (hoy la función solo los sugiere: `hueco_inventario_sugerido`).
+- El índice global no tiene los documentos del análisis de programación (`programming_agent_four_stage`, `docs/programming-agent`): la alimentación de ese índice es de su propio proceso y no se tocó.
 - Lectura de detalle de candidatos (los sondeos) como función.
 - Dimensión de sistema (LF/Saly) en el catálogo.
 - Entrega de `p_capability_hint` desde la etapa 1 al despacho.
