@@ -1,0 +1,49 @@
+name: LF F04 Q10 Exact Head Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/lf-f04-q10-exact-head-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  q10-exact-head:
+    name: Execute F04 Q10 exact-head observability qualification
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact Q10 candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: c3768cf4a2dda5ec66deac6f373a1f5954e33470
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify exact head and source lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "c3768cf4a2dda5ec66deac6f373a1f5954e33470"
+          git merge-base --is-ancestor "e709a3cc518c751e9492f53f93ba3b63a260c1fe" HEAD
+          echo "F04_Q10_EXACT_HEAD=$(git rev-parse HEAD)"
+          echo "F04_Q10_SOURCE_BASE=e709a3cc518c751e9492f53f93ba3b63a260c1fe"
+
+      - name: Execute owner-runner boundary regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/test_gate_check_observability_owner_runner_v1.py
+
+      - name: Execute owner-local observability package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/gate_check_observability/run_gate_check_observability_owner_v1.py
+          echo "F04_Q10_EXACT_HEAD_QUALIFICATION=PASS"
