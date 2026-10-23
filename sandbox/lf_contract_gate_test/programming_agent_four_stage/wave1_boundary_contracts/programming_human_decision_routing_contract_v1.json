@@ -1,0 +1,43 @@
+{
+  "schema_version": "PROGRAMMING_HUMAN_DECISION_ROUTING_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "unit": "PG-10",
+  "input_sources": [
+    "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "DECISION_CONTEXT_ASOF@CURRENT",
+    "public.lf_decision_log",
+    "transversal.decision_log"
+  ],
+  "routing": {
+    "route_only_true_owner_decision": true,
+    "resolvable_evidence_gap_routes_to_targeted_evidence_not_human": true,
+    "implementation_strategy_owned_by_pg03_not_human": true,
+    "missing_implementation_alone_not_human": true,
+    "current_existing_decision_reused_before_new_question": true,
+    "duplicate_question_forbidden": true,
+    "owner_scope": "SUPER_ADMIN",
+    "packet_schema_version": "PROGRAMMING_HUMAN_DECISION_PACKET_V1",
+    "required_packet_fields": [
+      "decision_code",
+      "scope_refs[]",
+      "question",
+      "options[]",
+      "recommendation",
+      "risk_if_deferred",
+      "authority_refs[]",
+      "evidence_refs[]",
+      "currentness_refs[]",
+      "owner_scope",
+      "resume_condition"
+    ]
+  },
+  "resolution": {
+    "decision_receipt_surface": "programacion.human_decisions",
+    "decision_context_persistence": "DECISION_CONTEXT_ASOF@CURRENT",
+    "resolved_decision_must_be_current_before_resume": true,
+    "resume_only_affected_scope": true,
+    "unrelated_ready_scope_may_continue": true
+  },
+  "runtime_activation": false,
+  "production_activation": false
+}
