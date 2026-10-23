@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-worker-return-v1",
+  "paths": {
+    "supabase/migrations/20261023100000_lf_router_worker_return_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-worker-return-v1.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -99,3 +99,21 @@ Reglas para cualquier agente. Si algo no esta aqui, no se improvisa: se pregunta
 Ejemplo de modificacion de pantalla ("Cambiar unicamente el texto del boton principal de Iniciar sesion B2B a Acceder, sin modificar autenticacion ni validaciones"): `lf_router_resolve_v1` resuelve la pantalla `B2B-AUTH-001` y el perfil `PERFIL-UI-ARCHITECT` (READ_ONLY) pero termina en `BLOCK_EXECUTOR_CAPABILITY_UNATTESTED`. Con la etapa 2 el resultado es `PROPUESTA_PERFIL`. Limitacion conocida: la continuacion semantica de `resolve_v1` rechaza pantallas (`BLOCK_SEMANTIC_RESUME_TARGET_NOT_CANONICAL_ASSET`); queda pendiente corregirla en el flujo central, con aprobacion del propietario.
 
 Un perfil `READ_ONLY`/`CANDIDATO` si puede trabajar en `EJECUCION_PERFIL_LF` con `executor_mode=GPT_NATIVE` (solo lectura): ya ocurrio en `EXEC-RW105-C2-GPT-NATIVE-CANARY-20261021-001`. El BLOQUEADO de `lf_router_resolve_v1` solo dice que el Router no autoriza efectos, no que el perfil no pueda trabajar.
+
+
+## Retorno de un perfil al Router (`lf_router_worker_return_v1`)
+
+Principio: un perfil **no llama a otro perfil** (POL-LF-ACTIVATION-ROUTING: los perfiles se activan solo por el Router). Cuando un perfil no puede seguir, informa al Router y el Router decide.
+
+Contrato `LF_ROUTER_WORKER_RETURN_V1` (JSON): `schema_version`, `perfil`, `solicitud_literal`, `hasta_donde_llegue`, `lo_que_encontre[]`, `lo_que_no_existe[]`, `causa` (`DATO_FALTANTE` | `ENRUTAMIENTO_INCORRECTO` | `FUERA_DE_MI_ALCANCE`), `quien_deberia_verlo` (texto libre), `buscar_destino[]` (1 a 4 frases), `retorno_numero` (opcional, 1 por defecto) y `downstream_execution_allowed=false`.
+
+El Router valida el informe y busca destino con la busqueda de nivel 1, considerando solo activos que pueden trabajar (PERFIL, SKILL, ADAPTER, OPERATION_CODE, CAPABILITY, STRATEGY); las reglas nunca son destino.
+
+| `paso` | Significado |
+|---|---|
+| `RETORNO_INVALIDO` | El informe no cumple el contrato; rehacerlo con los codigos indicados |
+| `RETORNO_ENRUTADO` | Hay hasta 3 activos que pueden trabajar lo que falta (pistas, no decision); quien decide elige y vuelve a entrar por el Router |
+| `RETORNO_SIN_DESTINO` | No hay en el inventario a quien enviarlo; se muestra el informe al usuario, una sola pregunta y se registra el hueco |
+| `RETORNO_EXCEDIDO` | Segundo retorno para la misma solicitud; una sola pregunta al usuario (evita ciclos) |
+
+Alcance actual: la funcion del Router existe y esta probada. **Falta** que los perfiles emitan este informe (cambio en cada perfil por `ACTUALIZACION_PERFIL_LF`, empezando por UI Architect) y que el agente lo entregue al Router.
