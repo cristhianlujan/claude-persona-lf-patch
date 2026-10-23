@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-aliases-es-v1",
+  "paths": {
+    "supabase/migrations/20261023000000_lf_router_aliases_es_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-aliases-es-v1.json": "CHANGESET_MANIFEST"
+  }
+}
