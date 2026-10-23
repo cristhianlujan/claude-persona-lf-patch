@@ -258,6 +258,116 @@ def test_pe10_c6_github_provider_output_source_bound_evidence():
     print(lines[0], flush=True)
 
 
+def test_current_v06_provider_candidate_contract():
+    """Validate the current source-authored V0.6 candidate; no receipt/cutover."""
+    import copy
+    import subprocess
+    import sys
+    import tempfile
+
+    root = Path(__file__).resolve().parents[3]
+    head = subprocess.check_output(
+        ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+    ).strip()
+    assert len(head) == 40
+    eval_dir = root / "skills/profile_creator/evals"
+    validator_dir = root / "skills/profile_creator/validators"
+    for directory in (eval_dir, validator_dir):
+        if str(directory) not in sys.path:
+            sys.path.insert(0, str(directory))
+    from build_profile_output_v06_provider_candidate_v1 import build
+    from run_bound_profile_output_validator_v1 import validate_bound_output
+
+    candidate, evidence_manifest = build(head)
+    assert candidate["profile_pack_id"] == "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"
+    assert candidate["status"] == "NEEDS_MORE_EVIDENCE"
+    assert candidate["blocking_codes"] == ["PROFILE_OUTPUT_PROVIDER_VERIFIED_RECEIPTS_MISSING"]
+    assert candidate["current_uncertainties"][0]["uncertainty_id"] == "U-PROVIDER-E2E"
+    assert evidence_manifest["producer"]["kind"] == "GPT_NATIVE_CURRENT_CHAT_SOURCE_AUTHORED"
+
+    def canonical_bytes(value):
+        return json.dumps(
+            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+
+    profile = Path("profiles/systemic_root_cause_repair_lf")
+    schema = profile / "schemas/output.schema.json"
+    validator = profile / "validators/runtime_validate.py"
+    runtime_binding = profile / "contracts/runtime_binding.json"
+
+    def digest(rel):
+        return hashlib.sha256((root / rel).read_bytes()).hexdigest()
+
+    def bound_packet(raw_rel, manifest_rel, expected_valid):
+        return {
+            "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+            "operation_code": "ACTUALIZACION_PERFIL_LF",
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "validator_transport": "STDIN_JSON",
+            "expected_valid": expected_valid,
+            "runtime_binding_sha256": digest(runtime_binding),
+            "schema_ref": schema.as_posix(),
+            "schema_sha256": digest(schema),
+            "validator_ref": validator.as_posix(),
+            "validator_sha256": digest(validator),
+            "raw_output_ref": raw_rel.as_posix(),
+            "raw_output_sha256": digest(raw_rel),
+            "evidence_manifest_ref": manifest_rel.as_posix(),
+            "evidence_manifest_sha256": digest(manifest_rel),
+        }
+
+    with tempfile.TemporaryDirectory(dir=root) as scratch:
+        base = Path(scratch).relative_to(root)
+        positive_rel = base / "current_v06_candidate.json"
+        manifest_rel = base / "current_v06_evidence_manifest.json"
+        negative_rel = base / "current_v06_candidate_negative.json"
+        (root / positive_rel).write_bytes(canonical_bytes(candidate))
+        (root / manifest_rel).write_bytes(canonical_bytes(evidence_manifest))
+        negative = copy.deepcopy(candidate)
+        negative.pop("status", None)
+        (root / negative_rel).write_bytes(canonical_bytes(negative))
+
+        positive = validate_bound_output(
+            root, bound_packet(positive_rel, manifest_rel, True)
+        )
+        negative_result = validate_bound_output(
+            root, bound_packet(negative_rel, manifest_rel, False)
+        )
+        assert positive["status"] == "CANDIDATE_OUTPUT_PARITY_OBSERVED", positive
+        assert positive["profile_validator_executed"] is True
+        assert positive["validator_errors"] == []
+        assert negative_result["status"] == "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE", negative_result
+
+        envelope = {
+            "schema": "PROFILE_OUTPUT_V06_CURRENT_CANDIDATE_BUILD_V1",
+            "source_head_sha": head,
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "profile_pack_id": candidate["profile_pack_id"],
+            "candidate_status": candidate["status"],
+            "evidence_scope": "CURRENT_NEEDS_MORE_EVIDENCE_CANDIDATE_NOT_CANONICAL_EXAMPLE",
+            "authoring_mode": "GPT_NATIVE_CURRENT_CHAT_SOURCE_AUTHORED",
+            "runtime_provider_attested": False,
+            "verified_output_receipt_count_at_authoring": 0,
+            "candidate_sha256": hashlib.sha256(canonical_bytes(candidate)).hexdigest(),
+            "evidence_manifest_sha256": hashlib.sha256(
+                canonical_bytes(evidence_manifest)
+            ).hexdigest(),
+            "negative_sha256": hashlib.sha256(canonical_bytes(negative)).hexdigest(),
+            "positive_result": positive,
+            "negative_result": negative_result,
+            "candidate": candidate,
+            "evidence_manifest": evidence_manifest,
+            "receipt_issued": False,
+            "checkpoint_closed": False,
+            "production_activation": False,
+        }
+        print(
+            "PROFILE_OUTPUT_V06_CURRENT_CANDIDATE_V1="
+            + json.dumps(envelope, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+            flush=True,
+        )
+
+
 def test_pe10_c6_declared_source_suite_in_current_ci():
     """The actual C6 declared test, not a synthetic substitute for DB gates.
 
@@ -308,5 +418,6 @@ if __name__ == "__main__":
     # Provider setup installs the already-pinned jsonschema runtime used by the
     # canonical V0.6 contract regression below.
     test_pe10_c6_github_provider_output_source_bound_evidence()
+    test_current_v06_provider_candidate_contract()
     test_existing_planner_assessment_regression()
     test_pe10_c6_declared_source_suite_in_current_ci()
