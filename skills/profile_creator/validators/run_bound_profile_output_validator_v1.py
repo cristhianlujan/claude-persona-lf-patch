@@ -102,6 +102,37 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
         if sha(data) != digest:
             return block("SOURCE_SHA_MISMATCH:" + key)
         contents[key] = (path, data)
+
+    # V0.3+ profiles may require an external evidence manifest. Keep it
+    # source-bound in the same packet and feed it only to the declared
+    # canonical validator; the canonical output schema still validates the
+    # candidate itself, never a wrapper invented by this runner.
+    manifest_json = None
+    manifest_ref = packet.get("evidence_manifest_ref")
+    manifest_digest = packet.get("evidence_manifest_sha256")
+    if manifest_ref is not None or manifest_digest is not None:
+        if transport != "STDIN_JSON":
+            return block("EVIDENCE_MANIFEST_TRANSPORT_UNSUPPORTED")
+        if (not isinstance(manifest_ref, str) or not isinstance(manifest_digest, str)
+                or not SHA.fullmatch(manifest_digest)):
+            return block("SOURCE_BINDING_MISSING:evidence_manifest")
+        if Path(manifest_ref).is_absolute() or ".." in Path(manifest_ref).parts:
+            return block("SOURCE_PATH_UNSAFE:evidence_manifest")
+        manifest_path = (root / manifest_ref).resolve()
+        if not manifest_path.is_relative_to(root) or not manifest_path.is_file():
+            return block("SOURCE_PATH_UNRESOLVED:evidence_manifest")
+        try:
+            manifest_data = manifest_path.read_bytes()
+        except OSError:
+            return block("SOURCE_READ_FAILED:evidence_manifest")
+        if sha(manifest_data) != manifest_digest:
+            return block("SOURCE_SHA_MISMATCH:evidence_manifest")
+        try:
+            manifest_json = json.loads(manifest_data)
+        except (ValueError, UnicodeError):
+            return block("EVIDENCE_MANIFEST_JSON_INVALID")
+        contents["evidence_manifest"] = (manifest_path, manifest_data)
+
     result["source_readback_matched"] = True
     result["source_refs"] = {
         k: packet[k + "_ref"] for k in contents
@@ -138,12 +169,18 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
             result["status"] = "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE"
             return result
         return block("OUTPUT_SHAPE_INVALID")
+    validator_input = contents["raw_output"][1]
+    if manifest_json is not None:
+        validator_input = json.dumps(
+            {"candidate": candidate, "evidence_manifest": manifest_json},
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        ).encode("utf-8")
     cmd = [sys.executable, str(contents["validator"][0])]
     if transport == "JSON_FILE_ARGUMENT":
         cmd.append(str(contents["raw_output"][0]))
     try:
         proc = subprocess.run(
-            cmd, input=(contents["raw_output"][1] if transport == "STDIN_JSON" else None),
+            cmd, input=(validator_input if transport == "STDIN_JSON" else None),
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, cwd=root,
             check=False,
         )

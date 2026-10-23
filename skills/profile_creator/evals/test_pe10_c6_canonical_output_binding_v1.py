@@ -5,7 +5,9 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import runpy
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -90,6 +92,78 @@ class CanonicalProfileBinding(unittest.TestCase):
         result = validate_bound_output(ROOT, modified)
         self.assertIn("SOURCE_SHA_MISMATCH:schema", result["blocking_codes"])
         self.assertFalse(result["profile_validator_executed"])
+
+    def _v06_pair(self):
+        fixture = runpy.run_path(
+            str(ROOT / "profiles/systemic_root_cause_repair_lf/evals/v06_edge_closure_cases.py"),
+            run_name="pe10_profile_output_v06_manifest_fixture",
+        )
+        return fixture["v06_pair"]()
+
+    def _materialize_pair(self, candidate, evidence_manifest, scratch):
+        base = Path(scratch).relative_to(ROOT)
+        raw = base / "candidate.json"
+        manifest = base / "evidence_manifest.json"
+        (ROOT / raw).write_text(json.dumps(
+            candidate, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ), encoding="utf-8")
+        (ROOT / manifest).write_text(json.dumps(
+            evidence_manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ), encoding="utf-8")
+        return raw, manifest
+
+    def test_v06_external_manifest_reaches_declared_canonical_validator(self):
+        candidate, evidence_manifest = self._v06_pair()
+        with tempfile.TemporaryDirectory(dir=ROOT) as scratch:
+            raw, manifest = self._materialize_pair(candidate, evidence_manifest, scratch)
+            bound = packet(raw, expected_valid=True)
+            bound["evidence_manifest_ref"] = manifest.as_posix()
+            bound["evidence_manifest_sha256"] = digest(manifest)
+            result = validate_bound_output(ROOT, bound)
+            self.assertEqual(result["status"], "CANDIDATE_OUTPUT_PARITY_OBSERVED", result)
+            self.assertEqual(result["validator_errors"], [])
+            self.assertEqual(
+                result["source_refs"]["evidence_manifest"], manifest.as_posix()
+            )
+            self.assertTrue(result["profile_validator_executed"])
+
+    def test_v06_without_manifest_fails_closed(self):
+        candidate, evidence_manifest = self._v06_pair()
+        with tempfile.TemporaryDirectory(dir=ROOT) as scratch:
+            raw, _ = self._materialize_pair(candidate, evidence_manifest, scratch)
+            result = validate_bound_output(ROOT, packet(raw, expected_valid=True))
+            self.assertEqual(result["status"], "FAIL", result)
+            self.assertIn("CANONICAL_VALIDATOR_RESULT_UNEXPECTED", result["blocking_codes"])
+            self.assertTrue(any(
+                x.get("code") == "SRCR_EVIDENCE_MANIFEST_REQUIRED"
+                for x in result.get("validator_errors", [])
+            ), result)
+
+    def test_v06_forged_manifest_digest_rejected_before_validator(self):
+        candidate, evidence_manifest = self._v06_pair()
+        with tempfile.TemporaryDirectory(dir=ROOT) as scratch:
+            raw, manifest = self._materialize_pair(candidate, evidence_manifest, scratch)
+            bound = packet(raw, expected_valid=True)
+            bound["evidence_manifest_ref"] = manifest.as_posix()
+            bound["evidence_manifest_sha256"] = "0" * 64
+            result = validate_bound_output(ROOT, bound)
+            self.assertEqual(result["status"], "FAIL", result)
+            self.assertIn("SOURCE_SHA_MISMATCH:evidence_manifest", result["blocking_codes"])
+            self.assertFalse(result["profile_validator_executed"])
+
+    def test_v06_negative_derived_from_same_candidate_is_rejected(self):
+        candidate, evidence_manifest = self._v06_pair()
+        candidate = copy.deepcopy(candidate)
+        candidate.pop("status", None)
+        with tempfile.TemporaryDirectory(dir=ROOT) as scratch:
+            raw, manifest = self._materialize_pair(candidate, evidence_manifest, scratch)
+            bound = packet(raw, expected_valid=False)
+            bound["evidence_manifest_ref"] = manifest.as_posix()
+            bound["evidence_manifest_sha256"] = digest(manifest)
+            result = validate_bound_output(ROOT, bound)
+            self.assertEqual(result["status"], "EXPECTED_NEGATIVE_REJECTED_BY_SHAPE", result)
+            self.assertTrue(result["shape_errors"])
+            self.assertFalse(result["profile_validator_executed"])
 
 
 if __name__ == "__main__":

@@ -218,6 +218,7 @@ def test_existing_planner_assessment_regression():
         "test_profile_evolution_reconciliation_v1.py",
         "test_profile_evolution_trusted_readback_v1.py",
         "test_profile_evolution_readonly_entrypoint_v1.py",
+        "test_pe10_c6_canonical_output_binding_v1.py",
     )
     for name in suites:
         suite = unittest.defaultTestLoader.discover(
@@ -304,6 +305,8 @@ if __name__ == "__main__":
     main()
     test_native_material_pre_admission_suite()
     test_real_profile_assessment_source_revision()
-    test_existing_planner_assessment_regression()
+    # Provider setup installs the already-pinned jsonschema runtime used by the
+    # canonical V0.6 contract regression below.
     test_pe10_c6_github_provider_output_source_bound_evidence()
+    test_existing_planner_assessment_regression()
     test_pe10_c6_declared_source_suite_in_current_ci()
