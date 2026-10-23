@@ -19,7 +19,7 @@ BEGIN
     'PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1','PE10','PE10_C6')->>'status') IS DISTINCT FROM 'READY'
  THEN RAISE EXCEPTION 'PE10_C6_STALE_CASE_FLOOR_EKB_PRESTATE_INVALID'; END IF;
 
- -- A controlled SAVEPOINT trial checks that this INSERT is rollback-safe.
+ -- The enclosing transaction provides atomic rollback if the readback fails.
  INSERT INTO public.lf_error_knowledge (
     codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,
     severidad,frecuencia,lote_origen,pr,estado,source_ref,lifecycle_phase,
