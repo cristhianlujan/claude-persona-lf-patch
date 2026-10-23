@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-resolve-siguiente-paso-v1",
+  "paths": {
+    "supabase/migrations/20261023070000_lf_router_resolve_siguiente_paso_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-resolve-siguiente-paso-v1.json": "CHANGESET_MANIFEST"
+  }
+}
