@@ -1,8 +1,8 @@
 name: PASE
 
-# TEMPORARILY DISABLED 2026-10-02.
-# Keep the workflow source and triggers intact while PASE is rebuilt/qualified.
-# No PASE or POST-PASE execution is allowed from this workflow until explicitly re-enabled.
+# PASE required check was re-enabled on 2026-10-20 (#2947).
+# The legacy reusable MIGRATION_SOURCE_PARITY caller remains disabled below while X16 shadow qualification proceeds.
+# POST-PASE Train-receipt verification runs only after pushes to main and only when the merge contains a migration.
 on:
   workflow_call:
   workflow_dispatch:
@@ -248,6 +248,87 @@ jobs:
           path: .lf_ci/lf_pase_dispatch_plan_v1.json
           if-no-files-found: error
           retention-days: 30
+
+  post-pase-train-receipt:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    name: POST-PASE / TRAIN_RECEIPT
+    environment: lf-ci-readonly
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Detect migration merge
+        id: receipt_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          first_parent="$(git rev-parse "${GITHUB_SHA}^1")"
+          mapfile -t migrations < <(
+            git diff --name-only "$first_parent" "$GITHUB_SHA" -- 'supabase/migrations/*.sql'
+          )
+          if [ "${#migrations[@]}" -eq 0 ]; then
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            echo "SKIP_POST_PASE_TRAIN_RECEIPT_NO_MIGRATION merge_sha=$GITHUB_SHA"
+            exit 0
+          fi
+          if [ "${#migrations[@]}" -ne 1 ]; then
+            printf 'BLOCK_POST_PASE_TRAIN_RECEIPT_MIGRATION_COUNT count=%s\n' "${#migrations[@]}"
+            printf '%s\n' "${migrations[@]}"
+            exit 2
+          fi
+          echo "applicable=true" >> "$GITHUB_OUTPUT"
+          echo "POST_PASE_TRAIN_RECEIPT_APPLICABLE merge_sha=$GITHUB_SHA migration=${migrations[0]}"
+
+      - name: Install read-only verifier dependency
+        if: steps.receipt_scope.outputs.applicable == 'true'
+        run: python3 -m pip install --disable-pip-version-check 'psycopg[binary]==3.2.10'
+
+      - name: Self-test Train receipt verifier
+        if: steps.receipt_scope.outputs.applicable == 'true'
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover             -s sandbox/lf_contract_gate_test/train_receipt_verifier             -p 'test_*.py' -v
+          python3 -m py_compile             sandbox/lf_contract_gate_test/train_receipt_verifier/verify_train_receipt.py
+
+      - name: Verify exact Train receipt for merged main
+        if: steps.receipt_scope.outputs.applicable == 'true'
+        env:
+          LF_SUPABASE_DB_READONLY_PASSWORD: ${{ secrets.LF_SUPABASE_DB_READONLY_PASSWORD }}
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..12}; do
+            set +e
+            output="$(
+              python3 sandbox/lf_contract_gate_test/train_receipt_verifier/verify_train_receipt.py                 --merge-sha "$GITHUB_SHA"                 --live-read-only 2>&1
+            )"
+            status=$?
+            set -e
+            printf '%s\n' "$output"
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+            if ! grep -q 'TRAIN_RECEIPT_NOT_FOUND' <<<"$output"; then
+              exit "$status"
+            fi
+            if [ "$attempt" -eq 12 ]; then
+              echo "FAIL_POST_PASE_TRAIN_RECEIPT_TIMEOUT merge_sha=$GITHUB_SHA attempts=$attempt"
+              exit "$status"
+            fi
+            sleep 5
+          done
 
   migration-source-parity:
     if: ${{ false }}
