@@ -188,26 +188,8 @@ DECLARE
 BEGIN
   IF md5(pg_get_functiondef(
        'public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)'::regprocedure
-     )) <> md5($expected$
-CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1(p_execution_id text, p_input_literal text, p_input_source_ref text, p_handoff jsonb)
- RETURNS jsonb
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'public', 'programacion'
-AS $function$
-DECLARE
-  v_exec public.lf_operation_execution%rowtype;
-  v_handoff_validation jsonb;
-  v_scope jsonb;
-  v_adapters jsonb:='[]'::jsonb;
-  v_ig jsonb;
-  v_direct_profile_ig boolean:=false;
-BEGIN
-$function$
-$expected$) THEN
-    -- Full-source md5 changes with formatting across pg_get_functiondef; use
-    -- explicit anchor guards below instead of accepting arbitrary source.
-    NULL;
+     )) <> 'ba055cf23eda92042cbc13bfedcf4e10' THEN
+    RAISE EXCEPTION 'PROFILE_IG_TASK_INPUT_VALIDATE_SOURCE_DRIFT';
   END IF;
 
   v_def:=pg_get_functiondef(
