@@ -71,6 +71,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py'
       - 'sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py'
       - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
+      - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -106,6 +107,7 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -149,7 +151,18 @@ jobs:
           assert "CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2" in s
           assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s
           assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s
+          p2=Path("supabase/migrations/20261024130000_lf_router_product_before_programming_v1.sql")
+          s2=p2.read_text(encoding="utf-8")
+          assert s2.count("BEGIN;")==1, s2.count("BEGIN;")
+          assert s2.count("COMMIT;")==1, s2.count("COMMIT;")
+          assert s2.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "'PROGRAMACION_PRECHECK_DEFINICION'" in s2
+          assert "'PRODUCTO_PRIMERO'" in s2
+          assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s2
+          assert "V2_MIXED_MUST_START_PRODUCTO" in s2
+          assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s2
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests
