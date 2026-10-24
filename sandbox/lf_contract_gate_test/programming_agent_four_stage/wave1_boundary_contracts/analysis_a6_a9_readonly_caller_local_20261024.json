@@ -275,5 +275,23 @@
     "read_only_after": "on",
     "contexts_unchanged": true,
     "functions_unchanged": true
+  },
+  "standalone_validation": {
+    "base_main": "33684cc36e6ca0a7d74e3d547fce50898a16f0a5",
+    "runs": [
+      {
+        "suite": "standalone_60_units",
+        "exit_code": 0,
+        "summary": "1.ShadowAdapterTests) ... ok\ntest_process_start_failure_is_advisory (test_analysis_a6_a9_shadow_v1.ShadowAdapterTests) ... ok\ntest_timeout_child_reaped_without_collecting_on_response_path (test_analysis_a6_a9_shadow_v1.ShadowAdapterTests) ... ok\ntest_worker_env_excludes_inherited_credentials (test_analysis_a6_a9_shadow_v1.ShadowAdapterTests) ... ok\n\n----------------------------------------------------------------------\nRan 60 tests in 0.664s\n\nOK\n"
+      },
+      {
+        "suite": "existing_a9_scope_front",
+        "exit_code": 0,
+        "summary": "PASS_ANALYSIS_PG01_SNAPSHOT_PAYLOAD positive=1 matrix_assembler_positive=1 matrix_assembler_negatives=2 negative=14 evidence_tier=DETERMINISTIC_PAYLOAD_VALIDATION pg01_runtime_verified=false\n"
+      }
+    ],
+    "prior_136_suite_scope": "PREVIOUS_RECEIVER_BASE_TREE; 76 PG01 tests are separate historical regression, not standalone tree tests",
+    "sql_foundation_required": false,
+    "shared_fixture_byte_identical_to_3135": true
   }
 }

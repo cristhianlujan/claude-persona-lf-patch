@@ -33,6 +33,8 @@ class ChannelPolicySourceContract(unittest.TestCase):
             self.assertTrue(channel["excluded"])
 
     def test_product_definition_before_programming(self):
+        product = next(c for c in self.p["channels"] if c["code"] == "PRODUCTO")
+        self.assertIn("READ_PRODUCT_DEFINITION", product["intents"])
         d = self.p["decision_policy"]
         self.assertEqual(d["product_definition_change"], "PRODUCTO_FIRST")
         self.assertEqual(d["programming_on_definition_missing_or_changed"], "RETURN_TO_PRODUCTO_NO_CODE")
@@ -194,6 +196,87 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertEqual(
             self.p["decision_policy"]["structural_repair_no_capability_behavior"],
             "CAPABILITY_GAP",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_gate2_pass_behavior"],
+            "AUTO_MATERIALIZE_EJECUCION_PERFIL_LF",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_execution_handoff_schema"],
+            "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["authorized_profile_execution_reenters_router"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_execution_context_owner"],
+            "EJECUCION_PERFIL_LF_CONTEXT_ADMISSION",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["router_loads_profile_channel_context"]
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["profile_execution_returns_to_router_after_result"]
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["executor_mode_selected_by_profile_execution_not_channel"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_gate2_pass_entrypoint"],
+            "public.lf_router_profile_execution_after_gate2_v1",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_gate2_pass_requires_new_router_decision"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_owner"],
+            "EJECUCION_PERFIL_LF_INPUT_VALIDATE",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_resume_via"],
+            "EJECUCION_PERFIL_LF/input_validate",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["pending_profile_input_governance_reenters_router"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_binding_mode"],
+            "DIRECT_PROFILE",
+        )
+        self.assertEqual(
+            set(self.p["decision_policy"]["profile_input_governance_profiles"]),
+            {
+                "PERFIL-PRODUCT-DIRECTOR-LF",
+                "PERFIL-UI-ARCHITECT",
+                "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+                "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+            },
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_adapter_is_input_governance_authority"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_binding_semantics"],
+            "CAPABILITY_NOT_MANDATORY_EXECUTION",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_canonical_read_intents"],
+            ["READ_PRODUCT_DEFINITION"],
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_canonical_read_result"],
+            "NOT_REQUIRED_CANONICAL_READ",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_default_result"],
+            "REQUIRED_BY_TASK",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_task_authority"],
+            "ROUTER_ACTION_BINDING_SHA256",
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["profile_input_governance_scope_must_not_carry_task_metadata"]
         )
 
     def test_no_scope_for_general_question(self):

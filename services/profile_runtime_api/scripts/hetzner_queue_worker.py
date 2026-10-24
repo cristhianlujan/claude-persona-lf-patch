@@ -267,7 +267,8 @@ def _claim(conn: psycopg.Connection) -> dict[str, Any] | None:
                    q.input_image_base64,
                    q.input_image_media_type,
                    q.input_image_sha256,
-                   q.runtime_request_envelope
+                   q.runtime_request_envelope,
+                   q.router_profile_handoff
             """,
             (PROVIDER,),
         )
@@ -463,6 +464,7 @@ def _begin_governed_pre_model(
         "no_write": True,
         "no_promotion": True,
         "automatic_impact": False,
+        "router_profile_handoff": claimed.get("router_profile_handoff"),
     }
     with conn.cursor() as cur:
         begun = _fetch_json_scalar(
@@ -494,35 +496,75 @@ def _begin_governed_pre_model(
         if not execution_manifest:
             raise RuntimeError("HETZNER_GOVERNED_EXECUTION_MANIFEST_MISSING")
 
-        cur.execute(
-            "select public.lf_router_resolve_v1(%s,%s,%s,%s,%s)",
-            (
-                claimed["input_literal"],
-                claimed["profile_code"],
-                "PROFILE_EXECUTION",
-                "PERFIL",
-                "ROUTER",
-            ),
-        )
-        row = cur.fetchone()
-        route = row[0] if row and isinstance(row[0], dict) else {}
-        if (
-            route.get("status") != "READY_TO_EXECUTE"
-            or route.get("operation_code") != "EJECUCION_PERFIL_LF"
-        ):
-            raise RuntimeError("HETZNER_GOVERNED_ROUTER_NOT_READY")
-        _record_governed_step(
-            cur,
-            execution_id=execution_id,
-            step_id="router",
-            evidence_ref=f"supabase://public.lf_router_resolve_v1/{claimed['profile_code']}/PROFILE_EXECUTION",
-            payload={
-                "router_read": "READY_TO_EXECUTE",
-                "action": "PROFILE_EXECUTION",
-                "router_result": route,
-                "input_literal_sha256": input_digest,
-            },
-        )
+        handoff = claimed.get("router_profile_handoff")
+        if handoff is not None:
+            handoff_validation = _fetch_json_scalar(
+                cur,
+                "select public.lf_router_profile_execution_handoff_validate_v1(%s,%s,%s)",
+                (Jsonb(handoff), claimed["input_literal"], claimed["profile_code"]),
+            )
+            if handoff_validation.get("valid") is not True:
+                raise RuntimeError(
+                    "HETZNER_GOVERNED_ROUTER_HANDOFF_INVALID:"
+                    + str(handoff_validation.get("code") or "UNKNOWN")
+                )
+            route = handoff.get("router_result")
+            if (
+                not isinstance(route, dict)
+                or route.get("status") != "READY_TO_EXECUTE"
+                or route.get("operation_code") != "EJECUCION_PERFIL_LF"
+            ):
+                raise RuntimeError("HETZNER_GOVERNED_ROUTER_HANDOFF_ROUTE_INVALID")
+            _record_governed_step(
+                cur,
+                execution_id=execution_id,
+                step_id="router",
+                evidence_ref="router-handoff://" + str(handoff.get("fingerprint_sha256") or ""),
+                payload={
+                    "router_read": "AUTHORIZED_HANDOFF_VALIDATED",
+                    "action": "PROFILE_EXECUTION",
+                    "router_result": route,
+                    "semantic_request": handoff.get("semantic_request"),
+                    "semantic_result": handoff.get("semantic_result"),
+                    "handoff_fingerprint_sha256": handoff.get("fingerprint_sha256"),
+                    "input_literal_sha256": input_digest,
+                    "reentered_router": False,
+                },
+            )
+        else:
+            # Legacy compatibility only: rows created before the handoff contract
+            # still re-resolve ACT-0001. New governed rows must carry the handoff.
+            cur.execute(
+                "select public.lf_router_resolve_v1(%s,%s,%s,%s,%s)",
+                (
+                    claimed["input_literal"],
+                    claimed["profile_code"],
+                    "PROFILE_EXECUTION",
+                    "PERFIL",
+                    "ROUTER",
+                ),
+            )
+            row = cur.fetchone()
+            route = row[0] if row and isinstance(row[0], dict) else {}
+            if (
+                route.get("status") != "READY_TO_EXECUTE"
+                or route.get("operation_code") != "EJECUCION_PERFIL_LF"
+            ):
+                raise RuntimeError("HETZNER_GOVERNED_ROUTER_NOT_READY")
+            _record_governed_step(
+                cur,
+                execution_id=execution_id,
+                step_id="router",
+                evidence_ref=f"supabase://public.lf_router_resolve_v1/{claimed['profile_code']}/PROFILE_EXECUTION",
+                payload={
+                    "router_read": "READY_TO_EXECUTE",
+                    "action": "PROFILE_EXECUTION",
+                    "router_result": route,
+                    "input_literal_sha256": input_digest,
+                    "reentered_router": True,
+                    "legacy_without_handoff": True,
+                },
+            )
 
         cur.execute(
             """
@@ -562,33 +604,62 @@ def _begin_governed_pre_model(
         input_evidence_ref = (
             f"queue://private.lf_profile_runtime_queue_v1/{request_id}@{input_digest}"
         )
-        scope_packet = _fetch_json_scalar(
-            cur,
-            "select public.lf_profile_execution_scope_authority_packet_v1(%s,%s,%s)",
-            (execution_id, claimed["input_literal"], input_evidence_ref),
-        )
-        if (
-            scope_packet.get("status") != "READY"
-            or not isinstance(scope_packet.get("scope_authority_packet"), dict)
-            or not isinstance(scope_packet.get("scope_packet_sha256"), str)
-        ):
-            raise RuntimeError(
-                "HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY:"
-                + str(scope_packet.get("code") or scope_packet.get("status") or "UNKNOWN")
+        if handoff is not None:
+            input_validation = _fetch_json_scalar(
+                cur,
+                "select public.lf_profile_execution_input_validate_v1(%s,%s,%s,%s)",
+                (
+                    execution_id,
+                    claimed["input_literal"],
+                    input_evidence_ref,
+                    Jsonb(handoff),
+                ),
             )
-        _record_governed_step(
-            cur,
-            execution_id=execution_id,
-            step_id="input_validate",
-            evidence_ref=input_evidence_ref,
-            payload={
+            if input_validation.get("status") != "READY":
+                raise RuntimeError(
+                    "HETZNER_PROFILE_INPUT_VALIDATE_NOT_READY:"
+                    + str(
+                        input_validation.get("blocking_code")
+                        or input_validation.get("status")
+                        or "UNKNOWN"
+                    )
+                )
+            input_payload = {
+                **input_validation,
+                "input_digest": input_digest,
+                "read_only": True,
+            }
+        else:
+            # Legacy compatibility for queue rows created before router handoffs.
+            scope_packet = _fetch_json_scalar(
+                cur,
+                "select public.lf_profile_execution_scope_authority_packet_v1(%s,%s,%s)",
+                (execution_id, claimed["input_literal"], input_evidence_ref),
+            )
+            if (
+                scope_packet.get("status") != "READY"
+                or not isinstance(scope_packet.get("scope_authority_packet"), dict)
+                or not isinstance(scope_packet.get("scope_packet_sha256"), str)
+            ):
+                raise RuntimeError(
+                    "HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY:"
+                    + str(scope_packet.get("code") or scope_packet.get("status") or "UNKNOWN")
+                )
+            input_payload = {
                 "input_scope": f"QUEUE_REQUEST:{request_id}",
                 "activation_trigger_match": True,
                 "input_digest": input_digest,
                 "read_only": True,
                 "scope_authority_packet": scope_packet["scope_authority_packet"],
                 "scope_authority_packet_sha256": scope_packet["scope_packet_sha256"],
-            },
+                "legacy_without_handoff": True,
+            }
+        _record_governed_step(
+            cur,
+            execution_id=execution_id,
+            step_id="input_validate",
+            evidence_ref=input_evidence_ref,
+            payload=input_payload,
         )
 
         context = _fetch_json_scalar(
@@ -596,6 +667,12 @@ def _begin_governed_pre_model(
             "select public.lf_profile_execution_context_admission_v1(%s)",
             (execution_id,),
         )
+        if context.get("status") == "READY" and handoff is not None:
+            context = _fetch_json_scalar(
+                cur,
+                "select public.lf_profile_execution_channel_context_v1(%s,%s,%s)",
+                (execution_id, Jsonb(context), Jsonb(handoff)),
+            )
         if context.get("status") != "READY" or context.get("server_validated") is not True:
             raise RuntimeError(
                 f"HETZNER_GOVERNED_CONTEXT_NOT_READY:{context.get('blocking_code')}"

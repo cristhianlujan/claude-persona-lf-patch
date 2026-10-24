@@ -1,6 +1,6 @@
 # Llamador RO DECISION_CONTEXT_ASOF → observación A6/A9
 24-oct-2026 · Candidato de fuente para revisión. Sin apply ni activación.
-Depende del receptor draft #3135, HEAD base 8b987d00e24a8b2be5eead22bde944c8af0c8ac8.
+PR autónomo sobre main 33684cc36e6ca0a7d74e3d547fce50898a16f0a5. No requiere aplicar la migración de #3135.
 Los documentos/evidencias previos conservan sus fechas y estados de sus commits de prueba.
 
 ## Qué resuelve
@@ -39,7 +39,7 @@ Los flags de planificación, ejecución, persistencia, admisión y efecto sobre 
 
 ## Pruebas y smoke
 
-18 tests del llamador + 15 del adaptador + 27 de ensamblado + 76 PG-01 = 136 tests unitarios locales satisfactorios.
+Validación de este PR autónomo: 18 tests del llamador + 15 del adaptador + 27 de ensamblado = 60 tests unitarios locales. Los 76 tests PG-01 adicionales se ejecutaron antes en la rama del receptor; esa regresión histórica no se atribuye al árbol autónomo.
 Se cubren lectura fija parametrizada, identidad, hashes, transacción RO, consumidor/sujeto, UNKNOWN, error de transporte, error del observador y prohibición de reemplazar la respuesta.
 Los tests positivos completos son sintéticos. No existe positivo A9 real admitido en esta evidencia.
 
@@ -57,8 +57,8 @@ No se inyectó el observador en el servicio Profile Runtime ni se reinició un s
 La instalación de un hook en un proceso activo, una ejecución programada y cualquier registro/activación adicional siguen fuera de esta entrega.
 La lectura RO acotada está permitida fuera de Router por AGENTS.md. Cualquier actualización del runtime activo requiere su ruta gobernada; la existencia de la operación no constituye una ejecución autorizada.
 
-Se prepara como PR draft apilado sobre la rama de #3135 para que su diff incluya únicamente código, tests, documentación y evidencia A6/A9.
+Se publica como PR draft autónomo contra main: 13 archivos de código, tests, documentación, evidencia A6/A9 y un fixture compartido. El fixture conserva los mismos bytes que el de #3135 y es exclusivamente sintético.
 No incorpora otra migración, workflow ni cambios del registro de familias. Paths bajo wave1_boundary_contracts: familia fija PROGRAMMING_AGENT_TESTS.
-main observado: 33684cc36e6ca0a7d74e3d547fce50898a16f0a5. Sus cambios recientes de Router/perfiles no se sobrescriben; este PR depende de la base draft, y deberá revalidarse al integrar/retargetear a main.
+main integrado: 33684cc36e6ca0a7d74e3d547fce50898a16f0a5. Se conservan sus cambios de Router/perfiles. El primer intento de base apilada produjo STALE_BASE; se corrigió la estructura del PR, sin alterar los checks.
 La clasificación local PASE y el CI del draft no equivalen a calificación funcional ni revisión independiente.
 P1/I0, C4/C7, D5/D7, positivo A9 y admisión operativa siguen abiertos.
