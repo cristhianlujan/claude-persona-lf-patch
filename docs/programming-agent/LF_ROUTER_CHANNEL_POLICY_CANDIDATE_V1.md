@@ -130,6 +130,39 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 - Si ya existe implementacion coincidente y autoridad suficiente, cierre con evidencia. Si existe una discrepancia de implementacion, iniciar Análisis / admision antes de Programacion.
 - No se cambia `lf_ops.reglas` por costumbre: cada tipo de definicion tiene su propio almacén canónico.
 
+## Entrega técnica para pasar al segundo nivel (sin promover SQL)
+
+Se preparó **LF_ROUTER_STAGE1_V2** como adaptación opt-in compatible, sin tocar la función `public.lf_router_stage1_validate_v1` ni el comportamiento `public.lf_router_route_v1` desplegados:
+
+- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` verifica congruencia con el `sistema` de Stage1 V1; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo usa `ruta_transversal=GESTION_ACTIVOS_IA` con `canal_candidato=null`.
+- `sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py`: casos estructurales positivos y negativos, incluyendo SALY conocido/no habilitado, multinegocio, ambigüedad, referencia inventada, operación no autorizada, pantalla y scope opcional.
+- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: adapta de forma *read-only* la salida V2 válida a la carga V1 de `public.lf_router_route_v1` **solamente para LF**. Las solicitudes SALY no se despachan; solicitudes multinegocio quedan pendientes. Descarta `capability_hint` de origen modelo al generar el handoff, para evitar despacho directo sin autoridad semántica; usa la búsqueda del nivel 1 existente. La referencia de alcance sigue `UNRESOLVED`; el contrato no concede acceso ni invoca SQL.
+- `sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py`: comprueba el payload de handoff, la contención de SALY y multinegocio, el bypass del hint no certificado, los límites de permisos y la respuesta directa sin scope.
+
+El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salida nueva conserva campos obligatorios V1 y añade estos campos de **interpretación**, no autorización:
+
+```json
+{
+  "schema_version": "LF_ROUTER_STAGE1_V2",
+  "sistema": "LF",
+  "canal_candidato": "OPERACIONES",
+  "negocio_codigo": "LF",
+  "negocios_afectados": [],
+  "ruta_transversal": null,
+  "razon_seleccion": "Consulta de una capacidad existente",
+  "alcance": {
+    "target_type": "OFERTA",
+    "target_hint": "mi oferta",
+    "resolution_status": "UNRESOLVED"
+  },
+  "downstream_execution_allowed": false
+}
+```
+
+Los demás campos heredados obligatorios V1 (`texto_original`, `es_operacion`, `respuesta_directa`, `accion`, `sujeto`, `correcciones`, `formas_busqueda`, `ambiguo`, `alternativas`, `pregunta_usuario`, `capability_hint`) se siguen exigiendo. `target_ref` y `verified=true` quedan prohibidos en Stage1.
+
+**Importante:** el intento de resolver la actualización de ACT-0001 vía `public.lf_router_resolve_v1` reportó `BLOCK_SCOPE_SEMANTICS_UNATTESTED`, `semantic_gap_code=POSITIVE_NEGATIVE_SCOPE_NOT_BOUND` y `downstream_execution_allowed=false`. Por tanto, este lote está limitado a **código fuente y pruebas candidatas**. No se creó ni aplicó una migración ni se activó Stage1/Stage2 en Supabase. Para activar el siguiente nivel, la operación deberá acreditar alcance semántico positivo/negativo, origen y destinatario exactos, pasar PASE y los controles del LF Migration Merge Train. No fabricar recibos para suplir ese bloqueo.
+
 ## Estado y siguientes lotes
 
 **Este lote** congela solo politica candidata + pruebas estructurales. No modifica `LF_ROUTER_STAGE1_V1` ni su validador productivo.
