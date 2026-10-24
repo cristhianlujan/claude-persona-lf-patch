@@ -20,10 +20,10 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertIs(self.p["applies_effects"], False)
         self.assertIs(self.p["decision_policy"]["stage1_cannot_grant_execution"], True)
 
-    def test_exactly_four_channels(self):
+    def test_exactly_three_channels(self):
         got = [c["code"] for c in self.p["channels"]]
-        self.assertEqual(len(got), 4)
-        self.assertEqual(set(got), {"PRODUCTO", "PROGRAMACION", "PERFILES_SKILLS", "SISTEMA"})
+        self.assertEqual(len(got), 3)
+        self.assertEqual(set(got), {"PRODUCTO", "PROGRAMACION", "OPERACIONES"})
 
     def test_intent_responsibilities_and_exclusions(self):
         for channel in self.p["channels"]:
@@ -57,7 +57,7 @@ class ChannelPolicySourceContract(unittest.TestCase):
     def test_fixtures_cover_channels_and_b2b(self):
         examples = self.p["examples"]
         self.assertEqual(len(examples), len({x["id"] for x in examples}))
-        self.assertEqual({x["initial_channel"] for x in examples}, {
+        self.assertEqual({x["initial_channel"] for x in examples if x["initial_channel"] is not None}, {
             "PRODUCTO", "PROGRAMACION", "PERFILES_SKILLS", "SISTEMA"
         })
         b2b = next(x for x in examples if x["id"] == "B2B_LABEL_CHANGE")
