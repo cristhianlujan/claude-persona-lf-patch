@@ -9,6 +9,7 @@
     "sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py": "ENGINEERING_CHECKPOINTS",
     "docs/programming-agent/LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1.md": "ENGINEERING_CHECKPOINTS",
-    "supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql": "MIGRATION"
+    "supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql": "MIGRATION",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
   }
 }
