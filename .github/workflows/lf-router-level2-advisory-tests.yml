@@ -77,6 +77,7 @@ on:
       - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
       - 'supabase/migrations/*lf_profile_native_execution_bridge_v1.sql'
       - 'supabase/migrations/*lf_profile_native_login_rules_output_v1.sql'
+      - 'supabase/migrations/*lf_profile_canonical_read_semantic_close_v1.sql'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json'
       - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
@@ -261,6 +262,43 @@ jobs:
           if data.get("valid") is not True or data.get("blocking_codes"):
               raise SystemExit("FAIL_LOGIN_B2B_PRODUCT_DIRECTOR_RAW:"+json.dumps(data,sort_keys=True))
           print("PASS_LOGIN_B2B_PRODUCT_DIRECTOR_RAW")
+          PY
+
+      - name: Guard deterministic canonical-read semantic judge boundary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          matches=list(Path("supabase/migrations").glob("*_lf_profile_canonical_read_semantic_close_v1.sql"))
+          assert len(matches)==1, matches
+          sql=matches[0].read_text(encoding="utf-8")
+          required=[
+            "lf_profile_execution_canonical_read_judge_v1",
+            "READ_PRODUCT_DEFINITION",
+            "NOT_REQUIRED_CANONICAL_READ",
+            "LF_PRODUCT_CANONICAL_RULE_READ_V1",
+            "PERFIL-PRODUCT-DIRECTOR-LF",
+            "DETERMINISTIC_CANONICAL_READ_V1",
+            "semantic_result is not distinct from canonical_read_judge",
+            "EXEC-PROFILE-GATE2-1BDAD35D77DC30810DE68282",
+            "'semantic_judge'",
+            "'report_output'",
+            "lf_profile_execution_terminal_authority_receipt_v1",
+            "lf_profile_execution_attach_terminal_authority_receipt_v1",
+            "CANONICAL_READ_JUDGE_DIRECT_READ_ONLY_EXECUTION_FORBIDDEN",
+          ]
+          missing=[x for x in required if x not in sql]
+          assert not missing, missing
+          normalized="".join(sql.replace("''","'").split())
+          for expression in (
+              "coalesce((semantic_result->>'model_call_count')::integer,0)=1",
+              "coalesce((semantic_result->>'model_call_count')::integer,-1)=0",
+              "semantic_result->>'judge_mode'='DETERMINISTIC_CANONICAL_READ_V1'",
+          ):
+              assert "".join(expression.split()) in normalized, expression
+          assert "GRANT EXECUTE ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text)\n  TO service_role;" in sql
+          assert "TO service_role,supabase_read_only_user" not in sql
+          print("PASS_CANONICAL_READ_DETERMINISTIC_JUDGE_BOUNDARY")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests
