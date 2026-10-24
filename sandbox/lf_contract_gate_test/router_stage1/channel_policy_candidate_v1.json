@@ -363,5 +363,134 @@
         "Arregla lo de las ofertas"
       ]
     }
+  ],
+  "product_context_contract": {
+    "schema_version": "LF_ROUTER_PRODUCT_SCOPE_CONTEXT_CANDIDATE_V1",
+    "state": "SOURCE_ONLY_CANDIDATE",
+    "conceptual_dimensions": [
+      "CANAL",
+      "PRODUCTO",
+      "ALCANCE"
+    ],
+    "canonical_product_field": "producto_codigo",
+    "legacy_stage1_product_field": "sistema",
+    "legacy_semantics": "The existing sistema field denotes a product (LF/SALY/OTRO/DESCONOCIDO), never one of the work channels",
+    "migration_policy": "Add typed producto_codigo through versioned Stage1-to-Stage2 compatibility adaptation; preserve LF_ROUTER_STAGE1_V1 and do not silently reinterpret sistema or break existing callers",
+    "channel_field": "canal_candidato",
+    "product_registry_policy": "Resolve against current registered product catalog; LF and SALY are examples only; never create an unregistered product code from free text",
+    "product_cardinality": [
+      "ONE",
+      "EXPLICIT_SET",
+      "UNRESOLVED"
+    ],
+    "product_codes_example": [
+      "LF",
+      "SALY"
+    ],
+    "product_set_field": "productos_afectados",
+    "cross_product_policy": "EXPLICIT_SET_ONLY_NOT_GLOBAL_WILDCARD",
+    "scoped_context": {
+      "scope_kind_values": [
+        "PRODUCTO",
+        "GRUPO_CORPORATIVO",
+        "EMPRESA",
+        "REGISTRO",
+        "MULTIPRODUCTO",
+        "UNRESOLVED"
+      ],
+      "group_ref": "group_id",
+      "company_ref": "company_id",
+      "record_ref": "target_ref",
+      "verified_hierarchy": [
+        "lf_ops.b2b_corporate_groups",
+        "lf_ops.b2b_corporate_group_companies",
+        "lf_ops.empresas"
+      ],
+      "group_membership_must_be_verified": true,
+      "company_scope_must_be_bound_server_side": true,
+      "group_scope_requires_authorized_scope_expansion": true,
+      "unit_scope_unimplemented": "Do not fabricate operating-unit identity or organizational-unit table before a source exists",
+      "product_owner_org_not_equivalent_to_customer_company": true
+    },
+    "resolution_order": [
+      "EXPLICIT_PRODUCT_MENTION_NORMALIZED_BY_REGISTRY",
+      "VERIFIED_ACTIVE_PRODUCT_SESSION",
+      "EXACT_TARGET_ASSET_PRODUCT_BINDING",
+      "CONTEXTUAL_HINT_NON_AUTHORITATIVE",
+      "ASK_ONE_QUESTION_IF_MATERIAL_AMBIGUITY"
+    ],
+    "authorization_guard": [
+      "CHANNEL_CLASSIFICATION_IS_NOT_PERMISSION",
+      "REQUESTED_COMPANY_FROM_TEXT_NEVER_GRANTS_ACCESS",
+      "ACTOR_SESSION_AND_MEMBERSHIP_REQUIRED",
+      "PRODUCT_HANDLER_AND_SUBJECT_SCOPE_MUST_MATCH",
+      "NO_CROSS_PRODUCT_DATA_LEAK",
+      "FAIL_CLOSED_FOR_UNREGISTERED_PRODUCT_OR_UNVERIFIED_SCOPE"
+    ],
+    "unsupported_products": "Can classify SALY or future products only as candidates; LF_ROUTER_ROUTE_V1 currently supports LF exclusively; no automatic launch of other product's handler",
+    "operational_selectors": "Product code and scope determine product-specific handler; names or intents can match across products but operation binding must be exact per product",
+    "skills_profiles_are_transversal_resources": true
+  },
+  "product_scope_examples": [
+    {
+      "id": "LF_OFFER_STATUS",
+      "utterance": "Consulta el estado de mi oferta en Libertad Financiera",
+      "canal": "OPERACIONES",
+      "producto_codigo": "LF",
+      "scope_kind": "REGISTRO",
+      "requires": "AUTHORIZED_OFFER_HANDLER_AND_AUTHENTICATED_SUBJECT"
+    },
+    {
+      "id": "SALY_ADVANCE_STATUS",
+      "utterance": "Consulta el estado de mi adelanto en SALY",
+      "canal": "OPERACIONES",
+      "producto_codigo": "SALY",
+      "scope_kind": "REGISTRO",
+      "requires": "SALY_ROUTE_CURRENTLY_UNSUPPORTED_NO_OPERATION_EXECUTION"
+    },
+    {
+      "id": "LF_COMPANY_PAYMENTS",
+      "utterance": "Muestra los pagos de mi empresa en LF",
+      "canal": "OPERACIONES",
+      "producto_codigo": "LF",
+      "scope_kind": "EMPRESA",
+      "requires": "SERVER_BOUND_COMPANY_ID"
+    },
+    {
+      "id": "LF_GROUP_REPORT",
+      "utterance": "Ver el consolidado de empresas del grupo en LF",
+      "canal": "OPERACIONES",
+      "producto_codigo": "LF",
+      "scope_kind": "GRUPO_CORPORATIVO",
+      "requires": "VERIFIED_GROUP_MEMBERSHIP_AND_AUTHORIZED_CROSS_COMPANY_ACCESS"
+    },
+    {
+      "id": "SHARED_AUTH_RULE",
+      "utterance": "Define una política de expiración que aplique a LF y SALY",
+      "canal": "PRODUCTO",
+      "producto_codigo": null,
+      "productos_afectados": [
+        "LF",
+        "SALY"
+      ],
+      "scope_kind": "MULTIPRODUCTO",
+      "requires": "EACH_PRODUCT_AUTHORITY_AND_DECISION_NO_IMPLICIT_GLOBAL_WRITE"
+    },
+    {
+      "id": "UNSCOPED_AMBIGUOUS",
+      "utterance": "Muéstrame el estado de mi solicitud",
+      "canal": "OPERACIONES",
+      "producto_codigo": null,
+      "scope_kind": "UNRESOLVED",
+      "requires": "DISAMBIGUATE_PRODUCT_BEFORE_DISPATCH"
+    },
+    {
+      "id": "FUTURE_UNREGISTERED",
+      "utterance": "Consultar una operación de un producto futuro no registrado",
+      "canal": "OPERACIONES",
+      "producto_codigo": null,
+      "scope_kind": "UNRESOLVED",
+      "requires": "VERIFY_PRODUCT_REGISTRY_OR_RETURN_UNSUPPORTED"
+    }
   ]
 }
