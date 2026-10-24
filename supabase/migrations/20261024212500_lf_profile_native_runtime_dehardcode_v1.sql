@@ -31,8 +31,8 @@ BEGIN
     'public.lf_profile_native_bridge_prepare_v1(text,text,text,text)'::regprocedure
   );
 
-  v_old:=E'''next_action'', ''EXECUTE_PRODUCT_DIRECTOR_IN_CURRENT_GPT_NATIVE_CONTEXT''';
-  v_new:=E'''next_action'', ''EXECUTE_PROFILE_IN_CURRENT_GPT_NATIVE_CONTEXT''';
+  v_old:=E'''next_action'',''EXECUTE_PRODUCT_DIRECTOR_IN_CURRENT_GPT_NATIVE_CONTEXT''';
+  v_new:=E'''next_action'',''EXECUTE_PROFILE_IN_CURRENT_GPT_NATIVE_CONTEXT''';
 
   IF strpos(v_def,v_old)=0 THEN
     RAISE EXCEPTION 'PROFILE_NATIVE_DEHARDCODE_BRIDGE_ACTION_ANCHOR_MISSING';
