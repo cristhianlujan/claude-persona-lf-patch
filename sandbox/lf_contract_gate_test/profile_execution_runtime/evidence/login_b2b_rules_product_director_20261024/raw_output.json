@@ -5,33 +5,32 @@
     "product_decision": {
       "decision_id": "B2B-AUTH-001-CANONICAL-RULE-READ-001",
       "selected_decision": "Para esta consulta de lectura, devolver las 71 reglas directamente vinculadas a B2B-AUTH-001 preservando código, título y estado; informar por separado que el contrato efectivo agrega 283 reglas en total, sin expandir las heredadas salvo que el usuario lo solicite.",
-      "rationale": "La solicitud es una extracción canónica, no una modificación. La fuente resuelta contiene las reglas directas y el agregado efectivo; no hace falta enriquecer el input ni inventar una decisión funcional nueva.",
+      "rationale": "Es una extracción canónica, no una modificación. La autoridad ya resolvió el conjunto directo y el agregado efectivo.",
       "source_refs": [
         {
           "source_ref": "supabase://lf_ops.reglas_pantallas/B2B-AUTH-001",
           "authority": "AUTHORITATIVE",
-          "supports": "Las 71 reglas directamente vinculadas a la pantalla B2B-AUTH-001, con código, título y estado actuales.",
+          "supports": "71 reglas directas con código, título y estado.",
           "current": true
         },
         {
           "source_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
           "authority": "AUTHORITATIVE",
-          "supports": "El agregado efectivo de reglas aplicables a B2B-AUTH-001 asciende a 283 incluyendo herencia/transversalidad.",
+          "supports": "283 reglas efectivas incluyendo herencia/transversalidad.",
           "current": true
         }
       ],
       "rejected_alternatives": [
-        "Devolver solo las reglas AUTH-* porque omitiría reglas directas de accesibilidad, gobernanza, observabilidad, UX y otras categorías.",
-        "Expandir las 283 reglas efectivas porque el usuario pidió las reglas del Login y la proyección compacta ya distingue directas de heredadas."
+        "Devolver solo AUTH-* omitiría otras reglas directas.",
+        "Expandir 283 reglas mezclaría el conjunto directo con la herencia efectiva."
       ],
       "tradeoffs": [
-        "Se prioriza precisión canónica y trazabilidad sobre una expansión innecesaria del conjunto heredado.",
-        "La respuesta puede ser extensa porque existen 71 reglas directas, pero evita mezclar reglas directas con herencia efectiva."
+        "Precisión canónica antes que expansión innecesaria."
       ],
       "preserved_constraints": [
-        "Lectura solamente; no modificar reglas, estados ni pantalla.",
-        "Preservar exactamente el estado VIGENTE o CANDIDATO de cada regla.",
-        "Distinguir 71 reglas directas de 283 reglas efectivas."
+        "Lectura sin mutación.",
+        "Preservar estados VIGENTE/CANDIDATO.",
+        "Distinguir 71 directas de 283 efectivas."
       ],
       "semantic_qualifiers": [
         "71 corresponde a reglas directamente vinculadas a B2B-AUTH-001.",
@@ -40,68 +39,66 @@
       ]
     },
     "included_scope": [
-      "Reglas directamente vinculadas a B2B-AUTH-001.",
-      "Código, título y estado de cada regla.",
-      "Comentario breve sobre la diferencia entre reglas directas y efectivas."
+      "Reglas directas de B2B-AUTH-001.",
+      "Código, título y estado.",
+      "Comentario breve de alcance."
     ],
     "excluded_scope": [
-      "Modificar reglas o estados.",
-      "Crear nuevas reglas.",
-      "Expandir las 283 reglas efectivas heredadas salvo solicitud expresa."
+      "Modificar reglas.",
+      "Crear reglas.",
+      "Expandir las 283 efectivas sin solicitud expresa."
     ],
     "priority": {
       "level": "READ_ONLY_CANONICAL",
-      "reason": "Responder con la verdad canónica actual sin introducir cambios."
+      "reason": "Responder la verdad canónica actual."
     },
     "acceptance_criteria": [
       {
         "criterion_id": "AC-DIRECT-COUNT",
-        "condition": "La respuesta incluye el conjunto directo de B2B-AUTH-001.",
-        "observable_check": "El listado contiene exactamente 71 reglas directas y cada entrada conserva código, título y estado."
+        "condition": "Responder el conjunto directo.",
+        "observable_check": "El listado contiene exactamente 71 reglas directas con código, título y estado."
       },
       {
         "criterion_id": "AC-EFFECTIVE-DISTINCTION",
-        "condition": "La respuesta menciona el agregado efectivo sin confundirlo con el directo.",
-        "observable_check": "Se indica por separado que el agregado efectivo es 283 y no se presenta como 283 reglas directas."
+        "condition": "Separar agregado efectivo.",
+        "observable_check": "Se informa 283 como agregado efectivo, no como reglas directas."
       },
       {
         "criterion_id": "AC-NO-MUTATION",
-        "condition": "La consulta permanece en modo lectura.",
-        "observable_check": "No se propone, registra ni modifica ninguna regla, estado o definición de pantalla."
+        "condition": "Mantener lectura.",
+        "observable_check": "No se modifica ninguna regla, estado o pantalla."
       }
     ],
     "dependencies": [],
     "risks": [
-      "Confundir reglas directas con reglas efectivas heredadas produciría una respuesta materialmente incorrecta.",
-      "Filtrar solo AUTH-* ocultaría reglas directas de otras categorías que también gobiernan el Login."
+      "Confundir reglas directas con efectivas.",
+      "Filtrar solo AUTH-* ocultaría otras categorías directas."
     ],
     "profiles_to_activate": [],
     "blockers": [],
     "next_step": {
       "target": "Orchestrator",
-      "action": "Renderizar al usuario las 71 reglas directas desde la referencia canónica y conservar el comentario de 71 directas frente a 283 efectivas."
+      "action": "Renderizar las 71 reglas directas y preservar la distinción 71/283."
     },
     "final_verdict": "READ_ONLY_CANONICAL_EXTRACTION",
     "evidence_used": [
       {
         "source_ref": "supabase://lf_ops.reglas_pantallas/B2B-AUTH-001",
-        "fact": "direct_rule_count=71",
-        "projection": "code,title,status"
+        "fact": "direct_rule_count=71"
       },
       {
         "source_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
-        "fact": "effective_rule_count=283",
-        "projection": "aggregate_only"
+        "fact": "effective_rule_count=283"
       }
     ],
     "open_assumptions": [],
     "success_metric_or_proxy": {
       "metric": "canonical_rule_fidelity",
-      "target": "71/71 reglas directas preservadas; 0 reglas inventadas; agregado 283 distinguido."
+      "target": "71/71 directas; 0 inventadas; agregado 283 distinguido."
     },
     "handoff_to_next": {
       "target": "Orchestrator",
-      "input_contract": "Renderizar la lista canónica directa y el comentario de alcance sin re-clasificar ni modificar la definición.",
+      "input_contract": "Renderizar lista canónica directa sin reclasificar ni modificar.",
       "qualifiers_to_preserve": [
         "71 corresponde a reglas directamente vinculadas a B2B-AUTH-001.",
         "283 corresponde al agregado efectivo incluyendo reglas heredadas o transversales.",
@@ -111,34 +108,34 @@
     "authority_status": "SUPPORTED",
     "material_claims": [
       {
-        "claim": "B2B-AUTH-001 tiene 71 reglas directamente vinculadas en la proyección canónica actual.",
+        "claim": "B2B-AUTH-001 tiene 71 reglas directamente vinculadas.",
         "authority_ref": "supabase://lf_ops.reglas_pantallas/B2B-AUTH-001",
         "status": "SUPPORTED"
       },
       {
-        "claim": "El contrato efectivo de B2B-AUTH-001 agrega 283 reglas en total incluyendo herencia/transversalidad.",
+        "claim": "B2B-AUTH-001 tiene 283 reglas efectivas incluyendo herencia/transversalidad.",
         "authority_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
         "status": "SUPPORTED"
       }
     ],
     "decision_lineage": {
-      "objective": "Responder qué reglas gobiernan actualmente el Login B2B sin modificar producto.",
+      "objective": "Responder las reglas actuales del Login B2B sin modificar producto.",
       "selected_decision": "Para esta consulta de lectura, devolver las 71 reglas directamente vinculadas a B2B-AUTH-001 preservando código, título y estado; informar por separado que el contrato efectivo agrega 283 reglas en total, sin expandir las heredadas salvo que el usuario lo solicite.",
       "evidence_refs": [
         "supabase://lf_ops.reglas_pantallas/B2B-AUTH-001",
         "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules"
       ],
       "preserved_constraints": [
-        "No modificar ninguna regla o estado.",
-        "No confundir reglas directas con reglas efectivas.",
-        "No inventar reglas ausentes de la fuente canónica."
+        "No modificar reglas o estados.",
+        "No confundir directas con efectivas.",
+        "No inventar reglas."
       ],
       "acceptance_refs": [
         "AC-DIRECT-COUNT",
         "AC-EFFECTIVE-DISTINCTION",
         "AC-NO-MUTATION"
       ],
-      "handoff_effect": "El Orchestrator puede presentar el listado canónico directo y el comentario del Product Director sin reinterpretar el alcance."
+      "handoff_effect": "El Orchestrator presenta el listado canónico directo sin reinterpretar el alcance."
     }
   },
   "score": {
@@ -150,19 +147,19 @@
     "total": 24,
     "evidence_by_criterion": {
       "product_decision_clarity": [
-        "deliverable_created.product_decision.selected_decision distingue lectura directa y agregado efectivo."
+        "selected_decision distingue lectura directa y agregado efectivo."
       ],
       "scope_control_mvp_separation": [
-        "deliverable_created.included_scope/excluded_scope limita la consulta a extracción sin mutación."
+        "included_scope/excluded_scope limita a extracción sin mutación."
       ],
       "acceptance_criteria_quality": [
-        "AC-DIRECT-COUNT y AC-EFFECTIVE-DISTINCTION detectan conteos o alcances incorrectos."
+        "AC-DIRECT-COUNT y AC-EFFECTIVE-DISTINCTION detectan errores."
       ],
       "cross_profile_handoff_quality": [
-        "handoff_to_next fija Orchestrator y conserva los calificadores 71 directas / 283 efectivas."
+        "handoff_to_next conserva los calificadores 71 directas / 283 efectivas."
       ],
       "evidence_risk_governance_traceability": [
-        "product_decision.source_refs vincula ambos conteos a referencias canónicas actuales."
+        "source_refs vincula conteos a referencias canónicas."
       ]
     }
   },
