@@ -15,8 +15,8 @@ La seleccion de canal **no es seleccion de perfil**, no es permiso de escritura 
 | Canal | Es responsable de | No debe hacer |
 |---|---|---|
 | PRODUCTO | Definir, verificar y actualizar reglas y definiciones canónicas del producto, incluidas pantallas y elementos | Programar o desplegar |
-| PROGRAMACION | Implementar solo a partir de definicion autorizada y paquete admitido | Inventar el QUÉ o reescribir la fuente canónica |
-| SISTEMA | Infraestructura, runtime, despliegue y cambios tecnicos de plataforma | Sustituir decisiones de Producto |
+| PROGRAMACION | Analizar trabajos admitidos, diseñar técnicamente, programar, probar, desplegar y mantener software/plataforma mediante fases y operaciones gobernadas | Inventar el QUÉ, cambiar la definición canónica ni ejecutar consultas cotidianas como si fueran programación |
+| OPERACIONES (nombre candidato: Operaciones del Producto) | Consultar estados y usar transacciones ya disponibles en el producto vigente, conforme a identidad, permisos y alcance de datos | Desarrollar nuevas funciones, ejecutar SQL libre, alterar reglas o desplegar |
 
 ### Perfiles/Skills no es canal
 
@@ -36,13 +36,21 @@ No se debe confundir una **regla transversal** con un quinto canal: una regla pu
 6. En solicitudes mixtas, planificar pasos secuenciales y dependencias; no despachar a todos los canales. Empates materiales: evidencia discriminante acotada y, si persisten, decision humana.
 7. Los permisos y versiones se leen de autoridad vigente: `public.lf_router_action_registry`, `public.lf_router_capability_v1`, `public.lf_capability_registry` y la capacidad transversal `CAPABILITY_SELECTOR` (solo propuesta, no permiso). **No copiar** a esta politica la lista viva de operaciones ni sus estados.
 
-## Solapamiento pendiente — PROGRAMACION y SISTEMA
+## Frontera: desarrollo y operacion cotidiana
 
-**No decidido en este lote.** La acepcion previa de SISTEMA («infraestructura/runtime/deploy») es insuficiente para consultas y operaciones de negocio sobre un sistema ya existente; la alternativa propuesta es incluir `CONSULTA_OPERATIVA` y `ACCION_OPERATIVA_EXISTENTE` sin convertirlo en programacion.
+**Nombre candidato del tercer canal:** `OPERACIONES` / «Operaciones del Producto». No se crea `SISTEMA` como canal. «Soporte» es un subtipo posible de Operaciones, pero no su unico objetivo.
 
-Criterio a evaluar con propietario: `PROGRAMACION` crea/modifica implementacion con definicion y admision PG-01; `SISTEMA` usa funcionalidades existentes (lecturas y efectos operativos autorizados, mantenimiento y supervision). Modificar reglas de negocio sigue siendo `PRODUCTO`. Un despliegue derivado de nueva programacion requiere control de operacion y no debe reutilizarse como permiso generico.
+**PROGRAMACION**, una vez admitido el alcance aplicable, cubre el ciclo tecnico completo: Analisis, diseño técnico, implementacion, pruebas, despliegue y mantenimiento tecnico. Los controles de cada fase y de cualquier efecto permanecen independientes y vigentes; esta politica no concede permisos de despliegue. Una incidencia por codigo defectuoso corresponde a Programacion; consultar un registro comercial o usar una transaccion ya expuesta no equivale a programar.
 
-**Ejemplo en revision:** «Cual es el estado de mi oferta?» propone SISTEMA y consulta via servicio autorizado, no SQL libre ni datos de otro cliente. En Supabase se observaron `public.lf_user_offer_access` y `public.lf_user_offer_selections`, pero `public.lf_router_capability_v1` no contiene todavia handler especifico de «estado de oferta». No afirmar que esa ruta funciona hoy.
+**OPERACIONES** atiende actividades cotidianas sobre un producto ya implementado: consultar una oferta, estado de un pago, resultado de una liquidacion, o invocar una accion de negocio existente. No requiere un paquete A9/PG-01 para una **lectura** autorizada; requiere que exista un handler o servicio vigente, identidad/empresa/tenant y permisos exactos, minimizacion de datos y evidencia del resultado. La existencia de una fila SQL no autoriza su lectura por un cliente. No otorgar SQL libre al modelo.
+
+**Dependencia nueva**: si Operaciones encuentra una capacidad inexistente, debe informar brecha al Router. Una nueva regla funcional regresa a PRODUCTO, mientras que implementar un servicio sobre una definicion ya vigente entra al analisis/admisión de PROGRAMACION. No convertir una consulta normal en un desarrollo por defecto.
+
+**Ejemplo** «¿Cual es el estado de mi oferta?» -> OPERACIONES -> servicio de consulta autorizado (si existe) -> respuesta. Las tablas `public.lf_user_offer_access` y `public.lf_user_offer_selections` se observaron en la base, pero `public.lf_router_capability_v1` no acredita una capacidad de estado de oferta: **no declarar operacion habilitada**.
+
+**Ejemplo** «Corregir un fallo en el servicio de ofertas y desplegar la correccion» -> PROGRAMACION, con entrada, pruebas y despliegue gobernados. «Definir las condiciones comerciales de la oferta» -> PRODUCTO.
+
+**No se altera el registro de operaciones** `public.lf_router_action_registry`: los nombres de canal clasifican solicitudes, no sustituyen `operation_code` ni cambian el permiso efectivo.
 
 ## Caso de regresion — Login B2B
 
@@ -64,4 +72,4 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 
 **Lote 4:** integrar recibos, retorno del especialista y habilitación gradual por canal después de sus propios gates.
 
-**No cerrado todavía:** limites precisos del canal SISTEMA y posibles subtipos de operacion; mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
+**No cerrado todavía:** validacion final del nombre OPERACIONES, operaciones de negocio expuestas por un handler autorizado y su enlace gobernado; mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
