@@ -7,13 +7,13 @@ canonical target resolution and admission belong to Stage 2 and its authority.
 from __future__ import annotations
 
 import copy
-from typing import Any
+from typing import Any, Iterable
 
 from stage1_context_validator_v2 import validate
 
 
-def prepare_handoff(stage1: Any) -> dict[str, Any]:
-    result = validate(stage1)
+def prepare_handoff(stage1: Any, registered_businesses: Iterable[str] | None = None) -> dict[str, Any]:
+    result = validate(stage1, registered_businesses=registered_businesses)
     base = {
         "schema_version": "LF_ROUTER_STAGE2_HANDOFF_CANDIDATE_V2",
         "downstream_execution_allowed": False,
