@@ -360,7 +360,7 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(te
   TO service_role;
 
 COMMENT ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text) IS
-+'Producer-independent deterministic semantic judge for exact PRODUCTO canonical-rule reads. Profile identity is derived from the governed execution/handoff and lf_activos registry; no profile name, output type, rubric score or downstream target is hardcoded.';
+'Producer-independent deterministic semantic judge for exact PRODUCTO canonical-rule reads. Profile identity is derived from the governed execution/handoff and lf_activos registry; no profile name, output type, rubric score or downstream target is hardcoded.';
 
 
 DO $postcheck$
