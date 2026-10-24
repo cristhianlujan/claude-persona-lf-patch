@@ -73,6 +73,7 @@ on:
       - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_acl_hotfix_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -110,6 +111,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_acl_hotfix_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -182,6 +184,14 @@ jobs:
           assert "TABS_IF_APPLICABLE" in s3
           assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
           assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
+          p4=Path("supabase/migrations/20261024150000_lf_router_product_context_acl_hotfix_v1.sql")
+          s4=p4.read_text(encoding="utf-8")
+          assert s4.count("BEGIN;")==1, s4.count("BEGIN;")
+          assert s4.count("COMMIT;")==1, s4.count("COMMIT;")
+          assert "PRODUCT_CONTEXT_UNSAFE_EXECUTE_ROLE" in s4
+          assert "PRODUCT_CYCLE_UNSAFE_EXECUTE_ROLE" in s4
+          assert "supabase_read_only_user" in s4
+          assert "ROUTER_ROUTE_MUST_NOT_BE_SECURITY_DEFINER" in s4
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
