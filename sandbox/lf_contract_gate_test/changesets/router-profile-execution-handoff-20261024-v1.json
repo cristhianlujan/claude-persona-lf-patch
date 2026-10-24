@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-profile-execution-handoff-20261024-v1",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_stage1/test_channel_policy_candidate_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-profile-execution-handoff-20261024-v1.json": "CHANGESET_MANIFEST"
+  }
+}
