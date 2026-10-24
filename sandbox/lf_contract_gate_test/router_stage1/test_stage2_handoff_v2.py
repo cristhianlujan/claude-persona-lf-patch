@@ -37,12 +37,12 @@ class Handoff(unittest.TestCase):
         self.assertFalse(result["downstream_execution_allowed"])
         self.assertFalse(result["effect_authorized"])
         self.assertFalse(result["alcance_verificado"])
-        self.assertEqual(result["stage1_v1_payload"]["schema_version"], "LF_ROUTER_STAGE1_V1")
-        self.assertEqual(result["stage1_v1_payload"]["sistema"], "LF")  # internal V1 compatibility only
+        self.assertEqual(result["legacy_stage1_v1_payload"]["schema_version"], "LF_ROUTER_STAGE1_V1")
+        self.assertEqual(result["legacy_stage1_v1_payload"]["sistema"], "LF")  # internal V1 compatibility only
 
     def test_untrusted_hint_does_not_skip_level1(self):
         result = prepare_handoff(case())
-        self.assertIsNone(result["stage1_v1_payload"]["capability_hint"])
+        self.assertIsNone(result["legacy_stage1_v1_payload"]["capability_hint"])
         self.assertTrue(result["capability_hint_bypassed_until_authority"])
 
     def test_saly_has_no_unauthorized_route(self):
