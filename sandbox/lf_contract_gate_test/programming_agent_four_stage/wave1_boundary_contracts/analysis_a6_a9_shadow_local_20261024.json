@@ -1,0 +1,277 @@
+{
+  "schema_version": "A6_A9_SHADOW_LOCAL_SMOKE_EVIDENCE_V1",
+  "date": "2026-10-24",
+  "parent_commit": "5ac1e8020513af1c334dfcb8aab42fef7194004f",
+  "mode": "LIVE_RO_RESOLVER_POST_RESPONSE_SHADOW_LOCAL",
+  "code_sha256": "6f7fc755a490ad9d72dc8ed93de2d11af184fbb8b04240ff1c674643a7d5d508",
+  "live_negative_cases": [
+    {
+      "context_id": "e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+      "context_sha256": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+      "active_response_same_buffer": true,
+      "active_response_sha256": "b73a8d4eb2f2a680f4a71fa14be63343feca23fb82901124d837ce5405c986e5",
+      "resolved_context_unchanged": true,
+      "observation": {
+        "schema_version": "A6_A9_SHADOW_OBSERVATION_V1",
+        "state": "OBSERVED",
+        "advisory_only": true,
+        "route_effect_allowed": false,
+        "planning_allowed": false,
+        "execution_allowed": false,
+        "operational_admission": false,
+        "persistence_allowed": false,
+        "preview_status": "RETURN_TO_ANALYSIS",
+        "issue_count": 5,
+        "issues": [
+          {
+            "path": "requirements",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "canonical_implementation_bindings",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "currentness_refs",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "implementability_fingerprint_sha256",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "implementability_fingerprint_sha256",
+            "code": "A6_FINGERPRINT_MISSING_OR_INVALID"
+          }
+        ],
+        "ready_scope_ids": []
+      }
+    },
+    {
+      "context_id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+      "context_sha256": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+      "active_response_same_buffer": true,
+      "active_response_sha256": "d44d60a5d7568ac3d37c9cc0d98f1cd7fa9824cca788412b2c4cf180f9fe9939",
+      "resolved_context_unchanged": true,
+      "observation": {
+        "schema_version": "A6_A9_SHADOW_OBSERVATION_V1",
+        "state": "OBSERVED",
+        "advisory_only": true,
+        "route_effect_allowed": false,
+        "planning_allowed": false,
+        "execution_allowed": false,
+        "operational_admission": false,
+        "persistence_allowed": false,
+        "preview_status": "RETURN_TO_ANALYSIS",
+        "issue_count": 5,
+        "issues": [
+          {
+            "path": "requirements",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "canonical_implementation_bindings",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "currentness_refs",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "implementability_fingerprint_sha256",
+            "code": "A6_REQUIRED_FIELD_MISSING"
+          },
+          {
+            "path": "implementability_fingerprint_sha256",
+            "code": "A6_FINGERPRINT_MISSING_OR_INVALID"
+          }
+        ],
+        "ready_scope_ids": []
+      }
+    },
+    {
+      "context_id": "41f0287a-c7db-4f34-b2f7-c548fa534ece",
+      "context_sha256": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+      "active_response_same_buffer": true,
+      "active_response_sha256": "0d5aa2991a7d53da545068cc2162461e1e01d440f23051186dfdf9a75c9d32c0",
+      "resolved_context_unchanged": true,
+      "observation": {
+        "schema_version": "A6_A9_SHADOW_OBSERVATION_V1",
+        "state": "OBSERVED",
+        "advisory_only": true,
+        "route_effect_allowed": false,
+        "planning_allowed": false,
+        "execution_allowed": false,
+        "operational_admission": false,
+        "persistence_allowed": false,
+        "preview_status": "RETURN_TO_ANALYSIS",
+        "issue_count": 1,
+        "issues": [
+          {
+            "path": "draft.snapshot_schema_digest_sha256",
+            "code": "A9_ENTRY_DIGEST_MISMATCH"
+          }
+        ],
+        "ready_scope_ids": []
+      }
+    }
+  ],
+  "synthetic_complete_a6_positive": {
+    "evidence_tier": "SYNTHETIC_UNADMITTED",
+    "active_response_same_buffer": true,
+    "observation": {
+      "schema_version": "A6_A9_SHADOW_OBSERVATION_V1",
+      "state": "OBSERVED",
+      "advisory_only": true,
+      "route_effect_allowed": false,
+      "planning_allowed": false,
+      "execution_allowed": false,
+      "operational_admission": false,
+      "persistence_allowed": false,
+      "preview_status": "CANDIDATE_ASSEMBLED",
+      "issue_count": 0,
+      "issues": [],
+      "ready_scope_ids": [
+        "S1"
+      ]
+    }
+  },
+  "tests": [
+    {
+      "suite": "shadow_adapter",
+      "exit_code": 0,
+      "summary": "erTests) ... ok\ntest_worker_env_excludes_inherited_credentials (test_analysis_a6_a9_shadow_v1.ShadowAdapterTests) ... ok\n\n----------------------------------------------------------------------\nRan 15 tests in 0.586s\n\nOK\n",
+      "log_sha256": "ee156ffd8ad3ad492dc3fe5c029c6dbf4300990119f8e005049a3d1e61520054"
+    },
+    {
+      "suite": "assembly_preview",
+      "exit_code": 0,
+      "summary": "test_valid_existing_matrix_and_extra_metadata_are_preserved (test_analysis_a6_a9_preview_v1.AssemblyPreviewTests) ... ok\n\n----------------------------------------------------------------------\nRan 27 tests in 0.015s\n\nOK\n",
+      "log_sha256": "3f66456760db0fee93e72b31dc4dea6e800d3981e22f4aece9a3ecbb022c77cc"
+    },
+    {
+      "suite": "pg01_regression",
+      "exit_code": 0,
+      "summary": "ong_bound_material_cannot_replace_pin (test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks) ... ok\n\n----------------------------------------------------------------------\nRan 76 tests in 0.775s\n\nOK\n",
+      "log_sha256": "8a2399987e2ab9eee2c87af514b1dab3878dc7e1577d56249e0e27a03776562b"
+    }
+  ],
+  "live_positive_a9_verified": false,
+  "active_router_hook_installed": false,
+  "database_written": false,
+  "independent_review": false,
+  "comparison": {
+    "before_at": "2026-10-24T16:38:09.838295+00:00",
+    "after_at": "2026-10-24T16:38:22.400186+00:00",
+    "read_only_before": "on",
+    "read_only_after": "on",
+    "contexts_unchanged": true,
+    "function_definitions_unchanged": true
+  },
+  "before": {
+    "contexts": [
+      {
+        "id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+        "hash": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+        "actual_hash": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10"
+      },
+      {
+        "id": "41f0287a-c7db-4f34-b2f7-c548fa534ece",
+        "hash": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+        "actual_hash": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c"
+      },
+      {
+        "id": "e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+        "hash": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+        "actual_hash": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8"
+      }
+    ],
+    "functions": [
+      {
+        "args": "p_resolution jsonb, p_expected_context_id text, p_expected_context_sha256 text, p_expected_schema_version text",
+        "hash": "03487579690d397257493641e812a1b05eb3cc34c699d36b0a0182e4cd7b368c",
+        "name": "fn_analysis_pg01_exact_receipt_guard_v1",
+        "schema": "programacion"
+      },
+      {
+        "args": "p_context jsonb, p_actor_execution_id text",
+        "hash": "47f7645f7de328fd1b2710166193ebd43fa1ea4b5464641b132c51bce752f520",
+        "name": "fn_lf_decision_context_asof_record_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_consumer_code text, p_subject_ref text, p_as_of timestamp with time zone",
+        "hash": "f707001ceb9dcaceac6dbfc9119b3b70e622f01198a5daf4aa91b353015a7a68",
+        "name": "fn_lf_decision_context_asof_resolve_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_request_text text, p_scope jsonb",
+        "hash": "c5ffb7378d37317f362111b97665c277d996fb8194ed8d96cc174dc0493293a8",
+        "name": "lf_router_product_context_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_stage1 jsonb, p_caller jsonb, p_nivel2_consentido boolean",
+        "hash": "a9709f7c9541c241d8e851040c40ccc5185124cd1df9900570e1000774306ade",
+        "name": "lf_router_route_v1",
+        "schema": "public"
+      }
+    ],
+    "read_only": "on",
+    "observed_at": "2026-10-24T16:38:09.838295+00:00"
+  },
+  "after": {
+    "contexts": [
+      {
+        "id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+        "hash": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+        "actual_hash": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10"
+      },
+      {
+        "id": "41f0287a-c7db-4f34-b2f7-c548fa534ece",
+        "hash": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+        "actual_hash": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c"
+      },
+      {
+        "id": "e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+        "hash": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+        "actual_hash": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8"
+      }
+    ],
+    "functions": [
+      {
+        "args": "p_resolution jsonb, p_expected_context_id text, p_expected_context_sha256 text, p_expected_schema_version text",
+        "hash": "03487579690d397257493641e812a1b05eb3cc34c699d36b0a0182e4cd7b368c",
+        "name": "fn_analysis_pg01_exact_receipt_guard_v1",
+        "schema": "programacion"
+      },
+      {
+        "args": "p_context jsonb, p_actor_execution_id text",
+        "hash": "47f7645f7de328fd1b2710166193ebd43fa1ea4b5464641b132c51bce752f520",
+        "name": "fn_lf_decision_context_asof_record_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_consumer_code text, p_subject_ref text, p_as_of timestamp with time zone",
+        "hash": "f707001ceb9dcaceac6dbfc9119b3b70e622f01198a5daf4aa91b353015a7a68",
+        "name": "fn_lf_decision_context_asof_resolve_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_request_text text, p_scope jsonb",
+        "hash": "c5ffb7378d37317f362111b97665c277d996fb8194ed8d96cc174dc0493293a8",
+        "name": "lf_router_product_context_v1",
+        "schema": "public"
+      },
+      {
+        "args": "p_stage1 jsonb, p_caller jsonb, p_nivel2_consentido boolean",
+        "hash": "a9709f7c9541c241d8e851040c40ccc5185124cd1df9900570e1000774306ade",
+        "name": "lf_router_route_v1",
+        "schema": "public"
+      }
+    ],
+    "read_only": "on",
+    "observed_at": "2026-10-24T16:38:22.400186+00:00"
+  }
+}
