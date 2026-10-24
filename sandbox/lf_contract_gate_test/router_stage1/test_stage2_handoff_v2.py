@@ -50,6 +50,12 @@ class Handoff(unittest.TestCase):
         self.assertEqual(result["paso"], "NEGOCIO_NO_HABILITADO")
         self.assertNotIn("entrypoint", result)
 
+    def test_future_registered_business_still_cannot_dispatch(self):
+        newer = case(sistema="OTRO", negocio_codigo="FUTUREBIZ")
+        result = prepare_handoff(newer, registered_businesses={"LF", "SALY", "FUTUREBIZ"})
+        self.assertEqual(result["paso"], "NEGOCIO_NO_HABILITADO")
+        self.assertNotIn("entrypoint", result)
+
     def test_cross_business_is_not_implicit_authorization(self):
         result = prepare_handoff(case(sistema="DESCONOCIDO", negocio_codigo=None,
                                       negocios_afectados=["LF", "SALY"]))
