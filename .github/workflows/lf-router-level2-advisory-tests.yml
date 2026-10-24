@@ -75,6 +75,9 @@ on:
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
       - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_execution_bridge_v1.sql'
+      - '.github/workflows/lf-profile-native-execution-bridge.yml'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -239,6 +242,10 @@ jobs:
           print("PASS_ACT0001_PROFILE_EXECUTION_HANDOFF_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PROFILE_INPUT_GOVERNANCE_TASK_APPLICABILITY_SOURCE_INVARIANTS")
           PY
+
+      - name: Execute native profile bridge trust-boundary tests
+        working-directory: sandbox/lf_contract_gate_test/router_stage1
+        run: python3 -m unittest -v test_profile_native_bridge_source_v1
 
       - name: Execute positive and negative level2 handoff contract tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
