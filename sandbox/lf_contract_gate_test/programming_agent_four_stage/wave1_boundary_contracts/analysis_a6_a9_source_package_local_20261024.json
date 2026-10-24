@@ -1,0 +1,41 @@
+{
+  "schema_version": "A6_A9_SOURCE_PACKAGE_LOCAL_EVIDENCE_V1",
+  "date": "2026-10-24",
+  "base_main": "9b4a17406d8d356a298587939a29270349af7496",
+  "scope": "SOURCE_ONLY_DRAFT",
+  "focused_tests": {
+    "unique": 129,
+    "failures": 0,
+    "skipped": 0,
+    "new_factory": 4,
+    "new_package": 4
+  },
+  "diagnosis": {
+    "engine_failures": 5,
+    "blocking_code": "LLAMA_EXECUTOR_MODE_INVALID",
+    "expected": "REMOTE_API",
+    "observed": null,
+    "cause": "generic runner omits executor_mode; adapter requires it",
+    "fixture_errors": 1,
+    "fixture_code": "PROFILE_RUNTIME_REQUIRED_SOURCE_CONTRACT_INVALID",
+    "missing_fixture_fields": [
+      "required_source_refs",
+      "allow_additional_sources"
+    ],
+    "fix_applied": false,
+    "live_service_failure_claimed": false
+  },
+  "concurrent_main": {
+    "pr": 3149,
+    "added_path": "supabase/migrations/20261024224500_lf_profile_selector_descriptors_v1.sql",
+    "preserved": true,
+    "applied_by_this_task": false
+  },
+  "driver_hosted_smoke": "PENDING_APPROVED_CONNECTION",
+  "deployment_applied": false,
+  "database_write": false,
+  "profile_execution": false,
+  "model_calls": 0,
+  "operational_admission": false,
+  "independent_review": "PENDING"
+}
