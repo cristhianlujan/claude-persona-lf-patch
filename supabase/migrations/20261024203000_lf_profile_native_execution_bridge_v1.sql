@@ -1022,6 +1022,15 @@ BEGIN
       'PROFILE_NATIVE_LOGIN_RULES_CANARY_PREPARE_FAILED:%',v_prepare;
   END IF;
 
+  IF v_prepare->>'profile_source_ref' <>
+       'github://cristhianlujan/claude-persona-lf-patch@fc88aca0874f3bee7d4dbe29379e975989b26cb2/profiles/product_director_lf/SKILL.md'
+     OR v_prepare->>'profile_source_digest' <>
+       'sha256:14d57a7709da9dd88ae1e2c5f3c2e48df91093a2afa470e63422e205707fd573' THEN
+    RAISE EXCEPTION
+      'PROFILE_NATIVE_LOGIN_RULES_CANARY_SOURCE_BINDING_FAILED:ref=% digest=%',
+      v_prepare->>'profile_source_ref',v_prepare->>'profile_source_digest';
+  END IF;
+
   IF v_prepare#>>'{input_governance,status}'<>'NOT_REQUIRED'
      OR v_prepare#>>'{input_governance,input_governance_requirement}'
           <>'NOT_REQUIRED_CANONICAL_READ' THEN
