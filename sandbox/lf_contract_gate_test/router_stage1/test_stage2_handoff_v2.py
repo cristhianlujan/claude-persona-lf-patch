@@ -14,7 +14,6 @@ def case(**kwargs):
         "texto_original": "Consultar mi oferta en LF",
         "es_operacion": True,
         "respuesta_directa": False,
-        "sistema": "LF",
         "accion": "consultar", "sujeto": "oferta",
         "correcciones": [], "formas_busqueda": ["oferta"],
         "ambiguo": False, "alternativas": [], "pregunta_usuario": None,
@@ -39,6 +38,7 @@ class Handoff(unittest.TestCase):
         self.assertFalse(result["effect_authorized"])
         self.assertFalse(result["alcance_verificado"])
         self.assertEqual(result["stage1_v1_payload"]["schema_version"], "LF_ROUTER_STAGE1_V1")
+        self.assertEqual(result["stage1_v1_payload"]["sistema"], "LF")  # internal V1 compatibility only
 
     def test_untrusted_hint_does_not_skip_level1(self):
         result = prepare_handoff(case())
@@ -46,18 +46,18 @@ class Handoff(unittest.TestCase):
         self.assertTrue(result["capability_hint_bypassed_until_authority"])
 
     def test_saly_has_no_unauthorized_route(self):
-        result = prepare_handoff(case(sistema="SALY", negocio_codigo="SALY"))
+        result = prepare_handoff(case(negocio_codigo="SALY"))
         self.assertEqual(result["paso"], "NEGOCIO_NO_HABILITADO")
         self.assertNotIn("entrypoint", result)
 
     def test_future_registered_business_still_cannot_dispatch(self):
-        newer = case(sistema="OTRO", negocio_codigo="FUTUREBIZ")
+        newer = case(negocio_codigo="FUTUREBIZ")
         result = prepare_handoff(newer, registered_businesses={"LF", "SALY", "FUTUREBIZ"})
         self.assertEqual(result["paso"], "NEGOCIO_NO_HABILITADO")
         self.assertNotIn("entrypoint", result)
 
     def test_cross_business_is_not_implicit_authorization(self):
-        result = prepare_handoff(case(sistema="DESCONOCIDO", negocio_codigo=None,
+        result = prepare_handoff(case(negocio_codigo=None,
                                       negocios_afectados=["LF", "SALY"]))
         self.assertEqual(result["paso"], "MULTINEGOCIO_PENDIENTE")
         self.assertFalse(result["effect_authorized"])
@@ -77,7 +77,7 @@ class Handoff(unittest.TestCase):
     def test_direct_answer_needs_no_scope(self):
         result = prepare_handoff(case(
             texto_original="¿Qué hace el Router?", es_operacion=False,
-            respuesta_directa=True, sistema=None, accion=None, sujeto=None,
+            respuesta_directa=True, accion=None, sujeto=None,
             formas_busqueda=[], canal_candidato=None, negocio_codigo=None,
             alcance=None, capability_hint=None, razon_seleccion=None,
         ))
