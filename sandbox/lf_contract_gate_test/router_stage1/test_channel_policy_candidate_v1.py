@@ -106,6 +106,28 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertEqual(next(x for x in self.p["examples"] if x["id"] ==
                               "DEFINE_AND_IMPLEMENT")["initial_channel"], "PRODUCTO")
 
+    def test_product_is_independent_from_channel_and_legacy_sistema(self):
+        contract = self.p["product_context_contract"]
+        self.assertEqual(contract["channel_field"], "canal_candidato")
+        self.assertEqual(contract["canonical_product_field"], "producto_codigo")
+        self.assertEqual(contract["legacy_stage1_product_field"], "sistema")
+        self.assertEqual(contract["scoped_context"]["company_ref"], "company_id")
+        self.assertTrue(contract["scoped_context"]["company_scope_must_be_bound_server_side"])
+        self.assertTrue(contract["scoped_context"]["group_membership_must_be_verified"])
+        self.assertTrue(contract["scoped_context"]["product_owner_org_not_equivalent_to_customer_company"])
+
+    def test_same_channel_different_products_and_cross_scope(self):
+        x = {e["id"]: e for e in self.p["product_scope_examples"]}
+        self.assertEqual(x["LF_OFFER_STATUS"]["canal"], "OPERACIONES")
+        self.assertEqual(x["SALY_ADVANCE_STATUS"]["canal"], "OPERACIONES")
+        self.assertEqual(x["LF_OFFER_STATUS"]["producto_codigo"], "LF")
+        self.assertEqual(x["SALY_ADVANCE_STATUS"]["producto_codigo"], "SALY")
+        self.assertEqual(x["LF_GROUP_REPORT"]["scope_kind"], "GRUPO_CORPORATIVO")
+        self.assertEqual(x["LF_COMPANY_PAYMENTS"]["scope_kind"], "EMPRESA")
+        self.assertEqual(x["SHARED_AUTH_RULE"]["productos_afectados"], ["LF", "SALY"])
+        self.assertIsNone(x["UNSCOPED_AMBIGUOUS"]["producto_codigo"])
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
