@@ -1,6 +1,6 @@
 # ACT-0001 — Politica candidata de canales (lote 1, source-only)
 
-**Estado:** SOURCE_ONLY_CANDIDATE. No altera funciones SQL, reglas vigentes, operadores, capacidades, perfiles, ni permisos. No activa Programacion ni realiza despliegue.
+**Estado:** CANDIDATE_WITH_UNAPPLIED_MIGRATION. El PR contiene contrato, adapter, pruebas y una migración fuente para integrar V2; nada de ello está aplicado todavía en Supabase. No activa Programación ni concede permisos o efectos.
 
 **Contrato machine-readable:** `sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json`.
 
@@ -57,7 +57,7 @@ La propuesta de Stage 1 V2 debe producir `canal_candidato`, `negocio_codigo`, `a
 - «Usa UI Architect para revisar la pantalla» -> canal del trabajo PRODUCTO y recurso PERFIL-UI-ARCHITECT.
 - «Actualiza el propio perfil UI Architect» -> `ACTUALIZACION_PERFIL_LF` por ruta de gestion de activos, sin canal Perfiles/Skills.
 
-**Activacion pendiente:** la documentación y el JSON del PR especifican el comportamiento, pero la funcion SQL `lf_router_route_v1` todavia no consume `canal_candidato`; requiere integracion y pruebas propias posteriores por Merge Train. No declarar la politica desplegada desde este PR.
+**Activación pendiente:** el PR ya incluye la integración fuente para que `public.lf_router_route_v1` consuma `LF_ROUTER_STAGE1_V2` directamente. La migración aún no está aplicada: requiere pruebas, PASE y la vía gobernada de migraciones antes de declarar el comportamiento desplegado.
 
 ## Canal, Negocio y Alcance dinámico
 
@@ -67,7 +67,7 @@ La propuesta de Stage 1 V2 debe producir `canal_candidato`, `negocio_codigo`, `a
 - **Negocio**: `negocio_codigo` es el campo canónico que responde «¿de qué negocio hablamos?». En esta fase operativa el único negocio aceptado para cierre es `LF`; SALY queda para una fase posterior. Un negocio no equivale a una empresa cliente de dicho negocio.
 - **Alcance**: **opcional, determinado a demanda** por el objeto mencionado en la solicitud y los datos canónicos específicos del negocio. NO es una lista fija de tipos ni se resuelve enteramente en Stage 1.
 
-**Compatibilidad:** `LF_ROUTER_STAGE1_V2` **no expone ni acepta** el campo legado `sistema`. El endpoint desplegado `LF_ROUTER_STAGE1_V1` todavía lo requiere internamente; mientras exista esa frontera V1, el adaptador deriva ese valor desde `negocio_codigo` únicamente dentro del payload de compatibilidad. El modelo y los consumidores V2 no deben producir, leer ni decidir usando `sistema`.
+**Compatibilidad:** `LF_ROUTER_STAGE1_V2` **no expone ni acepta** el campo legado `sistema`. El adapter V2 tampoco lo fabrica. `public.lf_router_route_v1` conserva la rama V1 exclusivamente para callers heredados, pero la rama V2 consume `negocio_codigo` directamente. El modelo y los consumidores V2 no deben producir, leer ni decidir usando `sistema`.
 
 ### ¿Cómo se determina el alcance sin construir un catálogo gigante?
 
@@ -92,7 +92,7 @@ El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos
 
 En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
 
-**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Las referencias exactas y derechos se resuelven en Stage 2 o en el handler autorizado de LF. El contrato y ejemplos de este PR son **SOURCE_ONLY_CANDIDATE**, no una capacidad operativa conectada.
+**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. La integración fuente de Stage 2 conserva y consume `canal_candidato`, `negocio_codigo` y `alcance`; referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente. La migración sigue sin aplicar.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
@@ -130,15 +130,15 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 - Si ya existe implementacion coincidente y autoridad suficiente, cierre con evidencia. Si existe una discrepancia de implementacion, iniciar Análisis / admision antes de Programacion.
 - No se cambia `lf_ops.reglas` por costumbre: cada tipo de definicion tiene su propio almacén canónico.
 
-## Entrega técnica para pasar al segundo nivel (sin promover SQL)
+## Entrega técnica para integrar el segundo nivel (sin aplicar SQL)
 
-Se preparó **LF_ROUTER_STAGE1_V2** como adaptación opt-in compatible, sin tocar la función `public.lf_router_stage1_validate_v1` ni el comportamiento `public.lf_router_route_v1` desplegados:
+Se preparó **LF_ROUTER_STAGE1_V2** como contrato canónico y se añadió una migración fuente que amplía `public.lf_router_route_v1` sin eliminar la compatibilidad V1. La migración no está aplicada en Supabase:
 
 **Fase actual LF:** el contrato usa `negocio_codigo` y el cierre de este PR se valida únicamente para `LF`. El validador conserva una extensión opcional `registered_businesses` para evolución futura, pero SALY y otros negocios no forman parte de la aceptación actual y no deben bloquear el cierre de LF. El catálogo nunca se toma del texto no confiable del usuario.
 
 - `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo usa `ruta_transversal=GESTION_ACTIVOS_IA` con `canal_candidato=null`.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py`: casos estructurales positivos y negativos, incluyendo SALY conocido/no habilitado, multinegocio, ambigüedad, referencia inventada, operación no autorizada, pantalla y scope opcional.
-- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: mantiene una frontera temporal de compatibilidad con `public.lf_router_route_v1` **solamente para LF**. Si el endpoint V1 necesita el nombre legado, se sintetiza dentro de `legacy_stage1_v1_payload`; ese detalle no pertenece al contrato V2. Descarta `capability_hint` de origen modelo para evitar despacho directo sin autoridad semántica. La referencia de alcance sigue `UNRESOLVED`; el contrato no concede acceso ni invoca SQL.
+- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: entrega el mismo `LF_ROUTER_STAGE1_V2` al único entrypoint Stage 2. No traduce a V1 ni fabrica `sistema`; conserva `canal_candidato`, `negocio_codigo`, `alcance` y `ruta_transversal`. `capability_hint` permanece candidato y no autoridad.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py`: comprueba el payload de handoff, la contención de SALY y multinegocio, el bypass del hint no certificado, los límites de permisos y la respuesta directa sin scope.
 
 El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salida nueva conserva campos obligatorios V1 y añade estos campos de **interpretación**, no autorización:
@@ -162,16 +162,14 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
 
 Los campos comunes (`texto_original`, `es_operacion`, `respuesta_directa`, `accion`, `sujeto`, `correcciones`, `formas_busqueda`, `ambiguo`, `alternativas`, `pregunta_usuario`, `capability_hint`) se siguen exigiendo según corresponda. `sistema` está prohibido en V2. `target_ref` y `verified=true` quedan prohibidos en Stage1.
 
-**Importante:** el intento de resolver la actualización de ACT-0001 vía `public.lf_router_resolve_v1` reportó `BLOCK_SCOPE_SEMANTICS_UNATTESTED`, `semantic_gap_code=POSITIVE_NEGATIVE_SCOPE_NOT_BOUND` y `downstream_execution_allowed=false`. Por tanto, este lote está limitado a **código fuente y pruebas candidatas**. No se creó ni aplicó una migración ni se activó Stage1/Stage2 en Supabase. Para activar el siguiente nivel, la operación deberá acreditar alcance semántico positivo/negativo, origen y destinatario exactos, pasar PASE y los controles del LF Migration Merge Train. No fabricar recibos para suplir ese bloqueo.
+**Importante:** la interpretación semántica de la solicitud fue posteriormente validada y el Router rederivó `ACTUALIZACION_ROUTER_LF`, pero `downstream_execution_allowed` permaneció `false`. Por eso esta rama solo prepara fuente: se creó la migración de integración, pero **no se aplicó** ni se activó Stage1/Stage2 en Supabase. La aplicación deberá pasar los controles oficiales y la vía gobernada de migraciones; no fabricar recibos ni inferir autoridad desde el estado del PR.
 
 ## Estado y siguientes lotes
 
-**Este lote** congela solo politica candidata + pruebas estructurales. No modifica `LF_ROUTER_STAGE1_V1` ni su validador productivo.
+**Estado de este lote:** Stage 1 V2, adapter V2 y la integración fuente de Stage 2 ya están definidos para LF. La rama V1 se conserva únicamente para compatibilidad de callers existentes.
 
-**Lote 2:** ampliar formalmente Stage 1, definir entrada/salida tipadas, adaptar el validador Python y SQL conservando compatibilidad; no interpretar confidence como permiso.
+**Pendiente antes de aplicar:** ejecutar las pruebas de contrato/integración, validar la migración en el carril autorizado, comprobar regresión V1 y pasar PASE/Train.
 
-**Lote 3:** integrar `lf_router_route_v1` con selección de canal + autoridad exacta; validar el `capability_hint` contra la intención, cubrir empates y bloqueos; pruebas con rollback; PR/PASE/Train.
-
-**Lote 4:** integrar recibos, retorno del especialista y habilitación gradual por canal después de sus propios gates.
+**Posterior:** completar handlers/capacidades operativas y admisiones de cada canal donde hoy exista una brecha. SALY se valida en una fase separada.
 
 **No cerrado todavía:** validacion final del nombre OPERACIONES, operaciones de negocio expuestas por un handler autorizado y su enlace gobernado; mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
