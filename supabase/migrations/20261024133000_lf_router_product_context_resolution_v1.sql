@@ -127,9 +127,9 @@ BEGIN
   WHERE e.pantalla_id=(v_subject->>'pantalla_id')::integer;
 
   v_full := v_contract || jsonb_build_object('elements',v_elements);
-  SELECT coalesce(jsonb_agg(k ORDER BY k),'[]'::jsonb)
+  SELECT coalesce(jsonb_agg(t.section_key ORDER BY t.section_key),'[]'::jsonb)
     INTO v_sections
-  FROM jsonb_object_keys(v_full) k;
+  FROM jsonb_object_keys(v_full) AS t(section_key);
 
   v_hint := upper(nullif(coalesce(p_scope->>'target_type',''),''));
 
