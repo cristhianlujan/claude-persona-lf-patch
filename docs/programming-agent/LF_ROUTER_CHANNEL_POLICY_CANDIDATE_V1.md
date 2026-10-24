@@ -26,6 +26,39 @@ La solicitud **de crear o actualizar el propio perfil o skill** toma la ruta de 
 
 No se debe confundir una **regla transversal** con un quinto canal: una regla puede ser consumida por multiples frentes; primero se identifica la definicion y su responsable.
 
+## Contrato de seleccion que debe consumir el Router
+
+**Distinguir el sistema destino del canal responsable:** `sistema=LF` no equivale a `canal=OPERACIONES`; `sistema` conserva `LF|SALY|OTRO|DESCONOCIDO`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. El cuarto caso es una **ruta transversal de operación gobernada**, no un cuarto canal: gestion del perfil/skill que sea sujeto de la peticion.
+
+La propuesta de Stage 1 debe producir `canal_candidato`, `intencion_tipificada`, `route_kind`, `razon_seleccion` y `precondiciones_no_satisfechas`. Es un **contrato candidato**, no un campo disponible hoy en `LF_ROUTER_STAGE1_V1`. Stage 2 debe validar semantica, activo, existencia de capacidad, version, scope/tenant y permisos antes de iniciar ningun efecto.
+
+| Regla | Entrada material | Ruta inicial | No hacer |
+|---|---|---|---|
+| R00 Gestion de activos IA | Crear/actualizar la definicion de un perfil o skill | Operacion gobernada exacta del activo, **sin canal** | No confundir ejecutar UI Architect con actualizar sus instrucciones |
+| R10 Consulta/accion existente | Consultar oferta/pago/liquidacion o actuar mediante transaccion existente | OPERACIONES | No ejecutar SQL arbitrario ni exponer datos de otros clientes |
+| R20 Nueva o distinta definicion | Definir/cambiar regla, conducta, flujo o elemento de pantalla | PRODUCTO | No programar antes de validar la fuente canónica |
+| R30 Ciclo tecnico | Analizar implementacion, programar, probar, desplegar, mantener software ya definido | PROGRAMACION | No modificar definiciones funcionales por inferencia |
+| R40 Incidencia indeterminada | El usuario reporta fallo en consulta/transaccion, sin causa probada | OPERACIONES (diagnostico de lectura) | No concluir bug y programar sin evidencia |
+| R50 Solicitud mixta | «Define la regla y prográmala» | PRODUCTO primero; dependencia ordenada a PROGRAMACION | No despachar los dos en paralelo |
+| R60 Ambiguedad material | «Arregla lo de ofertas» sin objeto preciso | Aclarar tras inspeccion acotada | No despachar al azar |
+
+**Orden logico:** primero discriminar si el usuario solicita gestionar el propio recurso IA; después si pide informarse/operar algo existente; después si pretende definir/cambiar reglas y requisitos; después si solicita el ciclo tecnico sobre definicion lista; ante incidencia incierta, diagnostico de solo lectura. La solicitud mixta antepone la dependencia PRODUCTO a PROGRAMACION. Este procedimiento no se basa en porcentajes fijos o keywords aisladas. Empates materiales requieren evidencia discriminante y, si persisten, una pregunta.
+
+**Comprobacion del Stage 2:** la ruta propuesta no sustituye los contratos del `lf_router_action_registry`, `CAPABILITY_SELECTOR` ni la admision gobernada. Operaciones necesita una capacidad **realmente liberada y autorizada**, no la mera existencia de tabla. Programacion necesita definicion vigente y, cuando corresponde implementar, paquete A9 y admision PG-01; despliegues e infraestructura siguen en Programacion y sujetos a sus operaciones y controles actuales. Las operaciones de gestion de perfiles y skills continuan utilizando sus codigos canónicos y ACT-0001.
+
+### Casos limite que deben probarse
+
+- «¿Que oferta vigente tengo?» -> OPERACIONES, solo con identidad/alcance verificado y handler existente.
+- «¿Cual es la regla de vigencia?» -> PRODUCTO (consulta de definicion), aunque pueda consultarse sin modificar.
+- «Cambia la vigencia de ofertas» -> PRODUCTO y actualizacion de definicion; implementacion eventual despues.
+- «Corrige el codigo que calcula la vigencia ya aprobada» -> PROGRAMACION con admision tecnica.
+- «Una oferta no aparece» -> OPERACIONES para diagnostico; escalamiento a PROGRAMACION solo ante defecto confirmado.
+- «Despliega la nueva version» -> PROGRAMACION bajo operacion/autoridad de despliegue, nunca bypass.
+- «Usa UI Architect para revisar la pantalla» -> canal del trabajo PRODUCTO y recurso PERFIL-UI-ARCHITECT.
+- «Actualiza el propio perfil UI Architect» -> `ACTUALIZACION_PERFIL_LF` por ruta de gestion de activos, sin canal Perfiles/Skills.
+
+**Activacion pendiente:** la documentación y el JSON del PR especifican el comportamiento, pero la funcion SQL `lf_router_route_v1` todavia no consume `canal_candidato`; requiere integracion y pruebas propias posteriores por Merge Train. No declarar la politica desplegada desde este PR.
+
 ## Precedencia y dependencias (no ejecuta acciones)
 
 1. Determinar si el pedido **modifica una definicion del producto**; si es asi, el primer canal es PRODUCTO.
