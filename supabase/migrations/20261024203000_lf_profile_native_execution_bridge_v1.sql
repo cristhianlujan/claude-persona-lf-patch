@@ -256,7 +256,7 @@ BEGIN
     jsonb_build_object(
       'evidence_schema_version','operational-event/v2',
       'producer','lf_profile_execution_channel_context_v1',
-      'purpose','Hydrate bounded channel-specific Product context for governed profile execution without declaring acceptance.',
+      'purpose','Hydrate bounded channel-specific Product context for governed profile execution.',
       'occurred_at',clock_timestamp(),
       'execution_id',p_execution_id,
       'acceptance_declared',false,
