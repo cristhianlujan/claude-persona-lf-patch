@@ -74,6 +74,7 @@ on:
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -114,6 +115,7 @@ on:
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -213,6 +215,19 @@ jobs:
           assert "PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT" in s4
           assert "router_reentry_before_execution" in s4
           assert "PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK" in s4
+          p5=Path("supabase/migrations/20261024193000_lf_profile_input_governance_task_applicability_v1.sql")
+          s5=p5.read_text(encoding="utf-8")
+          assert s5.count("BEGIN;")==1, s5.count("BEGIN;")
+          assert s5.count("COMMIT;")==1, s5.count("COMMIT;")
+          assert "lf_profile_input_governance_requirement_v1" in s5
+          assert "READ_PRODUCT_DEFINITION" in s5
+          assert "NOT_REQUIRED_CANONICAL_READ" in s5
+          assert "REQUIRED_BY_TASK" in s5
+          assert "router_action_binding" in s5
+          assert "DIRECT_PROFILE_CAPABILITY_NOT_INVOKED" in s5
+          assert "EXACT_CANONICAL_READ_OR_EXTRACTION_NO_INPUT_ENRICHMENT" in s5
+          assert "PROFILE_IG_CANONICAL_READ_NOT_SKIPPED" in s5
+          assert "PROFILE_IG_CHANGE_MUST_REMAIN_REQUIRED" in s5
           worker=Path("services/profile_runtime_api/scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
           assert "AUTHORIZED_HANDOFF_VALIDATED" in worker
           assert "lf_router_profile_execution_handoff_validate_v1" in worker
@@ -222,6 +237,7 @@ jobs:
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PROFILE_EXECUTION_HANDOFF_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PROFILE_INPUT_GOVERNANCE_TASK_APPLICABILITY_SOURCE_INVARIANTS")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests
