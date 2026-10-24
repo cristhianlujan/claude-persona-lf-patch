@@ -67,12 +67,13 @@ class ChannelPolicySourceContract(unittest.TestCase):
     def test_channel_field_is_not_existing_sistema_field(self):
         contract = self.p["channel_selection_contract"]
         self.assertEqual(contract["channel_field"], "canal_candidato")
-        self.assertEqual(contract["independent_existing_field"], "sistema")
         self.assertEqual(set(contract["channel_values"]), {
             "PRODUCTO", "PROGRAMACION", "OPERACIONES"
         })
         self.assertTrue(contract["channel_is_not_execution_authorization"])
         self.assertTrue(contract["semantic_validation_before_dispatch"])
+        self.assertNotIn("sistema", contract.get("selector_inputs", []))
+        self.assertEqual(contract["business_field"], "negocio_codigo")
 
     def test_routing_rules_cover_boundaries(self):
         rules = self.p["routing_rules"]
@@ -110,7 +111,8 @@ class ChannelPolicySourceContract(unittest.TestCase):
         contract = self.p["business_context_contract"]
         self.assertEqual(contract["channel_field"], "canal_candidato")
         self.assertEqual(contract["canonical_business_field"], "negocio_codigo")
-        self.assertEqual(contract["legacy_stage1_business_field"], "sistema")
+        self.assertEqual(contract["current_phase"], "LF_ONLY")
+        self.assertEqual(contract["saly_acceptance_status"], "DEFERRED_NOT_BLOCKING_LF_CLOSURE")
         self.assertEqual(contract["scoped_context"]["company_ref"], "company_id")
         self.assertTrue(contract["scoped_context"]["company_scope_must_be_bound_server_side"])
         self.assertTrue(contract["scoped_context"]["group_membership_must_be_verified"])
