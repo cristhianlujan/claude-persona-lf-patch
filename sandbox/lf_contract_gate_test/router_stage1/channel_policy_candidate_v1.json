@@ -107,7 +107,12 @@
       "NO_CODE_OR_FUNCTIONAL_DEFINITION_CHANGE"
     ],
     "missing_operational_capability": "NO_OPERATIONAL_DISPATCH; ROUTE_REQUIRED_CHANGE_TO_PRODUCT_OR_PROGRAMACION_AS_APPROPRIATE",
-    "customer_support_vs_operational_actions": "Support is a subtype of the operational channel, not its full scope"
+    "customer_support_vs_operational_actions": "Support is a subtype of the operational channel, not its full scope",
+    "impact_and_reuse": "Select work owner separately from the reusable profile/skill resource; always validate current exact operation in existing registries and preserve authority.",
+    "platform_technical_operations_owner": "PROGRAMACION",
+    "product_live_operations_owner": "OPERACIONES",
+    "product_definition_owner": "PRODUCTO",
+    "profile_execution_owner": "ROUTER_GOVERNED_RESOURCE_FOR_RESPONSIBLE_CHANNEL"
   },
   "examples": [
     {
@@ -169,6 +174,42 @@
       "initial_channel": "PROGRAMACION",
       "initial_task": "FOLLOW_TECHNICAL_LIFECYCLE_AND_GOVERNED_DEPLOYMENT",
       "expected_next": "REQUIRE_EXISTING_DEFINITION_A9_PG01_AND_DEPLOY_AUTHORIZATION"
+    },
+    {
+      "id": "PAYMENT_STATUS",
+      "request": "¿Se confirmó el pago del cliente?",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "RESOLVE_AUTHORIZED_PAYMENT_STATUS_CAPABILITY",
+      "expected_next": "CHECK_IDENTITY_AND_SCOPED_EXISTING_READ_ONLY_HANDLER"
+    },
+    {
+      "id": "DEFINE_AND_IMPLEMENT",
+      "request": "Crea una nueva regla de ofertas y prográmala",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "DEFINE_CANONICAL_RULE_FIRST",
+      "expected_next": "ORDER_DEPENDENCIES; ADMIT_PROGRAMMING_ONLY_AFTER_APPROVED_A9_PG01"
+    },
+    {
+      "id": "EXISTING_TRANSACTION_FAILURE",
+      "request": "Mi pago no aparece y creo que hay un error",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "READ_ONLY_DIAGNOSE",
+      "expected_next": "ESCALATE_TO_PROGRAMACION_ON_VERIFIED_SOFTWARE_DEFECT"
+    },
+    {
+      "id": "AMBIGUOUS_OFFERS",
+      "request": "Arregla lo de las ofertas",
+      "initial_channel": null,
+      "route_kind": "NEEDS_DECISION",
+      "initial_task": "BOUNDED_DISAMBIGUATION",
+      "expected_next": "ONE_QUESTION_NOT_AUTO_CODE"
+    },
+    {
+      "id": "CHECK_CURRENT_RULE",
+      "request": "¿Cuál es la regla definida para cierre de sesión?",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "READ_CANONICAL_RULE_DEFINITION",
+      "expected_next": "READ_AUTHORITATIVE_PRODUCT_DEFINITION"
     }
   ],
   "transversal_operation_families": [
@@ -187,5 +228,140 @@
       "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
     }
   ],
-  "channel_name_is_candidate": true
+  "channel_name_is_candidate": false,
+  "channel_selection_contract": {
+    "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
+    "state": "SOURCE_ONLY_CANDIDATE",
+    "channel_field": "canal_candidato",
+    "independent_existing_field": "sistema",
+    "sistema_values": [
+      "LF",
+      "SALY",
+      "OTRO",
+      "DESCONOCIDO"
+    ],
+    "channel_values": [
+      "PRODUCTO",
+      "PROGRAMACION",
+      "OPERACIONES"
+    ],
+    "special_route_kind": "DIRECT_GOVERNED_OPERATION",
+    "channel_is_not_execution_authorization": true,
+    "channel_is_not_profile_or_skill": true,
+    "selector_inputs": [
+      "texto_original",
+      "sistema",
+      "accion",
+      "sujeto",
+      "requested_effect",
+      "target_type",
+      "definition_change_intent",
+      "existing_capability_intent"
+    ],
+    "selector_outputs": [
+      "canal_candidato",
+      "route_kind",
+      "intencion_tipificada",
+      "razon_seleccion",
+      "precondiciones_no_satisfechas",
+      "siguiente_paso_propuesto"
+    ],
+    "deterministic_admission_required_at_stage2": true,
+    "unknown_or_material_tie": "ASK_USER_AFTER_BOUNDED_EVIDENCE",
+    "semantic_validation_before_dispatch": true,
+    "no_parallel_classification_engine": true
+  },
+  "routing_rules": [
+    {
+      "rule_id": "R00_IA_ASSET_MAINTENANCE",
+      "priority": 0,
+      "when": "The user asks to create/update/retire the profile or skill itself",
+      "route_kind": "DIRECT_GOVERNED_OPERATION",
+      "channel": null,
+      "operation_resolution": "Resolve existing operation from action registry; do not use profile/skill execution as a channel",
+      "examples": [
+        "Actualizar el perfil UI Architect",
+        "Crear una skill nueva"
+      ]
+    },
+    {
+      "rule_id": "R10_READ_EXISTING_PRODUCT_STATE",
+      "priority": 10,
+      "when": "The user asks for current customer/offer/payment/liquidation/status, or to perform an existing business operation, without changing its definition or code",
+      "channel": "OPERACIONES",
+      "requires": [
+        "AUTHORIZED_EXISTING_CAPABILITY",
+        "ACTOR_ID_AND_TENANT_SCOPE",
+        "DATA_MINIMALITY"
+      ],
+      "no_effects_from_classification": true,
+      "examples": [
+        "¿Cuál es el estado de mi oferta?",
+        "Consultar un pago"
+      ]
+    },
+    {
+      "rule_id": "R20_PRODUCT_DEFINITION",
+      "priority": 20,
+      "when": "The user wants to define/change the expected behavior, a rule, a screen specification or a condition of the product, including requests presented as visual changes",
+      "channel": "PRODUCTO",
+      "requires": [
+        "CANONICAL_DEFINITION_TARGET_LOOKUP",
+        "CURRENTNESS_CHECK"
+      ],
+      "examples": [
+        "Cambiar el texto del botón principal a Acceder",
+        "Definir cierre de sesión por inactividad"
+      ]
+    },
+    {
+      "rule_id": "R30_IMPLEMENTATION_LIFECYCLE",
+      "priority": 30,
+      "when": "The user explicitly asks for technical analysis/implementation/testing/deployment/maintenance or resolution of verified implementation drift",
+      "channel": "PROGRAMACION",
+      "requires": [
+        "CANONICAL_DEFINITION_OR_EXISTING_APPROVED_TECHNICAL_TARGET",
+        "ANALYSIS_AND_PG01_WHERE_APPLICABLE",
+        "GOVERNED_TECHNICAL_OPERATION"
+      ],
+      "examples": [
+        "Programar la pantalla ya definida",
+        "Desplegar una versión aprobada",
+        "Corregir bug de backend"
+      ]
+    },
+    {
+      "rule_id": "R40_INCIDENT_DIAGNOSIS",
+      "priority": 40,
+      "when": "The user reports that an existing transaction or query is failing but cause is unknown",
+      "channel": "OPERACIONES",
+      "initial_mode": "READ_ONLY_DIAGNOSIS",
+      "handoff": "PROGRAMACION_ONLY_AFTER_VERIFIED_TECHNICAL_DEFECT_AND_ADMISSION",
+      "examples": [
+        "No aparece mi pago",
+        "La oferta muestra un error"
+      ]
+    },
+    {
+      "rule_id": "R50_MIXED_REQUEST",
+      "priority": 50,
+      "when": "The request includes a product-definition change and its implementation",
+      "channel": "PRODUCTO",
+      "handoff": "ORDERED_DEPENDENCIES_AFTER_CANONICAL_DEFINITION_AND_PROGRAMMING_ADMISSION",
+      "examples": [
+        "Define la nueva regla y prográmala"
+      ]
+    },
+    {
+      "rule_id": "R60_UNCERTAIN",
+      "priority": 60,
+      "when": "The route lacks decisive evidence or two assignments remain materially plausible after bounded inspection",
+      "channel": null,
+      "route_kind": "NEEDS_DECISION",
+      "handoff": "ASK_ONE_DISAMBIGUATING_QUESTION_NO_DISPATCH",
+      "examples": [
+        "Arregla lo de las ofertas"
+      ]
+    }
+  ]
 }
