@@ -383,6 +383,247 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_execution_begin_from_handoff_v1(
   jsonb,text,text,text,text,text,text,jsonb
 ) TO service_role;
 
+-- UI / UX / Product profiles consume Input Governance directly.
+-- Adapters may add context, but they are not the authority that decides whether IG applies.
+DO $bind_profile_input_governance$
+DECLARE
+  v_profile text;
+  v_profiles text[]:=ARRAY[
+    'PERFIL-PRODUCT-DIRECTOR-LF',
+    'PERFIL-UI-ARCHITECT',
+    'PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531',
+    'PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING'
+  ];
+BEGIN
+  FOREACH v_profile IN ARRAY v_profiles LOOP
+    IF NOT EXISTS(
+      SELECT 1 FROM public.lf_activos
+      WHERE codigo_activo=v_profile
+        AND tipo_activo='PERFIL'
+        AND archived_at IS NULL
+    ) THEN
+      RAISE EXCEPTION 'PROFILE_INPUT_GOVERNANCE_PROFILE_NOT_FOUND:%',v_profile;
+    END IF;
+
+    UPDATE public.lf_activos
+    SET metadata=coalesce(metadata,'{}'::jsonb)||jsonb_build_object(
+      'input_governance_binding_contract','INPUT_GOVERNANCE_EXECUTION_CONTRACT',
+      'input_governance_consumer','CONTEXT_PACK',
+      'input_governance_binding_mode','DIRECT_PROFILE',
+      'input_governance_router_reentry_required',false
+    )
+    WHERE codigo_activo=v_profile
+      AND tipo_activo='PERFIL'
+      AND archived_at IS NULL;
+
+    INSERT INTO public.lf_activo_relaciones(
+      codigo_activo,relacionado_codigo,relacion_tipo,valor_original,fuente,created_by_execution_id
+    )
+    SELECT
+      v_profile,
+      'INPUT_GOVERNANCE_EXECUTION_CONTRACT',
+      'GOBERNADO_POR',
+      'DIRECT_PROFILE_INPUT_GOVERNANCE;consumer=CONTEXT_PACK;router_reentry_required=false',
+      'supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql',
+      'ROUTER_PROFILE_EXECUTION_HANDOFF_V1'
+    WHERE NOT EXISTS(
+      SELECT 1 FROM public.lf_activo_relaciones
+      WHERE codigo_activo=v_profile
+        AND relacionado_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+        AND relacion_tipo='GOBERNADO_POR'
+    );
+  END LOOP;
+END
+$bind_profile_input_governance$;
+
+CREATE OR REPLACE FUNCTION programacion.fn_lf_profile_input_governance_resolve_v1(
+  p_request_text text,
+  p_profile_code text,
+  p_scope jsonb DEFAULT NULL,
+  p_consumer text DEFAULT 'CONTEXT_PACK'
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','programacion','lf_ops'
+AS $fn$
+DECLARE
+  v_bound boolean:=false;
+  v_screen_count integer:=0;
+  v_pantalla_id integer;
+  v_screen_code text;
+  v_target_hint text:=nullif(btrim(coalesce(p_scope->>'target_hint','')),'');
+  v_req text;
+  v_result jsonb;
+  v_worker jsonb;
+BEGIN
+  SELECT EXISTS(
+    SELECT 1
+    FROM public.lf_activo_relaciones r
+    JOIN public.lf_activos a
+      ON a.codigo_activo=r.codigo_activo
+     AND a.archived_at IS NULL
+     AND a.tipo_activo='PERFIL'
+    WHERE r.codigo_activo=p_profile_code
+      AND r.relacionado_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+      AND r.relacion_tipo='GOBERNADO_POR'
+      AND a.metadata->>'input_governance_binding_mode'='DIRECT_PROFILE'
+      AND a.metadata->>'input_governance_consumer'=p_consumer
+  ) INTO v_bound;
+
+  IF NOT v_bound THEN
+    RETURN jsonb_build_object(
+      'applicable',false,
+      'status','NOT_REQUIRED',
+      'decision','N/A',
+      'continuation_allowed',true,
+      'profile_code',p_profile_code,
+      'binding_mode','NO_DIRECT_PROFILE_BINDING',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_target_hint IS NOT NULL THEN
+    SELECT count(*),min(id),min(codigo)
+      INTO v_screen_count,v_pantalla_id,v_screen_code
+    FROM lf_ops.pantallas
+    WHERE activa
+      AND (
+        upper(codigo)=upper(v_target_hint)
+        OR upper(nombre)=upper(v_target_hint)
+      );
+  END IF;
+
+  IF v_screen_count=0 THEN
+    v_req:=' '||btrim(regexp_replace(lower(coalesce(p_request_text,'')),'[^a-z0-9_]+',' ','g'))||' ';
+    SELECT count(*),min(id),min(codigo)
+      INTO v_screen_count,v_pantalla_id,v_screen_code
+    FROM lf_ops.pantallas
+    WHERE activa
+      AND strpos(
+        v_req,
+        ' '||btrim(regexp_replace(lower(codigo),'[^a-z0-9_]+',' ','g'))||' '
+      )>0;
+  END IF;
+
+  IF v_screen_count=0 THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','INPUT_GOVERNANCE_REQUIRED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_SUBJECT_UNRESOLVED',
+      'decision','PENDING',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_screen_count>1 THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_SUBJECT_AMBIGUOUS',
+      'decision','BLOCKED',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_result:=public.fn_input_governance_execute(v_pantalla_id,p_consumer);
+
+  IF v_result->>'status'='READY' THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','READY',
+      'blocking_code',null,
+      'decision','PASS',
+      'continuation_allowed',true,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'run_id',v_result->'run_id',
+      'governance_output_sha256',v_result->'output_sha256',
+      'context_manifest',v_result->'context_manifest',
+      'governance_result',v_result,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_result->>'status' IN ('CURATOR_RUNTIME_REQUIRED','VALIDATOR_RUNTIME_REQUIRED') THEN
+    v_worker:=coalesce(
+      v_result->'worker_spec',
+      public.fn_input_governance_worker_spec(v_pantalla_id,p_consumer)
+    );
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','INPUT_GOVERNANCE_REQUIRED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_RUNTIME_REQUIRED',
+      'decision','PENDING',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'agent_status',v_result->>'status',
+      'worker_spec',v_worker,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_result->>'status'='HUMAN_DECISION_REQUIRED' THEN
+    RETURN jsonb_build_object(
+      'applicable',true,
+      'status','HUMAN_DECISION_REQUIRED',
+      'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_HUMAN_DECISION_REQUIRED',
+      'decision','PARTIAL',
+      'continuation_allowed',false,
+      'profile_code',p_profile_code,
+      'consumer',p_consumer,
+      'binding_mode','DIRECT_PROFILE',
+      'pantalla_id',v_pantalla_id,
+      'screen_code',v_screen_code,
+      'governance_result',v_result,
+      'resume_via','EJECUCION_PERFIL_LF/input_validate',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  RETURN jsonb_build_object(
+    'applicable',true,
+    'status','BLOCKED',
+    'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE',
+    'decision','BLOCKED',
+    'continuation_allowed',false,
+    'profile_code',p_profile_code,
+    'consumer',p_consumer,
+    'binding_mode','DIRECT_PROFILE',
+    'pantalla_id',v_pantalla_id,
+    'screen_code',v_screen_code,
+    'governance_result',v_result,
+    'resume_via','EJECUCION_PERFIL_LF/input_validate',
+    'router_reentry_required',false
+  );
+END
+$fn$;
+
+REVOKE ALL ON FUNCTION programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)
+  FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)
+  TO service_role;
+
 CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1(
   p_execution_id text,
   p_input_literal text,
@@ -400,6 +641,7 @@ DECLARE
   v_scope jsonb;
   v_adapters jsonb:='[]'::jsonb;
   v_ig jsonb;
+  v_direct_profile_ig boolean:=false;
 BEGIN
   SELECT * INTO v_exec
   FROM public.lf_operation_execution
@@ -442,24 +684,42 @@ BEGIN
     );
   END IF;
 
-  SELECT coalesce(jsonb_agg(to_jsonb(x) order by x.adapter_code),'[]'::jsonb)
-    INTO v_adapters
-  FROM public.v_lf_router_adapter_bindings x
-  WHERE x.target_asset_code=v_exec.target_code;
+  SELECT EXISTS(
+    SELECT 1
+    FROM public.lf_activo_relaciones r
+    WHERE r.codigo_activo=v_exec.target_code
+      AND r.relacionado_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+      AND r.relacion_tipo='GOBERNADO_POR'
+  ) INTO v_direct_profile_ig;
 
-  IF jsonb_array_length(v_adapters)>0 THEN
-    v_ig:=programacion.fn_lf_router_input_governance_resolve_v1(
-      p_input_literal,v_adapters,'CONTEXT_PACK'
+  IF v_direct_profile_ig THEN
+    v_ig:=programacion.fn_lf_profile_input_governance_resolve_v1(
+      p_input_literal,
+      v_exec.target_code,
+      p_handoff->'scope',
+      'CONTEXT_PACK'
     );
   ELSE
-    v_ig:=jsonb_build_object(
-      'applicable',false,
-      'status','NOT_REQUIRED',
-      'blocking_code',null,
-      'decision','N/A',
-      'continuation_allowed',true,
-      'required_by_adapters','[]'::jsonb
-    );
+    SELECT coalesce(jsonb_agg(to_jsonb(x) order by x.adapter_code),'[]'::jsonb)
+      INTO v_adapters
+    FROM public.v_lf_router_adapter_bindings x
+    WHERE x.target_asset_code=v_exec.target_code;
+
+    IF jsonb_array_length(v_adapters)>0 THEN
+      v_ig:=programacion.fn_lf_router_input_governance_resolve_v1(
+        p_input_literal,v_adapters,'CONTEXT_PACK'
+      );
+    ELSE
+      v_ig:=jsonb_build_object(
+        'applicable',false,
+        'status','NOT_REQUIRED',
+        'blocking_code',null,
+        'decision','N/A',
+        'continuation_allowed',true,
+        'required_by_adapters','[]'::jsonb,
+        'binding_mode','NONE'
+      );
+    END IF;
   END IF;
 
   IF coalesce((v_ig->>'applicable')::boolean,false)
@@ -996,7 +1256,7 @@ END
 $patch_route$;
 
 UPDATE public.lf_operation_step_contracts
-SET resolver_ref='public.lf_profile_execution_input_validate_v1'
+SET resolver_ref='public.lf_profile_execution_input_validate_v1 + programacion.fn_lf_profile_input_governance_resolve_v1'
 WHERE operation_code='EJECUCION_PERFIL_LF'
   AND step_id='input_validate';
 
@@ -1036,6 +1296,24 @@ BEGIN
 
   IF position('lf_profile_execution_channel_context_v1' in coalesce(v_context_ref,''))=0 THEN
     RAISE EXCEPTION 'PROFILE_HANDOFF_CHANNEL_CONTEXT_NOT_BOUND';
+  END IF;
+
+  IF (
+    SELECT count(*)
+    FROM public.lf_activo_relaciones r
+    JOIN public.lf_activos a ON a.codigo_activo=r.codigo_activo
+    WHERE r.relacionado_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+      AND r.relacion_tipo='GOBERNADO_POR'
+      AND r.codigo_activo IN (
+        'PERFIL-PRODUCT-DIRECTOR-LF',
+        'PERFIL-UI-ARCHITECT',
+        'PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531',
+        'PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING'
+      )
+      AND a.metadata->>'input_governance_binding_mode'='DIRECT_PROFILE'
+      AND a.metadata->>'input_governance_consumer'='CONTEXT_PACK'
+  )<>4 THEN
+    RAISE EXCEPTION 'PROFILE_INPUT_GOVERNANCE_DIRECT_BINDING_INCOMPLETE';
   END IF;
 
   v_native:=public.lf_profile_execution_executor_admission_v1(
