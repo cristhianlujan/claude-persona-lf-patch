@@ -35,15 +35,13 @@ SET next_if_blocked='RETURN_TO_WORKER',
       nullif(notes,''),
       'CONTEXT_PACK/INPUT_GOVERNANCE pending or blocked is handled by the profile execution worker; the same Router decision is not re-entered.'
     ),
-    updated_at=now(),
-    updated_by_execution_id='PROFILE_INPUT_VALIDATE_NO_ROUTER_RETURN_V1'
+    updated_at=now()
 WHERE operation_code='EJECUCION_PERFIL_LF'
   AND step_id='input_validate';
 
 UPDATE public.lf_operation_step_judge_bindings
 SET return_result_value='RETURN_TO_WORKER',
-    updated_at=now(),
-    updated_by_execution_id='PROFILE_INPUT_VALIDATE_NO_ROUTER_RETURN_V1'
+    updated_at=now()
 WHERE operation_code='EJECUCION_PERFIL_LF'
   AND step_id='input_validate';
 
