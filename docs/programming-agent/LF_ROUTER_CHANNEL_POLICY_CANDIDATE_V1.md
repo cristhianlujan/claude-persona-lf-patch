@@ -16,8 +16,13 @@ La seleccion de canal **no es seleccion de perfil**, no es permiso de escritura 
 |---|---|---|
 | PRODUCTO | Definir, verificar y actualizar reglas y definiciones canónicas del producto, incluidas pantallas y elementos | Programar o desplegar |
 | PROGRAMACION | Implementar solo a partir de definicion autorizada y paquete admitido | Inventar el QUÉ o reescribir la fuente canónica |
-| PERFILES_SKILLS | Crear, actualizar, inspeccionar o utilizar perfiles y skills por operaciones registradas | Asumir que mencionar una pantalla implica actualizar un perfil |
 | SISTEMA | Infraestructura, runtime, despliegue y cambios tecnicos de plataforma | Sustituir decisiones de Producto |
+
+### Perfiles/Skills no es canal
+
+Los perfiles y skills son **recursos compartidos** que puede utilizar cualquiera de los canales, siempre a traves del Router ACT-0001. La ejecucion `EJECUCION_PERFIL_LF` o `EJECUCION_SKILL_LF` **no cambia el canal responsable**. Ejemplo: Producto puede solicitar UI Architect sin que exista una derivacion al «canal perfiles».
+
+La solicitud **de crear o actualizar el propio perfil o skill** toma la ruta de operacion gobernada `GESTION_ACTIVOS_IA` (familia logica, no es un codigo operativo nuevo) que resuelve `CREACION_PERFIL_LF`, `ACTUALIZACION_PERFIL_LF`, `CREACION_SKILL_LF` o `ACTUALIZACION_SKILL_LF`. No crear un quinto canal ni alterar los contratos de esas operaciones. El Router selecciona y autoriza el recurso; el perfil no llama directamente a otro perfil.
 
 No se debe confundir una **regla transversal** con un quinto canal: una regla puede ser consumida por multiples frentes; primero se identifica la definicion y su responsable.
 
@@ -30,6 +35,14 @@ No se debe confundir una **regla transversal** con un quinto canal: una regla pu
 5. Si falta definicion funcional, devolver a PRODUCTO. Si falta analisis/evidencia, devolver a ANALISIS. Si falta permiso de runtime u operacion, bloquear. Un perfil no deriva por si mismo a otro perfil: devuelve al Router.
 6. En solicitudes mixtas, planificar pasos secuenciales y dependencias; no despachar a todos los canales. Empates materiales: evidencia discriminante acotada y, si persisten, decision humana.
 7. Los permisos y versiones se leen de autoridad vigente: `public.lf_router_action_registry`, `public.lf_router_capability_v1`, `public.lf_capability_registry` y la capacidad transversal `CAPABILITY_SELECTOR` (solo propuesta, no permiso). **No copiar** a esta politica la lista viva de operaciones ni sus estados.
+
+## Solapamiento pendiente — PROGRAMACION y SISTEMA
+
+**No decidido en este lote.** La acepcion previa de SISTEMA («infraestructura/runtime/deploy») es insuficiente para consultas y operaciones de negocio sobre un sistema ya existente; la alternativa propuesta es incluir `CONSULTA_OPERATIVA` y `ACCION_OPERATIVA_EXISTENTE` sin convertirlo en programacion.
+
+Criterio a evaluar con propietario: `PROGRAMACION` crea/modifica implementacion con definicion y admision PG-01; `SISTEMA` usa funcionalidades existentes (lecturas y efectos operativos autorizados, mantenimiento y supervision). Modificar reglas de negocio sigue siendo `PRODUCTO`. Un despliegue derivado de nueva programacion requiere control de operacion y no debe reutilizarse como permiso generico.
+
+**Ejemplo en revision:** «Cual es el estado de mi oferta?» propone SISTEMA y consulta via servicio autorizado, no SQL libre ni datos de otro cliente. En Supabase se observaron `public.lf_user_offer_access` y `public.lf_user_offer_selections`, pero `public.lf_router_capability_v1` no contiene todavia handler especifico de «estado de oferta». No afirmar que esa ruta funciona hoy.
 
 ## Caso de regresion — Login B2B
 
@@ -51,4 +64,4 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 
 **Lote 4:** integrar recibos, retorno del especialista y habilitación gradual por canal después de sus propios gates.
 
-**No cerrado todavía:** mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
+**No cerrado todavía:** limites precisos del canal SISTEMA y posibles subtipos de operacion; mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
