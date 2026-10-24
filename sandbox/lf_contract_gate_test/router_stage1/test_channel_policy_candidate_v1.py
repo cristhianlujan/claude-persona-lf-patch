@@ -141,6 +141,13 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertTrue(self.p["channel_selection_contract"]["scope_is_optional"])
         self.assertTrue(self.p["channel_selection_contract"]["scope_resolver_is_business_specific"])
         self.assertTrue(self.p["decision_policy"]["scope_can_expand_through_existing_canonical_resolvers"])
+        self.assertTrue(self.p["decision_policy"]["target_type_is_hint_not_query_selector"])
+        self.assertTrue(self.p["decision_policy"]["resolve_canonical_subject_before_product_context_classification"])
+        self.assertTrue(self.p["decision_policy"]["aggregate_product_context_preferred_when_available"])
+        self.assertEqual(
+            self.p["decision_policy"]["aggregate_context_missing_fallback"],
+            "BOUNDED_CANONICAL_SEARCH_WITHOUT_TARGET_TYPE_PRE_FILTER",
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
