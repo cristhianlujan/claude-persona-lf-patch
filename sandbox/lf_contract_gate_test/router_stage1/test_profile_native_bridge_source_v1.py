@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import hashlib
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -75,6 +76,11 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.sql,
         )
         self.assertIn("profiles/product_director_lf/SKILL.md", self.sql)
+        source = ROOT / "profiles" / "product_director_lf" / "SKILL.md"
+        self.assertEqual(
+            hashlib.sha256(source.read_bytes()).hexdigest(),
+            "14d57a7709da9dd88ae1e2c5f3c2e48df91093a2afa470e63422e205707fd573",
+        )
 
     def test_no_new_privileged_ci_transport_is_created(self):
         forbidden = (
