@@ -141,7 +141,9 @@
     "profile_execution_context_owner": "EJECUCION_PERFIL_LF_CONTEXT_ADMISSION",
     "router_loads_profile_channel_context": false,
     "profile_execution_returns_to_router_after_result": true,
-    "executor_mode_selected_by_profile_execution_not_channel": true
+    "executor_mode_selected_by_profile_execution_not_channel": true,
+    "profile_gate2_pass_entrypoint": "public.lf_router_profile_execution_after_gate2_v1",
+    "profile_gate2_pass_requires_new_router_decision": false
   },
   "examples": [
     {
