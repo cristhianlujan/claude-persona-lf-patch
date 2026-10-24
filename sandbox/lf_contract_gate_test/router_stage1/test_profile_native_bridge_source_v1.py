@@ -59,6 +59,11 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
         self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_IG_NOT_SKIPPED", self.sql)
         self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_STEP_COUNT", self.sql)
         self.assertIn("expected_clean_step_count',7", self.sql)
+        self.assertIn("LF_PRODUCT_CANONICAL_RULE_READ_V1", self.sql)
+        self.assertIn("COMPACT_DIRECT_RULES_EFFECTIVE_AGGREGATE_LAZY", self.sql)
+        self.assertIn("'direct_rule_count'", self.sql)
+        self.assertIn("'effective_rule_count'", self.sql)
+        self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_CONTEXT_BUDGET_FAILED", self.sql)
 
     def test_canary_source_is_exact_and_content_bound(self):
         self.assertIn(
