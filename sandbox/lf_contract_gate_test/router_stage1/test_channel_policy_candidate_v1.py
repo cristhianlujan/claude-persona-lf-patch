@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Static checks for the ACT-0001 channel policy candidate.
+"""Static checks for the ACT-0001 LF V2 channel policy reference.
 
-This does NOT test the live Router, model classification, PG-01, or execution.
+This does NOT grant execution authority; it verifies source/runtime naming parity.
 """
 import json
 from pathlib import Path
@@ -15,8 +15,9 @@ class ChannelPolicySourceContract(unittest.TestCase):
     def setUpClass(cls):
         cls.p = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 
-    def test_source_only_no_effects(self):
-        self.assertEqual(self.p["state"], "SOURCE_ONLY_CANDIDATE")
+    def test_deployed_policy_still_grants_no_effects(self):
+        self.assertEqual(self.p["state"], "DEPLOYED_LF_V2")
+        self.assertEqual(self.p["stage1_contract_ref"], "LF_ROUTER_STAGE1_V2")
         self.assertIs(self.p["applies_effects"], False)
         self.assertIs(self.p["decision_policy"]["stage1_cannot_grant_execution"], True)
 
@@ -94,8 +95,32 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertFalse(family["is_channel"])
         self.assertEqual(family["entrypoint"], "ACT-0001")
         example = next(x for x in self.p["examples"] if x["id"] == "UPDATE_PROFILE")
-        self.assertEqual(example["route_kind"], "DIRECT_GOVERNED_OPERATION")
+        self.assertEqual(example["ruta_transversal"], "GESTION_ACTIVOS_IA")
         self.assertIsNone(example["initial_channel"])
+
+
+    def test_no_obsolete_route_or_dead_selector_fields(self):
+        serialized = json.dumps(self.p, ensure_ascii=False)
+        for forbidden in (
+            '"route_kind"',
+            '"special_route_kind"',
+            '"intencion_tipificada"',
+            '"precondiciones_no_satisfechas"',
+            '"siguiente_paso_propuesto"',
+            '"system_business_operations_scope"',
+            '"channel_name_is_candidate"',
+        ):
+            self.assertNotIn(forbidden, serialized)
+
+        outputs = self.p["channel_selection_contract"]["selector_outputs"]
+        self.assertEqual(outputs, [
+            "canal_candidato",
+            "negocio_codigo",
+            "negocios_afectados",
+            "ruta_transversal",
+            "razon_seleccion",
+            "alcance",
+        ])
 
     def test_operational_and_programming_boundaries(self):
         dp = self.p["decision_policy"]
