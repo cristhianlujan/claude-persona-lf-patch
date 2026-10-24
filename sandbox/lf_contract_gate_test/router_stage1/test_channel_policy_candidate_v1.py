@@ -219,6 +219,13 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertTrue(
             self.p["decision_policy"]["executor_mode_selected_by_profile_execution_not_channel"]
         )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_gate2_pass_entrypoint"],
+            "public.lf_router_profile_execution_after_gate2_v1",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_gate2_pass_requires_new_router_decision"]
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
