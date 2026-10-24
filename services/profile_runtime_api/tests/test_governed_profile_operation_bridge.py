@@ -63,6 +63,7 @@ def claimed() -> dict:
         "input_image_sha256": None,
         "input_image_media_type": None,
         "runtime_request_envelope": None,
+        "router_profile_handoff": None,
         "lf_adapter_sources": [],
     }
 
@@ -370,11 +371,23 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertIn('"scope_authority_packet_sha256": scope_packet["scope_packet_sha256"]', source)
         self.assertIn("HETZNER_SCOPE_AUTHORITY_PACKET_NOT_READY", source)
 
-    def test_pre_model_persists_full_router_authority_receipt(self) -> None:
+    def test_pre_model_consumes_authorized_handoff_without_rerouting(self) -> None:
         source = Path(worker.__file__).read_text()
-        self.assertIn('"router_result": route', source)
-        self.assertIn('"input_literal_sha256": input_digest', source)
-        self.assertIn("route.get(\"operation_code\") != \"EJECUCION_PERFIL_LF\"", source)
+        self.assertIn("lf_router_profile_execution_handoff_validate_v1", source)
+        self.assertIn('"router_read": "AUTHORIZED_HANDOFF_VALIDATED"', source)
+        self.assertIn('"reentered_router": False', source)
+        self.assertIn("legacy_without_handoff", source)
+        handoff_pos = source.index("handoff = claimed.get(\"router_profile_handoff\")")
+        legacy_pos = source.index("Legacy compatibility only", handoff_pos)
+        validator_pos = source.index("lf_router_profile_execution_handoff_validate_v1", handoff_pos)
+        router_call_pos = source.index("select public.lf_router_resolve_v1", handoff_pos)
+        self.assertLess(validator_pos, legacy_pos)
+        self.assertGreater(router_call_pos, legacy_pos)
+
+    def test_channel_context_hydration_occurs_inside_profile_execution(self) -> None:
+        source = Path(worker.__file__).read_text()
+        self.assertIn("lf_profile_execution_channel_context_v1", source)
+        self.assertIn("context.get(\"status\") == \"READY\" and handoff is not None", source)
 
     def test_terminal_failure_reconciler_accepts_only_canonical_outcomes(self) -> None:
         request_id = claimed()["request_id"]
