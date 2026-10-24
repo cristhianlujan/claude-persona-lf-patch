@@ -13,7 +13,7 @@ def base(**patch):
         "schema_version": "LF_ROUTER_STAGE1_V2",
         "texto_original": "Consultar el estado de una oferta en LF",
         "es_operacion": True, "respuesta_directa": False,
-        "sistema": "LF", "accion": "consultar", "sujeto": "oferta",
+        "accion": "consultar", "sujeto": "oferta",
         "correcciones": [], "formas_busqueda": ["estado oferta"],
         "ambiguo": False, "alternativas": [], "pregunta_usuario": None,
         "capability_hint": None, "downstream_execution_allowed": False,
@@ -56,7 +56,7 @@ class Stage1V2(unittest.TestCase):
         self.assertTrue(result["valid"], result)
 
     def test_saly_recognized_but_not_dispatched(self):
-        result = validate(base(sistema="SALY", negocio_codigo="SALY"))
+        result = validate(base(negocio_codigo="SALY"))
         self.assertTrue(result["valid"], result)
         self.assertEqual(result["next_step"], "SYSTEM_NOT_SUPPORTED")
 
@@ -65,7 +65,7 @@ class Stage1V2(unittest.TestCase):
                           "NEGOCIO_NO_REGISTRADO_EN_V2")
 
     def test_future_registered_business_does_not_need_new_channel(self):
-        future = base(sistema="OTRO", negocio_codigo="NEWBIZ")
+        future = base(negocio_codigo="NEWBIZ")
         unregistered = validate(future)
         self.assertFalse(unregistered["valid"], unregistered)
         self.assertIn("NEGOCIO_NO_REGISTRADO_EN_V2", unregistered["codes"])
@@ -81,6 +81,7 @@ class Stage1V2(unittest.TestCase):
     def test_legacy_v1_shape_is_preserved(self):
         normalized = normalize_to_v1(base())
         self.assertEqual(normalized["schema_version"], "LF_ROUTER_STAGE1_V1")
+        self.assertNotIn("sistema", base())
         self.assertEqual(normalized["sistema"], "LF")
         for unexpected in ("canal_candidato", "negocio_codigo", "alcance",
                            "ruta_transversal", "negocios_afectados"):
@@ -97,11 +98,14 @@ class Stage1V2(unittest.TestCase):
         self.assert_block(base(canal_candidato="PERFILES_SKILLS"),
                           "CANAL_NO_RECONOCIDO")
 
-    def test_no_cross_business_authority(self):
-        self.assert_block(base(negocio_codigo="SALY"), "NEGOCIO_NO_COINCIDE_CON_SISTEMA")
+    def test_business_is_required_for_single_business_operation(self):
+        self.assert_block(base(negocio_codigo=None), "NEGOCIO_REQUERIDO_EN_V2")
+
+    def test_legacy_sistema_field_is_rejected(self):
+        self.assert_block(base(sistema="LF"), "CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2")
 
     def test_multibusiness_is_explicit_and_does_not_auto_dispatch(self):
-        x = base(sistema="DESCONOCIDO", negocio_codigo=None,
+        x = base(negocio_codigo=None,
                  negocios_afectados=["LF", "SALY"],
                  canal_candidato="PRODUCTO", alcance=None)
         result = validate(x)
@@ -110,7 +114,7 @@ class Stage1V2(unittest.TestCase):
         self.assertFalse(result["downstream_execution_allowed"])
 
     def test_duplicate_business_rejected(self):
-        self.assert_block(base(sistema="DESCONOCIDO", negocio_codigo=None,
+        self.assert_block(base(negocio_codigo=None,
                                negocios_afectados=["LF", "LF"]), "NEGOCIOS_AFECTADOS_INVALIDOS")
 
     def test_scope_does_not_claim_verified_ref(self):
@@ -145,7 +149,7 @@ class Stage1V2(unittest.TestCase):
 
     def test_non_operation_must_be_scope_free(self):
         x = base(texto_original="¿Qué significa canal?", es_operacion=False,
-                 respuesta_directa=True, sistema=None, accion=None, sujeto=None,
+                 respuesta_directa=True, accion=None, sujeto=None,
                  formas_busqueda=[], canal_candidato=None, negocio_codigo=None,
                  alcance=None, razon_seleccion=None)
         self.assertEqual(validate(x)["next_step"], "DIRECT_ANSWER")
