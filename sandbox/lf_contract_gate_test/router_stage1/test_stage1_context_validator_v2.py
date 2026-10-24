@@ -61,7 +61,7 @@ class Stage1V2(unittest.TestCase):
         self.assertEqual(result["next_step"], "SYSTEM_NOT_SUPPORTED")
 
     def test_new_business_not_fabricated(self):
-        self.assert_block(base(sistema="OTRO", negocio_codigo="UNKNOWN_BIZ"),
+        self.assert_block(base(negocio_codigo="UNKNOWN_BIZ"),
                           "NEGOCIO_NO_REGISTRADO_EN_V2")
 
     def test_future_registered_business_does_not_need_new_channel(self):
