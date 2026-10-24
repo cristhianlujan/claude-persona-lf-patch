@@ -134,7 +134,14 @@
     "implementation_after_structural_repair_requires_product_currentness": true,
     "product_cycle_resume_entrypoint": "public.lf_router_product_cycle_v1",
     "profile_outputs_return_to_router_before_next_channel": true,
-    "structural_repair_no_capability_behavior": "CAPABILITY_GAP"
+    "structural_repair_no_capability_behavior": "CAPABILITY_GAP",
+    "profile_gate2_pass_behavior": "AUTO_MATERIALIZE_EJECUCION_PERFIL_LF",
+    "profile_execution_handoff_schema": "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+    "authorized_profile_execution_reenters_router": false,
+    "profile_execution_context_owner": "EJECUCION_PERFIL_LF_CONTEXT_ADMISSION",
+    "router_loads_profile_channel_context": false,
+    "profile_execution_returns_to_router_after_result": true,
+    "executor_mode_selected_by_profile_execution_not_channel": true
   },
   "examples": [
     {
@@ -180,7 +187,7 @@
       "request": "Usa el perfil UI Architect para analizar el Login B2B",
       "initial_channel": "PRODUCTO",
       "worker_candidate": "PERFIL-UI-ARCHITECT",
-      "expected_next": "PROFILE_EXECUTION_RESOURCE_NOT_NEW_CHANNEL"
+      "expected_next": "GATE2_PASS_AUTO_MATERIALIZES_EJECUCION_PERFIL_LF_WITH_HANDOFF_NO_ROUTER_REENTRY"
     },
     {
       "id": "OFFER_STATUS",
