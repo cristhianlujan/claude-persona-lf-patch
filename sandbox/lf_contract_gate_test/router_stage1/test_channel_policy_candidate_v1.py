@@ -237,6 +237,22 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertFalse(
             self.p["decision_policy"]["pending_profile_input_governance_reenters_router"]
         )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_binding_mode"],
+            "DIRECT_PROFILE",
+        )
+        self.assertEqual(
+            set(self.p["decision_policy"]["profile_input_governance_profiles"]),
+            {
+                "PERFIL-PRODUCT-DIRECTOR-LF",
+                "PERFIL-UI-ARCHITECT",
+                "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+                "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+            },
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_adapter_is_input_governance_authority"]
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
