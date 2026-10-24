@@ -388,6 +388,7 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_execution_begin_from_handoff_v1(
 DO $bind_profile_input_governance$
 DECLARE
   v_profile text;
+  v_batch uuid:=gen_random_uuid();
   v_profiles text[]:=ARRAY[
     'PERFIL-PRODUCT-DIRECTOR-LF',
     'PERFIL-UI-ARCHITECT',
@@ -417,14 +418,16 @@ BEGIN
       AND archived_at IS NULL;
 
     INSERT INTO public.lf_activo_relaciones(
-      codigo_activo,relacionado_codigo,relacion_tipo,valor_original,fuente,created_by_execution_id
+      codigo_activo,relacionado_codigo,relacion_tipo,valor_original,fuente,
+      migration_batch_id,created_by_execution_id
     )
     SELECT
       v_profile,
       'INPUT_GOVERNANCE_EXECUTION_CONTRACT',
       'GOBERNADO_POR',
       'DIRECT_PROFILE_INPUT_GOVERNANCE;consumer=CONTEXT_PACK;router_reentry_required=false',
-      'supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql',
+      'ROUTER_PROFILE_EXECUTION_HANDOFF_V1',
+      v_batch,
       'ROUTER_PROFILE_EXECUTION_HANDOFF_V1'
     WHERE NOT EXISTS(
       SELECT 1 FROM public.lf_activo_relaciones
