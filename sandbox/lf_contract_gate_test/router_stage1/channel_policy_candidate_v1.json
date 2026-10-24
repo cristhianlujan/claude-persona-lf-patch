@@ -1,0 +1,565 @@
+{
+  "schema_version": "LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "scope": "Router ACT-0001 / LF",
+  "stage1_contract_ref": "LF_ROUTER_STAGE1_V1",
+  "stage2_entrypoint": "public.lf_router_route_v1",
+  "applies_effects": false,
+  "channels": [
+    {
+      "code": "PRODUCTO",
+      "responsibility": "Definir, actualizar o verificar la fuente canónica del comportamiento/experiencia del producto, incluidas reglas y elementos de pantalla",
+      "intents": [
+        "DEFINE_PRODUCT_BEHAVIOR",
+        "CHANGE_PRODUCT_DEFINITION",
+        "VERIFY_PRODUCT_DEFINITION"
+      ],
+      "excluded": [
+        "APPLY_CODE_CHANGE",
+        "DEPLOY_INFRA",
+        "UPDATE_PROFILE_PACKAGE"
+      ]
+    },
+    {
+      "code": "PROGRAMACION",
+      "responsibility": "Asumir el ciclo técnico completo: análisis admitido, diseño de solución, desarrollo, pruebas, despliegue y mantenimiento correctivo/evolutivo del software y su plataforma",
+      "intents": [
+        "IMPLEMENT_APPROVED_CHANGE",
+        "FIX_IMPLEMENTATION_DRIFT",
+        "ANALYZE_IMPLEMENTATION",
+        "TEST_IMPLEMENTATION",
+        "DEPLOY_APPROVED_RELEASE",
+        "TECHNICAL_MAINTENANCE"
+      ],
+      "excluded": [
+        "DECIDE_PRODUCT_WHAT",
+        "REPLACE_MISSING_DEFINITION",
+        "AUTHORIZE_OWN_PG01",
+        "OPERATE_EXISTING_BUSINESS_TRANSACTION",
+        "READ_CUSTOMER_STATE_AS_NEW_DEVELOPMENT"
+      ]
+    },
+    {
+      "code": "OPERACIONES",
+      "label": "Operaciones del Producto",
+      "responsibility": "Atender consultas y acciones del negocio cotidianas sobre el producto vigente mediante capacidades operativas existentes y autorizadas",
+      "intents": [
+        "QUERY_BUSINESS_STATUS",
+        "USE_EXISTING_BUSINESS_OPERATION",
+        "CUSTOMER_OPERATIONAL_SUPPORT"
+      ],
+      "excluded": [
+        "DECIDE_PRODUCT_WHAT",
+        "WRITE_NEW_CODE",
+        "CHANGE_TECHNICAL_IMPLEMENTATION",
+        "DEPLOY_NEW_RELEASE",
+        "RUN_ARBITRARY_DATABASE_QUERY"
+      ]
+    }
+  ],
+  "reused_authorities": {
+    "action_registry": "public.lf_router_action_registry",
+    "router_capabilities": "public.lf_router_capability_v1",
+    "transverse_capabilities": "public.lf_capability_registry",
+    "selector": "CAPABILITY_SELECTOR",
+    "programming_admission_contract": "PROGRAMMING_ENTRY_CONTRACT_V1",
+    "analysis_handoff": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "context_snapshot": "PROGRAMMING_CONTEXT_SNAPSHOT_V1"
+  },
+  "decision_policy": {
+    "first_check": "Determine intent, target type, requested effect, exact canonical definition identity/currentness and whether the definition itself must change",
+    "product_definition_change": "PRODUCTO_FIRST",
+    "verified_unmodified_definition": "REUSE_CANONICAL_DEFINITION_NO_DUPLICATE_WRITE",
+    "programming_gate": [
+      "EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS",
+      "A9_ADMITTED_READY_SCOPE",
+      "PERSISTED_PROGRAMMING_CONTEXT_RECEIPT",
+      "PG01_ADMISSION",
+      "RUNTIME_AND_OPERATION_AUTHORIZATION"
+    ],
+    "programming_on_definition_missing_or_changed": "RETURN_TO_PRODUCTO_NO_CODE",
+    "programming_on_analysis_missing_or_stale": "RETURN_TO_ANALYSIS_NO_CODE",
+    "programming_on_unauthorized_runtime": "BLOCK_NO_CODE",
+    "candidate_selection": "Typed capability selection may suggest candidates; action registry and governed authority validate the exact operation; score is not authorization",
+    "cross_channel_request": "PLAN_ORDERED_DEPENDENCIES_NO_AUTO_PARALLEL_DISPATCH",
+    "ties": "BOUNDED_EVIDENCE_THEN_HUMAN_DECISION_IF_MATERIAL",
+    "no_hardcoded_confidence_percentage": true,
+    "stage1_cannot_grant_execution": true,
+    "capability_hint_not_permission": true,
+    "candidate_state_not_current_release": true,
+    "product_can_be_definition_table_other_than_rules": true,
+    "profile_or_skill_lifecycle": "DIRECT_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
+    "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
+    "system_business_operations_scope": "SUPERSEDED_BY_OPERACIONES_CANDIDATE",
+    "programming_lifecycle_includes": [
+      "ANALYSIS",
+      "DESIGN_TECHNICAL_SOLUTION",
+      "IMPLEMENTATION",
+      "TESTING",
+      "DEPLOYMENT",
+      "TECHNICAL_MAINTENANCE"
+    ],
+    "operational_channel_requires": [
+      "EXISTING_APPROVED_CAPABILITY",
+      "VERIFIED_AUTHORIZATION_AND_TENANT_SCOPE",
+      "DATA_MINIMALITY",
+      "NO_ARBITRARY_SQL",
+      "NO_CODE_OR_FUNCTIONAL_DEFINITION_CHANGE"
+    ],
+    "missing_operational_capability": "NO_OPERATIONAL_DISPATCH; ROUTE_REQUIRED_CHANGE_TO_PRODUCT_OR_PROGRAMACION_AS_APPROPRIATE",
+    "customer_support_vs_operational_actions": "Support is a subtype of the operational channel, not its full scope",
+    "impact_and_reuse": "Resolve CANAL and NEGOCIO separately. ALCANCE is optional, lazy, business-specific and must use existing canonical asset/tenant bindings if required. Profiles and skills are shared via Router.",
+    "platform_technical_operations_owner": "PROGRAMACION",
+    "product_live_operations_owner": "OPERACIONES",
+    "product_definition_owner": "PRODUCTO",
+    "profile_execution_owner": "ROUTER_GOVERNED_RESOURCE_FOR_RESPONSIBLE_CHANNEL",
+    "business_is_not_work_channel": true,
+    "business_is_not_tenant": true,
+    "scope_is_optional_until_action_requires_it": true,
+    "scope_can_expand_through_existing_canonical_resolvers": true,
+    "on_scope_unknown": "DONT_INVENT_TARGET; PROCEED_WITHOUT_SCOPE_IF_NOT_REQUIRED; ELSE_RESOLVE_BOUNDED_OR_ASK",
+    "on_business_unknown": "BOUNDED_BUSINESS_LOOKUP_OR_ASK; NEVER_ASSUMED_CROSS_BUSINESS_DISPATCH"
+  },
+  "examples": [
+    {
+      "id": "B2B_LABEL_CHANGE",
+      "request": "Cambiar únicamente el texto del botón principal de Iniciar sesión B2B a Acceder, sin cambiar autenticación ni validaciones",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "VERIFY_CANONICAL_ELEMENT_DEFINITION",
+      "known_readback": "lf_ops.pantalla_elementos.label_visible=Acceder; B2B-AUTH-001 v0.5 CANDIDATO",
+      "expected_next": "NO_DUPLICATE_WRITE; CHECK_AUTHORIZED_DEFINITION_AND_IMPLEMENTATION_GAP; PROGRAMMING_BLOCKED_UNTIL_ADMISSION"
+    },
+    {
+      "id": "NEW_TIMEOUT_RULE",
+      "request": "Definir una nueva regla de cierre de sesión por inactividad",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "DEFINE_CANONICAL_RULE",
+      "expected_next": "IMPACT_CHECK_AND_PUBLISH_DEFINITION_BEFORE_PROGRAMMING"
+    },
+    {
+      "id": "IMPLEMENT_READY_RULE",
+      "request": "Implementar una definición funcional vigente ya aprobada",
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "CHECK_PROGRAMMING_ENTRY_GATE",
+      "expected_next": "ONLY_READY_SCOPE_WITH_A9_AND_PG01_CAN_ENTER_IMPLEMENTATION"
+    },
+    {
+      "id": "UPDATE_PROFILE",
+      "request": "Actualizar el perfil UI Architect",
+      "initial_channel": null,
+      "initial_task": "RESOLVE_PROFILE_UPDATE_OPERATION",
+      "expected_next": "GOVERNED_PROFILE_UPDATE",
+      "route_kind": "DIRECT_GOVERNED_OPERATION",
+      "operation_code": "ACTUALIZACION_PERFIL_LF"
+    },
+    {
+      "id": "DEPLOY_EDGE",
+      "request": "Desplegar una Supabase Edge Function",
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "CHECK_GOVERNED_TECHNICAL_DEPLOY_ROUTE",
+      "expected_next": "DEPLOY_CAPABILITY_IS_CANDIDATE_READ_ONLY; NO_DEPLOY_WITHOUT_CURRENT_PERMISSION"
+    },
+    {
+      "id": "PRODUCT_USES_UI_PROFILE",
+      "request": "Usa el perfil UI Architect para analizar el Login B2B",
+      "initial_channel": "PRODUCTO",
+      "worker_candidate": "PERFIL-UI-ARCHITECT",
+      "expected_next": "PROFILE_EXECUTION_RESOURCE_NOT_NEW_CHANNEL"
+    },
+    {
+      "id": "OFFER_STATUS",
+      "request": "Consultar el estado de una oferta del cliente en LF",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "RESOLVE_EXISTING_AUTHORIZED_OFFER_STATUS_CAPABILITY",
+      "expected_next": "IF_MISSING_CAPABILITY_RETURN_GAP; NO_ARBITRARY_SQL_OR_CROSS_CUSTOMER_READ",
+      "observed_registry": "No specific offer status handler identified in public.lf_router_capability_v1"
+    },
+    {
+      "id": "TECHNICAL_MAINTENANCE",
+      "request": "Corregir fallo del backend del login y desplegar la version corregida",
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "FOLLOW_TECHNICAL_LIFECYCLE_AND_GOVERNED_DEPLOYMENT",
+      "expected_next": "REQUIRE_EXISTING_DEFINITION_A9_PG01_AND_DEPLOY_AUTHORIZATION"
+    },
+    {
+      "id": "PAYMENT_STATUS",
+      "request": "¿Se confirmó el pago del cliente?",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "RESOLVE_AUTHORIZED_PAYMENT_STATUS_CAPABILITY",
+      "expected_next": "CHECK_IDENTITY_AND_SCOPED_EXISTING_READ_ONLY_HANDLER"
+    },
+    {
+      "id": "DEFINE_AND_IMPLEMENT",
+      "request": "Crea una nueva regla de ofertas y prográmala",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "DEFINE_CANONICAL_RULE_FIRST",
+      "expected_next": "ORDER_DEPENDENCIES; ADMIT_PROGRAMMING_ONLY_AFTER_APPROVED_A9_PG01"
+    },
+    {
+      "id": "EXISTING_TRANSACTION_FAILURE",
+      "request": "Mi pago no aparece y creo que hay un error",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "READ_ONLY_DIAGNOSE",
+      "expected_next": "ESCALATE_TO_PROGRAMACION_ON_VERIFIED_SOFTWARE_DEFECT"
+    },
+    {
+      "id": "AMBIGUOUS_OFFERS",
+      "request": "Arregla lo de las ofertas",
+      "initial_channel": null,
+      "route_kind": "NEEDS_DECISION",
+      "initial_task": "BOUNDED_DISAMBIGUATION",
+      "expected_next": "ONE_QUESTION_NOT_AUTO_CODE"
+    },
+    {
+      "id": "CHECK_CURRENT_RULE",
+      "request": "¿Cuál es la regla definida para cierre de sesión?",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "READ_CANONICAL_RULE_DEFINITION",
+      "expected_next": "READ_AUTHORITATIVE_PRODUCT_DEFINITION"
+    }
+  ],
+  "transversal_operation_families": [
+    {
+      "code": "GESTION_ACTIVOS_IA",
+      "is_channel": false,
+      "description": "Operaciones gobernadas de crear, actualizar e inspeccionar perfiles y skills; no un canal funcional independiente",
+      "operations": [
+        "CREACION_PERFIL_LF",
+        "ACTUALIZACION_PERFIL_LF",
+        "CREACION_SKILL_LF",
+        "ACTUALIZACION_SKILL_LF"
+      ],
+      "entrypoint": "ACT-0001",
+      "resolution": "DIRECT_GOVERNED_OPERATION",
+      "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
+    }
+  ],
+  "channel_name_is_candidate": false,
+  "channel_selection_contract": {
+    "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
+    "state": "SOURCE_ONLY_CANDIDATE",
+    "channel_field": "canal_candidato",
+    "channel_values": [
+      "PRODUCTO",
+      "PROGRAMACION",
+      "OPERACIONES"
+    ],
+    "special_route_kind": "DIRECT_GOVERNED_OPERATION",
+    "channel_is_not_execution_authorization": true,
+    "channel_is_not_profile_or_skill": true,
+    "selector_inputs": [
+      "texto_original",
+      "negocio_codigo",
+      "accion",
+      "sujeto",
+      "requested_effect",
+      "target_type",
+      "definition_change_intent",
+      "existing_capability_intent"
+    ],
+    "selector_outputs": [
+      "canal_candidato",
+      "route_kind",
+      "intencion_tipificada",
+      "razon_seleccion",
+      "precondiciones_no_satisfechas",
+      "siguiente_paso_propuesto"
+    ],
+    "deterministic_admission_required_at_stage2": true,
+    "unknown_or_material_tie": "ASK_USER_AFTER_BOUNDED_EVIDENCE",
+    "semantic_validation_before_dispatch": true,
+    "no_parallel_classification_engine": true,
+    "business_field": "negocio_codigo",
+    "scope_field": "alcance",
+    "scope_is_optional": true,
+    "scope_resolver_is_business_specific": true,
+    "scope_values_are_not_closed_enum": true,
+    "v2_contract_fields": {
+      "canal_candidato": "Clasificacion funcional propuesta: PRODUCTO, PROGRAMACION u OPERACIONES; no concede autoridad.",
+      "negocio_codigo": "Codigo canonico del negocio al que pertenece la solicitud. En esta fase operativa: LF.",
+      "alcance": "Descriptor opcional y dinamico del objeto de trabajo; no concede permisos ni certifica target_ref."
+    }
+  },
+  "routing_rules": [
+    {
+      "rule_id": "R00_IA_ASSET_MAINTENANCE",
+      "priority": 0,
+      "when": "The user asks to create/update/retire the profile or skill itself",
+      "route_kind": "DIRECT_GOVERNED_OPERATION",
+      "channel": null,
+      "operation_resolution": "Resolve existing operation from action registry; do not use profile/skill execution as a channel",
+      "examples": [
+        "Actualizar el perfil UI Architect",
+        "Crear una skill nueva"
+      ]
+    },
+    {
+      "rule_id": "R10_READ_EXISTING_PRODUCT_STATE",
+      "priority": 10,
+      "when": "The user asks for current customer/offer/payment/liquidation/status, or to perform an existing business operation, without changing its definition or code",
+      "channel": "OPERACIONES",
+      "requires": [
+        "AUTHORIZED_EXISTING_CAPABILITY",
+        "ACTOR_ID_AND_TENANT_SCOPE",
+        "DATA_MINIMALITY"
+      ],
+      "no_effects_from_classification": true,
+      "examples": [
+        "¿Cuál es el estado de mi oferta?",
+        "Consultar un pago"
+      ]
+    },
+    {
+      "rule_id": "R20_PRODUCT_DEFINITION",
+      "priority": 20,
+      "when": "The user wants to define/change the expected behavior, a rule, a screen specification or a condition of the product, including requests presented as visual changes",
+      "channel": "PRODUCTO",
+      "requires": [
+        "CANONICAL_DEFINITION_TARGET_LOOKUP",
+        "CURRENTNESS_CHECK"
+      ],
+      "examples": [
+        "Cambiar el texto del botón principal a Acceder",
+        "Definir cierre de sesión por inactividad"
+      ]
+    },
+    {
+      "rule_id": "R30_IMPLEMENTATION_LIFECYCLE",
+      "priority": 30,
+      "when": "The user explicitly asks for technical analysis/implementation/testing/deployment/maintenance or resolution of verified implementation drift",
+      "channel": "PROGRAMACION",
+      "requires": [
+        "CANONICAL_DEFINITION_OR_EXISTING_APPROVED_TECHNICAL_TARGET",
+        "ANALYSIS_AND_PG01_WHERE_APPLICABLE",
+        "GOVERNED_TECHNICAL_OPERATION"
+      ],
+      "examples": [
+        "Programar la pantalla ya definida",
+        "Desplegar una versión aprobada",
+        "Corregir bug de backend"
+      ]
+    },
+    {
+      "rule_id": "R40_INCIDENT_DIAGNOSIS",
+      "priority": 40,
+      "when": "The user reports that an existing transaction or query is failing but cause is unknown",
+      "channel": "OPERACIONES",
+      "initial_mode": "READ_ONLY_DIAGNOSIS",
+      "handoff": "PROGRAMACION_ONLY_AFTER_VERIFIED_TECHNICAL_DEFECT_AND_ADMISSION",
+      "examples": [
+        "No aparece mi pago",
+        "La oferta muestra un error"
+      ]
+    },
+    {
+      "rule_id": "R50_MIXED_REQUEST",
+      "priority": 50,
+      "when": "The request includes a product-definition change and its implementation",
+      "channel": "PRODUCTO",
+      "handoff": "ORDERED_DEPENDENCIES_AFTER_CANONICAL_DEFINITION_AND_PROGRAMMING_ADMISSION",
+      "examples": [
+        "Define la nueva regla y prográmala"
+      ]
+    },
+    {
+      "rule_id": "R60_UNCERTAIN",
+      "priority": 60,
+      "when": "The route lacks decisive evidence or two assignments remain materially plausible after bounded inspection",
+      "channel": null,
+      "route_kind": "NEEDS_DECISION",
+      "handoff": "ASK_ONE_DISAMBIGUATING_QUESTION_NO_DISPATCH",
+      "examples": [
+        "Arregla lo de las ofertas"
+      ]
+    }
+  ],
+  "business_context_contract": {
+    "schema_version": "LF_ROUTER_BUSINESS_SCOPE_CONTEXT_CANDIDATE_V1",
+    "state": "SOURCE_ONLY_CANDIDATE",
+    "conceptual_dimensions": [
+      "CANAL",
+      "NEGOCIO",
+      "ALCANCE_DINAMICO"
+    ],
+    "canonical_business_field": "negocio_codigo",
+    "migration_policy": "LF_ROUTER_STAGE1_V2 expone negocio_codigo y no acepta el campo legado. Mientras el endpoint Stage2 desplegado siga en V1, el adaptador de compatibilidad deriva internamente el valor requerido por V1; ese detalle no forma parte del contrato V2.",
+    "channel_field": "canal_candidato",
+    "business_binding_policy": "CANONICAL_ACTIVE_BUSINESS_OR_TARGET_BINDING; LF AND SALY ARE KNOWN EXAMPLES; DO NOT GUESS OR CREATE BUSINESS CODE",
+    "business_registry_implementation_status": "NEEDS_VERIFIED_AUTHORITATIVE_SOURCE_AND_PER_BUSINESS_BINDINGS; NO_NEW_REGISTRY_AUTOMATICALLY_AUTHORIZED",
+    "business_cardinality": [
+      "ONE",
+      "EXPLICIT_SET",
+      "UNRESOLVED"
+    ],
+    "example_business_codes": [
+      "LF",
+      "SALY"
+    ],
+    "business_set_field": "negocios_afectados",
+    "cross_business_policy": "EXPLICIT_SET_ONLY_NOT_GLOBAL_WILDCARD",
+    "scoped_context": {
+      "resolution_strategy": "ON_DEMAND_BY_BUSINESS_AND_OPERATION",
+      "required_policy": "OPTIONAL_FOR_CHANNEL_AND_BUSINESS_CLASSIFICATION; REQUIRED_BEFORE_DISPATCH_ONLY_WHEN_THE_OPERATION_REQUIRES_AN_EXACT_TARGET_OR_AUTHORIZATION",
+      "scope_type_model": "EXTENSIBLE_REGISTERED_TARGET_TYPES_NOT_FIXED_ENUM",
+      "known_scope_examples": [
+        "NEGOCIO_COMPLETO",
+        "GRUPO_CORPORATIVO",
+        "EMPRESA",
+        "CLIENTE",
+        "REGISTRO",
+        "PANTALLA",
+        "REGLA",
+        "COMPONENTE",
+        "CONJUNTO_EXPLICITO_DE_NEGOCIOS"
+      ],
+      "inference_order": [
+        "EXPLICIT_SUBJECT_IN_REQUEST",
+        "TRUSTED_BUSINESS_OR_ACTIVE_SESSION_BINDING",
+        "CANONICAL_ASSET_OR_OPERATION_METADATA",
+        "SCOPED_TARGET_RESOLVER_IF_NEEDED"
+      ],
+      "target_descriptor_fields": [
+        "target_type",
+        "target_hint",
+        "target_ref",
+        "resolution_status"
+      ],
+      "target_resolution_status": [
+        "NOT_REQUIRED",
+        "RESOLVED",
+        "UNRESOLVED",
+        "MULTIPLE_MATCHES",
+        "NOT_AUTHORIZED"
+      ],
+      "do_not_create_scope_rows_for_classification": true,
+      "resolve_only_when_needed": true,
+      "no_generic_arbitrary_sql": true,
+      "allowed_resolvers": "EXISTING_BUSINESS_REGISTERED_RESOLVER_OR_HANDLER_ONLY",
+      "missing_resolver": "RETURN_CAPABILITY_GAP_OR_ASK_IF_MATERIAL_NO_FABRICATED_TARGET",
+      "group_ref": "group_id",
+      "company_ref": "company_id",
+      "record_ref": "target_ref",
+      "verified_hierarchy": [
+        "lf_ops.b2b_corporate_groups",
+        "lf_ops.b2b_corporate_group_companies",
+        "lf_ops.empresas"
+      ],
+      "group_membership_must_be_verified": true,
+      "company_scope_must_be_bound_server_side": true,
+      "group_scope_requires_authorized_scope_expansion": true,
+      "unit_scope_unimplemented": "Do not fabricate operating-unit identity or organizational-unit table before a source exists",
+      "business_owner_org_not_equivalent_to_customer_company": true,
+      "context_must_not_grant_permission": true
+    },
+    "resolution_order": [
+      "EXPLICIT_BUSINESS_MENTION_CHECKED_AGAINST_AUTHORITY",
+      "VERIFIED_ACTIVE_BUSINESS_SESSION",
+      "EXACT_TARGET_ASSET_BUSINESS_BINDING",
+      "CONTEXTUAL_HINT_NON_AUTHORITATIVE",
+      "ASK_ONE_QUESTION_IF_MATERIAL_AMBIGUITY"
+    ],
+    "authorization_guard": [
+      "CHANNEL_CLASSIFICATION_IS_NOT_PERMISSION",
+      "REQUESTED_COMPANY_FROM_TEXT_NEVER_GRANTS_ACCESS",
+      "ACTOR_SESSION_AND_MEMBERSHIP_REQUIRED",
+      "BUSINESS_HANDLER_AND_SUBJECT_SCOPE_MUST_MATCH",
+      "NO_CROSS_BUSINESS_DATA_LEAK",
+      "FAIL_CLOSED_FOR_UNKNOWN_BUSINESS_OR_REQUIRED_UNVERIFIED_SCOPE"
+    ],
+    "unsupported_businesses": "La fase actual habilita solo LF. SALY y otros negocios no forman parte de la aceptacion de este cierre.",
+    "operational_selectors": "Business determines the specific authorized handler; scope resolves lazily from request/asset/handler metadata only as needed",
+    "skills_profiles_are_transversal_resources": true,
+    "current_phase": "LF_ONLY",
+    "saly_acceptance_status": "DEFERRED_NOT_BLOCKING_LF_CLOSURE"
+  },
+  "business_scope_examples": [
+    {
+      "id": "LF_OFFER_STATUS",
+      "utterance": "Consulta el estado de mi oferta en Libertad Financiera",
+      "canal": "OPERACIONES",
+      "requires": "AUTHORIZED_OFFER_HANDLER_AND_AUTHENTICATED_SUBJECT",
+      "negocio_codigo": "LF",
+      "scope_hint": "REGISTRO"
+    },
+    {
+      "id": "SALY_ADVANCE_STATUS",
+      "utterance": "Consulta el estado de mi adelanto en SALY",
+      "canal": "OPERACIONES",
+      "requires": "SALY_ROUTE_CURRENTLY_UNSUPPORTED_NO_OPERATION_EXECUTION",
+      "negocio_codigo": "SALY",
+      "scope_hint": "REGISTRO"
+    },
+    {
+      "id": "LF_COMPANY_PAYMENTS",
+      "utterance": "Muestra los pagos de mi empresa en LF",
+      "canal": "OPERACIONES",
+      "requires": "SERVER_BOUND_COMPANY_ID",
+      "negocio_codigo": "LF",
+      "scope_hint": "EMPRESA"
+    },
+    {
+      "id": "LF_GROUP_REPORT",
+      "utterance": "Ver el consolidado de empresas del grupo en LF",
+      "canal": "OPERACIONES",
+      "requires": "VERIFIED_GROUP_MEMBERSHIP_AND_AUTHORIZED_CROSS_COMPANY_ACCESS",
+      "negocio_codigo": "LF",
+      "scope_hint": "GRUPO_CORPORATIVO"
+    },
+    {
+      "id": "SHARED_AUTH_RULE",
+      "utterance": "Define una política de expiración que aplique a LF y SALY",
+      "canal": "PRODUCTO",
+      "requires": "EACH_PRODUCT_AUTHORITY_AND_DECISION_NO_IMPLICIT_GLOBAL_WRITE",
+      "negocio_codigo": null,
+      "negocios_afectados": [
+        "LF",
+        "SALY"
+      ],
+      "scope_hint": "MULTIPRODUCTO"
+    },
+    {
+      "id": "UNSCOPED_AMBIGUOUS",
+      "utterance": "Muéstrame el estado de mi solicitud",
+      "canal": "OPERACIONES",
+      "requires": "DISAMBIGUATE_PRODUCT_BEFORE_DISPATCH",
+      "negocio_codigo": null,
+      "scope_hint": "UNRESOLVED"
+    },
+    {
+      "id": "FUTURE_UNREGISTERED",
+      "utterance": "Consultar una operación de un producto futuro no registrado",
+      "canal": "OPERACIONES",
+      "requires": "VERIFY_PRODUCT_REGISTRY_OR_RETURN_UNSUPPORTED",
+      "negocio_codigo": null,
+      "scope_hint": "UNRESOLVED"
+    },
+    {
+      "id": "LF_LOGIN_COMPONENT",
+      "utterance": "Cambiar el botón del login B2B en Libertad Financiera",
+      "canal": "PRODUCTO",
+      "negocio_codigo": "LF",
+      "scope_hint": "PANTALLA",
+      "target_type": "PANTALLA",
+      "target_hint": "Login B2B",
+      "requires": "RESOLVE_CANONICAL_SCREEN_IF_MODIFYING_DEFINITION"
+    },
+    {
+      "id": "GENERAL_DESCRIPTION_NO_SCOPE",
+      "utterance": "Explica cuáles son los canales del Router",
+      "canal": null,
+      "negocio_codigo": null,
+      "scope_hint": null,
+      "scope_required": false,
+      "requires": "DIRECT_ANSWER_IF_NOT_AN_OPERATION"
+    },
+    {
+      "id": "FUTURE_SCOPE_TYPE",
+      "utterance": "Revisa la vigencia de una regla nueva de un negocio futuro",
+      "canal": "PRODUCTO",
+      "negocio_codigo": null,
+      "scope_hint": "REGLA",
+      "target_type": "REGLA",
+      "requires": "VERIFY_BUSINESS_AND_RESOLVER; NO_NEW_FIXED_SCOPE_ENUM"
+    }
+  ]
+}

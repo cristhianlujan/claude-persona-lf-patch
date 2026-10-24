@@ -64,6 +64,13 @@ on:
       - 'docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_semantic_abi_v1.py'
       - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
+      - 'sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json'
+      - 'sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_channel_policy_candidate_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py'
+      - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -119,6 +126,32 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Execute ACT-0001 Stage1 V1/V2 and Stage2 handoff regression tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/router_stage1/stage1_validator_v1.py \
+            sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py \
+            sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py
+          python3 -m unittest -v \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage1_validator_v1 \
+            sandbox.lf_contract_gate_test.router_stage1.test_channel_policy_candidate_v1 \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage1_context_validator_v2 \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage2_handoff_v2
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql")
+          s=p.read_text(encoding="utf-8")
+          assert s.count("BEGIN;")==1, s.count("BEGIN;")
+          assert s.count("COMMIT;")==1, s.count("COMMIT;")
+          assert s.count("CREATE OR REPLACE FUNCTION public.lf_router_stage1_validate_v2")==1
+          assert s.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2" in s
+          assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s
+          assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s
+          print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
+          PY
+
       - name: Execute positive and negative level2 handoff contract tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_level2_advisory_handoff_v1
