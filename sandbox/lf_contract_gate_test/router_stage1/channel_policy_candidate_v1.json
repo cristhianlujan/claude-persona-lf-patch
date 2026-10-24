@@ -1,0 +1,133 @@
+{
+  "schema_version": "LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "scope": "Router ACT-0001 / LF",
+  "stage1_contract_ref": "LF_ROUTER_STAGE1_V1",
+  "stage2_entrypoint": "public.lf_router_route_v1",
+  "applies_effects": false,
+  "channels": [
+    {
+      "code": "PRODUCTO",
+      "responsibility": "Definir, actualizar o verificar la fuente canónica del comportamiento/experiencia del producto, incluidas reglas y elementos de pantalla",
+      "intents": [
+        "DEFINE_PRODUCT_BEHAVIOR",
+        "CHANGE_PRODUCT_DEFINITION",
+        "VERIFY_PRODUCT_DEFINITION"
+      ],
+      "excluded": [
+        "APPLY_CODE_CHANGE",
+        "DEPLOY_INFRA",
+        "UPDATE_PROFILE_PACKAGE"
+      ]
+    },
+    {
+      "code": "PROGRAMACION",
+      "responsibility": "Consumir una definición canónica vigente y un paquete de Análisis admitido para construir o modificar software",
+      "intents": [
+        "IMPLEMENT_APPROVED_CHANGE",
+        "FIX_IMPLEMENTATION_DRIFT"
+      ],
+      "excluded": [
+        "DECIDE_PRODUCT_WHAT",
+        "REPLACE_MISSING_DEFINITION",
+        "AUTHORIZE_OWN_PG01"
+      ]
+    },
+    {
+      "code": "PERFILES_SKILLS",
+      "responsibility": "Crear, actualizar, inspeccionar o ejecutar perfiles y skills bajo sus operaciones gobernadas",
+      "intents": [
+        "CREATE_PROFILE_OR_SKILL",
+        "UPDATE_PROFILE_OR_SKILL",
+        "EXECUTE_PROFILE_OR_SKILL"
+      ],
+      "excluded": [
+        "MODIFY_PRODUCT_UI_BY_PROFILE_NAME_ALONE",
+        "DEPLOY_INFRA"
+      ]
+    },
+    {
+      "code": "SISTEMA",
+      "responsibility": "Operar componentes de infraestructura, despliegue, runtimes y cambios técnicos de plataforma",
+      "intents": [
+        "DEPLOY_COMPONENT",
+        "UPDATE_PLATFORM_RUNTIME",
+        "PLATFORM_TECHNICAL_CHANGE"
+      ],
+      "excluded": [
+        "DECIDE_PRODUCT_BEHAVIOR",
+        "BYPASS_GOVERNED_TRAIN"
+      ]
+    }
+  ],
+  "reused_authorities": {
+    "action_registry": "public.lf_router_action_registry",
+    "router_capabilities": "public.lf_router_capability_v1",
+    "transverse_capabilities": "public.lf_capability_registry",
+    "selector": "CAPABILITY_SELECTOR",
+    "programming_admission_contract": "PROGRAMMING_ENTRY_CONTRACT_V1",
+    "analysis_handoff": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "context_snapshot": "PROGRAMMING_CONTEXT_SNAPSHOT_V1"
+  },
+  "decision_policy": {
+    "first_check": "Determine intent, target type, requested effect, exact canonical definition identity/currentness and whether the definition itself must change",
+    "product_definition_change": "PRODUCTO_FIRST",
+    "verified_unmodified_definition": "REUSE_CANONICAL_DEFINITION_NO_DUPLICATE_WRITE",
+    "programming_gate": [
+      "EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS",
+      "A9_ADMITTED_READY_SCOPE",
+      "PERSISTED_PROGRAMMING_CONTEXT_RECEIPT",
+      "PG01_ADMISSION",
+      "RUNTIME_AND_OPERATION_AUTHORIZATION"
+    ],
+    "programming_on_definition_missing_or_changed": "RETURN_TO_PRODUCTO_NO_CODE",
+    "programming_on_analysis_missing_or_stale": "RETURN_TO_ANALYSIS_NO_CODE",
+    "programming_on_unauthorized_runtime": "BLOCK_NO_CODE",
+    "candidate_selection": "Typed capability selection may suggest candidates; action registry and governed authority validate the exact operation; score is not authorization",
+    "cross_channel_request": "PLAN_ORDERED_DEPENDENCIES_NO_AUTO_PARALLEL_DISPATCH",
+    "ties": "BOUNDED_EVIDENCE_THEN_HUMAN_DECISION_IF_MATERIAL",
+    "no_hardcoded_confidence_percentage": true,
+    "stage1_cannot_grant_execution": true,
+    "capability_hint_not_permission": true,
+    "candidate_state_not_current_release": true,
+    "product_can_be_definition_table_other_than_rules": true
+  },
+  "examples": [
+    {
+      "id": "B2B_LABEL_CHANGE",
+      "request": "Cambiar únicamente el texto del botón principal de Iniciar sesión B2B a Acceder, sin cambiar autenticación ni validaciones",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "VERIFY_CANONICAL_ELEMENT_DEFINITION",
+      "known_readback": "lf_ops.pantalla_elementos.label_visible=Acceder; B2B-AUTH-001 v0.5 CANDIDATO",
+      "expected_next": "NO_DUPLICATE_WRITE; CHECK_AUTHORIZED_DEFINITION_AND_IMPLEMENTATION_GAP; PROGRAMMING_BLOCKED_UNTIL_ADMISSION"
+    },
+    {
+      "id": "NEW_TIMEOUT_RULE",
+      "request": "Definir una nueva regla de cierre de sesión por inactividad",
+      "initial_channel": "PRODUCTO",
+      "initial_task": "DEFINE_CANONICAL_RULE",
+      "expected_next": "IMPACT_CHECK_AND_PUBLISH_DEFINITION_BEFORE_PROGRAMMING"
+    },
+    {
+      "id": "IMPLEMENT_READY_RULE",
+      "request": "Implementar una definición funcional vigente ya aprobada",
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "CHECK_PROGRAMMING_ENTRY_GATE",
+      "expected_next": "ONLY_READY_SCOPE_WITH_A9_AND_PG01_CAN_ENTER_IMPLEMENTATION"
+    },
+    {
+      "id": "UPDATE_PROFILE",
+      "request": "Actualizar el perfil UI Architect",
+      "initial_channel": "PERFILES_SKILLS",
+      "initial_task": "RESOLVE_PROFILE_UPDATE_OPERATION",
+      "expected_next": "GOVERNED_PROFILE_UPDATE"
+    },
+    {
+      "id": "DEPLOY_EDGE",
+      "request": "Desplegar una Supabase Edge Function",
+      "initial_channel": "SISTEMA",
+      "initial_task": "RESOLVE_DEPLOY_OPERATION_AND_CURRENT_PERMISSION",
+      "expected_next": "CANDIDATE_READ_ONLY_MEANS_NO_DEPLOY"
+    }
+  ]
+}
