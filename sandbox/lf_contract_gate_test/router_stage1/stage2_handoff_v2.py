@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Non-executing Stage 1 V2 -> existing LF Stage 2 handoff.
+"""Non-executing Stage 1 V2 -> existing LF Stage 2 compatibility handoff.
+
+V2 canonical input uses negocio_codigo and never exposes the retired `sistema`
+field. The temporary V1 payload may synthesize `sistema` internally because the
+currently deployed lf_router_route_v1 contract still requires it.
 
 Never calls Supabase and never grants execution. Business-specific handlers,
 canonical target resolution and admission belong to Stage 2 and its authority.
