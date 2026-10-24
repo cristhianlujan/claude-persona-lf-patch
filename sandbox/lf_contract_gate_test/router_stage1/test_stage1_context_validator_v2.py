@@ -64,6 +64,20 @@ class Stage1V2(unittest.TestCase):
         self.assert_block(base(sistema="OTRO", negocio_codigo="UNKNOWN_BIZ"),
                           "NEGOCIO_NO_REGISTRADO_EN_V2")
 
+    def test_future_registered_business_does_not_need_new_channel(self):
+        future = base(sistema="OTRO", negocio_codigo="NEWBIZ")
+        unregistered = validate(future)
+        self.assertFalse(unregistered["valid"], unregistered)
+        self.assertIn("NEGOCIO_NO_REGISTRADO_EN_V2", unregistered["codes"])
+        registered = validate(future, registered_businesses={"LF", "SALY", "NEWBIZ"})
+        self.assertTrue(registered["valid"], registered)
+        self.assertEqual(registered["next_step"], "SYSTEM_NOT_SUPPORTED")
+
+    def test_invalid_registry_fails_closed(self):
+        out = validate(base(), registered_businesses={"LF", "not a business"})
+        self.assertFalse(out["valid"], out)
+        self.assertIn("CATALOGO_NEGOCIOS_INVALIDO", out["codes"])
+
     def test_legacy_v1_shape_is_preserved(self):
         normalized = normalize_to_v1(base())
         self.assertEqual(normalized["schema_version"], "LF_ROUTER_STAGE1_V1")
