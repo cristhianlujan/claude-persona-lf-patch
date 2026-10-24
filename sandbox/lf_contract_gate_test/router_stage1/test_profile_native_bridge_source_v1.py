@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
 MIGRATIONS = ROOT / "supabase" / "migrations"
-WORKFLOW = ROOT / ".github" / "workflows" / "lf-profile-native-execution-bridge.yml"
 
 
 class ProfileNativeBridgeSourceV1(unittest.TestCase):
@@ -14,7 +12,6 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
         matches = list(MIGRATIONS.glob("*_lf_profile_native_execution_bridge_v1.sql"))
         assert len(matches) == 1, matches
         cls.sql = matches[0].read_text(encoding="utf-8")
-        cls.workflow = WORKFLOW.read_text(encoding="utf-8")
 
     def test_bridge_is_service_role_only(self):
         self.assertIn("lf_profile_native_bridge_begin_v1", self.sql)
@@ -39,12 +36,6 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.assertIn(required, self.sql)
         self.assertNotIn("CREATE TABLE", self.sql)
 
-    def test_input_governance_is_not_forced_for_canonical_read(self):
-        self.assertIn("input_validate", self.sql)
-        self.assertIn("router_reentry_required", self.sql)
-        self.assertIn("NATIVE_MODEL_INPUT_READY", self.sql)
-        self.assertIn("expected_clean_step_count',7", self.sql)
-
     def test_channel_context_trust_is_explicit(self):
         self.assertIn("PROFILE_NATIVE_BRIDGE_TRUST_V1_SOURCE_DRIFT", self.sql)
         self.assertIn("lf_profile_execution_channel_context_v1", self.sql)
@@ -58,30 +49,37 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
         self.assertIn("'terminal_authority_ready',false", self.sql)
         self.assertNotIn("PASS_INDEPENDENT_SEMANTIC", self.sql)
 
-    def test_pull_request_target_never_checks_out_head(self):
-        self.assertIn("pull_request_target:", self.workflow)
-        self.assertIn("ref: refs/heads/main", self.workflow)
-        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", self.workflow)
-        self.assertIn("github.event.pull_request.user.login == github.repository_owner", self.workflow)
-        self.assertNotIn("ref: ${{ github.event.pull_request.head.sha }}", self.workflow)
-        self.assertNotIn("actions/checkout@v4\n        with:\n          ref: ${{", self.workflow)
+    def test_exact_login_rules_canary_is_prepared_by_train(self):
+        self.assertIn("Dame las reglas en el login B2B", self.sql)
+        self.assertIn("READ_PRODUCT_DEFINITION", self.sql)
+        self.assertIn("B2B-AUTH-001", self.sql)
+        self.assertIn("PERFIL-PRODUCT-DIRECTOR-LF", self.sql)
+        self.assertIn("NOT_REQUIRED_CANONICAL_READ", self.sql)
+        self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_PREPARE_FAILED", self.sql)
+        self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_IG_NOT_SKIPPED", self.sql)
+        self.assertIn("PROFILE_NATIVE_LOGIN_RULES_CANARY_STEP_COUNT", self.sql)
+        self.assertIn("expected_clean_step_count',7", self.sql)
 
-    def test_untrusted_pr_is_data_only_and_path_bounded(self):
-        self.assertIn("sandbox\\/lf_profile_native_requests", self.workflow)
-        self.assertIn("PROFILE_NATIVE_BRIDGE_UNTRUSTED_PATH", self.workflow)
-        self.assertIn("Fetch untrusted payload as data only", self.workflow)
-        self.assertIn("gh api", self.workflow)
-        self.assertIn("PROFILE_NATIVE_BRIDGE_LITERAL_NOT_ALLOWED_V1", self.workflow)
-        self.assertIn("Dame las reglas en el login B2B", self.workflow)
-
-    def test_workflow_uses_existing_db_secret_and_real_validator(self):
-        self.assertIn("LF_SUPABASE_DB_PASSWORD", self.workflow)
-        self.assertIn("environment: lf-merge-train", self.workflow)
+    def test_canary_source_is_exact_and_content_bound(self):
         self.assertIn(
-            "profiles/product_director_lf/validators/validate_product_director_output.py",
-            self.workflow,
+            "fc88aca0874f3bee7d4dbe29379e975989b26cb2",
+            self.sql,
         )
-        self.assertIn("PASS_PROFILE_NATIVE_BRIDGE_PRODUCT_VALIDATOR", self.workflow)
+        self.assertIn(
+            "sha256:14d57a7709da9dd88ae1e2c5f3c2e48df91093a2afa470e63422e205707fd573",
+            self.sql,
+        )
+        self.assertIn("profiles/product_director_lf/SKILL.md", self.sql)
+
+    def test_no_new_privileged_ci_transport_is_created(self):
+        forbidden = (
+            "pull_request_target",
+            "LF_SUPABASE_DB_PASSWORD",
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "supabase functions deploy",
+        )
+        for value in forbidden:
+            self.assertNotIn(value, self.sql)
 
 
 if __name__ == "__main__":
