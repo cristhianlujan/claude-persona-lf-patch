@@ -59,26 +59,40 @@ La propuesta de Stage 1 debe producir `canal_candidato`, `intencion_tipificada`,
 
 **Activacion pendiente:** la documentación y el JSON del PR especifican el comportamiento, pero la funcion SQL `lf_router_route_v1` todavia no consume `canal_candidato`; requiere integracion y pruebas propias posteriores por Merge Train. No declarar la politica desplegada desde este PR.
 
-## Contexto de producto y alcance (separado del canal)
+## Canal, Negocio y Alcance dinámico
 
-**Tres dimensiones independientes:** `canal_candidato` indica qué trabajo; `producto_codigo` indica en qué producto (`LF`, `SALY` u otro registrado); `alcance` indica dónde aplica (producto, grupo corporativo, empresa, registro, conjunto explícito de productos). No crear combinaciones fijas como `OPERACIONES_LF` o `PROGRAMACION_SALY`.
+**Dimensiones acordadas:**
 
-**Compatibilidad:** en `LF_ROUTER_STAGE1_V1` ya existe `sistema` con valores `LF|SALY|OTRO|DESCONOCIDO`; representa **producto destino** y nunca el canal. Se propone `producto_codigo` como nombre canónico en el contrato futuro y un normalizador explícito que proyecte la versión anterior sin romper consumidores existentes. **La función SQL actual sigue aceptando exclusivamente LF para continuar**; reconocer SALY no implica poder despachar a sus operaciones.
+- **Canal** (solo tres): `PRODUCTO`, `PROGRAMACION`, `OPERACIONES`. El canal Producto mantiene su nombre y responde a DEFINICIONES del negocio, no identifica a cuál negocio corresponde el pedido.
+- **Negocio**: `negocio_codigo` = `LF`, `SALY` u otro negocio registrado. Responde «¿de qué negocio hablamos?». Un negocio no equivale a una empresa cliente de dicho negocio.
+- **Alcance**: **opcional, determinado a demanda** por el objeto mencionado en la solicitud y los datos canónicos específicos del negocio. NO es una lista fija de tipos ni se resuelve enteramente en Stage 1.
 
-**Ámbito organizacional:** `lf_ops.b2b_corporate_groups` (`group_id`) -> `lf_ops.b2b_corporate_group_companies` -> `lf_ops.empresas` (`company_id`) es la jerarquia existente verificada de LF. Una empresa cliente/tenant no es sinónimo de producto LF ni de la organización dueña del producto. El usuario puede indicar el nombre de una empresa, pero el identificador real, la pertenencia al grupo y permisos deben venir de la sesión/resolvedores autorizados del servidor. La unidad operativa u otras jerarquías futuras no se inventan hasta registrarlas.
+**Compatibilidad:** el actual `LF_ROUTER_STAGE1_V1` todavía usa `sistema` con valores `LF|SALY|OTRO|DESCONOCIDO`. En ese contrato **sistema equivale al negocio destino, no al canal**. La nueva denominación `negocio_codigo` es candidata y requiere adaptador versionado desde `sistema`; no se cambia furtivamente el SQL activo. Hoy `lf_router_route_v1` solo continúa solicitudes de LF; SALY no se activa por tener nombre definido en este documento. Una vinculación y catálogo autoritativo de negocios deben verificarse antes de extender el enrutamiento; no se presume que exista ya un registro multinegocio listo.
 
-**Selección:** señales explícitas del producto, producto activo en sesión confiable y binding canónico del activo permiten proponer `producto_codigo`. La conversación previa es solo indicio; no autoriza seleccionar ni entrar a una empresa distinta. Si es materialmente ambiguo, una pregunta. Para trabajos verdaderamente transversales a más de un producto se utiliza lista explícita `productos_afectados` y se verifica cada autoridad; nunca `ALL` implícito.
+### ¿Cómo se determina el alcance sin construir un catálogo gigante?
 
-| Solicitud | Canal | Producto | Alcance |
+1. **Extraer el objeto mencionado**: «login B2B» sugiere una pantalla; «oferta» sugiere un registro comercial; «empresa ABC» sugiere ámbito de empresa. Son **pistas**, no referencias canónicas ni permisos.
+2. **Determinar si la operación realmente necesita alcance**. Una definición general o consulta conceptual puede tener `alcance=null` / `NOT_REQUIRED`; un cambio de pantalla o consulta de información privada sí necesita objeto concreto.
+3. **Reutilizar el resolvedor/catálogo de activos del negocio** y metadatos de la operación. Buscar la pantalla en definiciones de LF, la oferta en el servicio aprobado de LF o la empresa en el contexto de sesión. No consultar tablas arbitrarias ni inventar IDs.
+4. **Validar el binding** (`target_type`, `target_hint`, `target_ref`, `resolution_status`) y los permisos **solo cuando el trabajo lo requiera**. El acceso a datos de empresa se valida mediante el actor/tenant del servidor y las autorizaciones reales.
+5. Si hay varios objetos posibles, solicitar **una aclaración material**. Si falta un resolvedor/capacidad para ese negocio, devolver una brecha, no fabricar una ruta o activar Programación automáticamente.
+
+El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos de cada negocio (pantalla, regla, cliente, oferta, solicitud, liquidación, lote, integración, etc.). El Router conserva el contrato genérico y consulta las definiciones canónicas. No debe añadirse cada nuevo tipo a un `ENUM` central ni crear una tabla auxiliar para una mera clasificación.
+
+**Fuente ya verificada en LF, pero solo para esa parte del negocio:** `lf_ops.b2b_corporate_groups` (`group_id`) + `lf_ops.b2b_corporate_group_companies` + `lf_ops.empresas` (`company_id`). No representan por sí mismas todos los alcances posibles ni autorizan consultar datos del cliente. No se traslada esa jerarquía automáticamente a SALY u otros negocios.
+
+| Solicitud | Canal | Negocio | Alcance necesario |
 |---|---|---|---|
-| «Estado de mi oferta en LF» | OPERACIONES | LF | Registro autorizado |
-| «Estado de mi adelanto en SALY» | OPERACIONES | SALY | Registro autorizado; ruta SALY aún no habilitada por Router LF |
-| «Pagos de mi empresa en LF» | OPERACIONES | LF | Empresa verificada de sesión |
-| «Consolidado de un grupo corporativo en LF» | OPERACIONES | LF | Grupo y empresas con acceso verificado |
-| «Definir expiración de sesión para LF y SALY» | PRODUCTO | LF + SALY explícitos | Multiproducto, decisiones/aprobaciones separadas |
-| «Estado de mi solicitud», sin otro contexto | Candidato OPERACIONES | No resuelto | Solicitar desambiguación antes de despachar |
+| «Cambia el texto del Login B2B de LF» | PRODUCTO | LF | Pantalla canónica concreta |
+| «Estado de mi oferta en LF» | OPERACIONES | LF | Oferta/cliente autorizados si existe handler |
+| «Consulta mis adelantos de SALY» | OPERACIONES | SALY | Solicitud/empleado autorizado; no habilitado aún por Router LF |
+| «Pagos de mi empresa en LF» | OPERACIONES | LF | Empresa vinculada en sesión |
+| «Explica qué hace el canal Programación» | Respuesta directa | No requerido | No requerido |
+| «Revisa una regla que aplique a LF y SALY» | PRODUCTO | LF y SALY explícitos | Regla, con autoridad por cada negocio |
 
-**No confundir dimensiones:** `canal` no es identidad de producto, `producto` no es empresa, el `alcance` no es un permiso. El Router clasifica el pedido y Stage 2 valida producto exacto, capacidad de ese producto y scope autorizado, todo previo a datos/efectos.
+En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
+
+**Implementación futura:** introducir `negocio_codigo` y una descripción de `alcance` opcional en la ampliación compatible de Stage 1; resolver referencias exactas y derechos en Stage 2 o en el handler autorizado de cada negocio. El contrato y ejemplos de este PR son **SOURCE_ONLY_CANDIDATE**, no una capacidad operativa conectada.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
