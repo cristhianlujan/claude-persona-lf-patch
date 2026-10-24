@@ -1,7 +1,6 @@
 {
   "solution_ref": "gate2-gpt-native-bridge-20261024-v1",
   "paths": {
-    ".github/workflows/lf-router-level2-advisory-tests.yml": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/changesets/gate2-gpt-native-bridge-20261024-v1.json": "CHANGESET_MANIFEST"
   }
