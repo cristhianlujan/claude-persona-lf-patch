@@ -90,7 +90,6 @@
     "product_can_be_definition_table_other_than_rules": true,
     "profile_or_skill_lifecycle": "TRANSVERSAL_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
     "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
-    "system_business_operations_scope": "OPERACIONES",
     "programming_lifecycle_includes": [
       "ANALYSIS",
       "DESIGN_TECHNICAL_SOLUTION",
@@ -233,7 +232,6 @@
       "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
     }
   ],
-  "channel_name_is_candidate": false,
   "channel_selection_contract": {
     "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
     "state": "DEPLOYED_LF_V2",
