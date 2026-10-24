@@ -76,6 +76,8 @@ on:
       - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
       - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
       - 'supabase/migrations/*lf_profile_native_execution_bridge_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_login_rules_output_v1.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json'
       - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
@@ -245,6 +247,21 @@ jobs:
       - name: Execute native profile bridge trust-boundary tests
         working-directory: sandbox/lf_contract_gate_test/router_stage1
         run: python3 -m unittest -v test_profile_native_bridge_source_v1
+
+      - name: Validate Login B2B Product Director RAW with canonical validator
+        run: |
+          set -euo pipefail
+          RAW="sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json"
+          OUT="$(mktemp)"
+          python3 profiles/product_director_lf/validators/validate_product_director_output.py < "$RAW" > "$OUT"
+          cat "$OUT"
+          python3 - "$OUT" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          if data.get("valid") is not True or data.get("blocking_codes"):
+              raise SystemExit("FAIL_LOGIN_B2B_PRODUCT_DIRECTOR_RAW:"+json.dumps(data,sort_keys=True))
+          print("PASS_LOGIN_B2B_PRODUCT_DIRECTOR_RAW")
+          PY
 
       - name: Execute positive and negative level2 handoff contract tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
