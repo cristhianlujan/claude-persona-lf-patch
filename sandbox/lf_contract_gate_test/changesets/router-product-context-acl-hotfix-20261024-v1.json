@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-product-context-acl-hotfix-20261024-v1",
+  "paths": {
+    "supabase/migrations/20261024150000_lf_router_product_context_acl_hotfix_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-product-context-acl-hotfix-20261024-v1.json": "CHANGESET_MANIFEST",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+  }
+}
