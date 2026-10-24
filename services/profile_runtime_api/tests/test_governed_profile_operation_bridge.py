@@ -389,6 +389,16 @@ class GovernedBridgeOrderingTest(unittest.TestCase):
         self.assertIn("lf_profile_execution_channel_context_v1", source)
         self.assertIn("context.get(\"status\") == \"READY\" and handoff is not None", source)
 
+    def test_input_governance_is_owned_by_input_validate_for_handoff_rows(self) -> None:
+        source = Path(worker.__file__).read_text()
+        self.assertIn("lf_profile_execution_input_validate_v1", source)
+        self.assertIn("HETZNER_PROFILE_INPUT_VALIDATE_NOT_READY", source)
+        self.assertIn("Legacy compatibility for queue rows created before router handoffs", source)
+        handoff_pos = source.index("if handoff is not None:", source.index("input_evidence_ref"))
+        input_gate_pos = source.index("lf_profile_execution_input_validate_v1", handoff_pos)
+        legacy_scope_pos = source.index("Legacy compatibility for queue rows created before router handoffs", handoff_pos)
+        self.assertLess(input_gate_pos, legacy_scope_pos)
+
     def test_terminal_failure_reconciler_accepts_only_canonical_outcomes(self) -> None:
         request_id = claimed()["request_id"]
         class Cursor:
