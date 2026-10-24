@@ -103,7 +103,7 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
             errors.append("RAZON_SELECCION_REQUERIDA")
         if business is not None and business not in allowed:
             errors.append("NEGOCIO_NO_REGISTRADO_EN_V2")
-        if systems in BUSINESSES:
+        if systems in allowed:
             if business != systems or businesses:
                 errors.append("NEGOCIO_NO_COINCIDE_CON_SISTEMA")
         elif business is not None and (
