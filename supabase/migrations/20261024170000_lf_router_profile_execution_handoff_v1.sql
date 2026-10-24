@@ -618,6 +618,151 @@ REVOKE ALL ON FUNCTION programacion.fn_lf_profile_runtime_enqueue_authorized_v1(
 GRANT EXECUTE ON FUNCTION programacion.fn_lf_profile_runtime_enqueue_authorized_v1(jsonb,text,text)
   TO service_role;
 
+CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_after_gate2_v1(
+  p_request jsonb,
+  p_result jsonb,
+  p_channel text,
+  p_business text,
+  p_scope jsonb,
+  p_executor_mode text,
+  p_actor_execution_id text DEFAULT NULL,
+  p_github_backup_reason text DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog','public'
+AS $fn$
+DECLARE
+  v_built jsonb;
+  v_handoff jsonb;
+  v_mode text:=upper(nullif(btrim(coalesce(p_executor_mode,'')),''));
+  v_profile text;
+  v_slug text;
+  v_path text;
+  v_execution_id text;
+  v_actor text;
+  v_begin jsonb;
+  v_remote jsonb;
+BEGIN
+  v_built:=public.lf_router_profile_execution_handoff_v1(
+    p_request,p_result,p_channel,p_business,p_scope
+  );
+  IF v_built->>'status' IS DISTINCT FROM 'READY'
+     OR jsonb_typeof(v_built->'handoff')<>'object' THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_GATE2_HANDOFF_NOT_READY',
+      'handoff_result',v_built,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_handoff:=v_built->'handoff';
+  v_profile:=v_handoff->>'profile_code';
+
+  IF v_mode NOT IN ('GPT_NATIVE','CLAUDE_NATIVE','REMOTE_API') THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_EXECUTOR_MODE_REQUIRED',
+      'profile_code',v_profile,
+      'allowed_executor_modes',jsonb_build_array('GPT_NATIVE','CLAUDE_NATIVE','REMOTE_API'),
+      'router_reentry_required',false
+    );
+  END IF;
+
+  IF v_mode='REMOTE_API' THEN
+    v_remote:=programacion.fn_lf_profile_runtime_enqueue_authorized_v1(
+      v_handoff,
+      coalesce(nullif(btrim(p_actor_execution_id),''),'ACT-0001-GATE2'),
+      p_github_backup_reason
+    );
+    RETURN v_remote||jsonb_build_object(
+      'gate2_materialized',v_remote->>'status' IN ('PENDING','NATIVE_EXECUTOR_REQUIRED'),
+      'router_profile_handoff',v_handoff,
+      'router_reentry_required',false,
+      'return_to_router_after_profile_result',true
+    );
+  END IF;
+
+  SELECT a.metadata->>'profile_slug',
+         coalesce(
+           nullif(a.metadata->>'entrypoint_path',''),
+           case
+             when a.ruta_esperada like '%.md' then a.ruta_esperada
+             when nullif(a.ruta_esperada,'') is not null
+               then rtrim(a.ruta_esperada,'/')||'/SKILL.md'
+             else null
+           end
+         )
+    INTO v_slug,v_path
+  FROM public.lf_activos a
+  WHERE a.codigo_activo=v_profile
+    AND a.tipo_activo='PERFIL'
+    AND a.archived_at IS NULL
+  LIMIT 1;
+
+  IF nullif(v_slug,'') IS NULL OR nullif(v_path,'') IS NULL THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_GATE2_SOURCE_BINDING_UNRESOLVED',
+      'profile_code',v_profile,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_execution_id:='EXEC-PROFILE-GATE2-'||upper(substr(v_handoff->>'request_sha256',1,24));
+  v_actor:=coalesce(nullif(btrim(p_actor_execution_id),''),v_execution_id);
+
+  v_begin:=public.lf_profile_execution_begin_from_handoff_v1(
+    v_handoff,
+    v_mode,
+    v_execution_id,
+    'router-profile-gate2:'||(v_handoff->>'request_sha256')||':'||v_profile,
+    v_actor,
+    'cristhianlujan/claude-persona-lf-patch',
+    v_path,
+    jsonb_build_object(
+      'gate2_auto_materialized',true,
+      'channel',p_channel,
+      'business',p_business
+    )
+  );
+
+  IF v_begin->>'status' IS DISTINCT FROM 'READY' THEN
+    RETURN v_begin||jsonb_build_object(
+      'router_profile_handoff',v_handoff,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  RETURN v_begin||jsonb_build_object(
+    'status','NATIVE_EXECUTION_READY',
+    'gate2_materialized',true,
+    'executor_mode',v_mode,
+    'profile_code',v_profile,
+    'profile_slug',v_slug,
+    'profile_source_path',v_path,
+    'router_profile_handoff',v_handoff,
+    'next_action','EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT',
+    'router_reentry_required',false,
+    'return_to_router_after_profile_result',true
+  );
+END
+$fn$;
+
+REVOKE ALL ON FUNCTION public.lf_router_profile_execution_after_gate2_v1(
+  jsonb,jsonb,text,text,jsonb,text,text,text
+) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_router_profile_execution_after_gate2_v1(
+  jsonb,jsonb,text,text,jsonb,text,text,text
+) TO service_role;
+
+COMMENT ON FUNCTION public.lf_router_profile_execution_after_gate2_v1(
+  jsonb,jsonb,text,text,jsonb,text,text,text
+) IS
+'Consumes a resolved semantic Gate 2 once and materializes EJECUCION_PERFIL_LF. It never re-routes the same decision. Native modes begin the canonical operation; REMOTE_API uses the authorized queue only when admitted.';
+
 -- Stage2 PRODUCTO no longer performs Product work itself.
 DO $patch_route$
 DECLARE
@@ -663,11 +808,11 @@ BEGIN
     ||E'        ''gate2_request'',v_rs->''semantic_handoff_v2'',\n'
     ||E'        ''gate2_result_contract'',''LF_ROUTER_SEMANTIC_RESULT_V1'',\n'
     ||E'        ''after_gate2_handoff_builder'',''public.lf_router_profile_execution_handoff_v1'',\n'
+    ||E'        ''gate2_pass_entrypoint'',''public.lf_router_profile_execution_after_gate2_v1'',\n'
     ||E'        ''siguiente_operacion'',jsonb_build_object(\n'
     ||E'          ''operation_code'',''EJECUCION_PERFIL_LF'',\n'
-    ||E'          ''entrypoint'',''ROUTER_AUTHORIZED_HANDOFF_ONLY'',\n'
-    ||E'          ''native_begin'',''public.lf_profile_execution_begin_from_handoff_v1'',\n'
-    ||E'          ''remote_enqueue'',''programacion.fn_lf_profile_runtime_enqueue_authorized_v1'',\n'
+    ||E'          ''entrypoint'',''GATE2_AUTO_MATERIALIZER'',\n'
+    ||E'          ''materializer'',''public.lf_router_profile_execution_after_gate2_v1'',\n'
     ||E'          ''context_hydrator'',''public.lf_profile_execution_channel_context_v1'',\n'
     ||E'          ''router_reentry_before_execution'',false,\n'
     ||E'          ''return_to_router_after_profile_result'',true\n'
@@ -700,7 +845,8 @@ BEGIN
   IF position('PRODUCTO_CONTEXTO_CANONICO' in v_route_def)>0
      OR position('lf_router_product_context_v1(' in substring(v_route_def from position('IF v_channel=''PRODUCTO''' in v_route_def) for 2500))>0
      OR position('PRODUCTO_GATE2_PERFIL' in v_route_def)=0
-     OR position('ROUTER_AUTHORIZED_HANDOFF_ONLY' in v_route_def)=0
+     OR position('GATE2_AUTO_MATERIALIZER' in v_route_def)=0
+     OR position('lf_router_profile_execution_after_gate2_v1' in v_route_def)=0
   THEN
     RAISE EXCEPTION 'PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK';
   END IF;
