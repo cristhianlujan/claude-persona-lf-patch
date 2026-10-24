@@ -41,6 +41,15 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
         self.assertIn("PROFILE_NATIVE_BRIDGE_TRUST_V1_SOURCE_DRIFT", self.sql)
         self.assertIn("lf_profile_execution_channel_context_v1", self.sql)
 
+    def test_channel_context_event_uses_operational_envelope(self):
+        self.assertIn("'evidence_schema_version','operational-event/v2'", self.sql)
+        self.assertIn("'acceptance_declared',false", self.sql)
+        self.assertIn("'occurred_at',clock_timestamp()", self.sql)
+        self.assertIn(
+            "'purpose','Hydrate bounded channel-specific Product context for governed profile execution.'",
+            self.sql,
+        )
+
     def test_producer_stops_before_independent_semantic_judge(self):
         self.assertIn("NATIVE_PRODUCER_VALIDATED", self.sql)
         self.assertIn("expected_clean_step_count',9", self.sql)
