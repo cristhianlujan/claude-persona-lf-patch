@@ -106,27 +106,46 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertEqual(next(x for x in self.p["examples"] if x["id"] ==
                               "DEFINE_AND_IMPLEMENT")["initial_channel"], "PRODUCTO")
 
-    def test_product_is_independent_from_channel_and_legacy_sistema(self):
-        contract = self.p["product_context_contract"]
+    def test_business_is_independent_from_channel_and_legacy_sistema(self):
+        contract = self.p["business_context_contract"]
         self.assertEqual(contract["channel_field"], "canal_candidato")
-        self.assertEqual(contract["canonical_product_field"], "producto_codigo")
-        self.assertEqual(contract["legacy_stage1_product_field"], "sistema")
+        self.assertEqual(contract["canonical_business_field"], "negocio_codigo")
+        self.assertEqual(contract["legacy_stage1_business_field"], "sistema")
         self.assertEqual(contract["scoped_context"]["company_ref"], "company_id")
         self.assertTrue(contract["scoped_context"]["company_scope_must_be_bound_server_side"])
         self.assertTrue(contract["scoped_context"]["group_membership_must_be_verified"])
-        self.assertTrue(contract["scoped_context"]["product_owner_org_not_equivalent_to_customer_company"])
+        self.assertTrue(contract["scoped_context"]["business_owner_org_not_equivalent_to_customer_company"])
 
-    def test_same_channel_different_products_and_cross_scope(self):
-        x = {e["id"]: e for e in self.p["product_scope_examples"]}
+    def test_same_channel_different_businesses_and_cross_scope(self):
+        x = {e["id"]: e for e in self.p["business_scope_examples"]}
         self.assertEqual(x["LF_OFFER_STATUS"]["canal"], "OPERACIONES")
         self.assertEqual(x["SALY_ADVANCE_STATUS"]["canal"], "OPERACIONES")
-        self.assertEqual(x["LF_OFFER_STATUS"]["producto_codigo"], "LF")
-        self.assertEqual(x["SALY_ADVANCE_STATUS"]["producto_codigo"], "SALY")
-        self.assertEqual(x["LF_GROUP_REPORT"]["scope_kind"], "GRUPO_CORPORATIVO")
-        self.assertEqual(x["LF_COMPANY_PAYMENTS"]["scope_kind"], "EMPRESA")
-        self.assertEqual(x["SHARED_AUTH_RULE"]["productos_afectados"], ["LF", "SALY"])
-        self.assertIsNone(x["UNSCOPED_AMBIGUOUS"]["producto_codigo"])
+        self.assertEqual(x["LF_OFFER_STATUS"]["negocio_codigo"], "LF")
+        self.assertEqual(x["SALY_ADVANCE_STATUS"]["negocio_codigo"], "SALY")
+        self.assertEqual(x["LF_GROUP_REPORT"]["scope_hint"], "GRUPO_CORPORATIVO")
+        self.assertEqual(x["LF_COMPANY_PAYMENTS"]["scope_hint"], "EMPRESA")
+        self.assertEqual(x["SHARED_AUTH_RULE"]["negocios_afectados"], ["LF", "SALY"])
+        self.assertIsNone(x["UNSCOPED_AMBIGUOUS"]["negocio_codigo"])
 
+
+    def test_dynamic_scope_is_optional_and_extensible(self):
+        ctx = self.p["business_context_contract"]
+        rules = ctx["scoped_context"]
+        self.assertEqual(rules["scope_type_model"], "EXTENSIBLE_REGISTERED_TARGET_TYPES_NOT_FIXED_ENUM")
+        self.assertTrue(rules["resolve_only_when_needed"])
+        self.assertTrue(rules["do_not_create_scope_rows_for_classification"])
+        self.assertIn("NOT_REQUIRED", rules["target_resolution_status"])
+        self.assertIn("UNRESOLVED", rules["target_resolution_status"])
+        self.assertTrue(self.p["channel_selection_contract"]["scope_is_optional"])
+        self.assertTrue(self.p["channel_selection_contract"]["scope_resolver_is_business_specific"])
+        self.assertTrue(self.p["decision_policy"]["scope_can_expand_through_existing_canonical_resolvers"])
+
+    def test_no_scope_for_general_question(self):
+        examples = {e["id"]: e for e in self.p["business_scope_examples"]}
+        self.assertFalse(examples["GENERAL_DESCRIPTION_NO_SCOPE"]["scope_required"])
+        self.assertIsNone(examples["GENERAL_DESCRIPTION_NO_SCOPE"]["scope_hint"])
+        self.assertEqual(examples["LF_LOGIN_COMPONENT"]["scope_hint"], "PANTALLA")
+        self.assertEqual(examples["FUTURE_SCOPE_TYPE"]["scope_hint"], "REGLA")
 
 
 if __name__ == "__main__":
