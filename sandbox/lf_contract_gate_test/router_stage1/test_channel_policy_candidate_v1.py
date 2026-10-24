@@ -33,6 +33,8 @@ class ChannelPolicySourceContract(unittest.TestCase):
             self.assertTrue(channel["excluded"])
 
     def test_product_definition_before_programming(self):
+        product = next(c for c in self.p["channels"] if c["code"] == "PRODUCTO")
+        self.assertIn("READ_PRODUCT_DEFINITION", product["intents"])
         d = self.p["decision_policy"]
         self.assertEqual(d["product_definition_change"], "PRODUCTO_FIRST")
         self.assertEqual(d["programming_on_definition_missing_or_changed"], "RETURN_TO_PRODUCTO_NO_CODE")
@@ -252,6 +254,29 @@ class ChannelPolicySourceContract(unittest.TestCase):
         )
         self.assertFalse(
             self.p["decision_policy"]["profile_adapter_is_input_governance_authority"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_binding_semantics"],
+            "CAPABILITY_NOT_MANDATORY_EXECUTION",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_canonical_read_intents"],
+            ["READ_PRODUCT_DEFINITION"],
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_canonical_read_result"],
+            "NOT_REQUIRED_CANONICAL_READ",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_default_result"],
+            "REQUIRED_BY_TASK",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_task_authority"],
+            "ROUTER_ACTION_BINDING_SHA256",
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["profile_input_governance_scope_must_not_carry_task_metadata"]
         )
 
     def test_no_scope_for_general_question(self):
