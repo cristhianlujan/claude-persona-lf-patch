@@ -58,7 +58,7 @@ class ChannelPolicySourceContract(unittest.TestCase):
         examples = self.p["examples"]
         self.assertEqual(len(examples), len({x["id"] for x in examples}))
         self.assertEqual({x["initial_channel"] for x in examples if x["initial_channel"] is not None}, {
-            "PRODUCTO", "PROGRAMACION", "PERFILES_SKILLS", "SISTEMA"
+            "PRODUCTO", "PROGRAMACION", "OPERACIONES"
         })
         b2b = next(x for x in examples if x["id"] == "B2B_LABEL_CHANGE")
         self.assertEqual(b2b["initial_channel"], "PRODUCTO")
