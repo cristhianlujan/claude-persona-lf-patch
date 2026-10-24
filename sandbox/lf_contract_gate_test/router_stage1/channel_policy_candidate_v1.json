@@ -239,13 +239,6 @@
     "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
     "state": "SOURCE_ONLY_CANDIDATE",
     "channel_field": "canal_candidato",
-    "independent_existing_field": "sistema",
-    "sistema_values": [
-      "LF",
-      "SALY",
-      "OTRO",
-      "DESCONOCIDO"
-    ],
     "channel_values": [
       "PRODUCTO",
       "PROGRAMACION",
@@ -256,7 +249,7 @@
     "channel_is_not_profile_or_skill": true,
     "selector_inputs": [
       "texto_original",
-      "sistema",
+      "negocio_codigo",
       "accion",
       "sujeto",
       "requested_effect",
@@ -280,7 +273,12 @@
     "scope_field": "alcance",
     "scope_is_optional": true,
     "scope_resolver_is_business_specific": true,
-    "scope_values_are_not_closed_enum": true
+    "scope_values_are_not_closed_enum": true,
+    "v2_contract_fields": {
+      "canal_candidato": "Clasificacion funcional propuesta: PRODUCTO, PROGRAMACION u OPERACIONES; no concede autoridad.",
+      "negocio_codigo": "Codigo canonico del negocio al que pertenece la solicitud. En esta fase operativa: LF.",
+      "alcance": "Descriptor opcional y dinamico del objeto de trabajo; no concede permisos ni certifica target_ref."
+    }
   },
   "routing_rules": [
     {
@@ -384,9 +382,7 @@
       "ALCANCE_DINAMICO"
     ],
     "canonical_business_field": "negocio_codigo",
-    "legacy_stage1_business_field": "sistema",
-    "legacy_semantics": "The existing Stage1 sistema field is a legacy name for business destination LF/SALY/OTRO/DESCONOCIDO; it is NOT the work channel and is NOT silently renamed in deployed SQL",
-    "migration_policy": "Versioned adapter from sistema to negocio_codigo only when verified as the same business. Do not alter LF_ROUTER_STAGE1_V1 or reinterpret unrelated uses of producto_codigo without compatibility review",
+    "migration_policy": "LF_ROUTER_STAGE1_V2 expone negocio_codigo y no acepta el campo legado. Mientras el endpoint Stage2 desplegado siga en V1, el adaptador de compatibilidad deriva internamente el valor requerido por V1; ese detalle no forma parte del contrato V2.",
     "channel_field": "canal_candidato",
     "business_binding_policy": "CANONICAL_ACTIVE_BUSINESS_OR_TARGET_BINDING; LF AND SALY ARE KNOWN EXAMPLES; DO NOT GUESS OR CREATE BUSINESS CODE",
     "business_registry_implementation_status": "NEEDS_VERIFIED_AUTHORITATIVE_SOURCE_AND_PER_BUSINESS_BINDINGS; NO_NEW_REGISTRY_AUTOMATICALLY_AUTHORIZED",
@@ -470,9 +466,11 @@
       "NO_CROSS_BUSINESS_DATA_LEAK",
       "FAIL_CLOSED_FOR_UNKNOWN_BUSINESS_OR_REQUIRED_UNVERIFIED_SCOPE"
     ],
-    "unsupported_businesses": "LF_ROUTER_ROUTE_V1 currently only supports LF; recognizing SALY does not enable dispatch to SALY handlers",
+    "unsupported_businesses": "La fase actual habilita solo LF. SALY y otros negocios no forman parte de la aceptacion de este cierre.",
     "operational_selectors": "Business determines the specific authorized handler; scope resolves lazily from request/asset/handler metadata only as needed",
-    "skills_profiles_are_transversal_resources": true
+    "skills_profiles_are_transversal_resources": true,
+    "current_phase": "LF_ONLY",
+    "saly_acceptance_status": "DEFERRED_NOT_BLOCKING_LF_CLOSURE"
   },
   "business_scope_examples": [
     {
