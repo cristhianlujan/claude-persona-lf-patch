@@ -232,7 +232,7 @@ BEGIN
   IF v_schema='LF_PRODUCT_STRUCTURE_ASSESSMENT_V1' THEN
     v_status := p_event->>'structure_status';
 
-    IF v_status NOT IN ('FOUND_CANONICAL','FOUND_NON_CANONICAL','STRUCTURAL_GAP','NOT_FOUND') THEN
+    IF v_status IS NULL OR v_status NOT IN ('FOUND_CANONICAL','FOUND_NON_CANONICAL','STRUCTURAL_GAP','NOT_FOUND') THEN
       RETURN jsonb_build_object(
         'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
         'paso','INVALID_PRODUCT_STRUCTURE_ASSESSMENT',
@@ -255,6 +255,18 @@ BEGIN
     END IF;
 
     IF v_status IN ('FOUND_NON_CANONICAL','STRUCTURAL_GAP') THEN
+      IF coalesce((p_event->>'normalization_required')::boolean,false) IS NOT TRUE
+         OR p_event->'expected_canonical_location' IS NULL
+         OR jsonb_array_length(coalesce(p_event->'observed_locations','[]'::jsonb))=0 THEN
+        RETURN jsonb_build_object(
+          'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+          'paso','INVALID_PRODUCT_STRUCTURE_ASSESSMENT',
+          'subject_ref',v_subject,
+          'reason','STRUCTURAL_FINDING_REQUIRES_OBSERVED_LOCATION_EXPECTED_LOCATION_AND_NORMALIZATION',
+          'downstream_execution_allowed',false
+        );
+      END IF;
+
       RETURN jsonb_build_object(
         'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
         'paso','PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA',
@@ -290,12 +302,23 @@ BEGIN
     v_status := p_event->>'repair_status';
 
     IF v_status='REPAIRED' THEN
+      IF p_event->'canonical_structure_ref' IS NULL
+         OR jsonb_array_length(coalesce(p_event->'repair_evidence_refs','[]'::jsonb))=0 THEN
+        RETURN jsonb_build_object(
+          'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+          'paso','REPARACION_ESTRUCTURAL_EVIDENCIA_INSUFICIENTE',
+          'subject_ref',v_subject,
+          'downstream_execution_allowed',false
+        );
+      END IF;
+
       RETURN jsonb_build_object(
         'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
         'paso','PRODUCTO_REVALIDACION_POST_REPARACION',
         'canal_siguiente','PRODUCTO',
         'subject_ref',v_subject,
         'canonical_structure_ref',p_event->'canonical_structure_ref',
+        'repair_evidence_refs',p_event->'repair_evidence_refs',
         'functional_truth_write_allowed_by_repair',false,
         'next_contract','LF_PRODUCT_CANONICALIZATION_RESULT_V1',
         'downstream_execution_allowed',false
@@ -322,7 +345,9 @@ BEGIN
   IF v_schema='LF_PRODUCT_CANONICALIZATION_RESULT_V1' THEN
     v_status := p_event->>'canonical_status';
 
-    IF v_status NOT IN ('CANONICAL_CURRENT','CANONICAL_UPDATED') OR v_current IS NOT TRUE THEN
+    IF v_status NOT IN ('CANONICAL_CURRENT','CANONICAL_UPDATED')
+       OR v_current IS NOT TRUE
+       OR p_event->'canonical_definition_ref' IS NULL THEN
       RETURN jsonb_build_object(
         'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
         'paso','PRODUCTO_CURRENTNESS_PENDIENTE',
@@ -864,6 +889,10 @@ BEGIN
     'canonical_structure_ref',jsonb_build_object(
       'kind','CANONICAL_STRUCTURE',
       'ref','candidate://screen-tabs-structure'
+    ),
+    'repair_evidence_refs',jsonb_build_array(
+      'readback://schema/screen-tabs-structure',
+      'test://B2B-CARGA-003/tab-structure'
     )
   ));
 
