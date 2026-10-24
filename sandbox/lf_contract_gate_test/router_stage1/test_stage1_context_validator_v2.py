@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Positive and negative source checks for LF Stage1 V2; no live Router call."""
+import os
+import sys
 import unittest
 
+sys.path.insert(0, os.path.dirname(__file__))
 from stage1_context_validator_v2 import normalize_to_v1, validate
 
 
