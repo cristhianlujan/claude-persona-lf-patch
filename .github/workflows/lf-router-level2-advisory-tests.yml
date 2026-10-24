@@ -168,10 +168,19 @@ jobs:
           assert s3.count("BEGIN;")==1, s3.count("BEGIN;")
           assert s3.count("COMMIT;")==1, s3.count("COMMIT;")
           assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_context_v1")==1
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_cycle_v1")==1
           assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
           assert "'PRODUCTO_CONTEXTO_CANONICO'" in s3
           assert "'HINT_ONLY_NOT_SEARCH_SELECTOR'" in s3
+          assert "'STRUCTURAL_GAP'" in s3
+          assert "'PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA'" in s3
+          assert "'STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH'" in s3
+          assert "'PRODUCTO_REVALIDACION_POST_REPARACION'" in s3
+          assert "'CAPABILITY_GAP'" in s3
           assert "B2B_AUTH001_SUBMIT" in s3
+          assert "B2B-CARGA-003" in s3
+          assert "TABS_IF_APPLICABLE" in s3
+          assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
           assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
