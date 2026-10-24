@@ -48,12 +48,19 @@ def _valid_scope(scope: Any, errors: list[str]) -> None:
 def normalize_to_v1(candidate: dict[str, Any]) -> dict[str, Any]:
     """Return the exact V1-compatible fields for the existing Stage 2 route."""
     fields = (
-        "texto_original", "es_operacion", "respuesta_directa", "sistema",
+        "texto_original", "es_operacion", "respuesta_directa",
         "accion", "sujeto", "correcciones", "formas_busqueda", "ambiguo",
         "alternativas", "pregunta_usuario", "capability_hint",
         "downstream_execution_allowed",
     )
     result = {key: copy.deepcopy(candidate[key]) for key in fields if key in candidate}
+    # V2 never exposes the retired `sistema` field. It is synthesized only for
+    # the temporary V1 compatibility boundary while lf_router_route_v1 remains V1.
+    business = candidate.get("negocio_codigo")
+    if business in {"LF", "SALY"}:
+        result["sistema"] = business
+    elif business is not None:
+        result["sistema"] = "OTRO"
     result["schema_version"] = "LF_ROUTER_STAGE1_V1"
     return result
 
@@ -71,6 +78,8 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
         errors.append("CATALOGO_NEGOCIOS_INVALIDO")
     if candidate.get("schema_version") != V2_SCHEMA:
         errors.append("BAD_V2_SCHEMA_VERSION")
+    if "sistema" in candidate:
+        errors.append("CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2")
 
     normalized = normalize_to_v1(candidate)
     old = validate_v1(normalized)
@@ -80,7 +89,6 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
     channel = candidate.get("canal_candidato")
     business = candidate.get("negocio_codigo")
     transversal = candidate.get("ruta_transversal")
-    systems = candidate.get("sistema")
     businesses = candidate.get("negocios_afectados", [])
     explanation = candidate.get("razon_seleccion")
     _valid_scope(candidate.get("alcance"), errors)
@@ -103,13 +111,8 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
             errors.append("RAZON_SELECCION_REQUERIDA")
         if business is not None and business not in allowed:
             errors.append("NEGOCIO_NO_REGISTRADO_EN_V2")
-        if systems in allowed:
-            if business != systems or businesses:
-                errors.append("NEGOCIO_NO_COINCIDE_CON_SISTEMA")
-        elif business is not None and (
-            systems != "OTRO" or business in ("LF", "SALY")
-        ):
-            errors.append("NEGOCIO_NO_COINCIDE_CON_SISTEMA")
+        if business is None and not businesses:
+            errors.append("NEGOCIO_REQUERIDO_EN_V2")
         if businesses and (business is not None or len(businesses) < 2):
             errors.append("MULTINEGOCIO_INCONSISTENTE")
     else:
