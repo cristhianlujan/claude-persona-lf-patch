@@ -126,10 +126,14 @@ BEGIN
        OR EXISTS(
          SELECT 1
          FROM jsonb_array_elements(v_direct_rules) r(value)
-         WHERE jsonb_typeof(r.value)<>'object'
-           OR nullif(r.value->>'code','') IS NULL
-           OR nullif(r.value->>'title','') IS NULL
-           OR nullif(r.value->>'status','') IS NULL
+         WHERE jsonb_typeof(r.value)<>'array'
+           OR jsonb_array_length(r.value)<>3
+           OR EXISTS(
+             SELECT 1
+             FROM jsonb_array_elements(r.value) f(value)
+             WHERE jsonb_typeof(f.value)<>'string'
+               OR nullif(btrim(f.value#>>'{}'),'') IS NULL
+           )
        )
     THEN
       v_hard:=v_hard||jsonb_build_array('CANONICAL_READ_RULE_PROJECTION_INVALID');
