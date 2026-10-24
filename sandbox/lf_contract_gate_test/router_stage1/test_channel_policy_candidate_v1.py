@@ -107,6 +107,8 @@ class ChannelPolicySourceContract(unittest.TestCase):
             '"intencion_tipificada"',
             '"precondiciones_no_satisfechas"',
             '"siguiente_paso_propuesto"',
+            '"system_business_operations_scope"',
+            '"channel_name_is_candidate"',
         ):
             self.assertNotIn(forbidden, serialized)
 
