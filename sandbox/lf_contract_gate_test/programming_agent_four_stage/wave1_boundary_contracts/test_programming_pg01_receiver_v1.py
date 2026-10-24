@@ -156,8 +156,10 @@ def exercise_receiver(*, context, sql, query, check, repo):
     check("read_port_unavailable_BLOCK",blocked["code"],"READ_PORT_UNAVAILABLE")
     check("early_failure_does_not_fabricate_receipt",blocked["receipt"],None)
     check("no_new_writes_from_repeat_consume",query("(SELECT count(*) FROM private.lf_decision_context_asof_v1 WHERE decision_ref='"+good["decision_ref"]+"')"),1)
+    from test_programming_pg01_preplanning_receiver_v1 import exercise_preplanning
+    preplanning_evidence = exercise_preplanning(context=context, persisted=persisted, boundary_factory=receiver, check=check)
     return {"eight_families":"SYNTHETIC_LOCAL_BOUNDARY_CASES_EXECUTED", "historical_snapshots_executed":False,
-            "sample_accept_receipt":accepted["receipt"],"read_calls":len(calls),"operational_currentness_provider_verified":False,
+            "sample_accept_receipt":accepted["receipt"],"read_calls":len(calls),"source_preplanning":preplanning_evidence,"operational_currentness_provider_verified":False,
             "c4_implemented":False,"c7_implemented":False,"handoff_receipt_persisted":False}
 
 

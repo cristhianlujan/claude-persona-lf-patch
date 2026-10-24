@@ -64,6 +64,15 @@ on:
       - 'docs/programming-agent/router_wave/RW1_03_C2_SEMANTIC_ABI_TRANSITION_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw103_semantic_abi_v1.py'
       - 'supabase/migrations/*lf_router_rw102_c2_architecture_competition_contract_v1.sql'
+      - 'sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json'
+      - 'sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_channel_policy_candidate_v1.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py'
+      - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
+      - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -99,6 +108,8 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_V1.json'
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
+      - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -119,6 +130,63 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Execute ACT-0001 Stage1 V1/V2 and Stage2 handoff regression tests
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            sandbox/lf_contract_gate_test/router_stage1/stage1_validator_v1.py \
+            sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py \
+            sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py
+          python3 -m unittest -v \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage1_validator_v1 \
+            sandbox.lf_contract_gate_test.router_stage1.test_channel_policy_candidate_v1 \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage1_context_validator_v2 \
+            sandbox.lf_contract_gate_test.router_stage1.test_stage2_handoff_v2
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql")
+          s=p.read_text(encoding="utf-8")
+          assert s.count("BEGIN;")==1, s.count("BEGIN;")
+          assert s.count("COMMIT;")==1, s.count("COMMIT;")
+          assert s.count("CREATE OR REPLACE FUNCTION public.lf_router_stage1_validate_v2")==1
+          assert s.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2" in s
+          assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s
+          assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s
+          p2=Path("supabase/migrations/20261024130000_lf_router_product_before_programming_v1.sql")
+          s2=p2.read_text(encoding="utf-8")
+          assert s2.count("BEGIN;")==1, s2.count("BEGIN;")
+          assert s2.count("COMMIT;")==1, s2.count("COMMIT;")
+          assert s2.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "'PROGRAMACION_PRECHECK_DEFINICION'" in s2
+          assert "'PRODUCTO_PRIMERO'" in s2
+          assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s2
+          assert "V2_MIXED_MUST_START_PRODUCTO" in s2
+          assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s2
+          p3=Path("supabase/migrations/20261024133000_lf_router_product_context_resolution_v1.sql")
+          s3=p3.read_text(encoding="utf-8")
+          assert s3.count("BEGIN;")==1, s3.count("BEGIN;")
+          assert s3.count("COMMIT;")==1, s3.count("COMMIT;")
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_context_v1")==1
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_cycle_v1")==1
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "'PRODUCTO_CONTEXTO_CANONICO'" in s3
+          assert "'HINT_ONLY_NOT_SEARCH_SELECTOR'" in s3
+          assert "'STRUCTURAL_GAP'" in s3
+          assert "'PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA'" in s3
+          assert "'STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH'" in s3
+          assert "'PRODUCTO_REVALIDACION_POST_REPARACION'" in s3
+          assert "'CAPABILITY_GAP'" in s3
+          assert "B2B_AUTH001_SUBMIT" in s3
+          assert "B2B-CARGA-003" in s3
+          assert "TABS_IF_APPLICABLE" in s3
+          assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
+          assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
+          print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
+          PY
+
       - name: Execute positive and negative level2 handoff contract tests
         working-directory: sandbox/lf_contract_gate_test/canonical_route_guard
         run: python3 -m unittest -v test_router_level2_advisory_handoff_v1

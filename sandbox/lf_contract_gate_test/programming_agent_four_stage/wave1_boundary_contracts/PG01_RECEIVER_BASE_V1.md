@@ -13,8 +13,8 @@ Paulo autorizó continuar sin Claude el 23/10/2026. Revisión independiente pend
 | 2A.d | Paridad del digest comprobada en el emisor; no sustituye el acuerdo C1 con el productor |
 | 2A.g | Positivo sintético ACCEPT de frontera; execution_allowed=false |
 | 2A.h | Resultado y recibo idénticos al repetir inputs/decisiones exactos, sin redescubrimiento |
-| C4 / 2A.e | Pendiente: marco técnico |
-| C7 / 2A.f | Pendiente: suficiencia |
+| C4 / 2A.e | Validador integrado al resultado/proyección local; admisión operativa pendiente |
+| C7 / 2A.f | Validador integrado al resultado/proyección local; acuerdo A9/readback pendientes |
 | C6 persistencia / I0 | Pendiente: D7 y positivo real admitido de PR2 |
 
 ACCEPT aquí significa únicamente SOURCE_ONLY_READ_ONLY_BOUNDARY. El resultado exterior conserva execution_allowed=false y pending_gates con C4, C7 y persistencia C6. No equivale a P1, autorización de programación, PG01_CONSUMED_AND_RECONCILED ni recibo operativo admitido.
@@ -107,3 +107,19 @@ pg01_receiver_base_local_20261023.json contiene resultados y hashes de migració
 Solo desarrollo local y PR draft autorizados; no hosted apply, ready-to-merge, merge o activación. La ruta de la futura operación DB previamente devolvió BLOCK_SCOPE_SEMANTICS_UNATTESTED; no se usó como admisión y no se ejecutó ninguna escritura Supabase. Cualquier operación posterior necesita Router → ACTUALIZACION_DB_LF → PR → PASE → Merge Train.
 
 Siguiente paso: C4 y C7, proveedor operativo admitido de currentness y persistencia según D7. Revisión independiente pendiente; no cierre P1/I0.
+
+## Revisión posterior local
+
+PG01_C4_C7_LOCAL_REVIEW_V1.md documenta la corrección de currentness malformado y los validadores estructurales puros de C4/C7. No están conectados para quitar pending_gates. La nueva evidencia local es independiente del archivo previo de 97 comprobaciones. No se publicó este incremento ni se aplicó en Supabase.
+
+## Integración local posterior de C4/C7
+
+PG01_PREPLANNING_INTEGRATION_V1.md describe SourcePreplanningReceiver: marco y suficiencia ligados al contexto, preservados en la proyección y en su hash, sin ampliar el recibo de siete campos. Se mantiene el consumidor base para la frontera de lectura. 41 tests unitarios y 101 comprobaciones SQL locales; sin CI del incremento ni gates operativos cerrados.
+
+## Currentness técnico posterior
+
+PG01_TECHNICAL_CURRENTNESS_V1.md documenta TechnicalCurrentnessPort y el enlace al evaluador canónico para los pins C4/C7. Mantiene las restricciones operativas; sin proveedor calificado, presupuesto real, acuerdo A9 ni readback. La regresión actual es 60 tests unitarios y 106 comprobaciones SQL locales.
+
+## Lector exacto de fuentes
+
+PG01_EXACT_ARTIFACT_READER_V1.md describe el lector Git/RO por identidad exacta, integrado a C4 en pruebas, y el readback de fuentes reales. 76 tests unitarios y 111 comprobaciones SQL locales. La lectura verificada no acredita admisión del proveedor ni sustituye los inputs operativos faltantes.

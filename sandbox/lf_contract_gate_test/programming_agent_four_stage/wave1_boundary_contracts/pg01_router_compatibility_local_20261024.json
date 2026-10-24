@@ -1,0 +1,64 @@
+{
+  "schema_version": "PG01_ROUTER_COMPATIBILITY_LOCAL_EVIDENCE_V1",
+  "date": "2026-10-24",
+  "evidence_tier": "LOCAL_SOURCE_AND_ISOLATED_PG01_SQL",
+  "tested_commit": "2e698e2889e90d8ccc001385ff3158a6ad2c65d4",
+  "prior_receiver_commit": "eda4b8a1842498c49fd9bda806f058d0a6199e34",
+  "integrated_main": "5c4c6dd43f7011fbcbc4f064c496f92f4fd95379",
+  "upstream_paths": [
+    ".github/workflows/lf-router-level2-advisory-tests.yml",
+    "docs/programming-agent/LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1.md",
+    "sandbox/lf_contract_gate_test/changesets/router-channel-policy-20261023-v1.json",
+    "sandbox/lf_contract_gate_test/changesets/router-product-context-resolution-20261024-v1.json",
+    "sandbox/lf_contract_gate_test/changesets/router-v2-nomenclature-cleanup-20261024-v1.json",
+    "sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json",
+    "sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py",
+    "sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py",
+    "sandbox/lf_contract_gate_test/router_stage1/test_channel_policy_candidate_v1.py",
+    "sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py",
+    "sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py",
+    "supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql",
+    "supabase/migrations/20261024130000_lf_router_product_before_programming_v1.sql",
+    "supabase/migrations/20261024133000_lf_router_product_context_resolution_v1.sql"
+  ],
+  "upstream_blobs_preserved": true,
+  "receiver_and_currentness_blobs_unchanged": true,
+  "unit_tests": [
+    {
+      "suite": "pg01_unit",
+      "tests": 76,
+      "result": "SATISFACTORY_LOCAL",
+      "log_sha256": "7a51d409f48cf83a9f040934603b454d57148e2e0bdf17922f73626baf818e23"
+    },
+    {
+      "suite": "router_unit",
+      "tests": 67,
+      "result": "SATISFACTORY_LOCAL",
+      "log_sha256": "fc5792c1777f3d832628a4a370d82a04a2e2d7d08800a00112149da4ca13ad67"
+    }
+  ],
+  "sql": {
+    "assertions": 111,
+    "matched": 111,
+    "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "log_sha256": "14a482b438b1133646dc8a800bc6927000581bd373b543665855d557d73bec42",
+    "migration_sha256": "fa6c24cccdd0a5a609f4e40229fa44ce2d70ce094d5dd7984a37d06d36c1059c",
+    "historical_snapshots_replayed": false,
+    "router_sql_runtime_tested": false
+  },
+  "live_router_a9_pg01_integration_tested": false,
+  "independent_review": false,
+  "published": false,
+  "hosted_database_touched": false,
+  "planning_allowed": false,
+  "execution_allowed": false,
+  "operational_admission": false,
+  "pending": [
+    "PAULO_AUTH_AND_PUSH",
+    "EXACT_HEAD_CI",
+    "INDEPENDENT_REVIEW",
+    "A9_AGREED_MAPPING_AND_REAL_ADMITTED_POSITIVE",
+    "TECHNICAL_PROFILE_CONTROL_BUDGET_PROVIDER_ADMISSION",
+    "D7_RECEIPT_PERSISTENCE_AND_READBACK"
+  ]
+}

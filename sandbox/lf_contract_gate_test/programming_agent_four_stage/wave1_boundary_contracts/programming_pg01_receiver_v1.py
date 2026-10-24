@@ -98,7 +98,7 @@ class CanonicalCurrentnessPort:
     def __init__(self, repo: Path, provider: Callable[[ExpectedHandoff, str], dict]):
         self._repo, self._provider = repo, provider
 
-    def evaluate(self, expected: ExpectedHandoff, snapshot: dict, scope_id: str) -> dict:
+    def evaluate(self, expected: ExpectedHandoff, snapshot: dict, scope_id: str, *, additional_materials: dict | None = None) -> dict:
         packet = deepcopy(self._provider(expected, scope_id))
         if not isinstance(packet, dict) or packet.get("context_id") != expected.context_id or packet.get("context_sha256") != expected.context_sha256 or packet.get("scope_id") != scope_id:
             return {"ready": False, "decision": "UNKNOWN_FAIL_CLOSED", "reason": "CURRENTNESS_SUBJECT_MISMATCH"}
@@ -111,6 +111,14 @@ class CanonicalCurrentnessPort:
             "snapshot_authority": snapshot["authority_fingerprint_sha256"],
             "snapshot_source": snapshot["source_snapshot_sha256"],
         }
+        additional_materials = {} if additional_materials is None else additional_materials
+        if (not isinstance(additional_materials, dict)
+                or any(not isinstance(k, str) or not k.startswith("technical_")
+                       or not isinstance(v, str) or not HEX64.fullmatch(v)
+                       for k, v in additional_materials.items())
+                or set(additional_materials).intersection(expected_materials)):
+            return {"ready": False, "decision": "UNKNOWN_FAIL_CLOSED", "reason": "ADDITIONAL_MATERIALS_INVALID"}
+        expected_materials.update(additional_materials)
         materials = binding.get("materials")
         if not isinstance(materials, list) or any(not isinstance(row, dict) for row in materials):
             return {"ready": False, "decision": "UNKNOWN_FAIL_CLOSED", "reason": "CURRENTNESS_MATERIALS_MISSING"}
@@ -125,9 +133,15 @@ class CanonicalCurrentnessPort:
             return {"ready": False, "decision": "UNKNOWN_FAIL_CLOSED", "reason": "CURRENTNESS_CONTRACT_BINDING_MISMATCH"}
         result = evaluate_authority(binding, self._repo)
         # These are snapshot contract invariants, stricter than compatibility.
-        for name in ("context", "snapshot_schema", "snapshot_authority"):
+        for name in ("context", "snapshot_schema", "snapshot_authority", *additional_materials):
             if by_id[name].get("current_digest") != expected_materials[name]:
-                return {**result, "ready": False, "reason": "SNAPSHOT_REBUILD_REQUIRED:" + name}
+                # The canonical receipt is immutable. A stricter consumer
+                # invariant is a separate envelope, never a patched receipt.
+                reason = ("TECHNICAL_REVALIDATION_REQUIRED:" if name in additional_materials
+                          else "SNAPSHOT_REBUILD_REQUIRED:") + name
+                return {"schema_version": "PG01_CURRENTNESS_CONTRACT_CHECK_V1",
+                        "ready": False, "decision": result.get("decision"),
+                        "reason": reason, "authority_receipt": result}
         return result
 
 
@@ -244,8 +258,12 @@ class ReadOnlyReceiver:
             currentness = self._currentness.evaluate(expected, snapshot, scope_id)
         except Exception as exc:
             return reject_identified("CURRENTNESS_UNAVAILABLE", error_type=type(exc).__name__)
+        if not isinstance(currentness, dict):
+            return reject_identified("CURRENTNESS_RESULT_INVALID")
         if currentness.get("ready") is not True or currentness.get("decision") not in ("CURRENT", "CURRENT_REBOUND"):
             return reject_identified("CURRENTNESS_NOT_ADMISSIBLE", currentness=currentness)
         if currentness.get("bounded_validation_required") is True:
             return reject_identified("BOUNDED_VALIDATION_REQUIRED", currentness=currentness)
+        if currentness.get("bounded_validation_required") is not False:
+            return reject_identified("CURRENTNESS_RESULT_INVALID")
         return {**evidence, "state": "ACCEPT", "code": "READ_ONLY_BOUNDARY_ACCEPTED", "receipt": receipt("ACCEPT"), "material_projection": projection, "admitted_scope_ids": sorted(closure), "currentness": currentness}

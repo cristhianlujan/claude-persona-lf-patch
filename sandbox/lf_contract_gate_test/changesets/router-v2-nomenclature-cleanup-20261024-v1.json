@@ -1,0 +1,9 @@
+{
+  "solution_ref": "router-v2-nomenclature-cleanup-20261024-v1",
+  "paths": {
+    "docs/programming-agent/LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_stage1/test_channel_policy_candidate_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/router-v2-nomenclature-cleanup-20261024-v1.json": "CHANGESET_MANIFEST"
+  }
+}
