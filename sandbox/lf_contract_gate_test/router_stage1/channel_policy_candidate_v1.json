@@ -10,6 +10,7 @@
       "code": "PRODUCTO",
       "responsibility": "Definir, actualizar o verificar la fuente canónica del comportamiento/experiencia del producto, incluidas reglas y elementos de pantalla",
       "intents": [
+        "READ_PRODUCT_DEFINITION",
         "DEFINE_PRODUCT_BEHAVIOR",
         "CHANGE_PRODUCT_DEFINITION",
         "VERIFY_PRODUCT_DEFINITION"
@@ -154,7 +155,15 @@
       "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
       "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING"
     ],
-    "profile_adapter_is_input_governance_authority": false
+    "profile_adapter_is_input_governance_authority": false,
+    "profile_input_governance_binding_semantics": "CAPABILITY_NOT_MANDATORY_EXECUTION",
+    "profile_input_governance_canonical_read_intents": [
+      "READ_PRODUCT_DEFINITION"
+    ],
+    "profile_input_governance_canonical_read_result": "NOT_REQUIRED_CANONICAL_READ",
+    "profile_input_governance_default_result": "REQUIRED_BY_TASK",
+    "profile_input_governance_task_authority": "ROUTER_ACTION_BINDING_SHA256",
+    "profile_input_governance_scope_must_not_carry_task_metadata": true
   },
   "examples": [
     {
