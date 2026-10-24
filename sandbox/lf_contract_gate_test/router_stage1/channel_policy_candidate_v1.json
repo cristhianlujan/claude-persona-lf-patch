@@ -117,7 +117,24 @@
     "scope_is_optional_until_action_requires_it": true,
     "scope_can_expand_through_existing_canonical_resolvers": true,
     "on_scope_unknown": "DONT_INVENT_TARGET; PROCEED_WITHOUT_SCOPE_IF_NOT_REQUIRED; ELSE_RESOLVE_BOUNDED_OR_ASK",
-    "on_business_unknown": "BOUNDED_BUSINESS_LOOKUP_OR_ASK; NEVER_ASSUMED_CROSS_BUSINESS_DISPATCH"
+    "on_business_unknown": "BOUNDED_BUSINESS_LOOKUP_OR_ASK; NEVER_ASSUMED_CROSS_BUSINESS_DISPATCH",
+    "target_type_is_hint_not_query_selector": true,
+    "resolve_canonical_subject_before_product_context_classification": true,
+    "aggregate_product_context_preferred_when_available": true,
+    "aggregate_context_missing_fallback": "BOUNDED_CANONICAL_SEARCH_WITHOUT_TARGET_TYPE_PRE_FILTER",
+    "product_structure_assessment_statuses": [
+      "FOUND_CANONICAL",
+      "FOUND_NON_CANONICAL",
+      "STRUCTURAL_GAP",
+      "NOT_FOUND"
+    ],
+    "structural_gap_route": "PROGRAMACION_STRUCTURE_ONLY_THEN_RETURN_PRODUCTO",
+    "structural_repair_may_write_functional_truth": false,
+    "structural_repair_return_channel": "PRODUCTO",
+    "implementation_after_structural_repair_requires_product_currentness": true,
+    "product_cycle_resume_entrypoint": "public.lf_router_product_cycle_v1",
+    "profile_outputs_return_to_router_before_next_channel": true,
+    "structural_repair_no_capability_behavior": "CAPABILITY_GAP"
   },
   "examples": [
     {
@@ -273,7 +290,7 @@
     "v2_contract_fields": {
       "canal_candidato": "Clasificacion funcional propuesta: PRODUCTO, PROGRAMACION u OPERACIONES; no concede autoridad.",
       "negocio_codigo": "Codigo canonico del negocio al que pertenece la solicitud. En esta fase operativa: LF.",
-      "alcance": "Descriptor opcional y dinamico del objeto de trabajo; no concede permisos ni certifica target_ref."
+      "alcance": "Descriptor opcional y dinamico del objeto de trabajo; no concede permisos. target_type es una hipotesis semantica para coherencia/fallback y no selecciona por si solo una tabla o buscador."
     }
   },
   "routing_rules": [

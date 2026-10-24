@@ -72,6 +72,7 @@ on:
       - 'sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py'
       - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -108,6 +109,7 @@ on:
       - 'docs/programming-agent/router_wave/RW1_02_C2_ARCHITECTURE_COMPETITION_RESULT_V1.json'
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
+      - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -161,8 +163,28 @@ jobs:
           assert "'PROGRAMACION_ADMISION_REQUERIDA'" in s2
           assert "V2_MIXED_MUST_START_PRODUCTO" in s2
           assert "'OPERACIONES_CAPACIDAD_REQUERIDA'" in s2
+          p3=Path("supabase/migrations/20261024133000_lf_router_product_context_resolution_v1.sql")
+          s3=p3.read_text(encoding="utf-8")
+          assert s3.count("BEGIN;")==1, s3.count("BEGIN;")
+          assert s3.count("COMMIT;")==1, s3.count("COMMIT;")
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_context_v1")==1
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_product_cycle_v1")==1
+          assert s3.count("CREATE OR REPLACE FUNCTION public.lf_router_route_v1")==1
+          assert "'PRODUCTO_CONTEXTO_CANONICO'" in s3
+          assert "'HINT_ONLY_NOT_SEARCH_SELECTOR'" in s3
+          assert "'STRUCTURAL_GAP'" in s3
+          assert "'PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA'" in s3
+          assert "'STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH'" in s3
+          assert "'PRODUCTO_REVALIDACION_POST_REPARACION'" in s3
+          assert "'CAPABILITY_GAP'" in s3
+          assert "B2B_AUTH001_SUBMIT" in s3
+          assert "B2B-CARGA-003" in s3
+          assert "TABS_IF_APPLICABLE" in s3
+          assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
+          assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests

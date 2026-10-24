@@ -166,6 +166,35 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertTrue(self.p["channel_selection_contract"]["scope_is_optional"])
         self.assertTrue(self.p["channel_selection_contract"]["scope_resolver_is_business_specific"])
         self.assertTrue(self.p["decision_policy"]["scope_can_expand_through_existing_canonical_resolvers"])
+        self.assertTrue(self.p["decision_policy"]["target_type_is_hint_not_query_selector"])
+        self.assertTrue(self.p["decision_policy"]["resolve_canonical_subject_before_product_context_classification"])
+        self.assertTrue(self.p["decision_policy"]["aggregate_product_context_preferred_when_available"])
+        self.assertEqual(
+            self.p["decision_policy"]["aggregate_context_missing_fallback"],
+            "BOUNDED_CANONICAL_SEARCH_WITHOUT_TARGET_TYPE_PRE_FILTER",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["product_structure_assessment_statuses"],
+            ["FOUND_CANONICAL","FOUND_NON_CANONICAL","STRUCTURAL_GAP","NOT_FOUND"],
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["structural_gap_route"],
+            "PROGRAMACION_STRUCTURE_ONLY_THEN_RETURN_PRODUCTO",
+        )
+        self.assertFalse(self.p["decision_policy"]["structural_repair_may_write_functional_truth"])
+        self.assertEqual(self.p["decision_policy"]["structural_repair_return_channel"], "PRODUCTO")
+        self.assertTrue(
+            self.p["decision_policy"]["implementation_after_structural_repair_requires_product_currentness"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["product_cycle_resume_entrypoint"],
+            "public.lf_router_product_cycle_v1",
+        )
+        self.assertTrue(self.p["decision_policy"]["profile_outputs_return_to_router_before_next_channel"])
+        self.assertEqual(
+            self.p["decision_policy"]["structural_repair_no_capability_behavior"],
+            "CAPABILITY_GAP",
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
