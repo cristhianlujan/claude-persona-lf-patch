@@ -268,12 +268,11 @@ BEGIN
     p_execution_id
   ) RETURNING id INTO v_event_id;
 
-  v_budget_event_id:=nextval('private.lf_context_budget_events_v2_id_seq');
   INSERT INTO private.lf_context_budget_events_v2(
-    id,execution_id,estimated_tokens,context_status,source,recommendation,
+    execution_id,estimated_tokens,context_status,source,recommendation,
     evidence_event_id
   ) VALUES (
-    v_budget_event_id,p_execution_id,v_tokens,v_status,
+    p_execution_id,v_tokens,v_status,
     'lf_profile_execution_channel_context_v1',
     case
       when v_status='YELLOW'
@@ -281,7 +280,8 @@ BEGIN
       else null
     end,
     v_event_id
-  );
+  )
+  RETURNING id INTO v_budget_event_id;
 
   v_digest:='sha256:'||encode(
     extensions.digest(convert_to(v_capsule::text,'UTF8'),'sha256'),'hex'
