@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any
+from typing import Any, Iterable
 
 from stage1_validator_v1 import validate as validate_v1
 
 V2_SCHEMA = "LF_ROUTER_STAGE1_V2"
 CHANNELS = frozenset({"PRODUCTO", "PROGRAMACION", "OPERACIONES"})
-BUSINESSES = frozenset({"LF", "SALY"})
+DEFAULT_REGISTERED_BUSINESSES = frozenset({"LF", "SALY"})
 SCOPE_STATES = frozenset({"NOT_REQUIRED", "UNRESOLVED", "MULTIPLE_MATCHES"})
 CODE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
 TRANSVERSAL_ROUTE = "GESTION_ACTIVOS_IA"
@@ -58,11 +58,17 @@ def normalize_to_v1(candidate: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def validate(candidate: Any) -> dict[str, Any]:
+def validate(candidate: Any, registered_businesses: Iterable[str] | None = None) -> dict[str, Any]:
     """Validate V2; do not authorize dispatch. Keep V1 negative cases."""
     if not isinstance(candidate, dict):
         return {"valid": False, "codes": ["NOT_AN_OBJECT"], "next_step": "INVALID"}
     errors: list[str] = []
+    # The caller must obtain this catalog from the authoritative business registry.
+    # Only LF and SALY are current reference examples when no catalog is passed.
+    allowed = (DEFAULT_REGISTERED_BUSINESSES if registered_businesses is None
+               else frozenset(registered_businesses))
+    if not allowed or not all(isinstance(x, str) and CODE.fullmatch(x) for x in allowed):
+        errors.append("CATALOGO_NEGOCIOS_INVALIDO")
     if candidate.get("schema_version") != V2_SCHEMA:
         errors.append("BAD_V2_SCHEMA_VERSION")
 
@@ -82,7 +88,7 @@ def validate(candidate: Any) -> dict[str, Any]:
     if businesses is None:
         businesses = []
     if not isinstance(businesses, list) or not all(
-        isinstance(x, str) and x in BUSINESSES for x in businesses
+        isinstance(x, str) and x in allowed for x in businesses
     ) or len(businesses) != len(set(businesses)):
         errors.append("NEGOCIOS_AFECTADOS_INVALIDOS")
         businesses = []
@@ -95,12 +101,14 @@ def validate(candidate: Any) -> dict[str, Any]:
             errors.append("CANAL_NO_RECONOCIDO")
         if not _nonempty(explanation):
             errors.append("RAZON_SELECCION_REQUERIDA")
-        if business is not None and business not in BUSINESSES:
+        if business is not None and business not in allowed:
             errors.append("NEGOCIO_NO_REGISTRADO_EN_V2")
         if systems in BUSINESSES:
             if business != systems or businesses:
                 errors.append("NEGOCIO_NO_COINCIDE_CON_SISTEMA")
-        elif business is not None:
+        elif business is not None and (
+            systems != "OTRO" or business in ("LF", "SALY")
+        ):
             errors.append("NEGOCIO_NO_COINCIDE_CON_SISTEMA")
         if businesses and (business is not None or len(businesses) < 2):
             errors.append("MULTINEGOCIO_INCONSISTENTE")
