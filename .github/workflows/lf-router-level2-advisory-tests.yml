@@ -78,6 +78,7 @@ on:
       - 'supabase/migrations/*lf_profile_native_execution_bridge_v1.sql'
       - 'supabase/migrations/*lf_profile_native_login_rules_output_v1.sql'
       - 'supabase/migrations/*lf_profile_canonical_read_semantic_close_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_runtime_dehardcode_v1.sql'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json'
       - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
@@ -121,6 +122,7 @@ on:
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
       - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
       - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_runtime_dehardcode_v1.sql'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
@@ -299,6 +301,48 @@ jobs:
           assert "GRANT EXECUTE ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text)\n  TO service_role;" in sql
           assert "TO service_role,supabase_read_only_user" not in sql
           print("PASS_CANONICAL_READ_DETERMINISTIC_JUDGE_BOUNDARY")
+          PY
+
+      - name: Guard profile-native runtime de-hardcoding
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          matches=list(Path("supabase/migrations").glob("*_lf_profile_native_runtime_dehardcode_v1.sql"))
+          assert len(matches)==1, matches
+          sql=matches[0].read_text(encoding="utf-8")
+          required=[
+            "PROFILE_NATIVE_DEHARDCODE_BRIDGE_SOURCE_DRIFT",
+            "PROFILE_NATIVE_DEHARDCODE_JUDGE_SOURCE_DRIFT",
+            "EXECUTE_PROFILE_IN_CURRENT_GPT_NATIVE_CONTEXT",
+            "lf_router_profile_execution_handoff_validate_v1",
+            "e.target_code",
+            "metadata->>'profile_slug'",
+            "CANONICAL_READ_MATERIAL_CLAIMS_NOT_DERIVED",
+            "PROFILE_NATIVE_DEHARDCODE_HISTORICAL_RECEIPT_DRIFT",
+          ]
+          missing=[x for x in required if x not in sql]
+          assert not missing, missing
+
+          start=sql.index("CREATE OR REPLACE FUNCTION public.lf_profile_execution_canonical_read_judge_v1(")
+          end=sql.index("REVOKE ALL ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text)",start)
+          judge=sql[start:end]
+          forbidden=[
+            "PERFIL-PRODUCT-DIRECTOR-LF",
+            "product_director_lf",
+            "PRODUCT_DIRECTION_SPEC",
+            "Orchestrator",
+            "B2B-AUTH-001",
+            "EXEC-PROFILE-GATE2-",
+            "score,total",
+          ]
+          leaked=[x for x in forbidden if x in judge]
+          assert not leaked, leaked
+          assert "v_handoff->>'profile_code' IS DISTINCT FROM e.target_code" in judge
+          assert "v_out->>'worker' IS DISTINCT FROM v_profile_slug" in judge
+          assert "position(v_direct_ref in v_out_text)=0" in judge
+          assert "position(v_effective_ref in v_out_text)=0" in judge
+          print("PASS_PROFILE_NATIVE_RUNTIME_DEHARDCODE_SOURCE_GUARD")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests
