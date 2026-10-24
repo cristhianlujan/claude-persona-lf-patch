@@ -226,6 +226,17 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertFalse(
             self.p["decision_policy"]["profile_gate2_pass_requires_new_router_decision"]
         )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_owner"],
+            "EJECUCION_PERFIL_LF_INPUT_VALIDATE",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_resume_via"],
+            "EJECUCION_PERFIL_LF/input_validate",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["pending_profile_input_governance_reenters_router"]
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
