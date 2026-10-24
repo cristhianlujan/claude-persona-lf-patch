@@ -1013,7 +1013,7 @@ BEGIN
   v_prepare:=public.lf_profile_native_bridge_prepare_v1(
     v_execution_id,
     'fc88aca0874f3bee7d4dbe29379e975989b26cb2',
-    'sha256:14d57a7709da9dd88ae1e2c5f3c2e48df91093a2afa470e63422e205707fd573',
+    'sha256:1ddca16b29e65e6748f61fdc31e02081ca3990c67b079be705dde3a6a3c58209',
     v_execution_id
   );
 
@@ -1025,7 +1025,7 @@ BEGIN
   IF v_prepare->>'profile_source_ref' <>
        'github://cristhianlujan/claude-persona-lf-patch@fc88aca0874f3bee7d4dbe29379e975989b26cb2/profiles/product_director_lf/SKILL.md'
      OR v_prepare->>'profile_source_digest' <>
-       'sha256:14d57a7709da9dd88ae1e2c5f3c2e48df91093a2afa470e63422e205707fd573' THEN
+       'sha256:1ddca16b29e65e6748f61fdc31e02081ca3990c67b079be705dde3a6a3c58209' THEN
     RAISE EXCEPTION
       'PROFILE_NATIVE_LOGIN_RULES_CANARY_SOURCE_BINDING_FAILED:ref=% digest=%',
       v_prepare->>'profile_source_ref',v_prepare->>'profile_source_digest';
