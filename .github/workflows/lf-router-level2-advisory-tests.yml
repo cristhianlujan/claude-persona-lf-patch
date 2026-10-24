@@ -73,6 +73,9 @@ on:
       - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -110,6 +113,9 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -182,9 +188,40 @@ jobs:
           assert "TABS_IF_APPLICABLE" in s3
           assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
           assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
+          p4=Path("supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql")
+          s4=p4.read_text(encoding="utf-8")
+          assert s4.count("BEGIN;")==1, s4.count("BEGIN;")
+          assert s4.count("COMMIT;")==1, s4.count("COMMIT;")
+          assert "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1" in s4
+          assert "lf_router_profile_execution_handoff_validate_v1" in s4
+          assert "lf_profile_execution_begin_from_handoff_v1" in s4
+          assert "lf_profile_execution_channel_context_v1" in s4
+          assert "fn_lf_profile_runtime_enqueue_authorized_v1" in s4
+          assert "PRODUCTO_GATE2_PERFIL" in s4
+          assert "GATE2_AUTO_MATERIALIZER" in s4
+          assert "lf_router_profile_execution_after_gate2_v1" in s4
+          assert "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT" in s4
+          assert "lf_profile_execution_input_validate_v1" in s4
+          assert "fn_lf_profile_input_governance_resolve_v1" in s4
+          assert "DIRECT_PROFILE_INPUT_GOVERNANCE" in s4
+          assert "PERFIL-PRODUCT-DIRECTOR-LF" in s4
+          assert "PERFIL-UI-ARCHITECT" in s4
+          assert "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531" in s4
+          assert "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING" in s4
+          assert "EJECUCION_PERFIL_LF/input_validate" in s4
+          assert "RETRY_INPUT_VALIDATE_AFTER_INPUT_GOVERNANCE" in s4
+          assert "PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT" in s4
+          assert "router_reentry_before_execution" in s4
+          assert "PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK" in s4
+          worker=Path("services/profile_runtime_api/scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
+          assert "AUTHORIZED_HANDOFF_VALIDATED" in worker
+          assert "lf_router_profile_execution_handoff_validate_v1" in worker
+          assert "lf_profile_execution_channel_context_v1" in worker
+          assert worker.index("lf_router_profile_execution_handoff_validate_v1") < worker.index("Legacy compatibility only")
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PROFILE_EXECUTION_HANDOFF_SOURCE_INVARIANTS")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests

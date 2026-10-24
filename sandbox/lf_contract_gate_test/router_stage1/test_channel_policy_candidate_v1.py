@@ -195,6 +195,64 @@ class ChannelPolicySourceContract(unittest.TestCase):
             self.p["decision_policy"]["structural_repair_no_capability_behavior"],
             "CAPABILITY_GAP",
         )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_gate2_pass_behavior"],
+            "AUTO_MATERIALIZE_EJECUCION_PERFIL_LF",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_execution_handoff_schema"],
+            "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["authorized_profile_execution_reenters_router"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_execution_context_owner"],
+            "EJECUCION_PERFIL_LF_CONTEXT_ADMISSION",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["router_loads_profile_channel_context"]
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["profile_execution_returns_to_router_after_result"]
+        )
+        self.assertTrue(
+            self.p["decision_policy"]["executor_mode_selected_by_profile_execution_not_channel"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_gate2_pass_entrypoint"],
+            "public.lf_router_profile_execution_after_gate2_v1",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_gate2_pass_requires_new_router_decision"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_owner"],
+            "EJECUCION_PERFIL_LF_INPUT_VALIDATE",
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_resume_via"],
+            "EJECUCION_PERFIL_LF/input_validate",
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["pending_profile_input_governance_reenters_router"]
+        )
+        self.assertEqual(
+            self.p["decision_policy"]["profile_input_governance_binding_mode"],
+            "DIRECT_PROFILE",
+        )
+        self.assertEqual(
+            set(self.p["decision_policy"]["profile_input_governance_profiles"]),
+            {
+                "PERFIL-PRODUCT-DIRECTOR-LF",
+                "PERFIL-UI-ARCHITECT",
+                "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+                "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+            },
+        )
+        self.assertFalse(
+            self.p["decision_policy"]["profile_adapter_is_input_governance_authority"]
+        )
 
     def test_no_scope_for_general_question(self):
         examples = {e["id"]: e for e in self.p["business_scope_examples"]}
