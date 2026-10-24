@@ -254,8 +254,12 @@ BEGIN
     'Channel-specific context hydration for governed profile execution.',
     'INFO',
     jsonb_build_object(
+      'evidence_schema_version','operational-event/v2',
       'producer','lf_profile_execution_channel_context_v1',
+      'purpose','Hydrate bounded channel-specific Product context for governed profile execution without declaring acceptance.',
+      'occurred_at',clock_timestamp(),
       'execution_id',p_execution_id,
+      'acceptance_declared',false,
       'channel','PRODUCTO',
       'base_context_receipt_ref',p_base_context->>'context_receipt_ref',
       'context_receipt',v_capsule
