@@ -59,7 +59,7 @@ def prepare_handoff(stage1: Any, registered_businesses: Iterable[str] | None = N
         **base,
         "paso": "HANDOFF_STAGE2_LF",
         "entrypoint": "public.lf_router_route_v1",
-        "stage1_v1_payload": v1,
+        "legacy_stage1_v1_payload": v1,
         "canal_candidato": result["canal_candidato"],
         "negocio_codigo": "LF",
         "ruta_transversal": result["ruta_transversal"],
