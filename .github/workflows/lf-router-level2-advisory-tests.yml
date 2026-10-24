@@ -202,6 +202,12 @@ jobs:
           assert "lf_router_profile_execution_after_gate2_v1" in s4
           assert "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT" in s4
           assert "lf_profile_execution_input_validate_v1" in s4
+          assert "fn_lf_profile_input_governance_resolve_v1" in s4
+          assert "DIRECT_PROFILE_INPUT_GOVERNANCE" in s4
+          assert "PERFIL-PRODUCT-DIRECTOR-LF" in s4
+          assert "PERFIL-UI-ARCHITECT" in s4
+          assert "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531" in s4
+          assert "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING" in s4
           assert "EJECUCION_PERFIL_LF/input_validate" in s4
           assert "RETRY_INPUT_VALIDATE_AFTER_INPUT_GOVERNANCE" in s4
           assert "PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT" in s4
