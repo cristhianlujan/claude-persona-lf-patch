@@ -56,7 +56,7 @@ BEGIN
      OR e.operation_code<>'EJECUCION_PERFIL_LF'
      OR e.target_type<>'PERFIL'
      OR e.target_code<>'PERFIL-PRODUCT-DIRECTOR-LF'
-     OR e.status<>'IN_PROGRESS'
+     OR e.status NOT IN ('IN_PROGRESS','COMPLETED')
      OR e.manifest->>'executor_mode'<>'GPT_NATIVE'
      OR e.manifest->>'executor_provider'<>'OPENAI_CHATGPT_NATIVE'
      OR coalesce((e.manifest->>'read_only')::boolean,false) IS NOT TRUE
