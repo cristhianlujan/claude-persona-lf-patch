@@ -59,6 +59,27 @@ La propuesta de Stage 1 debe producir `canal_candidato`, `intencion_tipificada`,
 
 **Activacion pendiente:** la documentación y el JSON del PR especifican el comportamiento, pero la funcion SQL `lf_router_route_v1` todavia no consume `canal_candidato`; requiere integracion y pruebas propias posteriores por Merge Train. No declarar la politica desplegada desde este PR.
 
+## Contexto de producto y alcance (separado del canal)
+
+**Tres dimensiones independientes:** `canal_candidato` indica qué trabajo; `producto_codigo` indica en qué producto (`LF`, `SALY` u otro registrado); `alcance` indica dónde aplica (producto, grupo corporativo, empresa, registro, conjunto explícito de productos). No crear combinaciones fijas como `OPERACIONES_LF` o `PROGRAMACION_SALY`.
+
+**Compatibilidad:** en `LF_ROUTER_STAGE1_V1` ya existe `sistema` con valores `LF|SALY|OTRO|DESCONOCIDO`; representa **producto destino** y nunca el canal. Se propone `producto_codigo` como nombre canónico en el contrato futuro y un normalizador explícito que proyecte la versión anterior sin romper consumidores existentes. **La función SQL actual sigue aceptando exclusivamente LF para continuar**; reconocer SALY no implica poder despachar a sus operaciones.
+
+**Ámbito organizacional:** `lf_ops.b2b_corporate_groups` (`group_id`) -> `lf_ops.b2b_corporate_group_companies` -> `lf_ops.empresas` (`company_id`) es la jerarquia existente verificada de LF. Una empresa cliente/tenant no es sinónimo de producto LF ni de la organización dueña del producto. El usuario puede indicar el nombre de una empresa, pero el identificador real, la pertenencia al grupo y permisos deben venir de la sesión/resolvedores autorizados del servidor. La unidad operativa u otras jerarquías futuras no se inventan hasta registrarlas.
+
+**Selección:** señales explícitas del producto, producto activo en sesión confiable y binding canónico del activo permiten proponer `producto_codigo`. La conversación previa es solo indicio; no autoriza seleccionar ni entrar a una empresa distinta. Si es materialmente ambiguo, una pregunta. Para trabajos verdaderamente transversales a más de un producto se utiliza lista explícita `productos_afectados` y se verifica cada autoridad; nunca `ALL` implícito.
+
+| Solicitud | Canal | Producto | Alcance |
+|---|---|---|---|
+| «Estado de mi oferta en LF» | OPERACIONES | LF | Registro autorizado |
+| «Estado de mi adelanto en SALY» | OPERACIONES | SALY | Registro autorizado; ruta SALY aún no habilitada por Router LF |
+| «Pagos de mi empresa en LF» | OPERACIONES | LF | Empresa verificada de sesión |
+| «Consolidado de un grupo corporativo en LF» | OPERACIONES | LF | Grupo y empresas con acceso verificado |
+| «Definir expiración de sesión para LF y SALY» | PRODUCTO | LF + SALY explícitos | Multiproducto, decisiones/aprobaciones separadas |
+| «Estado de mi solicitud», sin otro contexto | Candidato OPERACIONES | No resuelto | Solicitar desambiguación antes de despachar |
+
+**No confundir dimensiones:** `canal` no es identidad de producto, `producto` no es empresa, el `alcance` no es un permiso. El Router clasifica el pedido y Stage 2 valida producto exacto, capacidad de ese producto y scope autorizado, todo previo a datos/efectos.
+
 ## Precedencia y dependencias (no ejecuta acciones)
 
 1. Determinar si el pedido **modifica una definicion del producto**; si es asi, el primer canal es PRODUCTO.
