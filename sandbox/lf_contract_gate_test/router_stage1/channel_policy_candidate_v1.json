@@ -34,19 +34,6 @@
       ]
     },
     {
-      "code": "PERFILES_SKILLS",
-      "responsibility": "Crear, actualizar, inspeccionar o ejecutar perfiles y skills bajo sus operaciones gobernadas",
-      "intents": [
-        "CREATE_PROFILE_OR_SKILL",
-        "UPDATE_PROFILE_OR_SKILL",
-        "EXECUTE_PROFILE_OR_SKILL"
-      ],
-      "excluded": [
-        "MODIFY_PRODUCT_UI_BY_PROFILE_NAME_ALONE",
-        "DEPLOY_INFRA"
-      ]
-    },
-    {
       "code": "SISTEMA",
       "responsibility": "Operar componentes de infraestructura, despliegue, runtimes y cambios técnicos de plataforma",
       "intents": [
@@ -90,7 +77,10 @@
     "stage1_cannot_grant_execution": true,
     "capability_hint_not_permission": true,
     "candidate_state_not_current_release": true,
-    "product_can_be_definition_table_other_than_rules": true
+    "product_can_be_definition_table_other_than_rules": true,
+    "profile_or_skill_lifecycle": "DIRECT_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
+    "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
+    "system_business_operations_scope": "UNDER_REVIEW"
   },
   "examples": [
     {
@@ -118,9 +108,11 @@
     {
       "id": "UPDATE_PROFILE",
       "request": "Actualizar el perfil UI Architect",
-      "initial_channel": "PERFILES_SKILLS",
+      "initial_channel": null,
       "initial_task": "RESOLVE_PROFILE_UPDATE_OPERATION",
-      "expected_next": "GOVERNED_PROFILE_UPDATE"
+      "expected_next": "GOVERNED_PROFILE_UPDATE",
+      "route_kind": "DIRECT_GOVERNED_OPERATION",
+      "operation_code": "ACTUALIZACION_PERFIL_LF"
     },
     {
       "id": "DEPLOY_EDGE",
@@ -128,6 +120,29 @@
       "initial_channel": "SISTEMA",
       "initial_task": "RESOLVE_DEPLOY_OPERATION_AND_CURRENT_PERMISSION",
       "expected_next": "CANDIDATE_READ_ONLY_MEANS_NO_DEPLOY"
+    },
+    {
+      "id": "PRODUCT_USES_UI_PROFILE",
+      "request": "Usa el perfil UI Architect para analizar el Login B2B",
+      "initial_channel": "PRODUCTO",
+      "worker_candidate": "PERFIL-UI-ARCHITECT",
+      "expected_next": "PROFILE_EXECUTION_RESOURCE_NOT_NEW_CHANNEL"
+    }
+  ],
+  "transversal_operation_families": [
+    {
+      "code": "GESTION_ACTIVOS_IA",
+      "is_channel": false,
+      "description": "Operaciones gobernadas de crear, actualizar e inspeccionar perfiles y skills; no un canal funcional independiente",
+      "operations": [
+        "CREACION_PERFIL_LF",
+        "ACTUALIZACION_PERFIL_LF",
+        "CREACION_SKILL_LF",
+        "ACTUALIZACION_SKILL_LF"
+      ],
+      "entrypoint": "ACT-0001",
+      "resolution": "DIRECT_GOVERNED_OPERATION",
+      "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
     }
   ]
 }
