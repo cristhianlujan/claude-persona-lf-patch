@@ -1,0 +1,61 @@
+{
+  "schema_version": "A6_A9_FULL_REVIEW_LOCAL_EVIDENCE_V1",
+  "date": "2026-10-24",
+  "scope": "SOURCE_ONLY_DRAFT",
+  "base_main": "633f120f62cf6dfaa950a18d6116fbfd61fe0c6c",
+  "baseline": {
+    "source": "main intact",
+    "tests": 219,
+    "failures": 6,
+    "errors": 1,
+    "new_candidate_regressions": 0
+  },
+  "prior_candidate_full_service": {
+    "tests": 229,
+    "failures": 6,
+    "errors": 1
+  },
+  "current_combined_suite": {
+    "tests": 313,
+    "unique": 313,
+    "successful": 308,
+    "failures": [
+      "tests.test_engine.EngineGateTest.test_batch_prepares_context_once_and_continues_all_profiles",
+      "tests.test_engine.EngineGateTest.test_noncanonical_artifact_set_prepares_each_artifact_and_executes_one_profile",
+      "tests.test_engine.EngineGateTest.test_queue_native_path_reuses_profile_source_and_schema_bindings",
+      "tests.test_engine.EngineGateTest.test_transport_success_does_not_promote_label_only_output",
+      "tests.test_engine.EngineGateTest.test_valid_completion_keeps_three_gates_separate"
+    ],
+    "errors": [],
+    "skipped": [],
+    "unittest_result": "FAILED",
+    "known_failure_comparison": "NO_NEW_REGRESSIONS; not suite PASS"
+  },
+  "repairs": [
+    "generic runtime projection fixture now declares required_source_refs and allow_additional_sources",
+    "UI budget test now supplies REMOTE_API to reach the budget guard"
+  ],
+  "new_negative": "missing executor_mode fails before health/model call",
+  "production_guard_modified": false,
+  "engine_fixed": false,
+  "conditional_next_step": "NOT_ADVANCED: full suite still has five real engine failures",
+  "independent_review": false,
+  "concurrent_main": {
+    "pr": 3150,
+    "path": "supabase/migrations/20261024233000_lf_profile_semantic_selector_v1.sql",
+    "preserved": true,
+    "applied_by_this_task": false
+  },
+  "a9_regression": {
+    "payload_positive": 1,
+    "assembler_positive": 1,
+    "assembler_negative": 2,
+    "payload_negative": 14
+  },
+  "database_inspection": "RO pg_proc/function definition only; input_validate does not return an execution_contract envelope; this does not prove no source exists elsewhere",
+  "driver_hosted_smoke": "PENDING",
+  "deployment_applied": false,
+  "database_write": false,
+  "model_calls": 0,
+  "operational_admission": false
+}
