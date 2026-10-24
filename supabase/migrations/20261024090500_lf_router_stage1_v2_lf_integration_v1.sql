@@ -191,7 +191,7 @@ BEGIN
       IF v_transversal<>'GESTION_ACTIVOS_IA' OR v_channel IS NOT NULL THEN
         v_codes := array_append(v_codes,'RUTA_TRANSVERSAL_INVALIDA');
       END IF;
-    ELSIF v_channel NOT IN ('PRODUCTO','PROGRAMACION','OPERACIONES') THEN
+    ELSIF v_channel IS NULL OR v_channel NOT IN ('PRODUCTO','PROGRAMACION','OPERACIONES') THEN
       v_codes := array_append(v_codes,'CANAL_NO_RECONOCIDO');
     END IF;
 
