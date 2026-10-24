@@ -201,6 +201,10 @@ jobs:
           assert "GATE2_AUTO_MATERIALIZER" in s4
           assert "lf_router_profile_execution_after_gate2_v1" in s4
           assert "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT" in s4
+          assert "lf_profile_execution_input_validate_v1" in s4
+          assert "EJECUCION_PERFIL_LF/input_validate" in s4
+          assert "RETRY_INPUT_VALIDATE_AFTER_INPUT_GOVERNANCE" in s4
+          assert "PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT" in s4
           assert "router_reentry_before_execution" in s4
           assert "PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK" in s4
           worker=Path("services/profile_runtime_api/scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
