@@ -28,6 +28,9 @@ DECLARE
   v_full jsonb;
   v_sections jsonb := '[]'::jsonb;
   v_hint text;
+  v_scope_hint text;
+  v_exact_screen_matches integer := 0;
+  v_resolution_method text := 'ROUTER_SUBJECT';
 BEGIN
   IF btrim(coalesce(p_request_text,''))='' THEN
     RETURN jsonb_build_object(
@@ -40,24 +43,54 @@ BEGIN
   v_rs := public.lf_router_resolve_v1(p_request_text);
   v_subject_count := jsonb_array_length(coalesce(v_rs->'subject_candidates','[]'::jsonb));
 
-  IF v_rs->>'subject_binding_state' IS DISTINCT FROM 'RESOLVED'
-     OR v_subject_count <> 1 THEN
-    RETURN jsonb_build_object(
-      'schema_version','LF_ROUTER_PRODUCT_CONTEXT_V1',
-      'status',CASE WHEN v_subject_count>1 THEN 'AMBIGUOUS_SUBJECT' ELSE 'SUBJECT_NOT_RESOLVED' END,
-      'router_resolve',jsonb_build_object(
-        'status',v_rs->>'status',
-        'blocking_code',v_rs->>'blocking_code',
-        'subject_binding_state',v_rs->>'subject_binding_state',
-        'subject_candidates',coalesce(v_rs->'subject_candidates','[]'::jsonb)
-      ),
-      'target_type_hint',upper(nullif(coalesce(p_scope->>'target_type',''),'')),
-      'target_type_authority','HINT_ONLY_NOT_SEARCH_SELECTOR',
-      'downstream_execution_allowed',false
-    );
-  END IF;
+  v_scope_hint := nullif(btrim(coalesce(p_scope->>'target_hint','')),'');
 
-  v_subject := v_rs->'subject_candidates'->0;
+  IF v_rs->>'subject_binding_state'='RESOLVED'
+     AND v_subject_count=1
+     AND nullif(v_rs#>>'{subject_candidates,0,screen_code}','') IS NOT NULL THEN
+    v_subject := v_rs->'subject_candidates'->0;
+  ELSE
+    SELECT count(*)
+      INTO v_exact_screen_matches
+    FROM lf_ops.pantallas p
+    WHERE (v_scope_hint IS NOT NULL
+           AND (lower(p.codigo)=lower(v_scope_hint) OR lower(p.nombre)=lower(v_scope_hint)))
+       OR lower(p_request_text) LIKE '%' || lower(p.codigo) || '%';
+
+    IF v_exact_screen_matches=1 THEN
+      SELECT jsonb_build_object(
+          'pantalla_id',p.id,
+          'screen_code',p.codigo,
+          'screen_name',p.nombre,
+          'source','EXACT_SCREEN_CODE_OR_SCOPE_HINT'
+        )
+        INTO v_subject
+      FROM lf_ops.pantallas p
+      WHERE (v_scope_hint IS NOT NULL
+             AND (lower(p.codigo)=lower(v_scope_hint) OR lower(p.nombre)=lower(v_scope_hint)))
+         OR lower(p_request_text) LIKE '%' || lower(p.codigo) || '%'
+      LIMIT 1;
+      v_resolution_method := 'EXACT_SCREEN_CODE_OR_SCOPE_HINT';
+    ELSE
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CONTEXT_V1',
+        'status',CASE
+          WHEN v_subject_count>1 OR v_exact_screen_matches>1 THEN 'AMBIGUOUS_SUBJECT'
+          ELSE 'SUBJECT_NOT_RESOLVED'
+        END,
+        'router_resolve',jsonb_build_object(
+          'status',v_rs->>'status',
+          'blocking_code',v_rs->>'blocking_code',
+          'subject_binding_state',v_rs->>'subject_binding_state',
+          'subject_candidates',coalesce(v_rs->'subject_candidates','[]'::jsonb)
+        ),
+        'exact_screen_matches',v_exact_screen_matches,
+        'target_type_hint',upper(nullif(coalesce(p_scope->>'target_type',''),'')),
+        'target_type_authority','HINT_ONLY_NOT_SEARCH_SELECTOR',
+        'downstream_execution_allowed',false
+      );
+    END IF;
+  END IF;
   IF nullif(v_subject->>'screen_code','') IS NULL
      OR nullif(v_subject->>'pantalla_id','') IS NULL THEN
     RETURN jsonb_build_object(
@@ -115,6 +148,9 @@ BEGIN
       'label_visible',e.label_visible,
       'component_token_id',e.component_token_id,
       'component_token_code',ct.component_token_code,
+      'component_name',ct.component_name,
+      'component_state',ct.component_state,
+      'component_token_bindings',ct.token_bindings,
       'semantic_binding_status',e.semantic_binding_status,
       'required_for_implementation',e.required_for_implementation,
       'source_refs',e.source_refs,
@@ -138,6 +174,7 @@ BEGIN
     'status','RESOLVED',
     'subject_ref',v_screen_code,
     'subject_name',v_screen_name,
+    'subject_resolution_method',v_resolution_method,
     'resolved_target_type','PANTALLA',
     'screen_status',v_screen_status,
     'screen_version',v_screen_version,
@@ -176,6 +213,164 @@ GRANT EXECUTE ON FUNCTION public.lf_router_product_context_v1(text,jsonb) TO ser
 COMMENT ON FUNCTION public.lf_router_product_context_v1(text,jsonb) IS
 'ACT-0001 internal read-only Product context loader. Resolves canonical subject first, then loads aggregate screen context. Stage1 target_type is hint/consistency only, never a search selector or authority.';
 
+
+CREATE OR REPLACE FUNCTION public.lf_router_product_cycle_v1(
+  p_event jsonb
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+SET search_path TO 'pg_catalog','public'
+AS $cy$
+DECLARE
+  v_schema text := nullif(p_event->>'schema_version','');
+  v_status text;
+  v_subject text := nullif(p_event->>'subject_ref','');
+  v_current boolean := coalesce((p_event->>'currentness_verified')::boolean,false);
+  v_impl boolean := coalesce((p_event->>'implementation_required')::boolean,false);
+BEGIN
+  IF v_schema='LF_PRODUCT_STRUCTURE_ASSESSMENT_V1' THEN
+    v_status := p_event->>'structure_status';
+
+    IF v_status NOT IN ('FOUND_CANONICAL','FOUND_NON_CANONICAL','STRUCTURAL_GAP','NOT_FOUND') THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','INVALID_PRODUCT_STRUCTURE_ASSESSMENT',
+        'subject_ref',v_subject,
+        'downstream_execution_allowed',false
+      );
+    END IF;
+
+    IF v_status='FOUND_CANONICAL' THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','PRODUCTO_VERIFICAR_O_ACTUALIZAR_DEFINICION',
+        'canal_siguiente','PRODUCTO',
+        'subject_ref',v_subject,
+        'structure_status',v_status,
+        'return_to_router_required',true,
+        'next_contract','LF_PRODUCT_CANONICALIZATION_RESULT_V1',
+        'downstream_execution_allowed',false
+      );
+    END IF;
+
+    IF v_status IN ('FOUND_NON_CANONICAL','STRUCTURAL_GAP') THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA',
+        'canal_siguiente','PROGRAMACION',
+        'subject_ref',v_subject,
+        'structure_status',v_status,
+        'repair_scope','STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH',
+        'functional_truth_write_allowed',false,
+        'programming_analysis_contract','ANALYSIS_IMPLEMENTATION_PACKAGE_V1',
+        'programming_entry_contract','PROGRAMMING_ENTRY_CONTRACT_V1',
+        'executor_selection','CAPABILITY_SELECTOR',
+        'if_no_compatible_capability','CAPABILITY_GAP',
+        'return_channel_after_repair','PRODUCTO',
+        'return_contract','LF_PRODUCT_STRUCTURAL_REPAIR_RESULT_V1',
+        'implementation_after_repair_requires_product_currentness',true,
+        'downstream_execution_allowed',false
+      );
+    END IF;
+
+    RETURN jsonb_build_object(
+      'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+      'paso','PRODUCTO_PROFUNDIZAR_EVIDENCIA',
+      'canal_siguiente','PRODUCTO',
+      'subject_ref',v_subject,
+      'structure_status',v_status,
+      'programming_allowed',false,
+      'return_to_router_required',true,
+      'downstream_execution_allowed',false
+    );
+  END IF;
+
+  IF v_schema='LF_PRODUCT_STRUCTURAL_REPAIR_RESULT_V1' THEN
+    v_status := p_event->>'repair_status';
+
+    IF v_status='REPAIRED' THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','PRODUCTO_REVALIDACION_POST_REPARACION',
+        'canal_siguiente','PRODUCTO',
+        'subject_ref',v_subject,
+        'canonical_structure_ref',p_event->'canonical_structure_ref',
+        'functional_truth_write_allowed_by_repair',false,
+        'next_contract','LF_PRODUCT_CANONICALIZATION_RESULT_V1',
+        'downstream_execution_allowed',false
+      );
+    ELSIF v_status='CAPABILITY_GAP' THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','CAPABILITY_GAP',
+        'subject_ref',v_subject,
+        'required_capability',p_event->'required_capability',
+        'downstream_execution_allowed',false
+      );
+    ELSE
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','REPARACION_ESTRUCTURAL_BLOQUEADA',
+        'subject_ref',v_subject,
+        'repair_status',v_status,
+        'downstream_execution_allowed',false
+      );
+    END IF;
+  END IF;
+
+  IF v_schema='LF_PRODUCT_CANONICALIZATION_RESULT_V1' THEN
+    v_status := p_event->>'canonical_status';
+
+    IF v_status NOT IN ('CANONICAL_CURRENT','CANONICAL_UPDATED') OR v_current IS NOT TRUE THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','PRODUCTO_CURRENTNESS_PENDIENTE',
+        'canal_siguiente','PRODUCTO',
+        'subject_ref',v_subject,
+        'canonical_status',v_status,
+        'currentness_verified',v_current,
+        'downstream_execution_allowed',false
+      );
+    END IF;
+
+    IF v_impl IS TRUE THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+        'paso','PROGRAMACION_PRECHECK_DEFINICION',
+        'canal_siguiente','PROGRAMACION',
+        'subject_ref',v_subject,
+        'canonical_definition_ref',p_event->'canonical_definition_ref',
+        'currentness_verified',true,
+        'programming_entry_contract','PROGRAMMING_ENTRY_CONTRACT_V1',
+        'upstream_required','ANALYSIS_IMPLEMENTATION_PACKAGE_V1',
+        'downstream_execution_allowed',false
+      );
+    END IF;
+
+    RETURN jsonb_build_object(
+      'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+      'paso','PRODUCTO_CERRADO_SIN_IMPLEMENTACION',
+      'canal_siguiente',null,
+      'subject_ref',v_subject,
+      'currentness_verified',true,
+      'downstream_execution_allowed',false
+    );
+  END IF;
+
+  RETURN jsonb_build_object(
+    'schema_version','LF_ROUTER_PRODUCT_CYCLE_V1',
+    'paso','INVALID_PRODUCT_CYCLE_EVENT',
+    'downstream_execution_allowed',false
+  );
+END
+$cy$;
+
+REVOKE ALL ON FUNCTION public.lf_router_product_cycle_v1(jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_router_product_cycle_v1(jsonb) TO service_role;
+
+COMMENT ON FUNCTION public.lf_router_product_cycle_v1(jsonb) IS
+'ACT-0001 Product structural loop. Structural repair may create/normalize the technical container only; after REPAIRED the flow must return to PRODUCTO to establish/verify functional truth before any implementation.';
 
 CREATE OR REPLACE FUNCTION public.lf_router_route_v1(
   p_stage1 jsonb,
@@ -323,14 +518,32 @@ BEGIN
           'paso','PRODUCTO_CONTEXTO_CANONICO',
           'contexto_producto',v_pc-'product_context',
           'target_type_uso','HINT_ONLY_NOT_SEARCH_SELECTOR',
-          'clasificacion_pendiente','WITHIN_CANONICAL_PRODUCT_CONTEXT',
+          'clasificacion_pendiente','PRODUCT_STRUCTURE_ASSESSMENT',
+          'product_profile_hint',jsonb_build_object(
+            'codigo_activo','PERFIL-PRODUCT-DIRECTOR-LF',
+            'authority','CANDIDATE_ONLY',
+            'mode','READ_ONLY',
+            'selection_must_be_revalidated_by_router',true
+          ),
+          'assessment_contract',jsonb_build_object(
+            'schema_version','LF_PRODUCT_STRUCTURE_ASSESSMENT_V1',
+            'allowed_structure_status',jsonb_build_array(
+              'FOUND_CANONICAL','FOUND_NON_CANONICAL','STRUCTURAL_GAP','NOT_FOUND'
+            ),
+            'required_fields',jsonb_build_array(
+              'subject_ref','structure_status','observed_locations',
+              'expected_canonical_location','normalization_required'
+            ),
+            'resume_entrypoint','public.lf_router_product_cycle_v1',
+            'return_to_router_required',true
+          ),
           'context_loader',jsonb_build_object(
             'function','public.lf_router_product_context_v1',
             'read_only',true,
             'contains_full_context',true
           ),
-          'motivo_es','Producto resolvio primero el sujeto canonico y su contexto agregado. target_type es una pista de coherencia, no un filtro de busqueda.',
-          'siguiente_paso_es','Clasificar el cambio dentro del contexto canonico; actualizar la definicion solo si difiere. Programacion entra despues de currentness y admision.'
+          'motivo_es','Producto resolvio primero el sujeto y su contexto. El perfil de Producto debe distinguir contenido canonico, contenido no canonico, brecha estructural o ausencia real.',
+          'siguiente_paso_es','Devolver LF_PRODUCT_STRUCTURE_ASSESSMENT_V1 al Router. Una reparacion estructural vuelve obligatoriamente a Producto antes de implementar funcionalidad.'
         );
       END IF;
     END IF;
@@ -496,7 +709,7 @@ END
 $f$;
 
 COMMENT ON FUNCTION public.lf_router_route_v1(jsonb,jsonb,boolean) IS
-'Punto unico Stage2 ACT-0001. PRODUCTO resuelve primero el sujeto y su contexto canonico agregado; target_type es hint/control, no selector de busqueda. PROGRAMACION requiere precheck de definicion vigente; OPERACIONES exige capacidad y alcance autorizados.';
+'Punto unico Stage2 ACT-0001. PRODUCTO resuelve sujeto/contexto, clasifica estructura y usa ciclo PRODUCTO->reparacion estructural->PRODUCTO antes de implementacion. target_type es hint/control. PROGRAMACION requiere definicion vigente; OPERACIONES exige capacidad y alcance autorizados.';
 
 DO $t$
 DECLARE
@@ -585,5 +798,98 @@ BEGIN
   END IF;
 END
 $t$;
+
+DO $cascade$
+DECLARE
+  pc jsonb;
+  h jsonb;
+  a jsonb;
+  repair_route jsonb;
+  post_repair jsonb;
+  final_route jsonb;
+BEGIN
+  pc := public.lf_router_product_context_v1(
+    'Agregar pestañas al detalle y trazabilidad del lote B2B-CARGA-003 sin inventar una estructura fuera de la definición canónica.',
+    '{"target_type":"PANTALLA","target_hint":"B2B-CARGA-003","resolution_status":"UNRESOLVED"}'::jsonb
+  );
+
+  IF pc->>'status' IS DISTINCT FROM 'RESOLVED'
+     OR pc->>'subject_ref' IS DISTINCT FROM 'B2B-CARGA-003'
+     OR pc->>'subject_resolution_method' IS DISTINCT FROM 'EXACT_SCREEN_CODE_OR_SCOPE_HINT' THEN
+    RAISE EXCEPTION 'CASCADE_SUBJECT_RESOLUTION:%',pc-'product_context';
+  END IF;
+
+  SELECT x INTO h
+  FROM jsonb_array_elements(pc#>'{product_context,elements}') x
+  WHERE x->>'element_role'='PAGE_HEADER'
+  LIMIT 1;
+
+  IF h IS NULL
+     OR position('TABS_IF_APPLICABLE' in coalesce(h->'component_token_bindings'->'slots','[]'::jsonb)::text)=0 THEN
+    RAISE EXCEPTION 'CASCADE_TAB_SUPPORT_NOT_OBSERVED:%',h;
+  END IF;
+
+  a := jsonb_build_object(
+    'schema_version','LF_PRODUCT_STRUCTURE_ASSESSMENT_V1',
+    'subject_ref','B2B-CARGA-003',
+    'structure_status','STRUCTURAL_GAP',
+    'observed_locations',jsonb_build_array(
+      jsonb_build_object(
+        'kind','COMPONENT_SLOT',
+        'ref','b2b_page_header_default:TABS_IF_APPLICABLE'
+      )
+    ),
+    'expected_canonical_location',jsonb_build_object(
+      'status','MISSING',
+      'concept','SCREEN_TABS'
+    ),
+    'normalization_required',true,
+    'normalization_proposal',jsonb_build_object(
+      'goal','CREATE_CANONICAL_TAB_STRUCTURE_WITHOUT_INVENTING_FUNCTIONAL_VALUES'
+    )
+  );
+
+  repair_route := public.lf_router_product_cycle_v1(a);
+  IF repair_route->>'paso' IS DISTINCT FROM 'PROGRAMACION_REPARACION_ESTRUCTURAL_REQUERIDA'
+     OR repair_route->>'repair_scope' IS DISTINCT FROM 'STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH'
+     OR repair_route->>'return_channel_after_repair' IS DISTINCT FROM 'PRODUCTO'
+     OR (repair_route->>'functional_truth_write_allowed')::boolean IS DISTINCT FROM false THEN
+    RAISE EXCEPTION 'CASCADE_REPAIR_ROUTE:%',repair_route;
+  END IF;
+
+  post_repair := public.lf_router_product_cycle_v1(jsonb_build_object(
+    'schema_version','LF_PRODUCT_STRUCTURAL_REPAIR_RESULT_V1',
+    'subject_ref','B2B-CARGA-003',
+    'repair_status','REPAIRED',
+    'canonical_structure_ref',jsonb_build_object(
+      'kind','CANONICAL_STRUCTURE',
+      'ref','candidate://screen-tabs-structure'
+    )
+  ));
+
+  IF post_repair->>'paso' IS DISTINCT FROM 'PRODUCTO_REVALIDACION_POST_REPARACION'
+     OR post_repair->>'canal_siguiente' IS DISTINCT FROM 'PRODUCTO' THEN
+    RAISE EXCEPTION 'CASCADE_MUST_RETURN_TO_PRODUCT:%',post_repair;
+  END IF;
+
+  final_route := public.lf_router_product_cycle_v1(jsonb_build_object(
+    'schema_version','LF_PRODUCT_CANONICALIZATION_RESULT_V1',
+    'subject_ref','B2B-CARGA-003',
+    'canonical_status','CANONICAL_UPDATED',
+    'canonical_definition_ref',jsonb_build_object(
+      'kind','PRODUCT_DEFINITION',
+      'ref','candidate://B2B-CARGA-003/tabs'
+    ),
+    'currentness_verified',true,
+    'implementation_required',true
+  ));
+
+  IF final_route->>'paso' IS DISTINCT FROM 'PROGRAMACION_PRECHECK_DEFINICION'
+     OR final_route->>'canal_siguiente' IS DISTINCT FROM 'PROGRAMACION'
+     OR (final_route->>'currentness_verified')::boolean IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'CASCADE_IMPLEMENTATION_ONLY_AFTER_PRODUCT:%',final_route;
+  END IF;
+END
+$cascade$;
 
 COMMIT;
