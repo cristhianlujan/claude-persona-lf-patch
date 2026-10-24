@@ -50,6 +50,10 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.sql,
         )
 
+    def test_channel_budget_event_uses_identity_default(self):
+        self.assertNotIn("lf_context_budget_events_v2_id_seq", self.sql)
+        self.assertIn("RETURNING id INTO v_budget_event_id", self.sql)
+
     def test_producer_stops_before_independent_semantic_judge(self):
         self.assertIn("NATIVE_PRODUCER_VALIDATED", self.sql)
         self.assertIn("expected_clean_step_count',9", self.sql)
