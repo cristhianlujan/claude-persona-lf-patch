@@ -28,9 +28,9 @@ No se debe confundir una **regla transversal** con un quinto canal: una regla pu
 
 ## Contrato de seleccion que debe consumir el Router
 
-**Distinguir el sistema destino del canal responsable:** `sistema=LF` no equivale a `canal=OPERACIONES`; `sistema` conserva `LF|SALY|OTRO|DESCONOCIDO`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. El cuarto caso es una **ruta transversal de operación gobernada**, no un cuarto canal: gestion del perfil/skill que sea sujeto de la peticion.
+**Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. El cuarto caso es una **ruta transversal de operación gobernada**, no un cuarto canal: gestion del perfil/skill que sea sujeto de la peticion.
 
-La propuesta de Stage 1 debe producir `canal_candidato`, `intencion_tipificada`, `route_kind`, `razon_seleccion` y `precondiciones_no_satisfechas`. Es un **contrato candidato**, no un campo disponible hoy en `LF_ROUTER_STAGE1_V1`. Stage 2 debe validar semantica, activo, existencia de capacidad, version, scope/tenant y permisos antes de iniciar ningun efecto.
+La propuesta de Stage 1 V2 debe producir `canal_candidato`, `negocio_codigo`, `alcance` cuando corresponda, `intencion_tipificada`, `route_kind`, `razon_seleccion` y `precondiciones_no_satisfechas`. Son campos de **interpretacion**, no de autoridad. Stage 2 debe validar semantica, activo, existencia de capacidad, version, scope/tenant y permisos antes de iniciar ningun efecto.
 
 | Regla | Entrada material | Ruta inicial | No hacer |
 |---|---|---|---|
@@ -64,10 +64,10 @@ La propuesta de Stage 1 debe producir `canal_candidato`, `intencion_tipificada`,
 **Dimensiones acordadas:**
 
 - **Canal** (solo tres): `PRODUCTO`, `PROGRAMACION`, `OPERACIONES`. El canal Producto mantiene su nombre y responde a DEFINICIONES del negocio, no identifica a cuál negocio corresponde el pedido.
-- **Negocio**: `negocio_codigo` = `LF`, `SALY` u otro negocio registrado. Responde «¿de qué negocio hablamos?». Un negocio no equivale a una empresa cliente de dicho negocio.
+- **Negocio**: `negocio_codigo` es el campo canónico que responde «¿de qué negocio hablamos?». En esta fase operativa el único negocio aceptado para cierre es `LF`; SALY queda para una fase posterior. Un negocio no equivale a una empresa cliente de dicho negocio.
 - **Alcance**: **opcional, determinado a demanda** por el objeto mencionado en la solicitud y los datos canónicos específicos del negocio. NO es una lista fija de tipos ni se resuelve enteramente en Stage 1.
 
-**Compatibilidad:** el actual `LF_ROUTER_STAGE1_V1` todavía usa `sistema` con valores `LF|SALY|OTRO|DESCONOCIDO`. En ese contrato **sistema equivale al negocio destino, no al canal**. La nueva denominación `negocio_codigo` es candidata y requiere adaptador versionado desde `sistema`; no se cambia furtivamente el SQL activo. Hoy `lf_router_route_v1` solo continúa solicitudes de LF; SALY no se activa por tener nombre definido en este documento. Una vinculación y catálogo autoritativo de negocios deben verificarse antes de extender el enrutamiento; no se presume que exista ya un registro multinegocio listo.
+**Compatibilidad:** `LF_ROUTER_STAGE1_V2` **no expone ni acepta** el campo legado `sistema`. El endpoint desplegado `LF_ROUTER_STAGE1_V1` todavía lo requiere internamente; mientras exista esa frontera V1, el adaptador deriva ese valor desde `negocio_codigo` únicamente dentro del payload de compatibilidad. El modelo y los consumidores V2 no deben producir, leer ni decidir usando `sistema`.
 
 ### ¿Cómo se determina el alcance sin construir un catálogo gigante?
 
@@ -92,7 +92,7 @@ El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos
 
 En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
 
-**Implementación futura:** introducir `negocio_codigo` y una descripción de `alcance` opcional en la ampliación compatible de Stage 1; resolver referencias exactas y derechos en Stage 2 o en el handler autorizado de cada negocio. El contrato y ejemplos de este PR son **SOURCE_ONLY_CANDIDATE**, no una capacidad operativa conectada.
+**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Las referencias exactas y derechos se resuelven en Stage 2 o en el handler autorizado de LF. El contrato y ejemplos de este PR son **SOURCE_ONLY_CANDIDATE**, no una capacidad operativa conectada.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
@@ -134,11 +134,11 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 
 Se preparó **LF_ROUTER_STAGE1_V2** como adaptación opt-in compatible, sin tocar la función `public.lf_router_stage1_validate_v1` ni el comportamiento `public.lf_router_route_v1` desplegados:
 
-**Negocios extensibles:** el validador V2 recibe opcionalmente `registered_businesses` desde una **fuente confiable del invocador**. Sin esa fuente solo reconoce como ejemplos `LF` y `SALY`; cualquier negocio nuevo requiere aparecer en el registro autorizado. El campo `sistema=OTRO` puede acompañar a un `negocio_codigo` adicional registrado, pero el handoff actual mantiene `NEGOCIO_NO_HABILITADO`: reconocer un negocio futuro no es activarlo. No aceptar el catálogo inyectado desde texto no confiable del usuario.
+**Fase actual LF:** el contrato usa `negocio_codigo` y el cierre de este PR se valida únicamente para `LF`. El validador conserva una extensión opcional `registered_businesses` para evolución futura, pero SALY y otros negocios no forman parte de la aceptación actual y no deben bloquear el cierre de LF. El catálogo nunca se toma del texto no confiable del usuario.
 
-- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` verifica congruencia con el `sistema` de Stage1 V1; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo usa `ruta_transversal=GESTION_ACTIVOS_IA` con `canal_candidato=null`.
+- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo usa `ruta_transversal=GESTION_ACTIVOS_IA` con `canal_candidato=null`.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py`: casos estructurales positivos y negativos, incluyendo SALY conocido/no habilitado, multinegocio, ambigüedad, referencia inventada, operación no autorizada, pantalla y scope opcional.
-- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: adapta de forma *read-only* la salida V2 válida a la carga V1 de `public.lf_router_route_v1` **solamente para LF**. Las solicitudes SALY no se despachan; solicitudes multinegocio quedan pendientes. Descarta `capability_hint` de origen modelo al generar el handoff, para evitar despacho directo sin autoridad semántica; usa la búsqueda del nivel 1 existente. La referencia de alcance sigue `UNRESOLVED`; el contrato no concede acceso ni invoca SQL.
+- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: mantiene una frontera temporal de compatibilidad con `public.lf_router_route_v1` **solamente para LF**. Si el endpoint V1 necesita el nombre legado, se sintetiza dentro de `legacy_stage1_v1_payload`; ese detalle no pertenece al contrato V2. Descarta `capability_hint` de origen modelo para evitar despacho directo sin autoridad semántica. La referencia de alcance sigue `UNRESOLVED`; el contrato no concede acceso ni invoca SQL.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py`: comprueba el payload de handoff, la contención de SALY y multinegocio, el bypass del hint no certificado, los límites de permisos y la respuesta directa sin scope.
 
 El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salida nueva conserva campos obligatorios V1 y añade estos campos de **interpretación**, no autorización:
@@ -146,7 +146,6 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
 ```json
 {
   "schema_version": "LF_ROUTER_STAGE1_V2",
-  "sistema": "LF",
   "canal_candidato": "OPERACIONES",
   "negocio_codigo": "LF",
   "negocios_afectados": [],
@@ -161,7 +160,7 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
 }
 ```
 
-Los demás campos heredados obligatorios V1 (`texto_original`, `es_operacion`, `respuesta_directa`, `accion`, `sujeto`, `correcciones`, `formas_busqueda`, `ambiguo`, `alternativas`, `pregunta_usuario`, `capability_hint`) se siguen exigiendo. `target_ref` y `verified=true` quedan prohibidos en Stage1.
+Los campos comunes (`texto_original`, `es_operacion`, `respuesta_directa`, `accion`, `sujeto`, `correcciones`, `formas_busqueda`, `ambiguo`, `alternativas`, `pregunta_usuario`, `capability_hint`) se siguen exigiendo según corresponda. `sistema` está prohibido en V2. `target_ref` y `verified=true` quedan prohibidos en Stage1.
 
 **Importante:** el intento de resolver la actualización de ACT-0001 vía `public.lf_router_resolve_v1` reportó `BLOCK_SCOPE_SEMANTICS_UNATTESTED`, `semantic_gap_code=POSITIVE_NEGATIVE_SCOPE_NOT_BOUND` y `downstream_execution_allowed=false`. Por tanto, este lote está limitado a **código fuente y pruebas candidatas**. No se creó ni aplicó una migración ni se activó Stage1/Stage2 en Supabase. Para activar el siguiente nivel, la operación deberá acreditar alcance semántico positivo/negativo, origen y destinatario exactos, pasar PASE y los controles del LF Migration Merge Train. No fabricar recibos para suplir ese bloqueo.
 
