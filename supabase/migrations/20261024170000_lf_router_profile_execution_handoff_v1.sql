@@ -383,6 +383,130 @@ GRANT EXECUTE ON FUNCTION public.lf_profile_execution_begin_from_handoff_v1(
   jsonb,text,text,text,text,text,text,jsonb
 ) TO service_role;
 
+CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1(
+  p_execution_id text,
+  p_input_literal text,
+  p_input_source_ref text,
+  p_handoff jsonb
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','programacion'
+AS $fn$
+DECLARE
+  v_exec public.lf_operation_execution%rowtype;
+  v_handoff_validation jsonb;
+  v_scope jsonb;
+  v_adapters jsonb:='[]'::jsonb;
+  v_ig jsonb;
+BEGIN
+  SELECT * INTO v_exec
+  FROM public.lf_operation_execution
+  WHERE execution_id=p_execution_id;
+
+  IF NOT FOUND
+     OR v_exec.operation_code<>'EJECUCION_PERFIL_LF'
+     OR v_exec.target_type<>'PERFIL'
+     OR v_exec.status<>'IN_PROGRESS' THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_VALIDATE_EXECUTION_INVALID',
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_handoff_validation:=public.lf_router_profile_execution_handoff_validate_v1(
+    p_handoff,p_input_literal,v_exec.target_code
+  );
+  IF coalesce((v_handoff_validation->>'valid')::boolean,false) IS NOT TRUE THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_VALIDATE_HANDOFF_INVALID',
+      'handoff_validation',v_handoff_validation,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  v_scope:=public.lf_profile_execution_scope_authority_packet_v1(
+    p_execution_id,p_input_literal,p_input_source_ref
+  );
+  IF v_scope->>'status' IS DISTINCT FROM 'READY'
+     OR jsonb_typeof(v_scope->'scope_authority_packet')<>'object'
+     OR nullif(v_scope->>'scope_packet_sha256','') IS NULL THEN
+    RETURN jsonb_build_object(
+      'status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_INPUT_VALIDATE_SCOPE_NOT_READY',
+      'scope_result',v_scope,
+      'router_reentry_required',false
+    );
+  END IF;
+
+  SELECT coalesce(jsonb_agg(to_jsonb(x) order by x.adapter_code),'[]'::jsonb)
+    INTO v_adapters
+  FROM public.v_lf_router_adapter_bindings x
+  WHERE x.target_asset_code=v_exec.target_code;
+
+  IF jsonb_array_length(v_adapters)>0 THEN
+    v_ig:=programacion.fn_lf_router_input_governance_resolve_v1(
+      p_input_literal,v_adapters,'CONTEXT_PACK'
+    );
+  ELSE
+    v_ig:=jsonb_build_object(
+      'applicable',false,
+      'status','NOT_REQUIRED',
+      'blocking_code',null,
+      'decision','N/A',
+      'continuation_allowed',true,
+      'required_by_adapters','[]'::jsonb
+    );
+  END IF;
+
+  IF coalesce((v_ig->>'applicable')::boolean,false)
+     AND coalesce((v_ig->>'continuation_allowed')::boolean,false) IS NOT TRUE THEN
+    RETURN jsonb_build_object(
+      'status',coalesce(v_ig->>'status','BLOCKED'),
+      'blocking_code',coalesce(v_ig->>'blocking_code','BLOCK_PROFILE_INPUT_GOVERNANCE_NOT_READY'),
+      'input_governance',
+        v_ig||jsonb_build_object(
+          'resume_via','EJECUCION_PERFIL_LF/input_validate',
+          'router_reentry_required',false
+        ),
+      'scope_authority_packet',v_scope->'scope_authority_packet',
+      'scope_authority_packet_sha256',v_scope->>'scope_packet_sha256',
+      'router_handoff_fingerprint',p_handoff->>'fingerprint_sha256',
+      'router_reentry_required',false,
+      'next_action','RETRY_INPUT_VALIDATE_AFTER_INPUT_GOVERNANCE'
+    );
+  END IF;
+
+  RETURN jsonb_build_object(
+    'status','READY',
+    'blocking_code',null,
+    'server_validated',true,
+    'input_scope','ROUTER_AUTHORIZED_PROFILE_EXECUTION',
+    'activation_trigger_match',true,
+    'scope_authority_packet',v_scope->'scope_authority_packet',
+    'scope_authority_packet_sha256',v_scope->>'scope_packet_sha256',
+    'input_governance',
+      coalesce(v_ig,'{}'::jsonb)||jsonb_build_object(
+        'resume_via','EJECUCION_PERFIL_LF/input_validate',
+        'router_reentry_required',false
+      ),
+    'router_handoff_fingerprint',p_handoff->>'fingerprint_sha256',
+    'router_reentry_required',false
+  );
+END
+$fn$;
+
+REVOKE ALL ON FUNCTION public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)
+  FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)
+  TO service_role;
+
+COMMENT ON FUNCTION public.lf_profile_execution_input_validate_v1(text,text,text,jsonb) IS
+'Canonical EJECUCION_PERFIL_LF input gate. Validates the traveling Router handoff, exact scope packet and Input Governance. Pending IG is retried at input_validate and never re-enters ACT-0001.';
+
 CREATE OR REPLACE FUNCTION public.lf_profile_execution_channel_context_v1(
   p_execution_id text,
   p_base_context jsonb,
@@ -763,6 +887,50 @@ COMMENT ON FUNCTION public.lf_router_profile_execution_after_gate2_v1(
 ) IS
 'Consumes a resolved semantic Gate 2 once and materializes EJECUCION_PERFIL_LF. It never re-routes the same decision. Native modes begin the canonical operation; REMOTE_API uses the authorized queue only when admitted.';
 
+-- For EJECUCION_PERFIL_LF, Input Governance is an internal input_validate gate.
+-- ACT-0001 authorizes entry into the operation once; a pending IG receipt must not
+-- force the same request through ACT-0001 again.
+DO $patch_profile_ig_owner$
+DECLARE
+  v_def text;
+  v_old text;
+  v_new text;
+BEGIN
+  IF md5(pg_get_functiondef(
+       'public.lf_router_resolve_v1(text,text,text,text,text)'::regprocedure
+     )) <> '5bbac630485dafb653cf67b78e0f2784' THEN
+    RAISE EXCEPTION 'PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT';
+  END IF;
+
+  v_def:=pg_get_functiondef(
+    'public.lf_router_resolve_v1(text,text,text,text,text)'::regprocedure
+  );
+
+  v_old:=E'    if coalesce((v_input_governance->>''applicable'')::boolean,false) then\n'
+    ||E'      if not coalesce((v_input_governance->>''continuation_allowed'')::boolean,false) then\n'
+    ||E'        return jsonb_build_object(\n';
+
+  v_new:=E'    if coalesce((v_input_governance->>''applicable'')::boolean,false) then\n'
+    ||E'      if v_operation.operation_code=''EJECUCION_PERFIL_LF''\n'
+    ||E'         and v_input_governance->>''status''=''INPUT_GOVERNANCE_REQUIRED''\n'
+    ||E'         and v_input_governance->>''decision''=''PENDING'' then\n'
+    ||E'        v_input_governance:=v_input_governance||jsonb_build_object(\n'
+    ||E'          ''execution_gate_owner'',''EJECUCION_PERFIL_LF/input_validate'',\n'
+    ||E'          ''resume_via'',''EJECUCION_PERFIL_LF/input_validate'',\n'
+    ||E'          ''router_reentry_required'',false\n'
+    ||E'        );\n'
+    ||E'      elsif not coalesce((v_input_governance->>''continuation_allowed'')::boolean,false) then\n'
+    ||E'        return jsonb_build_object(\n';
+
+  IF strpos(v_def,v_old)=0 THEN
+    RAISE EXCEPTION 'PROFILE_HANDOFF_ROUTER_IG_BLOCK_ANCHOR_MISSING';
+  END IF;
+
+  v_def:=replace(v_def,v_old,v_new);
+  EXECUTE v_def;
+END
+$patch_profile_ig_owner$;
+
 -- Stage2 PRODUCTO no longer performs Product work itself.
 DO $patch_route$
 DECLARE
@@ -828,6 +996,11 @@ END
 $patch_route$;
 
 UPDATE public.lf_operation_step_contracts
+SET resolver_ref='public.lf_profile_execution_input_validate_v1'
+WHERE operation_code='EJECUCION_PERFIL_LF'
+  AND step_id='input_validate';
+
+UPDATE public.lf_operation_step_contracts
 SET resolver_ref='public.lf_profile_execution_context_admission_v1 + public.lf_profile_execution_channel_context_v1'
 WHERE operation_code='EJECUCION_PERFIL_LF'
   AND step_id='context_admission';
@@ -847,6 +1020,12 @@ BEGIN
      OR position('PRODUCTO_GATE2_PERFIL' in v_route_def)=0
      OR position('GATE2_AUTO_MATERIALIZER' in v_route_def)=0
      OR position('lf_router_profile_execution_after_gate2_v1' in v_route_def)=0
+     OR position('lf_profile_execution_input_validate_v1' in pg_get_functiondef(
+          'public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)'::regprocedure
+        ))=0
+     OR position('EJECUCION_PERFIL_LF/input_validate' in pg_get_functiondef(
+          'public.lf_router_resolve_v1(text,text,text,text,text)'::regprocedure
+        ))=0
   THEN
     RAISE EXCEPTION 'PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK';
   END IF;
