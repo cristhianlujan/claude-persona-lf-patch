@@ -1,8 +1,8 @@
 {
   "schema_version": "LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1",
-  "state": "SOURCE_ONLY_CANDIDATE",
+  "state": "DEPLOYED_LF_V2",
   "scope": "Router ACT-0001 / LF",
-  "stage1_contract_ref": "LF_ROUTER_STAGE1_V1",
+  "stage1_contract_ref": "LF_ROUTER_STAGE1_V2",
   "stage2_entrypoint": "public.lf_router_route_v1",
   "applies_effects": false,
   "channels": [
@@ -88,9 +88,8 @@
     "capability_hint_not_permission": true,
     "candidate_state_not_current_release": true,
     "product_can_be_definition_table_other_than_rules": true,
-    "profile_or_skill_lifecycle": "DIRECT_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
+    "profile_or_skill_lifecycle": "TRANSVERSAL_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
     "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
-    "system_business_operations_scope": "SUPERSEDED_BY_OPERACIONES_CANDIDATE",
     "programming_lifecycle_includes": [
       "ANALYSIS",
       "DESIGN_TECHNICAL_SOLUTION",
@@ -149,8 +148,8 @@
       "initial_channel": null,
       "initial_task": "RESOLVE_PROFILE_UPDATE_OPERATION",
       "expected_next": "GOVERNED_PROFILE_UPDATE",
-      "route_kind": "DIRECT_GOVERNED_OPERATION",
-      "operation_code": "ACTUALIZACION_PERFIL_LF"
+      "operation_code": "ACTUALIZACION_PERFIL_LF",
+      "ruta_transversal": "GESTION_ACTIVOS_IA"
     },
     {
       "id": "DEPLOY_EDGE",
@@ -206,7 +205,6 @@
       "id": "AMBIGUOUS_OFFERS",
       "request": "Arregla lo de las ofertas",
       "initial_channel": null,
-      "route_kind": "NEEDS_DECISION",
       "initial_task": "BOUNDED_DISAMBIGUATION",
       "expected_next": "ONE_QUESTION_NOT_AUTO_CODE"
     },
@@ -230,21 +228,19 @@
         "ACTUALIZACION_SKILL_LF"
       ],
       "entrypoint": "ACT-0001",
-      "resolution": "DIRECT_GOVERNED_OPERATION",
+      "resolution": "ROUTER_ACTION_REGISTRY_OPERATION",
       "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
     }
   ],
-  "channel_name_is_candidate": false,
   "channel_selection_contract": {
     "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
-    "state": "SOURCE_ONLY_CANDIDATE",
+    "state": "DEPLOYED_LF_V2",
     "channel_field": "canal_candidato",
     "channel_values": [
       "PRODUCTO",
       "PROGRAMACION",
       "OPERACIONES"
     ],
-    "special_route_kind": "DIRECT_GOVERNED_OPERATION",
     "channel_is_not_execution_authorization": true,
     "channel_is_not_profile_or_skill": true,
     "selector_inputs": [
@@ -259,11 +255,11 @@
     ],
     "selector_outputs": [
       "canal_candidato",
-      "route_kind",
-      "intencion_tipificada",
+      "negocio_codigo",
+      "negocios_afectados",
+      "ruta_transversal",
       "razon_seleccion",
-      "precondiciones_no_satisfechas",
-      "siguiente_paso_propuesto"
+      "alcance"
     ],
     "deterministic_admission_required_at_stage2": true,
     "unknown_or_material_tie": "ASK_USER_AFTER_BOUNDED_EVIDENCE",
@@ -285,13 +281,13 @@
       "rule_id": "R00_IA_ASSET_MAINTENANCE",
       "priority": 0,
       "when": "The user asks to create/update/retire the profile or skill itself",
-      "route_kind": "DIRECT_GOVERNED_OPERATION",
       "channel": null,
       "operation_resolution": "Resolve existing operation from action registry; do not use profile/skill execution as a channel",
       "examples": [
         "Actualizar el perfil UI Architect",
         "Crear una skill nueva"
-      ]
+      ],
+      "ruta_transversal": "GESTION_ACTIVOS_IA"
     },
     {
       "rule_id": "R10_READ_EXISTING_PRODUCT_STATE",
@@ -366,7 +362,6 @@
       "priority": 60,
       "when": "The route lacks decisive evidence or two assignments remain materially plausible after bounded inspection",
       "channel": null,
-      "route_kind": "NEEDS_DECISION",
       "handoff": "ASK_ONE_DISAMBIGUATING_QUESTION_NO_DISPATCH",
       "examples": [
         "Arregla lo de las ofertas"
@@ -375,14 +370,14 @@
   ],
   "business_context_contract": {
     "schema_version": "LF_ROUTER_BUSINESS_SCOPE_CONTEXT_CANDIDATE_V1",
-    "state": "SOURCE_ONLY_CANDIDATE",
+    "state": "DEPLOYED_LF_V2",
     "conceptual_dimensions": [
       "CANAL",
       "NEGOCIO",
       "ALCANCE_DINAMICO"
     ],
     "canonical_business_field": "negocio_codigo",
-    "migration_policy": "LF_ROUTER_STAGE1_V2 expone negocio_codigo y no acepta el campo legado. Mientras el endpoint Stage2 desplegado siga en V1, el adaptador de compatibilidad deriva internamente el valor requerido por V1; ese detalle no forma parte del contrato V2.",
+    "migration_policy": "LF_ROUTER_STAGE1_V2 expone negocio_codigo y prohíbe sistema. public.lf_router_route_v1 consume V2 directamente; V1 se conserva solo para callers heredados.",
     "channel_field": "canal_candidato",
     "business_binding_policy": "CANONICAL_ACTIVE_BUSINESS_OR_TARGET_BINDING; LF AND SALY ARE KNOWN EXAMPLES; DO NOT GUESS OR CREATE BUSINESS CODE",
     "business_registry_implementation_status": "NEEDS_VERIFIED_AUTHORITATIVE_SOURCE_AND_PER_BUSINESS_BINDINGS; NO_NEW_REGISTRY_AUTOMATICALLY_AUTHORIZED",

@@ -1,6 +1,6 @@
-# ACT-0001 — Politica candidata de canales (lote 1, source-only)
+# ACT-0001 — Política de canales V2 (LF)
 
-**Estado:** CANDIDATE_WITH_UNAPPLIED_MIGRATION. El PR contiene contrato, adapter, pruebas y una migración fuente para integrar V2; nada de ello está aplicado todavía en Supabase. No activa Programación ni concede permisos o efectos.
+**Estado:** DEPLOYED_LF_V2. `LF_ROUTER_STAGE1_V2` y su consumo por `public.lf_router_route_v1` están desplegados para LF. La clasificación continúa siendo interpretación, no permiso ni autorización de efectos.
 
 **Contrato machine-readable:** `sandbox/lf_contract_gate_test/router_stage1/channel_policy_candidate_v1.json`.
 
@@ -16,7 +16,7 @@ La seleccion de canal **no es seleccion de perfil**, no es permiso de escritura 
 |---|---|---|
 | PRODUCTO | Definir, verificar y actualizar reglas y definiciones canónicas del producto, incluidas pantallas y elementos | Programar o desplegar |
 | PROGRAMACION | Analizar trabajos admitidos, diseñar técnicamente, programar, probar, desplegar y mantener software/plataforma mediante fases y operaciones gobernadas | Inventar el QUÉ, cambiar la definición canónica ni ejecutar consultas cotidianas como si fueran programación |
-| OPERACIONES (nombre candidato: Operaciones del Producto) | Consultar estados y usar transacciones ya disponibles en el producto vigente, conforme a identidad, permisos y alcance de datos | Desarrollar nuevas funciones, ejecutar SQL libre, alterar reglas o desplegar |
+| OPERACIONES (Operaciones del Producto) | Consultar estados y usar transacciones ya disponibles en el producto vigente, conforme a identidad, permisos y alcance de datos | Desarrollar nuevas funciones, ejecutar SQL libre, alterar reglas o desplegar |
 
 ### Perfiles/Skills no es canal
 
@@ -30,7 +30,7 @@ No se debe confundir una **regla transversal** con un quinto canal: una regla pu
 
 **Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. El cuarto caso es una **ruta transversal de operación gobernada**, no un cuarto canal: gestion del perfil/skill que sea sujeto de la peticion.
 
-La propuesta de Stage 1 V2 debe producir `canal_candidato`, `negocio_codigo`, `alcance` cuando corresponda, `intencion_tipificada`, `route_kind`, `razon_seleccion` y `precondiciones_no_satisfechas`. Son campos de **interpretacion**, no de autoridad. Stage 2 debe validar semantica, activo, existencia de capacidad, version, scope/tenant y permisos antes de iniciar ningun efecto.
+Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `negocio_codigo`, `negocios_afectados`, `ruta_transversal`, `razon_seleccion` y `alcance`. No existe un segundo campo de ruta: `ruta_transversal` cubre únicamente las operaciones transversales gobernadas y `paso` pertenece a la decisión de Stage 2. Estos campos son de **interpretación**, no de autoridad.
 
 | Regla | Entrada material | Ruta inicial | No hacer |
 |---|---|---|---|
@@ -57,7 +57,7 @@ La propuesta de Stage 1 V2 debe producir `canal_candidato`, `negocio_codigo`, `a
 - «Usa UI Architect para revisar la pantalla» -> canal del trabajo PRODUCTO y recurso PERFIL-UI-ARCHITECT.
 - «Actualiza el propio perfil UI Architect» -> `ACTUALIZACION_PERFIL_LF` por ruta de gestion de activos, sin canal Perfiles/Skills.
 
-**Activación pendiente:** el PR ya incluye la integración fuente para que `public.lf_router_route_v1` consuma `LF_ROUTER_STAGE1_V2` directamente. La migración aún no está aplicada: requiere pruebas, PASE y la vía gobernada de migraciones antes de declarar el comportamiento desplegado.
+**Activación:** completada para LF mediante la vía gobernada de migraciones. `public.lf_router_route_v1` consume `LF_ROUTER_STAGE1_V2` directamente y mantiene V1 solo para callers heredados.
 
 ## Canal, Negocio y Alcance dinámico
 
@@ -92,7 +92,7 @@ El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos
 
 En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
 
-**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. La integración fuente de Stage 2 conserva y consume `canal_candidato`, `negocio_codigo` y `alcance`; referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente. La migración sigue sin aplicar.
+**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Stage 2 conserva y consume `canal_candidato`, `negocio_codigo`, `alcance` y, cuando aplica, `ruta_transversal`; las referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
@@ -106,7 +106,7 @@ En trabajos verdaderamente transversales se usa `negocios_afectados` explícito,
 
 ## Frontera: desarrollo y operacion cotidiana
 
-**Nombre candidato del tercer canal:** `OPERACIONES` / «Operaciones del Producto». No se crea `SISTEMA` como canal. «Soporte» es un subtipo posible de Operaciones, pero no su unico objetivo.
+**Tercer canal:** `OPERACIONES` / «Operaciones del Producto». No se crea `SISTEMA` como canal. «Soporte» es un subtipo posible de Operaciones, pero no su unico objetivo.
 
 **PROGRAMACION**, una vez admitido el alcance aplicable, cubre el ciclo tecnico completo: Analisis, diseño técnico, implementacion, pruebas, despliegue y mantenimiento tecnico. Los controles de cada fase y de cualquier efecto permanecen independientes y vigentes; esta politica no concede permisos de despliegue. Una incidencia por codigo defectuoso corresponde a Programacion; consultar un registro comercial o usar una transaccion ya expuesta no equivale a programar.
 
@@ -130,9 +130,9 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 - Si ya existe implementacion coincidente y autoridad suficiente, cierre con evidencia. Si existe una discrepancia de implementacion, iniciar Análisis / admision antes de Programacion.
 - No se cambia `lf_ops.reglas` por costumbre: cada tipo de definicion tiene su propio almacén canónico.
 
-## Entrega técnica para integrar el segundo nivel (sin aplicar SQL)
+## Contrato desplegado de Stage 1 V2 → Stage 2
 
-Se preparó **LF_ROUTER_STAGE1_V2** como contrato canónico y se añadió una migración fuente que amplía `public.lf_router_route_v1` sin eliminar la compatibilidad V1. La migración no está aplicada en Supabase:
+**LF_ROUTER_STAGE1_V2** es el contrato canónico desplegado para LF. `public.lf_router_route_v1` lo consume directamente y conserva compatibilidad V1 para callers heredados:
 
 **Fase actual LF:** el contrato usa `negocio_codigo` y el cierre de este PR se valida únicamente para `LF`. El validador conserva una extensión opcional `registered_businesses` para evolución futura, pero SALY y otros negocios no forman parte de la aceptación actual y no deben bloquear el cierre de LF. El catálogo nunca se toma del texto no confiable del usuario.
 
@@ -162,14 +162,12 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
 
 Los campos comunes (`texto_original`, `es_operacion`, `respuesta_directa`, `accion`, `sujeto`, `correcciones`, `formas_busqueda`, `ambiguo`, `alternativas`, `pregunta_usuario`, `capability_hint`) se siguen exigiendo según corresponda. `sistema` está prohibido en V2. `target_ref` y `verified=true` quedan prohibidos en Stage1.
 
-**Importante:** la interpretación semántica de la solicitud fue posteriormente validada y el Router rederivó `ACTUALIZACION_ROUTER_LF`, pero `downstream_execution_allowed` permaneció `false`. Por eso esta rama solo prepara fuente: se creó la migración de integración, pero **no se aplicó** ni se activó Stage1/Stage2 en Supabase. La aplicación deberá pasar los controles oficiales y la vía gobernada de migraciones; no fabricar recibos ni inferir autoridad desde el estado del PR.
+**Importante:** el despliegue de V2 no convierte clasificación en autorización. `downstream_execution_allowed=false` sigue siendo el valor de contención de Stage 1/Stage 2 hasta que la operación concreta pase sus controles de autoridad.
 
-## Estado y siguientes lotes
+## Estado y siguientes frentes
 
-**Estado de este lote:** Stage 1 V2, adapter V2 y la integración fuente de Stage 2 ya están definidos para LF. La rama V1 se conserva únicamente para compatibilidad de callers existentes.
+**Estado actual:** Stage 1 V2, adapter V2 y consumo directo por Stage 2 están desplegados para LF. La rama V1 se conserva únicamente para compatibilidad de callers existentes.
 
-**Pendiente antes de aplicar:** ejecutar las pruebas de contrato/integración, validar la migración en el carril autorizado, comprobar regresión V1 y pasar PASE/Train.
+**Pendiente funcional:** completar únicamente los handlers/capacidades operativas que todavía no existan, sus admisiones y permisos exactos. SALY permanece en una fase separada.
 
-**Posterior:** completar handlers/capacidades operativas y admisiones de cada canal donde hoy exista una brecha. SALY se valida en una fase separada.
-
-**No cerrado todavía:** validacion final del nombre OPERACIONES, operaciones de negocio expuestas por un handler autorizado y su enlace gobernado; mapeo completo de las 28 operaciones existentes a responsable/consumidor; criterios de scoring y empates; validación de permisos y status por operación; invocador del Stage 1. Estos faltantes no autorizan a suponer disponibilidad.
+**No confundir con deuda de contrato:** la ausencia de un handler operativo concreto no crea nuevos campos de clasificación ni nuevos canales.
