@@ -22,28 +22,38 @@
     },
     {
       "code": "PROGRAMACION",
-      "responsibility": "Consumir una definición canónica vigente y un paquete de Análisis admitido para construir o modificar software",
+      "responsibility": "Asumir el ciclo técnico completo: análisis admitido, diseño de solución, desarrollo, pruebas, despliegue y mantenimiento correctivo/evolutivo del software y su plataforma",
       "intents": [
         "IMPLEMENT_APPROVED_CHANGE",
-        "FIX_IMPLEMENTATION_DRIFT"
+        "FIX_IMPLEMENTATION_DRIFT",
+        "ANALYZE_IMPLEMENTATION",
+        "TEST_IMPLEMENTATION",
+        "DEPLOY_APPROVED_RELEASE",
+        "TECHNICAL_MAINTENANCE"
       ],
       "excluded": [
         "DECIDE_PRODUCT_WHAT",
         "REPLACE_MISSING_DEFINITION",
-        "AUTHORIZE_OWN_PG01"
+        "AUTHORIZE_OWN_PG01",
+        "OPERATE_EXISTING_BUSINESS_TRANSACTION",
+        "READ_CUSTOMER_STATE_AS_NEW_DEVELOPMENT"
       ]
     },
     {
-      "code": "SISTEMA",
-      "responsibility": "Operar componentes de infraestructura, despliegue, runtimes y cambios técnicos de plataforma",
+      "code": "OPERACIONES",
+      "label": "Operaciones del Producto",
+      "responsibility": "Atender consultas y acciones del negocio cotidianas sobre el producto vigente mediante capacidades operativas existentes y autorizadas",
       "intents": [
-        "DEPLOY_COMPONENT",
-        "UPDATE_PLATFORM_RUNTIME",
-        "PLATFORM_TECHNICAL_CHANGE"
+        "QUERY_BUSINESS_STATUS",
+        "USE_EXISTING_BUSINESS_OPERATION",
+        "CUSTOMER_OPERATIONAL_SUPPORT"
       ],
       "excluded": [
-        "DECIDE_PRODUCT_BEHAVIOR",
-        "BYPASS_GOVERNED_TRAIN"
+        "DECIDE_PRODUCT_WHAT",
+        "WRITE_NEW_CODE",
+        "CHANGE_TECHNICAL_IMPLEMENTATION",
+        "DEPLOY_NEW_RELEASE",
+        "RUN_ARBITRARY_DATABASE_QUERY"
       ]
     }
   ],
@@ -80,7 +90,24 @@
     "product_can_be_definition_table_other_than_rules": true,
     "profile_or_skill_lifecycle": "DIRECT_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
     "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
-    "system_business_operations_scope": "UNDER_REVIEW"
+    "system_business_operations_scope": "SUPERSEDED_BY_OPERACIONES_CANDIDATE",
+    "programming_lifecycle_includes": [
+      "ANALYSIS",
+      "DESIGN_TECHNICAL_SOLUTION",
+      "IMPLEMENTATION",
+      "TESTING",
+      "DEPLOYMENT",
+      "TECHNICAL_MAINTENANCE"
+    ],
+    "operational_channel_requires": [
+      "EXISTING_APPROVED_CAPABILITY",
+      "VERIFIED_AUTHORIZATION_AND_TENANT_SCOPE",
+      "DATA_MINIMALITY",
+      "NO_ARBITRARY_SQL",
+      "NO_CODE_OR_FUNCTIONAL_DEFINITION_CHANGE"
+    ],
+    "missing_operational_capability": "NO_OPERATIONAL_DISPATCH; ROUTE_REQUIRED_CHANGE_TO_PRODUCT_OR_PROGRAMACION_AS_APPROPRIATE",
+    "customer_support_vs_operational_actions": "Support is a subtype of the operational channel, not its full scope"
   },
   "examples": [
     {
@@ -117,9 +144,9 @@
     {
       "id": "DEPLOY_EDGE",
       "request": "Desplegar una Supabase Edge Function",
-      "initial_channel": "SISTEMA",
-      "initial_task": "RESOLVE_DEPLOY_OPERATION_AND_CURRENT_PERMISSION",
-      "expected_next": "CANDIDATE_READ_ONLY_MEANS_NO_DEPLOY"
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "CHECK_GOVERNED_TECHNICAL_DEPLOY_ROUTE",
+      "expected_next": "DEPLOY_CAPABILITY_IS_CANDIDATE_READ_ONLY; NO_DEPLOY_WITHOUT_CURRENT_PERMISSION"
     },
     {
       "id": "PRODUCT_USES_UI_PROFILE",
@@ -127,6 +154,21 @@
       "initial_channel": "PRODUCTO",
       "worker_candidate": "PERFIL-UI-ARCHITECT",
       "expected_next": "PROFILE_EXECUTION_RESOURCE_NOT_NEW_CHANNEL"
+    },
+    {
+      "id": "OFFER_STATUS",
+      "request": "Consultar el estado de una oferta del cliente en LF",
+      "initial_channel": "OPERACIONES",
+      "initial_task": "RESOLVE_EXISTING_AUTHORIZED_OFFER_STATUS_CAPABILITY",
+      "expected_next": "IF_MISSING_CAPABILITY_RETURN_GAP; NO_ARBITRARY_SQL_OR_CROSS_CUSTOMER_READ",
+      "observed_registry": "No specific offer status handler identified in public.lf_router_capability_v1"
+    },
+    {
+      "id": "TECHNICAL_MAINTENANCE",
+      "request": "Corregir fallo del backend del login y desplegar la version corregida",
+      "initial_channel": "PROGRAMACION",
+      "initial_task": "FOLLOW_TECHNICAL_LIFECYCLE_AND_GOVERNED_DEPLOYMENT",
+      "expected_next": "REQUIRE_EXISTING_DEFINITION_A9_PG01_AND_DEPLOY_AUTHORIZATION"
     }
   ],
   "transversal_operation_families": [
@@ -144,5 +186,6 @@
       "resolution": "DIRECT_GOVERNED_OPERATION",
       "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
     }
-  ]
+  ],
+  "channel_name_is_candidate": true
 }
