@@ -19,7 +19,18 @@
     "schema_invention_allowed": false,
     "fail_closed": true,
     "exact_head_evidence_required": true,
-    "post_update_baseline_required": true
+    "post_update_baseline_required": true,
+    "governed_repair_write": {
+      "default_mode": "READ_ONLY",
+      "authority_schema": "LF_SRCR_REPAIR_EXECUTION_AUTHORITY_V1",
+      "allowed_profile_task_intents": [
+        "REPAIR_MISSING_PRODUCT_STRUCTURE"
+      ],
+      "readback_required": true,
+      "rollback_required": true,
+      "promotion_allowed": false,
+      "direct_profile_invocation_allowed": false
+    }
   },
   "canonical_quality": {
     "required_for_profile_pack_ids": [
@@ -56,7 +67,8 @@
       "mode": "MARKDOWN_SECTIONS",
       "include_sections": [
         "Purpose",
-        "Runtime method capsule"
+        "Runtime method capsule",
+        "Governed repair execution (V0.7R1 bounded extension)"
       ],
       "max_chars": 8000
     },
