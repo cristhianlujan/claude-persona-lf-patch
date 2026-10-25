@@ -56,6 +56,30 @@ BEGIN
     (SELECT coalesce(max(component_token_id),0)+1000002 FROM lf_design.component_tokens)
   );
 
+  -- C03B: unchanged existing visual evidence is accepted on normal update.
+  -- This is a transaction rolled back in full below.
+  UPDATE lf_design.component_tokens
+  SET token_bindings=token_bindings
+  WHERE component_token_code='client_auth_watermark'
+    AND token_bindings ? 'expected_visible_color_range';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'P0_C03B_VISUAL_EVIDENCE_FIXTURE_MISSING';
+  END IF;
+
+  -- C03C: changing a former evidence literal is not grandfathered.
+  v_error:=NULL;
+  BEGIN
+    UPDATE lf_design.component_tokens
+    SET token_bindings=jsonb_set(token_bindings,
+      '{expected_visible_color_range,0}',to_jsonb('#001122'::text),true)
+    WHERE component_token_code='client_auth_watermark';
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
+  END;
+  IF v_error IS DISTINCT FROM 'DESIGN_TOKEN_LITERAL_COLOR_FORBIDDEN' THEN
+    RAISE EXCEPTION 'P0_C03C_CHANGED_EVIDENCE_FALSE_PASS:%',coalesce(v_error,'NO_ERROR');
+  END IF;
+
   -- C04: canonical discovery labels this governed visual policy as required.
   v_discovery:=public.lf_profile_policy_deterministic_discovery_v1(
     'PERFIL-UI-ARCHITECT','LF','PRODUCTO','UPDATE','PANTALLA');
