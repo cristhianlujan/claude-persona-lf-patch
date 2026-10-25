@@ -1,7 +1,5 @@
 # Contract — LF Visual Governance
 
-> Canonical token policy: `LF-DESIGN-TOKEN-REFERENCE-POLICY-V1` (`docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md`). All visual values MUST remain token references by name/code; this contract cannot authorize persisted HEX/RGB/HSL literals or duplicate-value aliases.
-
 
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Applies to: UI Architect outputs for MarketPlace Libertad Financiera and debt-related experiences.
