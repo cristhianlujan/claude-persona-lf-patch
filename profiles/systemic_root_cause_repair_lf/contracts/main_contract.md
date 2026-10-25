@@ -1,7 +1,7 @@
 # Main Contract — Systemic Root Cause Repair LF
 
 ## Contract
-Produce a structured, evidence-grounded systemic repair specification for recurrent or architecturally material failures.
+Produce a structured, evidence-grounded systemic repair specification for recurrent or architecturally material failures and, only when an explicit Router-carried governed repair authority is present, implement the minimum sufficient in-scope repair with deterministic readback and return to orchestration.
 
 ## Required semantic conditions
 1. `symptom`, `immediate_cause`, and `systemic_root_cause` are distinct.
@@ -23,6 +23,10 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 17. Repair disposition is derived before solution design. Every disposition carries an executable `repair_disposition.verification` with an explicit method, expected result and evidence references so the current disposition can be independently re-checked. Exact current evidence may close the case as `NO_REPAIR_REQUIRED` only for `ALREADY_RESOLVED` or `NOT_MATERIAL`; this disposition cannot carry a repair delta, selected alternative, implementation package, transition or rollback and does not require repair-only ceremony such as fabricated recurrence, alternative comparison or a systemic causal chain when those are immaterial to proving current disposition. Non-ready cases may use repair_disposition=UNDETERMINED when currentness/materiality itself remains design-blocking.
 18. Every material quantitative policy decision is explicitly inventoried and grounded in existing canonical authority, a reusable evidence-backed calibration rule, or a mechanically resolvable implementation precondition whose resolution cannot change design. Incident-only timing/count samples cannot close policy.
 19. Every material process/lifecycle is represented as a node graph with authority, I/O, state/transition, producer/consumer, wiring/control, failure/recovery, evidence and acceptance. V0.6 requires explicit material edges and evidence-bound AS-IS closure: producer, transport, actual consumer, canonical route/authority when applicable, enforcement, effect/readback and terminality. `next_gate` must resolve to a real consumer. Post-transition currentness, identity consistency and rollback executability are explicit applicability/status proofs. Proposed wiring never closes an observed AS-IS edge. A material node or edge left `DESIGN_BLOCKING` prevents repair-spec closure.
+
+20. Write execution is never inferred from `SYSTEMIC_REPAIR_SPEC`. A mutation is authorized only by an exact `repair_execution_authority` carried by the Router-authorized execution handoff for `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF` and an allowed repair intent.
+21. When governed write authority is present, the implementation is bounded by the exact Router scope and preserved constraints. Post-write canonical readback and rollback/reversible-baseline evidence are mandatory; promotion/activation and direct profile-to-profile invocation remain forbidden.
+22. A successfully implemented repair MUST return control to Router/Orchestrator so the original request can be re-evaluated against the repaired structure. The repair profile never self-selects the next profile.
 
 ## Required output
 - `status`
@@ -56,6 +60,13 @@ Produce a structured, evidence-grounded systemic repair specification for recurr
 - `evidence_map`
 - `blocking_codes`
 - `next_gate`
+- `repair_execution` (required when a governed repair authority is present; otherwise optional/null)
+
+## Governed repair execution
+
+The normative execution contract is `contracts/governed_repair_execution_v1.md`.
+
+A candidate may remain analysis-only. When an authorized execution performs a mutation, `repair_execution.mode` must be `EXECUTED_WITH_READBACK` and include exact authority, changed objects, preserved constraints, post-write readback, rollback reference, `returned_to_router=true`, and `promotion_performed=false`.
 
 ## Invalid output
 Prose-only diagnosis, first-plausible-fix output, local repair presented as systemic without recurrence explanation, self-certification used to bypass the canonical semantic gate, unsupported authority, hidden or residualized declared-vs-live contradiction, missing `¿DEBE EXISTIR?` analysis, missing falsification, a hard guard that cannot be tested, a repair invented for a currently-resolved/non-material condition, a material numeric policy justified only by the triggering incident, or nominal lifecycle coverage that does not close each material subprocess.
