@@ -120,42 +120,69 @@ BEGIN
     RAISE EXCEPTION 'P0_C07_PUBLIC_POLICY_EXECUTE_EXPOSED';
   END IF;
 
-  -- C08/09: requires a pre-existing, authorized IN_PROGRESS profile execution.
-  -- Never create or alter execution records just to satisfy this check.
-  SELECT execution_id INTO v_current_exec
-  FROM public.lf_operation_execution
-  WHERE operation_code='EJECUCION_PERFIL_LF'
-    AND target_type='PERFIL'
-    AND status='IN_PROGRESS'
-  ORDER BY created_at DESC LIMIT 1;
-  IF v_current_exec IS NOT NULL THEN
-    v_request_current:=public.lf_profile_policy_selection_prepare_v1(v_current_exec);
-    IF v_request_current->>'status'='READY' THEN
-      v_result:=public.lf_profile_policy_selection_finalize_v1(
-        v_request_current,jsonb_build_object(
-          'decision','NONE','selected_policy_codes','[]'::jsonb,
-          'reason','intentional omission test'));
-      IF EXISTS (
-         SELECT 1 FROM jsonb_array_elements(v_request_current->'candidate_policies') c
-         WHERE c->>'required'='true')
-         AND v_result->>'blocking_code'<>'POLICY_SELECTION_REQUIRED_POLICY_OMITTED' THEN
-        RAISE EXCEPTION 'P0_C08_REQUIRED_POLICY_FALSE_OMISSION:%',v_result;
-      END IF;
-      -- Validate that the current shortlist can actually be selected (if nonempty).
-      SELECT coalesce(jsonb_agg(c->>'policy_code'),'[]'::jsonb) INTO v_selected
-      FROM jsonb_array_elements(v_request_current->'candidate_policies') c;
-      v_result:=public.lf_profile_policy_selection_finalize_v1(
-        v_request_current,jsonb_build_object(
-           'decision',CASE WHEN jsonb_array_length(v_selected)>0 THEN 'SELECTED' ELSE 'NONE' END,
-           'selected_policy_codes',v_selected,'reason','current shortlist positive control'));
-      IF v_result->>'status'<>'VALID' THEN
-        RAISE EXCEPTION 'P0_C09_CANONICAL_REQUEST_FALSE_BLOCK:%',v_result;
-      END IF;
-    END IF;
-  ELSE
-    RAISE NOTICE 'P0_C08_C09_SKIPPED: no authorized IN_PROGRESS profile execution fixture';
+  -- C08-C10: fail closed unless a controlled, authorized, active UI fixture
+  -- is explicitly supplied by the isolated DB runner. Never sample arbitrary
+  -- production execution records or silently downgrade a missing fixture to PASS.
+  v_current_exec:=nullif(btrim(current_setting('lf_p0.fixture_execution_id',true)),'');
+  IF v_current_exec IS NULL THEN
+    RAISE EXCEPTION 'P0_C08_REQUIRED_POLICY_FIXTURE_NOT_CONFIGURED';
   END IF;
-  RAISE NOTICE 'LF P0 readback assertions completed (subject to C08/C09 fixture availability)';
+  IF NOT EXISTS (
+    SELECT 1 FROM public.lf_operation_execution e
+    WHERE e.execution_id=v_current_exec
+      AND e.operation_code='EJECUCION_PERFIL_LF'
+      AND e.target_type='PERFIL'
+      AND e.status='IN_PROGRESS'
+  ) THEN
+    RAISE EXCEPTION 'P0_C08_AUTHORIZED_FIXTURE_NOT_IN_PROGRESS';
+  END IF;
+  v_request_current:=public.lf_profile_policy_selection_prepare_v1(v_current_exec);
+  IF v_request_current->>'status'<>'READY'
+     OR NOT EXISTS (
+         SELECT 1 FROM jsonb_array_elements(
+           coalesce(v_request_current->'candidate_policies','[]'::jsonb)) c
+         WHERE c->>'required'='true'
+           AND c->>'policy_code'='LF-DESIGN-TOKEN-REFERENCE-POLICY-V1'
+       ) THEN
+    RAISE EXCEPTION 'P0_C08_REQUIRED_VISUAL_POLICY_FIXTURE_NOT_ELIGIBLE:%',v_request_current;
+  END IF;
+
+  -- C08: mandatory policy cannot be semantically removed.
+  v_result:=public.lf_profile_policy_selection_finalize_v1(
+    v_request_current,jsonb_build_object(
+      'decision','NONE','selected_policy_codes','[]'::jsonb,
+      'reason','intentional mandatory omission regression'));
+  IF v_result->>'status'<>'BLOCKED'
+     OR v_result->>'blocking_code'<>'POLICY_SELECTION_REQUIRED_POLICY_OMITTED' THEN
+    RAISE EXCEPTION 'P0_C08_REQUIRED_POLICY_FALSE_OMISSION:%',v_result;
+  END IF;
+
+  -- C09: selecting every eligible, current policy must succeed.
+  SELECT coalesce(jsonb_agg(c->>'policy_code'),'[]'::jsonb) INTO v_selected
+  FROM jsonb_array_elements(v_request_current->'candidate_policies') c;
+  v_result:=public.lf_profile_policy_selection_finalize_v1(
+    v_request_current,jsonb_build_object(
+      'decision','SELECTED','selected_policy_codes',v_selected,
+      'reason','canonical current mandatory policy selection'));
+  IF v_result->>'status'<>'VALID'
+     OR v_result->>'selected_policy_count' IS DISTINCT FROM
+        (jsonb_array_length(v_selected))::text THEN
+    RAISE EXCEPTION 'P0_C09_CANONICAL_REQUEST_FALSE_BLOCK:%',v_result;
+  END IF;
+
+  -- C10: even an authentic execution_id may not authorize altered shortlist or hash.
+  v_result:=public.lf_profile_policy_selection_finalize_v1(
+    jsonb_set(v_request_current,'{candidate_set_sha256}',to_jsonb('FORGED'::text)),
+    jsonb_build_object(
+      'decision','SELECTED','selected_policy_codes',v_selected,
+      'reason','stale or forged shortlist regression'));
+  IF v_result->>'status'<>'BLOCKED'
+     OR v_result->>'blocking_code'<>'POLICY_SELECTION_REQUEST_STALE_OR_FORGED' THEN
+    RAISE EXCEPTION 'P0_C10_AUTHENTIC_EXECUTION_FORGED_DIGEST_FALSE_PASS:%',v_result;
+  END IF;
+
+  RAISE NOTICE 'LF P0 assertions C01-C10 PASS in the isolated DB fixture';
+
 END
 $suite$;
 
