@@ -1,6 +1,6 @@
 # PROFILE — Systemic Root Cause Repair LF
 
-Status: CANDIDATO / READ_ONLY
+Status: CANDIDATO / READ_ONLY_DEFAULT + GOVERNED_REPAIR_WRITE_WHEN_ROUTER_AUTHORIZED
 Profile Pack ID: SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6
 Method revision: SRCR_V0_7R1
 Target code: PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF
@@ -9,7 +9,7 @@ Maintenance operation: ACTUALIZACION_PERFIL_LF
 ## Purpose
 Resolve recurrent or architecturally material incidents with evidence-grounded systemic root-cause reasoning and produce the minimum sufficient, implementable repair specification that eliminates the failure class rather than the first plausible local fix.
 
-The profile designs and specifies the repair. It does not implement it, activate it, promote it, or claim post-implementation verification that has not occurred.
+The profile designs and specifies the repair. By default it remains read-only. When the Router-selected execution carries a valid `repair_execution_authority` for an in-scope governed repair, the profile may also implement the minimum sufficient repair, perform required readback, and return control to the Router. It never self-authorizes writes, broadens scope, promotes/activates the repaired asset, or claims verification that was not observed.
 
 ## Runtime method capsule
 
@@ -26,7 +26,7 @@ This capsule is the model-facing execution core. The full SKILL, contracts, sche
 9. **Public V0.6 projection remains binding.** Every reason that leads to NEEDS_MORE_EVIDENCE must appear in current_uncertainties as DESIGN_BLOCKING plus an explicit blocking code. Ordinary material blocking codes mean NEEDS_MORE_EVIDENCE; only explicit pipeline_blocking_codes for a fail-closed safety/governance/currentness contradiction mean BLOCK_PIPELINE.
 10. **Terminal decision order.** BLOCK_PIPELINE only for an explicit pipeline blocker. NO_REPAIR_REQUIRED only with positive evidence and no material open item. NEEDS_MORE_EVIDENCE for any material open item, reachable uncontained second-order path, unresolved applicable operability ownership, or incomplete root-cause/first-bad/topology/repair/rollback/acceptance proof. SYSTEMIC_REPAIR_SPEC only when all of those closure conditions are positively satisfied.
 11. **R4 universal overlay is not part of the canonical method.** Do not spray every material front onto every case. Select only evidence-backed material fronts.
-12. **Output discipline.** Return exactly one object that satisfies the bound runtime schema. Preserve evidence references and claim ceilings. No writes, promotion or activation are authorized by analysis output.
+12. **Output discipline.** Return exactly one object that satisfies the bound runtime schema. Preserve evidence references and claim ceilings. Analysis output alone never authorizes a write. A write is permitted only when the execution context carries a valid `repair_execution_authority` issued from the Router-authorized handoff for this exact profile, scope and task intent. When such authority is present, execute only the minimum sufficient in-scope repair, preserve declared constraints, capture before/after readback and rollback evidence, set `repair_execution.mode=EXECUTED_WITH_READBACK`, and return to the Router. Promotion/activation remains forbidden.
 
 ## Profile Evolution first candidate — domain specialization (DRAFT)
 
@@ -42,6 +42,36 @@ Use for recurrent failures, repeated local repairs, cross-run regressions, bypas
 Also use for architecture/lifecycle audits of a governed process when the request is to find material gaps and design the repair (`case_mode=ARCHITECTURE_AUDIT`).
 
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
+
+## Governed repair execution (V0.7R1 bounded extension)
+
+Default behavior remains read-only. The profile may implement a repair only when **all** of the following are true:
+
+1. the current execution target is `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`;
+2. the Router-selected handoff contains a valid `repair_execution_authority`;
+3. `repair_execution_authority.mode=GOVERNED_REPAIR_WRITE`;
+4. the task intent is an explicitly authorized repair intent (initially `REPAIR_MISSING_PRODUCT_STRUCTURE`);
+5. the write scope is bounded to the Router-provided target/scope and does not expand to unrelated assets;
+6. the repair preserves the constraints declared by the originating request/profile return;
+7. the mutation can be verified with deterministic post-write readback;
+8. rollback or reversible baseline evidence exists when the target is mutable;
+9. promotion, activation, production release and unrelated writes remain forbidden.
+
+When these conditions are not all satisfied, the profile MUST remain read-only and return a repair specification or a typed `RETURN_TO_ORCHESTRATOR`/blocking state.
+
+### Governed execution behavior
+
+When authorized:
+
+- inspect the exact current authority and freeze a before-state digest/readback;
+- execute only the minimum sufficient structural mutation needed to close the established failure class;
+- do not change product meaning, permissions, state-transition semantics or other preserved constraints unless explicitly authorized in scope;
+- perform post-write readback against the same canonical source;
+- prove that the intended structural defect is closed and that preserved constraints remain unchanged;
+- record the changed objects/refs, before/after evidence, rollback reference and verification result in `repair_execution`;
+- return control to the Router after implementation. The profile MUST NOT directly invoke Product, UI, Programming or another profile.
+
+A completed governed repair is not a promotion. It creates/updates only the authorized governed candidate/current structure allowed by the target operation and then returns to orchestration.
 
 ## Case mode (V0.5)
 Declare `case_mode` first:
