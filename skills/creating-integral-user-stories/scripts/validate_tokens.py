@@ -10,6 +10,8 @@ from lf_common import (
 )
 
 JUDGE = "J08_TOKENS_MESSAGES"
+POLICY_CODE = "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1"
+POLICY_REF = "docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md"
 HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 RGB = re.compile(r"\brgba?\s*\(")
 SPACING = re.compile(r"\b\d+(?:\.\d+)?(?:px|rem|em)\b")
@@ -73,6 +75,8 @@ def run() -> int:
         for key, values in checks.items() if values
     ]
     evidence = {
+        "policy_code": POLICY_CODE,
+        "policy_ref": POLICY_REF,
         "tokens_declared": len(tokens),
         "messages_declared": len(messages),
         "duplicate_text_refs": duplicate_text_refs,

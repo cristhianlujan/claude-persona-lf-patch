@@ -1,5 +1,9 @@
 # Frontend Prototype Architect LF Skill Pack
 
+## Canonical design-token policy
+
+Apply `LF-DESIGN-TOKEN-REFERENCE-POLICY-V1` (`docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md`). Frontend/prototype outputs MUST consume canonical token names/codes from the governed Design System. Literal HEX/RGB/HSL values may be renderer-resolved at runtime only; they MUST NOT become stored authority or replace token identity in implementation specs.
+
 ## 0. ROUTING SHORT-CIRCUIT — EVALUATE BEFORE ALL OTHER RULES
 When the request requires another governed owner, emit the complete governed redirect and stop. Never compress the route and never omit `RETURN_TO_ORCHESTRATOR`.
 
