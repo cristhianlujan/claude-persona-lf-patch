@@ -107,7 +107,6 @@ These rules apply to CREATE_NEW work.
 - Optional requirements may remain optional; do not relabel them redundant without authority.
 - Do not invent links, legal effects, payment success, eligibility, campaign urgency, debt closure, financial precision, or consent defaults.
 - Keep domain truth from upstream profiles intact; UI owns presentation, hierarchy, components, states, tokens and responsive behavior, not financial/legal/privacy truth.
-- Apply `LF-DESIGN-TOKEN-REFERENCE-POLICY-V1`: emit and preserve canonical token names/codes in UI outputs. Never resolve/persist HEX/RGB/HSL values, and never create an alias token solely to duplicate an existing literal value.
 - If multiple upstream domain decisions are supplied, compose them without silently replacing or strengthening them.
 - Compact output is preferred, but never at the expense of a material requirement or guardrail.
 
