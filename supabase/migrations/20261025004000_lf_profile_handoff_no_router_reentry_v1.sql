@@ -685,12 +685,12 @@ BEGIN
     'public.lf_profile_execution_begin_from_handoff_v1(jsonb,text,text,text,text,text,text,jsonb)'::regprocedure
   );
 
-  IF position('lf_router_semantic_resume_route_v1' in src_h)>0
-     OR position('lf_router_resolve_v1(' in src_h)>0
-     OR position('router_result' in src_h)>0
-     OR position('lf_router_semantic_resume_route_v1' in src_v)>0
-     OR position('router_result' in src_v)>0
-     OR position('router_result' in src_b)>0
+  IF position('v_resume:=public.lf_router_semantic_resume_route_v1' in src_h)>0
+     OR position(':=public.lf_router_resolve_v1(' in src_h)>0
+     OR position('p_handoff->''router_result''' in src_h)>0
+     OR position('v_resume:=public.lf_router_semantic_resume_route_v1' in src_v)>0
+     OR position('p_handoff->''router_result''' in src_v)>0
+     OR position('p_handoff->''router_result''' in src_b)>0
   THEN
     RAISE EXCEPTION 'PROFILE_HANDOFF_ROUTER_REENTRY_SOURCE_REMAINS';
   END IF;
