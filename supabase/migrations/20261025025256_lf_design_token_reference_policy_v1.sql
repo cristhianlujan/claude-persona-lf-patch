@@ -1,5 +1,17 @@
 BEGIN;
 
+ALTER TABLE private.lf_repository_governance_bundle_v4
+  DROP CONSTRAINT lf_repository_governance_bundle_v4_control_kind_check;
+
+ALTER TABLE private.lf_repository_governance_bundle_v4
+  ADD CONSTRAINT lf_repository_governance_bundle_v4_control_kind_check
+  CHECK (control_kind = ANY (ARRAY[
+    'SOURCE_WORKFLOW'::text,
+    'RECONCILIATION_WORKFLOW'::text,
+    'VALIDATOR'::text,
+    'POLICY'::text
+  ]));
+
 COMMENT ON FUNCTION lf_design.guard_component_token_bindings_v1() IS
 'Enforcement DB de LF-DESIGN-TOKEN-REFERENCE-POLICY-V1. Prohíbe colores literales en component_tokens.token_bindings y valida referencias cromáticas canónicas por nombre/status.';
 
