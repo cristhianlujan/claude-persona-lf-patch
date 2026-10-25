@@ -2206,6 +2206,168 @@
         }
       }
     },
+    "repair_execution": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "authority_ref",
+            "changes",
+            "preserved_constraints",
+            "readback_refs",
+            "rollback_ref",
+            "returned_to_router",
+            "promotion_performed"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "AUTHORIZED_NOT_EXECUTED",
+                "EXECUTED_WITH_READBACK",
+                "BLOCKED"
+              ]
+            },
+            "authority_ref": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 5
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "target_ref",
+                  "change_type",
+                  "before_ref",
+                  "after_ref"
+                ],
+                "properties": {
+                  "target_ref": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "change_type": {
+                    "enum": [
+                      "CREATE",
+                      "MODIFY",
+                      "REMOVE",
+                      "BIND",
+                      "UNBIND"
+                    ]
+                  },
+                  "before_ref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 5
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "after_ref": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 5
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "preserved_constraints": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 3
+              }
+            },
+            "readback_refs": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 5
+              }
+            },
+            "rollback_ref": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 5
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "returned_to_router": {
+              "type": "boolean"
+            },
+            "promotion_performed": {
+              "const": false
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "EXECUTED_WITH_READBACK"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "authority_ref": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "changes": {
+                    "minItems": 1
+                  },
+                  "preserved_constraints": {
+                    "minItems": 1
+                  },
+                  "readback_refs": {
+                    "minItems": 1
+                  },
+                  "rollback_ref": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "returned_to_router": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
     "implementation_delta": {
       "type": "array",
       "items": {
