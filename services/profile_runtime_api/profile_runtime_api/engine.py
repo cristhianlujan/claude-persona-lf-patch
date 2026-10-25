@@ -7,6 +7,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from .cache import StructuralCache
+from .execution_binding import consume_execution_binding
 from .deployment import deployment_state
 from .hashing import canonical_json_sha256, sha256_text
 from .llama import (
@@ -524,8 +525,11 @@ def _governed_context(
 
 
 class ProfileRuntimeEngine:
-    def __init__(self, settings: Settings, *, llama_client: LlamaHTTPClient | None = None, cache: StructuralCache | None = None, structural_pipeline: StructuralContextPipeline | None = None) -> None:
+    def __init__(self, settings: Settings, *, llama_client: LlamaHTTPClient | None = None, cache: StructuralCache | None = None, structural_pipeline: StructuralContextPipeline | None = None, execution_binding_provider: Any = None, allow_test_execution_bindings: bool = False) -> None:
         self.settings = settings
+        self.execution_binding_provider = execution_binding_provider
+        self.allow_test_execution_bindings = allow_test_execution_bindings
+        self.contract_bound_runner: Any = None
         self.repository = RepositoryBindings(settings.repo_root, max_prompt_chars=settings.max_prompt_chars)
         self.cache = cache or StructuralCache(settings.state_dir / "structural-cache", max_entries=settings.cache_max_entries)
         self.structural = structural_pipeline or StructuralContextPipeline(settings, self.cache)
@@ -534,7 +538,7 @@ class ProfileRuntimeEngine:
         self.runner: Any = None
 
     def initialize(self) -> None:
-        self.settings.validate(); self.repository.validate(); self.structural.validate(); self.cache.initialize(); self.runner = self.repository.load_runtime_runner()
+        self.settings.validate(); self.repository.validate(); self.structural.validate(); self.cache.initialize(); self.runner = self.repository.load_runtime_runner(); self.contract_bound_runner = self.repository.load_contract_bound_runtime()
 
     def run_execute(self, request: ExecuteRequest) -> dict[str, Any]:
         started = time.perf_counter()
@@ -979,6 +983,35 @@ class ProfileRuntimeEngine:
             "deterministic_acceptance": deterministic_acceptance,
         }
 
+    def _execute_bound_runtime(self, *, task, sources, governed_receipt, adapter, verifier):
+        execution_id = (task.governed_operation.execution_id if task.governed_operation is not None
+                        else f"EJECUCION_PERFIL_LF:{task.request_id}")
+        adapters = [item.model_dump(mode="python") for item in task.lf_adapter_sources]
+        skeleton = self.runner.build_runtime_request(
+            execution_id=execution_id, profile_code=task.profile_code,
+            profile_slug=task.profile_slug, profile_sources=sources,
+            input_literal=task.input_literal, lf_adapter_sources=adapters)
+        descriptor = {
+            "schema": "lf-runtime-execution-binding-request/v1",
+            "execution_id": execution_id, "request_id": task.request_id,
+            "profile_code": task.profile_code, "profile_slug": task.profile_slug,
+            "input_sha256": skeleton["input_sha256"],
+            "profile_source_sha256": skeleton["profile_source_sha256"],
+            "lf_adapter_source_sha256": skeleton.get("lf_adapter_source_sha256"),
+            "context_fingerprint": governed_receipt["context_fingerprint"],
+            "executor_mode": "REMOTE_API",
+        }
+        contract, evidence = consume_execution_binding(
+            self.execution_binding_provider, descriptor,
+            allow_test_bindings=self.allow_test_execution_bindings)
+        package = self.contract_bound_runner.execute_contract_bound_profile_runtime(
+            execution_contract=contract, execution_id=execution_id,
+            profile_code=task.profile_code, profile_slug=task.profile_slug,
+            profile_sources=sources, input_literal=task.input_literal,
+            adapter=adapter, attestation_verifier=verifier,
+            allow_test_doubles=False, lf_adapter_sources=adapters)
+        return package, evidence
+
     def _execute_queue_profile(
         self,
         *,
@@ -997,7 +1030,7 @@ class ProfileRuntimeEngine:
             governed_pack, governed_receipt = _governed_context(task, context_pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=None,image_media_type=None,model_profile_sources=model_sources,generation_schema=generation_schema,execution_budget=(binding.execution_budget if binding else None))
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack,model_profile_sources=model_sources,generation_schema=generation_schema)
-            runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
+            runtime_package,binding_evidence=self._execute_bound_runtime(task=task,sources=sources,governed_receipt=governed_receipt,adapter=adapter,verifier=verifier)
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
         model_raw_output=runtime_package.get("raw_output")
@@ -1008,7 +1041,7 @@ class ProfileRuntimeEngine:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        completion={"status":"PASS","blocking_codes":[],"execution_binding":binding_evidence,"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     def _execute_profile(self, *, task: ProfileTask, artifact: Any, prepared: PreparedContext, context_reused_within_batch: bool) -> dict[str, Any]:
@@ -1024,7 +1057,7 @@ class ProfileRuntimeEngine:
             governed_pack, governed_receipt = _governed_context(task, prepared.pack, profile_sources=sources, schema=schema)
             adapter=PersistentLlamaServerAdapter(settings=self.settings,client=self.llama_client,schema=schema,structural_context=governed_pack,image_bytes=image_bytes,image_media_type=artifact.image_media_type if image_bytes is not None else None,model_profile_sources=model_sources,generation_schema=generation_schema,execution_budget=(binding.execution_budget if binding else None))
             verifier=PersistentLlamaServerVerifier(settings=self.settings,schema=schema,structural_context=governed_pack,model_profile_sources=model_sources,generation_schema=generation_schema)
-            runtime_package=self.runner.execute_profile_runtime(execution_id=f"EJECUCION_PERFIL_LF:{task.request_id}",profile_code=task.profile_code,profile_slug=task.profile_slug,profile_sources=sources,input_literal=task.input_literal,adapter=adapter,attestation_verifier=verifier,allow_test_doubles=False,lf_adapter_sources=[i.model_dump(mode="python") for i in task.lf_adapter_sources])
+            runtime_package,binding_evidence=self._execute_bound_runtime(task=task,sources=sources,governed_receipt=governed_receipt,adapter=adapter,verifier=verifier)
         except Exception as exc:
             code,detail=_failure(exc); return self._profile_failure(task=task,code=code,detail=detail,stage="RUNTIME_COMPLETION",started=started,context=context,runtime_diagnostics=_runtime_diagnostics(exc))
         model_raw_output=runtime_package.get("raw_output")
@@ -1035,7 +1068,7 @@ class ProfileRuntimeEngine:
             code,detail=_failure(exc)
             diagnostics=_runtime_diagnostics(exc) or _post_generation_diagnostics(adapter, model_raw_output)
             return self._profile_failure(task=task,code=code,detail=detail,stage="POST_GENERATION_VALIDATION",started=started,context=context,runtime_diagnostics=diagnostics)
-        completion={"status":"PASS","blocking_codes":[],"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
+        completion={"status":"PASS","blocking_codes":[],"execution_binding":binding_evidence,"receipt":runtime_package.get("receipt"),"governed_context_receipt":governed_receipt,"attestation_verification":runtime_package.get("runtime_attestation_verification"),"llama_usage":adapter.last_completion.get("usage",{}),"llama_timings":adapter.last_completion.get("timings",{}),"output_materialization":materialization}
         return {"request_id":task.request_id,"profile_code":task.profile_code,"profile_slug":task.profile_slug,"context":context,"runtime_completion":completion,"profile_contract_valid":contract,"semantic_utility":semantic,"model_raw_output":model_raw_output,"raw_output":materialized_output,"elapsed_ms":round((time.perf_counter()-started)*1000,3),"downstream_authorized":False}
 
     @staticmethod

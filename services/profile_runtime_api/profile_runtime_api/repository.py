@@ -470,6 +470,14 @@ class RepositoryBindings:
             "lf_profile_runtime_runner",
         )
 
+    def load_contract_bound_runtime(self) -> ModuleType:
+        runtime_dir = self.repo_root / "sandbox/lf_contract_gate_test/profile_execution_runtime"
+        return self._load_with_siblings(
+            runtime_dir / "contract_bound_profile_runtime.py",
+            runtime_dir,
+            "lf_contract_bound_profile_runtime",
+        )
+
     def load_ui_composer_boundary(self) -> ModuleType:
         return self._load_file(
             self.repo_root / "profiles/ui_architect/validators/validate_composer_payload_boundary.py",
