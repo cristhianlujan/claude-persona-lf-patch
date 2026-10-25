@@ -1,0 +1,138 @@
+-- LF P0 policy-selection + design-token guard regression, transactional.
+-- Run only after both P0 migrations in an isolated test DB or governed test lane.
+-- Explicit ROLLBACK; never leave test components behind.
+BEGIN;
+
+DO $suite$
+DECLARE
+  v_result jsonb;
+  v_discovery jsonb;
+  v_request jsonb;
+  v_current_exec text;
+  v_request_current jsonb;
+  v_selected jsonb;
+  v_error text;
+  v_id bigint;
+BEGIN
+  -- C01: PostgreSQL regex must identify HEX / RGB and leave token codes untouched.
+  IF '#FEE2E2' !~* '(#[0-9a-f]{3,8}([^0-9a-f]|$)|rgba?\s*\(|hsla?\s*\()'
+     OR '#991B1B' !~* '(#[0-9a-f]{3,8}([^0-9a-f]|$)|rgba?\s*\(|hsla?\s*\()'
+     OR 'rgba(1,2,3,1)' !~* '(#[0-9a-f]{3,8}([^0-9a-f]|$)|rgba?\s*\(|hsla?\s*\()'
+     OR 'error_bg' ~* '(#[0-9a-f]{3,8}([^0-9a-f]|$)|rgba?\s*\(|hsla?\s*\()' THEN
+    RAISE EXCEPTION 'P0_C01_LITERAL_REGEX_REGRESSION';
+  END IF;
+
+  -- C02: a governed binding outside the known color-key list is still rejected.
+  v_error:=NULL;
+  BEGIN
+    INSERT INTO lf_design.component_tokens(
+      component_token_code,design_system_code,component_name,component_state,
+      token_bindings,allowed_usage,blocked_usage,status,
+      source_decision_id,notes,design_system_id,component_token_id
+    ) VALUES (
+      '__P0_POLICY_HEX_GUARD__','LF_DS_V1','p0_test','default',
+      jsonb_build_object('new_visual_property','#991B1B'),
+      'p0 test','p0 test','CANDIDATO','__P0_POLICY_TEST__',
+      'rollback-only regression check',1,
+      (SELECT coalesce(max(component_token_id),0)+1000001 FROM lf_design.component_tokens)
+    );
+  EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
+  END;
+  IF v_error IS DISTINCT FROM 'DESIGN_TOKEN_LITERAL_COLOR_FORBIDDEN' THEN
+    RAISE EXCEPTION 'P0_C02_UNEXPECTED_GUARD_RESPONSE:%',coalesce(v_error,'NO_ERROR');
+  END IF;
+
+  -- C03: a real current token reference must still be admitted.
+  INSERT INTO lf_design.component_tokens(
+    component_token_code,design_system_code,component_name,component_state,
+    token_bindings,allowed_usage,blocked_usage,status,
+    source_decision_id,notes,design_system_id,component_token_id
+  ) VALUES (
+    '__P0_POLICY_CANONICAL_GUARD__','LF_DS_V1','p0_test','default',
+    jsonb_build_object('background','error_bg','border','error_text','text','error_text'),
+    'p0 test','p0 test','CANDIDATO','__P0_POLICY_TEST__',
+    'rollback-only regression check',1,
+    (SELECT coalesce(max(component_token_id),0)+1000002 FROM lf_design.component_tokens)
+  );
+
+  -- C04: canonical discovery labels this governed visual policy as required.
+  v_discovery:=public.lf_profile_policy_deterministic_discovery_v1(
+    'PERFIL-UI-ARCHITECT','LF','PRODUCTO','UPDATE','PANTALLA');
+  IF v_discovery->>'candidate_count'<>'1'
+     OR v_discovery#>>'{candidate_policies,0,policy_code}'<>'LF-DESIGN-TOKEN-REFERENCE-POLICY-V1'
+     OR v_discovery#>>'{candidate_policies,0,required}'<>'true' THEN
+    RAISE EXCEPTION 'P0_C04_MANDATORY_DISCOVERY_REGRESSION:%',v_discovery;
+  END IF;
+
+  -- C05: forged or nonexistent execution cannot attest a fabricated shortlist.
+  v_request:=jsonb_build_object(
+    'schema_version','LF_PROFILE_POLICY_SEMANTIC_REQUEST_V1',
+    'status','READY','execution_id','__NO_SUCH_EXECUTION_P0__',
+    'candidate_set_sha256','FORGED',
+    'candidate_policies',jsonb_build_array(
+      jsonb_build_object('policy_code','INVENTED_POLICY','required',false)));
+  v_result:=public.lf_profile_policy_selection_finalize_v1(
+    v_request,jsonb_build_object('decision','SELECTED',
+      'selected_policy_codes',jsonb_build_array('INVENTED_POLICY'),
+      'reason','adversarial provenance test'));
+  IF v_result->>'status'<>'BLOCKED'
+     OR v_result->>'blocking_code'<>'POLICY_SELECTION_REQUEST_STALE_OR_FORGED' THEN
+    RAISE EXCEPTION 'P0_C05_FORGED_SHORTLIST_FALSE_PASS:%',v_result;
+  END IF;
+
+  -- C06: SALY remains excluded from LF-only policies.
+  v_discovery:=public.lf_profile_policy_deterministic_discovery_v1(
+    'PERFIL-UI-ARCHITECT','SALY','PRODUCTO','UPDATE','PANTALLA');
+  IF v_discovery->>'candidate_count'<>'0' THEN
+    RAISE EXCEPTION 'P0_C06_BUSINESS_ISOLATION_FALSE_PASS:%',v_discovery;
+  END IF;
+
+  -- C07: do not expose internal SECURITY DEFINER helpers to browser roles.
+  IF has_function_privilege('anon','public.lf_profile_policy_selection_finalize_v1(jsonb,jsonb)','EXECUTE')
+     OR has_function_privilege('authenticated','public.lf_profile_policy_selection_finalize_v1(jsonb,jsonb)','EXECUTE')
+     OR has_function_privilege('anon','public.lf_profile_policy_selection_prepare_v1(text)','EXECUTE')
+     OR has_function_privilege('authenticated','public.lf_profile_policy_deterministic_discovery_v1(text,text,text,text,text)','EXECUTE') THEN
+    RAISE EXCEPTION 'P0_C07_PUBLIC_POLICY_EXECUTE_EXPOSED';
+  END IF;
+
+  -- C08/09: requires a pre-existing, authorized IN_PROGRESS profile execution.
+  -- Never create or alter execution records just to satisfy this check.
+  SELECT execution_id INTO v_current_exec
+  FROM public.lf_operation_execution
+  WHERE operation_code='EJECUCION_PERFIL_LF'
+    AND target_type='PERFIL'
+    AND status='IN_PROGRESS'
+  ORDER BY created_at DESC LIMIT 1;
+  IF v_current_exec IS NOT NULL THEN
+    v_request_current:=public.lf_profile_policy_selection_prepare_v1(v_current_exec);
+    IF v_request_current->>'status'='READY' THEN
+      v_result:=public.lf_profile_policy_selection_finalize_v1(
+        v_request_current,jsonb_build_object(
+          'decision','NONE','selected_policy_codes','[]'::jsonb,
+          'reason','intentional omission test'));
+      IF EXISTS (
+         SELECT 1 FROM jsonb_array_elements(v_request_current->'candidate_policies') c
+         WHERE c->>'required'='true')
+         AND v_result->>'blocking_code'<>'POLICY_SELECTION_REQUIRED_POLICY_OMITTED' THEN
+        RAISE EXCEPTION 'P0_C08_REQUIRED_POLICY_FALSE_OMISSION:%',v_result;
+      END IF;
+      -- Validate that the current shortlist can actually be selected (if nonempty).
+      SELECT coalesce(jsonb_agg(c->>'policy_code'),'[]'::jsonb) INTO v_selected
+      FROM jsonb_array_elements(v_request_current->'candidate_policies') c;
+      v_result:=public.lf_profile_policy_selection_finalize_v1(
+        v_request_current,jsonb_build_object(
+           'decision',CASE WHEN jsonb_array_length(v_selected)>0 THEN 'SELECTED' ELSE 'NONE' END,
+           'selected_policy_codes',v_selected,'reason','current shortlist positive control'));
+      IF v_result->>'status'<>'VALID' THEN
+        RAISE EXCEPTION 'P0_C09_CANONICAL_REQUEST_FALSE_BLOCK:%',v_result;
+      END IF;
+    END IF;
+  ELSE
+    RAISE NOTICE 'P0_C08_C09_SKIPPED: no authorized IN_PROGRESS profile execution fixture';
+  END IF;
+  RAISE NOTICE 'LF P0 readback assertions completed (subject to C08/C09 fixture availability)';
+END
+$suite$;
+
+ROLLBACK;
