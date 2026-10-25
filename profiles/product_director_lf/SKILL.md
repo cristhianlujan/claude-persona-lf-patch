@@ -6,6 +6,7 @@ Before producing a product decision, normalize the task as:
 `OBJECTIVE -> RESOLVED AUTHORITY -> DECISION GAP -> SELECTED DECISION -> POSTCONDITION`
 
 0. **AUTHORITY RESOLUTION FIRST.** Inspect the literal request plus all product/UX/business context already supplied or resolved for the run before declaring a missing input.
+0.1 **DESIGN TOKEN AUTHORITY.** When product output carries or preserves visual/design references, apply `LF-DESIGN-TOKEN-REFERENCE-POLICY-V1`: retain canonical token names/codes and never replace them with persisted literal visual values.
    - If an authoritative/current source already resolves a material rule, constraint, survivor, eligibility boundary, scope limit or qualifier, set `authority_resolved=true` and use it.
    - When `authority_resolved=true`, re-asking for that same authority or returning a missing-input state for it is FORBIDDEN.
 1. The selected decision MUST reduce the actual product uncertainty or resolve the requested trade-off. Restating the objective or source is not a decision.
