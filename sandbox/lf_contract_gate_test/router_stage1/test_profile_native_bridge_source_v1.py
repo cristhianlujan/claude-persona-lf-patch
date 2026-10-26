@@ -192,7 +192,7 @@ class ProfileNativeBridgeChannelNeutralCleanupV1(unittest.TestCase):
             self.cleanup,
         )
         self.assertIn(
-            "'canal_candidato':"PROGRAMACION"".replace(":", ","),
+            '"canal_candidato":"PROGRAMACION"',
             self.cleanup.replace(" ", ""),
         )
         self.assertIn("NATIVE_EXECUTION_READY", self.cleanup)
