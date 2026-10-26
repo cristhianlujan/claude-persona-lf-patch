@@ -232,9 +232,26 @@ DO $$ DECLARE v jsonb; t text; BEGIN
  INSERT INTO test_passed VALUES ('12');
 END $$;
 
+-- 13: the gate runs with the caller's permissions. A caller without EXECUTE on
+-- the D7 reader (as service_role is today) gets an explicit block, never a crash.
+GRANT USAGE ON SCHEMA private TO service_role;
+DO $$ DECLARE v jsonb; g jsonb; b jsonb := pg_temp.binding('NORMAL'); BEGIN
+ IF (SELECT prosecdef FROM pg_proc WHERE oid='public.lf_router_programming_admission_gate_v1(jsonb)'::regprocedure)
+ THEN RAISE EXCEPTION 'TEST_FAIL:13_gate_must_be_security_invoker'; END IF;
+ PERFORM set_config('role','service_role',true);
+ v := public.lf_router_route_v1('{"schema_version":"TEST_STAGE1_V2","channel":"PROGRAMACION"}'::jsonb,
+        jsonb_build_object('programming_handoff',b));
+ PERFORM set_config('role','postgres',true);
+ IF v->>'paso' IS DISTINCT FROM 'PROGRAMACION_ADMISION_BLOQUEADA'
+    OR v->>'codigo' IS DISTINCT FROM 'PG01_ROUTER_READER_NOT_GRANTED'
+    OR v->>'retorno' IS DISTINCT FROM 'BLOCK_NO_CODE'
+ THEN RAISE EXCEPTION 'TEST_FAIL:13_caller_without_reader_grant %', v; END IF;
+ INSERT INTO test_passed VALUES ('13');
+END $$;
+
 DO $$ DECLARE n int; BEGIN
  SELECT count(*) INTO n FROM test_passed;
- IF n<>12 THEN RAISE EXCEPTION 'TEST_FAIL:total_%',n; END IF;
+ IF n<>13 THEN RAISE EXCEPTION 'TEST_FAIL:total_%',n; END IF;
  RAISE NOTICE 'ROUTER_PROGRAMMING_DISPATCH_TESTS_PASSED:%',n;
 END $$;
 ROLLBACK;

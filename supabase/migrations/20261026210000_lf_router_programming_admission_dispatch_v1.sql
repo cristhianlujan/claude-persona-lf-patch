@@ -18,7 +18,7 @@ $pre$;
 CREATE OR REPLACE FUNCTION public.lf_router_programming_admission_gate_v1(p_binding jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 STABLE
 SET search_path TO 'pg_catalog', 'public', 'private'
 AS $gate$
@@ -58,6 +58,11 @@ EXCEPTION
   WHEN invalid_text_representation OR invalid_parameter_value OR data_exception THEN
     RETURN jsonb_build_object('schema_version','LF_ROUTER_PROGRAMMING_ADMISSION_GATE_V1',
                  'found',false,'admissible',false,'reason','PG01_ROUTER_BINDING_INVALID');
+  WHEN insufficient_privilege THEN
+    -- Runs with the caller's permissions (owner decision 26-oct). Until the caller
+    -- is granted EXECUTE on the D7 reader, the gate answers this explicit code.
+    RETURN jsonb_build_object('schema_version','LF_ROUTER_PROGRAMMING_ADMISSION_GATE_V1',
+                 'found',false,'admissible',false,'reason','PG01_ROUTER_READER_NOT_GRANTED');
   WHEN OTHERS THEN
     -- Fail closed: any reader error is non-admissible, never a Router crash.
     RETURN jsonb_build_object('schema_version','LF_ROUTER_PROGRAMMING_ADMISSION_GATE_V1',
@@ -71,7 +76,7 @@ REVOKE ALL ON FUNCTION public.lf_router_programming_admission_gate_v1(jsonb)
 GRANT EXECUTE ON FUNCTION public.lf_router_programming_admission_gate_v1(jsonb)
   TO service_role, supabase_read_only_user;
 COMMENT ON FUNCTION public.lf_router_programming_admission_gate_v1(jsonb) IS
- 'Read-only security-definer minimization bridge to PG-01 exact receipt gate. Returns no stored content or receipt metadata.';
+ 'Read-only PG-01 exact receipt gate for the Router. SECURITY INVOKER: runs with the caller''s permissions; no privilege is granted on the D7 reader or ledger. Returns only schema_version, found, admissible and reason.';
 
 DO $route$
 DECLARE
