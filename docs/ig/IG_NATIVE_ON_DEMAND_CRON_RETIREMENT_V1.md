@@ -1,6 +1,6 @@
 # Input Governance — transición a ejecución bajo demanda GPT Native (candidato v1)
 
-**Estado:** PROPOSED / NON-PRODUCTION / NO_CUTOVER.
+**Estado:** PROPOSED / ROUTER_SEMANTIC_BLOCKED / NON-PRODUCTION / NO_CUTOVER.
 **Fecha de verificación:** 2026-10-26.
 **Alcance:** reemplazar exclusivamente el *despacho periódico* de `ig-direct-sql-worker-v1`, reutilizando el motor SQL gobernado. No modificar reglas, familias, controles EKB, Router ACT-0001 ni ejecución de otros perfiles.
 **Autoridad:** contrato vivo en `programacion.contratos`; este documento NO sustituye ni revisa su autoridad.
@@ -38,6 +38,17 @@ EKB focal consultado:
 - `IG-M107-CP3-TRANSPORT-CPU-TRADEOFF-004`: menor espera de transporte no soluciona tiempo SQL del Validator.
 - `DB-GIT-DRIFT-UNGOVERNED-PERSISTENT-OBJECT-001`: cualquier cambio DB persistente exige Git-first.
 - `docs/input-governance/ADR_M10_6_RUNTIME_AND_REGISTRY_AUTHORITY_V1.md`: distinguir registro/runtime/contrato; no duplicar autoridad ni promover por inferencia.
+
+## Corrección de ruta oficial — 2026-10-26
+
+**Separar dos tipos de escritura, sin mezclarlos:**
+
+- **Modificación estructural persistente** (funciones, autorizaciones/ACL, contrato, binding, consumidor, cron, triggers): **Router ACT-0001 → `ACTUALIZACION_DB_LF` → PR Git-first → PASE / checks exact-HEAD → `ready-to-merge` → Merge Train → apply + ledger + readback Git=ledger=DB**. El Train reserva la ejecución `ACTUALIZACION_DB_LF` al admitir el PR; no reservar manualmente ni ejecutar SQL por el conector de lectura. Regla vigente: `CLAUDE.md`, `AGENTS.md`, R16.
+- **Procesamiento operacional por pantalla** (Curator, Validator y receipts): **no** es una migración por solicitud. Lo gobierna `EJECUCION_PERFIL_LF` / Input Governance usando funciones y permisos del runtime ya admitidos. GPT Native dirige la interacción en la misma conversación; no se crean roles SQL nuevos ni se invocan herramientas de escritura sin identidad y ejecución gobernadas. El Train implementa el **cambio estructural** que habilita esa ruta operacional; no procesa las 47 familias en cada PR.
+
+**Router live — evidencia de bloqueo:** `public.lf_router_resolve_v1` sobre el alcance de migración retornó `BLOCK_SCOPE_SEMANTICS_UNATTESTED`, con `operation_code=null` y `downstream_execution_allowed=false`. Por ello solo se corrige documentación preparatoria en este PR. No adjuntar SQL aplicable ni etiquetar `ready-to-merge` como una migración ejecutable hasta recuperar la atestación semántica oficial del Router y sus políticas vigentes. No retirar/alterar el cron mientras exista este bloqueo.
+
+**No solución por bypass:** el bloqueo no se corrige omitiendo restricciones del pedido, forzando `p_target_hint`, ampliando EXECUTE a `service_role`/PUBLIC ni sustituyendo el SQL trabajador por otra capa de API. Se debe obtener la ruta con autoridad, reutilizar mecanismos aprobados y probar semántica/seguridad antes del Train.
 
 ## Diseño mínimo candidato (NO IMPLEMENTADO)
 
