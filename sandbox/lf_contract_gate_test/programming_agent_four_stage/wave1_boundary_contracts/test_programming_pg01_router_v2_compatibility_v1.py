@@ -25,6 +25,7 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
         ("20261024193000_lf_profile_input_governance_task_applicability_v1.sql", "$patch_router_task_binding$"),
         ("20261025000500_lf_router_product_dynamic_profile_selection_v1.sql", "$patch$"),
         ("20261026145500_lf_router_product_context_resolution_v1.sql", "$patch_route$"),
+        ("20261026161500_lf_router_thin_derivation_profile_investigation_v1.sql", "$route$"),
     ]
     for name, tag in patches:
         path = "supabase/migrations/" + name
@@ -36,7 +37,10 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
         sources[name] = text
     final_definition = query("to_jsonb(pg_get_functiondef('public.lf_router_route_v1(jsonb,jsonb,boolean)'::regprocedure))")
     check("router_v2_latest_main_dynamic_product_patch_present", "PRODUCTO_PROFILE_SELECTION_REQUIRED" in final_definition, True)
-    check("router_v2_latest_main_context_first_patch_present", "product_context_read_before_profile_selection" in final_definition, True)
+    # 20261026161500 (thin derivation) replaces the context-first Product block:
+    # the Router now only derives and the selected profile investigates READ_ONLY.
+    check("router_v2_latest_main_context_first_block_replaced", "product_context_read_before_profile_selection" in final_definition, False)
+    check("router_v2_latest_main_thin_derivation_patch_present", "'router_work_mode','DERIVATION_ONLY'" in final_definition, True)
     def programming_branch(text):
         start = text.index("IF v_channel='PROGRAMACION' THEN")
         return text[start:text.index("    END IF;", start)]
