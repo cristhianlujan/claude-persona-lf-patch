@@ -81,6 +81,22 @@ class ExecutorModeAttestationTest(unittest.TestCase):
         self.assertEqual(response["runtime_attestation"]["executor_mode"], "REMOTE_API")
         self.assertEqual(response["runtime_attestation"]["provider"], "local_llama_cpp_hetzner_persistent")
 
+    def test_missing_mode_fails_before_health_or_model_call(self) -> None:
+        from unittest.mock import patch
+
+        adapter = self.adapter()
+        request = self.request("REMOTE_API")
+        request.pop("executor_mode")
+        with (
+            patch.object(adapter.client, "health") as health,
+            patch.object(adapter.client, "chat") as chat,
+        ):
+            with self.assertRaises(LlamaTransportError) as ctx:
+                adapter.execute(request)
+            self.assertEqual(ctx.exception.code, "LLAMA_EXECUTOR_MODE_INVALID")
+            health.assert_not_called()
+            chat.assert_not_called()
+
     def test_non_remote_mode_fails_before_model_call(self) -> None:
         with self.assertRaises(LlamaTransportError) as ctx:
             self.adapter().execute(self.request("GPT_NATIVE"))
