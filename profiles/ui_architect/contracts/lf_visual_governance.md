@@ -1,5 +1,6 @@
 # Contract — LF Visual Governance
 
+
 Status: CANDIDATE_READ_ONLY / SANDBOX
 Applies to: UI Architect outputs for MarketPlace Libertad Financiera and debt-related experiences.
 

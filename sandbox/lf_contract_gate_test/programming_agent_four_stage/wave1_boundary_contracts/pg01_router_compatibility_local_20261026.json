@@ -1,0 +1,1274 @@
+{
+  "status": "LOCAL_FOUNDATION_TESTS_COMPLETED",
+  "evidence_tier": "LOCAL_POSTGRES_CANONICAL_FUNCTIONS_SYNTHETIC_CATALOG",
+  "provider_attested": false,
+  "pg01_runtime_verified": false,
+  "hosted_database_touched": false,
+  "independent_review": false,
+  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "image": "postgres:17.6",
+  "migration": "supabase/migrations/20261023221300_programming_context_snapshot_runtime_guard_pg01_receiver_base_v1.sql",
+  "migration_sha256": "fa6c24cccdd0a5a609f4e40229fa44ce2d70ce094d5dd7984a37d06d36c1059c",
+  "dependency_source": "supabase/migrations/20261004144500_t_decctx_decision_context_asof_v1.sql",
+  "dependency_source_sha256": "f65a1a2288c69c847e8f0434834a4ca62ffda8d8f5b59c49e30212c22376d9a0",
+  "assertions": 148,
+  "results": [
+    {
+      "case": "foundation_functions_before",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "ddl_rollback_restores_absence",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "ddl_rollback_restores_original_guard",
+      "actual": "2e9cba77a6a67039088a4e3cb971015d",
+      "expected": "2e9cba77a6a67039088a4e3cb971015d",
+      "matched": true
+    },
+    {
+      "case": "guard_acl_preserved",
+      "actual": "DEFAULT",
+      "expected": "DEFAULT",
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_snapshot_validate_v1(jsonb)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_record_v1(jsonb,text)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "no_public_execute_fn_programming_context_resolve_v1(text,text,timestamptz)",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "valid_synthetic_payload",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "record_positive",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "record_idempotency",
+      "actual": [
+        "e49de456-c4ee-4132-8499-1129a665db51",
+        "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
+        "IDEMPOTENT_REPLAY"
+      ],
+      "expected": [
+        "e49de456-c4ee-4132-8499-1129a665db51",
+        "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
+        "IDEMPOTENT_REPLAY"
+      ],
+      "matched": true
+    },
+    {
+      "case": "resolve_positive",
+      "actual": "RESOLVED",
+      "expected": "RESOLVED",
+      "matched": true
+    },
+    {
+      "case": "resolve_repeat_identical",
+      "actual": {
+        "sha256": "e854031150cf5598b0c0a1078f0f3e93ed0135bd25ee5477d94da73ca318e7be",
+        "type": "dict"
+      },
+      "expected": {
+        "sha256": "e854031150cf5598b0c0a1078f0f3e93ed0135bd25ee5477d94da73ca318e7be",
+        "type": "dict"
+      },
+      "matched": true
+    },
+    {
+      "case": "exact_guard_positive",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "unknown_subject",
+      "actual": "UNKNOWN",
+      "expected": "UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "partial_ready_shape_preserves_independent_ready_scope",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "missing_required_field",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+      ],
+      "matched": true
+    },
+    {
+      "case": "missing_required_field_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "empty_scope_front_matrix",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+      ],
+      "matched": true
+    },
+    {
+      "case": "empty_scope_front_matrix_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "blocked_front_hidden_as_preserve",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+      ],
+      "matched": true
+    },
+    {
+      "case": "blocked_front_hidden_as_preserve_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "a6_permission_field_missing",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+      ],
+      "matched": true
+    },
+    {
+      "case": "a6_permission_field_missing_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "inner_snapshot_wrong_version",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_VERSION"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_SNAPSHOT_VERSION"
+      ],
+      "matched": true
+    },
+    {
+      "case": "inner_snapshot_wrong_version_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "ready_scope_has_blocker",
+      "actual": [
+        "BLOCKED",
+        "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+      ],
+      "expected": [
+        "BLOCKED",
+        "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+      ],
+      "matched": true
+    },
+    {
+      "case": "ready_scope_has_blocker_record_refuses",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "negative_record_leaves_one_row",
+      "actual": 1,
+      "expected": 1,
+      "matched": true
+    },
+    {
+      "case": "id_mismatch",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "reported_hash_mismatch",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "not_resolved",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "mutable_resolution",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "latest_reinterpreted",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "authority_payload_tamper",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "wrong_expected_snapshot_version",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_id",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_hash",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "missing_expected_schema",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "zero_ready_is_only_shape_valid",
+      "actual": "VALID",
+      "expected": "VALID",
+      "matched": true
+    },
+    {
+      "case": "record_dependency_drift",
+      "actual": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+      "expected": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+      "matched": true
+    },
+    {
+      "case": "historical_guard_not_currentness_admission",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "positive_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "emitter_positive_boundary",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "emitter_never_execution_permission",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "emitter_remaining_gates_explicit",
+      "actual": [
+        "PG-01_C4",
+        "PG-01_C7",
+        "PG-01_C6_PERSISTENCE"
+      ],
+      "expected": [
+        "PG-01_C4",
+        "PG-01_C7",
+        "PG-01_C6_PERSISTENCE"
+      ],
+      "matched": true
+    },
+    {
+      "case": "emitter_admitted_exact_scope",
+      "actual": [
+        "S1"
+      ],
+      "expected": [
+        "S1"
+      ],
+      "matched": true
+    },
+    {
+      "case": "emitter_exact_seven_business_fields",
+      "actual": [
+        "context_id",
+        "context_sha256",
+        "material_projection_sha256",
+        "receiver_schema_digest_sha256",
+        "snapshot_schema_digest_sha256",
+        "validated_material_paths",
+        "verdict"
+      ],
+      "expected": [
+        "context_id",
+        "context_sha256",
+        "material_projection_sha256",
+        "receiver_schema_digest_sha256",
+        "snapshot_schema_digest_sha256",
+        "validated_material_paths",
+        "verdict"
+      ],
+      "matched": true
+    },
+    {
+      "case": "emitter_projection_digest_recomputed",
+      "actual": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+      "expected": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+      "matched": true
+    },
+    {
+      "case": "emitter_producer_receiver_parity",
+      "actual": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "expected": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "matched": true
+    },
+    {
+      "case": "emitter_repeat_entire_result_identical",
+      "actual": {
+        "sha256": "ab8a8dda84c228f0067c89c9c79a8e9d892eb6b380e0ff4a01f325ca7a12bdf3",
+        "type": "dict"
+      },
+      "expected": {
+        "sha256": "ab8a8dda84c228f0067c89c9c79a8e9d892eb6b380e0ff4a01f325ca7a12bdf3",
+        "type": "dict"
+      },
+      "matched": true
+    },
+    {
+      "case": "emitter_accepts_identical_proposed_projection",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "N1_six_missing_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "N1_synthetic_six_missing_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "N2_empty_matrix_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "N2_synthetic_empty_matrix_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "N3_zero_READY_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "N3_zero_READY_code",
+      "actual": "NO_READY_SCOPE",
+      "expected": "NO_READY_SCOPE",
+      "matched": true
+    },
+    {
+      "case": "N3_identifiable_BLOCK_receipt",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "N4_missing_handoff",
+      "actual": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+      "expected": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+      "matched": true
+    },
+    {
+      "case": "N4_malformed_expected_hash",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "N4_no_query_without_expected_receipt",
+      "actual": 6,
+      "expected": 6,
+      "matched": true
+    },
+    {
+      "case": "N5_stale_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "N5_canonical_engine_STALE",
+      "actual": "STALE_AFFECTED",
+      "expected": "STALE_AFFECTED",
+      "matched": true
+    },
+    {
+      "case": "N5_unknown_fails_closed",
+      "actual": "UNKNOWN_FAIL_CLOSED",
+      "expected": "UNKNOWN_FAIL_CLOSED",
+      "matched": true
+    },
+    {
+      "case": "N5_missing_compatibility_evidence",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "unrelated_git_revision_drift_does_not_stale",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "canonical_currentness_rebound",
+      "actual": "CURRENT_REBOUND",
+      "expected": "CURRENT_REBOUND",
+      "matched": true
+    },
+    {
+      "case": "bounded_validation_not_silently_bypassed",
+      "actual": "BOUNDED_VALIDATION_REQUIRED",
+      "expected": "BOUNDED_VALIDATION_REQUIRED",
+      "matched": true
+    },
+    {
+      "case": "N6_authority_payload_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "N6_modified_context_vs_original_receipt",
+      "actual": "EXACT_RECEIPT_MISMATCH",
+      "expected": "EXACT_RECEIPT_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "N6_authority_requires_rebuild_even_if_compatible",
+      "actual": "SNAPSHOT_REBUILD_REQUIRED:snapshot_authority",
+      "expected": "SNAPSHOT_REBUILD_REQUIRED:snapshot_authority",
+      "matched": true
+    },
+    {
+      "case": "N7_unknown_requested_scope",
+      "actual": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "expected": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "partial_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "partial_READY_accepts_S1_only",
+      "actual": [
+        "S1"
+      ],
+      "expected": [
+        "S1"
+      ],
+      "matched": true
+    },
+    {
+      "case": "N7_partial_READY_never_substitutes_blocked_S2",
+      "actual": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "expected": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "N8_lossy_projection_BLOCK",
+      "actual": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+      "expected": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "N8_BLOCK_receipt_hashes_retained_full_projection",
+      "actual": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+      "expected": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+      "matched": true
+    },
+    {
+      "case": "N8_expected_id_mismatch",
+      "actual": "EXACT_RECEIPT_MISMATCH",
+      "expected": "EXACT_RECEIPT_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "schema_digest_mismatch",
+      "actual": "HANDOFF_SCHEMA_DIGEST_MISMATCH",
+      "expected": "HANDOFF_SCHEMA_DIGEST_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "schema_inner_drift_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "producer_schema_drift",
+      "actual": "PRODUCER_RECEIVER_SCHEMA_DIGEST_MISMATCH",
+      "expected": "PRODUCER_RECEIVER_SCHEMA_DIGEST_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "unknown_material_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "unknown_material_field_BLOCK",
+      "actual": "SNAPSHOT_MATERIAL_FIELDS_MISSING_OR_UNKNOWN",
+      "expected": "SNAPSHOT_MATERIAL_FIELDS_MISSING_OR_UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "currentness_scope_replay_BLOCK",
+      "actual": "CURRENTNESS_SUBJECT_MISMATCH",
+      "expected": "CURRENTNESS_SUBJECT_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "currentness_hiding_material_roots_BLOCK",
+      "actual": "CURRENTNESS_ROOTS_INCOMPLETE",
+      "expected": "CURRENTNESS_ROOTS_INCOMPLETE",
+      "matched": true
+    },
+    {
+      "case": "read_port_unavailable_BLOCK",
+      "actual": "READ_PORT_UNAVAILABLE",
+      "expected": "READ_PORT_UNAVAILABLE",
+      "matched": true
+    },
+    {
+      "case": "early_failure_does_not_fabricate_receipt",
+      "actual": null,
+      "expected": null,
+      "matched": true
+    },
+    {
+      "case": "no_new_writes_from_repeat_consume",
+      "actual": 1,
+      "expected": 1,
+      "matched": true
+    },
+    {
+      "case": "preplanning_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "preplanning_real_sql_boundary_accept",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "preplanning_framework_complete",
+      "actual": "COMPLETE",
+      "expected": "COMPLETE",
+      "matched": true
+    },
+    {
+      "case": "preplanning_sufficiency_complete",
+      "actual": "COMPLETE",
+      "expected": "COMPLETE",
+      "matched": true
+    },
+    {
+      "case": "preplanning_hash_recomputed",
+      "actual": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
+      "expected": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
+      "matched": true
+    },
+    {
+      "case": "preplanning_exact_snapshot_preserved",
+      "actual": {
+        "sha256": "58ec436edf448b64059e02bc44a9885246d68ef94e3cf8e05e9ffe7e409235a4",
+        "type": "dict"
+      },
+      "expected": {
+        "sha256": "58ec436edf448b64059e02bc44a9885246d68ef94e3cf8e05e9ffe7e409235a4",
+        "type": "dict"
+      },
+      "matched": true
+    },
+    {
+      "case": "preplanning_full_repeat_deterministic",
+      "actual": {
+        "sha256": "41627d40b456036a1e4de9273a6d4bf6b1123fd1d77574e80d7174a9a9580f61",
+        "type": "dict"
+      },
+      "expected": {
+        "sha256": "41627d40b456036a1e4de9273a6d4bf6b1123fd1d77574e80d7174a9a9580f61",
+        "type": "dict"
+      },
+      "matched": true
+    },
+    {
+      "case": "preplanning_never_execution",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "preplanning_never_operational",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "preplanning_never_planning",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "preplanning_C4_C7_still_pending",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "technical_currentness_real_engine_CURRENT",
+      "actual": "CURRENT",
+      "expected": "CURRENT",
+      "matched": true
+    },
+    {
+      "case": "technical_currentness_receipt_hash_intact",
+      "actual": "65eb6c7323feade0c115bfaee458c2b8cf75b0cab12d8a9cfc2cc3037f7996ad",
+      "expected": "65eb6c7323feade0c115bfaee458c2b8cf75b0cab12d8a9cfc2cc3037f7996ad",
+      "matched": true
+    },
+    {
+      "case": "technical_missing_port_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "technical_changed_pin_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "technical_changed_pin_receipt_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "preplanning_lossy_report_rejected",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "preplanning_missing_frame_BLOCK",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "source_git_real_objects_integrated_ACCEPT",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "source_git_framework_COMPLETE",
+      "actual": "COMPLETE",
+      "expected": "COMPLETE",
+      "matched": true
+    },
+    {
+      "case": "source_git_observed_digest_matches_bound",
+      "actual": "c16ec1f74edd32d68222dafaaa62c4dad78c83f7072b770c79521251adb6a056",
+      "expected": "c16ec1f74edd32d68222dafaaa62c4dad78c83f7072b770c79521251adb6a056",
+      "matched": true
+    },
+    {
+      "case": "source_git_observation_is_not_admission",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "source_git_never_operational",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_latest_main_dynamic_product_patch_present",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_latest_main_context_first_patch_present",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_branch_unchanged_by_later_patches",
+      "actual": {
+        "sha256": "5be1a64e140bf43faa57d7ec0a4f385d5219c0444634e3ae13a43371c7ba4cdd",
+        "type": "str"
+      },
+      "expected": {
+        "sha256": "5be1a64e140bf43faa57d7ec0a4f385d5219c0444634e3ae13a43371c7ba4cdd",
+        "type": "str"
+      },
+      "matched": true
+    },
+    {
+      "case": "router_v2_stage1_valid",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_positive_snapshot_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "router_v2_actual_paso_is_precheck",
+      "actual": "PROGRAMACION_PRECHECK_DEFINICION",
+      "expected": "PROGRAMACION_PRECHECK_DEFINICION",
+      "matched": true
+    },
+    {
+      "case": "router_v2_conditional_continuation_only",
+      "actual": "PROGRAMACION_ADMISION_REQUERIDA",
+      "expected": "PROGRAMACION_ADMISION_REQUERIDA",
+      "matched": true
+    },
+    {
+      "case": "router_v2_contract_schema_matches_receiver",
+      "actual": "PROGRAMMING_ENTRY_CONTRACT_V1",
+      "expected": "PROGRAMMING_ENTRY_CONTRACT_V1",
+      "matched": true
+    },
+    {
+      "case": "router_v2_receiver_digest_matches_exact_file",
+      "actual": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "expected": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "matched": true
+    },
+    {
+      "case": "router_v2_frozen_entry_digest",
+      "actual": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "expected": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "matched": true
+    },
+    {
+      "case": "router_v2_upstream_name",
+      "actual": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "expected": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+      "matched": true
+    },
+    {
+      "case": "router_v2_never_execution",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_does_not_supply_context_id",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_does_not_supply_schema_digest",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_does_not_certify_definition_current",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_no_expected_handoff_blocks",
+      "actual": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+      "expected": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+      "matched": true
+    },
+    {
+      "case": "router_v2_structural_snapshot_positive",
+      "actual": "ACCEPT",
+      "expected": "ACCEPT",
+      "matched": true
+    },
+    {
+      "case": "router_v2_fixture_has_no_package_envelope",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_gap_missing_package_not_independently_attested",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_zero_ready_fixture_recorded",
+      "actual": "RECORDED",
+      "expected": "RECORDED",
+      "matched": true
+    },
+    {
+      "case": "router_v2_zero_ready_receiver_BLOCK",
+      "actual": "NO_READY_SCOPE",
+      "expected": "NO_READY_SCOPE",
+      "matched": true
+    },
+    {
+      "case": "router_v2_unknown_scope_BLOCK",
+      "actual": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "expected": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+      "matched": true
+    },
+    {
+      "case": "router_v2_stale_receiver_BLOCK",
+      "actual": "CURRENTNESS_NOT_ADMISSIBLE",
+      "expected": "CURRENTNESS_NOT_ADMISSIBLE",
+      "matched": true
+    },
+    {
+      "case": "router_v2_lossy_receiver_BLOCK",
+      "actual": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+      "expected": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+      "matched": true
+    },
+    {
+      "case": "router_v2_three_channels",
+      "actual": [
+        "PRODUCTO",
+        "PROGRAMACION",
+        "OPERACIONES"
+      ],
+      "expected": [
+        "PRODUCTO",
+        "PROGRAMACION",
+        "OPERACIONES"
+      ],
+      "matched": true
+    },
+    {
+      "case": "router_v2_policy_deployed",
+      "actual": "DEPLOYED_LF_V2",
+      "expected": "DEPLOYED_LF_V2",
+      "matched": true
+    },
+    {
+      "case": "router_v2_policy_analysis_return",
+      "actual": "RETURN_TO_ANALYSIS_NO_CODE",
+      "expected": "RETURN_TO_ANALYSIS_NO_CODE",
+      "matched": true
+    },
+    {
+      "case": "router_v2_policy_runtime_return",
+      "actual": "BLOCK_NO_CODE",
+      "expected": "BLOCK_NO_CODE",
+      "matched": true
+    },
+    {
+      "case": "historical_hash_41f0287a-c7db-4f34-b2f7-c548fa534ece",
+      "actual": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+      "expected": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+      "matched": true
+    },
+    {
+      "case": "historical_rejected_41f0287a-c7db-4f34-b2f7-c548fa534ece",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "historical_invalid_snapshot_41f0287a-c7db-4f34-b2f7-c548fa534ece",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "historical_hash_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+      "actual": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+      "expected": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+      "matched": true
+    },
+    {
+      "case": "historical_rejected_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "historical_invalid_snapshot_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    },
+    {
+      "case": "historical_hash_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+      "actual": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+      "expected": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+      "matched": true
+    },
+    {
+      "case": "historical_rejected_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+      "actual": "BLOCK",
+      "expected": "BLOCK",
+      "matched": true
+    },
+    {
+      "case": "historical_invalid_snapshot_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+      "actual": "BLOCKED",
+      "expected": "BLOCKED",
+      "matched": true
+    }
+  ],
+  "pending_operational_gates": [
+    "PG-01_C4",
+    "PG-01_C7",
+    "durable_receipt",
+    "trusted_currentness_provider_wiring"
+  ],
+  "receipt_emitter_implemented": true,
+  "emitter_evidence": {
+    "router_v2_compatibility": {
+      "evidence_tier": "LOCAL_CANONICAL_ROUTER_SQL_AND_RECEIVER_SYNTHETIC_CONTEXT_CURRENTNESS",
+      "route_input_fixture": {
+        "schema_version": "LF_ROUTER_STAGE1_V2",
+        "texto_original": "Corregir el backend del login B2B ya definido",
+        "es_operacion": true,
+        "respuesta_directa": false,
+        "accion": "corregir",
+        "sujeto": "backend login B2B",
+        "correcciones": [],
+        "formas_busqueda": [
+          "backend login B2B"
+        ],
+        "ambiguo": false,
+        "alternativas": [],
+        "pregunta_usuario": null,
+        "capability_hint": null,
+        "downstream_execution_allowed": false,
+        "canal_candidato": "PROGRAMACION",
+        "negocio_codigo": "LF",
+        "negocios_afectados": [],
+        "ruta_transversal": null,
+        "razon_seleccion": "Correccion tecnica sobre definicion vigente",
+        "alcance": {
+          "target_type": "COMPONENTE",
+          "target_hint": "backend login B2B",
+          "resolution_status": "UNRESOLVED"
+        }
+      },
+      "actual_route_output": {
+        "paso": "PROGRAMACION_PRECHECK_DEFINICION",
+        "router": "ACT-0001",
+        "alcance": {
+          "target_hint": "backend login B2B",
+          "target_type": "COMPONENTE",
+          "resolution_status": "UNRESOLVED"
+        },
+        "motivo_es": "Antes de Programacion se verifica la definicion funcional canonica. Si falta o difiere, Producto la corrige primero; si coincide, continua la admision tecnica.",
+        "negocio_codigo": "LF",
+        "schema_version": "LF_ROUTER_ROUTE_V1",
+        "canal_candidato": "PROGRAMACION",
+        "ruta_transversal": null,
+        "siguiente_paso_es": "Verificar la fuente canonica y su currentness; solo con definicion vigente continuar a PG-01.",
+        "si_definicion_vigente": "PROGRAMACION_ADMISION_REQUERIDA",
+        "stage1_schema_version": "LF_ROUTER_STAGE1_V2",
+        "alcance_requiere_ready": true,
+        "precondicion_requerida": "EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS",
+        "downstream_execution_allowed": false,
+        "si_definicion_falta_o_difiere": "PRODUCTO_PRIMERO",
+        "contrato_entrada_despues_precheck": "PROGRAMMING_ENTRY_CONTRACT_V1",
+        "upstream_requerido_despues_precheck": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
+      },
+      "canonical_source_sha256": {
+        "supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql": "78b4dece6db21edb9220884bc1a94707b5eae5e5bc62fc66edf711d6f0c5c938",
+        "supabase/migrations/20261024133000_lf_router_product_context_resolution_v1.sql": "700462e2c68eef1634d598f6c88c3122ea24841f96c13aa76bbde6007ff29833",
+        "supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql": "8e49b89ede0aa62a73943f29c938b09bc49bc3f20e50fb78548dc50bd8186756",
+        "supabase/migrations/20261024193000_lf_profile_input_governance_task_applicability_v1.sql": "51a0459e5f8817c1f680efdb4b25d30d9f46ca6871be67168cfcdc927bc1e0a7",
+        "supabase/migrations/20261025000500_lf_router_product_dynamic_profile_selection_v1.sql": "c351804df44498d2c33eff6e13abba8ec66b83eee4b0a14913762e5e5d4ec459",
+        "supabase/migrations/20261026145500_lf_router_product_context_resolution_v1.sql": "58d5285487f06645d3a5073e5b3eb76bbbf0f39a7708526b69628cae7e70b39c"
+      },
+      "receiver_contract_digest": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "schema_identity_match": true,
+      "runtime_authorization_tested": false,
+      "definition_currentness_tested": false,
+      "gaps": [
+        "ROUTER_RETURNS_PRECHECK_NOT_ADMISSION",
+        "NO_ROUTER_SCHEMA_DIGEST_OR_EXPECTED_HANDOFF",
+        "PACKAGE_ENVELOPE_AND_ADMITTED_A9_PROVENANCE_NOT_CHECKED_BY_BOUNDARY",
+        "NO_ONE_TO_ONE_RUNTIME_AUTHORIZATION_BLOCK_IN_RECEIVER"
+      ],
+      "mapping": {
+        "RETURN_TO_ANALYSIS_NO_CODE": [
+          "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+          "NO_READY_SCOPE",
+          "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+          "CURRENTNESS_NOT_ADMISSIBLE"
+        ],
+        "BLOCK_NO_CODE": [
+          "MATERIAL_PROJECTION_LOSS_OR_MISMATCH"
+        ]
+      },
+      "mapping_is_proposed_consumer_projection_not_router_dispatch": true,
+      "positive_receipt": {
+        "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
+        "context_id": "433449b3-882a-4a18-a2ea-f7676624518b",
+        "context_sha256": "0874c87f6ac74c2489c2c1a970987ef73706a609c518fdfd10bad402a75dd716",
+        "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "material_projection_sha256": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+        "validated_material_paths": [
+          "extensions.programming_context_snapshot.analysis_stop_rule",
+          "extensions.programming_context_snapshot.applicable_invariants",
+          "extensions.programming_context_snapshot.applicable_rules",
+          "extensions.programming_context_snapshot.authority_bindings",
+          "extensions.programming_context_snapshot.authority_fingerprint_sha256",
+          "extensions.programming_context_snapshot.authority_state",
+          "extensions.programming_context_snapshot.currentness_refs",
+          "extensions.programming_context_snapshot.decision_context",
+          "extensions.programming_context_snapshot.implementability_schema",
+          "extensions.programming_context_snapshot.implementation_state",
+          "extensions.programming_context_snapshot.material_front_coverage",
+          "extensions.programming_context_snapshot.objective",
+          "extensions.programming_context_snapshot.package_readiness",
+          "extensions.programming_context_snapshot.preserve",
+          "extensions.programming_context_snapshot.requirements",
+          "extensions.programming_context_snapshot.scope_front_matrix",
+          "extensions.programming_context_snapshot.scope_readiness",
+          "extensions.programming_context_snapshot.snapshot_schema_digest_sha256",
+          "extensions.programming_context_snapshot.source_refs",
+          "extensions.programming_context_snapshot.source_snapshot_sha256",
+          "extensions.programming_context_snapshot.target",
+          "extensions.programming_context_snapshot.target_granularity",
+          "extensions.programming_context_snapshot.unresolved_material_items"
+        ],
+        "verdict": "ACCEPT"
+      },
+      "execution_allowed": false
+    },
+    "eight_families": "SYNTHETIC_LOCAL_BOUNDARY_CASES_EXECUTED",
+    "historical_snapshots_executed": true,
+    "sample_accept_receipt": {
+      "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
+      "context_id": "c4f7d9e4-3d29-4d12-950b-0b7ef25e7c5c",
+      "context_sha256": "730f1ffcb8c049c8e7e3dfa8a5a94326baed867840a32711269bd86e5d72cfd2",
+      "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+      "material_projection_sha256": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+      "validated_material_paths": [
+        "extensions.programming_context_snapshot.analysis_stop_rule",
+        "extensions.programming_context_snapshot.applicable_invariants",
+        "extensions.programming_context_snapshot.applicable_rules",
+        "extensions.programming_context_snapshot.authority_bindings",
+        "extensions.programming_context_snapshot.authority_fingerprint_sha256",
+        "extensions.programming_context_snapshot.authority_state",
+        "extensions.programming_context_snapshot.currentness_refs",
+        "extensions.programming_context_snapshot.decision_context",
+        "extensions.programming_context_snapshot.implementability_schema",
+        "extensions.programming_context_snapshot.implementation_state",
+        "extensions.programming_context_snapshot.material_front_coverage",
+        "extensions.programming_context_snapshot.objective",
+        "extensions.programming_context_snapshot.package_readiness",
+        "extensions.programming_context_snapshot.preserve",
+        "extensions.programming_context_snapshot.requirements",
+        "extensions.programming_context_snapshot.scope_front_matrix",
+        "extensions.programming_context_snapshot.scope_readiness",
+        "extensions.programming_context_snapshot.snapshot_schema_digest_sha256",
+        "extensions.programming_context_snapshot.source_refs",
+        "extensions.programming_context_snapshot.source_snapshot_sha256",
+        "extensions.programming_context_snapshot.target",
+        "extensions.programming_context_snapshot.target_granularity",
+        "extensions.programming_context_snapshot.unresolved_material_items"
+      ],
+      "verdict": "ACCEPT"
+    },
+    "read_calls": 34,
+    "source_preplanning": {
+      "evidence_tier": "REAL_LOCAL_SQL_BOUNDARY_SYNTHETIC_TECHNICAL_PORTS",
+      "sample_receipt": {
+        "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
+        "context_id": "60f4e8d8-7711-4f3e-a695-29337a88559e",
+        "context_sha256": "93d1ae1dfb4beaf74bdb8894ddb2812c930e29eec1d2065b83f306c74da58643",
+        "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "material_projection_sha256": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
+        "validated_material_paths": [
+          "extensions.programming_context_snapshot.analysis_stop_rule",
+          "extensions.programming_context_snapshot.applicable_invariants",
+          "extensions.programming_context_snapshot.applicable_rules",
+          "extensions.programming_context_snapshot.authority_bindings",
+          "extensions.programming_context_snapshot.authority_fingerprint_sha256",
+          "extensions.programming_context_snapshot.authority_state",
+          "extensions.programming_context_snapshot.currentness_refs",
+          "extensions.programming_context_snapshot.decision_context",
+          "extensions.programming_context_snapshot.implementability_schema",
+          "extensions.programming_context_snapshot.implementation_state",
+          "extensions.programming_context_snapshot.material_front_coverage",
+          "extensions.programming_context_snapshot.objective",
+          "extensions.programming_context_snapshot.package_readiness",
+          "extensions.programming_context_snapshot.preserve",
+          "extensions.programming_context_snapshot.requirements",
+          "extensions.programming_context_snapshot.scope_front_matrix",
+          "extensions.programming_context_snapshot.scope_readiness",
+          "extensions.programming_context_snapshot.snapshot_schema_digest_sha256",
+          "extensions.programming_context_snapshot.source_refs",
+          "extensions.programming_context_snapshot.source_snapshot_sha256",
+          "extensions.programming_context_snapshot.target",
+          "extensions.programming_context_snapshot.target_granularity",
+          "extensions.programming_context_snapshot.unresolved_material_items",
+          "material_projection.preplanning_binding",
+          "material_projection.sufficiency_report",
+          "material_projection.technical_currentness",
+          "material_projection.technical_framework_validation"
+        ],
+        "verdict": "ACCEPT"
+      },
+      "operational_provider_verified": false,
+      "source_readback": {
+        "evidence_tier": "LOCAL_GIT_OBJECT_READ_WITH_SYNTHETIC_ARTIFACTS",
+        "operational_provider_qualified": false
+      }
+    },
+    "operational_currentness_provider_verified": false,
+    "c4_implemented": false,
+    "c7_implemented": false,
+    "handoff_receipt_persisted": false
+  },
+  "historical_results": [
+    {
+      "context_id": "41f0287a-c7db-4f34-b2f7-c548fa534ece",
+      "context_sha256": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
+      "decided_at": "2026-10-06T19:05:11.305815+00:00",
+      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
+      "receiver_code": "CONTEXT_NOT_RESOLVED",
+      "verdict": "BLOCK",
+      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
+    },
+    {
+      "context_id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
+      "context_sha256": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
+      "decided_at": "2026-10-07T12:33:12.577231+00:00",
+      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
+      "receiver_code": "CONTEXT_NOT_RESOLVED",
+      "verdict": "BLOCK",
+      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
+    },
+    {
+      "context_id": "e5adcfbf-e53f-420d-a94a-fad553fa6e48",
+      "context_sha256": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
+      "decided_at": "2026-10-09T11:23:30.188385+00:00",
+      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
+      "receiver_code": "CONTEXT_NOT_RESOLVED",
+      "verdict": "BLOCK",
+      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
+    }
+  ],
+  "integrated_main_sha": "ce3a96ba7bf25cc8ef4b1142509a5a6c6399a267",
+  "tested_source_commit": "8422b55634f8eb345e33fc49e23117d916bd2b90",
+  "local_unittest_counts": {
+    "pg01": 76,
+    "router": 85
+  },
+  "assertion_partition": {
+    "foundation_emitter_preplanning": 111,
+    "router_v2": 28,
+    "historical_replay": 9
+  },
+  "historical_input_export_committed": false
+}

@@ -1,62 +1,38 @@
-# PG-01: compatibilidad con los tres canales del Router
+# PG01_ROUTER_COMPATIBILITY_V1
 
-Fecha: 24-oct-2026. Estado: VERIFICADO_LOCALMENTE_EN_FUENTE; sin admisión operativa.
-PR del receptor: #3135, draft. Revisión independiente pendiente.
+Fecha: 26-oct-2026. Evidencia local; sin admisión operativa.
+Base integrada por merge normal: main `ce3a96ba7bf25cc8ef4b1142509a5a6c6399a267`. Historia anterior de #3135 preservada, sin conflictos. El documento y JSON del 24-oct son históricos; no recertifican esta base.
 
-## Cambio revisado
+## Resultado y límites
 
-La imagen aportada por Paulo define PRODUCTO (definición funcional), PROGRAMACION (ciclo técnico completo) y OPERACIONES (uso cotidiano de capacidades existentes). Perfiles y skills son recursos transversales. No constituyen canales adicionales. Despliegue y mantenimiento técnico pertenecen a Programación; cada efecto conserva su operación y autorización.
+PRODUCTO, PROGRAMACION y OPERACIONES son los tres canales de la política DEPLOYED_LF_V2 en fuente. GESTION_ACTIVOS_IA es transversal. Despliegue y mantenimiento técnico corresponden a PROGRAMACION y conservan su autorización independiente. No se modificó el Router ni se verificó su despliegue vivo.
 
-Se cotejó con main 5c4c6dd43f7011fbcbc4f064c496f92f4fd95379, que incorpora #3136, #3137, #3139 y #3138.
-No se verificó en esta ejecución el despliegue ni el estado de esas funciones en Supabase.
-Los 14 paths de main desde 4d399c9ffb20f1d22b69782231e96918a5fdb7bb corresponden al Router, su documentación, clasificación, workflow y migraciones.
-No hay cambios upstream en wave1_boundary_contracts ni en el motor material_currentness.
+La ejecución de la función canónica de 20261024133000_lf_router_product_context_resolution_v1.sql, seguida de los parches DO exactos 20261024170000, 20261024193000, 20261025000500 y 20261026145500 (#3165) de main, devuelve `paso=PROGRAMACION_PRECHECK_DEFINICION`. `PROGRAMACION_ADMISION_REQUERIDA` aparece solamente en `si_definicion_vigente`: no certifica una definición vigente ni ejecuta ese precheck. La fixture declara una intención sobre definición vigente, no aporta evidencia de currentness admitida. No se fabricó una salida distinta para satisfacer el escenario pedido.
 
-## Efecto sobre el receptor
+`contrato_entrada_despues_precheck=PROGRAMMING_ENTRY_CONTRACT_V1` coincide con el schema_version del contrato exacto. El receptor valida el digest de ese archivo: `d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8`. Los tres controles nuevos comprueban el selector dinámico, la lectura canónica previa de Producto y la igualdad exacta de la rama PROGRAMACION antes/después de esos parches. El Router no emite digest: hay identidad nominal y cotejo local, no binding criptográfico Router→receptor.
 
-| Límite | Consecuencia |
-|---|---|
-| Producto define el QUÉ | PG-01 no inventa definiciones ni sustituye su fuente canónica |
-| Programación cubre el ciclo técnico | Mantiene A9 y PROGRAMMING_ENTRY_CONTRACT_V1; clasificar no admite ni ejecuta |
-| Operaciones usa capacidades existentes | Una consulta cotidiana no debe forzarse a entrar por PG-01 |
-| Perfiles/skills transversales | Ejecutar un recurso no cambia el canal; gestionarlo usa su operación gobernada |
-| Despliegue dentro de Programación | Un ACCEPT del receptor no concede permisos de despliegue |
-| Reparación estructural | Su alcance es STRUCTURE_ONLY_NO_FUNCTIONAL_TRUTH y vuelve a PRODUCTO para revalidación |
+`upstream_requerido_despues_precheck=ANALYSIS_IMPLEMENTATION_PACKAGE_V1` es un requisito nominal. Sin ExpectedHandoff el receptor devuelve EXPECTED_HANDOFF_INVALID_OR_MISSING. Pero un snapshot estructural válido con handoff/currentness sintéticos puede obtener ACCEPT sin autenticar un envelope A9 ni la procedencia de un scope READY admitido. Esta brecha queda caracterizada, no corregida en esta tarea. Sin READY hay NO_READY_SCOPE; scope desconocido produce REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN. Todos los permisos de ejecución permanecen falsos.
 
-La fuente SQL nueva conserva PROGRAMACION_PRECHECK_DEFINICION, PRODUCTO_PRIMERO y PROGRAMACION_ADMISION_REQUERIDA.
-La reparación estructural cita ANALYSIS_IMPLEMENTATION_PACKAGE_V1 y PROGRAMMING_ENTRY_CONTRACT_V1; no habilita escrituras funcionales.
-No se agregó al receptor un adaptador Router→A9 ni se interpretó un paso del Router como recibo ACCEPT.
-El target_ref del Router es una referencia del negocio; no se equipara automáticamente al context_id de A9.
+## Correspondencia de retornos
 
-## Siguiente paso ejecutado
+Esta tabla es una propuesta de proyección del futuro consumidor. Los retornos de decision_policy no son un dispatch ejecutado por lf_router_route_v1 en esta rama.
 
-Se integró main por merge local normal en lf/pg01-context-receiver-foundation-v1, preservando la historia.
-Padres: eda4b8a1842498c49fd9bda806f058d0a6199e34 y 5c4c6dd43f7011fbcbc4f064c496f92f4fd95379.
-Merge local: 2e698e2889e90d8ccc001385ff3158a6ad2c65d4.
-Sin conflictos ni cambios en los blobs del receptor.
-Las migraciones del Router se conservaron desde main; no son nuevas migraciones propuestas por este PR.
+| Retorno de política Router | Códigos actuales del receptor | Evidencia y brecha |
+|---|---|---|
+| RETURN_TO_ANALYSIS_NO_CODE | EXPECTED_HANDOFF_INVALID_OR_MISSING; NO_READY_SCOPE; REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN; CURRENTNESS_NOT_ADMISSIBLE | Casos router_v2_no_expected_handoff_blocks, router_v2_zero_ready_receiver_BLOCK, router_v2_unknown_scope_BLOCK, router_v2_stale_receiver_BLOCK. La ausencia de envelope/admisión A9 no tiene un código independiente. |
+| BLOCK_NO_CODE | MATERIAL_PROJECTION_LOSS_OR_MISMATCH; EXACT_RECEIPT_MISMATCH; HANDOFF_SCHEMA_DIGEST_MISMATCH; PRODUCER_RECEIVER_SCHEMA_DIGEST_MISMATCH | Proyección: router_v2_lossy_receiver_BLOCK. Integridad: N6_modified_context_vs_original_receipt, schema_digest_mismatch, producer_schema_drift. No hay equivalencia para autorización runtime ausente: es otra compuerta. |
+| RETURN_TO_PRODUCTO_NO_CODE | Sin código equivalente | Definición canónica y currentness funcional corresponden al precheck de Producto; PG-01 no las inventa. |
 
-Validación sobre el merge local:
-- 76 tests unitarios PG-01 satisfactorios.
-- 67 tests unitarios Router V1/V2/política/handoff satisfactorios.
-- 111 comprobaciones SQL PG-01 satisfactorias en PostgreSQL 17.6 desechable, sin red.
-- Históricos no reejecutados; catálogo técnico/currentness y positivos siguen siendo fixtures donde lo eran.
-- No constituye prueba integral del Router SQL vivo, del cableado operativo Router→A9→PG-01 ni de persistencia real.
+## Reproducción y resultados locales
 
-Los resultados y hashes se conservan en pg01_router_compatibility_local_20261024.json.
-No se modificó la migración base PG-01 ni sus contratos o digest d2e347ef….
-Los siete campos del recibo y los permisos falsos de planificación/ejecución/admisión se mantienen.
+- 76 unittest PG-01, sin errores: preplanning_checks, preplanning_receiver, technical_currentness, exact_artifact_reader.
+- 85 unittest Router, sin errores: descubrimiento de test_*.py en router_stage1.
+- 148 assertions SQL coincidentes: 111 de fundamento/emisor/preplanning, 28 Router V2, 9 de replay exacto de tres contextos históricos.
+- PostgreSQL 17.6 desechable: imagen postgres:17.6, sin red ni puertos, tmpfs y cleanup. DDL solo en esa instancia.
+- Comando SQL: `python3 run_programming_pg01_receiver_base_v1.py --allow-local-docker --sudo-docker --router-v2-evidence --historical-input /ruta/privada/historicos.json`.
+- Las lecturas de los tres contextos reales se hicieron por Supabase RO; su replay fue local. El export crudo privado no se incorpora al repo.
+- La evidencia saneada completa y hashes fuente están en pg01_router_compatibility_local_20261026.json. Sin modelos reales, escrituras hosted o activación.
 
-## Checkpoints
+## Pendientes
 
-| Checkpoint | Estado |
-|---|---|
-| Compatibilidad fuente / actualización de base | Comprobada localmente |
-| 2A.i publicación y CI exact-HEAD | Pendiente; no usar el CI del HEAD publicado anterior |
-| PG-01 C4 | Parcial; faltan manifiesto/control, presupuesto aprobado y proveedor admitido |
-| PG-01 C7 / C1 compartido | Parcial; falta mapa acordado con A9 y readback semántico |
-| PG-01 C6 persistencia | Pendiente de D7 y positivo real PR2 |
-| P1 / I0 | Abiertos |
-
-Publicación pendiente de autenticación de Paulo. No usar la cuenta de Cristhian para push.
-Sin push, ready-to-merge, merge remoto, apply, llamadas de pago ni escritura en Supabase.
+P1/I0 siguen abiertos: positivo acordado C1/PR2, proveedor/currentness admitidos, C4/C7 operativos, envelope/admisión A9 y D7/C6 persistido con readback. Véanse PG01_P1_CLOSURE_MAP_V1.md y PG01_D7_RECEIPT_PERSISTENCE_PROPOSAL_V1.md. CI debe leerse por nombre sobre el HEAD publicado; estos conteos son locales. Ninguna conclusión constituye autorización operativa.

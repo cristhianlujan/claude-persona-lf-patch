@@ -607,6 +607,53 @@
         }
       }
     },
+    "repair_execution": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "mode": {
+              "enum": [
+                "AUTHORIZED_NOT_EXECUTED",
+                "EXECUTED_WITH_READBACK",
+                "BLOCKED"
+              ]
+            },
+            "authority_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "changes": {
+              "type": "array"
+            },
+            "preserved_constraints": {
+              "type": "array"
+            },
+            "readback_refs": {
+              "type": "array"
+            },
+            "rollback_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "returned_to_router": {
+              "type": "boolean"
+            },
+            "promotion_performed": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
     "repair_disposition": {
       "type": "object"
     },

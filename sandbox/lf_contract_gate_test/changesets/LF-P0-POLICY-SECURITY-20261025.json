@@ -1,0 +1,6 @@
+{
+  "solution_ref": "LF-P0-POLICY-SECURITY-20261025",
+  "paths": {
+    "supabase/tests/lf_profile_policy_p0_security_and_token_guard_v1.sql": "MIGRATION"
+  }
+}

@@ -60,5 +60,8 @@
     "A9_AGREED_MAPPING_AND_REAL_ADMITTED_POSITIVE",
     "TECHNICAL_PROFILE_CONTROL_BUDGET_PROVIDER_ADMISSION",
     "D7_RECEIPT_PERSISTENCE_AND_READBACK"
-  ]
+  ],
+  "historical_evidence": true,
+  "superseded_for_current_base_by": "pg01_router_compatibility_local_20261026.json",
+  "historical_reason": "Source-only review on main 5c4c6dd; not the 26-Oct canonical Router SQL characterization"
 }

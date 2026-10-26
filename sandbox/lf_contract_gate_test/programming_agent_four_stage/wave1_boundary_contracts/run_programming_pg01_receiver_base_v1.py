@@ -48,6 +48,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--allow-local-docker", action="store_true", required=True)
     parser.add_argument("--sudo-docker", action="store_true")
+    parser.add_argument("--router-v2-evidence", action="store_true", help="Run actual Router V2 function and characterize boundary gaps locally")
     parser.add_argument("--historical-input", type=Path, help="Optional exact RO export; consumed only by disposable local PG")
     args = parser.parse_args()
     docker = (["sudo"] if args.sudo_docker else []) + ["docker"]
@@ -189,7 +190,12 @@ LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'LOCAL_TEST_TYPED_EVIDENCE_UNSUPPOR
 
         sql("UPDATE public.lf_capability_current SET version='1.0.0' WHERE capability_code='CURRENTNESS_AUTHORITY';")
         from test_programming_pg01_receiver_v1 import exercise_receiver
-        emitter_evidence = exercise_receiver(context=context, sql=sql, query=query, check=check, repo=ROOT)
+        router_exercise = None
+        if args.router_v2_evidence:
+            from test_programming_pg01_router_v2_compatibility_v1 import exercise_router_v2
+            router_exercise = exercise_router_v2
+        emitter_evidence = exercise_receiver(context=context, sql=sql, query=query, check=check, repo=ROOT,
+                                             router_v2_exercise=router_exercise)
 
         historical_results = []
         if args.historical_input:

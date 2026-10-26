@@ -73,6 +73,16 @@ on:
       - 'supabase/migrations/*lf_router_stage1_v2_lf_integration_v1.sql'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_execution_bridge_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_login_rules_output_v1.sql'
+      - 'supabase/migrations/*lf_profile_canonical_read_semantic_close_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_runtime_dehardcode_v1.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json'
+      - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -110,6 +120,11 @@ on:
       - 'sandbox/lf_contract_gate_test/router_wave/validate_rw102_architecture_competition_v1.py'
       - 'supabase/migrations/*lf_router_product_before_programming_v1.sql'
       - 'supabase/migrations/*lf_router_product_context_resolution_v1.sql'
+      - 'supabase/migrations/*lf_router_profile_execution_handoff_v1.sql'
+      - 'supabase/migrations/*lf_profile_input_governance_task_applicability_v1.sql'
+      - 'supabase/migrations/*lf_profile_native_runtime_dehardcode_v1.sql'
+      - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
+      - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   workflow_dispatch:
 
@@ -182,9 +197,167 @@ jobs:
           assert "TABS_IF_APPLICABLE" in s3
           assert "CASCADE_MUST_RETURN_TO_PRODUCT" in s3
           assert "FULL_CONTEXT_MUST_NOT_BLOAT_ROUTE_RESPONSE" in s3
+          p4=Path("supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql")
+          s4=p4.read_text(encoding="utf-8")
+          assert s4.count("BEGIN;")==1, s4.count("BEGIN;")
+          assert s4.count("COMMIT;")==1, s4.count("COMMIT;")
+          assert "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1" in s4
+          assert "lf_router_profile_execution_handoff_validate_v1" in s4
+          assert "lf_profile_execution_begin_from_handoff_v1" in s4
+          assert "lf_profile_execution_channel_context_v1" in s4
+          assert "fn_lf_profile_runtime_enqueue_authorized_v1" in s4
+          assert "PRODUCTO_GATE2_PERFIL" in s4
+          assert "GATE2_AUTO_MATERIALIZER" in s4
+          assert "lf_router_profile_execution_after_gate2_v1" in s4
+          assert "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT" in s4
+          assert "lf_profile_execution_input_validate_v1" in s4
+          assert "fn_lf_profile_input_governance_resolve_v1" in s4
+          assert "DIRECT_PROFILE_INPUT_GOVERNANCE" in s4
+          assert "PERFIL-PRODUCT-DIRECTOR-LF" in s4
+          assert "PERFIL-UI-ARCHITECT" in s4
+          assert "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531" in s4
+          assert "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING" in s4
+          assert "EJECUCION_PERFIL_LF/input_validate" in s4
+          assert "RETRY_INPUT_VALIDATE_AFTER_INPUT_GOVERNANCE" in s4
+          assert "PROFILE_HANDOFF_ROUTER_RESOLVE_SOURCE_DRIFT" in s4
+          assert "router_reentry_before_execution" in s4
+          assert "PROFILE_HANDOFF_ROUTER_STILL_EXECUTES_PRODUCT_WORK" in s4
+          p5=Path("supabase/migrations/20261024193000_lf_profile_input_governance_task_applicability_v1.sql")
+          s5=p5.read_text(encoding="utf-8")
+          assert s5.count("BEGIN;")==1, s5.count("BEGIN;")
+          assert s5.count("COMMIT;")==1, s5.count("COMMIT;")
+          assert "lf_profile_input_governance_requirement_v1" in s5
+          assert "READ_PRODUCT_DEFINITION" in s5
+          assert "NOT_REQUIRED_CANONICAL_READ" in s5
+          assert "REQUIRED_BY_TASK" in s5
+          assert "router_action_binding" in s5
+          assert "DIRECT_PROFILE_CAPABILITY_NOT_INVOKED" in s5
+          assert "EXACT_CANONICAL_READ_OR_EXTRACTION_NO_INPUT_ENRICHMENT" in s5
+          assert "PROFILE_IG_CANONICAL_READ_NOT_SKIPPED" in s5
+          assert "PROFILE_IG_CHANGE_MUST_REMAIN_REQUIRED" in s5
+          p6=Path("supabase/migrations/20261026145500_lf_router_product_context_resolution_v1.sql")
+          s6=p6.read_text(encoding="utf-8")
+          assert s6.count("BEGIN;")==1, s6.count("BEGIN;")
+          assert s6.count("COMMIT;")==1, s6.count("COMMIT;")
+          assert "LF_ROUTER_PRODUCT_CONTEXT_FIRST_ROUTE_SOURCE_DRIFT" in s6
+          assert "product_context_read_before_profile_selection" in s6
+          assert "BLOCK_PRODUCT_CONTEXT_NOT_RESOLVED_BEFORE_GATE2" in s6
+          assert "B2B_AUTH001_SUBMIT" in s6
+          assert "label_visible" in s6
+          assert "Acceder" in s6
+          assert "GRANT EXECUTE ON FUNCTION public.lf_router_product_context_v1(text,jsonb)" in s6
+          assert "TO supabase_read_only_user" in s6
+          assert "LF_PRODUCT_CONTEXT_FIRST_EXECUTION_PRIVILEGE_WIDENED" in s6
+          assert "lf_router_profile_execution_after_gate2_v1" in s6
+          worker=Path("services/profile_runtime_api/scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
+          assert "AUTHORIZED_HANDOFF_VALIDATED" in worker
+          assert "lf_router_profile_execution_handoff_validate_v1" in worker
+          assert "lf_profile_execution_channel_context_v1" in worker
+          assert worker.index("lf_router_profile_execution_handoff_validate_v1") < worker.index("Legacy compatibility only")
           print("PASS_ACT0001_V2_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_BEFORE_PROGRAMMING_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PROFILE_EXECUTION_HANDOFF_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PROFILE_INPUT_GOVERNANCE_TASK_APPLICABILITY_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_CONTEXT_BEFORE_PROFILE_SELECTION_REGRESSION")
+          PY
+
+      - name: Execute native profile bridge trust-boundary tests
+        working-directory: sandbox/lf_contract_gate_test/router_stage1
+        run: python3 -m unittest -v test_profile_native_bridge_source_v1
+
+      - name: Validate Login B2B Product Director RAW with canonical validator
+        run: |
+          set -euo pipefail
+          RAW="sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json"
+          OUT="$(mktemp)"
+          python3 profiles/product_director_lf/validators/validate_product_director_output.py < "$RAW" > "$OUT"
+          cat "$OUT"
+          python3 - "$OUT" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          if data.get("valid") is not True or data.get("blocking_codes"):
+              raise SystemExit("FAIL_LOGIN_B2B_PRODUCT_DIRECTOR_RAW:"+json.dumps(data,sort_keys=True))
+          print("PASS_LOGIN_B2B_PRODUCT_DIRECTOR_RAW")
+          PY
+
+      - name: Guard deterministic canonical-read semantic judge boundary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          matches=list(Path("supabase/migrations").glob("*_lf_profile_canonical_read_semantic_close_v1.sql"))
+          assert len(matches)==1, matches
+          sql=matches[0].read_text(encoding="utf-8")
+          required=[
+            "lf_profile_execution_canonical_read_judge_v1",
+            "READ_PRODUCT_DEFINITION",
+            "NOT_REQUIRED_CANONICAL_READ",
+            "LF_PRODUCT_CANONICAL_RULE_READ_V1",
+            "PERFIL-PRODUCT-DIRECTOR-LF",
+            "DETERMINISTIC_CANONICAL_READ_V1",
+            "semantic_result is not distinct from canonical_read_judge",
+            "EXEC-PROFILE-GATE2-1BDAD35D77DC30810DE68282",
+            "'semantic_judge'",
+            "'report_output'",
+            "lf_profile_execution_terminal_authority_receipt_v1",
+            "lf_profile_execution_attach_terminal_authority_receipt_v1",
+            "CANONICAL_READ_JUDGE_DIRECT_READ_ONLY_EXECUTION_FORBIDDEN",
+          ]
+          missing=[x for x in required if x not in sql]
+          assert not missing, missing
+          normalized="".join(sql.replace("''","'").split())
+          for expression in (
+              "coalesce((semantic_result->>'model_call_count')::integer,0)=1",
+              "coalesce((semantic_result->>'model_call_count')::integer,-1)=0",
+              "semantic_result->>'judge_mode'='DETERMINISTIC_CANONICAL_READ_V1'",
+          ):
+              assert "".join(expression.split()) in normalized, expression
+          assert "GRANT EXECUTE ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text)\n  TO service_role;" in sql
+          assert "TO service_role,supabase_read_only_user" not in sql
+          print("PASS_CANONICAL_READ_DETERMINISTIC_JUDGE_BOUNDARY")
+          PY
+
+      - name: Guard profile-native runtime de-hardcoding
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          matches=list(Path("supabase/migrations").glob("*_lf_profile_native_runtime_dehardcode_v1.sql"))
+          assert len(matches)==1, matches
+          sql=matches[0].read_text(encoding="utf-8")
+          required=[
+            "PROFILE_NATIVE_DEHARDCODE_BRIDGE_SOURCE_DRIFT",
+            "PROFILE_NATIVE_DEHARDCODE_JUDGE_SOURCE_DRIFT",
+            "EXECUTE_PROFILE_IN_CURRENT_GPT_NATIVE_CONTEXT",
+            "lf_router_profile_execution_handoff_validate_v1",
+            "e.target_code",
+            "metadata->>'profile_slug'",
+            "CANONICAL_READ_MATERIAL_CLAIMS_NOT_DERIVED",
+            "PROFILE_NATIVE_DEHARDCODE_HISTORICAL_RECEIPT_DRIFT",
+          ]
+          missing=[x for x in required if x not in sql]
+          assert not missing, missing
+
+          start=sql.index("CREATE OR REPLACE FUNCTION public.lf_profile_execution_canonical_read_judge_v1(")
+          end=sql.index("REVOKE ALL ON FUNCTION public.lf_profile_execution_canonical_read_judge_v1(text)",start)
+          judge=sql[start:end]
+          forbidden=[
+            "PERFIL-PRODUCT-DIRECTOR-LF",
+            "product_director_lf",
+            "PRODUCT_DIRECTION_SPEC",
+            "Orchestrator",
+            "B2B-AUTH-001",
+            "EXEC-PROFILE-GATE2-",
+            "score,total",
+          ]
+          leaked=[x for x in forbidden if x in judge]
+          assert not leaked, leaked
+          assert "v_handoff->>'profile_code' IS DISTINCT FROM e.target_code" in judge
+          assert "v_out->>'worker' IS DISTINCT FROM v_profile_slug" in judge
+          assert "position(v_direct_ref in v_out_text)=0" in judge
+          assert "position(v_effective_ref in v_out_text)=0" in judge
+          print("PASS_PROFILE_NATIVE_RUNTIME_DEHARDCODE_SOURCE_GUARD")
           PY
 
       - name: Execute positive and negative level2 handoff contract tests

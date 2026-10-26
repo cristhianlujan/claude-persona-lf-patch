@@ -10,6 +10,7 @@
       "code": "PRODUCTO",
       "responsibility": "Definir, actualizar o verificar la fuente canónica del comportamiento/experiencia del producto, incluidas reglas y elementos de pantalla",
       "intents": [
+        "READ_PRODUCT_DEFINITION",
         "DEFINE_PRODUCT_BEHAVIOR",
         "CHANGE_PRODUCT_DEFINITION",
         "VERIFY_PRODUCT_DEFINITION"
@@ -134,7 +135,35 @@
     "implementation_after_structural_repair_requires_product_currentness": true,
     "product_cycle_resume_entrypoint": "public.lf_router_product_cycle_v1",
     "profile_outputs_return_to_router_before_next_channel": true,
-    "structural_repair_no_capability_behavior": "CAPABILITY_GAP"
+    "structural_repair_no_capability_behavior": "CAPABILITY_GAP",
+    "profile_gate2_pass_behavior": "AUTO_MATERIALIZE_EJECUCION_PERFIL_LF",
+    "profile_execution_handoff_schema": "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+    "authorized_profile_execution_reenters_router": false,
+    "profile_execution_context_owner": "EJECUCION_PERFIL_LF_CONTEXT_ADMISSION",
+    "router_loads_profile_channel_context": false,
+    "profile_execution_returns_to_router_after_result": true,
+    "executor_mode_selected_by_profile_execution_not_channel": true,
+    "profile_gate2_pass_entrypoint": "public.lf_router_profile_execution_after_gate2_v1",
+    "profile_gate2_pass_requires_new_router_decision": false,
+    "profile_input_governance_owner": "EJECUCION_PERFIL_LF_INPUT_VALIDATE",
+    "profile_input_governance_resume_via": "EJECUCION_PERFIL_LF/input_validate",
+    "pending_profile_input_governance_reenters_router": false,
+    "profile_input_governance_binding_mode": "DIRECT_PROFILE",
+    "profile_input_governance_profiles": [
+      "PERFIL-PRODUCT-DIRECTOR-LF",
+      "PERFIL-UI-ARCHITECT",
+      "PERFIL-UX-PRODUCT-EXPERIENCE-ARCHITECT-LF-20260531",
+      "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING"
+    ],
+    "profile_adapter_is_input_governance_authority": false,
+    "profile_input_governance_binding_semantics": "CAPABILITY_NOT_MANDATORY_EXECUTION",
+    "profile_input_governance_canonical_read_intents": [
+      "READ_PRODUCT_DEFINITION"
+    ],
+    "profile_input_governance_canonical_read_result": "NOT_REQUIRED_CANONICAL_READ",
+    "profile_input_governance_default_result": "REQUIRED_BY_TASK",
+    "profile_input_governance_task_authority": "ROUTER_ACTION_BINDING_SHA256",
+    "profile_input_governance_scope_must_not_carry_task_metadata": true
   },
   "examples": [
     {
@@ -180,7 +209,7 @@
       "request": "Usa el perfil UI Architect para analizar el Login B2B",
       "initial_channel": "PRODUCTO",
       "worker_candidate": "PERFIL-UI-ARCHITECT",
-      "expected_next": "PROFILE_EXECUTION_RESOURCE_NOT_NEW_CHANNEL"
+      "expected_next": "GATE2_PASS_AUTO_MATERIALIZES_EJECUCION_PERFIL_LF_WITH_HANDOFF_NO_ROUTER_REENTRY"
     },
     {
       "id": "OFFER_STATUS",

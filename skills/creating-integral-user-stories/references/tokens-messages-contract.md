@@ -1,3 +1,5 @@
+> Política canónica aplicable: `LF-DESIGN-TOKEN-REFERENCE-POLICY-V1` (`docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md`). Este contrato debe interpretarse y validarse bajo esa política; los valores visuales se consumen por referencia de token, nunca por literal persistido.
+
 # Contrato de tokens y mensajes
 
 Versión operativa: `v0.3`. Juez asociado: `J08_TOKENS_MESSAGES`.

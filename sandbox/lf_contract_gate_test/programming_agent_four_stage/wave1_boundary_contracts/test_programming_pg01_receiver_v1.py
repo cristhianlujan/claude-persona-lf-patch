@@ -16,7 +16,7 @@ from lf_currentness_authority_v1 import compatibility_proof_sha256
 from lf_material_currentness_v1 import canonical_sha256
 
 
-def exercise_receiver(*, context, sql, query, check, repo):
+def exercise_receiver(*, context, sql, query, check, repo, router_v2_exercise=None):
     calls = []
     counter = 0
     rev = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
@@ -158,7 +158,11 @@ def exercise_receiver(*, context, sql, query, check, repo):
     check("no_new_writes_from_repeat_consume",query("(SELECT count(*) FROM private.lf_decision_context_asof_v1 WHERE decision_ref='"+good["decision_ref"]+"')"),1)
     from test_programming_pg01_preplanning_receiver_v1 import exercise_preplanning
     preplanning_evidence = exercise_preplanning(context=context, persisted=persisted, boundary_factory=receiver, check=check)
-    return {"eight_families":"SYNTHETIC_LOCAL_BOUNDARY_CASES_EXECUTED", "historical_snapshots_executed":False,
+    router_evidence = None
+    if router_v2_exercise is not None:
+        router_evidence = router_v2_exercise(context=context, sql=sql, query=query, check=check,
+                                             repo=repo, persisted=persisted, receiver=receiver)
+    return {"router_v2_compatibility": router_evidence, "eight_families":"SYNTHETIC_LOCAL_BOUNDARY_CASES_EXECUTED", "historical_snapshots_executed":False,
             "sample_accept_receipt":accepted["receipt"],"read_calls":len(calls),"source_preplanning":preplanning_evidence,"operational_currentness_provider_verified":False,
             "c4_implemented":False,"c7_implemented":False,"handoff_receipt_persisted":False}
 
