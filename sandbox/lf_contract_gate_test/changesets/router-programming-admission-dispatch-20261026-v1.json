@@ -1,9 +1,0 @@
-{
-  "solution_ref": "router-programming-admission-dispatch-20261026-v1",
-  "paths": {
-    "supabase/migrations/20261026210000_lf_router_programming_admission_dispatch_v1.sql": "MIGRATION",
-    "sandbox/lf_contract_gate_test/router_stage1/test_router_programming_admission_dispatch_v1.sql": "ENGINEERING_CHECKPOINTS",
-    "sandbox/lf_contract_gate_test/router_stage1/ROUTER_PROGRAMMING_ADMISSION_DISPATCH_V1.md": "ENGINEERING_CHECKPOINTS",
-    "sandbox/lf_contract_gate_test/changesets/router-programming-admission-dispatch-20261026-v1.json": "CHANGESET_MANIFEST"
-  }
-}
