@@ -1,0 +1,260 @@
+{
+  "evidence_tier": "LOCAL_DISPOSABLE_POSTGRES_WITH_SYNTHETIC_CATALOGS_AND_EXACT_ROUTER_RO_READBACK",
+  "main_base": "ce3a96ba7bf25cc8ef4b1142509a5a6c6399a267",
+  "migration": "supabase/migrations/20261026153320_lf_programming_code_operation_candidate_v1.sql",
+  "migration_sha256": "7c53dec1b246786110f99fed9f842e33a276530590278dce3145df1217df132b",
+  "router_readback_sha256": "c99a99e61adbc783452b487f7fbccf5aa962aacaaa4e98afc2c4d5664b670886",
+  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "assertions": 28,
+  "results": [
+    {
+      "case": "router_readback_sha",
+      "actual": "c99a99e61adbc783452b487f7fbccf5aa962aacaaa4e98afc2c4d5664b670886",
+      "expected": "c99a99e61adbc783452b487f7fbccf5aa962aacaaa4e98afc2c4d5664b670886",
+      "matched": true
+    },
+    {
+      "case": "router_live_readback_md5",
+      "actual": "7f2d4d27e6b7a88f9fa22d2db6c00c8b",
+      "expected": "7f2d4d27e6b7a88f9fa22d2db6c00c8b",
+      "matched": true
+    },
+    {
+      "case": "candidate_absent_before",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "missing_train_execution_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "candidate_exact_operation",
+      "actual": "DESARROLLO_CODIGO_AGENTE_LF",
+      "expected": "DESARROLLO_CODIGO_AGENTE_LF",
+      "matched": true
+    },
+    {
+      "case": "candidate_state",
+      "actual": "CANDIDATO_READ_ONLY",
+      "expected": "CANDIDATO_READ_ONLY",
+      "matched": true
+    },
+    {
+      "case": "candidate_write_forbidden",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "candidate_static_resolution",
+      "actual": "STATIC",
+      "expected": "STATIC",
+      "matched": true
+    },
+    {
+      "case": "candidate_train_author",
+      "actual": "fixture://train-execution-2fp",
+      "expected": "fixture://train-execution-2fp",
+      "matched": true
+    },
+    {
+      "case": "candidate_target_flags",
+      "actual": [
+        false,
+        false
+      ],
+      "expected": [
+        false,
+        false
+      ],
+      "matched": true
+    },
+    {
+      "case": "candidate_excluded_from_active_lookup",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "actual_router_candidate_block",
+      "actual": "BLOCK_OPERATION_NOT_REGISTERED",
+      "expected": "BLOCK_OPERATION_NOT_REGISTERED",
+      "matched": true
+    },
+    {
+      "case": "actual_router_does_not_return_operation",
+      "actual": null,
+      "expected": null,
+      "matched": true
+    },
+    {
+      "case": "candidate_repeat_preserves_entire_row",
+      "actual": {
+        "notes": "2F.P draft candidate only; D8 GO and complete operation contract pending. Target identity and admission remain separate PG-01 gates. No dispatch, execution, deployment or receipt persistence.",
+        "status": "CANDIDATO_READ_ONLY",
+        "asset_type": "REPOSITORY_ARTIFACT",
+        "created_at": "2026-10-26T15:37:24.901504+00:00",
+        "updated_at": "2026-10-26T15:37:24.901504+00:00",
+        "action_code": "CODE_DEVELOPMENT",
+        "write_allowed": false,
+        "operation_code": "DESARROLLO_CODIGO_AGENTE_LF",
+        "operation_resolution": "STATIC",
+        "created_by_execution_id": "fixture://train-execution-2fp",
+        "requires_missing_target": false,
+        "updated_by_execution_id": "fixture://train-execution-2fp",
+        "requires_existing_target": false
+      },
+      "expected": {
+        "notes": "2F.P draft candidate only; D8 GO and complete operation contract pending. Target identity and admission remain separate PG-01 gates. No dispatch, execution, deployment or receipt persistence.",
+        "status": "CANDIDATO_READ_ONLY",
+        "asset_type": "REPOSITORY_ARTIFACT",
+        "created_at": "2026-10-26T15:37:24.901504+00:00",
+        "updated_at": "2026-10-26T15:37:24.901504+00:00",
+        "action_code": "CODE_DEVELOPMENT",
+        "write_allowed": false,
+        "operation_code": "DESARROLLO_CODIGO_AGENTE_LF",
+        "operation_resolution": "STATIC",
+        "created_by_execution_id": "fixture://train-execution-2fp",
+        "requires_missing_target": false,
+        "updated_by_execution_id": "fixture://train-execution-2fp",
+        "requires_existing_target": false
+      },
+      "matched": true
+    },
+    {
+      "case": "active_control_reaches_next_gate",
+      "actual": "BLOCK_OPERATION_REGISTRY_MISSING",
+      "expected": "BLOCK_OPERATION_REGISTRY_MISSING",
+      "matched": true
+    },
+    {
+      "case": "active_control_next_operation",
+      "actual": "DESARROLLO_CODIGO_AGENTE_LF",
+      "expected": "DESARROLLO_CODIGO_AGENTE_LF",
+      "matched": true
+    },
+    {
+      "case": "active_control_rollback_restores_candidate",
+      "actual": "BLOCK_OPERATION_NOT_REGISTERED",
+      "expected": "BLOCK_OPERATION_NOT_REGISTERED",
+      "matched": true
+    },
+    {
+      "case": "active_row_conflict_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "write_allowed_conflict_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "completed_train_execution_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "wrong_target_train_execution_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "ambiguous_train_execution_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "operation_under_other_key_refused",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "edge_reference_row_unchanged",
+      "actual": "CANDIDATO_READ_ONLY:false",
+      "expected": "CANDIDATO_READ_ONLY:false",
+      "matched": true
+    },
+    {
+      "case": "router_source_unchanged",
+      "actual": "7f2d4d27e6b7a88f9fa22d2db6c00c8b",
+      "expected": "7f2d4d27e6b7a88f9fa22d2db6c00c8b",
+      "matched": true
+    },
+    {
+      "case": "no_operation_registry_created",
+      "actual": 0,
+      "expected": 0,
+      "matched": true
+    },
+    {
+      "case": "only_one_candidate_row",
+      "actual": 1,
+      "expected": 1,
+      "matched": true
+    },
+    {
+      "case": "candidate_final_row_unchanged",
+      "actual": {
+        "notes": "2F.P draft candidate only; D8 GO and complete operation contract pending. Target identity and admission remain separate PG-01 gates. No dispatch, execution, deployment or receipt persistence.",
+        "status": "CANDIDATO_READ_ONLY",
+        "asset_type": "REPOSITORY_ARTIFACT",
+        "created_at": "2026-10-26T15:37:24.901504+00:00",
+        "updated_at": "2026-10-26T15:37:24.901504+00:00",
+        "action_code": "CODE_DEVELOPMENT",
+        "write_allowed": false,
+        "operation_code": "DESARROLLO_CODIGO_AGENTE_LF",
+        "operation_resolution": "STATIC",
+        "created_by_execution_id": "fixture://train-execution-2fp",
+        "requires_missing_target": false,
+        "updated_by_execution_id": "fixture://train-execution-2fp",
+        "requires_existing_target": false
+      },
+      "expected": {
+        "notes": "2F.P draft candidate only; D8 GO and complete operation contract pending. Target identity and admission remain separate PG-01 gates. No dispatch, execution, deployment or receipt persistence.",
+        "status": "CANDIDATO_READ_ONLY",
+        "asset_type": "REPOSITORY_ARTIFACT",
+        "created_at": "2026-10-26T15:37:24.901504+00:00",
+        "updated_at": "2026-10-26T15:37:24.901504+00:00",
+        "action_code": "CODE_DEVELOPMENT",
+        "write_allowed": false,
+        "operation_code": "DESARROLLO_CODIGO_AGENTE_LF",
+        "operation_resolution": "STATIC",
+        "created_by_execution_id": "fixture://train-execution-2fp",
+        "requires_missing_target": false,
+        "updated_by_execution_id": "fixture://train-execution-2fp",
+        "requires_existing_target": false
+      },
+      "matched": true
+    }
+  ],
+  "actual_candidate_router_output": {
+    "router": "ACT-0001",
+    "status": "BLOCKED",
+    "asset_code": null,
+    "asset_type": "REPOSITORY_ARTIFACT",
+    "action_code": "CODE_DEVELOPMENT",
+    "blocking_code": "BLOCK_OPERATION_NOT_REGISTERED"
+  },
+  "local_active_mutation_control_output": {
+    "router": "ACT-0001",
+    "status": "BLOCKED",
+    "blocking_code": "BLOCK_OPERATION_REGISTRY_MISSING",
+    "operation_code": "DESARROLLO_CODIGO_AGENTE_LF"
+  },
+  "hosted_writes": false,
+  "models_executed": false,
+  "activation_allowed": false,
+  "operation_contract_implemented": false,
+  "D8_owner_GO": false
+}
