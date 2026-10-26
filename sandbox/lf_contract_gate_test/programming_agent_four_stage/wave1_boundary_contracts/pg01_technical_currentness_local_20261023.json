@@ -1,0 +1,837 @@
+{
+  "schema_version": "PG01_TECHNICAL_CURRENTNESS_LOCAL_EVIDENCE_V1",
+  "status": "SOURCE_ONLY_CANONICAL_ENGINE_BINDING_TESTED",
+  "source_before_commit": "9a1f21e820de479542c564305c54eb761f945ec3",
+  "unit_tests": {
+    "count": 60,
+    "unique": true,
+    "successful": true,
+    "test_ids": [
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_boundary_malformed_currentness_blocks",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_architecture_exact_pin",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_architecture_scope_type",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_budget_thresholds_and_invalid_numbers",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_complete_structure_never_admits",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_control_destination",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_digest_and_version",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_duplicate_json_keys",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_each_missing_component",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_measure_only_not_fake_budget",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_no_control_relaxation_or_model_routing",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_provider_exception_and_nonbytes",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c4_wrong_repo_namespace_and_rule_selection",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_complete_and_deterministic_without_mutation",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_conflicting_decisions",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_declared_not_applicable_requires_reason",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_duplicate_requirement_or_scope",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_empty_or_unresolved_is_not_not_applicable",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_every_missing_dimension",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_explicit_not_applicable",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_independent_blocked_scope_and_dependency",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_malformed_material_identities_fail_closed",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_missing_material_values_and_demo",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_no_map_or_bad_kind_map",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_old_fixture_is_missing_all_five",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_requirement_coverage",
+      "test_programming_pg01_preplanning_checks_v1.PreplanningChecks.test_c7_wrong_context_map_or_scope",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_accept_never_promotes_operational_gates",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_enriched_projection_hash_and_same_seven_fields",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_exhausted_budget_returns_decision",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_lossy_projection_and_block_hash",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_malformed_projection_block_and_retains_authentic_digest",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_mapping_change_changes_digest",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_missing_frame_and_missing_map",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_provider_exception_and_artifact_unavailable",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_rejected_boundary_never_calls_provider",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_repeat_and_proposed_projection",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_technical_input_change_changes_digest",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_unknown_packet_field_and_invalid_json",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_valid_map_but_missing_material_returns_analysis",
+      "test_programming_pg01_preplanning_receiver_v1.IntegratedReceiverChecks.test_wrong_subject_scope_hash_or_target",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_adapter_cannot_override_snapshot_roots",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_bad_provider_result_fails_closed",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_changed_artifact_breaking_is_stale",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_changed_technical_artifact_blocks_even_compatible",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_duplicate_material_id_blocks",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_incomplete_structure_never_queries_currentness",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_input_declared_current_is_not_authority",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_material_roots_cannot_be_hidden",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_missing_technical_port_blocks",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_pending_bounded_validation_cannot_be_bypassed",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_pin_identity_change_requires_revalidation",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_provider_exception_blocks",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_real_engine_current_and_digest",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_snapshot_rebuild_check_keeps_authority_receipt_intact",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_subject_scope_target_and_material_fingerprint",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_tampered_authority_receipt_is_rejected",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_unknown_dependencies_fail_closed",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_unrelated_revision_drift_allows_rebound",
+      "test_programming_pg01_technical_currentness_v1.TechnicalCurrentnessChecks.test_wrong_bound_material_cannot_replace_pin"
+    ]
+  },
+  "sql": {
+    "assertions": 106,
+    "all_matched": true,
+    "results": [
+      {
+        "case": "foundation_functions_before",
+        "actual": 0,
+        "expected": 0,
+        "matched": true
+      },
+      {
+        "case": "ddl_rollback_restores_absence",
+        "actual": 0,
+        "expected": 0,
+        "matched": true
+      },
+      {
+        "case": "ddl_rollback_restores_original_guard",
+        "actual": "2e9cba77a6a67039088a4e3cb971015d",
+        "expected": "2e9cba77a6a67039088a4e3cb971015d",
+        "matched": true
+      },
+      {
+        "case": "guard_acl_preserved",
+        "actual": "DEFAULT",
+        "expected": "DEFAULT",
+        "matched": true
+      },
+      {
+        "case": "no_public_execute_fn_programming_context_snapshot_validate_v1(jsonb)",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "no_public_execute_fn_programming_context_record_v1(jsonb,text)",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "no_public_execute_fn_programming_context_resolve_v1(text,text,timestamptz)",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "valid_synthetic_payload",
+        "actual": "VALID",
+        "expected": "VALID",
+        "matched": true
+      },
+      {
+        "case": "record_positive",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "record_idempotency",
+        "actual": [
+          "5479894b-d28d-4b91-b571-e6a5ae3c87b8",
+          "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
+          "IDEMPOTENT_REPLAY"
+        ],
+        "expected": [
+          "5479894b-d28d-4b91-b571-e6a5ae3c87b8",
+          "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
+          "IDEMPOTENT_REPLAY"
+        ],
+        "matched": true
+      },
+      {
+        "case": "resolve_positive",
+        "actual": "RESOLVED",
+        "expected": "RESOLVED",
+        "matched": true
+      },
+      {
+        "case": "resolve_repeat_identical",
+        "actual": {
+          "sha256": "2a3a92a9d64b19e5dd337bf96ec65cbce91998706e8f5484d74d8a0b2eba3ba9",
+          "type": "dict"
+        },
+        "expected": {
+          "sha256": "2a3a92a9d64b19e5dd337bf96ec65cbce91998706e8f5484d74d8a0b2eba3ba9",
+          "type": "dict"
+        },
+        "matched": true
+      },
+      {
+        "case": "exact_guard_positive",
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      {
+        "case": "unknown_subject",
+        "actual": "UNKNOWN",
+        "expected": "UNKNOWN",
+        "matched": true
+      },
+      {
+        "case": "partial_ready_shape_preserves_independent_ready_scope",
+        "actual": "VALID",
+        "expected": "VALID",
+        "matched": true
+      },
+      {
+        "case": "missing_required_field",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING"
+        ],
+        "matched": true
+      },
+      {
+        "case": "missing_required_field_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "empty_scope_front_matrix",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_SCOPE_FRONT_MATRIX_INCOMPLETE"
+        ],
+        "matched": true
+      },
+      {
+        "case": "empty_scope_front_matrix_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "blocked_front_hidden_as_preserve",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_SCOPE_FRONT_MATRIX_FRONT_DRIFT"
+        ],
+        "matched": true
+      },
+      {
+        "case": "blocked_front_hidden_as_preserve_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "a6_permission_field_missing",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_IMPLEMENTABILITY_REQUIREMENT_INVALID"
+        ],
+        "matched": true
+      },
+      {
+        "case": "a6_permission_field_missing_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "inner_snapshot_wrong_version",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_SNAPSHOT_VERSION"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_SNAPSHOT_VERSION"
+        ],
+        "matched": true
+      },
+      {
+        "case": "inner_snapshot_wrong_version_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "ready_scope_has_blocker",
+        "actual": [
+          "BLOCKED",
+          "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+        ],
+        "expected": [
+          "BLOCKED",
+          "PROGRAMMING_READY_SCOPE_HAS_BLOCKER"
+        ],
+        "matched": true
+      },
+      {
+        "case": "ready_scope_has_blocker_record_refuses",
+        "actual": "BLOCKED",
+        "expected": "BLOCKED",
+        "matched": true
+      },
+      {
+        "case": "negative_record_leaves_one_row",
+        "actual": 1,
+        "expected": 1,
+        "matched": true
+      },
+      {
+        "case": "id_mismatch",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "reported_hash_mismatch",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "not_resolved",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "mutable_resolution",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "latest_reinterpreted",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "authority_payload_tamper",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "wrong_expected_snapshot_version",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "missing_expected_id",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "missing_expected_hash",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "missing_expected_schema",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "zero_ready_is_only_shape_valid",
+        "actual": "VALID",
+        "expected": "VALID",
+        "matched": true
+      },
+      {
+        "case": "record_dependency_drift",
+        "actual": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+        "expected": "DEPENDENCY_CURRENTNESS_OR_REFERENCE_DRIFT",
+        "matched": true
+      },
+      {
+        "case": "historical_guard_not_currentness_admission",
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      {
+        "case": "positive_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "emitter_positive_boundary",
+        "actual": "ACCEPT",
+        "expected": "ACCEPT",
+        "matched": true
+      },
+      {
+        "case": "emitter_never_execution_permission",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "emitter_remaining_gates_explicit",
+        "actual": [
+          "PG-01_C4",
+          "PG-01_C7",
+          "PG-01_C6_PERSISTENCE"
+        ],
+        "expected": [
+          "PG-01_C4",
+          "PG-01_C7",
+          "PG-01_C6_PERSISTENCE"
+        ],
+        "matched": true
+      },
+      {
+        "case": "emitter_admitted_exact_scope",
+        "actual": [
+          "S1"
+        ],
+        "expected": [
+          "S1"
+        ],
+        "matched": true
+      },
+      {
+        "case": "emitter_exact_seven_business_fields",
+        "actual": [
+          "context_id",
+          "context_sha256",
+          "material_projection_sha256",
+          "receiver_schema_digest_sha256",
+          "snapshot_schema_digest_sha256",
+          "validated_material_paths",
+          "verdict"
+        ],
+        "expected": [
+          "context_id",
+          "context_sha256",
+          "material_projection_sha256",
+          "receiver_schema_digest_sha256",
+          "snapshot_schema_digest_sha256",
+          "validated_material_paths",
+          "verdict"
+        ],
+        "matched": true
+      },
+      {
+        "case": "emitter_projection_digest_recomputed",
+        "actual": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+        "expected": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+        "matched": true
+      },
+      {
+        "case": "emitter_producer_receiver_parity",
+        "actual": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "expected": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
+        "matched": true
+      },
+      {
+        "case": "emitter_repeat_entire_result_identical",
+        "actual": {
+          "sha256": "c000ed3feb0d9906083137a2867ce03b73dfb0abfc30a383660a8c88a224c466",
+          "type": "dict"
+        },
+        "expected": {
+          "sha256": "c000ed3feb0d9906083137a2867ce03b73dfb0abfc30a383660a8c88a224c466",
+          "type": "dict"
+        },
+        "matched": true
+      },
+      {
+        "case": "emitter_accepts_identical_proposed_projection",
+        "actual": "ACCEPT",
+        "expected": "ACCEPT",
+        "matched": true
+      },
+      {
+        "case": "N1_six_missing_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "N1_synthetic_six_missing_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "N2_empty_matrix_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "N2_synthetic_empty_matrix_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "N3_zero_READY_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "N3_zero_READY_code",
+        "actual": "NO_READY_SCOPE",
+        "expected": "NO_READY_SCOPE",
+        "matched": true
+      },
+      {
+        "case": "N3_identifiable_BLOCK_receipt",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "N4_missing_handoff",
+        "actual": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+        "expected": "EXPECTED_HANDOFF_INVALID_OR_MISSING",
+        "matched": true
+      },
+      {
+        "case": "N4_malformed_expected_hash",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "N4_no_query_without_expected_receipt",
+        "actual": 6,
+        "expected": 6,
+        "matched": true
+      },
+      {
+        "case": "N5_stale_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "N5_canonical_engine_STALE",
+        "actual": "STALE_AFFECTED",
+        "expected": "STALE_AFFECTED",
+        "matched": true
+      },
+      {
+        "case": "N5_unknown_fails_closed",
+        "actual": "UNKNOWN_FAIL_CLOSED",
+        "expected": "UNKNOWN_FAIL_CLOSED",
+        "matched": true
+      },
+      {
+        "case": "N5_missing_compatibility_evidence",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "unrelated_git_revision_drift_does_not_stale",
+        "actual": "ACCEPT",
+        "expected": "ACCEPT",
+        "matched": true
+      },
+      {
+        "case": "canonical_currentness_rebound",
+        "actual": "CURRENT_REBOUND",
+        "expected": "CURRENT_REBOUND",
+        "matched": true
+      },
+      {
+        "case": "bounded_validation_not_silently_bypassed",
+        "actual": "BOUNDED_VALIDATION_REQUIRED",
+        "expected": "BOUNDED_VALIDATION_REQUIRED",
+        "matched": true
+      },
+      {
+        "case": "N6_authority_payload_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "N6_modified_context_vs_original_receipt",
+        "actual": "EXACT_RECEIPT_MISMATCH",
+        "expected": "EXACT_RECEIPT_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "N6_authority_requires_rebuild_even_if_compatible",
+        "actual": "SNAPSHOT_REBUILD_REQUIRED:snapshot_authority",
+        "expected": "SNAPSHOT_REBUILD_REQUIRED:snapshot_authority",
+        "matched": true
+      },
+      {
+        "case": "N7_unknown_requested_scope",
+        "actual": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+        "expected": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+        "matched": true
+      },
+      {
+        "case": "partial_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "partial_READY_accepts_S1_only",
+        "actual": [
+          "S1"
+        ],
+        "expected": [
+          "S1"
+        ],
+        "matched": true
+      },
+      {
+        "case": "N7_partial_READY_never_substitutes_blocked_S2",
+        "actual": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+        "expected": "REQUESTED_SCOPE_NOT_READY_OR_UNKNOWN",
+        "matched": true
+      },
+      {
+        "case": "N8_lossy_projection_BLOCK",
+        "actual": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+        "expected": "MATERIAL_PROJECTION_LOSS_OR_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "N8_BLOCK_receipt_hashes_retained_full_projection",
+        "actual": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+        "expected": "394b5a0ae95ebb12fbee32a006a48f9ee4984092815f16da62b5105a814278eb",
+        "matched": true
+      },
+      {
+        "case": "N8_expected_id_mismatch",
+        "actual": "EXACT_RECEIPT_MISMATCH",
+        "expected": "EXACT_RECEIPT_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "schema_digest_mismatch",
+        "actual": "HANDOFF_SCHEMA_DIGEST_MISMATCH",
+        "expected": "HANDOFF_SCHEMA_DIGEST_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "schema_inner_drift_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "producer_schema_drift",
+        "actual": "PRODUCER_RECEIVER_SCHEMA_DIGEST_MISMATCH",
+        "expected": "PRODUCER_RECEIVER_SCHEMA_DIGEST_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "unknown_material_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "unknown_material_field_BLOCK",
+        "actual": "SNAPSHOT_MATERIAL_FIELDS_MISSING_OR_UNKNOWN",
+        "expected": "SNAPSHOT_MATERIAL_FIELDS_MISSING_OR_UNKNOWN",
+        "matched": true
+      },
+      {
+        "case": "currentness_scope_replay_BLOCK",
+        "actual": "CURRENTNESS_SUBJECT_MISMATCH",
+        "expected": "CURRENTNESS_SUBJECT_MISMATCH",
+        "matched": true
+      },
+      {
+        "case": "currentness_hiding_material_roots_BLOCK",
+        "actual": "CURRENTNESS_ROOTS_INCOMPLETE",
+        "expected": "CURRENTNESS_ROOTS_INCOMPLETE",
+        "matched": true
+      },
+      {
+        "case": "read_port_unavailable_BLOCK",
+        "actual": "READ_PORT_UNAVAILABLE",
+        "expected": "READ_PORT_UNAVAILABLE",
+        "matched": true
+      },
+      {
+        "case": "early_failure_does_not_fabricate_receipt",
+        "actual": null,
+        "expected": null,
+        "matched": true
+      },
+      {
+        "case": "no_new_writes_from_repeat_consume",
+        "actual": 1,
+        "expected": 1,
+        "matched": true
+      },
+      {
+        "case": "preplanning_fixture_recorded",
+        "actual": "RECORDED",
+        "expected": "RECORDED",
+        "matched": true
+      },
+      {
+        "case": "preplanning_real_sql_boundary_accept",
+        "actual": "ACCEPT",
+        "expected": "ACCEPT",
+        "matched": true
+      },
+      {
+        "case": "preplanning_framework_complete",
+        "actual": "COMPLETE",
+        "expected": "COMPLETE",
+        "matched": true
+      },
+      {
+        "case": "preplanning_sufficiency_complete",
+        "actual": "COMPLETE",
+        "expected": "COMPLETE",
+        "matched": true
+      },
+      {
+        "case": "preplanning_hash_recomputed",
+        "actual": "b5437f9184df321db85b5fb5140ea6c1f7113281bae9e5267a9ee502886d3848",
+        "expected": "b5437f9184df321db85b5fb5140ea6c1f7113281bae9e5267a9ee502886d3848",
+        "matched": true
+      },
+      {
+        "case": "preplanning_exact_snapshot_preserved",
+        "actual": {
+          "sha256": "58ec436edf448b64059e02bc44a9885246d68ef94e3cf8e05e9ffe7e409235a4",
+          "type": "dict"
+        },
+        "expected": {
+          "sha256": "58ec436edf448b64059e02bc44a9885246d68ef94e3cf8e05e9ffe7e409235a4",
+          "type": "dict"
+        },
+        "matched": true
+      },
+      {
+        "case": "preplanning_full_repeat_deterministic",
+        "actual": {
+          "sha256": "819152a699e859c814d13066fbb533b86246b6e1da0d4876133c695007c2200b",
+          "type": "dict"
+        },
+        "expected": {
+          "sha256": "819152a699e859c814d13066fbb533b86246b6e1da0d4876133c695007c2200b",
+          "type": "dict"
+        },
+        "matched": true
+      },
+      {
+        "case": "preplanning_never_execution",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "preplanning_never_operational",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "preplanning_never_planning",
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      {
+        "case": "preplanning_C4_C7_still_pending",
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      {
+        "case": "technical_currentness_real_engine_CURRENT",
+        "actual": "CURRENT",
+        "expected": "CURRENT",
+        "matched": true
+      },
+      {
+        "case": "technical_currentness_receipt_hash_intact",
+        "actual": "9a59064d73d1407d1d5be10024d26dd565ed4b77baebf93dd757e18385b60d74",
+        "expected": "9a59064d73d1407d1d5be10024d26dd565ed4b77baebf93dd757e18385b60d74",
+        "matched": true
+      },
+      {
+        "case": "technical_missing_port_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "technical_changed_pin_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "technical_changed_pin_receipt_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "preplanning_lossy_report_rejected",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      },
+      {
+        "case": "preplanning_missing_frame_BLOCK",
+        "actual": "BLOCK",
+        "expected": "BLOCK",
+        "matched": true
+      }
+    ],
+    "historical_replay_this_run": false
+  },
+  "source_sha256": {
+    "programming_pg01_receiver_v1.py": "685cdab833d20e88b7520e63f5686a2f26bb89e0290249fcc3548058b5890ed3",
+    "programming_pg01_preplanning_checks_v1.py": "b0249a5d9ce3cb7a8e1980aebd4b756c3cf4a20b6d70574115049ab5880ec950",
+    "programming_pg01_preplanning_receiver_v1.py": "a675eada2b3ded4c340d9bdaa4b66fb8a27e1fdc0094dd1b221c72236c356c6f",
+    "programming_pg01_technical_currentness_v1.py": "de13faf8b8292c9c6b2a0a990d4857722a288f5f39cb4521668c0696161cf6ba",
+    "test_programming_pg01_preplanning_receiver_v1.py": "4d1aad082890ce80118d4f47c5d5b91a3cba6c5bd32a0206a27542ca00c48d3e",
+    "test_programming_pg01_technical_currentness_v1.py": "87f8e526886e795588cef04f208f8a67beb8f55c6cd4abaccdc12512c06e5921",
+    "test_programming_pg01_receiver_v1.py": "204086440a33c4979598d1c57240d0e496e882a9df1b623905e569ec2b5e47ad",
+    "test_programming_pg01_preplanning_checks_v1.py": "f4e982d8d5df11ebf905622bcbfb1dbc8ae1a27e20af4a4f85b0a66d727c4950",
+    "run_programming_pg01_receiver_base_v1.py": "bfb8e501c39ba0e7e2b598bd1653dc5bd65ae58108f3b6b9bbf8255a93f0f3de",
+    "PG01_TECHNICAL_CURRENTNESS_V1.md": "5b2a89e3c5349b20816deed2b06c9969f72b53597d3ba76a64574ac0428e245c",
+    "PG01_RECEIVER_BASE_V1.md": "3c6ebb56bee7f3e816a34aa54437d632eff658e6825566704ede7a5bd4a8b7a3"
+  },
+  "provider_provenance_qualified": false,
+  "technical_material_observation": "SYNTHETIC_EXPECTED_DIGEST_FIXTURE",
+  "operational_admission": false,
+  "planning_allowed": false,
+  "execution_allowed": false,
+  "independent_review": false,
+  "ci_for_increment": false,
+  "github_push": false,
+  "hosted_database_touched": false
+}
