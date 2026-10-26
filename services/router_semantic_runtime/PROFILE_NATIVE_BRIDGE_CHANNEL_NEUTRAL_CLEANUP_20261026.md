@@ -14,6 +14,7 @@ Retired legacy entrypoints:
 - public.lf_router_product_profile_after_selection_raw_v1 is removed.
 - public.lf_router_product_gate2_result_from_selection_v1 is removed.
 - Historical migrations may still mention these names because they describe prior schema states; no current runtime API may expose or call them.
+- PRODUCTO, PROGRAMACION and OPERACIONES all use `LF_ROUTER_CHANNEL_PROFILE_AFTER_SELECTION_V1`; the former PRODUCTO-specific schema identifier is retired from runtime output.
 
 Security:
 - no new GRANT is given to supabase_read_only_user;
