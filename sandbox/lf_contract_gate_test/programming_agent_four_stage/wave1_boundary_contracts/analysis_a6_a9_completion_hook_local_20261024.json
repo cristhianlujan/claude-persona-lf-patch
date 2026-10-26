@@ -1,0 +1,55 @@
+{
+  "schema_version": "A6_A9_COMPLETION_HOOK_LOCAL_EVIDENCE_V1",
+  "date": "2026-10-24",
+  "scope": "SOURCE_ONLY_DRAFT",
+  "base_main": "33684cc36e6ca0a7d74e3d547fce50898a16f0a5",
+  "previous_pr_head": "9aa6b02c57a93a3f012cc3f6eb6fd1fc1532caa7",
+  "focused_unit_tests": {
+    "unique": 121,
+    "failures": 0,
+    "skipped": 0,
+    "scope": "LOCAL",
+    "new_tests": 25,
+    "existing_a6_a9": 60,
+    "other_runtime_regressions": 36
+  },
+  "a9_regression": {
+    "payload_positive": 1,
+    "assembler_positive": 1,
+    "assembler_negative": 2,
+    "payload_negative": 14,
+    "scope": "LOCAL"
+  },
+  "expanded_regression": {
+    "tests": 132,
+    "failures": 5,
+    "errors": 1,
+    "baseline_same_failures": true,
+    "baseline_tests": 11,
+    "baseline_main": "33684cc36e6ca0a7d74e3d547fce50898a16f0a5",
+    "affected_modules": [
+      "tests.test_engine",
+      "tests.test_generic_profile_runtime_binding"
+    ],
+    "not_fixed_in_this_change": true
+  },
+  "transport_evidence": "fake DB-API/psycopg connector; no new hosted DB smoke or admitted role",
+  "api_evidence": "in-process FastAPI TestClient; fake engine, no model calls",
+  "active_response": "durably stored before metadata-only advisory dispatch; observer receives no result/store/payload",
+  "deployment_applied": false,
+  "database_write": false,
+  "operational_admission": false,
+  "planning_allowed": false,
+  "execution_allowed": false,
+  "persistence_allowed": false,
+  "independent_review": "PENDING",
+  "runtime_authorization": "NOT_OBTAINED; Router literal unresolved; no runtime update/execution attempted",
+  "notes": [
+    "Existing runtime Python dependencies reused for local tests; no installed packages/services modified.",
+    "TestClient httpx dependency supplied from existing test environment; deprecation warnings retained.",
+    "Thread capacity is per app, not a fleet-wide quota; hung transport can occupy slots until exit.",
+    "Config disabled; constructor injection only, no env auto-loading or scheduler."
+  ],
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
+}

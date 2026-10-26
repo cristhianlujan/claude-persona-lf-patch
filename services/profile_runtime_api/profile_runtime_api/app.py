@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import secrets
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -9,6 +10,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from .completion_observation import CompletionObservation
 from .deployment import deployment_state
 from .engine import ProfileRuntimeEngine
 from .hashing import canonical_json_sha256
@@ -90,8 +92,10 @@ def create_app(
     settings: Settings | None = None,
     *,
     engine_factory: Callable[[Settings], ProfileRuntimeEngine] = ProfileRuntimeEngine,
+    completion_observer: Callable[[dict[str, Any]], None] | None = None,
 ) -> FastAPI:
     runtime_settings = settings or Settings.from_env()
+    completion_observation = CompletionObservation(completion_observer)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -111,6 +115,7 @@ def create_app(
         try:
             yield
         finally:
+            completion_observation.close()
             executor.shutdown(wait=False, cancel_futures=True)
 
     app = FastAPI(
@@ -206,6 +211,13 @@ def create_app(
                         job["job_id"],
                         {"code": "UNEXPECTED_JOB_FAILURE", "detail": type(exc).__name__},
                     )
+                else:
+                    # Durable completion precedes observation. Its failure cannot
+                    # enter store.fail or replace the stored/public result.
+                    try:
+                        completion_observation.submit(job["job_id"], meta)
+                    except Exception:
+                        logging.getLogger(__name__).warning("COMPLETION_OBSERVATION_DISPATCH_FAILED")
 
             request.app.state.executor.submit(worker)
         return JobAccepted(
