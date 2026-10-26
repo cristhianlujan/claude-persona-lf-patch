@@ -35,3 +35,5 @@ del contrato y su entrega/admisión/currentness, y aprobar una composición que
 inyecte el proveedor. La integración por defecto no lo inventa y no puede
 habilitarse con un flag enviado por HTTP. Este documento deja el impacto
 reviewable; no se envió ningún mensaje externo ni se declaró conocimiento/GO del owner.
+
+Actualización de base: main ce3a96ba7bf25cc8ef4b1142509a5a6c6399a267 incorpora #3165 (workflow advisory y migración de contexto Producto). El workflow añade comprobación fuente de ese precheck; sigue sin invocar el motor real. El resto del inventario no cambia.
