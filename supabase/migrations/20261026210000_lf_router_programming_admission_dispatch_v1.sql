@@ -139,7 +139,7 @@ $old$ THEN
       IF COALESCE((v_d->>'admissible')::boolean,false) IS NOT TRUE THEN
         RETURN v_base || jsonb_build_object(
           'paso','PROGRAMACION_ADMISION_BLOQUEADA',
-          'reason',v_d->>'reason',
+          'codigo',v_d->>'reason',
           'context_id',v->>'context_id',
           'context_sha256',v->>'context_sha256',
           'retorno',CASE WHEN v_d->>'reason'='PG01_RECEIPT_NOT_FOUND'
@@ -164,7 +164,7 @@ $old$ THEN
       END IF;
 
       RETURN v_base || jsonb_build_object(
-        'paso','DISPATCHED',
+        'paso','PROGRAMACION_DESPACHADA',
         'despacho',jsonb_build_object(
           'operation_code','DESARROLLO_CODIGO_AGENTE_LF',
           'context_id',v->>'context_id',

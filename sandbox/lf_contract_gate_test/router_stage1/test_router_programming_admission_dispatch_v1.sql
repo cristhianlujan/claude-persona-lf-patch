@@ -155,7 +155,7 @@ DO $$ DECLARE v jsonb; BEGIN
  v:=pg_temp.call_router(pg_temp.binding('NOT-FOUND'));
  IF v->>'paso' IS DISTINCT FROM 'PROGRAMACION_ADMISION_BLOQUEADA'
     OR v->>'retorno' IS DISTINCT FROM 'RETURN_TO_ANALYSIS_NO_CODE'
-    OR v->>'reason' IS DISTINCT FROM 'PG01_RECEIPT_NOT_FOUND'
+    OR v->>'codigo' IS DISTINCT FROM 'PG01_RECEIPT_NOT_FOUND'
  THEN RAISE EXCEPTION 'TEST_FAIL:04_absent'; END IF;
  INSERT INTO test_passed VALUES ('04');
 END $$;
@@ -164,7 +164,7 @@ DO $$ DECLARE v jsonb; BEGIN
  v:=pg_temp.call_router(pg_temp.binding('NORMAL'));
  IF v->>'paso' IS DISTINCT FROM 'PROGRAMACION_ADMISION_BLOQUEADA'
     OR v->>'retorno' IS DISTINCT FROM 'BLOCK_NO_CODE'
-    OR v->>'reason' IS DISTINCT FROM 'PG01_ADMISSION_ENVELOPE_CONTRACT_NOT_RELEASED'
+    OR v->>'codigo' IS DISTINCT FROM 'PG01_ADMISSION_ENVELOPE_CONTRACT_NOT_RELEASED'
  THEN RAISE EXCEPTION 'TEST_FAIL:05_closed'; END IF;
  INSERT INTO test_passed VALUES ('05');
 END $$;
@@ -181,7 +181,7 @@ DO $$ DECLARE v jsonb; BEGIN
  UPDATE public.lf_router_action_registry SET status='ACTIVE'
  WHERE operation_code='DESARROLLO_CODIGO_AGENTE_LF';
  v:=pg_temp.call_router(pg_temp.binding('ADMIT-TEST-ONLY'));
- IF v->>'paso' IS DISTINCT FROM 'DISPATCHED'
+ IF v->>'paso' IS DISTINCT FROM 'PROGRAMACION_DESPACHADA'
    OR v#>>'{despacho,operation_code}' IS DISTINCT FROM 'DESARROLLO_CODIGO_AGENTE_LF'
    OR v#>>'{despacho,entry_contract}' IS DISTINCT FROM 'PROGRAMMING_ENTRY_CONTRACT_V1'
    OR (v->>'downstream_execution_allowed')::boolean IS DISTINCT FROM false
@@ -217,15 +217,24 @@ END $$;
 DO $$ DECLARE v jsonb; BEGIN
  v:=pg_temp.call_router(pg_temp.binding('READER-ERROR'));
  IF v->>'paso' IS DISTINCT FROM 'PROGRAMACION_ADMISION_BLOQUEADA'
-    OR v->>'reason' IS DISTINCT FROM 'PG01_ROUTER_ADMISSION_UNDETERMINED'
+    OR v->>'codigo' IS DISTINCT FROM 'PG01_ROUTER_ADMISSION_UNDETERMINED'
     OR v->>'retorno' IS DISTINCT FROM 'BLOCK_NO_CODE'
  THEN RAISE EXCEPTION 'TEST_FAIL:11_reader_error_fail_closed'; END IF;
  INSERT INTO test_passed VALUES ('11');
 END $$;
 
+DO $$ DECLARE v jsonb; t text; BEGIN
+ FOREACH t IN ARRAY ARRAY['NORMAL','NOT-FOUND','READER-ERROR','ADMIT-TEST-ONLY'] LOOP
+   v:=pg_temp.call_router(pg_temp.binding(t));
+   IF v ? 'reason' OR v->>'paso' = 'DISPATCHED' OR v->>'paso' NOT LIKE 'PROGRAMACION\_%' THEN
+     RAISE EXCEPTION 'TEST_FAIL:12_naming_convention_%',t; END IF;
+ END LOOP;
+ INSERT INTO test_passed VALUES ('12');
+END $$;
+
 DO $$ DECLARE n int; BEGIN
  SELECT count(*) INTO n FROM test_passed;
- IF n<>11 THEN RAISE EXCEPTION 'TEST_FAIL:total_%',n; END IF;
+ IF n<>12 THEN RAISE EXCEPTION 'TEST_FAIL:total_%',n; END IF;
  RAISE NOTICE 'ROUTER_PROGRAMMING_DISPATCH_TESTS_PASSED:%',n;
 END $$;
 ROLLBACK;

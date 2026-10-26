@@ -21,9 +21,18 @@ El objeto opt-in va en `p_caller.programming_handoff` e incluye `context_id`, `c
 | Recibo exacto ausente | `PROGRAMACION_ADMISION_BLOQUEADA` | `RETURN_TO_ANALYSIS_NO_CODE` |
 | Recibo hallado, no admisible | `PROGRAMACION_ADMISION_BLOQUEADA` | `BLOCK_NO_CODE` |
 | Admisible, operación no ACTIVE | `PROGRAMACION_OPERACION_NO_ACTIVA` | Estado de registro |
-| Admisible, operación ACTIVE | `DISPATCHED` | Identidad exacta y scopes para siguiente compuerta |
+| Admisible, operación ACTIVE | `PROGRAMACION_DESPACHADA` | Identidad exacta y scopes para siguiente compuerta |
 
-**En todos los caminos**, `downstream_execution_allowed=false`, incluso `DISPATCHED`. Despacho no equivale a permiso de ejecución.
+**En todos los caminos**, `downstream_execution_allowed=false`, incluso `PROGRAMACION_DESPACHADA`. Despacho no equivale a permiso de ejecución.
+
+## Decisiones
+
+| # | Tema | Estado |
+|---|---|---|
+| 1 | Transporte del handoff | **Decidido (Paulo, 26-oct):** `p_caller.programming_handoff`. No cambia la firma del Router ni a quien lo llama; un handoff falso no sirve porque se contrasta con el recibo guardado. Se puede formalizar en `p_stage1` cuando exista el contrato V2. |
+| 2 | Nombres de salida | **Decidido (Paulo, 26-oct):** todos los pasos nuevos llevan prefijo de canal, como el resto de V2 (`OPERACIONES_…`, `PRODUCTO_…`). El despacho es `PROGRAMACION_DESPACHADA` (no el `DISPATCHED` de V1, para distinguir el origen). El código va en `codigo`, como en el resto del Router (`reason` no se usa en la salida; solo dentro del puente, que replica al lector D7). La prueba 12 lo exige. |
+| 3 | Puente `SECURITY DEFINER` | Abierto para Cristhian. |
+| 4 | Reverificar la definición de Producto antes de admitir | Abierto para Cristhian. Propuesta: resolverlo en la compuerta V2 (binding con referencia y huella de la definición, comparadas con la vigente). |
 
 ## Puente de permisos
 
@@ -46,13 +55,13 @@ La fixture del Router no puede igualar el MD5 de la función real de 12.126 cara
 1. Contrato V2 de admisión y juez independiente A9 con evidencias gobernadas.
 2. Operación escritora de recibos PG-01 en runtime, si se autoriza.
 3. Activación explícita de `DESARROLLO_CODIGO_AGENTE_LF` en I1.
-4. Revisión de Cristhian del formato y la ubicación de `programming_handoff`, códigos `paso` y modelo del puente.
+4. Revisión de Cristhian del modelo del puente y de la reverificación de la definición de Producto (ver Decisiones).
 5. Verificación del MD5 y bloque real en la base viva en el momento del Train. Si difiere, detener; **no** sustituir el hash por uno actualizado sin revisión.
 
 ## Alcance de validación
 
-El script contiene 11 bloques. Ejecutado por Claude el 26-oct-2026 en PostgreSQL 16 local desechable: `ROUTER_PROGRAMMING_DISPATCH_TESTS_PASSED:11` (CI corre 17). Contra la base viva, en solo lectura, se comprobó: MD5 `42828a549c0e4ce15e45c902816fa9ea`, cada ancla aparece una vez y el bloque PROGRAMACION vivo (885 caracteres, md5 `787b637c5043c1e35b6bd922b02c32e0`, incluida la línea en blanco previa a OPERACIONES) es idéntico al bloque `$old$` de la migración.
+El script contiene 12 bloques. Ejecutado por Claude el 26-oct-2026 en PostgreSQL 16 local desechable: `ROUTER_PROGRAMMING_DISPATCH_TESTS_PASSED:12` (CI corre 17). Contra la base viva, en solo lectura, se comprobó: MD5 `42828a549c0e4ce15e45c902816fa9ea`, cada ancla aparece una vez y el bloque PROGRAMACION vivo (885 caracteres, md5 `787b637c5043c1e35b6bd922b02c32e0`, incluida la línea en blanco previa a OPERACIONES) es idéntico al bloque `$old$` de la migración.
 
-Correcciones de Claude sobre la entrega de GPT: (1) la regex de UUID del Router tenía 4 grupos y rechazaba todo `context_id` válido (la prueba 04 fallaba); (2) un UUID en mayúsculas pasaba el puente y hacía que el lector D7 lanzara excepción; (3) faltaba la línea en blanco del bloque vivo, lo que habría bloqueado el Train con `BLOCK_DRIFT`; (4) el cargador del test perdía líneas en blanco (CSV lee línea vacía como NULL). Se añadieron las pruebas 10 (UUID en mayúsculas, handoff null) y 11 (error del lector, fail closed), y el stub D7 ahora lanza excepción y devuelve `record` como el lector real.
+Correcciones de Claude sobre la entrega de GPT: (1) la regex de UUID del Router tenía 4 grupos y rechazaba todo `context_id` válido (la prueba 04 fallaba); (2) un UUID en mayúsculas pasaba el puente y hacía que el lector D7 lanzara excepción; (3) faltaba la línea en blanco del bloque vivo, lo que habría bloqueado el Train con `BLOCK_DRIFT`; (4) el cargador del test perdía líneas en blanco (CSV lee línea vacía como NULL). Se añadieron las pruebas 10 (UUID en mayúsculas, handoff null), 11 (error del lector, fail closed) y 12 (convención de nombres), y el stub D7 ahora lanza excepción y devuelve `record` como el lector real.
 
 Pendiente de revisión: la revisión de CI y de Cristhian debe confirmar también los permisos efectivos de `postgres`, `service_role` y `supabase_read_only_user` y la compatibilidad del `CREATE OR REPLACE FUNCTION` con el Router vigente.
