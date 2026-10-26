@@ -9,10 +9,11 @@ Canonical runtime path:
 - public.lf_router_profile_execution_after_gate2_v1 materializes EJECUCION_PERFIL_LF with the service identity.
 - public.lf_profile_native_bridge_prepare_v1 continues the same authorized GPT Native execution.
 
-Compatibility:
-- public.lf_router_product_profile_after_selection_v1 remains PRODUCTO-only but delegates to the common implementation.
-- public.lf_router_product_profile_after_selection_raw_v1 remains PRODUCTO-only but delegates to the common raw continuation.
-- public.lf_router_product_gate2_result_from_selection_v1 is a thin compatibility alias to the common Gate2 implementation.
+Retired legacy entrypoints:
+- public.lf_router_product_profile_after_selection_v1 is removed.
+- public.lf_router_product_profile_after_selection_raw_v1 is removed.
+- public.lf_router_product_gate2_result_from_selection_v1 is removed.
+- Historical migrations may still mention these names because they describe prior schema states; no current runtime API may expose or call them.
 
 Security:
 - no new GRANT is given to supabase_read_only_user;
@@ -23,4 +24,6 @@ Security:
 Acceptance:
 - PROGRAMACION + PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF + GPT_NATIVE reaches NATIVE_EXECUTION_READY in a rollback-only migration postcheck;
 - the bridge contains no active calls to product-specific continuation/Gate2 functions;
+- the three product-specific legacy entrypoints do not exist in the current schema;
+- no active PostgreSQL function source references those retired names;
 - postcheck leaves no execution residue.
