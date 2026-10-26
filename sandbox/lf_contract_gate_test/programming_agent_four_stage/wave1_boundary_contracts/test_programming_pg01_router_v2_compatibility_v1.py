@@ -26,6 +26,7 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
         ("20261025000500_lf_router_product_dynamic_profile_selection_v1.sql", "$patch$"),
         ("20261026145500_lf_router_product_context_resolution_v1.sql", "$patch_route$"),
         ("20261026161500_lf_router_thin_derivation_profile_investigation_v1.sql", "$route$"),
+        ("20261026213000_lf_router_profile_selection_all_channels_v1.sql", "$patch_route$"),
     ]
     for name, tag in patches:
         path = "supabase/migrations/" + name
@@ -44,7 +45,25 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
     def programming_branch(text):
         start = text.index("IF v_channel='PROGRAMACION' THEN")
         return text[start:text.index("    END IF;", start)]
-    check("router_v2_programming_branch_unchanged_by_later_patches", programming_branch(final_definition), programming_branch(original_definition))
+    branch = programming_branch(final_definition)
+    check("router_v2_programming_branch_replaced_by_profile_selection",
+          "'paso','PROGRAMACION_PROFILE_SELECTION_REQUIRED'" in branch and branch != programming_branch(original_definition), True)
+    for marker in (
+        "'code','PROGRAMACION_PRECHECK_DEFINICION'",
+        "'precondicion_requerida','EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS'",
+        "'si_definicion_falta_o_difiere','PRODUCTO_PRIMERO'",
+        "'si_definicion_vigente','PROGRAMACION_ADMISION_REQUERIDA'",
+        "'contrato_entrada_despues_precheck','PROGRAMMING_ENTRY_CONTRACT_V1'",
+        "'upstream_requerido_despues_precheck','ANALYSIS_IMPLEMENTATION_PACKAGE_V1'",
+    ):
+        check("router_v2_programming_precondition_preserved_" + marker.split("','")[0].strip("'"), marker in branch, True)
+    # Test-only stub: the disposable DB has no profile catalog or real selector.
+    # Signature and fixed result emulate only the Router dependency.
+    sql("""CREATE OR REPLACE FUNCTION public.lf_profile_selector_semantic_prepare_v1(p_text text)
+           RETURNS jsonb LANGUAGE sql AS $stub$
+           SELECT jsonb_build_object('schema_version','LF_PROFILE_SELECTOR_SEMANTIC_RESULT_V1',
+                                     'catalog_profile_count',3)
+           $stub$;""")
     stage1 = {
         "schema_version": "LF_ROUTER_STAGE1_V2", "texto_original": "Corregir el backend del login B2B ya definido",
         "es_operacion": True, "respuesta_directa": False, "accion": "corregir", "sujeto": "backend login B2B",
@@ -61,12 +80,17 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
     entry = json.loads(raw); digest = hashlib.sha256(raw).hexdigest()
     good, handoff = persisted(context, "router_v2_positive_snapshot")
     subject = receiver(good)
-    check("router_v2_actual_paso_is_precheck", route["paso"], "PROGRAMACION_PRECHECK_DEFINICION")
-    check("router_v2_conditional_continuation_only", route["si_definicion_vigente"], "PROGRAMACION_ADMISION_REQUERIDA")
-    check("router_v2_contract_schema_matches_receiver", route["contrato_entrada_despues_precheck"], entry["schema_version"])
+    check("router_v2_actual_paso_is_profile_selection", route["paso"], "PROGRAMACION_PROFILE_SELECTION_REQUIRED")
+    check("router_v2_derivation_only", route["router_work_mode"], "DERIVATION_ONLY")
+    check("router_v2_profile_candidates_stub", route["profile_selection_candidate_count"], 3)
+    check("router_v2_channel_precondition_code", route["channel_precondition"]["code"], "PROGRAMACION_PRECHECK_DEFINICION")
+    check("router_v2_precondition_before_effect", route["channel_precondition"]["required_before_channel_effect"], True)
+    check("router_v2_gate2_no_profile_effects", route["gate2_authorizes_profile_effects"], False)
+    check("router_v2_conditional_continuation_only", route["channel_precondition"]["si_definicion_vigente"], "PROGRAMACION_ADMISION_REQUERIDA")
+    check("router_v2_contract_schema_matches_receiver", route["channel_precondition"]["contrato_entrada_despues_precheck"], entry["schema_version"])
     check("router_v2_receiver_digest_matches_exact_file", subject.contract_digest, digest)
     check("router_v2_frozen_entry_digest", digest, "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8")
-    check("router_v2_upstream_name", route["upstream_requerido_despues_precheck"], "ANALYSIS_IMPLEMENTATION_PACKAGE_V1")
+    check("router_v2_upstream_name", route["channel_precondition"]["upstream_requerido_despues_precheck"], "ANALYSIS_IMPLEMENTATION_PACKAGE_V1")
     check("router_v2_never_execution", route["downstream_execution_allowed"], False)
     check("router_v2_does_not_supply_context_id", "context_id" in route, False)
     check("router_v2_does_not_supply_schema_digest", "snapshot_schema_digest_sha256" in route, False)
@@ -98,8 +122,9 @@ def exercise_router_v2(*, context, sql, query, check, repo, persisted, receiver)
         "route_input_fixture": stage1, "actual_route_output": route,
         "canonical_source_sha256": {source_paths[k]: hashlib.sha256(v.encode()).hexdigest() for k,v in sources.items()},
         "receiver_contract_digest": digest, "schema_identity_match": True,
+        "profile_selector_stubbed_for_local_replay": True,
         "runtime_authorization_tested": False, "definition_currentness_tested": False,
-        "gaps": ["ROUTER_RETURNS_PRECHECK_NOT_ADMISSION", "NO_ROUTER_SCHEMA_DIGEST_OR_EXPECTED_HANDOFF",
+        "gaps": ["ROUTER_DERIVES_PROFILE_SELECTION_PRECONDITION_NOT_ADMISSION", "NO_ROUTER_SCHEMA_DIGEST_OR_EXPECTED_HANDOFF",
                  "PACKAGE_ENVELOPE_AND_ADMITTED_A9_PROVENANCE_NOT_CHECKED_BY_BOUNDARY",
                  "NO_ONE_TO_ONE_RUNTIME_AUTHORIZATION_BLOCK_IN_RECEIVER"],
         "mapping": {

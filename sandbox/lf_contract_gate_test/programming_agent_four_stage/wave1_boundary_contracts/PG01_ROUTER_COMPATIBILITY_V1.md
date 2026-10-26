@@ -36,3 +36,9 @@ Esta tabla es una propuesta de proyección del futuro consumidor. Los retornos d
 ## Pendientes
 
 P1/I0 siguen abiertos: positivo acordado C1/PR2, proveedor/currentness admitidos, C4/C7 operativos, envelope/admisión A9 y D7/C6 persistido con readback. Véanse PG01_P1_CLOSURE_MAP_V1.md y PG01_D7_RECEIPT_PERSISTENCE_PROPOSAL_V1.md. CI debe leerse por nombre sobre el HEAD publicado; estos conteos son locales. Ninguna conclusión constituye autorización operativa.
+
+## Actualización tras #3177 (26-oct-2026)
+
+**Compatibilidad actualizada tras #3177 (26-oct-2026).** La caracterización local reproduce también `20261026213000_lf_router_profile_selection_all_channels_v1.sql`: el Router de `PROGRAMACION` ya no responde directamente `PROGRAMACION_PRECHECK_DEFINICION`, sino `PROGRAMACION_PROFILE_SELECTION_REQUIRED` con `router_work_mode=DERIVATION_ONLY`. La precondición funcional original sigue íntegra en `channel_precondition` (código `PROGRAMACION_PRECHECK_DEFINICION`, misma fuente canónica/currentness, continuidad PG-01 y contrato V1). La función `public.lf_profile_selector_semantic_prepare_v1(text)` se sustituye exclusivamente durante la prueba por un stub local con tres candidatos; esto **no** valida perfiles ni autoriza efectos reales. Los checks del receptor PG-01 y de la política conservan sus límites; la derivación no acredita admisión ni ejecución. El gap pasa a ser `ROUTER_DERIVES_PROFILE_SELECTION_PRECONDITION_NOT_ADMISSION`. La evidencia JSON debe regenerarla el runner, no editarse a mano.
+
+Verificación local (Claude): runner `--router-v2-evidence` con 151 aserciones en verde (148 antes) y main `39e2de6` integrado. La prueba anterior, ejecutada contra el Router nuevo, falla en `router_v2_programming_branch_unchanged_by_later_patches`, lo que confirma que la actualización era necesaria. Evidencia regenerada en `pg01_router_compatibility_local_20261026.json`.
