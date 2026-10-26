@@ -1,6 +1,6 @@
 # Input Governance — transición a ejecución bajo demanda GPT Native (candidato v1)
 
-**Estado:** PROPOSED / ROUTER_SEMANTIC_BLOCKED / NON-PRODUCTION / NO_CUTOVER.
+**Estado:** PROPOSED / STAGE2_PROGRAMACION_PRECHECK / NON-PRODUCTION / NO_CUTOVER.
 **Fecha de verificación:** 2026-10-26.
 **Alcance:** reemplazar exclusivamente el *despacho periódico* de `ig-direct-sql-worker-v1`, reutilizando el motor SQL gobernado. No modificar reglas, familias, controles EKB, Router ACT-0001 ni ejecución de otros perfiles.
 **Autoridad:** contrato vivo en `programacion.contratos`; este documento NO sustituye ni revisa su autoridad.
@@ -46,9 +46,13 @@ EKB focal consultado:
 - **Modificación estructural persistente** (funciones, autorizaciones/ACL, contrato, binding, consumidor, cron, triggers): **Router ACT-0001 → `ACTUALIZACION_DB_LF` → PR Git-first → PASE / checks exact-HEAD → `ready-to-merge` → Merge Train → apply + ledger + readback Git=ledger=DB**. El Train reserva la ejecución `ACTUALIZACION_DB_LF` al admitir el PR; no reservar manualmente ni ejecutar SQL por el conector de lectura. Regla vigente: `CLAUDE.md`, `AGENTS.md`, R16.
 - **Procesamiento operacional por pantalla** (Curator, Validator y receipts): **no** es una migración por solicitud. Lo gobierna `EJECUCION_PERFIL_LF` / Input Governance usando funciones y permisos del runtime ya admitidos. GPT Native dirige la interacción en la misma conversación; no se crean roles SQL nuevos ni se invocan herramientas de escritura sin identidad y ejecución gobernadas. El Train implementa el **cambio estructural** que habilita esa ruta operacional; no procesa las 47 familias en cada PR.
 
-**Router live — evidencia de bloqueo:** `public.lf_router_resolve_v1` sobre el alcance de migración retornó `BLOCK_SCOPE_SEMANTICS_UNATTESTED`, con `operation_code=null` y `downstream_execution_allowed=false`. Por ello solo se corrige documentación preparatoria en este PR. No adjuntar SQL aplicable ni etiquetar `ready-to-merge` como una migración ejecutable hasta recuperar la atestación semántica oficial del Router y sus políticas vigentes. No retirar/alterar el cron mientras exista este bloqueo.
+**Rectificación de ruta — prueba SQL live del 2026-10-26:** la llamada anterior a `public.lf_router_resolve_v1` fue un diagnóstico **del resolvedor legado**, no una comprobación del nuevo Stage 1/Stage 2. Su resultado `BLOCK_SCOPE_SEMANTICS_UNATTESTED` **NO es el bloqueo atribuible a la ruta V2** y no debe usarse para negar el cambio.
 
-**No solución por bypass:** el bloqueo no se corrige omitiendo restricciones del pedido, forzando `p_target_hint`, ampliando EXECUTE a `service_role`/PUBLIC ni sustituyendo el SQL trabajador por otra capa de API. Se debe obtener la ruta con autoridad, reutilizar mecanismos aprobados y probar semántica/seguridad antes del Train.
+**Ruta V2 comprobada:** se construyó una clasificación candidata `LF_ROUTER_STAGE1_V2` para el mismo pedido con `canal_candidato=PROGRAMACION`, `negocio_codigo=LF`, `alcance.target_type=CAPABILITY`, `resolution_status=UNRESOLVED`. `public.lf_router_stage1_validate_v2` respondió `valid=true`, `codes=[]`. `public.lf_router_route_v1` devolvió `paso=PROGRAMACION_PRECHECK_DEFINICION`, `precondicion_requerida=EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS`, `si_definicion_falta_o_difiere=PRODUCTO_PRIMERO`, `si_definicion_vigente=PROGRAMACION_ADMISION_REQUERIDA`, `downstream_execution_allowed=false`. **Este resultado valida la derivación V2 con entrada candidata, no certifica que GPT Native produjo Stage 1 ni completa la admisión PG-01, Gate 2 o autorización de escritura.**
+
+**Próximo paso real:** localizar la definición canónica y verificar currentness; si es vigente, continuar por el contrato `PROGRAMMING_ENTRY_CONTRACT_V1`, el paquete `ANALYSIS_IMPLEMENTATION_PACKAGE_V1` y los gates aplicables. Solo después se materializa la migración correspondiente y se encamina por `ACTUALIZACION_DB_LF` y Train. No adjuntar SQL aplicable ni etiquetar `ready-to-merge` hasta obtener la autorización y los recibos canónicos.
+
+**No solución por bypass:** no omitir las restricciones del pedido ni forzar parámetros de autoridad, ampliar EXECUTE a `service_role`/PUBLIC o sustituir el SQL trabajador por otro servicio. Respetar los roles de Router, perfiles, PG-01, EKB y Train.
 
 ## Diseño mínimo candidato (NO IMPLEMENTADO)
 
