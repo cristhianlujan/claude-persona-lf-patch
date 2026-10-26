@@ -5,13 +5,13 @@
   "pg01_runtime_verified": false,
   "hosted_database_touched": false,
   "independent_review": false,
-  "postgres": "PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "postgres": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
   "image": "postgres:17.6",
   "migration": "supabase/migrations/20261023221300_programming_context_snapshot_runtime_guard_pg01_receiver_base_v1.sql",
   "migration_sha256": "fa6c24cccdd0a5a609f4e40229fa44ce2d70ce094d5dd7984a37d06d36c1059c",
   "dependency_source": "supabase/migrations/20261004144500_t_decctx_decision_context_asof_v1.sql",
   "dependency_source_sha256": "f65a1a2288c69c847e8f0434834a4ca62ffda8d8f5b59c49e30212c22376d9a0",
-  "assertions": 148,
+  "assertions": 151,
   "results": [
     {
       "case": "foundation_functions_before",
@@ -70,12 +70,12 @@
     {
       "case": "record_idempotency",
       "actual": [
-        "e49de456-c4ee-4132-8499-1129a665db51",
+        "5556f5ad-94c2-431b-8e96-f61053b944b6",
         "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
         "IDEMPOTENT_REPLAY"
       ],
       "expected": [
-        "e49de456-c4ee-4132-8499-1129a665db51",
+        "5556f5ad-94c2-431b-8e96-f61053b944b6",
         "7b4fe8d7b1159cb22e74bc91ffc602cd18fb7e78a4646bbcb09161b46543dc3d",
         "IDEMPOTENT_REPLAY"
       ],
@@ -90,11 +90,11 @@
     {
       "case": "resolve_repeat_identical",
       "actual": {
-        "sha256": "e854031150cf5598b0c0a1078f0f3e93ed0135bd25ee5477d94da73ca318e7be",
+        "sha256": "d928a72dadb8c827be80d4079228539ddc0d4c5009aa39f6648d755c3815a9bd",
         "type": "dict"
       },
       "expected": {
-        "sha256": "e854031150cf5598b0c0a1078f0f3e93ed0135bd25ee5477d94da73ca318e7be",
+        "sha256": "d928a72dadb8c827be80d4079228539ddc0d4c5009aa39f6648d755c3815a9bd",
         "type": "dict"
       },
       "matched": true
@@ -388,11 +388,11 @@
     {
       "case": "emitter_repeat_entire_result_identical",
       "actual": {
-        "sha256": "ab8a8dda84c228f0067c89c9c79a8e9d892eb6b380e0ff4a01f325ca7a12bdf3",
+        "sha256": "a905ba9d26cd260bf74588ba6f0c5bbe6d557a298e3539c1b5110f48793efa14",
         "type": "dict"
       },
       "expected": {
-        "sha256": "ab8a8dda84c228f0067c89c9c79a8e9d892eb6b380e0ff4a01f325ca7a12bdf3",
+        "sha256": "a905ba9d26cd260bf74588ba6f0c5bbe6d557a298e3539c1b5110f48793efa14",
         "type": "dict"
       },
       "matched": true
@@ -655,8 +655,8 @@
     },
     {
       "case": "preplanning_hash_recomputed",
-      "actual": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
-      "expected": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
+      "actual": "fd09716d8295651d0cb1e5f47016fb58d46d66c2fda8358a9ff07133103fb232",
+      "expected": "fd09716d8295651d0cb1e5f47016fb58d46d66c2fda8358a9ff07133103fb232",
       "matched": true
     },
     {
@@ -674,11 +674,11 @@
     {
       "case": "preplanning_full_repeat_deterministic",
       "actual": {
-        "sha256": "41627d40b456036a1e4de9273a6d4bf6b1123fd1d77574e80d7174a9a9580f61",
+        "sha256": "96e54fdab5cec0576ea27cc25aee1254d0238ecf05e0242996fe67a3cb528b24",
         "type": "dict"
       },
       "expected": {
-        "sha256": "41627d40b456036a1e4de9273a6d4bf6b1123fd1d77574e80d7174a9a9580f61",
+        "sha256": "96e54fdab5cec0576ea27cc25aee1254d0238ecf05e0242996fe67a3cb528b24",
         "type": "dict"
       },
       "matched": true
@@ -715,8 +715,8 @@
     },
     {
       "case": "technical_currentness_receipt_hash_intact",
-      "actual": "65eb6c7323feade0c115bfaee458c2b8cf75b0cab12d8a9cfc2cc3037f7996ad",
-      "expected": "65eb6c7323feade0c115bfaee458c2b8cf75b0cab12d8a9cfc2cc3037f7996ad",
+      "actual": "9646f6837d399b957c7598ffff4220480f5a1c9bd8e4a68f47d2d679afd57aac",
+      "expected": "9646f6837d399b957c7598ffff4220480f5a1c9bd8e4a68f47d2d679afd57aac",
       "matched": true
     },
     {
@@ -786,21 +786,57 @@
       "matched": true
     },
     {
-      "case": "router_v2_latest_main_context_first_patch_present",
+      "case": "router_v2_latest_main_context_first_block_replaced",
+      "actual": false,
+      "expected": false,
+      "matched": true
+    },
+    {
+      "case": "router_v2_latest_main_thin_derivation_patch_present",
       "actual": true,
       "expected": true,
       "matched": true
     },
     {
-      "case": "router_v2_programming_branch_unchanged_by_later_patches",
-      "actual": {
-        "sha256": "5be1a64e140bf43faa57d7ec0a4f385d5219c0444634e3ae13a43371c7ba4cdd",
-        "type": "str"
-      },
-      "expected": {
-        "sha256": "5be1a64e140bf43faa57d7ec0a4f385d5219c0444634e3ae13a43371c7ba4cdd",
-        "type": "str"
-      },
+      "case": "router_v2_programming_branch_replaced_by_profile_selection",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_code",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_precondicion_requerida",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_si_definicion_falta_o_difiere",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_si_definicion_vigente",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_contrato_entrada_despues_precheck",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_programming_precondition_preserved_upstream_requerido_despues_precheck",
+      "actual": true,
+      "expected": true,
       "matched": true
     },
     {
@@ -816,9 +852,39 @@
       "matched": true
     },
     {
-      "case": "router_v2_actual_paso_is_precheck",
+      "case": "router_v2_actual_paso_is_profile_selection",
+      "actual": "PROGRAMACION_PROFILE_SELECTION_REQUIRED",
+      "expected": "PROGRAMACION_PROFILE_SELECTION_REQUIRED",
+      "matched": true
+    },
+    {
+      "case": "router_v2_derivation_only",
+      "actual": "DERIVATION_ONLY",
+      "expected": "DERIVATION_ONLY",
+      "matched": true
+    },
+    {
+      "case": "router_v2_profile_candidates_stub",
+      "actual": 3,
+      "expected": 3,
+      "matched": true
+    },
+    {
+      "case": "router_v2_channel_precondition_code",
       "actual": "PROGRAMACION_PRECHECK_DEFINICION",
       "expected": "PROGRAMACION_PRECHECK_DEFINICION",
+      "matched": true
+    },
+    {
+      "case": "router_v2_precondition_before_effect",
+      "actual": true,
+      "expected": true,
+      "matched": true
+    },
+    {
+      "case": "router_v2_gate2_no_profile_effects",
+      "actual": false,
+      "expected": false,
       "matched": true
     },
     {
@@ -960,60 +1026,6 @@
       "actual": "BLOCK_NO_CODE",
       "expected": "BLOCK_NO_CODE",
       "matched": true
-    },
-    {
-      "case": "historical_hash_41f0287a-c7db-4f34-b2f7-c548fa534ece",
-      "actual": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
-      "expected": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
-      "matched": true
-    },
-    {
-      "case": "historical_rejected_41f0287a-c7db-4f34-b2f7-c548fa534ece",
-      "actual": "BLOCK",
-      "expected": "BLOCK",
-      "matched": true
-    },
-    {
-      "case": "historical_invalid_snapshot_41f0287a-c7db-4f34-b2f7-c548fa534ece",
-      "actual": "BLOCKED",
-      "expected": "BLOCKED",
-      "matched": true
-    },
-    {
-      "case": "historical_hash_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
-      "actual": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
-      "expected": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
-      "matched": true
-    },
-    {
-      "case": "historical_rejected_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
-      "actual": "BLOCK",
-      "expected": "BLOCK",
-      "matched": true
-    },
-    {
-      "case": "historical_invalid_snapshot_38a8f5c8-a6f3-45d6-b1ee-823af130e647",
-      "actual": "BLOCKED",
-      "expected": "BLOCKED",
-      "matched": true
-    },
-    {
-      "case": "historical_hash_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
-      "actual": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
-      "expected": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
-      "matched": true
-    },
-    {
-      "case": "historical_rejected_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
-      "actual": "BLOCK",
-      "expected": "BLOCK",
-      "matched": true
-    },
-    {
-      "case": "historical_invalid_snapshot_e5adcfbf-e53f-420d-a94a-fad553fa6e48",
-      "actual": "BLOCKED",
-      "expected": "BLOCKED",
-      "matched": true
     }
   ],
   "pending_operational_gates": [
@@ -1054,27 +1066,45 @@
         }
       },
       "actual_route_output": {
-        "paso": "PROGRAMACION_PRECHECK_DEFINICION",
+        "paso": "PROGRAMACION_PROFILE_SELECTION_REQUIRED",
         "router": "ACT-0001",
         "alcance": {
           "target_hint": "backend login B2B",
           "target_type": "COMPONENTE",
           "resolution_status": "UNRESOLVED"
         },
-        "motivo_es": "Antes de Programacion se verifica la definicion funcional canonica. Si falta o difiere, Producto la corrige primero; si coincide, continua la admision tecnica.",
+        "motivo_es": "Programacion se administra por perfiles. El perfil puede investigar en solo lectura; definicion/currentness y PG-01 siguen siendo obligatorios antes de cualquier efecto tecnico.",
         "negocio_codigo": "LF",
         "schema_version": "LF_ROUTER_ROUTE_V1",
         "canal_candidato": "PROGRAMACION",
+        "router_work_mode": "DERIVATION_ONLY",
         "ruta_transversal": null,
-        "siguiente_paso_es": "Verificar la fuente canonica y su currentness; solo con definicion vigente continuar a PG-01.",
-        "si_definicion_vigente": "PROGRAMACION_ADMISION_REQUERIDA",
+        "siguiente_paso_es": "Seleccionar perfil CURRENT, resolver Gate2 para administracion READ_ONLY y exigir la precondicion de Programacion antes de implementar/probar/desplegar.",
+        "channel_precondition": {
+          "code": "PROGRAMACION_PRECHECK_DEFINICION",
+          "si_definicion_vigente": "PROGRAMACION_ADMISION_REQUERIDA",
+          "alcance_requiere_ready": true,
+          "precondicion_requerida": "EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS",
+          "profile_execution_role": "READ_ONLY_CHANNEL_ADMINISTRATION",
+          "si_definicion_falta_o_difiere": "PRODUCTO_PRIMERO",
+          "required_before_channel_effect": true,
+          "contrato_entrada_despues_precheck": "PROGRAMMING_ENTRY_CONTRACT_V1",
+          "upstream_requerido_despues_precheck": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
+        },
         "stage1_schema_version": "LF_ROUTER_STAGE1_V2",
-        "alcance_requiere_ready": true,
-        "precondicion_requerida": "EXACT_CANONICAL_DEFINITION_REF_AND_CURRENTNESS",
+        "profile_context_hydrator": "public.lf_profile_execution_channel_context_v1",
+        "profile_selection_request": {
+          "schema_version": "LF_PROFILE_SELECTOR_SEMANTIC_RESULT_V1",
+          "catalog_profile_count": 3
+        },
+        "profile_selection_consumer": "public.lf_profile_selector_semantic_consume_raw_v1",
         "downstream_execution_allowed": false,
-        "si_definicion_falta_o_difiere": "PRODUCTO_PRIMERO",
-        "contrato_entrada_despues_precheck": "PROGRAMMING_ENTRY_CONTRACT_V1",
-        "upstream_requerido_despues_precheck": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1"
+        "canonical_investigation_owner": "SELECTED_PROFILE_READ_ONLY",
+        "gate2_after_profile_selection": true,
+        "gate2_authorizes_profile_effects": false,
+        "profile_selection_candidate_count": 3,
+        "profile_selection_result_contract": "LF_PROFILE_SELECTOR_SEMANTIC_RESULT_V1",
+        "profile_selection_resume_entrypoint": "public.lf_router_profile_after_selection_raw_v1"
       },
       "canonical_source_sha256": {
         "supabase/migrations/20261024090500_lf_router_stage1_v2_lf_integration_v1.sql": "78b4dece6db21edb9220884bc1a94707b5eae5e5bc62fc66edf711d6f0c5c938",
@@ -1082,14 +1112,17 @@
         "supabase/migrations/20261024170000_lf_router_profile_execution_handoff_v1.sql": "8e49b89ede0aa62a73943f29c938b09bc49bc3f20e50fb78548dc50bd8186756",
         "supabase/migrations/20261024193000_lf_profile_input_governance_task_applicability_v1.sql": "51a0459e5f8817c1f680efdb4b25d30d9f46ca6871be67168cfcdc927bc1e0a7",
         "supabase/migrations/20261025000500_lf_router_product_dynamic_profile_selection_v1.sql": "c351804df44498d2c33eff6e13abba8ec66b83eee4b0a14913762e5e5d4ec459",
-        "supabase/migrations/20261026145500_lf_router_product_context_resolution_v1.sql": "58d5285487f06645d3a5073e5b3eb76bbbf0f39a7708526b69628cae7e70b39c"
+        "supabase/migrations/20261026145500_lf_router_product_context_resolution_v1.sql": "58d5285487f06645d3a5073e5b3eb76bbbf0f39a7708526b69628cae7e70b39c",
+        "supabase/migrations/20261026161500_lf_router_thin_derivation_profile_investigation_v1.sql": "1173096273dee965682f48cb31be42c275bbadcf33cedff35af6e3333759ca42",
+        "supabase/migrations/20261026213000_lf_router_profile_selection_all_channels_v1.sql": "35b78d5612c316d2b29003c249355ee31e3484abd1f773efa0f3e4af206c289a"
       },
       "receiver_contract_digest": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
       "schema_identity_match": true,
+      "profile_selector_stubbed_for_local_replay": true,
       "runtime_authorization_tested": false,
       "definition_currentness_tested": false,
       "gaps": [
-        "ROUTER_RETURNS_PRECHECK_NOT_ADMISSION",
+        "ROUTER_DERIVES_PROFILE_SELECTION_PRECONDITION_NOT_ADMISSION",
         "NO_ROUTER_SCHEMA_DIGEST_OR_EXPECTED_HANDOFF",
         "PACKAGE_ENVELOPE_AND_ADMITTED_A9_PROVENANCE_NOT_CHECKED_BY_BOUNDARY",
         "NO_ONE_TO_ONE_RUNTIME_AUTHORIZATION_BLOCK_IN_RECEIVER"
@@ -1108,7 +1141,7 @@
       "mapping_is_proposed_consumer_projection_not_router_dispatch": true,
       "positive_receipt": {
         "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
-        "context_id": "433449b3-882a-4a18-a2ea-f7676624518b",
+        "context_id": "381bee72-7588-449f-98c9-94cfbe081187",
         "context_sha256": "0874c87f6ac74c2489c2c1a970987ef73706a609c518fdfd10bad402a75dd716",
         "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
         "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
@@ -1143,10 +1176,10 @@
       "execution_allowed": false
     },
     "eight_families": "SYNTHETIC_LOCAL_BOUNDARY_CASES_EXECUTED",
-    "historical_snapshots_executed": true,
+    "historical_snapshots_executed": false,
     "sample_accept_receipt": {
       "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
-      "context_id": "c4f7d9e4-3d29-4d12-950b-0b7ef25e7c5c",
+      "context_id": "118b17b3-3a56-4f91-a75d-02d41a844006",
       "context_sha256": "730f1ffcb8c049c8e7e3dfa8a5a94326baed867840a32711269bd86e5d72cfd2",
       "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
       "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
@@ -1183,11 +1216,11 @@
       "evidence_tier": "REAL_LOCAL_SQL_BOUNDARY_SYNTHETIC_TECHNICAL_PORTS",
       "sample_receipt": {
         "schema_version": "PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1",
-        "context_id": "60f4e8d8-7711-4f3e-a695-29337a88559e",
+        "context_id": "f4e2611e-b5ce-4e46-815a-15c83bed41ac",
         "context_sha256": "93d1ae1dfb4beaf74bdb8894ddb2812c930e29eec1d2065b83f306c74da58643",
         "snapshot_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
         "receiver_schema_digest_sha256": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8",
-        "material_projection_sha256": "f7573e151b975a5dc010e6b6308baae82ddfc5cf2c7ae89f0c580a60ffdba08c",
+        "material_projection_sha256": "fd09716d8295651d0cb1e5f47016fb58d46d66c2fda8358a9ff07133103fb232",
         "validated_material_paths": [
           "extensions.programming_context_snapshot.analysis_stop_rule",
           "extensions.programming_context_snapshot.applicable_invariants",
@@ -1230,45 +1263,7 @@
     "c7_implemented": false,
     "handoff_receipt_persisted": false
   },
-  "historical_results": [
-    {
-      "context_id": "41f0287a-c7db-4f34-b2f7-c548fa534ece",
-      "context_sha256": "9f416ce7bea29db1e80257829972251f40135ecbdd217e952115dcb18654246c",
-      "decided_at": "2026-10-06T19:05:11.305815+00:00",
-      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
-      "receiver_code": "CONTEXT_NOT_RESOLVED",
-      "verdict": "BLOCK",
-      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
-    },
-    {
-      "context_id": "38a8f5c8-a6f3-45d6-b1ee-823af130e647",
-      "context_sha256": "5ed3ffd513e4caadc65a9cbfb5991b6f8caeac8f714bec2c95fab23849a16e10",
-      "decided_at": "2026-10-07T12:33:12.577231+00:00",
-      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
-      "receiver_code": "CONTEXT_NOT_RESOLVED",
-      "verdict": "BLOCK",
-      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
-    },
-    {
-      "context_id": "e5adcfbf-e53f-420d-a94a-fad553fa6e48",
-      "context_sha256": "2bb192f4bf9b1ed2ca7133ffe50665319671945f98add6457889256974e9ebb8",
-      "decided_at": "2026-10-09T11:23:30.188385+00:00",
-      "validation_code": "PROGRAMMING_SNAPSHOT_REQUIRED_FIELD_MISSING",
-      "receiver_code": "CONTEXT_NOT_RESOLVED",
-      "verdict": "BLOCK",
-      "evidence_tier": "EXACT_HISTORICAL_INPUT_REPLAY_IN_LOCAL_PG"
-    }
-  ],
-  "integrated_main_sha": "ce3a96ba7bf25cc8ef4b1142509a5a6c6399a267",
-  "tested_source_commit": "8422b55634f8eb345e33fc49e23117d916bd2b90",
-  "local_unittest_counts": {
-    "pg01": 76,
-    "router": 85
-  },
-  "assertion_partition": {
-    "foundation_emitter_preplanning": 111,
-    "router_v2": 28,
-    "historical_replay": 9
-  },
-  "historical_input_export_committed": false
+  "historical_results": [],
+  "integrated_main_sha": "39e2de647dd2596f38aa2cdef642c3c5164a4e87",
+  "tested_source_commit": "b1a9c92858818c2177e2e2d27c18e47883246321"
 }
