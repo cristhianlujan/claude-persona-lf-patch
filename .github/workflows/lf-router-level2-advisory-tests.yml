@@ -235,6 +235,20 @@ jobs:
           assert "EXACT_CANONICAL_READ_OR_EXTRACTION_NO_INPUT_ENRICHMENT" in s5
           assert "PROFILE_IG_CANONICAL_READ_NOT_SKIPPED" in s5
           assert "PROFILE_IG_CHANGE_MUST_REMAIN_REQUIRED" in s5
+          p6=Path("supabase/migrations/20261026145500_lf_router_product_context_resolution_v1.sql")
+          s6=p6.read_text(encoding="utf-8")
+          assert s6.count("BEGIN;")==1, s6.count("BEGIN;")
+          assert s6.count("COMMIT;")==1, s6.count("COMMIT;")
+          assert "LF_ROUTER_PRODUCT_CONTEXT_FIRST_ROUTE_SOURCE_DRIFT" in s6
+          assert "product_context_read_before_profile_selection" in s6
+          assert "BLOCK_PRODUCT_CONTEXT_NOT_RESOLVED_BEFORE_GATE2" in s6
+          assert "B2B_AUTH001_SUBMIT" in s6
+          assert "label_visible" in s6
+          assert "Acceder" in s6
+          assert "GRANT EXECUTE ON FUNCTION public.lf_router_product_context_v1(text,jsonb)" in s6
+          assert "TO supabase_read_only_user" in s6
+          assert "LF_PRODUCT_CONTEXT_FIRST_EXECUTION_PRIVILEGE_WIDENED" in s6
+          assert "lf_router_profile_execution_after_gate2_v1" in s6
           worker=Path("services/profile_runtime_api/scripts/hetzner_queue_worker.py").read_text(encoding="utf-8")
           assert "AUTHORIZED_HANDOFF_VALIDATED" in worker
           assert "lf_router_profile_execution_handoff_validate_v1" in worker
@@ -245,6 +259,7 @@ jobs:
           print("PASS_ACT0001_PRODUCT_CONTEXT_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PROFILE_EXECUTION_HANDOFF_SOURCE_INVARIANTS")
           print("PASS_ACT0001_PROFILE_INPUT_GOVERNANCE_TASK_APPLICABILITY_SOURCE_INVARIANTS")
+          print("PASS_ACT0001_PRODUCT_CONTEXT_BEFORE_PROFILE_SELECTION_REGRESSION")
           PY
 
       - name: Execute native profile bridge trust-boundary tests
