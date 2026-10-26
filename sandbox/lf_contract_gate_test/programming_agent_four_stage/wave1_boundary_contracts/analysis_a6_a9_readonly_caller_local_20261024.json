@@ -293,5 +293,7 @@
     "prior_136_suite_scope": "PREVIOUS_RECEIVER_BASE_TREE; 76 PG01 tests are separate historical regression, not standalone tree tests",
     "sql_foundation_required": false,
     "shared_fixture_byte_identical_to_3135": true
-  }
+  },
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
 }

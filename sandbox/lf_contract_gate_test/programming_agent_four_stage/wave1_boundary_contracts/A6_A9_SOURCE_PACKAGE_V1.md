@@ -1,3 +1,5 @@
+> Evidencia histórica del 24-oct. Para el estado separado del 26-oct, ver A6_A9_OBSERVER_FREEZE_V1.md; no atribuir 330 tests a esta rama actual.
+
 # Factoría y paquete fuente A6/A9 · candidato sin despliegue
 
 Estado: SOURCE_ONLY_DRAFT. Complementa A6_A9_COMPLETION_HOOK_V1.md.

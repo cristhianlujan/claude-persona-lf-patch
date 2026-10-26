@@ -48,7 +48,6 @@ from profile_runtime_api.models import (
 )
 from profile_runtime_api.settings import Settings
 from profile_runtime_api.structural import PreparedContext
-from tests.runtime_execution_binding_fixture import SyntheticExecutionBindingProvider
 
 
 def valid_quality_output() -> str:
@@ -92,7 +91,7 @@ class FakeLlamaClient:
         self.chat_calls = 0
 
     def health(self) -> dict[str, Any]:
-        return {"ready": True, "status": "READY", "model_ids": ["fake-local-qwen-model"]}
+        return {"ready": True, "status": "READY", "model_ids": ["fake-local-model"]}
 
     def chat(self, **kwargs: Any) -> dict[str, Any]:
         self.chat_calls += 1
@@ -104,7 +103,7 @@ class FakeLlamaClient:
         return {
             "content": self.output,
             "id": f"completion-{self.chat_calls}",
-            "model": "fake-local-qwen-model",
+            "model": "fake-local-model",
             "usage": {"prompt_tokens": 10, "completion_tokens": 10},
             "timings": {"predicted_ms": 1.0},
             "finish_reason": "stop",
@@ -181,8 +180,6 @@ class EngineGateTest(unittest.TestCase):
             llama_client=FakeLlamaClient(output),  # type: ignore[arg-type]
             cache=cache,
             structural_pipeline=pipeline,  # type: ignore[arg-type]
-            execution_binding_provider=SyntheticExecutionBindingProvider(),
-            allow_test_execution_bindings=True,
         )
         engine.initialize()
         return engine, pipeline

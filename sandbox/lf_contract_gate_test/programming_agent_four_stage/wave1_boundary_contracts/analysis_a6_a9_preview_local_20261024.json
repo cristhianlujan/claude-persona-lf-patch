@@ -99,5 +99,7 @@
   "historical_diagnostic_input": "FRESH_SUPABASE_RO_A6_READBACK_2026_10_24",
   "code_sha256": "ac1a1bcfe7339f3886f61d8a2919fab8453d81dcd75936ab3a2e1f2655eca1f0",
   "test_sha256": "4d24dabdb816a85169da608e3e524b9cae05e80e6a016d509633fcb60a7cf25f",
-  "historical_payloads_committed": false
+  "historical_payloads_committed": false,
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
 }

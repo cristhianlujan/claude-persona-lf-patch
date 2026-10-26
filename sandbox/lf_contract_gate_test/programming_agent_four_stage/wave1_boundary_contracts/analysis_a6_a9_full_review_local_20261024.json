@@ -57,5 +57,7 @@
   "deployment_applied": false,
   "database_write": false,
   "model_calls": 0,
-  "operational_admission": false
+  "operational_admission": false,
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
 }

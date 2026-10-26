@@ -37,5 +37,7 @@
   "profile_execution": false,
   "model_calls": 0,
   "operational_admission": false,
-  "independent_review": "PENDING"
+  "independent_review": "PENDING",
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
 }

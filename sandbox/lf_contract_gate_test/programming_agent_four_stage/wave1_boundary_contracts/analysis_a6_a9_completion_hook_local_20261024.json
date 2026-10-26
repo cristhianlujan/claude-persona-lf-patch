@@ -49,5 +49,7 @@
     "TestClient httpx dependency supplied from existing test environment; deprecation warnings retained.",
     "Thread capacity is per app, not a fleet-wide quota; hung transport can occupy slots until exit.",
     "Config disabled; constructor injection only, no env auto-loading or scheduler."
-  ]
+  ],
+  "historical_evidence": true,
+  "current_separation_note": "See A6_A9_OBSERVER_FREEZE_V1.md; former full runtime 330 included extracted engine and is not current recertification"
 }

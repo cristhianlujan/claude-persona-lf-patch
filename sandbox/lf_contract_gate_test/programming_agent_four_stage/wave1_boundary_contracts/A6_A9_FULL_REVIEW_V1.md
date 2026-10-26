@@ -1,3 +1,5 @@
+> Evidencia histórica del 24-oct. Para el estado separado del 26-oct, ver A6_A9_OBSERVER_FREEZE_V1.md; no atribuir 330 tests a esta rama actual.
+
 # Revisión completa A6/A9 y regresiones del runtime · 24-oct-2026
 
 Estado: SOURCE_ONLY_DRAFT. Revisión del implementador, no auditoría independiente.

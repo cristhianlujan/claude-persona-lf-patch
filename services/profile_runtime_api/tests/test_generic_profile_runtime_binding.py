@@ -69,8 +69,6 @@ class GenericRuntimeBindingTest(unittest.TestCase):
             data=json.loads(path.read_text())
             data['model_context']={
                 'full_source_to_model':False,
-                'required_source_refs':['profiles/p/SKILL.md'],
-                'allow_additional_sources':False,
                 'source_projection':{'mode':'MARKDOWN_SECTIONS','include_sections':['Purpose'],'max_chars':1000},
             }
             data['execution_partition']={

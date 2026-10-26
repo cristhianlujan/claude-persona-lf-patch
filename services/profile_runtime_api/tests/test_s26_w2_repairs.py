@@ -157,7 +157,7 @@ class S26W2RepairTest(unittest.TestCase):
             image_media_type=None,
         )
         with self.assertRaises(LlamaTransportError) as ctx:
-            adapter.execute({"executor_mode": "REMOTE_API", "input_literal": "x" * 10001})
+            adapter.execute({"input_literal": "x" * 10001})
         self.assertEqual(ctx.exception.code, "LLAMA_UI_INPUT_TOKEN_PROXY_BUDGET_EXCEEDED")
 
 
