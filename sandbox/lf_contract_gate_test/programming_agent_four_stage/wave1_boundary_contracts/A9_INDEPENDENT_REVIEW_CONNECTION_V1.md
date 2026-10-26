@@ -13,6 +13,22 @@
 5. **`judge_record`.** `build_a9q_c3_evidence` prepara los campos de aceptación alcanzables: `frozen_subject_sha256`, identidades propuestas, referencia a resultado, `exact_stage_assertion_results`, `no_critical_regressions`. En nivel chat deja en `null` todo campo que solo emite el runtime (`evidence_ledger_verified_ref`, `governed_execution_id`, `router_dispatch_receipt_id`, `provider_response_id_attested_by_transport`). La operación, usando pruebas proveedor-bound reales, debe registrar el resultado y decidir su aceptación definitiva. No está implementado en este PR.
 6. **`reviewer_readback` y `report_output`.** El runtime gobernado recupera el veredicto y verifica consistencia con el sujeto congelado, recibos y dimensiones. `build_v2_envelope_review_fragment` deja un fragmento **provisional y no admisible**, para contrato V2 aún inexistente. La salida gobernada y el informe final se harán después, no aquí.
 
+## Registro de los pasos (verificado RO por Claude, 26-oct)
+
+Después de `begin_v3`, cada paso se registra con `public.lf_record_independent_review_step_v3(p_execution_id, p_step_id, p_evidence_ref, p_evidence_payload, p_actor_execution_id, p_evidence_ledger_execution_id)`, que solo ejecutan `postgres` y `service_role`. Para `semantic_review` exige:
+
+- `verdict` igual a `PASS` o `FAIL` (no hay tercer estado);
+- `review_type` en `INDEPENDENT_REVIEW` / `INDEPENDENT_HOLDOUT`;
+- `review_context = INDEPENDENT_OPERATION_CONTEXT`;
+- `rationale_summary` no vacío y `evidence_refs` como array no vacío;
+- para sujetos que no son `STRATEGY`, `utility_dimensions_checked` exactamente igual a `required_dimensions` del manifiesto (si no, `UTILITY_DIMENSIONS_INCOMPLETE`).
+
+`build_semantic_review_step_payload` arma ese payload. `RETURN_TO_WORKER` y `BLOCKED` se registran ambos como `FAIL`; el veredicto original viaja en `a9_global_verdict` para no perder la distinción. Además, `begin_v3` y el CHECK del ledger exigen que `source_head_sha` sea un SHA de Git de 40 hex; el adaptador lo valida.
+
+## Pregunta abierta: ¿el nivel chat cierra A9Q_C3?
+
+`docs/programming-agent/ANALYSIS_C2C3_GPT_NATIVE_APPROVED_EQUIVALENT_V1.md` (13-oct) dice que el equivalente GPT Native en chat **no satisface** `INDEPENDENT_ASSURANCE@2.0.1` ni `begin_v3` (`independent_assurance_admitted=false`) para los checkpoints C2/C3 de la calificación del Análisis. En cambio, `EXEC-PE10C5-INDEP-d288c5ee8b3335e4` (21-oct) completó los 6 pasos de `INDEPENDENT_ASSURANCE` registrando la revisión de un material de chat por la operación gobernada. Antes de usar este adaptador para cerrar A9Q_C3, Cristhian debe decidir si una revisión GPT Native en chat, registrada por la operación gobernada como en PE10_C5, cuenta para A9Q_C3, o si A9Q_C3 exige el nivel `GOVERNED_RUNTIME`.
+
 ## Criterio de veredicto
 
 - **PASS**: todas las dimensiones PASS, cada una con evidencia concreta.

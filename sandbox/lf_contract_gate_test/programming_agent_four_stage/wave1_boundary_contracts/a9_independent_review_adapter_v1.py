@@ -27,6 +27,7 @@ RUNTIME_LEVEL = "GOVERNED_RUNTIME"
 FORBIDDEN = frozenset({"governed_execution_id", "router_dispatch_receipt_id", "provider_response_id_attested_by_transport", "evidence_ledger_verified_ref"})
 SHA = re.compile(r"[a-f0-9]{64}\Z")
 UUID = re.compile(r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\Z")
+GIT_SHA = re.compile(r"[a-f0-9]{40}\Z")  # begin_v3 and the ledger CHECK require a 40-hex source_head_sha
 
 
 class A9ContractError(ValueError):
@@ -93,7 +94,7 @@ def build_subject_anchor_params(snapshot_row: Mapping[str, Any], source_head_sha
     cid, sha, _payload = _snapshot_parts(snapshot_row, subject_contract["required_snapshot_fields"])
     _nonempty(producer_execution_id, "SUBJECT_OR_PRODUCER_IDENTITY_MISSING")
     _nonempty(actor_execution_id, "A9_REVIEW_ACTOR_MISSING")
-    _nonempty(source_head_sha, "A9_REVIEW_SOURCE_HEAD_MISSING")
+    _require(isinstance(source_head_sha, str) and GIT_SHA.fullmatch(source_head_sha) is not None, "SUBJECT_HASH_INVALID")
     authority_ref = f"supabase://private/lf_decision_context_asof_v1/{cid}"
     return {
         "p_execution_id": producer_execution_id,
@@ -135,7 +136,7 @@ def build_begin_params(subject: Mapping[str, Any], subject_receipt_id: str, revi
     _nonempty(plan.get("plan_digest"), "A9_REVIEW_PLAN_INVALID")
     _nonempty(plan.get("idempotency_key"), "A9_REVIEW_PLAN_INVALID")
     _nonempty(plan.get("review_scope"), "A9_REVIEW_PLAN_INVALID")
-    _nonempty(subject.get("source_head_sha"), "A9_REVIEW_SOURCE_HEAD_MISSING")
+    _require(isinstance(subject.get("source_head_sha"), str) and GIT_SHA.fullmatch(subject["source_head_sha"]) is not None, "SUBJECT_HASH_INVALID")
     _nonempty(subject_receipt_id, "A9_REVIEW_RECEIPT_ID_MISSING")
     _nonempty(dispatch_receipt_id, "A9_REVIEW_DISPATCH_ID_MISSING")
     _nonempty(actor_execution_id, "A9_REVIEW_ACTOR_MISSING")
@@ -238,3 +239,40 @@ def build_v2_envelope_review_fragment(*, subject: Mapping[str, Any], review: Map
     sha = _sha(subject.get("context_sha256"))
     _require(sha == subject.get("subject_sha256"), "A9_REVIEW_SUBJECT_HASH_MISMATCH")
     return {"schema_version": "A9_V2_REVIEW_FRAGMENT_PROPOSAL_V1", "review_verdict_ref": review_verdict_ref, "reviewer_execution_id": reviewer_execution_id, "frozen_subject_sha256": sha, "context_id": cid, "context_sha256": sha, "dimensions": review.get("dimensions"), "global_verdict": review.get("global_verdict"), "evidence_level": evidence_level, "provider_attested": False, "admissible": False}
+
+
+# public.lf_record_independent_review_step_v3 accepts only PASS or FAIL for
+# semantic_review and requires review_type, review_context, rationale_summary,
+# non-empty evidence_refs and utility_dimensions_checked equal to the
+# manifest required_dimensions (non-STRATEGY subjects). Verified RO 26-oct.
+STEP_VERDICT = {"PASS": "PASS", "RETURN_TO_WORKER": "FAIL", "BLOCKED": "FAIL"}
+
+
+def build_semantic_review_step_payload(review: Mapping[str, Any], subject_contract: Mapping[str, Any], *, rationale_summary: str) -> dict[str, Any]:
+    """Map a parsed review to the semantic_review step payload; never records it.
+
+    RETURN_TO_WORKER and BLOCKED both record as FAIL: the step has no third
+    state. The original global verdict travels in a2_global_verdict so the
+    distinction is not lost.
+    """
+    gv = review.get("global_verdict")
+    _require(gv in STEP_VERDICT, "A9_REVIEW_VERDICT_INVALID")
+    _nonempty(rationale_summary, "A9_REVIEW_VERDICT_INVALID")
+    dims = [d["code"] for d in _dimensions(subject_contract)]
+    seen = [d.get("code") for d in review.get("dimensions", [])]
+    _require(sorted(seen) == sorted(dims), "A9_REVIEW_DIMENSIONS_INVALID")
+    refs = sorted({e for d in review["dimensions"] for e in d.get("evidence", []) if isinstance(e, str) and e.strip()})
+    _require(bool(refs), "A9_REVIEW_PASS_WITHOUT_EVIDENCE")
+    return {
+        "verdict": STEP_VERDICT[gv],
+        "a9_global_verdict": gv,
+        "review_type": "INDEPENDENT_REVIEW",
+        "review_context": "INDEPENDENT_OPERATION_CONTEXT",
+        "rationale_summary": rationale_summary,
+        "evidence_refs": refs,
+        "utility_dimensions_checked": dims,
+        "dimension_results": [{"code": d["code"], "verdict": d["verdict"]} for d in review["dimensions"]],
+        "packet_sha256": review.get("packet_sha256"),
+        "evidence_level": CHAT_LEVEL,
+        "provider_attested": False,
+    }

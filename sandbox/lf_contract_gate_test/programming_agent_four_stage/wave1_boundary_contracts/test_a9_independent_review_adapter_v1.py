@@ -7,6 +7,7 @@ from a9_independent_review_adapter_v1 import (
     A9ContractError, CHAT_LEVEL, CAPABILITY_MANIFEST,
     build_subject_anchor_params, build_begin_params, build_blind_review_packet,
     parse_review_verdict, build_a9q_c3_evidence, build_v2_envelope_review_fragment,
+    build_semantic_review_step_payload,
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -56,6 +57,8 @@ class AdapterTests(unittest.TestCase):
         result = args(subject(), "EXEC-REVIEWER", plan)
         self.assertFalse(result["p_manifest"]["runtime_activation"])
         self.assertEqual(len(result["p_manifest"]["required_dimensions"]), 7)
+        short_head = {**subject(), "source_head_sha": "abc"}
+        self.assert_code("SUBJECT_HASH_INVALID", lambda: args(short_head, "EXEC-REVIEWER", plan))
         bad = {**subject(), "subject_sha256": "not-a-hash"}
         self.assert_code("SUBJECT_HASH_INVALID", lambda: args(bad, "EXEC-REVIEWER", plan))
 
@@ -96,6 +99,23 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(fragment["context_id"], CID)
         self.assertEqual(fragment["context_sha256"], SHA)
         self.assertFalse(fragment["admissible"])
+
+    def test_semantic_review_step_payload(self):
+        ph = "2" * 64
+        codes = [d["code"] for d in CONTRACT["required_dimensions"]]
+        ok = build_semantic_review_step_payload(parse_review_verdict(review_json(ph), ph, CONTRACT), CONTRACT, rationale_summary="todas las dimensiones con evidencia")
+        self.assertEqual((ok["verdict"], ok["review_type"], ok["review_context"]), ("PASS", "INDEPENDENT_REVIEW", "INDEPENDENT_OPERATION_CONTEXT"))
+        self.assertEqual(ok["utility_dimensions_checked"], codes)
+        self.assertTrue(ok["evidence_refs"])
+        for status, expected in (("FAIL", "RETURN_TO_WORKER"), ("UNKNOWN", "BLOCKED")):
+            r = parse_review_verdict(review_json(ph, {codes[0]: status}), ph, CONTRACT)
+            p = build_semantic_review_step_payload(r, CONTRACT, rationale_summary="hallazgo")
+            self.assertEqual((p["verdict"], p["a9_global_verdict"]), ("FAIL", expected))
+        self.assert_code("A9_REVIEW_VERDICT_INVALID", lambda: build_semantic_review_step_payload({"global_verdict": "MAYBE", "dimensions": []}, CONTRACT, rationale_summary="x"))
+        self.assert_code("A9_REVIEW_VERDICT_INVALID", lambda: build_semantic_review_step_payload(parse_review_verdict(review_json(ph), ph, CONTRACT), CONTRACT, rationale_summary=" "))
+
+    def test_anchor_rejects_non_git_head(self):
+        self.assert_code("SUBJECT_HASH_INVALID", lambda: build_subject_anchor_params(row(), "main", "EXEC-PRODUCER", "EXEC-ACTOR", subject_contract=CONTRACT))
 
 
 if __name__ == "__main__":
