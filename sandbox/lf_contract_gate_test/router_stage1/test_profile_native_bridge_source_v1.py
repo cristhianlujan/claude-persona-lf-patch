@@ -106,5 +106,110 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.assertNotIn(value, self.sql)
 
 
+class ProfileNativeBridgeChannelNeutralCleanupV1(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        matches = list(
+            MIGRATIONS.glob("*_lf_profile_native_bridge_channel_neutral_cleanup_v1.sql")
+        )
+        assert len(matches) == 1, matches
+        cls.cleanup = matches[0].read_text(encoding="utf-8")
+        cls.bridge = cls.cleanup.split(
+            "CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_begin_v1", 1
+        )[1].split(
+            "REVOKE ALL ON FUNCTION public.lf_profile_native_bridge_begin_v1", 1
+        )[0]
+        cls.generic_gate2 = cls.cleanup.split(
+            "CREATE OR REPLACE FUNCTION public.lf_router_profile_gate2_result_from_selection_v1", 1
+        )[1].split(
+            "REVOKE ALL ON FUNCTION public.lf_router_profile_gate2_result_from_selection_v1", 1
+        )[0]
+        cls.legacy_gate2 = cls.cleanup.split(
+            "CREATE OR REPLACE FUNCTION public.lf_router_product_gate2_result_from_selection_v1", 1
+        )[1].split(
+            "REVOKE ALL ON FUNCTION public.lf_router_product_gate2_result_from_selection_v1", 1
+        )[0]
+
+    def test_native_bridge_is_channel_neutral(self):
+        self.assertIn(
+            "v_channel NOT IN ('PRODUCTO','PROGRAMACION','OPERACIONES')",
+            self.bridge,
+        )
+        self.assertIn("public.lf_router_profile_after_selection_v1", self.bridge)
+        self.assertIn(
+            "public.lf_router_profile_gate2_result_from_selection_v1",
+            self.bridge,
+        )
+        self.assertNotIn(
+            "public.lf_router_product_profile_after_selection_v1",
+            self.bridge,
+        )
+        self.assertNotIn(
+            "public.lf_router_product_gate2_result_from_selection_v1",
+            self.bridge,
+        )
+        self.assertNotIn("'PRODUCTO_PROFILE_SELECTION_REQUIRED'", self.bridge)
+        self.assertNotIn("'PRODUCTO_GATE2_PERFIL'", self.bridge)
+
+    def test_stage1_is_single_channel_business_scope_source(self):
+        self.assertIn("p_stage1->>'negocio_codigo'", self.bridge)
+        self.assertIn("p_stage1->'alcance'", self.bridge)
+        self.assertIn("v_expected_route_step:=v_channel||'_PROFILE_SELECTION_REQUIRED'", self.bridge)
+        self.assertIn("v_expected_gate2_step:=v_channel||'_GATE2_PERFIL'", self.bridge)
+        self.assertNotIn("v_after_selection->>'canal_candidato'", self.bridge)
+        self.assertNotIn("v_after_selection->>'negocio_codigo'", self.bridge)
+        self.assertNotIn("v_after_selection->'alcance'", self.bridge)
+
+    def test_generic_gate2_owns_logic_and_product_name_is_wrapper_only(self):
+        self.assertIn("public.lf_router_semantic_resume_validate_v1", self.generic_gate2)
+        self.assertIn(
+            "DETERMINISTIC_FROM_VALIDATED_PROFILE_SELECTION",
+            self.generic_gate2,
+        )
+        self.assertIn(
+            "public.lf_router_profile_gate2_result_from_selection_v1",
+            self.legacy_gate2,
+        )
+        self.assertNotIn(
+            "public.lf_router_semantic_resume_validate_v1",
+            self.legacy_gate2,
+        )
+
+    def test_legacy_product_continuations_delegate_to_common_implementation(self):
+        self.assertIn(
+            "RETURN public.lf_router_profile_after_selection_v1",
+            self.cleanup,
+        )
+        self.assertIn(
+            "RETURN public.lf_router_profile_after_selection_raw_v1",
+            self.cleanup,
+        )
+        self.assertIn("NATIVE_BRIDGE_LEGACY_WRAPPER_CLEANUP_FAIL", self.cleanup)
+
+    def test_srcr_programacion_native_postcheck_is_rollback_only(self):
+        self.assertIn(
+            "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            self.cleanup,
+        )
+        self.assertIn(
+            "'canal_candidato':"PROGRAMACION"".replace(":", ","),
+            self.cleanup.replace(" ", ""),
+        )
+        self.assertIn("NATIVE_EXECUTION_READY", self.cleanup)
+        self.assertIn("NATIVE_BRIDGE_CHANNEL_NEUTRAL_ROLLBACK_SENTINEL", self.cleanup)
+        self.assertIn("NATIVE_BRIDGE_CHANNEL_NEUTRAL_POSTCHECK_RESIDUE", self.cleanup)
+
+    def test_execution_acl_stays_service_role_only(self):
+        self.assertIn(
+            "FROM PUBLIC,anon,authenticated,supabase_read_only_user",
+            self.cleanup,
+        )
+        self.assertIn(
+            "TO service_role",
+            self.cleanup,
+        )
+        self.assertIn("NATIVE_BRIDGE_EXECUTION_ACL_REGRESSION", self.cleanup)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
