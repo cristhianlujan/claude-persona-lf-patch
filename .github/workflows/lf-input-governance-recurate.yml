@@ -13,6 +13,16 @@ on:
         required: false
         default: false
         type: boolean
+      context_pack_mode:
+        description: "Profile Input Governance CONTEXT_PACK direct Edge continuation. No SQL queue or polling."
+        required: false
+        default: false
+        type: boolean
+      context_pack_screen_id:
+        description: "Single semantically resolved pantalla_id for CONTEXT_PACK."
+        required: false
+        default: "51"
+        type: string
       cp2_pilot_screen_id:
         description: "Exactly one screen in canonical CP2 cohort; default 1 (ONB_001), never a cohort fanout"
         required: false
@@ -25,7 +35,7 @@ permissions:
 
 jobs:
   validate-screens:
-    if: ${{ !inputs.cp2_mode }}
+    if: ${{ !inputs.cp2_mode && !inputs.context_pack_mode }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -61,7 +71,7 @@ jobs:
           PY
 
   recurate-input-readiness:
-    if: ${{ !inputs.cp2_mode }}
+    if: ${{ !inputs.cp2_mode && !inputs.context_pack_mode }}
     needs: validate-screens
     runs-on: ubuntu-latest
     timeout-minutes: 7
@@ -157,6 +167,87 @@ jobs:
               'pantalla_id':requested,
               'terminal_status':data.get('terminal_status'),
               'run_id':data.get('run_id'),
+          },sort_keys=True))
+          PY
+
+  context-pack-direct-edge:
+    if: ${{ inputs.context_pack_mode && !inputs.cp2_mode }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Request exact GitHub OIDC identity for CONTEXT_PACK
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('lf-profiles-governance-caller-v1');
+            core.setSecret(token);
+            core.setOutput('token', token)
+
+      - name: Run CONTEXT_PACK directly through Input Governance Edge
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          IG_OIDC_GATEWAY_URL: ${{ vars.LF_IG_OIDC_CALLER_URL }}
+          CONTEXT_PACK_SCREEN_ID: ${{ inputs.context_pack_screen_id }}
+        run: |
+          set -euo pipefail
+          [ -n "${IG_OIDC_GATEWAY_URL:-}" ] || { echo 'CONTEXT_PACK_OIDC_GATEWAY_URL_NOT_CONFIGURED'; exit 2; }
+          [[ "${CONTEXT_PACK_SCREEN_ID}" =~ ^[1-9][0-9]*$ ]] || { echo 'CONTEXT_PACK_SCREEN_ID_INVALID'; exit 2; }
+
+          python3 - <<'PY'
+          import json, os
+          with open("context-pack-request.json","w",encoding="utf-8") as f:
+              json.dump({
+                  "action":"input_readiness_context_pack_v1",
+                  "pantalla_id":int(os.environ["CONTEXT_PACK_SCREEN_ID"]),
+              },f,separators=(",",":"),sort_keys=True)
+          PY
+
+          code=202
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            code=$(curl --silent --show-error               --max-time 145               -o context-pack-response.json -w '%{http_code}'               -H "Authorization: Bearer ${OIDC_TOKEN}"               -H 'Content-Type: application/json'               --data-binary @context-pack-request.json               "${IG_OIDC_GATEWAY_URL}")
+
+            if [ "${code}" = "202" ]; then
+              CONTEXT_PACK_ATTEMPT="${attempt}" python3 - <<'PY'
+          import json, os
+          v=json.load(open("context-pack-response.json",encoding="utf-8"))
+          if v.get("outcome")!="CONTINUATION_REQUIRED":
+              raise SystemExit("CONTEXT_PACK_202_WITHOUT_CONTINUATION")
+          if v.get("consumer")!="CONTEXT_PACK" or v.get("transport")!="DIRECT_EDGE_INVOCATION":
+              raise SystemExit("CONTEXT_PACK_CONTINUATION_CONTRACT_INVALID")
+          if v.get("queue_required") is not False or v.get("polling_required") is not False:
+              raise SystemExit("CONTEXT_PACK_QUEUE_OR_POLLING_REGRESSION")
+          print("CONTEXT_PACK_DIRECT_CONTINUATION attempt="+os.environ["CONTEXT_PACK_ATTEMPT"])
+          PY
+              continue
+            fi
+            break
+          done
+
+          cat context-pack-response.json
+          CONTEXT_PACK_HTTP="${code}" python3 - <<'PY'
+          import json, os
+          http=os.environ["CONTEXT_PACK_HTTP"]
+          v=json.load(open("context-pack-response.json",encoding="utf-8"))
+          checks={
+              "http_200": http=="200",
+              "terminal": v.get("outcome")=="TERMINAL",
+              "scope": v.get("scope")=="PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+              "consumer": v.get("consumer")=="CONTEXT_PACK",
+              "transport": v.get("transport")=="DIRECT_EDGE_INVOCATION",
+              "queue_absent": v.get("queue_required") is False,
+              "polling_absent": v.get("polling_required") is False,
+              "ready": v.get("terminal_status")=="READY",
+          }
+          failed=[k for k,ok in checks.items() if not ok]
+          if failed:
+              raise SystemExit("FAIL_CONTEXT_PACK_DIRECT_EDGE:"+repr(failed)+":"+json.dumps(v,sort_keys=True)[:12000])
+          print(json.dumps({
+              "outcome":"PASS_CONTEXT_PACK_DIRECT_EDGE",
+              "pantalla_id":v.get("pantalla_id"),
+              "run_id":v.get("run_id"),
+              "terminal_status":v.get("terminal_status"),
+              "transport":v.get("transport"),
           },sort_keys=True))
           PY
 
