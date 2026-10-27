@@ -1,0 +1,61 @@
+{
+ "schema": "pe10a-ct01-frozen-inventory/v1",
+ "observed": "2026-10-27",
+ "repo_head": "24af5f9",
+ "surfaces": [
+  {
+   "fn": "lf_profile_update_begin_v1",
+   "args": "p_execution_id text, p_target_code text, p_target_repo text, p_target_path text, p_request_sha256 text, p_idempotency_key text, p_actor_execution_id text, p_manifest jsonb",
+   "md5": "deb4d57cbe7d35ad93401056bd1ab071",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_effective_route_v1",
+   "args": "p_execution_id text",
+   "md5": "da620cf19a9a10d18e0d5d39ff743f2e",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_evolution_step_guard_v1",
+   "args": "p_execution_id text, p_step_id text, p_payload jsonb",
+   "md5": "bd713a5a0cbc93619980f493723f7f6b",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_post_merge_reconcile_v1",
+   "args": "p_execution_id text, p_merge_sha text, p_entrypoint_sha text, p_manifest_sha text, p_profile_pack_id text, p_pr_number integer, p_actor_execution_id text",
+   "md5": "8b1f02ec4583e9870437bca2e152187d",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_result_class_v1",
+   "args": "p_value jsonb",
+   "md5": "19f4b9cdf0f2e23dad120d01b9c8660e",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_substantive_block_v1",
+   "args": "p_execution_id text, p_step_id text, p_payload jsonb, p_manifest jsonb",
+   "md5": "06a07b442f19076542ae7fbec9513897",
+   "secdef": false
+  },
+  {
+   "fn": "lf_profile_update_verified_receipt_v1",
+   "args": "p_subject_type text, p_subject_ref text, p_receipt_id text, p_subject_sha256 text, p_source_head_sha text",
+   "md5": "7c163d3308ecba94ad066e6df8446e80",
+   "secdef": true
+  },
+  {
+   "fn": "lf_router_governed_caller_route_v1",
+   "args": "p_caller jsonb, p_target_code text, p_target_path text",
+   "md5": "5615b6371d1da49f9dfe8cce186d41bc",
+   "secdef": true
+  },
+  {
+   "fn": "lf_record_profile_operation_step_v1",
+   "args": "p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text",
+   "md5": "03f8c6a1ada0321ced8682afb74d3f0f",
+   "secdef": false
+  }
+ ]
+}
