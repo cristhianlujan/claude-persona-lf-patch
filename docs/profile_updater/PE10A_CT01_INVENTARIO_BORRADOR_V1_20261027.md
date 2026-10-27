@@ -103,6 +103,18 @@ Límites: la columna de consumidores es una búsqueda de texto del nombre en `pr
 - **Brecha para CT01:** el plan pide "firma entrada/salida" por superficie. Las funciones SQL la tienen (sección 1). Para las Edge solo se relevaron las acciones aceptadas, no un schema formal de respuesta, porque **no existe uno en el repo**. Esto debe decidirse (documentar o declararlo fuera de alcance) antes de cerrar CT01.
 - **Hallazgo de CT01 en el plan:** el checkpoint no tiene `assertion_contract` ni validador atado (`validator_contract_status = EXACT_EXISTING_VALIDATOR_TO_BE_BOUND_PER_CHECKPOINT`). Hay que definir esa condición de cierre antes de la migración de cierre.
 
+### 5.8 Ronda 1 de revisión independiente (GPT, 2026-10-27) — resultado FAIL, aceptado tras verificación propia
+Revisor: sesión de ChatGPT con conectores de solo lectura a GitHub y Supabase (no es el productor). Veredicto: **FAIL** en P5 (superficies faltantes). P1, P3 y P4 PASS; P2 NO_VERIFICADO (no ejecutó el script Python del repo; replicó la comparación en SQL y detectó una mutación propia `secdef`).
+Omisiones señaladas y **comprobadas por el productor en producción** (solo lectura):
+| Superficie | Firma / md5 / SECDEF | Hallazgo |
+|---|---|---|
+| `lf_router_resolve_v1` | 5 args text · `4fd692a2…54a24` · no · STABLE | La llama `run-creacion-perfil-lf` y 19 funciones SQL. Al ser STABLE no puede escribir; el texto "DML" de su cuerpo es falso positivo. |
+| `lf_router_semantic_resume_route_v1` | `p_request jsonb, p_result jsonb` · `140b1e04…cb2038d80b3bd03005cb3` · **sí** · volátil | La llama `lf_router_governed_caller_route_v1`. Sin DML en el texto. EXECUTE: postgres, service_role, supabase_read_only_user. |
+| `lf_record_creacion_perfil_step_v1` | 5 args · `f7d1ad06…ae0ad` · no · volátil | La llama `run-creacion-perfil-lf` (rama de creación). **EXECUTE concedido a `anon` y `authenticated`.** No se verificó si es explotable. |
+Efecto en el inventario: **9 → 12 superficies SQL** (`frozen_inventory_v1.json` v2). Falsificador sobre las 12: 12/12 PASS.
+Sobre `lf_router_governed_caller_route_v1` (pregunta de CT05): la cadena governed_caller_route → semantic_resume_route → resolve no muestra DML en el texto y la hoja es STABLE; **no se demostró** que no haya efectos indirectos en toda la cadena.
+Limitación del revisor: la sección `independence` declara evidencia técnica obtenida directamente por conectores y, según la parte visible de su respuesta, **sin atestación del proveedor**. No sirve todavía como recibo de cierre.
+
 ## 6. Lo que sigue sin cubrirse (CT01 no puede cerrarse con esto)
 - Contenido campo a campo de los contratos (solo claves de primer nivel) y SRCR V0_7R1 (no localizado por nombre).
 - Falsificador en CI: existe en `docs/profile_updater/pe10a_ct01_falsifier/` (probado a mano contra producción), pero no corre solo.
