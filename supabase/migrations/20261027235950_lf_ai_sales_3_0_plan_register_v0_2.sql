@@ -31,7 +31,10 @@ BEGIN
  'Plan AI Sales 3.0 v0.2 borrador: 17 unidades, 102 checkpoints PENDING; sin ejecución.',
  'INFO',jsonb_build_object(
   'evidence_schema_version','operational-event/v2','producer','LF_MIGRATION_MERGE_TRAIN',
-  'execution_id',exec_id,'plan_code',plan,'version','v0.2',
+  'execution_id',exec_id,
+  'purpose','Register AI Sales 3.0 draft plan with exact source and checkpoint readback, no activation.',
+  'occurred_at',to_char(clock_timestamp() at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+  'plan_code',plan,'version','v0.2',
   'snapshot_digest',p->>'content_sha256_without_digest',
   'unit_count',17,'checkpoint_count',102,'status','DRAFT_NOT_EXECUTED',
   'source_ref','github://cristhianlujan/claude-persona-lf-patch/docs/ai_sales/AI_SALES_3_0_PLAN_V0_2_20261027.json',
