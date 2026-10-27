@@ -563,7 +563,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           ? governed.status
           : directStatus;
 
-        if (directStatus === "VALIDATOR_RESUME_REQUIRED") {
+        if (directStatus === "VALIDATOR_RESUME_REQUIRED" || terminalStatus === "VALIDATOR_RESUME_REQUIRED") {
           return json({
             outcome: "CONTINUATION_REQUIRED",
             code: "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
