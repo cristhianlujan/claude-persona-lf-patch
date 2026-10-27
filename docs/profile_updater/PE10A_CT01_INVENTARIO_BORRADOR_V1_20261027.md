@@ -97,6 +97,12 @@ Límites: la columna de consumidores es una búsqueda de texto del nombre en `pr
 - No se encontró en el repo ningún archivo con `V0_7R1` en su ruta (búsqueda por nombre, profundidad 4).
 - Limite: se inventariaron claves, no se validó el contenido de cada campo contra producción.
 
+### 5.7 Python y schemas (medido; pedidos por la prueba positiva de CT01)
+- **Python que nombra las superficies (11 archivos):** `sandbox/lf_contract_gate_test/authority_readback/authority_readback_adapters_v1.py`, `sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py` y 9 en `skills/profile_creator/evals/` (batch_resume_contract, profile_operation_blocked_evidence_contract, profile_operation_common_recorder_contract, profile_update_helpers_rollback_probe_v1, test_profile_update_output_receipt_reader_candidate_v1, test_profile_update_recorder_route_candidate_v1, update_recorder_readiness_contract, update_server_trust_context_contract). El generador del falsificador (`gen_falsifier_sql.py`) también los nombra y es parte de este trabajo.
+- **Schemas (2):** `missing_input.schema.json` (requeridos: status, missing_inputs, blocking_codes, next_gate) y `output.schema.json` (requeridos: status, profile_pack_id, source_authority, deliverable_created, files_created, evidence_map, blocking_codes, next_gate). Ninguno describe la entrada/salida de las funciones SQL; describen la salida del creador de perfiles.
+- **Brecha para CT01:** el plan pide "firma entrada/salida" por superficie. Las funciones SQL la tienen (sección 1). Para las Edge solo se relevaron las acciones aceptadas, no un schema formal de respuesta, porque **no existe uno en el repo**. Esto debe decidirse (documentar o declararlo fuera de alcance) antes de cerrar CT01.
+- **Hallazgo de CT01 en el plan:** el checkpoint no tiene `assertion_contract` ni validador atado (`validator_contract_status = EXACT_EXISTING_VALIDATOR_TO_BE_BOUND_PER_CHECKPOINT`). Hay que definir esa condición de cierre antes de la migración de cierre.
+
 ## 6. Lo que sigue sin cubrirse (CT01 no puede cerrarse con esto)
 - Contenido campo a campo de los contratos (solo claves de primer nivel) y SRCR V0_7R1 (no localizado por nombre).
 - Falsificador en CI: existe en `docs/profile_updater/pe10a_ct01_falsifier/` (probado a mano contra producción), pero no corre solo.
