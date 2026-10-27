@@ -32,8 +32,7 @@ Propietario de base de datos de las 9: rol `postgres`.
 - begin → `supabase/functions/run-creacion-perfil-lf/index.ts`.
 - governed_caller_route → `run-creacion-perfil-lf/index.ts` (línea 257) y `sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py`.
 - post_merge_reconcile → `sandbox/lf_contract_gate_test/authority_readback/*` (inventario, adaptadores, proyección SQL).
-- effective_route, evolution_step_guard, result_class, substantive_block, verified_receipt → candidatos y evals en `skills/profile_creator/contracts/*` y `skills/profile_creator/evals/*`.
-- lf_record_profile_operation_step_v1 → 7 evals/contratos en `skills/profile_creator/` y el test de caller de sandbox.
+- Conteo exacto de archivos que nombran cada función (sin `.git`, `supabase/migrations` ni `docs`): effective_route 5, evolution_step_guard 5, result_class 2, substantive_block 2, verified_receipt 8 (todos en `skills/profile_creator/contracts/*` y `skills/profile_creator/evals/*`); lf_record_profile_operation_step_v1: 11 en `skills/profile_creator/`, 1 en `sandbox/` y 3 fuera de esas carpetas (por identificar en el inventario definitivo); governed_caller_route: 1 en `sandbox/` y 1 fuera (el `index.ts` del Edge en `main`).
 - Workflow: `.github/workflows/lf-customer-profile-creator-governance-caller.yml`.
 
 ## 3. Propietario canónico
