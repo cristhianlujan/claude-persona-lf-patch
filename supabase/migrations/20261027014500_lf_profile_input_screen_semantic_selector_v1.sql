@@ -256,7 +256,9 @@ DECLARE
   v_blocking jsonb:='[]'::jsonb;
   v_bad integer:=0;
 BEGIN
-  IF jsonb_typeof(p_request)<>'object'
+  IF p_request IS NULL
+     OR p_result IS NULL
+     OR jsonb_typeof(p_request)<>'object'
      OR jsonb_typeof(p_result)<>'object' THEN
     RETURN jsonb_build_object(
       'schema_version','LF_PROFILE_SCREEN_SELECTOR_SEMANTIC_VALIDATION_V1',
@@ -471,7 +473,7 @@ DECLARE
   v_receipt text;
   v_validation jsonb;
 BEGIN
-  IF jsonb_typeof(p_draft)<>'object' THEN
+  IF p_draft IS NULL OR jsonb_typeof(p_draft)<>'object' THEN
     RETURN jsonb_build_object(
       'status','BLOCKED',
       'blocking_code','PROFILE_SCREEN_SELECTOR_DRAFT_NOT_OBJECT'
@@ -759,6 +761,8 @@ BEGIN
   IF upper(coalesce(p_scope->>'resolution_status',''))<>'RESOLVED'
      OR p_scope->>'resolution_method'<>'DETERMINISTIC_SHORTLIST_THEN_SEMANTIC'
      OR v_screen_code IS NULL
+     OR v_screen_request IS NULL
+     OR v_screen_result IS NULL
      OR jsonb_typeof(v_screen_request)<>'object'
      OR jsonb_typeof(v_screen_result)<>'object'
      OR v_screen_request->>'literal_request' IS DISTINCT FROM p_request_text
@@ -1039,7 +1043,7 @@ BEGIN
 
       v_screen_result:=v_exec.manifest->'screen_selection_result';
 
-      IF jsonb_typeof(v_screen_result)<>'object' THEN
+      IF v_screen_result IS NULL OR jsonb_typeof(v_screen_result)<>'object' THEN
         RETURN jsonb_build_object(
           'status','SCREEN_SELECTION_REQUIRED',
           'blocking_code',null,
@@ -1650,7 +1654,8 @@ BEGIN
       p_handoff->'scope'
     );
 
-    IF jsonb_typeof(v_screen_selection_result)<>'object' THEN
+    IF v_screen_selection_result IS NULL
+       OR jsonb_typeof(v_screen_selection_result)<>'object' THEN
       RETURN jsonb_build_object(
         'status','BLOCKED',
         'blocking_code','BLOCK_PRODUCT_CHANNEL_CONTEXT_SCREEN_SELECTION_MISSING',
