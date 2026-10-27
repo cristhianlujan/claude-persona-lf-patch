@@ -236,4 +236,39 @@ BEGIN
    'downstream_path','EXISTING_EJECUCION_PERFIL_LF');
 END $fn$;
 
+
+-- Required operational registration for the existing governed recorder.
+-- Gate2 is conditional; do not force unrelated routes through profile selection.
+INSERT INTO public.lf_operation_steps
+(operation_code,step_order,step_id,required,evidence_required,source_path,source_sha,
+ active,execution_order,created_by_execution_id,updated_by_execution_id)
+SELECT 'EJECUCION_ROUTER_LF',70,'profile_gate2',false,
+ 'selected_profile_code; after_selection_sha256; gate2_derivation; gate2_sha256',
+ 'public.lf_operation_step_contracts/EJECUCION_ROUTER_LF/profile_gate2',
+ NULL,true,70,'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
+WHERE NOT EXISTS (SELECT 1 FROM public.lf_operation_steps
+ WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2');
+
+INSERT INTO public.lf_operation_step_judge_bindings
+(operation_code,step_order,step_id,judge_code,clean_result_value,
+ blocked_result_value,return_result_value,required_evidence_keys,status,
+ created_by_execution_id,updated_by_execution_id)
+SELECT 'EJECUCION_ROUTER_LF',70,'profile_gate2','JUDGE-EJECUCION-ROUTER-LF-v0.1',
+ 'STEP_PASS_WITH_EVIDENCE','BLOCKED_ROUTER_PIPELINE_NOT_CLEAN','RETURN_TO_ORCHESTRATOR',
+ '["selected_profile_code","after_selection_sha256","gate2_derivation","gate2_sha256"]'::jsonb,
+ 'ACTIVE_ENFORCEMENT',
+ 'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
+WHERE NOT EXISTS (SELECT 1 FROM public.lf_operation_step_judge_bindings
+ WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2');
+
+DO $preflight$
+BEGIN
+ IF (SELECT count(*) FROM public.lf_operation_steps WHERE operation_code='EJECUCION_ROUTER_LF'
+     AND step_id='profile_gate2' AND step_order=70 AND required=false AND active=true)<>1
+ OR (SELECT count(*) FROM public.lf_operation_step_judge_bindings WHERE operation_code='EJECUCION_ROUTER_LF'
+     AND step_id='profile_gate2' AND step_order=70 AND judge_code='JUDGE-EJECUCION-ROUTER-LF-v0.1'
+     AND status='ACTIVE_ENFORCEMENT')<>1
+ THEN RAISE EXCEPTION 'GATE2_REGISTRY_JUDGE_BINDING_POSTCHECK_FAILED'; END IF;
+END $preflight$;
+
 COMMIT;
