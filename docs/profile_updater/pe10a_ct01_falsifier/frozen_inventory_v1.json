@@ -1,5 +1,5 @@
 {
- "schema": "pe10a-ct01-frozen-inventory/v2",
+ "schema": "pe10a-ct01-frozen-inventory/v3",
  "observed": "2026-10-27",
  "repo_head": "24af5f9",
  "surfaces": [
@@ -7,74 +7,92 @@
    "fn": "lf_profile_update_begin_v1",
    "args": "p_execution_id text, p_target_code text, p_target_repo text, p_target_path text, p_request_sha256 text, p_idempotency_key text, p_actor_execution_id text, p_manifest jsonb",
    "md5": "deb4d57cbe7d35ad93401056bd1ab071",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_effective_route_v1",
    "args": "p_execution_id text",
    "md5": "da620cf19a9a10d18e0d5d39ff743f2e",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_evolution_step_guard_v1",
    "args": "p_execution_id text, p_step_id text, p_payload jsonb",
    "md5": "bd713a5a0cbc93619980f493723f7f6b",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_post_merge_reconcile_v1",
    "args": "p_execution_id text, p_merge_sha text, p_entrypoint_sha text, p_manifest_sha text, p_profile_pack_id text, p_pr_number integer, p_actor_execution_id text",
    "md5": "8b1f02ec4583e9870437bca2e152187d",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_result_class_v1",
    "args": "p_value jsonb",
    "md5": "19f4b9cdf0f2e23dad120d01b9c8660e",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_substantive_block_v1",
    "args": "p_execution_id text, p_step_id text, p_payload jsonb, p_manifest jsonb",
    "md5": "06a07b442f19076542ae7fbec9513897",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_profile_update_verified_receipt_v1",
    "args": "p_subject_type text, p_subject_ref text, p_receipt_id text, p_subject_sha256 text, p_source_head_sha text",
    "md5": "7c163d3308ecba94ad066e6df8446e80",
-   "secdef": true
+   "secdef": true,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_router_governed_caller_route_v1",
    "args": "p_caller jsonb, p_target_code text, p_target_path text",
    "md5": "5615b6371d1da49f9dfe8cce186d41bc",
-   "secdef": true
+   "secdef": true,
+   "scope": "DEFERRED_ROUTER"
   },
   {
    "fn": "lf_record_profile_operation_step_v1",
    "args": "p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text",
    "md5": "03f8c6a1ada0321ced8682afb74d3f0f",
-   "secdef": false
+   "secdef": false,
+   "scope": "UPDATER"
   },
   {
    "fn": "lf_router_resolve_v1",
    "args": "p_request_text text, p_target_hint text, p_action_hint text, p_asset_type_hint text, p_distribution_mode text",
    "md5": "4fd692a272f02774f1c03f381ac54a24",
-   "secdef": false
+   "secdef": false,
+   "scope": "DEFERRED_ROUTER"
   },
   {
    "fn": "lf_router_semantic_resume_route_v1",
    "args": "p_request jsonb, p_result jsonb",
    "md5": "140b1e04289cb2038d80b3bd03005cb3",
-   "secdef": true
+   "secdef": true,
+   "scope": "DEFERRED_ROUTER"
   },
   {
    "fn": "lf_record_creacion_perfil_step_v1",
    "args": "p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text",
    "md5": "f7d1ad06e33470667239d7ae4dcde0ad",
-   "secdef": false
+   "secdef": false,
+   "scope": "OUT_OF_SCOPE_CREATION"
   }
  ],
- "revision": "ronda 2: +3 superficies halladas por el revisor independiente (ronda 1)"
+ "revision": "ronda 2: +3 superficies halladas por el revisor independiente (ronda 1)",
+ "scope_decision": {
+  "by": "Cristhian Lujan (due\u00f1o), chat 2026-10-27 17:52 Lima",
+  "text": "El router y su encadenamiento se ven al final, en la integracion. Primero el funcionamiento propio del updater.",
+  "closes_ct01_on": "UPDATER",
+  "deferred_must_be_tracked": true
+ }
 }
