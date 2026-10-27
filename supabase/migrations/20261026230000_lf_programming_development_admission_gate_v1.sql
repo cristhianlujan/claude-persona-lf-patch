@@ -119,6 +119,13 @@ BEGIN
   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_HANDOFF_INVALIDO','codigo','PG01_GATE_BINDING_INVALID',
    'motivo_es','El handoff PG-01 no cumple la identidad requerida.','siguiente_paso_es','Reconstruir el handoff desde el análisis.');
  END IF;
+ -- A valid receipt from another completed profile execution cannot be rebound.
+ IF p_programming_handoff->>'producer_execution_ref' IS DISTINCT FROM p_source_execution_id THEN
+  RETURN v_base || jsonb_build_object('paso','PROGRAMACION_HANDOFF_INVALIDO',
+   'codigo','PG01_HANDOFF_SOURCE_EXECUTION_MISMATCH',
+   'motivo_es','El productor del handoff no coincide con la ejecución de origen.',
+   'siguiente_paso_es','Reconstruir el handoff desde la misma ejecución de análisis.');
+ END IF;
  IF v_gate->'admissible' IS DISTINCT FROM 'true'::jsonb THEN
   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_ADMISION_BLOQUEADA',
    'codigo',COALESCE(v_gate->>'reason','PG01_GATE_ADMISSION_UNDETERMINED'),

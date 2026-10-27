@@ -89,3 +89,16 @@ y la integración con lectores reales ampliada. La prueba nueva falla con el
 código anterior (REAL_FAIL:4_full_entry_missing_receipt) y pasa con la corrección.
 La versión 17 objetivo sigue pendiente de CI/revisión; no se atribuye esta
 corrida a CI ni se declara un positivo operacional.
+
+## Cross-execution handoff audit (2026-10-27)
+
+The entry now requires `producer_execution_ref = source_execution_id` after
+validating the handoff shape. A completed origin with an identical valid Router
+binding cannot reuse another execution's handoff/receipt. Mismatch returns
+`PROGRAMACION_HANDOFF_INVALIDO / PG01_HANDOFF_SOURCE_EXECUTION_MISMATCH` with
+`downstream_execution_allowed=false`.
+
+The new negative test reproduced an incorrect `PROGRAMACION_DESARROLLO_ADMITIDO`
+on the previous candidate (ACTIVE is only a rollback-owned test fixture). The
+corrected suite has 21 cases. Valid fixtures now use matching producer/source
+identities instead of silently exercising the old gap. No hosted change.

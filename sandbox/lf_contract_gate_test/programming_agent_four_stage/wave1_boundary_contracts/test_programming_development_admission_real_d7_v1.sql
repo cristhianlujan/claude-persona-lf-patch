@@ -50,7 +50,7 @@ SELECT replace(replace(string_agg(coalesce(line,''),E'\n' ORDER BY n),E'BEGIN;\n
 
 CREATE FUNCTION pg_temp.h(p_ctx text DEFAULT 'c4f7d9e4-3d29-4d12-950b-0b7ef25e7c5c') RETURNS jsonb LANGUAGE sql AS $q$
   SELECT jsonb_build_object('context_id',p_ctx,'context_sha256',repeat('a',64),
-  'target_ref','T','requested_scope_ids',jsonb_build_array('S1'),'producer_execution_ref','EXEC-P',
+  'target_ref','T','requested_scope_ids',jsonb_build_array('S1'),'producer_execution_ref','EXEC-TEST-V2-RETURN',
   'entry_contract_digest_sha256','d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8') $q$;
 
 -- Explicit synthetic completed profile; real ledger, readers and entrypoint below.

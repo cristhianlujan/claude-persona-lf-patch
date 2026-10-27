@@ -78,7 +78,7 @@ $f$;
 CREATE FUNCTION pg_temp.handoff(p_target text DEFAULT 'NORMAL') RETURNS jsonb LANGUAGE sql AS $f$
  SELECT jsonb_build_object('context_id','c4f7d9e4-3d29-4d12-950b-0b7ef25e7c5c',
  'context_sha256',repeat('a',64),'target_ref',p_target,'requested_scope_ids',jsonb_build_array('S1'),
- 'producer_execution_ref','EXEC-PRODUCER','entry_contract_digest_sha256',
+ 'producer_execution_ref','EXEC-PROFILE-TEST','entry_contract_digest_sha256',
  'd2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8');
 $f$;
 -- Restricted-role negative check first, before owner invokes either PL/pgSQL function.
@@ -203,9 +203,19 @@ DO $$ DECLARE r jsonb; b jsonb; BEGIN
  r:=public.lf_programming_development_admission_v1(b,pg_temp.handoff(),'EXEC-PROFILE-PRODUCT');
  IF r->>'codigo' IS DISTINCT FROM 'PG01_ROUTER_BINDING_NOT_ISSUED_BY_EXECUTION' THEN RAISE EXCEPTION 'TEST_FAIL:20_wrong_channel'; END IF;
  INSERT INTO passed VALUES(20); END $$;
+DO $$ DECLARE r jsonb; b jsonb; BEGIN
+ b:=pg_temp.router_binding(); PERFORM pg_temp.profile_execution('EXEC-PROFILE-SECOND',b);
+ UPDATE public.lf_router_action_registry SET status='ACTIVE';
+ r:=public.lf_programming_development_admission_v1(b,pg_temp.handoff('ADMIT-TEST-ONLY'),'EXEC-PROFILE-SECOND');
+ IF r->>'codigo' IS DISTINCT FROM 'PG01_HANDOFF_SOURCE_EXECUTION_MISMATCH'
+ OR r->'downstream_execution_allowed' IS DISTINCT FROM 'false'::jsonb THEN
+  RAISE EXCEPTION 'TEST_FAIL:21_cross_execution_handoff %',r;
+ END IF;
+ UPDATE public.lf_router_action_registry SET status='CANDIDATO_READ_ONLY';
+ INSERT INTO passed VALUES(21); END $$;
 DO $$ DECLARE n integer; BEGIN
  SELECT count(*) INTO n FROM passed;
- IF n IS DISTINCT FROM 20 THEN RAISE EXCEPTION 'TEST_FAIL:TOTAL_%',n; END IF;
+ IF n IS DISTINCT FROM 21 THEN RAISE EXCEPTION 'TEST_FAIL:TOTAL_%',n; END IF;
  RAISE NOTICE 'PROGRAMMING_DEVELOPMENT_ADMISSION_TESTS_PASSED:%',n;
 END $$;
 ROLLBACK;
