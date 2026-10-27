@@ -160,6 +160,10 @@ function recurationBody(id: number): Record<string, unknown> {
   return { action: "input_readiness_recurate_v1", pantalla_id: id };
 }
 
+function contextPackBody(id: number): Record<string, unknown> {
+  return { action: "input_readiness_context_pack_v1", pantalla_id: id };
+}
+
 Deno.test("positive: exact workflow_dispatch identity from main", async () => {
   const h = harness();
   const { response, payload } = await invoke(h, recurationBody(1));
@@ -176,6 +180,46 @@ Deno.test("positive: exact workflow_dispatch identity from main", async () => {
   assertEquals(headers.get("authorization"), `Bearer ${BASE_ENV.SUPABASE_SERVICE_ROLE_KEY}`);
   assertEquals(h.calls[0].init?.body, "{}");
 });
+
+Deno.test("positive CONTEXT_PACK: dispatch invokes Edge directly without queue", async () => {
+  const h = harness();
+  const { response, payload } = await invoke(h, contextPackBody(51));
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "TERMINAL");
+  assertEquals(payload.scope, "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1");
+  assertEquals(payload.consumer, "CONTEXT_PACK");
+  assertEquals(payload.pantalla_id, 51);
+  assertEquals(payload.transport, "DIRECT_EDGE_INVOCATION");
+  assertEquals(payload.queue_required, false);
+  assertEquals(payload.polling_required, false);
+  assertEquals(payload.terminal_status, "READY");
+  assertEquals(h.calls.filter((c) => c.url.includes("fn_input_governance_queue_")).length, 0);
+  const edgeCalls = h.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1"));
+  assertEquals(edgeCalls.length, 1);
+  assertEquals(edgeCalls[0].body, { pantalla_id: 51, consumer: "CONTEXT_PACK" });
+});
+
+Deno.test("CONTEXT_PACK continuation: Validator resume is explicit direct continuation", async () => {
+  const h = harness({ inputStatus: "VALIDATOR_RESUME_REQUIRED" });
+  const { response, payload } = await invoke(h, contextPackBody(51));
+  assertEquals(response.status, 202);
+  assertEquals(payload.outcome, "CONTINUATION_REQUIRED");
+  assertEquals(payload.code, "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED");
+  assertEquals(payload.consumer, "CONTEXT_PACK");
+  assertEquals(payload.transport, "DIRECT_EDGE_INVOCATION");
+  assertEquals(payload.queue_required, false);
+  assertEquals(payload.polling_required, false);
+  assertEquals(h.calls.filter((c) => c.url.includes("fn_input_governance_queue_")).length, 0);
+});
+
+Deno.test("negative CONTEXT_PACK: reusable push identity cannot invoke profile context", async () => {
+  const h = harness({ claims: REUSABLE_PUSH_CLAIMS });
+  const { response, payload } = await invoke(h, contextPackBody(51));
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "CONTEXT_PACK_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED");
+  assertEquals(h.calls.length, 0);
+});
+
 
 for (const [eventName, claims] of [["push", REUSABLE_PUSH_CLAIMS], ["workflow_call", REUSABLE_CALL_CLAIMS]] as const) {
   Deno.test(`positive parity: reusable ${eventName} identity remains accepted`, async () => {
