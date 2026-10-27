@@ -55,3 +55,16 @@ Desde la raíz del repo, contra PostgreSQL 17 desechable: `psql -v ON_ERROR_STOP
 - `test_programming_development_admission_real_d7_v1.sql`: la compuerta contra el **lector D7 real** (migración `20261026173901`), no un stub. `service_role` recibe `PG01_GATE_READER_NOT_GRANTED`; el dueño recibe `PG01_RECEIPT_NOT_FOUND`; un `context_id` en mayúsculas se detiene como `PG01_GATE_BINDING_INVALID` sin llegar al lector.
 - Hallazgo de prueba: dentro de una misma transacción, PL/pgSQL reutiliza una llamada ya inicializada y no vuelve a comprobar `EXECUTE` después de un cambio de rol. Las pruebas de privilegios deben hacer la llamada con el rol restringido antes de cualquier llamada como dueño. En producción cada llamada corre en su propia transacción con su propio rol, así que no afecta al comportamiento real.
 
+
+## Ajuste de entrada gobernada (#3176, 26-oct-2026)
+
+La firma de entrada pasa a `public.lf_programming_development_admission_v1(jsonb,jsonb,text)`, siendo el tercer argumento `p_source_execution_id`. Tras validar los campos y la huella local del `router_action_binding`, consulta la ejecución de perfil: exige `EJECUCION_PERFIL_LF`, tipo `PERFIL`, estado `COMPLETED`, canal `PROGRAMACION`, e igualdad `jsonb` exacta con `manifest.router_profile_handoff.semantic_request.router_action_binding`. Ante discrepancias responde `PROGRAMACION_BINDING_INVALIDO` y `PG01_ROUTER_BINDING_NOT_ISSUED_BY_EXECUTION`. La compuerta `SECURITY INVOKER` ahora usa `resolve_v2`; se concede `EXECUTE` en ese lector exclusivamente a `service_role`, nunca a `supabase_read_only_user`, `anon` ni `authenticated`. La admisión válida incluye `source_execution_id`, pero mantiene **`downstream_execution_allowed=false`**. Esta migración no modifica el Router ni activa desarrollo.
+
+## Verificación del ajuste (Claude, 27-oct-2026)
+
+Reemplaza a la verificación del 26-oct en lo que respecta a lectores y privilegios.
+
+- Corrección sobre el borrador: la función de entrada usaba `v_execution` sin declararla y no compilaba; se añadió `v_execution public.lf_operation_execution%ROWTYPE;`.
+- `test_programming_development_admission_gate_v1.sql`: `PROGRAMMING_DEVELOPMENT_ADMISSION_TESTS_PASSED:20` en PostgreSQL 16 local desechable (CI usa 17).
+- `test_programming_development_admission_real_d7_v1.sql` (reescrita): carga las migraciones reales de D7, de #3181 (`resolve_v2` y proveedor de vigencia) y de esta compuerta. Resultados: `supabase_read_only_user` → `PG01_GATE_READER_NOT_GRANTED`; `service_role` → `PG01_V2_RECEIPT_NOT_FOUND` con las cuatro claves de respuesta; dueño → no encontrado; `context_id` en mayúsculas → `PG01_GATE_BINDING_INVALID` sin llegar al lector; ACL de `resolve_v2` limitada a `service_role`. Emite `PROGRAMMING_DEVELOPMENT_ADMISSION_REAL_READERS_OK`.
+- Dependencia: esta rama se apila sobre `lf/pg01-admission-envelope-v2-v1` (#3181) porque la compuerta llama a `resolve_v2`. Se fusiona después de #3181.
