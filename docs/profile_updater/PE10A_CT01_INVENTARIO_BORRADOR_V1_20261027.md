@@ -1,7 +1,7 @@
-# PE10A_CT01 — Inventario de superficies (CT01)
+# PE10A_CT01 — Inventario de superficies (BORRADOR para revisión independiente)
 
 Fecha: 2026-10-27 · Alcance acordado: **ruta de actualización de perfiles** (ACTUALIZACION_PERFIL_LF) · Exact-head del repo: `e7f50a6ab345d4b40a66d34d46669661fd22c657` (main tras PR #3204).
-**Estado: `PE10A_CT01` cerrado (DONE) el 2026-10-27 por migración gobernada `lf_pe10a_ct01_close_v1`.** Este documento es el inventario que sustenta ese cierre. Por decisión del dueño no se usa revisión independiente en este proyecto.
+**Estado: el checkpoint `PE10A_CT01` sigue PENDING.** Este documento es evidencia material de entrada; no es un cierre ni un recibo. El recibo independiente lo debe emitir otro agente.
 
 ## Cómo se obtuvo (todo ejecutado, solo lectura)
 Consultas a `pg_proc`/`pg_roles`/`aclexplode` en Supabase `mhwmirqcgxxukpctffuv`, `lf_activos`, `lf_operation_step_contracts`, `lf_operation_step_judge_bindings`, `get_edge_function`/`list_edge_functions`, y búsqueda exacta en el repo (sin `.git` ni `supabase/migrations`).
@@ -103,6 +103,18 @@ Límites: la columna de consumidores es una búsqueda de texto del nombre en `pr
 - **Brecha para CT01:** el plan pide "firma entrada/salida" por superficie. Las funciones SQL la tienen (sección 1). Para las Edge solo se relevaron las acciones aceptadas, no un schema formal de respuesta, porque **no existe uno en el repo**. Esto debe decidirse (documentar o declararlo fuera de alcance) antes de cerrar CT01.
 - **Hallazgo de CT01 en el plan:** el checkpoint no tiene `assertion_contract` ni validador atado (`validator_contract_status = EXACT_EXISTING_VALIDATOR_TO_BE_BOUND_PER_CHECKPOINT`). Hay que definir esa condición de cierre antes de la migración de cierre.
 
+### 5.8 Ronda 1 de revisión independiente (GPT, 2026-10-27) — resultado FAIL, aceptado tras verificación propia
+Revisor: sesión de ChatGPT con conectores de solo lectura a GitHub y Supabase (no es el productor). Veredicto: **FAIL** en P5 (superficies faltantes). P1, P3 y P4 PASS; P2 NO_VERIFICADO (no ejecutó el script Python del repo; replicó la comparación en SQL y detectó una mutación propia `secdef`).
+Omisiones señaladas y **comprobadas por el productor en producción** (solo lectura):
+| Superficie | Firma / md5 / SECDEF | Hallazgo |
+|---|---|---|
+| `lf_router_resolve_v1` | 5 args text · `4fd692a2…54a24` · no · STABLE | La llama `run-creacion-perfil-lf` y 19 funciones SQL. Al ser STABLE no puede escribir; el texto "DML" de su cuerpo es falso positivo. |
+| `lf_router_semantic_resume_route_v1` | `p_request jsonb, p_result jsonb` · `140b1e04…cb2038d80b3bd03005cb3` · **sí** · volátil | La llama `lf_router_governed_caller_route_v1`. Sin DML en el texto. EXECUTE: postgres, service_role, supabase_read_only_user. |
+| `lf_record_creacion_perfil_step_v1` | 5 args · `f7d1ad06…ae0ad` · no · volátil | La llama `run-creacion-perfil-lf` (rama de creación). **EXECUTE concedido a `anon` y `authenticated`.** No se verificó si es explotable. |
+Efecto en el inventario: **9 → 12 superficies SQL** (`frozen_inventory_v1.json` v2). Falsificador sobre las 12: 12/12 PASS.
+Sobre `lf_router_governed_caller_route_v1` (pregunta de CT05): la cadena governed_caller_route → semantic_resume_route → resolve no muestra DML en el texto y la hoja es STABLE; **no se demostró** que no haya efectos indirectos en toda la cadena.
+Limitación del revisor: la sección `independence` declara evidencia técnica obtenida directamente por conectores y, según la parte visible de su respuesta, **sin atestación del proveedor**. No sirve todavía como recibo de cierre.
+
 ### 5.9 Decisión de alcance del dueño (2026-10-27, 17:52 Lima)
 Texto del dueño: las funciones del router y su encadenamiento se ven **al final**, en la integración; primero se obtiene bien el funcionamiento propio del updater.
 Aplicación en `frozen_inventory_v1.json` (v3), campo `scope` por superficie:
@@ -119,13 +131,13 @@ Nota de coherencia: la especificación de CT01 en el plan dice "todas las superf
 - Contenido campo a campo de los contratos (solo claves de primer nivel) y SRCR V0_7R1 (no localizado por nombre).
 - Falsificador en CI: existe en `docs/profile_updater/pe10a_ct01_falsifier/` (probado a mano contra producción), pero no corre solo.
 - Revisar si el cuerpo de `lf_router_governed_caller_route_v1` escribe (CT05).
-- Contrato de aserción de CT01 y migración de cierre.
+- Contrato de aserción de CT01, migración de cierre y recibo del agente independiente.
 
 ## 7. Ruta de cierre verificada
 La operación `CIERRE_CHECKPOINT_INGENIERIA_LF` está en `OP_CANDIDATE`/`CANDIDATO_READ_ONLY`, con un único vínculo de proveedor y sin activar; el conector de transición está documentado como no instalado. La ruta usada por los cierres previos (p. ej. `lf_pe10_c5_admission_event_close_v1`) es una **migración de cierre por checkpoint vía Merge Train**. CT01 seguirá esa ruta.
 
-### 5.10 Enumeración exhaustiva de archivos de la ruta de actualización (corrección)
-Origen: revisión del inventario. Comprobación propia: el inventario nombraba solo 2 de los 15 contratos propios del updater y no listaba los validadores ni la Edge `lf-profile-creator-governance-caller-v1` (acción `profile_update_init_v1`) ni el workflow `lf-customer-profile-creator-governance-caller.yml` (acciones `profile_update_init` y `profile_update_record_batch`) como superficies del updater. Los 5 "transporte/OIDC" de 5.2 incluían entonces una Edge que sí inicia actualizaciones: se corrige aquí.
+### 5.10 Enumeración exhaustiva de archivos de la ruta de actualización (ronda 2 → corrección)
+Origen: la ronda 2 (GPT) dio FAIL conservador: P1, P2, P4 PASS; P5 NO_VERIFICADO porque no podía probar exhaustividad de contratos/workflows. Comprobación propia: el inventario nombraba solo 2 de los 15 contratos propios del updater y no listaba los validadores ni la Edge `lf-profile-creator-governance-caller-v1` (acción `profile_update_init_v1`) ni el workflow `lf-customer-profile-creator-governance-caller.yml` (acciones `profile_update_init` y `profile_update_record_batch`) como superficies del updater. Los 5 "transporte/OIDC" de 5.2 incluían entonces una Edge que sí inicia actualizaciones: se corrige aquí.
 Método reproducible: `pe10a_ct01_falsifier/enumerate_updater_files.sh` (git ls-files en `.github/workflows`, `supabase/functions`, `skills/profile_creator/{contracts,validators}`, `docs/{reconcile,programming-agent,operations}` + grep del patrón `lf_profile_update_|lf_record_profile_operation_step_v1|ACTUALIZACION_PERFIL_LF|profile_update_`). Resultado congelado en `frozen_updater_files_v1.json` (path + blob sha1 + categoría; 43 archivos). La categoría la asigna el productor y puede impugnarse.
 
 | Categoría | n | Archivos |
