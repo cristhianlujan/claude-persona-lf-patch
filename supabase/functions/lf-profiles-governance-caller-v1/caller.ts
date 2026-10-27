@@ -9,6 +9,8 @@ const LEGACY_WORKFLOW_FILE = "lf-profiles-governance-caller.yml";
 const RECURATION_ACTION = "input_readiness_recurate_v1";
 const RECURATION_POLL_ACTION = "input_readiness_poll_v1";
 const CONTEXT_PACK_ACTION = "input_readiness_context_pack_v1";
+const CONTEXT_PACK_RUNTIME_ACTION = "input_readiness_context_pack_runtime_v1";
+const RUNTIME_TICKET_RPC = "lf_profile_input_governance_runtime_ticket_consume_v1";
 const PILOT_ACTION = "input_readiness_pilot_v1";
 const SCREEN_ACTION = "input_readiness_screen_v1";
 const B2B_ACTION = "input_readiness_b2b_402_v1";
@@ -338,6 +340,34 @@ async function readRecurationAuthority(config: CallerConfig, deps: RuntimeDeps):
   return validateAllowlist(payload);
 }
 
+async function consumeProfileRuntimeTicket(
+  config: CallerConfig,
+  deps: RuntimeDeps,
+  ticket: string,
+  executionId: string,
+  pantallaId: number,
+): Promise<Record<string, unknown>> {
+  const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${RUNTIME_TICKET_RPC}`, {
+    method: "POST",
+    headers: {
+      apikey: config.serviceRoleKey,
+      authorization: `Bearer ${config.serviceRoleKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      p_ticket: ticket,
+      p_execution_id: executionId,
+      p_pantalla_id: pantallaId,
+      p_consumer: CONTEXT_PACK_CONSUMER,
+    }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (response.status !== 200) {
+    throw new CallerFault("PROFILE_RUNTIME_TICKET_RPC_HTTP_ERROR", 502, { rpc_status: response.status });
+  }
+  return await parseJsonObject(response, "PROFILE_RUNTIME_TICKET_RPC_RESPONSE_INVALID");
+}
+
 async function callRuntime(
   config: CallerConfig,
   deps: RuntimeDeps,
@@ -465,6 +495,124 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
     try {
       if (req.method !== "POST") return json({ outcome: "BLOCKED", code: "METHOD_NOT_ALLOWED" }, 405);
       const config = loadConfig(deps.getEnv);
+      const runtimeTicket = (req.headers.get("x-lf-profile-runtime-ticket") ?? "").trim();
+
+      if (runtimeTicket) {
+        let runtimeBody: Record<string, unknown>;
+        try {
+          const parsed = await req.json();
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("invalid");
+          runtimeBody = parsed as Record<string, unknown>;
+        } catch {
+          return json({ outcome: "BLOCKED", code: "INVALID_JSON" }, 400);
+        }
+
+        const action = typeof runtimeBody.action === "string" ? runtimeBody.action : "";
+        if (action !== CONTEXT_PACK_RUNTIME_ACTION) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_RUNTIME_TICKET_ACTION_MISMATCH" }, 403);
+        }
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(runtimeTicket)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_RUNTIME_TICKET_INVALID" }, 401);
+        }
+
+        const executionId = typeof runtimeBody.execution_id === "string" ? runtimeBody.execution_id.trim() : "";
+        const pantallaId = typeof runtimeBody.pantalla_id === "number" ? runtimeBody.pantalla_id : Number.NaN;
+        if (!executionId || executionId.length > 220 || !Number.isInteger(pantallaId) || pantallaId < 1) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_RUNTIME_CONTEXT_PACK_INPUT_INVALID" }, 400);
+        }
+
+        const ticket = await consumeProfileRuntimeTicket(config, deps, runtimeTicket, executionId, pantallaId);
+        if (ticket.authorized !== true) {
+          return json({
+            outcome: "BLOCKED",
+            code: typeof ticket.code === "string" ? ticket.code : "PROFILE_RUNTIME_TICKET_NOT_AUTHORIZED",
+          }, 403);
+        }
+
+        const caller: Record<string, unknown> = {
+          method: "EJECUCION_PERFIL_LF_RUNTIME_TICKET_V1",
+          scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+          execution_id: executionId,
+          router_reentry: false,
+        };
+        const result = await callRuntime(
+          config,
+          deps,
+          config.inputGovernanceSlug,
+          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER },
+          config.recurationTimeoutMs,
+        );
+
+        const directStatus = typeof result.status === "string" ? result.status : "";
+        const governed = result.result && typeof result.result === "object" && !Array.isArray(result.result)
+          ? result.result as Record<string, unknown>
+          : {};
+        const terminalStatus = typeof governed.status === "string" ? governed.status : directStatus;
+
+        if (directStatus === "VALIDATOR_RESUME_REQUIRED" || terminalStatus === "VALIDATOR_RESUME_REQUIRED") {
+          return json({
+            outcome: "CONTINUATION_REQUIRED",
+            code: "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller,
+            execution_id: executionId,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            transport: "DIRECT_EDGE_INVOCATION",
+            queue_required: false,
+            polling_required: false,
+            result,
+          }, 202);
+        }
+
+        if (!["READY", "HUMAN_DECISION_REQUIRED", "BLOCKED"].includes(terminalStatus)) {
+          return json({
+            outcome: "BLOCKED",
+            code: "IG_CONTEXT_PACK_NON_TERMINAL_RESULT",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller,
+            execution_id: executionId,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: terminalStatus || null,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
+
+        if (terminalStatus !== "READY") {
+          return json({
+            outcome: "BLOCKED",
+            code: terminalStatus === "HUMAN_DECISION_REQUIRED"
+              ? "IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED"
+              : "IG_CONTEXT_PACK_BLOCKED",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller,
+            execution_id: executionId,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: terminalStatus,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
+
+        return json({
+          outcome: "TERMINAL",
+          scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+          caller,
+          execution_id: executionId,
+          pantalla_id: pantallaId,
+          consumer: CONTEXT_PACK_CONSUMER,
+          terminal_status: terminalStatus,
+          run_id: governed.run_id ?? null,
+          transport: "DIRECT_EDGE_INVOCATION",
+          queue_required: false,
+          polling_required: false,
+          result,
+        });
+      }
+
       const { payload: claims, identity } = await requireOidc(req, config, deps);
 
       let body: Record<string, unknown>;
