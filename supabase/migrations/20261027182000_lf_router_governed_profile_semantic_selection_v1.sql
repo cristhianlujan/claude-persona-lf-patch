@@ -514,7 +514,7 @@ BEGIN
   v_step:=public.lf_record_router_execution_step_v1(
     p_execution_id,
     'profile_semantic_selection',
-    'router-profile-selection://'||v_result->>'semantic_receipt_sha256',
+    'router-profile-selection://'||(v_result->>'semantic_receipt_sha256'),
     jsonb_build_object(
       'profile_selection_request_sha256',v_request_sha,
       'semantic_result',v_result,
