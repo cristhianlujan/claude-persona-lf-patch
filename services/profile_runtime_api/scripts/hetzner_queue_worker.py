@@ -324,6 +324,155 @@ def _api_json(method: str, path: str, payload: dict[str, Any] | None = None) -> 
     return data
 
 
+def _profile_ig_caller_json(
+    ticket: str, payload: dict[str, Any]
+) -> tuple[int, dict[str, Any]]:
+    project = _env("SUPABASE_PROJECT_ID", "mhwmirqcgxxukpctffuv")
+    default_url = (
+        f"https://{project}.supabase.co/functions/v1/"
+        "lf-profiles-governance-caller-v1"
+    )
+    url = _env("LF_PROFILE_IG_CALLER_URL", default_url)
+    if not url.startswith("https://"):
+        raise RuntimeError("HETZNER_PROFILE_IG_CALLER_URL_INVALID")
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Content-Length": str(len(body)),
+            "X-LF-Profile-Runtime-Ticket": ticket,
+        },
+        method="POST",
+    )
+    timeout = float(_env("PROFILE_RUNTIME_IG_HTTP_TIMEOUT", "150"))
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            raw = response.read().decode("utf-8")
+            status = int(response.status)
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8", errors="replace")
+        status = int(exc.code)
+    except OSError as exc:
+        raise RuntimeError(
+            f"HETZNER_PROFILE_IG_CALLER_UNREACHABLE:{type(exc).__name__}"
+        ) from exc
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("HETZNER_PROFILE_IG_CALLER_RESPONSE_INVALID") from exc
+    if not isinstance(value, dict):
+        raise RuntimeError("HETZNER_PROFILE_IG_CALLER_RESPONSE_NOT_OBJECT")
+    return status, value
+
+
+def _run_profile_input_governance_runtime(
+    conn: psycopg.Connection,
+    *,
+    claimed: dict[str, Any],
+    execution_id: str,
+    input_evidence_ref: str,
+    handoff: dict[str, Any],
+    input_validation: dict[str, Any],
+) -> dict[str, Any]:
+    governance = input_validation.get("input_governance")
+    runtime_request = governance.get("runtime_request") if isinstance(governance, dict) else None
+    request_body = runtime_request.get("request_body") if isinstance(runtime_request, dict) else None
+    if (
+        input_validation.get("status") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED"
+        or input_validation.get("next_action")
+        != "RUN_INPUT_GOVERNANCE_RUNTIME_AND_RETRY_SAME_NATIVE_BRIDGE_PREPARE"
+        or not isinstance(runtime_request, dict)
+        or runtime_request.get("transport") != "DIRECT_EDGE_INVOCATION"
+        or runtime_request.get("queue_required") is not False
+        or runtime_request.get("polling_required") is not False
+        or runtime_request.get("runtime_slug") != "input-governance-agent-v1"
+        or not isinstance(request_body, dict)
+        or request_body.get("consumer") != "CONTEXT_PACK"
+        or not isinstance(request_body.get("pantalla_id"), int)
+        or request_body["pantalla_id"] < 1
+    ):
+        raise RuntimeError("HETZNER_PROFILE_IG_RUNTIME_REQUEST_INVALID")
+
+    pantalla_id = int(request_body["pantalla_id"])
+    attempts_raw = _env("PROFILE_RUNTIME_IG_MAX_CONTINUATIONS", "10")
+    if not attempts_raw.isdigit():
+        raise RuntimeError("HETZNER_PROFILE_IG_MAX_CONTINUATIONS_INVALID")
+    attempts = int(attempts_raw)
+    if attempts < 1 or attempts > 10:
+        raise RuntimeError("HETZNER_PROFILE_IG_MAX_CONTINUATIONS_INVALID")
+
+    for attempt in range(1, attempts + 1):
+        with conn.cursor() as cur:
+            ticket = _fetch_json_scalar(
+                cur,
+                "select public.lf_profile_input_governance_runtime_ticket_issue_v1(%s,%s,%s,%s)",
+                (
+                    execution_id,
+                    claimed["input_literal"],
+                    input_evidence_ref,
+                    Jsonb(handoff),
+                ),
+            )
+        if (
+            ticket.get("status") != "AUTHORIZED"
+            or not isinstance(ticket.get("ticket"), str)
+            or ticket.get("execution_id") != execution_id
+            or ticket.get("pantalla_id") != pantalla_id
+            or ticket.get("consumer") != "CONTEXT_PACK"
+            or ticket.get("queue_required") is not False
+            or ticket.get("polling_required") is not False
+            or ticket.get("router_reentry_required") is not False
+        ):
+            raise RuntimeError(
+                "HETZNER_PROFILE_IG_RUNTIME_TICKET_NOT_AUTHORIZED:"
+                + str(ticket.get("code") or ticket.get("status") or "UNKNOWN")
+            )
+
+        # Make the one-use authority visible before the Edge caller consumes it.
+        conn.commit()
+        http_status, result = _profile_ig_caller_json(
+            str(ticket["ticket"]),
+            {
+                "action": "input_readiness_context_pack_runtime_v1",
+                "execution_id": execution_id,
+                "pantalla_id": pantalla_id,
+            },
+        )
+
+        if http_status == 202:
+            if (
+                result.get("outcome") != "CONTINUATION_REQUIRED"
+                or result.get("code") != "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED"
+                or result.get("consumer") != "CONTEXT_PACK"
+                or result.get("transport") != "DIRECT_EDGE_INVOCATION"
+                or result.get("queue_required") is not False
+                or result.get("polling_required") is not False
+            ):
+                raise RuntimeError("HETZNER_PROFILE_IG_CONTINUATION_CONTRACT_INVALID")
+            continue
+
+        if (
+            http_status == 200
+            and result.get("outcome") == "TERMINAL"
+            and result.get("terminal_status") == "READY"
+            and result.get("consumer") == "CONTEXT_PACK"
+            and result.get("pantalla_id") == pantalla_id
+            and result.get("transport") == "DIRECT_EDGE_INVOCATION"
+            and result.get("queue_required") is False
+            and result.get("polling_required") is False
+        ):
+            return result
+
+        raise RuntimeError(
+            "HETZNER_PROFILE_IG_RUNTIME_FAILED:"
+            + str(result.get("code") or result.get("terminal_status") or http_status)
+        )
+
+    raise RuntimeError("HETZNER_PROFILE_IG_CONTINUATION_LIMIT")
+
+
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -615,6 +764,25 @@ def _begin_governed_pre_model(
                     Jsonb(handoff),
                 ),
             )
+            if input_validation.get("status") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
+                _run_profile_input_governance_runtime(
+                    conn,
+                    claimed=claimed,
+                    execution_id=execution_id,
+                    input_evidence_ref=input_evidence_ref,
+                    handoff=handoff,
+                    input_validation=input_validation,
+                )
+                input_validation = _fetch_json_scalar(
+                    cur,
+                    "select public.lf_profile_execution_input_validate_v1(%s,%s,%s,%s)",
+                    (
+                        execution_id,
+                        claimed["input_literal"],
+                        input_evidence_ref,
+                        Jsonb(handoff),
+                    ),
+                )
             if input_validation.get("status") != "READY":
                 raise RuntimeError(
                     "HETZNER_PROFILE_INPUT_VALIDATE_NOT_READY:"
