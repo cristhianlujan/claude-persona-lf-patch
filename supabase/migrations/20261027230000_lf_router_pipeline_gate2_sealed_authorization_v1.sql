@@ -80,7 +80,7 @@ SELECT 'EJECUCION_ROUTER_LF','profile_gate2',70,70,
        '["profile_after_selection_not_clean","semantic_selection_not_clean","gate2_not_ready","gate2_evidence_mismatch"]'::jsonb,
        'BLOCK_ROUTER_PROFILE_GATE2_NOT_CLEAN', 'JUDGE-EJECUCION-ROUTER-LF-v0.1',
        '["selected_profile_code","after_selection_sha256","gate2_derivation","gate2_sha256"]'::jsonb,
-       'DYNAMIC_FROM_GATE2_RESULT','RETURN_TO_ORCHESTRATOR','ACTIVE_ENFORCEMENT',
+       'profile_execution_handoff','RETURN_TO_ORCHESTRATOR','ACTIVE_ENFORCEMENT',
        'Este paso solo se ejecuta si la ruta sellada lo requiere; no hace otra selección semántica. Gate 2 no autoriza efectos de canal ni bypass. El handoff debe ser validado por su propio contrato gobernado.',
        'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
 WHERE NOT EXISTS (
@@ -93,7 +93,7 @@ BEGIN
  IF (SELECT count(*) FROM public.lf_operation_step_contracts
      WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2'
        AND step_order=70 AND resolver_ref='public.lf_router_profile_gate2_result_from_selection_v1'
-       AND next_if_pass='DYNAMIC_FROM_GATE2_RESULT' AND status='ACTIVE_ENFORCEMENT')<>1
+       AND next_if_pass='profile_execution_handoff' AND status='ACTIVE_ENFORCEMENT')<>1
  THEN RAISE EXCEPTION 'GATE2_CONTRACT_POSTCHECK_FAIL'; END IF;
 END $check$;
 
@@ -138,20 +138,102 @@ BEGIN
  IF r->>'outcome'<>'STEP_RECORDED' THEN
    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_GATE2_RECORD_FAILED','record_result',r);
  END IF;
- -- Do not automatically dispatch a profile or hard-code an executor.
+ -- Continue into the pre-existing Gate2 handoff entrypoint, without choosing an executor.
  UPDATE public.lf_operation_execution
  SET manifest=manifest||jsonb_build_object(
       'current_step','profile_gate2',
-      'next_step','DYNAMIC_FROM_GATE2_RESULT',
+      'next_step','profile_execution_handoff',
       'gate2_sha256',h,
       'selected_profile_code',y->>'selected_profile_code'),
  updated_by_execution_id=p_execution_id,updated_at=now()
  WHERE execution_id=p_execution_id;
  RETURN jsonb_build_object('status','GATE2_AUTHORIZED','execution_id',p_execution_id,
-    'current_step','profile_gate2','next_step','DYNAMIC_FROM_GATE2_RESULT',
+    'current_step','profile_gate2','next_step','profile_execution_handoff',
     'gate2_derivation',g,'gate2_request',x->'gate2_request',
     'downstream_execution_allowed',false,'effect_authority',false,
     'caller_selects_next_step',false);
+END $fn$;
+
+
+-- The selected executor mode is supplied explicitly by the authorized caller,
+-- never inferred from a profile name or silently defaulted.
+-- This resumes the PRE-EXISTING handoff+profile execution entrypoint.
+CREATE OR REPLACE FUNCTION public.lf_router_pipeline_profile_handoff_continue_v1(
+ p_execution_id text, p_executor_mode text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','extensions' AS $fn$
+DECLARE
+ e public.lf_operation_execution%rowtype;
+ s7 public.lf_operation_execution_steps%rowtype;
+ s6 public.lf_operation_execution_steps%rowtype;
+ s1 public.lf_operation_execution_steps%rowtype;
+ v_gate jsonb;
+ v_after jsonb;
+ v_stage1 jsonb;
+ v_mode text;
+ v_result jsonb;
+BEGIN
+ SELECT * INTO e FROM public.lf_operation_execution WHERE execution_id=p_execution_id;
+ IF NOT FOUND OR e.operation_code<>'EJECUCION_ROUTER_LF'
+    OR e.target_code<>'ACT-0001' OR e.status<>'IN_PROGRESS'
+    OR e.manifest->>'next_step'<>'profile_execution_handoff'
+ THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ROUTER_HANDOFF_TRANSITION_NOT_AUTHORIZED');
+ END IF;
+ SELECT * INTO s7 FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_execution_id AND step_id='profile_gate2';
+ SELECT * INTO s6 FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_execution_id AND step_id='profile_after_selection';
+ SELECT * INTO s1 FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_execution_id AND step_id='stage1_seal';
+ IF s7.execution_id IS NULL OR s7.status<>'STEP_PASS_WITH_EVIDENCE'
+    OR s6.execution_id IS NULL OR s6.status<>'STEP_PASS_WITH_EVIDENCE'
+    OR s1.execution_id IS NULL OR s1.status<>'STEP_PASS_WITH_EVIDENCE'
+ THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ROUTER_HANDOFF_SEALED_STEPS_REQUIRED');
+ END IF;
+ IF coalesce((public.lf_router_pipeline_gate2_trust_v1(
+    p_execution_id,s7.evidence_payload)->>'valid')::boolean,false) IS NOT TRUE
+ THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ROUTER_HANDOFF_GATE2_TRUST_INVALID');
+ END IF;
+ v_gate:=s7.evidence_payload->'gate2_derivation';
+ v_after:=s6.evidence_payload->'after_selection_result';
+ v_stage1:=s1.evidence_payload->'stage1_payload';
+ v_mode:=upper(nullif(btrim(coalesce(p_executor_mode,'')),''));
+ IF v_mode IS NULL OR v_mode NOT IN ('GPT_NATIVE','CLAUDE_NATIVE','REMOTE_API') THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+      'blocking_code','BLOCK_ROUTER_HANDOFF_EXECUTOR_MODE_REQUIRED',
+      'allowed_executor_modes',jsonb_build_array('GPT_NATIVE','CLAUDE_NATIVE','REMOTE_API'));
+ END IF;
+ IF v_after->>'perfil_candidato' IS DISTINCT FROM
+    s7.evidence_payload->>'selected_profile_code'
+ THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_ROUTER_HANDOFF_PROFILE_MISMATCH');
+ END IF;
+ -- Reuse the approved Gate2→handoff→EJECUCION_PERFIL_LF materializer.
+ -- This procedure validates the signed handoff itself; no Router re-entry.
+ v_result:=public.lf_router_profile_execution_after_gate2_v1(
+    v_after->'gate2_request',v_gate->'gate2_result',
+    v_stage1->>'canal_candidato',v_stage1->>'negocio_codigo',
+    v_stage1->'alcance',v_mode,p_execution_id,NULL
+ );
+ IF v_result->>'status' NOT IN ('NATIVE_EXECUTION_READY','PENDING','NATIVE_EXECUTOR_REQUIRED') THEN
+   RETURN v_result||jsonb_build_object('router_pipeline_handoff_success',false);
+ END IF;
+ UPDATE public.lf_operation_execution SET
+   manifest=manifest||jsonb_build_object(
+     'current_step','profile_execution_handoff',
+     'next_step','EXISTING_PROFILE_EXECUTOR',
+     'executor_mode',v_mode,
+     'profile_handoff_status',v_result->>'status'
+   ),
+   updated_by_execution_id=p_execution_id,updated_at=now()
+ WHERE execution_id=p_execution_id;
+ RETURN v_result||jsonb_build_object(
+   'router_pipeline_handoff_success',true,
+   'router_pipeline_execution_id',p_execution_id,
+   'downstream_path','EXISTING_EJECUCION_PERFIL_LF');
 END $fn$;
 
 COMMIT;
