@@ -41,22 +41,26 @@ Los tres `created_by_execution_id` registrados no existen en `public.lf_operatio
 `supabase/migrations/20261027180000_lf_decision_context_asof_record_acl_v1.sql`:
 
 - `REVOKE ALL ... FROM PUBLIC, anon, authenticated` y `GRANT EXECUTE ... TO service_role`.
-- No cambia el cuerpo, el modo, el `search_path`, la tabla, el resolvedor ni ninguna fila.
-- Termina con aserciones de privilegio **efectivo** (`has_function_privilege`, que incluye membresías). Si algún rol hereda `EXECUTE`, la migración falla y el Train no la aplica.
+- Fija el comentario de la función (`COMMENT ON FUNCTION`); hoy no tiene uno en el repo. No cambia el cuerpo, el modo, el `search_path`, la tabla, el resolvedor ni ninguna fila.
+- Termina con aserciones de privilegio **efectivo** (`has_function_privilege`). Si `anon` o `authenticated` conservan `EXECUTE`, también por un rol del que heredan, la migración falla y el Train no la aplica.
+- Límites de esas aserciones: no ven membresías solo `SET` (PG16+, `INHERIT FALSE`), que los clientes de PostgREST no pueden usar; y las de `PUBLIC` y `service_role` solo protegen contra ediciones de las sentencias anteriores.
+- Si la función se borra y se vuelve a crear (en vez de `CREATE OR REPLACE`), los privilegios por defecto de Supabase devuelven `EXECUTE` a `anon` y `authenticated`.
 
 ## Prueba local
 
-`test_decision_context_asof_record_acl_v1.sql`, en PostgreSQL 17.6 desechable, solo socket Unix, todo dentro de una transacción con `ROLLBACK`. Resultado: **15/15**.
+`test_decision_context_asof_record_acl_v1.sql`, en PostgreSQL 17.6 desechable, solo socket Unix, todo dentro de una transacción con `ROLLBACK`. Resultado: **16/16**.
 
 - C00: el cuerpo de la fixture es idéntico al hospedado (mismo md5).
 - C01–C03: antes de la migración, `anon` y `authenticated` registran con un actor inventado (reproduce H1).
-- C04–C06: después, ambos reciben `insufficient_privilege` y no se escribe nada.
+- C04–C05: después, ambos reciben `insufficient_privilege`. C06 es solo una comprobación de consistencia: una llamada denegada nunca llega al cuerpo.
 - C07–C08: `service_role` registra y el replay es idempotente.
 - C09–C11: `PUBLIC` fuera de la ACL; cuerpo, modo y `search_path` intactos; filas previas intactas.
 - C12: H4 queda afirmado a propósito (`service_role` declara un actor cualquiera).
-- C13–C14: un grant heredado por membresía es efectivo y hace fallar la migración.
+- C13–C15: un grant heredado por membresía es efectivo; la migración falla con el error exacto esperado, tanto para `authenticated` como para `anon`.
 
-Mutación comprobada: con `REVOKE ... FROM PUBLIC` solamente, la migración falla con `LF_ASOF_RECORD_ACL_ANON_STILL_EFFECTIVE`.
+Mutaciones comprobadas: con `REVOKE ... FROM PUBLIC` solamente, la migración falla con `LF_ASOF_RECORD_ACL_ANON_STILL_EFFECTIVE`; sin la aserción de `anon`, la prueba falla en C15.
+
+Revisión independiente (agente separado, mismo día): PASS_WITH_FINDINGS. Corregido: C14 aceptaba cualquier error y la aserción de `anon` no estaba cubierta; el texto exageraba el alcance de las aserciones y omitía el comentario. Sin hallazgos que cambien la migración.
 
 Fixtures: tablas de capacidades y validador de payload son stubs mínimos. Esto no es evidencia hospedada.
 

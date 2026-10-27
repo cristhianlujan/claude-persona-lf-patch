@@ -148,6 +148,7 @@ INSERT INTO t_results SELECT 'C03_PRE_STORED_ACTOR_IS_CALLER_CHOSEN',
 -- 3. Effective privileges after the migration.
 INSERT INTO t_results SELECT 'C04_POST_ANON_DENIED', r='DENIED', r FROM pg_temp.call_as('anon','post-anon','ANY-ACTOR') r;
 INSERT INTO t_results SELECT 'C05_POST_AUTHENTICATED_DENIED', r='DENIED', r FROM pg_temp.call_as('authenticated','post-auth','ANY-ACTOR') r;
+-- C06 is a consistency check only: a denied call never reaches the body.
 INSERT INTO t_results SELECT 'C06_POST_NO_ROW_FROM_DENIED_CALLS',
   NOT EXISTS (SELECT 1 FROM private.lf_decision_context_asof_v1 WHERE decision_ref IN ('post-anon','post-auth')), NULL;
 INSERT INTO t_results SELECT 'C07_POST_SERVICE_ROLE_RECORDS', r='OK:NEW_CONTEXT', r FROM pg_temp.call_as('service_role','post-svc','EXEC-LEGIT-SERVICE') r;
@@ -172,17 +173,33 @@ INSERT INTO t_results SELECT 'C13_INHERITED_GRANT_IS_EFFECTIVE',
 SAVEPOINT inherited_negative;
 \set ON_ERROR_STOP 0
 \ir ../../../../supabase/migrations/20261027180000_lf_decision_context_asof_record_acl_v1.sql
+-- LAST_ERROR_MESSAGE is not reset by a later success, so ERROR is checked too.
 \set inherited_failed :ERROR
+\set inherited_msg :LAST_ERROR_MESSAGE
 \set ON_ERROR_STOP 1
 ROLLBACK TO SAVEPOINT inherited_negative;
-INSERT INTO t_results SELECT 'C14_MIGRATION_FAILS_CLOSED_ON_INHERITED_GRANT', :'inherited_failed'::boolean, :'inherited_failed';
+INSERT INTO t_results SELECT 'C14_MIGRATION_FAILS_CLOSED_ON_INHERITED_GRANT_AUTHENTICATED',
+  :'inherited_failed'::boolean AND :'inherited_msg'='LF_ASOF_RECORD_ACL_AUTHENTICATED_STILL_EFFECTIVE',
+  'error=' || :'inherited_failed' || ' ' || :'inherited_msg';
+REVOKE lf_asof_test_inherited FROM authenticated;
+GRANT lf_asof_test_inherited TO anon;
+SAVEPOINT inherited_negative_anon;
+\set ON_ERROR_STOP 0
+\ir ../../../../supabase/migrations/20261027180000_lf_decision_context_asof_record_acl_v1.sql
+\set inherited_anon_failed :ERROR
+\set inherited_anon_msg :LAST_ERROR_MESSAGE
+\set ON_ERROR_STOP 1
+ROLLBACK TO SAVEPOINT inherited_negative_anon;
+INSERT INTO t_results SELECT 'C15_MIGRATION_FAILS_CLOSED_ON_INHERITED_GRANT_ANON',
+  :'inherited_anon_failed'::boolean AND :'inherited_anon_msg'='LF_ASOF_RECORD_ACL_ANON_STILL_EFFECTIVE',
+  'error=' || :'inherited_anon_failed' || ' ' || :'inherited_anon_msg';
 
 -- Report and fail on any miss.
 SELECT case_id, passed, detail FROM t_results ORDER BY case_id;
 DO $f$ DECLARE n int; t int;
 BEGIN
   SELECT count(*) FILTER (WHERE NOT passed), count(*) INTO n, t FROM t_results;
-  IF t <> 15 OR n <> 0 THEN RAISE EXCEPTION 'DECISION_CONTEXT_ASOF_RECORD_ACL_TEST_FAILED failed=% total=%', n, t; END IF;
+  IF t <> 16 OR n <> 0 THEN RAISE EXCEPTION 'DECISION_CONTEXT_ASOF_RECORD_ACL_TEST_FAILED failed=% total=%', n, t; END IF;
   RAISE NOTICE 'DECISION_CONTEXT_ASOF_RECORD_ACL_TEST_PASS %/%', t, t;
 END $f$;
 

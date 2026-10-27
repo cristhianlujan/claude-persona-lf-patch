@@ -7,8 +7,9 @@
 -- an arbitrary p_actor_execution_id. The PG-01 runtime writer (#3193) relies on
 -- created_by_execution_id to prove that a snapshot came from its source execution.
 --
--- This migration changes privileges only. It does not change the function body,
--- its search_path, its SECURITY DEFINER mode, the store, the resolver or any row.
+-- This migration changes privileges and sets the function comment. It does not change
+-- the function body, its search_path, its SECURITY DEFINER mode, the store, the
+-- resolver or any row.
 -- Residual trust boundary: service_role can still declare any actor id. That is
 -- documented in DECISION_CONTEXT_ASOF_RECORD_ACL_V1.md and is not closed here.
 
@@ -21,8 +22,11 @@ GRANT EXECUTE ON FUNCTION public.fn_lf_decision_context_asof_record_v1(jsonb, te
 COMMENT ON FUNCTION public.fn_lf_decision_context_asof_record_v1(jsonb, text) IS
   'DECISION_CONTEXT_ASOF writer. EXECUTE restricted to service_role (and owner). p_actor_execution_id is declared by the caller, not verified.';
 
--- Effective-privilege assertions: membership and inherited grants are included,
--- so a revoke that only changes the ACL text cannot pass.
+-- Effective-privilege assertions. has_function_privilege includes privileges inherited
+-- through role membership, so a revoke that only changes the ACL text cannot pass.
+-- It does not see SET-only memberships (PG16+, INHERIT FALSE); PostgREST clients
+-- cannot issue SET ROLE. The PUBLIC and service_role checks guard against edits to
+-- the statements above; they cannot fire while those statements are unchanged.
 DO $assert$
 DECLARE
   v_fn constant regprocedure := 'public.fn_lf_decision_context_asof_record_v1(jsonb,text)'::regprocedure;
