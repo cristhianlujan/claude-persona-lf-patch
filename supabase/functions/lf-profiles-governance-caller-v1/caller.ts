@@ -8,12 +8,14 @@ const LEGACY_WORKFLOW_NAME = "LF Profiles Governance Caller";
 const LEGACY_WORKFLOW_FILE = "lf-profiles-governance-caller.yml";
 const RECURATION_ACTION = "input_readiness_recurate_v1";
 const RECURATION_POLL_ACTION = "input_readiness_poll_v1";
+const CONTEXT_PACK_ACTION = "input_readiness_context_pack_v1";
 const PILOT_ACTION = "input_readiness_pilot_v1";
 const SCREEN_ACTION = "input_readiness_screen_v1";
 const B2B_ACTION = "input_readiness_b2b_402_v1";
 const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
+const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
 const ALLOWLIST_RPC = "lf_input_gov_recuration_allowlist_v1";
 const ALLOWLIST_SCHEMA_VERSION = "lf-input-gov-recuration-allowlist/v1";
@@ -49,6 +51,7 @@ export type CallerConfig = {
   recurationWorkflowRef: string;
   recurationDispatchWorkflowRef: string;
   recurationWorkflowName: string;
+  inputGovernanceSlug: string;
   profileCreatorSlug: string;
   recurationTimeoutMs: number;
   defaultTimeoutMs: number;
@@ -140,6 +143,7 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   const recurationWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_REF");
   const recurationDispatchWorkflowRef = requiredEnv(getEnv, "LF_CALLER_RECURATION_DISPATCH_WORKFLOW_REF");
   const recurationWorkflowName = requiredEnv(getEnv, "LF_CALLER_RECURATION_WORKFLOW_NAME");
+  const inputGovernanceSlug = requiredEnv(getEnv, "LF_CALLER_INPUT_GOVERNANCE_SLUG");
   const profileCreatorSlug = requiredEnv(getEnv, "LF_CALLER_PROFILE_CREATOR_SLUG");
   const recurationTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_RECURATION_TIMEOUT_MS");
   const defaultTimeoutRaw = requiredEnv(getEnv, "LF_CALLER_DEFAULT_TIMEOUT_MS");
@@ -163,6 +167,7 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
   if (recurationWorkflowName.length > 200 || /[\r\n]/.test(recurationWorkflowName)) {
     throw new CallerFault("CONFIG_LF_CALLER_RECURATION_WORKFLOW_NAME_INVALID", 500);
   }
+  if (!validSlug(inputGovernanceSlug)) throw new CallerFault("CONFIG_LF_CALLER_INPUT_GOVERNANCE_SLUG_INVALID", 500);
   if (!validSlug(profileCreatorSlug)) throw new CallerFault("CONFIG_LF_CALLER_PROFILE_CREATOR_SLUG_INVALID", 500);
 
   return {
@@ -174,6 +179,7 @@ export function loadConfig(getEnv: EnvGetter): CallerConfig {
     recurationWorkflowRef,
     recurationDispatchWorkflowRef,
     recurationWorkflowName,
+    inputGovernanceSlug,
     profileCreatorSlug,
     recurationTimeoutMs: parseTimeout(recurationTimeoutRaw, "LF_CALLER_RECURATION_TIMEOUT_MS", 149000),
     defaultTimeoutMs: parseTimeout(defaultTimeoutRaw, "LF_CALLER_DEFAULT_TIMEOUT_MS", 149000),
@@ -476,10 +482,23 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
         return json({outcome: "BLOCKED", code: "CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED"}, 403);
       }
-      if (isRecurationIdentity && action !== RECURATION_ACTION && action !== RECURATION_POLL_ACTION && !isCp2Action) {
-        return json({ outcome: "BLOCKED", code: "OIDC_ACTION_SCOPE_MISMATCH", allowed_action: RECURATION_ACTION }, 403);
+      if (
+        isRecurationIdentity &&
+        action !== RECURATION_ACTION &&
+        action !== RECURATION_POLL_ACTION &&
+        action !== CONTEXT_PACK_ACTION &&
+        !isCp2Action
+      ) {
+        return json({
+          outcome: "BLOCKED",
+          code: "OIDC_ACTION_SCOPE_MISMATCH",
+          allowed_actions: [RECURATION_ACTION, RECURATION_POLL_ACTION, CONTEXT_PACK_ACTION],
+        }, 403);
       }
-      if (!isRecurationIdentity && (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION)) {
+      if (
+        !isRecurationIdentity &&
+        (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION || action === CONTEXT_PACK_ACTION)
+      ) {
         return json({ outcome: "BLOCKED", code: "RECURATION_CALLER_IDENTITY_REQUIRED" }, 403);
       }
 
@@ -500,6 +519,108 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         // before each new Edge invocation, never via the SQL recuration queue.
         const out = await executeCp2(config, deps.fetchFn, action, body);
         return json({...out.result, caller}, out.status);
+      }
+
+      if (action === CONTEXT_PACK_ACTION) {
+        if (identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
+          return json({
+            outcome: "BLOCKED",
+            code: "CONTEXT_PACK_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED",
+            caller,
+          }, 403);
+        }
+
+        const pantallaId = typeof body.pantalla_id === "number" ? body.pantalla_id : Number.NaN;
+        if (!Number.isInteger(pantallaId) || pantallaId < 1) {
+          return json({ outcome: "BLOCKED", code: "CONTEXT_PACK_SCREEN_ID_INVALID", caller }, 400);
+        }
+
+        const authority = await readRecurationAuthority(config, deps);
+        const auditedCaller = withAuthority(caller, authority);
+        if (!authority.screenIds.includes(pantallaId)) {
+          return json({
+            outcome: "BLOCKED",
+            code: "CONTEXT_PACK_SCREEN_NOT_ALLOWED",
+            caller: auditedCaller,
+            pantalla_id: pantallaId,
+            allowed_pantalla_ids: authority.screenIds,
+          }, 400);
+        }
+
+        const result = await callRuntime(
+          config,
+          deps,
+          config.inputGovernanceSlug,
+          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER },
+          config.recurationTimeoutMs,
+        );
+
+        const directStatus = typeof result.status === "string" ? result.status : "";
+        const governed = result.result && typeof result.result === "object" && !Array.isArray(result.result)
+          ? result.result as Record<string, unknown>
+          : {};
+        const terminalStatus = typeof governed.status === "string"
+          ? governed.status
+          : directStatus;
+
+        if (directStatus === "VALIDATOR_RESUME_REQUIRED") {
+          return json({
+            outcome: "CONTINUATION_REQUIRED",
+            code: "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller: auditedCaller,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            transport: "DIRECT_EDGE_INVOCATION",
+            queue_required: false,
+            polling_required: false,
+            result,
+          }, 202);
+        }
+
+        if (!["READY", "HUMAN_DECISION_REQUIRED", "BLOCKED"].includes(terminalStatus)) {
+          return json({
+            outcome: "BLOCKED",
+            code: "IG_CONTEXT_PACK_NON_TERMINAL_RESULT",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller: auditedCaller,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: terminalStatus || null,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
+
+        if (terminalStatus !== "READY") {
+          return json({
+            outcome: "BLOCKED",
+            code: terminalStatus === "HUMAN_DECISION_REQUIRED"
+              ? "IG_CONTEXT_PACK_HUMAN_DECISION_REQUIRED"
+              : "IG_CONTEXT_PACK_BLOCKED",
+            scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+            caller: auditedCaller,
+            pantalla_id: pantallaId,
+            consumer: CONTEXT_PACK_CONSUMER,
+            terminal_status: terminalStatus,
+            transport: "DIRECT_EDGE_INVOCATION",
+            result,
+          }, 409);
+        }
+
+        return json({
+          outcome: "TERMINAL",
+          scope: "PROFILE_INPUT_GOVERNANCE_CONTEXT_PACK_V1",
+          caller: auditedCaller,
+          pantalla_id: pantallaId,
+          consumer: CONTEXT_PACK_CONSUMER,
+          terminal_status: terminalStatus,
+          run_id: governed.run_id ?? null,
+          transport: "DIRECT_EDGE_INVOCATION",
+          queue_required: false,
+          polling_required: false,
+          result,
+        });
       }
 
       if (action === RECURATION_ACTION || action === RECURATION_POLL_ACTION) {
