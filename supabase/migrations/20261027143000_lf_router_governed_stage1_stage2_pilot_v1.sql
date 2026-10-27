@@ -41,7 +41,7 @@ INSERT INTO public.lf_operation_registry(
 ) VALUES (
   'EJECUCION_ROUTER_LF',
   'v0.1-pilot',
-  'PRODUCCION_CONTROLADA_READ_ONLY',
+  'CANDIDATE_READ_ONLY',
   'SUPABASE_STRUCTURED_OPERATION',
   'cristhianlujan/claude-persona-lf-patch',
   jsonb_build_array(
@@ -58,7 +58,7 @@ INSERT INTO public.lf_operation_registry(
   'DOC',
   'EXEC-ROUTER-PIPELINE-PILOT-20261027',
   'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'OP_OPERATIONAL'
+  'OP_CANDIDATE'
 );
 
 INSERT INTO public.lf_operation_contracts(
@@ -823,7 +823,7 @@ BEGIN
     FROM public.lf_operation_registry
     WHERE operation_code='EJECUCION_ROUTER_LF'
       AND operation_family='ORCHESTRATION'
-      AND lifecycle_state_code='OP_OPERATIONAL'
+      AND lifecycle_state_code='OP_CANDIDATE'
   ) THEN
     RAISE EXCEPTION 'ROUTER_PIPELINE_PILOT_REGISTRY_POSTCHECK_FAILED';
   END IF;
