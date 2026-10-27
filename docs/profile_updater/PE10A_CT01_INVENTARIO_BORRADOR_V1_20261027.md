@@ -90,9 +90,16 @@ Se congeló la tabla de la sección 1 (firma, md5 del cuerpo, SECURITY DEFINER) 
 
 Límites: la columna de consumidores es una búsqueda de texto del nombre en `prosrc`, por lo que **no distingue una llamada de un comentario o mensaje**; en dos filas el resultado es bidireccional (record_step menciona a effective_route y effective_route menciona a record_step), lo que prueba la mención, no el sentido de la llamada. La comparación no cubre ACL, triggers ni dependencias fuera de `public`. El falsificador corre sobre una copia congelada hecha por mí; una versión que viva en el repo y falle en CI sigue pendiente.
 
+### 5.6 Contratos de `skills/profile_creator/contracts/` (medido)
+- 16 JSON: los 16 parsean. Se inventariaron sus claves de primer nivel (p. ej. `update_server_trust_context_contract.json`: contract_code, operation_code, step_id, status, purpose, architecture, trust_boundary, server_context, decision_matrix, activation_gate). `resolver_dispatch_contract.json` es el único con `schema_version` y 1 resolver declarado.
+- 7 SQL candidatos: 5 definen exactamente 1 función; `profile_update_v02_governed_stage_rollback_candidate_v1.sql` y `update_step60_dedicated_judge_materialization_v1.sql` definen 0.
+- Contratos que nombran superficies SQL: ver 5.1. Los candidatos `*_candidate_v1.sql` son fuente candidata, no estado desplegado; el estado vigente es el de la sección 1.
+- No se encontró en el repo ningún archivo con `V0_7R1` en su ruta (búsqueda por nombre, profundidad 4).
+- Limite: se inventariaron claves, no se validó el contenido de cada campo contra producción.
+
 ## 6. Lo que sigue sin cubrirse (CT01 no puede cerrarse con esto)
-- **Schemas JSON de `skills/profile_creator/contracts/*` y SRCR V0_7R1: identificados por nombre, no leídos campo a campo.** No se inventarió entrada/salida de contratos.
-- Falsificador reproducible en el repo (hoy es una consulta manual).
+- Contenido campo a campo de los contratos (solo claves de primer nivel) y SRCR V0_7R1 (no localizado por nombre).
+- Falsificador en CI: existe en `docs/profile_updater/pe10a_ct01_falsifier/` (probado a mano contra producción), pero no corre solo.
 - Revisar si el cuerpo de `lf_router_governed_caller_route_v1` escribe (CT05).
 - Contrato de aserción de CT01, migración de cierre y recibo del agente independiente.
 
