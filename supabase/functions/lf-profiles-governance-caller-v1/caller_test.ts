@@ -98,6 +98,7 @@ type HarnessOptions = {
   allowlistStatus?: number;
   allowlistPayload?: unknown;
   inputStatus?: string;
+  runtimeTicketAuthorized?: boolean;
 };
 
 function harness(options: HarnessOptions = {}) {
@@ -106,6 +107,7 @@ function harness(options: HarnessOptions = {}) {
   let allowlistStatus = options.allowlistStatus ?? 200;
   let allowlistPayload: unknown = options.allowlistPayload ?? goodAllowlist();
   let inputStatus = options.inputStatus ?? "READY";
+  let runtimeTicketAuthorized = options.runtimeTicketAuthorized ?? true;
   const calls: Array<{ url: string; init?: RequestInit; body?: Record<string, unknown> }> = [];
 
   const handler = createHandler({
@@ -125,6 +127,12 @@ function harness(options: HarnessOptions = {}) {
       if (url.endsWith("/rest/v1/rpc/lf_input_gov_recuration_allowlist_v1")) {
         return new Response(JSON.stringify(allowlistPayload), { status: allowlistStatus, headers: { "content-type": "application/json" } });
       }
+      if (url.endsWith("/rest/v1/rpc/lf_profile_input_governance_runtime_ticket_consume_v1")) {
+        return new Response(JSON.stringify(runtimeTicketAuthorized
+          ? { authorized: true, execution_id: body?.p_execution_id, pantalla_id: body?.p_pantalla_id, consumer: "CONTEXT_PACK" }
+          : { authorized: false, code: "PROFILE_IG_RUNTIME_TICKET_INVALID_OR_EXPIRED" }
+        ), { status: 200, headers: { "content-type": "application/json" } });
+      }
       if (url.endsWith("/functions/v1/input-governance-agent-v1")) {
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
@@ -143,6 +151,7 @@ function harness(options: HarnessOptions = {}) {
     setClaims(value: JwtPayload) { claims = value; },
     setAllowlist(status: number, payload: unknown) { allowlistStatus = status; allowlistPayload = payload; },
     setInputStatus(value: string) { inputStatus = value; },
+    setRuntimeTicketAuthorized(value: boolean) { runtimeTicketAuthorized = value; },
   };
 }
 
@@ -150,6 +159,23 @@ async function invoke(h: ReturnType<typeof harness>, body: Record<string, unknow
   const response = await h.handler(new Request("https://caller.test", {
     method: "POST",
     headers: { authorization: "Bearer mock-token", "content-type": "application/json" },
+    body: JSON.stringify(body),
+  }));
+  const payload = await response.json();
+  return { response, payload };
+}
+
+async function invokeRuntime(
+  h: ReturnType<typeof harness>,
+  body: Record<string, unknown>,
+  ticket = "11111111-2222-4333-8444-555555555555",
+) {
+  const response = await h.handler(new Request("https://caller.test", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-lf-profile-runtime-ticket": ticket,
+    },
     body: JSON.stringify(body),
   }));
   const payload = await response.json();
@@ -207,6 +233,58 @@ Deno.test("CONTEXT_PACK continuation: Validator resume is explicit direct contin
   assertEquals(payload.code, "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED");
   assertEquals(payload.consumer, "CONTEXT_PACK");
   assertEquals(payload.transport, "DIRECT_EDGE_INVOCATION");
+  assertEquals(payload.queue_required, false);
+  assertEquals(payload.polling_required, false);
+  assertEquals(h.calls.filter((c) => c.url.includes("fn_input_governance_queue_")).length, 0);
+});
+
+Deno.test("positive profile runtime ticket: same EJECUCION_PERFIL_LF invokes CONTEXT_PACK without OIDC", async () => {
+  const h = harness();
+  const { response, payload } = await invokeRuntime(h, {
+    action: "input_readiness_context_pack_runtime_v1",
+    execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id: 51,
+  });
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "TERMINAL");
+  assertEquals(payload.consumer, "CONTEXT_PACK");
+  assertEquals(payload.pantalla_id, 51);
+  assertEquals(payload.caller.method, "EJECUCION_PERFIL_LF_RUNTIME_TICKET_V1");
+  assertEquals(payload.caller.router_reentry, false);
+  assertEquals(payload.queue_required, false);
+  assertEquals(payload.polling_required, false);
+  const ticketCalls = h.calls.filter((c) => c.url.endsWith("/rest/v1/rpc/lf_profile_input_governance_runtime_ticket_consume_v1"));
+  assertEquals(ticketCalls.length, 1);
+  assertEquals(ticketCalls[0].body?.p_execution_id, "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555");
+  assertEquals(ticketCalls[0].body?.p_pantalla_id, 51);
+  assertEquals(ticketCalls[0].body?.p_consumer, "CONTEXT_PACK");
+  const edgeCalls = h.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1"));
+  assertEquals(edgeCalls.length, 1);
+  assertEquals(edgeCalls[0].body, { pantalla_id: 51, consumer: "CONTEXT_PACK" });
+});
+
+Deno.test("negative profile runtime ticket: invalid or expired ticket fails before IG Edge", async () => {
+  const h = harness({ runtimeTicketAuthorized: false });
+  const { response, payload } = await invokeRuntime(h, {
+    action: "input_readiness_context_pack_runtime_v1",
+    execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id: 51,
+  });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "PROFILE_IG_RUNTIME_TICKET_INVALID_OR_EXPIRED");
+  assertEquals(h.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1")).length, 0);
+});
+
+Deno.test("profile runtime ticket continuation stays direct and queue-free", async () => {
+  const h = harness({ inputStatus: "VALIDATOR_RESUME_REQUIRED" });
+  const { response, payload } = await invokeRuntime(h, {
+    action: "input_readiness_context_pack_runtime_v1",
+    execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id: 51,
+  });
+  assertEquals(response.status, 202);
+  assertEquals(payload.outcome, "CONTINUATION_REQUIRED");
+  assertEquals(payload.code, "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED");
   assertEquals(payload.queue_required, false);
   assertEquals(payload.polling_required, false);
   assertEquals(h.calls.filter((c) => c.url.includes("fn_input_governance_queue_")).length, 0);
