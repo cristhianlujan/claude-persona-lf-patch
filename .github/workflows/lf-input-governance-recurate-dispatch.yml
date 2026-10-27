@@ -20,6 +20,16 @@ on:
         required: false
         default: false
         type: boolean
+      context_pack_mode:
+        description: "Profile Input Governance CONTEXT_PACK direct Edge continuation. No SQL queue or polling."
+        required: false
+        default: false
+        type: boolean
+      context_pack_screen_id:
+        description: "Single semantically resolved pantalla_id for CONTEXT_PACK."
+        required: false
+        default: "51"
+        type: string
       cp2_pilot_screen_id:
         description: "CP2 only: one-screen pilot (default 1 = ONB_001). Cannot execute 13 screens."
         required: false
@@ -40,7 +50,9 @@ jobs:
     uses: ./.github/workflows/lf-input-governance-recurate.yml
     with:
       pantalla_ids: ${{ github.event_name == 'workflow_dispatch' && inputs.pantalla_ids || '3,4,5,6,11,18,19,21,24,25,27,28,30,33,34,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67' }}
-      cp2_mode: ${{ github.event_name == 'workflow_dispatch' && inputs.cp2_edge_mode || false }}
+      cp2_mode: ${{ github.event_name == 'workflow_dispatch' && inputs.cp2_edge_mode && !inputs.context_pack_mode || false }}
+      context_pack_mode: ${{ github.event_name == 'workflow_dispatch' && inputs.context_pack_mode || false }}
+      context_pack_screen_id: ${{ github.event_name == 'workflow_dispatch' && inputs.context_pack_screen_id || '51' }}
       cp2_pilot_screen_id: ${{ github.event_name == 'workflow_dispatch' && inputs.cp2_pilot_screen_id || '1' }}
     permissions:
       contents: read
