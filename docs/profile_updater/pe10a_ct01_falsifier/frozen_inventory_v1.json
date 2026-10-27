@@ -1,5 +1,5 @@
 {
- "schema": "pe10a-ct01-frozen-inventory/v1",
+ "schema": "pe10a-ct01-frozen-inventory/v2",
  "observed": "2026-10-27",
  "repo_head": "24af5f9",
  "surfaces": [
@@ -56,6 +56,25 @@
    "args": "p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text",
    "md5": "03f8c6a1ada0321ced8682afb74d3f0f",
    "secdef": false
+  },
+  {
+   "fn": "lf_router_resolve_v1",
+   "args": "p_request_text text, p_target_hint text, p_action_hint text, p_asset_type_hint text, p_distribution_mode text",
+   "md5": "4fd692a272f02774f1c03f381ac54a24",
+   "secdef": false
+  },
+  {
+   "fn": "lf_router_semantic_resume_route_v1",
+   "args": "p_request jsonb, p_result jsonb",
+   "md5": "140b1e04289cb2038d80b3bd03005cb3",
+   "secdef": true
+  },
+  {
+   "fn": "lf_record_creacion_perfil_step_v1",
+   "args": "p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text",
+   "md5": "f7d1ad06e33470667239d7ae4dcde0ad",
+   "secdef": false
   }
- ]
+ ],
+ "revision": "ronda 2: +3 superficies halladas por el revisor independiente (ronda 1)"
 }
