@@ -2,7 +2,7 @@
 
 Purpose: prove execution provenance before cutting over the existing Router entrypoints.
 
-This pilot does not create a second routing engine. It registers `EJECUCION_ROUTER_LF` in the existing operation-governance framework and reuses:
+The operation is registered only as `CANDIDATO_READ_ONLY / OP_CANDIDATE`; it is not a Router cutover. Its governance rows are created under a `VULNERABILITY_COVERAGE_REPAIR_LF` bootstrap execution and that bootstrap is closed after materialization.\n\nThis pilot does not create a second routing engine. It registers `EJECUCION_ROUTER_LF` in the existing operation-governance framework and reuses:
 - `public.lf_operation_execution`
 - `public.lf_operation_execution_steps`
 - `public.lf_record_operation_step_core_v1`
