@@ -112,7 +112,7 @@ Binarios `postgresql-17.6.0-x86_64-unknown-linux-gnu` con sha256 verificado cont
 | Retorno tipado (#3180) | `1adb331` | 9/9 |
 | Composición (#3194, generador con hash de compuerta `c0ec44b9…` verificado) | `8e87fad` | 8 grupos (`PG01_CANDIDATE_COMPOSITION_PASSED:8`) |
 | Adaptador Native (#3194) | `8e87fad` | 10/10 (unittest) |
-| Permisos del escritor as-of (#3197) | `d250642` | 15/15 |
+| Permisos del escritor as-of (#3197) | `9d0f5ae` | 16/16 |
 | Prototipo de proveedor técnico (este PR) | — | 20/20 |
 
 Las fixtures siguen siendo sintéticas (catálogo, perfil, juez, recibo terminal). Estas corridas no son evidencia hospedada ni de CI.
