@@ -34,7 +34,7 @@ def test_deploy_is_single_function_and_preserves_oidc_jwt_mode():
 def test_cli_and_rollback_are_pinned():
     assert "uses: supabase/setup-cli@v1" in WF
     assert "version: 2.48.3" in WF
-    assert "ROLLBACK_COMMIT: cbaecd8d154b593f7d16126e9f3097797f31a7aa" in WF
+    assert "ROLLBACK_COMMIT: c9be66afa6d73727c760878fce0e1a9362e33106" in WF
     assert "Roll back caller if postdeploy verification failed" in WF
 
 
@@ -44,8 +44,22 @@ def test_pre_and_post_management_readback_are_mandatory():
     assert WF.count("edge_management_credential_canary_v1.py") >= 3
 
 
-def test_deploy_lane_is_manual_only():
-    assert "github.event_name == 'workflow_dispatch' && inputs.action == 'deploy-caller'" in WF
+def test_deploy_lane_runs_for_caller_source_push_or_manual_dispatch():
     deploy_start = WF.index("  deploy-caller:")
     deploy_block = WF[deploy_start:]
+    assert "github.event_name == 'push'" in deploy_block
     assert "github.event_name == 'workflow_dispatch'" in deploy_block
+    assert "inputs.action == 'deploy-caller'" in deploy_block
+    for path in (
+        "supabase/functions/lf-profiles-governance-caller-v1/index.ts",
+        "supabase/functions/lf-profiles-governance-caller-v1/caller.ts",
+        "supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge.ts",
+    ):
+        assert path in WF
+
+
+def test_push_deploy_remains_exact_main_only():
+    assert "branches: [main]" in WF
+    assert "ref: refs/heads/main" in WF
+    assert 'test "${GITHUB_REF}" = "refs/heads/main"' in WF
+    assert 'test "${MAIN_SHA}" = "${GITHUB_SHA}"' in WF
