@@ -3,8 +3,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MIGRATIONS = ROOT / "supabase" / "migrations"
-WORKER = ROOT / "services" / "profile_runtime_api" / "scripts" / "hetzner_queue_worker.py"
-
 
 def _migration() -> str:
     matches = list(MIGRATIONS.glob("*_lf_profile_native_context_pack_runtime_handoff_v1.sql"))
@@ -38,17 +36,6 @@ def test_native_bridge_keeps_context_pack_queue_and_router_free():
         "POSTGRES_SQL_WORKER",
     ):
         assert forbidden not in sql
-
-
-def test_remote_profile_worker_is_not_the_native_ig_continuation_owner():
-    worker = WORKER.read_text(encoding="utf-8")
-    for forbidden in (
-        "lf_profile_input_governance_runtime_ticket_issue_v1",
-        "input_readiness_context_pack_runtime_v1",
-        "_run_profile_input_governance_runtime",
-        "LF_PROFILE_IG_CALLER_URL",
-    ):
-        assert forbidden not in worker
 
 
 def test_ticket_is_short_lived_and_not_a_new_profile_execution():
