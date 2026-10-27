@@ -124,7 +124,7 @@ BEGIN
    'codigo',COALESCE(v_gate->>'reason','PG01_GATE_ADMISSION_UNDETERMINED'),
    'context_id',p_programming_handoff->>'context_id',
    'context_sha256',p_programming_handoff->>'context_sha256',
-   'retorno',CASE WHEN v_gate->>'reason'='PG01_RECEIPT_NOT_FOUND' THEN 'RETURN_TO_ANALYSIS_NO_CODE' ELSE 'BLOCK_NO_CODE' END,
+   'retorno',CASE WHEN v_gate->>'reason'='PG01_V2_RECEIPT_NOT_FOUND' THEN 'RETURN_TO_ANALYSIS_NO_CODE' ELSE 'BLOCK_NO_CODE' END,
    'motivo_es','PG-01 no acredita una admisión vigente.','siguiente_paso_es','Resolver la admisión sin ejecutar código.');
  END IF;
  SELECT status INTO v_status FROM public.lf_router_action_registry

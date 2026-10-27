@@ -31,7 +31,7 @@ BEGIN
  END IF;
  IF p_binding->>'target_ref'='READER-ERROR' THEN RAISE EXCEPTION 'SIMULATED_READER_FAILURE'; END IF;
  IF p_binding->>'target_ref'='NOT-FOUND' THEN
-  RETURN jsonb_build_object('found',false,'admissible',false,'reason','PG01_RECEIPT_NOT_FOUND');
+  RETURN jsonb_build_object('found',false,'admissible',false,'reason','PG01_V2_RECEIPT_NOT_FOUND');
  ELSIF p_binding->>'target_ref'='ADMIT-TEST-ONLY' THEN
   RETURN jsonb_build_object('found',true,'admissible',true,'reason','TEST_ONLY',
     'receipt',jsonb_build_object('SECRET','DO_NOT_EXPOSE'),

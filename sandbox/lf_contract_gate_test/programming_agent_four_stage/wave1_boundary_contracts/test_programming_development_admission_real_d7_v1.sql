@@ -53,6 +53,26 @@ CREATE FUNCTION pg_temp.h(p_ctx text DEFAULT 'c4f7d9e4-3d29-4d12-950b-0b7ef25e7c
   'target_ref','T','requested_scope_ids',jsonb_build_array('S1'),'producer_execution_ref','EXEC-P',
   'entry_contract_digest_sha256','d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8') $q$;
 
+-- Explicit synthetic completed profile; real ledger, readers and entrypoint below.
+CREATE FUNCTION pg_temp.router_binding() RETURNS jsonb LANGUAGE sql AS $q$
+ WITH body AS (
+ SELECT jsonb_build_object(
+   'channel','PROGRAMACION','channel_effect_authority',false,
+   'channel_precondition',jsonb_build_object(
+     'code','PROGRAMACION_PRECHECK_DEFINICION',
+     'required_before_channel_effect',true,
+     'programming_entry_contract','PROGRAMMING_ENTRY_CONTRACT_V1')) b
+ ) SELECT b||jsonb_build_object('binding_sha256',
+     'sha256:'||encode(extensions.digest(convert_to(b::text,'UTF8'),'sha256'),'hex'))
+ FROM body
+$q$;
+INSERT INTO public.lf_operation_execution(
+ execution_id,operation_code,target_type,target_code,status,manifest)
+VALUES('EXEC-TEST-V2-RETURN','EJECUCION_PERFIL_LF','PERFIL','SYNTHETIC-PROFILE',
+ 'COMPLETED',jsonb_build_object('router_profile_handoff',jsonb_build_object(
+   'channel','PROGRAMACION','semantic_request',
+   jsonb_build_object('router_action_binding',pg_temp.router_binding()))));
+
 -- 1. supabase_read_only_user has no EXECUTE on resolve_v2 -> explicit code, no crash.
 DO $t1$ DECLARE g jsonb; BEGIN
   PERFORM set_config('role','supabase_read_only_user',true);
@@ -81,6 +101,22 @@ DO $t3$ DECLARE g jsonb; BEGIN
      OR NOT has_function_privilege('service_role','private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb)','EXECUTE')
      OR has_function_privilege('service_role','private.fn_lf_programming_context_handoff_receipt_resolve_v1(jsonb)','EXECUTE') THEN
     RAISE EXCEPTION 'REAL_FAIL:3_acl'; END IF;
+  -- Real V2 absence must return to Analysis; it must never authorize execution.
+  g := public.lf_programming_development_admission_v1(
+    pg_temp.router_binding(),pg_temp.h(),'EXEC-TEST-V2-RETURN');
+  IF g->>'codigo' IS DISTINCT FROM 'PG01_V2_RECEIPT_NOT_FOUND'
+     OR g->>'retorno' IS DISTINCT FROM 'RETURN_TO_ANALYSIS_NO_CODE'
+     OR g->>'paso' IS DISTINCT FROM 'PROGRAMACION_ADMISION_BLOQUEADA'
+     OR g->'downstream_execution_allowed' IS DISTINCT FROM 'false'::jsonb THEN
+    RAISE EXCEPTION 'REAL_FAIL:4_full_entry_missing_receipt %',g;
+  END IF;
+  -- Invalid bindings stay rejected, independently of missing receipts.
+  g := public.lf_programming_development_admission_v1(
+    pg_temp.router_binding(),pg_temp.h(),'EXEC-NOT-FOUND');
+  IF g->>'codigo' IS DISTINCT FROM 'PG01_ROUTER_BINDING_NOT_ISSUED_BY_EXECUTION'
+     OR g->'downstream_execution_allowed' IS DISTINCT FROM 'false'::jsonb THEN
+    RAISE EXCEPTION 'REAL_FAIL:5_unissued_binding %',g;
+  END IF;
   RAISE NOTICE 'PROGRAMMING_DEVELOPMENT_ADMISSION_REAL_READERS_OK';
 END $t3$;
 ROLLBACK;

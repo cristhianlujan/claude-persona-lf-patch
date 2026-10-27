@@ -68,3 +68,24 @@ Reemplaza a la verificación del 26-oct en lo que respecta a lectores y privileg
 - `test_programming_development_admission_gate_v1.sql`: `PROGRAMMING_DEVELOPMENT_ADMISSION_TESTS_PASSED:20` en PostgreSQL 16 local desechable (CI usa 17).
 - `test_programming_development_admission_real_d7_v1.sql` (reescrita): carga las migraciones reales de D7, de #3181 (`resolve_v2` y proveedor de vigencia) y de esta compuerta. Resultados: `supabase_read_only_user` → `PG01_GATE_READER_NOT_GRANTED`; `service_role` → `PG01_V2_RECEIPT_NOT_FOUND` con las cuatro claves de respuesta; dueño → no encontrado; `context_id` en mayúsculas → `PG01_GATE_BINDING_INVALID` sin llegar al lector; ACL de `resolve_v2` limitada a `service_role`. Emite `PROGRAMMING_DEVELOPMENT_ADMISSION_REAL_READERS_OK`.
 - Dependencia: esta rama se apila sobre `lf/pg01-admission-envelope-v2-v1` (#3181) porque la compuerta llama a `resolve_v2`. Se fusiona después de #3181.
+
+## Corrección del retorno V2 — 27-oct-2026
+
+El lector V2 devuelve PG01_V2_RECEIPT_NOT_FOUND. La entrada comprobaba el
+código V1 PG01_RECEIPT_NOT_FOUND, por lo que clasificaba la ausencia como
+BLOCK_NO_CODE en vez de RETURN_TO_ANALYSIS_NO_CODE. Se alinea el código
+exacto con V2; no se cambia el lector, los grants ni la decisión de admisión.
+La prueba con lectores reales ahora invoca también la entrada completa sobre
+una ejecución de perfil explícitamente sintética y exige retorno a Análisis,
+PROGRAMACION_ADMISION_BLOQUEADA y downstream_execution_allowed=false.
+También conserva el rechazo de una ejecución origen inexistente.
+
+La validación local usa una BD desechable; no constituye un caso positivo real
+ni habilita la aplicación de esta migración. El PR permanece draft.
+
+Validación de este incremento: PostgreSQL 14.24 local extraído en directorio
+aislado, sin instalación global, Docker ni TCP. Pasan los 20 casos existentes
+y la integración con lectores reales ampliada. La prueba nueva falla con el
+código anterior (REAL_FAIL:4_full_entry_missing_receipt) y pasa con la corrección.
+La versión 17 objetivo sigue pendiente de CI/revisión; no se atribuye esta
+corrida a CI ni se declara un positivo operacional.
