@@ -36,10 +36,89 @@ CREATE TRIGGER trg_00_programming_admission_revocation_immutable BEFORE UPDATE O
 ON private.lf_programming_admission_revocations_v1 FOR EACH ROW
 EXECUTE FUNCTION private.fn_lf_programming_admission_revocation_immutable_v1();
 
--- Unreleased currentness provider. It must never attest a definition today.
+-- Canonical definition fingerprint: exclude only volatile metadata.generated_at.
+-- SECURITY INVOKER, callable only by owner via V2 resolver.
+CREATE OR REPLACE FUNCTION private.fn_lf_programming_definition_ref_sha256_v1(p_definition_ref text)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','private','lf_ops','extensions' AS $ref$
+DECLARE
+  parts text[]; v_count bigint; v_status text; v_version text; v_contract jsonb;
+BEGIN
+  IF p_definition_ref IS NULL OR p_definition_ref !~ '^lf-screen-contract://[^/]+/[^/]+/[^/]+$' THEN
+    RETURN jsonb_build_object('ok',false,'reason','DEFINITION_REF_SCHEME_UNSUPPORTED');
+  END IF;
+  parts := string_to_array(substring(p_definition_ref from length('lf-screen-contract://')+1),'/');
+  -- One call only: each call builds the full screen contract (~300 KB for B2B-AUTH-001).
+  SELECT count(*), min(f.screen_status), min(f.contract_version), (array_agg(f.contract))[1]
+    INTO v_count,v_status,v_version,v_contract
+    FROM lf_ops.fn_screen_contract_v1(parts[1],parts[2],parts[3]) f;
+  IF v_count IS DISTINCT FROM 1 THEN
+    RETURN jsonb_build_object('ok',false,'reason',CASE WHEN v_count=0 THEN 'DEFINITION_NOT_FOUND' ELSE 'DEFINITION_AMBIGUOUS' END);
+  END IF;
+  RETURN jsonb_build_object('ok',true,'definition_ref',p_definition_ref,
+    'definition_sha256',encode(extensions.digest(convert_to((v_contract #- '{metadata,generated_at}')::text,'UTF8'),'sha256'),'hex'),
+    'screen_status',v_status,'contract_version',v_version);
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('ok',false,'reason','DEFINITION_CURRENTNESS_UNDETERMINED');
+END $ref$;
+
 CREATE OR REPLACE FUNCTION private.fn_lf_programming_definition_currentness_v1(p_definition_refs jsonb)
-RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path TO 'pg_catalog','private'
-AS $fn$ SELECT jsonb_build_object('verified',false,'reason','DEFINITION_CURRENTNESS_PROVIDER_NOT_RELEASED') $fn$;
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','private' AS $cur$
+DECLARE
+  ref jsonb; one jsonb; items jsonb := '[]'::jsonb;
+  failure text; item_reason text;
+BEGIN
+  IF jsonb_typeof(p_definition_refs) IS DISTINCT FROM 'array'
+     OR jsonb_array_length(CASE WHEN jsonb_typeof(p_definition_refs)='array' THEN p_definition_refs ELSE '[]'::jsonb END)=0 THEN
+    RETURN jsonb_build_object('verified',false,'reason','DEFINITION_REFS_INVALID','results',items);
+  END IF;
+  FOR ref IN SELECT value FROM jsonb_array_elements(p_definition_refs) LOOP
+    IF jsonb_typeof(ref) IS DISTINCT FROM 'object'
+       OR (SELECT count(*) FROM jsonb_object_keys(ref)) IS DISTINCT FROM 2
+       OR jsonb_typeof(ref->'definition_ref') IS DISTINCT FROM 'string'
+       OR btrim(ref->>'definition_ref') = ''
+       OR jsonb_typeof(ref->'definition_sha256') IS DISTINCT FROM 'string'
+       OR (ref->>'definition_sha256') !~ '^[0-9a-f]{64}$' THEN
+      RETURN jsonb_build_object('verified',false,'reason','DEFINITION_REFS_INVALID','results',items);
+    END IF;
+    one:=private.fn_lf_programming_definition_ref_sha256_v1(ref->>'definition_ref');
+    item_reason:=NULL;
+    IF (one->>'ok')::boolean IS DISTINCT FROM true THEN
+      item_reason:=coalesce(one->>'reason','DEFINITION_CURRENTNESS_UNDETERMINED');
+    ELSIF one->>'screen_status' IS DISTINCT FROM 'VIGENTE' THEN
+      item_reason:='DEFINITION_NOT_CURRENT';
+    ELSIF one->>'definition_sha256' IS DISTINCT FROM ref->>'definition_sha256' THEN
+      item_reason:='DEFINITION_CHANGED';
+    END IF;
+    IF failure IS NULL THEN failure:=item_reason; END IF;
+    items:=items || jsonb_build_array(jsonb_build_object(
+      'definition_ref',ref->>'definition_ref','ok',item_reason IS NULL,
+      'reason',coalesce(item_reason,'DEFINITION_CURRENT'),
+      'screen_status',one->>'screen_status'));
+  END LOOP;
+  RETURN jsonb_build_object('verified',failure IS NULL,
+    'reason',coalesce(failure,'DEFINITION_CURRENT'),'results',items);
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('verified',false,'reason','DEFINITION_CURRENTNESS_UNDETERMINED','results',items);
+END $cur$;
+
+CREATE OR REPLACE FUNCTION private.fn_lf_programming_admission_revocation_train_guard_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
+SET search_path TO 'pg_catalog','private','public' AS $guard$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.lf_operation_execution e
+     WHERE e.execution_id=NEW.revoked_by_execution_id
+       AND e.operation_code='ACTUALIZACION_DB_LF'
+       AND e.status='IN_PROGRESS'
+       AND e.manifest->>'producer'='lf-migration-merge-train') THEN
+    RAISE EXCEPTION 'PROGRAMACION_V2_REVOCATION_NOT_TRAIN';
+  END IF;
+  RETURN NEW;
+END $guard$;
+CREATE TRIGGER trg_01_programming_admission_revocation_train_guard
+BEFORE INSERT ON private.lf_programming_admission_revocations_v1
+FOR EACH ROW EXECUTE FUNCTION private.fn_lf_programming_admission_revocation_train_guard_v1();
 
 CREATE OR REPLACE FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(p_binding jsonb)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
@@ -198,15 +277,19 @@ END $fn$;
 
 ALTER TABLE private.lf_programming_admission_revocations_v1 OWNER TO postgres;
 ALTER FUNCTION private.fn_lf_programming_admission_revocation_immutable_v1() OWNER TO postgres;
+ALTER FUNCTION private.fn_lf_programming_definition_ref_sha256_v1(text) OWNER TO postgres;
+ALTER FUNCTION private.fn_lf_programming_admission_revocation_train_guard_v1() OWNER TO postgres;
 ALTER FUNCTION private.fn_lf_programming_definition_currentness_v1(jsonb) OWNER TO postgres;
 ALTER FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb) OWNER TO postgres;
 REVOKE ALL ON TABLE private.lf_programming_admission_revocations_v1 FROM PUBLIC,anon,authenticated,service_role;
 REVOKE ALL ON FUNCTION private.fn_lf_programming_admission_revocation_immutable_v1() FROM PUBLIC,anon,authenticated,service_role;
-REVOKE ALL ON FUNCTION private.fn_lf_programming_definition_currentness_v1(jsonb) FROM PUBLIC,anon,authenticated,service_role;
+REVOKE ALL ON FUNCTION private.fn_lf_programming_definition_ref_sha256_v1(text) FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
+REVOKE ALL ON FUNCTION private.fn_lf_programming_admission_revocation_train_guard_v1() FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
+REVOKE ALL ON FUNCTION private.fn_lf_programming_definition_currentness_v1(jsonb) FROM PUBLIC,anon,authenticated,service_role,supabase_read_only_user;
 REVOKE ALL ON FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb) FROM PUBLIC,anon,authenticated,service_role;
-COMMENT ON TABLE private.lf_programming_admission_revocations_v1 IS 'Append-only D7 phase-2 revocation facts; no runtime grants.';
-COMMENT ON FUNCTION private.fn_lf_programming_definition_currentness_v1(jsonb) IS 'Closed by default until Product authoritative currentness provider is released.';
-COMMENT ON FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb) IS 'V2 exact-binding admission; closed while definition currentness provider is unreleased. V1 unchanged.';
+COMMENT ON TABLE private.lf_programming_admission_revocations_v1 IS 'Append-only D7 phase-2 revocation facts; inserts restricted to ACTUALIZACION_DB_LF Merge Train.';
+COMMENT ON FUNCTION private.fn_lf_programming_definition_currentness_v1(jsonb) IS 'Product definition currentness from lf_ops screen contract; VIGENTE and canonical SHA256 excluding metadata.generated_at only.';
+COMMENT ON FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb) IS 'V2 exact-binding admission; 24-hour maximum envelope validity, verified Product definition and Train-only revocations. V1 unchanged.';
 DO $after$
 BEGIN
   IF (SELECT prosecdef FROM pg_proc WHERE oid='private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb)'::regprocedure) IS DISTINCT FROM true
@@ -215,8 +298,18 @@ BEGIN
      OR has_function_privilege('authenticated','private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb)','EXECUTE') THEN
     RAISE EXCEPTION 'PROGRAMACION_V2_PRIVILEGE_POSTCHECK_FAILED';
   END IF;
-  IF (private.fn_lf_programming_definition_currentness_v1('[]'::jsonb)->>'verified') IS DISTINCT FROM 'false' THEN
-    RAISE EXCEPTION 'PROGRAMACION_V2_CURRENTNESS_PROVIDER_MUST_BE_CLOSED';
+  IF (private.fn_lf_programming_definition_currentness_v1('[]'::jsonb)->>'verified') IS DISTINCT FROM 'false'
+     OR (private.fn_lf_programming_definition_currentness_v1('[]'::jsonb)->>'reason') IS DISTINCT FROM 'DEFINITION_REFS_INVALID'
+     OR (private.fn_lf_programming_definition_currentness_v1(
+           jsonb_build_array(jsonb_build_object('definition_ref','product://unsupported','definition_sha256',repeat('a',64)))
+         )->>'verified') IS DISTINCT FROM 'false'
+     OR has_function_privilege('service_role','private.fn_lf_programming_definition_ref_sha256_v1(text)','EXECUTE')
+     OR has_function_privilege('anon','private.fn_lf_programming_definition_ref_sha256_v1(text)','EXECUTE')
+     OR has_function_privilege('authenticated','private.fn_lf_programming_definition_ref_sha256_v1(text)','EXECUTE')
+     OR has_function_privilege('service_role','private.fn_lf_programming_definition_currentness_v1(jsonb)','EXECUTE')
+     OR has_function_privilege('anon','private.fn_lf_programming_definition_currentness_v1(jsonb)','EXECUTE')
+     OR has_function_privilege('authenticated','private.fn_lf_programming_definition_currentness_v1(jsonb)','EXECUTE') THEN
+    RAISE EXCEPTION 'PROGRAMACION_V2_CURRENTNESS_POSTCHECK_FAILED';
   END IF;
 END $after$;
 COMMIT;

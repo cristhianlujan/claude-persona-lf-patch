@@ -31,6 +31,22 @@ CREATE TABLE public.lf_operation_execution_steps(
   created_by_execution_id text NOT NULL DEFAULT 'TEST', created_at timestamptz NOT NULL DEFAULT now(),
   updated_by_execution_id text, updated_at timestamptz);
 
+-- Test-only screen-contract authority stub. Volatile generated_at is reinserted each read.
+CREATE SCHEMA lf_ops;
+CREATE TEMP TABLE test_screens(app_shell_code text,module_code text,screen_code text,screen_status text,contract jsonb);
+INSERT INTO pg_temp.test_screens VALUES
+ ('B2B_APP_SHELL','B2B_AUTENTICACION','B2B-AUTH-001','VIGENTE',
+  '{"fields":[],"metadata":{"stable":"v1"}}'::jsonb);
+CREATE FUNCTION lf_ops.fn_screen_contract_v1(p_app_shell_code text,p_module_code text,p_screen_code text)
+RETURNS TABLE(app_shell_id bigint,module_id bigint,pantalla_id integer,app_shell_code text,module_code text,
+ screen_code text,screen_name text,screen_status text,contract_version text,contract jsonb)
+LANGUAGE sql VOLATILE AS $stub$
+ SELECT 1::bigint,1::bigint,1::integer,s.app_shell_code,s.module_code,s.screen_code,
+ 'TEST_SCREEN'::text,s.screen_status,'v1.2'::text,
+ jsonb_set(s.contract,'{metadata,generated_at}',to_jsonb(clock_timestamp()::text),true)
+ FROM pg_temp.test_screens s WHERE s.app_shell_code=p_app_shell_code AND s.module_code=p_module_code AND s.screen_code=p_screen_code
+$stub$;
+
 -- Load both migrations from disk; strip only the outer BEGIN/COMMIT so this test owns the rollback.
 CREATE TEMP TABLE src_lines(n bigint GENERATED ALWAYS AS IDENTITY, line text);
 \copy src_lines(line) FROM 'supabase/migrations/20261026173901_lf_programming_context_handoff_receipt_ledger_v1.sql' WITH (FORMAT csv, DELIMITER E'\x01', QUOTE E'\x02', ESCAPE E'\x03')
@@ -64,6 +80,7 @@ CREATE FUNCTION pg_temp.digest() RETURNS text LANGUAGE sql AS $q$
 INSERT INTO private.lf_decision_context_asof_v1 VALUES (pg_temp.c1(), pg_temp.sha(pg_temp.c1())), (pg_temp.c2(), pg_temp.sha(pg_temp.c2()));
 INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,manifest)
 VALUES ('EXEC-TRAIN-TEST','ACTUALIZACION_DB_LF','MIGRATION','test','IN_PROGRESS','{"producer":"lf-migration-merge-train"}');
+INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,manifest) VALUES ('EXEC-BAD-REVOKER','EJECUCION_PERFIL_LF','PERFIL','X','IN_PROGRESS','{}');
 
 CREATE FUNCTION pg_temp.binding(p_ctx uuid, p_target text, p_scopes jsonb DEFAULT '["S1"]') RETURNS jsonb LANGUAGE sql AS $q$
   SELECT jsonb_build_object('context_id',p_ctx::text,'context_sha256',pg_temp.sha(p_ctx),'target_ref',p_target,
@@ -89,7 +106,7 @@ CREATE FUNCTION pg_temp.env(p_ctx uuid, p_judge text, p_over jsonb DEFAULT '{}')
     'admitted_scope_ids',jsonb_build_array('S1','S2'),
     'valid_from',to_char((now()-interval '1 hour') at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'),
     'valid_until',to_char((now()+interval '1 hour') at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS"Z"'),
-    'definition_refs',jsonb_build_array(jsonb_build_object('definition_ref','product://B2B-AUTH-001','definition_sha256',repeat('3',64))),
+    'definition_refs',jsonb_build_array(jsonb_build_object('definition_ref','lf-screen-contract://B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001','definition_sha256',private.fn_lf_programming_definition_ref_sha256_v1('lf-screen-contract://B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001')->>'definition_sha256')),
     'issued_by_execution_id','EXEC-ISSUER') || p_over $q$;
 -- Write one receipt through the REAL writer; target_ref makes each binding unique.
 CREATE FUNCTION pg_temp.put(p_target text, p_env jsonb, p_ctx uuid DEFAULT NULL, p_verdict text DEFAULT 'ACCEPT') RETURNS jsonb LANGUAGE sql AS $q$
@@ -116,16 +133,12 @@ DO $t$ DECLARE r jsonb; BEGIN
   INSERT INTO results VALUES ('02');
 END $t$;
 
--- 03. Complete, valid envelope with the provider closed: never admissible.
+-- 03. Real provider recognizes VIGENTE screen, no mocked override.
 DO $t$ BEGIN
-  PERFORM pg_temp.put('T-OK', pg_temp.env(pg_temp.c1(),'EXEC-JUDGE-OK'));
-  PERFORM pg_temp.expect('03_closed_provider', pg_temp.v2('T-OK'), 'PG01_V2_DEFINITION_CURRENTNESS_NOT_VERIFIED');
-  INSERT INTO results VALUES ('03');
+ PERFORM pg_temp.put('T-OK',pg_temp.env(pg_temp.c1(),'EXEC-JUDGE-OK'));
+ PERFORM pg_temp.expect('03_live_provider',pg_temp.v2('T-OK'),'PG01_V2_ADMITTED',true);
+ INSERT INTO results VALUES ('03');
 END $t$;
-
--- Replace the provider INSIDE THIS TEST ONLY to reach the remaining branches.
-CREATE OR REPLACE FUNCTION private.fn_lf_programming_definition_currentness_v1(p_definition_refs jsonb)
-RETURNS jsonb LANGUAGE sql STABLE AS $q$ SELECT '{"verified":true,"reason":"TEST_ONLY"}'::jsonb $q$;
 
 -- 04. Everything valid -> admissible; resolve_v1 on the same row stays closed (V2 adds, V1 unchanged).
 DO $t$ DECLARE r jsonb; BEGIN
@@ -222,14 +235,14 @@ DO $t$ DECLARE r jsonb; BEGIN
   PERFORM pg_temp.put('T-REV-B', pg_temp.env(pg_temp.c1(),'EXEC-JUDGE-OK'));
   r := pg_temp.v2('T-REV-B');
   INSERT INTO private.lf_programming_admission_revocations_v1(binding_key_sha256,reason_code,revoked_by_execution_id)
-  VALUES (r#>>'{record,binding_key_sha256}','TEST_REVOKE','EXEC-REVOKER');
+  VALUES (r#>>'{record,binding_key_sha256}','TEST_REVOKE','EXEC-TRAIN-TEST');
   PERFORM pg_temp.expect('12_revoked_binding', pg_temp.v2('T-REV-B'), 'PG01_V2_REVOKED');
   PERFORM pg_temp.expect('12_other_binding_unaffected', pg_temp.v2('T-OK'), 'PG01_V2_ADMITTED', true);
   PERFORM pg_temp.put('T-REV-C1', pg_temp.env(pg_temp.c2(),'EXEC-JUDGE-OK2'), pg_temp.c2());
   PERFORM pg_temp.put('T-REV-C2', pg_temp.env(pg_temp.c2(),'EXEC-JUDGE-OK2'), pg_temp.c2());
   PERFORM pg_temp.expect('12_before_context_revoke', pg_temp.v2('T-REV-C1', pg_temp.c2()), 'PG01_V2_ADMITTED', true);
   INSERT INTO private.lf_programming_admission_revocations_v1(context_id,reason_code,revoked_by_execution_id)
-  VALUES (pg_temp.c2(),'TEST_REVOKE','EXEC-REVOKER');
+  VALUES (pg_temp.c2(),'TEST_REVOKE','EXEC-TRAIN-TEST');
   PERFORM pg_temp.expect('12_revoked_context_1', pg_temp.v2('T-REV-C1', pg_temp.c2()), 'PG01_V2_REVOKED');
   PERFORM pg_temp.expect('12_revoked_context_2', pg_temp.v2('T-REV-C2', pg_temp.c2()), 'PG01_V2_REVOKED');
   INSERT INTO results VALUES ('12');
@@ -247,7 +260,7 @@ DO $t$ DECLARE blocked boolean; BEGIN
   IF blocked IS DISTINCT FROM true THEN RAISE EXCEPTION 'TEST_FAIL:13_delete'; END IF;
   blocked := false;
   BEGIN INSERT INTO private.lf_programming_admission_revocations_v1(binding_key_sha256,context_id,reason_code,revoked_by_execution_id)
-        VALUES (repeat('a',64),pg_temp.c1(),'X','E');
+        VALUES (repeat('a',64),pg_temp.c1(),'X','EXEC-TRAIN-TEST');
   EXCEPTION WHEN check_violation THEN blocked := true; END;
   IF blocked IS DISTINCT FROM true THEN RAISE EXCEPTION 'TEST_FAIL:13_two_targets'; END IF;
   INSERT INTO results VALUES ('13');
@@ -263,9 +276,57 @@ DO $t$ BEGIN
   INSERT INTO results VALUES ('14');
 END $t$;
 
+-- 15. Canonical digest stable across changing metadata.generated_at.
+DO $t$ DECLARE a text; b text; BEGIN
+ a:=private.fn_lf_programming_definition_ref_sha256_v1('lf-screen-contract://B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001')->>'definition_sha256';
+ b:=private.fn_lf_programming_definition_ref_sha256_v1('lf-screen-contract://B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001')->>'definition_sha256';
+ IF a IS DISTINCT FROM b THEN RAISE EXCEPTION 'TEST_FAIL:15_volatile_metadata'; END IF;
+ INSERT INTO results VALUES ('15');
+END $t$;
+-- 16. CANDIDATO screen fails currentness.
+DO $t$ DECLARE r jsonb; BEGIN
+ UPDATE pg_temp.test_screens SET screen_status='CANDIDATO';
+ r:=private.fn_lf_programming_definition_currentness_v1(pg_temp.env(pg_temp.c1(),'EXEC-JUDGE-OK')->'definition_refs');
+ IF r->>'reason' IS DISTINCT FROM 'DEFINITION_NOT_CURRENT' OR (r->>'verified')::boolean IS DISTINCT FROM false THEN
+  RAISE EXCEPTION 'TEST_FAIL:16_candidate %',r; END IF;
+ PERFORM pg_temp.expect('16_gate',pg_temp.v2('T-OK'),'PG01_V2_DEFINITION_CURRENTNESS_NOT_VERIFIED');
+ UPDATE pg_temp.test_screens SET screen_status='VIGENTE';
+ INSERT INTO results VALUES ('16');
+END $t$;
+-- 17. Definition mutated after envelope issuance fails SHA check.
+DO $t$ DECLARE r jsonb; BEGIN
+ UPDATE pg_temp.test_screens SET contract=jsonb_set(contract,'{metadata,stable}','"v2"');
+ r:=private.fn_lf_programming_definition_currentness_v1(
+   (SELECT envelope->'definition_refs' FROM private.lf_programming_context_handoff_receipts_v1 WHERE receipt->>'verdict'='ACCEPT' AND receipt_record_id=(pg_temp.v2('T-OK')#>>'{record,receipt_record_id}')::uuid));
+ IF r->>'reason' IS DISTINCT FROM 'DEFINITION_CHANGED' THEN RAISE EXCEPTION 'TEST_FAIL:17_changed %',r; END IF;
+ PERFORM pg_temp.expect('17_gate',pg_temp.v2('T-OK'),'PG01_V2_DEFINITION_CURRENTNESS_NOT_VERIFIED');
+ UPDATE pg_temp.test_screens SET contract='{"fields":[],"metadata":{"stable":"v1"}}';
+ INSERT INTO results VALUES ('17');
+END $t$;
+-- 18. Missing ref, unknown scheme, two refs with one failing.
+DO $t$ DECLARE good jsonb; bad jsonb; r jsonb; BEGIN
+ good:=pg_temp.env(pg_temp.c1(),'EXEC-JUDGE-OK')->'definition_refs'->0;
+ bad:=jsonb_build_object('definition_ref','lf-screen-contract://X/Y/Z','definition_sha256',repeat('a',64));
+ r:=private.fn_lf_programming_definition_currentness_v1(jsonb_build_array(bad));
+ IF r->>'reason' IS DISTINCT FROM 'DEFINITION_NOT_FOUND' THEN RAISE EXCEPTION 'TEST_FAIL:18_missing'; END IF;
+ r:=private.fn_lf_programming_definition_currentness_v1(jsonb_build_array(jsonb_build_object('definition_ref','product://X','definition_sha256',repeat('a',64))));
+ IF r->>'reason' IS DISTINCT FROM 'DEFINITION_REF_SCHEME_UNSUPPORTED' THEN RAISE EXCEPTION 'TEST_FAIL:18_scheme'; END IF;
+ r:=private.fn_lf_programming_definition_currentness_v1(jsonb_build_array(good,bad));
+ IF (r->>'verified')::boolean IS DISTINCT FROM false OR jsonb_array_length(r->'results') IS DISTINCT FROM 2 THEN RAISE EXCEPTION 'TEST_FAIL:18_pair'; END IF;
+ INSERT INTO results VALUES ('18');
+END $t$;
+-- 19. Train-only revocations reject non-Train execution.
+DO $t$ DECLARE denied boolean:=false; BEGIN
+ BEGIN
+  INSERT INTO private.lf_programming_admission_revocations_v1(context_id,reason_code,revoked_by_execution_id)
+  VALUES (pg_temp.c1(),'TEST_REVOKE','EXEC-BAD-REVOKER');
+ EXCEPTION WHEN OTHERS THEN denied:=SQLERRM LIKE 'PROGRAMACION_V2_REVOCATION_NOT_TRAIN%'; END;
+ IF denied IS DISTINCT FROM true THEN RAISE EXCEPTION 'TEST_FAIL:19_nontrain_revocation'; END IF;
+ INSERT INTO results VALUES ('19');
+END $t$;
 DO $t$ DECLARE n int; BEGIN
   SELECT count(*) INTO n FROM results;
-  IF n IS DISTINCT FROM 14 THEN RAISE EXCEPTION 'TEST_FAIL:COUNT_%', n; END IF;
+  IF n IS DISTINCT FROM 19 THEN RAISE EXCEPTION 'TEST_FAIL:COUNT_%', n; END IF;
   RAISE NOTICE 'PROGRAMMING_ADMISSION_ENVELOPE_V2_TESTS_PASSED:%', n;
 END $t$;
 ROLLBACK;
