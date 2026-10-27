@@ -34,6 +34,29 @@ BEGIN
 END
 $precheck$;
 
+INSERT INTO public.lf_operation_execution(
+  execution_id,operation_code,target_type,target_code,status,manifest,
+  created_by_execution_id,updated_by_execution_id
+) VALUES (
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'VULNERABILITY_COVERAGE_REPAIR_LF',
+  'OPERATION_PROTOCOL_REPAIR',
+  'EJECUCION_ROUTER_LF',
+  'IN_PROGRESS',
+  jsonb_build_object(
+    'mode','ROUTER_EXECUTION_GOVERNANCE_BOOTSTRAP',
+    'governance_bootstrap',true,
+    'bootstrap_operation_code','EJECUCION_ROUTER_LF',
+    'bootstrap_status_ceiling','SANDBOX_ACTIVE',
+    'candidate_only',true,
+    'production_allowed',false,
+    'runtime_activation',false,
+    'router_cutover_executed',false
+  ),
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
+);
+
 INSERT INTO public.lf_operation_registry(
   operation_code,version,status,source_model,source_repo,source_paths,notes,
   operation_family,operation_domain,operation_type,applies_to_asset_type,
@@ -41,7 +64,7 @@ INSERT INTO public.lf_operation_registry(
 ) VALUES (
   'EJECUCION_ROUTER_LF',
   'v0.1-pilot',
-  'CANDIDATE_READ_ONLY',
+  'CANDIDATO_READ_ONLY',
   'SUPABASE_STRUCTURED_OPERATION',
   'cristhianlujan/claude-persona-lf-patch',
   jsonb_build_array(
@@ -56,8 +79,8 @@ INSERT INTO public.lf_operation_registry(
   'ROUTER_EXECUTION',
   'ROUTER_EXECUTION',
   'DOC',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
   'OP_CANDIDATE'
 );
 
@@ -89,8 +112,8 @@ INSERT INTO public.lf_operation_contracts(
   ),
   '[]'::jsonb,
   'ACTIVE_ENFORCEMENT',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 );
 
 INSERT INTO public.lf_operation_step_contracts(
@@ -115,7 +138,7 @@ INSERT INTO public.lf_operation_step_contracts(
   'ACTIVE_ENFORCEMENT',
   'The request literal is immutable for the execution.',
   NULL,NULL,
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027','EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001','EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 ),
 (
   'EJECUCION_ROUTER_LF','stage1_seal',20,20,
@@ -133,7 +156,7 @@ INSERT INTO public.lf_operation_step_contracts(
   'ACTIVE_ENFORCEMENT',
   'Stage1 provenance is execution-bound; structural validity alone is insufficient.',
   NULL,NULL,
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027','EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001','EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 ),
 (
   'EJECUCION_ROUTER_LF','stage2_route',30,30,
@@ -151,7 +174,7 @@ INSERT INTO public.lf_operation_step_contracts(
   'ACTIVE_ENFORCEMENT',
   'Caller cannot supply Stage1 to Stage2; Stage2 reads the sealed payload by execution_id.',
   NULL,NULL,
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027','EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001','EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 );
 
 INSERT INTO public.lf_operation_steps(
@@ -167,8 +190,8 @@ SELECT
   ),
   'public.lf_operation_step_contracts/'||c.operation_code||'/'||c.step_id,
   NULL,true,c.execution_order,
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 FROM public.lf_operation_step_contracts c
 WHERE c.operation_code='EJECUCION_ROUTER_LF';
 
@@ -188,8 +211,8 @@ INSERT INTO public.lf_operation_judges(
     'BLOCKED_ROUTER_PIPELINE_NOT_CLEAN'
   ),
   'ACTIVE_ENFORCEMENT',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 );
 
 INSERT INTO public.lf_operation_step_judge_bindings(
@@ -204,8 +227,8 @@ SELECT
   'RETURN_TO_ORCHESTRATOR',
   c.required_evidence_keys,
   'ACTIVE_ENFORCEMENT',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027',
-  'EXEC-ROUTER-PIPELINE-PILOT-20261027'
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+  'EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
 FROM public.lf_operation_step_contracts c
 WHERE c.operation_code='EJECUCION_ROUTER_LF';
 
@@ -823,6 +846,7 @@ BEGIN
     FROM public.lf_operation_registry
     WHERE operation_code='EJECUCION_ROUTER_LF'
       AND operation_family='ORCHESTRATION'
+      AND status='CANDIDATO_READ_ONLY'
       AND lifecycle_state_code='OP_CANDIDATE'
   ) THEN
     RAISE EXCEPTION 'ROUTER_PIPELINE_PILOT_REGISTRY_POSTCHECK_FAILED';
@@ -991,5 +1015,45 @@ BEGIN
   END IF;
 END
 $postcheck$;
+
+
+UPDATE public.lf_operation_execution
+SET status='COMPLETED',
+    completed_at=clock_timestamp(),
+    updated_at=clock_timestamp(),
+    updated_by_execution_id='EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001',
+    manifest=manifest||jsonb_build_object(
+      'result','ROUTER_PIPELINE_PILOT_GOVERNANCE_REGISTERED_CANDIDATE',
+      'operation_code','EJECUCION_ROUTER_LF',
+      'operation_status','CANDIDATO_READ_ONLY',
+      'operation_lifecycle_state','OP_CANDIDATE',
+      'production_allowed',false,
+      'router_cutover_executed',false
+    )
+WHERE execution_id='EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
+  AND operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+  AND status='IN_PROGRESS'
+  AND manifest->>'bootstrap_operation_code'='EJECUCION_ROUTER_LF'
+  AND manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE';
+
+DO $bootstrap_close_postcheck$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.lf_operation_execution
+    WHERE execution_id='EXEC-BOOTSTRAP-EJECUCION-ROUTER-LF-20261027-001'
+      AND operation_code='VULNERABILITY_COVERAGE_REPAIR_LF'
+      AND target_code='EJECUCION_ROUTER_LF'
+      AND status='COMPLETED'
+      AND completed_at IS NOT NULL
+      AND coalesce((manifest->>'governance_bootstrap')::boolean,false) IS TRUE
+      AND manifest->>'bootstrap_operation_code'='EJECUCION_ROUTER_LF'
+      AND manifest->>'bootstrap_status_ceiling'='SANDBOX_ACTIVE'
+      AND manifest->>'result'='ROUTER_PIPELINE_PILOT_GOVERNANCE_REGISTERED_CANDIDATE'
+  ) THEN
+    RAISE EXCEPTION 'ROUTER_PIPELINE_PILOT_BOOTSTRAP_CLOSE_FAILED';
+  END IF;
+END
+$bootstrap_close_postcheck$;
 
 COMMIT;
