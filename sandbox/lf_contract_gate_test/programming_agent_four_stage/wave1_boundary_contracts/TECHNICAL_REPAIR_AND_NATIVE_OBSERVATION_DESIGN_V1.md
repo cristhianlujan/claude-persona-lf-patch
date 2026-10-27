@@ -130,3 +130,13 @@ checkout corregido de #3176 y --output a un directorio nuevo. El generador
 no conecta a BD: produce composition.sql, migraciones exactas y sources.json.
 Desde ese directorio ejecutar psql -X -v ON_ERROR_STOP=1 -f composition.sql
 contra una BD exclusivamente desechable. El script termina con ROLLBACK.
+
+## Cross-origin regression audit (2026-10-27)
+
+The composition now includes a second completed execution with the same valid
+Router binding. It cannot borrow the first execution's real accepted receipt:
+the corrected #3176 entry rejects the producer/source mismatch. The positive
+same-origin admission still succeeds only under the test-local ACTIVE toggle,
+with downstream execution disabled. Eight composition groups now cover this
+boundary. The generator pins the corrected gate hash; stale gate bytes fail
+before materializing the composition.

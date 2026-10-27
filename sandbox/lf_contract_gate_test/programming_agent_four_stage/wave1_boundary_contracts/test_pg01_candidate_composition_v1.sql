@@ -88,6 +88,22 @@ DO $admitted$ DECLARE r jsonb; BEGIN
  END IF;
 END $admitted$;
 
+-- A second completed origin with the same binding must not borrow PROFILE's
+-- real, admitted receipt. The positive PROFILE case above remains unchanged.
+INSERT INTO public.lf_operation_execution
+ SELECT (jsonb_populate_record(NULL::public.lf_operation_execution,
+   to_jsonb(e)||jsonb_build_object('execution_id','PROFILE-SECOND'))).*
+ FROM public.lf_operation_execution e WHERE execution_id='PROFILE';
+DO $cross_origin$ DECLARE r jsonb; BEGIN
+ r:=public.lf_programming_development_admission_v1(pg_temp.binding(),
+   pg_temp.handoff('aaaaaaaa-0000-4000-8000-000000000001'),'PROFILE-SECOND');
+ IF r->>'paso' IS DISTINCT FROM 'PROGRAMACION_HANDOFF_INVALIDO'
+    OR r->>'codigo' IS DISTINCT FROM 'PG01_HANDOFF_SOURCE_EXECUTION_MISMATCH'
+    OR r->'downstream_execution_allowed' IS DISTINCT FROM 'false'::jsonb THEN
+  RAISE EXCEPTION 'COMPOSITION_FAIL:7_cross_origin_receipt %',r;
+ END IF;
+END $cross_origin$;
+
 UPDATE lf_ops.pantallas SET estado='CANDIDATO' WHERE codigo='B2B-AUTH-001';
 DO $stale$ DECLARE r jsonb; BEGIN
  r:=public.lf_programming_development_admission_v1(pg_temp.binding(),
@@ -107,5 +123,5 @@ DO $technical$ DECLARE r jsonb; BEGIN
     OR r->>'reason' IS DISTINCT FROM 'DEFINITION_REF_SCHEME_UNSUPPORTED' THEN
   RAISE EXCEPTION 'COMPOSITION_FAIL:6_technical_not_admitted %',r;
  END IF;
- RAISE NOTICE 'PG01_CANDIDATE_COMPOSITION_PASSED:7';
+ RAISE NOTICE 'PG01_CANDIDATE_COMPOSITION_PASSED:8';
 END $technical$;

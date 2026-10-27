@@ -19,7 +19,7 @@ RETURN_FILES = [
  "20261026180500_lf_profile_positive_continuation_router_return_v1.sql",
  "20261027090000_lf_programming_analysis_return_to_development_v1.sql",
 ]
-GATE_SHA256 = "c25f55b8234c2ae6b3c36926b6c36ea94051b21e80ce5cbfb982ed1b2721f77a"
+GATE_SHA256 = "c0ec44b9d57e745d4480565f677d4fa949a140f49139956e19a93553ddd855f3"
 BOUNDARY = "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/"
 MIGRATIONS = [
     "20261026173901_lf_programming_context_handoff_receipt_ledger_v1.sql",
