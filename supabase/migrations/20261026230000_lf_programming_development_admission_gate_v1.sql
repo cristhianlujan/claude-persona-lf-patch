@@ -1,12 +1,13 @@
 BEGIN;
 DO $pre$
 BEGIN
- IF to_regprocedure('private.fn_lf_programming_context_handoff_receipt_resolve_v1(jsonb)') IS NULL
-    OR to_regclass('public.lf_router_action_registry') IS NULL THEN
+ IF to_regprocedure('private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb)') IS NULL
+    OR to_regclass('public.lf_router_action_registry') IS NULL
+     OR to_regclass('public.lf_operation_execution') IS NULL THEN
    RAISE EXCEPTION 'PG01_DEVELOPMENT_ADMISSION_PREREQUISITE_MISSING';
  END IF;
  IF to_regprocedure('public.lf_programming_admission_gate_v1(jsonb)') IS NOT NULL
-    OR to_regprocedure('public.lf_programming_development_admission_v1(jsonb,jsonb)') IS NOT NULL THEN
+    OR to_regprocedure('public.lf_programming_development_admission_v1(jsonb,jsonb,text)') IS NOT NULL THEN
    RAISE EXCEPTION 'PG01_DEVELOPMENT_ADMISSION_ALREADY_INSTALLED';
  END IF;
 END $pre$;
@@ -41,7 +42,7 @@ BEGIN
    RETURN jsonb_build_object('schema_version','LF_PROGRAMMING_ADMISSION_GATE_V1',
                              'found',false,'admissible',false,'reason','PG01_GATE_BINDING_INVALID');
  END IF;
- v_result := private.fn_lf_programming_context_handoff_receipt_resolve_v1(p_binding);
+ v_result := private.fn_lf_programming_context_handoff_receipt_resolve_v2(p_binding);
  RETURN jsonb_build_object('schema_version','LF_PROGRAMMING_ADMISSION_GATE_V1',
    'found',COALESCE((v_result->>'found')::boolean,false),
    'admissible',COALESCE((v_result->>'admissible')::boolean,false),
@@ -59,7 +60,7 @@ EXCEPTION
 END $gate$;
 
 CREATE FUNCTION public.lf_programming_development_admission_v1(
- p_router_action_binding jsonb, p_programming_handoff jsonb)
+ p_router_action_binding jsonb, p_programming_handoff jsonb, p_source_execution_id text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER STABLE
 SET search_path TO 'pg_catalog', 'public', 'extensions'
 AS $admission$
@@ -70,6 +71,7 @@ DECLARE
  v_gate jsonb;
  v_status text;
  v_pre jsonb;
+ v_execution public.lf_operation_execution%ROWTYPE;
 BEGIN
  IF p_router_action_binding IS NULL OR jsonb_typeof(p_router_action_binding) IS DISTINCT FROM 'object' THEN
   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_BINDING_INVALIDO','codigo','PG01_ROUTER_BINDING_NOT_OBJECT',
@@ -100,7 +102,19 @@ BEGIN
   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_BINDING_INVALIDO','codigo','PG01_ROUTER_BINDING_PRECONDITION_MISMATCH',
    'motivo_es','La precondición del canal no coincide con el contrato vigente.','siguiente_paso_es','Resolver precondición de definición y perfil.');
  END IF;
- v_gate := public.lf_programming_admission_gate_v1(p_programming_handoff);
+  SELECT * INTO v_execution FROM public.lf_operation_execution
+   WHERE execution_id=p_source_execution_id;
+  IF NOT FOUND OR v_execution.operation_code IS DISTINCT FROM 'EJECUCION_PERFIL_LF'
+     OR v_execution.target_type IS DISTINCT FROM 'PERFIL'
+     OR v_execution.status IS DISTINCT FROM 'COMPLETED'
+     OR v_execution.manifest#>>'{router_profile_handoff,channel}' IS DISTINCT FROM 'PROGRAMACION'
+     OR v_execution.manifest#>'{router_profile_handoff,semantic_request,router_action_binding}' IS DISTINCT FROM p_router_action_binding THEN
+   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_BINDING_INVALIDO',
+    'codigo','PG01_ROUTER_BINDING_NOT_ISSUED_BY_EXECUTION',
+    'motivo_es','El binding no coincide con la ejecución de perfil completada.',
+    'siguiente_paso_es','Recuperar el binding íntegro desde la ejecución gobernada.');
+  END IF;
+  v_gate := public.lf_programming_admission_gate_v1(p_programming_handoff);
  IF v_gate->>'reason' = 'PG01_GATE_BINDING_INVALID' THEN
   RETURN v_base || jsonb_build_object('paso','PROGRAMACION_HANDOFF_INVALIDO','codigo','PG01_GATE_BINDING_INVALID',
    'motivo_es','El handoff PG-01 no cumple la identidad requerida.','siguiente_paso_es','Reconstruir el handoff desde el análisis.');
@@ -126,32 +140,35 @@ BEGIN
    'context_sha256',p_programming_handoff->>'context_sha256',
    'requested_scope_ids',p_programming_handoff->'requested_scope_ids',
    'entry_contract','PROGRAMMING_ENTRY_CONTRACT_V1',
-   'router_binding_sha256',p_router_action_binding->>'binding_sha256'),
+   'router_binding_sha256',p_router_action_binding->>'binding_sha256',
+    'source_execution_id',p_source_execution_id),
   'motivo_es','Admisión verificada sin autorizar ejecución.','siguiente_paso_es','Solicitar por separado autorización de ejecución gobernada.');
 END $admission$;
 
+-- Explicit read-only V2 access for the development agent only.
+GRANT EXECUTE ON FUNCTION private.fn_lf_programming_context_handoff_receipt_resolve_v2(jsonb) TO service_role;
 ALTER FUNCTION public.lf_programming_admission_gate_v1(jsonb) OWNER TO postgres;
-ALTER FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb) OWNER TO postgres;
+ALTER FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb,text) OWNER TO postgres;
 REVOKE ALL ON FUNCTION public.lf_programming_admission_gate_v1(jsonb) FROM PUBLIC, anon, authenticated, service_role, supabase_read_only_user;
-REVOKE ALL ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb) FROM PUBLIC, anon, authenticated, service_role, supabase_read_only_user;
+REVOKE ALL ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb,text) FROM PUBLIC, anon, authenticated, service_role, supabase_read_only_user;
 GRANT EXECUTE ON FUNCTION public.lf_programming_admission_gate_v1(jsonb) TO service_role, supabase_read_only_user;
-GRANT EXECUTE ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb) TO service_role, supabase_read_only_user;
+GRANT EXECUTE ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb,text) TO service_role, supabase_read_only_user;
 COMMENT ON FUNCTION public.lf_programming_admission_gate_v1(jsonb) IS
- 'Read-only PG-01 exact receipt admission gate; SECURITY INVOKER, no grants on D7 reader or ledger; returns only schema_version, found, admissible, reason.';
-COMMENT ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb) IS
- 'Admission check at development-operation entry; no Router mutation, no execution authority; SECURITY INVOKER.';
+ 'Read-only PG-01 exact V2 receipt admission gate; SECURITY INVOKER, returns only schema_version, found, admissible, reason.';
+COMMENT ON FUNCTION public.lf_programming_development_admission_v1(jsonb,jsonb,text) IS
+ 'Admission at development-operation entry validates issued profile binding against completed execution; no Router mutation or execution authority; SECURITY INVOKER.';
 DO $after$
 DECLARE v_count integer;
 BEGIN
  SELECT count(*) INTO v_count FROM pg_proc p
  WHERE p.oid IN ('public.lf_programming_admission_gate_v1(jsonb)'::regprocedure,
-                 'public.lf_programming_development_admission_v1(jsonb,jsonb)'::regprocedure)
+                 'public.lf_programming_development_admission_v1(jsonb,jsonb,text)'::regprocedure)
  AND p.prosecdef = false;
  IF v_count <> 2 THEN RAISE EXCEPTION 'PG01_ADMISSION_FUNCTION_SECURITY_MISMATCH'; END IF;
  IF has_function_privilege('anon','public.lf_programming_admission_gate_v1(jsonb)','EXECUTE')
  OR has_function_privilege('authenticated','public.lf_programming_admission_gate_v1(jsonb)','EXECUTE')
- OR has_function_privilege('anon','public.lf_programming_development_admission_v1(jsonb,jsonb)','EXECUTE')
- OR has_function_privilege('authenticated','public.lf_programming_development_admission_v1(jsonb,jsonb)','EXECUTE') THEN
+ OR has_function_privilege('anon','public.lf_programming_development_admission_v1(jsonb,jsonb,text)','EXECUTE')
+ OR has_function_privilege('authenticated','public.lf_programming_development_admission_v1(jsonb,jsonb,text)','EXECUTE') THEN
  RAISE EXCEPTION 'PG01_ADMISSION_FUNCTION_ACL_MISMATCH'; END IF;
 END $after$;
 COMMIT;
