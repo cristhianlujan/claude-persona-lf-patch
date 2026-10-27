@@ -47,12 +47,54 @@ Propietario de base de datos de las 9: rol `postgres`.
 4. **Sin consumidor SQL ni en el Edge desplegado** para `lf_router_governed_caller_route_v1` (solo en `main` y en un test).
 5. La lista inicial de superficies estaba incompleta: faltaba `lf_record_profile_operation_step_v1`, que consume 3 de las 8.
 
-## 5. Lo que este borrador NO cubre (CT01 no puede cerrarse con esto)
-- Código fuente de las otras 5 Edge de perfiles y del workflow de GitHub (llamadores y firmas de entrada/salida).
-- Contratos y schemas JSON de `skills/profile_creator/contracts/*` y SRCR V0_7R1 (campos de entrada/salida).
-- Políticas (`v_lf_operation_policy_snapshot`) como superficie con firma.
-- Falsificador negativo ejecutado (firma obsoleta o sin propietario → falla y señala consumidor).
+## 5. Ampliación (v2 del borrador, misma fecha)
+
+### 5.1 Consumidores que faltaban identificar
+- `lf_record_profile_operation_step_v1` fuera de `skills/` y `sandbox/`: `supabase/functions/run-creacion-perfil-lf/{index.ts (línea 386), required_profile_steps.ts, required_profile_steps.test.mjs}`. Además aparece en 12 migraciones históricas (definiciones y correcciones sucesivas).
+- `lf_router_governed_caller_route_v1` fuera de `sandbox/`: `run-creacion-perfil-lf/index.ts` en `main` (línea 257) y la migración que la creó (`20261023163624_lf_router_governed_callers_v1.sql`). El Edge desplegado no la llama (ver hallazgo 1).
+- Contratos y evals de `skills/profile_creator/` que nombran cada función: effective_route → 5 archivos, evolution_step_guard → 5, result_class → 2, substantive_block → 2, verified_receipt → 8, record_step → 11. **begin, post_merge_reconcile y governed_caller_route no aparecen en ningún contrato de `skills/profile_creator/`.**
+
+### 5.2 Edge de perfiles (código desplegado leído, solo lectura)
+| Edge | Versión | verify_jwt | Qué llama / acepta |
+|---|---|---|---|
+| lf-profile-creator-governance-caller-v1 | v17 | no (OIDC propio) | OIDC GitHub exacto (repo, workflow, ref). Acciones: `profile_creator_init_v1`, `profile_update_init_v1`, `profile_operation_next_step_v1`, record_step y record_batch. Delega **todo** a `run-creacion-perfil-lf`; no llama RPC SQL directamente. Resuelve la revisión vigente de `main` por la API pública de GitHub y fija el SHA. |
+| lf-profiles-governance-caller-v1 | v25 | no (OIDC propio o ticket de runtime) | Acciones de input-governance y CP2; para perfiles solo `profile_creator_init_v1` / `profile_creator_record_step_v1`, que delega al slug configurado. Llama a RPC `lf_profile_input_governance_runtime_ticket_consume_v1`, `lf_input_gov_recuration_allowlist_v1`, `fn_input_governance_queue_*_oidc_v1`, `fn_ig_m105_cp2_*`. No toca las 9 superficies SQL. |
+| run-github-write-perfil-lf | v20 | sí + service role | Escribe un pack en una rama `lf/**` (no `main`), solo bajo `profiles/` y `sandbox/lf_contract_gate_test/receipts/`; exige `pre_write_gate_passed`. Sin RPC SQL. |
+| run-github-readback-perfil-lf | v20 | sí + service role | Relee archivos y compara SHA. Sin RPC SQL. |
+| run-formalizacion-perfil-lf | v17 | sí + service role | Solo DRY_RUN; `database_accessed=false`. Sin RPC SQL. |
+| run-creacion-perfil-lf | v35 | no relevado en esta pasada | Único Edge que llama a las superficies SQL (`lf_profile_update_begin_v1`, `lf_record_profile_operation_step_v1`, `lf_router_resolve_v1`). |
+
+Consecuencia para CT01: de las 6 Edge, **solo `run-creacion-perfil-lf` es consumidor de las superficies SQL**. Las otras 5 son transporte, escritura/relectura o dry-run, y no necesitan firma SQL en el inventario.
+
+### 5.3 Workflow
+`.github/workflows/lf-customer-profile-creator-governance-caller.yml`: dispara por `push` a `lf/profiles/profile-creator-customer-caller-20260902` o `workflow_dispatch` (acciones `source_canary_only`, `profile_update_init`, `profile_update_record_batch`). Es la identidad OIDC que acepta `lf-profile-creator-governance-caller-v1` (`ref` y `workflow_ref` exactos; para actualización solo `refs/heads/main` + `workflow_dispatch`). Un cambio de nombre del workflow o de la rama rompe el caller sin que ninguna prueba SQL lo detecte.
+
+### 5.4 Políticas como superficie
+`public.v_lf_operation_policy_snapshot`, operación `ACTUALIZACION_PERFIL_LF` (5 políticas requeridas), `policy_sha` observados:
+- PASS_POLICY `POL-PROFILE-UPDATE-PASS` v1.1 → `f96451a2…b942`
+- GOVERNANCE_LIFECYCLE `POL-LF-OPERATION-LIFECYCLE` v1.1-operational-closure → `2adb62f8…3c00`
+- POLICY_CONSUMPTION `POL-LF-POLICY-CONSUMPTION` v1.3-assurance-cutover → `a6bd42d3…aa22f`
+- SOURCE_RESOLUTION `POL-LF-SOURCE-RESOLUTION` v1.4-… → `5fab0c7f…ae46`
+- STATE_MODEL `POL-LF-STATE-MODEL` v2.0-canonical-lifecycle → `f0d039a7…b495b3`
+`EJECUCION_PERFIL_LF` comparte 4 de ellas (mismos SHA) y añade `POL-LF-ACTIVATION-ROUTING` v1.0.
+
+### 5.5 Falsificador ejecutado (solo lectura, producción)
+Se congeló la tabla de la sección 1 (firma, md5 del cuerpo, SECURITY DEFINER) y se comparó con `pg_proc`:
+
+| Caso | Resultado | Consumidor señalado |
+|---|---|---|
+| POSITIVE (9 funciones) | 9/9 PASS | — |
+| NEG_MD5_OBSOLETE (`result_class` con md5 falso) | FAIL_BODY_DRIFT | `lf_profile_update_substantive_block_v1` |
+| NEG_ARGS_OBSOLETE (`effective_route` con un argumento extra) | FAIL_SIGNATURE_DRIFT | `lf_record_profile_operation_step_v1` |
+| NEG_OWNERLESS_NEW (`lf_profile_update_ghost_v1`) | FAIL_MISSING_OR_OWNERLESS | ninguno |
+
+Límites: la columna de consumidores es una búsqueda de texto del nombre en `prosrc`, por lo que **no distingue una llamada de un comentario o mensaje**; en dos filas el resultado es bidireccional (record_step menciona a effective_route y effective_route menciona a record_step), lo que prueba la mención, no el sentido de la llamada. La comparación no cubre ACL, triggers ni dependencias fuera de `public`. El falsificador corre sobre una copia congelada hecha por mí; una versión que viva en el repo y falle en CI sigue pendiente.
+
+## 6. Lo que sigue sin cubrirse (CT01 no puede cerrarse con esto)
+- **Schemas JSON de `skills/profile_creator/contracts/*` y SRCR V0_7R1: identificados por nombre, no leídos campo a campo.** No se inventarió entrada/salida de contratos.
+- Falsificador reproducible en el repo (hoy es una consulta manual).
+- Revisar si el cuerpo de `lf_router_governed_caller_route_v1` escribe (CT05).
 - Contrato de aserción de CT01, migración de cierre y recibo del agente independiente.
 
-## 6. Ruta de cierre verificada
+## 7. Ruta de cierre verificada
 La operación `CIERRE_CHECKPOINT_INGENIERIA_LF` está en `OP_CANDIDATE`/`CANDIDATO_READ_ONLY`, con un único vínculo de proveedor y sin activar; el conector de transición está documentado como no instalado. La ruta usada por los cierres previos (p. ej. `lf_pe10_c5_admission_event_close_v1`) es una **migración de cierre por checkpoint vía Merge Train**. CT01 seguirá esa ruta.
