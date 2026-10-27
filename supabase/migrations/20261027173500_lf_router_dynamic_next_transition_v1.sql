@@ -745,6 +745,13 @@ DECLARE
   v_fake jsonb;
   v_map jsonb;
   v_unknown jsonb;
+  v_begin2 jsonb;
+  v_exec2 text;
+  v_stage1_forge jsonb;
+  v_validation jsonb;
+  v_stage1_sha text;
+  v_route jsonb;
+  v_record jsonb;
 BEGIN
   IF (
     SELECT count(*)
@@ -894,18 +901,68 @@ BEGIN
       RAISE EXCEPTION 'ROUTER_DYNAMIC_TRANSITION_STATUS_FAIL:%',v_status;
     END IF;
 
-    -- A forged transition cannot be recorded even with caller-supplied valid=true.
+    -- Build a second execution only through Stage2, leaving transition absent.
+    -- Then prove the generic core cannot accept a forged transition even when
+    -- caller-supplied trust claims valid=true.
+    v_begin2:=public.lf_router_pipeline_begin_v1(
+      'Revisa técnicamente el Login B2B sin ejecutar cambios.'
+    );
+    IF v_begin2->>'status'<>'STAGE1_REQUIRED' THEN
+      RAISE EXCEPTION 'ROUTER_DYNAMIC_TRANSITION_FORGE_BEGIN_FAIL:%',v_begin2;
+    END IF;
+    v_exec2:=v_begin2->>'execution_id';
+
+    v_stage1_forge:=v_stage1||jsonb_build_object(
+      'texto_original','Revisa técnicamente el Login B2B sin ejecutar cambios.'
+    );
+    v_validation:=public.lf_router_stage1_validate_v2(v_stage1_forge);
+    v_stage1_sha:=encode(
+      extensions.digest(convert_to(v_stage1_forge::text,'UTF8'),'sha256'),
+      'hex'
+    );
+
+    v_record:=public.lf_record_router_execution_step_v1(
+      v_exec2,
+      'stage1_seal',
+      'router-stage1://'||v_stage1_sha,
+      jsonb_build_object(
+        'stage1_payload',v_stage1_forge,
+        'stage1_sha256',v_stage1_sha,
+        'stage1_validation',v_validation
+      ),
+      v_exec2
+    );
+    IF v_record->>'outcome'<>'STEP_RECORDED' THEN
+      RAISE EXCEPTION 'ROUTER_DYNAMIC_TRANSITION_FORGE_STAGE1_SETUP_FAIL:%',v_record;
+    END IF;
+
+    v_route:=public.lf_router_route_v1(v_stage1_forge,'{}'::jsonb,false);
+    v_record:=public.lf_record_router_execution_step_v1(
+      v_exec2,
+      'stage2_route',
+      'router-stage2://'||v_stage1_sha,
+      jsonb_build_object(
+        'route_result',v_route,
+        'stage1_sha256',v_stage1_sha,
+        'route_step',v_route->>'paso'
+      ),
+      v_exec2
+    );
+    IF v_record->>'outcome'<>'STEP_RECORDED' THEN
+      RAISE EXCEPTION 'ROUTER_DYNAMIC_TRANSITION_FORGE_STAGE2_SETUP_FAIL:%',v_record;
+    END IF;
+
     v_fake:=public.lf_record_operation_step_core_v1(
-      v_exec,
+      v_exec2,
       'resolve_next_transition',
       'forged://transition',
       jsonb_build_object(
-        'route_step','PROGRAMACION_PROFILE_SELECTION_REQUIRED',
+        'route_step',v_route->>'paso',
         'transition_result',jsonb_build_object(
           'status','RESOLVED',
           'schema_version','LF_ROUTER_NEXT_TRANSITION_V1',
           'router','ACT-0001',
-          'route_step','PROGRAMACION_PROFILE_SELECTION_REQUIRED',
+          'route_step',v_route->>'paso',
           'transition_code','DIRECT_RESULT',
           'transition_class','TERMINAL',
           'next_step','result_direct',
@@ -914,7 +971,7 @@ BEGIN
         ),
         'transition_sha256',repeat('0',64)
       ),
-      v_exec,
+      v_exec2,
       'EJECUCION_ROUTER_LF',
       'DOC',
       'ACTIVE_ENFORCEMENT',
@@ -930,10 +987,7 @@ BEGIN
     );
 
     IF v_fake->>'outcome'<>'BLOCKED'
-       OR v_fake->>'code' NOT IN (
-         'STEP_ALREADY_RECORDED_DIFFERENT',
-         'ROUTER_PIPELINE_SERVER_VALIDATION_FAILED'
-       )
+       OR v_fake->>'code'<>'ROUTER_PIPELINE_SERVER_VALIDATION_FAILED'
     THEN
       RAISE EXCEPTION 'ROUTER_DYNAMIC_TRANSITION_FORGED_NOT_BLOCKED:%',v_fake;
     END IF;
