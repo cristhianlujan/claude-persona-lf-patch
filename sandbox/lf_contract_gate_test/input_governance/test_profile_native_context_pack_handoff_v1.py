@@ -2,6 +2,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+# Classified under the existing INPUT_GOVERNANCE change family.
 MIGRATIONS = ROOT / "supabase" / "migrations"
 
 def _migration() -> str:
