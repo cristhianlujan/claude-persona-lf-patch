@@ -78,10 +78,17 @@ CREATE FUNCTION pg_temp.handoff(p_id uuid) RETURNS jsonb LANGUAGE sql AS $q$
  'target_ref','lf-screen-contract://B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001',
  'requested_scope_ids',jsonb_build_array('S1'),'producer_execution_ref','PROFILE',
  'entry_contract_digest_sha256','d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8') $q$;
+-- Selector binding as written by #3183: receipt = sha256((result - receipt)::text).
+CREATE FUNCTION pg_temp.selection(p_code text) RETURNS jsonb LANGUAGE sql AS $q$
+ SELECT jsonb_build_object('screen_selection_schema_version','LF_PROFILE_SCREEN_SELECTOR_BINDING_V1',
+  'screen_selection_result',r||jsonb_build_object('semantic_receipt_sha256',encode(extensions.digest(convert_to(r::text,'UTF8'),'sha256'),'hex')),
+  'screen_selection_validation',jsonb_build_object('status','VALID','decision','SELECTED','selected_screen_code',p_code))
+ FROM (SELECT jsonb_build_object('schema_version','LF_PROFILE_SCREEN_SELECTOR_SEMANTIC_RESULT_V1','decision','SELECTED',
+  'selected_screen_code',p_code,'ambiguous_screen_codes','[]'::jsonb) r) x $q$;
 CREATE FUNCTION pg_temp.setup_profile(p_id text DEFAULT 'PROFILE') RETURNS void LANGUAGE sql AS $q$
  INSERT INTO public.lf_operation_execution VALUES(p_id,'EJECUCION_PERFIL_LF','PERFIL','A9','COMPLETED',jsonb_build_object(
- 'router_profile_handoff',jsonb_build_object('channel','PROGRAMACION','semantic_request',jsonb_build_object('router_action_binding',pg_temp.binding())),
- 'screen_selection_result',jsonb_build_object('selected_screen_code','B2B-AUTH-001','semantic_receipt_sha256',repeat('a',64))),now(),now()) $q$;
+ 'router_profile_handoff',jsonb_build_object('channel','PROGRAMACION','semantic_request',jsonb_build_object('router_action_binding',pg_temp.binding())))
+ ||pg_temp.selection('B2B-AUTH-001'),now(),now()) $q$;
 SELECT pg_temp.setup_profile();
 SELECT pg_temp.putcontext('aaaaaaaa-0000-4000-8000-000000000001','PROFILE');
 INSERT INTO public.lf_operation_execution VALUES('JUDGE','REVISION_INDEPENDIENTE_ESTRATEGIA_LF','ANALYSIS','A9','COMPLETED',
@@ -196,6 +203,15 @@ DO $$ DECLARE r jsonb; v jsonb; BEGIN
  IF r->>'status' IS DISTINCT FROM 'IDEMPOTENT_REPLAY' OR NOT (r->'warnings' @> '["DEFINITION_NOT_CURRENT_AT_ISSUE"]')
     OR v->>'reason' IS DISTINCT FROM 'PG01_V2_DEFINITION_CURRENTNESS_NOT_VERIFIED' THEN
   RAISE EXCEPTION 'TEST_FAIL:20_candidate % %',r,v; END IF; INSERT INTO passed VALUES(20); END $$;
-DO $$ DECLARE n int; BEGIN SELECT count(*) INTO n FROM passed; IF n IS DISTINCT FROM 20 THEN RAISE EXCEPTION 'TEST_FAIL:COUNT_%',n; END IF;
+-- 21 Selector receipt that does not match its result (tampered after binding).
+INSERT INTO public.lf_operation_execution VALUES('PROFILE7','EJECUCION_PERFIL_LF','PERFIL','A9','COMPLETED',jsonb_build_object(
+ 'router_profile_handoff',jsonb_build_object('channel','PROGRAMACION','semantic_request',jsonb_build_object('router_action_binding',pg_temp.binding())))
+ ||jsonb_set(pg_temp.selection('B2B-AUTH-001'),'{screen_selection_result,semantic_receipt_sha256}',to_jsonb(repeat('a',64))),now(),now());
+SELECT pg_temp.ctx('aaaaaaaa-0000-4000-8000-000000000007','PROFILE7');
+SELECT pg_temp.judge('JUDGE7','aaaaaaaa-0000-4000-8000-000000000007');
+DO $$ BEGIN
+ IF NOT pg_temp.expect($c$SELECT private.fn_lf_programming_receipt_record_runtime_v1('PROFILE7',pg_temp.binding(),pg_temp.ho('aaaaaaaa-0000-4000-8000-000000000007','PROFILE7'),'JUDGE7')$c$,'PG01_RUNTIME_SCREEN_SELECTION_INVALID')
+ THEN RAISE EXCEPTION 'TEST_FAIL:21_selection_receipt'; END IF; INSERT INTO passed VALUES(21); END $$;
+DO $$ DECLARE n int; BEGIN SELECT count(*) INTO n FROM passed; IF n IS DISTINCT FROM 21 THEN RAISE EXCEPTION 'TEST_FAIL:COUNT_%',n; END IF;
  RAISE NOTICE 'PG01_RUNTIME_WRITER_TESTS_PASSED:%',n; END $$;
 ROLLBACK;

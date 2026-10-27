@@ -521,6 +521,16 @@ BEGIN
  selsha:=e.manifest#>>'{screen_selection_result,semantic_receipt_sha256}';
  IF nullif(btrim(coalesce(sel,'')),'') IS NULL OR coalesce(selsha,'') !~ '^[0-9a-f]{64}$' THEN
   RAISE EXCEPTION 'PG01_RUNTIME_SCREEN_SELECTION_MISSING'; END IF;
+ -- Integrity of the selector binding (#3183): same schema, VALID/SELECTED, and the
+ -- receipt recomputed with the selector's own formula. Proves the stored result is
+ -- internally consistent; provenance still rests on who may write the manifest.
+ IF e.manifest->>'screen_selection_schema_version' IS DISTINCT FROM 'LF_PROFILE_SCREEN_SELECTOR_BINDING_V1'
+ OR e.manifest#>>'{screen_selection_validation,status}' IS DISTINCT FROM 'VALID'
+ OR e.manifest#>>'{screen_selection_result,decision}' IS DISTINCT FROM 'SELECTED'
+ OR e.manifest#>>'{screen_selection_validation,selected_screen_code}' IS DISTINCT FROM sel
+ OR selsha IS DISTINCT FROM encode(extensions.digest(convert_to(
+      ((e.manifest->'screen_selection_result')-'semantic_receipt_sha256')::text,'UTF8'),'sha256'),'hex') THEN
+  RAISE EXCEPTION 'PG01_RUNTIME_SCREEN_SELECTION_INVALID'; END IF;
  SELECT count(*),min('lf-screen-contract://'||sh.app_shell_code||'/'||m.module_code||'/'||p.codigo)
  INTO screen_count,dref FROM lf_ops.pantallas p JOIN lf_ops.modulos m ON p.module_id=m.module_id
  JOIN lf_ops.app_shells sh ON m.app_shell_id=sh.app_shell_id
