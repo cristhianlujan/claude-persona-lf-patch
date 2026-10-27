@@ -115,6 +115,18 @@ Efecto en el inventario: **9 → 12 superficies SQL** (`frozen_inventory_v1.json
 Sobre `lf_router_governed_caller_route_v1` (pregunta de CT05): la cadena governed_caller_route → semantic_resume_route → resolve no muestra DML en el texto y la hoja es STABLE; **no se demostró** que no haya efectos indirectos en toda la cadena.
 Limitación del revisor: la sección `independence` declara evidencia técnica obtenida directamente por conectores y, según la parte visible de su respuesta, **sin atestación del proveedor**. No sirve todavía como recibo de cierre.
 
+### 5.9 Decisión de alcance del dueño (2026-10-27, 17:52 Lima)
+Texto del dueño: las funciones del router y su encadenamiento se ven **al final**, en la integración; primero se obtiene bien el funcionamiento propio del updater.
+Aplicación en `frozen_inventory_v1.json` (v3), campo `scope` por superficie:
+| Alcance | Funciones | n |
+|---|---|---|
+| `UPDATER` (cierra CT01) | begin, effective_route, evolution_step_guard, post_merge_reconcile, result_class, substantive_block, verified_receipt, lf_record_profile_operation_step_v1 | 8 |
+| `DEFERRED_ROUTER` (se ve en la integración, **no se pierde**) | lf_router_governed_caller_route_v1, lf_router_resolve_v1, lf_router_semantic_resume_route_v1 | 3 |
+| `OUT_OF_SCOPE_CREATION` (ruta de creación, no de actualización) | lf_record_creacion_perfil_step_v1 | 1 |
+Falsificador con `scope` (probado en producción): UPDATER 8 PASS · DEFERRED_ROUTER 3 PASS · OUT_OF_SCOPE_CREATION 1 PASS · 3 mutaciones negativas detectadas. Las 12 siguen vigiladas contra deriva; solo las 8 de alcance UPDATER cuentan para cerrar CT01.
+Pendientes que esta decisión **no resuelve** y deben quedar rastreados fuera de CT01: (1) el chequeo de escrituras indirectas de la cadena del router (PE10A_CT05 u otro checkpoint de integración); (2) el permiso EXECUTE de `anon`/`authenticated` sobre `lf_record_creacion_perfil_step_v1` (ruta de creación; no verificado si es explotable).
+Nota de coherencia: la especificación de CT01 en el plan dice "todas las superficies tocadas". El alcance se acota aquí por decisión del dueño; el plan no se modificó. El cierre de CT01 debe citar esta decisión.
+
 ## 6. Lo que sigue sin cubrirse (CT01 no puede cerrarse con esto)
 - Contenido campo a campo de los contratos (solo claves de primer nivel) y SRCR V0_7R1 (no localizado por nombre).
 - Falsificador en CI: existe en `docs/profile_updater/pe10a_ct01_falsifier/` (probado a mano contra producción), pero no corre solo.
