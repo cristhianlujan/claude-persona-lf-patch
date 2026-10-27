@@ -1,0 +1,61 @@
+{
+  "schema_version": "LF_TECHNICAL_DEFINITION_CONTRACT_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "admitted_provider": false,
+  "operational_admission": false,
+  "purpose": "Identify, observe and verify one technical database asset as the subject of a programming repair, without presenting it as a screen.",
+  "definition_kind": "TECHNICAL_ASSET",
+  "ref": {
+    "scheme": "lf-technical-definition",
+    "pattern": "^lf-technical-definition://<project_ref>/<object_kind>/<canonical_identity>$",
+    "object_kinds_v1": ["FUNCTION"],
+    "object_kinds_deferred": ["TABLE", "VIEW", "POLICY", "TRIGGER", "TYPE"],
+    "canonical_identity_function": "<schema>.<name>(<oidvectortypes(proargtypes)>)",
+    "example": "lf-technical-definition://mhwmirqcgxxukpctffuv/FUNCTION/public.fn_lf_decision_context_asof_record_v1(jsonb, text)",
+    "non_canonical_spelling": "REJECT_SIGNATURE_NOT_CANONICAL",
+    "name_without_signature": "REJECT_IDENTITY_SIGNATURE_REQUIRED",
+    "overloads": "EACH_SIGNATURE_IS_A_DISTINCT_SUBJECT"
+  },
+  "observed_state": {
+    "reader": "SECURITY INVOKER, STABLE, fixed search_path, read-only catalog readback",
+    "body_sha256": "sha256 of pg_proc.prosrc bytes",
+    "attrs_sha256": "sha256 of {owner, language, security_definer, volatility, config, returns}",
+    "acl": "aclexplode(coalesce(proacl, acldefault('f', proowner))) sorted by grantee then privilege; PUBLIC spelled PUBLIC",
+    "acl_sha256": "sha256 of the normalized acl array",
+    "effective_privileges": "has_function_privilege per role listed in the delta; required in success criteria because the ACL text does not include inherited grants"
+  },
+  "source_pin": {
+    "required": ["repo", "commit", "path", "blob_sha1"],
+    "path_pattern": "^supabase/migrations/[0-9]{14}_[a-z0-9_]+\\.sql$",
+    "git_resolution": "OUTSIDE_DATABASE_IN_CI_OR_CALLER",
+    "source_live_parity": "REPORTED_SEPARATELY_FROM_CURRENTNESS",
+    "known_parity_gap": "Hosted prosrc can differ from the Git migration bytes (observed 2026-10-27 for fn_lf_decision_context_asof_record_v1: equal only modulo whitespace). Byte parity is a finding, not an admission blocker, until the owner decides the rule."
+  },
+  "definition": {
+    "required": ["definition_ref", "observed_pin", "source_pin", "allowed_refs", "allowed_dimensions", "changes", "success_criteria", "rollback"],
+    "dimensions": ["ACL", "BODY", "ATTRS"],
+    "changes_item": ["definition_ref", "dimension", "before", "after"],
+    "success_criteria_examples": ["observed acl equals target acl", "effective EXECUTE false for anon and authenticated", "body_sha256 unchanged"],
+    "approval": "PENDING_DECISION: who approves a technical delta and how the approval binds to the subject sha"
+  },
+  "currentness": {
+    "vocabulary": ["DEFINITION_CURRENT", "DEFINITION_NOT_FOUND", "DEFINITION_CHANGED_BODY", "DEFINITION_CHANGED_ATTRS", "DEFINITION_CHANGED_ACL", "SOURCE_PIN_MISSING", "SIGNATURE_NOT_CANONICAL", "IDENTITY_SIGNATURE_REQUIRED", "DEFINITION_REF_SCHEME_UNSUPPORTED", "KIND_UNSUPPORTED", "PROJECT_MISMATCH"],
+    "checked_at": ["A9_SNAPSHOT", "RECEIPT_WRITE", "ADMISSION", "BEFORE_TRAIN_LABEL"],
+    "drift_response": "RETURN_TO_ANALYSIS_NO_CODE",
+    "reuse": "CURRENTNESS_AUTHORITY vocabulary; no new snapshot table"
+  },
+  "scope": {
+    "out_of_scope_ref": "SCOPE_OUT_OF_BOUNDS",
+    "out_of_scope_dimension": "DIMENSION_OUT_OF_BOUNDS",
+    "empty_delta": "DELTA_EMPTY"
+  },
+  "admission_evolution": {
+    "v2_unchanged": true,
+    "v2_scope": "SCREEN only via lf-screen-contract",
+    "proposal": "Next admission version discriminated by definition_kind in {SCREEN, TECHNICAL_ASSET}; one kind per envelope in its first version; each kind with its own provider and its own selection binding",
+    "screen_fabrication_forbidden": true,
+    "technical_through_screen_selector_forbidden": true
+  },
+  "transport": "ACTUALIZACION_DB_LF -> PR -> PASE -> Merge Train; the repair itself never writes hosted state",
+  "prototype": "test_technical_definition_provider_prototype_v1.sql (20 cases, PostgreSQL 17.6, ROLLBACK)"
+}
