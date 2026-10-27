@@ -50,13 +50,15 @@ Respuestas: `DEFINITION_NOT_FOUND`, `DEFINITION_CHANGED_BODY|ATTRS|ACL`, `SOURCE
 
 V2 no cambia: sigue siendo solo `SCREEN`. La propuesta es una versión siguiente discriminada por `definition_kind ∈ {SCREEN, TECHNICAL_ASSET}`, un solo tipo por sobre, con proveedor y selección propios para cada tipo. Prohibido fabricar una pantalla o pasar un activo técnico por el selector de pantallas.
 
-### Prueba del prototipo (PostgreSQL 17.6, ROLLBACK): 20/20
+### Prueba del prototipo (PostgreSQL 17.6, ROLLBACK): 63/63
 
 | Grupo | Casos |
 |---|---|
 | Identidad | Firma exacta; grafía no canónica; sobrecarga equivocada no es el sujeto; firma inexistente; nombre sin firma; referencia de pantalla; tipo no soportado; otro proyecto |
 | Vigencia | Pin vigente; pin de fuente ausente; deriva de ACL; de cuerpo; de atributos; sujeto eliminado |
 | Delta | En alcance; sujeto ajeno; cambio de cuerpo en una reparación solo de ACL; destino aún no cumplido; cumplido tras el delta; cuerpo intacto |
+
+Se añaden 43 negativos estructurales: objeto raíz, arrays obligatorios y no vacíos, cada cambio como objeto, sujetos y dimensiones obligatorios/no nulos, referencias no vacías y dimensiones ACL/BODY/ATTRS. `DELTA_INVALID` se resuelve antes de cualquier predicado de pertenencia; `DELTA_EMPTY` conserva su significado. Esto corrige los deltas incompletos que antes daban `DELTA_IN_SCOPE`.
 
 El prototipo vive en un esquema creado dentro de la transacción. No es un proveedor admitido ni un objeto propuesto para hosted.
 
@@ -87,7 +89,10 @@ Identidad propuesta: un rol de servicio dedicado con `EXECUTE` solo sobre las fu
 
 ### Idempotencia y reintentos
 
-- Clave del llamador: `(source_execution_id, context_sha256)`. Repetir la secuencia completa no duplica nada: el escritor D7 es append-only con replay, y la admisión no escribe.
+- La pareja `(source_execution_id, context_sha256)` es solo un índice de observación, no una clave suficiente de deduplicación.
+- **D7** normaliza seis campos: context_id, context_sha256, target_ref, requested_scope_ids (ordenados y sin duplicados), producer_execution_ref y entry_contract_digest_sha256. El SQL calcula `binding_key_sha256` con el JSONB canónico; el llamador no sustituye ese cálculo por serialización JSON de Python.
+- **Identidad del llamador**: source_execution_id + los seis campos normalizados + el router_action_binding íntegro, con namespace/version propios. `caller_request_identity` es un fingerprint distinto del digest D7. Cambiar target, scopes, contexto, productor, digest de contrato o binding del Router no reutiliza una identidad anterior. El productor debe ser la misma ejecución de origen.
+- Un replay siempre vuelve a verificar cierre, contexto, juez, currentness y admisión. No cachear un resultado positivo como autorización permanente. El escritor D7 evita duplicar su recibo; eso no demuestra recuperación durable de toda la secuencia.
 - Reintentos solo ante errores transitorios (conexión o tiempo de espera): hasta 3, con espera creciente.
 - Los estados terminales (`STALE`, `NOT_FOUND`, `SOURCE_MISMATCH`, `JUDGE_INVALID`) no se reintentan: devuelven retorno tipado.
 - Recibo vencido (más de 24 h) o definición cambiada: retorno a Análisis, nunca reescritura.
@@ -113,7 +118,7 @@ Binarios `postgresql-17.6.0-x86_64-unknown-linux-gnu` con sha256 verificado cont
 | Composición (#3194, generador con hash de compuerta `c0ec44b9…` verificado) | `8e87fad` | 8 grupos (`PG01_CANDIDATE_COMPOSITION_PASSED:8`) |
 | Adaptador Native (#3194) | `8e87fad` | 10/10 (unittest) |
 | Permisos del escritor as-of (#3197) | `9d0f5ae` | 16/16 |
-| Prototipo de proveedor técnico (este PR) | — | 20/20 |
+| Prototipo de proveedor técnico (este PR, actualizado) | — | 63/63 |
 
 Las fixtures siguen siendo sintéticas (catálogo, perfil, juez, recibo terminal). Estas corridas no son evidencia hospedada ni de CI.
 
@@ -139,3 +144,24 @@ Las fixtures siguen siendo sintéticas (catálogo, perfil, juez, recibo terminal
 | D-C1 | Rol del llamador: dedicado o `service_role` | Cristhian |
 | D-C2 | Dónde corre: worker del runtime, Edge Function o job programado | Cristhian |
 | D-C3 | Quién crea la ejecución del juez independiente | Cristhian |
+
+
+## Continuación del 27-oct: corrección estructural, identidad y simulación
+
+Main integrado: `b57c5de166e9cf3d452239424292a6ce82a0b96f` (merge Train de #3197 observado en GitHub; no se atribuye ese merge a este trabajo). La aplicación/readback hosted no se certifica con esta observación.
+
+### Simulación del llamador
+
+`caller_simulation_v1.py` es diseño ejecutable exclusivamente sintético: no es un adaptador operacional, no tiene credenciales, transporte, scheduler, modelo, sleeps ni acceso a BD. Requiere puertos explícitamente sintéticos, sin considerar ese marcador una barrera de seguridad. Los estados de las fixtures son una proyección de prueba; un adaptador futuro debe validar y traducir los contratos reales de readback, incluido el recibo terminal completo.
+
+`test_caller_simulation_v1.py`: 21 tests unitarios. Cubre orden de lectura, cierre no terminal/ajeno, continuación ausente, origen/contexto ajenos, juez ausente o inválido (nunca creado), recibo ausente/vencido/revocado, booleanos tipados, operación inactiva, autoridad inesperada, reintentos transitorios hasta tres intentos, agotamiento, respuesta perdida después de escribir y replay sin duplicado en el ledger simulado. Un replay reconsulta vigencia; inputs y snapshots no se mutan. Ningún resultado habilita ejecución: operational_admission y downstream_execution_allowed permanecen false.
+
+No demuestra permisos reales, autenticidad del juez, coordinación entre procesos, persistencia de la bitácora, backoff ni recuperación durable; esas partes siguen dependiendo de D-C1..C3 y de un adaptador admitido.
+
+### Contraste con D7 real
+
+`test_pg01_d7_caller_identity_v1.sql` se añade al final de la composición rollback-owned de #3194, antes del ROLLBACK. Usa el resolver D7 real y el recibo creado por el escritor runtime real con fixtures: duplicar el scope conserva receipt_record_id/binding_key_sha256; cambiar por separado cualquiera de los seis campos no encuentra el recibo anterior. Son 7 comprobaciones adicionales, sin reemplazar los 8 grupos originales.
+
+Reproducción: generar la composición con el builder de #3194 y su gate fijado. Conservar `composition.sql` y `sources.json`; producir otro archivo SQL que inserte este test antes del ROLLBACK final. Ejecutarlo desde el directorio generado en PostgreSQL desechable. La simulación Python se ejecuta desde esta carpeta con `python3 -m unittest -v test_caller_simulation_v1.py`.
+
+Resultado de esta continuación: prototipo 63/63 y composición 8 grupos + identidad D7 7 comprobaciones en PostgreSQL 17.6; simulación 21/21 en Python. Todas las entradas de autoridad, catálogo, perfil y juez siguen siendo fixtures explícitas. Sin efectos hosted ni cierre P1/PR2/I0/I1.

@@ -74,18 +74,55 @@ END $f$;
 
 -- Delta scope: a repair may only touch the refs it declares, and only in declared dimensions.
 CREATE FUNCTION tdp.delta_scope_v1(p_def jsonb) RETURNS jsonb
-LANGUAGE sql IMMUTABLE AS $f$
-  SELECT CASE
-    WHEN jsonb_typeof(p_def->'changes') IS DISTINCT FROM 'array' OR jsonb_array_length(p_def->'changes') = 0
-      THEN jsonb_build_object('ok',false,'reason','DELTA_EMPTY')
-    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements(p_def->'changes') c
-                 WHERE NOT (p_def->'allowed_refs') ? (c->>'definition_ref'))
-      THEN jsonb_build_object('ok',false,'reason','SCOPE_OUT_OF_BOUNDS')
-    WHEN EXISTS (SELECT 1 FROM jsonb_array_elements(p_def->'changes') c
-                 WHERE c->>'dimension' NOT IN (SELECT jsonb_array_elements_text(p_def->'allowed_dimensions')))
-      THEN jsonb_build_object('ok',false,'reason','DIMENSION_OUT_OF_BOUNDS')
-    ELSE jsonb_build_object('ok',true,'reason','DELTA_IN_SCOPE') END
-$f$;
+LANGUAGE plpgsql IMMUTABLE AS $f$
+DECLARE c jsonb; v jsonb;
+BEGIN
+  IF jsonb_typeof(p_def) IS DISTINCT FROM 'object' THEN
+    RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+  END IF;
+  -- Separate structural validation from membership predicates: SQL NULL must
+  -- never turn a missing field into a successful scope check.
+  IF jsonb_typeof(p_def->'changes') IS DISTINCT FROM 'array'
+     OR jsonb_typeof(p_def->'allowed_refs') IS DISTINCT FROM 'array'
+     OR jsonb_typeof(p_def->'allowed_dimensions') IS DISTINCT FROM 'array' THEN
+    RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+  END IF;
+  IF jsonb_array_length(p_def->'changes') = 0 THEN
+    RETURN jsonb_build_object('ok',false,'reason','DELTA_EMPTY');
+  END IF;
+  IF jsonb_array_length(p_def->'allowed_refs') = 0
+     OR jsonb_array_length(p_def->'allowed_dimensions') = 0 THEN
+    RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+  END IF;
+  FOR v IN SELECT value FROM jsonb_array_elements(p_def->'allowed_refs') LOOP
+    IF jsonb_typeof(v) IS DISTINCT FROM 'string' OR nullif(btrim(v#>>'{}'),'') IS NULL THEN
+      RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+    END IF;
+  END LOOP;
+  FOR v IN SELECT value FROM jsonb_array_elements(p_def->'allowed_dimensions') LOOP
+    IF jsonb_typeof(v) IS DISTINCT FROM 'string' OR (v#>>'{}') NOT IN ('ACL','BODY','ATTRS') THEN
+      RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+    END IF;
+  END LOOP;
+  FOR c IN SELECT value FROM jsonb_array_elements(p_def->'changes') LOOP
+    IF jsonb_typeof(c) IS DISTINCT FROM 'object'
+       OR jsonb_typeof(c->'definition_ref') IS DISTINCT FROM 'string'
+       OR nullif(btrim(c->>'definition_ref'),'') IS NULL
+       OR jsonb_typeof(c->'dimension') IS DISTINCT FROM 'string'
+       OR (c->>'dimension') NOT IN ('ACL','BODY','ATTRS') THEN
+      RETURN jsonb_build_object('ok',false,'reason','DELTA_INVALID');
+    END IF;
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM jsonb_array_elements(p_def->'changes') x
+             WHERE NOT (p_def->'allowed_refs') ? (x->>'definition_ref')) THEN
+    RETURN jsonb_build_object('ok',false,'reason','SCOPE_OUT_OF_BOUNDS');
+  END IF;
+  IF EXISTS (SELECT 1 FROM jsonb_array_elements(p_def->'changes') x
+             WHERE NOT (p_def->'allowed_dimensions') ? (x->>'dimension')) THEN
+    RETURN jsonb_build_object('ok',false,'reason','DIMENSION_OUT_OF_BOUNDS');
+  END IF;
+  RETURN jsonb_build_object('ok',true,'reason','DELTA_IN_SCOPE');
+END $f$;
 
 -- Success criterion: the observed ACL equals the declared target ACL.
 CREATE FUNCTION tdp.delta_satisfied_v1(p_ref text, p_project text, p_target_acl jsonb) RETURNS boolean
@@ -163,11 +200,61 @@ REVOKE ALL ON FUNCTION public.fn_demo_writer_v1(jsonb,text) FROM PUBLIC, anon, a
 INSERT INTO r SELECT 'T19_TARGET_SATISFIED_AFTER_DELTA', tdp.delta_satisfied_v1(:'ref', :'prj', :'target_acl'::jsonb), (tdp.observe_v1(:'ref', :'prj')->'acl')::text;
 INSERT INTO r SELECT 'T20_BODY_UNCHANGED_BY_ACL_DELTA', tdp.observe_v1(:'ref', :'prj')->>'body_sha256' = :'obs'::jsonb->>'body_sha256', NULL;
 
+-- Malformed deltas must be rejected before any membership checks.
+INSERT INTO r
+SELECT t.case_id, d->'ok' IS NOT DISTINCT FROM 'false'::jsonb
+  AND d->>'reason' IS NOT DISTINCT FROM t.expected, d::text
+FROM (VALUES
+ ('T21_SQL_NULL',NULL::jsonb,'DELTA_INVALID'),
+ ('T22_JSON_NULL','null'::jsonb,'DELTA_INVALID'),
+ ('T23_ROOT_ARRAY','[]'::jsonb,'DELTA_INVALID'),
+ ('T24_ROOT_STRING','"x"'::jsonb,'DELTA_INVALID'),
+ ('T25_CHANGES_MISSING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"]}'::jsonb,'DELTA_INVALID'),
+ ('T26_CHANGES_NULL','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": null}'::jsonb,'DELTA_INVALID'),
+ ('T27_CHANGES_OBJECT','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": {}}'::jsonb,'DELTA_INVALID'),
+ ('T28_CHANGES_STRING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": "ACL"}'::jsonb,'DELTA_INVALID'),
+ ('T29_CHANGES_NUMBER','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": 1}'::jsonb,'DELTA_INVALID'),
+ ('T30_CHANGES_EMPTY','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": []}'::jsonb,'DELTA_EMPTY'),
+ ('T31_ALLOWED_REFS_MISSING','{"allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T32_ALLOWED_REFS_NULL','{"allowed_refs": null, "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T33_ALLOWED_REFS_OBJECT','{"allowed_refs": {}, "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T34_ALLOWED_REFS_STRING','{"allowed_refs": "ACL", "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T35_ALLOWED_REFS_NUMBER','{"allowed_refs": 1, "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T36_ALLOWED_REFS_EMPTY','{"allowed_refs": [], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T37_ALLOWED_DIMENSIONS_MISSING','{"allowed_refs": ["EXPECTED"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T38_ALLOWED_DIMENSIONS_NULL','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": null, "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T39_ALLOWED_DIMENSIONS_OBJECT','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": {}, "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T40_ALLOWED_DIMENSIONS_STRING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": "ACL", "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T41_ALLOWED_DIMENSIONS_NUMBER','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": 1, "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T42_ALLOWED_DIMENSIONS_EMPTY','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": [], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T43_CHANGE_ITEM_NULL','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [null]}'::jsonb,'DELTA_INVALID'),
+ ('T44_CHANGE_ITEM_ARRAY','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [[]]}'::jsonb,'DELTA_INVALID'),
+ ('T45_CHANGE_ITEM_STRING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": ["ACL"]}'::jsonb,'DELTA_INVALID'),
+ ('T46_CHANGE_ITEM_NUMBER','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [1]}'::jsonb,'DELTA_INVALID'),
+ ('T47_CHANGE_ITEM_OBJECT','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{}]}'::jsonb,'DELTA_INVALID'),
+ ('T48_CHANGE_DEFINITION_REF_MISSING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T49_CHANGE_DEFINITION_REF_NULL','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": null, "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T50_CHANGE_DEFINITION_REF_NUMBER','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": 1, "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T51_CHANGE_DEFINITION_REF_BLANK','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": " ", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T52_CHANGE_DIMENSION_MISSING','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED"}]}'::jsonb,'DELTA_INVALID'),
+ ('T53_CHANGE_DIMENSION_NULL','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": null}]}'::jsonb,'DELTA_INVALID'),
+ ('T54_CHANGE_DIMENSION_NUMBER','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": 1}]}'::jsonb,'DELTA_INVALID'),
+ ('T55_CHANGE_DIMENSION_BLANK','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": " "}]}'::jsonb,'DELTA_INVALID'),
+ ('T56_ALLOWED_REFS_NULL_ITEM','{"allowed_refs": [null], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T57_ALLOWED_REFS_NUMBER_ITEM','{"allowed_refs": [1], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T58_ALLOWED_REFS_BLANK_ITEM','{"allowed_refs": [" "], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T59_ALLOWED_DIMENSIONS_NULL_ITEM','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": [null], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T60_ALLOWED_DIMENSIONS_NUMBER_ITEM','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": [1], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T61_ALLOWED_DIMENSIONS_BLANK_ITEM','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": [" "], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T62_UNKNOWN_ALLOWED_DIMENSION','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["DROP"], "changes": [{"definition_ref": "EXPECTED", "dimension": "ACL"}]}'::jsonb,'DELTA_INVALID'),
+ ('T63_UNKNOWN_CHANGE_DIMENSION','{"allowed_refs": ["EXPECTED"], "allowed_dimensions": ["ACL"], "changes": [{"definition_ref": "EXPECTED", "dimension": "DROP"}]}'::jsonb,'DELTA_INVALID')
+) t(case_id,payload,expected) CROSS JOIN LATERAL tdp.delta_scope_v1(t.payload) d;
+
 SELECT case_id, passed, detail FROM r ORDER BY case_id;
 DO $f$ DECLARE n int; t int;
 BEGIN
   SELECT count(*) FILTER (WHERE NOT passed), count(*) INTO n, t FROM r;
-  IF t <> 20 OR n <> 0 THEN RAISE EXCEPTION 'TECHNICAL_DEFINITION_PROVIDER_PROTOTYPE_FAILED failed=% total=%', n, t; END IF;
+  IF t <> 63 OR n <> 0 THEN RAISE EXCEPTION 'TECHNICAL_DEFINITION_PROVIDER_PROTOTYPE_FAILED failed=% total=%', n, t; END IF;
   RAISE NOTICE 'TECHNICAL_DEFINITION_PROVIDER_PROTOTYPE_PASS %/%', t, t;
 END $f$;
 ROLLBACK;
