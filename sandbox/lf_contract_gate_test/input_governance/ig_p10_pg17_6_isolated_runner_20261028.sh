@@ -47,8 +47,10 @@ source=/ig/ig_p10_forward_only_scope_boundary_candidate_20261028.sql
 DO $cases$
 DECLARE v_error text;
 BEGIN
- IF (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='IG')<>1
- OR (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='TREMED')<>1
+ IF (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='IG_DERIVED')<>1
+ OR (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='TREMED_GLOBAL')<>1
+ OR (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='IG_LEGACY')<>4
+ OR (SELECT count(*) FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='TREMED_OWN')<>4
  THEN RAISE EXCEPTION 'P10_BASELINE_COUNT_FAILED'; END IF;
  RAISE NOTICE 'P10_CASE|HISTORICAL_PARITY|PASS';
 
@@ -102,6 +104,16 @@ BEGIN
   '{"applicability_v1":{"status":"ACTIVE"}}'::jsonb);
  RAISE NOTICE 'P10_CASE|CANDIDATE_AUTHORING_ALLOWED|PASS';
 
+ -- New candidate links remain available to Curator via source data,
+ -- but MUST NOT appear in either effective operational reader.
+ INSERT INTO lf_ops.reglas_pantallas(pantalla_id,regla_id) VALUES (3,200);
+ IF EXISTS(SELECT 1 FROM programacion.fn_input_effective_rule_links_v1(3,'INPUT_GOVERNANCE')
+   WHERE regla_id=200 AND binding_source='LEGACY_EXPLICIT')
+ OR EXISTS(SELECT 1 FROM programacion.fn_t_remed_effective_rules_v1(3,0.25)
+   WHERE regla_id=200 AND origin='OWN')
+ THEN RAISE EXCEPTION 'P10_NEW_CANDIDATE_PHYSICAL_LINK_ESCAPED'; END IF;
+ RAISE NOTICE 'P10_CASE|CANDIDATE_LINK_REVIEW_ONLY|PASS';
+
  -- No physical links: technical status change cannot create global scope
  -- because the executable resolver now reads ONLY the frozen baseline.
  UPDATE lf_ops.reglas SET estado='VIGENTE' WHERE id=300;
@@ -133,7 +145,7 @@ SQL
 
 for marker in HISTORICAL_PARITY PROMOTION_DENIED NEW_VIGENTE_LINK_DENIED \
  NEW_ACTIVE_DENIED SELECTOR_CHANGE_DENIED CANDIDATE_AUTHORING_ALLOWED \
- UNLINKED_NO_GLOBAL NEW_SCREEN_NO_IMPLICIT_GLOBAL REVOCATION_ALLOWED; do
+ CANDIDATE_LINK_REVIEW_ONLY UNLINKED_NO_GLOBAL NEW_SCREEN_NO_IMPLICIT_GLOBAL REVOCATION_ALLOWED; do
  [[ "$(grep -Fc "P10_CASE|$marker|PASS" "$data/log.txt")" -eq 1 ]] ||
   { echo "FAIL: missing/duplicated case $marker"; cat "$data/log.txt"; exit 1; }
 done
@@ -152,5 +164,5 @@ SELECT
 [[ "$readback" == "t|t|t|t|t|t|t" ]] ||
  { echo "FAIL: rollback did not restore preimage: $readback"; exit 1; }
 grep -F "P10_CASE|" "$data/log.txt"
-echo "PASS_P10_FORWARD_BOUNDARY_PG17_6_9_CASES_ROLLBACK"
+echo "PASS_P10_FORWARD_BOUNDARY_PG17_6_10_CASES_ROLLBACK"
 ISOLATED_SCRIPT
