@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { resolveProfileRequiredSteps } from "./required_profile_steps.ts";
+import { verifyGithubReadback, verifyGithubWrite } from "./verified_write_evidence.ts";
 
 const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
@@ -382,6 +383,23 @@ Deno.serve(async (req: Request) => {
           const trusted = await deriveServerTrust(ex, before, body.evidence_payload as Record<string, unknown>);
           if (!trusted.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: trusted.code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
           evidence = trusted.evidence;
+        }
+        // Governed-route executions (opened with a Router semantic receipt) never accept caller-asserted write/readback
+        // evidence: branch/commit are verified against GitHub and every derived field is computed here.
+        if ((stepId === "github_write" || stepId === "github_readback") && typeof ex.manifest?.router_semantic_receipt_sha256 === "string") {
+          const recordedRows = await rows(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_id=in.(pre_write_execution_binding_gate,github_write)&select=step_id,evidence_payload`, "VERIFIED_WRITE_CONTEXT_READ");
+          const prewrite = recordedRows.find((r: any) => r.step_id === "pre_write_execution_binding_gate")?.evidence_payload;
+          const boundRevision = typeof prewrite?.bound_revision === "string" ? prewrite.bound_revision.trim().toLowerCase() : "";
+          const verified = await (stepId === "github_write" ? verifyGithubWrite : verifyGithubReadback)({
+            repository: REPOSITORY,
+            targetRootPath: String(ex.manifest?.target_root_path ?? ""),
+            boundRevision,
+            evidence: evidence ?? {},
+            gh: (path: string) => githubJson(`https://api.github.com/repos/${REPOSITORY}${path}`, "GITHUB_VERIFY"),
+            recordedWrite: recordedRows.find((r: any) => r.step_id === "github_write")?.evidence_payload ?? null,
+          });
+          if (!verified.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: verified.code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
+          evidence = verified.evidence;
         }
         const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
         const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;
