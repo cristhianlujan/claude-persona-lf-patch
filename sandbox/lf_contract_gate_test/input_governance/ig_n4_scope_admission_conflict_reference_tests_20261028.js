@@ -1,12 +1,12 @@
 // DEV-ONLY REFERENCE TESTS — LF IG G3/G4; no runtime, no database writes.
 // DO NOT USE THIS SCRIPT TO APPROVE, PUBLISH, OR ENFORCE POLICIES.
-// A trustedLookup fixture is an *injected test double*, NOT a verified LF authority adapter.
+// A trustedLookup and trustedCoverage are *injected test doubles*, NOT LF authority adapters.
 // Status READY_FOR_GOVERNED_PUBLICATION is a preliminary candidate, never ACTIVE.
 // Real admission requires an independently authenticated authority registry and receipt.
 
 function isDigest(x){return typeof x==="string"&&/^[0-9a-f]{64}$/i.test(x)}
 
-function admissionCandidate(p, trustedLookup){
+function admissionCandidate(p, trustedLookup, trustedCoverage){
   if (!p || !isDigest(p.rule_hash) || !isDigest(p.selector_hash)
     || !isDigest(p.scope_hash) || !p.consumer || !p.owner_role || !p.receipt_ref)
     return {status:"HOLD_EVIDENCE",reason:"MISSING_BINDING"};
@@ -23,7 +23,17 @@ function admissionCandidate(p, trustedLookup){
     if(receipt[key]!==p[key])return {status:"HOLD_AUTHORITY",reason:"RECEIPT_SCOPE_BINDING_MISMATCH"};
   if(!receipt.negative_tests_verified || !receipt.source_current)
     return {status:"HOLD_EVIDENCE",reason:"NO_NEGATIVE_TESTS_OR_STALE_SOURCE"};
-  if(p.is_broad_coverage && !receipt.explicit_broad_scope_approval)
+  // Never trust a caller-supplied "is_broad_coverage" flag.
+  // A future authoritative scope inspector must compute impact/coverage from
+  // the published target registry and bind it to the exact proposal hashes.
+  if(typeof trustedCoverage!=="function")
+    return {status:"HOLD_SCOPE",reason:"NO_TRUSTED_COVERAGE_INSPECTOR"};
+  const coverage=trustedCoverage(p);
+  if(!coverage || coverage.verified!==true || coverage.source_current!==true
+    || coverage.rule_hash!==p.rule_hash || coverage.selector_hash!==p.selector_hash
+    || coverage.scope_hash!==p.scope_hash || typeof coverage.is_broad!=="boolean")
+    return {status:"HOLD_SCOPE",reason:"SCOPE_INSPECTION_UNVERIFIED"};
+  if(coverage.is_broad && !receipt.explicit_broad_scope_approval)
     return {status:"HOLD_AUTHORITY",reason:"BROAD_SCOPE_NOT_RATIFIED"};
   if(receipt.restricted_conditions && !p.conditions_satisfied)
     return {status:"HOLD_AUTHORITY",reason:"APPROVAL_CONDITIONS_UNMET"};
@@ -44,7 +54,7 @@ function compositionCandidate(a,b,relation,verifiedRelation){
   return {status:"OVERRIDE_CANDIDATE",reason:"PRECEDENCE_RECEIPT_REFERENCED_REQUIRES_PUBLICATION_GATE"};
 }
 
-const H='a'.repeat(64),J='b'.repeat(64),K='c'.repeat(64);
+const H='a'.repeat(64),J='b'.repeat(64),K='c'.repeat(64),L='d'.repeat(64);
 const base={
   "rule_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "selector_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -56,7 +66,7 @@ const base={
   "selector_state": "ACTIVE",
   "has_unknown_attributes": false,
   "has_conflict": false,
-  "is_broad_coverage": false,
+  
   "evaluation_epoch": 100,
   "conditions_satisfied": true
 };
@@ -75,6 +85,10 @@ const receipt={
   "valid_until_epoch": 200
 };
 const get=()=>receipt;
+// TEST DOUBLE only. A real adapter must obtain this result from independently
+// authenticated scope/coverage evidence; a proposer must not set is_broad.
+const trustedCoverage=p=>({verified:true,source_current:true,rule_hash:p.rule_hash,
+  selector_hash:p.selector_hash,scope_hash:p.scope_hash,is_broad:p.scope_hash===L});
 const admissionTests=[
   ["A01 positive bounded receipt",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},get,"READY_FOR_GOVERNED_PUBLICATION"],
   ["A02 no adapter",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},null,"HOLD_AUTHORITY"],
@@ -92,8 +106,8 @@ const admissionTests=[
   ["A14 conflict",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":true,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},get,"HOLD_CONFLICT"],
   ["A15 CANDIDATO",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"CANDIDATO","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},get,"HOLD_LIFECYCLE"],
   ["A16 UNRESOLVED",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"UNRESOLVED","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},get,"HOLD_LIFECYCLE"],
-  ["A17 broad without approval",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":true,"evaluation_epoch":100,"conditions_satisfied":true},get,"HOLD_AUTHORITY"],
-  ["A18 broad explicitly ratified",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":true,"evaluation_epoch":100,"conditions_satisfied":true},()=>({...receipt,explicit_broad_scope_approval:true}),"READY_FOR_GOVERNED_PUBLICATION"],
+  ["A17 broad without approval",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"evaluation_epoch":100,"conditions_satisfied":true},get,"HOLD_AUTHORITY"],
+  ["A18 broad explicitly ratified",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"evaluation_epoch":100,"conditions_satisfied":true},()=>({...receipt,scope_hash:L,explicit_broad_scope_approval:true}),"READY_FOR_GOVERNED_PUBLICATION"],
   ["A19 conditional approval unmet",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":false},()=>({...receipt,restricted_conditions:true}),"HOLD_AUTHORITY"],
   ["A20 conditional approval met",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},()=>({...receipt,restricted_conditions:true,decision:"APPROVE_WITH_CONDITIONS"}),"READY_FOR_GOVERNED_PUBLICATION"],
   ["A21 rejected decision",{"rule_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","selector_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","scope_hash":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","consumer":"INPUT_GOVERNANCE","owner_role":"BUSINESS_OWNER","receipt_ref":"test-receipt","rule_state":"VIGENTE","selector_state":"ACTIVE","has_unknown_attributes":false,"has_conflict":false,"is_broad_coverage":false,"evaluation_epoch":100,"conditions_satisfied":true},()=>({...receipt,decision:"REJECT_SCOPE"}),"HOLD_AUTHORITY"],
@@ -113,6 +127,12 @@ const compositionTests=[
   ["C10 string title similarity no collision",{"effect_key":"onboarding.session","effect_value":"REQUIRE"},{"effect_key":"auth.session","effect_value":"DENY"},null,null,"COMPOSE_CANDIDATE"]
 ];
 let failed=0;
-for(const [label,p,lookup,expected] of admissionTests){const actual=admissionCandidate(p,lookup).status;if(actual!==expected){failed++;throw new Error(label+": expected "+expected+" got "+actual)}}
+for(const [label,p,lookup,expected] of admissionTests){const actual=admissionCandidate(p,lookup,trustedCoverage).status;if(actual!==expected){failed++;throw new Error(label+": expected "+expected+" got "+actual)}}
 for(const [label,a,b,relation,verify,expected] of compositionTests){const actual=compositionCandidate(a,b,relation,verify).status;if(actual!==expected){failed++;throw new Error(label+": expected "+expected+" got "+actual)}}
-console.log(JSON.stringify({admission:admissionTests.length,composition:compositionTests.length,failed,reference_only:true}));
+const noInspector=admissionCandidate(base,get,null);
+if(noInspector.status!=="HOLD_SCOPE")throw new Error("Scope adapter missing must HOLD");
+const forgedInspector=admissionCandidate(base,get,()=>({...trustedCoverage(base),scope_hash:L}));
+if(forgedInspector.status!=="HOLD_SCOPE")throw new Error("Scope hash drift must HOLD");
+const staleInspector=admissionCandidate(base,get,()=>({...trustedCoverage(base),source_current:false}));
+if(staleInspector.status!=="HOLD_SCOPE")throw new Error("Stale scope inspection must HOLD");
+console.log(JSON.stringify({admission:admissionTests.length+3,composition:compositionTests.length,failed,reference_only:true}));
