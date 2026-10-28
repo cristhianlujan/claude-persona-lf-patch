@@ -157,8 +157,7 @@ begin
   );
   return v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
 end;
-$function$
-
+$function$;
 
 DO $verify$
 DECLARE v_oid oid:='programacion.fn_input_governance_validator_rebind_v1(bigint,text)'::regprocedure;
