@@ -1,5 +1,7 @@
 # LF Input Governance — G2/G3: implementación candidata y verificaciones
 
+> **ACTUALIZACIÓN SQL/MATERIALIZED — 2026-10-28:** Se revisaron las consultas G3/G4/P07. P07 ahora usa una sola sentencia con CTE `MATERIALIZED`; paridad G3 tiene archivo versionado con `MATERIALIZED` (812 comparaciones, 52 matches, cero diferencias); el shadow usa CTE materializados. Se añadió T28 por coerción numérica de `consumer_role`: función actual 18/28, sombra candidata **28/28**. Ver [acta de auditoría](./IG_AUDITORIA_SQL_MATERIALIZED_VALIDACION_20261028.md). Los resultados anteriores de **27** casos quedan como evidencia histórica. **Sin ejecución DDL en PostgreSQL aislado ni aprobación G4; G5 sigue bloqueado.**
+
 > **CONTINUIDAD G3/G4:** Se preparó [verificador local PostgreSQL aislado](../../sandbox/lf_contract_gate_test/input_governance/ig_n4_isolated_pg_verifier_20261028.py): comprueba la identidad de la instancia, transacción de candidato, 27 casos, paridad activa y ROLLBACK. **NO se ejecutó**: este entorno carece de `psql` y `postgres`. El control de autoridad G4 se auditó con SELECT real, pero 14/14 provenance refieren eventos de diseño sin aceptación/producción explícita: [informe](./IG_G4_AUTORIDAD_SCOPE_FUENTES_Y_BRECHA_CONTRATO_V2_20261028.md). **G3 PG aislado y G4 siguen NO VERIFICADOS.**
 
 **Fecha:** 2026-10-28 · **Rama:** `dev/ig-n4-tremed-cascade-governed-20261028` · **PR:** #3269 (DRAFT) · **NO RECLASSIFY / NO ROUTER / NO DB WRITES**.
