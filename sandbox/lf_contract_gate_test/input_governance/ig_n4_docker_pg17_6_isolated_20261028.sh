@@ -81,7 +81,7 @@ SQL
 if grep -E "^T[0-9]{2}\|" "$out" | grep -Evq "\|PASS$"; then
   echo "FAIL: matcher vector mismatch"; exit 1
 fi
-grep -Fxq "ACL_G3_POST_DDL|PASS" "$out" ||
+grep -Fxq "ACL_G3_POST_DDL_REAL_INVOCATION|PASS" "$out" ||
   { echo "FAIL: isolated ACL probe missing"; exit 1; }
 grep -Fxq "PARITY|812|52|52|0|14|58" "$out" ||
   { echo "FAIL: active-selector parity mismatch"; exit 1; }
@@ -96,6 +96,6 @@ SELECT md5(pg_get_functiondef(
 [[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t" ]] ||
   { echo "FAIL: post-ROLLBACK source changed"; exit 1; }
 
-echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_SIMULATED"
+echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_REAL_ROLE"
 echo "PARITY|812|52|52|0|14|58"
 '
