@@ -1,0 +1,74 @@
+name: IG Universe canonical guard isolated regression
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261028132000_lf_ig_stale_recuration_canonical_universe_v1.sql'
+      - 'tests/ig/universe_ephemeral_*.sql'
+      - '.github/workflows/ig-universe-ephemeral-functional.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-universe-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: universe_ephemeral_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d universe_ephemeral_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Extract real pre-insert contract guard from PR SQL
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('supabase/migrations/20261028132000_lf_ig_stale_recuration_canonical_universe_v1.sql').read_text()
+          start=src.index("  select r.codigo,r.valor_config->'families',")
+          end=src.index("  v_graph:=programacion.fn_input_screen_canonical_graph",start)
+          insert=src.index("insert into programacion.input_readiness_runs",end)
+          assert start<end<insert, 'GUARD_NOT_BEFORE_RUN_INSERT'
+          extracted=src[start:end]
+          for required in ['v_parent.universe_rule_id','v_parent.universe_snapshot_sha256',
+                           'v_registry_count','jsonb_object_keys','fn_v09_sha256_jsonb']:
+              assert required in extracted, 'GUARD_MISSING_'+required
+          code="""CREATE FUNCTION programacion.fixture_guard()
+          RETURNS void LANGUAGE plpgsql AS $fn$
+          DECLARE
+            v_parent programacion.input_readiness_runs%rowtype;
+            v_version bigint:=19;
+            v_rule_code text;
+            v_family_list jsonb;
+            v_registry_rule text;
+            v_registry_count integer;
+          BEGIN
+            SELECT * INTO STRICT v_parent FROM programacion.input_readiness_runs WHERE id=833;
+          """+extracted+"""
+          END
+          $fn$;
+          """
+          Path('/tmp/ig_universe_exact_guard.sql').write_text(code)
+          print('CANDIDATE_EXACT_PREINSERT_GUARD_EXTRACTED',len(extracted))
+          PY
+      - name: Run positive and negative family binding tests on ephemeral DB
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: isolated_only
+          PGDATABASE: universe_ephemeral_test
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f tests/ig/universe_ephemeral_setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/ig_universe_exact_guard.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/ig/universe_ephemeral_cases.sql
+          echo 'ISOLATED_IG_UNIVERSE_GUARDS_TESTED'
