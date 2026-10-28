@@ -130,6 +130,10 @@ BEGIN
   THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_NEW_ACTIVE_SELECTOR'
     USING ERRCODE='P0001'; END IF;
  ELSIF TG_OP='UPDATE' THEN
+  IF NEW.estado='VIGENTE' AND OLD.estado IS DISTINCT FROM NEW.estado
+     AND EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas z WHERE z.regla_id=NEW.id)
+  THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_CANDIDATE_PROMOTION'
+    USING ERRCODE='P0001'; END IF;
   IF NEW.valor_config->'applicability_v1'->>'status'='ACTIVE'
    AND (
     OLD.valor_config->'applicability_v1'
@@ -146,6 +150,37 @@ $guard$;
 CREATE TRIGGER trg_ig_p10_future_selector_admission_v1
 BEFORE INSERT OR UPDATE OF valor_config,estado ON lf_ops.reglas
 FOR EACH ROW EXECUTE FUNCTION programacion.fn_ig_p10_forward_selector_admission_v1();
+
+-- Future physical bindings are a SEPARATE source of effective scope.
+-- Keep CANDIDATO links as analysis data, but disallow publishing new
+-- links to a VIGENTE rule before the competent G4 publication gate exists.
+CREATE OR REPLACE FUNCTION programacion.fn_ig_p10_forward_binding_admission_v1()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
+SET search_path TO 'pg_catalog','programacion','lf_ops'
+AS $guard$
+DECLARE v_state text;
+BEGIN
+ IF TG_OP='UPDATE'
+   AND NEW.regla_id IS NOT DISTINCT FROM OLD.regla_id
+   AND NEW.pantalla_id IS NOT DISTINCT FROM OLD.pantalla_id
+ THEN RETURN NEW; END IF;
+ SELECT r.estado INTO v_state FROM lf_ops.reglas r WHERE r.id=NEW.regla_id;
+ IF v_state='VIGENTE' THEN
+   RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_NEW_PHYSICAL_LINK'
+      USING ERRCODE='P0001';
+ END IF;
+ RETURN NEW;
+END
+$guard$;
+CREATE TRIGGER trg_ig_p10_future_binding_admission_v1
+BEFORE INSERT OR UPDATE OF regla_id,pantalla_id ON lf_ops.reglas_pantallas
+FOR EACH ROW EXECUTE FUNCTION programacion.fn_ig_p10_forward_binding_admission_v1();
+
+-- Candidate rule links may have been recorded for analysis. Promoting such
+-- a rule changes those links into potential operational scope. Hold that
+-- promotion until G4 verifies competent authority and future publication.
+-- No re-review of an unchanged VIGENTE historical rule is attempted.
+
 
 -- Baseline must be bitwise identical for all PREEXISTING targets under both
 -- root consumers. Never accept a sum-only parity assertion.
