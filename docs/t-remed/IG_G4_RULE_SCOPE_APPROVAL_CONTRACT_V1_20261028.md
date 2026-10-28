@@ -1,5 +1,7 @@
 # LF Input Governance — G4 contrato verificable de autorización del alcance de reglas v1
 
+> **ADENDA G4 (28-10-2026) — REGISTRO EXISTENTE IDENTIFICADO:** La gobernanza central de decisiones humanas **ya existe** en `private.lf_human_decision_classes_v1`, `...classification_rules_v1`, `...route_policies_v1`, `...authority_policies_v1`, requests y receipts. Inventario: 7 clases ACTIVE, 11 clasificadores ACTIVE, 7 rutas PENDING_AUTHORITY (0 ACTIVE), 0 políticas de autoridad y 0 requests/receipts. Específico IG: las tres rutas actuales son para `INPUT_GAP_PROPOSAL`, no para cambio de scope de regla N-4. **NO crear tabla/motor paralelo**. Contrato y cinco ensayos read-only en [auditoría de registro real G4](./IG_G4_REGISTRY_REUSE_REAL_AUTHORITY_GAP_20261028.md). La anterior afirmación de que faltaba un circuito de decisiones debe interpretarse como que **falta vinculación y autorización de scope por regla**, no que falte el registro central. G4 sigue NO_VERIFICADO.
+
 **Fecha:** 2026-10-28. **Naturaleza:** especificación de integración con contratos existentes, no un motor nuevo, no autorización concedida. **Estado:** `G4_NO_VERIFICADO`, `G5_NO_RECLASSIFY`. Dev branch PR #3269; EKB consultado; sin Router, escrituras a Supabase ni merge.
 
 ## 1. Evidencia primaria actual: quién puede decidir y qué no está probado
