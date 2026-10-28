@@ -1,6 +1,8 @@
 # LF IG — G4: paquete para revisión conjunta de autoridad de aplicabilidad por regla
 Fecha: 2026-10-28 · PR #3269 draft · **PROPUESTA PARA DECISIÓN, NO RATIFICADA** · CERO escrituras a Supabase, sin Router, sin reclasificación G5.
 
+> **ACTUALIZACIÓN DE EVIDENCIA (2026-10-28):** La hipótesis de varias solicitudes/recibos por dominio descrita abajo **no es una solución ratificada ni exigencia de ABAC/RBAC/XACML**. Primero deben verificarse fuentes competentes y la necesidad real de conformidades múltiples. Véase el [comparativo formal de 3 configuraciones, NIST/OASIS/OMG y 20 pruebas sintéticas](./IG_G4_COMPARATIVO_FORMAL_ESTANDARES_Y_DECISION_DE_ARQUITECTURA_V1_20261028.md). El comparativo contiene 20/20 de conformidad con un **oráculo diseñado**, no prueba de superioridad real. G4 sigue NO_VERIFICADO y G5 NO_RECLASSIFY.
+
 ## 1. Decisión que se debe tomar
 
 Definir **quién autoriza el alcance de cada regla** sin inferir GLOBAL de `es_transversal`, sin atribuirlo a `created_by` ni usar `reglas_pantallas` como autoridad terminal, y **sin crear otro motor de aprobaciones**.
