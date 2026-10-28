@@ -213,7 +213,7 @@ export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): 
   const eventName = typeof payload.event_name === "string" ? payload.event_name : "";
   const edgeWorkflowRef = `${config.repository}/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main`;
   if (
-    eventName === "pull_request" &&
+    eventName === "workflow_run" &&
     payload.workflow_ref === edgeWorkflowRef &&
     (payload.ref === "refs/heads/main" || /^refs\/pull\/[0-9]+\/merge$/.test(String(payload.ref ?? "")))
   ) {
