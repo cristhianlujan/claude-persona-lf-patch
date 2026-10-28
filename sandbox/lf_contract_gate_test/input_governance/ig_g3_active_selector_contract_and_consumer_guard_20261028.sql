@@ -29,12 +29,14 @@ structural AS MATERIALIZED (
  FROM active
 ),
 cross_consumer AS MATERIALIZED (
- SELECT id,
- programacion.fn_input_rule_selector_matches_v1(
-  selector,
-  '{"consumer_role":"IG_UNAUTHORIZED_CROSS_CONSUMER_PROBE","target":{"screen":{"id":0}}}'::jsonb
- ) AS forbidden_match
- FROM active
+ SELECT a.id,
+ CASE WHEN s.well_formed IS TRUE
+  THEN programacion.fn_input_rule_selector_matches_v1(
+   a.selector,
+   '{"consumer_role":"IG_UNAUTHORIZED_CROSS_CONSUMER_PROBE","target":{"screen":{"id":0}}}'::jsonb
+  )
+  ELSE false END AS forbidden_match
+ FROM active a JOIN structural s ON s.id=a.id
 )
 SELECT
  (SELECT count(*) FROM active) active_selectors,
