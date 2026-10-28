@@ -38,7 +38,7 @@ DECLARE
  v_a int; v_b int; v_ver text; v_cand int; v_pos boolean := false;
  v_neg_active int; v_neg boolean := false;
  v_after_cand int; v_rolled boolean := false;
- v_evidence text; v_observed jsonb; v_rec jsonb; v_tr jsonb;
+ v_evidence text; v_observed jsonb; v_rec jsonb; v_tr jsonb; v_open_before text; v_open_after text;
 BEGIN
  SELECT execution_id INTO v_exec FROM public.lf_operation_execution
  WHERE operation_code='ACTUALIZACION_DB_LF' AND target_type='MIGRATION'
@@ -58,11 +58,12 @@ BEGIN
  IF v_contract->>'status' IS DISTINCT FROM 'READY' OR jsonb_typeof(v_contract->'pass_when') IS DISTINCT FROM 'object'
  THEN RAISE EXCEPTION 'PE10_C6_CLOSE_CONTRACT_NOT_READY:%',v_contract; END IF;
 
- -- estado previo exigido: v0.1 en el registro, 1 contrato activo, sin candidato v0.2, sin ejecuciones abiertas
+ -- estado previo exigido: v0.1 en el registro, 1 contrato activo, sin candidato v0.2.
+ -- Ejecuciones abiertas heredadas de la operacion: se toleran y NO se tocan (el plan prohibe AUTO_CLOSE_LEGACY_EXECUTIONS);
+ -- el candidato es invisible para ellas (la revision de la operacion no cambia) y se registran sus ids antes/despues.
  IF (SELECT count(*) FROM public.lf_operation_registry WHERE operation_code=c_op AND version='v0.1')<>1
     OR (SELECT count(*) FROM public.lf_operation_contracts WHERE operation_code=c_op AND status='ACTIVE_ENFORCEMENT')<>1
     OR (SELECT count(*) FROM public.lf_operation_contracts WHERE operation_code=c_op AND contract_code='CONTRACT-ACTUALIZACION-PERFIL-LF-v0.2')<>0
-    OR (SELECT count(*) FROM public.lf_operation_execution WHERE operation_code=c_op AND status='IN_PROGRESS')<>0
  THEN RAISE EXCEPTION 'PE10_C6_CLOSE_PRESTATE_INVALID'; END IF;
 
  SELECT md5(coalesce((SELECT string_agg(to_jsonb(r)::text,'|' ORDER BY r.operation_code) FROM public.lf_operation_registry r),'')||'#'||
@@ -72,6 +73,7 @@ BEGIN
  SELECT string_agg(c.checkpoint_code||':'||c.status,',' ORDER BY c.checkpoint_code) INTO v_cp_before
  FROM programacion.engineering_work_checkpoints c WHERE c.work_item_id=v_wid AND c.checkpoint_code<>c_cp;
  v_rev_before := public.lf_operation_revision_sha256_v1(c_op);
+ SELECT coalesce(string_agg(execution_id||'='||status,',' ORDER BY execution_id),'') INTO v_open_before FROM public.lf_operation_execution WHERE operation_code=c_op AND status='IN_PROGRESS';
 
  -- DRY-RUN: el subbloque se revierte siempre (RAISE al final); las variables sobreviven al rollback
  BEGIN
@@ -120,6 +122,7 @@ BEGIN
    'positive_gate',jsonb_build_object('active_enforcement_contracts',v_a,'router_visible_contracts',v_b,'operation_revision_unchanged',(v_rev_in=v_rev_before),'registry_version',v_ver),
    'negative_gate',jsonb_build_object('active_enforcement_contracts_with_second_active',v_neg_active,'rejected',v_neg),
    'no_mutation_fingerprint_equal',(v_fp_after=v_fp_before),
+   'open_legacy_executions_untouched',v_open_before,
    'source_tests_total',57,'source_tests_scope','RUN_LOCALLY_BY_AUTHOR_PRE_MERGE_NOT_IN_CI',
    'test_script_sha256',c_test_sha,'capture_file_sha256',c_capture_file_sha,'capture_sha256',c_capture_sha,'handoff_sha256',c_handoff_sha,
    'source_receipt_sha256',c_receipt_sha,'executor_mode','CLAUDE_NATIVE','capture_scope','NATIVE_CHAT_RAW_SOURCE_BOUND_UNATTESTED',
@@ -135,11 +138,13 @@ BEGIN
 
  SELECT string_agg(c.checkpoint_code||':'||c.status,',' ORDER BY c.checkpoint_code) INTO v_cp_after
  FROM programacion.engineering_work_checkpoints c WHERE c.work_item_id=v_wid AND c.checkpoint_code<>c_cp;
+ SELECT coalesce(string_agg(execution_id||'='||status,',' ORDER BY execution_id),'') INTO v_open_after FROM public.lf_operation_execution WHERE operation_code=c_op AND status='IN_PROGRESS';
  IF (SELECT status FROM programacion.engineering_work_checkpoints WHERE work_item_id=v_wid AND checkpoint_code=c_cp) IS DISTINCT FROM 'DONE'
     OR v_cp_after IS DISTINCT FROM v_cp_before
     OR (SELECT assertion_receipt_sha256 FROM programacion.engineering_work_checkpoints WHERE work_item_id=v_wid AND checkpoint_code=c_cp) IS NULL
     OR (SELECT count(*) FROM public.lf_operation_contracts WHERE operation_code=c_op AND contract_code<>'CONTRACT-ACTUALIZACION-PERFIL-LF-v0.1')<>0
     OR (SELECT version FROM public.lf_operation_registry WHERE operation_code=c_op)<>'v0.1'
+    OR v_open_after IS DISTINCT FROM v_open_before
  THEN RAISE EXCEPTION 'PE10_C6_CLOSE_POSTSTATE_INVALID'; END IF;
 END
 $mig$;

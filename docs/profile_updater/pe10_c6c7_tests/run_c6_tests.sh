@@ -36,7 +36,10 @@ experr 6 PE10_C6_CLOSE_PRESTATE_INVALID
 echo "== 7 mutacion: C5 no esta DONE"; fresh; train
 $P -d t_c6 -c "update programacion.engineering_work_checkpoints c set status='PENDING' from $PL u where u.work_item_id=c.work_item_id and u.unit_code='PE10' and c.checkpoint_code='PE10_C5'" >/dev/null
 experr 7 PE10_C6_CLOSE_GATES_STATE_INVALID
-echo "== 8 mutacion: hay una ejecucion abierta de la operacion"; fresh; train
+echo "== 8 ejecucion abierta heredada: se tolera y no se toca"; fresh; train
 $P -d t_c6 -c "insert into public.lf_operation_execution values ('EXEC-OPEN','ACTUALIZACION_PERFIL_LF','PERFIL','x','IN_PROGRESS')" >/dev/null
-experr 8 PE10_C6_CLOSE_PRESTATE_INVALID
+r=$(run); n=$((n+1)); [ -z "$r" ] && echo "PASS  8 migracion OK con ejecucion abierta" || { f=$((f+1)); echo "FAIL  8 obtenido=[$r]"; }
+chk "8 la ejecucion abierta sigue IN_PROGRESS" "select status from public.lf_operation_execution where execution_id='EXEC-OPEN'" IN_PROGRESS
+chk "8 C6 DONE" "select status from programacion.engineering_work_checkpoints c join $PL u on u.work_item_id=c.work_item_id where u.unit_code='PE10' and c.checkpoint_code='PE10_C6'" DONE
+chk "8 el detalle registra la ejecucion abierta" "select detail like '%EXEC-OPEN=IN_PROGRESS%' from programacion.engineering_work_updates w join $PL u on u.work_item_id=w.work_item_id where u.unit_code='PE10' and w.summary='Checkpoint PE10_C6 -> DONE'" t
 echo; echo "TOTAL $n pruebas, $f fallas"

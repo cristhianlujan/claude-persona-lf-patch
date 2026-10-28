@@ -55,6 +55,11 @@ experr 7 PE10_C7_CLOSE_PRESTATE_INVALID
 echo "== 8 mutacion: ya hay un segundo contrato activo"; fresh; train
 $P -d t_c7 -c "insert into public.lf_operation_contracts(operation_code,contract_code,contract_path,status) values ('ACTUALIZACION_PERFIL_LF','OTRO','x','ACTIVE_ENFORCEMENT')" >/dev/null
 experr 8 PE10_C7_CLOSE_PRESTATE_INVALID
+echo "== 8b ejecucion abierta heredada: se tolera y no se toca"; fresh; train
+$P -d t_c7 -c "insert into public.lf_operation_execution values ('EXEC-OPEN','ACTUALIZACION_PERFIL_LF','PERFIL','x','IN_PROGRESS')" >/dev/null
+r=$(run); n=$((n+1)); [ -z "$r" ] && echo "PASS  8b migracion OK con ejecucion abierta" || { f=$((f+1)); echo "FAIL  8b obtenido=[$r]"; }
+chk "8b la ejecucion abierta sigue IN_PROGRESS" "select status from public.lf_operation_execution where execution_id='EXEC-OPEN'" IN_PROGRESS
+chk "8b C7 DONE" "${CPS}'PE10_C7'" DONE
 echo "== 9 mutacion: criterio de aceptacion ya distinto"; fresh; train
 $P -d t_c7 -c "update programacion.engineering_work_items w set acceptance_criteria='[\"otro\"]'::jsonb from $PL u where u.work_item_id=w.id and u.unit_code='PE10'" >/dev/null
 experr 9 PE10_C7_CLOSE_ACCEPTANCE_DRIFT
