@@ -1,0 +1,25 @@
+-- Stubs de la replica PG16 para probar la migracion de cierre de CT01 (NO son las funciones de produccion)
+
+alter table programacion.engineering_work_checkpoints
+  add column if not exists assertion_contract_sha256 text, add column if not exists assertion_receipt_sha256 text,
+  add column if not exists assertion_recorded_at timestamptz, add column if not exists assertion_recorded_by text,
+  add column if not exists updated_at timestamptz, add column if not exists updated_by_execution_id text;
+alter table programacion.engineering_work_items add column if not exists started_at timestamptz, add column if not exists completed_at timestamptz, add column if not exists updated_at timestamptz;
+create table if not exists programacion.engineering_work_updates(id bigserial primary key, work_item_id bigint, update_type text, summary text, detail text, next_action text, evidence_refs jsonb, reported_by text, observed_at timestamptz, created_by_execution_id text);
+create table if not exists public.lf_error_knowledge(codigo text, categoria text, titulo text, descripcion text, causa_raiz text, patron text, prevencion text, validacion text, severidad text, frecuencia int, primera_vez timestamptz, ultima_vez timestamptz, lote_origen text, estado text, source_ref text);
+create or replace function programacion.fn_v09_sha256_jsonb(j jsonb) returns text language sql immutable as $$ select encode(sha256(convert_to(j::text,'UTF8')),'hex') $$;
+create or replace function programacion.fn_engineering_checkpoint_action_spec_v3(p_plan_code text,p_unit_code text,p_checkpoint_code text default null) returns jsonb language sql stable as $$ select unit_metadata->'action_specs_v1'->p_checkpoint_code from programacion.engineering_plan_units where plan_code=p_plan_code and unit_code=p_unit_code $$;
+create or replace function programacion.fn_engineering_effective_open_blocker_count_v1(w bigint) returns int language sql as $$ select 0 $$;
+create or replace function programacion.fn_engineering_unit_bootstrap_with_contract_repair_v1(p text,u text) returns jsonb language sql as $$ select '{"state":{"progress_pct":"0"},"terminal_action":"STUB"}'::jsonb $$;
+create or replace function public.lf_profile_update_begin_v1(p_execution_id text, p_target_code text, p_target_repo text, p_target_path text, p_request_sha256 text, p_idempotency_key text, p_actor_execution_id text, p_manifest jsonb) returns text language sql as $f$ select 'stub:lf_profile_update_begin_v1' $f$;
+create or replace function public.lf_profile_update_effective_route_v1(p_execution_id text) returns text language sql as $f$ select 'stub:lf_profile_update_effective_route_v1' $f$;
+create or replace function public.lf_profile_update_evolution_step_guard_v1(p_execution_id text, p_step_id text, p_payload jsonb) returns text language sql as $f$ select 'stub:lf_profile_update_evolution_step_guard_v1' $f$;
+create or replace function public.lf_profile_update_post_merge_reconcile_v1(p_execution_id text, p_merge_sha text, p_entrypoint_sha text, p_manifest_sha text, p_profile_pack_id text, p_pr_number integer, p_actor_execution_id text) returns text language sql as $f$ select 'stub:lf_profile_update_post_merge_reconcile_v1' $f$;
+create or replace function public.lf_profile_update_result_class_v1(p_value jsonb) returns text language sql as $f$ select 'stub:lf_profile_update_result_class_v1' $f$;
+create or replace function public.lf_profile_update_substantive_block_v1(p_execution_id text, p_step_id text, p_payload jsonb, p_manifest jsonb) returns text language sql as $f$ select 'stub:lf_profile_update_substantive_block_v1' $f$;
+create or replace function public.lf_profile_update_verified_receipt_v1(p_subject_type text, p_subject_ref text, p_receipt_id text, p_subject_sha256 text, p_source_head_sha text) returns text language sql security definer as $f$ select 'stub:lf_profile_update_verified_receipt_v1' $f$;
+create or replace function public.lf_router_governed_caller_route_v1(p_caller jsonb, p_target_code text, p_target_path text) returns text language sql security definer as $f$ select 'stub:lf_router_governed_caller_route_v1' $f$;
+create or replace function public.lf_record_profile_operation_step_v1(p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text) returns text language sql as $f$ select 'stub:lf_record_profile_operation_step_v1' $f$;
+create or replace function public.lf_router_resolve_v1(p_request_text text, p_target_hint text, p_action_hint text, p_asset_type_hint text, p_distribution_mode text) returns text language sql as $f$ select 'stub:lf_router_resolve_v1' $f$;
+create or replace function public.lf_router_semantic_resume_route_v1(p_request jsonb, p_result jsonb) returns text language sql security definer as $f$ select 'stub:lf_router_semantic_resume_route_v1' $f$;
+create or replace function public.lf_record_creacion_perfil_step_v1(p_execution_id text, p_step_id text, p_evidence_ref text, p_evidence_payload jsonb, p_actor_execution_id text) returns text language sql as $f$ select 'stub:lf_record_creacion_perfil_step_v1' $f$;
