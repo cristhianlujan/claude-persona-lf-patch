@@ -18,17 +18,19 @@ BEGIN
   -- Explicit governed effects continue through the existing writer, opted in
   -- only by its already-authorized service-role entrypoint.
   IF session_user = 'supabase_read_only_user' THEN
-    RETURN jsonb_build_object(
-      'status','STAGE1_REQUIRED',
-      'schema_version','LF_ROUTER_EXECUTION_PIPELINE_V1',
-      'transport_mode','READ_ONLY_CONTEXT',
-      'request_context',jsonb_build_object(
+    v_begin:=jsonb_build_object(
          'schema_version','LF_ROUTER_READ_ONLY_CONTEXT_V1',
          'original_request_text',v_request,
          'request_sha256',encode(extensions.digest(convert_to(v_request,'UTF8'),'sha256'),'hex'),
          'next_step','stage1_seal',
          'effect_authority',false
-      ),
+    );
+    RETURN jsonb_build_object(
+      'status','STAGE1_REQUIRED',
+      'schema_version','LF_ROUTER_EXECUTION_PIPELINE_V1',
+      'transport_mode','READ_ONLY_CONTEXT',
+      'request_context',v_begin,
+      'transport_token','ROCTX:'||encode(convert_to(v_begin::text,'UTF8'),'base64'),
       'current_step','request_intake',
       'next_step','stage1_seal',
       'stage1_contract','LF_ROUTER_STAGE1_V2',
