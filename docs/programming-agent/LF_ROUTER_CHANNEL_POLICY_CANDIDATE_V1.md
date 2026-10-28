@@ -28,9 +28,9 @@ No se debe confundir una **regla transversal** con un quinto canal: una regla pu
 
 ## Contrato de seleccion que debe consumir el Router
 
-**Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. No hay cuarta ruta de Stage 1. El campo heredado `ruta_transversal` debe permanecer nulo; un valor distinto de nulo se rechaza.
+**Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. No hay cuarta ruta de Stage 1. Los campos no reconocidos de Stage 1 se rechazan sin habilitar rutas alternativas.
 
-Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `negocio_codigo`, `negocios_afectados`, `ruta_transversal`, `razon_seleccion` y `alcance`. No existe una ruta especial adicional: `ruta_transversal` queda como campo heredado nulo y `paso` pertenece a la decisión de Stage 2. Los campos de Stage 1 son de **interpretación**, no de autoridad.
+Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `negocio_codigo`, `negocios_afectados`, `razon_seleccion` y `alcance`. No existe una ruta especial adicional y `paso` pertenece a la decisión de Stage 2. Los campos de Stage 1 son de **interpretación**, no de autoridad.
 
 | Regla | Entrada material | Ruta inicial | No hacer |
 |---|---|---|---|
@@ -91,7 +91,7 @@ El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos
 
 En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
 
-**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Stage 2 conserva y consume `canal_candidato`, `negocio_codigo`, `alcance` y `ruta_transversal=null`; las referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente.
+**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Stage 2 conserva y consume `canal_candidato`, `negocio_codigo` y `alcance`; las referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
@@ -135,9 +135,9 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 
 **Fase actual LF:** el contrato usa `negocio_codigo` y el cierre de este PR se valida únicamente para `LF`. El validador conserva una extensión opcional `registered_businesses` para evolución futura, pero SALY y otros negocios no forman parte de la aceptación actual y no deben bloquear el cierre de LF. El catálogo nunca se toma del texto no confiable del usuario.
 
-- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo no admite una excepción transversal; `ruta_transversal` debe ser nulo y la operación requiere admisión independiente.
+- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo no admite una excepción de clasificación y la operación requiere admisión independiente.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py`: casos estructurales positivos y negativos, incluyendo SALY conocido/no habilitado, multinegocio, ambigüedad, referencia inventada, operación no autorizada, pantalla y scope opcional.
-- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: entrega el mismo `LF_ROUTER_STAGE1_V2` al único entrypoint Stage 2. No traduce a V1 ni fabrica `sistema`; conserva `canal_candidato`, `negocio_codigo`, `alcance` y `ruta_transversal`. `capability_hint` permanece candidato y no autoridad.
+- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: entrega el mismo `LF_ROUTER_STAGE1_V2` al único entrypoint Stage 2. No traduce a V1 ni fabrica `sistema`; conserva `canal_candidato`, `negocio_codigo` y `alcance`. `capability_hint` permanece candidato y no autoridad.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py`: comprueba el payload de handoff, la contención de SALY y multinegocio, el bypass del hint no certificado, los límites de permisos y la respuesta directa sin scope.
 
 El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salida nueva conserva campos obligatorios V1 y añade estos campos de **interpretación**, no autorización:
@@ -148,7 +148,6 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
   "canal_candidato": "OPERACIONES",
   "negocio_codigo": "LF",
   "negocios_afectados": [],
-  "ruta_transversal": null,
   "razon_seleccion": "Consulta de una capacidad existente",
   "alcance": {
     "target_type": "OFERTA",
