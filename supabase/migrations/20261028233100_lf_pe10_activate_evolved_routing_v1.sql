@@ -1,8 +1,10 @@
--- PE10: activacion del enrutamiento evolutivo de Profile Updater (v1.4-evolved-routing) -- BORRADOR, requiere autorizacion del dueno.
+-- PE10: activacion del enrutamiento evolutivo de Profile Updater (v1.4-evolved-routing) -- autorizada por el dueno en el chat el 2026-10-28.
 -- Activa: pasos method_selection y evolution_decision (+ sus jueces enlazados, contratos de paso y jueces) y la politica de pase v1.4.
 -- NO cambia: lf_operation_registry (sigue v0.1), contrato v0.1 ACTIVE_ENFORCEMENT, contrato v0.2 candidato, ni ejecuciones existentes
 -- (el snapshot de politica de cada ejecucion es inmutable: las abiertas siguen con v1.1 y sus 15 pasos).
 -- Probado con rollback en produccion: cierre completo con v1.1 (14/14) y con v1.4 en rutas UPDATE (17 pasos) y NO_CHANGE (ruta corta).
+-- Ensayo de rollback (PE10A_OP09): activar -> revertir con el SQL de reversion deja identicos pasos, jueces enlazados, contratos, jueces y politicas
+--   (solo difiere updated_at de los 2 pasos); una transicion de estado sobre la ejecucion abierta del UI Architect no es bloqueada por la activacion.
 -- Reversion: migracion nueva que vuelve los estados a CANDIDATE/inactivo y v1.1 ACTIVE (fail-forward; no se reaplica ni se cambia la version).
 DO $guard$
 BEGIN
