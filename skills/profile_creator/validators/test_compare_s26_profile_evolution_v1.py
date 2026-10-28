@@ -79,6 +79,19 @@ class Proof(unittest.TestCase):
         self.assertEqual(r["verdict"], "NO_DEMONSTRATED_IMPROVEMENT")
         self.assertTrue(r["structural_ceiling_reached"])
 
+    def test_measure_reports_real_baseline(self):
+        r = cmp.measure(ROOT, SLUG, self.base)
+        self.assertEqual(r["schema"], "S26_PROFILE_MEASUREMENT_V1")
+        self.assertEqual((r["score"], r["required"]), (2, 13))
+        self.assertEqual(r["decision"], "UPDATE_REQUIRED")
+        self.assertEqual(len(r["failed_dimensions"]), 11)
+        self.assertEqual(r["proof_sha256"], cmp.measure(ROOT, SLUG, self.base)["proof_sha256"])
+
+    def test_measure_blocks_symlink_and_missing(self):
+        (self.base / "l.md").symlink_to(self.base / "SKILL.md")
+        self.assertEqual(cmp.measure(ROOT, SLUG, self.base)["decision"], "BLOCKED")
+        self.assertIn("PROFILE_DIR_MISSING", cmp.measure(ROOT, SLUG, self.tmp / "nope")["blocking_codes"])
+
     def test_proof_digest_is_deterministic(self):
         self.assertEqual(self.run_cmp()["proof_sha256"], self.run_cmp()["proof_sha256"])
 

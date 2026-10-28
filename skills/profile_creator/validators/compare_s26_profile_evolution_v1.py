@@ -80,6 +80,29 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path) 
     return _seal(result)
 
 
+def measure(trusted_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
+    """Baseline measurement of one profile tree with the trusted evaluator (no comparison)."""
+    trusted_root = trusted_root.resolve()
+    result: dict[str, Any] = {"schema": "S26_PROFILE_MEASUREMENT_V1", "profile_slug": slug, "blocking_codes": []}
+    if not profile_dir.is_dir():
+        result["blocking_codes"].append("PROFILE_DIR_MISSING")
+    elif _has_symlink(profile_dir):
+        result["blocking_codes"].append("PROFILE_SYMLINK_FORBIDDEN")
+    if result["blocking_codes"]:
+        result["decision"] = "BLOCKED"
+        return _seal(result)
+    ev = _evaluate(_load_evaluator(trusted_root), trusted_root, slug, profile_dir)
+    if ev.get("blocking_codes") and not ev.get("dimensions"):
+        result["blocking_codes"].extend(ev["blocking_codes"])
+        result["decision"] = "BLOCKED"
+        return _seal(result)
+    result.update({
+        "score": ev["score"], "required": ev["required"], "decision": ev["decision"],
+        "failed_dimensions": sorted(d for d, v in ev["dimensions"].items() if not v["pass"]),
+    })
+    return _seal(result)
+
+
 def _seal(result: dict[str, Any]) -> dict[str, Any]:
     body = json.dumps(result, sort_keys=True, separators=(",", ":")).encode()
     result["proof_sha256"] = hashlib.sha256(body).hexdigest()
@@ -87,8 +110,12 @@ def _seal(result: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    if len(sys.argv) == 5 and sys.argv[1] == "measure":
+        out = measure(Path(sys.argv[3]), sys.argv[2], Path(sys.argv[4]))
+        print(json.dumps(out, indent=2, sort_keys=True))
+        return 0 if not out["blocking_codes"] else 1
     if len(sys.argv) != 5:
-        print("usage: compare_s26_profile_evolution_v1.py <slug> <trusted_root> <base_profile_dir> <candidate_profile_dir>", file=sys.stderr)
+        print("usage: compare_s26_profile_evolution_v1.py <slug> <trusted_root> <base_profile_dir> <candidate_profile_dir> | measure <slug> <trusted_root> <profile_dir>", file=sys.stderr)
         return 2
     out = compare(Path(sys.argv[2]), sys.argv[1], Path(sys.argv[3]), Path(sys.argv[4]))
     print(json.dumps(out, indent=2, sort_keys=True))
