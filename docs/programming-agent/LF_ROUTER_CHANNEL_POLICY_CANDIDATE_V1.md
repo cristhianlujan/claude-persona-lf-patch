@@ -22,19 +22,18 @@ La seleccion de canal **no es seleccion de perfil**, no es permiso de escritura 
 
 Los perfiles y skills son **recursos compartidos** que puede utilizar cualquiera de los canales, siempre a traves del Router ACT-0001. La ejecucion `EJECUCION_PERFIL_LF` o `EJECUCION_SKILL_LF` **no cambia el canal responsable**. Ejemplo: Producto puede solicitar UI Architect sin que exista una derivacion al «canal perfiles».
 
-La solicitud **de crear o actualizar el propio perfil o skill** toma la ruta de operacion gobernada `GESTION_ACTIVOS_IA` (familia logica, no es un codigo operativo nuevo) que resuelve `CREACION_PERFIL_LF`, `ACTUALIZACION_PERFIL_LF`, `CREACION_SKILL_LF` o `ACTUALIZACION_SKILL_LF`. No crear un quinto canal ni alterar los contratos de esas operaciones. El Router selecciona y autoriza el recurso; el perfil no llama directamente a otro perfil.
+La solicitud **de crear o actualizar un perfil o skill** conserva sus operaciones canónicas `CREACION_PERFIL_LF`, `ACTUALIZACION_PERFIL_LF`, `CREACION_SKILL_LF` y `ACTUALIZACION_SKILL_LF` en `public.lf_router_action_registry`. La antigua excepción de Stage 1 fue retirada: ninguna operación puede escoger una ruta adicional ni otorgarse autoridad desde el clasificador. Debe pasar por la admisión gobernada propia de la operación; si no hay vínculo de canal y operación autorizado, se bloquea sin inventar una ruta.
 
 No se debe confundir una **regla transversal** con un quinto canal: una regla puede ser consumida por multiples frentes; primero se identifica la definicion y su responsable.
 
 ## Contrato de seleccion que debe consumir el Router
 
-**Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. El cuarto caso es una **ruta transversal de operación gobernada**, no un cuarto canal: gestion del perfil/skill que sea sujeto de la peticion.
+**Distinguir Negocio del Canal:** `negocio_codigo=LF` identifica el negocio y no equivale a `canal_candidato=OPERACIONES`. Los nombres de canal son exclusivamente `PRODUCTO`, `PROGRAMACION` y `OPERACIONES`. No hay cuarta ruta de Stage 1. Los campos no reconocidos de Stage 1 se rechazan sin habilitar rutas alternativas.
 
-Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `negocio_codigo`, `negocios_afectados`, `ruta_transversal`, `razon_seleccion` y `alcance`. No existe un segundo campo de ruta: `ruta_transversal` cubre únicamente las operaciones transversales gobernadas y `paso` pertenece a la decisión de Stage 2. Estos campos son de **interpretación**, no de autoridad.
+Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `negocio_codigo`, `negocios_afectados`, `razon_seleccion` y `alcance`. No existe una ruta especial adicional y `paso` pertenece a la decisión de Stage 2. Los campos de Stage 1 son de **interpretación**, no de autoridad.
 
 | Regla | Entrada material | Ruta inicial | No hacer |
 |---|---|---|---|
-| R00 Gestion de activos IA | Crear/actualizar la definicion de un perfil o skill | Operacion gobernada exacta del activo, **sin canal** | No confundir ejecutar UI Architect con actualizar sus instrucciones |
 | R10 Consulta/accion existente | Consultar oferta/pago/liquidacion o actuar mediante transaccion existente | OPERACIONES | No ejecutar SQL arbitrario ni exponer datos de otros clientes |
 | R20 Nueva o distinta definicion | Definir/cambiar regla, conducta, flujo o elemento de pantalla | PRODUCTO | No programar antes de validar la fuente canónica |
 | R30 Ciclo tecnico | Analizar implementacion, programar, probar, desplegar, mantener software ya definido | PROGRAMACION | No modificar definiciones funcionales por inferencia |
@@ -42,7 +41,7 @@ Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `
 | R50 Solicitud mixta | «Define la regla y prográmala» | PRODUCTO primero; dependencia ordenada a PROGRAMACION | No despachar los dos en paralelo |
 | R60 Ambiguedad material | «Arregla lo de ofertas» sin objeto preciso | Aclarar tras inspeccion acotada | No despachar al azar |
 
-**Orden logico:** primero discriminar si el usuario solicita gestionar el propio recurso IA; después si pide informarse/operar algo existente; después si pretende definir/cambiar reglas y requisitos; después si solicita el ciclo tecnico sobre definicion lista; ante incidencia incierta, diagnostico de solo lectura. La solicitud mixta antepone la dependencia PRODUCTO a PROGRAMACION. Este procedimiento no se basa en porcentajes fijos o keywords aisladas. Empates materiales requieren evidencia discriminante y, si persisten, una pregunta.
+**Orden logico:** primero identificar la naturaleza del trabajo entre los tres canales; distinguir cambios en la definición del producto, operaciones existentes y ciclo técnico; ante incidencia incierta, diagnosticar en solo lectura. La gestión del propio perfil o skill requiere una operación registrada y admisión independiente, nunca una excepción de canal. La solicitud mixta antepone la dependencia PRODUCTO a PROGRAMACION. Este procedimiento no se basa en porcentajes fijos o keywords aisladas. Empates materiales requieren evidencia discriminante y, si persisten, una pregunta.
 
 **Comprobacion del Stage 2:** la ruta propuesta no sustituye los contratos del `lf_router_action_registry`, `CAPABILITY_SELECTOR` ni la admision gobernada. Operaciones necesita una capacidad **realmente liberada y autorizada**, no la mera existencia de tabla. Programacion necesita definicion vigente y, cuando corresponde implementar, paquete A9 y admision PG-01; despliegues e infraestructura siguen en Programacion y sujetos a sus operaciones y controles actuales. Las operaciones de gestion de perfiles y skills continuan utilizando sus codigos canónicos y ACT-0001.
 
@@ -55,7 +54,7 @@ Stage 1 V2 utiliza como campos canónicos de clasificación `canal_candidato`, `
 - «Una oferta no aparece» -> OPERACIONES para diagnostico; escalamiento a PROGRAMACION solo ante defecto confirmado.
 - «Despliega la nueva version» -> PROGRAMACION bajo operacion/autoridad de despliegue, nunca bypass.
 - «Usa UI Architect para revisar la pantalla» -> canal del trabajo PRODUCTO y recurso PERFIL-UI-ARCHITECT.
-- «Actualiza el propio perfil UI Architect» -> `ACTUALIZACION_PERFIL_LF` por ruta de gestion de activos, sin canal Perfiles/Skills.
+- «Actualiza el propio perfil UI Architect» -> `ACTUALIZACION_PERFIL_LF` solo si se valida la operación vigente y se obtiene su admisión gobernada; Stage 1 no propone una ruta especial.
 
 **Activación:** completada para LF mediante la vía gobernada de migraciones. `public.lf_router_route_v1` consume `LF_ROUTER_STAGE1_V2` directamente y mantiene V1 solo para callers heredados.
 
@@ -92,7 +91,7 @@ El vocabulario de objetos puede crecer al registrar capacidades o nuevos activos
 
 En trabajos verdaderamente transversales se usa `negocios_afectados` explícito, nunca `ALL` implícito. La petición en texto no confiere permiso de acceso a grupo, empresa o cliente. El alcance no sustituye autorización.
 
-**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Stage 2 conserva y consume `canal_candidato`, `negocio_codigo`, `alcance` y, cuando aplica, `ruta_transversal`; las referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente.
+**Implementación V2:** `negocio_codigo` es canónico y `alcance` es opcional/dinámico. Stage 2 conserva y consume `canal_candidato`, `negocio_codigo` y `alcance`; las referencias exactas y derechos continúan resolviéndose por la autoridad/handler correspondiente.
 
 ## Precedencia y dependencias (no ejecuta acciones)
 
@@ -136,9 +135,9 @@ Solicitud: «Cambiar unicamente el texto del boton principal de Iniciar sesion B
 
 **Fase actual LF:** el contrato usa `negocio_codigo` y el cierre de este PR se valida únicamente para `LF`. El validador conserva una extensión opcional `registered_businesses` para evolución futura, pero SALY y otros negocios no forman parte de la aceptación actual y no deben bloquear el cierre de LF. El catálogo nunca se toma del texto no confiable del usuario.
 
-- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo usa `ruta_transversal=GESTION_ACTIVOS_IA` con `canal_candidato=null`.
+- `sandbox/lf_contract_gate_test/router_stage1/stage1_context_validator_v2.py`: validador estructural de la clasificación generada por GPT/Claude nativo. Admite exactamente `PRODUCTO|PROGRAMACION|OPERACIONES`; `negocio_codigo` es el campo canónico de negocio y el validador rechaza el campo legado `sistema`; `alcance` es objeto **opcional**, sin enumeración central fija y sin identificadores canónicos certificados desde el modelo. Gestión del perfil/skill mismo no admite una excepción de clasificación y la operación requiere admisión independiente.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage1_context_validator_v2.py`: casos estructurales positivos y negativos, incluyendo SALY conocido/no habilitado, multinegocio, ambigüedad, referencia inventada, operación no autorizada, pantalla y scope opcional.
-- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: entrega el mismo `LF_ROUTER_STAGE1_V2` al único entrypoint Stage 2. No traduce a V1 ni fabrica `sistema`; conserva `canal_candidato`, `negocio_codigo`, `alcance` y `ruta_transversal`. `capability_hint` permanece candidato y no autoridad.
+- `sandbox/lf_contract_gate_test/router_stage1/stage2_handoff_v2.py`: entrega el mismo `LF_ROUTER_STAGE1_V2` al único entrypoint Stage 2. No traduce a V1 ni fabrica `sistema`; conserva `canal_candidato`, `negocio_codigo` y `alcance`. `capability_hint` permanece candidato y no autoridad.
 - `sandbox/lf_contract_gate_test/router_stage1/test_stage2_handoff_v2.py`: comprueba el payload de handoff, la contención de SALY y multinegocio, el bypass del hint no certificado, los límites de permisos y la respuesta directa sin scope.
 
 El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salida nueva conserva campos obligatorios V1 y añade estos campos de **interpretación**, no autorización:
@@ -149,7 +148,6 @@ El modelo debe emitir V2 solo cuando el invocador adopte este contrato. La salid
   "canal_candidato": "OPERACIONES",
   "negocio_codigo": "LF",
   "negocios_afectados": [],
-  "ruta_transversal": null,
   "razon_seleccion": "Consulta de una capacidad existente",
   "alcance": {
     "target_type": "OFERTA",

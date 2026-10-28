@@ -1,0 +1,110 @@
+name: LF Profile Evolution Proof
+
+# Read-only deterministic proof for the Profile updater.
+#   mode=measure : structural S26 measurement of the profile at <base_sha>.
+#   mode=compare : before/after proof (<base_sha> vs <candidate_sha>); the job FAILS unless the verdict
+#                  is EVOLUTION_DEMONSTRATED, so a green run is itself the attestation.
+# The evaluator and its contract come from main. Only the profile directory is read from the given SHAs
+# as Git data; no profile code is executed. The result is published as a job annotation that the
+# governed runtime reads back through the GitHub API and binds to the run title below.
+run-name: "profile-evolution-proof ${{ inputs.mode }} ${{ inputs.profile_slug }} ${{ inputs.base_sha }} ${{ inputs.candidate_sha }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "measure | compare"
+        required: true
+        type: choice
+        options: [measure, compare]
+      profile_slug:
+        description: "Profile slug under profiles/"
+        required: true
+        type: string
+      base_sha:
+        description: "Exact 40-hex commit of the profile BEFORE the change"
+        required: true
+        type: string
+      candidate_sha:
+        description: "Exact 40-hex commit AFTER the change (compare only; use 0 x40 for measure)"
+        required: true
+        type: string
+        default: "0000000000000000000000000000000000000000"
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: proof
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate inputs
+        env:
+          MODE: ${{ inputs.mode }}
+          SLUG: ${{ inputs.profile_slug }}
+          BASE_SHA: ${{ inputs.base_sha }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$SLUG" | grep -Eq '^[a-z0-9][a-z0-9_]{0,79}$' || { echo "BLOCK_PROOF_SLUG_INVALID"; exit 2; }
+          printf '%s' "$BASE_SHA" | grep -Eq '^[0-9a-f]{40}$' || { echo "BLOCK_PROOF_BASE_SHA_INVALID"; exit 2; }
+          printf '%s' "$CANDIDATE_SHA" | grep -Eq '^[0-9a-f]{40}$' || { echo "BLOCK_PROOF_CANDIDATE_SHA_INVALID"; exit 2; }
+          case "$MODE" in measure|compare) ;; *) echo "BLOCK_PROOF_MODE_INVALID"; exit 2;; esac
+          if [ "$MODE" = "compare" ] && [ "$BASE_SHA" = "$CANDIDATE_SHA" ]; then echo "BLOCK_PROOF_SAME_COMMIT"; exit 2; fi
+
+      - name: Materialize profile trees from Git objects
+        env:
+          MODE: ${{ inputs.mode }}
+          SLUG: ${{ inputs.profile_slug }}
+          BASE_SHA: ${{ inputs.base_sha }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          extract() {
+            git fetch --no-tags --depth=1 origin "$1"
+            mkdir -p "$2"
+            git archive "$1" "profiles/$SLUG" | tar -x -C "$2"
+            test -d "$2/profiles/$SLUG"
+          }
+          extract "$BASE_SHA" "$RUNNER_TEMP/base"
+          if [ "$MODE" = "compare" ]; then extract "$CANDIDATE_SHA" "$RUNNER_TEMP/candidate"; fi
+
+      - name: Run trusted proof
+        env:
+          MODE: ${{ inputs.mode }}
+          SLUG: ${{ inputs.profile_slug }}
+          BASE_SHA: ${{ inputs.base_sha }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          set -euo pipefail
+          TOOL=skills/profile_creator/validators/compare_s26_profile_evolution_v1.py
+          if [ "$MODE" = "measure" ]; then
+            python3 "$TOOL" measure "$SLUG" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/base/profiles/$SLUG" > "$RUNNER_TEMP/proof.json" || rc=$?
+          else
+            python3 "$TOOL" "$SLUG" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/base/profiles/$SLUG" "$RUNNER_TEMP/candidate/profiles/$SLUG" > "$RUNNER_TEMP/proof.json" || rc=$?
+          fi
+          python3 - "$RUNNER_TEMP/proof.json" "$MODE" "$SLUG" "$BASE_SHA" "$CANDIDATE_SHA" <<'PY'
+          import json, sys
+          path, mode, slug, base, cand = sys.argv[1:]
+          proof = json.load(open(path, encoding="utf-8"))
+          envelope = {"schema": "LF_PROFILE_EVOLUTION_PROOF_ANNOTATION_V1", "mode": mode, "profile_slug": slug,
+                      "base_sha": base, "candidate_sha": cand, "proof": proof}
+          print("::notice title=LF_PROFILE_EVOLUTION_PROOF::" + json.dumps(envelope, sort_keys=True, separators=(",", ":")))
+          ok = proof.get("decision") != "BLOCKED" if mode == "measure" else proof.get("verdict") == "EVOLUTION_DEMONSTRATED"
+          raise SystemExit(0 if ok and not proof.get("blocking_codes") else 1)
+          PY
