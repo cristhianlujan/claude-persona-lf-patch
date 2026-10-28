@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""Genera replica_pe10_c6_c7_fixture.sql: estado minimo de PE10 C6/C7 copiado de produccion (2026-10-27) para probar en la replica."""
+import json, pathlib
+H = "PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1"
+C3 = "(select status from programacion.engineering_work_checkpoints c join programacion.engineering_plan_units u on u.work_item_id=c.work_item_id where u.plan_code='%s' and u.unit_code='PE10' and c.checkpoint_code='PE10_C3') as assurance_status,(select count(*)::int from public.lf_eventos where evento_tipo='PROFILE_EVOLUTION_CUTOVER_ADMITTED' and entidad_codigo='ACTUALIZACION_PERFIL_LF' and payload->>'status'='ADMIT_CUTOVER') as admitted_event_count,(select count(*)::int from public.lf_operation_execution where operation_code='ACTUALIZACION_PERFIL_LF' and status='IN_PROGRESS') as open_execution_count,(select count(*)::int from public.lf_operation_registry where operation_code='ACTUALIZACION_PERFIL_LF' and version='v0.2') as staged_registry_count" % H
+Q6 = "select " + C3
+Q7 = ("select (select count(*)::int from public.lf_operation_registry where operation_code='ACTUALIZACION_PERFIL_LF' and version='v0.2') registry_v02,"
+      "(select count(*)::int from public.lf_operation_contracts where operation_code='ACTUALIZACION_PERFIL_LF' and contract_code='CONTRACT-ACTUALIZACION-PERFIL-LF-v0.2') contract_v02,"
+      "(select count(*)::int from public.lf_policy_versions where policy_code='POL-PROFILE-UPDATE-PASS' and status='CANDIDATE' and policy_payload#>>'{cutover,target_operation_version}'='v0.2') matching_policy_v02,"
+      "(select count(*)::int from public.lf_policy_versions where policy_code='POL-PROFILE-UPDATE-PASS' and status='ACTIVE') active_policy_count")
+FORB = ["AUTO_ACTIVATE_V02","AUTO_CLOSE_LEGACY_EXECUTIONS","TREAT_FIRST_EVOLUTION_AS_CUTOVER_PASS","REUSE_UNSCOPED_RECEIPTS"]
+STEPS = ["RUN_EXACT_DECLARED_VALIDATOR","CAPTURE_FRESH_VALIDATION_RECEIPT","PERSIST_CHECKPOINT_ONLY_ON_PASS","ON_FAIL_RESOLVE_OR_BLOCK_THEN_REVALIDATE"]
+C6_PW = "Real bounded transactional test: exact candidate SQL, BEGIN, positive gate, negative gate, ROLLBACK, no mutation and machine-verifiable receipt"
+C7_PW = "Exact v0.2 registry AND contract AND matching candidate policy authority, with no automatic activation"
+c6 = {"status":"READY","forbidden":FORB,"precision":"EXPLICIT_DETERMINISTIC_VALIDATOR","action_kind":"RUN_TEST","recipe_mode":"READBACK_EXACT","action_steps":STEPS,
+ "required_gates":["PE10_C3","PE10_C4","PE10_C5"],"contract_family":"BOUNDED_CHECKPOINT_TEST","mutation_policy":"NO_DOMAIN_MUTATION",
+ "assertion_contract":{"mode":"EXPLICIT_PASS_WHEN_SUBSET","pass_when":{"status":"PASS","runtime_activated":False,"negative_gate_tested":True,"positive_gate_tested":True,"transaction_rolled_back":True}},
+ "validator_contract":{"required":True,"pass_when":C6_PW,"failure_code":"CUTOVER_GATE_FAIL","validator_code":"PROFILE_EVOLUTION_CUTOVER_GATE_V1","resolver_policy":"RECONCILE_EXACT_CANONICAL_READBACK_NO_SYNTHETIC_PASS","validation_input":{"mode":"BEGIN_DRY_RUN_ROLLBACK"}},
+ "pre_activation_scope":"PE10_CUTOVER_QUALIFICATION_ONLY","verification_queries":[Q6],"requires_material_execution":True,
+ "test_execution_contract":{"test_code":"PE10_C6_TRANSACTIONAL_DRY_RUN_V1","declared_queries":[Q6],"transaction_mode":"BEGIN_TEST_AND_ROLLBACK","negative_required":True}}
+c7 = {"status":"READY","forbidden":FORB,"precision":"EXPLICIT_DETERMINISTIC_VALIDATOR","action_kind":"READBACK_ONCE","recipe_mode":"READBACK_EXACT","action_steps":STEPS,
+ "required_gates":["PE10_C3","PE10_C4","PE10_C5","PE10_C6"],"mutation_policy":"NO_DOMAIN_MUTATION",
+ "assertion_contract":{"mode":"EXPLICIT_PASS_WHEN_SUBSET","pass_when":{"contract_v02":1,"registry_v02":1,"active_policy_count":1,"matching_policy_v02":1}},
+ "validator_contract":{"required":True,"pass_when":C7_PW,"failure_code":"V02_AUTHORITY_READBACK_FAIL","validator_code":"SUPABASE_CATALOG_ASSERT_V1","resolver_policy":"RECONCILE_EXACT_CANONICAL_READBACK_NO_SYNTHETIC_PASS",
+  "validation_input":{"assertions":[{"type":"ROW_COUNT_EQUALS","table":"lf_operation_registry","where":"operation_code=ACTUALIZACION_PERFIL_LF and version=v0.2","expected":1}]}},
+ "pre_activation_scope":"PE10_CUTOVER_QUALIFICATION_ONLY","verification_queries":[Q7],"requires_material_execution":False}
+meta = {"action_specs_v1":{"PE10_C6":c6,"PE10_C7":c7},
+ "checkpoint_contracts":{"PE10_C6":{"required":True,"pass_when":C6_PW,"validation_input":{"source":"EXACT_DECLARED_READBACK","queries":[Q6]}},
+                         "PE10_C7":{"required":True,"pass_when":C7_PW,"failure_code":"V02_AUTHORITY_READBACK_FAIL","validation_input":{"source":"EXACT_DECLARED_READBACK","queries":[Q7]}}},
+ "source_pack_v2":{"checkpoint_inputs":{"PE10_C7":{"inputs":{"queries":[Q7]},"checkpoint_code":"PE10_C7"}}}}
+acc = ["PE10_C6: qualified material transactional dry-run on exact candidate, positive and negative controls, BEGIN/ROLLBACK, no runtime effect, receipt",
+       "PE10_C7: exact v0.2 registry+contract+matching candidate policy authority; separate activation gate, no automatic promotion",
+       "PE10_C2B:legacy FULL_PROFILE_EVOLUTION_BEHAVIOR is architecture/governance control only; PE10E expert-task benchmark remains required"]
+sql = f"""-- GENERADO por build_fixture.py. Estado minimo de PE10 C6/C7 y objetos de apoyo para probar las migraciones en la replica.
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE OR REPLACE FUNCTION extensions.digest(b bytea, t text) RETURNS bytea LANGUAGE sql IMMUTABLE AS $$ select sha256(b) $$;
+ALTER TABLE public.lf_operation_registry ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS notes text, ADD COLUMN IF NOT EXISTS lifecycle_state_code text,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now(), ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now(), ADD COLUMN IF NOT EXISTS created_by_execution_id text, ADD COLUMN IF NOT EXISTS updated_by_execution_id text;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.lf_operation_registry'::regclass AND contype='p') THEN ALTER TABLE public.lf_operation_registry ADD PRIMARY KEY (operation_code); END IF; END $$;
+DELETE FROM public.lf_operation_registry WHERE operation_code='ACTUALIZACION_PERFIL_LF';
+INSERT INTO public.lf_operation_registry(operation_code,version,status,lifecycle_state_code) VALUES ('ACTUALIZACION_PERFIL_LF','v0.1','PRODUCCION_CONTROLADA','OP_OPERATIONAL');
+CREATE TABLE IF NOT EXISTS public.lf_operation_contracts (operation_code text NOT NULL REFERENCES public.lf_operation_registry(operation_code) ON DELETE CASCADE, contract_code text NOT NULL, contract_path text NOT NULL, contract_sha text,
+  required_before_write jsonb NOT NULL DEFAULT '[]', allowed jsonb NOT NULL DEFAULT '{{}}', blocked jsonb NOT NULL DEFAULT '[]', required_after_write jsonb NOT NULL DEFAULT '[]', status text NOT NULL DEFAULT 'CANDIDATO_READ_ONLY',
+  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), created_by_execution_id text NOT NULL DEFAULT 'UNKNOWN', updated_by_execution_id text, PRIMARY KEY (operation_code, contract_code));
+CREATE TABLE IF NOT EXISTS public.lf_operation_step_contracts (operation_code text, status text, execution_order int, step_order int, step_id text, created_at timestamptz, updated_at timestamptz, created_by_execution_id text, updated_by_execution_id text);
+CREATE TABLE IF NOT EXISTS public.lf_operation_judges (operation_code text, status text, judge_code text, created_at timestamptz, updated_at timestamptz, created_by_execution_id text, updated_by_execution_id text);
+CREATE TABLE IF NOT EXISTS public.lf_router_action_registry (operation_code text, status text, asset_type text, action_code text, created_at timestamptz, updated_at timestamptz);
+CREATE TABLE IF NOT EXISTS public.lf_policy_versions (policy_code text, policy_version text, status text, policy_payload jsonb, policy_sha text);
+CREATE TABLE IF NOT EXISTS public.lf_eventos (id bigserial PRIMARY KEY, evento_tipo text, entidad_tipo text, entidad_codigo text, payload jsonb);
+CREATE OR REPLACE FUNCTION public.lf_operation_revision_sha256_v1(p_operation_code text) RETURNS text LANGUAGE plpgsql STABLE AS $f$
+DECLARE r public.lf_operation_registry%rowtype; payload jsonb; BEGIN SELECT * INTO r FROM public.lf_operation_registry WHERE operation_code=p_operation_code; IF NOT FOUND THEN RAISE EXCEPTION 'LF_OPERATION_REVISION_TARGET_MISSING:%',p_operation_code; END IF; payload:=jsonb_build_object('registry',to_jsonb(r)-ARRAY['status','lifecycle_state_code','version','notes','created_at','updated_at','created_by_execution_id','updated_by_execution_id'],'contracts',coalesce((SELECT jsonb_agg(to_jsonb(c)-ARRAY['created_at','updated_at','created_by_execution_id','updated_by_execution_id'] ORDER BY c.contract_code) FROM public.lf_operation_contracts c WHERE c.operation_code=p_operation_code AND c.status IN ('ACTIVE_ENFORCEMENT','ACTIVE','ACTIVO')),'[]'::jsonb),'steps',coalesce((SELECT jsonb_agg(to_jsonb(s)-ARRAY['created_at','updated_at','created_by_execution_id','updated_by_execution_id'] ORDER BY coalesce(s.execution_order,s.step_order),s.step_id) FROM public.lf_operation_step_contracts s WHERE s.operation_code=p_operation_code AND s.status IN ('ACTIVE_ENFORCEMENT','ACTIVE','ACTIVO')),'[]'::jsonb),'judges',coalesce((SELECT jsonb_agg(to_jsonb(j)-ARRAY['created_at','updated_at','created_by_execution_id','updated_by_execution_id'] ORDER BY j.judge_code) FROM public.lf_operation_judges j WHERE j.operation_code=p_operation_code AND j.status IN ('ACTIVE_ENFORCEMENT','ACTIVE','ACTIVO')),'[]'::jsonb),'router',coalesce((SELECT jsonb_agg(to_jsonb(a)-ARRAY['created_at','updated_at'] ORDER BY a.asset_type,a.action_code) FROM public.lf_router_action_registry a WHERE a.operation_code=p_operation_code AND a.status='ACTIVE'),'[]'::jsonb)); RETURN encode(extensions.digest(convert_to(payload::text,'UTF8'),'sha256'),'hex'); END $f$;
+TRUNCATE public.lf_operation_contracts, public.lf_policy_versions, public.lf_eventos;
+INSERT INTO public.lf_operation_contracts(operation_code,contract_code,contract_path,required_before_write,allowed,blocked,required_after_write,status,created_by_execution_id)
+VALUES ('ACTUALIZACION_PERFIL_LF','CONTRACT-ACTUALIZACION-PERFIL-LF-v0.1','public.lf_operation_contracts/ACTUALIZACION_PERFIL_LF/CONTRACT-ACTUALIZACION-PERFIL-LF-v0.1',
+ '["router_read","exact_profile_resolved","baseline_read","change_scope_defined","regression_plan_defined","execution_bound_before_write","pre_write_gate_passed"]',
+ '{{"asset_type":"PERFIL","minimal_patch":true,"runtime_enable":false,"validated_mark":false,"asset_must_exist":true,"automatic_promotion":false,"preserve_profile_slug":true,"candidate_branch_write":true,"preserve_codigo_activo":true,"github_readback_required":true,"merge_requires_explicit_user_approval":true}}',
+ '["profile_not_found","ambiguous_profile","create_new_profile","write_before_execution_binding","identity_change","profile_slug_change","runtime_enable","validated_mark","automatic_promotion","merge_without_explicit_user_approval","semantic_regression","router_direct_divergence"]',
+ '["github_readback_exact_head","deterministic_validation_pass","semantic_judge_pass","regression_after_pass","identity_preserved","no_runtime_change","no_automatic_promotion"]','ACTIVE_ENFORCEMENT','USER_AUTH_PROFILE_ROUTING_20260827');
+INSERT INTO public.lf_policy_versions VALUES
+ ('POL-PROFILE-UPDATE-PASS','v1.1','ACTIVE','{{}}','f96451a2a345516321d1a2736d83a38d1e571a338f6fb0083257ecbe31d9b942'),
+ ('POL-PROFILE-UPDATE-PASS','v1.2-gpt-native-in-chat-candidate','CANDIDATE','{{}}','0af372bdadd7df7cc4ce3b7d42c82e9771c67d2d3d00eefae0bec57d3f5c0045'),
+ ('POL-PROFILE-UPDATE-PASS','v1.3-phase-separation-candidate','CANDIDATE','{{}}','082ff23976175d6442b28b7609d6443f2fd46f11ae41538b3b7543b8c6bff48d'),
+ ('POL-PROFILE-UPDATE-PASS','v1.4-evolved-routing-candidate','CANDIDATE','{{}}','5ae6804ded17dea94a7ec2d8c4ebe588b1017222ab8d92b912bc8607996892b5');
+INSERT INTO public.lf_eventos(evento_tipo,entidad_tipo,entidad_codigo,payload) VALUES
+ ('PROFILE_EVOLUTION_CUTOVER_ADMITTED','OPERACION','ACTUALIZACION_PERFIL_LF','{{"status":"ADMIT_CUTOVER","candidate_policy_sha256":"5ae6804ded17dea94a7ec2d8c4ebe588b1017222ab8d92b912bc8607996892b5","production_activation_authorized":"false","cutover_eligible":"false"}}');
+UPDATE programacion.engineering_plan_units SET unit_metadata = $m${json.dumps(meta, ensure_ascii=False)}$m$::jsonb WHERE plan_code='{H}' AND unit_code='PE10';
+UPDATE programacion.engineering_work_items w SET acceptance_criteria = $a${json.dumps(acc, ensure_ascii=False)}$a$::jsonb FROM programacion.engineering_plan_units u WHERE u.work_item_id=w.id AND u.plan_code='{H}' AND u.unit_code='PE10';
+UPDATE programacion.engineering_work_checkpoints c SET status='DONE' FROM programacion.engineering_plan_units u WHERE u.work_item_id=c.work_item_id AND u.plan_code='{H}' AND u.unit_code='PE10' AND c.checkpoint_code IN ('PE10_C3','PE10_C4','PE10_C5');
+UPDATE programacion.engineering_work_checkpoints c SET status='PENDING' FROM programacion.engineering_plan_units u WHERE u.work_item_id=c.work_item_id AND u.plan_code='{H}' AND u.unit_code='PE10' AND c.checkpoint_code IN ('PE10_C6','PE10_C7');
+"""
+pathlib.Path(__file__).with_name("replica_pe10_c6_c7_fixture.sql").write_text(sql, encoding="utf-8")
+print("fixture escrito")

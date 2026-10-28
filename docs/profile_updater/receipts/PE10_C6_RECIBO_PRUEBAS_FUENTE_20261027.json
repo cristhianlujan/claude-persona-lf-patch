@@ -1,0 +1,54 @@
+{
+  "schema": "PE10_C6_SOURCE_AND_NATIVE_CHAT_TEST_V1",
+  "status": "SOURCE_PROBES_PASS_DB_TRANSACTION_NOT_CLAIMED",
+  "total_cases": 57,
+  "suites": [
+    {
+      "name": "same_chat",
+      "passed": 17,
+      "source": "skills/profile_creator/evals/test_profile_updater_same_chat_v02.py",
+      "source_sha256": "bc094485c2b767c3970b27632f3df6c161650558de120c45acd7f282d4482164"
+    },
+    {
+      "name": "planner",
+      "passed": 13,
+      "source": "skills/profile_creator/evals/test_profile_evolution_reconciliation_v1.py",
+      "source_sha256": "66d45ce885fdfa236a2c09938d6eebfdde31c961b7c0ba8a3dddbc9d5260b802"
+    },
+    {
+      "name": "dispatch",
+      "passed": 10,
+      "source": "skills/profile_creator/evals/test_execute_profile_evolution_v02.py",
+      "source_sha256": "bf1bb24c9ff5a0ead74c99135c05dc3a07e5ca9926f2eb2e7bf9c0e07119235c"
+    },
+    {
+      "name": "oidc_transport",
+      "passed": 7,
+      "source": "skills/profile_creator/evals/test_profile_evolution_oidc_recorder_v02.py",
+      "source_sha256": "a360c4ce8d3cc3c6ad47c9e3f324cf2f74947f3b7c43208feaca006380f17914"
+    },
+    {
+      "name": "dynamic_selection",
+      "passed": 10,
+      "source": "skills/profile_creator/evals/test_pe10_c6_dynamic_selection_repro_v2.py",
+      "source_sha256": "2d55e768276203d6f31086489e75d238d0c93356d39afc1cb1d0affecb7ced74"
+    }
+  ],
+  "material_gpt_capture": {
+    "run_id": "PE10-C6-CLAUDE-SAME-CHAT-MATERIAL-20261027",
+    "methods": [
+      "CAUSAL_ANALYSIS",
+      "SELF_REFINE"
+    ],
+    "capture_sha256": "e3c62bdc2abc6b34809c48e6c38cbe6d38941ce4b1d5a004a958ecf7a5e76ebe",
+    "executor_mode": "CLAUDE_NATIVE",
+    "source_bound": true,
+    "runtime_provider_attested": false
+  },
+  "selection_is_execution_certification": false,
+  "claude_material_execution_claimed": true,
+  "production_activated": false,
+  "checkpoint_closed": false,
+  "requires_governed_postgres_probes": true,
+  "receipt_sha256": "cd6832932c11033442e5a4057b7a3bcdf03dd2c00347bcf9cfaca1bbaeac6f75"
+}
