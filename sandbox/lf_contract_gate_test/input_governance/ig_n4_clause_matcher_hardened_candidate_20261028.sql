@@ -1,4 +1,4 @@
--- DEV-ONLY CANDIDATE, LF IG N-4 v1 hardening (27 test vectors), 2026-10-28.
+-- DEV-ONLY CANDIDATE, LF IG N-4 v1 hardening (28 test vectors), 2026-10-28.
 -- NOT A MIGRATION. NEVER run against shared/production Supabase. Use isolated DB.
 -- Existing N-4 matcher stays the owner. One small schema validator is reused by
 -- both existing matchers; no new scope engine or hardcoded business codes.
@@ -119,6 +119,9 @@ BEGIN
     WHERE k.key NOT IN ('schema_version','status','consumer_roles','all','any','provenance')
   ) THEN RETURN false; END IF;
 
+  -- Do not coerce caller consumer_role number/bool into a trusted text role.
+  IF jsonb_typeof(p_context->'consumer_role') IS DISTINCT FROM 'string'
+    THEN RETURN false; END IF;
   IF jsonb_typeof(p_selector->'consumer_roles') IS DISTINCT FROM 'array'
     THEN RETURN false; END IF;
   IF jsonb_array_length(p_selector->'consumer_roles')=0 THEN RETURN false; END IF;
@@ -170,7 +173,7 @@ $function$;
 -- Preserve all existing callable signatures, IMMUTABLE volatility, SECURITY
 -- INVOKER flags, and explicit schema qualification. The NEW helper's grants
 -- must be designed/verified by the governed owner before any future release.
--- Verify 27 synthetic test vectors AND 14 active-selector parity in isolated PG.
+-- Verify 28 synthetic test vectors AND 14 active-selector parity in isolated PG.
 -- Publication approval is a SEPARATE boundary requiring trusted authority
 -- receipt + independently measured scope; not implemented by these functions.
 ROLLBACK;
