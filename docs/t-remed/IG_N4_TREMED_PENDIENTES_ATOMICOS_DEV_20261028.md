@@ -1,5 +1,7 @@
 # IG LF — Auditoría de pendientes atómicos del PR #3269 (28-oct-2026)
 
+> **CONTROL DE VALIDACIÓN PRECLASIFICACIÓN:** G2 v2.1 registra F01–F06; las pruebas sintéticas de matcher G3 tienen **18/23 PASS y 5/23 FAIL**. G3 integral y aprobación G4 continúan pendientes. Ver [adenda](./IG_N4_TREMED_G2_AUDITORIA_Y_AJUSTES_DE_CONTRATO_V21_20261028.md) y [evidencia ejecutada](./IG_N4_TREMED_G3_RESULTADOS_PRUEBAS_SELECTORES_V21_20261028.md). **No reclasificar ni promover reglas.**
+
 > **REORDENAMIENTO DE TRABAJO (2026-10-28):** Antes de cualquier reclasificación se deben definir y validar estrategia, glosario, reglas de evaluación, autoridad y conflictos, con ensayos sintéticos. Los inventarios P00/P07 son solo evidencia histórica; **NO_RECLASSIFY** hasta completar y ratificar G0–G4. Contrato: [estrategia, definiciones y reglas v2](./IG_N4_TREMED_CONTRATO_ESTRATEGIA_DEFINICIONES_REGLAS_V2_20261028.md); [protocolo preclasificación](./IG_N4_TREMED_PRECLASS_GATES_Y_CASOS_V2_20261028.md). Los pasos P00–P12 abajo siguen como backlog dependiente, no ejecución autorizada.
 
 **Estado:** auditado parcialmente contra EKB y código vivo; NO es cierre, NO es PASS para despliegue. Desarrollo **sin Router**, sin modificación de Supabase. **No convertir la función SQL de sandbox en migración** hasta cerrar estos puntos.
