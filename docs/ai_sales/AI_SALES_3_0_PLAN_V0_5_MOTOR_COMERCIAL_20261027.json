@@ -1,0 +1,3298 @@
+{
+  "plan_code": "AI_SALES_3_0",
+  "snapshot_version": "v0.5",
+  "snapshot_date": "2026-10-27",
+  "type": "GOVERNED_OPERATIONAL_NORMALIZATION",
+  "status": "DRAFT_REVISION_PROPOSED",
+  "source": "Versioned revision of registered AI_SALES_3_0 v0.3 event 21611. No checkpoint requires a separate reviewer or certification round.",
+  "rules": [
+    "Presupuesto inicial US$0 licencias/API de pago; verificar costo total de infraestructura",
+    "Supabase como fuente gobernada; CRM es propietario del estado comercial y actividades",
+    "Segregación de datos/reglas por negocio; SALY B2B primer piloto, LF separado",
+    "Reutilizar perfiles, skills, políticas, Router y n8n únicamente tras confirmar compatibilidad",
+    "Sin bypass del Router ni secuencias establecidas",
+    "Pruebas funcionales focalizadas y readback del equipo ejecutor en cada lote, sin dependencia de revisor separado.",
+    "No cambiar reglas aprobadas sin análisis de impacto, preservar evidencia y readback",
+    "No declarar completa una unidad sin evidencia, ni modificar producción por crear este plan",
+    "U15 y U16 son unidades transversales; se inician temprano y se reusan sus controles sin reauditar todo",
+    "Los conectores WhatsApp/WAHA/LinkedIn se someten a restricciones legales y de plataforma",
+    "Ruta de modelos: determinista primero; Ollama si cumple calidad; GPT nativo asistido; API pagada bloqueada",
+    "Antes de cualquier envío externo, PRE_SEND_ADMISSION determinista; ni puntuación ni LLM confieren autorización.",
+    "Frecuencia y prioridad de contacto se configuran y versionan por negocio/canal/categoría: no números incrustados en el Router ni prompts.",
+    "Una secuencia comercial activa y un responsable autorizado por prospecto; coordinación con locks/leases e idempotencia.",
+    "Responder, reunir, revocar o bloquear detiene o pausa cualquier seguimiento incompatible antes del siguiente mensaje.",
+    "Para WAHA/WhatsApp, confirmar elegibilidad de categoría y finalidad de SALY/LF bajo política Meta vigente; bloquear por defecto casos no autorizados.",
+    "Validar resultados en KPIs comerciales y control de molestias al destinatario; no optimizar solo aperturas, leads brutos o volumen.",
+    "Sin rondas de revisión externas por checkpoint; sólo controles funcionales, regresión pertinente y evidencia real del ejecutor.",
+    "G0 valida prospectos antes de expandir modelos, agentes y colas.",
+    "Noticias y señales requieren fuente primaria/corroboración real, identidad y vigencia; no convertir recortes en verdad automática.",
+    "Correo técnicamente válido no constituye permiso de contacto; bloquear si finalidad/categoría/canal no están habilitados.",
+    "Envío masivo solo tras admisión determinista, cuotas por persona/empresa y gestión de baja; no segundo Router ni cola general.",
+    "Cada checkpoint tiene entrada, proceso, salida, prueba y recibo; ausencia de evidencia es NO_VERIFICADO.",
+    "Preservar IDs/progreso de los 102 existentes; 60 checkpoints nuevos; cero nuevas unidades y cero activación productiva."
+  ],
+  "phases": {
+    "F1": "Fundamentos y arquitectura",
+    "F2": "Captación y canales",
+    "F3": "Operación comercial",
+    "F4": "Evolución"
+  },
+  "gates": [
+    {
+      "id": "G0",
+      "name": "Prueba temprana de tracción comercial",
+      "type": "MARKET_FIRST",
+      "requires_checkpoints": [
+        "U00-C01",
+        "U00-C06",
+        "U00-C08",
+        "U07-C01",
+        "U07-C06",
+        "U07-C07",
+        "U07-C08",
+        "U07-C09",
+        "U07-C16",
+        "U07-C17",
+        "U02-C06",
+        "U08-C01",
+        "U08-C07",
+        "U12-C06",
+        "U12-C09"
+      ],
+      "condition": "Muestra de empresas verificables multifuente, investigación y decisión GO/REWORK/STOP con métricas. Envíos a terceros solo tras admisión de canal/categoría/finalidad y base válida."
+    },
+    {
+      "id": "G1",
+      "name": "Fundamentos",
+      "requires": [
+        "U00",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U15",
+        "U16"
+      ],
+      "condition": "Resultados de arquitectura y dependencias pertinentes verificados antes de automatización"
+    },
+    {
+      "id": "G2",
+      "name": "Canales",
+      "requires": [
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09"
+      ],
+      "condition": "Ingreso, calificación y seguimiento sin duplicación"
+    },
+    {
+      "id": "G3",
+      "name": "Piloto",
+      "requires": [
+        "U10",
+        "U11",
+        "U12"
+      ],
+      "condition": "Flujo comercial E2E validado, métricas y seguridad"
+    },
+    {
+      "id": "G4",
+      "name": "Evolución",
+      "requires": [
+        "U13",
+        "U14"
+      ],
+      "condition": "Cambios mejoran KPIs con evidencia y versiones"
+    }
+  ],
+  "execution_order_note": "G0 prueba descubrimiento, calidad y conversiones antes de comprar o construir automatización extensa. U15/U16 y fundamentos mínimos se desarrollan en paralelo.",
+  "units": [
+    {
+      "unit_code": "U00",
+      "title": "Alcance y gobernanza",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U00-C01",
+          "title": "Objetivo y segmentos",
+          "evidence_to_close": "Objetivos, segmentos, negocio piloto y alcance documentados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables: Objetivo y segmentos",
+            "output": "Objetivos, segmentos, negocio piloto y alcance documentados",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C02",
+          "title": "KPIs",
+          "evidence_to_close": "KPIs con definiciones, fuentes y umbrales de piloto",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables: KPIs",
+            "output": "KPIs con definiciones, fuentes y umbrales de piloto",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C03",
+          "title": "Inventario de activos",
+          "evidence_to_close": "Inventario trazable de componentes y herramientas actuales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables: Inventario de activos",
+            "output": "Inventario trazable de componentes y herramientas actuales",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C04",
+          "title": "Arquitectura y dependencias",
+          "evidence_to_close": "Mapa de integración, fuentes canónicas y dependencias",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables: Arquitectura y dependencias",
+            "output": "Mapa de integración, fuentes canónicas y dependencias",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C05",
+          "title": "Riesgos y límites",
+          "evidence_to_close": "Riesgos, restricciones, aprobación y límites del piloto | ADICIÓN 2026: Incluir riesgos operativos de saturación, consentimiento por finalidad/canal, elegibilidad de productos financieros, exclusiones, propietarios únicos y trazabilidad de excepciones. No fijar cadencias sin datos.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables: Riesgos y límites",
+            "output": "Riesgos, restricciones, aprobación y límites del piloto | ADICIÓN 2026: Incluir riesgos operativos de saturación, consentimiento por finalidad/canal, elegibilidad de productos financieros, exclusiones, propietarios únicos y trazabilidad de excepciones. No fijar cadencias sin datos.",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C06",
+          "title": "Hipótesis de segmentos y dolores SALY",
+          "evidence_to_close": "Matriz de segmento/decisor/dolor/valor/experimento con hipótesis falsables y fuente",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables; Hipótesis de segmentos y dolores SALY",
+            "output": "Matriz de segmento/decisor/dolor/valor/experimento con hipótesis falsables y fuente",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C07",
+          "title": "Comité comprador y mapa de decisión",
+          "evidence_to_close": "Áreas RRHH/Tesorería/Finanzas/TI/Legal, objeciones, roles y proceso de convenio por dos segmentos",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables; Comité comprador y mapa de decisión",
+            "output": "Áreas RRHH/Tesorería/Finanzas/TI/Legal, objeciones, roles y proceso de convenio por dos segmentos",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U00-C08",
+          "title": "Diseño de experimento temprano G0",
+          "evidence_to_close": "Muestra exploratoria 30–50 empresas, fuentes, límites legales, KPIs y criterios GO/REWORK/STOP",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "oferta/segmentos",
+            "process": "formular hipótesis contrastables; Diseño de experimento temprano G0",
+            "output": "Muestra exploratoria 30–50 empresas, fuentes, límites legales, KPIs y criterios GO/REWORK/STOP",
+            "verify": "validar coherencia objetivo-métrica",
+            "receipt": "AIS30/v0.5/U00-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "oferta/segmentos",
+        "pipeline": "formular hipótesis contrastables",
+        "verification": "validar coherencia objetivo-métrica",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U01",
+      "title": "Investigación Ollama / GPT",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U01-C01",
+          "title": "Inventario de arquitectura existente",
+          "evidence_to_close": "Capacidades, contratos y restricciones actuales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Inventario de arquitectura existente",
+            "output": "Capacidades, contratos y restricciones actuales",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C02",
+          "title": "Hardware",
+          "evidence_to_close": "Recursos CPU, memoria y GPU disponibles para Ollama",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Hardware",
+            "output": "Recursos CPU, memoria y GPU disponibles para Ollama",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C03",
+          "title": "Modelos gratuitos",
+          "evidence_to_close": "Alternativas, hardware y licencias verificados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Modelos gratuitos",
+            "output": "Alternativas, hardware y licencias verificados",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C04",
+          "title": "GPT nativo",
+          "evidence_to_close": "Capacidades, integraciones, costos y límites verificados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: GPT nativo",
+            "output": "Capacidades, integraciones, costos y límites verificados",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C05",
+          "title": "Casos de uso",
+          "evidence_to_close": "Matriz de tareas y motor candidato",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Casos de uso",
+            "output": "Matriz de tareas y motor candidato",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C06",
+          "title": "Benchmark",
+          "evidence_to_close": "Calidad, tiempo, recursos y confiabilidad medidos",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Benchmark",
+            "output": "Calidad, tiempo, recursos y confiabilidad medidos",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C07",
+          "title": "Selección y fallback",
+          "evidence_to_close": "Reglas de decisión y escalamiento justificadas",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Selección y fallback",
+            "output": "Reglas de decisión y escalamiento justificadas",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C08",
+          "title": "Seguridad",
+          "evidence_to_close": "Privacidad, permisos y trazabilidad",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Seguridad",
+            "output": "Privacidad, permisos y trazabilidad",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C09",
+          "title": "Compatibilidad",
+          "evidence_to_close": "Contratos y no regresión del sistema existente",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Compatibilidad",
+            "output": "Contratos y no regresión del sistema existente",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C10",
+          "title": "Dictamen",
+          "evidence_to_close": "Motor recomendado por operación con evidencia",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea: Dictamen",
+            "output": "Motor recomendado por operación con evidencia",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C11",
+          "title": "Benchmark IA por tarea de prospección",
+          "evidence_to_close": "Corpus etiquetado RUC, noticias, extracción, contactos y respuestas con precisión, coste, alucinación y p95",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea; Benchmark IA por tarea de prospección",
+            "output": "Corpus etiquetado RUC, noticias, extracción, contactos y respuestas con precisión, coste, alucinación y p95",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C12",
+          "title": "Contratos estructurados y abstención",
+          "evidence_to_close": "JSON schema, fuentes citadas, valores nulos y pruebas NO_VERIFICADO ante evidencia insuficiente",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea; Contratos estructurados y abstención",
+            "output": "JSON schema, fuentes citadas, valores nulos y pruebas NO_VERIFICADO ante evidencia insuficiente",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C12/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U01-C13",
+          "title": "Routing de modelos y fallback por coste",
+          "evidence_to_close": "Matriz reglas/local/nativo por tarea con presupuesto, hardware, latencia y fallback medido",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "corpus etiquetado/modelos",
+            "process": "comparar alternativas por tarea; Routing de modelos y fallback por coste",
+            "output": "Matriz reglas/local/nativo por tarea con presupuesto, hardware, latencia y fallback medido",
+            "verify": "medir precisión-abstención-costo",
+            "receipt": "AIS30/v0.5/U01-C13/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "corpus etiquetado/modelos",
+        "pipeline": "comparar alternativas por tarea",
+        "verification": "medir precisión-abstención-costo",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U02",
+      "title": "CRM y datos comerciales",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U02-C01",
+          "title": "Auditoría CRM existente",
+          "evidence_to_close": "Capacidades y brechas del CRM actual",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos: Auditoría CRM existente",
+            "output": "Capacidades y brechas del CRM actual",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C02",
+          "title": "Alternativas gratuitas",
+          "evidence_to_close": "Comparativa de CRM open source/freemium y costos",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos: Alternativas gratuitas",
+            "output": "Comparativa de CRM open source/freemium y costos",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C03",
+          "title": "Modelo comercial",
+          "evidence_to_close": "Empresa, contacto, lead, oportunidad, tarea y actividad | ADICIÓN 2026: Definir claves de identidad deduplicada por empresa/contacto, propietario único, histórico multicanal, secuencia activa, consentimiento con procedencia, opt-out, reclamaciones y siguiente acción.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos: Modelo comercial",
+            "output": "Empresa, contacto, lead, oportunidad, tarea y actividad | ADICIÓN 2026: Definir claves de identidad deduplicada por empresa/contacto, propietario único, histórico multicanal, secuencia activa, consentimiento con procedencia, opt-out, reclamaciones y siguiente acción.",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C04",
+          "title": "Permisos y segregación",
+          "evidence_to_close": "Protección por negocio y actor validada | ADICIÓN 2026: Separar acceso interno por negocio, finalidad y canal; bloquear difusión sin consentimiento vigente; conservar evidencia de base y revocación.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos: Permisos y segregación",
+            "output": "Protección por negocio y actor validada | ADICIÓN 2026: Separar acceso interno por negocio, finalidad y canal; bloquear difusión sin consentimiento vigente; conservar evidencia de base y revocación.",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C05",
+          "title": "Ciclo CRM",
+          "evidence_to_close": "Prueba mínima del flujo comercial completo",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos: Ciclo CRM",
+            "output": "Prueba mínima del flujo comercial completo",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C06",
+          "title": "Resolución de identidad empresa/contacto",
+          "evidence_to_close": "Matching RUC/dominio/razón social y control de filiales y homónimos sin merge silencioso",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Resolución de identidad empresa/contacto",
+            "output": "Matching RUC/dominio/razón social y control de filiales y homónimos sin merge silencioso",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C07",
+          "title": "Enriquecimiento progresivo y procedencia",
+          "evidence_to_close": "Modelo atributo-valor-fuente-fecha-TTL-licencia-confianza y regla de contradicción",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Enriquecimiento progresivo y procedencia",
+            "output": "Modelo atributo-valor-fuente-fecha-TTL-licencia-confianza y regla de contradicción",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C08",
+          "title": "Onboarding de lead B2B",
+          "evidence_to_close": "Entrada, propósito, deduplicación, asignación, etapa y seguimiento CRM probado",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Onboarding de lead B2B",
+            "output": "Entrada, propósito, deduplicación, asignación, etapa y seguimiento CRM probado",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C09",
+          "title": "Onboarding de cliente B2B SALY",
+          "evidence_to_close": "Checklist convenio/legales/nómina/financiación/contactos/operaciones y estados antes de activar servicio",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Onboarding de cliente B2B SALY",
+            "output": "Checklist convenio/legales/nómina/financiación/contactos/operaciones y estados antes de activar servicio",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C10",
+          "title": "Ledger de consentimiento y exclusiones",
+          "evidence_to_close": "Finalidad y canal, fuente de permiso, revocación, supresión y pruebas de bloqueo",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Ledger de consentimiento y exclusiones",
+            "output": "Finalidad y canal, fuente de permiso, revocación, supresión y pruebas de bloqueo",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U02-C11",
+          "title": "Vigencia y revalidación de datos",
+          "evidence_to_close": "TTLs separados empresa/cargo/correo/teléfono/señal, revalidación y HOLD",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "fuentes de cuentas/CRM",
+            "process": "resolver entidades y gobernar datos; Vigencia y revalidación de datos",
+            "output": "TTLs separados empresa/cargo/correo/teléfono/señal, revalidación y HOLD",
+            "verify": "probar duplicados/cambios de estado",
+            "receipt": "AIS30/v0.5/U02-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "fuentes de cuentas/CRM",
+        "pipeline": "resolver entidades y gobernar datos",
+        "verification": "probar duplicados/cambios de estado",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U03",
+      "title": "Cerebro comercial",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U03-C01",
+          "title": "Inventario de fuentes",
+          "evidence_to_close": "Fuentes oficiales, propietarias y vigencia",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones: Inventario de fuentes",
+            "output": "Fuentes oficiales, propietarias y vigencia",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C02",
+          "title": "Taxonomía y conocimiento",
+          "evidence_to_close": "Esquema de ICP, productos, políticas y playbooks",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones: Taxonomía y conocimiento",
+            "output": "Esquema de ICP, productos, políticas y playbooks",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C03",
+          "title": "Versionado y vigencia",
+          "evidence_to_close": "Ciclo de revisión, historia y fuentes canónicas",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones: Versionado y vigencia",
+            "output": "Ciclo de revisión, historia y fuentes canónicas",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C04",
+          "title": "Recuperación de conocimiento",
+          "evidence_to_close": "Consulta y selección de evidencia",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones: Recuperación de conocimiento",
+            "output": "Consulta y selección de evidencia",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C05",
+          "title": "Respuestas con evidencia",
+          "evidence_to_close": "Prueba focalizada de precisión y grounding",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones: Respuestas con evidencia",
+            "output": "Prueba focalizada de precisión y grounding",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C06",
+          "title": "Catálogo comparativo de fuentes",
+          "evidence_to_close": "Cobertura, licencia, método de acceso, costo, fecha, sesgo y propietario por familia",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones; Catálogo comparativo de fuentes",
+            "output": "Cobertura, licencia, método de acceso, costo, fecha, sesgo y propietario por familia",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C07",
+          "title": "Verificación de afirmaciones y noticias",
+          "evidence_to_close": "Afirmación-empresa-fecha-URL, primaria y corroboración: VERIFIED/CORROBORATED/UNVERIFIED/CONTRADICTED/STALE",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones; Verificación de afirmaciones y noticias",
+            "output": "Afirmación-empresa-fecha-URL, primaria y corroboración: VERIFIED/CORROBORATED/UNVERIFIED/CONTRADICTED/STALE",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C08",
+          "title": "Deduplicación de noticias y contradicción",
+          "evidence_to_close": "Publicaciones sindicadas agrupadas por origen y no contadas como fuentes diferentes",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones; Deduplicación de noticias y contradicción",
+            "output": "Publicaciones sindicadas agrupadas por origen y no contadas como fuentes diferentes",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U03-C09",
+          "title": "Calidad y retorno por fuente",
+          "evidence_to_close": "Medición de precisión, falsos positivos, vigencia y origen que genera reunión válida",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "evidencia documental/noticias",
+            "process": "extraer y contrastar afirmaciones; Calidad y retorno por fuente",
+            "output": "Medición de precisión, falsos positivos, vigencia y origen que genera reunión válida",
+            "verify": "probar contradicción y caducidad",
+            "receipt": "AIS30/v0.5/U03-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "evidencia documental/noticias",
+        "pipeline": "extraer y contrastar afirmaciones",
+        "verification": "probar contradicción y caducidad",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U04",
+      "title": "Integraciones y herramientas",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U04-C01",
+          "title": "Catálogo de conectores",
+          "evidence_to_close": "Herramientas, propietarios, costo y estado",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback: Catálogo de conectores",
+            "output": "Herramientas, propietarios, costo y estado",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C02",
+          "title": "Contratos API/webhooks",
+          "evidence_to_close": "Entrada, salida y semántica de error | ADICIÓN 2026: Contrato PRE_SEND_ADMISSION determinista: identidad, producto/categoría, política del canal, consentimiento, contactos y propietario. LLM no puede autorizar el envío.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback: Contratos API/webhooks",
+            "output": "Entrada, salida y semántica de error | ADICIÓN 2026: Contrato PRE_SEND_ADMISSION determinista: identidad, producto/categoría, política del canal, consentimiento, contactos y propietario. LLM no puede autorizar el envío.",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C03",
+          "title": "Autenticación y permisos",
+          "evidence_to_close": "Acceso mínimo y rotación de credenciales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback: Autenticación y permisos",
+            "output": "Acceso mínimo y rotación de credenciales",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C04",
+          "title": "Reintentos e idempotencia",
+          "evidence_to_close": "Política documentada y control de duplicados | ADICIÓN 2026: Idempotency key estable para acciones externas; lease de contacto y readback CRM. Reintento no genera segundo mensaje.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback: Reintentos e idempotencia",
+            "output": "Política documentada y control de duplicados | ADICIÓN 2026: Idempotency key estable para acciones externas; lease de contacto y readback CRM. Reintento no genera segundo mensaje.",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C05",
+          "title": "Integración",
+          "evidence_to_close": "Prueba focalizada de contratos sin duplicación",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback: Integración",
+            "output": "Prueba focalizada de contratos sin duplicación",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C06",
+          "title": "Adaptadores de fuentes y permisos",
+          "evidence_to_close": "Contratos SUNAT/web/empleo/SEACE/gremios/noticias/redes con acceso legal o manual y esquema de error",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback; Adaptadores de fuentes y permisos",
+            "output": "Contratos SUNAT/web/empleo/SEACE/gremios/noticias/redes con acceso legal o manual y esquema de error",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C07",
+          "title": "Caché y rate limit de investigación",
+          "evidence_to_close": "TTL, backoff 429/503, circuit breaker y presupuesto por proveedor",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback; Caché y rate limit de investigación",
+            "output": "TTL, backoff 429/503, circuit breaker y presupuesto por proveedor",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C08",
+          "title": "Contrato outbox idempotente",
+          "evidence_to_close": "Estados de despacho, lease, claim atómico, recibo y cancelación por revocación probados",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback; Contrato outbox idempotente",
+            "output": "Estados de despacho, lease, claim atómico, recibo y cancelación por revocación probados",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U04-C09",
+          "title": "Salud y fallback de conectores",
+          "evidence_to_close": "Fuente caída o cuota excedida produce HOLD/NO_VERIFICADO, no dato inventado",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "APIs/permisos",
+            "process": "contratos de retry/cotas y fallback; Salud y fallback de conectores",
+            "output": "Fuente caída o cuota excedida produce HOLD/NO_VERIFICADO, no dato inventado",
+            "verify": "simular 429/503 y duplicidad",
+            "receipt": "AIS30/v0.5/U04-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "APIs/permisos",
+        "pipeline": "contratos de retry/cotas y fallback",
+        "verification": "simular 429/503 y duplicidad",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U05",
+      "title": "WAHA Copilot del vendedor",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U05-C01",
+          "title": "Factibilidad y riesgo",
+          "evidence_to_close": "Límites WAHA/Meta e infraestructura | ADICIÓN 2026: Bloqueo por defecto de casos de adelanto de sueldo/préstamos/cobranza en WhatsApp hasta evidenciar elegibilidad específica de producto, modalidad y canal según política Meta vigente. Validar WAHA separado; UI interna alternativa.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos: Factibilidad y riesgo",
+            "output": "Límites WAHA/Meta e infraestructura | ADICIÓN 2026: Bloqueo por defecto de casos de adelanto de sueldo/préstamos/cobranza en WhatsApp hasta evidenciar elegibilidad específica de producto, modalidad y canal según política Meta vigente. Validar WAHA separado; UI interna alternativa.",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U05-C02",
+          "title": "Identificación del vendedor",
+          "evidence_to_close": "Usuario autorizado y permisos CRM",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos: Identificación del vendedor",
+            "output": "Usuario autorizado y permisos CRM",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U05-C03",
+          "title": "Entrada texto/voz",
+          "evidence_to_close": "Adaptador de WhatsApp y transcripción",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos: Entrada texto/voz",
+            "output": "Adaptador de WhatsApp y transcripción",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U05-C04",
+          "title": "Extracción y confirmación",
+          "evidence_to_close": "Datos estructurados confirmados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos: Extracción y confirmación",
+            "output": "Datos estructurados confirmados",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U05-C05",
+          "title": "Registro y readback",
+          "evidence_to_close": "Visita u oportunidad reflejada en CRM",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos: Registro y readback",
+            "output": "Visita u oportunidad reflejada en CRM",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U05-C06",
+          "title": "Copilot alternativo interno web",
+          "evidence_to_close": "Entrada voz/texto de vendedor, extracción confirmada y readback CRM sin dependencia de WhatsApp",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "vendedor/canal",
+            "process": "capturar y confirmar datos; Copilot alternativo interno web",
+            "output": "Entrada voz/texto de vendedor, extracción confirmada y readback CRM sin dependencia de WhatsApp",
+            "verify": "verificar permiso y registro CRM",
+            "receipt": "AIS30/v0.5/U05-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "vendedor/canal",
+        "pipeline": "capturar y confirmar datos",
+        "verification": "verificar permiso y registro CRM",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U06",
+      "title": "LinkedIn y Social Selling",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U06-C01",
+          "title": "Capacidades permitidas",
+          "evidence_to_close": "APIs, restricciones y canales autorizados | ADICIÓN 2026: Permitir solo operaciones LinkedIn conformes a sus términos; sin scraping/automatización de mensajes no autorizada. Definir límites operativos y trazabilidad de fuente.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos: Capacidades permitidas",
+            "output": "APIs, restricciones y canales autorizados | ADICIÓN 2026: Permitir solo operaciones LinkedIn conformes a sus términos; sin scraping/automatización de mensajes no autorizada. Definir límites operativos y trazabilidad de fuente.",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C02",
+          "title": "Investigación asistida",
+          "evidence_to_close": "Cuentas y decisores con fuentes",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos: Investigación asistida",
+            "output": "Cuentas y decisores con fuentes",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C03",
+          "title": "Estrategia editorial",
+          "evidence_to_close": "Calendario y políticas de publicación",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos: Estrategia editorial",
+            "output": "Calendario y políticas de publicación",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C04",
+          "title": "Captación y origen",
+          "evidence_to_close": "Origen de lead y trazabilidad en CRM",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos: Captación y origen",
+            "output": "Origen de lead y trazabilidad en CRM",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C05",
+          "title": "Métricas",
+          "evidence_to_close": "KPIs de captación y contenido",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos: Métricas",
+            "output": "KPIs de captación y contenido",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C06",
+          "title": "Radar de señales corporativas sociales",
+          "evidence_to_close": "Empresa-evento-fecha-URL y vías permitidas sin scraping prohibido",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos; Radar de señales corporativas sociales",
+            "output": "Empresa-evento-fecha-URL y vías permitidas sin scraping prohibido",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C07",
+          "title": "Mapa de roles y decisores en redes",
+          "evidence_to_close": "Cargos RRHH/Finanzas/Tesorería/Compras con fuente, vigencia y confianza",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos; Mapa de roles y decisores en redes",
+            "output": "Cargos RRHH/Finanzas/Tesorería/Compras con fuente, vigencia y confianza",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C08",
+          "title": "Playbook de búsqueda social permitida",
+          "evidence_to_close": "Comparación búsqueda guardada/alerta/página oficial/manual por cobertura y límites",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos; Playbook de búsqueda social permitida",
+            "output": "Comparación búsqueda guardada/alerta/página oficial/manual por cobertura y límites",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U06-C09",
+          "title": "Atribución social a leads y reuniones",
+          "evidence_to_close": "URL y señal de origen enlazadas con CRM y fuente original por negocio",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "señales sociales permitidas",
+            "process": "rastrear fuentes y cargos; Atribución social a leads y reuniones",
+            "output": "URL y señal de origen enlazadas con CRM y fuente original por negocio",
+            "verify": "probar origen, fecha y términos",
+            "receipt": "AIS30/v0.5/U06-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "señales sociales permitidas",
+        "pipeline": "rastrear fuentes y cargos",
+        "verification": "probar origen, fecha y términos",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U07",
+      "title": "Inteligencia comercial y Radar",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U07-C01",
+          "title": "ICP",
+          "evidence_to_close": "Criterios B2B SALY, segmentación y exclusiones",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar: ICP",
+            "output": "Criterios B2B SALY, segmentación y exclusiones",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C02",
+          "title": "Fuentes de empresas",
+          "evidence_to_close": "Fuentes públicas y uso autorizado",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar: Fuentes de empresas",
+            "output": "Fuentes públicas y uso autorizado",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C03",
+          "title": "Señales comerciales",
+          "evidence_to_close": "Eventos verificables de potencial interés",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar: Señales comerciales",
+            "output": "Eventos verificables de potencial interés",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C04",
+          "title": "Scoring y evidencias",
+          "evidence_to_close": "Puntaje, explicación y confiabilidad | ADICIÓN 2026: Scoring interpretable Fit/Intent/Recency/Engagement y preguntas BANT donde aplique, evidencia de señales y degradación por antigüedad. Score no implica permiso de contactar.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar: Scoring y evidencias",
+            "output": "Puntaje, explicación y confiabilidad | ADICIÓN 2026: Scoring interpretable Fit/Intent/Recency/Engagement y preguntas BANT donde aplique, evidencia de señales y degradación por antigüedad. Score no implica permiso de contactar.",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C05",
+          "title": "Ranking validado",
+          "evidence_to_close": "Priorización consistente en muestra focalizada",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar: Ranking validado",
+            "output": "Priorización consistente en muestra focalizada",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C06",
+          "title": "Matriz y consultas de descubrimiento multifuente",
+          "evidence_to_close": "SUNAT/sitios/SEACE/empleo/noticias/gremios/redes: consultas concretas, permisos, cobertura y coste",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Matriz y consultas de descubrimiento multifuente",
+            "output": "SUNAT/sitios/SEACE/empleo/noticias/gremios/redes: consultas concretas, permisos, cobertura y coste",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C07",
+          "title": "Ejecución de búsqueda por lotes",
+          "evidence_to_close": "Consultas segmentadas registradas con fecha, origen, conteo bruto/valido/descartado y cuotas",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Ejecución de búsqueda por lotes",
+            "output": "Consultas segmentadas registradas con fecha, origen, conteo bruto/valido/descartado y cuotas",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C08",
+          "title": "Normalización y deduplicación de cuentas",
+          "evidence_to_close": "RUC/dominio/razón social canonizados, matrices y filiales separadas",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Normalización y deduplicación de cuentas",
+            "output": "RUC/dominio/razón social canonizados, matrices y filiales separadas",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C09",
+          "title": "Verificación registral y sitio oficial",
+          "evidence_to_close": "Identificación inequívoca RUC+sitio+actividad o NO_VERIFICADO",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Verificación registral y sitio oficial",
+            "output": "Identificación inequívoca RUC+sitio+actividad o NO_VERIFICADO",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C10",
+          "title": "Estimación de plantilla y capacidad",
+          "evidence_to_close": "Rangos de personal/sedes/sector con evidencia, sin inventar número",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Estimación de plantilla y capacidad",
+            "output": "Rangos de personal/sedes/sector con evidencia, sin inventar número",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C11",
+          "title": "Extracción de señales desde noticias",
+          "evidence_to_close": "Expansión, contratos, inversión, vacantes y sedes en eventos atómicos con URL/fecha",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Extracción de señales desde noticias",
+            "output": "Expansión, contratos, inversión, vacantes y sedes en eventos atómicos con URL/fecha",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C12",
+          "title": "Clasificación de disparadores de compra",
+          "evidence_to_close": "Separar realidad corroborada, vigencia y relevancia a convenios SALY",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Clasificación de disparadores de compra",
+            "output": "Separar realidad corroborada, vigencia y relevancia a convenios SALY",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C12/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C13",
+          "title": "Grafo de decisores e influencia",
+          "evidence_to_close": "Mapa RRHH/Finanzas/Tesorería/Compras con rol y evidencia, sin inventar personas",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Grafo de decisores e influencia",
+            "output": "Mapa RRHH/Finanzas/Tesorería/Compras con rol y evidencia, sin inventar personas",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C13/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C14",
+          "title": "Cascada del mejor número y correo",
+          "evidence_to_close": "Ranking canal institucional/contacto aportado/fuente autorizada, fuente/fecha/rol y abstención",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Cascada del mejor número y correo",
+            "output": "Ranking canal institucional/contacto aportado/fuente autorizada, fuente/fecha/rol y abstención",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C14/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C15",
+          "title": "Verificación del canal y permiso",
+          "evidence_to_close": "Validez técnica separada de base válida para contactar; TECH_VALID no equivale a SEND_ALLOWED",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Verificación del canal y permiso",
+            "output": "Validez técnica separada de base válida para contactar; TECH_VALID no equivale a SEND_ALLOWED",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C15/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C16",
+          "title": "Scoring con negativos e incertidumbre",
+          "evidence_to_close": "Fit/Intent/Recency/Engagement más caducidad, exclusiones, confianza y explicación",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Scoring con negativos e incertidumbre",
+            "output": "Fit/Intent/Recency/Engagement más caducidad, exclusiones, confianza y explicación",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C16/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U07-C17",
+          "title": "Experimentos de rendimiento por fuente",
+          "evidence_to_close": "Cuentas verificadas, decisor, contacto permitido, reuniones, falsos positivos y costo por cohorte",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "ICP/fuentes/cuentas",
+            "process": "descubrir validar enriquecer puntuar; Experimentos de rendimiento por fuente",
+            "output": "Cuentas verificadas, decisor, contacto permitido, reuniones, falsos positivos y costo por cohorte",
+            "verify": "comprobar identidad/falsos positivos",
+            "receipt": "AIS30/v0.5/U07-C17/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "ICP/fuentes/cuentas",
+        "pipeline": "descubrir validar enriquecer puntuar",
+        "verification": "comprobar identidad/falsos positivos",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U08",
+      "title": "Outbound inteligente",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U08-C01",
+          "title": "Canales autorizados",
+          "evidence_to_close": "Permisos para email/LinkedIn/WhatsApp",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder: Canales autorizados",
+            "output": "Permisos para email/LinkedIn/WhatsApp",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C02",
+          "title": "Scripts y personalización",
+          "evidence_to_close": "Mensajes con claims aprobados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder: Scripts y personalización",
+            "output": "Mensajes con claims aprobados",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C03",
+          "title": "Secuencias",
+          "evidence_to_close": "Cadencia, límites y exclusiones | ADICIÓN 2026: Cadencias condicionadas a elegibilidad, límites multicanal por contacto/empresa, una secuencia comercial activa por contacto, ventanas y cooldown; topes calibrables según piloto, no embebidos en prompts.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder: Secuencias",
+            "output": "Cadencia, límites y exclusiones | ADICIÓN 2026: Cadencias condicionadas a elegibilidad, límites multicanal por contacto/empresa, una secuencia comercial activa por contacto, ventanas y cooldown; topes calibrables según piloto, no embebidos en prompts.",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C04",
+          "title": "Autorización",
+          "evidence_to_close": "Revisión previa del contacto externo | ADICIÓN 2026: Admission determinista justo antes de enviar: canal permitido, consentimiento, opt-out, categoría elegible, propietario único, presión comercial, reunión, respuesta, horarios y reserva idempotente. Bloquear si cualquiera falla.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder: Autorización",
+            "output": "Revisión previa del contacto externo | ADICIÓN 2026: Admission determinista justo antes de enviar: canal permitido, consentimiento, opt-out, categoría elegible, propietario único, presión comercial, reunión, respuesta, horarios y reserva idempotente. Bloquear si cualquiera falla.",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C05",
+          "title": "Respuestas y seguimiento",
+          "evidence_to_close": "Estado de secuencia sincronizado con CRM | ADICIÓN 2026: Webhook de respuesta/reunión/opt-out cierra o pausa secuencias y evita seguimientos; cada resultado se refleja en CRM antes de otra acción.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder: Respuestas y seguimiento",
+            "output": "Estado de secuencia sincronizado con CRM | ADICIÓN 2026: Webhook de respuesta/reunión/opt-out cierra o pausa secuencias y evita seguimientos; cada resultado se refleja en CRM antes de otra acción.",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C06",
+          "title": "Segmentador de campañas y audiencias",
+          "evidence_to_close": "ICP, negocio, finalidad, canal, exclusiones y lista versionada reproducible",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Segmentador de campañas y audiencias",
+            "output": "ICP, negocio, finalidad, canal, exclusiones y lista versionada reproducible",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C07",
+          "title": "Admisión previa masiva por persona",
+          "evidence_to_close": "ALLOWED/HOLD/DENIED por consentimiento, categoría, dueño, horario y supresiones",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Admisión previa masiva por persona",
+            "output": "ALLOWED/HOLD/DENIED por consentimiento, categoría, dueño, horario y supresiones",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C08",
+          "title": "Plantillas personalizadas con evidencia",
+          "evidence_to_close": "Claims citados, identidad de remitente, finalidad y baja donde corresponda",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Plantillas personalizadas con evidencia",
+            "output": "Claims citados, identidad de remitente, finalidad y baja donde corresponda",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C09",
+          "title": "Outbox y cola con claim atómico",
+          "evidence_to_close": "DRAFT/APPROVED/SCHEDULED/CLAIMED/SENT y PAUSED/RETRY/FAILED/CANCELLED sin doble envío",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Outbox y cola con claim atómico",
+            "output": "DRAFT/APPROVED/SCHEDULED/CLAIMED/SENT y PAUSED/RETRY/FAILED/CANCELLED sin doble envío",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C10",
+          "title": "Despachador con cuotas multicanal",
+          "evidence_to_close": "Capacidad, límites por contacto/empresa/dominio, backoff y cancelación en concurrencia",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Despachador con cuotas multicanal",
+            "output": "Capacidad, límites por contacto/empresa/dominio, backoff y cancelación en concurrencia",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C11",
+          "title": "Gestor rebotes/bajas/reputación",
+          "evidence_to_close": "Hard/soft bounce, spam, opt-out, supresión y pausa preventiva reflejados en CRM",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Gestor rebotes/bajas/reputación",
+            "output": "Hard/soft bounce, spam, opt-out, supresión y pausa preventiva reflejados en CRM",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C12",
+          "title": "Clasificador de respuestas y acción",
+          "evidence_to_close": "Interested/question/objection/not_now/unsubscribe/complaint/wrong_contact con humano ante dudas",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Clasificador de respuestas y acción",
+            "output": "Interested/question/objection/not_now/unsubscribe/complaint/wrong_contact con humano ante dudas",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C12/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U08-C13",
+          "title": "Experimentos A/B de mensaje y cadencia",
+          "evidence_to_close": "Cohortes comparables, reuniones útiles, quejas y regla de parada",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "audiencias/políticas",
+            "process": "admitir encolar dosificar responder; Experimentos A/B de mensaje y cadencia",
+            "output": "Cohortes comparables, reuniones útiles, quejas y regla de parada",
+            "verify": "probar permiso/opt-out/idempotencia",
+            "receipt": "AIS30/v0.5/U08-C13/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "audiencias/políticas",
+        "pipeline": "admitir encolar dosificar responder",
+        "verification": "probar permiso/opt-out/idempotencia",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U09",
+      "title": "Inbound omnicanal",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U09-C01",
+          "title": "Canales y clasificación",
+          "evidence_to_close": "Ingreso y clasificación autorizada",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar: Canales y clasificación",
+            "output": "Ingreso y clasificación autorizada",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C02",
+          "title": "Consultas frecuentes",
+          "evidence_to_close": "Respuestas ancladas en conocimiento",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar: Consultas frecuentes",
+            "output": "Respuestas ancladas en conocimiento",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C03",
+          "title": "Captura y calificación",
+          "evidence_to_close": "Lead y validaciones mínimas",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar: Captura y calificación",
+            "output": "Lead y validaciones mínimas",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C04",
+          "title": "Escalamiento humano",
+          "evidence_to_close": "Transferencia con contexto y trazabilidad | ADICIÓN 2026: Traspaso humano por alta intención, complejidad, objeciones o necesidad de consentimiento, con contexto resumido, un owner y detención de automatismos contradictorios.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar: Escalamiento humano",
+            "output": "Transferencia con contexto y trazabilidad | ADICIÓN 2026: Traspaso humano por alta intención, complejidad, objeciones o necesidad de consentimiento, con contexto resumido, un owner y detención de automatismos contradictorios.",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C05",
+          "title": "Sincronización CRM",
+          "evidence_to_close": "Consulta, lead y seguimiento coherentes",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar: Sincronización CRM",
+            "output": "Consulta, lead y seguimiento coherentes",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C06",
+          "title": "Landing y formulario B2B",
+          "evidence_to_close": "Campos mínimos, UTM, privacidad, finalidad, consentimiento y dedupe a CRM",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar; Landing y formulario B2B",
+            "output": "Campos mínimos, UTM, privacidad, finalidad, consentimiento y dedupe a CRM",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C07",
+          "title": "Intención de mensajes entrantes",
+          "evidence_to_close": "Clasificar demo/cotización/soporte/baja/reclamo y abstener ante ambigüedad",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar; Intención de mensajes entrantes",
+            "output": "Clasificar demo/cotización/soporte/baja/reclamo y abstener ante ambigüedad",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U09-C08",
+          "title": "Asignación y agenda de reunión",
+          "evidence_to_close": "Un dueño, disponibilidad y reunión CRM confirmada; sin doble reserva",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "formularios/respuestas",
+            "process": "validar clasificar asignar; Asignación y agenda de reunión",
+            "output": "Un dueño, disponibilidad y reunión CRM confirmada; sin doble reserva",
+            "verify": "probar ingreso/consentimiento/reunión",
+            "receipt": "AIS30/v0.5/U09-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "formularios/respuestas",
+        "pipeline": "validar clasificar asignar",
+        "verification": "probar ingreso/consentimiento/reunión",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U10",
+      "title": "SDR y coordinación multiagente",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U10-C01",
+          "title": "Roles y contratos",
+          "evidence_to_close": "Funciones y límites de cada perfil",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente: Roles y contratos",
+            "output": "Funciones y límites de cada perfil",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C02",
+          "title": "Selección de perfiles",
+          "evidence_to_close": "Descubrimiento determinista y selección semántica | ADICIÓN 2026: Selección dinámica de perfiles y agente propietario del lead; recursos compartidos no equivalen a varios remitentes autónomos. Revisar productor/actualizador antes de crear.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente: Selección de perfiles",
+            "output": "Descubrimiento determinista y selección semántica | ADICIÓN 2026: Selección dinámica de perfiles y agente propietario del lead; recursos compartidos no equivalen a varios remitentes autónomos. Revisar productor/actualizador antes de crear.",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C03",
+          "title": "Next Best Action",
+          "evidence_to_close": "Acción explicada y priorizada",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente: Next Best Action",
+            "output": "Acción explicada y priorizada",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C04",
+          "title": "Pipeline dinámico gobernado",
+          "evidence_to_close": "Secuencias, autorización y recuperación sin bypass | ADICIÓN 2026: Orquestación por lease de contacto, orden de prioridad respuesta > contacto inicial > seguimiento, idempotencia, escalamiento humano y pruebas de concurrencia; sin segundo Router.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente: Pipeline dinámico gobernado",
+            "output": "Secuencias, autorización y recuperación sin bypass | ADICIÓN 2026: Orquestación por lease de contacto, orden de prioridad respuesta > contacto inicial > seguimiento, idempotencia, escalamiento humano y pruebas de concurrencia; sin segundo Router.",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C05",
+          "title": "Prueba con CRM",
+          "evidence_to_close": "Ejecución y resultado trazables",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente: Prueba con CRM",
+            "output": "Ejecución y resultado trazables",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C06",
+          "title": "Lease de propiedad cuenta-contacto",
+          "evidence_to_close": "Un solo actor externo y prueba de concurrencia IA versus vendedor",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente; Lease de propiedad cuenta-contacto",
+            "output": "Un solo actor externo y prueba de concurrencia IA versus vendedor",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U10-C07",
+          "title": "Next Best Action de conversión",
+          "evidence_to_close": "Decidir investigar/verificar/esperar/pedir permiso/preparar contacto según etapa y evidencia",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "estado CRM/perfiles",
+            "process": "selección gobernada y acción siguiente; Next Best Action de conversión",
+            "output": "Decidir investigar/verificar/esperar/pedir permiso/preparar contacto según etapa y evidencia",
+            "verify": "probar carreras de concurrencia",
+            "receipt": "AIS30/v0.5/U10-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "estado CRM/perfiles",
+        "pipeline": "selección gobernada y acción siguiente",
+        "verification": "probar carreras de concurrencia",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U11",
+      "title": "Seguimiento, RevOps y reportes",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U11-C01",
+          "title": "Catálogo de KPIs",
+          "evidence_to_close": "Definición de métricas y propietarios | ADICIÓN 2026: KPIs con definición y fuente: contactos/persona, contactos/empresa, bajas, quejas, bloqueos preenvío, duplicados, reuniones válidas, avance de oportunidades y ratio de derivación humana.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones: Catálogo de KPIs",
+            "output": "Definición de métricas y propietarios | ADICIÓN 2026: KPIs con definición y fuente: contactos/persona, contactos/empresa, bajas, quejas, bloqueos preenvío, duplicados, reuniones válidas, avance de oportunidades y ratio de derivación humana.",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C02",
+          "title": "Alertas y seguimiento",
+          "evidence_to_close": "Tareas y vencimientos, sin duplicar CRM",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones: Alertas y seguimiento",
+            "output": "Tareas y vencimientos, sin duplicar CRM",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C03",
+          "title": "Conciliación CRM/Supabase",
+          "evidence_to_close": "Consistencia entre fuentes y telemetría IA",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones: Conciliación CRM/Supabase",
+            "output": "Consistencia entre fuentes y telemetría IA",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C04",
+          "title": "Dashboard",
+          "evidence_to_close": "Panel por negocio, vendedor, canal y periodo",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones: Dashboard",
+            "output": "Panel por negocio, vendedor, canal y periodo",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C05",
+          "title": "Costos y forecast",
+          "evidence_to_close": "Calidad comercial, costo y pronóstico | ADICIÓN 2026: Costo por oportunidad y forecast con p50/p95, rate-limit, caducidad de señales y panel de salud de envíos; no optimizar por aperturas aisladas.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones: Costos y forecast",
+            "output": "Calidad comercial, costo y pronóstico | ADICIÓN 2026: Costo por oportunidad y forecast con p50/p95, rate-limit, caducidad de señales y panel de salud de envíos; no optimizar por aperturas aisladas.",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C06",
+          "title": "Embudo multifuente hasta convenio",
+          "evidence_to_close": "Descubierta→validada→contactable→respuesta→reunión→propuesta→convenio con denominadores y costos",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones; Embudo multifuente hasta convenio",
+            "output": "Descubierta→validada→contactable→respuesta→reunión→propuesta→convenio con denominadores y costos",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U11-C07",
+          "title": "Panel de calidad de fuentes/contactos",
+          "evidence_to_close": "Falsos positivos, datos caducados, rebotes, bajas y exclusiones por fuente",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "eventos CRM/telemetría",
+            "process": "conciliar cohortes y conversiones; Panel de calidad de fuentes/contactos",
+            "output": "Falsos positivos, datos caducados, rebotes, bajas y exclusiones por fuente",
+            "verify": "probar denominadores y trazas",
+            "receipt": "AIS30/v0.5/U11-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "eventos CRM/telemetría",
+        "pipeline": "conciliar cohortes y conversiones",
+        "verification": "probar denominadores y trazas",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U12",
+      "title": "Piloto SALY B2B",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U12-C01",
+          "title": "Casos y datos de prueba",
+          "evidence_to_close": "Casos SALY B2B representativos",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E: Casos y datos de prueba",
+            "output": "Casos SALY B2B representativos",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C02",
+          "title": "E2E funcional",
+          "evidence_to_close": "Captación a reporte sin pasos omitidos | ADICIÓN 2026: E2E focalizado con lead duplicado, dos agentes, respuesta antes de seguimiento, revocación, consentimiento ausente, canal prohibido, presión excedida y devolución al vendedor.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E: E2E funcional",
+            "output": "Captación a reporte sin pasos omitidos | ADICIÓN 2026: E2E focalizado con lead duplicado, dos agentes, respuesta antes de seguimiento, revocación, consentimiento ausente, canal prohibido, presión excedida y devolución al vendedor.",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C03",
+          "title": "Seguridad y no regresión",
+          "evidence_to_close": "Cambios de alcance y riesgos controlados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E: Seguridad y no regresión",
+            "output": "Cambios de alcance y riesgos controlados",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C04",
+          "title": "Piloto comercial controlado",
+          "evidence_to_close": "Ejecución real dentro de autorización | ADICIÓN 2026: Piloto controlado con registro de parámetros realmente usados, grupos comparables, quejas/opt-out, tasa de reuniones y criterio detener/retroceder.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E: Piloto comercial controlado",
+            "output": "Ejecución real dentro de autorización | ADICIÓN 2026: Piloto controlado con registro de parámetros realmente usados, grupos comparables, quejas/opt-out, tasa de reuniones y criterio detener/retroceder.",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C05",
+          "title": "Evaluación y decisión",
+          "evidence_to_close": "Métricas, resultados y dictamen",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E: Evaluación y decisión",
+            "output": "Métricas, resultados y dictamen",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C06",
+          "title": "Prueba manual multifuente 30–50 cuentas",
+          "evidence_to_close": "Listado con RUC, ICP, señal, evidencias y contactabilidad, sin campañas no autorizadas",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E; Prueba manual multifuente 30–50 cuentas",
+            "output": "Listado con RUC, ICP, señal, evidencias y contactabilidad, sin campañas no autorizadas",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C07",
+          "title": "Simulación sombra candidato a reunión",
+          "evidence_to_close": "Transiciones completas sin envío externo no aprobado; trazas y bloqueos",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E; Simulación sombra candidato a reunión",
+            "output": "Transiciones completas sin envío externo no aprobado; trazas y bloqueos",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C08",
+          "title": "Ablación y descarte de fuentes",
+          "evidence_to_close": "Comparación de precisión/cobertura/costo al quitar fuente; decisión con evidencia",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E; Ablación y descarte de fuentes",
+            "output": "Comparación de precisión/cobertura/costo al quitar fuente; decisión con evidencia",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U12-C09",
+          "title": "Gate comercial GO/REWORK/STOP",
+          "evidence_to_close": "Decisión basada en cuentas válidas, interés, permisos, reuniones observadas y costos",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "muestra real/simulada",
+            "process": "validar tracción y flujo E2E; Gate comercial GO/REWORK/STOP",
+            "output": "Decisión basada en cuentas válidas, interés, permisos, reuniones observadas y costos",
+            "verify": "probar GO/STOP y sin envíos no permitidos",
+            "receipt": "AIS30/v0.5/U12-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "muestra real/simulada",
+        "pipeline": "validar tracción y flujo E2E",
+        "verification": "probar GO/STOP y sin envíos no permitidos",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U13",
+      "title": "Voz y coaching comercial",
+      "phase": "F4",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U13-C01",
+          "title": "Alternativas gratuitas",
+          "evidence_to_close": "Motores de voz y costos de infraestructura",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "llamadas con permiso",
+            "process": "transcribir y evaluar: Alternativas gratuitas",
+            "output": "Motores de voz y costos de infraestructura",
+            "verify": "verificar precisión y acceso",
+            "receipt": "AIS30/v0.5/U13-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U13-C02",
+          "title": "Consentimiento y grabación",
+          "evidence_to_close": "Consentimiento, privacidad y retención",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "llamadas con permiso",
+            "process": "transcribir y evaluar: Consentimiento y grabación",
+            "output": "Consentimiento, privacidad y retención",
+            "verify": "verificar precisión y acceso",
+            "receipt": "AIS30/v0.5/U13-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U13-C03",
+          "title": "Transcripción",
+          "evidence_to_close": "Calidad de STT en casos objetivo",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "llamadas con permiso",
+            "process": "transcribir y evaluar: Transcripción",
+            "output": "Calidad de STT en casos objetivo",
+            "verify": "verificar precisión y acceso",
+            "receipt": "AIS30/v0.5/U13-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U13-C04",
+          "title": "Evaluación de llamadas",
+          "evidence_to_close": "Scorecard con evidencia",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "llamadas con permiso",
+            "process": "transcribir y evaluar: Evaluación de llamadas",
+            "output": "Scorecard con evidencia",
+            "verify": "verificar precisión y acceso",
+            "receipt": "AIS30/v0.5/U13-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U13-C05",
+          "title": "Calidad y costo",
+          "evidence_to_close": "Dictamen de voz/coaching",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "llamadas con permiso",
+            "process": "transcribir y evaluar: Calidad y costo",
+            "output": "Dictamen de voz/coaching",
+            "verify": "verificar precisión y acceso",
+            "receipt": "AIS30/v0.5/U13-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "llamadas con permiso",
+        "pipeline": "transcribir y evaluar",
+        "verification": "verificar precisión y acceso",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U14",
+      "title": "Aprendizaje y Revenue Intelligence",
+      "phase": "F4",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U14-C01",
+          "title": "Feedback comercial",
+          "evidence_to_close": "Resultados y errores registrados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes: Feedback comercial",
+            "output": "Resultados y errores registrados",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C02",
+          "title": "Experimentos A/B",
+          "evidence_to_close": "Hipótesis y muestras comparables",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes: Experimentos A/B",
+            "output": "Hipótesis y muestras comparables",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C03",
+          "title": "Conversión y rentabilidad",
+          "evidence_to_close": "Datos confiables, costo e ingreso esperado",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes: Conversión y rentabilidad",
+            "output": "Datos confiables, costo e ingreso esperado",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C04",
+          "title": "Propuestas de mejora",
+          "evidence_to_close": "Candidatos con impacto y reversibilidad",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes: Propuestas de mejora",
+            "output": "Candidatos con impacto y reversibilidad",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C05",
+          "title": "Validación y versionado",
+          "evidence_to_close": "Mejora verificada antes de promover",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes: Validación y versionado",
+            "output": "Mejora verificada antes de promover",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C06",
+          "title": "Etiquetas reales de conversión",
+          "evidence_to_close": "Ganado/perdido/postergado/sin respuesta y causa validada por operador",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes; Etiquetas reales de conversión",
+            "output": "Ganado/perdido/postergado/sin respuesta y causa validada por operador",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U14-C07",
+          "title": "Optimización de mezcla de fuentes",
+          "evidence_to_close": "A/B con holdout, costo por reunión y rollback de fuentes",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "conversiones/costos",
+            "process": "medir feedback y ajustar fuentes; Optimización de mezcla de fuentes",
+            "output": "A/B con holdout, costo por reunión y rollback de fuentes",
+            "verify": "validar cohortes/rollback",
+            "receipt": "AIS30/v0.5/U14-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "conversiones/costos",
+        "pipeline": "medir feedback y ajustar fuentes",
+        "verification": "validar cohortes/rollback",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U15",
+      "title": "Ingeniería, selección y evolución de perfiles",
+      "phase": "Transversal/prioritario",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U15-C01",
+          "title": "Inventario perfiles/skills",
+          "evidence_to_close": "Versiones y fuentes canónicas reconciliadas",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Inventario perfiles/skills",
+            "output": "Versiones y fuentes canónicas reconciliadas",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C02",
+          "title": "Matriz de capacidades por fase",
+          "evidence_to_close": "Habilidades requeridas por rol y unidad",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Matriz de capacidades por fase",
+            "output": "Habilidades requeridas por rol y unidad",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C03",
+          "title": "Selección determinista/semántica",
+          "evidence_to_close": "Contratos y secuencia consultados",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Selección determinista/semántica",
+            "output": "Contratos y secuencia consultados",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C04",
+          "title": "Reutilización y brechas",
+          "evidence_to_close": "Clasificación reutilizar/evolucionar/crear",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Reutilización y brechas",
+            "output": "Clasificación reutilizar/evolucionar/crear",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C05",
+          "title": "Auditoría Profile Creator",
+          "evidence_to_close": "Capacidades y lagunas reales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Auditoría Profile Creator",
+            "output": "Capacidades y lagunas reales",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C06",
+          "title": "Auditoría Profile Updater",
+          "evidence_to_close": "Brechas PE10, sin duplicar cierres",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Auditoría Profile Updater",
+            "output": "Brechas PE10, sin duplicar cierres",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C07",
+          "title": "Habilidades estándar",
+          "evidence_to_close": "Interfaz común de perfil, costo, profundidad y transporte",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Habilidades estándar",
+            "output": "Interfaz común de perfil, costo, profundidad y transporte",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C08",
+          "title": "Diseño de evolución",
+          "evidence_to_close": "Cambio mínimo, compatibilidad y rollback",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Diseño de evolución",
+            "output": "Cambio mínimo, compatibilidad y rollback",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C09",
+          "title": "Diseño de perfiles objetivo",
+          "evidence_to_close": "Alcance de las especialidades AI Sales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Diseño de perfiles objetivo",
+            "output": "Alcance de las especialidades AI Sales",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C10",
+          "title": "Políticas y skills",
+          "evidence_to_close": "Bindings según negocio/acción | ADICIÓN 2026: Reutilizar políticas y skills de elegibilidad, contact-pressure, single-owner y send-admission; verificar que cada perfil respeta admisión determinista y selección gobernada.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Políticas y skills",
+            "output": "Bindings según negocio/acción | ADICIÓN 2026: Reutilizar políticas y skills de elegibilidad, contact-pressure, single-owner y send-admission; verificar que cada perfil respeta admisión determinista y selección gobernada.",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C11",
+          "title": "Prueba consolidada",
+          "evidence_to_close": "Selección, actualización/creación y operación focalizadas",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Prueba consolidada",
+            "output": "Selección, actualización/creación y operación focalizadas",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C12",
+          "title": "Readback y cierre",
+          "evidence_to_close": "Evidencia unificada y versión",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo: Readback y cierre",
+            "output": "Evidencia unificada y versión",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C12/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U15-C13",
+          "title": "Matriz perfiles existentes versus motor comercial",
+          "evidence_to_close": "Mapa reutilizar/evolucionar/crear para investigación, enriquecimiento, campañas y CRM",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "perfiles skills router",
+            "process": "reutilizar evolucionar crear mínimo; Matriz perfiles existentes versus motor comercial",
+            "output": "Mapa reutilizar/evolucionar/crear para investigación, enriquecimiento, campañas y CRM",
+            "verify": "verificar no regresión",
+            "receipt": "AIS30/v0.5/U15-C13/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "perfiles skills router",
+        "pipeline": "reutilizar evolucionar crear mínimo",
+        "verification": "verificar no regresión",
+        "scope": "PLAN_ONLY"
+      }
+    },
+    {
+      "unit_code": "U16",
+      "title": "Ingeniería de rendimiento, transporte y profundidad",
+      "phase": "Transversal/prioritario",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U16-C01",
+          "title": "Línea base de tiempos",
+          "evidence_to_close": "p50/p95 y duraciones por etapa",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Línea base de tiempos",
+            "output": "p50/p95 y duraciones por etapa",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C01/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C02",
+          "title": "Transporte",
+          "evidence_to_close": "Canales, contratos y autenticación",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Transporte",
+            "output": "Canales, contratos y autenticación",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C02/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C03",
+          "title": "Payload",
+          "evidence_to_close": "Tamaño y límites de contenido",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Payload",
+            "output": "Tamaño y límites de contenido",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C03/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C04",
+          "title": "Timeout/retry/idempotencia",
+          "evidence_to_close": "Controles de recuperación de fallos",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Timeout/retry/idempotencia",
+            "output": "Controles de recuperación de fallos",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C04/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C05",
+          "title": "Profundidad de razonamiento",
+          "evidence_to_close": "Niveles dinámicos según necesidad",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Profundidad de razonamiento",
+            "output": "Niveles dinámicos según necesidad",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C05/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C06",
+          "title": "Suficiencia de evidencia",
+          "evidence_to_close": "Grounding y políticas de calidad",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Suficiencia de evidencia",
+            "output": "Grounding y políticas de calidad",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C06/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C07",
+          "title": "Consumo",
+          "evidence_to_close": "Tokens, CPU, memoria y concurrencia",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Consumo",
+            "output": "Tokens, CPU, memoria y concurrencia",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C07/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C08",
+          "title": "Observabilidad E2E",
+          "evidence_to_close": "Traza y correlación de eventos",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Observabilidad E2E",
+            "output": "Traza y correlación de eventos",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C08/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C09",
+          "title": "No regresión y rollback",
+          "evidence_to_close": "Prueba focalizada de cambios | ADICIÓN 2026: Regresión enfocada en doble envío, race conditions, tiempos de reserva/ejecución, bloqueos, reversión y efecto en latencia; verificación funcional directa y readback del lote.",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: No regresión y rollback",
+            "output": "Prueba focalizada de cambios | ADICIÓN 2026: Regresión enfocada en doble envío, race conditions, tiempos de reserva/ejecución, bloqueos, reversión y efecto en latencia; verificación funcional directa y readback del lote.",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C09/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C10",
+          "title": "Benchmark y dictamen",
+          "evidence_to_close": "Cumplimiento medido de umbrales",
+          "status": "NOT_VERIFIED",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación: Benchmark y dictamen",
+            "output": "Cumplimiento medido de umbrales",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C10/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        },
+        {
+          "checkpoint_code": "U16-C11",
+          "title": "Telemetría y límites del motor comercial",
+          "evidence_to_close": "Benchmarks p50/p95, colas, rate limit, presupuesto y fallbacks",
+          "status": "NOT_VERIFIED",
+          "checkpoint_origin": "V0_5_OPERATIONAL",
+          "operational_contract": {
+            "contract": "AIS30-CP/v1",
+            "input": "trazas de rendimiento",
+            "process": "medir cotas y degradación; Telemetría y límites del motor comercial",
+            "output": "Benchmarks p50/p95, colas, rate limit, presupuesto y fallbacks",
+            "verify": "verificar p95/errores/costo",
+            "receipt": "AIS30/v0.5/U16-C11/receipt.json",
+            "on_failure": "NO_VERIFICADO",
+            "separate_reviewer_required": false
+          }
+        }
+      ],
+      "operating_protocol": {
+        "input": "trazas de rendimiento",
+        "pipeline": "medir cotas y degradación",
+        "verification": "verificar p95/errores/costo",
+        "scope": "PLAN_ONLY"
+      }
+    }
+  ],
+  "counts": {
+    "units": 17,
+    "checkpoints": 162,
+    "verified_ai_sales_checkpoints": 0,
+    "original_checkpoints": 102,
+    "added_checkpoints": 60
+  },
+  "dependencies": {
+    "pe10": "Profile Updater PE10 exists in Supabase and has active backlog; read live states before reuse. No duplicate PE10 in AI Sales."
+  },
+  "previous_version": {
+    "version": "v0.4",
+    "event_id": 21621,
+    "source_ref": "docs/ai_sales/AI_SALES_3_0_PLAN_V0_4_SIN_REVISION_INDEPENDIENTE_20261027.json",
+    "blob_sha": "036aa0c312d32838f43f8834613178e21044c10a",
+    "immutable": true
+  },
+  "registered_state_at_revision": {
+    "units": 17,
+    "checkpoints": 102,
+    "pending": 102,
+    "closed": 0,
+    "base_event_id": 21611
+  },
+  "benchmark_2026": {
+    "schema": "AI_SALES_BENCHMARK_CHANGESET_V1",
+    "source_category": "Documented vendor practices reviewed 2026; policy and legal applicability must be confirmed before enablement",
+    "change_type": "CHECKPOINT_ACCEPTANCE_CRITERIA_ENRICHMENT_ONLY",
+    "changed_checkpoint_count": 20,
+    "changed_checkpoint_codes": [
+      "U00-C05",
+      "U02-C03",
+      "U02-C04",
+      "U04-C02",
+      "U04-C04",
+      "U05-C01",
+      "U06-C01",
+      "U07-C04",
+      "U08-C03",
+      "U08-C04",
+      "U08-C05",
+      "U09-C04",
+      "U10-C02",
+      "U10-C04",
+      "U11-C01",
+      "U11-C05",
+      "U12-C02",
+      "U12-C04",
+      "U15-C10",
+      "U16-C09"
+    ],
+    "risk_controls": [
+      "CONTACT_PRESSURE_BUDGET",
+      "SINGLE_ACTIVE_SEQUENCE",
+      "SINGLE_OUTBOUND_OWNER",
+      "PRE_SEND_ADMISSION",
+      "DETERMINISTIC_CHANNEL_ELIGIBILITY",
+      "EVENT_DRIVEN_STOP",
+      "EXPLAINABLE_SCORING",
+      "RATE_LIMIT_AND_TRANSPORT",
+      "RELEASE_GATING"
+    ],
+    "benchmark_examples_not_authorized_defaults": {
+      "status": "CALIBRATION_CANDIDATES_ONLY",
+      "max_active_sequences_per_contact": 1,
+      "max_outbound_14_days": 2,
+      "max_outbound_30_days": 4,
+      "min_hours_between_outbound": 72,
+      "max_contacts_per_organization_7_days": 3,
+      "note": "Numbers are hypotheses for authorized marketing campaigns; must not be hardcoded; platform and local consent policies prevail; not applied to legitimate inbound support replies."
+    },
+    "precedence": "LEGAL_AND_PLATFORM_POLICIES > CONSENT_AND_OPTOUT > CONTACT_OWNER_AND_SEQUENCE > CONTACT_PRESSURE > SCORE_OR_LLM",
+    "dynamic_policy_authority": "Policy by business, product category, channel, purpose and current version; NOT Router static if-statements",
+    "research_flags": [
+      {
+        "key": "META_WHATSAPP_FINANCIAL",
+        "status": "BLOCK_PENDING_SPECIFIC_USE_CASE_ELIGIBILITY",
+        "alternative": "Seller-facing internal web app"
+      },
+      {
+        "key": "PERU_CONSENT_ADVERTISING",
+        "status": "REQUIRE_CURRENT_OFFICIAL_LEGAL_CONFIRMATION_BEFORE_SEND"
+      },
+      {
+        "key": "LINKEDIN_TERMS",
+        "status": "NO_UNAUTHORIZED_SCRAPING_OR_BULK_AUTO_MESSAGING"
+      },
+      {
+        "key": "EMAIL_SENDER_POLICY",
+        "status": "REQUIRE_DOMAIN_AUTHENTICATION_AND_UNSUBSCRIBE_WHERE_APPLICABLE"
+      }
+    ],
+    "evaluation_scope": "One consolidated functional readback per lot by the implementing team; no external reviewer gate for any checkpoint.",
+    "no_runtime_activation": true,
+    "no_schema_redesign": true,
+    "no_new_units": true
+  },
+  "review_policy": {
+    "applies_to": "ALL_102_CHECKPOINTS",
+    "model": "SELF_VALIDATION_BY_IMPLEMENTING_TEAM",
+    "additional_reviewer_required": false,
+    "verification": "Focused functional checks, relevant regression, exact-source and Supabase readback",
+    "applies_to_profiles_and_agents": true,
+    "no_extra_checkpoints_added": true,
+    "existing_security_and_merge_train_controls_unchanged": true
+  },
+  "change_summary": {
+    "change_kind": "DELETE_OPTIONAL_REVIEW_GATE",
+    "checkpoints_updated": [
+      "U16-C09"
+    ],
+    "rules_updated": 2,
+    "benchmark_scope_updated": 1,
+    "unit_policy_keys_removed": [
+      "legacy_separate_reviewer_flag"
+    ],
+    "checkpoint_ids_changed": 0,
+    "checkpoint_status_changed": 0,
+    "affected_units": 17,
+    "work_item_criteria_updated": 17
+  },
+  "market_engine_v05": {
+    "flow": [
+      "ICP",
+      "DISCOVERY_MULTISOURCE",
+      "RESOLVE_RUC_AND_DOMAIN",
+      "VERIFY_NEWS_CLAIMS",
+      "ENRICH_ACCOUNT",
+      "BUYER_GRAPH",
+      "CONTACT_WATERFALL",
+      "LEGAL_ELIGIBILITY",
+      "SCORING",
+      "OUTBOX_ADMISSION",
+      "QUEUE_DISPATCH",
+      "REPLY_CLASSIFY",
+      "CRM_MEETING",
+      "B2B_ONBOARD",
+      "SOURCE_ROI_FEEDBACK"
+    ],
+    "sources": [
+      [
+        "SUNAT",
+        "identidad, RUC y actividad"
+      ],
+      [
+        "sitios oficiales",
+        "sede, sector, canales institucionales"
+      ],
+      [
+        "SEACE",
+        "contratos públicos"
+      ],
+      [
+        "empleo",
+        "posibles señales de contratación"
+      ],
+      [
+        "gremios y cámaras",
+        "empresas por sector"
+      ],
+      [
+        "redes sociales permitidas",
+        "señal y roles"
+      ],
+      [
+        "noticias y reguladores",
+        "eventos verificables"
+      ],
+      [
+        "formularios y referidos propios",
+        "intención declarada"
+      ]
+    ],
+    "algorithms": {
+      "entity_resolution": "RUC exacto > dominio corporativo confirmado > nombre y evidencia adicional; homónimos/filiales ambiguos en HOLD",
+      "source_truth": "Afirmación, fecha, RUC/empresa, fuente primaria, corroboración no sindicada, contradicción, TTL; VERIFIED/CORROBORATED/UNVERIFIED/CONTRADICTED/STALE",
+      "contact_cascade": "canal corporativo oficial > contacto aportado voluntariamente > fuente autorizada > NO_VERIFICADO; score por rol×origen×vigencia; email inferido no verificado",
+      "qualification": "Fit,Intent,Recency,Engagement con score explicable y abstención; score nunca otorga SEND_ALLOWED",
+      "admission": "producto/categoría/canal/finalidad/consentimiento/baja/owner/presión/horario/actividad/lease; fail closed",
+      "outbox": "DRAFT→APPROVED→SCHEDULED→CLAIMED→SENT y PAUSED/RETRY/FAILED/CANCELLED; lease e idempotencia",
+      "learning": "fuente→cuenta→decisor→contactable permitido→respuesta→reunión→propuesta→convenio; costo y falsos positivos por etapa"
+    },
+    "market_proof": {
+      "sample": "30–50 empresas como hipótesis de muestra ajustable",
+      "mode": "manual/semiautomatizado, sin despachos masivos por defecto",
+      "kpis": [
+        "cuentas verificadas",
+        "señales sustentadas",
+        "decisor válido",
+        "contactabilidad legal",
+        "respuesta/reunión cuando permitido",
+        "costo por cuenta útil"
+      ],
+      "decision": "GO/REWORK/STOP con evidencia, sin umbrales inventados"
+    },
+    "source_access": "Comprobar licencias/ToS de cada fuente al ejecutar, sin extracción prohibida",
+    "runtime_activation": false
+  },
+  "normalization_v05": {
+    "baseline": 102,
+    "added": 60,
+    "total": 162,
+    "units": 17,
+    "gates": 5,
+    "allocation": {
+      "U00": {
+        "original": 5,
+        "added": 3,
+        "total": 8
+      },
+      "U01": {
+        "original": 10,
+        "added": 3,
+        "total": 13
+      },
+      "U02": {
+        "original": 5,
+        "added": 6,
+        "total": 11
+      },
+      "U03": {
+        "original": 5,
+        "added": 4,
+        "total": 9
+      },
+      "U04": {
+        "original": 5,
+        "added": 4,
+        "total": 9
+      },
+      "U05": {
+        "original": 5,
+        "added": 1,
+        "total": 6
+      },
+      "U06": {
+        "original": 5,
+        "added": 4,
+        "total": 9
+      },
+      "U07": {
+        "original": 5,
+        "added": 12,
+        "total": 17
+      },
+      "U08": {
+        "original": 5,
+        "added": 8,
+        "total": 13
+      },
+      "U09": {
+        "original": 5,
+        "added": 3,
+        "total": 8
+      },
+      "U10": {
+        "original": 5,
+        "added": 2,
+        "total": 7
+      },
+      "U11": {
+        "original": 5,
+        "added": 2,
+        "total": 7
+      },
+      "U12": {
+        "original": 5,
+        "added": 4,
+        "total": 9
+      },
+      "U13": {
+        "original": 5,
+        "added": 0,
+        "total": 5
+      },
+      "U14": {
+        "original": 5,
+        "added": 2,
+        "total": 7
+      },
+      "U15": {
+        "original": 12,
+        "added": 1,
+        "total": 13
+      },
+      "U16": {
+        "original": 10,
+        "added": 1,
+        "total": 11
+      }
+    },
+    "all_checkpoints_pending": true,
+    "no_additional_reviewer": true,
+    "no_runtime_activation": true
+  }
+}
