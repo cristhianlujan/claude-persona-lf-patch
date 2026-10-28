@@ -641,6 +641,9 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       }
 
       const action = typeof body.action === "string" ? body.action : "";
+      if (identity.scope === "GOVERNED_ROUTER_PROFILE_CANARY" && action !== ROUTER_PROFILE_CANARY_ACTION) {
+        return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CANARY_ACTION_SCOPE_MISMATCH" }, 403);
+      }
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isCp2Action = action === CP2_PREFLIGHT_ACTION || action === CP2_EXECUTE_ACTION;
       if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
