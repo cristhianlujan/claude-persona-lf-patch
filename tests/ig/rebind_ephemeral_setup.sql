@@ -41,7 +41,7 @@ CREATE FUNCTION programacion.fn_input_resolve_source_ref(jsonb,integer,bigint)
 RETURNS jsonb LANGUAGE sql AS $$ SELECT '{"observed":{"status":"OK"}}'::jsonb $$;
 CREATE FUNCTION programacion.fn_input_validator_evidence_rehydrate_v1(jsonb)
 RETURNS jsonb LANGUAGE sql AS $$
- SELECT case when $1 ? 'assertions' then $1 else $1||jsonb_build_object(
+ SELECT case when $1 ? 'assertions' then $1 else ($1 - 'assertion_set_sha256')||jsonb_build_object(
  'assertions',(select s.assertions from programacion.input_validator_assertion_sets_v1 s
   where s.assertion_set_sha256=$1->>'assertion_set_sha256')) end
 $$;
