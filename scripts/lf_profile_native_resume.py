@@ -43,8 +43,45 @@ def oidc():
         return json.load(response)["value"]
 
 
+
+def governed_request():
+    """Accept only explicit, bounded issue data or authorized dispatch inputs."""
+    if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
+        return os.environ["PROFILE_EXECUTION_ID"], os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip()
+
+    event_path = os.environ["GITHUB_EVENT_PATH"]
+    event = json.loads(Path(event_path).read_text(encoding="utf-8"))
+    issue = event.get("issue", {})
+    label = event.get("label", {})
+    expected_url = "https://api.github.com/repos/" + os.environ["GITHUB_REPOSITORY"]
+    if (
+        os.environ.get("GITHUB_EVENT_NAME") != "issues"
+        or event.get("action") != "labeled"
+        or label.get("name") != "lf-profile-resume-governed"
+        or issue.get("state") != "open"
+        or issue.get("pull_request") is not None
+        or issue.get("repository_url") != expected_url
+    ):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_TRIGGER_INVALID")
+
+    raw = issue.get("body")
+    if not isinstance(raw, str) or len(raw) > 8192:
+        raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
+    data = json.loads(raw)
+    if not isinstance(data, dict) or set(data) - {
+        "schema_version", "execution_id", "screen_selection_draft"
+    } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
+        raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
+    execution_id = data.get("execution_id")
+    if not isinstance(execution_id, str):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_EXECUTION_ID_INVALID")
+    selection = data.get("screen_selection_draft")
+    if selection is not None and not isinstance(selection, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
+    return execution_id, json.dumps(selection) if selection is not None else ""
+
 def main():
-    execution_id = os.environ["PROFILE_EXECUTION_ID"]
+    execution_id, raw_draft = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
@@ -83,7 +120,6 @@ def main():
         "source_revision": source_revision,
         "source_digest": digest,
     }
-    raw_draft = os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip()
     if raw_draft:
         draft = json.loads(raw_draft)
         if not isinstance(draft, dict):
