@@ -84,6 +84,8 @@ DECLARE
  v_selector boolean;
  v_clause boolean;
  v_valid boolean;
+ v_true boolean;
+ v_cross_consumer boolean;
 BEGIN
  SELECT programacion.fn_input_rule_selector_matches_v1('{}'::jsonb,'{}'::jsonb)
  INTO v_selector;
@@ -94,6 +96,18 @@ BEGIN
  IF v_selector IS DISTINCT FROM false OR
     v_clause IS DISTINCT FROM false OR v_valid IS DISTINCT FROM false
  THEN RAISE EXCEPTION 'FAIL_ACL_GOVERNED_INVALID_INPUT_NOT_DENIED'; END IF;
+ -- Authorized consumer and exact target path: actual user-role invocation
+ -- should return TRUE; different consumer must fail closed.
+ SELECT programacion.fn_input_rule_selector_matches_v1(
+   '{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[{"path":["target","screen","id"],"op":"EQ","value":1}]}'::jsonb,
+   '{"consumer_role":"INPUT_GOVERNANCE","target":{"screen":{"id":1}}}'::jsonb
+ ) INTO v_true;
+ SELECT programacion.fn_input_rule_selector_matches_v1(
+   '{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[{"path":["target","screen","id"],"op":"EQ","value":1}]}'::jsonb,
+   '{"consumer_role":"OTHER_CONSUMER","target":{"screen":{"id":1}}}'::jsonb
+ ) INTO v_cross_consumer;
+ IF v_true IS DISTINCT FROM true OR v_cross_consumer IS DISTINCT FROM false
+ THEN RAISE EXCEPTION 'FAIL_ACL_GOVERNED_POSITIVE_OR_CONSUMER_NEGATIVE'; END IF;
 END
 $acl_positive$;
 RESET ROLE;
