@@ -40,6 +40,7 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
 }
 Deno.test("continuation: exact OIDC workflow only",()=>{
   eq(resolveOidcIdentity(oidc,config).scope,"PROFILE_NATIVE_CONTINUATION_ONLY");
+  eq(resolveOidcIdentity({...oidc,event_name:"issues"},config).scope,"PROFILE_NATIVE_CONTINUATION_ONLY");
   for(const wrong of [{...oidc,event_name:"push"},{...oidc,ref:"refs/heads/feature"},
     {...oidc,environment:"unprotected"},{...oidc,workflow_ref:"untrusted"}]){
     let blocked=false;try{resolveOidcIdentity(wrong,config)}catch{blocked=true}eq(blocked,true);
