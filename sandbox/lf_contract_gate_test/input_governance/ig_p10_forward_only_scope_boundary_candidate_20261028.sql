@@ -23,6 +23,12 @@ BEGIN
 END
 $preflight$;
 
+-- Serialize snapshot creation against concurrent input changes before
+-- inspecting any rows. Fail quickly rather than freezing inconsistent scope.
+SET LOCAL lock_timeout = '5s';
+LOCK TABLE lf_ops.reglas, lf_ops.reglas_pantallas, lf_ops.pantallas,
+  lf_ops.modulos IN SHARE MODE;
+
 -- Fail before freeze if raw physical bindings are ambiguous. A frozen
 -- historical pair is NOT authority; duplication also breaks exact parity.
 DO $physical_uniqueness$
