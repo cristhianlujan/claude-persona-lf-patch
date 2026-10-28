@@ -89,6 +89,8 @@ END
 $guard$;
 
 -- Invocation authorization is deliberately narrow: no broad function grants.
+REVOKE ALL ON FUNCTION public.lf_router_pipeline_read_only_v1(text,jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lf_router_pipeline_read_only_v1(text,jsonb) TO service_role;
 DO $grant$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='supabase_read_only_user') THEN
