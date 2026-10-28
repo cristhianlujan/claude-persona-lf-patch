@@ -1,0 +1,1022 @@
+{
+  "authority_status": "CANDIDATE_NOT_APPROVED",
+  "inventory_version": "0.1.1-candidate",
+  "canonicalization": "json utf8 sort_keys true ensure_ascii false separators comma colon; hash over inventory_core only",
+  "inventory_digest_sha256": "cd2f7a964b9901d9e58b8d5f4271532f480966424d37fd2d9a40332a7b440ffb",
+  "inventory_core": {
+    "schema": "PROGRAMMING_CHECKPOINT_INVENTORY_V1",
+    "pg00_mode": "EXTERNAL_REQUIRED_VERSIONED",
+    "external_prerequisite": {
+      "unit_id": "PG-00",
+      "checkpoints": [
+        {
+          "checkpoint_id": "PG-00.C1",
+          "closure_criterion": "Cada ítem tiene fuente y métrica (acceso a `libertad-financiera` obtenido 21/10)",
+          "scope": "Inventario: reglas vigentes, convenciones medidas, stack real (incluye leer `libertad-financiera`)",
+          "sequence_no": 1,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C2",
+          "closure_criterion": "Las 17 registradas (decididas 21/10; registro preparado, pendiente del Router y del GO de Cristhian)",
+          "scope": "Decisiones D1–D17 registradas como ADR en `transversal.decision_log` (donde `programming-agent/docs/DECISIONS.md` ubica las decisiones canónicas; `programacion.human_decisions` exige una ejecución y un `head_sha`, así que queda para los GO ligados a una corrida)",
+          "sequence_no": 2,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C3",
+          "closure_criterion": "Catálogo versionado legible por PG-03 y por las skills.",
+          "scope": "Catálogo `STD-*` publicado en `transversal` y en el repo, con versión y digest, en **dos formatos**: legible por herramientas y para el LLM con ejemplos ✅/❌",
+          "sequence_no": 3,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C4",
+          "closure_criterion": "Glosario versionado y consultable por PG-03 y PG-11; check en sombra con caso negativo; cobertura positiva lista para PG-11",
+          "scope": "Glosario base ES→EN (solo términos de semántica estable: `status`, `amount`, `currency`, `user`…) en `transversal` + glosario por proyecto (L3; LF primero). Cada término con `term_id`, forma canónica, formas rechazadas, **formas heredadas atadas a contratos concretos**, contextos, ejemplos ✅/❌, fuentes y `decision_ref`. Precedencia de nombres: contrato existente > glosario del proyecto > glosario base > propuesta (`REQUIRES_DECISION`)",
+          "sequence_no": 4,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C5",
+          "closure_criterion": "El kit crea un esquema vacío que pasa todos los STD-DB",
+          "scope": "Kit base de proyecto: tablas comunes en inglés (errores con los técnicos mínimos de D2, ocurrencias, mensajes, auditoría, navegación, `legal_documents`, `consents`), trigger de `updated_at` y consultas de soporte, como migraciones del stack",
+          "sequence_no": 5,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C6",
+          "closure_criterion": "Cada skill cita la versión del catálogo.",
+          "scope": "Skills por stack (Spring, Next.js, Postgres/Flyway; Supabase y Python para la plataforma) que **cargan** el catálogo en su versión fijada, sin copiarlo",
+          "sequence_no": 6,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C7",
+          "closure_criterion": "Cada STD BLOCK tiene un check que **falla** con su caso negativo",
+          "scope": "Configuración de linters por repo, **la misma para CI y agente**; primero en sombra y luego bloqueando sobre el diff",
+          "sequence_no": 7,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C8",
+          "closure_criterion": "Un waiver de prueba visible para PG-03 y PG-11",
+          "scope": "Waivers: aprobador, caducidad, registro e id citable",
+          "sequence_no": 8,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C9",
+          "closure_criterion": "Circuito probado con un cambio de prueba",
+          "scope": "Circuito de cambio del catálogo: hallazgo → propuesta → GO → versión nueva; los cambios de seguridad invalidan el pin de versión",
+          "sequence_no": 9,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C10",
+          "closure_criterion": "Informe con tasa de FP y ajustes",
+          "scope": "Aseguramiento: aplicar el catálogo a código existente y medir falsos positivos",
+          "sequence_no": 10,
+          "status": "REQUIRED"
+        },
+        {
+          "checkpoint_id": "PG-00.C11",
+          "closure_criterion": "Tabla y política con versión; esquema listo para el Train",
+          "scope": "**Consumo (D16/D17):** tabla de precios por modelo y política de optimización, versionadas; esquema del registro de consumo",
+          "sequence_no": 11,
+          "status": "REQUIRED"
+        }
+      ]
+    },
+    "operational_units": [
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-01.C1",
+            "closure_criterion": "Los digests coinciden o la diferencia queda registrada",
+            "scope": "Contrato receptor alineado con el productor (schema digest `d2e347ef…`)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C2",
+            "closure_criterion": "Readback igual al recibo",
+            "scope": "Resolver el `context_id` exacto y recomputar `context_sha256`",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C3",
+            "closure_criterion": "Admisión por scope con motivo",
+            "scope": "Validar material paths y la matriz scope-frente; solo admite scopes READY con frente limpio",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C4",
+            "closure_criterion": "Los cuatro, más modo y presupuesto, quedan en el recibo; sin manifiesto ni perfil de arquitectura vigentes → BLOCK",
+            "scope": "Fijar el **marco técnico** con versión: (1) `standards_catalog_version`; (2) el **perfil técnico del proyecto** (manifiesto de reglas L3 tipo B en el repo destino, con su huella; el contenido se resuelve en el esquema del proyecto, nunca `lf_ops` por defecto); (3) el **mecanismo de control del repo destino** (Train + PASE en la plataforma LF; CI + Flyway + pipeline en el producto); (4) el **perfil de arquitectura del proyecto** (D15: repo + commit exacto); además el **modo de optimización** y el **presupuesto del pedido** (D17). **No toca las reglas tipo A**: vienen en el paquete",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C5",
+            "closure_criterion": "Tabla de negativos",
+            "scope": "8 negativos dan BLOCK; cero redescubrimiento con el mismo fingerprint",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C6",
+            "closure_criterion": "Nivel `PG01_CONSUMED_AND_RECONCILED`. **Depende de la Fase 1** (los 3 snapshots existentes no son admisibles)",
+            "scope": "Recibo `PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1` persistido y releído; un positivo real",
+            "sequence_no": 6,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-01.C7",
+            "closure_criterion": "0 huecos o retorno a la Fase 1 antes de planificar",
+            "scope": "**Suficiencia para Programación** (movido desde PG-03·C6): el paquete trae lo que el reglamento exige y el agente no puede inventar: textos de mensajes, códigos de error, eventos de navegación, respuesta sobre historial y consentimientos aplicables. Si falta algo → `MISSING`, vuelve a la Fase 1 en la puerta",
+            "sequence_no": 7,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Admisión de la entrada",
+        "unit_id": "PG-01"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-02.C1",
+            "closure_criterion": "Tabla versionada y dominios activos por scope",
+            "scope": "**Tabla automática:** granularidad (A2) + frentes (A7) + capas del stack destino → dominios STD activos por scope. Ej.: frente `UI_VISUAL` → STD-FE, NAV, MSG; `DATA_CONTRACT` → DB y pregunta de historial (AUD-02); `API_CONTRACT` → API, SEC; `PERMISSION` → SEC",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-02.C2",
+            "closure_criterion": "0 reclasificaciones",
+            "scope": "Prohibido reclasificar: se usan A2 y A7 tal cual",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-02.C3",
+            "closure_criterion": "Negativo probado",
+            "scope": "Paquete ambiguo o contradictorio → `CONTRADICTION`, vuelve a la Fase 1 (no se pregunta a una persona ni se adivina)",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-02.C4",
+            "closure_criterion": "Repetición idéntica",
+            "scope": "Determinismo: el mismo paquete produce siempre la misma tabla",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-02.C5",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento independiente sobre una muestra",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Clasificación del cambio",
+        "unit_id": "PG-02"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-03.C1",
+            "closure_criterion": "`stack_profile` con fuentes",
+            "scope": "Resolver el stack real del repo destino desde fuentes verificables (`pom.xml`, `package.json`, lockfiles, versiones); nunca suponerlo",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C2",
+            "closure_criterion": "STD, reglas del proyecto y skills aplicables con versión; 0 reglas tipo A agregadas por el agente",
+            "scope": "Armar el conjunto de reglas del pedido: catálogo L1+L2 de los dominios activos + **perfil técnico del proyecto** (tipo B, fijado en PG-01) + **reglas del paquete** (tipo A, `applicable_rules[]`/`applicable_invariants[]`, tal cual); resolver choques con la precedencia de 1.5; **seleccionar las skills de forma determinista** (stack + matriz de PG-02). Si se sospecha una regla de negocio no citada, **no se aplica ni se busca**: `MISSING` → vuelve a la Fase 1",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C3",
+            "closure_criterion": "Estrategia explicada y trazable",
+            "scope": "**Estrategia de implementación y de partición** según los criterios originales, con `CAPABILITY_SELECTOR`, razones, alternativas consideradas y fallback",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C4",
+            "closure_criterion": "Reutilización técnica registrada; 0 contradicciones con la del paquete",
+            "scope": "La **evaluación de reutilización de la Fase 1** (capacidades y activos a reusar, `REUSE_AS_IS`) es vinculante; PG-03 solo decide la reutilización técnica (qué clase, componente o módulo extender) antes de construir",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C5",
+            "closure_criterion": "Borradores de contrato conformes",
+            "scope": "Decisiones técnicas por dominio activo, contrato primero (STD-API-06): esquema y migraciones, contrato de API, estructura de servicios y frontend; si el proyecto es nuevo, instanciar el kit base",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C6",
+            "closure_criterion": "0 faltantes inventados",
+            "scope": "Usa el resultado de suficiencia de PG-01·C7. Si al diseñar aparece un faltante nuevo, se trata como `MATERIAL_NEW_QUESTION` con resolver tipado o vuelve a la Fase 1; nunca se inventa",
+            "sequence_no": 6,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C7",
+            "closure_criterion": "0 desviaciones sin waiver",
+            "scope": "Desviaciones del estándar solo con waiver; reglas citadas con `pendiente_decision = true` que afecten el cambio → `REQUIRES_DECISION`",
+            "sequence_no": 7,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C8",
+            "closure_criterion": "Paquete completo",
+            "scope": "Handoff a PG-04: estrategia de partición + STD + skills + contratos",
+            "sequence_no": 8,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C9",
+            "closure_criterion": "Veredicto con evidencia",
+            "scope": "Aseguramiento: revisor independiente sobre una muestra",
+            "sequence_no": 9,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-03.C10",
+            "closure_criterion": "Ubicación y recursos declarados; 0 desvíos sin decisión",
+            "scope": "**Conformidad con el perfil de arquitectura (D15)**: cada pieza se ubica en su unidad desplegable y módulo; declara qué recursos de infraestructura necesita (o ninguno, D14). Servicio, unidad o patrón fuera del perfil → `REQUIRES_DECISION` con propuesta de ADR",
+            "sequence_no": 10,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Estrategia técnica",
+        "unit_id": "PG-03"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-04.C1",
+            "closure_criterion": "Fuente reutilizada y trazada",
+            "scope": "Base: contrato de partición del PR #1912 + núcleo extraído de J02, rehecho sobre `main` actual; sin motor paralelo",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C2",
+            "closure_criterion": "Cada lote cita la estrategia",
+            "scope": "Partición por **solución** (cambio más pequeño, coherente y válido; puede abarcar FE/BE/BD) según la estrategia de PG-03; primero por significado, luego dependencias y riesgo; nunca solo por número de archivos o tokens",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C3",
+            "closure_criterion": "Trazabilidad bidireccional al 100 %",
+            "scope": "Cobertura 100 % de requisitos y obligaciones de aceptación; 0 huérfanos, 0 dueños duplicados; dependencias entre lotes explícitas; contratos compartidos referenciados, no copiados",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C4",
+            "closure_criterion": "Sin reconstrucción ni duplicados",
+            "scope": "Usa `implementation_state` del paquete, sin volver a determinarlo. `EXISTING`: solo el delta. `NEW`: sin duplicar autoridades compartidas (Shell, Design System, decisiones de reutilización) por lote",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C5",
+            "closure_criterion": "Cada lote con su lista de checks",
+            "scope": "Definition of done por lote: los STD y checks que debe pasar.",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C6",
+            "closure_criterion": "Caso de prueba de reparto",
+            "scope": "Vuelta desde PG-07 cuando un lote excede el presupuesto de contexto: se reparte de nuevo (arista de reparación, no ciclo)",
+            "sequence_no": 6,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-04.C7",
+            "closure_criterion": "0 huérfanos",
+            "scope": "Aseguramiento independiente de la cobertura",
+            "sequence_no": 7,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Descomposición en lotes",
+        "unit_id": "PG-04"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-05.C1",
+            "closure_criterion": "Base del paquete + rama registradas",
+            "scope": "Toma `repo_full_name` y `base_head_sha` del paquete (`target_binding`; inferirlos está prohibido) y crea la rama `lf/prog-<work_code>/<slug>`",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-05.C2",
+            "closure_criterion": "Allowlist por solución",
+            "scope": "Write-scope **por solución** (paths y objetos de BD derivados del lote, carpeta correcta según la estructura L3); lo compartido entre soluciones es de solo lectura por defecto",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-05.C3",
+            "closure_criterion": "Prueba de choque → BLOCK",
+            "scope": "Lock y detección de choques entre writers; dos lotes en paralelo solo sin choque material sin resolver",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-05.C4",
+            "closure_criterion": "Probado",
+            "scope": "Negativos: escribir fuera de scope da BLOCK; el desvío bloquea **solo la solución afectada**",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-05.C5",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento independiente",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Lock de target y write-scope",
+        "unit_id": "PG-05"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-06.C1",
+            "closure_criterion": "Decisión de PG-01 citada o revalidación con motivo",
+            "scope": "Reutiliza la decisión de vigencia de PG-01; solo vuelve a evaluarla con un motivo tipado (`SOURCE_DRIFT`, `STALE`); nunca re-enlaza a mitad de ejecución (`mid_execution_rebind_forbidden`)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-06.C2",
+            "closure_criterion": "Versiones registradas",
+            "scope": "Toolchain y entorno disponibles en las versiones del catálogo (V1: Maven/JDK, pnpm/Node, `docker compose` con PostgreSQL 17 + Floci); si falta, `BLOCKED_TOOL_UNAVAILABLE` *(PRV-TOOL-004)*",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-06.C3",
+            "closure_criterion": "Plan de rollback ligado al frente del paquete",
+            "scope": "La **obligación** de reversibilidad viene del paquete (frentes `MIGRATION_CUTOVER` / `ROLLBACK_RECOVERY` de A7); PG-06 arma el plan técnico (migración reversible, expand/contract)",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-06.C4",
+            "closure_criterion": "Línea base con digest",
+            "scope": "Línea base: build + lint del target sin cambios; se registran las violaciones previas",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-06.C5",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento independiente",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Precondiciones",
+        "unit_id": "PG-06"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-07.C1",
+            "closure_criterion": "Runtime e identidad de modelo registrados; consumo por llamada en el recibo",
+            "scope": "Constructor = Worker v0.8 con proveedor y modelo fijados por corrida; el ejecutor por carriles corre los lotes en paralelo según las reglas de PG-05; cada llamada registra tokens de entrada, salida y **caché** y su costo (D16)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-07.C2",
+            "closure_criterion": "Tarea fijada con hash",
+            "scope": "Tarea por lote generada con `fn_agent_task_worker_spec`: objetivo, referencias, write-scope, comandos de aceptación y referencia al oráculo oculto (fuera del repo)",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-07.C3",
+            "closure_criterion": "Recibo de presupuesto sin truncamiento; tasa de acierto de caché registrada.",
+            "scope": "Presupuesto de contexto (`CONTEXT_BUDGET_GOVERNANCE`): proyección por tarea con las referencias materiales obligatorias; nunca repo completo ni spec completo; nunca truncar contexto material; si no cabe → repartir en PG-04 o traer la referencia exacta bajo demanda; límite según el perfil del modelo, nunca fijo; el contexto estable (reglamento, perfil técnico, paquete) va **en caché** entre lotes (D17)",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-07.C4",
+            "closure_criterion": "Diff formateado y contrato antes que el código",
+            "scope": "Contrato primero (STD-API-06); skills y STD con ejemplos ✅/❌ en el contexto; formateadores antes de entregar el patch",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-07.C5",
+            "closure_criterion": "0 redefiniciones silenciosas",
+            "scope": "Cada iteración explicable y ligada al objetivo; si hay que cambiar objetivo, aceptación o scope → PG-10, nunca en silencio",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-07.C6",
+            "closure_criterion": "Paquete para PG-12",
+            "scope": "Evidencia por lote: recibo sellado del Worker (diff, inputs, STD aplicados)",
+            "sequence_no": 6,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Constructor incremental",
+        "unit_id": "PG-07"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-08.C1",
+            "closure_criterion": "PASS con versión de herramienta",
+            "scope": "Build/compilación (V1: `./mvnw verify`, `pnpm build`)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C2",
+            "closure_criterion": "0 BLOCK nuevos frente a la línea base",
+            "scope": "Formato + lint (incluye nombres) sobre el diff, con la configuración del CI",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C3",
+            "closure_criterion": "PASS",
+            "scope": "Typecheck (`tsc` strict, `javac`, mypy en la plataforma)",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C4",
+            "closure_criterion": "PASS",
+            "scope": "Unitarias focales + smoke; migraciones Flyway contra el PostgreSQL local (apply/rollback/reapply, *PRV-SQL-001*)",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C5",
+            "closure_criterion": "0 BLOCK",
+            "scope": "Lint de contratos: Spectral sobre OpenAPI, oasdiff (breaking), lint de catálogo de la BD migrada",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C6",
+            "closure_criterion": "Recibos completos",
+            "scope": "Recibos de cada check con herramienta, versión, digest de configuración y SHA; marcados como feedback, no veredicto",
+            "sequence_no": 6,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C7",
+            "closure_criterion": "PASS",
+            "scope": "**Fronteras de arquitectura** (D15): pruebas que verifican que los módulos solo se usan por su API pública o eventos (LF: Spring Modulith `verify()` / ArchUnit)",
+            "sequence_no": 7,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-08.C8",
+            "closure_criterion": "PASS sin tocar la nube",
+            "scope": "**IaC y contenedores** (D14, STD-IAC/CONT): `terraform fmt/validate`, lint de IaC, `plan`/`apply` contra Floci; build de imágenes y `docker compose up` con healthchecks verdes",
+            "sequence_no": 8,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Feedback técnico local",
+        "unit_id": "PG-08"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-09.C1",
+            "closure_criterion": "Política fijada; prueba de presupuesto agotado → se detiene sin recortar calidad",
+            "scope": "Límites de iteración y costo por lote **y presupuesto por pedido medido con consumo real (D16/D17)**: aviso al 80 %, `REQUIRES_DECISION` al 100 %; reutiliza el límite de intentos del Worker",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-09.C2",
+            "closure_criterion": "Detector probado",
+            "scope": "Convergencia: una iteración repetida **sin evidencia nueva ni reducción de findings se detiene y se reclasifica**",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-09.C3",
+            "closure_criterion": "Negativo → BLOCK",
+            "scope": "Prohibido desactivar reglas, agregar supresiones sin waiver o borrar tests para pasar",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-09.C4",
+            "closure_criterion": "Salida tipada",
+            "scope": "Escalamiento tipado: RETURN o BLOCKED con diagnóstico",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-09.C5",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento con casos de bucle adversariales",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Gobernador de iteraciones",
+        "unit_id": "PG-09"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-10.C1",
+            "closure_criterion": "Conflicto tipado",
+            "scope": "Detección de conflictos requisito ↔ estándar ↔ contrato existente ↔ `REUSE_AS_IS` del spec",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-10.C2",
+            "closure_criterion": "Decisión trazable",
+            "scope": "Precedencia de 1.5; nunca renombrar legado sin migración aprobada",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-10.C3",
+            "closure_criterion": "0 preguntas duplicadas o evitables; 0 investigaciones sin motivo",
+            "scope": "**Ruteo:** solo va a una persona la decisión verdaderamente humana; una decisión técnica → PG-03; falta de implementación → no es pregunta. Un hueco de evidencia o de requisito **no se investiga aquí**: con motivo tipado y resolver tipado se consulta lo exacto; si es investigación de requisito → vuelve a la Fase 1 (A3). **Antes de preguntar se reutiliza una decisión vigente**; prohibido preguntar dos veces",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-10.C4",
+            "closure_criterion": "Reanudación parcial probada",
+            "scope": "Paquete de decisión (`PROGRAMMING_HUMAN_DECISION_PACKET_V1`): pregunta, opciones, recomendación, riesgo de no decidir, referencias y condición de reanudación; al resolverse **se reanuda solo el scope afectado** y lo demás READY sigue",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-10.C5",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento con negativos",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Conflicto de contrato o scope y decisiones humanas",
+        "unit_id": "PG-10"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-11.C1",
+            "closure_criterion": "Checklist PASS",
+            "scope": "0 archivos fuera de scope; 0 residuos (debug, código muerto, TODO sin ticket); dependencias y compatibilidad preservadas",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-11.C2",
+            "closure_criterion": "Checklist del catálogo",
+            "scope": "Rúbrica: nombres semánticos e idioma según glosario (STD-GEN-01); códigos de catálogo literales (STD-GEN-07); textos no inventados (STD-MSG-02); consistencia con el módulo vecino; **cobertura positiva del glosario:** cada identificador de dominio nuevo cita sus `term_id` y se verifica sí/no que existan y coincidan",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-11.C3",
+            "closure_criterion": "0 sin waiver",
+            "scope": "Toda supresión tiene waiver válido (STD-GEN-05)",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-11.C4",
+            "closure_criterion": "100 %",
+            "scope": "Trazabilidad diff ↔ requisito ↔ lote",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-11.C5",
+            "closure_criterion": "Identidades distintas registradas",
+            "scope": "El revisor es distinto del constructor",
+            "sequence_no": 5,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Revisión de integridad del diff",
+        "unit_id": "PG-11"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-12.C1",
+            "closure_criterion": "Manifest",
+            "scope": "Base SHA, SHA/tree del candidato, digest del diff, paths y objetos cambiados, builder",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-12.C2",
+            "closure_criterion": "Inputs completos",
+            "scope": "Inputs: `context_id`, versión del catálogo, versiones de skills, `stack_profile`, proveedor/modelo, foto de la EKB, versiones de toolchain y digest de la configuración de linters; **consumo total y por etapa** (tokens, caché, costo, gasto desperdiciado) y modo de optimización usado; **registro de consultas extra** (cada una con su motivo tipado y su resolver); **mapa identificador → `term_id`** de los identificadores de dominio nuevos",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-12.C3",
+            "closure_criterion": "Enlaces resolubles",
+            "scope": "Resultados de checks de PG-08 y PG-11 enlazados",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-12.C4",
+            "closure_criterion": "Readback igual; identidad reconstruible sin inferencias",
+            "scope": "Persistido y releído",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Manifest y provenance del candidato",
+        "unit_id": "PG-12"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-13.C1",
+            "closure_criterion": "Inmutable",
+            "scope": "Congelar el SHA exacto",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-13.C2",
+            "closure_criterion": "Comparación",
+            "scope": "Reproducibilidad: un rebuild desde el SHA da los mismos digests (o la diferencia queda documentada)",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-13.C3",
+            "closure_criterion": "Probado",
+            "scope": "Negativo: intento de mutar da BLOCK",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Freeze del candidato",
+        "unit_id": "PG-13"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-14.C1",
+            "closure_criterion": "`frozen_candidate_ref/sha256`",
+            "scope": "Conforme al modo EXECUTION de `testing_admission_contract_v1`",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-14.C2",
+            "closure_criterion": "Paquete completo",
+            "scope": "Incluye versión del catálogo, obligaciones de prueba del spec (en LF: *B2B-RULE-TEST-001*), contrato de pruebas a ciegas (`fn_submit_blind_test_contract`) y lista de textos \"pendiente de copy\"",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-14.C3",
+            "closure_criterion": "Recibo de Testing",
+            "scope": "Testing admite o bloquea, con readback",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Handoff a Testing",
+        "unit_id": "PG-14"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-15.C1",
+            "closure_criterion": "N intacto; dependientes invalidados",
+            "scope": "Findings tipados (incluye violaciones de estándar) → candidato N+1 con nuevo SHA; lo que dependía de N se invalida",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-15.C2",
+            "closure_criterion": "100 %",
+            "scope": "Trazabilidad finding → cambio",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-15.C3",
+            "closure_criterion": "Recibos nuevos",
+            "scope": "Se re-ejecutan **todos** los checks sobre N+1, no solo los que fallaron",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Reparación desde findings",
+        "unit_id": "PG-15"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-16.C1",
+            "closure_criterion": "Ambos corpus versionados",
+            "scope": "Dos corpus versionados: **A. Método** (cambios de programación reales de LF, ~30; independiente del stack) y **B. Stack** (hitos M0–M4 del plan del producto + comportamientos de LF reescritos como pruebas de caja negra)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-16.C2",
+            "closure_criterion": "Informe y findings persistidos",
+            "scope": "Métricas comparables, incluida la tasa de violaciones de estándar en código nuevo y de waivers pedidos",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-16.C3",
+            "closure_criterion": "Veredicto",
+            "scope": "Oráculo ciego",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Prueba histórica",
+        "unit_id": "PG-16"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-17.C1",
+            "closure_criterion": "Todos BLOCK o estado correcto",
+            "scope": "Desvío de scope, base stale, choque de writers, **cambio de contrato silencioso**, **reparación superficial**, bucle improductivo, contaminación del candidato, **reinvestigar sin motivo tipado**",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-17.C2",
+            "closure_criterion": "Todos detectados",
+            "scope": "Adversarial de estándares y de spec: pedido de columna `FechaPago`, legado en conflicto, intento de desactivar el linter, idiomas mezclados, `fetch` a mano, **spec sin texto de un mensaje** (debe detenerse, no inventar)",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-17.C3",
+            "closure_criterion": "Veredicto; 0 false-ready críticos",
+            "scope": "Aseguramiento independiente",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Batería adversarial",
+        "unit_id": "PG-17"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-18.C1",
+            "closure_criterion": "Baseline",
+            "scope": "Línea base de cómo se programa hoy sobre las mismas tareas del corpus B (persona o GPT)",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-18.C2",
+            "closure_criterion": "Comparación con trade-offs visibles",
+            "scope": "Calidad, conformidad con estándares, tamaño de lote, iteraciones improductivas, fuera de scope, tiempo y costo, con **costo medido en tokens y dinero por pedido** (D16); evaluar si conviene activar el modelo según dificultad (D17·5)",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-18.C3",
+            "closure_criterion": "Re-ejecución igual",
+            "scope": "Reproducibilidad",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Benchmark contra la programación actual",
+        "unit_id": "PG-18"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-19.C1",
+            "closure_criterion": "0 sin disposición",
+            "scope": "Disposición de cada finding: corregir, waiver o descartar con razón",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-19.C2",
+            "closure_criterion": "Changelog",
+            "scope": "Cambios generales al modelo, no parches puntuales; si el estándar estaba mal, nueva versión de PG-00 (circuito C9)",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-19.C3",
+            "closure_criterion": "PASS",
+            "scope": "Regresión",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Remediación del modelo",
+        "unit_id": "PG-19"
+      },
+      {
+        "checkpoints": [
+          {
+            "checkpoint_id": "PG-20.C1",
+            "closure_criterion": "Muestra sellada",
+            "scope": "Muestra fresca no usada antes, ejecutada en el **repo oficial** por el camino normal (PR, CI, revisión); tamaño de muestra y evaluador ciego fijados **antes** de correr",
+            "sequence_no": 1,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-20.C2",
+            "closure_criterion": "Todos en PASS",
+            "scope": "Gates originales: 0 scope drift material, 0 mutaciones de candidato congelado, 0 redefiniciones silenciosas, 0 false-ready críticos, identidad reproducible, ≥95 % de acierto de estrategia; más los nuestros: 0 violaciones BLOCK nuevas y 0 supresiones sin waiver; **consumo por pedido dentro del presupuesto fijado tras PG-16**",
+            "sequence_no": 2,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-20.C3",
+            "closure_criterion": "Versión registrada",
+            "scope": "Freeze del modelo V1 junto con la versión del catálogo y de las skills",
+            "sequence_no": 3,
+            "status": "REQUIRED"
+          },
+          {
+            "checkpoint_id": "PG-20.C4",
+            "closure_criterion": "Veredicto",
+            "scope": "Aseguramiento independiente",
+            "sequence_no": 4,
+            "status": "REQUIRED"
+          }
+        ],
+        "title": "Fresh run y freeze V1",
+        "unit_id": "PG-20"
+      }
+    ],
+    "requires_edges": [
+      {
+        "from": "PG-02",
+        "requires": "PG-01"
+      },
+      {
+        "from": "PG-03",
+        "requires": "PG-02"
+      },
+      {
+        "from": "PG-04",
+        "requires": "PG-03"
+      },
+      {
+        "from": "PG-05",
+        "requires": "PG-04"
+      },
+      {
+        "from": "PG-06",
+        "requires": "PG-04"
+      },
+      {
+        "from": "PG-06",
+        "requires": "PG-05"
+      },
+      {
+        "from": "PG-07",
+        "requires": "PG-06"
+      },
+      {
+        "from": "PG-08",
+        "requires": "PG-07"
+      },
+      {
+        "from": "PG-09",
+        "requires": "PG-08"
+      },
+      {
+        "from": "PG-10",
+        "requires": "PG-01"
+      },
+      {
+        "from": "PG-11",
+        "requires": "PG-09"
+      },
+      {
+        "from": "PG-11",
+        "requires": "PG-10"
+      },
+      {
+        "from": "PG-12",
+        "requires": "PG-11"
+      },
+      {
+        "from": "PG-13",
+        "requires": "PG-12"
+      },
+      {
+        "from": "PG-14",
+        "requires": "PG-13"
+      },
+      {
+        "from": "PG-15",
+        "requires": "PG-14"
+      },
+      {
+        "from": "PG-16",
+        "requires": "PG-15"
+      },
+      {
+        "from": "PG-17",
+        "requires": "PG-15"
+      },
+      {
+        "from": "PG-18",
+        "requires": "PG-16"
+      },
+      {
+        "from": "PG-18",
+        "requires": "PG-17"
+      },
+      {
+        "from": "PG-19",
+        "requires": "PG-18"
+      },
+      {
+        "from": "PG-20",
+        "requires": "PG-19"
+      }
+    ]
+  },
+  "excluded_proposals": [
+    {
+      "checkpoint_id": "PG-07.C7",
+      "reason": "PROPOSED_NOT_REQUIRED"
+    },
+    {
+      "checkpoint_id": "PG-00.C3",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-00.C6",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-04.C5",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-07.C3",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-12.C2",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-17.C2",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    }
+  ],
+  "approval_ref": null,
+  "pg00_certification_ref": null,
+  "source_provenance": "Canonical phase-2 plan 2026-10-21 with glossary additions 2026-10-22; Claude independent 2026-10-28 confirmed 108 checkpoint IDs and selected updated text; full textual parity not yet independently revalidated in this revision. Owner GO 2026-10-28: D1-D17 and PG-05 requires PG-04."
+}
