@@ -1,0 +1,61 @@
+name: IG Rebind isolated function regression
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261028131000_lf_ig_rebind_assertion_semantic_parity_v1.sql'
+      - 'tests/ig/rebind_ephemeral_*.sql'
+      - '.github/workflows/ig-rebind-ephemeral-functional.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-rebind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ig_ephemeral_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ig_ephemeral_test"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL CLI
+        run: |
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Extract the actual PR function, not a test-only implementation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('supabase/migrations/20261028131000_lf_ig_rebind_assertion_semantic_parity_v1.sql').read_text()
+          head='CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validator_rebind_v1'
+          start=source.index(head)
+          terminator='$function$;'
+          end=source.index(terminator,start)+len(terminator)
+          fn=source[start:end]
+          for needle in ('fn_input_evaluate_assertion(', 'fn_input_validator_semantic_scope_v1(',
+                         'fn_input_governance_validate_gap_proposals_v1(', 'INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN'):
+              if needle not in fn:
+                  raise SystemExit('CANDIDATE_FUNCTION_MISSING_GATE:'+needle)
+          Path('/tmp/ig_rebind_actual_candidate.sql').write_text(fn+'\n')
+          print('CANDIDATE_EXTRACTED_NOT_REIMPLEMENTED',len(fn))
+          PY
+      - name: Execute positive/negative contract tests on disposable PostgreSQL
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: isolated_only
+          PGDATABASE: ig_ephemeral_test
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f tests/ig/rebind_ephemeral_setup.sql
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/ig_rebind_actual_candidate.sql
+          psql -X -v ON_ERROR_STOP=1 -f tests/ig/rebind_ephemeral_cases.sql
+          echo 'ISOLATED_IG_REBIND_CASES_EXECUTED'
