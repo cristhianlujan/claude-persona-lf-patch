@@ -74,7 +74,8 @@ FROM (
 ) results;
 ROLLBACK;
 SQL
-} | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$out" 2>&1
+} | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$out" 2>&1 ||
+ { cat "$out"; echo "FAIL: isolated SQL execution or pipeline"; exit 1; }
 
 # Match exact T01..T28 (not merely 28 arbitrary or repeated PASS lines).
 expected_ids="$(seq -w 1 28 | sed "s/^/T/")"
