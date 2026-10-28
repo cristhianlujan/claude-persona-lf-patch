@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION public.lf_router_pipeline_read_only_v1(
   p_stage1 jsonb
 ) RETURNS jsonb
 LANGUAGE plpgsql STABLE
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path TO 'pg_catalog','public'
 AS $fn$
 DECLARE
@@ -73,18 +73,17 @@ BEGIN
 END
 $fn$;
 
--- Deployment guard: read-only entrypoint may never be SECURITY DEFINER
--- or VOLATILE; these enforce the no-internal-writes contract.
+-- The narrowly scoped SECURITY DEFINER entrypoint exposes read-only\n-- derivation to callers without granting EXECUTE on internal dispatcher functions.\n-- STABLE forbids database writes by this function and its callees.
 DO $guard$
 DECLARE v_security_definer boolean; v_volatility char;
 BEGIN
  SELECT prosecdef, provolatile INTO v_security_definer,v_volatility
  FROM pg_proc
  WHERE oid='public.lf_router_pipeline_read_only_v1(text,jsonb)'::regprocedure;
- IF v_security_definer OR v_volatility <> 's' THEN
+ IF NOT v_security_definer OR v_volatility <> 's' THEN
    RAISE EXCEPTION 'ROUTER_READ_ONLY_EXECUTION_CONTRACT_INVALID';
  END IF;
 END
 $guard$;
 
-COMMIT;
+-- Invocation authorization is deliberately narrow: no broad function grants.\nGRANT EXECUTE ON FUNCTION public.lf_router_pipeline_read_only_v1(text,jsonb)\n  TO supabase_read_only_user;\n\nCOMMIT;\n
