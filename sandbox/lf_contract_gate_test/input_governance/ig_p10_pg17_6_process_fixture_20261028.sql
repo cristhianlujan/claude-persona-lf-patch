@@ -138,6 +138,10 @@ BEGIN
   IS DISTINCT FROM '156247a925d74c6f4accd7a6d2508489'
  OR md5(pg_get_functiondef('programacion.fn_t_remed_effective_rules_v1(integer,numeric)'::regprocedure))
   IS DISTINCT FROM 'ad5aecf15e12be5b55fdd1e8dac00295'
+ OR md5(pg_get_functiondef('programacion.fn_t_remed_global_rules_v1(numeric)'::regprocedure))
+  IS DISTINCT FROM '7d8b7a58f16bc5b53867c3322fd1befb'
+ OR md5(pg_get_functiondef('programacion.fn_t_remed_scope_judge_v1(numeric)'::regprocedure))
+  IS DISTINCT FROM '433445c108c36b25cf26f5a1bddb7a99'
  THEN RAISE EXCEPTION 'P10_FIXTURE_SOURCE_HASH_DRIFT'; END IF;
  IF (SELECT count(*) FROM programacion.fn_input_effective_rule_links_v1(3,'INPUT_GOVERNANCE') e
    WHERE e.binding_source='DERIVED_GLOBAL') <> 1
