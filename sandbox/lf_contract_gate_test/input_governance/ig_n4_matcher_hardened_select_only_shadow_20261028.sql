@@ -1,6 +1,8 @@
 -- SELECT-ONLY DEV shadow; code equivalent to isolated SQL candidate shape/match semantics.
 -- Never modifies Supabase. No authority or publication claims.
-WITH fixtures(case_id,description,selector,context,expected) AS (
+-- MATERIALIZED caches fixtures, normalized selectors and per-clause decisions
+-- because each is reused by multiple downstream branches/EXISTS probes.
+WITH fixtures(case_id,description,selector,context,expected) AS MATERIALIZED (
   VALUES
     ('T01'::text,'EQ matches verified module'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[{"path":["target","module","module_code"],"op":"EQ","value":"ALPHA"}],"any":[]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"module":{"module_code":"ALPHA"}}}'::jsonb,true),
     ('T02'::text,'EQ excludes different module'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[{"path":["target","module","module_code"],"op":"EQ","value":"ALPHA"}],"any":[]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"module":{"module_code":"BETA"}}}'::jsonb,false),
@@ -31,7 +33,7 @@ WITH fixtures(case_id,description,selector,context,expected) AS (
     ('T26'::text,'Unsupported second OR operator must not be ignored'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[],"any":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"},{"path":["target","screen","mode"],"op":"GREATER","value":"A"}]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"screen":{"mode":"REAL"}}}'::jsonb,false),
     ('T27'::text,'Consumer role values must be strings'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":[42],"all":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"}]}'::jsonb,'{"consumer_role":"42","target":{"screen":{"mode":"REAL"}}}'::jsonb,false)
 ),
-selector_struct AS (
+selector_struct AS MATERIALIZED (
  SELECT f.*,
  CASE WHEN jsonb_typeof(f.selector->'all')='array' THEN f.selector->'all' ELSE '[]'::jsonb END as all_clauses,
  CASE WHEN jsonb_typeof(f.selector->'any')='array' THEN f.selector->'any' ELSE '[]'::jsonb END as any_clauses,
@@ -82,7 +84,7 @@ validations AS (
  ) AS schema_valid
  FROM typed t
 ),
-clause_match AS (
+clause_match AS MATERIALIZED (
  SELECT c.case_id,c.grp,c.schema_valid,
  CASE WHEN c.schema_valid IS NOT TRUE THEN false
       WHEN (f.context#>c.path) IS NULL OR jsonb_typeof(f.context#>c.path)='null' THEN false
