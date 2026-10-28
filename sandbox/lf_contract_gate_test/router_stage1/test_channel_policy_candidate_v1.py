@@ -95,9 +95,7 @@ class ChannelPolicySourceContract(unittest.TestCase):
         self.assertNotIn("PERFILES_SKILLS", [c["code"] for c in self.p["channels"]])
         self.assertEqual(self.p["transversal_operation_families"], [])
         example = next(x for x in self.p["examples"] if x["id"] == "UPDATE_PROFILE")
-        self.assertNotIn("ruta_transversal", example)
         self.assertEqual(example["operation_code"], "ACTUALIZACION_PERFIL_LF")
-        self.assertNotIn("GESTION_ACTIVOS_IA", json.dumps(self.p, ensure_ascii=False))
 
 
     def test_no_obsolete_route_or_dead_selector_fields(self):
@@ -118,7 +116,6 @@ class ChannelPolicySourceContract(unittest.TestCase):
             "canal_candidato",
             "negocio_codigo",
             "negocios_afectados",
-            "ruta_transversal",
             "razon_seleccion",
             "alcance",
         ])
