@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pruebas locales (replica PG16) de la migracion que cierra PE10_C6.
 H=/home/pgtest; R=/home/claude/claude-persona-lf-patch; T=$R/docs/profile_updater/pe10_c6c7_tests
-M=$R/supabase/migrations/20261028030000_lf_pe10_c6_close_v1.sql; N=20261028030000_lf_pe10_c6_close_v1
+M=$(ls $R/supabase/migrations/*_lf_pe10_c6_close_v1.sql | head -1); N=$(basename $M .sql)
 P="psql -h $H/sock -p 54330 -U pgtest -q -At"; PL=programacion.engineering_plan_units; PLAN=PROFILE_UPDATER_EVOLUTION_IMPLEMENTATION_V1
 n=0;f=0
 fresh(){ $P -d postgres -c "drop database if exists t_c6" -c "create database t_c6 template t_dep" >/dev/null 2>&1; python3 $T/build_fixture.py >/dev/null; $P -d t_c6 -v ON_ERROR_STOP=1 -f $T/replica_pe10_c6_c7_fixture.sql >/dev/null 2>&1 || echo "FALLO fixture"; }
