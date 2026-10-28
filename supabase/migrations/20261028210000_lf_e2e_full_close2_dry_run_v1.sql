@@ -15,7 +15,7 @@ DECLARE
 BEGIN
  SELECT execution_id INTO v_train FROM public.lf_operation_execution
  WHERE operation_code='ACTUALIZACION_DB_LF' AND target_type='MIGRATION'
-  AND target_code LIKE '%lf_e2e_full_close_dry_run_v1' AND status='IN_PROGRESS' ORDER BY created_at DESC LIMIT 1;
+  AND target_code LIKE '%lf_e2e_full_close2_dry_run_v1' AND status='IN_PROGRESS' ORDER BY created_at DESC LIMIT 1;
  IF v_train IS NULL THEN RAISE EXCEPTION 'E2E_FULL_TRAIN_TRANSPORT_REQUIRED'; END IF;
  IF EXISTS (SELECT 1 FROM public.lf_operation_execution WHERE execution_id IN ('EXEC-E2E-FULL-A-20261028-V1','EXEC-E2E-FULL-B-20261028-V1')) THEN RAISE EXCEPTION 'E2E_FULL_PRESTATE_INVALID'; END IF;
  SELECT md5(coalesce((SELECT string_agg(to_jsonb(x)::text,'|' ORDER BY x.step_id) FROM public.lf_operation_steps x WHERE operation_code='ACTUALIZACION_PERFIL_LF'),'')||
@@ -53,6 +53,10 @@ BEGIN
                 WHERE b.operation_code='ACTUALIZACION_PERFIL_LF' AND b.step_id=s AND b.status='ACTIVE_ENFORCEMENT' LOOP
        v_p := v_p || jsonb_build_object(v_k,'e2e-test');
      END LOOP;
+     SELECT j.pass_if INTO v_pass FROM public.lf_operation_judges j JOIN public.lf_operation_step_judge_bindings b
+       ON b.operation_code=j.operation_code AND b.judge_code=j.judge_code
+      WHERE b.operation_code='ACTUALIZACION_PERFIL_LF' AND b.step_id=s AND b.status='ACTIVE_ENFORCEMENT' AND j.status='ACTIVE_ENFORCEMENT';
+     v_p := v_p || jsonb_build_object('assertions_checked',coalesce(v_pass,'[]'::jsonb),'hard_fails_checked','[]'::jsonb);
      IF s IN ('method_selection','evolution_decision') THEN
        SELECT j.pass_if INTO v_pass FROM public.lf_operation_judges j JOIN public.lf_operation_step_judge_bindings b
          ON b.operation_code=j.operation_code AND b.judge_code=j.judge_code
