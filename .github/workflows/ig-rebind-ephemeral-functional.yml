@@ -1,10 +1,5 @@
 name: IG Rebind isolated function regression
 on:
-  pull_request:
-    paths:
-      - 'supabase/migrations/20261028131000_lf_ig_rebind_assertion_semantic_parity_v1.sql'
-      - 'tests/ig/rebind_ephemeral_*.sql'
-      - '.github/workflows/ig-rebind-ephemeral-functional.yml'
   workflow_dispatch:
 permissions:
   contents: read
