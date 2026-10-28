@@ -4,7 +4,7 @@
 -- Mirrors live ACL POLICY boundary, not an independently authenticated live role test.
 DO $preflight_acl$
 BEGIN
- IF current_database() NOT LIKE 'lf_ig_n4_isolated_%'
+ IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci'
    OR to_regprocedure('programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)') IS NULL
  THEN RAISE EXCEPTION 'IG_G3_ACL_NOT_ISOLATED_POST_DDL'; END IF;
 END
