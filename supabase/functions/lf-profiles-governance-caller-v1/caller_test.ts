@@ -137,6 +137,9 @@ function harness(options: HarnessOptions = {}) {
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
       }
+      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")) {
+        return new Response(JSON.stringify({ status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST" }), { status: 200 });
+      }
       if (url.endsWith("/functions/v1/run-creacion-perfil-lf")) {
         return new Response(JSON.stringify({ outcome: "INITIALIZED" }), { status: 200 });
       }
@@ -498,4 +501,23 @@ Deno.test("CP2: reusable push OIDC identity cannot invoke Edge execution", async
   assertEquals(response.status,403);
   assertEquals(payload.code,"CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED");
   assertEquals(h.calls.length,0);
+});
+
+Deno.test("router V2 profile admission: exact governed identity forwards existing context", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const context = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT", stage1_payload: { texto_original: "Login B2B" } };
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
+  assertEquals(response.status, 200);
+  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+  const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
+  assertEquals(rpc.length, 1);
+  assertEquals(rpc[0].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
+});
+
+Deno.test("router V2 profile admission: unrelated OIDC identity blocked before RPC", async () => {
+  const h = harness({ claims: DISPATCH_CLAIMS });
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" }, executor_mode: "GPT_NATIVE" });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "ROUTER_PROFILE_ADMISSION_IDENTITY_REQUIRED");
+  assertEquals(h.calls.length, 0);
 });
