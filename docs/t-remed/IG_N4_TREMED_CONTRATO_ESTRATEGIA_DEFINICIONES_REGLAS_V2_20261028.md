@@ -1,6 +1,8 @@
 # LF — Contrato director v2: estrategia, definiciones y reglas PREVIAS a reclasificar
 **Fecha:** 2026-10-28 · **Estado:** propuesta técnica versionada para revisión de diseño; no autoriza re-clasificación ni publicación · **PR:** #3269 (draft) · **Ámbito:** Input Governance LF / T-REMED / N-4.
 
+> **ADENDA TÉCNICA V2.1 (2026-10-28):** Este contrato v2 sigue siendo propuesta, **no está ratificado**. Tras 23 pruebas de N-4 se detectaron 5 diferencias frente a expectativas de diseño. Leer obligatoriamente [G2: ajustes F01–F06/H16–H21](./IG_N4_TREMED_G2_AUDITORIA_Y_AJUSTES_DE_CONTRATO_V21_20261028.md) y [G3: 18 PASS/5 FAIL en matcher; NO PASS integral](./IG_N4_TREMED_G3_RESULTADOS_PRUEBAS_SELECTORES_V21_20261028.md). La clasificación real permanece suspendida; no declarar G2/G3/G4 cerrados.
+
 ## 0. Cambio de secuencia obligatorio
 
 **STOP RECLASSIFICATION.** El inventario existente es una fotografía de diagnóstico; no es una cola aprobada de reglas a reclasificar. Se suspende cualquier inferencia de alcance a partir de números, familias de categoría o shells hasta cerrar este contrato.
