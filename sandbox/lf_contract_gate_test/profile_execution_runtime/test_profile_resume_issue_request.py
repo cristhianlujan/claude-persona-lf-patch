@@ -34,7 +34,9 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             "PROFILE_EXECUTION_ID": "",
         }
         with patch.dict(os.environ, self.env, clear=True):
-            self.get_request = runpy.run_path(str(SCRIPT), run_name="native_resume_test")["governed_request"]
+            mod = runpy.run_path(str(SCRIPT), run_name="native_resume_test")
+            self.get_request = mod["governed_request"]
+            self.validator_continuation = mod["is_direct_validator_continuation"]
 
     def check(self):
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
@@ -83,6 +85,27 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             self.event["issue"]["body"] = json.dumps(bad)
             with self.assertRaises(ValueError):
                 self.check()
+
+    def test_only_exact_governed_202_allows_direct_resume(self):
+        valid = {
+            "outcome": "CONTINUATION_REQUIRED",
+            "code": "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED",
+            "transport": "DIRECT_EDGE_INVOCATION",
+            "queue_required": False,
+            "polling_required": False,
+            "result": {"status": "VALIDATOR_RESUME_REQUIRED"},
+        }
+        self.assertTrue(self.validator_continuation(202, valid))
+        self.assertFalse(self.validator_continuation(200, valid))
+        self.assertFalse(self.validator_continuation(409, valid))
+        for field, wrong in [
+            ("code", "UNRELATED"), ("transport", "QUEUED"),
+            ("queue_required", True), ("polling_required", True),
+            ("outcome", "BLOCKED"), ("result", {"status": "BLOCKED"}),
+        ]:
+            self.assertFalse(self.validator_continuation(202, {**valid, field: wrong}))
+        self.assertFalse(self.validator_continuation(202, {}))
+
 
 
 if __name__ == "__main__":
