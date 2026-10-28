@@ -1,5 +1,7 @@
 # IG LF — Auditoría de pendientes atómicos del PR #3269 (28-oct-2026)
 
+> **REORDENAMIENTO DE TRABAJO (2026-10-28):** Antes de cualquier reclasificación se deben definir y validar estrategia, glosario, reglas de evaluación, autoridad y conflictos, con ensayos sintéticos. Los inventarios P00/P07 son solo evidencia histórica; **NO_RECLASSIFY** hasta completar y ratificar G0–G4. Contrato: [estrategia, definiciones y reglas v2](./IG_N4_TREMED_CONTRATO_ESTRATEGIA_DEFINICIONES_REGLAS_V2_20261028.md); [protocolo preclasificación](./IG_N4_TREMED_PRECLASS_GATES_Y_CASOS_V2_20261028.md). Los pasos P00–P12 abajo siguen como backlog dependiente, no ejecución autorizada.
+
 **Estado:** auditado parcialmente contra EKB y código vivo; NO es cierre, NO es PASS para despliegue. Desarrollo **sin Router**, sin modificación de Supabase. **No convertir la función SQL de sandbox en migración** hasta cerrar estos puntos.
 
 ## Dictamen
