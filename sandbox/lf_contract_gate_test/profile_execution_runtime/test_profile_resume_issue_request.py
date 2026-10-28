@@ -33,7 +33,8 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             "GITHUB_EVENT_PATH": str(self.event_path),
             "PROFILE_EXECUTION_ID": "",
         }
-        self.get_request = runpy.run_path(str(SCRIPT), run_name="native_resume_test")["governed_request"]
+        with patch.dict(os.environ, self.env, clear=True):
+            self.get_request = runpy.run_path(str(SCRIPT), run_name="native_resume_test")["governed_request"]
 
     def check(self):
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
