@@ -13,6 +13,7 @@ CREATE SCHEMA programacion;
 CREATE SCHEMA lf_ops;
 CREATE TABLE lf_ops.pantallas(id integer PRIMARY KEY,module_id bigint,activa boolean NOT NULL DEFAULT true);
 CREATE TABLE lf_ops.modulos(module_id bigint PRIMARY KEY,app_shell_id bigint);
+CREATE TABLE lf_ops.app_shells(app_shell_id bigint PRIMARY KEY);
 CREATE TABLE lf_ops.reglas(
  id integer PRIMARY KEY,codigo text NOT NULL,categoria text NOT NULL,
  pendiente_decision boolean NOT NULL DEFAULT false,
@@ -126,6 +127,7 @@ AS $function$
 $function$
 ;
 
+INSERT INTO lf_ops.app_shells(app_shell_id) VALUES (1),(2);
 INSERT INTO lf_ops.modulos(module_id,app_shell_id) VALUES (11,1),(12,2);
 INSERT INTO lf_ops.pantallas(id,module_id,activa) VALUES (1,11,true),(2,12,true),(3,11,true);
 INSERT INTO lf_ops.reglas(id,codigo,categoria,estado,es_transversal,valor_config) VALUES
