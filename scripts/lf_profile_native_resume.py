@@ -80,6 +80,22 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
     return execution_id, json.dumps(selection) if selection is not None else ""
 
+
+def is_direct_validator_continuation(status, response):
+    """Only the exact governed 202 response may request a fresh one-time ticket."""
+    return (
+        status == 202
+        and isinstance(response, dict)
+        and response.get("outcome") == "CONTINUATION_REQUIRED"
+        and response.get("code") == "IG_CONTEXT_PACK_VALIDATOR_RESUME_REQUIRED"
+        and response.get("transport") == "DIRECT_EDGE_INVOCATION"
+        and response.get("queue_required") is False
+        and response.get("polling_required") is False
+        and isinstance(response.get("result"), dict)
+        and response["result"].get("status") == "VALIDATOR_RESUME_REQUIRED"
+    )
+
+
 def main():
     execution_id, raw_draft = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
@@ -134,7 +150,9 @@ def main():
 
     # Input Governance is a runtime concern, not a profile/Router bypass.
     # Reinvoke only on an explicit DIRECT_EDGE_INVOCATION ticket and READY.
-    for _ in range(3):
+    # Each 202 consumes its ticket. Refresh the bridge before continuing.
+    # Four directly chained invocations, never a queue or polling worker.
+    for _ in range(4):
         if result.get("phase") != "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
             break
         runtime = result.get("result", {}).get("input_governance_runtime_request", {})
@@ -149,6 +167,16 @@ def main():
             print("PROFILE_INPUT_GOVERNANCE_TICKET_INVALID")
             return 1
         ig_code, ig = call_json(EDGE_URL, body, {"X-LF-Profile-Runtime-Ticket": ticket})
+        if is_direct_validator_continuation(ig_code, ig):
+            payload.pop("screen_selection_draft", None)
+            code, result = call_json(EDGE_URL, payload, headers)
+            if code != 200 or result.get("outcome") != "CONTINUATION_REQUIRED":
+                print(json.dumps({
+                    "phase": "REPREPARE_AFTER_IG_202", "status": code,
+                    "outcome": result.get("outcome"), "code": result.get("code"),
+                }))
+                return 1
+            continue
         if ig_code != 200 or ig.get("outcome") != "TERMINAL" or ig.get("terminal_status") != "READY":
             print(json.dumps({
                 "phase": "INPUT_GOVERNANCE", "status": ig_code,
@@ -160,6 +188,10 @@ def main():
         if code != 200:
             print(json.dumps({"phase": "PREPARE_AFTER_IG", "status": code, "code": result.get("code")}))
             return 1
+
+    if result.get("phase") == "INPUT_GOVERNANCE_RUNTIME_REQUIRED":
+        print("PROFILE_INPUT_GOVERNANCE_BOUNDED_RESUME_EXHAUSTED")
+        return 1
 
     phase = result.get("phase")
     # Deliberately do not print context packs or runtime tickets in CI logs.
