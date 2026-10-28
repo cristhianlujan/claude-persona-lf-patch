@@ -89,7 +89,7 @@
     "capability_hint_not_permission": true,
     "candidate_state_not_current_release": true,
     "product_can_be_definition_table_other_than_rules": true,
-    "profile_or_skill_lifecycle": "TRANSVERSAL_GOVERNED_OPERATION_NOT_FUNCTIONAL_CHANNEL",
+    "profile_or_skill_lifecycle": "EXISTING_GOVERNED_OPERATION_VIA_ACTION_REGISTRY_NO_ADDITIONAL_CHANNEL",
     "profile_or_skill_execution": "SHARED_RESOURCE_KEEP_RESPONSIBLE_CHANNEL",
     "programming_lifecycle_includes": [
       "ANALYSIS",
@@ -193,9 +193,8 @@
       "request": "Actualizar el perfil UI Architect",
       "initial_channel": null,
       "initial_task": "RESOLVE_PROFILE_UPDATE_OPERATION",
-      "expected_next": "GOVERNED_PROFILE_UPDATE",
-      "operation_code": "ACTUALIZACION_PERFIL_LF",
-      "ruta_transversal": "GESTION_ACTIVOS_IA"
+      "expected_next": "NO_STAGE1_TRANSVERSAL; EXISTING_OPERATION_REQUIRES_OWN_GOVERNED_ADMISSION",
+      "operation_code": "ACTUALIZACION_PERFIL_LF"
     },
     {
       "id": "DEPLOY_EDGE",
@@ -262,22 +261,7 @@
       "expected_next": "READ_AUTHORITATIVE_PRODUCT_DEFINITION"
     }
   ],
-  "transversal_operation_families": [
-    {
-      "code": "GESTION_ACTIVOS_IA",
-      "is_channel": false,
-      "description": "Operaciones gobernadas de crear, actualizar e inspeccionar perfiles y skills; no un canal funcional independiente",
-      "operations": [
-        "CREACION_PERFIL_LF",
-        "ACTUALIZACION_PERFIL_LF",
-        "CREACION_SKILL_LF",
-        "ACTUALIZACION_SKILL_LF"
-      ],
-      "entrypoint": "ACT-0001",
-      "resolution": "ROUTER_ACTION_REGISTRY_OPERATION",
-      "execution_note": "EJECUCION_PERFIL_LF y EJECUCION_SKILL_LF son ejecuciones de recursos especializados usados por el canal responsable; activacion siempre gobernada por el Router"
-    }
-  ],
+  "transversal_operation_families": [],
   "channel_selection_contract": {
     "schema_version": "LF_ROUTER_CHANNEL_SELECTION_CANDIDATE_V1",
     "state": "DEPLOYED_LF_V2",
@@ -323,18 +307,6 @@
     }
   },
   "routing_rules": [
-    {
-      "rule_id": "R00_IA_ASSET_MAINTENANCE",
-      "priority": 0,
-      "when": "The user asks to create/update/retire the profile or skill itself",
-      "channel": null,
-      "operation_resolution": "Resolve existing operation from action registry; do not use profile/skill execution as a channel",
-      "examples": [
-        "Actualizar el perfil UI Architect",
-        "Crear una skill nueva"
-      ],
-      "ruta_transversal": "GESTION_ACTIVOS_IA"
-    },
     {
       "rule_id": "R10_READ_EXISTING_PRODUCT_STATE",
       "priority": 10,

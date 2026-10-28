@@ -126,7 +126,7 @@ class Handoff(unittest.TestCase):
         ))
         self.assertEqual(result["paso"], "DIRECT_ANSWER")
 
-    def test_profile_management_without_fourth_channel(self):
+    def test_retired_transversal_cannot_reach_stage2(self):
         result = prepare_handoff(case(
             texto_original="Actualizar perfil UI Architect",
             accion="actualizar",
@@ -135,9 +135,9 @@ class Handoff(unittest.TestCase):
             canal_candidato=None,
             ruta_transversal="GESTION_ACTIVOS_IA",
         ))
-        self.assertEqual(result["paso"], "HANDOFF_STAGE2_LF")
-        self.assertIsNone(result["canal_candidato"])
-        self.assertEqual(result["ruta_transversal"], "GESTION_ACTIVOS_IA")
+        self.assertEqual(result["paso"], "INVALID_STAGE1_V2")
+        self.assertIn("RUTA_TRANSVERSAL_INVALIDA", result["codigos"])
+        self.assertNotIn("entrypoint", result)
 
 
 if __name__ == "__main__":
