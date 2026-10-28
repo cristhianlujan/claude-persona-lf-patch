@@ -24,6 +24,59 @@ LANGUAGE sql STABLE AS $stub$
  SELECT NULL::integer,NULL::integer,NULL::text WHERE false
 $stub$;
 
+-- Dependency-first DDL: each referenced SQL function is defined before its caller.
+-- Keep check_function_bodies ON so undefined references fail immediately.
+-- Exact source md5 433445c108c36b25cf26f5a1bddb7a99 programacion.fn_t_remed_scope_judge_v1(numeric)
+CREATE OR REPLACE FUNCTION programacion.fn_t_remed_scope_judge_v1(p_min_share numeric DEFAULT 0.25)
+ RETURNS TABLE(regla_id bigint, regla_codigo text, categoria text, real_shells integer, category_shells integer, pendiente boolean, verdict text, reason text)
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'programacion', 'lf_ops'
+AS $function$
+  with tot as (select count(*)::numeric n from lf_ops.pantallas),
+  use as (select regla_id rid, count(distinct pantalla_id) c from lf_ops.reglas_pantallas group by 1),
+  rs as (
+    select distinct rp.regla_id rid, m.app_shell_id sh
+    from lf_ops.reglas_pantallas rp join lf_ops.pantallas s on s.id=rp.pantalla_id join lf_ops.modulos m on m.module_id=s.module_id
+    where m.app_shell_id is not null
+  ), cand as (
+    select r.id, r.codigo, r.categoria, r.pendiente_decision
+    from lf_ops.reglas r left join use u on u.rid=r.id cross join tot t
+    where r.estado='VIGENTE' and r.es_transversal and coalesce(u.c,0) < coalesce(p_min_share,0.25)*t.n
+  ), own as (select rid, count(*)::int n from rs group by 1),
+  cat as (
+    select c.id, count(distinct x.sh)::int n
+    from cand c join lf_ops.reglas o on o.categoria is not distinct from c.categoria and o.id<>c.id and o.estado='VIGENTE'
+    join rs x on x.rid=o.id group by c.id
+  )
+  select c.id::bigint, c.codigo::text, c.categoria::text, coalesce(w.n,0), coalesce(k.n,0), coalesce(c.pendiente_decision,false),
+    case when coalesce(c.pendiente_decision,false) then 'MANUAL'
+         when coalesce(w.n,0)>=2 or coalesce(k.n,0)>=2 then 'PASS_GLOBAL' else 'MANUAL' end,
+    case when coalesce(c.pendiente_decision,false) then 'PENDING_DECISION'
+         when coalesce(w.n,0)>=2 then 'USED_IN_2_CHANNELS'
+         when coalesce(k.n,0)>=2 then 'CATEGORY_USED_IN_2_CHANNELS'
+         else 'NO_CROSS_CHANNEL_EVIDENCE' end
+  from cand c left join own w on w.rid=c.id left join cat k on k.id=c.id order by c.id
+$function$
+;
+
+-- Exact source md5 7d8b7a58f16bc5b53867c3322fd1befb programacion.fn_t_remed_global_rules_v1(numeric)
+CREATE OR REPLACE FUNCTION programacion.fn_t_remed_global_rules_v1(p_min_share numeric DEFAULT 0.25)
+ RETURNS TABLE(regla_id bigint, regla_codigo text, regla_estado text, screens integer, share numeric, basis text)
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'programacion', 'lf_ops'
+AS $function$
+  with tot as (select count(*)::numeric n from lf_ops.pantallas),
+  use as (select z.regla_id rid, count(distinct z.pantalla_id)::int c from lf_ops.reglas_pantallas z group by 1),
+  pj as (select j.regla_id rid from programacion.fn_t_remed_scope_judge_v1(p_min_share) j where j.verdict='PASS_GLOBAL')
+  select r.id::bigint, r.codigo::text, r.estado::text, coalesce(u.c,0), round(coalesce(u.c,0)/t.n,4),
+         case when coalesce(u.c,0) >= coalesce(p_min_share,0.25)*t.n then 'USAGE' else 'DECLARED' end
+  from lf_ops.reglas r left join use u on u.rid=r.id cross join tot t
+  where r.estado='VIGENTE' and (coalesce(u.c,0) >= coalesce(p_min_share,0.25)*t.n or r.id in (select rid from pj)) order by r.id
+$function$
+;
+
 -- Exact source md5 156247a925d74c6f4accd7a6d2508489 programacion.fn_input_effective_rule_links_v1(integer,text)
 CREATE OR REPLACE FUNCTION programacion.fn_input_effective_rule_links_v1(p_pantalla_id integer, p_consumer text DEFAULT 'INPUT_GOVERNANCE'::text)
  RETURNS TABLE(pantalla_id integer, regla_id integer, binding_source text)
@@ -61,57 +114,6 @@ AS $function$
   select g.regla_id, 'GLOBAL' from programacion.fn_t_remed_global_rules_v1(p_min_share) g
    where exists(select 1 from lf_ops.pantallas where id=p_pantalla_id)
      and not exists(select 1 from lf_ops.reglas_pantallas z where z.pantalla_id=p_pantalla_id and z.regla_id=g.regla_id)
-$function$
-;
-
--- Exact source md5 7d8b7a58f16bc5b53867c3322fd1befb programacion.fn_t_remed_global_rules_v1(numeric)
-CREATE OR REPLACE FUNCTION programacion.fn_t_remed_global_rules_v1(p_min_share numeric DEFAULT 0.25)
- RETURNS TABLE(regla_id bigint, regla_codigo text, regla_estado text, screens integer, share numeric, basis text)
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'programacion', 'lf_ops'
-AS $function$
-  with tot as (select count(*)::numeric n from lf_ops.pantallas),
-  use as (select z.regla_id rid, count(distinct z.pantalla_id)::int c from lf_ops.reglas_pantallas z group by 1),
-  pj as (select j.regla_id rid from programacion.fn_t_remed_scope_judge_v1(p_min_share) j where j.verdict='PASS_GLOBAL')
-  select r.id::bigint, r.codigo::text, r.estado::text, coalesce(u.c,0), round(coalesce(u.c,0)/t.n,4),
-         case when coalesce(u.c,0) >= coalesce(p_min_share,0.25)*t.n then 'USAGE' else 'DECLARED' end
-  from lf_ops.reglas r left join use u on u.rid=r.id cross join tot t
-  where r.estado='VIGENTE' and (coalesce(u.c,0) >= coalesce(p_min_share,0.25)*t.n or r.id in (select rid from pj)) order by r.id
-$function$
-;
-
--- Exact source md5 433445c108c36b25cf26f5a1bddb7a99 programacion.fn_t_remed_scope_judge_v1(numeric)
-CREATE OR REPLACE FUNCTION programacion.fn_t_remed_scope_judge_v1(p_min_share numeric DEFAULT 0.25)
- RETURNS TABLE(regla_id bigint, regla_codigo text, categoria text, real_shells integer, category_shells integer, pendiente boolean, verdict text, reason text)
- LANGUAGE sql
- STABLE SECURITY DEFINER
- SET search_path TO 'pg_catalog', 'programacion', 'lf_ops'
-AS $function$
-  with tot as (select count(*)::numeric n from lf_ops.pantallas),
-  use as (select regla_id rid, count(distinct pantalla_id) c from lf_ops.reglas_pantallas group by 1),
-  rs as (
-    select distinct rp.regla_id rid, m.app_shell_id sh
-    from lf_ops.reglas_pantallas rp join lf_ops.pantallas s on s.id=rp.pantalla_id join lf_ops.modulos m on m.module_id=s.module_id
-    where m.app_shell_id is not null
-  ), cand as (
-    select r.id, r.codigo, r.categoria, r.pendiente_decision
-    from lf_ops.reglas r left join use u on u.rid=r.id cross join tot t
-    where r.estado='VIGENTE' and r.es_transversal and coalesce(u.c,0) < coalesce(p_min_share,0.25)*t.n
-  ), own as (select rid, count(*)::int n from rs group by 1),
-  cat as (
-    select c.id, count(distinct x.sh)::int n
-    from cand c join lf_ops.reglas o on o.categoria is not distinct from c.categoria and o.id<>c.id and o.estado='VIGENTE'
-    join rs x on x.rid=o.id group by c.id
-  )
-  select c.id::bigint, c.codigo::text, c.categoria::text, coalesce(w.n,0), coalesce(k.n,0), coalesce(c.pendiente_decision,false),
-    case when coalesce(c.pendiente_decision,false) then 'MANUAL'
-         when coalesce(w.n,0)>=2 or coalesce(k.n,0)>=2 then 'PASS_GLOBAL' else 'MANUAL' end,
-    case when coalesce(c.pendiente_decision,false) then 'PENDING_DECISION'
-         when coalesce(w.n,0)>=2 then 'USED_IN_2_CHANNELS'
-         when coalesce(k.n,0)>=2 then 'CATEGORY_USED_IN_2_CHANNELS'
-         else 'NO_CROSS_CHANNEL_EVIDENCE' end
-  from cand c left join own w on w.rid=c.id left join cat k on k.id=c.id order by c.id
 $function$
 ;
 
