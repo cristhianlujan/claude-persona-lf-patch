@@ -91,10 +91,12 @@ SELECT md5(pg_get_functiondef(
  md5(pg_get_functiondef(
   '"'"'programacion.fn_input_rule_selector_clause_matches_v1(jsonb,jsonb)'"'"'::regprocedure)),
  to_regprocedure(
-  '"'"'programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)'"'"') IS NULL;
+  '"'"'programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_untrusted_acl_probe'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_governed_acl_probe'"'"') IS NULL;
 ")"
-[[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t" ]] ||
-  { echo "FAIL: post-ROLLBACK source changed"; exit 1; }
+[[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t|t|t" ]] ||
+  { echo "FAIL: post-ROLLBACK source or ephemeral roles changed"; exit 1; }
 
 echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_REAL_ROLE"
 echo "PARITY|812|52|52|0|14|58"
