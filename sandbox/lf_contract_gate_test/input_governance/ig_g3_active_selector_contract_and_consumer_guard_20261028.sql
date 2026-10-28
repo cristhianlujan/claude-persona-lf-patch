@@ -10,20 +10,22 @@ WITH active AS MATERIALIZED (
  SELECT a.id,clause_item.value clause
  FROM active a
  CROSS JOIN LATERAL jsonb_array_elements(
-  coalesce(a.selector->'all','[]'::jsonb) ||
-  coalesce(a.selector->'any','[]'::jsonb)
+  (CASE WHEN jsonb_typeof(a.selector->'all')='array'
+         THEN a.selector->'all' ELSE '[]'::jsonb END) ||
+  (CASE WHEN jsonb_typeof(a.selector->'any')='array'
+         THEN a.selector->'any' ELSE '[]'::jsonb END)
  ) AS clause_item(value)
 ),
 structural AS MATERIALIZED (
  SELECT id,
- (jsonb_typeof(selector)='object'
-   AND selector->>'schema_version'='lf-rule-applicability/v1'
-   AND jsonb_typeof(selector->'consumer_roles')='array'
-   AND jsonb_array_length(selector->'consumer_roles')>0
-   AND jsonb_typeof(selector->'all')='array'
-   AND jsonb_typeof(selector->'any')='array'
-   AND (jsonb_array_length(selector->'all')+jsonb_array_length(selector->'any'))>0
- ) AS well_formed
+ CASE WHEN jsonb_typeof(selector)='object'
+       AND jsonb_typeof(selector->'consumer_roles')='array'
+       AND jsonb_typeof(selector->'all')='array'
+       AND jsonb_typeof(selector->'any')='array'
+  THEN selector->>'schema_version'='lf-rule-applicability/v1'
+       AND jsonb_array_length(selector->'consumer_roles')>0
+       AND (jsonb_array_length(selector->'all')+jsonb_array_length(selector->'any'))>0
+  ELSE false END AS well_formed
  FROM active
 ),
 cross_consumer AS MATERIALIZED (
