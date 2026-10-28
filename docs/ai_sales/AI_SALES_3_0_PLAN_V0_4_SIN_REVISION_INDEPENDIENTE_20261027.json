@@ -943,9 +943,9 @@
     "unit_policy_keys_removed": [
       "legacy_separate_reviewer_flag"
     ],
-    "work_item_acceptance_changed": true,
     "checkpoint_ids_changed": 0,
     "checkpoint_status_changed": 0,
-    "affected_units": 17
+    "affected_units": 17,
+    "work_item_criteria_updated": 17
   }
 }
