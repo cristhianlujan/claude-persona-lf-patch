@@ -11,7 +11,16 @@
 -- Contract versioning, owner approval, canaries, and migration-source parity are
 -- REQUIRED BEFORE any future production migration; this is not that migration.
 
+-- SUPERSEDED / NON-EXECUTABLE: bulk removal of DERIVED_GLOBAL is NOT the
+-- forward-process fix. Kept for historical review only, not promotion/cutover.
+-- Approved direction: ig_p10_forward_only_scope_boundary_candidate_20261028.sql
+-- This guard fails before any historical function/source change.
 BEGIN;
+DO $ig_p10_superseded$
+BEGIN
+ RAISE EXCEPTION 'IG_P10_SUPERSEDED_BULK_CASCADE_PROPOSAL_DO_NOT_EXECUTE';
+END
+$ig_p10_superseded$;
 
 DO $preflight$
 DECLARE
