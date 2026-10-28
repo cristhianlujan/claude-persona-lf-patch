@@ -1,5 +1,7 @@
 # LF Input Governance — Lote A, acta de progreso 2026-10-28
 
+> **CONTINUIDAD (2026-10-28):** Se suspende la reclasificación de reglas. Este documento es evidencia de levantamientos anteriores, no metodología aprobada. Primero ratificar estrategia, definiciones y H01–H15, y verificar G0–G4: [contrato director v2](./IG_N4_TREMED_CONTRATO_ESTRATEGIA_DEFINICIONES_REGLAS_V2_20261028.md) y [protocolo preclasificación](./IG_N4_TREMED_PRECLASS_GATES_Y_CASOS_V2_20261028.md). La reclasificación real G5 queda bloqueada.
+
 **Alcance:** P00, P01, P02, P07; rama `dev/ig-n4-tremed-cascade-governed-20261028`, PR #3269 DRAFT / NO-GO. Sin Router, sin cambios Supabase, sin merge ni CI certificada.
 
 | Punto | Estado exacto | Evidencia | Dependencia para cerrar |
