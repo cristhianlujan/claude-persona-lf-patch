@@ -63,16 +63,6 @@ const REUSABLE_CALL_CLAIMS: JwtPayload = {
   run_id: "9003",
 };
 
-const EDGE_MERGED_PR_CLAIMS: JwtPayload = {
-  repository: REPO,
-  repository_id: REPO_ID,
-  ref: REF,
-  workflow_ref: `${REPO}/.github/workflows/lf-edge-deploy-credential-readback.yml@${REF}`,
-  event_name: "workflow_run",
-  run_id: "9005",
-  workflow_sha: SHA,
-};
-
 const LEGACY_CLAIMS: JwtPayload = {
   repository: REPO,
   repository_id: REPO_ID,
@@ -146,18 +136,6 @@ function harness(options: HarnessOptions = {}) {
       if (url.endsWith("/functions/v1/input-governance-agent-v1")) {
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
-      }
-      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_begin_v2")) {
-        return new Response(JSON.stringify({ status: "STAGE1_REQUIRED", context_token: "RCTX2:start" }), { status: 200 });
-      }
-      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_stage1_submit_v2")) {
-        return new Response(JSON.stringify({ status: "NEXT_TRANSITION_READY", context_token: "RCTX2:routed", transition: { transition_code: "PROFILE_SELECTION_REQUIRED" } }), { status: 200 });
-      }
-      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_semantic_prepare_v2")) {
-        return new Response(JSON.stringify({ status: "PROFILE_SEMANTIC_SELECTION_REQUIRED", context_token: "RCTX2:prepared" }), { status: 200 });
-      }
-      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_semantic_submit_v2")) {
-        return new Response(JSON.stringify({ status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1" }), { status: 200 });
       }
       if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")) {
         return new Response(JSON.stringify({ status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST" }), { status: 200 });
@@ -544,32 +522,33 @@ Deno.test("router V2 profile admission: unrelated OIDC identity blocked before R
   assertEquals(h.calls.length, 0);
 });
 
-Deno.test("router V2 merged-main OIDC canary: five governed RPC calls in exact order", async () => {
-  const h = harness({ claims: EDGE_MERGED_PR_CLAIMS });
-  const { response, payload } = await invoke(h, { action: "router_profile_login_b2b_canary_v2" });
-  assertEquals(response.status, 200);
-  assertEquals(payload.outcome, "NATIVE_EXECUTION_READY");
-  assertEquals(payload.execution_id, "EXEC-PROFILE-GATE2-TEST");
-  assertEquals(h.calls.map(x => x.url.split("/").pop()), [
-    "lf_router_pipeline_context_begin_v2",
-    "lf_router_pipeline_context_stage1_submit_v2",
-    "lf_router_pipeline_context_profile_semantic_prepare_v2",
-    "lf_router_pipeline_context_profile_semantic_submit_v2",
-    "lf_router_pipeline_context_profile_admit_v2",
-  ]);
+
+Deno.test("router V2 generic admission: forwards two distinct context/profile selections without overriding them", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const profileCodes = ["PERFIL-UX-DESIGN-LF", "PERFIL-QA-LF"];
+  for (const [i, profile] of profileCodes.entries()) {
+    const context = {
+      schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
+      status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+      transport_mode: "CONTEXT_TRANSPORT",
+      stage1_payload: { texto_original: `Dynamic request ${i}` },
+      semantic_result: { selected_profile_code: profile },
+    };
+    const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
+    assertEquals(response.status, 200);
+    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    assertEquals(h.calls[i].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
+  }
 });
 
-Deno.test("router V2 merged-main OIDC cannot call unrelated functions", async () => {
-  const h = harness({ claims: EDGE_MERGED_PR_CLAIMS });
-  const { response, payload } = await invoke(h, { action: "profile_creator_init_v1" });
-  assertEquals(response.status, 403);
-  assertEquals(payload.code, "ROUTER_PROFILE_CANARY_ACTION_SCOPE_MISMATCH");
-  assertEquals(h.calls.length, 0);
-});
-
-Deno.test("router V2 canary cannot execute under recuration OIDC identity", async () => {
-  const h = harness({ claims: DISPATCH_CLAIMS });
-  const { response, payload } = await invoke(h, { action: "router_profile_login_b2b_canary_v2" });
-  assertEquals(response.status, 403);
+Deno.test("router V2 generic admission: rejects wrong transport state before RPC", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const { response, payload } = await invoke(h, {
+    action: "router_profile_admit_context_v2",
+    context: { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "STAGE1_REQUIRED", transport_mode: "CONTEXT_TRANSPORT" },
+    executor_mode: "GPT_NATIVE",
+  });
+  assertEquals(response.status, 400);
+  assertEquals(payload.code, "ROUTER_PROFILE_CONTEXT_ENVELOPE_INVALID");
   assertEquals(h.calls.length, 0);
 });

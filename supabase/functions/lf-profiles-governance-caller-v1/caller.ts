@@ -17,7 +17,6 @@ const B2B_ACTION = "input_readiness_b2b_402_v1";
 const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
-const ROUTER_PROFILE_CANARY_ACTION = "router_profile_login_b2b_canary_v2";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -65,7 +64,7 @@ type OidcIdentity = {
   method: string;
   ref: string;
   workflowRef: string;
-  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY" | "GOVERNED_ROUTER_PROFILE_CANARY";
+  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY";
 };
 
 type RuntimeDeps = {
@@ -211,20 +210,6 @@ export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): 
   }
 
   const eventName = typeof payload.event_name === "string" ? payload.event_name : "";
-  const edgeWorkflowRef = `${config.repository}/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main`;
-  if (
-    eventName === "workflow_run" &&
-    payload.workflow_ref === edgeWorkflowRef &&
-    (payload.ref === "refs/heads/main" || /^refs\/pull\/[0-9]+\/merge$/.test(String(payload.ref ?? "")))
-  ) {
-    return {
-      method: "GITHUB_ACTIONS_OIDC_MAIN_EDGE_DEPLOY_MERGED_PR_V1",
-      ref: String(payload.ref),
-      workflowRef: edgeWorkflowRef,
-      scope: "GOVERNED_ROUTER_PROFILE_CANARY",
-    };
-  }
-
   const jobWorkflowRef = typeof payload.job_workflow_ref === "string" ? payload.job_workflow_ref : "";
   if (
     payload.ref === config.recurationRef &&
@@ -641,9 +626,6 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       }
 
       const action = typeof body.action === "string" ? body.action : "";
-      if (identity.scope === "GOVERNED_ROUTER_PROFILE_CANARY" && action !== ROUTER_PROFILE_CANARY_ACTION) {
-        return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CANARY_ACTION_SCOPE_MISMATCH" }, 403);
-      }
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isCp2Action = action === CP2_PREFLIGHT_ACTION || action === CP2_EXECUTE_ACTION;
       if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
@@ -906,94 +888,6 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           required_count: PILOT_SCREENS.length,
           results,
         }, readyCount === PILOT_SCREENS.length ? 200 : 409);
-      }
-
-      if (action === ROUTER_PROFILE_CANARY_ACTION) {
-        if (identity.method !== "GITHUB_ACTIONS_OIDC_MAIN_EDGE_DEPLOY_MERGED_PR_V1") {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CANARY_IDENTITY_REQUIRED" }, 403);
-        }
-        // Fixed, read-only-by-profile B2B canary. Each transport operation
-        // is invoked in sequence and only the existing governed admission
-        // can reserve an execution. No arbitrary SQL or object mutation.
-        const requestText = "Revisa si las reglas actuales de la pantalla Iniciar sesión B2B están completas para Producto, UX y QA; identifica brechas e implementa las nuevas reglas";
-        const stage1 = {
-          schema_version: "LF_ROUTER_STAGE1_V2",
-          texto_original: requestText,
-          es_operacion: true,
-          ambiguo: false,
-          respuesta_directa: false,
-          canal_candidato: "PRODUCTO",
-          negocio_codigo: "LF",
-          ruta_transversal: null,
-          negocios_afectados: [],
-          razon_seleccion: "Revisión de reglas funcionales de Login B2B en LF; la implementación requiere admisión gobernada posterior.",
-          sujeto: "Reglas de pantalla Iniciar sesión B2B",
-          accion: "REVISAR_BRECHAS_E_IMPLEMENTAR",
-          formas_busqueda: ["reglas de autenticación B2B", "reglas de producto y UX inicio sesión", "QA login B2B"],
-          alternativas: [],
-          correcciones: [],
-          alcance: { target_type: "PANTALLA", target_hint: "Iniciar sesión B2B", resolution_status: "UNRESOLVED" },
-          downstream_execution_allowed: false,
-        };
-        const semantic = {
-          decision: "SELECTED",
-          selected_profile_code: "PERFIL-PRODUCT-DIRECTOR-LF",
-          reason: "La solicitud se centra en la revisión y ampliación de reglas funcionales y criterios de aceptación; Product Director define el alcance y los handoffs hacia UX y QA sin desplazar sus responsabilidades.",
-          evidence_refs: [
-            { profile_code: "PERFIL-PRODUCT-DIRECTOR-LF", kind: "PURPOSE", source_section: "Purpose" },
-            { profile_code: "PERFIL-PRODUCT-DIRECTOR-LF", kind: "ACTIVATION", source_section: "Activation triggers" },
-          ],
-          ambiguous_profile_codes: [],
-          material_ambiguities: [],
-        };
-        async function rpc(name: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
-          const response = await deps.fetchFn(`${config.supabaseUrl}/rest/v1/rpc/${name}`, {
-            method: "POST",
-            headers: {
-              apikey: config.serviceRoleKey,
-              authorization: `Bearer ${config.serviceRoleKey}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify(args),
-            signal: AbortSignal.timeout(15_000),
-          });
-          const payload = await parseJsonObject(response, "ROUTER_PROFILE_CANARY_RPC_BAD_RESPONSE");
-          if (!response.ok) throw new CallerFault("ROUTER_PROFILE_CANARY_RPC_REJECTED", 502, { name, status: response.status });
-          return payload;
-        }
-        const trace: Record<string, unknown>[] = [];
-        const begin = await rpc("lf_router_pipeline_context_begin_v2", { p_request_text: requestText });
-        trace.push({ step: "begin", status: begin.status });
-        if (begin.status !== "STAGE1_REQUIRED" || typeof begin.context_token !== "string") {
-          return json({ outcome: "BLOCKED", code: "CANARY_BEGIN_FAILED", trace }, 409);
-        }
-        const routed = await rpc("lf_router_pipeline_context_stage1_submit_v2", { p_context_token: begin.context_token, p_stage1: stage1 });
-        trace.push({ step: "stage1_stage2", status: routed.status, transition: (routed.transition as Record<string, unknown> | undefined)?.transition_code });
-        if (routed.status !== "NEXT_TRANSITION_READY" || typeof routed.context_token !== "string") {
-          return json({ outcome: "BLOCKED", code: "CANARY_ROUTE_FAILED", trace }, 409);
-        }
-        const prepared = await rpc("lf_router_pipeline_context_profile_semantic_prepare_v2", { p_context_token: routed.context_token });
-        trace.push({ step: "semantic_prepare", status: prepared.status });
-        if (prepared.status !== "PROFILE_SEMANTIC_SELECTION_REQUIRED" || typeof prepared.context_token !== "string") {
-          return json({ outcome: "BLOCKED", code: "CANARY_SELECTION_PREPARE_FAILED", trace }, 409);
-        }
-        const submitted = await rpc("lf_router_pipeline_context_profile_semantic_submit_v2", { p_context_token: prepared.context_token, p_raw: JSON.stringify(semantic) });
-        trace.push({ step: "gate2", status: submitted.status, gate: (submitted.gate2_derivation as Record<string, unknown> | undefined)?.status });
-        if (submitted.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION") {
-          return json({ outcome: "BLOCKED", code: "CANARY_GATE2_FAILED", trace }, 409);
-        }
-        const admitted = await rpc("lf_router_pipeline_context_profile_admit_v2", { p_context: submitted, p_executor_mode: "GPT_NATIVE" });
-        trace.push({ step: "admission", status: admitted.status, blocking_code: admitted.blocking_code ?? null });
-        if (admitted.status !== "NATIVE_EXECUTION_READY") {
-          return json({ outcome: "BLOCKED", code: "CANARY_GOVERNED_ADMISSION_FAILED", trace, admission: admitted }, 409);
-        }
-        return json({
-          outcome: "NATIVE_EXECUTION_READY",
-          profile: admitted.profile_code,
-          execution_id: admitted.execution_id ?? null,
-          next_action: admitted.next_action ?? null,
-          trace,
-        }, 200);
       }
 
       if (action === ROUTER_PROFILE_ADMIT_ACTION) {
