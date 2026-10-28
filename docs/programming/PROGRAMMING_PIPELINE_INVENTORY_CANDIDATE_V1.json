@@ -1,8 +1,8 @@
 {
   "authority_status": "CANDIDATE_NOT_APPROVED",
-  "inventory_version": "0.1.0-candidate",
+  "inventory_version": "0.1.1-candidate",
   "canonicalization": "json utf8 sort_keys true ensure_ascii false separators comma colon; hash over inventory_core only",
-  "inventory_digest_sha256": "951d4aa5bc62c01cf68d77c37f7b4dfe586da23353366bb1c3b76541369b2c21",
+  "inventory_digest_sha256": "cd2f7a964b9901d9e58b8d5f4271532f480966424d37fd2d9a40332a7b440ffb",
   "inventory_core": {
     "schema": "PROGRAMMING_CHECKPOINT_INVENTORY_V1",
     "pg00_mode": "EXTERNAL_REQUIRED_VERSIONED",
@@ -18,14 +18,14 @@
         },
         {
           "checkpoint_id": "PG-00.C2",
-          "closure_criterion": "Las 15 registradas (decididas 21/10; registro preparado, pendiente del Router y del GO de Cristhian)",
-          "scope": "Decisiones D1–D15 registradas como ADR en `transversal.decision_log` (donde `programming-agent/docs/DECISIONS.md` ubica las decisiones canónicas; `programacion.human_decisions` exige una ejecución y un `head_sha`, así que queda para los GO ligados a una corrida)",
+          "closure_criterion": "Las 17 registradas (decididas 21/10; registro preparado, pendiente del Router y del GO de Cristhian)",
+          "scope": "Decisiones D1–D17 registradas como ADR en `transversal.decision_log` (donde `programming-agent/docs/DECISIONS.md` ubica las decisiones canónicas; `programacion.human_decisions` exige una ejecución y un `head_sha`, así que queda para los GO ligados a una corrida)",
           "sequence_no": 2,
           "status": "REQUIRED"
         },
         {
           "checkpoint_id": "PG-00.C3",
-          "closure_criterion": "Catálogo versionado legible por PG-03 y por las skills. → Ajuste propuesto 27/10: fragmentado por dominio con núcleo L1 (ver C.1.1 y C.1.2)",
+          "closure_criterion": "Catálogo versionado legible por PG-03 y por las skills.",
           "scope": "Catálogo `STD-*` publicado en `transversal` y en el repo, con versión y digest, en **dos formatos**: legible por herramientas y para el LLM con ejemplos ✅/❌",
           "sequence_no": 3,
           "status": "REQUIRED"
@@ -46,7 +46,7 @@
         },
         {
           "checkpoint_id": "PG-00.C6",
-          "closure_criterion": "Cada skill cita la versión del catálogo. → Ajuste propuesto 27/10: carga fragmentos, no el catálogo entero (ver C.1.4)",
+          "closure_criterion": "Cada skill cita la versión del catálogo.",
           "scope": "Skills por stack (Spring, Next.js, Postgres/Flyway; Supabase y Python para la plataforma) que **cargan** el catálogo en su versión fijada, sin copiarlo",
           "sequence_no": 6,
           "status": "REQUIRED"
@@ -294,7 +294,7 @@
           {
             "checkpoint_id": "PG-04.C5",
             "closure_criterion": "Cada lote con su lista de checks",
-            "scope": "Definition of done por lote: los STD y checks que debe pasar. → Ajuste propuesto 27/10: la DoD lista los dominios STD que se cargan al contexto del lote (ver C.1.3)",
+            "scope": "Definition of done por lote: los STD y checks que debe pasar.",
             "sequence_no": 5,
             "status": "REQUIRED"
           },
@@ -416,7 +416,7 @@
           },
           {
             "checkpoint_id": "PG-07.C3",
-            "closure_criterion": "Recibo de presupuesto sin truncamiento; tasa de acierto de caché registrada. → Ajuste propuesto 27/10: solo núcleo L1 + dominios del lote (ver C.1)",
+            "closure_criterion": "Recibo de presupuesto sin truncamiento; tasa de acierto de caché registrada.",
             "scope": "Presupuesto de contexto (`CONTEXT_BUDGET_GOVERNANCE`): proyección por tarea con las referencias materiales obligatorias; nunca repo completo ni spec completo; nunca truncar contexto material; si no cabe → repartir en PG-04 o traer la referencia exacta bajo demanda; límite según el perfil del modelo, nunca fijo; el contexto estable (reglamento, perfil técnico, paquete) va **en caché** entre lotes (D17)",
             "sequence_no": 3,
             "status": "REQUIRED"
@@ -643,7 +643,7 @@
           {
             "checkpoint_id": "PG-12.C2",
             "closure_criterion": "Inputs completos",
-            "scope": "Inputs: `context_id`, versión del catálogo, versiones de skills, `stack_profile`, proveedor/modelo, foto de la EKB, versiones de toolchain y digest de la configuración de linters; **consumo total y por etapa** (tokens, caché, costo, gasto desperdiciado) y modo de optimización usado; **registro de consultas extra** (cada una con su motivo tipado y su resolver); **mapa identificador → `term_id`** de los identificadores de dominio nuevos; → *propuesto 27/10:* fragmentos del catálogo cargados por lote y su costo (C.1.7)",
+            "scope": "Inputs: `context_id`, versión del catálogo, versiones de skills, `stack_profile`, proveedor/modelo, foto de la EKB, versiones de toolchain y digest de la configuración de linters; **consumo total y por etapa** (tokens, caché, costo, gasto desperdiciado) y modo de optimización usado; **registro de consultas extra** (cada una con su motivo tipado y su resolver); **mapa identificador → `term_id`** de los identificadores de dominio nuevos",
             "sequence_no": 2,
             "status": "REQUIRED"
           },
@@ -785,7 +785,7 @@
           {
             "checkpoint_id": "PG-17.C2",
             "closure_criterion": "Todos detectados",
-            "scope": "Adversarial de estándares y de spec: pedido de columna `FechaPago`, legado en conflicto, intento de desactivar el linter, idiomas mezclados, `fetch` a mano, **spec sin texto de un mensaje** (debe detenerse, no inventar); → *propuesto 27/10:* lote de frontend con STD-DB en el contexto (C.1.8) y corte del runner a mitad de lote (C.2.7)",
+            "scope": "Adversarial de estándares y de spec: pedido de columna `FechaPago`, legado en conflicto, intento de desactivar el linter, idiomas mezclados, `fetch` a mano, **spec sin texto de un mensaje** (debe detenerse, no inventar)",
             "sequence_no": 2,
             "status": "REQUIRED"
           },
@@ -904,7 +904,7 @@
       },
       {
         "from": "PG-05",
-        "requires": "PG-01"
+        "requires": "PG-04"
       },
       {
         "from": "PG-06",
@@ -984,9 +984,39 @@
     {
       "checkpoint_id": "PG-07.C7",
       "reason": "PROPOSED_NOT_REQUIRED"
+    },
+    {
+      "checkpoint_id": "PG-00.C3",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-00.C6",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-04.C5",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-07.C3",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-12.C2",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
+    },
+    {
+      "checkpoint_id": "PG-17.C2",
+      "reason": "PROPOSED_2026_10_27_C1_NO_OWNER_GO",
+      "proposal_ref": "Plan 2026-10-27 section C.1"
     }
   ],
   "approval_ref": null,
   "pg00_certification_ref": null,
-  "source_provenance": "User provided context export 2026-10-27, section 16; live official plan textual parity NOT VERIFIED"
+  "source_provenance": "Canonical phase-2 plan 2026-10-21 with glossary additions 2026-10-22; Claude independent 2026-10-28 confirmed 108 checkpoint IDs and selected updated text; full textual parity not yet independently revalidated in this revision. Owner GO 2026-10-28: D1-D17 and PG-05 requires PG-04."
 }
