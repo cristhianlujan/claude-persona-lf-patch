@@ -22,7 +22,6 @@ ASSET_CODE_RE = re.compile(
     r"SKILL-[A-Z0-9-]+|EDGE_FN_[A-Z0-9_]+)\b",
     re.I,
 )
-TRANSVERSAL_ROUTE = "GESTION_ACTIVOS_IA"
 MAX_FORMAS = 4
 MAX_ALTERNATIVAS = 3
 
@@ -164,9 +163,8 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
         if not formas:
             errors.append("FORMAS_BUSQUEDA_REQUIRED")
         if transversal is not None:
-            if transversal != TRANSVERSAL_ROUTE or channel is not None:
-                errors.append("RUTA_TRANSVERSAL_INVALIDA")
-        elif channel not in CHANNELS:
+            errors.append("RUTA_TRANSVERSAL_INVALIDA")
+        if channel not in CHANNELS:
             errors.append("CANAL_NO_RECONOCIDO")
         if not _nonempty(reason):
             errors.append("RAZON_SELECCION_REQUERIDA")
