@@ -121,8 +121,8 @@ FROM (
     stdout = run_psql(sql, timeout=90)
     rows = stdout.splitlines()
     fixture_rows = [x for x in rows if re.fullmatch(r"T[0-9]{2}\|.*", x)]
-    if len(fixture_rows) != 27 or any(not x.endswith("|PASS") for x in fixture_rows):
-        reject("FAIL: not all 27 synthetic tests passed in isolated PostgreSQL")
+    if len(fixture_rows) != 28 or any(not x.endswith("|PASS") for x in fixture_rows):
+        reject("FAIL: not all 28 synthetic tests passed in isolated PostgreSQL")
     matches = [x for x in rows if x.startswith("PARITY|")]
     if len(matches) != 1:
         reject("FAIL: isolated N-4 parity result missing")
@@ -146,7 +146,7 @@ SELECT md5(pg_get_functiondef(
     ]:
         reject("FAIL: post-ROLLBACK source parity not restored")
 
-    print("PASS_G3_ISOLATED_PG_27_VECTORS_812_PARITY_ROLLBACK")
+    print("PASS_G3_ISOLATED_PG_28_VECTORS_812_PARITY_ROLLBACK")
     print(matches[0])
     return 0
 
