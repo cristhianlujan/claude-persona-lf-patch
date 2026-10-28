@@ -611,7 +611,7 @@ Deno.test("router V2 generic admission: rejects wrong transport state before RPC
   assertEquals(h.calls.length, 0);
 });
 
-Deno.test("native profile resume: only exact protected main-branch workflow may read source", async () => {
+Deno.test("CP2: native profile resume: only exact protected main-branch workflow may read source", async () => {
   const approved = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
   const { response, payload } = await invoke(approved, {
     action: "profile_native_source_bind_v1",
@@ -639,7 +639,7 @@ Deno.test("native profile resume: only exact protected main-branch workflow may 
   }
 });
 
-Deno.test("native profile resume: rejects other actions under continuation-only OIDC", async () => {
+Deno.test("CP2: native profile resume: rejects other actions under continuation-only OIDC", async () => {
   const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
   const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2" });
   assertEquals(response.status, 403);
@@ -647,7 +647,7 @@ Deno.test("native profile resume: rejects other actions under continuation-only 
   assertEquals(h.calls.length, 0);
 });
 
-Deno.test("native profile resume: generic source identity and semantic screen pause", async () => {
+Deno.test("CP2: native profile resume: generic source identity and semantic screen pause", async () => {
   for (const path of ["profiles/ux_design_lf/SKILL.md", "profiles/product_director_lf/SKILL.md"]) {
     const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS, executionOverrides: { target_path: path } });
     const { response, payload } = await invoke(h, {
@@ -668,7 +668,7 @@ Deno.test("native profile resume: generic source identity and semantic screen pa
   }
 });
 
-Deno.test("native profile resume: semantic decision is submitted only if screen selection was requested", async () => {
+Deno.test("CP2: native profile resume: semantic decision is submitted only if screen selection was requested", async () => {
   const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
   const decision = { decision: "SELECTED", selected_screen_code: "B2B-AUTH-001" };
   const { response, payload } = await invoke(h, {
@@ -689,7 +689,7 @@ Deno.test("native profile resume: semantic decision is submitted only if screen 
   assertEquals(h.calls[2].body?.p_draft, decision);
 });
 
-Deno.test("native profile resume: fail closed before prepare for invalid authority and source", async () => {
+Deno.test("CP2: native profile resume: fail closed before prepare for invalid authority and source", async () => {
   for (const overrides of [
     { status: "SUCCEEDED" },
     { manifest: { executor_mode: "GPT_NATIVE" } },
