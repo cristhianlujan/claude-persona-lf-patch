@@ -8,7 +8,7 @@ n=0;f=0
 fresh(){ $P -d postgres -c "drop database if exists t_c7" -c "create database t_c7 template t_dep" >/dev/null 2>&1; python3 -B $T/build_fixture.py >/dev/null; $P -d t_c7 -v ON_ERROR_STOP=1 -f $T/replica_pe10_c6_c7_fixture.sql >/dev/null 2>&1 || echo "FALLO fixture"
   $P -d t_c7 -c "insert into public.lf_operation_execution values ('EXEC-C6','ACTUALIZACION_DB_LF','MIGRATION','$N6','IN_PROGRESS')" >/dev/null
   $P -d t_c7 -v ON_ERROR_STOP=1 -f $M6 2>&1 | grep -q ERROR && echo "FALLO migracion C6"
-  $P -d t_c7 -c "update public.lf_operation_execution set status='COMPLETED' where execution_id='EXEC-C6'" >/dev/null; }
+  $P -d t_c7 -c "update public.lf_operation_execution set status='COMPLETED' where execution_id='EXEC-C6'" -c "update programacion.engineering_work_updates set summary=summary||'; ledger_progress=77.78%' where summary='Checkpoint PE10_C6 -> DONE'" >/dev/null; }
 train(){ $P -d t_c7 -c "insert into public.lf_operation_execution values ('EXEC-C7','ACTUALIZACION_DB_LF','MIGRATION','$N','IN_PROGRESS')" >/dev/null; }
 run(){ $P -d t_c7 -v ON_ERROR_STOP=1 -f $M 2>&1 | grep ERROR | sed 's/.*ERROR:  //' | head -1; }
 chk(){ r=$($P -d t_c7 -c "$2" 2>&1); n=$((n+1)); [ "$r" = "$3" ] && echo "PASS  $1 ($r)" || { f=$((f+1)); echo "FAIL  $1 obtenido=[$r] esperado=[$3]"; }; }
@@ -38,7 +38,7 @@ chk "2 politica candidata v1.4 no modificada" "select policy_sha from public.lf_
 chk "2 fila EKB creada" "select count(*) from public.lf_error_knowledge where codigo='LF-PE10-C7-REGISTRY-V02-NEEDS-ACTIVATION-20261028-001'" 1
 echo "== 3 reaplicar"; experr 3 PE10_C7_CLOSE_GATES_STATE_INVALID
 echo "== 4 mutacion: C6 cerrado con OTRO sql candidato"; fresh; train
-$P -d t_c7 -c "update programacion.engineering_work_updates set detail=replace(detail,'candidate_sql_sha256','candidate_sql_shaX') where summary='Checkpoint PE10_C6 -> DONE'" >/dev/null
+$P -d t_c7 -c "update programacion.engineering_work_updates set detail=replace(detail,'candidate_sql_sha256','candidate_sql_shaX') where summary like 'Checkpoint PE10_C6 -> DONE%'" >/dev/null
 S0=$($P -d t_c7 -c "$SPECHASH"); experr 4 PE10_C7_CLOSE_CANDIDATE_SQL_NOT_THE_ONE_TESTED_BY_C6; chk "4 atomico: especificacion intacta" "select ('$S0'=md5(unit_metadata::text)) from $PL where unit_code='PE10'" t
 echo "== 5 mutacion: la politica candidata no coincide con el evento de C5"; fresh; train
 $P -d t_c7 -c "update public.lf_policy_versions set policy_sha='deadbeef' where policy_version='v1.4-evolved-routing-candidate'" >/dev/null
