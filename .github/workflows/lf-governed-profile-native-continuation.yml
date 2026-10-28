@@ -1,0 +1,38 @@
+name: LF Governed Profile Native Continuation
+on:
+  workflow_dispatch:
+    inputs:
+      execution_id:
+        description: Existing governed EJECUCION_PERFIL_LF execution identifier
+        required: true
+        type: string
+      screen_selection_draft_json:
+        description: Optional semantic screen decision already authored by native worker (JSON); never auto-select
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: lf-governed-native-continue-${{ inputs.execution_id }}
+  cancel-in-progress: false
+jobs:
+  governed-native-resume:
+    name: Bound source -> ordered native bridge checkpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    environment: lf-edge-deploy
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout pinned main revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Resume the existing run without writing product data
+        env:
+          LF_PROFILE_EDGE_URL: https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profiles-governance-caller-v1
+          PROFILE_EXECUTION_ID: ${{ inputs.execution_id }}
+          PROFILE_SCREEN_SELECTION_DRAFT_JSON: ${{ inputs.screen_selection_draft_json }}
+        run: python3 scripts/lf_profile_native_resume.py
