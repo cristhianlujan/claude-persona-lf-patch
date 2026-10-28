@@ -1,5 +1,7 @@
 # LF IG — G4: prechequeo del contrato existente de decisiones (solo lectura)
 
+> **EVIDENCIA NUEVA G4 (2026-10-28):** Ejecutada auditoría read-only de provenance de los 14 selectores ACTIVE contra eventos 19948 y 19951: referencias 14/14 existentes, pero 0/14 eventos con aceptación o autorización de producción explícita. Evento 19962 constata cierre técnico, no autoridad de scope. `human_decisions` y receipts `HUMAN_DECISION` = 0. **No se deduce que no exista otra autorización**, sino que estas fuentes no la prueban. Ver [informe de G4](./IG_G4_AUTORIDAD_SCOPE_FUENTES_Y_BRECHA_CONTRATO_V2_20261028.md) y [SQL ejecutado](../..//sandbox/lf_contract_gate_test/input_governance/ig_n4_scope_authority_readonly_audit_20261028.sql). G4 NO VERIFICADO; no desactivar selectores históricos ni aprobar nuevos por etiqueta.
+
 **Estado:** EXPLORATORIO / G4 PENDING / NO HUMAN APPROVAL / NO RECLASSIFICATION. Fecha: 2026-10-28.
 
 ## Evidencia verificada
