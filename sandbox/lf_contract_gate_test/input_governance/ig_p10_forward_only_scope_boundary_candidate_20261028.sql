@@ -23,6 +23,23 @@ BEGIN
 END
 $preflight$;
 
+-- Fail before freeze if raw physical bindings are ambiguous. A frozen
+-- historical pair is NOT authority; duplication also breaks exact parity.
+DO $physical_uniqueness$
+DECLARE duplicate_pairs bigint;
+BEGIN
+ SELECT count(*) INTO duplicate_pairs FROM (
+  SELECT rp.regla_id,rp.pantalla_id
+  FROM lf_ops.reglas_pantallas rp
+  GROUP BY rp.regla_id,rp.pantalla_id
+  HAVING count(*)>1
+ ) d;
+ IF duplicate_pairs<>0 THEN
+   RAISE EXCEPTION 'IG_P10_PHYSICAL_BINDING_DUPLICATES:%',duplicate_pairs;
+ END IF;
+END
+$physical_uniqueness$;
+
 -- Capture original output with labels. No update to historical source rows.
 CREATE TEMP TABLE ig_p10_before ON COMMIT DROP AS
  SELECT 'IG'::text resolver,p.id::integer pantalla_id,
