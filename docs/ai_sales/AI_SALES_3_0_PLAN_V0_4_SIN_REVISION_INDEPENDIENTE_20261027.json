@@ -941,7 +941,7 @@
     "rules_updated": 2,
     "benchmark_scope_updated": 1,
     "unit_policy_keys_removed": [
-      "independent_review_only_if_material_risk"
+      "legacy_separate_reviewer_flag"
     ],
     "work_item_acceptance_changed": true,
     "checkpoint_ids_changed": 0,
