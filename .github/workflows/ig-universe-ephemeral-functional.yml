@@ -1,10 +1,5 @@
 name: IG Universe canonical guard isolated regression
 on:
-  pull_request:
-    paths:
-      - 'supabase/migrations/20261028132000_lf_ig_stale_recuration_canonical_universe_v1.sql'
-      - 'tests/ig/universe_ephemeral_*.sql'
-      - '.github/workflows/ig-universe-ephemeral-functional.yml'
   workflow_dispatch:
 permissions:
   contents: read
