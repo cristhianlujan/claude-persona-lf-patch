@@ -1,5 +1,7 @@
 # LF IG — Continuidad G3/G4, cierre verificable de iteración
 
+> **ACTUALIZACIÓN SQL/MATERIALIZED — 2026-10-28:** Se revisaron las consultas G3/G4/P07. P07 ahora usa una sola sentencia con CTE `MATERIALIZED`; paridad G3 tiene archivo versionado con `MATERIALIZED` (812 comparaciones, 52 matches, cero diferencias); el shadow usa CTE materializados. Se añadió T28 por coerción numérica de `consumer_role`: función actual 18/28, sombra candidata **28/28**. Ver [acta de auditoría](./IG_AUDITORIA_SQL_MATERIALIZED_VALIDACION_20261028.md). Los resultados anteriores de **27** casos quedan como evidencia histórica. **Sin ejecución DDL en PostgreSQL aislado ni aprobación G4; G5 sigue bloqueado.**
+
 Fecha: 2026-10-28. Rama: `dev/ig-n4-tremed-cascade-governed-20261028`. PR #3269 DRAFT. **No router, no DB writes, no reclassificación, no merge.**
 
 ## G3: PostgreSQL aislado, fixture y verificador
