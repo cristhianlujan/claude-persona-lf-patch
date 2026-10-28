@@ -1,5 +1,7 @@
 # LF Input Governance — G2/G3: implementación candidata y verificaciones
 
+> **CONTINUIDAD G3/G4:** Se preparó [verificador local PostgreSQL aislado](../../sandbox/lf_contract_gate_test/input_governance/ig_n4_isolated_pg_verifier_20261028.py): comprueba la identidad de la instancia, transacción de candidato, 27 casos, paridad activa y ROLLBACK. **NO se ejecutó**: este entorno carece de `psql` y `postgres`. El control de autoridad G4 se auditó con SELECT real, pero 14/14 provenance refieren eventos de diseño sin aceptación/producción explícita: [informe](./IG_G4_AUTORIDAD_SCOPE_FUENTES_Y_BRECHA_CONTRATO_V2_20261028.md). **G3 PG aislado y G4 siguen NO VERIFICADOS.**
+
 **Fecha:** 2026-10-28 · **Rama:** `dev/ig-n4-tremed-cascade-governed-20261028` · **PR:** #3269 (DRAFT) · **NO RECLASSIFY / NO ROUTER / NO DB WRITES**.
 
 ## Resultado y límites
