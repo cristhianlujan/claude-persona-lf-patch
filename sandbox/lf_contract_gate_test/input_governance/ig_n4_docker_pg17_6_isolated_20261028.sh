@@ -97,10 +97,12 @@ for marker in "ACL_BASELINE|helper|PUBLIC_EXECUTE_TRUE" "ACL_RESTRICTED_SIM|sche
   [[ "$(grep -Fc "$marker" "$out")" -eq 1 ]] ||
     { echo "FAIL: ACL evidence missing/duplicated: $marker"; cat "$out"; exit 1; }
 done
-grep -Fxq "ACL_G3_POST_DDL_REAL_INVOCATION|PASS" "$out" ||
-  { echo "FAIL: isolated ACL probe missing"; exit 1; }
-grep -Fxq "PARITY|812|52|52|0|14|58" "$out" ||
-  { echo "FAIL: active-selector parity mismatch"; exit 1; }
+# Require exactly one aggregate observation. Duplicate or absent markers are
+# invalid even when every repeated marker says PASS.
+[[ "$(grep -Fxc "ACL_G3_POST_DDL_REAL_INVOCATION|PASS" "$out")" -eq 1 ]] ||
+  { echo "FAIL: isolated ACL probe missing or duplicated"; cat "$out"; exit 1; }
+[[ "$(grep -Fxc "PARITY|812|52|52|0|14|58" "$out")" -eq 1 ]] ||
+  { echo "FAIL: active-selector parity missing or duplicated"; cat "$out"; exit 1; }
 readback="$(psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 -c "
 SELECT md5(pg_get_functiondef(
   '"'"'programacion.fn_input_rule_selector_matches_v1(jsonb,jsonb)'"'"'::regprocedure)),
