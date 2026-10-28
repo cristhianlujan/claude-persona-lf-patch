@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""G3 LF IG: isolated PostgreSQL transaction-only verification.
+"""LF IG G3: fail-closed isolated PostgreSQL verification.
 
-Must run only against a dedicated LOCAL isolated DB populated with a vetted,
-sanitized snapshot of IG schemas/functions/rule-screen relationships.
-Never use this against Supabase, prod, shared staging, Docker tunnels to prod,
-or any linked project. No Router. No migration. All candidate DDL rolls back.
-A missing postgres/psql is a BLOCK, never a simulated PASS.
+Only a deliberately created local and disposable instance may be used.
+Requires exact existing N-4 function definitions, a SANITIZED baseline
+with the 14 active selectors and 58 screens, and validated source drift.
+This script NEVER connects to Supabase or performs any production migration.
 """
 from __future__ import annotations
 
@@ -17,101 +16,135 @@ import sys
 from pathlib import Path
 
 
-def main() -> int:
+def reject(message: str) -> None:
+    raise SystemExit(message)
+
+
+def isolated_environment() -> tuple[str, str, str]:
     db = os.environ.get("PGDATABASE", "")
     host = os.environ.get("PGHOST", "")
+    data_dir = os.environ.get("LF_IG_EXPECTED_DATA_DIRECTORY", "")
     if os.environ.get("LF_IG_ISOLATED_PG_CONFIRMED") != "YES":
-        raise SystemExit("BLOCK: explicit local isolated DB confirmation required")
-    if not db.startswith("lf_ig_n4_isolated_"):
-        raise SystemExit("BLOCK: PGDATABASE must be a disposable lf_ig_n4_isolated_* DB")
-    if host not in ("", "/var/run/postgresql", "/tmp", "127.0.0.1", "localhost", "::1"):
-        raise SystemExit("BLOCK: remote PostgreSQL host refused")
-    if os.environ.get("PGSERVICE") or os.environ.get("DATABASE_URL") or os.environ.get("PGSERVICEFILE"):
-        raise SystemExit("BLOCK: connection URI/service indirection refused")
+        reject("BLOCK: explicit local isolated DB confirmation required")
+    if not re.fullmatch(r"lf_ig_n4_isolated_[a-zA-Z0-9_]+", db):
+        reject("BLOCK: disposable PGDATABASE name required")
+    if not host.startswith("/tmp/lf_ig_n4_socket_") or not Path(host).is_dir():
+        reject("BLOCK: isolated private Unix socket directory required")
+    if not data_dir.startswith("/tmp/lf_ig_n4_data_") or not Path(data_dir).is_dir():
+        reject("BLOCK: isolated private PostgreSQL data directory required")
+    if any(os.environ.get(x) for x in (
+        "PGSERVICE", "PGSERVICEFILE", "DATABASE_URL", "PGHOSTADDR", "PGOPTIONS"
+    )):
+        reject("BLOCK: indirect PostgreSQL connection settings forbidden")
     if not shutil.which("psql"):
-        raise SystemExit("NO_VERIFICADO: local psql binary unavailable")
+        reject("NO_VERIFICADO: psql is not installed locally")
+    return db, host, data_dir
 
-    dirpath = Path(__file__).resolve().parent
-    candidate = (dirpath / "ig_n4_clause_matcher_hardened_candidate_20261028.sql").read_text()
-    vectors = (dirpath / "ig_n4_preclass_synthetic_matcher_v2_20261028.sql").read_text()
-    if candidate.count("BEGIN;") != 1 or not candidate.rstrip().endswith("ROLLBACK;"):
-        raise SystemExit("BLOCK: candidate transaction contract changed")
-    if not re.search(r"\\bCREATE OR REPLACE FUNCTION\\b", candidate):
-        raise SystemExit("BLOCK: candidate contains no functions")
-    if not re.search(r"SELECT case_id,description,expected,actual,CASE", vectors):
-        raise SystemExit("BLOCK: vector reporting contract changed")
 
-    check = subprocess.run(
-        ["psql", "-X", "-w", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c",
-         "SELECT current_database(), coalesce(inet_server_addr()::text,'LOCAL_SOCKET')"],
-        capture_output=True, text=True, timeout=12, check=False,
+def run_psql(sql: str, timeout: int) -> str:
+    p = subprocess.run(
+        ["psql", "-X", "-w", "-A", "-t", "-F", "|",
+         "-v", "ON_ERROR_STOP=1"],
+        input=sql, text=True, capture_output=True,
+        timeout=timeout, check=False,
     )
-    if check.returncode:
-        raise SystemExit("BLOCK: cannot verify isolated DB identity: " + check.stderr[:500])
-    observed = check.stdout.strip().split("|")
-    if len(observed) != 2 or observed[0] != db or observed[1] not in (
-        "LOCAL_SOCKET", "127.0.0.1", "::1"
-    ):
-        raise SystemExit("BLOCK: database identity/network guard failed: " + repr(observed))
+    if p.returncode:
+        reject("FAIL: PostgreSQL verification error: " + p.stderr[-1600:])
+    return p.stdout
 
-    # Trim BEGIN and ROLLBACK so the snapshot is taken BEFORE the candidate's
-    # changes and test queries execute BEFORE the one final mandatory ROLLBACK.
-    start = candidate.index("BEGIN;") + len("BEGIN;")
+
+def main() -> int:
+    db, _host, data_dir = isolated_environment()
+    root = Path(__file__).resolve().parent
+    candidate = (root / "ig_n4_clause_matcher_hardened_candidate_20261028.sql").read_text()
+    vectors = (root / "ig_n4_preclass_synthetic_matcher_v2_20261028.sql").read_text()
+
+    if len(re.findall(r"^BEGIN;$", candidate, flags=re.MULTILINE)) != 1:
+        reject("BLOCK: candidate does not declare a single outer BEGIN")
+    if not candidate.rstrip().endswith("ROLLBACK;"):
+        reject("BLOCK: candidate must end with ROLLBACK")
+    if candidate.count("CREATE OR REPLACE FUNCTION") != 3:
+        reject("BLOCK: expected exactly three N-4 functions in candidate")
+    if not re.search(r"\\bCREATE OR REPLACE FUNCTION\\b", candidate):
+        reject("BLOCK: function definitions not present")
+    if not re.search(r"SELECT case_id,description,expected,actual,CASE", vectors):
+        reject("BLOCK: vector reporting contract changed")
+
+    check = run_psql(
+        "SELECT current_database(), "
+        "coalesce(inet_server_addr()::text,'LOCAL_SOCKET'), "
+        "current_setting('data_directory'), "
+        "pg_is_in_recovery()",
+        timeout=15,
+    ).strip().split("|")
+    if len(check) != 4 or check[0] != db or check[1] != "LOCAL_SOCKET":
+        reject("BLOCK: not using the isolated database/socket")
+    if Path(check[2]).resolve() != Path(data_dir).resolve() or check[3] != "f":
+        reject("BLOCK: cluster data directory/recovery state mismatch")
+
+    start = candidate.index("\nBEGIN;") + len("\nBEGIN;")
     end = candidate.rfind("ROLLBACK;")
-    payload = candidate[start:end]
+    patch = candidate[start:end]
     before = """
-CREATE TEMP TABLE ig_n4_old_match ON COMMIT DROP AS
-SELECT r.id rule_id,p.id screen_id,
-  programacion.fn_input_rule_selector_matches_v1(
-      r.valor_config->'applicability_v1',
-      programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
-  ) AS old_match
+CREATE TEMP TABLE ig_n4_preimage ON COMMIT DROP AS
+SELECT r.id AS rule_id, p.id AS screen_id,
+ programacion.fn_input_rule_selector_matches_v1(
+   r.valor_config->'applicability_v1',
+   programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
+ ) AS old_match
 FROM lf_ops.reglas r CROSS JOIN lf_ops.pantallas p
 WHERE r.estado='VIGENTE'
-  AND r.valor_config->'applicability_v1'->>'status'='ACTIVE';
+ AND r.valor_config->'applicability_v1'->>'status'='ACTIVE';
 """
     after = """
-SELECT 'PARITY' AS test_name,
-  count(*) AS pairs,
-  count(*) FILTER (WHERE old_match) AS old_matches,
-  count(*) FILTER (
-   WHERE programacion.fn_input_rule_selector_matches_v1(
-    r.valor_config->'applicability_v1',
-    programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
-   )
-  ) AS candidate_matches,
-  count(*) FILTER (
-   WHERE old_match IS DISTINCT FROM
-   programacion.fn_input_rule_selector_matches_v1(
-    r.valor_config->'applicability_v1',
-    programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
-   )
-  ) AS differences
-FROM ig_n4_old_match m
-JOIN lf_ops.reglas r ON r.id=m.rule_id
-JOIN lf_ops.pantallas p ON p.id=m.screen_id;
+SELECT 'PARITY',
+ count(*),
+ count(*) FILTER (WHERE old_match),
+ count(*) FILTER (WHERE new_match),
+ count(*) FILTER (WHERE old_match IS DISTINCT FROM new_match),
+ count(DISTINCT rule_id),
+ count(DISTINCT screen_id)
+FROM (
+ SELECT a.*,programacion.fn_input_rule_selector_matches_v1(
+   r.valor_config->'applicability_v1',
+   programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
+ ) AS new_match
+ FROM ig_n4_preimage a
+ JOIN lf_ops.reglas r ON r.id=a.rule_id
+ JOIN lf_ops.pantallas p ON p.id=a.screen_id
+) results;
 """
-    program = "BEGIN;\n" + before + "\n" + payload + "\n" + vectors + "\n" + after + "\nROLLBACK;\n"
-    # Retain no DB dumps; all SQL is constructed from versioned repository files.
-    result = subprocess.run(
-        ["psql", "-X", "-w", "-A", "-t", "-F", "|", "-v", "ON_ERROR_STOP=1"],
-        input=program, text=True, capture_output=True, timeout=75, check=False,
-    )
-    # A failed psql transaction never counts as PASS, even if ROLLBACK ran.
-    if result.returncode:
-        raise SystemExit("FAIL: candidate PG execution failed: " + result.stderr[-1500:])
-    lines = result.stdout.splitlines()
-    test_rows = [line for line in lines if re.match(r"^T[0-9]{2}\\|", line)]
-    if len(test_rows) != 27 or any(not line.endswith("|PASS") for line in test_rows):
-        raise SystemExit("FAIL: 27 selector fixture results missing or negative")
-    parity = [line for line in lines if line.startswith("PARITY|")]
-    if len(parity) != 1:
-        raise SystemExit("FAIL: exact parity line missing")
-    fields = parity[0].split("|")
-    if len(fields) != 5 or int(fields[1]) <= 0 or fields[2] != fields[3] or fields[4] != "0":
-        raise SystemExit("FAIL: non-zero selector parity drift " + repr(parity[0]))
-    print("PASS_ISOLATED_POSTGRESQL_CANDIDATE_27_VECTORS_AND_ACTIVE_PARITY_ROLLBACK")
-    print(parity[0])
+    sql = "BEGIN;\n" + before + patch + "\n" + vectors + "\n" + after + "\nROLLBACK;\n"
+    stdout = run_psql(sql, timeout=90)
+    rows = stdout.splitlines()
+    fixture_rows = [x for x in rows if re.fullmatch(r"T[0-9]{2}\\|.*", x)]
+    if len(fixture_rows) != 27 or any(not x.endswith("|PASS") for x in fixture_rows):
+        reject("FAIL: not all 27 synthetic tests passed in isolated PostgreSQL")
+    matches = [x for x in rows if x.startswith("PARITY|")]
+    if len(matches) != 1:
+        reject("FAIL: isolated N-4 parity result missing")
+    cols = matches[0].split("|")
+    if len(cols) != 7 or cols[1:] != ["812", "52", "52", "0", "14", "58"]:
+        reject("FAIL: isolated baseline/selector parity mismatch: " + matches[0])
+
+    # One final independent connection checks the rollback did not persist any
+    # new helper and confirms unchanged source hashes.
+    after_rollback = run_psql("""
+SELECT md5(pg_get_functiondef(
+ 'programacion.fn_input_rule_selector_matches_v1(jsonb,jsonb)'::regprocedure)),
+ md5(pg_get_functiondef(
+ 'programacion.fn_input_rule_selector_clause_matches_v1(jsonb,jsonb)'::regprocedure)),
+ to_regprocedure('programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)') IS NULL;
+""", timeout=15).strip().split("|")
+    if after_rollback != [
+        "3b912c7872aceff83de24e9e8d1ad934",
+        "1123257c0c6c7eb1e2aa26783f3ccc0a",
+        "t",
+    ]:
+        reject("FAIL: post-ROLLBACK source parity not restored")
+
+    print("PASS_G3_ISOLATED_PG_27_VECTORS_812_PARITY_ROLLBACK")
+    print(matches[0])
     return 0
 
 
