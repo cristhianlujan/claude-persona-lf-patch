@@ -3,6 +3,9 @@
 -- should be revoked, not a production guard, and not a replacement for owner
 -- approval. Treat false/missing approval evidence as NEEDS_AUTHORITY_REVIEW.
 -- EKB IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001.
+-- Bound numeric provenance text to 18 digits before BIGINT cast, so overly
+-- long numeric strings cannot crash this SELECT-only audit. Only 14 selectors;
+-- these one-use CTEs are deliberately NOT materialized.
 WITH selectors AS (
   SELECT r.id rule_id,r.codigo rule_code,r.valor_config->'applicability_v1' selector,
          r.valor_config->'applicability_v1'->'provenance' provenance
@@ -19,11 +22,11 @@ WITH selectors AS (
          r.payload->>'production_authorized' AS r14_production_authorized
   FROM selectors s
   LEFT JOIN public.lf_eventos d ON d.id=CASE
-    WHEN s.provenance->>'decision_event_id' ~ '^[0-9]+$'
+    WHEN s.provenance->>'decision_event_id' ~ '^[0-9]{1,18}$'
       THEN (s.provenance->>'decision_event_id')::bigint
     ELSE NULL END
   LEFT JOIN public.lf_eventos r ON r.id=CASE
-    WHEN s.provenance->>'r14_event_id' ~ '^[0-9]+$'
+    WHEN s.provenance->>'r14_event_id' ~ '^[0-9]{1,18}$'
       THEN (s.provenance->>'r14_event_id')::bigint
     ELSE NULL END
 )
