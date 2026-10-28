@@ -106,6 +106,16 @@ BEGIN
         'route_result',v_route,
         'transition',v_transition,
         'profile_selection_request',v_route->'profile_selection_request',
+        'transport_token','ROCTX:'||encode(convert_to(jsonb_build_object(
+           'schema_version','LF_ROUTER_READ_ONLY_CONTEXT_V1',
+           'original_request_text',v_literal,
+           'request_sha256',v_ctx->>'request_sha256',
+           'stage1_payload',p_stage1,
+           'stage2_route',v_route,
+           'transition',v_transition,
+           'next_step',v_transition->>'next_step',
+           'effect_authority',false
+        )::text,'UTF8'),'base64'),
         'trace_persistence','NONE',
         'effect_authority',false,
         'downstream_execution_allowed',false
