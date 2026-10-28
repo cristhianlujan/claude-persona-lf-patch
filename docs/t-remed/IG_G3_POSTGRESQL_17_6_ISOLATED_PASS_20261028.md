@@ -50,3 +50,16 @@ El helper `fn_input_rule_selector_clause_schema_valid_v1(jsonb)` **no existe en 
 | **G5:** catálogo/reclasificación y cutover | **BLOQUEADO** |
 
 **No usar este PASS técnico para autorizar una ampliación de scope, para activar el helper en producción, para eliminar `DERIVED_GLOBAL` ni para fusionar PR.** Fuente EKB: `IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001`, `CI-MIGRATION-SOURCE-PARITY-001`.
+
+## 5. Auditoría adicional de ACL en fuente real (solo lectura)
+
+En Supabase se verificaron `pg_proc.prosecdef/proacl/proconfig`, `pg_namespace.nspacl` y privilegios efectivos. Las funciones selector/clause actuales son `SECURITY INVOKER`, `IMMUTABLE`, dueño `postgres`; no tienen `proacl` explícito. PostgreSQL permite `EXECUTE` por defecto a PUBLIC, **pero** `programacion` tiene `USAGE` restringido. Comprobación `SELECT` por rol:
+
+| Rol | `USAGE(programacion)` | `EXECUTE` matcher |
+|---|---|---|
+| `anon`, `authenticated`, `service_role` | FALSE | TRUE por grant implícito de función, **sin uso del esquema** |
+| `programacion_builder`, `auditor`, `verifier`, `human_authority`, `promoter`, `test_generator` | TRUE | TRUE |
+
+**Implicación:** al introducir el helper candidato debe preservar los límites efectivos de esquema y comportamiento de invocador; conceder o revocar `EXECUTE` arbitrariamente sin análisis podría abrir una superficie o interrumpir al matcher. La compilación aislada se ejecutó como dueño local del contenedor; **no constituye prueba de ACL con todos los roles reales**. Antes de release: comparar `nspacl/proacl/prosecdef/proconfig` pre/post y ejecutar positivos/negativos de permisos con roles equivalentes en ambiente autorizado. `G3_ACL_INTEGRATION=PENDING`.
+
+Este hallazgo tampoco concede permiso de publicar selectores: G4 exige autoridad de scope independientemente de ACL técnica.
