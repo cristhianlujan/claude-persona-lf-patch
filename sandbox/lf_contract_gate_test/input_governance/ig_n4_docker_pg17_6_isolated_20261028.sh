@@ -74,13 +74,28 @@ FROM (
 ) results;
 ROLLBACK;
 SQL
-} | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$out"
+} | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$out" 2>&1
 
-[[ "$(grep -Ec "^T[0-9]{2}\|" "$out")" -eq 28 ]] ||
-  { echo "FAIL: missing 28 matcher cases"; exit 1; }
-if grep -E "^T[0-9]{2}\|" "$out" | grep -Evq "\|PASS$"; then
-  echo "FAIL: matcher vector mismatch"; exit 1
+# Match exact T01..T28 (not merely 28 arbitrary or repeated PASS lines).
+expected_ids="$(seq -w 1 28 | sed "s/^/T/")"
+actual_ids="$(grep -Eo "^T[0-9]{2}\\|" "$out" | tr -d "|" | LC_ALL=C sort)"
+[[ "$actual_ids" == "$expected_ids" ]] ||
+  { echo "FAIL: matcher IDs missing, duplicated or unexpected"; cat "$out"; exit 1; }
+if grep -E "^T[0-9]{2}\\|" "$out" |
+   grep -Evq "^T[0-9]{2}\\|[^|]*\\|[tf]\\|[tf]\\|PASS$"; then
+  echo "FAIL: matcher vector shape, result or verdict"; cat "$out"; exit 1
 fi
+# These are actual RAISE NOTICE observations emitted inside role invocations.
+for fn in selector_matches clause_matches clause_schema_valid; do
+  [[ "$(grep -Fc "ACL_NEGATIVE|$fn|42501" "$out")" -eq 1 ]] ||
+    { echo "FAIL: negative ACL observation missing/duplicated: $fn"; cat "$out"; exit 1; }
+  [[ "$(grep -Fc "ACL_POSITIVE|$fn|false" "$out")" -eq 1 ]] ||
+    { echo "FAIL: positive ACL observation missing/duplicated: $fn"; cat "$out"; exit 1; }
+done
+for marker in "ACL_BASELINE|helper|PUBLIC_EXECUTE_TRUE" "ACL_RESTRICTED_SIM|schema_only|helper|42501" "ACL_POSITIVE|selector_allowed|true" "ACL_POSITIVE|cross_consumer|false"; do
+  [[ "$(grep -Fc "$marker" "$out")" -eq 1 ]] ||
+    { echo "FAIL: ACL evidence missing/duplicated: $marker"; cat "$out"; exit 1; }
+done
 grep -Fxq "ACL_G3_POST_DDL_REAL_INVOCATION|PASS" "$out" ||
   { echo "FAIL: isolated ACL probe missing"; exit 1; }
 grep -Fxq "PARITY|812|52|52|0|14|58" "$out" ||
@@ -93,11 +108,15 @@ SELECT md5(pg_get_functiondef(
  to_regprocedure(
   '"'"'programacion.fn_input_rule_selector_clause_schema_valid_v1(jsonb)'"'"') IS NULL,
  to_regrole('"'"'ig_n4_untrusted_acl_probe'"'"') IS NULL,
- to_regrole('"'"'ig_n4_governed_acl_probe'"'"') IS NULL;
+ to_regrole('"'"'ig_n4_governed_acl_probe'"'"') IS NULL,
+ to_regrole('"'"'ig_n4_schema_only_acl_probe'"'"') IS NULL;
 ")"
-[[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t|t|t" ]] ||
+[[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t|t|t|t" ]] ||
   { echo "FAIL: post-ROLLBACK source or ephemeral roles changed"; exit 1; }
 
+# Surface the primary evidence; a final PASS marker alone is insufficient.
+grep -E "^T[0-9]{2}\\|" "$out"
+grep -E "ACL_(NEGATIVE|POSITIVE|BASELINE|RESTRICTED_SIM)\\|" "$out"
 echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_REAL_ROLE"
 echo "PARITY|812|52|52|0|14|58"
 '
