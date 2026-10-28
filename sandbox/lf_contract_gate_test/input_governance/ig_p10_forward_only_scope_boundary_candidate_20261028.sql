@@ -37,7 +37,7 @@ CREATE TEMP TABLE ig_p10_before ON COMMIT DROP AS
  CROSS JOIN LATERAL programacion.fn_t_remed_effective_rules_v1(p.id,0.25) x;
 
 CREATE TABLE programacion.ig_n4_legacy_scope_frozen_v1 (
- source_code text NOT NULL CHECK (source_code IN ('IG','TREMED')),
+ source_code text NOT NULL CHECK (source_code IN ('IG_LEGACY','IG_DERIVED','TREMED_OWN','TREMED_GLOBAL')),
  pantalla_id integer NOT NULL,
  regla_id integer NOT NULL,
  frozen_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -47,15 +47,23 @@ REVOKE ALL ON TABLE programacion.ig_n4_legacy_scope_frozen_v1 FROM PUBLIC;
 
 INSERT INTO programacion.ig_n4_legacy_scope_frozen_v1
  (source_code,pantalla_id,regla_id)
-SELECT resolver,pantalla_id,regla_id FROM ig_p10_before
-WHERE (resolver='IG' AND origin='DERIVED_GLOBAL')
-   OR (resolver='TREMED' AND origin='GLOBAL')
-GROUP BY resolver,pantalla_id,regla_id;
+SELECT CASE
+ WHEN resolver='IG' AND origin='LEGACY_EXPLICIT' THEN 'IG_LEGACY'
+ WHEN resolver='IG' AND origin='DERIVED_GLOBAL' THEN 'IG_DERIVED'
+ WHEN resolver='TREMED' AND origin='OWN' THEN 'TREMED_OWN'
+ WHEN resolver='TREMED' AND origin='GLOBAL' THEN 'TREMED_GLOBAL'
+ END AS source_code,pantalla_id,regla_id
+FROM ig_p10_before
+WHERE (resolver='IG' AND origin IN ('LEGACY_EXPLICIT','DERIVED_GLOBAL'))
+   OR (resolver='TREMED' AND origin IN ('OWN','GLOBAL'))
+GROUP BY resolver,origin,pantalla_id,regla_id;
 
--- The only authority for the historical implicit branch is the frozen
--- pair set. A newly promoted rule, newly added screen, changed category,
--- or changed PASS_GLOBAL recommendation CANNOT add an implicit pair.
--- Existing explicit/declared paths retain their existing status semantics.
+-- The existing implicit AND explicit binding pairs are frozen as a boundary,
+-- not as approval. Newly inserted candidate physical links remain in the
+-- raw authoring table but not the effective reader until governed publication.
+-- A newly promoted rule, newly added screen, changed category, or changed
+-- PASS_GLOBAL recommendation CANNOT add an implicit effective pair.
+-- Existing historical explicit/declared paths retain original status semantics.
 CREATE OR REPLACE FUNCTION programacion.fn_input_effective_rule_links_v1(
  p_pantalla_id integer,p_consumer text DEFAULT 'INPUT_GOVERNANCE')
 RETURNS TABLE(pantalla_id integer,regla_id integer,binding_source text)
@@ -64,8 +72,12 @@ SET search_path TO 'pg_catalog','programacion','lf_ops'
 AS $function$
  WITH legacy AS (
   SELECT rp.pantalla_id,rp.regla_id,'LEGACY_EXPLICIT'::text binding_source
-  FROM lf_ops.reglas_pantallas rp JOIN lf_ops.reglas r ON r.id=rp.regla_id
-  WHERE rp.pantalla_id=p_pantalla_id
+  FROM programacion.ig_n4_legacy_scope_frozen_v1 f
+  JOIN lf_ops.reglas_pantallas rp
+    ON rp.pantalla_id=f.pantalla_id AND rp.regla_id=f.regla_id
+  JOIN lf_ops.reglas r ON r.id=rp.regla_id
+  WHERE f.source_code='IG_LEGACY'
+    AND f.pantalla_id=p_pantalla_id
     AND jsonb_typeof(r.valor_config->'applicability_v1') IS DISTINCT FROM 'object'
  ), declared AS (
   SELECT d.pantalla_id,d.regla_id,d.binding_source
@@ -74,7 +86,7 @@ AS $function$
   SELECT p_pantalla_id AS pantalla_id,f.regla_id,'DERIVED_GLOBAL'::text binding_source
   FROM programacion.ig_n4_legacy_scope_frozen_v1 f
   JOIN lf_ops.reglas r ON r.id=f.regla_id
-  WHERE f.source_code='IG'
+  WHERE f.source_code='IG_DERIVED'
     AND f.pantalla_id=p_pantalla_id
     AND r.estado='VIGENTE'
     AND jsonb_typeof(r.valor_config->'applicability_v1') IS DISTINCT FROM 'object'
@@ -99,14 +111,17 @@ LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path TO 'pg_catalog','programacion','lf_ops'
 AS $function$
  SELECT z.regla_id::bigint,'OWN'::text
- FROM lf_ops.reglas_pantallas z
- WHERE z.pantalla_id=p_pantalla_id
+ FROM programacion.ig_n4_legacy_scope_frozen_v1 f
+ JOIN lf_ops.reglas_pantallas z
+   ON z.pantalla_id=f.pantalla_id AND z.regla_id=f.regla_id
+ WHERE f.source_code='TREMED_OWN'
+   AND z.pantalla_id=p_pantalla_id
    AND EXISTS(SELECT 1 FROM lf_ops.pantallas WHERE id=p_pantalla_id)
  UNION
  SELECT f.regla_id::bigint,'GLOBAL'::text
  FROM programacion.ig_n4_legacy_scope_frozen_v1 f
  JOIN lf_ops.reglas r ON r.id=f.regla_id
- WHERE f.source_code='TREMED'
+ WHERE f.source_code='TREMED_GLOBAL'
    AND r.estado='VIGENTE'
    AND f.pantalla_id=p_pantalla_id
    AND EXISTS(SELECT 1 FROM lf_ops.pantallas WHERE id=p_pantalla_id)
@@ -218,7 +233,7 @@ BEGIN
  THEN RAISE EXCEPTION 'IG_P10_FROZEN_BASELINE_DRIFT missing=% extra=%',
        v_missing,v_extra; END IF;
  SELECT count(*) INTO v_ig
- FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='IG';
+ FROM programacion.ig_n4_legacy_scope_frozen_v1 WHERE source_code='IG_DERIVED';
  SELECT count(*) INTO v_total FROM ig_p10_before WHERE resolver='IG' AND origin='DERIVED_GLOBAL';
  IF v_ig<>v_total
  THEN RAISE EXCEPTION 'IG_P10_SNAPSHOT_ROW_COUNT_DRIFT expected=% got=%',
