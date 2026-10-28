@@ -1,4 +1,7 @@
 # LF IG N-4 — Evidencia P08/P10: lectores, promociones y derivación global
+
+> **IMPLEMENTACIÓN DE PROCESO POSTERIOR (2026-10-28):** la mitigación forward-only está en [SQL candidato sandbox](../../sandbox/lf_contract_gate_test/input_governance/ig_p10_forward_only_scope_boundary_candidate_20261028.sql); no depende de que los autores editen a mano todas las rutas de promoción. Una foto de enlaces heredados preserva el pasado sin reclasificarlo; los nuevos VIGENTE/bindings/selector ACTIVE quedan bajo guard de admisión (HOLD hasta G4). Cobertura read-only 17/17; runner real PG17.6 aún NO VERIFICADO. Esta acta conserva el diagnóstico anterior, no constituye habilitación de producción.
+
 **Fecha de corte:** 2026-10-28 · **PR #3269 DRAFT / NO-GO** · **Evidencia real:** SQL SELECT, `pg_proc` y `pg_get_functiondef`; cero invocaciones mutadoras.  
 **Plan maestro:** [G0–G5 / P00–P12](./IG_N4_TREMED_PLAN_MAESTRO_EJECUCION_V1_20261028.md).  
 **Estado P08:** PARCIAL (solo corpus local DB) · **P10:** EN INVESTIGACIÓN, NO CERRADO · **G5:** NO_RECLASSIFY.
