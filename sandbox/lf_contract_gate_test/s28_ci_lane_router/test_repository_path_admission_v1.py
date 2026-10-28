@@ -37,6 +37,7 @@ def main() -> int:
         ".github/workflows/lf-migration-reconcile-lane.yml",
         ".github/workflows/lf-independent-change-admission.yml",
         ".github/workflows/lf-input-governance-recurate.yml",
+        ".github/workflows/lf-profile-evolution-proof.yml",
     }
     assert expected_exact.issubset(policy.github_exact)
     checks += 1
