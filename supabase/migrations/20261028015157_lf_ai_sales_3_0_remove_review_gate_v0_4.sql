@@ -131,7 +131,7 @@ BEGIN
       JOIN programacion.engineering_work_items wi ON wi.id=pu.work_item_id
       WHERE pu.plan_code='AI_SALES_3_0'
         AND (pu.unit_metadata ? 'independent_review_only_if_material_risk'
-             OR pu.unit_metadata::text ~* '(independiente|independent)'
+             OR coalesce((pu.unit_metadata->'checkpoint_inputs')::text,'') ~* '(independiente|independent)'
              OR wi.acceptance_criteria::text ~* '(independiente|independent)'
              OR pu.unit_metadata#>>'{revision_v0_4,review_model}'<>'SELF_VALIDATION_BY_IMPLEMENTING_TEAM'))
     OR (SELECT count(*) FROM programacion.engineering_work_checkpoints c
