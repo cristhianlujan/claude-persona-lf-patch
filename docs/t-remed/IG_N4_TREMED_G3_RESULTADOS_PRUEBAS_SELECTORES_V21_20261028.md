@@ -1,6 +1,8 @@
 # LF / IG — G3: evidencia de pruebas sintéticas del matcher N-4
 **28-10-2026 · SELECT-only · PR #3269 · G3 NO PASA · NO RECLASIFICAR**
 
+> **AMPLIACIÓN POSTERIOR (2026-10-28):** Esta acta documenta la ronda inicial de **23** vectores. La ronda extendida tiene **27 vectores**: matcher vigente 18 PASS/9 FAIL, candidato SQL sombra read-only 27/27 y referencia de autoridad/conflictos 35/35, **sin ejecución DDL ni aprobación real**. Para la versión vigente de evidencia consultar [reporte técnico G2/G3](./IG_N4_G2_G3_TRABAJO_TECNICO_VALIDACION_20261028.md). Este acta histórica se conserva sin reescribir los resultados antiguos.
+
 ## 1. Ejecución realmente realizada
 
 Se recuperó la definición vigente de:
