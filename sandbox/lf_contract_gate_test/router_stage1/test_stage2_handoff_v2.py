@@ -26,7 +26,6 @@ def case(**kwargs):
         "canal_candidato": "OPERACIONES",
         "negocio_codigo": "LF",
         "negocios_afectados": [],
-        "ruta_transversal": None,
         "razon_seleccion": "Consulta existente",
         "alcance": {"target_type": "OFERTA", "target_hint": "mi oferta"},
     }
@@ -126,17 +125,17 @@ class Handoff(unittest.TestCase):
         ))
         self.assertEqual(result["paso"], "DIRECT_ANSWER")
 
-    def test_retired_transversal_cannot_reach_stage2(self):
+    def test_unknown_field_cannot_reach_stage2(self):
         result = prepare_handoff(case(
             texto_original="Actualizar perfil UI Architect",
             accion="actualizar",
             sujeto="perfil",
             formas_busqueda=["perfil UI Architect"],
             canal_candidato=None,
-            ruta_transversal="GESTION_ACTIVOS_IA",
+            campo_desconocido="test",
         ))
         self.assertEqual(result["paso"], "INVALID_STAGE1_V2")
-        self.assertIn("RUTA_TRANSVERSAL_INVALIDA", result["codigos"])
+        self.assertIn("CAMPO_NO_PERMITIDO_EN_V2", result["codigos"])
         self.assertNotIn("entrypoint", result)
 
 
