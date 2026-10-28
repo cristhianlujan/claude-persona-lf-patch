@@ -50,3 +50,15 @@ Inspección **SELECT de metadatos**:
 | G5 reclasificación | **BLOQUEADA**, no correr SQL que retire `DERIVED_GLOBAL` |
 
 El reporte es evidencia de diagnóstico/performance. Se mantiene el SQL de sandbox reversible y fuera de `supabase/migrations`; no autoriza merge o deploy.
+
+## 6. Vía alternativa de certificación G3 sin instalar PostgreSQL local
+
+El repositorio ya contiene otras pruebas que usan la imagen Docker `postgres:17.6`, pero esas pruebas existentes incluyen adaptadores a BD vinculada y **no son adecuados para este ensayo**. Se agregó un runner autocontenido, exclusivamente local o CI de desarrollo:
+
+- Archivo: `sandbox/lf_contract_gate_test/input_governance/ig_n4_docker_pg17_6_isolated_20261028.sh`.
+- Usa imagen `postgres:17.6` con `--network none`, `--read-only`, `--cap-drop ALL`, socket Unix y datos en `tmpfs`; no mapea credenciales ni direcciones de Supabase. Solo monta el directorio de pruebas `readonly`.
+- Crea una BD efímera y carga la fixture N-4 saneada. Ejecuta en **una transacción** los 28 vectores y la paridad 812/52/0, luego `ROLLBACK`. Reabre conexión para comprobar los hashes originales y la ausencia del helper candidato. El contenedor se destruye al salir.
+- No modifica `.github/workflows`, no agrega secretos a CI y no ejecuta migraciones. **Este script es un candidato de test sin verificación de ejecución ni de shell `bash -n` en este entorno**; requerirá comprobación estática y ejecución en un runner con Docker antes de certificar.
+- El script Python preexistente sigue como ruta local PG17.6; la vía Docker no lo sustituye como evidencia de éxito mientras no haya ejecución.
+
+**Estado:** Docker y PostgreSQL binarios ausentes en el contenedor de trabajo. `G3_PG_EXECUTION=NO_VERIFICADO`; `G4=NO_VERIFICADO`; `G5=NO_RECLASSIFY`.
