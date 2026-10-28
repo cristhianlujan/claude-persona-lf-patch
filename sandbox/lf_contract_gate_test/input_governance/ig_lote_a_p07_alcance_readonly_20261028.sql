@@ -1,68 +1,63 @@
--- LF Input Governance P07 structural scope audit, SELECT only.
--- Inputs from live catalogs: NO hardcoded rule IDs, no new engine, no mutation.
--- No scope may be authorized by a source-shell match alone.
--- Expect target unknown in some historical/unmapped screens: never coerce to a shell.
-
-WITH observed_origin AS (
+-- LF IG P07 optimized read-only audit (PostgreSQL 17.6).
+-- A single snapshot. MATERIALIZED avoids recomputing the LATERAL effective
+-- rule resolver for independent bucket/total queries.
+-- It is a TEMPORARY query result, NOT CREATE MATERIALIZED VIEW.
+-- Shell source/destination are discovery evidence, never scope authority.
+WITH
+targets AS MATERIALIZED (
+ SELECT p.id AS pantalla_id,p.activa,m.app_shell_code AS target_shell
+ FROM lf_ops.pantallas p
+ LEFT JOIN lf_ops.modulos m ON m.module_id=p.module_id
+),
+source_shells AS MATERIALIZED (
  SELECT rp.regla_id,
-  array_agg(DISTINCT m.app_shell_code ORDER BY m.app_shell_code)
-    FILTER (WHERE m.app_shell_code IS NOT NULL) AS source_shells
+   array_agg(DISTINCT m.app_shell_code ORDER BY m.app_shell_code)
+     FILTER (WHERE m.app_shell_code IS NOT NULL) AS origin_shells
  FROM lf_ops.reglas_pantallas rp
  JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
  LEFT JOIN lf_ops.modulos m ON m.module_id=p.module_id
  GROUP BY rp.regla_id
 ),
-derived AS (
- SELECT p.id AS pantalla_id,p.codigo AS screen_code,p.activa,
-  e.regla_id,m.app_shell_code AS target_shell,o.source_shells
- FROM lf_ops.pantallas p
- LEFT JOIN lf_ops.modulos m ON m.module_id=p.module_id
- CROSS JOIN LATERAL programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
- LEFT JOIN observed_origin o ON o.regla_id=e.regla_id
+derived AS MATERIALIZED (
+ SELECT t.pantalla_id,t.activa,t.target_shell,e.regla_id
+ FROM targets t
+ CROSS JOIN LATERAL programacion.fn_input_effective_rule_links_v1(
+   t.pantalla_id,'INPUT_GOVERNANCE'
+ ) e
  WHERE e.binding_source='DERIVED_GLOBAL'
 ),
-classified AS (
- SELECT *,
+classified AS MATERIALIZED (
+ SELECT d.pantalla_id,d.regla_id,d.activa,
  CASE
-  WHEN target_shell IS NULL THEN 'DESTINATION_SHELL_UNKNOWN'
-  WHEN coalesce(cardinality(source_shells),0)=0 THEN 'ORIGIN_SHELL_UNKNOWN'
-  WHEN target_shell=ANY(source_shells) THEN 'WITHIN_OBSERVED_SOURCE_SHELL'
+  WHEN d.target_shell IS NULL THEN 'DESTINATION_SHELL_UNKNOWN'
+  WHEN COALESCE(cardinality(s.origin_shells),0)=0 THEN 'ORIGIN_SHELL_UNKNOWN'
+  WHEN d.target_shell=ANY(s.origin_shells) THEN 'WITHIN_OBSERVED_SOURCE_SHELL'
   ELSE 'OUTSIDE_OBSERVED_SOURCE_SHELL'
- END AS discovery_bucket
- FROM derived
+ END AS bucket
+ FROM derived d
+ LEFT JOIN source_shells s ON s.regla_id=d.regla_id
+),
+groups AS MATERIALIZED (
+ SELECT bucket,count(*) AS pairs,
+   count(DISTINCT regla_id) AS rule_count,
+   count(DISTINCT pantalla_id) AS screen_count,
+   count(*) FILTER(WHERE NOT activa) AS inactive_pairs
+ FROM classified GROUP BY bucket
+),
+totals AS MATERIALIZED (
+ SELECT count(*) AS pairs,count(DISTINCT regla_id) AS rule_count,
+ count(DISTINCT pantalla_id) AS screen_count,
+ count(*) FILTER(WHERE NOT activa) AS inactive_pairs
+ FROM classified
 )
-SELECT discovery_bucket,
- count(*) AS derived_pairs,
- count(DISTINCT regla_id) AS rules_affected,
- count(DISTINCT pantalla_id) AS screens_affected,
- count(*) FILTER(WHERE NOT activa) AS links_to_inactive_screens
-FROM classified
-GROUP BY discovery_bucket ORDER BY discovery_bucket;
-
--- Verify exhaustive, disjoint partition and current catalog size;
--- expected numbers are a historical audit reference only, never runtime logic.
-WITH observed_origin AS (
- SELECT rp.regla_id,
-  array_agg(DISTINCT m.app_shell_code ORDER BY m.app_shell_code)
-   FILTER (WHERE m.app_shell_code IS NOT NULL) AS source_shells
- FROM lf_ops.reglas_pantallas rp JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
- LEFT JOIN lf_ops.modulos m ON m.module_id=p.module_id GROUP BY rp.regla_id
-), derived AS (
- SELECT p.id,m.app_shell_code AS target_shell,e.regla_id,o.source_shells
- FROM lf_ops.pantallas p LEFT JOIN lf_ops.modulos m ON m.module_id=p.module_id
- CROSS JOIN LATERAL programacion.fn_input_effective_rule_links_v1(p.id,'INPUT_GOVERNANCE') e
- LEFT JOIN observed_origin o ON o.regla_id=e.regla_id WHERE e.binding_source='DERIVED_GLOBAL'
-)
-SELECT count(*) AS derived_pairs,
- count(DISTINCT regla_id) AS derived_rules,
- count(*) FILTER(WHERE target_shell IS NULL) AS unknown_target,
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)=0) AS unknown_origin,
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)>0 AND target_shell=ANY(source_shells)) AS within,
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)>0 AND NOT(target_shell=ANY(source_shells))) AS outside,
- count(*) = (
- count(*) FILTER(WHERE target_shell IS NULL) +
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)=0) +
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)>0 AND target_shell=ANY(source_shells)) +
- count(*) FILTER(WHERE target_shell IS NOT NULL AND coalesce(cardinality(source_shells),0)>0 AND NOT(target_shell=ANY(source_shells)))
- ) AS partition_complete
-FROM derived;
+SELECT x.bucket,x.pairs,x.rule_count,x.screen_count,x.inactive_pairs,x.partition_ok
+FROM (
+ SELECT 0 AS is_total,g.bucket,g.pairs,g.rule_count,g.screen_count,g.inactive_pairs,
+ (SELECT COALESCE(sum(pairs),0) FROM groups) = (SELECT pairs FROM totals)
+ AS partition_ok FROM groups g
+ UNION ALL
+ SELECT 1,'TOTAL',t.pairs,t.rule_count,t.screen_count,t.inactive_pairs,
+ (SELECT COALESCE(sum(pairs),0) FROM groups)=t.pairs
+ FROM totals t
+) x
+ORDER BY x.is_total,x.bucket;
