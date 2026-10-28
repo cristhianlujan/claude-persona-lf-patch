@@ -1,5 +1,13 @@
 -- LF IG P10, PG17.6 isolated synthetic fixtures, no live credentials or PII.
 -- Exact baseline pg_get_functiondef read-only 2026-10-28; verify MD5 in PG.
+-- Fail before creating objects unless the isolated database is selected.
+DO $fixture_isolation$
+BEGIN
+ IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci' THEN
+  RAISE EXCEPTION 'IG_P10_FIXTURE_NOT_ISOLATED';
+ END IF;
+END
+$fixture_isolation$;
 CREATE SCHEMA programacion;
 CREATE SCHEMA lf_ops;
 CREATE TABLE lf_ops.pantallas(id integer PRIMARY KEY,module_id bigint,activa boolean NOT NULL DEFAULT true);
