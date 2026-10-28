@@ -73,7 +73,9 @@ BEGIN
 END
 $fn$;
 
--- The narrowly scoped SECURITY DEFINER entrypoint exposes read-only\n-- derivation to callers without granting EXECUTE on internal dispatcher functions.\n-- STABLE forbids database writes by this function and its callees.
+-- The narrowly scoped SECURITY DEFINER entrypoint exposes read-only
+-- derivation to callers without granting EXECUTE on internal dispatcher functions.
+-- STABLE forbids database writes by this function and its callees.
 DO $guard$
 DECLARE v_security_definer boolean; v_volatility char;
 BEGIN
@@ -86,4 +88,14 @@ BEGIN
 END
 $guard$;
 
--- Invocation authorization is deliberately narrow: no broad function grants.\nGRANT EXECUTE ON FUNCTION public.lf_router_pipeline_read_only_v1(text,jsonb)\n  TO supabase_read_only_user;\n\nCOMMIT;\n
+-- Invocation authorization is deliberately narrow: no broad function grants.
+DO $grant$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='supabase_read_only_user') THEN
+    GRANT EXECUTE ON FUNCTION public.lf_router_pipeline_read_only_v1(text,jsonb)
+      TO supabase_read_only_user;
+  END IF;
+END
+$grant$;
+
+COMMIT;
