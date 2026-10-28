@@ -215,7 +215,7 @@ export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): 
   if (
     eventName === "pull_request" &&
     payload.workflow_ref === edgeWorkflowRef &&
-    (payload.ref === "refs/heads/main" || /^refs\\/pull\\/[0-9]+\\/merge$/.test(String(payload.ref ?? "")))
+    (payload.ref === "refs/heads/main" || /^refs\/pull\/[0-9]+\/merge$/.test(String(payload.ref ?? "")))
   ) {
     return {
       method: "GITHUB_ACTIONS_OIDC_MAIN_EDGE_DEPLOY_MERGED_PR_V1",
