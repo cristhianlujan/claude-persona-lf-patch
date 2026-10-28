@@ -105,7 +105,9 @@ AS $function$
  UNION
  SELECT f.regla_id::bigint,'GLOBAL'::text
  FROM programacion.ig_n4_legacy_scope_frozen_v1 f
+ JOIN lf_ops.reglas r ON r.id=f.regla_id
  WHERE f.source_code='TREMED'
+   AND r.estado='VIGENTE'
    AND f.pantalla_id=p_pantalla_id
    AND EXISTS(SELECT 1 FROM lf_ops.pantallas WHERE id=p_pantalla_id)
    AND NOT EXISTS(
@@ -126,7 +128,8 @@ SET search_path TO 'pg_catalog','programacion','lf_ops'
 AS $guard$
 BEGIN
  IF TG_OP='INSERT' THEN
-  IF NEW.valor_config->'applicability_v1'->>'status'='ACTIVE'
+  IF NEW.estado='VIGENTE'
+   AND NEW.valor_config->'applicability_v1'->>'status'='ACTIVE'
   THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_NEW_ACTIVE_SELECTOR'
     USING ERRCODE='P0001'; END IF;
  ELSIF TG_OP='UPDATE' THEN
@@ -134,7 +137,8 @@ BEGIN
      AND EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas z WHERE z.regla_id=NEW.id)
   THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_CANDIDATE_PROMOTION'
     USING ERRCODE='P0001'; END IF;
-  IF NEW.valor_config->'applicability_v1'->>'status'='ACTIVE'
+  IF NEW.estado='VIGENTE'
+   AND NEW.valor_config->'applicability_v1'->>'status'='ACTIVE'
    AND (
     OLD.valor_config->'applicability_v1'
       IS DISTINCT FROM NEW.valor_config->'applicability_v1'
