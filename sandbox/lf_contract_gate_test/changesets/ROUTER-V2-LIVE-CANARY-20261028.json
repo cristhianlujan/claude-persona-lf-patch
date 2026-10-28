@@ -1,0 +1,6 @@
+{
+  "solution_ref": "ROUTER-V2-LIVE-CANARY-20261028",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router/router_v2_profile_admission_canary.py": "RUNTIME_TESTING"
+  }
+}
