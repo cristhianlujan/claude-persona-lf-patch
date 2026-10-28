@@ -68,6 +68,30 @@ BEGIN
   EXECUTE replace(d,anchor,replacement);
 END $patch$;
 
+-- A real, operation-scoped provenance execution is reserved by the authorized
+-- Migration Train transaction. This is migration audit, not per-query logging.
+-- Idempotent on retries and checked by the existing provenance guard.
+DO $router_provenance$
+DECLARE
+  v_id text := 'EXEC-ROUTER-CONTRACT-GATE2-20261028';
+  v_key text := 'lf-router-pipeline-context-gate2-integration-v1';
+  v_sha text := encode(extensions.digest(convert_to(v_key,'UTF8'),'sha256'),'hex');
+  v_result jsonb;
+BEGIN
+  v_result:=public.fn_lf_operation_reserve_execution_v1(
+    v_id,'EJECUCION_ROUTER_LF','DOC','ACT-0001',
+    v_key,v_sha,v_id,
+    'cristhianlujan/claude-persona-lf-patch',
+    'supabase/migrations/20261028020345_lf_router_pipeline_context_gate2_integration_v1.sql',
+    jsonb_build_object('purpose','GATE2_CONTRACT_MIGRATION_PROVENANCE',
+      'effect_authority',false,'deployment_route','LF_MIGRATION_MERGE_TRAIN')
+  );
+  IF v_result->>'result' NOT IN ('RESERVED_NEW_EXECUTION','REPLAY_EXISTING_EXECUTION')
+     OR v_result->>'execution_id' IS DISTINCT FROM v_id THEN
+    RAISE EXCEPTION 'BLOCK_ROUTER_CONTRACT_PROVENANCE_RESERVATION';
+  END IF;
+END $router_provenance$;
+
 INSERT INTO public.lf_operation_step_contracts
 (operation_code,step_id,step_order,execution_order,contract_code,purpose,input_required,
  resolver_ref,output_payload,pass_condition,block_condition,blocking_code,
@@ -85,7 +109,7 @@ SELECT 'EJECUCION_ROUTER_LF','profile_gate2',70,70,
        '["selected_profile_code","after_selection_sha256","gate2_derivation","gate2_sha256"]'::jsonb,
        'profile_execution_handoff','RETURN_TO_ORCHESTRATOR','ACTIVE_ENFORCEMENT',
        'Este paso solo se ejecuta si la ruta sellada lo requiere; no hace otra selección semántica. Gate 2 no autoriza efectos de canal ni bypass. El handoff debe ser validado por su propio contrato gobernado.',
-       'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
+       (SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028'),(SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028')
 WHERE NOT EXISTS (
   SELECT 1 FROM public.lf_operation_step_contracts
   WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2'
@@ -248,7 +272,7 @@ INSERT INTO public.lf_operation_steps
 SELECT 'EJECUCION_ROUTER_LF',70,'profile_gate2',false,
  'selected_profile_code; after_selection_sha256; gate2_derivation; gate2_sha256',
  'public.lf_operation_step_contracts/EJECUCION_ROUTER_LF/profile_gate2',
- NULL,true,70,'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
+ NULL,true,70,(SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028'),(SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028')
 WHERE NOT EXISTS (SELECT 1 FROM public.lf_operation_steps
  WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2');
 
@@ -260,7 +284,7 @@ SELECT 'EJECUCION_ROUTER_LF',70,'profile_gate2','JUDGE-EJECUCION-ROUTER-LF-v0.1'
  'STEP_PASS_WITH_EVIDENCE','BLOCKED_ROUTER_PIPELINE_NOT_CLEAN','RETURN_TO_ORCHESTRATOR',
  '["selected_profile_code","after_selection_sha256","gate2_derivation","gate2_sha256"]'::jsonb,
  'ACTIVE_ENFORCEMENT',
- 'EXEC-ROUTER-GATE2-MIGRATION-20261027','EXEC-ROUTER-GATE2-MIGRATION-20261027'
+ (SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028'),(SELECT execution_id FROM public.lf_operation_execution WHERE operation_code='EJECUCION_ROUTER_LF' AND idempotency_key='lf-router-pipeline-context-gate2-integration-v1' AND execution_id='EXEC-ROUTER-CONTRACT-GATE2-20261028')
 WHERE NOT EXISTS (SELECT 1 FROM public.lf_operation_step_judge_bindings
  WHERE operation_code='EJECUCION_ROUTER_LF' AND step_id='profile_gate2');
 
@@ -572,4 +596,3 @@ GRANT EXECUTE ON FUNCTION public.lf_router_pipeline_profile_semantic_prepare_v1(
 GRANT EXECUTE ON FUNCTION public.lf_router_pipeline_profile_semantic_submit_v1(text,text)
   TO supabase_read_only_user;
 
-COMMIT;
