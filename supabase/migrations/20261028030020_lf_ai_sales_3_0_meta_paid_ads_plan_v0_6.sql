@@ -180,13 +180,11 @@ BEGIN
       'operational_contract',cp.value->'operational_contract','origin','V0_6_META_PAID_ADS'))
  INTO v_inputs FROM jsonb_array_elements(v_new_unit->'checkpoints') AS cp(value);
 
- -- The plan_units table intentionally has no generated ID; allocate safely under an exclusive DML mutex.
- LOCK TABLE programacion.engineering_plan_units IN SHARE ROW EXCLUSIVE MODE;
- SELECT coalesce(max(id),0)+1 INTO v_new_plan_unit FROM programacion.engineering_plan_units;
+ -- plan_units.id is GENERATED ALWAYS AS IDENTITY; let PostgreSQL allocate it.
  INSERT INTO programacion.engineering_plan_units(
- id,plan_code,unit_code,unit_class,lot_code,lot_from,lot_to,title,exit_criterion,
+ plan_code,unit_code,unit_class,lot_code,lot_from,lot_to,title,exit_criterion,
  plan_event_id,work_item_id,created_by_execution_id,unit_metadata)
- VALUES(v_new_plan_unit,'AI_SALES_3_0','U17','EXECUTION','F2',18,18,
+ VALUES('AI_SALES_3_0','U17','EXECUTION','F2',18,18,
  'U17 — Meta Ads: campañas, publicación y optimización',
  'Sólo anuncios elegibles, validación de creatividad, permisos Meta y aprobación separada de gasto.',
  v_event,v_new_work,v_exec,jsonb_build_object(
@@ -195,7 +193,8 @@ BEGIN
  'no_runtime_activation',true,'separate_reviewer_required',false,
  'revision_v0_6',jsonb_build_object('event_id',v_event,'snapshot_digest',v_digest,'version','v0.6',
  'new_meta_ads_unit','U17','created_by_execution_id',v_exec,'media_spend_authorized',false,
- 'ad_creation_authorized',false,'no_runtime_activation',true)));
+ 'ad_creation_authorized',false,'no_runtime_activation',true)))
+ RETURNING id INTO v_new_plan_unit;
 
  IF (SELECT count(*) FROM programacion.engineering_plan_units WHERE plan_code='AI_SALES_3_0')<>18
  OR (SELECT count(*) FROM programacion.engineering_plan_units WHERE plan_code='AI_SALES_3_0'
