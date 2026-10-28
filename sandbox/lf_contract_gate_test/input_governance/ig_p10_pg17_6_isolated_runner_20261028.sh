@@ -5,10 +5,10 @@ set -euo pipefail
 umask 077
 command -v docker >/dev/null || { echo 'NO_VERIFICADO: docker not present'; exit 2; }
 here="$(cd "$(dirname "$0")" && pwd)"
-docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+docker run -i --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --read-only --tmpfs /tmp:rw,nosuid,nodev,size=256m \
   --user postgres --mount "type=bind,src=$here,dst=/ig,readonly" \
-  --entrypoint /bin/bash postgres:17.6 -ceu '
+  --entrypoint /bin/bash postgres:17.6 -seu <<'ISOLATED_SCRIPT'
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -ne 0 ]] || { echo "BLOCK: root"; exit 2; }
@@ -37,13 +37,13 @@ source=/ig/ig_p10_forward_only_scope_boundary_candidate_20261028.sql
  { echo "FAIL: unsafe candidate transaction boundary"; exit 1; }
 {
  echo "BEGIN;"
- awk '"'"'
+ awk '
   $0=="BEGIN;" {started++;inside=1;next}
   $0=="ROLLBACK;" {finished++;inside=0;next}
   inside {print}
   END {if(started!=1||finished!=1)exit 4}
- '"'"' "$source"
- cat <<'"'"'SQL'"'"'
+ ' "$source"
+ cat <<'SQL'
 DO $cases$
 DECLARE v_error text;
 BEGIN
@@ -139,18 +139,18 @@ for marker in HISTORICAL_PARITY PROMOTION_DENIED NEW_VIGENTE_LINK_DENIED \
 done
 readback="$(psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 -c "
 SELECT
- to_regclass('"'"'programacion.ig_n4_legacy_scope_frozen_v1'"'"') IS NULL,
- to_regprocedure('"'"'programacion.fn_ig_p10_forward_selector_admission_v1()'"'"') IS NULL,
- to_regprocedure('"'"'programacion.fn_ig_p10_forward_binding_admission_v1()'"'"') IS NULL,
- md5(pg_get_functiondef('"'"'programacion.fn_input_effective_rule_links_v1(integer,text)'"'"'::regprocedure))=
-  '"'"'156247a925d74c6f4accd7a6d2508489'"'"',
- md5(pg_get_functiondef('"'"'programacion.fn_t_remed_effective_rules_v1(integer,numeric)'"'"'::regprocedure))=
-  '"'"'ad5aecf15e12be5b55fdd1e8dac00295'"'"',
+ to_regclass('programacion.ig_n4_legacy_scope_frozen_v1') IS NULL,
+ to_regprocedure('programacion.fn_ig_p10_forward_selector_admission_v1()') IS NULL,
+ to_regprocedure('programacion.fn_ig_p10_forward_binding_admission_v1()') IS NULL,
+ md5(pg_get_functiondef('programacion.fn_input_effective_rule_links_v1(integer,text)'::regprocedure))=
+  '156247a925d74c6f4accd7a6d2508489',
+ md5(pg_get_functiondef('programacion.fn_t_remed_effective_rules_v1(integer,numeric)'::regprocedure))=
+  'ad5aecf15e12be5b55fdd1e8dac00295',
  (SELECT count(*)=3 FROM lf_ops.pantallas),
- (SELECT estado='"'"'CANDIDATO'"'"' FROM lf_ops.reglas WHERE id=200);
+ (SELECT estado='CANDIDATO' FROM lf_ops.reglas WHERE id=200);
 ")"
 [[ "$readback" == "t|t|t|t|t|t|t" ]] ||
  { echo "FAIL: rollback did not restore preimage: $readback"; exit 1; }
 grep -F "P10_CASE|" "$data/log.txt"
 echo "PASS_P10_FORWARD_BOUNDARY_PG17_6_9_CASES_ROLLBACK"
-'
+ISOLATED_SCRIPT
