@@ -8,17 +8,25 @@
 -- Future scope cannot be created from T-REMED frequency/PASS_GLOBAL.
 BEGIN;
 
--- Serialize snapshot creation against concurrent input changes before
--- inspecting any rows. Fail quickly rather than freezing inconsistent scope.
-SET LOCAL lock_timeout = '5s';
-LOCK TABLE lf_ops.reglas, lf_ops.reglas_pantallas, lf_ops.pantallas,
-  lf_ops.modulos IN SHARE MODE;
-
-DO $preflight$
+-- Environmental check MUST execute before acquiring locks, even in an
+-- accidentally misdirected session. Scope-source fingerprint is checked
+-- separately under the consistent source-table lock.
+DO $isolation$
 BEGIN
  IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci'
    OR current_setting('server_version_num')::integer <> 170006
- THEN RAISE EXCEPTION 'IG_P10_NOT_ISOLATED_PG17'; END IF;
+ THEN RAISE EXCEPTION 'IG_P10_NOT_ISOLATED_PG17_6'; END IF;
+END
+$isolation$;
+
+-- All tables of the two effective-reader dependency chains are included.
+-- In particular N-4 target-context reads app_shells via module.app_shell_id.
+SET LOCAL lock_timeout = '5s';
+LOCK TABLE lf_ops.reglas, lf_ops.reglas_pantallas, lf_ops.pantallas,
+  lf_ops.modulos, lf_ops.app_shells IN SHARE MODE;
+
+DO $preflight$
+BEGIN
  IF to_regclass('programacion.ig_n4_legacy_scope_frozen_v1') IS NOT NULL
  THEN RAISE EXCEPTION 'IG_P10_BASELINE_ALREADY_EXISTS'; END IF;
  IF md5(pg_get_functiondef('programacion.fn_input_effective_rule_links_v1(integer,text)'::regprocedure))
