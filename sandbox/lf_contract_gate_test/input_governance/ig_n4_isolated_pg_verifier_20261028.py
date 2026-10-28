@@ -66,7 +66,7 @@ def main() -> int:
         reject("BLOCK: candidate must end with ROLLBACK")
     if candidate.count("CREATE OR REPLACE FUNCTION") != 3:
         reject("BLOCK: expected exactly three N-4 functions in candidate")
-    if not re.search(r"\\bCREATE OR REPLACE FUNCTION\\b", candidate):
+    if not re.search(r"\bCREATE OR REPLACE FUNCTION\b", candidate):
         reject("BLOCK: function definitions not present")
     if not re.search(r"SELECT case_id,description,expected,actual,CASE", vectors):
         reject("BLOCK: vector reporting contract changed")
@@ -120,7 +120,7 @@ FROM (
     sql = "BEGIN;\n" + before + patch + "\n" + vectors + "\n" + after + "\nROLLBACK;\n"
     stdout = run_psql(sql, timeout=90)
     rows = stdout.splitlines()
-    fixture_rows = [x for x in rows if re.fullmatch(r"T[0-9]{2}\\|.*", x)]
+    fixture_rows = [x for x in rows if re.fullmatch(r"T[0-9]{2}\|.*", x)]
     if len(fixture_rows) != 27 or any(not x.endswith("|PASS") for x in fixture_rows):
         reject("FAIL: not all 27 synthetic tests passed in isolated PostgreSQL")
     matches = [x for x in rows if x.startswith("PARITY|")]
