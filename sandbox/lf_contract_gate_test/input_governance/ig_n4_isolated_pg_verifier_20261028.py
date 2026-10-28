@@ -58,6 +58,7 @@ def main() -> int:
     root = Path(__file__).resolve().parent
     candidate = (root / "ig_n4_clause_matcher_hardened_candidate_20261028.sql").read_text()
     vectors = (root / "ig_n4_preclass_synthetic_matcher_v2_20261028.sql").read_text()
+    fixture = (root / "ig_n4_pg17_6_sanitized_fixture_20261028.sql").read_text()
 
     if len(re.findall(r"^BEGIN;$", candidate, flags=re.MULTILINE)) != 1:
         reject("BLOCK: candidate does not declare a single outer BEGIN")
@@ -74,27 +75,30 @@ def main() -> int:
         "SELECT current_database(), "
         "coalesce(inet_server_addr()::text,'LOCAL_SOCKET'), "
         "current_setting('data_directory'), "
-        "pg_is_in_recovery()",
+        "pg_is_in_recovery(), current_setting('server_version_num')",
         timeout=15,
     ).strip().split("|")
-    if len(check) != 4 or check[0] != db or check[1] != "LOCAL_SOCKET":
+    if len(check) != 5 or check[0] != db or check[1] != "LOCAL_SOCKET":
         reject("BLOCK: not using the isolated database/socket")
     if Path(check[2]).resolve() != Path(data_dir).resolve() or check[3] != "f":
         reject("BLOCK: cluster data directory/recovery state mismatch")
+    if check[4] != "170006":
+        reject("BLOCK: isolated PostgreSQL 17.6 required to preserve source MD5")
+    # The baseline is sanitized: only screen id/module code/app shell code and
+    # existing declarative selector JSON. No live Supabase data is queried here.
+    run_psql(fixture, timeout=50)
 
     start = candidate.index("\nBEGIN;") + len("\nBEGIN;")
     end = candidate.rfind("ROLLBACK;")
     patch = candidate[start:end]
     before = """
 CREATE TEMP TABLE ig_n4_preimage ON COMMIT DROP AS
-SELECT r.id AS rule_id, p.id AS screen_id,
+SELECT r.rule_id,p.screen_id,
  programacion.fn_input_rule_selector_matches_v1(
-   r.valor_config->'applicability_v1',
-   programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
+   r.selector,p.context
  ) AS old_match
-FROM lf_ops.reglas r CROSS JOIN lf_ops.pantallas p
-WHERE r.estado='VIGENTE'
- AND r.valor_config->'applicability_v1'->>'status'='ACTIVE';
+FROM public.ig_n4_rule_fixtures r
+CROSS JOIN public.ig_n4_screen_fixtures p;
 """
     after = """
 SELECT 'PARITY',
@@ -106,12 +110,11 @@ SELECT 'PARITY',
  count(DISTINCT screen_id)
 FROM (
  SELECT a.*,programacion.fn_input_rule_selector_matches_v1(
-   r.valor_config->'applicability_v1',
-   programacion.fn_input_rule_target_context_v1(p.id,'INPUT_GOVERNANCE')
+   r.selector,p.context
  ) AS new_match
  FROM ig_n4_preimage a
- JOIN lf_ops.reglas r ON r.id=a.rule_id
- JOIN lf_ops.pantallas p ON p.id=a.screen_id
+ JOIN public.ig_n4_rule_fixtures r ON r.rule_id=a.rule_id
+ JOIN public.ig_n4_screen_fixtures p ON p.screen_id=a.screen_id
 ) results;
 """
     sql = "BEGIN;\n" + before + patch + "\n" + vectors + "\n" + after + "\nROLLBACK;\n"
