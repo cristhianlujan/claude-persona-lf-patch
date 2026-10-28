@@ -44,6 +44,31 @@ source=/ig/ig_p10_forward_only_scope_boundary_candidate_20261028.sql
   END {if(started!=1||finished!=1)exit 4}
  ' "$source"
  cat <<'SQL'
+-- Mandatory real lock observation, in the same transaction as the snapshot.
+-- This is not a catalog projection: pg_locks must show all five SHARE grants.
+DO $snapshot_lock_assert$
+DECLARE acquired integer;
+BEGIN
+ SELECT count(*) INTO acquired FROM (
+   SELECT unnest(ARRAY[
+     'lf_ops.reglas'::regclass,
+     'lf_ops.reglas_pantallas'::regclass,
+     'lf_ops.pantallas'::regclass,
+     'lf_ops.modulos'::regclass,
+     'lf_ops.app_shells'::regclass
+   ]) AS target
+ ) sources
+ WHERE EXISTS(
+   SELECT 1 FROM pg_locks l
+   WHERE l.pid=pg_backend_pid() AND l.relation=sources.target
+     AND l.mode='ShareLock' AND l.granted IS TRUE
+ );
+ IF acquired<>5 THEN
+   RAISE EXCEPTION 'P10_REQUIRED_SNAPSHOT_LOCKS_MISSING:%',acquired;
+ END IF;
+ RAISE NOTICE 'P10_CASE|SNAPSHOT_LOCKS_HELD|PASS';
+END
+$snapshot_lock_assert$;
 DO $cases$
 DECLARE v_error text;
 BEGIN
@@ -143,7 +168,7 @@ SQL
 } | psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 > "$data/log.txt" 2>&1 ||
  { cat "$data/log.txt"; echo "FAIL: isolated P10 execution"; exit 1; }
 
-for marker in HISTORICAL_PARITY PROMOTION_DENIED NEW_VIGENTE_LINK_DENIED \
+for marker in SNAPSHOT_LOCKS_HELD HISTORICAL_PARITY PROMOTION_DENIED NEW_VIGENTE_LINK_DENIED \
  NEW_ACTIVE_DENIED SELECTOR_CHANGE_DENIED CANDIDATE_AUTHORING_ALLOWED \
  CANDIDATE_LINK_REVIEW_ONLY UNLINKED_NO_GLOBAL NEW_SCREEN_NO_IMPLICIT_GLOBAL REVOCATION_ALLOWED; do
  [[ "$(grep -Fc "P10_CASE|$marker|PASS" "$data/log.txt")" -eq 1 ]] ||
@@ -164,5 +189,5 @@ SELECT
 [[ "$readback" == "t|t|t|t|t|t|t" ]] ||
  { echo "FAIL: rollback did not restore preimage: $readback"; exit 1; }
 grep -F "P10_CASE|" "$data/log.txt"
-echo "PASS_P10_FORWARD_BOUNDARY_PG17_6_10_CASES_ROLLBACK"
+echo "PASS_P10_FORWARD_BOUNDARY_PG17_6_11_CASES_ROLLBACK"
 ISOLATED_SCRIPT
