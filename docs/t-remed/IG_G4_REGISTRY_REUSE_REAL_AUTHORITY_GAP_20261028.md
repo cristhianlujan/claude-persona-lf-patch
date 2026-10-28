@@ -87,3 +87,13 @@ Se ejecutó `sandbox/lf_contract_gate_test/input_governance/ig_g3_n4_acl_baselin
 - **G5 reclasificación:** NO_RECLASSIFY. Nada en este documento autoriza tocar `DERIVED_GLOBAL`, crear reglas/policies o activar `human_decisions`.
 
 Próxima dependencia concreta: ratificar **qué fuente canónica expresa la competencia por regla** y cómo se proyecta al clasificador central sin aceptar entradas autoprovistas; solo después propuesta de actualización controlada del registro de políticas, con tests del resolver en ambiente autorizado y política de multiautoridad.
+
+## 7. EKB de escalamiento: evitar aprobación humana prematura
+
+Verificación adicional EKB: `IG-TARGETED-EVIDENCE-BEFORE-HUMAN-ESCALATION-001` exige intentar obtener **evidencia que cambie la decisión** antes de abrir un flujo humano por una simple recomendación; `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001` distingue construcción sandbox de autorización operativa. Por ello, la clasificación `RULE_APPLICABILITY_CHANGE` debe distinguir:
+- **INFORMACIÓN_INSUFICIENTE:** adquirir evidencia puntual, no elevar automáticamente a gerencia.
+- **CONFLICTO_FUNCIONAL_O_NORMATIVO / EXCEPCIÓN:** derivar a especialista cuando el contrato vigente admita un acto humano con competencia demostrada.
+- **APROBACIÓN_DE_PUBLICACIÓN:** paso distinto; exige recibo auténtico, head y scope hashes, y autorización técnica posterior. No inferirlo de un `ACCEPT_PROPOSAL` de brecha.
+
+El adaptador no debe agregar una cola indiscriminada a cada evaluación de pantalla ni activar nuevos workflows sin el dueño de LF.
+
