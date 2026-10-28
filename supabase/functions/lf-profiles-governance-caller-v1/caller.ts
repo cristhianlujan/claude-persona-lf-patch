@@ -202,7 +202,7 @@ export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): 
   if (
     payload.ref === "refs/heads/main" &&
     payload.workflow_ref === nativeContinuationWorkflowRef &&
-    payload.event_name === "workflow_dispatch" &&
+    (payload.event_name === "workflow_dispatch" || payload.event_name === "issues") &&
     payload.environment === "lf-edge-deploy"
   ) {
     return {
