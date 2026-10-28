@@ -3,7 +3,8 @@
 -- Fail before creating objects unless the isolated database is selected.
 DO $fixture_isolation$
 BEGIN
- IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci' THEN
+ IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci'
+    OR current_setting('server_version_num')::integer <> 170006 THEN
   RAISE EXCEPTION 'IG_P10_FIXTURE_NOT_ISOLATED';
  END IF;
 END
