@@ -1,6 +1,8 @@
 # LF Input Governance — protocolo de validación del modelo ANTES de reclasificar
 **Versión de diseño:** v2 candidato · 2026-10-28 · **Estado:** SPEC ONLY / NO RECLASS / NO SUPABASE WRITES.
 
+> **EJECUCIÓN PARCIAL G3 (2026-10-28):** Se ejecutaron 23 pruebas SQL de matcher N-4: 18 PASS, 5 FAIL contra el contrato objetivo. **Esto NO completa los 14 escenarios S01–S14** (conflictos, autoridad, consumer operativo, G4). Ver [resultados](./IG_N4_TREMED_G3_RESULTADOS_PRUEBAS_SELECTORES_V21_20261028.md) y [adenda de diseño v2.1](./IG_N4_TREMED_G2_AUDITORIA_Y_AJUSTES_DE_CONTRATO_V21_20261028.md). No iniciar G5.
+
 ## 1. Cambio de dependencias
 
 El lote A anterior procedió con inventarios y clasificación estructural antes de ratificar la estrategia. Ese trabajo es evidencia histórica **no resultado de reclasificación**. A partir de este documento, el gate correcto de inicio de análisis del catálogo es:
