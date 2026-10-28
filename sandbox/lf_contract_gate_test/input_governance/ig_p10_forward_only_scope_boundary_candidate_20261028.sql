@@ -8,10 +8,16 @@
 -- Future scope cannot be created from T-REMED frequency/PASS_GLOBAL.
 BEGIN;
 
+-- Serialize snapshot creation against concurrent input changes before
+-- inspecting any rows. Fail quickly rather than freezing inconsistent scope.
+SET LOCAL lock_timeout = '5s';
+LOCK TABLE lf_ops.reglas, lf_ops.reglas_pantallas, lf_ops.pantallas,
+  lf_ops.modulos IN SHARE MODE;
+
 DO $preflight$
 BEGIN
  IF current_database() IS DISTINCT FROM 'lf_ig_n4_isolated_ci'
-   OR current_setting('server_version_num')::integer < 170000
+   OR current_setting('server_version_num')::integer <> 170006
  THEN RAISE EXCEPTION 'IG_P10_NOT_ISOLATED_PG17'; END IF;
  IF to_regclass('programacion.ig_n4_legacy_scope_frozen_v1') IS NOT NULL
  THEN RAISE EXCEPTION 'IG_P10_BASELINE_ALREADY_EXISTS'; END IF;
@@ -19,15 +25,13 @@ BEGIN
    IS DISTINCT FROM '156247a925d74c6f4accd7a6d2508489'
  OR md5(pg_get_functiondef('programacion.fn_t_remed_effective_rules_v1(integer,numeric)'::regprocedure))
    IS DISTINCT FROM 'ad5aecf15e12be5b55fdd1e8dac00295'
+ OR md5(pg_get_functiondef('programacion.fn_t_remed_global_rules_v1(numeric)'::regprocedure))
+   IS DISTINCT FROM '7d8b7a58f16bc5b53867c3322fd1befb'
+ OR md5(pg_get_functiondef('programacion.fn_t_remed_scope_judge_v1(numeric)'::regprocedure))
+   IS DISTINCT FROM '433445c108c36b25cf26f5a1bddb7a99'
  THEN RAISE EXCEPTION 'IG_P10_SOURCE_DRIFT_BEFORE_FREEZE'; END IF;
 END
 $preflight$;
-
--- Serialize snapshot creation against concurrent input changes before
--- inspecting any rows. Fail quickly rather than freezing inconsistent scope.
-SET LOCAL lock_timeout = '5s';
-LOCK TABLE lf_ops.reglas, lf_ops.reglas_pantallas, lf_ops.pantallas,
-  lf_ops.modulos IN SHARE MODE;
 
 -- Fail before freeze if raw physical bindings are ambiguous. A frozen
 -- historical pair is NOT authority; duplication also breaks exact parity.
