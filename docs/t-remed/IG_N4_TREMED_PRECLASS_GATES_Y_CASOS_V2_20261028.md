@@ -1,6 +1,8 @@
 # LF Input Governance — protocolo de validación del modelo ANTES de reclasificar
 **Versión de diseño:** v2 candidato · 2026-10-28 · **Estado:** SPEC ONLY / NO RECLASS / NO SUPABASE WRITES.
 
+> **RESULTADO NUEVO DE ENSAYOS PARCIALES:** La ronda sintética se amplió a **27 vectores**, con **18 PASS/9 FAIL** del matcher vigente y **27/27** de sombra SQL SELECT. Pruebas aisladas de decisiones/conflictos **35/35**, no integración. G3, G4 y G5 **NO están cerrados**. Consultar [informe](./IG_N4_G2_G3_TRABAJO_TECNICO_VALIDACION_20261028.md). No reinterpretar el registro histórico 23-vector de los apartados originales como estado final.
+
 > **EJECUCIÓN PARCIAL G3 (2026-10-28):** Se ejecutaron 23 pruebas SQL de matcher N-4: 18 PASS, 5 FAIL contra el contrato objetivo. **Esto NO completa los 14 escenarios S01–S14** (conflictos, autoridad, consumer operativo, G4). Ver [resultados](./IG_N4_TREMED_G3_RESULTADOS_PRUEBAS_SELECTORES_V21_20261028.md) y [adenda de diseño v2.1](./IG_N4_TREMED_G2_AUDITORIA_Y_AJUSTES_DE_CONTRATO_V21_20261028.md). No iniciar G5.
 
 ## 1. Cambio de dependencias
