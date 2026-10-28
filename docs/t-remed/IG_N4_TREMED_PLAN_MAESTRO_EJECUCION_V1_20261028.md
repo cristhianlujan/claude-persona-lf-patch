@@ -116,3 +116,11 @@ No solicitar permiso para lectura, investigación, pruebas de sandbox o edición
 - `IG_G4_PAQUETE_REVISION_CONJUNTA_AUTORIDAD_POR_REGLA_20261028.md` y `IG_G4_REGISTRY_REUSE_REAL_AUTHORITY_GAP_20261028.md`.
 - `IG_N4_G3_ACL_HANDOFF_REVISION_INDEPENDIENTE_V3_20261028.md`, con hashes exactos de G3.
 - EKB leído vivo: `IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001`, `INPUT-GOV-CONSUMER-BINDING-001`, `CI-MIGRATION-SOURCE-PARITY-001`, `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`, `IG-TARGETED-EVIDENCE-BEFORE-HUMAN-ESCALATION-001`.
+
+## 10. Adenda de ejecución P08/P10 — descubrimiento nuevo sin cambio de gates
+
+Se completó lectura de fuentes reales de `fn_t_remed_promote_v1` (dos sobrecargas), `fn_t_remed_promote_v3`, `fn_t_remed_rule_promotion_verdicts_v1`, `fn_t_remed_global_rules_v1` y `fn_input_effective_rule_links_v1`. Evidencia y casos negativos: [P08/P10: promoción técnica no autoriza scope](./IG_N4_P08_P10_MAPEO_CONSUMIDORES_PROMOCION_RIESGO_NO_SCOPE_20261028.md).
+
+**Riesgo condicional concreto:** la promoción de una regla sin selector a `VIGENTE` puede colocarla en el resolvedor global por frecuencia, porque la rama `DERIVED_GLOBAL` no verifica un selector N-4. Corte SELECT: 166 reglas CANDIDATO sin selector objeto, 18 con al menos 5 vínculos físicos, 12 con al menos 15 de las 58 pantallas (umbral 25%). No implica que esas 12 tengan `verdict=PASS`: la consulta de veredictos fue denegada por ACL, SQLSTATE 42501. **P10 permanece NO HECHO formalmente y se prioriza su cierre técnico antes de integración**; P08 sigue PARCIAL. No promover ninguna regla ni inferir autoridad.
+
+**Progreso documental confirmado:** H01–H21 correlacionadas con escenarios o brechas en [trazabilidad G0–G2](./IG_N4_G0_G2_TRAZABILIDAD_H01_H21_S01_S14_V1_20261028.md). Nueve contrapruebas de integración propuestas, todavía NO EJECUTADAS. La clasificación de estado G0–G5 y P00–P12 no se altera por publicar estos documentos.
