@@ -1,5 +1,7 @@
 # LF Input Governance — G3 prueba efectiva PostgreSQL 17.6 aislada
 
+> **ACL basales verificadas (28-10-2026):** [SQL de nueve roles](../../sandbox/lf_contract_gate_test/input_governance/ig_g3_n4_acl_baseline_readonly_20261028.sql) ejecutado con `WITH ... AS MATERIALIZED`: 3/3 roles públicos sin acceso efectivo, 6/6 roles técnicos con acceso, cero desvíos y helper nuevo no desplegado. **No** certifica ACL tras DDL candidata: requiere prueba aislada con roles y revisor independiente. [Informe G4](./IG_G4_REGISTRY_REUSE_REAL_AUTHORITY_GAP_20261028.md).
+
 **Fecha:** 2026-10-28 · **PR:** #3269 · **Resultado técnico aislado:** `PASS` · **G3 global:** `PARCIAL` · **G4:** `NO_VERIFICADO` · **G5:** `NO_RECLASSIFY`.
 
 ## 1. Evidencia externa de ejecución (no solo simulación)
