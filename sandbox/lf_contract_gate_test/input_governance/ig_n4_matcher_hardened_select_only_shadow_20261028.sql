@@ -31,7 +31,8 @@ WITH fixtures(case_id,description,selector,context,expected) AS MATERIALIZED (
     ('T24'::text,'Malformed second OR clause must not be ignored'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[],"any":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"},{"path":["target","screen","mode"],"op":"EQ","value":"REAL","unknown_required_guard":true}]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"screen":{"mode":"REAL"}}}'::jsonb,false),
     ('T25'::text,'Null second OR clause must fail schema validation'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[],"any":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"},{"path":["target","screen","unused"],"op":"EQ","value":null}]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"screen":{"mode":"REAL"}}}'::jsonb,false),
     ('T26'::text,'Unsupported second OR operator must not be ignored'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["INPUT_GOVERNANCE"],"all":[],"any":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"},{"path":["target","screen","mode"],"op":"GREATER","value":"A"}]}'::jsonb,'{"consumer_role":"INPUT_GOVERNANCE","target":{"screen":{"mode":"REAL"}}}'::jsonb,false),
-    ('T27'::text,'Consumer role values must be strings'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":[42],"all":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"}]}'::jsonb,'{"consumer_role":"42","target":{"screen":{"mode":"REAL"}}}'::jsonb,false)
+    ('T27'::text,'Consumer role values must be strings'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":[42],"all":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"}]}'::jsonb,'{"consumer_role":"42","target":{"screen":{"mode":"REAL"}}}'::jsonb,false),
+    ('T28'::text,'Context consumer role must be a text value'::text,'{"schema_version":"lf-rule-applicability/v1","status":"ACTIVE","consumer_roles":["42"],"all":[{"path":["target","screen","mode"],"op":"EQ","value":"REAL"}]}'::jsonb,'{"consumer_role":42,"target":{"screen":{"mode":"REAL"}}}'::jsonb,false)
 ),
 selector_struct AS MATERIALIZED (
  SELECT f.*,
@@ -104,6 +105,7 @@ shadow AS (
  OR f.selector->>'status' IS DISTINCT FROM 'ACTIVE'
  OR EXISTS(SELECT 1 FROM jsonb_object_keys(f.selector) k(key)
    WHERE k.key NOT IN('schema_version','status','consumer_roles','all','any','provenance'))
+ OR jsonb_typeof(f.context->'consumer_role') IS DISTINCT FROM 'string'
  OR jsonb_typeof(f.selector->'consumer_roles') IS DISTINCT FROM 'array'
  OR jsonb_array_length(f.roles)=0
  OR EXISTS(SELECT 1 FROM jsonb_array_elements(f.roles) x(value)
