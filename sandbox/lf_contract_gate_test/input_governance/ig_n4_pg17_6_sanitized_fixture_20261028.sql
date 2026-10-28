@@ -51,7 +51,7 @@ begin
 
   return false;
 end;
-$function$
+$function$;
 
 
 -- PREIMAGE programacion.fn_input_rule_selector_matches_v1(jsonb,jsonb) md5 3b912c7872aceff83de24e9e8d1ad934
@@ -108,7 +108,7 @@ begin
 
   return true;
 end;
-$function$
+$function$;
 
 DROP TABLE IF EXISTS public.ig_n4_rule_fixtures;
 DROP TABLE IF EXISTS public.ig_n4_screen_fixtures;
