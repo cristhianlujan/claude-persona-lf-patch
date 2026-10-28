@@ -133,6 +133,13 @@ BEGIN
   THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_NEW_ACTIVE_SELECTOR'
     USING ERRCODE='P0001'; END IF;
  ELSIF TG_OP='UPDATE' THEN
+  -- A VIGENTE rule changing selector semantics can revoke historical scope
+  -- or expand operational scope. Neither is an unreviewed text edit.
+  IF OLD.estado='VIGENTE' AND NEW.estado='VIGENTE'
+     AND OLD.valor_config->'applicability_v1'
+           IS DISTINCT FROM NEW.valor_config->'applicability_v1'
+  THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_SELECTOR_CHANGE'
+    USING ERRCODE='P0001'; END IF;
   IF NEW.estado='VIGENTE' AND OLD.estado IS DISTINCT FROM NEW.estado
      AND EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas z WHERE z.regla_id=NEW.id)
   THEN RAISE EXCEPTION 'IG_P10_SCOPE_AUTHORITY_REQUIRED_ON_CANDIDATE_PROMOTION'
