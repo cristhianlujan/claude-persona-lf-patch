@@ -57,6 +57,7 @@ awk '"'"'
   END { if(start!=1 || finish!=1) exit 5 }
 '"'"' /ig/ig_n4_clause_matcher_hardened_candidate_20261028.sql
 cat /ig/ig_n4_preclass_synthetic_matcher_v2_20261028.sql
+cat /ig/ig_n4_pg17_6_acl_postddl_tests_20261028.sql
 cat <<'"'"'SQL'"'"'
 SELECT '"'"'PARITY'"'"',
  count(*),
@@ -80,6 +81,8 @@ SQL
 if grep -E "^T[0-9]{2}\|" "$out" | grep -Evq "\|PASS$"; then
   echo "FAIL: matcher vector mismatch"; exit 1
 fi
+grep -Fxq "ACL_G3_POST_DDL|PASS" "$out" ||
+  { echo "FAIL: isolated ACL probe missing"; exit 1; }
 grep -Fxq "PARITY|812|52|52|0|14|58" "$out" ||
   { echo "FAIL: active-selector parity mismatch"; exit 1; }
 readback="$(psql -X -w -A -t -F "|" -v ON_ERROR_STOP=1 -c "
@@ -93,6 +96,6 @@ SELECT md5(pg_get_functiondef(
 [[ "$readback" == "3b912c7872aceff83de24e9e8d1ad934|1123257c0c6c7eb1e2aa26783f3ccc0a|t" ]] ||
   { echo "FAIL: post-ROLLBACK source changed"; exit 1; }
 
-echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK"
+echo "PASS_G3_PG17_6_ISOLATED_28_VECTORS_812_PARITY_ROLLBACK_ACL_SIMULATED"
 echo "PARITY|812|52|52|0|14|58"
 '
