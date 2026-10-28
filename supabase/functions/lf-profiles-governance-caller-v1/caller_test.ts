@@ -68,7 +68,7 @@ const EDGE_MERGED_PR_CLAIMS: JwtPayload = {
   repository_id: REPO_ID,
   ref: REF,
   workflow_ref: `${REPO}/.github/workflows/lf-edge-deploy-credential-readback.yml@${REF}`,
-  event_name: "pull_request",
+  event_name: "workflow_run",
   run_id: "9005",
   workflow_sha: SHA,
 };
