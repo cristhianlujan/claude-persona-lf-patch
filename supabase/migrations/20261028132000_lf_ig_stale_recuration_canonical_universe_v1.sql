@@ -72,6 +72,41 @@ begin
   then
     raise exception 'IG_STALE_RECURATION_CANONICAL_UNIVERSE_BINDING_INVALID:parent=%',v_parent.id;
   end if;
+  -- The registry and the exact predecessor must agree on the entire
+  -- family identity set, not merely the count. Stable cardinality with
+  -- replacement family still fails closed. Pin the original universe SHA.
+  if exists (
+       select x.code
+       from jsonb_object_keys(
+         (select c.especificacion->'families'
+          from programacion.contratos c
+          where c.version_id=v_version
+            and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY'
+            and c.estado='defined' and c.fail_closed
+          order by c.id desc limit 1)
+       ) x(code)
+       except
+       select y.value from jsonb_array_elements_text(v_family_list) y(value)
+     )
+     or exists (
+       select y.value from jsonb_array_elements_text(v_family_list) y(value)
+       except
+       select x.code
+       from jsonb_object_keys(
+         (select c.especificacion->'families'
+          from programacion.contratos c
+          where c.version_id=v_version
+            and c.contrato_codigo='INPUT_FAMILY_POLICY_REGISTRY'
+            and c.estado='defined' and c.fail_closed
+          order by c.id desc limit 1)
+       ) x(code)
+     )
+     or programacion.fn_v09_sha256_jsonb(
+       jsonb_build_object('rule_code',v_rule_code,'families',v_family_list)
+     ) is distinct from v_parent.universe_snapshot_sha256
+  then
+    raise exception 'IG_STALE_RECURATION_CANONICAL_UNIVERSE_SNAPSHOT_DRIFT:parent=%',v_parent.id;
+  end if;
   v_graph:=programacion.fn_input_screen_canonical_graph(p_pantalla_id,v_version);
   insert into programacion.input_readiness_runs(version_id,pantalla_id,universe_rule_id,supersedes_run_id,status,scope,universe_snapshot_sha256,family_count,contract_version,curator_identity,curator_component_id)
   values(v_parent.version_id,v_parent.pantalla_id,v_parent.universe_rule_id,v_parent.id,'CURATING',v_parent.scope || jsonb_build_object('mode','RUNTIME_GOVERNED_RECURATION_V2','parent_run_id',v_parent.id,'reason','SOURCE_STALE_RECURATION','successor_strategy','REBUILD_CHANGED_SOURCES','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','remediation_decision','DEC-INPUT-GOV-SELF-REMEDIATE-001','remediation_policy_revision','POSITIVE_OWNER_AUTHORITY_V1','runtime','input-governance-curator-v1','source_stale_proof','INPUT_FRESHNESS_DELTA_V1','source_stale_affected_family_count',v_affected,'classifier_mode','CACHED_CANONICAL_GRAPH_EQUIVALENT','promotion_authorized',false,'production_authorized',false),v_parent.universe_snapshot_sha256,v_parent.family_count,v_contract_schema,p_curator_identity,v_curator_component) returning id into v_new;
@@ -100,6 +135,7 @@ BEGIN
     OR position('IG_STALE_RECURATION_CANONICAL_UNIVERSE_BINDING_INVALID' IN v_def)=0
     OR position('v_parent.universe_rule_id' IN v_def)=0
     OR position('v_registry_count' IN v_def)=0
+    OR position('IG_STALE_RECURATION_CANONICAL_UNIVERSE_SNAPSHOT_DRIFT' IN v_def)=0
     OR position('B2B-RULE-STORY-READINESS-001' IN v_def)>0
  THEN RAISE EXCEPTION 'IG_STALE_RECURATION_UNIVERSE_POSTCHECK_FAILED'; END IF;
 END $verify$;
