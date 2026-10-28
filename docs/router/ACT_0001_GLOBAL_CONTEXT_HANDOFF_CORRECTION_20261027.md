@@ -1,6 +1,6 @@
 # ACT-0001 — Corrección del contrato global de contexto y handoff
 
-Estado: PROPUESTA DE CORRECCIÓN; SIN DESPLIEGUE. Origen: revisión directa de funciones desplegadas y migración 20261028020345_lf_router_pipeline_context_gate2_integration_v1.sql.
+Estado: IMPLEMENTACIÓN CANDIDATA EN PR #3234; pendiente de LF Migration Merge Train y regresión postdespliegue. Origen: revisión directa de funciones desplegadas y migración 20261028020345_lf_router_pipeline_context_gate2_integration_v1.sql.
 
 ## Errores concretos detectados
 1. La bifurcación `session_user='supabase_read_only_user'` en las funciones `lf_router_pipeline_begin_v1`, `lf_router_pipeline_stage1_submit_v1`, `lf_router_pipeline_profile_semantic_prepare_v1` y `lf_router_pipeline_profile_semantic_submit_v1` determina el modo de transporte por identidad técnica del llamador, no por contrato ni transición. Una solicitud funcional equivalente puede recorrer rutas diferentes por usar otro rol.
@@ -33,3 +33,10 @@ No es correcto sustituir globalmente `READ_ONLY_CONTEXT` por `CONTEXT_TRANSPORT`
 - Migración aplicada: `supabase/migrations/20261028020345_lf_router_pipeline_context_gate2_integration_v1.sql`.
 - `lf_router_action_registry`: `PERFIL/PROFILE_EXECUTION → EJECUCION_PERFIL_LF`, ACTIVE, write_allowed=false.
 - El caso de Login B2B produjo `READ_ONLY_GATE2_DERIVED_NOT_AUTHORIZED` con `gate2_derivation.status='READY'` y `effect_authority=false`. No se autorizó ni ejecutó el perfil.
+
+## Implementación candidata V2
+- Migración: `supabase/migrations/20261028225500_lf_router_global_context_contract_v2.sql`.
+- Entradas separadas `lf_router_pipeline_context_*_v2`, con `RCTX2:` y nombres neutrales; V1 conservado.
+- `lf_router_pipeline_context_profile_admit_v2(jsonb,text)` revalida Stage 1, ruta, transición, catálogo/selección, after-selection y Gate 2, consulta `lf_router_action_registry` y reutiliza el materializador gobernado existente.
+- Admisión otorgada únicamente a `service_role`, no a `supabase_read_only_user`; el token no autoriza efectos.
+- PENDIENTE: validación real de migración por Train y regresión de los pasos desplegados. No declarar PASS funcional por revisión estática.
