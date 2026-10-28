@@ -1,4 +1,5 @@
 import {CP2_PREFLIGHT_ACTION, CP2_EXECUTE_ACTION, Cp2Fault, executeCp2} from "./cp2_edge_bridge.ts";
+import { PROFILE_CONTINUATION_ACTIONS, handleProfileContinuation } from "./profile_continuation.ts";
 export const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 export const OIDC_AUDIENCE = "lf-profiles-governance-caller-v1";
 
@@ -6,6 +7,7 @@ const LEGACY_BRANCH = "governance/profiles-unblock-secure-caller-20260901";
 const LEGACY_REF = `refs/heads/${LEGACY_BRANCH}`;
 const LEGACY_WORKFLOW_NAME = "LF Profiles Governance Caller";
 const LEGACY_WORKFLOW_FILE = "lf-profiles-governance-caller.yml";
+const NATIVE_CONTINUATION_WORKFLOW_FILE = "lf-governed-profile-native-continuation.yml";
 const RECURATION_ACTION = "input_readiness_recurate_v1";
 const RECURATION_POLL_ACTION = "input_readiness_poll_v1";
 const CONTEXT_PACK_ACTION = "input_readiness_context_pack_v1";
@@ -64,7 +66,7 @@ type OidcIdentity = {
   method: string;
   ref: string;
   workflowRef: string;
-  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY";
+  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY" | "PROFILE_NATIVE_CONTINUATION_ONLY";
 };
 
 type RuntimeDeps = {
@@ -195,6 +197,21 @@ function legacyWorkflowRef(config: CallerConfig): string {
 
 export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): OidcIdentity {
   const legacyRef = legacyWorkflowRef(config);
+  const nativeContinuationWorkflowRef =
+    `${config.repository}/.github/workflows/${NATIVE_CONTINUATION_WORKFLOW_FILE}@refs/heads/main`;
+  if (
+    payload.ref === "refs/heads/main" &&
+    payload.workflow_ref === nativeContinuationWorkflowRef &&
+    payload.event_name === "workflow_dispatch" &&
+    payload.environment === "lf-edge-deploy"
+  ) {
+    return {
+      method: "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1",
+      ref: "refs/heads/main",
+      workflowRef: nativeContinuationWorkflowRef,
+      scope: "PROFILE_NATIVE_CONTINUATION_ONLY",
+    };
+  }
   if (
     payload.ref === LEGACY_REF &&
     payload.workflow_ref === legacyRef &&
@@ -627,6 +644,14 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       const action = typeof body.action === "string" ? body.action : "";
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
+      const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
+      const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
+      if (isNativeContinuationIdentity && !isNativeContinuationAction) {
+        return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
+      }
+      if (isNativeContinuationAction && !isNativeContinuationIdentity) {
+        return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_EXACT_OIDC_IDENTITY_REQUIRED" }, 403);
+      }
       const isCp2Action = action === CP2_PREFLIGHT_ACTION || action === CP2_EXECUTE_ACTION;
       if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
         return json({outcome: "BLOCKED", code: "CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED"}, 403);
@@ -662,6 +687,16 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         workflow_sha: workflowSha,
       };
       if (isRecurationIdentity) caller.workflow_name = config.recurationWorkflowName;
+
+      if (isNativeContinuationAction) {
+        return await handleProfileContinuation(
+          action,
+          body,
+          config,
+          deps.fetchFn,
+          String(claims.workflow_sha),
+        );
+      }
 
       if (isCp2Action) {
         // Authorization is rechecked via the canonical read-only release context
