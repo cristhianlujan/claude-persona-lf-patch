@@ -67,7 +67,7 @@ const NATIVE_CONTINUATION_CLAIMS: JwtPayload = {
   repository: REPO,
   repository_id: REPO_ID,
   ref: REF,
-  workflow_ref: `${REPO}/.github/workflows/lf-governed-profile-native-continuation.yml@${REF}`,
+  workflow_ref: `${REPO}/.github/workflows/lf-edge-deploy-credential-readback.yml@${REF}`,
   event_name: "workflow_dispatch",
   environment: "lf-edge-deploy",
   run_id: "9021",
