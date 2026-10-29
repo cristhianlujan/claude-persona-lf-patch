@@ -45,6 +45,21 @@ DECLARE
       SELECT 1
       FROM programacion.input_readiness_runs r
       JOIN programacion.input_family_assessments a ON a.run_id=r.id
+      -- A valid run+family alone is not an entitlement to challenge it.
+      -- Bind to the exact IG receipt consumed by this profile execution.
+      JOIN public.lf_operation_execution e
+        ON e.execution_id=p_execution_id
+       AND e.operation_code='EJECUCION_PERFIL_LF'
+       AND e.target_type='PERFIL'
+       AND e.target_code=p_profile_code
+       AND e.status IN ('IN_PROGRESS','COMPLETED')
+      JOIN public.lf_operation_execution_steps s
+        ON s.execution_id=e.execution_id
+       AND s.step_id='input_validate'
+       AND s.status='STEP_PASS_WITH_EVIDENCE'
+       AND s.evidence_payload#>>'{input_governance,run_id}'=r.id::text
+       AND s.evidence_payload#>>'{input_governance,pantalla_id}'=r.pantalla_id::text
+       AND s.evidence_payload#>>'{input_governance,context_manifest,run,source_snapshot_sha256}'=r.source_snapshot_sha256
       WHERE r.id=(v_ig_feedback->>'run_id')::bigint
         AND r.pantalla_id=(v_ig_feedback->>'pantalla_id')::integer
         AND r.source_snapshot_sha256=v_ig_feedback->>'source_snapshot_sha256'
@@ -63,7 +78,13 @@ DECLARE
 
     IF v_ig_feedback_kind='EVIDENCE_CHALLENGE'
        AND (jsonb_typeof(v_ig_feedback->'evidence_refs') IS DISTINCT FROM 'array'
-            OR jsonb_array_length(coalesce(v_ig_feedback->'evidence_refs','[]'::jsonb))=0)
+            OR jsonb_array_length(coalesce(v_ig_feedback->'evidence_refs','[]'::jsonb))=0
+            OR EXISTS(
+              SELECT 1
+              FROM jsonb_array_elements(coalesce(v_ig_feedback->'evidence_refs','[]'::jsonb)) f(ref)
+              WHERE jsonb_typeof(f.ref)<>'string'
+                 OR nullif(btrim(f.ref#>>'{}'),'') IS NULL
+            ))
     THEN
       RETURN jsonb_build_object(
         'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
@@ -74,11 +95,24 @@ DECLARE
     END IF;
 
     IF v_ig_feedback_kind='NONCANONICAL_RULE_PROPOSAL'
-       AND v_ig_feedback->>'canonical_status' IS DISTINCT FROM 'PROPOSED_NOT_CANONICAL'
+       AND (v_ig_feedback->>'canonical_status' IS DISTINCT FROM 'PROPOSED_NOT_CANONICAL'
+            OR nullif(btrim(coalesce(v_ig_feedback->>'proposed_change','')),'') IS NULL)
     THEN
       RETURN jsonb_build_object(
         'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
         'status','BLOCKED','code','PROFILE_IG_FEEDBACK_PROPOSAL_AUTHORITY_INVALID',
+        'source_execution_id',p_execution_id,
+        'source_profile_code',p_profile_code
+      );
+    END IF;
+
+    IF v_ig_feedback_kind='UNSUPPORTED_DISAGREEMENT'
+       AND jsonb_typeof(v_routing)='object'
+       AND upper(coalesce(v_routing->>'resolution_target',''))='AUTHORITY_OR_CONTEXT_RESOLUTION'
+    THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
+        'status','BLOCKED','code','PROFILE_IG_FEEDBACK_UNSUPPORTED_LOOP_FORBIDDEN',
         'source_execution_id',p_execution_id,
         'source_profile_code',p_profile_code
       );
@@ -134,12 +168,26 @@ DO $postcheck$
 DECLARE
   src jsonb;
   run_hash text;
+  test_execution_id text;
   x jsonb;
 BEGIN
   SELECT source_snapshot_sha256 INTO run_hash
   FROM programacion.input_readiness_runs WHERE id=949 AND pantalla_id=51;
   IF run_hash IS NULL THEN
     RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_TEST_FIXTURE_RUN_MISSING';
+  END IF;
+  SELECT e.execution_id INTO test_execution_id
+  FROM public.lf_operation_execution e
+  JOIN public.lf_operation_execution_steps s ON s.execution_id=e.execution_id
+  WHERE e.operation_code='EJECUCION_PERFIL_LF'
+    AND e.target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+    AND s.step_id='input_validate'
+    AND s.status='STEP_PASS_WITH_EVIDENCE'
+    AND s.evidence_payload#>>'{input_governance,run_id}'='949'
+    AND s.evidence_payload#>>'{input_governance,context_manifest,run,source_snapshot_sha256}'=run_hash
+  LIMIT 1;
+  IF test_execution_id IS NULL THEN
+    RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_TEST_PROFILE_IG_RECEIPT_MISSING';
   END IF;
 
   src:=jsonb_build_object(
@@ -153,7 +201,7 @@ BEGIN
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
       'status','PASS','deliverable_created',
        jsonb_build_object('input_governance_feedback',src)),
-    'Revisar reglas de login B2B','TEST-IG-FB-EVIDENCE','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'status'<>'RETURN_TO_ROUTER'
      OR x->>'next_action'<>'REENTER_ROUTER_STAGE1'
      OR x#>>'{router_return_request,next_entrypoint}'<>'ACT-0001_STAGE1'
@@ -162,12 +210,13 @@ BEGIN
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_EVIDENCE_CHALLENGE_NOT_ROUTED:%',x; END IF;
 
   src:=jsonb_set(src,'{kind}','"NONCANONICAL_RULE_PROPOSAL"'::jsonb)
-    ||jsonb_build_object('canonical_status','PROPOSED_NOT_CANONICAL');
+    ||jsonb_build_object('canonical_status','PROPOSED_NOT_CANONICAL',
+      'proposed_change','Definir comportamiento funcional para recuperacion de cuenta');
   x:=public.lf_profile_result_router_return_classify_v1(
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
       'status','PASS','deliverable_created',
        jsonb_build_object('input_governance_feedback',src)),
-    'Revisar reglas de login B2B','TEST-IG-FB-PROPOSAL','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'status'<>'RETURN_TO_ROUTER' OR
      x#>>'{router_return_request,unresolved_payload,upstream_profile_output,deliverable_created,input_governance_feedback,canonical_status}'<>'PROPOSED_NOT_CANONICAL'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_PROPOSAL_NOT_ROUTED:%',x; END IF;
@@ -177,7 +226,7 @@ BEGIN
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
       'status','PASS','deliverable_created',
        jsonb_build_object('input_governance_feedback',src)),
-    'Revisar reglas de login B2B','TEST-IG-FB-DISAGREEMENT','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'status'<>'COMPLETE' OR x->>'next_action'<>'EMIT_PROFILE_RESULT'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_UNSUPPORTED_DISAGREEMENT_LOOP:%',x; END IF;
 
@@ -187,7 +236,7 @@ BEGIN
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
       'status','PASS','deliverable_created',
        jsonb_build_object('input_governance_feedback',src)),
-    'Revisar reglas de login B2B','TEST-IG-FB-NO-EVIDENCE','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_NO_EVIDENCE_NOT_REJECTED:%',x; END IF;
 
@@ -196,14 +245,64 @@ BEGIN
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
       'status','PASS','deliverable_created',
        jsonb_build_object('input_governance_feedback',src)),
-    'Revisar reglas de login B2B','TEST-IG-FB-BAD-FAMILY','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'code'<>'PROFILE_IG_FEEDBACK_RUN_FAMILY_BINDING_INVALID'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_BAD_FAMILY_NOT_REJECTED:%',x; END IF;
+
+  -- Same run/family but wrong execution: no feedback-routing entitlement.
+  src:=jsonb_set(src,'{family_code}','"SESSION"'::jsonb);
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B','UNKNOWN-EXECUTION-ID','PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_RUN_FAMILY_BINDING_INVALID'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_UNBOUND_EXECUTION_NOT_REJECTED:%',x; END IF;
+
+  -- Same execution, incorrect profile identity must also fail.
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-UI-ARCHITECT');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_RUN_FAMILY_BINDING_INVALID'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_UNBOUND_PROFILE_NOT_REJECTED:%',x; END IF;
+
+  src:=jsonb_set(src,'{source_snapshot_sha256}',to_jsonb(repeat('a',64)));
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_RUN_FAMILY_BINDING_INVALID'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_WRONG_SOURCE_SHA_NOT_REJECTED:%',x; END IF;
+
+  src:=jsonb_set(src,'{source_snapshot_sha256}',to_jsonb(run_hash));
+  src:=jsonb_set(src,'{kind}','"EVIDENCE_CHALLENGE"'::jsonb);
+  src:=jsonb_set(src,'{evidence_refs}','[""]'::jsonb);
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_EMPTY_REF_NOT_REJECTED:%',x; END IF;
+
+  src:=jsonb_set(src,'{kind}','"UNSUPPORTED_DISAGREEMENT"'::jsonb);
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src),
+      'routing',jsonb_build_object('via','ORCHESTRATOR',
+        'pipeline_action','CONTINUE','resolution_target','AUTHORITY_OR_CONTEXT_RESOLUTION')),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_UNSUPPORTED_LOOP_FORBIDDEN'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_UNSUPPORTED_LOOP_NOT_REJECTED:%',x; END IF;
 
   x:=public.lf_profile_result_router_return_classify_v1(
     jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','status','PASS',
       'self_verdict','PASS','target_profile','PERFIL-UI-ARCHITECT'),
-    'Revisar reglas de login B2B','TEST-IG-FB-DIRECT-TARGET','PERFIL-PRODUCT-DIRECTOR-LF');
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'code'<>'PROFILE_RESULT_DIRECT_TARGET_PROFILE_FORBIDDEN'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_DIRECT_PROFILE_REGRESSION:%',x; END IF;
 END
