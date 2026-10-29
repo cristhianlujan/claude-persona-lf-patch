@@ -29,7 +29,7 @@ WITH cohort AS MATERIALIZED(
   ) FROM ready WHERE declared_return='true')
  UNION ALL SELECT 'DISABLED_RETURN_REMAINS_COMPLETE',
   (SELECT count(*)=1 FROM ready
-    WHERE declared_return='false'
+    WHERE coalesce(declared_return::boolean,false)=false
       AND prepared->>'status'='COMPLETE'
       AND prepared->>'code'='PROFILE_RESULT_ROUTER_RETURN_DISABLED')
  UNION ALL SELECT 'ENABLED_TERMINAL_PROFILE_CAN_FINISH_WITHOUT_REENTRY',
