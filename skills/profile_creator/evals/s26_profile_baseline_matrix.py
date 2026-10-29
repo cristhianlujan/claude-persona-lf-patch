@@ -41,7 +41,7 @@ def materialize(root: Path, *, complete: bool = True, ambiguous: bool = False, s
     (p / "examples/good.json").write_text(json.dumps({"answer": "A clear answer."}), encoding="utf-8")
     validate_src = validator_src or (
         "def validate(payload):\n"
-        "    ok = isinstance(payload, dict) and set(payload) == {'answer'} and isinstance(payload['answer'], str) and payload['answer'].replace('\\u200b','').replace('\\u00a0','').strip() != ''\n"
+        "    ok = isinstance(payload, dict) and set(payload) == {'answer'} and isinstance(payload['answer'], str) and any(c.isalnum() and c not in '\\u115f\\u1160\\u3164\\uffa0' for c in payload['answer'])\n"
         "    return {'status': 'PASS' if ok else 'FAIL'}\n")
     (p / "validators/runtime_validate.py").write_text(marker + validate_src, encoding="utf-8")
     (p / "validators/runtime_semantic_utility.py").write_text(marker + (
@@ -76,7 +76,8 @@ def main() -> int:
     t, r = make_repo()
     try:
         materialize(r); x = mod.evaluate(r, "demo")
-        checks["complete_14_of_14"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 14 and x["required"] == 14
+        checks["complete_15_of_15"] = x["decision"] == "NO_UPDATE_REQUIRED" and x["score"] == 15 and x["required"] == 15
+        checks["text_battery_measured_and_passes"] = x["dimensions"]["B15_TEXT_INTEGRITY_BATTERY"]["pass"] is True and x["adversarial_suite"]["text_integrity_battery"]["catch_rate"] == 1.0
         checks["suite_catches_and_accepts_controls"] = x["adversarial_suite"]["catch_rate"] == 1.0 and x["adversarial_suite"]["controls_rejected_wrongly"] == []
         checks["static_callable_discovery"] = x["callable_discovery_mode"] == "STATIC_AST_NO_IMPORT"
     finally: t.cleanup()
@@ -93,6 +94,14 @@ def main() -> int:
     finally: t.cleanup()
     t, r = make_repo()
     try:
+        weak = ("def validate(payload):\n"
+                "    ok = isinstance(payload, dict) and set(payload) == {'answer'} and isinstance(payload['answer'], str) and payload['answer'].replace('\\u200b','').replace('\\u00a0','').strip() != ''\n"
+                "    return {'status': 'PASS' if ok else 'FAIL'}\n")
+        materialize(r, validator_src=weak); x = mod.evaluate(r, "demo")
+        checks["invisible_text_validator_fails_b15_only"] = x["dimensions"]["B15_TEXT_INTEGRITY_BATTERY"]["pass"] is False and x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["pass"] is True and x["score"] == 14 and x["decision"] == "UPDATE_REQUIRED"
+    finally: t.cleanup()
+    t, r = make_repo()
+    try:
         materialize(r); x = mod.evaluate(r, "demo", dynamic=False)
         checks["static_mode_never_executes"] = x["target_code_execution_performed"] is False and x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["code"] == "SUITE_NOT_EXECUTED"
         x = mod.evaluate(r, "demo")
@@ -101,7 +110,7 @@ def main() -> int:
     t, r = make_repo()
     try:
         materialize(r, suite=False); x = mod.evaluate(r, "demo")
-        checks["undeclared_suite_fails_b14_only"] = x["score"] == 13 and x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["code"] == "SUITE_NOT_DECLARED" and x["target_code_execution_performed"] is False
+        checks["undeclared_suite_fails_b14_and_b15_only"] = x["score"] == 13 and x["dimensions"]["B15_TEXT_INTEGRITY_BATTERY"]["pass"] is False and x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["code"] == "SUITE_NOT_DECLARED" and x["target_code_execution_performed"] is False
     finally: t.cleanup()
     t, r = make_repo()
     try:

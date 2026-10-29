@@ -292,6 +292,23 @@ def evaluate(repo_root: Path, profile_slug: str, seed: str | None = None, dynami
             {k: suite_result.get(k) for k in ("catch_rate", "caught", "invalid_cases", "controls", "seed_sha256")} if suite_pass else None,
             "DECLARE_AND_PASS_DYNAMIC_ADVERSARIAL_SUITE")
 
+    # B15: universal text-integrity battery, fabricated by the measurer inside the same isolated run as B14.
+    battery = suite_result.get("text_integrity_battery") if isinstance(suite_result, dict) else None
+    battery_pass = bool(battery and battery.get("status") == "PASS")
+    if suite_errors:
+        battery_code = suite_errors[0]
+    elif not dynamic:
+        battery_code = "SUITE_NOT_EXECUTED"
+    elif suite_result is None:
+        battery_code = "RUNTIME_BINDING_MISSING_OR_INVALID"
+    elif not isinstance(battery, dict):
+        battery_code = (suite_result.get("blocking_codes") or ["TEXT_BATTERY_NOT_RUN"])[0]
+    else:
+        battery_code = "PASS" if battery_pass else "TEXT_INTEGRITY_BATTERY_BELOW_MIN"
+    set_dim("B15_TEXT_INTEGRITY_BATTERY", battery_pass, battery_code,
+            {k: battery.get(k) for k in ("catch_rate", "caught", "invalid_cases")} if battery_pass else None,
+            "REJECT_INVISIBLE_FILLER_AND_PUNCTUATION_ONLY_TEXT")
+
     score = sum(1 for item in dimensions.values() if item["pass"])
     if score == len(baseline["dimensions"]):
         decision = "NO_UPDATE_REQUIRED"
