@@ -1,0 +1,81 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "case_id": "WEB-001",
+  "description": "Registro real de lf_error_knowledge WEB-001 (CAPTURA_WEB): web.run open(url) devuelve Cache miss; el pipeline cierra FALLIDO sin inventar contenido. Entrada literal en el input de cada corrida.",
+  "checks": [
+    {
+      "id": "OP01_CLOSES_WITH_REPAIR_SPEC",
+      "pointer": "/output/status",
+      "op": "eq",
+      "value": "SYSTEMIC_REPAIR_SPEC"
+    },
+    {
+      "id": "OP02_OUTPUT_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
+      "pointer": "/output",
+      "op": "no_node",
+      "key": "status",
+      "values": [
+        "UNRESOLVED",
+        "NEEDS_MORE_EVIDENCE"
+      ]
+    },
+    {
+      "id": "OP04_OWNER_RESOLVED",
+      "pointer": "/output/owner/status",
+      "op": "eq",
+      "value": "RESOLVED"
+    },
+    {
+      "id": "OP05_DERIVED_OWNER_HAS_RATIFICATION",
+      "op": "if_then",
+      "if": {
+        "pointer": "/output/owner/authority_kind",
+        "op": "eq",
+        "value": "DERIVED_PROPOSAL"
+      },
+      "then": {
+        "pointer": "/output/owner/derivation/ratification_ref",
+        "op": "nonempty"
+      }
+    },
+    {
+      "id": "OP06_ALTERNATIVE_SELECTED",
+      "pointer": "/output/selected_alternative",
+      "op": "nonempty"
+    },
+    {
+      "id": "OP07_PLANNED_REGRESSIONS",
+      "pointer": "/output/planned_regressions",
+      "op": "min_len",
+      "value": 3
+    },
+    {
+      "id": "OP08_ACCEPTANCE_CRITERIA",
+      "pointer": "/output/acceptance_criteria",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "OP09_HARD_GUARD_FAIL_CLOSED",
+      "pointer": "/output/hard_guard/fail_closed_condition",
+      "op": "nonempty"
+    }
+  ],
+  "semantic_pending": [
+    "WEB-001:P2 distingue lo que funciona de lo que falta",
+    "WEB-001:P3 concentracion por dominio y seccion",
+    "WEB-001:P4 cifras reales (46/39/7/13)",
+    "WEB-001:P5 control que fallo y control que se escapo",
+    "WEB-001:P7 reparacion con tope, senal por dominio y sin snippets",
+    "WEB-001:P8 conserva la prevencion vigente y cambios de datos por la Train",
+    "WEB-001:P10 declara lo no probado (sitio vs herramienta)"
+  ],
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+}

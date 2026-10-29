@@ -1,0 +1,1671 @@
+{
+ "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+ "run_id": "RUN-WEB001-CANDIDATE-20261029",
+ "case_id": "WEB-001",
+ "profile_slug": "systemic_root_cause_repair_lf",
+ "profile_tree_sha256": "2f4ac419ee3a49b2366a684daf4df2613a28426e77f0a880851fe07841105381",
+ "attestation": "NONE",
+ "recorded_at": "2026-10-29T22:00:00Z",
+ "executor": {
+  "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+  "note": "Profile tree with the gap-resolution cascade (7 files)."
+ },
+ "conditions": "Isolated model given only the profile tree, case.md and evidence_manifest.json; read-only database queries allowed; iterate with the profile validator until valid or shown impossible; one run.",
+ "validator": {
+  "tool": "profile validators/runtime_validate.py via run_validate.py",
+  "valid": true,
+  "errors": []
+ },
+ "output": {
+  "status": "SYSTEMIC_REPAIR_SPEC",
+  "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+  "symptom": {
+   "statement": "Capture of specific Reevalua/Finanty URLs fails with WEB_FETCH_CACHE_MISS on web.run open(url); EKB WEB-001 records frequency 46 between 2026-08-24 and 2026-09-01 and lf_url_queue holds 39 FALLIDO rows (reevalua.com 34 of 236 rows, 32 of them under /blog/ where 89 other /blog/ rows were PROCESADO).",
+   "status": "OBSERVED",
+   "evidence_refs": [
+    "EV-EKB",
+    "EV-ASSET",
+    "EV-DOM",
+    "EV-SEC"
+   ],
+   "missing_evidence": []
+  },
+  "immediate_cause": {
+   "statement": "The external fetch/cache dependency does not return content for specific URLs in a given execution (URL-specific, not domain-wide: the same /blog/ section has 89 PROCESADO and 32 FALLIDO rows), and the pipeline correctly closes those URLs fail-closed.",
+   "status": "ESTABLISHED",
+   "evidence_refs": [
+    "EV-EKB",
+    "EV-SEC",
+    "EV-DOM"
+   ],
+   "missing_evidence": []
+  },
+  "systemic_root_cause": {
+   "statement": "The retry that EKB WEB-001 declares ('reintento posterior controlado') has no machine-checkable contract: the queue records the failure cause only as free text in error_detail (15 distinct groups across the FALLIDO/DESCARTADO rows, mixing cache miss, HTTP 500/timeout, non-retryable safe-open block, HITL and lifecycle errors), so retry eligibility, attempt cap and run lineage cannot be enforced or measured and every re-attempt of an unrecoverable URL is re-recorded as a new occurrence.",
+   "status": "ESTABLISHED",
+   "evidence_refs": [
+    "EV-ERR",
+    "EV-ASSET",
+    "EV-EKB"
+   ],
+   "missing_evidence": []
+  },
+  "causal_chain": [
+   {
+    "statement": "A valid URL is queued and web.run open(url) returns Cache miss / 500 / timeout for it.",
+    "status": "OBSERVED",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ERR"
+    ],
+    "missing_evidence": []
+   },
+   {
+    "statement": "The orchestrator closes the URL as FALLIDO with a free-text error_detail and increments intento_count (26 rows at 1, 7 at 2, 6 at 3), without a typed failure class that says whether the URL may be retried.",
+    "status": "OBSERVED",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-ERR"
+    ],
+    "missing_evidence": []
+   },
+   {
+    "statement": "Because retry eligibility is not typed, later runs re-attempt and re-document the same class, and the EKB entry accumulates occurrences (frequency 46) while 19 of 39 FALLIDO queue rows have no pipeline_run_id link to their FAILED run.",
+    "status": "ESTABLISHED",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ASSET"
+    ],
+    "missing_evidence": []
+   }
+  ],
+  "first_bad_control": {
+   "statement": "The failure-recording contract of the capture stage (lf_url_queue.error_detail plus the queue-to-run link) is untyped: it does not carry a retryability class or a mandatory pipeline_run_id at the moment the URL is closed FALLIDO.",
+   "status": "ESTABLISHED",
+   "evidence_refs": [
+    "EV-ASSET",
+    "EV-ERR"
+   ],
+   "missing_evidence": []
+  },
+  "escape_control": {
+   "statement": "The EKB WEB-001 validation (queue FALLIDO + FAILED run + no KB from non-existent content) detects harm but not retry waste or missing lineage; it passes (0 KB rows for 39 FALLIDO urls) while 19 FALLIDO rows lack the run link.",
+   "status": "ESTABLISHED",
+   "evidence_refs": [
+    "EV-EKB",
+    "EV-ASSET"
+   ],
+   "missing_evidence": []
+  },
+  "recurrence_evidence": [
+   {
+    "ref": "EV-EKB",
+    "fact": "EKB WEB-001 frequency 46, first_vez 2026-08-24, ultima_vez 2026-09-01, recurrences appended on 2026-08-25, 08-26, 08-27 and 09-01.",
+    "evidence_class": "OBSERVED_HISTORY",
+    "scope": "EKB entry WEB-001 for ACT-0058 capture"
+   },
+   {
+    "ref": "EV-ASSET",
+    "fact": "lf_url_queue currently holds 39 FALLIDO rows; intento_count is 1 on 26, 2 on 7 and 3 on 6 of them.",
+    "evidence_class": "OBSERVED_LIVE",
+    "scope": "URL capture queue"
+   },
+   {
+    "ref": "EV-ERR",
+    "fact": "FALLIDO/DESCARTADO rows carry 15 distinct free-text error_detail groups (e.g. WEB_FETCH_CACHE_MISS variants, WEB_FETCH_RETRY_9AM_FAILED timeout/500, WEB_RUN_OPEN_BLOCKED non-retryable).",
+    "evidence_class": "OBSERVED_LIVE",
+    "scope": "error_detail classes in lf_url_queue"
+   }
+  ],
+  "live_authority_packet": {
+   "status": "PARTIAL",
+   "observed_at": "2026-10-29T16:05:00Z",
+   "applicable_surfaces": [
+    "SUPABASE_TABLES_AND_VIEWS",
+    "REPOSITORY_SKILL_SOURCE",
+    "DEPLOYED_RUNTIME_WEB_RUN",
+    "AGENT_CONNECTOR_IDENTITY"
+   ],
+   "inspected_surfaces": [
+    "SUPABASE_TABLES_AND_VIEWS"
+   ],
+   "evidence_refs": [
+    "EV-ASSET",
+    "EV-OP",
+    "EV-EKB",
+    "EV-REG"
+   ],
+   "material_effects_observed": true,
+   "unavailable_sources": [
+    "REPOSITORY_SKILL_SOURCE",
+    "DEPLOYED_RUNTIME_WEB_RUN",
+    "AGENT_CONNECTOR_IDENTITY"
+   ],
+   "unavailable_source_assessments": [
+    {
+     "source": "REPOSITORY_SKILL_SOURCE",
+     "impact": "IMPLEMENTATION_PRECONDITION",
+     "rationale": "The ACT-0058 skill source (OP-4 / retry) was not read in this run. The selected repair replaces the retry clause with a call to a data rule, so the current clause text cannot change the architecture; it is read at implementation as the baseline of the MODIFY delta.",
+     "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+    },
+    {
+     "source": "DEPLOYED_RUNTIME_WEB_RUN",
+     "impact": "NON_BLOCKING_HISTORICAL",
+     "rationale": "web.run is an external dependency outside LF authority; the repair treats its output as untrusted and does not depend on why a cache miss occurs.",
+     "containment_ref": "$.hard_guard"
+    },
+    {
+     "source": "AGENT_CONNECTOR_IDENTITY",
+     "impact": "NON_BLOCKING_HISTORICAL",
+     "rationale": "Which agent session produced each historical FALLIDO row does not change the repair, which sits at the shared queue-closing contract.",
+     "containment_ref": "$.hard_guard"
+    }
+   ]
+  },
+  "execution_effect_reconciliation": [
+   {
+    "effect": "lf_url_queue rows closed FALLIDO with no KB row",
+    "observed_ref": "EV-ASSET",
+    "declared_producer": "ACT-0058 pipeline orchestrator capture stage",
+    "declared_producer_ref": "EV-OP",
+    "observed_producer_refs": [
+     "EV-ASSET",
+     "EV-EKB"
+    ],
+    "reconciliation_status": "MATCH",
+    "blocking": false,
+    "impact": "NONE",
+    "containment_ref": null
+   }
+  ],
+  "authority_contradictions": [],
+  "repair_level": "SYSTEMIC_ORIGIN",
+  "should_exist_assessment": {
+   "verdict": "CONDITIONAL",
+   "subject": "free-text error_detail as the sole carrier of capture-failure cause and retry intent",
+   "real_consumers": [
+    {
+     "consumer": "ACT-0058 orchestrator capture stage (writes FALLIDO + intento_count)",
+     "evidence_ref": "EV-OP"
+    },
+    {
+     "consumer": "EKB WEB-001 validation and AUTOLEARN recurrence appends",
+     "evidence_ref": "EV-EKB"
+    }
+   ],
+   "elimination_impact": "Removing the failure recording would lose lineage and make fail-closed outcomes untraceable; the fail-closed no-KB control must be kept as is (0 of 39 FALLIDO urls has a KB row). Only the untyped, unlinked form of the record should not exist.",
+   "native_or_existing_alternative": "Reuse existing columns (lf_url_queue.error_detail, intento_count, pipeline_run_id; lf_pipeline_runs.failure_category/stage_failed) and the existing policy store (lf_policy_versions / lf_operation_policy_bindings): a controlled code vocabulary plus a rule-as-data row, with no new table or engine.",
+   "evidence_refs": [
+    "EV-ASSET",
+    "EV-EKB",
+    "EV-ERR"
+   ],
+   "missing_evidence": []
+  },
+  "alternatives": [
+   {
+    "id": "ALT-A",
+    "description": "No change: keep EKB WEB-001 as prose and append recurrences.",
+    "prevention": "None; recurrence and the untyped record remain.",
+    "complexity": "None.",
+    "blast_radius": "None.",
+    "reuse": "Total.",
+    "fail_closed": "Unchanged (already holds for KB creation).",
+    "idempotency": "No new guarantee.",
+    "recoverability": "Manual per run.",
+    "operational_cost": "Grows with every recurrence appended.",
+    "basis_refs": [
+     "EV-EKB",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "id": "ALT-B",
+    "description": "Controlled failure-code vocabulary written into existing columns at FALLIDO time, mandatory pipeline_run_id, and a retry-eligibility rule stored as policy data that the orchestrator consults before any re-attempt; absent rule or value means no automatic retry.",
+    "prevention": "High: retry becomes a checked decision and lineage is complete at write time.",
+    "complexity": "Low to medium.",
+    "blast_radius": "Low: one skill clause, one policy row, one EKB validation text; no new table.",
+    "reuse": "High: existing columns, policy store and Router route.",
+    "fail_closed": "High: unknown or unclassified failure is non-retryable.",
+    "idempotency": "Same url+class+attempt yields the same decision.",
+    "recoverability": "High: policy row can be retired; historical rows untouched.",
+    "operational_cost": "Low.",
+    "basis_refs": [
+     "EV-ERR",
+     "EV-ASSET",
+     "EV-OP"
+    ]
+   },
+   {
+    "id": "ALT-C",
+    "description": "Build a new fetch layer (alternate fetcher or proxy cache) to avoid Cache miss.",
+    "prevention": "Possible for cache misses only; does not address 500/timeout/non-retryable classes or lineage.",
+    "complexity": "High.",
+    "blast_radius": "High: new runtime and cost surface.",
+    "reuse": "Low.",
+    "fail_closed": "Depends on new component.",
+    "idempotency": "New design needed.",
+    "recoverability": "Medium.",
+    "operational_cost": "High; the zero-cost runtime policy forbids paid providers.",
+    "basis_refs": [
+     "EV-EKB",
+     "EV-ERR"
+    ]
+   }
+  ],
+  "preferred_alternative": "ALT-B",
+  "selected_alternative": "ALT-B",
+  "rejected_alternatives": [
+   {
+    "id": "ALT-A",
+    "reason": "Does not remove the cause of recurrence: 46 recorded occurrences and 19 unlinked FALLIDO rows persist while retry stays untyped.",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "id": "ALT-C",
+    "reason": "Exceeds the minimum sufficient repair, targets only the cache-miss subclass and the root cause (untyped retry and lineage) would remain.",
+    "evidence_refs": [
+     "EV-ERR",
+     "EV-EKB"
+    ]
+   }
+  ],
+  "falsification_results": [
+   {
+    "case": "bypass",
+    "result": "PLANNED",
+    "evidence_ref": "design://bypass",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Invoke the orchestrator re-attempt path for that row, and separately write a FALLIDO row with no failure code or no pipeline_run_id.",
+    "expected_result": "The re-attempt is refused and the incomplete FALLIDO write is rejected with CAPTURE_FAILURE_UNCLASSIFIED; no fetch and no KB row result.",
+    "test_protocol": {
+     "setup": [
+      "Fixture queue row for a URL whose last failure class is NON_RETRYABLE or unclassified."
+     ],
+     "action": [
+      "Invoke the orchestrator re-attempt path for that row, and separately write a FALLIDO row with no failure code or no pipeline_run_id."
+     ],
+     "assertions": [
+      "The re-attempt is refused and the incomplete FALLIDO write is rejected with CAPTURE_FAILURE_UNCLASSIFIED; no fetch and no KB row result."
+     ],
+     "failure_signal": "BYPASS_RETRY_GATE_NOT_ENFORCED"
+    }
+   },
+   {
+    "case": "retry",
+    "result": "PLANNED",
+    "evidence_ref": "design://retry",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Run the re-attempt decision again.",
+    "expected_result": "Decision is NOT_ELIGIBLE (attempt cap reached) and the row stays FALLIDO; below the cap the decision is ELIGIBLE exactly once per window.",
+    "test_protocol": {
+     "setup": [
+      "Fixture row with RETRYABLE_TRANSIENT class and attempts equal to the ratified maximum."
+     ],
+     "action": [
+      "Run the re-attempt decision again."
+     ],
+     "assertions": [
+      "Decision is NOT_ELIGIBLE (attempt cap reached) and the row stays FALLIDO; below the cap the decision is ELIGIBLE exactly once per window."
+     ],
+     "failure_signal": "RETRY_EXCEEDS_CAP"
+    }
+   },
+   {
+    "case": "concurrency",
+    "result": "PLANNED",
+    "evidence_ref": "design://concurrency",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Run both decisions concurrently.",
+    "expected_result": "At most one run obtains the re-attempt and intento_count increases by exactly one.",
+    "test_protocol": {
+     "setup": [
+      "Two orchestrator runs read the same FALLIDO row."
+     ],
+     "action": [
+      "Run both decisions concurrently."
+     ],
+     "assertions": [
+      "At most one run obtains the re-attempt and intento_count increases by exactly one."
+     ],
+     "failure_signal": "DOUBLE_RETRY_ON_SAME_ROW"
+    }
+   },
+   {
+    "case": "partial_failure",
+    "result": "PLANNED",
+    "evidence_ref": "design://partial_failure",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Close the URL FALLIDO under that fault.",
+    "expected_result": "The row is not left FALLIDO without pipeline_run_id; the conformance probe reports it and no KB row exists.",
+    "test_protocol": {
+     "setup": [
+      "Fixture where the queue update succeeds and the pipeline run insert fails."
+     ],
+     "action": [
+      "Close the URL FALLIDO under that fault."
+     ],
+     "assertions": [
+      "The row is not left FALLIDO without pipeline_run_id; the conformance probe reports it and no KB row exists."
+     ],
+     "failure_signal": "FALLIDO_WITHOUT_RUN_LINK"
+    }
+   },
+   {
+    "case": "stale_state",
+    "result": "PLANNED",
+    "evidence_ref": "design://stale_state",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Decide eligibility with the stale rule version.",
+    "expected_result": "Decision binds the rule version and sha used; a mismatch against the active version fails closed to NOT_ELIGIBLE.",
+    "test_protocol": {
+     "setup": [
+      "Retry rule row superseded after the orchestrator read it."
+     ],
+     "action": [
+      "Decide eligibility with the stale rule version."
+     ],
+     "assertions": [
+      "Decision binds the rule version and sha used; a mismatch against the active version fails closed to NOT_ELIGIBLE."
+     ],
+     "failure_signal": "STALE_RULE_USED"
+    }
+   },
+   {
+    "case": "interrupted_execution",
+    "result": "PLANNED",
+    "evidence_ref": "design://interrupted_execution",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Resume the run.",
+    "expected_result": "The URL is closed once with a classified code; no duplicate run row or KB row appears.",
+    "test_protocol": {
+     "setup": [
+      "Run interrupted between the fetch failure and the queue write."
+     ],
+     "action": [
+      "Resume the run."
+     ],
+     "assertions": [
+      "The URL is closed once with a classified code; no duplicate run row or KB row appears."
+     ],
+     "failure_signal": "INTERRUPTED_RUN_UNCLASSIFIED"
+    }
+   },
+   {
+    "case": "replay_or_duplicate",
+    "result": "PLANNED",
+    "evidence_ref": "design://replay_or_duplicate",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Apply the closing contract twice.",
+    "expected_result": "One FALLIDO closure, intento_count advanced once per genuine attempt, identical failure code.",
+    "test_protocol": {
+     "setup": [
+      "Replay the same failed fetch event twice."
+     ],
+     "action": [
+      "Apply the closing contract twice."
+     ],
+     "assertions": [
+      "One FALLIDO closure, intento_count advanced once per genuine attempt, identical failure code."
+     ],
+     "failure_signal": "DUPLICATE_FAILURE_RECORD"
+    }
+   },
+   {
+    "case": "undeclared_or_unversioned_caller",
+    "result": "PLANNED",
+    "evidence_ref": "design://undeclared_or_unversioned_caller",
+    "evidence_class": "DESIGN_ONLY",
+    "verification_method": "Let the conformance probe scan lf_url_queue.",
+    "expected_result": "Every FALLIDO row written after activation without code or run link is reported by the probe and blocks closure.",
+    "test_protocol": {
+     "setup": [
+      "A caller that closes URLs FALLIDO without the controlled code."
+     ],
+     "action": [
+      "Let the conformance probe scan lf_url_queue."
+     ],
+     "assertions": [
+      "Every FALLIDO row written after activation without code or run link is reported by the probe and blocks closure."
+     ],
+     "failure_signal": "UNDECLARED_CALLER_WRITES_UNTYPED_FAILURE"
+    }
+   }
+  ],
+  "origin_asset": {
+   "status": "RESOLVED",
+   "code": "URL-CAPTURE-QUEUE",
+   "evidence_ref": "EV-ASSET",
+   "missing_evidence": [],
+   "authority_kind": "EXISTING_AUTHORITY",
+   "evidence_id": "EV-ASSET",
+   "subject": "URL-CAPTURE-QUEUE",
+   "observed_revision": "2026-10-29T16:05:00Z"
+  },
+  "origin_operation": {
+   "status": "RESOLVED",
+   "code": "ACT-0058-PIPELINE-ORCHESTRATOR",
+   "evidence_ref": "EV-OP",
+   "missing_evidence": [],
+   "authority_kind": "EXISTING_AUTHORITY",
+   "evidence_id": "EV-OP",
+   "subject": "ACT-0058-PIPELINE-ORCHESTRATOR",
+   "observed_revision": "2026-10-29T16:05:00Z"
+  },
+  "owner": {
+   "status": "RESOLVED",
+   "code": "LF_GOVERNANCE",
+   "evidence_ref": "EV-REG",
+   "missing_evidence": [],
+   "authority_kind": "DERIVED_PROPOSAL",
+   "evidence_id": "EV-REG",
+   "subject": "OWNER-CONVENTION-REGISTRY",
+   "observed_revision": "2026-10-29T16:05:00Z",
+   "derivation": {
+    "confidence": 0.79,
+    "criterion": "lf_activos.owner_name of ACT-0058 is NULL (as for sibling skills ACT-0054..ACT-0057). Proposed value = owner_name of the most recent earlier lf_activos row of the same tipo_activo (SKILL), i.e. the current convention LF_GOVERNANCE (SKILL-GENERACION-PDF-PROFESIONAL-LF, 2026-09-23). Measured by hiding each owned row in turn and predicting it from earlier rows only: same-type rule 136 of 171 (0.795), any-type rule 157 of 192 (0.818); confidence is capped at the lower rate, 0.79. Since 2026-09-01, 76 of 106 owned rows use exactly LF_GOVERNANCE. The convention changed over time (Cristhian before 2026-06-10, LF_GOVERNANCE from 2026-09-23) and the current one is followed.",
+    "alternatives": [
+     {
+      "candidate": "Cristhian",
+      "status": "DISCARDED",
+      "reason": "Legacy convention: 7 SKILL rows created 2026-05-18..2026-06-10; the two SKILL rows created 2026-09-23 use LF_GOVERNANCE."
+     },
+     {
+      "candidate": "SUPER_ADMIN",
+      "status": "DISCARDED",
+      "reason": "Seen only on CAPABILITY and CONTRACT rows created 2026-09-17..2026-10-05, not on SKILL rows."
+     },
+     {
+      "candidate": "PENDING_OWNER_CONFIRMATION (leave unowned)",
+      "status": "DISCARDED",
+      "reason": "Single precedent (one CARRIER row, 2026-10-07); using it would leave the slot open although a convention measured at about 0.8 exists."
+     }
+    ],
+    "attempts": [
+     {
+      "class": "DIRECT",
+      "source": "public.lf_activos row ACT-0058",
+      "result": "owner_name is NULL; no owner recorded",
+      "evidence_id": "EV-OP"
+     },
+     {
+      "class": "ANALOGY",
+      "source": "public.lf_activos owner_name by tipo_activo and created_at, leave-one-out",
+      "result": "LF_GOVERNANCE current convention, measured 0.795 / 0.818",
+      "evidence_id": "EV-REG"
+     },
+     {
+      "class": "RELATED",
+      "source": "public.lf_activos SKILL siblings ACT-0054..ACT-0057 and public.lf_activo_relaciones for ACT-0058",
+      "result": "siblings equally NULL; no relation rows for ACT-0058",
+      "evidence_id": "EV-REG"
+     },
+     {
+      "class": "HISTORY",
+      "source": "public.lf_activos owner_name over created_at",
+      "result": "convention changed from Cristhian (2026-05/06) to LF_GOVERNANCE (2026-09 onward)",
+      "evidence_id": "EV-REG"
+     }
+    ],
+    "declared_class_note": "DECLARED: lf_policy_versions was searched for an owner declaration for ACT-0058 and none was found; that search is not bound to a manifest evidence id.",
+    "ratification_ref": "DEL-4-OWNER-RATIFICATION"
+   }
+  },
+  "invariant": {
+   "statement": "A capture URL may be closed FALLIDO only with a controlled failure class and a pipeline_run_id, and an automatic re-attempt may occur only when the active retry rule marks that class retryable and the attempt cap is not reached; absent rule, absent value or unclassified failure means no re-attempt and no KB row.",
+   "evidence_refs": [
+    "EV-ERR",
+    "EV-ASSET",
+    "EV-EKB"
+   ],
+   "missing_evidence": [],
+   "validation_state": "SPECIFIED"
+  },
+  "hard_guard": {
+   "control": "Orchestrator closing and re-attempt gate that rejects FALLIDO without failure class and run link, and refuses re-attempt unless the retry rule allows it.",
+   "enforcement_point_ref": "EV-OP",
+   "fail_closed_condition": "Block the write or the re-attempt when failure class, pipeline_run_id, rule version or attempt count is missing, stale or over the cap.",
+   "blocking_code": "CAPTURE_FAILURE_UNCLASSIFIED",
+   "observable_result": "No fetch re-attempt, no KB row, and a deterministic blocking code recorded on the queue row and pipeline run.",
+   "evidence_refs": [
+    "EV-OP",
+    "EV-ASSET"
+   ],
+   "missing_evidence": [],
+   "validation_state": "SPECIFIED"
+  },
+  "acceptance_criteria": [
+   {
+    "criterion": "After activation no FALLIDO row lacks a controlled failure class or pipeline_run_id.",
+    "verification_method": "Read-only SQL on lf_url_queue for rows with estado='FALLIDO' and updated_at after the activation timestamp lacking a code prefix or pipeline_run_id.",
+    "expected_result": "Zero rows."
+   },
+   {
+    "criterion": "No automatic re-attempt for NON_RETRYABLE, unclassified or cap-reached rows.",
+    "verification_method": "Replay fixtures through the orchestrator decision and compare intento_count before and after.",
+    "expected_result": "intento_count unchanged and no fetch issued for those rows."
+   },
+   {
+    "criterion": "Fail-closed no-KB behavior is preserved.",
+    "verification_method": "Count lf_knowledge_base rows whose source_url equals any FALLIDO queue url.",
+    "expected_result": "Zero rows (baseline observed: 0 of 39)."
+   }
+  ],
+  "historical_regressions": [
+   {
+    "case_id": "HIST-WEB001-CACHE-MISS",
+    "occurrence_ref": "EV-EKB",
+    "observed_failure": "WEB_FETCH_CACHE_MISS recurrences on 2026-08-24, 08-25, 08-26, 08-27 and 09-01 (frequency 46), each closed FALLIDO without fabricated content.",
+    "evidence_refs": [
+     "EV-EKB"
+    ]
+   },
+   {
+    "case_id": "HIST-UNLINKED-FALLIDO",
+    "occurrence_ref": "EV-ASSET",
+    "observed_failure": "19 of 39 FALLIDO queue rows have pipeline_run_id NULL (14 cache-miss and 5 lifecycle rows, all updated 2026-09-01).",
+    "evidence_refs": [
+     "EV-ASSET"
+    ]
+   }
+  ],
+  "planned_regressions": [
+   {
+    "case_id": "REG-UNTYPED-CLOSE",
+    "scenario": "Close a URL FALLIDO with free text only.",
+    "verification_method": "Invoke the closing contract with no failure class.",
+    "expected_result": "Rejected with CAPTURE_FAILURE_UNCLASSIFIED.",
+    "test_protocol": {
+     "setup": [
+      "Materialize fixture REG-UNTYPED-CLOSE on a non-production copy of lf_url_queue and lf_pipeline_runs."
+     ],
+     "action": [
+      "Invoke the closing contract with no failure class."
+     ],
+     "assertions": [
+      "Rejected with CAPTURE_FAILURE_UNCLASSIFIED."
+     ],
+     "failure_signal": "REG-UNTYPED-CLOSE_FAILED"
+    }
+   },
+   {
+    "case_id": "REG-RETRY-CAP",
+    "scenario": "Re-attempt a retryable row at the ratified cap.",
+    "verification_method": "Run the eligibility decision.",
+    "expected_result": "NOT_ELIGIBLE and no fetch.",
+    "test_protocol": {
+     "setup": [
+      "Materialize fixture REG-RETRY-CAP on a non-production copy of lf_url_queue and lf_pipeline_runs."
+     ],
+     "action": [
+      "Run the eligibility decision."
+     ],
+     "assertions": [
+      "NOT_ELIGIBLE and no fetch."
+     ],
+     "failure_signal": "REG-RETRY-CAP_FAILED"
+    }
+   },
+   {
+    "case_id": "REG-NO-KB",
+    "scenario": "Fetch fails for a queued URL.",
+    "verification_method": "Run the capture stage with a simulated Cache miss.",
+    "expected_result": "FALLIDO with class and run link, zero KB rows for that url.",
+    "test_protocol": {
+     "setup": [
+      "Materialize fixture REG-NO-KB on a non-production copy of lf_url_queue and lf_pipeline_runs."
+     ],
+     "action": [
+      "Run the capture stage with a simulated Cache miss."
+     ],
+     "assertions": [
+      "FALLIDO with class and run link, zero KB rows for that url."
+     ],
+     "failure_signal": "REG-NO-KB_FAILED"
+    }
+   }
+  ],
+  "current_uncertainties": [
+   {
+    "uncertainty": "The ACT-0058 skill source (OP-4 / retry clause) was not read in this run, so its current retry wording is unknown.",
+    "impact": "IMPLEMENTATION_PRECONDITION",
+    "evidence_needed": [
+     "current text of OP-4 and the retry clause at the exact skill revision"
+    ],
+    "design_consequence": "None on the design: the delta replaces the retry clause by a call to the data rule; the current text only becomes the baseline of the MODIFY.",
+    "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+   },
+   {
+    "uncertainty": "Numeric retry policy (maximum attempts, backoff interval) has no ratified value; intento_count values 1 to 3 are incident observations, not policy.",
+    "impact": "IMPLEMENTATION_PRECONDITION",
+    "evidence_needed": [
+     "owner-ratified max_attempts and backoff in the retry rule row"
+    ],
+    "design_consequence": "None: while the value is absent the rule yields no automatic re-attempt (fail-closed).",
+    "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+   },
+   {
+    "uncertainty": "Owner of ACT-0058 is unrecorded (owner_name NULL); LF_GOVERNANCE is a derived proposal at confidence 0.79, not existing authority.",
+    "impact": "IMPLEMENTATION_PRECONDITION",
+    "evidence_needed": [
+     "owner ratification recorded for ACT-0058"
+    ],
+    "design_consequence": "None on the repair design; ratification is deliverable DEL-4-OWNER-RATIFICATION.",
+    "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[2]"
+   },
+   {
+    "uncertainty": "Why web.run returns Cache miss for particular URLs is not observable from LF data.",
+    "impact": "NON_BLOCKING_HISTORICAL",
+    "evidence_needed": [
+     "web.run provider diagnostics"
+    ],
+    "design_consequence": "None: the repair treats fetch output as untrusted and classifies by recorded outcome.",
+    "containment_ref": "$.hard_guard"
+   }
+  ],
+  "residual_risks": [
+   {
+    "risk": "Cache misses will keep occurring because the external fetch dependency is outside LF; the repair bounds retry and records lineage but does not remove the dependency failure.",
+    "evidence_refs": [
+     "EV-EKB"
+    ]
+   },
+   {
+    "risk": "The 19 historical unlinked FALLIDO rows remain unlinked until a separately governed disposition is approved.",
+    "evidence_refs": [
+     "EV-ASSET"
+    ]
+   }
+  ],
+  "evidence_map": [
+   {
+    "claim_path": "$.symptom",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ASSET",
+     "EV-DOM",
+     "EV-SEC"
+    ]
+   },
+   {
+    "claim_path": "$.immediate_cause",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-SEC",
+     "EV-DOM"
+    ]
+   },
+   {
+    "claim_path": "$.systemic_root_cause",
+    "evidence_refs": [
+     "EV-ERR",
+     "EV-ASSET",
+     "EV-EKB"
+    ]
+   },
+   {
+    "claim_path": "$.first_bad_control",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-ERR"
+    ]
+   },
+   {
+    "claim_path": "$.escape_control",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "claim_path": "$.origin_asset",
+    "evidence_refs": [
+     "EV-ASSET"
+    ]
+   },
+   {
+    "claim_path": "$.origin_operation",
+    "evidence_refs": [
+     "EV-OP"
+    ]
+   },
+   {
+    "claim_path": "$.owner",
+    "evidence_refs": [
+     "EV-REG",
+     "EV-OP"
+    ]
+   }
+  ],
+  "blocking_codes": [],
+  "next_gate": {
+   "gate": "ROUTER_ACT_0001_IMPLEMENTATION_ROUTING",
+   "entry_condition": "Spec accepted by the canonical quality gates and owner ratification of DEL-4 requested; no DESIGN_BLOCKING uncertainty.",
+   "exit_condition": "Router resolves the write route for each deliverable; stages ADOPT then ENFORCE complete with readback and the planned falsifications converted to observed results."
+  },
+  "implementation_delta": [
+   {
+    "target": "ACT-0058 skill, OP-4 capture-failure closing clause",
+    "action": "Write a controlled failure class prefix in error_detail and the pipeline_run_id when closing a URL FALLIDO, and consult the retry rule before any re-attempt.",
+    "rationale": "Moves retry from prose intent to a checked decision at the first bad control.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ERR",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "target": "policy row for capture-failure retry rule in the existing policy store",
+    "action": "Add rule-as-data mapping failure classes to retryable or non-retryable with max_attempts and backoff fields left to ratified values.",
+    "rationale": "Reuses lf_policy_versions instead of a new engine; absence means no retry.",
+    "evidence_refs": [
+     "EV-ERR",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "target": "EKB WEB-001 validacion text",
+    "action": "Add the checks: FALLIDO rows have class and pipeline_run_id; re-attempts only for eligible classes; counts of distinct occurrences instead of appended prose.",
+    "rationale": "Aligns the escape control with the new invariant.",
+    "evidence_refs": [
+     "EV-EKB"
+    ]
+   },
+   {
+    "target": "owner_name of ACT-0058 in lf_activos",
+    "action": "Request owner ratification or replacement of the derived proposal LF_GOVERNANCE.",
+    "rationale": "Owner slot is a derived proposal, never existing authority.",
+    "evidence_refs": [
+     "EV-REG",
+     "EV-OP"
+    ]
+   }
+  ],
+  "transition_plan": {
+   "strategy": "Adopt the controlled vocabulary and run link in observe mode first, then enforce the retry gate per operation, starting with ACT-0058 capture only.",
+   "compatibility_rule": "Callers that do not yet write the class keep baseline behavior and are only reported by the conformance probe until their adoption stage passes; no blanket switch.",
+   "stages": [
+    {
+     "stage_id": "ADOPT",
+     "entry_condition": "Router route resolved and baseline text of OP-4 read.",
+     "changes": [
+      "Publish the retry rule row with classes only and no automatic retry value.",
+      "Write class prefix and pipeline_run_id on new FALLIDO closures; probe reports non-conforming writes."
+     ],
+     "exit_condition": "Probe shows zero untyped FALLIDO closures for the observation window set by the owner.",
+     "rollback_scope": "Retire the retry rule row and revert the OP-4 clause."
+    },
+    {
+     "stage_id": "ENFORCE",
+     "entry_condition": "ADOPT exit met and max_attempts and backoff ratified by the owner.",
+     "changes": [
+      "Enable the hard guard for ACT-0058 capture closing and re-attempt."
+     ],
+     "exit_condition": "Falsification and regression cases pass with readback.",
+     "rollback_scope": "Disable the guard for ACT-0058 only, preserving queue and run history."
+    }
+   ]
+  },
+  "rollback_plan": {
+   "trigger_conditions": [
+    "Valid first-time captures are blocked or retry volume changes unexpectedly after a stage."
+   ],
+   "inverse_actions": [
+    "Restore the previous OP-4 clause text recorded as baseline and set the retry rule row to RETIRED."
+   ],
+   "protected_history": [
+    "Do not rewrite or delete historical lf_url_queue, lf_pipeline_runs, EKB or lf_eventos rows."
+   ],
+   "verification": [
+    "Re-read the skill clause and the policy row status and rerun the three acceptance queries."
+   ]
+  },
+  "solution_depth": {
+   "mode": "BOUNDED",
+   "rationale": "Authority and architecture boundaries are stable (existing queue, run table, policy store, orchestrator); a few local design decisions on the failure contract need focused investigation and external research cannot change them.",
+   "complexity_signals": [
+    "POLICY_CONTRACT_CHANGE"
+   ]
+  },
+  "research_assurance": {
+   "research_complete": true,
+   "research_questions": [
+    "Which existing LF columns and stores can carry a controlled failure class and run link without a new engine?",
+    "Is the fail-closed no-KB control intact today?"
+   ],
+   "internal_evidence_refs": [
+    "EV-ASSET",
+    "EV-ERR",
+    "EV-EKB",
+    "EV-OP"
+   ],
+   "current_practice_research_required": false,
+   "external_research_rationale": "Internal canonical authority fully determines the bounded contract change; external practice cannot alter which LF columns, store or route are used.",
+   "external_evidence_refs": [],
+   "patterns_compared": [
+    {
+     "pattern": "Controlled failure vocabulary plus rule-as-data retry",
+     "fit": "High: reuses existing columns and policy store.",
+     "tradeoff": "Needs a ratified cap and backoff.",
+     "source_refs": [
+      "EV-ERR",
+      "EV-ASSET"
+     ]
+    },
+    {
+     "pattern": "Keep prose EKB only",
+     "fit": "Low: recurrence and unlinked rows persist.",
+     "tradeoff": "No change cost.",
+     "source_refs": [
+      "EV-EKB",
+      "EV-ASSET"
+     ]
+    }
+   ],
+   "first_solution_disposition": "RETAINED_AFTER_CHALLENGE",
+   "context_strategy": "LOCAL_ONLY"
+  },
+  "challenger_review": [
+   {
+    "challenge_id": "CH-1",
+    "challenge": "Is the failure really systemic, or is it only an external outage that the pipeline already handles fail-closed?",
+    "outcome": "SURVIVED",
+    "resolution": "The harm control holds (0 of 39 FALLIDO urls with a KB row) and is kept; the systemic part is the untyped retry and missing lineage, which are LF-owned.",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-EKB"
+    ]
+   },
+   {
+    "challenge_id": "CH-2",
+    "challenge": "Is a new table or fetcher needed instead of reusing existing columns?",
+    "outcome": "SURVIVED",
+    "resolution": "No: error_detail, intento_count, pipeline_run_id, failure_category and the policy store already exist.",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-ERR"
+    ]
+   },
+   {
+    "challenge_id": "CH-3",
+    "challenge": "Could enforcement break callers that do not write the class?",
+    "outcome": "DESIGN_CHANGED",
+    "resolution": "Observe-first ADOPT stage, then ENFORCE only for ACT-0058 capture.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ASSET"
+    ]
+   }
+  ],
+  "omission_discovery": [
+   {
+    "dimension": "ARCHITECTURE",
+    "disposition": "REUSE_AS_IS",
+    "finding": "Existing queue, run table and orchestrator are kept; no new component.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "CONTROLS",
+    "disposition": "REQUIRED_CHANGE",
+    "finding": "Add the closing and re-attempt gate as the hard guard.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ERR"
+    ]
+   },
+   {
+    "dimension": "POLICIES_CONTRACTS",
+    "disposition": "REQUIRED_CHANGE",
+    "finding": "Controlled failure class vocabulary, run link and retry rule row.",
+    "evidence_refs": [
+     "EV-ERR",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "CONTEXT_TRANSPORT",
+    "disposition": "NOT_APPLICABLE",
+    "finding": "No model context payload is transported by this repair.",
+    "evidence_refs": [
+     "EV-OP"
+    ]
+   },
+   {
+    "dimension": "WIRING",
+    "disposition": "REUSE_AS_IS",
+    "finding": "Orchestrator to queue and run table wiring already exists and is reused; only the record content changes.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "COMPATIBILITY_TRANSITION",
+    "disposition": "REUSE_AS_IS",
+    "finding": "Handled by the staged transition plan; no consumer is cut over blindly.",
+    "evidence_refs": [
+     "EV-OP",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "RECOVERY_TERMINALITY",
+    "disposition": "REUSE_AS_IS",
+    "finding": "FALLIDO remains the terminal state and rollback restores the prior clause.",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-EKB"
+    ]
+   },
+   {
+    "dimension": "OBSERVABILITY",
+    "disposition": "REUSE_AS_IS",
+    "finding": "The read-only conformance queries and EKB validation provide readback.",
+    "evidence_refs": [
+     "EV-EKB",
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "SECURITY_AUTHORITY",
+    "disposition": "NOT_APPLICABLE",
+    "finding": "No permission or credential change.",
+    "evidence_refs": [
+     "EV-OP"
+    ]
+   },
+   {
+    "dimension": "COST_PERFORMANCE",
+    "disposition": "REUSE_AS_IS",
+    "finding": "No paid provider; bounded retry reduces repeated calls.",
+    "evidence_refs": [
+     "EV-EKB"
+    ]
+   },
+   {
+    "dimension": "TESTING_ASSURANCE",
+    "disposition": "REUSE_AS_IS",
+    "finding": "Planned falsification and regression protocols cover the guard.",
+    "evidence_refs": [
+     "EV-ASSET"
+    ]
+   },
+   {
+    "dimension": "OPERABILITY_MAINTENANCE",
+    "disposition": "NOT_APPLICABLE",
+    "finding": "No background job, trigger or queue lifecycle is created; the existing orchestrator schedule is unchanged.",
+    "evidence_refs": [
+     "EV-OP"
+    ]
+   }
+  ],
+  "implementation_package": {
+   "architecture_decisions": [
+    {
+     "decision_id": "D1",
+     "question": "Where must retry intent become a checked decision?",
+     "decision": "At the ACT-0058 capture closing clause, backed by a rule-as-data row in the existing policy store.",
+     "authority_ref": "EV-OP",
+     "rationale": "First preventable boundary; reuses existing authority and columns.",
+     "alternatives_considered": [
+      "ALT-A",
+      "ALT-C"
+     ],
+     "evidence_refs": [
+      "EV-OP",
+      "EV-ERR",
+      "EV-ASSET"
+     ]
+    }
+   ],
+   "control_matrix": [
+    {
+     "control_id": "CTRL-CAPTURE-FAILURE-GATE",
+     "purpose": "Prevent untyped FALLIDO closure and unauthorized re-attempt.",
+     "authority_ref": "EV-OP",
+     "applies_when": "Every capture failure closing and every re-attempt decision of ACT-0058.",
+     "enforcement_point_ref": "EV-OP",
+     "input_contract": "url, failure class, pipeline_run_id, intento_count, retry rule version and sha.",
+     "blocking_code": "CAPTURE_FAILURE_UNCLASSIFIED",
+     "observable_result": "No fetch and no KB row; block code on queue row and run.",
+     "verification_method": "Run REG-UNTYPED-CLOSE, REG-RETRY-CAP and REG-NO-KB."
+    }
+   ],
+   "policy_contract_changes": [
+    {
+     "authority_ref": "EV-ERR",
+     "change": "Controlled failure class prefix in error_detail with classes RETRYABLE_TRANSIENT, NON_RETRYABLE, NOT_A_FETCH_FAILURE and a mandatory pipeline_run_id on FALLIDO.",
+     "owner_ref": "EV-REG",
+     "compatibility_rule": "Unadopted callers keep baseline and are reported by the probe until adoption.",
+     "evidence_refs": [
+      "EV-ERR",
+      "EV-ASSET"
+     ]
+    }
+   ],
+   "context_transport": {
+    "status": "NOT_APPLICABLE",
+    "rationale": "The repair moves no model context; it changes a database record contract and a skill clause.",
+    "compiler_ref": null,
+    "delivery_strategy": null,
+    "deterministic_inputs": [],
+    "jit_refs": [],
+    "excluded_payloads": [],
+    "token_budget": null,
+    "degradation_rule": null
+   },
+   "wiring": [
+    {
+     "from_ref": "ACT-0058 capture stage",
+     "to_ref": "public.lf_url_queue",
+     "contract_ref": "EV-ASSET",
+     "data_carried": [
+      "url",
+      "failure class",
+      "intento_count",
+      "pipeline_run_id"
+     ],
+     "precondition": "Caller belongs to the adopted set.",
+     "fail_closed_behavior": "Missing class or run link blocks the FALLIDO write."
+    },
+    {
+     "from_ref": "ACT-0058 capture stage",
+     "to_ref": "retry rule row in policy store",
+     "contract_ref": "EV-OP",
+     "data_carried": [
+      "failure class",
+      "attempt count",
+      "rule version"
+     ],
+     "precondition": "Active rule row exists.",
+     "fail_closed_behavior": "No rule or no value means NOT_ELIGIBLE."
+    }
+   ],
+   "deliverables": [
+    {
+     "artifact_ref": "DEL-1-RETRY-RULE-ROW",
+     "change_type": "CREATE",
+     "exact_delta": "Policy-store row mapping the three failure classes to retryable or not, with max_attempts and backoff as ratified fields.",
+     "dependencies": [
+      "Router route for policy writes"
+     ],
+     "acceptance_refs": [
+      "AC-1",
+      "REG-RETRY-CAP"
+     ]
+    },
+    {
+     "artifact_ref": "DEL-2-OP4-CLOSING-CLAUSE",
+     "change_type": "MODIFY",
+     "exact_delta": "Replace the retry clause with: write class and pipeline_run_id on FALLIDO; consult DEL-1 before any re-attempt.",
+     "dependencies": [
+      "DEL-1-RETRY-RULE-ROW"
+     ],
+     "acceptance_refs": [
+      "AC-1",
+      "REG-UNTYPED-CLOSE"
+     ]
+    },
+    {
+     "artifact_ref": "DEL-3-EKB-VALIDATION",
+     "change_type": "MODIFY",
+     "exact_delta": "Extend EKB WEB-001 validacion with the class, run link and eligible-retry checks.",
+     "dependencies": [
+      "DEL-2-OP4-CLOSING-CLAUSE"
+     ],
+     "acceptance_refs": [
+      "AC-3",
+      "REG-NO-KB"
+     ]
+    },
+    {
+     "artifact_ref": "DEL-4-OWNER-RATIFICATION",
+     "change_type": "BIND",
+     "exact_delta": "Owner ratifies or replaces the derived proposal LF_GOVERNANCE for ACT-0058 through the approved operational runtime.",
+     "dependencies": [
+      "owner decision"
+     ],
+     "acceptance_refs": [
+      "AC-1"
+     ]
+    }
+   ],
+   "observability_plan": [
+    {
+     "signal": "fallido_without_class_or_run_link_count",
+     "source_ref": "EV-ASSET",
+     "expected_change": "Zero after activation.",
+     "alert_or_gate": "Block closure on nonzero."
+    },
+    {
+     "signal": "reattempts_over_cap_count",
+     "source_ref": "EV-ASSET",
+     "expected_change": "Zero.",
+     "alert_or_gate": "Block closure on nonzero."
+    }
+   ],
+   "decision_closure": {
+    "handoff_ready": true,
+    "open_design_decisions": [],
+    "implementation_preconditions": [
+     {
+      "name": "Read baseline OP-4 retry clause",
+      "resolver_ref": "repo://skills/orquestador_pipeline_lf/SKILL.md#OP-4,retry",
+      "expected_shape": "Text of the clause at the exact skill revision.",
+      "decision_rule": "Record the text as the MODIFY baseline and rollback source; proceed regardless of its content.",
+      "stage": "ADOPT",
+      "design_effect": "NONE"
+     },
+     {
+      "name": "Ratified retry numerics",
+      "resolver_ref": "owner decision recorded in DEL-1-RETRY-RULE-ROW",
+      "expected_shape": "Integer max_attempts >= 1 and a backoff interval.",
+      "decision_rule": "If both values exist in the rule row ENFORCE may start; if either is absent the rule yields NOT_ELIGIBLE and ENFORCE does not start.",
+      "stage": "ENFORCE",
+      "design_effect": "NONE"
+     },
+     {
+      "name": "Owner ratification for ACT-0058",
+      "resolver_ref": "owner decision recorded through the approved operational runtime for lf_activos ACT-0058",
+      "expected_shape": "A non-empty owner_name value or an explicit rejection of the derived proposal.",
+      "decision_rule": "If ratified, replace the DERIVED_PROPOSAL with the ratified value; if rejected, use the owner given; the repair design is unchanged in both cases.",
+      "stage": "ADOPT",
+      "design_effect": "NONE"
+     }
+    ],
+    "closure_statement": "The implementer may read the baseline clause and the ratified numerics, but no remaining choice can change authority, enforcement point, wiring, transition, rollback or acceptance."
+   }
+  },
+  "closure_proof": {
+   "contract_version": "SRCR_CLOSURE_PROOF_V2",
+   "materiality": [
+    {
+     "signal": "POLICY_CONTRACT_CHANGE",
+     "material": true,
+     "rationale": "A controlled failure class and retry rule change the record contract.",
+     "obligation_ids": [
+      "PO-POLICY"
+     ]
+    },
+    {
+     "signal": "POLICIES_CONTRACTS",
+     "material": true,
+     "rationale": "Omission dimension POLICIES_CONTRACTS is REQUIRED_CHANGE.",
+     "obligation_ids": [
+      "PO-POLICY"
+     ]
+    },
+    {
+     "signal": "CONTROLS",
+     "material": true,
+     "rationale": "Omission dimension CONTROLS is REQUIRED_CHANGE.",
+     "obligation_ids": [
+      "PO-DECISION"
+     ]
+    },
+    {
+     "signal": "DECISION_CLOSURE",
+     "material": true,
+     "rationale": "Readiness must be derived from closed obligations.",
+     "obligation_ids": [
+      "PO-DECISION"
+     ]
+    },
+    {
+     "signal": "EVIDENCE_PROVENANCE",
+     "material": true,
+     "rationale": "Authority claims need manifest-bound evidence.",
+     "obligation_ids": [
+      "PO-EVIDENCE"
+     ]
+    },
+    {
+     "signal": "AUTHORITY_CHANGE",
+     "material": false,
+     "rationale": "No authority is changed; the owner slot is only a derived proposal to ratify.",
+     "obligation_ids": []
+    }
+   ],
+   "proof_obligations": [
+    {
+     "obligation_id": "PO-AUTH",
+     "obligation_type": "AUTHORITY_EXISTENCE",
+     "proof_phase": "CURRENT_STATE",
+     "derived_from": [
+      "BASELINE_EXISTING_AUTHORITY"
+     ],
+     "status": "CLOSED",
+     "evidence_ids": [
+      "EV-ASSET",
+      "EV-OP",
+      "EV-REG"
+     ],
+     "decision_refs": [
+      "$.origin_asset",
+      "$.origin_operation",
+      "$.owner"
+     ],
+     "missing_requirements": [],
+     "closure_basis": "Origin asset and operation are backed by current manifest evidence; owner is a DERIVED_PROPOSAL, not existing authority, with ratification deliverable DEL-4."
+    },
+    {
+     "obligation_id": "PO-POLICY",
+     "obligation_type": "POLICY_CONTRACT",
+     "proof_phase": "REPAIR_DESIGN",
+     "derived_from": [
+      "POLICY_CONTRACT_CHANGE",
+      "POLICIES_CONTRACTS"
+     ],
+     "status": "CLOSED",
+     "evidence_ids": [
+      "EV-ERR",
+      "EV-ASSET"
+     ],
+     "decision_refs": [
+      "$.implementation_package.policy_contract_changes"
+     ],
+     "missing_requirements": [],
+     "closure_basis": "The class vocabulary, run link and rule row are fully specified with owner and compatibility rule."
+    },
+    {
+     "obligation_id": "PO-DECISION",
+     "obligation_type": "DECISION_CLOSURE",
+     "proof_phase": "REPAIR_DESIGN",
+     "derived_from": [
+      "DECISION_CLOSURE",
+      "CONTROLS"
+     ],
+     "status": "CLOSED",
+     "evidence_ids": [
+      "EV-CLOSURE"
+     ],
+     "decision_refs": [
+      "$.implementation_package.decision_closure"
+     ],
+     "missing_requirements": [],
+     "closure_basis": "Zero open design decisions; both preconditions are mechanical with design_effect NONE."
+    },
+    {
+     "obligation_id": "PO-EVIDENCE",
+     "obligation_type": "EVIDENCE_PROVENANCE",
+     "proof_phase": "CURRENT_STATE",
+     "derived_from": [
+      "EVIDENCE_PROVENANCE"
+     ],
+     "status": "CLOSED",
+     "evidence_ids": [
+      "EV-CLOSURE"
+     ],
+     "decision_refs": [
+      "$.evidence_map"
+     ],
+     "missing_requirements": [],
+     "closure_basis": "Claims map to manifest evidence ids."
+    },
+    {
+     "obligation_id": "PO-VERIFY",
+     "obligation_type": "TEST_ASSURANCE",
+     "proof_phase": "POST_IMPLEMENTATION",
+     "derived_from": [
+      "POST_IMPLEMENTATION_VERIFICATION"
+     ],
+     "status": "OPEN",
+     "evidence_ids": [],
+     "decision_refs": [],
+     "missing_requirements": [
+      "Planned falsifications and regressions executed with observed results"
+     ],
+     "closure_basis": null
+    }
+   ],
+   "authority_bindings": [
+    {
+     "subject": "URL-CAPTURE-QUEUE",
+     "authority_kind": "EXISTING_AUTHORITY",
+     "used_as_existing_authority": true,
+     "evidence_ids": [
+      "EV-ASSET"
+     ]
+    },
+    {
+     "subject": "ACT-0058-PIPELINE-ORCHESTRATOR",
+     "authority_kind": "EXISTING_AUTHORITY",
+     "used_as_existing_authority": true,
+     "evidence_ids": [
+      "EV-OP"
+     ]
+    },
+    {
+     "subject": "OWNER-CONVENTION-REGISTRY",
+     "authority_kind": "DERIVED_PROPOSAL",
+     "used_as_existing_authority": false,
+     "evidence_ids": [
+      "EV-REG"
+     ]
+    }
+   ],
+   "wiring_proofs": [],
+   "context_transport_proofs": [],
+   "behavioral_proofs": [],
+   "derived_decision_closure": {
+    "required_obligation_ids": [
+     "PO-AUTH",
+     "PO-POLICY",
+     "PO-DECISION",
+     "PO-EVIDENCE"
+    ],
+    "closed_obligation_ids": [
+     "PO-AUTH",
+     "PO-POLICY",
+     "PO-DECISION",
+     "PO-EVIDENCE"
+    ],
+    "open_obligation_ids": [],
+    "post_implementation_obligation_ids": [
+     "PO-VERIFY"
+    ],
+    "handoff_ready": true,
+    "quality_state": "QUALITY_PENDING"
+   }
+  },
+  "repair_disposition": {
+   "decision": "REPAIR_REQUIRED",
+   "rationale": "WEB-001 is recorded 46 times (2026-08-24..2026-09-01) and 39 queue rows are FALLIDO; the data-integrity control already holds (0 of 39 FALLIDO URLs has a KB row), but the declared 'controlled retry' is not mechanized: failure causes are free text and 19 of 39 FALLIDO rows carry no pipeline_run_id link. A bounded contract repair is justified; the external fetch dependency itself is not repairable inside LF.",
+   "evidence_refs": [
+    "EV-EKB",
+    "EV-ASSET",
+    "EV-ERR"
+   ],
+   "currentness_refs": [
+    "EV-ASSET",
+    "EV-EKB"
+   ],
+   "active_failure_present": true,
+   "material_repair_justified": true,
+   "verification": {
+    "executable": true,
+    "method": "Read-only SQL on lf_url_queue: count estado='FALLIDO', count FALLIDO rows with pipeline_run_id IS NULL, count distinct error_detail classes, and count lf_knowledge_base rows whose source_url equals a FALLIDO url.",
+    "expected_result": "Current readback (2026-10-29): 39 FALLIDO, 19 without pipeline_run_id, error_detail free text across 15 groups, 0 KB rows for FALLIDO urls; repair is required while the untyped/unlinked rows exist.",
+    "evidence_refs": [
+     "EV-ASSET",
+     "EV-ERR"
+    ]
+   }
+  },
+  "quantitative_decisions": [
+   {
+    "decision_id": "QD-MAX-ATTEMPTS",
+    "parameter": "maximum automatic re-attempts per queue url",
+    "proposed_value": null,
+    "materiality": "MATERIAL",
+    "affects": [
+     "terminality",
+     "retry volume"
+    ],
+    "grounding_type": "IMPLEMENTATION_PRECONDITION",
+    "grounding_ref": "Ratified retry numerics",
+    "evidence_refs": [
+     "EV-ASSET"
+    ],
+    "incident_specific_only": false,
+    "closure_state": "PRECONDITION",
+    "precondition_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+   },
+   {
+    "decision_id": "QD-BACKOFF",
+    "parameter": "backoff interval between re-attempts",
+    "proposed_value": null,
+    "materiality": "MATERIAL",
+    "affects": [
+     "terminality",
+     "retry volume"
+    ],
+    "grounding_type": "IMPLEMENTATION_PRECONDITION",
+    "grounding_ref": "Ratified retry numerics",
+    "evidence_refs": [
+     "EV-ASSET"
+    ],
+    "incident_specific_only": false,
+    "closure_state": "PRECONDITION",
+    "precondition_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+   }
+  ],
+  "material_process_graph": {
+   "applies": true,
+   "rationale": "The failure class spans a multi-stage capture lifecycle (fetch, failure recording, retry decision, terminal state) and the repair changes two of its stages.",
+   "nodes": [
+    {
+     "node_id": "N-FETCH",
+     "phase": "CAPTURE_FETCH",
+     "authority_refs": [
+      "EV-OP"
+     ],
+     "inputs": [
+      "queued url"
+     ],
+     "outputs": [
+      "page content or fetch failure"
+     ],
+     "state_transition": "PENDIENTE -> fetch result",
+     "producer_refs": [
+      "EV-OP"
+     ],
+     "consumer_refs": [
+      "EV-OP"
+     ],
+     "wiring_refs": [
+      "EV-OP"
+     ],
+     "control_refs": [
+      "EV-OP"
+     ],
+     "failure_recovery": "External dependency; failure returns to N-RECORD, never fabricates content.",
+     "disposition": "REUSE_AS_IS",
+     "evidence_refs": [
+      "EV-EKB",
+      "EV-SEC"
+     ],
+     "acceptance_refs": [
+      "AC-3"
+     ]
+    },
+    {
+     "node_id": "N-RECORD",
+     "phase": "FAILURE_RECORDING",
+     "authority_refs": [
+      "EV-OP"
+     ],
+     "inputs": [
+      "fetch failure"
+     ],
+     "outputs": [
+      "FALLIDO row with class and run link"
+     ],
+     "state_transition": "PENDIENTE -> FALLIDO",
+     "producer_refs": [
+      "EV-OP"
+     ],
+     "consumer_refs": [
+      "EV-ASSET"
+     ],
+     "wiring_refs": [
+      "EV-ASSET"
+     ],
+     "control_refs": [
+      "CTRL-CAPTURE-FAILURE-GATE"
+     ],
+     "failure_recovery": "Unclassified closure is rejected; interrupted run is closed once on resume.",
+     "disposition": "IMPLEMENTABLE",
+     "evidence_refs": [
+      "EV-ASSET",
+      "EV-ERR"
+     ],
+     "acceptance_refs": [
+      "AC-1",
+      "REG-UNTYPED-CLOSE"
+     ]
+    },
+    {
+     "node_id": "N-RETRY",
+     "phase": "RETRY_DECISION",
+     "authority_refs": [
+      "EV-OP"
+     ],
+     "inputs": [
+      "FALLIDO row",
+      "retry rule"
+     ],
+     "outputs": [
+      "eligible or not eligible"
+     ],
+     "state_transition": "FALLIDO -> FALLIDO (terminal) or PENDIENTE (eligible)",
+     "producer_refs": [
+      "EV-OP"
+     ],
+     "consumer_refs": [
+      "EV-OP"
+     ],
+     "wiring_refs": [
+      "EV-OP"
+     ],
+     "control_refs": [
+      "CTRL-CAPTURE-FAILURE-GATE"
+     ],
+     "failure_recovery": "Absent rule or value means not eligible; attempts counted once per genuine attempt.",
+     "disposition": "IMPLEMENTABLE",
+     "evidence_refs": [
+      "EV-ASSET",
+      "EV-ERR"
+     ],
+     "acceptance_refs": [
+      "AC-2",
+      "REG-RETRY-CAP"
+     ]
+    }
+   ],
+   "edges": [
+    {
+     "edge_id": "EDGE-FETCH-RECORD",
+     "from_node": "N-FETCH",
+     "to_node": "N-RECORD",
+     "edge_kind": "CONTROL_FLOW",
+     "observation_status": "OBSERVED_OPEN",
+     "disposition": "IMPLEMENTABLE",
+     "producer_evidence_refs": [
+      "EV-EKB"
+     ],
+     "transport_evidence_refs": [
+      "EV-ERR"
+     ],
+     "consumer_evidence_refs": [
+      "EV-ASSET"
+     ],
+     "enforcement_evidence_refs": [],
+     "effect_readback_evidence_refs": [
+      "EV-ASSET"
+     ],
+     "gap_evidence_refs": [
+      "EV-ERR",
+      "EV-ASSET"
+     ],
+     "next_gate": "N-RETRY retry decision",
+     "next_gate_consumer_evidence_refs": [],
+     "canonical_route_consistency": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "post_transition_currentness": {
+      "applicability": "REQUIRED",
+      "status": "OBSERVED_PASS",
+      "evidence_refs": [
+       "EV-ASSET"
+      ]
+     },
+     "terminality": {
+      "applicability": "REQUIRED",
+      "status": "OBSERVED_PASS",
+      "evidence_refs": [
+       "EV-ASSET"
+      ]
+     },
+     "identity_consistency": {
+      "applicability": "REQUIRED",
+      "status": "OBSERVED_FAIL",
+      "evidence_refs": [
+       "EV-ASSET"
+      ]
+     },
+     "rollback_executability": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "proposed_change_ref": "DEL-2-OP4-CLOSING-CLAUSE",
+     "blocking_uncertainty_id": null
+    },
+    {
+     "edge_id": "EDGE-RECORD-RETRY",
+     "from_node": "N-RECORD",
+     "to_node": "N-RETRY",
+     "edge_kind": "CONTROL_FLOW",
+     "observation_status": "OBSERVED_OPEN",
+     "disposition": "IMPLEMENTABLE",
+     "producer_evidence_refs": [
+      "EV-ASSET"
+     ],
+     "transport_evidence_refs": [
+      "EV-ERR"
+     ],
+     "consumer_evidence_refs": [],
+     "enforcement_evidence_refs": [],
+     "effect_readback_evidence_refs": [
+      "EV-ASSET"
+     ],
+     "gap_evidence_refs": [
+      "EV-ERR"
+     ],
+     "next_gate": null,
+     "next_gate_consumer_evidence_refs": [],
+     "canonical_route_consistency": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "post_transition_currentness": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "terminality": {
+      "applicability": "REQUIRED",
+      "status": "OBSERVED_PASS",
+      "evidence_refs": [
+       "EV-ASSET"
+      ]
+     },
+     "identity_consistency": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "rollback_executability": {
+      "applicability": "REQUIRED",
+      "status": "PROPOSED_ONLY",
+      "evidence_refs": []
+     },
+     "proposed_change_ref": "DEL-1-RETRY-RULE-ROW",
+     "blocking_uncertainty_id": null
+    }
+   ]
+  },
+  "case_mode": "INCIDENT_REPAIR"
+ },
+ "output_sha256": "64711b7782349090c0f72719d1fd84ea84d49aa65154518ce9bc9521d9527e9e"
+}

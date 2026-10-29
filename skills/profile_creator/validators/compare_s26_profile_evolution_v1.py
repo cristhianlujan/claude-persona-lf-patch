@@ -16,6 +16,9 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import operational_coverage_v1 as opc  # trusted sibling module (same directory as this tool)
+
 SCHEMA = "S26_PROFILE_EVOLUTION_PROOF_V1"
 EVALUATOR_REL = Path("skills/profile_creator/validators/evaluate_s26_profile_baseline.py")
 BASELINE_REL = Path("skills/profile_creator/contracts/s26_profile_baseline_v1.json")
@@ -52,7 +55,8 @@ def _evaluate(evaluator, trusted_root: Path, slug: str, profile_dir: Path, seed:
         return evaluator.evaluate(root, slug, seed=seed)
 
 
-def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path) -> dict[str, Any]:
+def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path,
+            operational_root: Path | None = None) -> dict[str, Any]:
     trusted_root = trusted_root.resolve()
     result: dict[str, Any] = {"schema": SCHEMA, "profile_slug": slug, "verdict": "BLOCKED",
                               "blocking_codes": [], "improved_dimensions": [], "regressed_dimensions": []}
@@ -82,10 +86,15 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path) 
         "improved_dimensions": improved, "regressed_dimensions": regressed,
         "structural_ceiling_reached": base["score"] == base["required"],
     })
-    if regressed:
+    # Group 2 (operational cases): trusted cases and runs from the trusted root, bound to the exact trees.
+    operational = opc.evaluate(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, base_dir, candidate_dir)
+    result["operational"] = operational
+    basis = (["STRUCTURAL_S26"] if improved else []) + (["OPERATIONAL_COVERAGE"] if operational["improved_checks"] else [])
+    if regressed or operational["regressed_checks"]:
         result["verdict"] = "REGRESSION"
-    elif improved:
+    elif basis:
         result["verdict"] = "EVOLUTION_DEMONSTRATED"
+        result["evolution_basis"] = basis
     else:
         result["verdict"] = "NO_DEMONSTRATED_IMPROVEMENT"
     return _seal(result)
