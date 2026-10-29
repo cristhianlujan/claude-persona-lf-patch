@@ -469,5 +469,77 @@ END
 $function$
 
 
--- No promotion: rollback always. Tests against isolated PostgreSQL clone needed.
+-- Test the actual newly compiled helper inside the same rollback transaction.
+-- No test creates an IG run, overrides a profile output, or grants privileges.
+DO $postcheck$
+DECLARE
+  a jsonb;
+  f jsonb:=jsonb_build_object(
+    'schema_version','IG_PROFILE_FEEDBACK_V1',
+    'source_execution_id','UNKNOWN-EXECUTION-TEST-01',
+    'source_profile_code','PERFIL-UI-ARCHITECT',
+    'source_profile_output_sha256','sha256:'||repeat('a',64),
+    'ig',jsonb_build_object(
+      'run_id',949,'pantalla_id',51,'family_code','SESSION',
+      'source_snapshot_sha256',repeat('b',64)),
+    'kind','EVIDENCE_CHALLENGE','reason','Test of hypothetical evidence',
+    'requested_resolution','FOCAL_REVIEW_ONLY',
+    'evidence_refs',jsonb_build_array('supabase://example/receipt')
+  );
+BEGIN
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT','null'::jsonb);
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_SHAPE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_JSON_NULL:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{ig}','[]'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_SHAPE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_BAD_IG_SHAPE:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    f||jsonb_build_object('target_profile','PERFIL-PRODUCT-DIRECTOR-LF'));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_FORBIDDEN_KEYS' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_DIRECT_TARGET:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{evidence_refs}','[]'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_EMPTY_EVIDENCE:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{evidence_refs}','{"bad":"object"}'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_EVIDENCE_SHAPE:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{requested_resolution}','"FULL_RECURATE"'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_FORCE_FULL_RECURATE:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{kind}','"NONCANONICAL_RULE_PROPOSAL"'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_PROPOSAL_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_PROPOSAL_AUTHORITY:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{kind}','"UNSUPPORTED_DISAGREEMENT"'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_UNSUPPORTED_RERUN_FORBIDDEN' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_UNSUPPORTED_LOOP:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',f);
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_EXECUTION_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_FAKE_EXECUTION:%',a; END IF;
+END
+$postcheck$;
+
+-- No promotion: rollback always. Tests require isolated PostgreSQL clone.
 ROLLBACK;
