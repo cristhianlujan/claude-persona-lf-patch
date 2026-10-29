@@ -281,6 +281,33 @@ jobs:
           print("PASS_LOGIN_B2B_PRODUCT_DIRECTOR_RAW")
           PY
 
+      - name: Validate IG949 corrected Product Director candidate R1
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import copy,json,subprocess,sys
+          from pathlib import Path
+          path=Path("sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_corrected_candidate_r1_20261029.json")
+          a=json.loads(path.read_text(encoding="utf-8"))
+          canonical="profiles/product_director_lf/validators/validate_product_director_output.py"
+          def check(v):
+              p=subprocess.run([sys.executable,canonical],input=json.dumps(v,ensure_ascii=False),text=True,capture_output=True,check=True)
+              return json.loads(p.stdout)
+          result=check(a)
+          print("IG949_R1_CANONICAL_VALIDATOR",json.dumps(result,ensure_ascii=False,sort_keys=True))
+          assert result.get("valid") is True and result.get("blocking_codes")==[],result
+          assert a["traceability"]["origin_raw_git_blob_sha"]=="e9d12e39fdc51c0ba84b0371705a4371a14d4991"
+          d=a["deliverable_created"]
+          assert len(d["acceptance_criteria"])>=6
+          assert all(x in d["product_decision"]["selected_decision"] for x in ["35","10","2","20"])
+          bad=copy.deepcopy(a)
+          bad["deliverable_created"]["decision_lineage"]["selected_decision"]="TAMPERED"
+          negative=check(bad)
+          print("IG949_R1_NEGATIVE_CANONICAL",json.dumps(negative,ensure_ascii=False,sort_keys=True))
+          assert negative.get("valid") is False and "DECISION_LINEAGE_MISMATCH" in negative.get("blocking_codes",[]),negative
+          print("PASS_IG949_CORRECTED_CANDIDATE_CANONICAL_AND_NEGATIVE")
+          PY
+
       - name: Guard deterministic canonical-read semantic judge boundary
         run: |
           set -euo pipefail
