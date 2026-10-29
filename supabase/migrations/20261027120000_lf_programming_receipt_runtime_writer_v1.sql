@@ -489,7 +489,7 @@ DECLARE e record; c record; j record; b jsonb; sel text; selsha text; dref text;
  h jsonb:=p_programming_handoff; ctx uuid; r jsonb; receipt jsonb; reasons jsonb;
  snapshot jsonb; ready jsonb; scopes jsonb; env jsonb; result jsonb; oldrow record;
  warnings jsonb:='[]'::jsonb; stamp timestamptz; valid_from text; valid_until text;
- keysha text; screen_count bigint; norm_scopes jsonb; canonical jsonb; sid text;
+ keysha text; screen_count bigint; norm_scopes jsonb; canonical jsonb; sid text; dg jsonb;
  constant_digest CONSTANT text:='d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8';
 BEGIN
  SELECT * INTO e FROM public.lf_operation_execution WHERE execution_id=p_source_execution_id;
@@ -623,12 +623,27 @@ BEGIN
      AND (nullif(btrim(coalesce(s.created_by_execution_id,'')),'') IS NULL
           OR s.created_by_execution_id IS DISTINCT FROM p_judge_execution_id)) THEN
    RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_REVIEW_RESULT_UNPROVEN'; END IF;
- -- H-A2 authority gate (fail-closed). Every check above binds the judge to rows that
- -- service_role cannot write, but the root of that chain is not authenticated: service_role
- -- may INSERT public.lf_operation_execution rows (ORQUESTACION_PIPELINE_LF is not a
- -- ROUTER_DOWNSTREAM_AUTHORITY consumer) and the evidence anchor takes VERIFIED from its
- -- caller. Until an authenticated reviewer/orchestrator identity exists (owner decision D-B),
- -- no runtime PG-01 receipt is issued. Lifting this gate is the only change D-B requires here.
+ -- D-A: the subject receipt must carry an authenticated Supabase readback (programacion_verifier
+ -- external login) of this exact snapshot, HEAD and producer. A VERIFIED ledger row alone is not enough.
+ PERFORM 1 FROM private.lf_pg01_subject_verifications_v1 sv
+  WHERE sv.receipt_id=(j.manifest->>'subject_receipt_id')::uuid AND sv.context_id=ctx
+    AND sv.observed_subject_sha256=c.context_sha256 AND sv.source_head_sha=j.manifest->>'source_head_sha'
+    AND sv.producer_execution_id=p_source_execution_id AND sv.resolver_id='LF_SUPABASE_READBACK_V1'
+    AND sv.authority_role='programacion_verifier';
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_RUNTIME_SUBJECT_VERIFICATION_UNATTESTED'; END IF;
+ -- D-B: an authenticated programacion_auditor login, distinct from the verifier, attested this
+ -- exact judge manifest and review steps. Any later change to either invalidates it.
+ dg:=private.fn_lf_pg01_judge_digest_v1(p_judge_execution_id);
+ PERFORM 1 FROM private.lf_pg01_review_attestations_v1 ra
+  JOIN private.lf_pg01_subject_verifications_v1 sv ON sv.receipt_id=ra.subject_receipt_id
+  WHERE ra.judge_execution_id=p_judge_execution_id AND ra.context_id=ctx AND ra.producer_execution_id=p_source_execution_id
+    AND ra.subject_receipt_id=(j.manifest->>'subject_receipt_id')::uuid AND ra.authority_role='programacion_auditor'
+    AND ra.manifest_sha256=dg->>'manifest_sha256' AND ra.steps_sha256=dg->>'steps_sha256'
+    AND ra.verifier_session_principal=sv.session_principal AND ra.session_principal IS DISTINCT FROM sv.session_principal;
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED'; END IF;
+ -- Authority gate (fail-closed). D-A/D-B are enforced above, but no authentic positive exists yet:
+ -- no LOGIN holds SET membership to programacion_verifier/programacion_auditor in Supabase and no
+ -- PG-01 subject has been verified. Remove this line only after an authentic positive (PG01-CP1).
  RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_AUTHORITY_UNVERIFIED';
  r:=private.fn_lf_programming_context_handoff_receive_v1(ctx,c.context_sha256);
  receipt:=r->'receipt'; reasons:=r->'block_reasons';

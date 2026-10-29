@@ -26,6 +26,12 @@ LANGUAGE sql STABLE AS $q$ SELECT 1::bigint,1::bigint,1::integer,p_app_shell_cod
  (SELECT p.estado FROM lf_ops.pantallas p WHERE p.codigo=p_screen_code LIMIT 1),'v1',jsonb_build_object('metadata',jsonb_build_object('generated_at','synthetic'),'fields','[]'::jsonb) $q$;
 -- D7 must be the REAL migration, not a hand-written stub.
 \i supabase/migrations/20261026173901_lf_programming_context_handoff_receipt_ledger_v1.sql
+\i sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_authority_programacion_fixture.sql
+CREATE TEMP TABLE att_lines(n bigint GENERATED ALWAYS AS IDENTITY,line text);
+\copy att_lines(line) FROM 'supabase/migrations/20261029160000_lf_pg01_authority_attestations_v1.sql' WITH (FORMAT csv, DELIMITER E'\x01', QUOTE E'\x02', ESCAPE E'\x03')
+SELECT replace(replace(string_agg(coalesce(line,''),E'\n' ORDER BY n),E'\nBEGIN;\n',E'\n'),E'\nCOMMIT;',E'\n') FROM att_lines
+\gexec
+GRANT SELECT ON private.lf_decision_context_asof_v1 TO programacion_verifier;
 -- Load the actual #3181 migration, previously applied in the intended stack.
 -- Its BEGIN/COMMIT are removed only for the disposable test transaction.
 CREATE TEMP TABLE src_lines(n bigint GENERATED ALWAYS AS IDENTITY,line text);

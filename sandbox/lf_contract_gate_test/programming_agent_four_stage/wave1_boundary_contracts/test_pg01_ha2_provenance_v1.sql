@@ -25,6 +25,12 @@ LANGUAGE sql STABLE AS $q$ SELECT 1::bigint,1::bigint,1::integer,p_app_shell_cod
  (SELECT p.estado FROM lf_ops.pantallas p WHERE p.codigo=p_screen_code LIMIT 1),'v1',jsonb_build_object('metadata',jsonb_build_object('generated_at','synthetic'),'fields','[]'::jsonb) $q$;
 -- D7 must be the REAL migration, not a hand-written stub.
 \i supabase/migrations/20261026173901_lf_programming_context_handoff_receipt_ledger_v1.sql
+\i sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_authority_programacion_fixture.sql
+CREATE TEMP TABLE att_lines(n bigint GENERATED ALWAYS AS IDENTITY,line text);
+\copy att_lines(line) FROM 'supabase/migrations/20261029160000_lf_pg01_authority_attestations_v1.sql' WITH (FORMAT csv, DELIMITER E'\x01', QUOTE E'\x02', ESCAPE E'\x03')
+SELECT replace(replace(string_agg(coalesce(line,''),E'\n' ORDER BY n),E'\nBEGIN;\n',E'\n'),E'\nCOMMIT;',E'\n') FROM att_lines
+\gexec
+GRANT SELECT ON private.lf_decision_context_asof_v1 TO programacion_verifier;
 -- Load the actual #3181 migration, previously applied in the intended stack.
 -- Its BEGIN/COMMIT are removed only for the disposable test transaction.
 CREATE TEMP TABLE src_lines(n bigint GENERATED ALWAYS AS IDENTITY,line text);
@@ -118,12 +124,12 @@ SELECT pg_temp.govern('JUDGE'); -- H-A2 adaptation: sandbox provenance
 \pset format unaligned
 SELECT pg_temp.putcontext('aaaaaaaa-0000-4000-8000-000000000002','PROFILE');
 CREATE FUNCTION pg_temp.nrec() RETURNS bigint LANGUAGE sql AS $q$ SELECT count(*) FROM private.lf_programming_context_handoff_receipts_v1 $q$;
-CREATE FUNCTION pg_temp.mkjudge(p_id text, p_ctx text DEFAULT 'aaaaaaaa-0000-4000-8000-000000000001') RETURNS void LANGUAGE plpgsql AS $q$ BEGIN
+CREATE FUNCTION pg_temp.mkjudge(p_id text, p_ctx text DEFAULT 'aaaaaaaa-0000-4000-8000-000000000001', p_attest int DEFAULT 2) RETURNS void LANGUAGE plpgsql AS $q$ BEGIN
  INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,manifest,started_at,completed_at)
  VALUES(p_id,'REVISION_INDEPENDIENTE_ESTRATEGIA_LF','ANALYSIS','A9','COMPLETED',jsonb_build_object('capability_code','INDEPENDENT_ASSURANCE',
   'subject_sha256',(SELECT context_sha256 FROM private.lf_decision_context_asof_v1 WHERE context_id=p_ctx::uuid),'subject_ref','PROGRAMMING_ANALYSIS_PACKAGE/'||p_ctx),now(),now());
  INSERT INTO public.lf_operation_execution_steps(execution_id,step_id,status,evidence_payload) VALUES(p_id,'semantic_review','STEP_PASS_WITH_EVIDENCE','{"verdict":"PASS"}'),(p_id,'judge_record','STEP_PASS_WITH_EVIDENCE','{}');
- PERFORM pg_temp.govern(p_id); END $q$;
+ PERFORM pg_temp.govern(p_id,p_attest); END $q$;
 CREATE TEMP TABLE ha2_results_raw(j jsonb);
 CREATE FUNCTION pg_temp.run(p_case text, p_judge text, p_note text) RETURNS text LANGUAGE plpgsql AS $q$
 DECLARE n0 bigint:=pg_temp.nrec(); r jsonb; res text; BEGIN
@@ -251,6 +257,36 @@ INSERT INTO ha2_results_raw VALUES (:'r19'::jsonb);
 INSERT INTO ha2_results_raw VALUES (:'r20'::jsonb);
 
 
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DA1','aaaaaaaa-0000-4000-8000-000000000001',0);
+ SELECT pg_temp.run('DA-1_self_declared_VERIFIED','J-DA1','ledger VERIFIED via caller-declared anchor, no authenticated readback') AS rda1 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rda1'::jsonb);
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DA2','aaaaaaaa-0000-4000-8000-000000000001',0);
+ UPDATE public.lf_operation_execution SET manifest=manifest||jsonb_build_object('source_head_sha',repeat('2',40)) WHERE execution_id='J-DA2';
+ SELECT pg_temp.run('DA-2_wrong_head','J-DA2','judge bound to a HEAD different from the verified receipt') AS rda2 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rda2'::jsonb);
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DB1','aaaaaaaa-0000-4000-8000-000000000001',1);
+ SELECT pg_temp.run('DB-1_no_reviewer_attestation','J-DB1','subject verified, full begin_v3-shaped chain, no authenticated reviewer') AS rdb1 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rdb1'::jsonb);
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DB2');
+ UPDATE public.lf_operation_execution_steps SET evidence_payload='{"verdict":"PASS","rewritten":true}' WHERE execution_id='J-DB2' AND step_id='semantic_review';
+ SELECT pg_temp.run('DB-2_steps_rewritten_after_attestation','J-DB2','service_role rewrites review steps (author kept) after the auditor attested') AS rdb2 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rdb2'::jsonb);
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DB3');
+ UPDATE public.lf_operation_execution SET manifest=manifest||'{"injected":true}' WHERE execution_id='J-DB3';
+ SELECT pg_temp.run('DB-3_manifest_changed_after_attestation','J-DB3','manifest changed after the auditor attested') AS rdb3 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rdb3'::jsonb);
+SAVEPOINT s; SELECT pg_temp.mkjudge('J-DB4');
+ SELECT set_config('t.db4',pg_temp.as_service($q$INSERT INTO public.lf_operation_execution(execution_id,operation_code,target_type,target_code,status,manifest,created_by_execution_id) VALUES('J-DB4-FAKE','REVISION_INDEPENDIENTE_ESTRATEGIA_LF','PROGRAMMING_ANALYSIS_PACKAGE','x','COMPLETED','{}','ORCH-FAKE')$q$),false);
+ UPDATE public.lf_operation_execution f SET manifest=j.manifest, target_code=j.target_code, created_by_execution_id=j.created_by_execution_id FROM public.lf_operation_execution j WHERE j.execution_id='J-DB4' AND f.execution_id='J-DB4-FAKE';
+ INSERT INTO public.lf_operation_execution_steps(execution_id,step_id,status,evidence_payload,created_by_execution_id) VALUES('J-DB4-FAKE','semantic_review','STEP_PASS_WITH_EVIDENCE','{"verdict":"PASS"}','J-DB4-FAKE'),('J-DB4-FAKE','judge_record','STEP_PASS_WITH_EVIDENCE','{}','J-DB4-FAKE');
+ SELECT pg_temp.run('DB-4_clone_of_attested_judge','J-DB4-FAKE','service_role clones an attested judge (manifest, receipts, steps) under a new id') AS rdb4 \gset
+ROLLBACK TO SAVEPOINT s;
+INSERT INTO ha2_results_raw VALUES (:'rdb4'::jsonb);
 -- ============ P1 via REAL begin_v3 chain in disposable DB (ENSAYO_NO_CERTIFICA, NOT authentic evidence) ============
 \pset tuples_only on
 \pset format unaligned
@@ -287,6 +323,9 @@ BEGIN
  -- 3) the judge records its own review steps and completes (sandbox stand-in for the reviewer runtime)
  INSERT INTO public.lf_operation_execution_steps VALUES(p_judge,'semantic_review','STEP_PASS_WITH_EVIDENCE','{"verdict":"PASS"}',p_judge),(p_judge,'judge_record','STEP_PASS_WITH_EVIDENCE','{}',p_judge);
  UPDATE public.lf_operation_execution SET status='COMPLETED',completed_at=now() WHERE execution_id=p_judge;
+ IF pg_temp.as_authority('lf_t_verifier_login','programacion_verifier',format('INSERT INTO private.lf_pg01_subject_verifications_v1(receipt_id,context_id) VALUES(%L,%L)',rid,c.context_id))<>'OK'
+ OR pg_temp.as_authority('lf_t_auditor_login','programacion_auditor',format('INSERT INTO private.lf_pg01_review_attestations_v1(judge_execution_id) VALUES(%L)',p_judge))<>'OK' THEN
+  RAISE EXCEPTION 'P1_ATTESTATION_FAILED'; END IF;
  RETURN jsonb_build_object('dispatch',d,'begin_v3',b); END $q$;
 CREATE FUNCTION pg_temp.run_unused(p_case text, p_judge text, p_note text) RETURNS text LANGUAGE plpgsql AS $q$
 DECLARE n0 bigint:=pg_temp.nrec(); r jsonb; res text; BEGIN
@@ -313,6 +352,12 @@ INSERT INTO ha2_results_raw VALUES (:'r22'::jsonb);
 -- ===================== assertions =====================
 CREATE TEMP TABLE ha2_expected(case_id text PRIMARY KEY, gated text, lifted text);
 INSERT INTO ha2_expected VALUES
+('DA-2_wrong_head','ERROR:PG01_RUNTIME_JUDGE_SUBJECT_RECEIPT_NOT_VERIFIED','ERROR:PG01_RUNTIME_JUDGE_SUBJECT_RECEIPT_NOT_VERIFIED'),
+('DA-1_self_declared_VERIFIED','ERROR:PG01_RUNTIME_SUBJECT_VERIFICATION_UNATTESTED','ERROR:PG01_RUNTIME_SUBJECT_VERIFICATION_UNATTESTED'),
+('DB-1_no_reviewer_attestation','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED'),
+('DB-2_steps_rewritten_after_attestation','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED'),
+('DB-3_manifest_changed_after_attestation','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED','ERROR:PG01_RUNTIME_JUDGE_ACTOR_UNATTESTED'),
+('DB-4_clone_of_attested_judge','ERROR:PG01_RUNTIME_JUDGE_DISPATCH_RECEIPT_INVALID','ERROR:PG01_RUNTIME_JUDGE_DISPATCH_RECEIPT_INVALID'),
 ('A2-N1','ERROR:PG01_RUNTIME_JUDGE_NOT_INDEPENDENT','ERROR:PG01_RUNTIME_JUDGE_NOT_INDEPENDENT'),
 ('A2-N2','ERROR:PG01_RUNTIME_JUDGE_INVALID','ERROR:PG01_RUNTIME_JUDGE_INVALID'),
 ('R4 / A2-N3','ERROR:PG01_RUNTIME_JUDGE_PROVENANCE_INVALID','ERROR:PG01_RUNTIME_JUDGE_PROVENANCE_INVALID'),

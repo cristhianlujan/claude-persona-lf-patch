@@ -12,8 +12,8 @@ CREATE TABLE public.lf_capability_binding(execution_id text,capability_code text
 -- Same privilege split as Supabase: service_role may write executions/steps/binding, not ledger nor dispatch.
 GRANT INSERT,UPDATE,SELECT ON public.lf_operation_execution,public.lf_operation_execution_steps,public.lf_capability_binding TO service_role;
 -- Sandbox helper: a judge whose provenance chain is complete (synthetic, owner-written; NOT a real review).
-CREATE FUNCTION pg_temp.govern(p_judge text) RETURNS void LANGUAGE plpgsql AS $g$
-DECLARE ctx text; c record; orch text:='ORCH-'||p_judge; plan text; cms text:=repeat('c',64); rid uuid; did uuid; sha text; ref text;
+CREATE FUNCTION pg_temp.govern(p_judge text, p_attest int DEFAULT 2) RETURNS void LANGUAGE plpgsql AS $g$
+DECLARE r text; ctx text; c record; orch text:='ORCH-'||p_judge; plan text; cms text:=repeat('c',64); rid uuid; did uuid; sha text; ref text;
 BEGIN
  ref:=(SELECT manifest->>'subject_ref' FROM public.lf_operation_execution WHERE execution_id=p_judge);
  ctx:=split_part(ref,'/',2);
@@ -34,4 +34,11 @@ BEGIN
   'review_required',true,'runtime_activation',false,'production_activation',false,
   'capability_binding_receipt',jsonb_build_object('ready',true,'entry_guard',jsonb_build_object('ready',true,'receipt_id',did::text),'binding',jsonb_build_object('ready',true))) WHERE execution_id=p_judge;
  UPDATE public.lf_operation_execution_steps SET created_by_execution_id=p_judge WHERE execution_id=p_judge;
+ -- D-A/D-B (synthetic logins, sandbox only): p_attest 0=none, 1=subject verification, 2=+review attestation
+ IF p_attest>=1 THEN
+  r:=pg_temp.as_authority('lf_t_verifier_login','programacion_verifier',format('INSERT INTO private.lf_pg01_subject_verifications_v1(receipt_id,context_id) VALUES(%L,%L)',rid,ctx));
+  IF r<>'OK' THEN RAISE EXCEPTION 'GOVERN_VERIFY_FAILED:%',r; END IF; END IF;
+ IF p_attest>=2 THEN
+  r:=pg_temp.as_authority('lf_t_auditor_login','programacion_auditor',format('INSERT INTO private.lf_pg01_review_attestations_v1(judge_execution_id) VALUES(%L)',p_judge));
+  IF r<>'OK' THEN RAISE EXCEPTION 'GOVERN_ATTEST_FAILED:%',r; END IF; END IF;
 END $g$;
