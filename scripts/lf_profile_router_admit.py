@@ -7,6 +7,7 @@ never runs a model and never writes product data; authority stays in Supabase.
 """
 import json
 import os
+from pathlib import Path
 import sys
 import urllib.error
 import urllib.parse
@@ -17,6 +18,7 @@ AUDIENCE = "lf-profiles-governance-caller-v1"
 ACTION = "router_profile_admit_context_v2"
 NATIVE_MODES = ("GPT_NATIVE", "CLAUDE_NATIVE")
 MAX_CONTEXT_CHARS = 60000
+ISSUE_LABEL = "lf-profile-admit-governed"
 
 
 def call_json(url, payload, headers):
@@ -44,22 +46,46 @@ def oidc():
         return json.load(response)["value"]
 
 
-def governed_request():
-    """Validate bounded dispatch inputs; the database re-validates everything."""
-    raw = os.environ.get("ROUTER_CONTEXT_JSON", "")
-    if not raw or len(raw) > MAX_CONTEXT_CHARS:
-        raise ValueError("ROUTER_ADMIT_CONTEXT_SIZE_INVALID")
-    context = json.loads(raw)
+def _validate(context, mode):
     if not isinstance(context, dict):
         raise ValueError("ROUTER_ADMIT_CONTEXT_NOT_OBJECT")
     if (context.get("schema_version") != "LF_ROUTER_EXECUTION_PIPELINE_V1"
             or context.get("status") != "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"
             or context.get("transport_mode") != "CONTEXT_TRANSPORT"):
         raise ValueError("ROUTER_ADMIT_CONTEXT_ENVELOPE_INVALID")
-    mode = os.environ.get("EXECUTOR_MODE", "")
     if mode not in NATIVE_MODES:
         raise ValueError("ROUTER_ADMIT_EXECUTOR_MODE_INVALID")
     return context, mode
+
+
+def governed_request():
+    """Validate bounded dispatch or issue data; the database re-validates everything."""
+    if os.getenv("LF_PROFILE_ADMIT_REQUEST_MODE") == "ISSUE":
+        event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
+        issue = event.get("issue", {})
+        expected_url = "https://api.github.com/repos/" + os.environ["GITHUB_REPOSITORY"]
+        if (os.environ.get("GITHUB_EVENT_NAME") != "issues"
+                or event.get("action") != "labeled"
+                or event.get("label", {}).get("name") != ISSUE_LABEL
+                or issue.get("state") != "open"
+                or issue.get("pull_request") is not None
+                or issue.get("repository_url") != expected_url):
+            raise ValueError("ROUTER_ADMIT_ISSUE_TRIGGER_INVALID")
+        raw = issue.get("body")
+        if not isinstance(raw, str) or len(raw) > MAX_CONTEXT_CHARS + 2048:
+            raise ValueError("ROUTER_ADMIT_ISSUE_BODY_INVALID")
+        data = json.loads(raw)
+        if (not isinstance(data, dict)
+                or set(data) != {"schema_version", "router_context", "executor_mode"}
+                or data["schema_version"] != "LF_PROFILE_ROUTER_ADMIT_REQUEST_V1"):
+            raise ValueError("ROUTER_ADMIT_ISSUE_SCHEMA_INVALID")
+        if len(json.dumps(data["router_context"])) > MAX_CONTEXT_CHARS:
+            raise ValueError("ROUTER_ADMIT_CONTEXT_SIZE_INVALID")
+        return _validate(data["router_context"], data["executor_mode"])
+    raw = os.environ.get("ROUTER_CONTEXT_JSON", "")
+    if not raw or len(raw) > MAX_CONTEXT_CHARS:
+        raise ValueError("ROUTER_ADMIT_CONTEXT_SIZE_INVALID")
+    return _validate(json.loads(raw), os.environ.get("EXECUTOR_MODE", ""))
 
 
 def main():
