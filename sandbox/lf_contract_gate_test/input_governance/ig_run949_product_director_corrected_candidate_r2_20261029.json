@@ -10,19 +10,19 @@
         {
           "source_ref": "supabase://programacion.input_family_assessments/run_id=949",
           "authority": "AUTHORITATIVE",
-          "supports": "Readback run 949: 35 COMPLETE, 10 PARTIAL, 2 NOT_APPLICABLE, 47/47 validator PASS; 10 PARTIAL = 2 IMPLEMENTATION_DEPENDENCY + 7 INCOMPLETE_EVIDENCE + 1 MISSING_SOURCE; earliest blocking stage 6 IMPLEMENTATION y 4 QA, códigos y probes por familia en family_gap_diagnostics.",
+          "supports": "Input_family_assessments/run_id=949: validator_outcome PASS 47/47; coverage_status y well_defined_status 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE; las 10 PARTIAL se agrupan 2 IMPLEMENTATION_DEPENDENCY + 7 INCOMPLETE_EVIDENCE + 1 MISSING_SOURCE, earliest_blocking_stage 6 IMPLEMENTATION y 4 QA; blockers y probes exactos por familia. Readiness por etapa separada.",
           "current": true
         },
         {
           "source_ref": "supabase://programacion.input_readiness_runs/949",
           "authority": "AUTHORITATIVE",
-          "supports": "Run 949 pantalla_id=51, version_id=19, COMPLETED, validator_outcome PASS para 47 de 47, sin invalidated_at; source_snapshot_sha256 087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c. Esto no acredita reglas completas ni implementación.",
+          "supports": "Run 949, pantalla_id=51, version_id=19, estado COMPLETED, no invalidado, family_count=47, validator_completed_at informado, snapshot 087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c. El conteo de 47 validator_outcome=PASS procede de input_family_assessments/run_id=949 y no se infiere de la tabla de runs.",
           "current": true
         },
         {
           "source_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
           "authority": "AUTHORITATIVE",
-          "supports": "Contrato B2B-AUTH-001 v1.2: 283 reglas; AUTH-013 y AUTH-017 CANDIDATO, AUTH-015 y AUTH-022 VIGENTE; AUTH-015 mantiene M1 ADR-003 de identity binding pendiente, sin endpoint ni OIDC grant ejecutable; SESSION-001/002 consumen política central.",
+          "supports": "Pantalla B2B-AUTH-001 screen_status=CANDIDATO, contrato v1.2: 283 reglas; AUTH-013 y AUTH-017 CANDIDATO, AUTH-015 y AUTH-022 VIGENTE; AUTH-015 mantiene M1 ADR-003 de identity binding pendiente, sin endpoint ni OIDC grant ejecutable; SESSION-001/002 consumen política central. Los estados de reglas no promueven la pantalla a producción.",
           "current": true
         },
         {
@@ -63,7 +63,8 @@
         "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
         "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
         "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable.",
-        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante."
+        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante.",
+        "La pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO; que ciertas reglas sean VIGENTE no significa que la pantalla esté liberada para producción."
       ],
       "semantic_qualifiers": [
         "47/47 validator PASS certifica integridad del análisis, no completitud: run 949 conserva 35 COMPLETE, 10 PARTIAL y 2 NOT_APPLICABLE.",
@@ -74,7 +75,8 @@
         "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
         "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
         "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable.",
-        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante."
+        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante.",
+        "La pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO; que ciertas reglas sean VIGENTE no significa que la pantalla esté liberada para producción."
       ]
     },
     "included_scope": [
@@ -102,7 +104,7 @@
       {
         "criterion_id": "AC-IG949-CURRENT",
         "condition": "El análisis usa exactamente la versión vigente del run 949 y distingue integridad del validador.",
-        "observable_check": "Consultar run_id=949, pantalla_id=51, status COMPLETED, invalidated_at IS NULL, source_snapshot_sha256 exacto y 47/47 validator_outcome=PASS; falla si usa run 833 u otro invalidado."
+        "observable_check": "Leer input_readiness_runs WHERE id=949 para pantalla_id=51, COMPLETED, invalidated_at IS NULL, family_count=47 y hash exacto; comprobar 47/47 validator_outcome=PASS mediante input_family_assessments WHERE run_id=949. Rechazar runs anteriores invalidados o un 47 PASS inferido solo de input_readiness_runs."
       },
       {
         "criterion_id": "AC-IG949-COVERAGE",
@@ -122,7 +124,7 @@
       {
         "criterion_id": "AC-IG949-AUTH",
         "condition": "Identity y sesión continúan fail-closed.",
-        "observable_check": "Leer reglas AUTH-015 y AUTH-022 VIGENTE; prohibir endpoint, OIDC grant o sesión sin AUTHENTICATED/MFA; mantener AUTH-013/017 como CANDIDATO; exigir negativos de bypass MFA y fuga de credenciales al ejecutar QA posterior."
+        "observable_check": "Leer v_b2b_backoffice_login_contract pantalla_id=51: pantalla CANDIDATO, AUTH-015 y AUTH-022 VIGENTE, AUTH-013/017 CANDIDATO; endpoint/grant no ejecutables; no crear sesión sin AUTHENTICATED/MFA. QA negativa posterior bloquea fuga de tokens, bypass y promociones sin autoridad."
       },
       {
         "criterion_id": "AC-IG949-EFFECT",
@@ -141,7 +143,8 @@
       "Confundir 10 PARTIAL con diez reglas ausentes e introducir duplicados.",
       "Resolver 20 P1 de implementación omitiendo 4 P2 con definición/QA parcial.",
       "Elevar CANDIDATO sin autoridad.",
-      "Acreditar implementación o identidad ejecutable desde una ejecución no_write."
+      "Acreditar implementación o identidad ejecutable desde una ejecución no_write.",
+      "Confundir reglas individuales VIGENTE con pantalla CANDIDATO liberada a producción."
     ],
     "profiles_to_activate": [],
     "blockers": [
@@ -155,7 +158,7 @@
       "action": "VERIFY_CANONICAL_RULE_ABSENCE_PER_CLASSIFIED_GAP_THEN_ROUTE_GOVERNED_IMPLEMENTATION",
       "note": "Usar family_gap_diagnostics, no redescubrir su tipología; Router y operación autorizada para cualquier efecto."
     },
-    "final_verdict": "CORRECTED_PRODUCT_DECISION_CANDIDATE_PENDING_CANONICAL_VALIDATION_AND_INDEPENDENT_SEMANTIC_REVIEW_NOT_IMPLEMENTED",
+    "final_verdict": "CORRECTED_PRODUCT_DECISION_CANDIDATE_NOT_IMPLEMENTED_INDEPENDENT_SEMANTIC_PENDING",
     "evidence_used": [
       "supabase://programacion.input_family_assessments/run_id=949",
       "supabase://programacion.input_readiness_runs/949",
@@ -165,7 +168,8 @@
     "open_assumptions": [
       "No existe una salida DIRECT verificada del mismo pedido material: router_direct_consistency NO_VERIFICADO.",
       "Para ninguna de las diez PARTIAL se ha demostrado ausencia concreta de regla canónica; cero justificaciones verificadas no implica cero posibles reglas ausentes.",
-      "En DESIGN_SYSTEM el blocker es DESIGN_BINDING_INCOMPLETE mientras probe expone cero componentes requeridos semánticamente pendientes: requiere reconciliación, no override silencioso."
+      "En DESIGN_SYSTEM el blocker es DESIGN_BINDING_INCOMPLETE mientras probe expone cero componentes requeridos semánticamente pendientes: requiere reconciliación, no override silencioso.",
+      "AC-IG949-EFFECT contiene una condición de aceptación futura; esta auditoría en solo lectura no certifica exhaustivamente la ausencia de todas las mutaciones por execution_id ni autoriza reporte terminal."
     ],
     "success_metric_or_proxy": {
       "metric": "Familias PARTIAL clasificadas por evidencia de fuente con etapa y blocker_code",
@@ -189,14 +193,15 @@
         "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
         "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
         "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable.",
-        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante."
+        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante.",
+        "La pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO; que ciertas reglas sean VIGENTE no significa que la pantalla esté liberada para producción."
       ]
     },
     "authority_status": "SUPPORTED",
     "material_claims": [
       {
         "claim": "Run 949 completó validación determinista de 47/47 assessments; no acredita completitud ni readiness.",
-        "authority_ref": "supabase://programacion.input_readiness_runs/949",
+        "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
         "status": "SUPPORTED"
       },
       {
@@ -228,6 +233,11 @@
         "claim": "Los diez PARTIAL ya tienen causa canónica: dos IMPLEMENTATION_DEPENDENCY, siete INCOMPLETE_EVIDENCE y un MISSING_SOURCE; seis bloqueos comienzan en IMPLEMENTATION y cuatro en QA.",
         "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
         "status": "SUPPORTED"
+      },
+      {
+        "claim": "La pantalla B2B-AUTH-001 (pantalla_id=51) está en estado CANDIDATO; su contrato v1.2 tiene 283 reglas y eso no autoriza producción.",
+        "authority_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+        "status": "SUPPORTED"
       }
     ],
     "decision_lineage": {
@@ -248,7 +258,8 @@
         "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
         "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
         "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable.",
-        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante."
+        "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante.",
+        "La pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO; que ciertas reglas sean VIGENTE no significa que la pantalla esté liberada para producción."
       ],
       "acceptance_refs": [
         "AC-IG949-CURRENT",
@@ -583,7 +594,8 @@
       "La ejecución EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968 es GPT_NATIVE READ_ONLY, no_write y effect_authority=false; toda escritura requiere operación separada.",
       "No emitir feedback IG ni declarar desacuerdo sin observación material sustentada.",
       "Este archivo es una corrección derivada candidata del output, no una nueva inferencia certificada ni reemplazo del RAW inmutable.",
-      "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante."
+      "La clasificación canónica de las diez PARTIAL ya está resuelta como tipo de incertidumbre y primer bloqueo en el run 949; no delegar su redescubrimiento ni equiparar una brecha PARTIAL a regla faltante.",
+      "La pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO; que ciertas reglas sean VIGENTE no significa que la pantalla esté liberada para producción."
     ]
   },
   "self_verdict": "PASS",
@@ -599,6 +611,15 @@
     "origin_raw_git_blob_sha": "e9d12e39fdc51c0ba84b0371705a4371a14d4991",
     "correction_kind": "DERIVED_CANDIDATE_NOT_ORIGINAL_PROFILE_RUNTIME_OUTPUT",
     "runtime_reexecution_claimed": false,
-    "prior_candidate_ref": "github://cristhianlujan/claude-persona-lf-patch@4a52dae5104511928c0fc64a967a395e440a5d70/sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_corrected_candidate_r1_20261029.json"
+    "prior_candidate_ref": "github://cristhianlujan/claude-persona-lf-patch@4a52dae5104511928c0fc64a967a395e440a5d70/sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_corrected_candidate_r1_20261029.json",
+    "producer_audit_revision": "R2_AUDIT_01",
+    "superseded_r2_blob_sha": "054a6627a541f8ea07a27d59b33c015958f38f57",
+    "producer_audit_changes": [
+      "Reatribuir claim 47/47 a input_family_assessments",
+      "Evitar final_verdict temporal de validador; separar CI exact-head",
+      "Preservar screen_status CANDIDATO en fuentes, claims, aceptación, constraints y handoffs",
+      "Marcar límites de verificación de ausencia de efectos"
+    ],
+    "producer_audit_status": "PRODUCER_CORRECTED_PENDING_EXACT_HEAD_REVALIDATION_AND_SEPARATE_REVIEW"
   }
 }
