@@ -4,6 +4,8 @@
 -- independent review, and Router E2E evidence are complete.
 -- SHA of source functions must match live DB exactly. No manual SQL apply.
 -- Source assembled from PR #3269 sandbox candidates, 2026-10-29.
+-- Rebases native bridge to current live definition supporting BOTH GPT_NATIVE
+-- and CLAUDE_NATIVE; preimage guard refuses any further live drift.
 --
 -- Preserves original profile output JSON and validators, routes existing
 -- optional feedback through the existing stage1 return and report gate.
@@ -11,7 +13,7 @@
 DO $lf_ig_feedback_precheck$
 BEGIN
  IF md5(pg_get_functiondef('public.lf_profile_native_bridge_record_output_v1(text,jsonb,jsonb,text,text,text)'::regprocedure))
-       IS DISTINCT FROM 'e16131b4a542c71867e59730ca14b253'
+       IS DISTINCT FROM 'd3bb006ad6ac1af6d5e48aa883e49870'
  OR md5(pg_get_functiondef('public.lf_profile_execution_trust_validation_v2(text,text,jsonb)'::regprocedure))
        IS DISTINCT FROM 'c71964f030d7c2f9bf90101f541a6e6b'
  OR md5(pg_get_functiondef('public.lf_profile_result_router_return_prepare_v1(text)'::regprocedure))
@@ -175,8 +177,12 @@ BEGIN
      OR e.operation_code<>'EJECUCION_PERFIL_LF'
      OR e.target_type<>'PERFIL'
      OR e.status<>'IN_PROGRESS'
-     OR e.manifest->>'executor_mode'<>'GPT_NATIVE'
-     OR e.manifest->>'executor_provider'<>'OPENAI_CHATGPT_NATIVE'
+     OR NOT COALESCE(
+       (e.manifest->>'executor_mode'='GPT_NATIVE'
+        AND e.manifest->>'executor_provider'='OPENAI_CHATGPT_NATIVE')
+       OR (e.manifest->>'executor_mode'='CLAUDE_NATIVE'
+        AND e.manifest->>'executor_provider'='ANTHROPIC_CLAUDE_NATIVE'),
+       false)
      OR e.manifest ? 'queue_request_id'
      OR nullif(e.manifest->>'runtime_target','') IS NOT NULL THEN
     RETURN jsonb_build_object(
