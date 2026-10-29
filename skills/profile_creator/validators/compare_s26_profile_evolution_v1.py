@@ -100,7 +100,7 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path,
     return _seal(result)
 
 
-def measure(trusted_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
+def measure(trusted_root: Path, slug: str, profile_dir: Path, operational_root: Path | None = None) -> dict[str, Any]:
     """Baseline measurement of one profile tree with the trusted evaluator (no comparison)."""
     trusted_root = trusted_root.resolve()
     result: dict[str, Any] = {"schema": "S26_PROFILE_MEASUREMENT_V1", "profile_slug": slug, "blocking_codes": []}
@@ -120,6 +120,14 @@ def measure(trusted_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
         "score": ev["score"], "required": ev["required"], "decision": ev["decision"],
         "failed_dimensions": sorted(d for d, v in ev["dimensions"].items() if not v["pass"]),
     })
+    # Group 2: a structurally complete profile still needs an update while a trusted business-case check
+    # recorded for this exact tree is unmet. Without bound runs nothing changes.
+    operational = opc.unmet(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, profile_dir)
+    if operational["status"] != "NOT_APPLICABLE":
+        result["operational"] = operational
+        if result["decision"] == "NO_UPDATE_REQUIRED" and operational["unmet_checks"]:
+            result["decision"] = "UPDATE_REQUIRED"
+            result["update_basis"] = ["OPERATIONAL_COVERAGE"]
     return _seal(result)
 
 

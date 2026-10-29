@@ -189,3 +189,16 @@ def evaluate(operational_root: Path, slug: str, base_dir: Path, candidate_dir: P
                    "base_tree_sha256": base_sha, "candidate_tree_sha256": cand_sha,
                    "semantic_pending": sorted({p for c in cases.values() for p in c.get("semantic_pending", [])})})
     return result
+
+
+def unmet(operational_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
+    """Checks still unmet by the runs bound to this exact tree (drives the UPDATE_REQUIRED decision)."""
+    cases, problems = load_cases(operational_root, slug)
+    if not cases:
+        return {"status": "NOT_APPLICABLE", "unmet_checks": [], "problems": problems}
+    runs, rejected = load_runs(operational_root, slug, cases)
+    measured = measure(cases, runs, tree_sha256(profile_dir))
+    unmet_checks = sorted(f"{cid}:{chk}" for cid, m in measured.items() if m["measured"] for chk, ok in m["checks"].items() if not ok)
+    any_measured = any(m["measured"] for m in measured.values())
+    return {"status": "MEASURED" if any_measured else "UNMEASURED", "unmet_checks": unmet_checks, "problems": problems + rejected,
+            "profile_tree_sha256": tree_sha256(profile_dir)}
