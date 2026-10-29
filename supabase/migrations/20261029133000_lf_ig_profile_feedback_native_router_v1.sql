@@ -129,7 +129,7 @@ BEGIN
    'rerun_authorized',false,'promotion_authorized',false,
    'evidence_authenticity_verified',false);
 END
-$fb$
+$fb$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_record_output_v1(p_execution_id text, p_profile_output jsonb, p_validation jsonb, p_raw_evidence_ref text, p_validator_evidence_ref text, p_actor_execution_id text DEFAULT NULL::text)
  RETURNS jsonb
@@ -393,7 +393,7 @@ BEGIN
     'router_reentry_required',false
   );
 END
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_execution_trust_validation_v2(p_execution_id text, p_step_id text, p_evidence_payload jsonb)
  RETURNS jsonb
@@ -607,7 +607,7 @@ begin
     'server_hard_fails','[]'::jsonb
   );
 end
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_result_router_return_prepare_v1(p_execution_id text)
  RETURNS jsonb
@@ -788,4 +788,4 @@ BEGIN
     'next_action',v_decision->>'next_action'
   );
 END
-$function$
+$function$;
