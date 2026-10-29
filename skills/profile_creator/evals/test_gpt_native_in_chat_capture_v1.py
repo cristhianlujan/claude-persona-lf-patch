@@ -132,8 +132,8 @@ def test_real_profile_assessment_source_revision():
     from profile_assessment_v1 import assess_profile
     structural = evaluate_s26(root, slug)
     assert structural["profile_slug"] == slug
-    assert structural["required"] == 13
-    assert len(structural["dimensions"]) == 13
+    assert structural["required"] == 14
+    assert len(structural["dimensions"]) == 14
     assert structural["decision"] == "UPDATE_REQUIRED", structural
     assert not structural["blocking_codes"], structural
     # The actual canonical profile is missing runtime execution partition
