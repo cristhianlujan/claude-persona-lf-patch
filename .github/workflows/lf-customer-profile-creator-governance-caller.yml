@@ -237,6 +237,7 @@ jobs:
               assert 'research_baseline_contract' not in manifest, data
           print('GOVERNED_PROFILE_UPDATE_INITIALIZATION=PASS')
           print('EXECUTION_ID='+str(execution.get('execution_id')))
+          print('::notice title=LF_PROFILE_UPDATE_EXECUTION::'+str(execution.get('execution_id')))
           PY
           echo 'GITHUB_WRITE_EXECUTED=false'
           echo 'RUNTIME_DEPLOYMENT_EXECUTED=false'
@@ -277,6 +278,17 @@ jobs:
             --data-binary @governed-update-batch-request.json \
             'https://mhwmirqcgxxukpctffuv.supabase.co/functions/v1/lf-profile-creator-governance-caller-v1')
           cat governed-update-batch.json
+          python3 - <<'PY'
+          import json
+          try:
+              d=json.load(open('governed-update-batch.json',encoding='utf-8'))
+              r=d.get('result') if isinstance(d.get('result'),dict) else {}
+              keys=('outcome','code','blocked_step_id')
+              info={k:(d.get(k) if d.get(k) is not None else r.get(k)) for k in keys}
+              print('::notice title=LF_PROFILE_UPDATE_BATCH::'+json.dumps(info,separators=(',',':'))[:300])
+          except Exception:
+              print('::notice title=LF_PROFILE_UPDATE_BATCH::{"outcome":"UNPARSEABLE"}')
+          PY
           test "$code" = "200"
           python3 - <<'PY'
           import json
