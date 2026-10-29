@@ -95,8 +95,18 @@ perfil (juicio funcional o técnico) no sustituye el Validator independiente.
   `sandbox/lf_contract_gate_test/input_governance/ig_profile_feedback_router_return_candidate_20261029.sql`.
   Extiende el clasificador actual, no crea un segundo resolver, usa binding
   run/familia/hash y devuelve vía el retorno positivo existente.
-  El script incluye 6 aserciones y `BEGIN ... ROLLBACK`; **no fue ejecutado
-  ni aplicado** porque la conexión a Supabase está autorizada solo en lectura.
+  El script incluye escenarios positivos y negativos dentro de
+  `BEGIN ... ROLLBACK`; **no fue ejecutado como DDL ni aplicado** porque
+  la conexión a Supabase está autorizada solo en lectura.
+- Se reforzó el candidato para verificar que la ejecución del perfil
+  consumió **ese run y esa pantalla** desde el paso `input_validate`
+  `STEP_PASS_WITH_EVIDENCE`, y que el hash de su manifiesto coincide
+  con el run. Una coincidencia entre familia y run no es suficiente.
+- Para `EVIDENCE_CHALLENGE`, referencias vacías o no textuales se
+  bloquean (sin atribuirles autoridad canónica). Las propuestas exigen
+  `proposed_change` y `PROPOSED_NOT_CANONICAL`; una discrepancia
+  sin sustento que intenta volver a `AUTHORITY_OR_CONTEXT_RESOLUTION`
+  se bloquea para evitar ciclos artificiales.
 
 ## Aceptación antes de habilitar
 
@@ -114,3 +124,42 @@ EKB consultado: `INPUT-GOV-CONSUMER-BINDING-001`,
 `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`,
 `HUMAN-DECISION-POLICY-RESOLUTION-NO-PRODUCER-AUTHORITY-001`.
 EKB vivo sin mutaciones; cualquier registro posterior se hace por ruta gobernada.
+
+## Verificación independiente de datos y compatibilidad (29/10/2026)
+
+1. Se ejecutó desde el **blob exacto Git**
+   `sandbox/lf_contract_gate_test/input_governance/ig_profile_feedback_run_receipt_binding_readonly_20261029.sql`:
+   **8/8 PASS**. Incluye existencia del fixture, caso correcto, y rechazo
+   de ejecución, perfil, run, pantalla, hash y familia incorrectos.
+   Son SELECT sobre Supabase: **prueban el predicado de identidad**,
+   no la compilación ni la ejecución del clasificador candidato.
+2. Se verificó el esquema JSON actual de Product Director:
+   `properties.deliverable_created.additionalProperties=true`;
+   por tanto el campo adicional anidado es compatible con esa
+   restricción de esquema. El esquema de nivel superior usa
+   `additionalProperties=false`, por lo que no se añadió campo
+   top-level. La ejecución integral del validador y juez de Producto
+   queda **NO_VERIFICADA**.
+3. La función viva sigue en MD5
+   `7517e452f5fa3ab2686c073bd6604b78`, igual al preimage guard
+   del candidato; el fichero contiene rollback y no contiene commit.
+   La verificación del texto **no constituye compilación PostgreSQL**.
+4. El fixture de la ejecución que consumió `run_id=949`
+   actualmente está `IN_PROGRESS`; no constituye prueba de un retorno
+   posterior al cierre completo del perfil. El runtime prepare exige
+   `COMPLETED` para devolver al Router.
+
+### Estado de salida y frontera de autoridad
+
+- `PASS`: predicado read-only de unión ejecución/perfil/run/familia/hash,
+  comprobación de schema y guardas de fuente.
+- `NO_VERIFICADO`: SQL `CREATE OR REPLACE FUNCTION` del candidato en
+  PostgreSQL de pruebas con `ROLLBACK`, aserciones del postcheck,
+  comportamiento del validador real y cadena
+  `perfil COMPLETED -> prepare -> Router Stage1`.
+- `NO`: despliegue/activación/permiso de cambiar reglas/selector; ninguna
+  escritura a Supabase.
+- Próxima acción autorizada: ejecutar el candidato **en una rama/entorno
+  aislado de PostgreSQL con permisos de test**, registrar PASS/FAIL y
+  rollback. Solo después, siguiendo EKB de migración source-first y
+  autorización de integración, considerar cutover gobernado.
