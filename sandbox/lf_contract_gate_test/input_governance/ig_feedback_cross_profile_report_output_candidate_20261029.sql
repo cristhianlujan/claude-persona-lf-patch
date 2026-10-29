@@ -20,8 +20,10 @@ DECLARE
  i public.lf_operation_execution_steps%rowtype;
  g jsonb; k text; expected_sha text;
 BEGIN
- IF jsonb_typeof(p_feedback)<>'object'
-  OR p_feedback->>'schema_version' IS DISTINCT FROM 'IG_PROFILE_FEEDBACK_V1'
+ IF jsonb_typeof(p_feedback)<>'object' THEN
+   RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_SHAPE_INVALID');
+ END IF;
+ IF p_feedback->>'schema_version' IS DISTINCT FROM 'IG_PROFILE_FEEDBACK_V1'
   OR p_feedback->>'source_execution_id' IS DISTINCT FROM p_execution_id
   OR p_feedback->>'source_profile_code' IS DISTINCT FROM p_profile_code
   OR jsonb_typeof(p_feedback->'ig')<>'object'
@@ -29,13 +31,16 @@ BEGIN
   OR coalesce(p_feedback->>'kind','') NOT IN
    ('EVIDENCE_CHALLENGE','NONCANONICAL_RULE_PROPOSAL','UNSUPPORTED_DISAGREEMENT')
   OR nullif(btrim(coalesce(p_feedback->>'reason','')),'') IS NULL
-  OR EXISTS(SELECT 1 FROM jsonb_object_keys(p_feedback) z(k)
+ THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_SHAPE_INVALID'); END IF;
+ -- Strictly separate shape guards from object iteration: PG SQL need not
+ -- short-circuit OR predicates. A JSON null/array must return a typed blocker.
+ IF EXISTS(SELECT 1 FROM jsonb_object_keys(p_feedback) z(k)
    WHERE z.k NOT IN ('schema_version','source_execution_id','source_profile_code',
      'source_profile_output_sha256','ig','kind','reason','evidence_refs',
      'requested_resolution','canonical_status','proposed_change'))
-  OR EXISTS(SELECT 1 FROM jsonb_object_keys(coalesce(p_feedback->'ig','{}'::jsonb)) z(k)
+   OR EXISTS(SELECT 1 FROM jsonb_object_keys(p_feedback->'ig') z(k)
    WHERE z.k NOT IN ('run_id','pantalla_id','family_code','source_snapshot_sha256'))
- THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_SHAPE_INVALID'); END IF;
+ THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_FORBIDDEN_KEYS'); END IF;
  g:=p_feedback->'ig'; k:=p_feedback->>'kind';
  IF coalesce(g->>'run_id','') !~ '^[1-9][0-9]{0,15}$'
   OR coalesce(g->>'pantalla_id','') !~ '^[1-9][0-9]{0,8}$'
