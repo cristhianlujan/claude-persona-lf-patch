@@ -74,6 +74,11 @@
       "evidence": "runtime_binding.adversarial_suite is declared and the profile's own validators catch >= min_catch_rate of seed-generated invalid cases and accept every valid control, executed in an isolated child process",
       "id": "B14_DYNAMIC_ADVERSARIAL_SUITE",
       "required": true
+    },
+    {
+      "evidence": "universal invisible, filler and punctuation-only text attacks injected by the measurer into the declared text fields are rejected by the profile's own validators",
+      "id": "B15_TEXT_INTEGRITY_BATTERY",
+      "required": true
     }
   ],
   "enforcement": "PROFILE_LOCAL_POST_UPDATE_REQUIRED",

@@ -29,6 +29,14 @@ SUITE_SCHEMA = "LF_PROFILE_ADVERSARIAL_SUITE_V1"
 RESULT_SCHEMA = "S26_ADVERSARIAL_RESULT_V1"
 BLANK_VARIANTS = ["", "   ", "​", "\n\t ", " "]
 MAX_CASES_PER_FAMILY = 24
+# B15: attacks that are never valid content in a text field, whatever the profile. The measurer owns this list.
+UNIVERSAL_TEXT_ATTACKS = [
+    "\u2800" * 8, "\u3164" * 6, "\uffa0" * 4, "\u00ad\u00ad", "\u034f", "\u202e", "\u2061\u2062", "\u180e",
+    "\u115f\u1160", "\ufe0f", "\U000e0020\U000e0020", "\u17b4\u17b5", "\u0301", "\u200b\u200d", "\u3000\u3000",
+    "........", "--------", "????????", "\u2026\u2026", "////////",
+]
+TEXT_BATTERY_MIN_CASES = 20
+TEXT_BATTERY_MIN_CATCH = 0.95
 _TOKEN = re.compile(r"([A-Za-z0-9_]+)|\[(\d*)\]")
 
 
@@ -185,6 +193,19 @@ def build_cases(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) 
     return invalid, controls
 
 
+def build_text_battery(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) -> list[tuple[str, Any]]:
+    """B15 cases: universal invisible, filler and punctuation-only text injected into the profile's declared text fields."""
+    cases: list[tuple[str, Any]] = []
+    for field in decl["blank_fields"]:
+        for path in _expand(base, field):
+            for v in UNIVERSAL_TEXT_ATTACKS:
+                p = copy.deepcopy(base)
+                _set(p, path, v)
+                cases.append((f"text:{'.'.join(map(str, path))}:{v!r}", p))
+    rng.shuffle(cases)
+    return cases[:MAX_CASES_PER_FAMILY * 4]
+
+
 # ---------------------------------------------------------------- in-process core (runs in the child)
 def _load(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -241,13 +262,27 @@ def run_suite(profile_dir: Path, seed: str) -> dict[str, Any]:
                 wrong.append(name)
         except Exception:
             wrong.append(name)
+    battery_cases = build_text_battery(decl, base, random.Random(int(hashlib.sha256((seed + ":b15").encode()).hexdigest(), 16)))
+    b_missed: list[str] = []
+    for name, payload in battery_cases:
+        try:
+            if _accepts(schema_check, validate, semantic, payload):
+                b_missed.append(name)
+        except Exception:
+            pass
+    b_total = len(battery_cases)
+    b_rate = (b_total - len(b_missed)) / b_total if b_total else 0.0
+    b_ok = b_total >= TEXT_BATTERY_MIN_CASES and b_rate >= TEXT_BATTERY_MIN_CATCH
+    text_battery = {"status": "PASS" if b_ok else "FAIL", "invalid_cases": b_total, "caught": b_total - len(b_missed),
+                    "catch_rate": round(b_rate, 4), "min_cases": TEXT_BATTERY_MIN_CASES, "min_catch_rate": TEXT_BATTERY_MIN_CATCH,
+                    "missed_examples": b_missed[:8]}
     total = len(invalid)
     caught = total - len(missed)
     rate = caught / total if total else 0.0
     ok = total >= decl["min_cases"] and rate >= decl["min_catch_rate"] and not wrong
     return {"schema": RESULT_SCHEMA, "status": "PASS" if ok else "FAIL", "seed_sha256": hashlib.sha256(seed.encode()).hexdigest(),
             "invalid_cases": total, "caught": caught, "catch_rate": round(rate, 4), "min_catch_rate": decl["min_catch_rate"],
-            "min_cases": decl["min_cases"], "schema_gate": True, "controls": len(controls), "controls_rejected_wrongly": wrong,
+            "min_cases": decl["min_cases"], "schema_gate": True, "text_integrity_battery": text_battery, "controls": len(controls), "controls_rejected_wrongly": wrong,
             "missed_examples": missed[:8], "blocking_codes": [] if ok else (
                 (["SUITE_TOO_FEW_CASES"] if total < decl["min_cases"] else []) +
                 (["SUITE_CATCH_RATE_BELOW_MIN"] if rate < decl["min_catch_rate"] else []) +

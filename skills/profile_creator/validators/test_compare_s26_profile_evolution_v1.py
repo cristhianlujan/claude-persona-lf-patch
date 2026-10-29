@@ -73,7 +73,7 @@ class Proof(unittest.TestCase):
         (self.cand / "skills/profile_creator/contracts/s26_profile_baseline_v1.json").write_text('{"dimensions":{}}')
         r = self.run_cmp()
         self.assertEqual(r["verdict"], "NO_DEMONSTRATED_IMPROVEMENT")
-        self.assertEqual(r["required"], 14)
+        self.assertEqual(r["required"], 15)
 
     def test_ceiling_flag_when_base_is_already_complete(self):
         # Base already at the structural ceiling cannot show structural improvement.
@@ -93,9 +93,9 @@ class Proof(unittest.TestCase):
     def test_measure_reports_real_baseline(self):
         r = cmp.measure(ROOT, SLUG, self.base)
         self.assertEqual(r["schema"], "S26_PROFILE_MEASUREMENT_V1")
-        self.assertEqual((r["score"], r["required"]), (2, 14))
+        self.assertEqual((r["score"], r["required"]), (2, 15))
         self.assertEqual(r["decision"], "UPDATE_REQUIRED")
-        self.assertEqual(len(r["failed_dimensions"]), 12)
+        self.assertEqual(len(r["failed_dimensions"]), 13)
         self.assertEqual(r["proof_sha256"], cmp.measure(ROOT, SLUG, self.base)["proof_sha256"])
 
     def test_measure_blocks_symlink_and_missing(self):
