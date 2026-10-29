@@ -614,5 +614,6 @@ jobs:
           python3 test_pg02_pg01_binding_v1.py
           python3 test_pg02_c4_evidence_adapter_v1.py
           python3 test_pg01_c4_readback_candidate_v1.py
+          python3 test_pg01_technical_frame_v3_candidate_v1.py
           cd ..
           python3 wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py --self-test
