@@ -9,6 +9,8 @@ on:
       - "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py"
       - "sandbox/lf_contract_gate_test/profile_creator_customer_step_request.json"
       - "sandbox/lf_contract_gate_test/profile_creator_customer_step_batch_request.json"
+  issues:
+    types: [labeled]
   workflow_dispatch:
     inputs:
       action:
@@ -48,7 +50,30 @@ permissions:
   id-token: write
 
 jobs:
+  governed-update-issue-request:
+    if: ${{ github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'lf-profile-update-governed' && github.event.issue.state == 'open' && github.event.issue.pull_request == null }}
+    name: Governed profile update request from labeled issue (GPT-native or Claude-native)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: lf-edge-deploy
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify issue request parser before dispatch
+        run: python3 -m unittest discover -s sandbox/lf_contract_gate_test/profile_execution_runtime -p test_profile_update_issue_request.py
+      - name: Re-dispatch the registered governed caller on main with the validated request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/lf_profile_update_issue_dispatch.py
+
   customer-profile-creator-governed-caller:
+    if: ${{ github.event_name != 'issues' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
