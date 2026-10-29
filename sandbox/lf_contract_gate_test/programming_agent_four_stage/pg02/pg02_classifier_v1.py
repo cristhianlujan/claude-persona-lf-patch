@@ -1,7 +1,6 @@
 """PG-02 candidate classifier; pure function; NO admission authority."""
 import hashlib
 import json
-import re
 
 class PG02Blocked(ValueError):
     pass
@@ -22,12 +21,14 @@ def verify_catalog_binding(mapping, expected_ref=None, expected_sha256=None):
         raise PG02Blocked("CATALOG_DIGEST_DRIFT")
     return digest(mapping)
 
-"""PG-02 scope-isolated A7 classifier candidate. No PG-01 authority or official catalog release."""
+
 
 VALID_STATUSES={"REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"}
 VALID_CLOSURES={"CLOSED","BLOCKED"}
+VALID_SCOPE_STATES={"READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED","NOT_APPLICABLE"}
 
 def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_sha256=None):
+    if not isinstance(snapshot,dict): raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
     if snapshot.get("schema_version")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1":
         raise PG02Blocked("SNAPSHOT_SCHEMA_INVALID")
     cov=snapshot.get("material_front_coverage")
@@ -38,12 +39,30 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
     fronts=cov.get("material_fronts")
     if not all(isinstance(x,list) for x in (scopes,matrix,fronts)) or not scopes or not fronts:
         raise PG02Blocked("CONTRADICTION:INVALID_SCOPE_MATRIX")
+    if any(not isinstance(x,dict) for x in scopes+matrix+fronts):
+        raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
+    if any(not isinstance(x.get("scope_id"),str) or not x["scope_id"] or not isinstance(x.get("material_front_refs"),list)
+           or any(not isinstance(v,str) for v in x["material_front_refs"]) for x in scopes):
+        raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
+    if any(not isinstance(f.get("front_id"),str) or not f["front_id"] or not isinstance(f.get("scope_refs"),list)
+           or not f["scope_refs"] or any(not isinstance(v,str) for v in f["scope_refs"]) for f in fronts):
+        raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
+    if any(not isinstance(r.get("scope_id"),str) or not isinstance(r.get("front_id"),str) for r in matrix):
+        raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
+    if any(x.get("status") not in VALID_SCOPE_STATES for x in scopes):
+        raise PG02Blocked("CONTRADICTION:READINESS_INVALID")
     if not isinstance(snapshot.get("target_granularity"),dict) or not snapshot["target_granularity"]:
         raise PG02Blocked("CONTRADICTION:A2_MISSING")
     sidx={x["scope_id"]:x for x in scopes}
     fidx={x["front_id"]:x for x in fronts}
     if len(sidx)!=len(scopes) or len(fidx)!=len(fronts):
         raise PG02Blocked("CONTRADICTION:DUPLICATE")
+    if any(sid not in sidx for f in fronts for sid in f["scope_refs"]) or any(r["scope_id"] not in sidx for r in matrix):
+        raise PG02Blocked("CONTRADICTION:A7_UNKNOWN_SCOPE")
+    if any(r["front_id"] not in fidx for r in matrix):
+        raise PG02Blocked("CONTRADICTION:A7_UNKNOWN_FRONT")
+    if any(f.get("status") not in VALID_STATUSES or f.get("closure") not in VALID_CLOSURES for f in fronts):
+        raise PG02Blocked("CONTRADICTION:A7_ENUM")
     expected={(sid,fid) for fid,f in fidx.items() for sid in f["scope_refs"]}
     observed={(r["scope_id"],r["front_id"]) for r in matrix}
     if observed!=expected or len(observed)!=len(matrix):
@@ -102,6 +121,10 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
                         domains.add(domain)
                     else:
                         reasons.append(f["front_id"]+":STACK_NOT_APPLICABLE:"+domain)
+        if s["status"]=="READY" and any(fidx[r["front_id"]]["status"]!="NOT_APPLICABLE" and fidx[r["front_id"]]["closure"]=="BLOCKED" for r in links):
+            raise PG02Blocked("CONTRADICTION:READY_SCOPE_BLOCKING_FRONT")
+        if any(fidx[r["front_id"]]["closure"]=="CLOSED" and r.get("effect_on_scope")=="BLOCKS" for r in links):
+            raise PG02Blocked("CONTRADICTION:CLOSED_FRONT_BLOCKS")
         ready=s.get("status")=="READY" and not reasons
         rows.append({"scope_id":sid,"state":"READY_FOR_CLASSIFICATION" if ready else "BLOCKED",
                      "candidate_domains":sorted(domains) if ready else [],"blockers":sorted(reasons)})
