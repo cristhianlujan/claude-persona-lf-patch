@@ -1,0 +1,249 @@
+{
+  "worker": "product_director_lf",
+  "output_type": "PRODUCT_DIRECTION_SPEC",
+  "deliverable_created": {
+    "product_decision": {
+      "decision_id": "PD-B2B-AUTH-IG949-20261029",
+      "selected_decision": "Mantener las reglas ya catalogadas de Iniciar sesión B2B como fuente de verdad según su estado VIGENTE o CANDIDATO; priorizar la resolución gobernada de las 20 familias P1 no listas para implementación, con criterios de QA y trazabilidad, sin duplicar reglas ni alterar producción desde esta ejecución de solo lectura.",
+      "rationale": "El análisis de IG reporta completitud documental de familias, pero veinte P1 aún carecen de implementación/QA. Duplicar reglas no resolvería la falta de binding de identidad y de readback de ejecución. El perfil debe separar decisión de producto de ejecución operativa.",
+      "source_refs": [
+        {
+          "source_ref": "supabase://programacion.input_family_assessments/run_id=949",
+          "authority": "AUTHORITATIVE",
+          "supports": "Run 949: veinte familias P1 con implementation_ready_status=NOT_READY, qa_ready_status=BLOCKED y production_ready_status=BLOCKED; FIELDS, ERRORS, PERMISSIONS y STATES figuran READY.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://programacion.input_readiness_runs/949",
+          "authority": "AUTHORITATIVE",
+          "supports": "Run 949 pantalla 51, estado COMPLETED, 47 familias con validador PASS; snapshot 087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+          "authority": "AUTHORITATIVE",
+          "supports": "Pantalla B2B-AUTH-001 con 283 entradas en contrato de login v1.2, incluidas las reglas AUTH-013, AUTH-015, AUTH-017, AUTH-022 y SESSION-001/002; hay estados VIGENTE y CANDIDATO.",
+          "current": true
+        },
+        {
+          "source_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest",
+          "authority": "CONSTRAINT",
+          "supports": "Ejecución GPT Native Router autorizada con read_only=true, no_write=true, no_promotion=true y effect_authority=false.",
+          "current": true
+        }
+      ],
+      "rejected_alternatives": [
+        {
+          "alternative": "Crear nuevas reglas automáticamente para toda familia P1",
+          "reason": "Confunde ausencia de implementación con ausencia de definición y duplicaría reglas VIGENTE o CANDIDATO."
+        },
+        {
+          "alternative": "Declarar listo para producción por 47 validaciones PASS",
+          "reason": "El validador certifica integridad del análisis; los estados implementación, QA y producción permanecen bloqueados."
+        },
+        {
+          "alternative": "Registrar un desacuerdo genérico contra Input Governance",
+          "reason": "No se observó una contradicción material respaldada por fuente que justifique retroalimentación correctiva."
+        }
+      ],
+      "tradeoffs": [
+        "Se prioriza evidencia de implementación y pruebas por encima de cambios masivos de catálogo.",
+        "El análisis no modifica la configuración; cualquier efecto requiere ruta y autoridad específicas."
+      ],
+      "preserved_constraints": [
+        "La integridad de Input Governance (47/47 PASS) no equivale a implementación ni preparación de QA o producción.",
+        "Las reglas CANDIDATO no son políticas VIGENTE ni pueden presentarse como aprobadas.",
+        "El contrato de identidad ejecutable está pendiente del spike M1 de ADR-003: no inventar endpoint, flujo OIDC ni proveedor local.",
+        "El manifest de la ejecución autoriza análisis, no cambios funcionales, promoción ni escritura operativa.",
+        "No hay evidencia de desacuerdo material con IG; no generar ig_profile_feedback_candidate sin fuente verificable."
+      ],
+      "semantic_qualifiers": [
+        "La integridad de Input Governance (47/47 PASS) no equivale a implementación ni preparación de QA o producción.",
+        "Las reglas CANDIDATO no son políticas VIGENTE ni pueden presentarse como aprobadas.",
+        "El contrato de identidad ejecutable está pendiente del spike M1 de ADR-003: no inventar endpoint, flujo OIDC ni proveedor local.",
+        "El manifest de la ejecución autoriza análisis, no cambios funcionales, promoción ni escritura operativa.",
+        "No hay evidencia de desacuerdo material con IG; no generar ig_profile_feedback_candidate sin fuente verificable."
+      ]
+    },
+    "included_scope": [
+      "Login B2B pantalla B2B-AUTH-001, pantalla_id=51, snapshot IG run 949.",
+      "Priorizar API_DATA_CONTRACT, MFA_OTP_SSO, SECURITY, SESSION y VALIDATIONS, más otras familias P1 según dependencias y criterios observables.",
+      "Handoff a UX/QA/implementación mediante rutas gobernadas y source refs exactos."
+    ],
+    "excluded_scope": [
+      "No cambiar reglas canónicas ni el estado de CANDIDATO a VIGENTE.",
+      "No seleccionar proveedor de identidad o endpoint sin spike M1 ADR-003.",
+      "No abrir 47 familias indiscriminadamente ni ejecutar una nueva curación por defecto.",
+      "No asignar a otro perfil fuera del Router ACT-0001."
+    ],
+    "priority": {
+      "P1": "Corregir binding y evidencias de implementación/QA de las familias P1 abiertas.",
+      "P2": "Alinear UX estados de carga/errores y accesibilidad conservando seguridad.",
+      "P3": "Validar coherencia documental y trazabilidad antes de producción."
+    },
+    "acceptance_criteria": [
+      {
+        "criterion_id": "AC-IG-LINEAGE",
+        "condition": "La solución conserva el run 949 y distingue validación de disposición para implementar.",
+        "observable_check": "Releer source_snapshot_sha256 y familia P1 en input_family_assessments; falla si informa 47/47 como QA o producción READY."
+      },
+      {
+        "criterion_id": "AC-AUTH-BINDING",
+        "condition": "No se declara ejecutable el login antes de cerrar el binding de identidad autorizado.",
+        "observable_check": "Comprobar B2B-RULE-AUTH-015 y API_EXECUTABLE_IDENTITY_BINDING_PENDING; falla si se inventa endpoint, grant, proveedor local o se crea sesión sin AUTHENTICATED."
+      },
+      {
+        "criterion_id": "AC-PRIORITY",
+        "condition": "Resolver primero bloqueos P1 con evidencia de implementación y QA específicos.",
+        "observable_check": "Cada familia P1 afectada pasa de NOT_READY/BLOCKED solo con readback funcional, contrato aplicado y test de QA; no aceptar cambio nominal de estado."
+      },
+      {
+        "criterion_id": "AC-SECURITY",
+        "condition": "La implementación conserva seguridad, sesión y permisos vigentes.",
+        "observable_check": "Pruebas negativas de bypass MFA, reconocimiento de cuenta, acceso entre empresas, sesión sin autenticación completa y credenciales en logs deben denegar."
+      },
+      {
+        "criterion_id": "AC-NO-EFFECT",
+        "condition": "Esta ejecución no escribe reglas ni promueve candidatos.",
+        "observable_check": "Comprobar que no aparecen nuevas mutaciones de reglas, grants, selectores ni promociones asociadas con este execution_id."
+      }
+    ],
+    "dependencies": [
+      "Cierre autorizado del identity binding del spike M1 ADR-003.",
+      "Implementaciones y pruebas de las familias P1 con evidencia propia.",
+      "Operación gobernada separada para cualquier cambio persistente."
+    ],
+    "risks": [
+      "Confundir validator PASS con production READY.",
+      "Elevar una regla CANDIDATO a norma funcional sin autorización.",
+      "Permitir implementación de login sin proveedor de identidad y sin pruebas negativas de seguridad."
+    ],
+    "profiles_to_activate": [],
+    "blockers": [
+      "La ejecución no tiene effect_authority para implementación.",
+      "Veinte familias P1 no están listas para implementación ni QA."
+    ],
+    "next_step": {
+      "target": "Orchestrator",
+      "action": "ROUTE_GOVERNED_IMPLEMENTATION_WORK",
+      "note": "La elección de especialidad y las operaciones con efecto pertenecen al Router."
+    },
+    "final_verdict": "PRODUCT_DECISION_READY_FOR_INDEPENDENT_SEMANTIC_REVIEW_NOT_IMPLEMENTED",
+    "evidence_used": [
+      "supabase://programacion.input_family_assessments/run_id=949",
+      "supabase://programacion.input_readiness_runs/949",
+      "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+      "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest"
+    ],
+    "open_assumptions": [],
+    "success_metric_or_proxy": {
+      "metric": "Familias P1 con implementación comprobada y pruebas QA específicas / familias P1 aplicables",
+      "baseline": "0/20 READY en run 949",
+      "target": "20/20 con evidencias observables, no por cambio declarativo de estado"
+    },
+    "handoff_to_next": {
+      "target": "Orchestrator",
+      "input_contract": "Entregar decisión de producto con fuentes y bloqueos P1; canalizar trabajos de implementación mediante operaciones gobernadas separadas, sin reinterpretar esta ejecución como autoridad de escritura.",
+      "qualifiers_to_preserve": [
+        "La integridad de Input Governance (47/47 PASS) no equivale a implementación ni preparación de QA o producción.",
+        "Las reglas CANDIDATO no son políticas VIGENTE ni pueden presentarse como aprobadas.",
+        "El contrato de identidad ejecutable está pendiente del spike M1 de ADR-003: no inventar endpoint, flujo OIDC ni proveedor local.",
+        "El manifest de la ejecución autoriza análisis, no cambios funcionales, promoción ni escritura operativa.",
+        "No hay evidencia de desacuerdo material con IG; no generar ig_profile_feedback_candidate sin fuente verificable."
+      ]
+    },
+    "authority_status": "SUPPORTED",
+    "material_claims": [
+      {
+        "claim": "El run 949 analizó 47 familias; la validación no acredita preparación para QA ni producción.",
+        "authority_ref": "supabase://programacion.input_readiness_runs/949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "Veinte familias P1 del run 949 tienen implementación NOT_READY y QA/producción BLOCKED.",
+        "authority_ref": "supabase://programacion.input_family_assessments/run_id=949",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "El contrato de login posee reglas actuales y candidatas; AUTH-015 conserva la identidad ejecutable pendiente de ADR-003 M1.",
+        "authority_ref": "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+        "status": "SUPPORTED"
+      },
+      {
+        "claim": "Este perfil está en una ejecución sin autoridad de escritura o promoción.",
+        "authority_ref": "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest",
+        "status": "SUPPORTED"
+      }
+    ],
+    "decision_lineage": {
+      "objective": "Evaluar brechas de Producto, UX y QA para Iniciar sesión B2B y preparar una implementación segura.",
+      "selected_decision": "Mantener las reglas ya catalogadas de Iniciar sesión B2B como fuente de verdad según su estado VIGENTE o CANDIDATO; priorizar la resolución gobernada de las 20 familias P1 no listas para implementación, con criterios de QA y trazabilidad, sin duplicar reglas ni alterar producción desde esta ejecución de solo lectura.",
+      "evidence_refs": [
+        "supabase://programacion.input_family_assessments/run_id=949",
+        "supabase://programacion.input_readiness_runs/949",
+        "supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51",
+        "supabase://public.lf_operation_execution/EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968#manifest"
+      ],
+      "preserved_constraints": [
+        "La integridad de Input Governance (47/47 PASS) no equivale a implementación ni preparación de QA o producción.",
+        "Las reglas CANDIDATO no son políticas VIGENTE ni pueden presentarse como aprobadas.",
+        "El contrato de identidad ejecutable está pendiente del spike M1 de ADR-003: no inventar endpoint, flujo OIDC ni proveedor local.",
+        "El manifest de la ejecución autoriza análisis, no cambios funcionales, promoción ni escritura operativa.",
+        "No hay evidencia de desacuerdo material con IG; no generar ig_profile_feedback_candidate sin fuente verificable."
+      ],
+      "acceptance_refs": [
+        "AC-IG-LINEAGE",
+        "AC-AUTH-BINDING",
+        "AC-PRIORITY",
+        "AC-SECURITY",
+        "AC-NO-EFFECT"
+      ],
+      "handoff_effect": "El orquestador recibe prioridades, reglas preservadas y criterios QA sin cambios operativos ni feedback IG no sustentado."
+    }
+  },
+  "score": {
+    "product_decision_clarity": 5,
+    "scope_control_mvp_separation": 5,
+    "acceptance_criteria_quality": 5,
+    "cross_profile_handoff_quality": 4,
+    "evidence_risk_governance_traceability": 5,
+    "total": 24,
+    "evidence_by_criterion": {
+      "product_decision_clarity": [
+        "product_decision.selected_decision vincula 20 familias P1 a resolución de implementación sin inventar reglas"
+      ],
+      "scope_control_mvp_separation": [
+        "included_scope y excluded_scope impiden escritura, atajos de Router y actualización masiva de 47 familias"
+      ],
+      "acceptance_criteria_quality": [
+        "acceptance_criteria AC-AUTH-BINDING y AC-SECURITY verifican funcionalmente seguridad y sesión"
+      ],
+      "cross_profile_handoff_quality": [
+        "handoff_to_next conserva cinco calificadores y entrega a Orchestrator sin selección directa"
+      ],
+      "evidence_risk_governance_traceability": [
+        "material_claims citan run 949, assessments, contrato B2B y autorización Router de la ejecución"
+      ]
+    }
+  },
+  "handoff_to_next": {
+    "target": "Orchestrator",
+    "summary": "Decisión de producto para revisión independiente; no ejecutar cambios desde este output.",
+    "qualifiers_to_preserve": [
+      "La integridad de Input Governance (47/47 PASS) no equivale a implementación ni preparación de QA o producción.",
+      "Las reglas CANDIDATO no son políticas VIGENTE ni pueden presentarse como aprobadas.",
+      "El contrato de identidad ejecutable está pendiente del spike M1 de ADR-003: no inventar endpoint, flujo OIDC ni proveedor local.",
+      "El manifest de la ejecución autoriza análisis, no cambios funcionales, promoción ni escritura operativa.",
+      "No hay evidencia de desacuerdo material con IG; no generar ig_profile_feedback_candidate sin fuente verificable."
+    ]
+  },
+  "self_verdict": "PASS",
+  "traceability": {
+    "execution_id": "EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968",
+    "profile_source_revision": "8b22c92bb3cf4f46c749f47b69bbdcb86f024c9e",
+    "ig_run_id": 949,
+    "ig_snapshot_sha256": "087c60cab0b950a079dcc5eebf75c1fbe87ec9ad0e6da398ebb7ba5c648df71c",
+    "feedback_emitted": false,
+    "semantic_review_status": "NOT_YET_INDEPENDENTLY_JUDGED"
+  }
+}
