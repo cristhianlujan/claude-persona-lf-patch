@@ -127,6 +127,13 @@ class ProofTest(unittest.TestCase):
         self.assertIn("candidate_sha=" + B40, cmd)
 
 
+class AnnotationTest(unittest.TestCase):
+    def test_workflow_publishes_execution_id_and_batch_outcome_as_annotations(self):
+        wf = open(".github/workflows/lf-customer-profile-creator-governance-caller.yml", encoding="utf-8").read()
+        self.assertEqual(wf.count("::notice title=LF_PROFILE_UPDATE_EXECUTION::"), 1)
+        self.assertEqual(wf.count("::notice title=LF_PROFILE_UPDATE_BATCH::"), 2)
+
+
 class DeployTest(unittest.TestCase):
     DEPLOY = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "profile_runtime_deploy"}
 
