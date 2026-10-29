@@ -830,6 +830,97 @@ def _v04_transversal_errors(payload):
     return errors
 
 
+# --- Text integrity: blank / invisible-only strings and exact placeholder fill are never evidence or analysis. ---
+import re as _re_ti
+import unicodedata as _ud_ti
+
+_TI_INVISIBLE = _re_ti.compile("[\u200b-\u200f\u2060\ufeff\u00a0]")
+_TI_PLACEHOLDERS = frozenset({
+    "tbd", "tba", "todo", "n a", "na", "none", "null", "nil", "unknown", "pending", "lorem ipsum",
+    "to be determined", "to be defined", "not applicable", "not available", "no data",
+    "ninguna", "ninguno", "por definir", "por determinar", "no aplica", "sin datos", "pendiente", "desconocido",
+})
+# Keys whose entries legitimately describe an absence or an open item.
+_TI_EXEMPT_KEYS = frozenset({"missing_evidence", "current_uncertainties", "residual_risks", "blocking_codes", "unavailable_source_assessments"})
+
+
+def _ti_fold(text):
+    text = _ud_ti.normalize("NFKD", _TI_INVISIBLE.sub("", str(text)))
+    text = "".join(c for c in text if not _ud_ti.combining(c)).lower()
+    return _re_ti.sub(r"[^a-z0-9]+", " ", text).strip()
+
+
+def _ti_schema():
+    import functools
+    import json as _json
+    from pathlib import Path as _P
+
+    @functools.lru_cache(maxsize=1)
+    def _load():
+        try:
+            return _json.loads((_P(__file__).resolve().parent.parent / "schemas" / "output.schema.json").read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    return _load()
+
+
+def _ti_variants(node, root, depth=0):
+    """The schema node, its resolved $ref and every anyOf/oneOf alternative."""
+    if not isinstance(node, dict) or depth > 12:
+        return []
+    out = [node]
+    ref = node.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/"):
+        target = root
+        for part in ref[2:].split("/"):
+            target = target.get(part, {}) if isinstance(target, dict) else {}
+        out += _ti_variants(target, root, depth + 1)
+    for key in ("anyOf", "oneOf", "allOf"):
+        for member in node.get(key, []) if isinstance(node.get(key), list) else []:
+            out += _ti_variants(member, root, depth + 1)
+    return out
+
+
+def _ti_children(cands, root, key):
+    out = []
+    for node in cands:
+        if isinstance(key, int):
+            items = node.get("items")
+            if isinstance(items, dict):
+                out += _ti_variants(items, root)
+        else:
+            props = node.get("properties")
+            if isinstance(props, dict) and key in props:
+                out += _ti_variants(props[key], root)
+    return out
+
+
+def _ti_free(cands):
+    """True when the bound schema allows this position to hold arbitrary text (a string that is not an enum or const)."""
+    if not cands or any("enum" in n or "const" in n for n in cands):
+        return False
+    return any(n.get("type") == "string" for n in cands)
+
+
+def _text_integrity_errors(node, path="$", exempt=False, cands=None, root=None):
+    if root is None:
+        root = _ti_schema()
+        cands = _ti_variants(root, root) if isinstance(root, dict) else []
+    errors = []
+    if isinstance(node, str):
+        if not _TI_INVISIBLE.sub("", node).strip():
+            errors.append(_error("TEXT_BLANK_OR_INVISIBLE", path))
+        elif not exempt and _ti_free(cands) and _ti_fold(node) in _TI_PLACEHOLDERS:
+            errors.append(_error("TEXT_PLACEHOLDER_CONTENT", path))
+    elif isinstance(node, dict):
+        for k, value in node.items():
+            errors.extend(_text_integrity_errors(value, f"{path}.{k}", exempt or k in _TI_EXEMPT_KEYS, _ti_children(cands, root, k), root))
+    elif isinstance(node, list):
+        for idx, value in enumerate(node):
+            errors.extend(_text_integrity_errors(value, f"{path}[{idx}]", exempt, _ti_children(cands, root, idx), root))
+    return errors
+
 def validate(payload, evidence_manifest=None):
     if evidence_manifest is None:
         candidate, embedded_manifest = unwrap_runtime_input(payload)
@@ -1016,6 +1107,8 @@ def validate(payload, evidence_manifest=None):
     next_gate = payload.get("next_gate")
     if not isinstance(next_gate, dict) or not all(_nonempty_string(next_gate.get(key)) for key in ("gate", "entry_condition", "exit_condition")):
         errors.append(_error("NEXT_GATE_NOT_STRUCTURED", "$.next_gate"))
+
+    errors.extend(_text_integrity_errors(payload))
 
     codes = sorted({item["code"] for item in errors})
     result = {
