@@ -1,0 +1,156 @@
+{
+ "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+ "bundle_id": "BUNDLE-1FB64437B850",
+ "bundle_digest": "sha256:79417428efe1ce6f7f1895966dc811bd4c9a294b332269c785ee19ec63716664",
+ "observed_at": "2026-10-29T15:30:00Z",
+ "producer": {
+  "kind": "CLAUDE_NATIVE_READ_ONLY_REPO_READBACK",
+  "resolver_ref": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/"
+ },
+ "evidence": [
+  {
+   "evidence_id": "EV-ASSET",
+   "subject": "PROOF-VERDICT-CONTRACT",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py#L82-L90",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:6e9824d7d5f42ec50722a4414b0b164b5d2c9cd6f48402cd3a6032a3102fc698",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-OP",
+   "subject": "PROOF-WORKFLOW-OPERATION",
+   "evidence_class": "OBSERVED_READBACK",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/.github/workflows/lf-profile-evolution-proof.yml#L111",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2a34bc66201be8118e202daf54272c53061216096c395b8138e3a8af7c2eb5fc",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-OWNER",
+   "subject": "PROFILE-UPDATER-OWNER",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/SKILL.md",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:0b3c638374d9906ef7f9c8316ba45fecb2c9eefceb5451afbfdcac4fc387e4d7",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-CLOSURE",
+   "subject": "SCOPE-AUTHORITY-PACKET",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "supabase://public.lf_operation_execution_steps/EXEC-PROFILE-GATE2-B6070E56727C1FB64437B850#input_validate.scope_authority_packet",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:bae88664492a152f0b095a320ebb9c2983ed24a3e48602ef1e9ad1004e19f6d4",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-REPRO",
+   "subject": "ceiling reproduction",
+   "evidence_class": "OBSERVED_READBACK",
+   "source_locator": "local-run://compare_s26_profile_evolution_v1.compare@288c97c85b164bcaed96f4281c3dcf371246402b evaluator=15/15 base!=candidate",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:ccba04807be19af9dfb1d4fe60b7e37561627bdcc3da8800d3e2dca78d015a51",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-PRODUCER",
+   "subject": "verdict producer",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py#L82-L90",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:6e9824d7d5f42ec50722a4414b0b164b5d2c9cd6f48402cd3a6032a3102fc698",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-TRANSPORT",
+   "subject": "annotation transport",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/.github/workflows/lf-profile-evolution-proof.yml#L103-L111",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2a34bc66201be8118e202daf54272c53061216096c395b8138e3a8af7c2eb5fc",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-CONSUMER",
+   "subject": "edge verifier consumer",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/supabase/functions/run-creacion-perfil-lf/verified_proof_evidence.ts#L73-L77",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2c56f5f54aaac77003496966ef393335c3d6201f363cf80f8ae29ffccfa870a8",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-ENFORCEMENT",
+   "subject": "workflow acceptance predicate",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/.github/workflows/lf-profile-evolution-proof.yml#L111",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2a34bc66201be8118e202daf54272c53061216096c395b8138e3a8af7c2eb5fc",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-READBACK",
+   "subject": "ceiling reproduction readback",
+   "evidence_class": "OBSERVED_READBACK",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/validators/test_compare_s26_profile_evolution_v1.py#test_ceiling_flag_when_base_is_already_complete",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:108d5925d2ba617e8fc9dc0aeef179763fb23559f91d8f58ad8e0d00dc45470c",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-NEXT",
+   "subject": "downstream step recorder",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/supabase/functions/run-creacion-perfil-lf/index.ts#L429-L431",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:ee031e5e29bd50192fb6d32c177ad49954a517fb83d64fdcd33d31ea925f48bf",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-ROUTE",
+   "subject": "proof route main-only",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/.github/workflows/lf-profile-evolution-proof.yml#L33",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2a34bc66201be8118e202daf54272c53061216096c395b8138e3a8af7c2eb5fc",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-CURRENTNESS",
+   "subject": "run notBefore/candidate binding",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/supabase/functions/run-creacion-perfil-lf/verified_proof_evidence.ts#L64-L70",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2c56f5f54aaac77003496966ef393335c3d6201f363cf80f8ae29ffccfa870a8",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-TERMINALITY",
+   "subject": "ceiling dead end reproduction",
+   "evidence_class": "OBSERVED_READBACK",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/validators/test_compare_s26_profile_evolution_v1.py#test_ceiling_flag_when_base_is_already_complete",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:108d5925d2ba617e8fc9dc0aeef179763fb23559f91d8f58ad8e0d00dc45470c",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-IDENTITY",
+   "subject": "base/candidate sha identity binding",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/supabase/functions/run-creacion-perfil-lf/verified_proof_evidence.ts#L64-L70",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:2c56f5f54aaac77003496966ef393335c3d6201f363cf80f8ae29ffccfa870a8",
+   "state": "CURRENT"
+  },
+  {
+   "evidence_id": "EV-E-ROLLBACK",
+   "subject": "baseline evaluator decision map",
+   "evidence_class": "SOURCE_PROVENANCE",
+   "source_locator": "github://cristhianlujan/claude-persona-lf-patch@288c97c85b164bcaed96f4281c3dcf371246402b/skills/profile_creator/validators/evaluate_s26_profile_baseline.py#L314-L318",
+   "revision_or_observed_at": "288c97c85b164bcaed96f4281c3dcf371246402b",
+   "digest": "sha256:c6675afd7ccc65edfd7353685979b8efee9dbc2205c7346d3c70488c90f981ad",
+   "state": "CURRENT"
+  }
+ ]
+}
