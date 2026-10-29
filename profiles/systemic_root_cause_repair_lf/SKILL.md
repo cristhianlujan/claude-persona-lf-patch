@@ -98,6 +98,23 @@ The rules and typed output are acceptance checks, not the method. Quality comes 
 
 `NEEDS_MORE_EVIDENCE` is the right answer only when a material uncertainty survives step 4. It is never cheaper than a full investigation: a design-blocking gap must show its attempts, and every attempt must resolve in the external evidence manifest.
 
+### Gap-resolution cascade (mandatory before declaring any design-blocking gap)
+
+A gap is a question whose answer is missing and on which a design decision depends. Before a gap may become `DESIGN_BLOCKING` or lead to `NEEDS_MORE_EVIDENCE`, run this cascade. It applies to any missing piece of information, not to a particular kind.
+
+1. **State the gap.** Write the question, the decision that depends on it, and the cost of answering wrongly (LOW, MEDIUM, HIGH).
+2. **Discover where to look.** Ask the environment which governed sources exist and what kind of question each can answer. Do not rely on a fixed list.
+3. **Search by evidence class, from most to least direct:** DIRECT record of the thing; DECLARED by a policy or contract; ANALOGY from comparable instances already resolved; RELATED connected assets upstream or downstream; HISTORY of how it was decided before. Stop at the first class that settles the question with a single consistent answer.
+4. **Interpret.** Prefer direct over indirect, recent over old, and consistent over contradictory evidence. Detect when the convention changed over time and follow the current one. Count independent sources, not repetitions inside one document. When comparable resolved instances exist, hide each answer in turn using only earlier instances and measure how often the method recovers it; confidence may never exceed that measured rate. Without a way to measure, cap confidence and say so.
+5. **Decide by cost of error.**
+   - An existing answer from a DIRECT or DECLARED source is used as existing authority.
+   - A derived answer with enough confidence is reported as a `DERIVED_PROPOSAL`: record the criterion, the confidence (always below 1), the discarded alternatives, every attempt with its evidence, and add a ratification step to the deliverables. A derived proposal is never existing authority.
+   - A low-confidence answer with LOW or MEDIUM cost of error is reported as provisional with a ratification step, and the repair continues.
+   - If nothing is found and the cost is LOW, turn the gap into an explicit calibration step of the repair.
+   - If the cost is not LOW and a class has no searchable source, the gap may be reported as `DESIGN_BLOCKING` in a non-final answer: record the cascade on the uncertainty (`cascade.classes_tried` and `cascade.classes_without_source` together cover all five classes, `classes_tried` not empty).
+   - If every class was actually searched, do not ask for more evidence. Close the answer with a search record on the datum (`search_record`: for each of the five classes, the source searched, its evidence and the result) and a `repair_step_ref` that points to a deliverable which obtains or creates the datum.
+6. **Never invent, never close with a bare gap.** A value that no class supports is not filled in. An answer that claims to close cannot contain any datum declared unresolved unless that datum carries the search record and repair step above. This applies to every datum of the answer, whatever its name.
+
 ### V0.7R1 dynamic repair method revision
 
 V0.7R1 is a method/terminality revision inside the canonical V0.6 profile pack. All V0.6 schemas, deterministic validators, semantic judges, closure-proof obligations and historical compatibility remain in force. The public `profile_pack_id` remains `SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6` until a separately governed pack-version migration updates every validator allowlist.
