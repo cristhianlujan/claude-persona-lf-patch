@@ -1,0 +1,55 @@
+{
+  "schema_version": "PG00_FRONT_DOMAIN_MAP_CANDIDATE_V1",
+  "state": "DRAFT_NOT_RELEASED",
+  "version": "pg00-domain-map-candidate-v1",
+  "source_ref": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql:76",
+  "source_checkpoint": "PG-02_C1",
+  "authority_boundary": "EXAMPLES_ONLY_NOT_COMPLETE_NOR_AUTHORIZED",
+  "front_kind_domains": {
+    "UI_VISUAL": [
+      "STD-FE",
+      "NAV",
+      "MSG"
+    ],
+    "API_CONTRACT": [
+      "API",
+      "SEC"
+    ],
+    "PERMISSION": [
+      "SEC"
+    ]
+  },
+  "conditional_domains": {
+    "DATA_CONTRACT": {
+      "base_domains": [
+        "DB"
+      ],
+      "requires_decision": "AUD-02 history applicability; no automatic domain activation"
+    }
+  },
+  "omissions": [
+    "All unlisted A7 front kinds",
+    "A2 granularity to tech stack matching",
+    "PG00_C3 official issuance and version authority",
+    "Independent assurance C5"
+  ],
+  "adr_references": [
+    "ADR-PROG-STD-001",
+    "ADR-PROG-STD-002",
+    "ADR-PROG-STD-003",
+    "ADR-PROG-STD-004",
+    "ADR-PROG-STD-005",
+    "ADR-PROG-STD-006",
+    "ADR-PROG-STD-007",
+    "ADR-PROG-STD-008",
+    "ADR-PROG-STD-009",
+    "ADR-PROG-STD-010",
+    "ADR-PROG-STD-011",
+    "ADR-PROG-STD-012",
+    "ADR-PROG-STD-013",
+    "ADR-PROG-STD-014",
+    "ADR-PROG-STD-015",
+    "ADR-PROG-STD-016",
+    "ADR-PROG-STD-017"
+  ]
+}
