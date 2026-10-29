@@ -114,7 +114,7 @@ El probe `sandbox/lf_contract_gate_test/input_governance/ig_g4_authority_contrac
 
 **Siguiente integración:** conectar la verificación de autoridad **solo en la frontera de cambio de alcance**, dentro del run IG existente, con los verificadores canónicos y sin crear otra ejecución. Mantener G5 sin reclasificación y EKB vivo pendiente de escritura gobernada.
 
-## 9. G4 prepublicación — lector del run y autoridad central (29/10/2026)
+## 9. G4 prepublicación — lector del run y autoridad central (28/10/2026)
 
 **Integración de lectura desarrollada en rama DRAFT, no activada en Supabase ni en P10.** Candidato:
 `sandbox/lf_contract_gate_test/input_governance/ig_g4_run_scope_prepublication_readonly_candidate_20261028.sql`.
