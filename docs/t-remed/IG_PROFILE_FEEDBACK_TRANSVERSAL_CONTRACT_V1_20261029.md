@@ -236,3 +236,53 @@ de Product/UI/tercero, validación y juicio propio; reentrada ACT-0001
 Stage1; feedback sin IG, hash ajeno, repetición, evidencia falsa, rollback,
 readback, revisión independiente. Sigue **NO-VERIFICADO/NO-GO** para
 integración, G4/G5 y producción.
+## 9. Endurecimiento y admisión del candidato (29/10/2026)
+
+**Protección de frontera:** el helper se ubicó en
+\`private.lf_profile_ig_feedback_validate_v1\` con
+\`SECURITY INVOKER\`. El EKB y el readback del esquema mostraron
+\`private.USAGE=false\` para \`anon\` y \`authenticated\`;
+no se cambió ningún permiso. Requiere revisión de propietario/RPC
+en el PostgreSQL aislado antes de activar.
+
+**Proveniencia del juicio:** para atribuir un feedback al perfil, el
+verificador candidato exige que
+\`execute_profile.evidence_payload.ig_profile_feedback_candidate\`
+contenga el objeto idéntico a
+\`report_output.evidence_payload.ig_profile_feedback\` y que el SHA
+del output nativo validado coincida. Así, agregar una objeción
+directamente a \`report_output\` **no basta**. No afecta los esquemas
+nativos de Product, UI ni los otros perfiles. El emisor del sidecar
+en \`execute_profile\` **todavía NO está implementado** en el bridge
+GPT/Claude native; sin él, todo feedback nuevo debe bloquearse.
+El nuevo control solo es válido cuando la evidencia provenga
+realmente de la ejecución autorizada, no de un texto añadido después.
+
+**Autorización del Router:** si
+\`router_profile_handoff.return_to_router_after_profile_result\`
+está ausente o es falso, el candidato no abre el Router por la
+presencia de un sidecar; devuelve
+\`PROFILE_IG_FEEDBACK_ROUTER_RETURN_NOT_AUTHORIZED\`.
+Sin feedback, conserva exactamente el comportamiento anterior.
+
+**Pruebas de regresión del flujo vigente:** se ejecutó desde el
+blob Git exacto:
+\`sandbox/lf_contract_gate_test/input_governance/ig_feedback_profile_return_authority_readonly_20261029.sql\`.
+**9/9 PASS**: dos perfiles con autoridad terminal \`READY\`;
+14 ejecuciones legadas no elegibles; retorno habilitado/deshabilitado,
+hash, ausencia de sidecars, preimages de las funciones y run 949 intacto.
+El primer ensayo marcó FAIL por tratar un campo opcional de manifiesto
+ausente como falso explícito; el test se corrigió para respetar el
+\`coalesce(...,false)\` de la función viva y se repitió con 9/9 PASS.
+
+**Límites:** no hay PostgreSQL binario en la sesión y el acceso a
+Supabase es de solo lectura. El candidato SQL contiene
+\`BEGIN ... ROLLBACK\` y 11 negativos **preparados pero NO EJECUTADOS**;
+no hay PASS de compilación, DDL, emisión real, cuatro perfiles completos,
+integración, G4 ni G5. PR #3269 continúa DRAFT sin mutar producción.
+
+**Orden de salida:** 1) probar el candidato exacto en PostgreSQL aislado;
+2) definir y construir emisión segura desde el resultado real del
+especialista a \`execute_profile\`; 3) probar el trayecto report_output
+-> prepare -> Router Stage1 con casos positivos, negativos y sin IG;
+4) revisión independiente y habilitación solamente por ruta gobernada.
