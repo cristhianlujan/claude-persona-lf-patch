@@ -1,6 +1,7 @@
 -- IG profile-neutral sidecar: SANDBOX/ROLLBACK ONLY, not production.
 -- Uses existing report_output, trust_validation_v2, router_return_prepare_v1.
 -- No profile schema, selectors, ACL, queues, or tables are modified.
+-- Helper is SECURITY INVOKER: a new SECURITY DEFINER endpoint must not be exposed.
 BEGIN;
 DO $precheck$ BEGIN
   IF md5(pg_get_functiondef('public.lf_profile_execution_trust_validation_v2(text,text,jsonb)'::regprocedure))<>'c71964f030d7c2f9bf90101f541a6e6b'
@@ -11,7 +12,7 @@ END $precheck$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_ig_feedback_validate_v1(
  p_execution_id text,p_profile_code text,p_feedback jsonb
-) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
 SET search_path TO 'pg_catalog','public','programacion','extensions'
 AS $fb$
 DECLARE
