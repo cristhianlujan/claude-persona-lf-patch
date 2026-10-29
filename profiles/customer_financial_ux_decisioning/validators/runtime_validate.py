@@ -12,6 +12,13 @@ SPEC_REQUIRED = ("decision_id", "decision_question", "comparison_basis", "option
 OPTION_REQUIRED = ("option_id", "terms", "customer_consequence", "timing", "monetary_basis", "key_tradeoff", "authority_refs")
 
 
+ALLOWED_KEYS = {"output_type", "status", "evidence_map", "decision_id", "decision_question", "comparison_basis",
+                "options", "must_understand", "uncertainties", "claim_guardrails", "recommended_presentation_priority",
+                "handoff_to_next", "blocked", "missing_inputs", "blocking_reason", "self_verdict"}
+SPEC_STATUSES = {"READY_FOR_REVIEW", "NEEDS_REPAIR"}
+SPEC_FORBIDDEN = ("missing_inputs", "blocking_reason")
+
+
 def _nonempty_str(value) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
@@ -29,6 +36,9 @@ def validate(payload):
         reject("CFUX_OUTPUT_TYPE_INVALID", "$.output_type")
     if payload.get("status") not in STATUSES:
         reject("CFUX_STATUS_INVALID", "$.status")
+    for key in payload:
+        if key not in ALLOWED_KEYS:
+            reject("CFUX_UNKNOWN_FIELD", f"$.{key}")
     if payload.get("self_verdict") != payload.get("status"):
         reject("CFUX_SELF_VERDICT_STATUS_MISMATCH", "$.self_verdict")
 
@@ -37,21 +47,38 @@ def validate(payload):
         reject("CFUX_EVIDENCE_MAP_REQUIRED", "$.evidence_map")
     else:
         for i, item in enumerate(evidence):
-            if not isinstance(item, dict) or not _nonempty_str(item.get("source_ref")) or not isinstance(item.get("supports"), list) or not item["supports"]:
+            if isinstance(item, dict) and set(item) - {"source_ref", "supports"}:
+                reject("CFUX_EVIDENCE_ITEM_UNKNOWN_FIELD", f"$.evidence_map[{i}]")
+            if (not isinstance(item, dict) or not _nonempty_str(item.get("source_ref"))
+                    or not isinstance(item.get("supports"), list) or not item["supports"]
+                    or not all(_nonempty_str(x) for x in item["supports"])):
                 reject("CFUX_EVIDENCE_ITEM_INVALID", f"$.evidence_map[{i}]")
 
     if kind == "CUSTOMER_FINANCIAL_DECISION_SPEC":
         for key in SPEC_REQUIRED:
             if key not in payload:
                 reject("CFUX_SPEC_FIELD_MISSING", f"$.{key}")
-        if payload.get("status") == "READY_FOR_REVIEW" and payload.get("blocked") is True:
-            reject("CFUX_READY_BUT_BLOCKED", "$.blocked")
+        if payload.get("status") not in SPEC_STATUSES:
+            reject("CFUX_SPEC_STATUS_INVALID", "$.status")
+        if payload.get("blocked") is True:
+            reject("CFUX_SPEC_CANNOT_BE_BLOCKED", "$.blocked")
+        for key in SPEC_FORBIDDEN:
+            if key in payload:
+                reject("CFUX_MULTIPLE_OUTPUT_MODES", f"$.{key}")
+        for key in ("must_understand", "uncertainties", "claim_guardrails"):
+            if key in payload and not isinstance(payload[key], list):
+                reject("CFUX_FIELD_NOT_LIST", f"$.{key}")
+        if "handoff_to_next" in payload and not isinstance(payload["handoff_to_next"], dict):
+            reject("CFUX_HANDOFF_NOT_OBJECT", "$.handoff_to_next")
+        if not _nonempty_str(payload.get("decision_id")):
+            reject("CFUX_DECISION_ID_EMPTY", "$.decision_id")
+        evidence_refs = {e.get("source_ref") for e in (evidence or []) if isinstance(e, dict)}
         options = payload.get("options")
         if not isinstance(options, list) or not options:
             reject("CFUX_OPTIONS_REQUIRED", "$.options")
         else:
             ids = [o.get("option_id") if isinstance(o, dict) else None for o in options]
-            if len(set(ids)) != len(ids) or None in ids:
+            if not all(_nonempty_str(i) for i in ids) or len(set(ids)) != len(ids):
                 reject("CFUX_OPTION_ID_DUPLICATE_OR_MISSING", "$.options")
             for i, option in enumerate(options):
                 if not isinstance(option, dict):
@@ -60,18 +87,28 @@ def validate(payload):
                 for key in OPTION_REQUIRED:
                     if key not in option:
                         reject("CFUX_OPTION_FIELD_MISSING", f"$.options[{i}].{key}")
+                if "terms" in option and not isinstance(option["terms"], dict):
+                    reject("CFUX_OPTION_TERMS_NOT_OBJECT", f"$.options[{i}].terms")
                 refs = option.get("authority_refs")
                 if not isinstance(refs, list) or not refs or not all(_nonempty_str(r) for r in refs):
                     reject("CFUX_OPTION_WITHOUT_AUTHORITY", f"$.options[{i}].authority_refs")
+                elif any(r not in evidence_refs for r in refs):
+                    reject("CFUX_AUTHORITY_REF_NOT_IN_EVIDENCE_MAP", f"$.options[{i}].authority_refs")
     elif kind == "MISSING_MATERIAL_FINANCIAL_INPUT":
-        if payload.get("blocked") is not True or not isinstance(payload.get("missing_inputs"), list) or not payload["missing_inputs"]:
+        missing = payload.get("missing_inputs")
+        if (payload.get("blocked") is not True or not isinstance(missing, list) or not missing
+                or not all(_nonempty_str(x) for x in missing)):
             reject("CFUX_MISSING_INPUT_CONTRACT", "$.missing_inputs")
-        if payload.get("status") == "READY_FOR_REVIEW":
-            reject("CFUX_MISSING_INPUT_CANNOT_BE_READY", "$.status")
+        if payload.get("status") != "NEEDS_INPUT":
+            reject("CFUX_MISSING_INPUT_STATUS_INVALID", "$.status")
+        if "options" in payload or "blocking_reason" in payload:
+            reject("CFUX_MULTIPLE_OUTPUT_MODES", "$")
     elif kind == "BLOCKED_UNSUPPORTED_FINANCIAL_CLAIM":
         if payload.get("blocked") is not True or not _nonempty_str(payload.get("blocking_reason")):
             reject("CFUX_BLOCKED_CLAIM_CONTRACT", "$.blocking_reason")
-        if payload.get("status") == "READY_FOR_REVIEW":
-            reject("CFUX_BLOCKED_CLAIM_CANNOT_BE_READY", "$.status")
+        if payload.get("status") != "BLOCKED":
+            reject("CFUX_BLOCKED_CLAIM_STATUS_INVALID", "$.status")
+        if "options" in payload or "missing_inputs" in payload:
+            reject("CFUX_MULTIPLE_OUTPUT_MODES", "$")
 
     return {"status": "FAIL" if errors else "PASS", "errors": errors}

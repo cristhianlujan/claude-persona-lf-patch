@@ -48,8 +48,8 @@
   "execution_partition": {
     "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
     "field_classes": {
-      "output_type": "DETERMINISTIC",
-      "status": "DETERMINISTIC",
+      "output_type": "SEMANTIC",
+      "status": "SEMANTIC",
       "evidence_map": "HYBRID",
       "decision_id": "SEMANTIC",
       "decision_question": "SEMANTIC",
@@ -60,17 +60,13 @@
       "claim_guardrails": "SEMANTIC",
       "recommended_presentation_priority": "SEMANTIC",
       "handoff_to_next": "HYBRID",
-      "blocked": "DETERMINISTIC",
+      "blocked": "SEMANTIC",
       "missing_inputs": "SEMANTIC",
       "blocking_reason": "SEMANTIC",
-      "self_verdict": "DETERMINISTIC"
+      "self_verdict": "SEMANTIC"
     },
-    "deterministic_materialization": {
-      "output_type": "derived from which of decision spec / missing input / blocked claim the validator selects",
-      "status": "derived from self_verdict and blocked",
-      "blocked": "true iff output_type is not CUSTOMER_FINANCIAL_DECISION_SPEC",
-      "self_verdict": "must equal status"
-    }
+    "deterministic_materialization": {},
+    "generation_limits": {}
   },
   "execution_budget": {
     "resource_class": "STANDARD",
