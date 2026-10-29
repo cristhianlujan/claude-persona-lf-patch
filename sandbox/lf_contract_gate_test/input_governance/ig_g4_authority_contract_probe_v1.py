@@ -2,7 +2,7 @@
 
 All authority sources, route policies and receipts MUST be fetched by authorized
 readers; the caller cannot use proposed rule/category/origin as an authority.
-The two verification callbacks MUST call real canonical receipt/source verifiers
+The verification callbacks MUST call real canonical receipt/source verifiers
 when later integrated. This module itself cannot certify real governance.
 """
 from __future__ import annotations
@@ -25,7 +25,6 @@ def check_authority_contract(
     *,
     verify_source: Callable[[dict[str, Any]], bool] | None = None,
     verify_receipt: Callable[[dict[str, Any]], bool] | None = None,
-    verify_run_binding: Callable[[dict[str, Any]], bool] | None = None,
     now: datetime | None = None,
 ) -> str:
     """Synthetic shape contract, not a runtime admission. Only returns HOLD or PROOF_READY_FOR_TECHNICAL_ADMISSION."""
@@ -34,18 +33,12 @@ def check_authority_contract(
         return "HOLD_UNTRUSTED_TIME"
     if not isinstance(request, dict) or any(not request.get(k) for k in KEYS):
         return "HOLD_REQUEST_INVALID"
-    # Single logical operation: the profile/governed execution_id is the
-    # parent, while IG's bigint run_id is a correlated child, not a second root.
-    # The connector MUST use trusted live readback; a caller-supplied pair alone
-    # cannot establish the binding.
-    root_id = request.get("execution_id")
-    ig_run_id = request.get("ig_run_id")
-    if (not isinstance(root_id, str) or not root_id.strip()
-            or not isinstance(ig_run_id, int) or isinstance(ig_run_id, bool)
-            or ig_run_id <= 0):
-        return "HOLD_RUN_BINDING_MISSING"
-    if verify_run_binding is None or not verify_run_binding(request):
-        return "HOLD_RUN_BINDING_UNVERIFIED"
+    # IG creates its run at intake. The same run_id travels through Curator,
+    # Validator and conditional G4. A caller/profile execution is NOT its parent.
+    # Runtime obtains this id from canonical IG, never from untrusted proposals.
+    run_id = request.get("ig_run_id")
+    if not isinstance(run_id, int) or isinstance(run_id, bool) or run_id <= 0:
+        return "HOLD_IG_RUN_REQUIRED"
     if not isinstance(trusted_source, dict) or verify_source is None or not verify_source(trusted_source):
         return "HOLD_SOURCE_UNVERIFIED"
     if trusted_source.get("status") != "ACTIVE" or trusted_source.get("revoked") is True:
@@ -76,8 +69,6 @@ def check_authority_contract(
         receipt = candidates[0]
         if receipt.get("status") != "VERIFIED" or receipt.get("revoked") is True:
             return "HOLD_RECEIPT_INACTIVE"
-        if receipt.get("execution_id") != root_id or receipt.get("ig_run_id") != ig_run_id:
-            return "HOLD_RECEIPT_RUN_MISMATCH"
         if receipt.get("authority_ref") != route["authority_ref"] or not _has_exact_fields(receipt, request):
             return "HOLD_RECEIPT_SCOPE_MISMATCH"
         try:
