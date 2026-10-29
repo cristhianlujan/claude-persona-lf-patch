@@ -88,5 +88,149 @@
         ]
       }
     ]
+  },
+  "execution_partition": {
+    "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
+    "field_classes": {
+      "status": "SEMANTIC",
+      "profile_pack_id": "SEMANTIC",
+      "symptom": "SEMANTIC",
+      "immediate_cause": "HYBRID",
+      "systemic_root_cause": "HYBRID",
+      "causal_chain": "HYBRID",
+      "first_bad_control": "HYBRID",
+      "escape_control": "HYBRID",
+      "recurrence_evidence": "HYBRID",
+      "live_authority_packet": "HYBRID",
+      "execution_effect_reconciliation": "HYBRID",
+      "authority_contradictions": "HYBRID",
+      "repair_level": "SEMANTIC",
+      "should_exist_assessment": "HYBRID",
+      "alternatives": "HYBRID",
+      "preferred_alternative": "SEMANTIC",
+      "selected_alternative": "SEMANTIC",
+      "rejected_alternatives": "HYBRID",
+      "falsification_results": "HYBRID",
+      "origin_asset": "HYBRID",
+      "origin_operation": "HYBRID",
+      "owner": "HYBRID",
+      "invariant": "HYBRID",
+      "hard_guard": "HYBRID",
+      "acceptance_criteria": "HYBRID",
+      "historical_regressions": "HYBRID",
+      "planned_regressions": "HYBRID",
+      "current_uncertainties": "HYBRID",
+      "residual_risks": "HYBRID",
+      "evidence_map": "HYBRID",
+      "blocking_codes": "HYBRID",
+      "next_gate": "HYBRID",
+      "repair_execution": "SEMANTIC",
+      "implementation_delta": "HYBRID",
+      "transition_plan": "SEMANTIC",
+      "rollback_plan": "SEMANTIC",
+      "solution_depth": "HYBRID",
+      "research_assurance": "HYBRID",
+      "challenger_review": "HYBRID",
+      "omission_discovery": "HYBRID",
+      "implementation_package": "SEMANTIC",
+      "closure_proof": "HYBRID",
+      "repair_disposition": "HYBRID",
+      "quantitative_decisions": "HYBRID",
+      "material_process_graph": "HYBRID",
+      "case_mode": "SEMANTIC"
+    },
+    "deterministic_materialization": {},
+    "generation_limits": {}
+  },
+  "execution_budget": {
+    "resource_class": "HEAVY_SEMANTIC",
+    "max_prompt_tokens": 12000,
+    "max_output_tokens": 16000,
+    "min_available_memory_mb": 2048,
+    "max_swap_used_pct": 50
+  },
+  "adversarial_suite": {
+    "schema": "LF_PROFILE_ADVERSARIAL_SUITE_V1",
+    "base_example": "examples/good_output.json",
+    "min_cases": 40,
+    "min_catch_rate": 0.95,
+    "blank_fields": [
+      "symptom.statement",
+      "immediate_cause.statement",
+      "systemic_root_cause.statement",
+      "first_bad_control.statement",
+      "escape_control.statement",
+      "causal_chain[].statement",
+      "alternatives[].description",
+      "alternatives[].prevention",
+      "alternatives[].complexity",
+      "rejected_alternatives[].reason",
+      "recurrence_evidence[].ref",
+      "recurrence_evidence[].fact",
+      "falsification_results[].evidence_ref"
+    ],
+    "case_duplicate_ids": [
+      {
+        "list": "alternatives",
+        "key": "id"
+      },
+      {
+        "list": "rejected_alternatives",
+        "key": "id"
+      }
+    ],
+    "unknown_root_key": true,
+    "injections": [
+      {
+        "match": "exact",
+        "fields": [
+          "immediate_cause.statement",
+          "systemic_root_cause.statement",
+          "first_bad_control.statement",
+          "escape_control.statement",
+          "causal_chain[].statement",
+          "alternatives[].description",
+          "recurrence_evidence[].fact"
+        ],
+        "phrases": [
+          "unknown",
+          "pending",
+          "no aplica",
+          "por definir",
+          "to be determined",
+          "lorem ipsum"
+        ]
+      },
+      {
+        "match": "exact",
+        "fields": [
+          "systemic_root_cause.evidence_refs[]",
+          "recurrence_evidence[].ref",
+          "falsification_results[].evidence_ref"
+        ],
+        "phrases": [
+          "unknown",
+          "pending",
+          "no aplica",
+          "por definir",
+          "to be determined",
+          "lorem ipsum"
+        ]
+      }
+    ],
+    "valid_controls": [
+      {
+        "name": "placeholder_word_inside_sentence",
+        "set": {
+          "systemic_root_cause.statement": "The unknown caller path bypasses the reservation, so source and live state diverge again."
+        }
+      },
+      {
+        "name": "pending_inside_sentence",
+        "set": {
+          "immediate_cause.statement": "Pending migration identity is not reserved atomically before live apply."
+        }
+      }
+    ]
   }
 }
