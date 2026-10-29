@@ -1,5 +1,5 @@
 import copy
-from pg02_classifier_v1 import classify, PG02Blocked
+from pg02_classifier_v1 import classify, PG02Blocked, digest
 s = {"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1",
      "target_granularity":{"level":"SCREEN","target_ref":"B2B-AUTH-001"},
      "scope_readiness":[{"scope_id":"B2B_COPY","status":"READY"}],
@@ -15,6 +15,14 @@ assert s == original
 assert result == classify(copy.deepcopy(s),copy.deepcopy(m))
 assert result["status"] == "CANDIDATE_NOT_ADMITTED"
 assert result["classification"][0]["candidate_domains"] == ["MSG","NAV","STD-FE"]
+assert classify(s,m,expected_catalog_ref=m["source_ref"],expected_catalog_sha256=digest(m)) == result
+for pinned, reason in [
+    ({"expected_catalog_ref":"fixture://wrong"},"CATALOG_SOURCE_DRIFT"),
+    ({"expected_catalog_sha256":"0"*64},"CATALOG_DIGEST_DRIFT"),
+]:
+    try: classify(s,m,**pinned)
+    except PG02Blocked as e: assert str(e)==reason
+    else: raise AssertionError(reason)
 negative_cases = [
     (lambda s,m:s.pop("target_granularity"),"A2_GRANULARITY_MISSING"),
     (lambda s,m:s["scope_readiness"][0].update(status="BLOCKED"),"PG01_SCOPE_NOT_READY"),
@@ -37,4 +45,4 @@ for mutate, expected in negative_cases:
         assert str(e)==expected, (expected,str(e))
     else:
         raise AssertionError(expected)
-print(f"PG02_CANDIDATE_SMOKE_PASS positive=1 negatives={len(negative_cases)} deterministic=PASS")
+print(f"PG02_CANDIDATE_SMOKE_PASS positive=1 negatives={len(negative_cases)+2} deterministic=PASS")
