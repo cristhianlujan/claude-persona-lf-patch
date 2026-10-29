@@ -3,7 +3,7 @@
 
 The trusted evaluator and baseline contract come from --trusted-root. Only the profile directory is
 taken from the base and candidate trees, so a candidate cannot change the rules it is judged by.
-Never imports or executes profile code.
+Profile code is never imported here; B14 runs the profile's validators only inside the evaluator's isolated child process.
 """
 from __future__ import annotations
 
@@ -33,14 +33,23 @@ def _has_symlink(root: Path) -> bool:
     return any(p.is_symlink() for p in [root, *root.rglob("*")])
 
 
-def _evaluate(evaluator, trusted_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
+def _tree_seed(directory: Path) -> str:
+    """Seed derived from the candidate tree: base and candidate share it, and it is unknown before the change exists."""
+    h = hashlib.sha256()
+    for p in sorted(directory.rglob("*")):
+        if p.is_file():
+            h.update(str(p.relative_to(directory)).encode() + b"\0" + p.read_bytes() + b"\0")
+    return h.hexdigest()
+
+
+def _evaluate(evaluator, trusted_root: Path, slug: str, profile_dir: Path, seed: str | None = None) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="s26-proof-") as tmp:
         root = Path(tmp)
         (root / BASELINE_REL).parent.mkdir(parents=True)
         shutil.copyfile(trusted_root / BASELINE_REL, root / BASELINE_REL)
         (root / "profiles").mkdir()
         shutil.copytree(profile_dir, root / "profiles" / slug, symlinks=False)
-        return evaluator.evaluate(root, slug)
+        return evaluator.evaluate(root, slug, seed=seed)
 
 
 def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path) -> dict[str, Any]:
@@ -55,8 +64,10 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path) 
     if result["blocking_codes"]:
         return _seal(result)
     evaluator = _load_evaluator(trusted_root)
-    base = _evaluate(evaluator, trusted_root, slug, base_dir)
-    cand = _evaluate(evaluator, trusted_root, slug, candidate_dir)
+    seed = _tree_seed(candidate_dir)
+    result["adversarial_seed_sha256"] = hashlib.sha256(seed.encode()).hexdigest()
+    base = _evaluate(evaluator, trusted_root, slug, base_dir, seed)
+    cand = _evaluate(evaluator, trusted_root, slug, candidate_dir, seed)
     for label, ev in (("BASE", base), ("CANDIDATE", cand)):
         if ev.get("blocking_codes") and not ev.get("dimensions"):
             result["blocking_codes"].extend(f"{label}_{c}" for c in ev["blocking_codes"])
@@ -91,7 +102,7 @@ def measure(trusted_root: Path, slug: str, profile_dir: Path) -> dict[str, Any]:
     if result["blocking_codes"]:
         result["decision"] = "BLOCKED"
         return _seal(result)
-    ev = _evaluate(_load_evaluator(trusted_root), trusted_root, slug, profile_dir)
+    ev = _evaluate(_load_evaluator(trusted_root), trusted_root, slug, profile_dir, _tree_seed(profile_dir))
     if ev.get("blocking_codes") and not ev.get("dimensions"):
         result["blocking_codes"].extend(ev["blocking_codes"])
         result["decision"] = "BLOCKED"

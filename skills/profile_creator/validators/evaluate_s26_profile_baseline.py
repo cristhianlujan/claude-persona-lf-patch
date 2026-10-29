@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import re
 import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import s26_adversarial_suite as adversarial  # noqa: E402  (trusted sibling module)
 
 BASELINE_REL = Path("skills/profile_creator/contracts/s26_profile_baseline_v1.json")
 RUNTIME_BINDING_REL = Path("contracts/runtime_binding.json")
@@ -46,7 +50,7 @@ def _declares_callable(path: Path, callable_name: object) -> bool:
     return any(isinstance(node, ast.FunctionDef) and node.name == callable_name for node in tree.body)
 
 
-def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
+def evaluate(repo_root: Path, profile_slug: str, seed: str | None = None, dynamic: bool = True) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     baseline = _load_json(repo_root / BASELINE_REL)
     profiles_root = (repo_root / "profiles").resolve()
@@ -265,6 +269,29 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
     set_dim("B13_EXECUTION_BUDGET", budget_ok, "PASS" if budget_ok else "EXECUTION_BUDGET_NOT_BOUND",
             budget if budget_ok else None, "BIND_EXECUTION_BUDGET")
 
+    # B14: the declaration is read statically; the suite then runs the profile's own validators in an isolated child.
+    suite_decl = binding.get("adversarial_suite") if isinstance(binding, dict) else None
+    suite_errors = adversarial.declaration_errors(suite_decl)
+    suite_result: dict[str, Any] | None = None
+    executed = False
+    if not suite_errors and dynamic and valid_binding:
+        suite_seed = seed or hashlib.sha256(
+            b"".join(p.read_bytes() for p in sorted(profile_dir.rglob("*")) if p.is_file())).hexdigest()
+        suite_result = adversarial.run_isolated(profile_dir, suite_seed)
+        executed = True
+    suite_pass = bool(suite_result and suite_result.get("status") == "PASS")
+    if suite_errors:
+        suite_code = suite_errors[0]
+    elif not dynamic:
+        suite_code = "SUITE_NOT_EXECUTED"
+    elif suite_result is None:
+        suite_code = "RUNTIME_BINDING_MISSING_OR_INVALID"
+    else:
+        suite_code = "PASS" if suite_pass else (suite_result.get("blocking_codes") or ["SUITE_FAILED"])[0]
+    set_dim("B14_DYNAMIC_ADVERSARIAL_SUITE", suite_pass, suite_code,
+            {k: suite_result.get(k) for k in ("catch_rate", "caught", "invalid_cases", "controls", "seed_sha256")} if suite_pass else None,
+            "DECLARE_AND_PASS_DYNAMIC_ADVERSARIAL_SUITE")
+
     score = sum(1 for item in dimensions.values() if item["pass"])
     if score == len(baseline["dimensions"]):
         decision = "NO_UPDATE_REQUIRED"
@@ -280,8 +307,10 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
         "repair_actions": repairs, "blocking_codes": sorted(set(blockers)),
         "post_update_rule": f"RERUN_AND_REQUIRE_{len(baseline['dimensions'])}_OF_{len(baseline['dimensions'])}_BEFORE_PROFILE_UPDATE_CLOSURE",
         "automatic_impact_authorized": False, "runtime_activation_authorized": False,
-        "target_code_execution_performed": False,
+        "target_code_execution_performed": executed,
+        "target_code_execution_mode": "ISOLATED_CHILD_NO_NETWORK_CLEARED_ENV" if executed else "NONE",
         "callable_discovery_mode": "STATIC_AST_NO_IMPORT",
+        "adversarial_suite": suite_result,
     }
 
 
