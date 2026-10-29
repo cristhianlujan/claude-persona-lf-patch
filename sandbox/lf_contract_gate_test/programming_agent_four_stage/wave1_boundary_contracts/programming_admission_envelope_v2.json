@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PROGRAMMING_ADMISSION_ENVELOPE_V2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entry_contract_digest_sha256",
+    "context_id",
+    "context_sha256",
+    "judge",
+    "admitted_scope_ids",
+    "valid_from",
+    "valid_until",
+    "definition_refs",
+    "issued_by_execution_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "PROGRAMMING_ADMISSION_ENVELOPE_V2"
+    },
+    "entry_contract_digest_sha256": {
+      "const": "d2e347efe07a9971790f1a605f0b6ab93fa48a1608744330d1e49e59930d7fb8"
+    },
+    "context_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "judge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_code",
+        "capability_version",
+        "execution_id",
+        "subject_sha256"
+      ],
+      "properties": {
+        "capability_code": {
+          "const": "INDEPENDENT_ASSURANCE"
+        },
+        "capability_version": {
+          "const": "2.0.1"
+        },
+        "execution_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "admitted_scope_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "definition_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "definition_ref",
+          "definition_sha256"
+        ],
+        "properties": {
+          "definition_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "issued_by_execution_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$comment": "Proposed maximum envelope validity: 24 hours, subject to Cristhian approval; the V1 entry contract remains independently required."
+}
