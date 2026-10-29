@@ -21,13 +21,13 @@ DECLARE
  i public.lf_operation_execution_steps%rowtype;
  g jsonb; k text; expected_sha text;
 BEGIN
- IF jsonb_typeof(p_feedback)<>'object' THEN
+ IF jsonb_typeof(p_feedback) IS DISTINCT FROM 'object' THEN
    RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_SHAPE_INVALID');
  END IF;
  IF p_feedback->>'schema_version' IS DISTINCT FROM 'IG_PROFILE_FEEDBACK_V1'
   OR p_feedback->>'source_execution_id' IS DISTINCT FROM p_execution_id
   OR p_feedback->>'source_profile_code' IS DISTINCT FROM p_profile_code
-  OR jsonb_typeof(p_feedback->'ig')<>'object'
+  OR jsonb_typeof(p_feedback->'ig') IS DISTINCT FROM 'object'
   OR coalesce(p_feedback->>'source_profile_output_sha256','') !~ '^sha256:[a-f0-9]{64}$'
   OR coalesce(p_feedback->>'kind','') NOT IN
    ('EVIDENCE_CHALLENGE','NONCANONICAL_RULE_PROPOSAL','UNSUPPORTED_DISAGREEMENT')
@@ -50,7 +50,7 @@ BEGIN
  THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_IG_REF_INVALID'); END IF;
  IF k='EVIDENCE_CHALLENGE' THEN
    IF p_feedback->>'requested_resolution' IS DISTINCT FROM 'FOCAL_REVIEW_ONLY'
-    OR jsonb_typeof(p_feedback->'evidence_refs')<>'array'
+    OR jsonb_typeof(p_feedback->'evidence_refs') IS DISTINCT FROM 'array'
    THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_CHALLENGE_INVALID'); END IF;
    IF jsonb_array_length(p_feedback->'evidence_refs')=0 OR EXISTS(
      SELECT 1 FROM jsonb_array_elements(p_feedback->'evidence_refs') z(v)
@@ -502,6 +502,18 @@ BEGIN
     f||jsonb_build_object('target_profile','PERFIL-PRODUCT-DIRECTOR-LF'));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_FORBIDDEN_KEYS' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_DIRECT_TARGET:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    f-'evidence_refs');
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_MISSING_EVIDENCE:%',a; END IF;
+
+  a:=public.lf_profile_ig_feedback_validate_v1(
+    'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
+    jsonb_set(f,'{evidence_refs}','null'::jsonb));
+  IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
+    RAISE EXCEPTION 'IG_FB_POSTCHECK_NULL_EVIDENCE:%',a; END IF;
 
   a:=public.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
