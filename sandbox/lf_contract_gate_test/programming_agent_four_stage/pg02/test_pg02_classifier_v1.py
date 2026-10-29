@@ -1,7 +1,7 @@
 import copy
 from pg02_classifier_v1 import classify, PG02Blocked, digest
 s={"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1",
-   "target_granularity":{"level":"SCREEN","target_ref":"B2B-AUTH-001"},
+   "target_granularity":{"level":"SCREEN","target_ref":"B2B-AUTH-001"},"stack_profile":{"source_ref":"fixture://architecture","version":"fixture-v1","active_layers":["FRONTEND"]},
    "scope_readiness":[{"scope_id":"B2B_COPY","status":"READY","material_front_refs":["F1"]}],
    "material_front_coverage":{"all_material_fronts_accounted":True,"unmapped_material_signals":[],
       "material_fronts":[{"front_id":"F1","front_kind":"UI_VISUAL","status":"REQUIRED",
@@ -9,7 +9,7 @@ s={"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1",
    "scope_front_matrix":[{"scope_id":"B2B_COPY","front_id":"F1","front_status":"REQUIRED",
                           "front_closure":"CLOSED","effect_on_scope":"PRESERVE"}]}
 m={"state":"SOURCE_ONLY_CANDIDATE","source_ref":"fixture://PG02-C1",
-   "version":"fixture-v1","front_kind_domains":{"UI_VISUAL":["STD-FE","NAV","MSG"]}}
+   "version":"fixture-v1","front_kind_domains":{"UI_VISUAL":["STD-FE","NAV","MSG"]},"domain_stack_layers":{"STD-FE":["FRONTEND"],"NAV":["FRONTEND"],"MSG":["FRONTEND"]}}
 before=copy.deepcopy(s)
 result=classify(s,m)
 assert result==classify(copy.deepcopy(s),copy.deepcopy(m))
