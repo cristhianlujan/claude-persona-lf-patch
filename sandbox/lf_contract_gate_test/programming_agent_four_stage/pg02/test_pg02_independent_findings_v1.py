@@ -1,9 +1,9 @@
 import copy
-from test_pg02_classifier_v1 import s,m
+from test_pg02_classifier_v1 import s,m,pg01_binding
 from pg02_classifier_v1 import classify, PG02Blocked
 from pg02_classification_outcome_v1 import classify_with_outcome
 def reject(snap,reason):
-    try: classify(snap,m)
+    try: classify(snap,m,pg01_binding=pg01_binding)
     except PG02Blocked as ex: assert str(ex)==reason,(str(ex),reason)
     else: raise AssertionError("Unexpected classification: "+reason)
 ghost=copy.deepcopy(s)
@@ -12,7 +12,7 @@ ghost["scope_front_matrix"].append({"scope_id":"GHOST","front_id":"F1","front_st
 reject(ghost,"CONTRADICTION:A7_UNKNOWN_SCOPE")
 for value in (None,[],42,"bad"):
     reject(value,"CONTRADICTION:INVALID_SHAPE")
-    assert classify_with_outcome(value,m)["decision"]=="CONTRADICTION"
+    assert classify_with_outcome(value,m,pg01_binding=pg01_binding)["decision"]=="CONTRADICTION"
 missing=copy.deepcopy(s)
 del missing["material_front_coverage"]["material_fronts"][0]["scope_refs"]
 reject(missing,"CONTRADICTION:INVALID_SHAPE")
