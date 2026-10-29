@@ -22,7 +22,6 @@ ASSET_CODE_RE = re.compile(
     r"SKILL-[A-Z0-9-]+|EDGE_FN_[A-Z0-9_]+)\b",
     re.I,
 )
-TRANSVERSAL_ROUTE = "GESTION_ACTIVOS_IA"
 MAX_FORMAS = 4
 MAX_ALTERNATIVAS = 3
 
@@ -69,6 +68,15 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
         errors.append("BAD_V2_SCHEMA_VERSION")
     if "sistema" in candidate:
         errors.append("CAMPO_LEGACY_SISTEMA_NO_PERMITIDO_EN_V2")
+    accepted_fields = {
+        "schema_version", "texto_original", "es_operacion", "ambiguo",
+        "respuesta_directa", "sujeto", "accion", "formas_busqueda",
+        "alternativas", "correcciones", "pregunta_usuario", "capability_hint",
+        "downstream_execution_allowed", "canal_candidato", "negocio_codigo",
+        "negocios_afectados", "razon_seleccion", "alcance",
+    }
+    if set(candidate).difference(accepted_fields):
+        errors.append("CAMPO_NO_PERMITIDO_EN_V2")
     if not _nonempty(candidate.get("texto_original")):
         errors.append("ORIGINAL_TEXT_REQUIRED")
     if candidate.get("downstream_execution_allowed") is not False:
@@ -130,7 +138,6 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
     channel = candidate.get("canal_candidato")
     business = candidate.get("negocio_codigo")
     affected_businesses = candidate.get("negocios_afectados", [])
-    transversal = candidate.get("ruta_transversal")
     reason = candidate.get("razon_seleccion")
     scope = candidate.get("alcance")
     _valid_scope(scope, errors)
@@ -150,7 +157,7 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
             errors.append("NON_OPERATION_REQUIRES_DIRECT_ANSWER")
         if formas or capability_hint is not None:
             errors.append("NON_OPERATION_MUST_NOT_SEARCH")
-        if channel is not None or transversal is not None or business is not None:
+        if channel is not None or business is not None:
             errors.append("NO_OPERACION_NO_TIENE_RUTA")
         if affected_businesses:
             errors.append("NO_OPERACION_NO_TIENE_NEGOCIOS")
@@ -163,10 +170,7 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
             errors.append("SUBJECT_OR_ACTION_REQUIRED")
         if not formas:
             errors.append("FORMAS_BUSQUEDA_REQUIRED")
-        if transversal is not None:
-            if transversal != TRANSVERSAL_ROUTE or channel is not None:
-                errors.append("RUTA_TRANSVERSAL_INVALIDA")
-        elif channel not in CHANNELS:
+        if channel not in CHANNELS:
             errors.append("CANAL_NO_RECONOCIDO")
         if not _nonempty(reason):
             errors.append("RAZON_SELECCION_REQUERIDA")
@@ -205,7 +209,6 @@ def validate(candidate: Any, registered_businesses: Iterable[str] | None = None)
         "canal_candidato": channel,
         "negocio_codigo": business,
         "negocios_afectados": list(affected_businesses),
-        "ruta_transversal": transversal,
         "alcance": copy.deepcopy(scope),
         "downstream_execution_allowed": False,
         "classification_only": True,

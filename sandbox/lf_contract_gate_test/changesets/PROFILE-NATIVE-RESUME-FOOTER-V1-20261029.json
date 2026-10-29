@@ -1,0 +1,8 @@
+{
+  "solution_ref": "PROFILE-NATIVE-RESUME-FOOTER-V1-20261029",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-NATIVE-RESUME-FOOTER-V1-20261029.json": "CHANGESET_MANIFEST"
+  }
+}
