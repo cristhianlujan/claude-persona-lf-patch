@@ -40,5 +40,42 @@ class RouterAdmitRequestTest(unittest.TestCase):
                 self.run_request(raw, "CLAUDE_NATIVE")
 
 
+class RouterAdmitIssueTest(unittest.TestCase):
+    LABEL = "lf-profile-admit-governed"
+
+    def issue_request(self, body=None, label=None, state="open", pr=None, repo_url=None):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "event.json"
+            payload = {"schema_version": "LF_PROFILE_ROUTER_ADMIT_REQUEST_V1",
+                       "router_context": CTX, "executor_mode": "CLAUDE_NATIVE"}
+            event = {"action": "labeled", "label": {"name": label or self.LABEL},
+                     "issue": {"state": state, "pull_request": pr,
+                               "repository_url": repo_url or "https://api.github.com/repos/o/r",
+                               "body": json.dumps(payload) if body is None else body}}
+            path.write_text(json.dumps(event), encoding="utf-8")
+            env = {"LF_PROFILE_ADMIT_REQUEST_MODE": "ISSUE", "GITHUB_EVENT_NAME": "issues",
+                   "GITHUB_REPOSITORY": "o/r", "GITHUB_EVENT_PATH": str(path)}
+            with patch.dict(os.environ, env, clear=True):
+                return runpy.run_path(str(SCRIPT), run_name="admit_issue_test")["governed_request"]()
+
+    def test_valid_issue(self):
+        self.assertEqual(self.issue_request(), (CTX, "CLAUDE_NATIVE"))
+
+    def test_wrong_label_state_pr_or_repo_rejected(self):
+        for kw in ({"label": "other"}, {"state": "closed"}, {"pr": {}}, {"repo_url": "https://api.github.com/repos/x/y"}):
+            with self.assertRaises(ValueError):
+                self.issue_request(**kw)
+
+    def test_bad_body_rejected(self):
+        for body in ("not json", "[]", json.dumps({"schema_version": "X"}),
+                     json.dumps({"schema_version": "LF_PROFILE_ROUTER_ADMIT_REQUEST_V1",
+                                 "router_context": CTX, "executor_mode": "REMOTE_API"}),
+                     json.dumps({"schema_version": "LF_PROFILE_ROUTER_ADMIT_REQUEST_V1",
+                                 "router_context": CTX, "executor_mode": "CLAUDE_NATIVE", "extra": 1})):
+            with self.assertRaises((ValueError, json.JSONDecodeError)):
+                self.issue_request(body=body)
+
+
 if __name__ == "__main__":
     unittest.main()
