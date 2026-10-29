@@ -28,7 +28,7 @@
     }
   },
   "omissions": [
-    "All unlisted A7 front kinds",
+    "Unknown evidence-derived A7 front kinds require separately governed mapping; never auto-generalize",
     "A2 granularity to tech stack matching",
     "PG00_C3 official issuance and version authority",
     "Independent assurance C5"
@@ -51,5 +51,9 @@
     "ADR-PROG-STD-015",
     "ADR-PROG-STD-016",
     "ADR-PROG-STD-017"
-  ]
+  ],
+  "front_kind_policy": "EVIDENCE_DERIVED_OPEN_CATALOG",
+  "closed_static_front_catalog_forbidden": true,
+  "mapping_policy": "PARTIAL_KNOWN_RULES_ONLY_UNKNOWN_FRONT_FAIL_CLOSED",
+  "contract_source_ref": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_material_front_coverage_contract_v1.json"
 }
