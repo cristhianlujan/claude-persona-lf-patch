@@ -53,7 +53,8 @@ def declaration_errors(decl: Any) -> list[str]:
             isinstance(i, dict) and isinstance(i.get("fields"), list) and i["fields"]
             and all(isinstance(f, str) and f for f in i["fields"])
             and isinstance(i.get("phrases"), list) and i["phrases"]
-            and all(isinstance(p, str) and p.strip() for p in i["phrases"]) for i in inj)):
+            and all(isinstance(p, str) and p.strip() for p in i["phrases"])
+            and i.get("match", "contains") in {"contains", "exact"} for i in inj)):
         errs.append("SUITE_INJECTIONS_INVALID")
     dups = decl.get("case_duplicate_ids", [])
     if not (isinstance(dups, list) and all(isinstance(d, dict) and isinstance(d.get("list"), str) and isinstance(d.get("key"), str) for d in dups)):
@@ -116,6 +117,13 @@ def _phrase_variants(phrase: str) -> list[str]:
     return [phrase, phrase.upper(), phrase.replace(" ", "  "), phrase.replace(" ", "-"), phrase + "!", "Oferta: " + phrase, phrase.lower()]
 
 
+def _exact_variants(phrase: str) -> list[str]:
+    """Variants that keep the value equal to the phrase after normalisation (for rules that match the whole value)."""
+    mid = len(phrase) // 2
+    return [phrase, phrase.upper(), phrase.lower(), phrase.title(), phrase.replace(" ", "  "), phrase.replace(" ", "-"),
+            phrase + "!", phrase + ".", " " + phrase + " ", phrase[:mid] + "\u200b" + phrase[mid:]]
+
+
 def build_cases(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) -> tuple[list[tuple[str, Any]], list[tuple[str, Any]]]:
     """Return (invalid_cases, valid_controls) as lists of (name, payload)."""
     invalid: list[tuple[str, Any]] = []
@@ -138,7 +146,7 @@ def build_cases(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) 
         for field in group["fields"]:
             for path in _expand(base, field):
                 for phrase in group["phrases"]:
-                    for variant in _phrase_variants(phrase):
+                    for variant in (_exact_variants(phrase) if group.get("match") == "exact" else _phrase_variants(phrase)):
                         p = copy.deepcopy(base)
                         _set(p, path, variant)
                         inj.append((f"inject:{'.'.join(map(str, path))}:{variant}", p))
@@ -185,7 +193,10 @@ def _load(name: str, path: Path):
     return mod
 
 
-def _accepts(validate, semantic, payload: Any) -> bool:
+def _accepts(schema_check, validate, semantic, payload: Any) -> bool:
+    """Same acceptance pipeline as the runtime: JSON Schema, then canonical validator, then semantic utility."""
+    if schema_check is not None and not schema_check(payload):
+        return False
     gate = validate(payload)
     if not isinstance(gate, dict) or gate.get("status") != "PASS":
         return False
@@ -204,6 +215,15 @@ def run_suite(profile_dir: Path, seed: str) -> dict[str, Any]:
         return {"schema": RESULT_SCHEMA, "status": "NOT_DECLARED_OR_INVALID", "blocking_codes": errs}
     base = json.loads((profile_dir / decl["base_example"]).read_text(encoding="utf-8"))
     cv, su = binding["canonical_validator"], binding.get("semantic_utility")
+    try:
+        from jsonschema import Draft202012Validator
+    except ImportError:
+        return {"schema": RESULT_SCHEMA, "status": "ERROR", "blocking_codes": ["SUITE_JSONSCHEMA_UNAVAILABLE"]}
+    schema_rel = (binding.get("runtime_schema") or {}).get("default")
+    if not isinstance(schema_rel, str) or not schema_rel or schema_rel.startswith("/") or ".." in Path(schema_rel).parts:
+        return {"schema": RESULT_SCHEMA, "status": "ERROR", "blocking_codes": ["SUITE_RUNTIME_SCHEMA_INVALID"]}
+    schema_validator = Draft202012Validator(json.loads((profile_dir / schema_rel).read_text(encoding="utf-8")))
+    schema_check = lambda payload: schema_validator.is_valid(payload)  # noqa: E731
     validate = getattr(_load("profile_validator", profile_dir / cv["path"]), cv["callable"])
     semantic = getattr(_load("profile_semantic", profile_dir / su["path"]), su["callable"]) if isinstance(su, dict) else None
     rng = random.Random(int(hashlib.sha256(seed.encode()).hexdigest(), 16))
@@ -211,13 +231,13 @@ def run_suite(profile_dir: Path, seed: str) -> dict[str, Any]:
     missed, wrong = [], []
     for name, payload in invalid:
         try:
-            if _accepts(validate, semantic, payload):
+            if _accepts(schema_check, validate, semantic, payload):
                 missed.append(name)
         except Exception:  # a crashing validator rejects (fail closed)
             pass
     for name, payload in controls:
         try:
-            if not _accepts(validate, semantic, payload):
+            if not _accepts(schema_check, validate, semantic, payload):
                 wrong.append(name)
         except Exception:
             wrong.append(name)
@@ -227,7 +247,7 @@ def run_suite(profile_dir: Path, seed: str) -> dict[str, Any]:
     ok = total >= decl["min_cases"] and rate >= decl["min_catch_rate"] and not wrong
     return {"schema": RESULT_SCHEMA, "status": "PASS" if ok else "FAIL", "seed_sha256": hashlib.sha256(seed.encode()).hexdigest(),
             "invalid_cases": total, "caught": caught, "catch_rate": round(rate, 4), "min_catch_rate": decl["min_catch_rate"],
-            "min_cases": decl["min_cases"], "controls": len(controls), "controls_rejected_wrongly": wrong,
+            "min_cases": decl["min_cases"], "schema_gate": True, "controls": len(controls), "controls_rejected_wrongly": wrong,
             "missed_examples": missed[:8], "blocking_codes": [] if ok else (
                 (["SUITE_TOO_FEW_CASES"] if total < decl["min_cases"] else []) +
                 (["SUITE_CATCH_RATE_BELOW_MIN"] if rate < decl["min_catch_rate"] else []) +

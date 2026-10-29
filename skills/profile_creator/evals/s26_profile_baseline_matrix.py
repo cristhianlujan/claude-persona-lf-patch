@@ -148,6 +148,30 @@ def main() -> int:
         b["execution_partition"]["deterministic_materialization"] = {"answer": {"source": "profile_slug"}}; p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
         checks["structured_materialization_accepted"] = x["dimensions"]["B12_EXECUTION_PARTITION"]["pass"] is True
     finally: t.cleanup()
+    t, r = make_repo()
+    try:
+        materialize(r, validator_src="def validate(payload): return {'status': 'PASS'}\n")
+        sp = r / "profiles/demo/schemas/output.schema.json"
+        sp.write_text(json.dumps({"type": "object", "additionalProperties": False, "required": ["answer"], "properties": {"answer": {"type": "string", "pattern": "[A-Za-z0-9]"}}}), encoding="utf-8")
+        x = mod.evaluate(r, "demo")
+        checks["runtime_schema_counts_as_rejection"] = x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["pass"] is True and x["adversarial_suite"].get("schema_gate") is True
+    finally: t.cleanup()
+    t, r = make_repo()
+    try:
+        materialize(r, validator_src="def validate(payload): return {'status': 'PASS'}\n")
+        x = mod.evaluate(r, "demo")
+        checks["lax_validator_without_schema_help_still_fails"] = x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["pass"] is False
+    finally: t.cleanup()
+    t, r = make_repo()
+    try:
+        materialize(r, validator_src="import re\ndef validate(payload):\n    t = re.sub(r'[^a-z0-9]+', ' ', str(payload.get('answer','')).replace('\\u200b','').lower()).strip() if isinstance(payload, dict) else ''\n    ok = isinstance(payload, dict) and set(payload) == {'answer'} and t != '' and t not in {'tbd','pending','unknown'}\n    return {'status': 'PASS' if ok else 'FAIL'}\n")
+        p = r / "profiles/demo/contracts/runtime_binding.json"; b = json.loads(p.read_text())
+        b["adversarial_suite"]["injections"] = [{"fields": ["answer"], "phrases": ["tbd", "pending", "unknown"], "match": "exact"}]
+        p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["exact_match_rule_measured_with_exact_variants"] = x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["pass"] is True
+        b["adversarial_suite"]["injections"][0]["match"] = "fuzzy"; p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["unknown_match_mode_rejected"] = x["dimensions"]["B14_DYNAMIC_ADVERSARIAL_SUITE"]["code"] == "SUITE_INJECTIONS_INVALID"
+    finally: t.cleanup()
     ok = all(checks.values())
     print(json.dumps({"contract":"S26_PROFILE_BASELINE_MATRIX_V2","checks":checks,"count":len(checks),"result":"PASS" if ok else "FAIL"}, sort_keys=True)); return 0 if ok else 1
 
