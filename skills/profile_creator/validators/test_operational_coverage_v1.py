@@ -38,16 +38,16 @@ class Checks(unittest.TestCase):
         self.assertFalse(self.ev(op="if_then", **{"if": {"op": "eq", "pointer": "/output/owner/kind", "value": "DERIVED"}}, then={"op": "eq", "pointer": "/x", "value": 1}))
 
 
-def make_root(tmp, base_dir, cand_dir, base_out, cand_out, tamper=False):
-    d = tmp / SLUG
+def make_root(tmp, base_dir, cand_dir, base_out, cand_out, tamper=False, slug=SLUG):
+    d = tmp / slug
     shutil.rmtree(tmp, ignore_errors=True)
     (d / "runs").mkdir(parents=True)
-    case = {"schema_version": opc.CASE_SCHEMA, "profile_slug": SLUG, "case_id": "C1", "checks": [
+    case = {"schema_version": opc.CASE_SCHEMA, "profile_slug": slug, "case_id": "C1", "checks": [
         {"id": "K1", "pointer": "/output/status", "op": "eq", "value": "DONE"},
         {"id": "K2", "pointer": "/output/plan", "op": "nonempty"}]}
     (d / "C1.case.json").write_text(json.dumps(case))
     for name, tree, out in (("base", opc.tree_sha256(base_dir), base_out), ("cand", opc.tree_sha256(cand_dir), cand_out)):
-        run = {"schema_version": opc.RUN_SCHEMA, "run_id": name, "case_id": "C1", "profile_slug": SLUG,
+        run = {"schema_version": opc.RUN_SCHEMA, "run_id": name, "case_id": "C1", "profile_slug": slug,
                "profile_tree_sha256": tree, "attestation": "NONE", "validator": {"valid": True},
                "output": out, "output_sha256": opc.canonical_sha256(out)}
         if tamper and name == "cand":
@@ -111,6 +111,40 @@ class Integration(unittest.TestCase):
     def test_slug_without_cases_is_not_applicable(self):
         r = cmp.compare(ROOT, SLUG, self.base, self.cand, operational_root=self.tmp / "none")
         self.assertEqual(r["operational"]["status"], "NOT_APPLICABLE")
+
+
+CEILING_SLUG = "systemic_root_cause_repair_lf"  # structurally complete (15/15) profile
+
+
+class Measure(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.prof = self.tmp / "p"
+        shutil.copytree(ROOT / "profiles" / CEILING_SLUG, self.prof)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def measure(self, out):
+        op_root = make_root(self.tmp / "ops", self.prof, self.prof, out, out, slug=CEILING_SLUG)
+        return cmp.measure(ROOT, CEILING_SLUG, self.prof, operational_root=op_root)
+
+    def test_complete_profile_with_unmet_operational_check_needs_update(self):
+        r = self.measure({"status": "NEEDS", "plan": [1]})
+        self.assertEqual(r["decision"], "UPDATE_REQUIRED")
+        self.assertEqual(r["update_basis"], ["OPERATIONAL_COVERAGE"])
+        self.assertEqual(r["operational"]["unmet_checks"], ["C1:K1"])
+        self.assertEqual(r["failed_dimensions"], [])
+
+    def test_all_checks_met_keeps_no_update_required(self):
+        r = self.measure({"status": "DONE", "plan": [1]})
+        self.assertEqual(r["decision"], "NO_UPDATE_REQUIRED")
+        self.assertNotIn("update_basis", r)
+
+    def test_no_bound_run_or_no_cases_changes_nothing(self):
+        r = cmp.measure(ROOT, CEILING_SLUG, self.prof, operational_root=self.tmp / "none")
+        self.assertEqual(r["decision"], "NO_UPDATE_REQUIRED")
+        self.assertNotIn("operational", r)
 
 
 class RepoData(unittest.TestCase):
