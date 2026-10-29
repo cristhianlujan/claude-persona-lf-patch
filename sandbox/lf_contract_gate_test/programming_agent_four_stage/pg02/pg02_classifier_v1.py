@@ -12,13 +12,24 @@ def canonical(obj):
 def digest(obj):
     return hashlib.sha256(canonical(obj).encode("utf-8")).hexdigest()
 
-def classify(snapshot, mapping):
+def verify_catalog_binding(mapping, expected_ref=None, expected_sha256=None):
+    """Optional readback pin. An assertion of CURRENT by a caller is never authority."""
+    if not isinstance(mapping, dict):
+        raise PG02Blocked("CATALOG_INVALID")
+    if expected_ref is not None and mapping.get("source_ref") != expected_ref:
+        raise PG02Blocked("CATALOG_SOURCE_DRIFT")
+    if expected_sha256 is not None and digest(mapping) != expected_sha256:
+        raise PG02Blocked("CATALOG_DIGEST_DRIFT")
+    return digest(mapping)
+
+def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_sha256=None):
     if not isinstance(snapshot, dict) or snapshot.get("schema_version") != "PROGRAMMING_CONTEXT_SNAPSHOT_V1":
         raise PG02Blocked("SNAPSHOT_SCHEMA_INVALID")
     if not isinstance(mapping, dict) or mapping.get("state") != "SOURCE_ONLY_CANDIDATE":
         raise PG02Blocked("CATALOG_NOT_AUTHORIZED")
     if not isinstance(mapping.get("source_ref"), str) or not mapping["source_ref"] or not isinstance(mapping.get("version"), str) or not mapping["version"]:
         raise PG02Blocked("CATALOG_PROVENANCE_MISSING")
+    catalog_digest = verify_catalog_binding(mapping, expected_catalog_ref, expected_catalog_sha256)
     rule_set = mapping.get("front_kind_domains")
     if not isinstance(rule_set, dict) or not rule_set:
         raise PG02Blocked("CATALOG_RULES_MISSING")
@@ -80,4 +91,4 @@ def classify(snapshot, mapping):
     return {"schema_version": "PG02_CLASSIFICATION_CANDIDATE_V1",
             "status": "CANDIDATE_NOT_ADMITTED", "source_snapshot_sha256": digest(snapshot),
             "catalog_source_ref": mapping["source_ref"], "catalog_version": mapping["version"],
-            "catalog_sha256": digest(mapping), "classification": rows}
+            "catalog_sha256": catalog_digest, "classification": rows}
