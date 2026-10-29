@@ -16,7 +16,7 @@ def fixture(domains=("D1",)):
 
 
 def check(source, routes, receipts, request=None, **kwargs):
-    return check_authority_contract(request or REQ, source, routes, receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: True, verify_run_binding=lambda r: True, **kwargs)
+    return check_authority_contract(request or REQ, source, routes, receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: True, **kwargs)
 
 
 class G4Contract(unittest.TestCase):
@@ -32,11 +32,11 @@ class G4Contract(unittest.TestCase):
         self.assertEqual(check(source, routes, receipts[:1]), "HOLD_RECEIPT_MISSING_OR_DUPLICATE")
 
     def test_unverified_source(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_receipt=lambda r: True)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_receipt=lambda r: True)
         self.assertEqual(result, "HOLD_SOURCE_UNVERIFIED")
 
     def test_unverified_receipt(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_source=lambda r: True)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_source=lambda r: True)
         self.assertEqual(result, "HOLD_RECEIPT_VERIFIER_MISSING")
 
     def test_wrong_operation(self):
@@ -92,42 +92,33 @@ class G4Contract(unittest.TestCase):
         self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_SOURCE_INACTIVE")
 
     def test_provenance_callback_false(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_source=lambda r: True, verify_receipt=lambda r: False)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: False)
         self.assertEqual(result, "HOLD_RECEIPT_PROVENANCE_UNVERIFIED")
 
     def test_untrusted_domain_from_request_ignored(self):
         req = {**REQ, "required_domains": ["EASY"]}
         self.assertEqual(check(self.source, self.routes, self.receipts, req), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
-    def test_missing_root(self):
+    def test_no_profile_execution_required(self):
         request = dict(REQ)
         request.pop("execution_id")
-        self.assertEqual(check(self.source, self.routes, self.receipts, request), "HOLD_RUN_BINDING_MISSING")
+        self.assertEqual(check(self.source, self.routes, self.receipts, request), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
-    def test_missing_child_run(self):
-        request = dict(REQ, ig_run_id=None)
-        self.assertEqual(check(self.source, self.routes, self.receipts, request), "HOLD_RUN_BINDING_MISSING")
+    def test_missing_ig_run_rejected(self):
+        request = dict(REQ)
+        request.pop("ig_run_id")
+        self.assertEqual(check(self.source, self.routes, self.receipts, request), "HOLD_IG_RUN_REQUIRED")
 
-    def test_no_trusted_run_link(self):
-        outcome = check_authority_contract(
-            REQ, self.source, self.routes, self.receipts, now=NOW,
-            verify_source=lambda r: True, verify_receipt=lambda r: True)
-        self.assertEqual(outcome, "HOLD_RUN_BINDING_UNVERIFIED")
+    def test_invalid_ig_run_rejected(self):
+        for value in (None, 0, -1, True, "123"):
+            with self.subTest(value=value):
+                self.assertEqual(check(self.source, self.routes, self.receipts, dict(REQ, ig_run_id=value)), "HOLD_IG_RUN_REQUIRED")
 
-    def test_receipt_with_other_root(self):
-        self.receipts[0]["execution_id"] = "EXEC-OTHER"
-        self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_RECEIPT_RUN_MISMATCH")
-
-    def test_receipt_with_other_child_run(self):
-        self.receipts[0]["ig_run_id"] = 999
-        self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_RECEIPT_RUN_MISMATCH")
-
-    def test_run_link_rejected_by_canonical_reader(self):
-        outcome = check_authority_contract(
-            REQ, self.source, self.routes, self.receipts, now=NOW,
-            verify_run_binding=lambda r: False, verify_source=lambda r: True,
-            verify_receipt=lambda r: True)
-        self.assertEqual(outcome, "HOLD_RUN_BINDING_UNVERIFIED")
+    def test_approved_scope_not_tied_to_profile_or_one_run(self):
+        # Positive is only synthetic shape; governed receipt verifier still required.
+        request = dict(REQ, ig_run_id=456)
+        request.pop("execution_id")
+        self.assertEqual(check(self.source, self.routes, self.receipts, request), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
     def test_no_authority_source(self):
         self.assertEqual(check(None, self.routes, self.receipts), "HOLD_SOURCE_UNVERIFIED")
