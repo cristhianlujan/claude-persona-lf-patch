@@ -74,3 +74,6 @@ Domain-specific UI or gamification mechanics are not copied.
 
 ## Authority limits / boundaries
 This profile may decide customer financial decision semantics only from supplied governed authority. It must not design UI layout, execute payments, issue legal conclusions, decide privacy consent, create gamification mechanics, invent authority, bypass Router/Orchestrator, enable runtime, mark VALIDATED/VIGENTE, or authorize production. Deterministic validators and fixtures prove contract consistency only; behavioral PASS requires RAW output plus an execution receipt bound to exact source/input/output and applicable semantic review.
+
+## Update route
+Any change to this profile is made only through the governed operation `ACTUALIZACION_PERFIL_LF`. The structural baseline (S26) must be re-measured on the exact updated head, and the change must demonstrate at least one dimension moving from fail to pass with none regressing. Runtime activation and promotion stay unchanged by an update.
