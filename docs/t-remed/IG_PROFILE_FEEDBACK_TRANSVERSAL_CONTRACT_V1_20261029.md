@@ -173,3 +173,66 @@ EKB vigente consultado: `INPUT-GOV-CONSUMER-BINDING-001`,
 `IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001`,
 `HUMAN-DECISION-POLICY-RESOLUTION-NO-PRODUCER-AUTHORITY-001`,
 `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`.
+
+## 8. Primer candidato de integración (29/10/2026, NO DESPLEGADO)
+
+El PR DRAFT contiene ahora
+\`sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_report_output_candidate_20261029.sql\`.
+El candidato extiende **dos controles ya existentes**, manteniendo intactos los
+esquemas nativos de los perfiles:
+
+1. \`lf_profile_execution_trust_validation_v2\`: admite el sidecar opcional
+   \`report_output.evidence_payload.ig_profile_feedback\` únicamente cuando
+   coincide con el *mismo* execution_id/profile_code, el SHA calculado de
+   \`execute_profile.profile_output\`, el run/familia/pantalla/SHA del recibo
+   \`input_validate\`; verifica su forma, la ruta de revisión y bloquea
+   objetos JSON no válidos, targets directos, reejecuciones forzadas y
+   propuestas presentadas como canónicas.
+2. \`lf_profile_result_router_return_prepare_v1\`: lee el sidecar **solo**
+   después de recibo terminal READY, revalida la vinculación y usa el
+   clasificador de continuaciones del Router ya existente. Si el perfil
+   termina sin retorno pero tiene objeción sustentada, solicita
+   \`CONTINUE_WITH_RESTRICTIONS / AUTHORITY_OR_CONTEXT_RESOLUTION\`.
+   Si ya existe una continuación, preserva su ruta y añade el feedback al
+   mismo payload de retorno. Conserva el **output nativo original exacto**
+   y su SHA, y no autoriza llamar directamente a un perfil ni recurar IG.
+   \`UNSUPPORTED_DISAGREEMENT\` por sí solo no genera ruta nueva.
+
+Un helper de validación de solo lectura
+\`lf_profile_ig_feedback_validate_v1\` permite ejecutar la misma validación
+de binding en ambas fronteras, sin crear otro Router, motor, tabla ni cola.
+Se declara \`SECURITY INVOKER\` y **no** se tocan ACL; revisar los grants
+efectivos antes de cualquier integración autorizada.
+
+La ubicación como sidecar de \`report_output\` necesita además que el
+ejecutor/registrador real de perfiles **emita y adjunte** la observación
+independiente, bajo la identidad y autoridad de la ejecución. Ese
+componente de emisión **NO está integrado** en el runtime vivo.
+Una cadena de fuentes \`evidence_refs\` sigue siendo una **alegación** que
+el revisor debe verificar: el helper devuelve
+\`evidence_authenticity_verified=false\`. Su PASS estructural nunca
+significa que IG estaba equivocado.
+
+**Pruebas:** el candidato incluye 11 negativos de \`DO $postcheck$\`,
+con \`BEGIN; ... ROLLBACK;\`, todos **NO EJECUTADOS** en PostgreSQL porque
+la conexión a Supabase es SELECT-only y no hay servidor PostgreSQL local.
+No confundir su presencia textual con PASS de ejecución.
+
+**Readback reproducible del flujo vivo:**
+\`sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_report_output_baseline_readonly_20261029.sql\`
+→ **11/11 PASS**. El primer intento, que comparó indiscriminadamente
+todos los \`COMPLETED\` históricos contra el contrato terminal actual,
+produjo 3 FAIL. La investigación demostró 2 ejecuciones con terminal
+\`READY\` y 14 legadas \`BLOCKED\` por el contrato actual; el test
+se corrigió para verificar explícitamente la cohorte admisible,
+mantener visible la diferencia y no otorgar PASS retroactivo a los 14.
+El baseline actual no tiene sidecars, conserva sus hashes y preserva
+las 47 familias del run 949.
+
+**Gates para continuidad:** compilar y ejecutar el SQL candidato completo
+en PostgreSQL 17 aislado con rollback; comprobar permiso/ACL; implementar
+emisión gobernada del sidecar en \`report_output\`; probar salidas reales
+de Product/UI/tercero, validación y juicio propio; reentrada ACT-0001
+Stage1; feedback sin IG, hash ajeno, repetición, evidencia falsa, rollback,
+readback, revisión independiente. Sigue **NO-VERIFICADO/NO-GO** para
+integración, G4/G5 y producción.
