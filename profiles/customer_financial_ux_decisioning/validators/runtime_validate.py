@@ -5,6 +5,8 @@ Structural only: it does not prove that any monetary figure or source claim is t
 """
 from __future__ import annotations
 
+import re
+
 OUTPUT_TYPES = {"CUSTOMER_FINANCIAL_DECISION_SPEC", "MISSING_MATERIAL_FINANCIAL_INPUT", "BLOCKED_UNSUPPORTED_FINANCIAL_CLAIM"}
 STATUSES = {"READY_FOR_REVIEW", "NEEDS_INPUT", "BLOCKED", "NEEDS_REPAIR"}
 SPEC_REQUIRED = ("decision_id", "decision_question", "comparison_basis", "options", "must_understand",
@@ -19,8 +21,16 @@ SPEC_STATUSES = {"READY_FOR_REVIEW", "NEEDS_REPAIR"}
 SPEC_FORBIDDEN = ("missing_inputs", "blocking_reason")
 
 
+_INVISIBLE = re.compile("[\u200b-\u200f\u2060\ufeff\u00a0]")
+
+
 def _nonempty_str(value) -> bool:
-    return isinstance(value, str) and bool(value.strip())
+    return isinstance(value, str) and bool(_INVISIBLE.sub("", value).strip())
+
+
+def _key(value) -> str:
+    """Identity key for ids/refs: case, surrounding spaces and invisible characters do not make a new identity."""
+    return _INVISIBLE.sub("", value).strip().casefold() if isinstance(value, str) else ""
 
 
 def validate(payload):
@@ -54,6 +64,10 @@ def validate(payload):
                     or not all(_nonempty_str(x) for x in item["supports"])):
                 reject("CFUX_EVIDENCE_ITEM_INVALID", f"$.evidence_map[{i}]")
 
+        keys = [_key(i.get("source_ref")) for i in evidence if isinstance(i, dict) and _nonempty_str(i.get("source_ref"))]
+        if len(set(keys)) != len(keys):
+            reject("CFUX_EVIDENCE_SOURCE_REF_DUPLICATE", "$.evidence_map")
+
     if kind == "CUSTOMER_FINANCIAL_DECISION_SPEC":
         for key in SPEC_REQUIRED:
             if key not in payload:
@@ -70,15 +84,23 @@ def validate(payload):
                 reject("CFUX_FIELD_NOT_LIST", f"$.{key}")
         if "handoff_to_next" in payload and not isinstance(payload["handoff_to_next"], dict):
             reject("CFUX_HANDOFF_NOT_OBJECT", "$.handoff_to_next")
-        if not _nonempty_str(payload.get("decision_id")):
-            reject("CFUX_DECISION_ID_EMPTY", "$.decision_id")
+        elif payload.get("handoff_to_next") == {}:
+            reject("CFUX_HANDOFF_EMPTY", "$.handoff_to_next")
+        for key in ("decision_id", "decision_question"):
+            if not _nonempty_str(payload.get(key)):
+                reject("CFUX_DECISION_ID_EMPTY" if key == "decision_id" else "CFUX_DECISION_QUESTION_EMPTY", f"$.{key}")
+        if "comparison_basis" in payload and not isinstance(payload["comparison_basis"], str):
+            reject("CFUX_FIELD_NOT_STRING", "$.comparison_basis")
+        prio = payload.get("recommended_presentation_priority")
+        if prio is not None and (not isinstance(prio, list) or not all(_nonempty_str(x) for x in prio)):
+            reject("CFUX_FIELD_NOT_STRING_LIST", "$.recommended_presentation_priority")
         evidence_refs = {e.get("source_ref") for e in (evidence or []) if isinstance(e, dict)}
         options = payload.get("options")
         if not isinstance(options, list) or not options:
             reject("CFUX_OPTIONS_REQUIRED", "$.options")
         else:
             ids = [o.get("option_id") if isinstance(o, dict) else None for o in options]
-            if not all(_nonempty_str(i) for i in ids) or len(set(ids)) != len(ids):
+            if not all(_nonempty_str(i) for i in ids) or len({_key(i) for i in ids}) != len(ids):
                 reject("CFUX_OPTION_ID_DUPLICATE_OR_MISSING", "$.options")
             for i, option in enumerate(options):
                 if not isinstance(option, dict):
@@ -87,6 +109,9 @@ def validate(payload):
                 for key in OPTION_REQUIRED:
                     if key not in option:
                         reject("CFUX_OPTION_FIELD_MISSING", f"$.options[{i}].{key}")
+                for key in ("customer_consequence", "timing", "monetary_basis", "key_tradeoff"):
+                    if key in option and not _nonempty_str(option[key]):
+                        reject("CFUX_OPTION_TEXT_EMPTY_OR_NOT_STRING", f"$.options[{i}].{key}")
                 if "terms" in option and not isinstance(option["terms"], dict):
                     reject("CFUX_OPTION_TERMS_NOT_OBJECT", f"$.options[{i}].terms")
                 refs = option.get("authority_refs")
