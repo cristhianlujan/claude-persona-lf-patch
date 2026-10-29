@@ -1,0 +1,841 @@
+{
+  "plan_code": "AI_SALES_3_0",
+  "snapshot_version": "v0.2",
+  "snapshot_date": "2026-10-27",
+  "type": "PRE_REGISTRATION_DESIGN_SNAPSHOT",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "source": "Design consolidated from current conversation; not an official Supabase plan or source-of-truth.",
+  "supabase_readback": {
+    "at": "2026-10-27",
+    "work_items_matching_ai_sales": 0,
+    "plan_units_matching_ai_sales": 0,
+    "checkpoints_matching_ai_sales": 0,
+    "note": "Search by AI Sales name/code; absence does not prove total absence under unknown naming."
+  },
+  "rules": [
+    "Presupuesto inicial US$0 licencias/API de pago; verificar costo total de infraestructura",
+    "Supabase como fuente gobernada; CRM es propietario del estado comercial y actividades",
+    "Segregación de datos/reglas por negocio; SALY B2B primer piloto, LF separado",
+    "Reutilizar perfiles, skills, políticas, Router y n8n únicamente tras confirmar compatibilidad",
+    "Sin bypass del Router ni secuencias establecidas",
+    "Verificación mínima durante ejecución; auditoría independiente al cierre solo si riesgo lo exige",
+    "No cambiar reglas aprobadas sin análisis de impacto, preservar evidencia y readback",
+    "No declarar completa una unidad sin evidencia, ni modificar producción por crear este plan",
+    "U15 y U16 son unidades transversales; se inician temprano y se reusan sus controles sin reauditar todo",
+    "Los conectores WhatsApp/WAHA/LinkedIn se someten a restricciones legales y de plataforma",
+    "Ruta de modelos: determinista primero; Ollama si cumple calidad; GPT nativo asistido; API pagada bloqueada"
+  ],
+  "phases": {
+    "F1": "Fundamentos y arquitectura",
+    "F2": "Captación y canales",
+    "F3": "Operación comercial",
+    "F4": "Evolución"
+  },
+  "gates": [
+    {
+      "id": "G1",
+      "name": "Fundamentos",
+      "requires": [
+        "U00",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U15",
+        "U16"
+      ],
+      "condition": "Resultados de arquitectura y dependencias pertinentes verificados antes de automatización"
+    },
+    {
+      "id": "G2",
+      "name": "Canales",
+      "requires": [
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09"
+      ],
+      "condition": "Ingreso, calificación y seguimiento sin duplicación"
+    },
+    {
+      "id": "G3",
+      "name": "Piloto",
+      "requires": [
+        "U10",
+        "U11",
+        "U12"
+      ],
+      "condition": "Flujo comercial E2E validado, métricas y seguridad"
+    },
+    {
+      "id": "G4",
+      "name": "Evolución",
+      "requires": [
+        "U13",
+        "U14"
+      ],
+      "condition": "Cambios mejoran KPIs con evidencia y versiones"
+    }
+  ],
+  "execution_order_note": "U00; U15/U16 prioritarios (sin bloquear investigaciones de U01 y preparación U02-U04); G1; U05-U09/G2; U10-U12/G3; U13-U14/G4.",
+  "units": [
+    {
+      "unit_code": "U00",
+      "title": "Alcance y gobernanza",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U00-C01",
+          "title": "Objetivo y segmentos",
+          "evidence_to_close": "Objetivos, segmentos, negocio piloto y alcance documentados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U00-C02",
+          "title": "KPIs",
+          "evidence_to_close": "KPIs con definiciones, fuentes y umbrales de piloto",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U00-C03",
+          "title": "Inventario de activos",
+          "evidence_to_close": "Inventario trazable de componentes y herramientas actuales",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U00-C04",
+          "title": "Arquitectura y dependencias",
+          "evidence_to_close": "Mapa de integración, fuentes canónicas y dependencias",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U00-C05",
+          "title": "Riesgos y límites",
+          "evidence_to_close": "Riesgos, restricciones, aprobación y límites del piloto",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U01",
+      "title": "Investigación Ollama / GPT",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U01-C01",
+          "title": "Inventario de arquitectura existente",
+          "evidence_to_close": "Capacidades, contratos y restricciones actuales",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C02",
+          "title": "Hardware",
+          "evidence_to_close": "Recursos CPU, memoria y GPU disponibles para Ollama",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C03",
+          "title": "Modelos gratuitos",
+          "evidence_to_close": "Alternativas, hardware y licencias verificados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C04",
+          "title": "GPT nativo",
+          "evidence_to_close": "Capacidades, integraciones, costos y límites verificados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C05",
+          "title": "Casos de uso",
+          "evidence_to_close": "Matriz de tareas y motor candidato",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C06",
+          "title": "Benchmark",
+          "evidence_to_close": "Calidad, tiempo, recursos y confiabilidad medidos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C07",
+          "title": "Selección y fallback",
+          "evidence_to_close": "Reglas de decisión y escalamiento justificadas",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C08",
+          "title": "Seguridad",
+          "evidence_to_close": "Privacidad, permisos y trazabilidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C09",
+          "title": "Compatibilidad",
+          "evidence_to_close": "Contratos y no regresión del sistema existente",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U01-C10",
+          "title": "Dictamen",
+          "evidence_to_close": "Motor recomendado por operación con evidencia",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U02",
+      "title": "CRM y datos comerciales",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U02-C01",
+          "title": "Auditoría CRM existente",
+          "evidence_to_close": "Capacidades y brechas del CRM actual",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U02-C02",
+          "title": "Alternativas gratuitas",
+          "evidence_to_close": "Comparativa de CRM open source/freemium y costos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U02-C03",
+          "title": "Modelo comercial",
+          "evidence_to_close": "Empresa, contacto, lead, oportunidad, tarea y actividad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U02-C04",
+          "title": "Permisos y segregación",
+          "evidence_to_close": "Protección por negocio y actor validada",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U02-C05",
+          "title": "Ciclo CRM",
+          "evidence_to_close": "Prueba mínima del flujo comercial completo",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U03",
+      "title": "Cerebro comercial",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U03-C01",
+          "title": "Inventario de fuentes",
+          "evidence_to_close": "Fuentes oficiales, propietarias y vigencia",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U03-C02",
+          "title": "Taxonomía y conocimiento",
+          "evidence_to_close": "Esquema de ICP, productos, políticas y playbooks",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U03-C03",
+          "title": "Versionado y vigencia",
+          "evidence_to_close": "Ciclo de revisión, historia y fuentes canónicas",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U03-C04",
+          "title": "Recuperación de conocimiento",
+          "evidence_to_close": "Consulta y selección de evidencia",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U03-C05",
+          "title": "Respuestas con evidencia",
+          "evidence_to_close": "Prueba focalizada de precisión y grounding",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U04",
+      "title": "Integraciones y herramientas",
+      "phase": "F1",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U04-C01",
+          "title": "Catálogo de conectores",
+          "evidence_to_close": "Herramientas, propietarios, costo y estado",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U04-C02",
+          "title": "Contratos API/webhooks",
+          "evidence_to_close": "Entrada, salida y semántica de error",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U04-C03",
+          "title": "Autenticación y permisos",
+          "evidence_to_close": "Acceso mínimo y rotación de credenciales",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U04-C04",
+          "title": "Reintentos e idempotencia",
+          "evidence_to_close": "Política documentada y control de duplicados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U04-C05",
+          "title": "Integración",
+          "evidence_to_close": "Prueba focalizada de contratos sin duplicación",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U05",
+      "title": "WAHA Copilot del vendedor",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U05-C01",
+          "title": "Factibilidad y riesgo",
+          "evidence_to_close": "Límites WAHA/Meta e infraestructura",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U05-C02",
+          "title": "Identificación del vendedor",
+          "evidence_to_close": "Usuario autorizado y permisos CRM",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U05-C03",
+          "title": "Entrada texto/voz",
+          "evidence_to_close": "Adaptador de WhatsApp y transcripción",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U05-C04",
+          "title": "Extracción y confirmación",
+          "evidence_to_close": "Datos estructurados confirmados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U05-C05",
+          "title": "Registro y readback",
+          "evidence_to_close": "Visita u oportunidad reflejada en CRM",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U06",
+      "title": "LinkedIn y Social Selling",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U06-C01",
+          "title": "Capacidades permitidas",
+          "evidence_to_close": "APIs, restricciones y canales autorizados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U06-C02",
+          "title": "Investigación asistida",
+          "evidence_to_close": "Cuentas y decisores con fuentes",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U06-C03",
+          "title": "Estrategia editorial",
+          "evidence_to_close": "Calendario y políticas de publicación",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U06-C04",
+          "title": "Captación y origen",
+          "evidence_to_close": "Origen de lead y trazabilidad en CRM",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U06-C05",
+          "title": "Métricas",
+          "evidence_to_close": "KPIs de captación y contenido",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U07",
+      "title": "Inteligencia comercial y Radar",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U07-C01",
+          "title": "ICP",
+          "evidence_to_close": "Criterios B2B SALY, segmentación y exclusiones",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U07-C02",
+          "title": "Fuentes de empresas",
+          "evidence_to_close": "Fuentes públicas y uso autorizado",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U07-C03",
+          "title": "Señales comerciales",
+          "evidence_to_close": "Eventos verificables de potencial interés",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U07-C04",
+          "title": "Scoring y evidencias",
+          "evidence_to_close": "Puntaje, explicación y confiabilidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U07-C05",
+          "title": "Ranking validado",
+          "evidence_to_close": "Priorización consistente en muestra focalizada",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U08",
+      "title": "Outbound inteligente",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U08-C01",
+          "title": "Canales autorizados",
+          "evidence_to_close": "Permisos para email/LinkedIn/WhatsApp",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U08-C02",
+          "title": "Scripts y personalización",
+          "evidence_to_close": "Mensajes con claims aprobados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U08-C03",
+          "title": "Secuencias",
+          "evidence_to_close": "Cadencia, límites y exclusiones",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U08-C04",
+          "title": "Autorización",
+          "evidence_to_close": "Revisión previa del contacto externo",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U08-C05",
+          "title": "Respuestas y seguimiento",
+          "evidence_to_close": "Estado de secuencia sincronizado con CRM",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U09",
+      "title": "Inbound omnicanal",
+      "phase": "F2",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U09-C01",
+          "title": "Canales y clasificación",
+          "evidence_to_close": "Ingreso y clasificación autorizada",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U09-C02",
+          "title": "Consultas frecuentes",
+          "evidence_to_close": "Respuestas ancladas en conocimiento",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U09-C03",
+          "title": "Captura y calificación",
+          "evidence_to_close": "Lead y validaciones mínimas",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U09-C04",
+          "title": "Escalamiento humano",
+          "evidence_to_close": "Transferencia con contexto y trazabilidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U09-C05",
+          "title": "Sincronización CRM",
+          "evidence_to_close": "Consulta, lead y seguimiento coherentes",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U10",
+      "title": "SDR y coordinación multiagente",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U10-C01",
+          "title": "Roles y contratos",
+          "evidence_to_close": "Funciones y límites de cada perfil",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U10-C02",
+          "title": "Selección de perfiles",
+          "evidence_to_close": "Descubrimiento determinista y selección semántica",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U10-C03",
+          "title": "Next Best Action",
+          "evidence_to_close": "Acción explicada y priorizada",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U10-C04",
+          "title": "Pipeline dinámico gobernado",
+          "evidence_to_close": "Secuencias, autorización y recuperación sin bypass",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U10-C05",
+          "title": "Prueba con CRM",
+          "evidence_to_close": "Ejecución y resultado trazables",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U11",
+      "title": "Seguimiento, RevOps y reportes",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U11-C01",
+          "title": "Catálogo de KPIs",
+          "evidence_to_close": "Definición de métricas y propietarios",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U11-C02",
+          "title": "Alertas y seguimiento",
+          "evidence_to_close": "Tareas y vencimientos, sin duplicar CRM",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U11-C03",
+          "title": "Conciliación CRM/Supabase",
+          "evidence_to_close": "Consistencia entre fuentes y telemetría IA",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U11-C04",
+          "title": "Dashboard",
+          "evidence_to_close": "Panel por negocio, vendedor, canal y periodo",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U11-C05",
+          "title": "Costos y forecast",
+          "evidence_to_close": "Calidad comercial, costo y pronóstico",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U12",
+      "title": "Piloto SALY B2B",
+      "phase": "F3",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U12-C01",
+          "title": "Casos y datos de prueba",
+          "evidence_to_close": "Casos SALY B2B representativos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U12-C02",
+          "title": "E2E funcional",
+          "evidence_to_close": "Captación a reporte sin pasos omitidos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U12-C03",
+          "title": "Seguridad y no regresión",
+          "evidence_to_close": "Cambios de alcance y riesgos controlados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U12-C04",
+          "title": "Piloto comercial controlado",
+          "evidence_to_close": "Ejecución real dentro de autorización",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U12-C05",
+          "title": "Evaluación y decisión",
+          "evidence_to_close": "Métricas, resultados y dictamen",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U13",
+      "title": "Voz y coaching comercial",
+      "phase": "F4",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U13-C01",
+          "title": "Alternativas gratuitas",
+          "evidence_to_close": "Motores de voz y costos de infraestructura",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U13-C02",
+          "title": "Consentimiento y grabación",
+          "evidence_to_close": "Consentimiento, privacidad y retención",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U13-C03",
+          "title": "Transcripción",
+          "evidence_to_close": "Calidad de STT en casos objetivo",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U13-C04",
+          "title": "Evaluación de llamadas",
+          "evidence_to_close": "Scorecard con evidencia",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U13-C05",
+          "title": "Calidad y costo",
+          "evidence_to_close": "Dictamen de voz/coaching",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U14",
+      "title": "Aprendizaje y Revenue Intelligence",
+      "phase": "F4",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U14-C01",
+          "title": "Feedback comercial",
+          "evidence_to_close": "Resultados y errores registrados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U14-C02",
+          "title": "Experimentos A/B",
+          "evidence_to_close": "Hipótesis y muestras comparables",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U14-C03",
+          "title": "Conversión y rentabilidad",
+          "evidence_to_close": "Datos confiables, costo e ingreso esperado",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U14-C04",
+          "title": "Propuestas de mejora",
+          "evidence_to_close": "Candidatos con impacto y reversibilidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U14-C05",
+          "title": "Validación y versionado",
+          "evidence_to_close": "Mejora verificada antes de promover",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U15",
+      "title": "Ingeniería, selección y evolución de perfiles",
+      "phase": "Transversal/prioritario",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U15-C01",
+          "title": "Inventario perfiles/skills",
+          "evidence_to_close": "Versiones y fuentes canónicas reconciliadas",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C02",
+          "title": "Matriz de capacidades por fase",
+          "evidence_to_close": "Habilidades requeridas por rol y unidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C03",
+          "title": "Selección determinista/semántica",
+          "evidence_to_close": "Contratos y secuencia consultados",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C04",
+          "title": "Reutilización y brechas",
+          "evidence_to_close": "Clasificación reutilizar/evolucionar/crear",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C05",
+          "title": "Auditoría Profile Creator",
+          "evidence_to_close": "Capacidades y lagunas reales",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C06",
+          "title": "Auditoría Profile Updater",
+          "evidence_to_close": "Brechas PE10, sin duplicar cierres",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C07",
+          "title": "Habilidades estándar",
+          "evidence_to_close": "Interfaz común de perfil, costo, profundidad y transporte",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C08",
+          "title": "Diseño de evolución",
+          "evidence_to_close": "Cambio mínimo, compatibilidad y rollback",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C09",
+          "title": "Diseño de perfiles objetivo",
+          "evidence_to_close": "Alcance de las especialidades AI Sales",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C10",
+          "title": "Políticas y skills",
+          "evidence_to_close": "Bindings según negocio/acción",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C11",
+          "title": "Prueba consolidada",
+          "evidence_to_close": "Selección, actualización/creación y operación focalizadas",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U15-C12",
+          "title": "Readback y cierre",
+          "evidence_to_close": "Evidencia unificada y versión",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    },
+    {
+      "unit_code": "U16",
+      "title": "Ingeniería de rendimiento, transporte y profundidad",
+      "phase": "Transversal/prioritario",
+      "state": "PROPOSED_NOT_REGISTERED",
+      "checkpoints": [
+        {
+          "checkpoint_code": "U16-C01",
+          "title": "Línea base de tiempos",
+          "evidence_to_close": "p50/p95 y duraciones por etapa",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C02",
+          "title": "Transporte",
+          "evidence_to_close": "Canales, contratos y autenticación",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C03",
+          "title": "Payload",
+          "evidence_to_close": "Tamaño y límites de contenido",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C04",
+          "title": "Timeout/retry/idempotencia",
+          "evidence_to_close": "Controles de recuperación de fallos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C05",
+          "title": "Profundidad de razonamiento",
+          "evidence_to_close": "Niveles dinámicos según necesidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C06",
+          "title": "Suficiencia de evidencia",
+          "evidence_to_close": "Grounding y políticas de calidad",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C07",
+          "title": "Consumo",
+          "evidence_to_close": "Tokens, CPU, memoria y concurrencia",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C08",
+          "title": "Observabilidad E2E",
+          "evidence_to_close": "Traza y correlación de eventos",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C09",
+          "title": "No regresión y rollback",
+          "evidence_to_close": "Prueba focalizada de cambios",
+          "status": "NOT_VERIFIED"
+        },
+        {
+          "checkpoint_code": "U16-C10",
+          "title": "Benchmark y dictamen",
+          "evidence_to_close": "Cumplimiento medido de umbrales",
+          "status": "NOT_VERIFIED"
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "units": 17,
+    "checkpoints": 102,
+    "verified_ai_sales_checkpoints": 0
+  },
+  "dependencies": {
+    "pe10": "Profile Updater PE10 exists in Supabase and has active backlog; read live states before reuse. No duplicate PE10 in AI Sales."
+  },
+  "content_sha256_without_digest": "f3038017950a0ade159cde1c607e529f1e80b8c4ec072f4f9508bc164795797d"
+}

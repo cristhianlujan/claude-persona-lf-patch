@@ -1,0 +1,66 @@
+{
+ "valid": true,
+ "status": "PASS",
+ "errors": [],
+ "blocking_codes": [],
+ "validation_role": "PRE_QUALITY_STRUCTURAL_FLOOR",
+ "canonical_quality_accepted": false,
+ "closure_summary": {
+  "applies": true,
+  "required_obligation_types": [
+   "AUTHORITY_EXISTENCE",
+   "COMPATIBILITY",
+   "DECISION_CLOSURE",
+   "EVIDENCE_PROVENANCE",
+   "OTHER_MATERIAL",
+   "POLICY_CONTRACT",
+   "STATE_RECOVERY_SEMANTICS",
+   "TEST_ASSURANCE",
+   "WIRING_PHYSICALITY"
+  ],
+  "required_obligation_ids": [
+   "PO-AUTHORITY_EXISTENCE",
+   "PO-COMPATIBILITY",
+   "PO-DECISION_CLOSURE",
+   "PO-EVIDENCE_PROVENANCE",
+   "PO-OTHER_MATERIAL",
+   "PO-POLICY_CONTRACT",
+   "PO-STATE_RECOVERY_SEMANTICS",
+   "PO-TEST_ASSURANCE",
+   "PO-WIRING_PHYSICALITY"
+  ],
+  "closed_obligation_ids": [
+   "PO-AUTHORITY_EXISTENCE",
+   "PO-COMPATIBILITY",
+   "PO-DECISION_CLOSURE",
+   "PO-EVIDENCE_PROVENANCE",
+   "PO-OTHER_MATERIAL",
+   "PO-POLICY_CONTRACT",
+   "PO-STATE_RECOVERY_SEMANTICS",
+   "PO-TEST_ASSURANCE",
+   "PO-WIRING_PHYSICALITY"
+  ],
+  "open_obligation_ids": [],
+  "post_implementation_obligation_ids": [
+   "PO-POST-REGRESSION-OBSERVED"
+  ],
+  "closure_contract_version": "SRCR_CLOSURE_PROOF_V2",
+  "computed_handoff_ready": true,
+  "candidate_digest": "sha256:6ec57269a07de0d50af737d12bc97aab31ee556fbd4652e94a89cc452ae74bf7",
+  "evidence_bundle_id": "BUNDLE-1FB64437B850",
+  "evidence_bundle_digest": "sha256:79417428efe1ce6f7f1895966dc811bd4c9a294b332269c785ee19ec63716664",
+  "evidence_refs_resolved": 4,
+  "canonical_quality_accepted": false,
+  "quality_stage": "PRE_QUALITY_FLOOR"
+ },
+ "incremental_value_summary": {
+  "applies": true,
+  "required_for_ready": true,
+  "outcome": "NO_MATERIAL_UPLIFT",
+  "adopted_delta_ids": [],
+  "packet_estimated_tokens": 337,
+  "soft_limit_tokens": 1200,
+  "hard_limit_tokens": 2400,
+  "semantic_materiality_authority": "INDEPENDENT_SEMANTIC_JUDGE"
+ }
+}
