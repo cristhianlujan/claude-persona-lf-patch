@@ -540,7 +540,14 @@ BEGIN
  IF (d->>'ok')::boolean IS DISTINCT FROM true OR d->>'definition_sha256' !~ '^[0-9a-f]{64}$' THEN
    RAISE EXCEPTION 'PG01_RUNTIME_DEFINITION_UNRESOLVED'; END IF;
  IF h->>'target_ref' IS DISTINCT FROM dref THEN RAISE EXCEPTION 'PG01_RUNTIME_TARGET_SCREEN_MISMATCH'; END IF;
- IF d->>'screen_status' IS DISTINCT FROM 'VIGENTE' THEN warnings:=warnings||'"DEFINITION_NOT_CURRENT_AT_ISSUE"'::jsonb; END IF;
+ -- H-A3: an issue on a non-current definition is rejected before any ledger read or
+ -- write (no new row, no replay of an older row). Earlier rows are left untouched.
+ IF d->>'screen_status' IS DISTINCT FROM 'VIGENTE' THEN RAISE EXCEPTION 'PG01_RUNTIME_DEFINITION_NOT_CURRENT'; END IF;
+ -- H-A2 candidate: fail closed before reading judge steps and before ledger INSERT.
+ IF p_judge_execution_id IS NULL OR btrim(p_judge_execution_id) = ''
+    OR p_judge_execution_id IS NOT DISTINCT FROM p_source_execution_id THEN
+   RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_NOT_INDEPENDENT';
+ END IF;
  SELECT * INTO j FROM public.lf_operation_execution WHERE execution_id=p_judge_execution_id;
  IF NOT FOUND OR j.operation_code IS DISTINCT FROM 'REVISION_INDEPENDIENTE_ESTRATEGIA_LF'
   OR j.status IS DISTINCT FROM 'COMPLETED'
@@ -552,6 +559,77 @@ BEGIN
   OR (SELECT count(*) FROM public.lf_operation_execution_steps s WHERE s.execution_id=p_judge_execution_id
        AND s.step_id='judge_record' AND s.status='STEP_PASS_WITH_EVIDENCE') IS DISTINCT FROM 1 THEN
     RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_INVALID'; END IF;
+ -- H-A2 v2 (Claude, 29-oct): governed provenance of the judge, checked before any
+ -- ledger read or write. JSON fields are only accepted when they match rows in tables
+ -- that service_role cannot write (evidence ledger, orchestrator dispatch receipts).
+ IF j.manifest->>'producer_execution_id' IS DISTINCT FROM p_source_execution_id
+    OR j.manifest->>'subject_type' IS DISTINCT FROM 'PROGRAMMING_ANALYSIS_PACKAGE'
+    OR j.manifest->>'subject_ref' IS DISTINCT FROM 'PROGRAMMING_ANALYSIS_PACKAGE/'||ctx::text
+    OR j.manifest->>'subject_sha256' IS DISTINCT FROM c.context_sha256
+    OR j.target_type IS DISTINCT FROM 'PROGRAMMING_ANALYSIS_PACKAGE'
+    OR j.target_code IS DISTINCT FROM 'PROGRAMMING_ANALYSIS_PACKAGE/'||ctx::text
+    OR coalesce(j.manifest->>'source_head_sha','') !~ '^[0-9a-f]{40}$'
+    OR coalesce(j.manifest->>'subject_receipt_id','') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    OR coalesce(j.manifest->>'capability_manifest_sha256','') !~ '^[0-9a-f]{64}$'
+    OR coalesce(j.manifest->>'plan_digest','') !~ '^[0-9a-f]{64}$'
+    OR nullif(btrim(coalesce(j.manifest->>'orchestrator_execution_id','')),'') IS NULL
+    OR j.manifest->'review_required' IS DISTINCT FROM 'true'::jsonb
+    OR j.manifest->'runtime_activation' IS DISTINCT FROM 'false'::jsonb
+    OR j.manifest#>'{capability_binding_receipt,ready}' IS DISTINCT FROM 'true'::jsonb
+    OR coalesce(j.manifest#>>'{capability_binding_receipt,entry_guard,receipt_id}','') !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    OR nullif(btrim(coalesce(j.created_by_execution_id,'')),'') IS NULL
+    OR j.created_by_execution_id IN (p_source_execution_id, p_judge_execution_id)
+    OR j.manifest->>'orchestrator_execution_id' IN (p_source_execution_id, p_judge_execution_id)
+    OR j.created_by_execution_id IS DISTINCT FROM j.manifest->>'orchestrator_execution_id' THEN
+   RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_PROVENANCE_INVALID'; END IF;
+ -- Subject receipt: VERIFIED, exact PG-01 subject, not anchored by the producer.
+ PERFORM 1 FROM private.lf_evidence_ledger_v1 v
+  WHERE v.receipt_id=(j.manifest->>'subject_receipt_id')::uuid
+    AND v.verification_state='VERIFIED'
+    AND v.subject_type='PROGRAMMING_ANALYSIS_PACKAGE'
+    AND v.subject_ref='PROGRAMMING_ANALYSIS_PACKAGE/'||ctx::text
+    AND v.subject_sha256=c.context_sha256
+    AND v.source_head_sha=j.manifest->>'source_head_sha'
+    AND v.created_by_execution_id IS DISTINCT FROM p_source_execution_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_SUBJECT_RECEIPT_NOT_VERIFIED'; END IF;
+ -- Orchestrator dispatch receipt (not writable by service_role): exact consumer, plan
+ -- and capability, digest recomputed with the issuer's formula, not issued by producer.
+ PERFORM 1 FROM private.lf_orchestrator_dispatch_receipts_v1 dr
+  WHERE dr.receipt_id=(j.manifest#>>'{capability_binding_receipt,entry_guard,receipt_id}')::uuid
+    AND dr.consumer_execution_id=p_judge_execution_id
+    AND dr.capability_code='INDEPENDENT_ASSURANCE'
+    AND dr.plan_digest=j.manifest->>'plan_digest'
+    AND dr.orchestrator_execution_id=j.manifest->>'orchestrator_execution_id'
+    AND dr.issued_by_execution_id IS DISTINCT FROM p_source_execution_id
+    AND dr.receipt_sha256=encode(extensions.digest(convert_to(jsonb_build_object(
+      'schema_version','LF_ORCHESTRATOR_DISPATCH_RECEIPT_V1',
+      'orchestrator_execution_id',dr.orchestrator_execution_id,
+      'orchestrator_operation_code',dr.orchestrator_operation_code,
+      'orchestrator_operation_version',dr.orchestrator_operation_version,
+      'consumer_execution_id',dr.consumer_execution_id,'capability_code',dr.capability_code,
+      'plan_digest',dr.plan_digest,'dispatch_scope',dr.dispatch_scope,'guard_code',dr.guard_code)::text,'UTF8'),'sha256'),'hex');
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_DISPATCH_RECEIPT_INVALID'; END IF;
+ -- Capability binding row for the judge, matching the manifest it was reserved with.
+ PERFORM 1 FROM public.lf_capability_binding cb
+  WHERE cb.execution_id=p_judge_execution_id AND cb.capability_code='INDEPENDENT_ASSURANCE'
+    AND cb.binding_state IN ('BOUND','PINNED')
+    AND cb.bound_manifest_sha256=j.manifest->>'capability_manifest_sha256'
+    AND cb.bound_by_execution_id=j.manifest->>'orchestrator_execution_id';
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_CAPABILITY_BINDING_INVALID'; END IF;
+ -- Review result steps must be authored by the judge itself (shape of begin_v3 judges). KNOWN GAP: no governed
+ -- review-result receipt exists yet; steps remain writable by service_role.
+ IF EXISTS (SELECT 1 FROM public.lf_operation_execution_steps s WHERE s.execution_id=p_judge_execution_id
+     AND s.step_id IN ('semantic_review','judge_record')
+     AND (nullif(btrim(coalesce(s.created_by_execution_id,'')),'') IS NULL
+          OR s.created_by_execution_id IS DISTINCT FROM p_judge_execution_id)) THEN
+   RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_REVIEW_RESULT_UNPROVEN'; END IF;
+ -- H-A2 authority gate (fail-closed). Every check above binds the judge to rows that
+ -- service_role cannot write, but the root of that chain is not authenticated: service_role
+ -- may INSERT public.lf_operation_execution rows (ORQUESTACION_PIPELINE_LF is not a
+ -- ROUTER_DOWNSTREAM_AUTHORITY consumer) and the evidence anchor takes VERIFIED from its
+ -- caller. Until an authenticated reviewer/orchestrator identity exists (owner decision D-B),
+ -- no runtime PG-01 receipt is issued. Lifting this gate is the only change D-B requires here.
+ RAISE EXCEPTION 'PG01_RUNTIME_JUDGE_AUTHORITY_UNVERIFIED';
  r:=private.fn_lf_programming_context_handoff_receive_v1(ctx,c.context_sha256);
  receipt:=r->'receipt'; reasons:=r->'block_reasons';
  snapshot:=c.context_payload#>'{extensions,programming_context_snapshot}';
