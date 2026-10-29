@@ -1,5 +1,5 @@
 -- IG profile-neutral sidecar: SANDBOX/ROLLBACK ONLY, not production.
--- Uses existing report_output, trust_validation_v2, router_return_prepare_v1.
+-- Uses existing execute_profile receipt, report_output trust gate, router_return_prepare_v1.
 -- No profile schema, selectors, ACL, queues, or tables are modified.
 -- Helper is private.SECURITY INVOKER; anon/authenticated have no private schema USAGE.
 BEGIN;
@@ -283,12 +283,28 @@ begin
     end if;
   end if;
 
-  -- Advisory sidecar is attached only to the governed report, never
-  -- embedded in the validated native model output.
-  IF p_step_id='report_output' AND p_evidence_payload ? 'ig_profile_feedback' THEN
-    IF private.lf_profile_ig_feedback_validate_v1(
-      p_execution_id,e.target_code,p_evidence_payload->'ig_profile_feedback'
-    )->>'status'<>'VALID' THEN
+  -- Verify the optional feedback at report gate, but read it from the
+  -- ORIGINAL execute_profile evidence; never accept a report-only insertion.
+  IF p_step_id='report_output' THEN
+    IF p_evidence_payload ? 'ig_profile_feedback' THEN
+      hard:=hard||jsonb_build_array('ig_profile_feedback_report_injection_forbidden');
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM public.lf_operation_execution_steps s
+      WHERE s.execution_id=p_execution_id
+        AND s.step_id='execute_profile'
+        AND s.status='STEP_PASS_WITH_EVIDENCE'
+        AND s.evidence_payload ? 'ig_profile_feedback_candidate'
+    ) AND (
+      SELECT private.lf_profile_ig_feedback_validate_v1(
+        p_execution_id,e.target_code,
+        s.evidence_payload->'ig_profile_feedback_candidate'
+      )->>'status'
+      FROM public.lf_operation_execution_steps s
+      WHERE s.execution_id=p_execution_id
+        AND s.step_id='execute_profile'
+        AND s.status='STEP_PASS_WITH_EVIDENCE'
+    ) IS DISTINCT FROM 'VALID' THEN
       hard:=hard||jsonb_build_array('ig_profile_feedback_binding_invalid');
     END IF;
   END IF;
@@ -365,9 +381,9 @@ BEGIN
     IF EXISTS (
       SELECT 1 FROM public.lf_operation_execution_steps s
       WHERE s.execution_id=p_execution_id
-        AND s.step_id='report_output'
+        AND s.step_id='execute_profile'
         AND s.status='STEP_PASS_WITH_EVIDENCE'
-        AND s.evidence_payload ? 'ig_profile_feedback'
+        AND s.evidence_payload ? 'ig_profile_feedback_candidate'
     ) THEN
       RETURN jsonb_build_object(
         'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_PREPARE_V1',
@@ -426,9 +442,11 @@ BEGIN
     e.target_code
   );
 
-  SELECT s.evidence_payload->'ig_profile_feedback' INTO v_ig_feedback
+  -- The response's optional feedback is sealed with the original
+  -- execute_profile step, never injected in a later report-only payload.
+  SELECT s.evidence_payload->'ig_profile_feedback_candidate' INTO v_ig_feedback
   FROM public.lf_operation_execution_steps s
-  WHERE s.execution_id=p_execution_id AND s.step_id='report_output'
+  WHERE s.execution_id=p_execution_id AND s.step_id='execute_profile'
     AND s.status='STEP_PASS_WITH_EVIDENCE'
   LIMIT 1;
   IF v_ig_feedback IS NOT NULL THEN
