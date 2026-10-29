@@ -163,3 +163,43 @@ EKB vivo sin mutaciones; cualquier registro posterior se hace por ruta gobernada
   aislado de PostgreSQL con permisos de test**, registrar PASS/FAIL y
   rollback. Solo después, siguiendo EKB de migración source-first y
   autorización de integración, considerar cutover gobernado.
+
+## Verificación adicional del Router existente (29/10/2026)
+
+Se ejecutó **desde el blob exacto versionado** el SQL read-only
+`sandbox/lf_contract_gate_test/input_governance/ig_profile_feedback_router_roundtrip_readonly_20261029.sql`
+(blob `de36b3bdd688812b6c5f590bdd6a05c67efe4b4c`):
+**9/9 PASS**. Checks: RETURN_TO_ROUTER, REENTER_ROUTER_STAGE1,
+REPEAT_FULL_ROUTER_FLOW sin reutilizar autoridad previa,
+conservación de feedback, conservación de SHA de salida, Stage1 requerido,
+Stage1 válido, selección semántica requerida (catálogo 10) y
+`effect_authority=false`.
+
+**Frontera semántica importante:** esta regresión utiliza una salida de
+perfil **sintética con routing explícito** que la función viva ya conoce.
+No afirma que ese payload supere
+`product_director_lf/validators/validate_product_director_output.py`
+(el esquema de Product Director veta propiedades top-level extra).
+No demuestra la ruta nueva que infiere retorno desde el feedback anidado;
+esa inferencia solamente existe en el candidato SQL **NO INSTALADO**.
+
+Se comprobó además que hay una ejecución Product Director completada con
+IG `NOT_REQUIRED`, y otra con `run_id=949` en estado `IN_PROGRESS`.
+Por ello **no existe en este fixture evidencia E2E de un perfil terminado
+con feedback IG consumido**, ni se declara integrado el retorno.
+
+### Primer bloqueo operativo para el SQL candidato
+
+El entorno de prueba de esta sesión carece de un PostgreSQL ejecutable local
+y la interfaz Supabase disponible impide DDL, inclusive en transacciones
+que terminarían con `ROLLBACK`. No se instaló componente externo ni se
+alteraron permisos. La **compilación del candidato y los postchecks
+dentro de `BEGIN ... ROLLBACK` siguen NO_VERIFICADOS**.
+No convertir 8/8 + 9/9 de consultas existentes en PASS del parche.
+
+Criterio de próxima prueba: PostgreSQL aislado que contenga los contratos
+y esquema real, ejecutar el archivo candidato exacto, capturar primer
+error y postchecks, verificar readback funcional y rollback sin residuos;
+después validar payload real de Product Director y la frontera
+`report_output -> Router ACT-0001`. Mantener PR DRAFT y no modificar
+DB viva, EKB, ni reglas/permissions/selectores.
