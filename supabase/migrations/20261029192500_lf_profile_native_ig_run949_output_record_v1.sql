@@ -1,7 +1,7 @@
 -- LF managed migration: candidate data-only native output registration, IG run 949.
 -- Authorized route: LF Migration Merge Train; original execution stays read-only.
 -- Raw source (immutable): github://cristhianlujan/claude-persona-lf-patch@1ebcc4292816e52054a55a17b1b61cbb85fc0710/sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_raw_candidate_20261029.json
--- DRAFT: independent canonical Python validator receipt not available; intentionally no effects.
+-- Canonical Python validator PASS proven by exact-head CI; independent semantic review remains pending.
 BEGIN;
 DO $ig949$
 DECLARE
@@ -27,9 +27,45 @@ BEGIN
  OR v_raw#>>'{traceability,ig_run_id}' IS DISTINCT FROM '949'
  OR v_raw#>>'{traceability,feedback_emitted}' IS DISTINCT FROM 'false'
  THEN RAISE EXCEPTION 'IG949_RAW_TRACEABILITY_DRIFT'; END IF;
- -- Do not falsely present an authored/shape-checked candidate as a Python-validated output.
- -- Completing this migration requires exact validator evidence and a reviewed source amendment.
- RAISE EXCEPTION 'IG949_CANONICAL_PYTHON_VALIDATOR_NOT_YET_EXECUTED';
+ -- Real canonical Python validator execution: GitHub Actions
+ -- LF Router Level2 Advisory Tests run 40939962957, job 123680411771
+ -- exact head f05e17e6cd9d69f027fcdce2c262697c2b76e8d0
+ -- test_ig949_raw_with_frozen_canonical_python_validator: PASS.
+ -- It rechecked Git blob hashes for RAW e9d12e39, validator fc01e73b,
+ -- schema df8a988e, shared shape-checker 03f2a0cc and ran the original
+ -- validator as a Python subprocess. Its valid=true and blocking_codes=[]
+ -- are observed from the test assertions and the successful job logs.
+ -- This is deterministic validity only, never independent semantic PASS.
+ v_out:=public.lf_profile_native_bridge_record_output_v1(
+    e.execution_id,v_raw,
+    jsonb_build_object(
+      'valid',true,
+      'errors','[]'::jsonb,
+      'blocking_codes','[]'::jsonb,
+      'validator','profiles/product_director_lf/validators/validate_product_director_output.py',
+      'validator_source_git_blob','fc01e73b1c5bd74e6a8b0abd3513f16211a6def9',
+      'schema_source_git_blob','df8a988e1913b1d5d95090b67c6ab0e72c80d24b',
+      'shared_validator_git_blob','03f2a0cc23ff2de9251a373f61106538dcba308f',
+      'raw_output_git_blob','e9d12e39fdc51c0ba84b0371705a4371a14d4991',
+      'ci_exact_head','f05e17e6cd9d69f027fcdce2c262697c2b76e8d0',
+      'ci_run_id',40939962957,
+      'ci_job_id',123680411771,
+      'ci_result','SUCCESS',
+      'semantic_judge_executed',false
+    ),
+    'github://cristhianlujan/claude-persona-lf-patch@1ebcc4292816e52054a55a17b1b61cbb85fc0710/sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_raw_candidate_20261029.json',
+    'https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/40939962957/job/123680411771',
+    NULL
+  );
+ IF v_out->>'status' IS DISTINCT FROM 'NATIVE_PRODUCER_VALIDATED'
+   OR coalesce((v_out->>'clean_step_count')::integer,0)<>9
+   OR coalesce((v_out->>'independent_semantic_judge_required')::boolean,false) IS NOT TRUE
+   OR coalesce((v_out->>'producer_may_self_authorize')::boolean,true) IS TRUE
+   OR coalesce((v_out->>'terminal_authority_ready')::boolean,true) IS TRUE
+ THEN RAISE EXCEPTION 'IG949_NATIVE_RECORD_RESULT_INVALID:%',v_out; END IF;
+ IF EXISTS (SELECT 1 FROM public.lf_operation_execution_steps
+   WHERE execution_id=e.execution_id AND step_id IN ('semantic_judge','report_output'))
+ THEN RAISE EXCEPTION 'IG949_UNAUTHORIZED_TERMINAL_WRITE'; END IF;
 END
 $ig949$;
 COMMIT;
