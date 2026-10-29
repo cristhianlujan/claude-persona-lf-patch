@@ -301,8 +301,7 @@ begin
     'server_hard_fails','[]'::jsonb
   );
 end
-$function$
-
+$function$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_result_router_return_prepare_v1(p_execution_id text)
  RETURNS jsonb
@@ -466,8 +465,7 @@ BEGIN
     'next_action',v_decision->>'next_action'
   );
 END
-$function$
-
+$function$;
 
 -- Test the actual newly compiled helper inside the same rollback transaction.
 -- No test creates an IG run, overrides a profile output, or grants privileges.
