@@ -335,6 +335,28 @@ jobs:
           assert stages=={"IMPLEMENTATION":6,"QA":4},stages
           assert all(r["blocker_code"] and r["source_ref"].endswith("/run_id=949") and r["material_gap_rule_absence_proven"] is False for r in diag)
           print("IG949_R2_CANONICAL_GAP_BREAKDOWN",categories,stages)
+          source_refs={r["source_ref"]:r for r in d["product_decision"]["source_refs"]}
+          assessments="supabase://programacion.input_family_assessments/run_id=949"
+          run="supabase://programacion.input_readiness_runs/949"
+          contract="supabase://lf_ops.v_b2b_backoffice_login_contract/pantalla_id=51"
+          claim47=next(c for c in d["material_claims"] if c["claim"].startswith("Run 949 completó validación determinista de 47/47"))
+          assert claim47["authority_ref"]==assessments,claim47
+          assert "47/47" in source_refs[assessments]["supports"]
+          assert "no se infiere de la tabla de runs" in source_refs[run]["supports"]
+          assert "screen_status=CANDIDATO" in source_refs[contract]["supports"]
+          assert d["final_verdict"]=="CORRECTED_PRODUCT_DECISION_CANDIDATE_NOT_IMPLEMENTED_INDEPENDENT_SEMANTIC_PENDING"
+          qualifiers=d["product_decision"]["semantic_qualifiers"]
+          candidate_clause=next(q for q in qualifiers if "pantalla 51 B2B-AUTH-001 sigue en estado CANDIDATO" in q)
+          assert all(candidate_clause in v for v in [
+              d["product_decision"]["preserved_constraints"],
+              d["decision_lineage"]["preserved_constraints"],
+              d["handoff_to_next"]["qualifiers_to_preserve"],
+              a["handoff_to_next"]["qualifiers_to_preserve"],
+          ])
+          assert a["traceability"]["correction_kind"]=="DERIVED_CANDIDATE_NOT_ORIGINAL_PROFILE_RUNTIME_OUTPUT"
+          assert a["traceability"]["runtime_reexecution_claimed"] is False
+          print("IG949_R2_PRODUCER_AUDIT_GUARDS","PASS")
+
           bad=copy.deepcopy(a)
           bad["deliverable_created"]["decision_lineage"]["selected_decision"]="TAMPERED"
           negative=check(bad)
