@@ -360,6 +360,21 @@ BEGIN
        false
      ) IS NOT TRUE
   THEN
+    -- A sidecar must not silently bypass a disabled Router return contract.
+    -- Authorization is checked before the optional feedback is considered.
+    IF EXISTS (
+      SELECT 1 FROM public.lf_operation_execution_steps s
+      WHERE s.execution_id=p_execution_id
+        AND s.step_id='report_output'
+        AND s.status='STEP_PASS_WITH_EVIDENCE'
+        AND s.evidence_payload ? 'ig_profile_feedback'
+    ) THEN
+      RETURN jsonb_build_object(
+        'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_PREPARE_V1',
+        'status','BLOCKED',
+        'code','PROFILE_IG_FEEDBACK_ROUTER_RETURN_NOT_AUTHORIZED',
+        'execution_id',p_execution_id);
+    END IF;
     RETURN jsonb_build_object(
       'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_PREPARE_V1',
       'status','COMPLETE',
