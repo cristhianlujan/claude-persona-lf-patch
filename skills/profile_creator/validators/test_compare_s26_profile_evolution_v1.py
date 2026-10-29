@@ -13,7 +13,18 @@ class Proof(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.base, self.cand = self.tmp / "base", self.tmp / "cand"
         shutil.copytree(ROOT / "profiles" / SLUG, self.base)
-        shutil.copytree(ROOT / "profiles" / SLUG, self.cand)
+        self._degrade(self.base)
+        shutil.copytree(self.base, self.cand)
+
+    @staticmethod
+    def _degrade(profile):
+        """Recreate the pre-update (2/13) profile so these tests do not depend on the live profile state."""
+        for rel in ("contracts/runtime_binding.json", "validators/runtime_validate.py", "validators/runtime_semantic_utility.py"):
+            (profile / rel).unlink(missing_ok=True)
+        skill = profile / "SKILL.md"
+        text = skill.read_text(encoding="utf-8")
+        text = text.split("## Update route")[0].rstrip() + "\n"
+        skill.write_text(text, encoding="utf-8")
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)

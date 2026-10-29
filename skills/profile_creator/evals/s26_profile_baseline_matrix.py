@@ -82,6 +82,18 @@ def main() -> int:
         materialize(r); raw = r / "profiles/demo"; outside = r / "outside"; raw.rename(outside); raw.symlink_to(outside, target_is_directory=True); x = mod.evaluate(r, "demo")
         checks["symlink_profile_blocked"] = "PROFILE_TARGET_SYMLINK_FORBIDDEN" in x["blocking_codes"]
     finally: t.cleanup()
+    t, r = make_repo()
+    try:
+        materialize(r); p = r / "profiles/demo/contracts/runtime_binding.json"; b = json.loads(p.read_text()); del b["execution_partition"]["generation_limits"]; p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["partition_without_generation_limits_rejected"] = x["dimensions"]["B12_EXECUTION_PARTITION"]["pass"] is False
+    finally: t.cleanup()
+    t, r = make_repo()
+    try:
+        materialize(r); p = r / "profiles/demo/contracts/runtime_binding.json"; b = json.loads(p.read_text()); b["execution_partition"]["field_classes"]["answer"] = "DETERMINISTIC"; b["execution_partition"]["deterministic_materialization"] = {"answer": "free text description"}; p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["prose_materialization_rejected"] = x["dimensions"]["B12_EXECUTION_PARTITION"]["pass"] is False
+        b["execution_partition"]["deterministic_materialization"] = {"answer": {"source": "profile_slug"}}; p.write_text(json.dumps(b)); x = mod.evaluate(r, "demo")
+        checks["structured_materialization_accepted"] = x["dimensions"]["B12_EXECUTION_PARTITION"]["pass"] is True
+    finally: t.cleanup()
     ok = all(checks.values())
     print(json.dumps({"contract":"S26_PROFILE_BASELINE_MATRIX_V2","checks":checks,"count":len(checks),"result":"PASS" if ok else "FAIL"}, sort_keys=True)); return 0 if ok else 1
 
