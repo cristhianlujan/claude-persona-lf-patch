@@ -642,10 +642,44 @@ Deno.test("CP2: native profile resume: only exact protected main-branch workflow
 
 Deno.test("CP2: native profile resume: rejects other actions under continuation-only OIDC", async () => {
   const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
-  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2" });
+  const { response, payload } = await invoke(h, { action: "input_readiness_pilot_v1" });
   assertEquals(response.status, 403);
   assertEquals(payload.code, "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH");
   assertEquals(h.calls.length, 0);
+});
+
+const ADMIT_CONTEXT = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" };
+
+Deno.test("router V2 profile admission: governed native identity admits both native executors", async () => {
+  for (const mode of ["CLAUDE_NATIVE", "GPT_NATIVE"]) {
+    const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+    const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: mode });
+    assertEquals(response.status, 200);
+    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
+    assertEquals(rpc.length, 1);
+    assertEquals(rpc[0].body, { p_context: ADMIT_CONTEXT, p_executor_mode: mode });
+  }
+});
+
+Deno.test("router V2 profile admission: governed native identity cannot select REMOTE_API", async () => {
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: "REMOTE_API" });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "ROUTER_PROFILE_NATIVE_IDENTITY_REQUIRES_NATIVE_EXECUTOR");
+  assertEquals(h.calls.length, 0);
+});
+
+Deno.test("router V2 profile admission: native identity with wrong environment or ref stays blocked", async () => {
+  for (const claims of [
+    { ...NATIVE_CONTINUATION_CLAIMS, environment: "untrusted" },
+    { ...NATIVE_CONTINUATION_CLAIMS, ref: "refs/heads/feature" },
+  ]) {
+    const h = harness({ claims });
+    const { response } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: "CLAUDE_NATIVE" });
+    assertEquals(response.status >= 400, true);
+    assertEquals(h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")).length, 0);
+  }
 });
 
 Deno.test("CP2: native profile resume: generic source identity and semantic screen pause", async () => {
