@@ -75,6 +75,15 @@ BEGIN
   AND status='STEP_PASS_WITH_EVIDENCE';
  IF NOT FOUND OR jsonb_typeof(x.evidence_payload->'profile_output')<>'object'
  THEN RETURN jsonb_build_object('status','BLOCKED','code','PROFILE_IG_FEEDBACK_OUTPUT_MISSING'); END IF;
+ -- The feedback must originate in the same execute_profile receipt as the
+ -- specialist's validated native output. A report-stage caller cannot invent
+ -- a new opinion and attribute it to the specialist after the judge.
+ IF x.evidence_payload->'ig_profile_feedback_candidate' IS DISTINCT FROM p_feedback
+   OR nullif(x.evidence_ref,'') IS NULL
+ THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+     'code','PROFILE_IG_FEEDBACK_SPECIALIST_ORIGIN_NOT_PROVEN');
+ END IF;
  expected_sha:='sha256:'||encode(extensions.digest(
    convert_to((x.evidence_payload->'profile_output')::text,'UTF8'),'sha256'),'hex');
  IF expected_sha IS DISTINCT FROM p_feedback->>'source_profile_output_sha256'
