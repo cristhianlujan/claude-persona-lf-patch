@@ -1,7 +1,7 @@
 -- IG profile-neutral sidecar: SANDBOX/ROLLBACK ONLY, not production.
 -- Uses existing report_output, trust_validation_v2, router_return_prepare_v1.
 -- No profile schema, selectors, ACL, queues, or tables are modified.
--- Helper is SECURITY INVOKER: a new SECURITY DEFINER endpoint must not be exposed.
+-- Helper is private.SECURITY INVOKER; anon/authenticated have no private schema USAGE.
 BEGIN;
 DO $precheck$ BEGIN
   IF md5(pg_get_functiondef('public.lf_profile_execution_trust_validation_v2(text,text,jsonb)'::regprocedure))<>'c71964f030d7c2f9bf90101f541a6e6b'
@@ -10,7 +10,7 @@ DO $precheck$ BEGIN
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_TRANSVERSAL_SOURCE_DRIFT'; END IF;
 END $precheck$;
 
-CREATE OR REPLACE FUNCTION public.lf_profile_ig_feedback_validate_v1(
+CREATE OR REPLACE FUNCTION private.lf_profile_ig_feedback_validate_v1(
  p_execution_id text,p_profile_code text,p_feedback jsonb
 ) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
 SET search_path TO 'pg_catalog','public','programacion','extensions'
@@ -277,7 +277,7 @@ begin
   -- Advisory sidecar is attached only to the governed report, never
   -- embedded in the validated native model output.
   IF p_step_id='report_output' AND p_evidence_payload ? 'ig_profile_feedback' THEN
-    IF public.lf_profile_ig_feedback_validate_v1(
+    IF private.lf_profile_ig_feedback_validate_v1(
       p_execution_id,e.target_code,p_evidence_payload->'ig_profile_feedback'
     )->>'status'<>'VALID' THEN
       hard:=hard||jsonb_build_array('ig_profile_feedback_binding_invalid');
@@ -408,7 +408,7 @@ BEGIN
     AND s.status='STEP_PASS_WITH_EVIDENCE'
   LIMIT 1;
   IF v_ig_feedback IS NOT NULL THEN
-    v_ig_feedback_validation:=public.lf_profile_ig_feedback_validate_v1(
+    v_ig_feedback_validation:=private.lf_profile_ig_feedback_validate_v1(
       p_execution_id,e.target_code,v_ig_feedback);
     IF v_ig_feedback_validation->>'status'<>'VALID' THEN
       RETURN jsonb_build_object(
@@ -486,66 +486,66 @@ DECLARE
     'evidence_refs',jsonb_build_array('supabase://example/receipt')
   );
 BEGIN
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT','null'::jsonb);
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_SHAPE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_JSON_NULL:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{ig}','[]'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_SHAPE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_BAD_IG_SHAPE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     f||jsonb_build_object('target_profile','PERFIL-PRODUCT-DIRECTOR-LF'));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_FORBIDDEN_KEYS' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_DIRECT_TARGET:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     f-'evidence_refs');
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_MISSING_EVIDENCE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{evidence_refs}','null'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_NULL_EVIDENCE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{evidence_refs}','[]'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_EMPTY_EVIDENCE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{evidence_refs}','{"bad":"object"}'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_EVIDENCE_SHAPE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{requested_resolution}','"FULL_RECURATE"'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_CHALLENGE_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_FORCE_FULL_RECURATE:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{kind}','"NONCANONICAL_RULE_PROPOSAL"'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_PROPOSAL_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_PROPOSAL_AUTHORITY:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',
     jsonb_set(f,'{kind}','"UNSUPPORTED_DISAGREEMENT"'::jsonb));
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_UNSUPPORTED_RERUN_FORBIDDEN' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_UNSUPPORTED_LOOP:%',a; END IF;
 
-  a:=public.lf_profile_ig_feedback_validate_v1(
+  a:=private.lf_profile_ig_feedback_validate_v1(
     'UNKNOWN-EXECUTION-TEST-01','PERFIL-UI-ARCHITECT',f);
   IF a->>'code'<>'PROFILE_IG_FEEDBACK_EXECUTION_INVALID' THEN
     RAISE EXCEPTION 'IG_FB_POSTCHECK_FAKE_EXECUTION:%',a; END IF;
