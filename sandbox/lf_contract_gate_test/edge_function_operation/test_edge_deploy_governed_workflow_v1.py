@@ -63,3 +63,48 @@ def test_push_deploy_remains_exact_main_only():
     assert "ref: refs/heads/main" in WF
     assert 'test "${GITHUB_REF}" = "refs/heads/main"' in WF
     assert 'test "${MAIN_SHA}" = "${GITHUB_SHA}"' in WF
+
+
+def _runtime_block():
+    start = WF.index("  deploy-profile-runtime:")
+    return WF[start:]
+
+
+def test_profile_runtime_lane_is_dispatch_only_and_approval_gated():
+    block = _runtime_block()
+    assert "github.event_name == 'workflow_dispatch' && inputs.action == 'deploy-profile-runtime'" in block
+    assert "github.event_name == 'push'" not in block.split("steps:")[0]
+    assert "environment: lf-edge-deploy" in block
+    assert "- deploy-profile-runtime" in WF
+
+
+def test_profile_runtime_lane_has_fixed_target_and_exact_main():
+    block = _runtime_block()
+    assert "PROFILE_RUNTIME_SLUG: run-creacion-perfil-lf" in block
+    assert 'test "${GITHUB_REF}" = "refs/heads/main"' in block
+    assert 'test "${MAIN_SHA}" = "${GITHUB_SHA}"' in block
+    assert 'supabase functions deploy "${PROFILE_RUNTIME_SLUG}"' in block
+    assert "supabase functions deploy --project-ref" not in block
+    assert "function_slug:" not in block
+
+
+def test_profile_runtime_lane_preserves_jwt_mode():
+    block = _runtime_block()
+    assert "--no-verify-jwt" not in block  # run-creacion-perfil-lf requires verify_jwt=true
+    assert "edge_profile_runtime_readback_v1.py" in block
+
+
+def test_profile_runtime_lane_has_pre_post_readback_and_rollback():
+    block = _runtime_block()
+    assert "Predeploy Management API readback" in block
+    assert "Postdeploy Management API readback" in block
+    assert "Roll back profile runtime if postdeploy verification failed" in block
+    assert "PROFILE_RUNTIME_ROLLBACK_COMMIT: b7be59551f72e7b6a02bd4e849ab64bfcaa44cdc" in block
+    assert block.count("edge_profile_runtime_readback_v1.py") >= 3
+
+
+def test_profile_runtime_lane_has_no_db_credentials_and_no_expression_in_shell():
+    block = _runtime_block()
+    for value in ("LF_SUPABASE_DB_PASSWORD", "PGPASSWORD", "SUPABASE_SERVICE_ROLE_KEY", "DATABASE_URL"):
+        assert value not in block
+    assert "NEXT=$(( ${{" not in block

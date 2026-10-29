@@ -74,3 +74,6 @@ Domain-specific UI or gamification mechanics are not copied.
 
 ## Authority limits / boundaries
 This profile may decide customer financial decision semantics only from supplied governed authority. It must not design UI layout, execute payments, issue legal conclusions, decide privacy consent, create gamification mechanics, invent authority, bypass Router/Orchestrator, enable runtime, mark VALIDATED/VIGENTE, or authorize production. Deterministic validators and fixtures prove contract consistency only; behavioral PASS requires RAW output plus an execution receipt bound to exact source/input/output and applicable semantic review.
+
+## Update route
+Any change to this profile is made only through the governed operation `ACTUALIZACION_PERFIL_LF`. The structural baseline (S26) must be re-measured on the exact updated head, with no dimension regressing. S26 is structural only: a runtime binding must also load with the runtime's own loader (`RepositoryBindings.runtime_binding`) before the change is closed. Runtime activation and promotion stay unchanged by an update. Validator changes must keep `runtime_binding.adversarial_suite` passing (S26 B14): the suite lists this profile's own attack surface, including financial-pressure phrases in Spanish and English, and the measurer generates the cases.

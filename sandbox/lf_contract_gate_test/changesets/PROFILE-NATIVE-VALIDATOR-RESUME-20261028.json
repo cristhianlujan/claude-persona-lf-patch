@@ -1,0 +1,6 @@
+{
+  "solution_ref": "PROFILE-NATIVE-VALIDATOR-RESUME-20261028",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "RUNTIME_TESTING"
+  }
+}
