@@ -5,6 +5,7 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/**'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_exact_identity_source_v1.py'
@@ -600,3 +601,14 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
+
+      - name: PG-02 candidate contract regressions (advisory only)
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02
+          python3 test_pg02_classifier_v1.py
+          python3 test_pg02_scope_isolation_v2.py
+          python3 test_pg02_pg00_bridge_v1.py
+          python3 test_pg02_classification_outcome_v1.py
+          cd ..
+          python3 wave1_boundary_contracts/validate_wave1_boundary_contracts_v1.py --self-test
