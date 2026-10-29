@@ -174,115 +174,93 @@ EKB vigente consultado: `INPUT-GOV-CONSUMER-BINDING-001`,
 `HUMAN-DECISION-POLICY-RESOLUTION-NO-PRODUCER-AUTHORITY-001`,
 `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`.
 
-## 8. Primer candidato de integración (29/10/2026, NO DESPLEGADO)
+## 8. Candidatos de integración en el proceso existente (29/10/2026)
 
-El PR DRAFT contiene ahora
-\`sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_report_output_candidate_20261029.sql\`.
-El candidato extiende **dos controles ya existentes**, manteniendo intactos los
-esquemas nativos de los perfiles:
+**Decisión ajustada:** no duplicar la observación en `report_output`.
+El portador es `execute_profile.evidence_payload.ig_profile_feedback_candidate`,
+registrado en el **mismo paso que el output nativo**.
 
-1. \`lf_profile_execution_trust_validation_v2\`: admite el sidecar opcional
-   \`report_output.evidence_payload.ig_profile_feedback\` únicamente cuando
-   coincide con el *mismo* execution_id/profile_code, el SHA calculado de
-   \`execute_profile.profile_output\`, el run/familia/pantalla/SHA del recibo
-   \`input_validate\`; verifica su forma, la ruta de revisión y bloquea
-   objetos JSON no válidos, targets directos, reejecuciones forzadas y
-   propuestas presentadas como canónicas.
-2. \`lf_profile_result_router_return_prepare_v1\`: lee el sidecar **solo**
-   después de recibo terminal READY, revalida la vinculación y usa el
-   clasificador de continuaciones del Router ya existente. Si el perfil
-   termina sin retorno pero tiene objeción sustentada, solicita
-   \`CONTINUE_WITH_RESTRICTIONS / AUTHORITY_OR_CONTEXT_RESOLUTION\`.
-   Si ya existe una continuación, preserva su ruta y añade el feedback al
-   mismo payload de retorno. Conserva el **output nativo original exacto**
-   y su SHA, y no autoriza llamar directamente a un perfil ni recurar IG.
-   \`UNSUPPORTED_DISAGREEMENT\` por sí solo no genera ruta nueva.
+Dos candidatos fuente, **únicamente sandbox y rollback**:
+- `sandbox/lf_contract_gate_test/input_governance/ig_feedback_native_bridge_emission_candidate_20261029.sql`:
+  extiende el bridge `lf_profile_native_bridge_record_output_v1` para aceptar
+  un sobre de respuesta con `profile_output` y feedback opcional. Exige
+  coincidencia exacta del output, ejecución, perfil, SHA del output,
+  SHA del sobre nativo y referencia de evidencia. Guarda el feedback
+  junto al output en `execute_profile`; un reintento diferente se bloquea.
+  No cambia ni amplía el esquema JSON validado de cada perfil.
+  **Cubre la vía GPT_NATIVE actual; no afirma cubrir CLAUDE_NATIVE.**
+- `sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_report_output_candidate_20261029.sql`:
+  define un verificador `private.lf_profile_ig_feedback_validate_v1`
+  `SECURITY INVOKER` y modifica `lf_profile_execution_trust_validation_v2`
+  para comprobar el feedback presente en el paso `execute_profile` cuando
+  se llega al control `report_output`. Rechaza explícitamente insertar
+  feedback nuevo solo en el reporte. Extiende
+  `lf_profile_result_router_return_prepare_v1` para leer el feedback
+  del output original, después de un recibo terminal limpio y con
+  autorización preexistente `return_to_router_after_profile_result=true`.
+  El Router reutiliza su clasificador tipado hacia `ACT-0001_STAGE1`.
 
-Un helper de validación de solo lectura
-\`lf_profile_ig_feedback_validate_v1\` permite ejecutar la misma validación
-de binding en ambas fronteras, sin crear otro Router, motor, tabla ni cola.
-Se declara \`SECURITY INVOKER\` y **no** se tocan ACL; revisar los grants
-efectivos antes de cualquier integración autorizada.
+**No se crea:** tabla, cola, perfil de Producto obligatorio, Router alterno,
+motor IG alterno, regla canónica, permiso, selector ni rerun automático.
+Una discrepancia sin evidencia conserva el resultado y no reabre el Router.
 
-La ubicación como sidecar de \`report_output\` necesita además que el
-ejecutor/registrador real de perfiles **emita y adjunte** la observación
-independiente, bajo la identidad y autoridad de la ejecución. Ese
-componente de emisión **NO está integrado** en el runtime vivo.
-Una cadena de fuentes \`evidence_refs\` sigue siendo una **alegación** que
-el revisor debe verificar: el helper devuelve
-\`evidence_authenticity_verified=false\`. Su PASS estructural nunca
-significa que IG estaba equivocado.
+La evidencia de origen contenida en un sobre JSON y su SHA **no prueban por
+sí solos** que realmente fue emitida por el modelo seleccionado. Antes de
+habilitar la capacidad, el ejecutor nativo deberá verificar de forma
+independiente las **fuentes y los bytes originales** del modelo y su
+`p_raw_evidence_ref`. La cadena de referencias de fuentes propuestas
+tampoco se acepta como evidencia verificada. Ningún campo de validación
+aportado por el productor sustituye a esa comprobación.
 
-**Pruebas:** el candidato incluye 11 negativos de \`DO $postcheck$\`,
-con \`BEGIN; ... ROLLBACK;\`, todos **NO EJECUTADOS** en PostgreSQL porque
-la conexión a Supabase es SELECT-only y no hay servidor PostgreSQL local.
-No confundir su presencia textual con PASS de ejecución.
+## 9. Pruebas, regresiones y garantías
 
-**Readback reproducible del flujo vivo:**
-\`sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_report_output_baseline_readonly_20261029.sql\`
-→ **11/11 PASS**. El primer intento, que comparó indiscriminadamente
-todos los \`COMPLETED\` históricos contra el contrato terminal actual,
-produjo 3 FAIL. La investigación demostró 2 ejecuciones con terminal
-\`READY\` y 14 legadas \`BLOCKED\` por el contrato actual; el test
-se corrigió para verificar explícitamente la cohorte admisible,
-mantener visible la diferencia y no otorgar PASS retroactivo a los 14.
-El baseline actual no tiene sidecars, conserva sus hashes y preserva
-las 47 familias del run 949.
+**Regresiones SELECT sobre Supabase, rama DRAFT sin escrituras:**
+- Binding de perfil, ejecución, run, pantalla, familia y hash:
+  8/8 PASS (prueba histórica).
+- Retorno Router Stage1 + selección semántica:
+  9/9 PASS con salida *sintética* ya tipada.
+- Routing de distintos perfiles:
+  11/11 PASS con resultados sintéticos (Product, UI, Evidence, Repair).
+- Fuentes agregadas y familias del run 949:
+  12/12 PASS; demuestra que no existe granularidad suficiente
+  para afirmar recuración selectiva persistente.
+- Baseline del output y terminal actual:
+  11/11 PASS: 2 ejecuciones elegibles y 14 legadas no elegibles.
+- Regresión de autoridad de retorno:
+  9/9 PASS tras corregir una suposición del fixture: campo ausente
+  de `return_to_router_after_profile_result` equivale a falso.
 
-**Gates para continuidad:** compilar y ejecutar el SQL candidato completo
-en PostgreSQL 17 aislado con rollback; comprobar permiso/ACL; implementar
-emisión gobernada del sidecar en \`report_output\`; probar salidas reales
-de Product/UI/tercero, validación y juicio propio; reentrada ACT-0001
-Stage1; feedback sin IG, hash ajeno, repetición, evidencia falsa, rollback,
-readback, revisión independiente. Sigue **NO-VERIFICADO/NO-GO** para
-integración, G4/G5 y producción.
-## 9. Endurecimiento y admisión del candidato (29/10/2026)
+**Aún NO VERIFICADO:** compilación PostgreSQL 17 de ambos SQL candidatos,
+ejecución real de casos positivos/negativos con `BEGIN ... ROLLBACK`,
+emisión desde un modelo real con bytes y ref independently read-back,
+registrador GPT native, vía CLAUDE native, juicio independiente,
+retorno real con informe y reentrada Stage1. El candidato de guardas
+contiene 11 pruebas negativas preparadas, no ejecutadas.
 
-**Protección de frontera:** el helper se ubicó en
-`private.lf_profile_ig_feedback_validate_v1` con
-`SECURITY INVOKER`. El EKB y el readback del esquema mostraron
-`private.USAGE=false` para `anon` y `authenticated`;
-no se cambió ningún permiso. Requiere revisión de propietario/RPC
-en el PostgreSQL aislado antes de activar.
+El control PASE del PR DRAFT prueba admisión estructural, pero
+`MIGRATION_SOURCE_PARITY` se omite durante la ventana de reparación y
+PASE **no ejecuta los tests SQL de dominio**: no confundir
+SUCCESS de PASE con autorización de integrar estos candidatos.
 
-**Proveniencia del juicio:** para atribuir un feedback al perfil, el
-verificador candidato exige que
-`execute_profile.evidence_payload.ig_profile_feedback_candidate`
-contenga el objeto idéntico a
-`report_output.evidence_payload.ig_profile_feedback` y que el SHA
-del output nativo validado coincida. Así, agregar una objeción
-directamente a `report_output` **no basta**. No afecta los esquemas
-nativos de Product, UI ni los otros perfiles. El emisor del sidecar
-en `execute_profile` **todavía NO está implementado** en el bridge
-GPT/Claude native; sin él, todo feedback nuevo debe bloquearse.
-El nuevo control solo es válido cuando la evidencia provenga
-realmente de la ejecución autorizada, no de un texto añadido después.
+**Preflight de habilitación:**
+1. Probar fuente SQL exacta contra clon PostgreSQL 17 y rollback.
+2. Construir/verificar origen nativo real GPT (y Claude por su propia vía).
+3. Validar casos positivos, negativos y sin IG: Product, UI y tercero.
+4. Exigir EKB, no regresiones, revisión independiente y ruta source-first.
+5. Sin recibo de emisión real o sin permisos de pruebas, mantener
+   `NO_IMPLEMENTADO` para runtime vivo y `NO-GO` para integración.
 
-**Autorización del Router:** si
-`router_profile_handoff.return_to_router_after_profile_result`
-está ausente o es falso, el candidato no abre el Router por la
-presencia de un sidecar; devuelve
-`PROFILE_IG_FEEDBACK_ROUTER_RETURN_NOT_AUTHORIZED`.
-Sin feedback, conserva exactamente el comportamiento anterior.
+## 10. Frontera con el experimento inicial Product-only
 
-**Pruebas de regresión del flujo vigente:** se ejecutó desde el
-blob Git exacto:
-`sandbox/lf_contract_gate_test/input_governance/ig_feedback_profile_return_authority_readonly_20261029.sql`.
-**9/9 PASS**: dos perfiles con autoridad terminal `READY`;
-14 ejecuciones legadas no elegibles; retorno habilitado/deshabilitado,
-hash, ausencia de sidecars, preimages de las funciones y run 949 intacto.
-El primer ensayo marcó FAIL por tratar un campo opcional de manifiesto
-ausente como falso explícito; el test se corrigió para respetar el
-`coalesce(...,false)` de la función viva y se repitió con 9/9 PASS.
+`sandbox/lf_contract_gate_test/input_governance/ig_profile_feedback_router_return_candidate_20261029.sql`
+usaba `deliverable_created.input_governance_feedback`; su alcance
+es **PRODUCT-ONLY**, sin cobertura de esquemas nativos cerrados.
+No promoverlo a producción ni fusionarlo con los candidatos transversales.
+Su preimage, rollback y pruebas siguen siendo evidencia histórica útil.
 
-**Límites:** no hay PostgreSQL binario en la sesión y el acceso a
-Supabase es de solo lectura. El candidato SQL contiene
-`BEGIN ... ROLLBACK` y 11 negativos **preparados pero NO EJECUTADOS**;
-no hay PASS de compilación, DDL, emisión real, cuatro perfiles completos,
-integración, G4 ni G5. PR #3269 continúa DRAFT sin mutar producción.
-
-**Orden de salida:** 1) probar el candidato exacto en PostgreSQL aislado;
-2) definir y construir emisión segura desde el resultado real del
-especialista a `execute_profile`; 3) probar el trayecto report_output
--> prepare -> Router Stage1 con casos positivos, negativos y sin IG;
-4) revisión independiente y habilitación solamente por ruta gobernada.
+EKB vivo consultado:
+`INPUT-GOV-CONSUMER-BINDING-001`,
+`IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001`,
+`HUMAN-DECISION-POLICY-RESOLUTION-NO-PRODUCER-AUTHORITY-001`,
+`IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`,
+`CI-MIGRATION-SOURCE-PARITY-001`.
