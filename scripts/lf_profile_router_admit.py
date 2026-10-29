@@ -107,6 +107,18 @@ def main():
         "executor_mode": mode,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
+    if code != 200:
+        # Readable GitHub annotation (no context, no tokens): the outcome codes only.
+        summary = {
+            "http_status": code,
+            "outcome": response.get("outcome"),
+            "code": response.get("code"),
+            "rpc_status": response.get("rpc_status"),
+            "result_status": result.get("status"),
+            "blocking_code": result.get("blocking_code"),
+            "blocking_codes": result.get("blocking_codes"),
+        }
+        print("::error title=ROUTER_ADMIT_BLOCKED::" + json.dumps(summary, ensure_ascii=False))
     return 0 if code == 200 else 1
 
 

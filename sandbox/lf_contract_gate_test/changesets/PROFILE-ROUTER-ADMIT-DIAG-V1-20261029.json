@@ -1,0 +1,7 @@
+{
+  "solution_ref": "PROFILE-ROUTER-ADMIT-DIAG-V1-20261029",
+  "paths": {
+    "scripts/lf_profile_router_admit.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-ROUTER-ADMIT-DIAG-V1-20261029.json": "CHANGESET_MANIFEST"
+  }
+}
