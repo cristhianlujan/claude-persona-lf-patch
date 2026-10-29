@@ -203,3 +203,27 @@ error y postchecks, verificar readback funcional y rollback sin residuos;
 después validar payload real de Product Director y la frontera
 `report_output -> Router ACT-0001`. Mantener PR DRAFT y no modificar
 DB viva, EKB, ni reglas/permissions/selectores.
+
+## Precisión transversal — múltiples perfiles (29/10/2026)
+
+Este documento y su SQL candidato previo **solo ensayan la ubicación
+`deliverable_created.input_governance_feedback`**, compatible con el
+`PRODUCT_DIRECTION_SPEC` actual. No equivale a un contrato universal: por
+ejemplo, la decisión focal de UI posee un esquema raíz cerrado sin
+`deliverable_created`.
+
+El contrato de arquitectura que debe regir la extensión a perfiles presentes
+y futuros es:
+`docs/t-remed/IG_PROFILE_FEEDBACK_TRANSVERSAL_CONTRACT_V1_20261029.md`.
+Se propone un feedback de ejecución independiente del output nativo,
+vinculado a `execution_id`, `profile_code`, SHA del output validado y
+recibo IG realmente consumido. **El portador, la validación y su lectura
+por Router aún NO están implementados.** No activar ni promover el SQL
+Product-only como solución transversal. Mantener sin cambios todos los
+contratos de salida vigentes hasta autorización y pruebas.
+
+Regresión exacta de solo lectura:
+`sandbox/lf_contract_gate_test/input_governance/ig_feedback_cross_profile_transversal_readonly_20261029.sql`.
+11/11 PASS para vínculos registrados y retorno tipado con salidas sintéticas
+de Product, UI, Evidence Reviewer y Reparador. Esto no acredita ejecución
+real de cada perfil ni autorización IG de los seis sin binding directo.
