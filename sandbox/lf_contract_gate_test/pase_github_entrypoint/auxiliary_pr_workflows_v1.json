@@ -47,6 +47,11 @@
       "reason": "Runs focused tests for migration parity proposal changes."
     },
     {
+      "name": "lf-pg02-candidate-tests.yml",
+      "owner": "LF Programming PG-02 candidate",
+      "reason": "Runs read-only, exact-head PG-02 regression tests; never grants PG-01 admission or PG-00 catalog release."
+    },
+    {
       "name": "lf-router-level2-advisory-tests.yml",
       "owner": "LF Router ACT-0001 / CI",
       "reason": "Runs exact-source positive and negative tests for the advisory level2 handoff; CI owns execution, PASE consumes evidence."
