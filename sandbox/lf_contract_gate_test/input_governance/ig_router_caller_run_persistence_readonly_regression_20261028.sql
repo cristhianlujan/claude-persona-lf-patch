@@ -5,6 +5,27 @@ WITH router_intake AS MATERIALIZED (
  SELECT public.lf_router_pipeline_context_begin_v2(
   'Revisar login b2b para ver las reglas que le faltan'
  ) AS result
+), router_stage1 AS MATERIALIZED (
+ SELECT public.lf_router_pipeline_context_stage1_submit_v2(
+  result->>'context_token',
+  jsonb_build_object(
+   'schema_version','LF_ROUTER_STAGE1_V2',
+   'texto_original','Revisar login b2b para ver las reglas que le faltan',
+   'es_operacion',true,'ambiguo',false,'respuesta_directa',false,
+   'sujeto','login B2B','accion','revisar reglas faltantes',
+   'formas_busqueda',jsonb_build_array('login b2b','B2B-AUTH','inicio sesion B2B'),
+   'alternativas','[]'::jsonb,'correcciones','[]'::jsonb,
+   'canal_candidato','PRODUCTO','negocio_codigo','LF',
+   'negocios_afectados','[]'::jsonb,
+   'razon_seleccion','Analizar reglas y brechas funcionales de login B2B; sin cambios de codigo',
+   'alcance',jsonb_build_object('target_type','PANTALLA','target_hint','login B2B','resolution_status','UNRESOLVED'),
+   'downstream_execution_allowed',false
+  )
+ ) AS result FROM router_intake
+), router_selection AS MATERIALIZED (
+ SELECT public.lf_router_pipeline_context_profile_semantic_prepare_v2(
+   result->>'context_token'
+ ) AS result FROM router_stage1
 ), consumer_step AS MATERIALIZED (
  SELECT e.execution_id, e.operation_code, e.status AS caller_status,
         s.status AS step_status,s.evidence_payload->'input_governance' AS ig
@@ -36,6 +57,17 @@ WITH router_intake AS MATERIALIZED (
    AND result->>'next_step'='stage1_seal'
    AND result->>'effect_authority'='false'
    FROM router_intake) AS passed
+ UNION ALL SELECT 'ROUTER_STAGE1_VALID_TO_PROFILE_SELECTION',
+  (SELECT result->>'status'='NEXT_TRANSITION_READY'
+   AND result->>'next_step'='profile_semantic_selection'
+   AND result#>>'{stage1_validation,valid}'='true'
+   AND result->>'effect_authority'='false'
+   FROM router_stage1)
+ UNION ALL SELECT 'ROUTER_PROFILE_SELECTOR_HONORS_READ_ONLY',
+  (SELECT result->>'status'='PROFILE_SEMANTIC_SELECTION_REQUIRED'
+   AND result#>>'{profile_selection_request,catalog_profile_count}'='10'
+   AND result->>'downstream_execution_allowed'='false'
+   FROM router_selection)
  UNION ALL SELECT 'CALLER_HAS_ONE_IG_RUN_REFERENCE',
   (SELECT count(*)=1 FROM linked_run)
  UNION ALL SELECT 'CALLER_IG_IDS_AND_SOURCE_HASH_MATCH',
