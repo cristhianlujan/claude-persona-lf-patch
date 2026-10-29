@@ -1,4 +1,4 @@
-pg01_binding={"source":"PG01_C4","architecture_repo":"fixture://repo","architecture_commit":"f".repeat(40),"manifest_digest_sha256":"a".repeat(64),"architecture_profile":{"active_layers":["FRONTEND"]},"context_binding":{"context_id":"fixture-context","context_sha256":"b".repeat(64),"receipt_ref":"fixture://pg01-receipt"}}
+pg01_binding={"source":"PG01_C4","architecture_repo":"fixture://repo","architecture_commit":"f"*40,"manifest_digest_sha256":"a"*64,"architecture_profile":{"active_layers":["FRONTEND"]},"context_binding":{"context_id":"fixture-context","context_sha256":"b"*64,"receipt_ref":"fixture://pg01-receipt"}}
 import copy
 from pg02_classifier_v1 import classify, PG02Blocked, digest
 s={"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1",
