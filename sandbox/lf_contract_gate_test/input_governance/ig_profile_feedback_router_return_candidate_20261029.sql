@@ -76,22 +76,31 @@ DECLARE
       );
     END IF;
 
-    IF v_ig_feedback_kind='EVIDENCE_CHALLENGE'
-       AND (jsonb_typeof(v_ig_feedback->'evidence_refs') IS DISTINCT FROM 'array'
-            OR jsonb_array_length(coalesce(v_ig_feedback->'evidence_refs','[]'::jsonb))=0
-            OR EXISTS(
-              SELECT 1
-              FROM jsonb_array_elements(coalesce(v_ig_feedback->'evidence_refs','[]'::jsonb)) f(ref)
-              WHERE jsonb_typeof(f.ref)<>'string'
-                 OR nullif(btrim(f.ref#>>'{}'),'') IS NULL
-            ))
-    THEN
-      RETURN jsonb_build_object(
-        'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
-        'status','BLOCKED','code','PROFILE_IG_FEEDBACK_EVIDENCE_MISSING',
-        'source_execution_id',p_execution_id,
-        'source_profile_code',p_profile_code
-      );
+    -- Do NOT apply jsonb_array_length/jsonb_array_elements before type
+    -- admission: a JSON null or object must fail closed with a typed code.
+    IF v_ig_feedback_kind='EVIDENCE_CHALLENGE' THEN
+      IF jsonb_typeof(v_ig_feedback->'evidence_refs') IS DISTINCT FROM 'array' THEN
+        RETURN jsonb_build_object(
+          'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
+          'status','BLOCKED','code','PROFILE_IG_FEEDBACK_EVIDENCE_MISSING',
+          'source_execution_id',p_execution_id,
+          'source_profile_code',p_profile_code
+        );
+      END IF;
+      IF jsonb_array_length(v_ig_feedback->'evidence_refs')=0
+         OR EXISTS(
+           SELECT 1 FROM jsonb_array_elements(v_ig_feedback->'evidence_refs') f(ref)
+           WHERE jsonb_typeof(f.ref)<>'string'
+              OR nullif(btrim(f.ref#>>'{}'),'') IS NULL
+         )
+      THEN
+        RETURN jsonb_build_object(
+          'schema_version','LF_PROFILE_RESULT_ROUTER_RETURN_DECISION_V1',
+          'status','BLOCKED','code','PROFILE_IG_FEEDBACK_EVIDENCE_MISSING',
+          'source_execution_id',p_execution_id,
+          'source_profile_code',p_profile_code
+        );
+      END IF;
     END IF;
 
     IF v_ig_feedback_kind='NONCANONICAL_RULE_PROPOSAL'
@@ -239,6 +248,27 @@ BEGIN
     'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
   IF x->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING'
   THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_NO_EVIDENCE_NOT_REJECTED:%',x; END IF;
+
+  -- Object/JSON null instead of array must be typed BLOCKED (not SQL ERROR).
+  src:=jsonb_set(src,'{evidence_refs}','{"not":"array"}'::jsonb);
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_EVIDENCE_MISSING'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_OBJECT_REFS_NOT_REJECTED:%',x; END IF;
+
+  src:=jsonb_set(src,'{evidence_refs}','[]'::jsonb);
+  src:=src||jsonb_build_object('force_new_run',true);
+  x:=public.lf_profile_result_router_return_classify_v1(
+    jsonb_build_object('output_type','PRODUCT_DIRECTION_SPEC','self_verdict','PASS',
+      'status','PASS','deliverable_created',
+       jsonb_build_object('input_governance_feedback',src)),
+    'Revisar reglas de login B2B',test_execution_id,'PERFIL-PRODUCT-DIRECTOR-LF');
+  IF x->>'code'<>'PROFILE_IG_FEEDBACK_CONTRACT_INVALID'
+  THEN RAISE EXCEPTION 'IG_PROFILE_FEEDBACK_FORCED_RERUN_NOT_REJECTED:%',x; END IF;
+  src:=src-'force_new_run';
 
   src:=jsonb_set(src,'{family_code}','"FAMILY_DOES_NOT_EXIST"'::jsonb);
   x:=public.lf_profile_result_router_return_classify_v1(
