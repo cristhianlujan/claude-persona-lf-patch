@@ -27,7 +27,7 @@ VALID_STATUSES={"REQUIRED","REUSE_AS_IS","NOT_APPLICABLE"}
 VALID_CLOSURES={"CLOSED","BLOCKED"}
 VALID_SCOPE_STATES={"READY","NEED_MORE_EVIDENCE","REQUIRES_DECISION","BLOCKED","NOT_APPLICABLE"}
 
-def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_sha256=None):
+def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_sha256=None, pg01_binding=None):
     if not isinstance(snapshot,dict): raise PG02Blocked("CONTRADICTION:INVALID_SHAPE")
     if snapshot.get("schema_version")!="PROGRAMMING_CONTEXT_SNAPSHOT_V1":
         raise PG02Blocked("SNAPSHOT_SCHEMA_INVALID")
@@ -82,9 +82,15 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
     granularity = snapshot["target_granularity"]
     if not granularity.get("level") or not granularity.get("target_ref"):
         raise PG02Blocked("CONTRADICTION:A2_TARGET_IDENTITY_MISSING")
-    stack = snapshot.get("stack_profile")
-    if not isinstance(stack,dict) or not stack.get("source_ref") or not stack.get("version") or not isinstance(stack.get("active_layers"),list) or not stack["active_layers"]:
-        raise PG02Blocked("MISSING:STACK_PROFILE_NOT_BOUND")
+    # PG-01_C4 owns the architecture framework; A9 does not define stack_profile.
+    # This candidate is not an authenticated reader; external readback is still required.
+    if not isinstance(pg01_binding,dict) or pg01_binding.get("source")!="PG01_C4":
+        raise PG02Blocked("MISSING:PG01_C4_FRAMEWORK_REQUIRED")
+    if not all(isinstance(pg01_binding.get(k),str) and pg01_binding[k] for k in ("architecture_repo","architecture_commit","manifest_digest_sha256")):
+        raise PG02Blocked("MISSING:PG01_C4_FRAMEWORK_INCOMPLETE")
+    stack = pg01_binding.get("architecture_profile")
+    if not isinstance(stack,dict) or not isinstance(stack.get("active_layers"),list) or not stack["active_layers"]:
+        raise PG02Blocked("MISSING:PG01_C4_ARCHITECTURE_LAYERS")
     active_layers = set(stack["active_layers"])
     if len(active_layers)!=len(stack["active_layers"]) or any(not isinstance(x,str) or not x for x in active_layers):
         raise PG02Blocked("CONTRADICTION:STACK_LAYERS_INVALID")
@@ -128,8 +134,16 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
         ready=s.get("status")=="READY" and not reasons
         rows.append({"scope_id":sid,"state":"READY_FOR_CLASSIFICATION" if ready else "BLOCKED",
                      "candidate_domains":sorted(domains) if ready else [],"blockers":sorted(reasons)})
+    # M6: include PG-01 context identity only as externally supplied evidence.
+    # Python JSON digest is NOT PostgreSQL jsonb::text SHA256.
+    identity = pg01_binding.get("context_binding")
+    if not isinstance(identity,dict) or not all(isinstance(identity.get(k),str) and identity[k] for k in ("context_id","context_sha256","receipt_ref")):
+        raise PG02Blocked("MISSING:PG01_CONTEXT_RECEIPT_BINDING")
+    h=identity["context_sha256"]
+    if len(h)!=64 or any(c not in "0123456789abcdef" for c in h):
+        raise PG02Blocked("CONTRADICTION:PG01_CONTEXT_DIGEST_INVALID")
     return {"schema_version":"PG02_CLASSIFICATION_CANDIDATE_V2",
-            "status":"CANDIDATE_NOT_ADMITTED","source_digest":digest(snapshot),"stack_source_ref":stack["source_ref"],"stack_version":stack["version"],"target_granularity":granularity,
+            "status":"CANDIDATE_NOT_ADMITTED","source_digest":digest(snapshot),"source_digest_note":"PYTHON_JSON_ONLY_NOT_PG01_HASH","context_id":identity["context_id"],"context_sha256":identity["context_sha256"],"pg01_receipt_ref":identity["receipt_ref"],"architecture_repo":pg01_binding["architecture_repo"],"architecture_commit":pg01_binding["architecture_commit"],"manifest_digest_sha256":pg01_binding["manifest_digest_sha256"],"target_granularity":granularity,
             "scopes":rows}
 
 
