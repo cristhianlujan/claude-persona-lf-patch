@@ -264,3 +264,51 @@ EKB vivo consultado:
 `HUMAN-DECISION-POLICY-RESOLUTION-NO-PRODUCER-AUTHORITY-001`,
 `IG-M99-SANDBOX-LIVE-ADMISSION-CONFLATION-001`,
 `CI-MIGRATION-SOURCE-PARITY-001`.
+
+## 11. Avance de fuente y gates restantes (29/10/2026)
+
+Se ajustó el contrato para que el *único portador* del feedback sea
+`execute_profile.evidence_payload.ig_profile_feedback_candidate` y
+**no** un campo agregado posteriormente en `report_output`.
+El gate de `report_output` verifica el dato guardado con el output
+original, y `return_prepare_v1` lo vuelve a leer desde ese paso.
+No se amplió el universo de 11 pasos ni se modificaron esquemas.
+
+**Candidato de emisión incorporado:** el bridge nativo
+`lf_profile_native_bridge_record_output_v1` puede recibir una
+`native_model_response_envelope` con el `profile_output` propio y
+un feedback opcional separado. Verifica coincidencia estructural
+de ambas piezas, ref y SHA del sobre, identidad y SHA del output.
+Escribe el sidecar únicamente durante `execute_profile`; bloquea
+reintentos con otro output o feedback y rechaza sobres no declarados.
+Esto es **código fuente de sandbox**, no la función viva.
+
+**Auditoría de fuente propia ejecutada:** 20/20 comprobaciones
+estáticas PASS sobre blobs de la rama y esquemas Product/UI, entre
+ellas: 2 rollback-only, preimages de las tres funciones vivas,
+consistencia de sobre nativo, SHA, idempotencia, helper en esquema
+`private`, vínculo IG consumido, bloqueo de inyección en
+`report_output`, retorno previamente autorizado, ausencia de
+GRANT/REVOKE y conservación de los esquemas nativos cerrados.
+**No** es compilación SQL ni prueba de ejecución real.
+
+**Primer bloqueo de seguridad aún abierto:** el contenido de
+`native_model_response_envelope`, su digest y la bandera
+`native_response_admission` pueden ser **afirmaciones del solicitante**
+si no se comprueban independientemente contra los bytes auténticos
+del modelo. Antes de habilitar el bridge, debe existir readback
+verificable de `p_raw_evidence_ref` desde el runtime nativo autorizado.
+El SHA de un JSON aportado por el propio caller **no prueba origen**.
+Si esa verificación falta, el gate es **NO-GO**, aunque un ensayo de
+tipos o SQL aislado pase.
+
+La vía `CLAUDE_NATIVE` también requiere una verificación propia de
+su registrador nativo. No se infiere cobertura por reutilizar el
+mismo esquema de salida. El runtime vivo sigue intacto.
+
+**Siguiente fase autorizable (sin saltos):** pruebas SQL sobre clon
+PostgreSQL 17 con rollback; prueba contra evidencia auténtica de
+respuesta nativa; casos Product/UI/tercero y sin IG; juicio
+independiente; Router ACT-0001; EKB/ACL/source-first; G4/G5.
+PASE actual no ejecuta SQL de dominio y su SUCCESS no cubre
+estos gates.
