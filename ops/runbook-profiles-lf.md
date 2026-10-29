@@ -13,7 +13,7 @@ Classify the result:
 - `OK`: PostgreSQL returned a result; continue.
 - `SQL_ERROR`: PostgreSQL returned a query/schema/constraint error; inspect schema/source, correct minimally, retry the affected operation and continue.
 - `CONNECTOR_DENIED`: the connector rejected the request before PostgreSQL; record the literal response and time, retry once with a minimal probe, then continue independent GitHub work if still unavailable.
-- `PROVIDER_BLOCKED`: the literal response says the tool call was blocked by provider safety checks or equivalent provider policy wording. Record literal response and time. Do not retry the same payload. Continue independent GitHub work and report `PROMPT_BLOCKED_BY_PROVIDER` plus `REQUIERE_INTERVENCION_HUMANA`.
+- `PROVIDER_BLOCKED`: classify by the literal sender; do not attribute an OpenAI safety block to GitHub, Supabase or Router. For an **explicit OpenAI tool safety block only**, follow [`lf-openai-tool-safety-review-v1.md`](lf-openai-tool-safety-review-v1.md): preserve exact error, prepare an evidence-backed legitimacy explanation, and use official support review when appropriate. Do not retry the same blocked payload in a loop or bypass platform controls; resume only after normal authorization and successful readback. Record `PROMPT_BLOCKED_BY_PROVIDER` and `PROVIDER_BLOCKED_PENDING_REVIEW` when unresolved. Other providers' errors retain their own diagnosis.
 
 A single failed invocation does not establish a Supabase outage. A PostgreSQL response establishes that the database route is reachable for that invocation.
 
