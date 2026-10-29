@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from ig_g4_authority_contract_probe_v1 import check_authority_contract
 
 NOW = datetime(2026, 10, 28, tzinfo=timezone.utc)
-REQ = {"rule_ref": "fixture:rule", "rule_sha256": "hash-rule", "selector_sha256": "hash-selector", "scope_diff_sha256": "hash-diff", "consumer": "CONTEXT_PACK", "operation": "CHANGE_RULE_SCOPE"}
+REQ = {"rule_ref": "fixture:rule", "rule_sha256": "hash-rule", "selector_sha256": "hash-selector", "scope_diff_sha256": "hash-diff", "consumer": "CONTEXT_PACK", "operation": "CHANGE_RULE_SCOPE", "execution_id": "EXEC-FIXTURE-ROOT", "ig_run_id": 123}
 
 
 def fixture(domains=("D1",)):
@@ -16,7 +16,7 @@ def fixture(domains=("D1",)):
 
 
 def check(source, routes, receipts, request=None, **kwargs):
-    return check_authority_contract(request or REQ, source, routes, receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: True, **kwargs)
+    return check_authority_contract(request or REQ, source, routes, receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: True, verify_run_binding=lambda r: True, **kwargs)
 
 
 class G4Contract(unittest.TestCase):
@@ -32,11 +32,11 @@ class G4Contract(unittest.TestCase):
         self.assertEqual(check(source, routes, receipts[:1]), "HOLD_RECEIPT_MISSING_OR_DUPLICATE")
 
     def test_unverified_source(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_receipt=lambda r: True)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_receipt=lambda r: True)
         self.assertEqual(result, "HOLD_SOURCE_UNVERIFIED")
 
     def test_unverified_receipt(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_source=lambda r: True)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_source=lambda r: True)
         self.assertEqual(result, "HOLD_RECEIPT_VERIFIER_MISSING")
 
     def test_wrong_operation(self):
@@ -92,7 +92,7 @@ class G4Contract(unittest.TestCase):
         self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_SOURCE_INACTIVE")
 
     def test_provenance_callback_false(self):
-        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_source=lambda r: True, verify_receipt=lambda r: False)
+        result = check_authority_contract(REQ, self.source, self.routes, self.receipts, now=NOW, verify_run_binding=lambda r: True, verify_source=lambda r: True, verify_receipt=lambda r: False)
         self.assertEqual(result, "HOLD_RECEIPT_PROVENANCE_UNVERIFIED")
 
     def test_untrusted_domain_from_request_ignored(self):
