@@ -59,6 +59,19 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
     if mapping.get("state")!="SOURCE_ONLY_CANDIDATE" or not isinstance(rules,dict):
         raise PG02Blocked("CATALOG_NOT_AUTHORIZED")
     verify_catalog_binding(mapping,expected_catalog_ref,expected_catalog_sha256)
+    # A2 and target stack remain source-bound; no default stack is inferred.
+    granularity = snapshot["target_granularity"]
+    if not granularity.get("level") or not granularity.get("target_ref"):
+        raise PG02Blocked("CONTRADICTION:A2_TARGET_IDENTITY_MISSING")
+    stack = snapshot.get("stack_profile")
+    if not isinstance(stack,dict) or not stack.get("source_ref") or not stack.get("version") or not isinstance(stack.get("active_layers"),list) or not stack["active_layers"]:
+        raise PG02Blocked("MISSING:STACK_PROFILE_NOT_BOUND")
+    active_layers = set(stack["active_layers"])
+    if len(active_layers)!=len(stack["active_layers"]) or any(not isinstance(x,str) or not x for x in active_layers):
+        raise PG02Blocked("CONTRADICTION:STACK_LAYERS_INVALID")
+    scoped_layers = mapping.get("domain_stack_layers")
+    if not isinstance(scoped_layers,dict):
+        raise PG02Blocked("MISSING:DOMAIN_STACK_BINDINGS")
     rows=[]
     for s in sorted(scopes,key=lambda x:x["scope_id"]):
         sid=s["scope_id"]
@@ -80,12 +93,20 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
             if effect!="PRESERVE": raise PG02Blocked("CONTRADICTION:EFFECT")
             kinds=rules.get(f.get("front_kind"))
             if not kinds: reasons.append(f["front_id"]+":UNMAPPED")
-            else: domains.update(kinds)
+            else:
+                for domain in kinds:
+                    applicable = scoped_layers.get(domain)
+                    if not isinstance(applicable,list) or not applicable:
+                        raise PG02Blocked("MISSING:DOMAIN_STACK_BINDING:"+str(domain))
+                    if active_layers.intersection(applicable):
+                        domains.add(domain)
+                    else:
+                        reasons.append(f["front_id"]+":STACK_NOT_APPLICABLE:"+domain)
         ready=s.get("status")=="READY" and not reasons
         rows.append({"scope_id":sid,"state":"READY_FOR_CLASSIFICATION" if ready else "BLOCKED",
                      "candidate_domains":sorted(domains) if ready else [],"blockers":sorted(reasons)})
     return {"schema_version":"PG02_CLASSIFICATION_CANDIDATE_V2",
-            "status":"CANDIDATE_NOT_ADMITTED","source_digest":digest(snapshot),
+            "status":"CANDIDATE_NOT_ADMITTED","source_digest":digest(snapshot),"stack_source_ref":stack["source_ref"],"stack_version":stack["version"],"target_granularity":granularity,
             "scopes":rows}
 
 
