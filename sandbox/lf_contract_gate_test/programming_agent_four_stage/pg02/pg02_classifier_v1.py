@@ -7,6 +7,11 @@ def classify(snapshot, mapping):
     fronts=snapshot.get("material_front_coverage",{}).get("material_fronts",[])
     matrix=snapshot.get("scope_front_matrix",[])
     if not scopes or not fronts or not matrix: raise PG02Blocked("MISSING_MATERIAL")
+    if not isinstance(snapshot.get("target_granularity"), dict):
+        raise PG02Blocked("A2_GRANULARITY_MISSING")
+    allowed_status={"READY","BLOCKED","REQUIRES_DECISION","NEED_MORE_EVIDENCE","NOT_APPLICABLE"}
+    if any(not isinstance(s,dict) or s.get("status") not in allowed_status for s in scopes):
+        raise PG02Blocked("READINESS_INVALID")
     ss={s["scope_id"]:s for s in scopes}
     ff={f["front_id"]:f for f in fronts}
     if len(ss)!=len(scopes) or len(ff)!=len(fronts): raise PG02Blocked("DUPLICATE")
@@ -16,6 +21,8 @@ def classify(snapshot, mapping):
     for r in matrix:
         f=ff[r["front_id"]]
         if r["front_status"]!=f["status"] or r["front_closure"]!=f["closure"]: raise PG02Blocked("A7_RECLASSIFICATION")
+    if any(s["status"] != "READY" for s in scopes):
+        raise PG02Blocked("PG01_SCOPE_NOT_READY")
     rows=[]
     for sid in sorted(ss):
         links=sorted((ff[r["front_id"]] for r in matrix if r["scope_id"]==sid),key=lambda f:f["front_id"])
