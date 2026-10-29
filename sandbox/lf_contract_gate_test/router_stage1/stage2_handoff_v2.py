@@ -57,7 +57,6 @@ def prepare_handoff(stage1: Any, registered_businesses: Iterable[str] | None = N
         "stage1_v2_payload": payload,
         "canal_candidato": result["canal_candidato"],
         "negocio_codigo": result["negocio_codigo"],
-        "ruta_transversal": result["ruta_transversal"],
         "alcance": result["alcance"],
         "capability_hint_authority": "CANDIDATE_ONLY",
         "alcance_verificado": False,

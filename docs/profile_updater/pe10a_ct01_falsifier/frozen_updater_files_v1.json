@@ -1,0 +1,223 @@
+{
+ "version": 1,
+ "generator": "enumerate_updater_files.sh",
+ "pattern": "lf_profile_update_|lf_record_profile_operation_step_v1|ACTUALIZACION_PERFIL_LF|profile_update_",
+ "classification_by": "productor (Claude); el revisor puede impugnar",
+ "files": [
+  {
+   "path": ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
+   "blob_sha1": "fc059dc76d043f01a6829d8f963c2f72e89c7e61",
+   "category": "UPDATER_WORKFLOW"
+  },
+  {
+   "path": "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md",
+   "blob_sha1": "06d8905db56f04bf8557ccb0db556a25f704d015",
+   "category": "DEFERRED_ROUTER_DOC"
+  },
+  {
+   "path": "docs/programming-agent/LF_ROUTER_CHANNEL_POLICY_CANDIDATE_V1.md",
+   "blob_sha1": "c1231fe7699ddcd63e9bb8137299ba1a8794aaa2",
+   "category": "DEFERRED_ROUTER_DOC"
+  },
+  {
+   "path": "docs/programming-agent/LF_ROUTER_FLOW_V1.md",
+   "blob_sha1": "e09982d08b584185377f92472534d89d7bf176d9",
+   "category": "DEFERRED_ROUTER_DOC"
+  },
+  {
+   "path": "docs/reconcile/PRE_BASELINE_INVENTORY_20261019.json",
+   "blob_sha1": "27c20930a2dfcc8390538c4b0b11b78f637ae1be",
+   "category": "DEFERRED_ROUTER_DOC"
+  },
+  {
+   "path": "docs/reconcile/RECONCILE_BATCH_2.md",
+   "blob_sha1": "97e901fdc066645c2d6c5a8425f814ee52c75e16",
+   "category": "DEFERRED_ROUTER_DOC"
+  },
+  {
+   "path": "skills/profile_creator/contracts/dependency_consumer_measurement_v1.md",
+   "blob_sha1": "f4f1b5c37810b43542f67b47057ff80592accf56",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/existing_artifact_remediation_contract.json",
+   "blob_sha1": "35bc5195f9ab301e012d3ca280de5e5fe79f33da",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/gpt_native_in_chat_capture_contract_v1.json",
+   "blob_sha1": "27170e69e3aff361d1aca3e65ee12918c51da492",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_evolution_phase_separation_v1.json",
+   "blob_sha1": "129351ba3380892b88590bd1d3be79fe9cae9bba",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_expert_asis_tobe_gap_contract_v1.json",
+   "blob_sha1": "6b3c67c3f23969319d765983fc009c2b6b5c26dc",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_operation_blocked_evidence_v1.json",
+   "blob_sha1": "7274ca9c8e25d894cbd0cfb8f9a3a91126b77b43",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_operation_common_recorder_v1.sql",
+   "blob_sha1": "3f42ad4fa72c0d7ee5df090bff9ced790a9e649c",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_effective_route_reader_candidate_v1.sql",
+   "blob_sha1": "98009d0ee6d10bc713ebee1db526ce12b694b04c",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_evolution_step_guard_candidate_v1.sql",
+   "blob_sha1": "6565ce15ea00297dc54c80014bbcc3723d7dc646",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_evolved_routing_candidate_v1.json",
+   "blob_sha1": "60155d443829d38bc433e7a8494f0f3789dde6ad",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_recorder_conditional_route_candidate_v1.sql",
+   "blob_sha1": "16bbf1d71e56ca7abdb31e24f123d66627452071",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_v02_governed_stage_rollback_candidate_v1.sql",
+   "blob_sha1": "bf2e767ea812bce9b3f568c1151fbcfb0f3ff741",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/profile_update_verified_receipt_reader_candidate_v1.sql",
+   "blob_sha1": "7295723c2489115dc454cdbe5b3cb5fb8975638c",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/resolver_dispatch_contract.json",
+   "blob_sha1": "16a319b45ac7b636388d27f596143ac9bac07a36",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/s26_learning_preflight_v1.json",
+   "blob_sha1": "093a8bede8ea9b62ea099254a424cf6367784077",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/s26_profile_baseline_v1.json",
+   "blob_sha1": "1ccd7de46f74f5933d7b3794d9fa1102c37f82c9",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/targeted_evidence_drilldown_v1.md",
+   "blob_sha1": "0dac1eb13c1f7f767fa249724376cffdb11105aa",
+   "category": "RELATED_CONTRACT_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_judge_semantics_contract.json",
+   "blob_sha1": "68b4bd42591cae314334c9e3b5a0d2b4506be9a3",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_judge_semantics_source_v1.json",
+   "blob_sha1": "008a39602366ea98f03251ecab9c718691b689e7",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_revision_continuity_contract.json",
+   "blob_sha1": "cd1bb517f4231b9799fab9b376b01eee0d271349",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_server_trust_context_contract.json",
+   "blob_sha1": "76d8f6b51323d905edec7f92ec1c86a941ff1b5f",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_step60_dedicated_judge_materialization_v1.sql",
+   "blob_sha1": "9e875302f73b301b0c4dbc8596aee722d9a83838",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/contracts/update_step60_judge_rebaseline_v1.json",
+   "blob_sha1": "4f66b68dcb7767a4aaf4b58d2812528572b6bb1d",
+   "category": "UPDATER_CONTRACT"
+  },
+  {
+   "path": "skills/profile_creator/validators/evaluate_s26_learning_preflight.py",
+   "blob_sha1": "244429d6df90d267cff38f64511f14fc0db6bbe9",
+   "category": "RELATED_VALIDATOR_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/validators/evaluate_s26_profile_baseline.py",
+   "blob_sha1": "affe051f71cd91eb546018578b4a90ac17d768dc",
+   "category": "RELATED_VALIDATOR_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/validators/execute_profile_evolution_v02.py",
+   "blob_sha1": "8a8f314da7eff9bd6b82c27297aef309f3c8c1f3",
+   "category": "UPDATER_VALIDATOR"
+  },
+  {
+   "path": "skills/profile_creator/validators/measure_dependencies_v1.py",
+   "blob_sha1": "3199da8f3c1b506f81e2e4ffa61134884d9b6453",
+   "category": "RELATED_VALIDATOR_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/validators/plan_profile_evolution.py",
+   "blob_sha1": "4ce6e23f5f691388330a9988b68e0853dc1f63cd",
+   "category": "UPDATER_VALIDATOR"
+  },
+  {
+   "path": "skills/profile_creator/validators/plan_s26_profile_update.py",
+   "blob_sha1": "84f0b9a00596ed148f7d77c45fee6af882759870",
+   "category": "UPDATER_VALIDATOR"
+  },
+  {
+   "path": "skills/profile_creator/validators/profile_evolution_oidc_recorder_v02.py",
+   "blob_sha1": "5fb82500ae8472b4736a2f7b5609a3e757929802",
+   "category": "UPDATER_VALIDATOR"
+  },
+  {
+   "path": "skills/profile_creator/validators/profile_output_shape_preflight_v1.py",
+   "blob_sha1": "03f2a0cc23ff2de9251a373f61106538dcba308f",
+   "category": "RELATED_VALIDATOR_MENTIONS_UPDATE"
+  },
+  {
+   "path": "skills/profile_creator/validators/profile_updater_same_chat_v02.py",
+   "blob_sha1": "53ddf99de6da7c08e3ca888929463523f0a6ebbd",
+   "category": "UPDATER_VALIDATOR"
+  },
+  {
+   "path": "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py",
+   "blob_sha1": "602c919780f1ae61ca57257a6d3185e1caaffcb2",
+   "category": "RELATED_VALIDATOR_MENTIONS_UPDATE"
+  },
+  {
+   "path": "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts",
+   "blob_sha1": "993d6839b11d8bd78c152469c1658d0c14310828",
+   "category": "UPDATER_EDGE"
+  },
+  {
+   "path": "supabase/functions/run-creacion-perfil-lf/index.ts",
+   "blob_sha1": "45e2302d164740fcdf60b4c894feba9922a4b664",
+   "category": "UPDATER_EDGE"
+  },
+  {
+   "path": "supabase/functions/run-creacion-perfil-lf/required_profile_steps.test.mjs",
+   "blob_sha1": "aa505ecba1278852d16ae1b81a381c8b5600cd46",
+   "category": "UPDATER_EDGE"
+  },
+  {
+   "path": "supabase/functions/run-creacion-perfil-lf/required_profile_steps.ts",
+   "blob_sha1": "5211875849d6e6921b8127e71dc580ef1aaeb985",
+   "category": "UPDATER_EDGE"
+  }
+ ]
+}

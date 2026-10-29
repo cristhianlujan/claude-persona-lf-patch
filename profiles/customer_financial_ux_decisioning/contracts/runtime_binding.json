@@ -1,0 +1,153 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "customer_financial_ux_decisioning",
+  "profile_code": "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING",
+  "runtime_schema": {
+    "default": "schemas/output.schema.json",
+    "output_modes": {}
+  },
+  "canonical_validator": {
+    "path": "validators/runtime_validate.py",
+    "callable": "validate"
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
+  },
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true,
+    "post_update_baseline_required": true
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "required_source_refs": [
+      "profiles/customer_financial_ux_decisioning/SKILL.md"
+    ],
+    "allow_additional_sources": true,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "Inputs",
+        "Output modes",
+        "Decision spec requirements",
+        "Financial safety and clarity invariants"
+      ],
+      "max_chars": 8000
+    },
+    "projection_rationale": {
+      "policy": "PROFILE-RUNTIME-FULL-SOURCE-PROMPT-BLOAT-001",
+      "full_source_to_model": false,
+      "full_canonical_sources_retained": true,
+      "deterministic_output_contract_retained": true
+    }
+  },
+  "execution_partition": {
+    "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
+    "field_classes": {
+      "output_type": "SEMANTIC",
+      "status": "SEMANTIC",
+      "evidence_map": "HYBRID",
+      "decision_id": "SEMANTIC",
+      "decision_question": "SEMANTIC",
+      "comparison_basis": "SEMANTIC",
+      "options": "HYBRID",
+      "must_understand": "SEMANTIC",
+      "uncertainties": "SEMANTIC",
+      "claim_guardrails": "SEMANTIC",
+      "recommended_presentation_priority": "SEMANTIC",
+      "handoff_to_next": "HYBRID",
+      "blocked": "SEMANTIC",
+      "missing_inputs": "SEMANTIC",
+      "blocking_reason": "SEMANTIC",
+      "self_verdict": "SEMANTIC"
+    },
+    "deterministic_materialization": {},
+    "generation_limits": {}
+  },
+  "execution_budget": {
+    "resource_class": "STANDARD",
+    "max_prompt_tokens": 6000,
+    "max_output_tokens": 3000,
+    "min_available_memory_mb": 512,
+    "max_swap_used_pct": 50
+  },
+  "adversarial_suite": {
+    "schema": "LF_PROFILE_ADVERSARIAL_SUITE_V1",
+    "base_example": "examples/good_output.json",
+    "min_cases": 40,
+    "min_catch_rate": 0.95,
+    "blank_fields": [
+      "decision_id",
+      "decision_question",
+      "comparison_basis",
+      "options[].customer_consequence",
+      "options[].timing",
+      "options[].monetary_basis",
+      "options[].key_tradeoff",
+      "must_understand[]",
+      "claim_guardrails[]"
+    ],
+    "case_duplicate_ids": [
+      {
+        "list": "options",
+        "key": "option_id"
+      },
+      {
+        "list": "evidence_map",
+        "key": "source_ref"
+      }
+    ],
+    "unknown_root_key": true,
+    "injections": [
+      {
+        "fields": [
+          "options[].key_tradeoff",
+          "options[].customer_consequence",
+          "options[].timing"
+        ],
+        "phrases": [
+          "Act now",
+          "Last chance",
+          "Only today",
+          "Hurry",
+          "Best option for you",
+          "Pay immediately",
+          "Limited time offer",
+          "Guaranteed savings",
+          "Aproveche ahora",
+          "Última oportunidad",
+          "Solo hoy",
+          "No se lo pierda",
+          "La mejor opción para usted",
+          "Pague ya",
+          "Oferta limitada",
+          "URGENTE"
+        ]
+      }
+    ],
+    "valid_controls": [
+      {
+        "name": "negated_pressure",
+        "set": {
+          "options[0].key_tradeoff": "No claim that this is the best option; the choice is the customer's."
+        }
+      },
+      {
+        "name": "quoted_pressure_term",
+        "set": {
+          "options[0].key_tradeoff": "Offer text says 'limited time'; authority gives no expiry, so none is stated."
+        }
+      },
+      {
+        "name": "spanish_neutral",
+        "set": {
+          "options[0].key_tradeoff": "Mayor desembolso inicial; sin cronograma de cuotas."
+        }
+      }
+    ]
+  }
+}

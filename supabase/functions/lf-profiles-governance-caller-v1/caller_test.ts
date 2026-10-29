@@ -63,6 +63,17 @@ const REUSABLE_CALL_CLAIMS: JwtPayload = {
   run_id: "9003",
 };
 
+const NATIVE_CONTINUATION_CLAIMS: JwtPayload = {
+  repository: REPO,
+  repository_id: REPO_ID,
+  ref: REF,
+  workflow_ref: `${REPO}/.github/workflows/lf-edge-deploy-credential-readback.yml@${REF}`,
+  event_name: "workflow_dispatch",
+  environment: "lf-edge-deploy",
+  run_id: "9021",
+  workflow_sha: SHA,
+};
+
 const LEGACY_CLAIMS: JwtPayload = {
   repository: REPO,
   repository_id: REPO_ID,
@@ -99,6 +110,9 @@ type HarnessOptions = {
   allowlistPayload?: unknown;
   inputStatus?: string;
   runtimeTicketAuthorized?: boolean;
+  executionOverrides?: Record<string, unknown>;
+  nativePrepareStatus?: string;
+  selectionAccepted?: boolean;
 };
 
 function harness(options: HarnessOptions = {}) {
@@ -108,6 +122,9 @@ function harness(options: HarnessOptions = {}) {
   let allowlistPayload: unknown = options.allowlistPayload ?? goodAllowlist();
   let inputStatus = options.inputStatus ?? "READY";
   let runtimeTicketAuthorized = options.runtimeTicketAuthorized ?? true;
+  let nativePrepareStatus = options.nativePrepareStatus ?? "SCREEN_SELECTION_REQUIRED";
+  let selectionAccepted = options.selectionAccepted ?? true;
+  const executionOverrides = options.executionOverrides ?? {};
   const calls: Array<{ url: string; init?: RequestInit; body?: Record<string, unknown> }> = [];
 
   const handler = createHandler({
@@ -136,6 +153,51 @@ function harness(options: HarnessOptions = {}) {
       if (url.endsWith("/functions/v1/input-governance-agent-v1")) {
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
+      }
+      if (url.includes("/rest/v1/lf_operation_execution?")) {
+        const executionId = decodeURIComponent(url.split("execution_id=eq.")[1]?.split("&")[0] ?? "");
+        return new Response(JSON.stringify([{
+          execution_id: executionId,
+          status: "IN_PROGRESS",
+          operation_code: "EJECUCION_PERFIL_LF",
+          target_type: "PERFIL",
+          target_code: "PERFIL-UX-DESIGN-LF",
+          target_repo: REPO,
+          target_path: "profiles/ux_design_lf/SKILL.md",
+          manifest: {
+            executor_mode: "GPT_NATIVE",
+            executor_provider: "OPENAI_CHATGPT_NATIVE",
+            read_only: true,
+            no_write: true,
+            no_promotion: true,
+            governed_repair_write: false,
+            router_profile_handoff: {
+              profile_code: "PERFIL-UX-DESIGN-LF",
+              router_authorization_receipt: {
+                profile_code: "PERFIL-UX-DESIGN-LF",
+                profile_execution_allowed: true,
+                effect_authority: false,
+              },
+            },
+          },
+          ...executionOverrides,
+        }]), { status: 200 });
+      }
+      if (url.endsWith("/rest/v1/rpc/lf_profile_native_bridge_prepare_v1")) {
+        return new Response(JSON.stringify({
+          status: nativePrepareStatus,
+          execution_id: body?.p_execution_id,
+          next_action: nativePrepareStatus === "SCREEN_SELECTION_REQUIRED"
+            ? "SUBMIT_SCREEN_SELECTION_AND_RETRY_SAME_NATIVE_BRIDGE_PREPARE"
+            : "EXECUTE_PROFILE_IN_CURRENT_GPT_NATIVE_CONTEXT",
+        }), { status: 200 });
+      }
+      if (url.endsWith("/rest/v1/rpc/lf_profile_screen_selector_semantic_submit_v1")) {
+        if (selectionAccepted) nativePrepareStatus = "NATIVE_MODEL_INPUT_READY";
+        return new Response(JSON.stringify({ status: selectionAccepted ? "BOUND" : "BLOCKED" }), { status: 200 });
+      }
+      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")) {
+        return new Response(JSON.stringify({ status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST" }), { status: 200 });
       }
       if (url.endsWith("/functions/v1/run-creacion-perfil-lf")) {
         return new Response(JSON.stringify({ outcome: "INITIALIZED" }), { status: 200 });
@@ -498,4 +560,185 @@ Deno.test("CP2: reusable push OIDC identity cannot invoke Edge execution", async
   assertEquals(response.status,403);
   assertEquals(payload.code,"CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED");
   assertEquals(h.calls.length,0);
+});
+
+Deno.test("router V2 profile admission: exact governed identity forwards existing context", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const context = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT", stage1_payload: { texto_original: "Login B2B" } };
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
+  assertEquals(response.status, 200);
+  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+  const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
+  assertEquals(rpc.length, 1);
+  assertEquals(rpc[0].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
+});
+
+Deno.test("router V2 profile admission: unrelated OIDC identity blocked before RPC", async () => {
+  const h = harness({ claims: DISPATCH_CLAIMS });
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" }, executor_mode: "GPT_NATIVE" });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "ROUTER_PROFILE_ADMISSION_IDENTITY_REQUIRED");
+  assertEquals(h.calls.length, 0);
+});
+
+
+Deno.test("router V2 generic admission: forwards two distinct context/profile selections without overriding them", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const profileCodes = ["PERFIL-UX-DESIGN-LF", "PERFIL-QA-LF"];
+  for (const [i, profile] of profileCodes.entries()) {
+    const context = {
+      schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
+      status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+      transport_mode: "CONTEXT_TRANSPORT",
+      stage1_payload: { texto_original: `Dynamic request ${i}` },
+      semantic_result: { selected_profile_code: profile },
+    };
+    const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
+    assertEquals(response.status, 200);
+    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    assertEquals(h.calls[i].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
+  }
+});
+
+Deno.test("router V2 generic admission: rejects wrong transport state before RPC", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const { response, payload } = await invoke(h, {
+    action: "router_profile_admit_context_v2",
+    context: { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "STAGE1_REQUIRED", transport_mode: "CONTEXT_TRANSPORT" },
+    executor_mode: "GPT_NATIVE",
+  });
+  assertEquals(response.status, 400);
+  assertEquals(payload.code, "ROUTER_PROFILE_CONTEXT_ENVELOPE_INVALID");
+  assertEquals(h.calls.length, 0);
+});
+
+Deno.test("CP2: native profile resume: only exact protected main-branch workflow may read source", async () => {
+  const approved = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const { response, payload } = await invoke(approved, {
+    action: "profile_native_source_bind_v1",
+    execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+  });
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "SOURCE_BINDING_REQUIRED");
+  assertEquals(payload.target_path, "profiles/ux_design_lf/SKILL.md");
+  assertEquals(approved.calls.length, 1);
+  assertEquals(approved.calls[0].init?.method, "GET");
+
+  for (const claims of [
+    LEGACY_CLAIMS,
+    DISPATCH_CLAIMS,
+    { ...NATIVE_CONTINUATION_CLAIMS, environment: "untrusted" },
+    { ...NATIVE_CONTINUATION_CLAIMS, ref: "refs/heads/feature" },
+  ]) {
+    const denied = harness({ claims });
+    const output = await invoke(denied, {
+      action: "profile_native_source_bind_v1",
+      execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+    });
+    assertEquals(output.response.status, claims === LEGACY_CLAIMS || claims === DISPATCH_CLAIMS ? 403 : 401);
+    assertEquals(denied.calls.length, 0);
+  }
+});
+
+Deno.test("CP2: native profile resume: rejects other actions under continuation-only OIDC", async () => {
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const { response, payload } = await invoke(h, { action: "input_readiness_pilot_v1" });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH");
+  assertEquals(h.calls.length, 0);
+});
+
+const ADMIT_CONTEXT = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" };
+
+Deno.test("router V2 profile admission: governed native identity admits both native executors", async () => {
+  for (const mode of ["CLAUDE_NATIVE", "GPT_NATIVE"]) {
+    const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+    const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: mode });
+    assertEquals(response.status, 200);
+    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
+    assertEquals(rpc.length, 1);
+    assertEquals(rpc[0].body, { p_context: ADMIT_CONTEXT, p_executor_mode: mode });
+  }
+});
+
+Deno.test("router V2 profile admission: governed native identity cannot select REMOTE_API", async () => {
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: "REMOTE_API" });
+  assertEquals(response.status, 403);
+  assertEquals(payload.code, "ROUTER_PROFILE_NATIVE_IDENTITY_REQUIRES_NATIVE_EXECUTOR");
+  assertEquals(h.calls.length, 0);
+});
+
+Deno.test("router V2 profile admission: native identity with wrong environment or ref stays blocked", async () => {
+  for (const claims of [
+    { ...NATIVE_CONTINUATION_CLAIMS, environment: "untrusted" },
+    { ...NATIVE_CONTINUATION_CLAIMS, ref: "refs/heads/feature" },
+  ]) {
+    const h = harness({ claims });
+    const { response } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: "CLAUDE_NATIVE" });
+    assertEquals(response.status >= 400, true);
+    assertEquals(h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")).length, 0);
+  }
+});
+
+Deno.test("CP2: native profile resume: generic source identity and semantic screen pause", async () => {
+  for (const path of ["profiles/ux_design_lf/SKILL.md", "profiles/product_director_lf/SKILL.md"]) {
+    const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS, executionOverrides: { target_path: path } });
+    const { response, payload } = await invoke(h, {
+      action: "profile_native_continue_v1",
+      execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+      source_revision: SHA,
+      source_digest: `sha256:${"b".repeat(64)}`,
+    });
+    assertEquals(response.status, 200);
+    assertEquals(payload.phase, "SCREEN_SELECTION_REQUIRED");
+    assertEquals(h.calls.length, 2);
+    assertEquals(h.calls[1].body, {
+      p_execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+      p_source_revision: SHA,
+      p_source_digest: `sha256:${"b".repeat(64)}`,
+      p_actor_execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+    });
+  }
+});
+
+Deno.test("CP2: native profile resume: semantic decision is submitted only if screen selection was requested", async () => {
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const decision = { decision: "SELECTED", selected_screen_code: "B2B-AUTH-001" };
+  const { response, payload } = await invoke(h, {
+    action: "profile_native_continue_v1",
+    execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001",
+    source_revision: SHA,
+    source_digest: `sha256:${"b".repeat(64)}`,
+    screen_selection_draft: decision,
+  });
+  assertEquals(response.status, 200);
+  assertEquals(payload.phase, "NATIVE_MODEL_INPUT_READY");
+  assertEquals(h.calls.map(c => c.url.split("/").pop()), [
+    "lf_operation_execution?execution_id=eq.EXEC-PROFILE-GATE2-DYNAMICPROFILE000001&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,manifest",
+    "lf_profile_native_bridge_prepare_v1",
+    "lf_profile_screen_selector_semantic_submit_v1",
+    "lf_profile_native_bridge_prepare_v1",
+  ]);
+  assertEquals(h.calls[2].body?.p_draft, decision);
+});
+
+Deno.test("CP2: native profile resume: fail closed before prepare for invalid authority and source", async () => {
+  for (const overrides of [
+    { status: "SUCCEEDED" },
+    { manifest: { executor_mode: "GPT_NATIVE" } },
+    { operation_code: "ACTUALIZACION_PERFIL_LF" },
+    { target_path: "../private/SKILL.md" },
+    { target_repo: "untrusted/other-repo" },
+  ]) {
+    const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS, executionOverrides: overrides });
+    const output = await invoke(h, { action: "profile_native_continue_v1", execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001", source_revision: SHA, source_digest: `sha256:${"b".repeat(64)}` });
+    assertEquals(output.response.status, 403);
+    assertEquals(h.calls.length, 1);
+  }
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const output = await invoke(h, { action: "profile_native_continue_v1", execution_id: "EXEC-PROFILE-GATE2-DYNAMICPROFILE000001", source_revision: "c".repeat(40), source_digest: `sha256:${"b".repeat(64)}` });
+  assertEquals(output.response.status, 400);
+  assertEquals(h.calls.length, 1);
 });

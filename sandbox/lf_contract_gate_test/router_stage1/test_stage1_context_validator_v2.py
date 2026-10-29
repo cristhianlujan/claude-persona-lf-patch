@@ -26,7 +26,6 @@ def base(**patch):
         "canal_candidato": "OPERACIONES",
         "negocio_codigo": "LF",
         "negocios_afectados": [],
-        "ruta_transversal": None,
         "razon_seleccion": "Es una consulta de datos vigentes",
         "alcance": {
             "target_type": "OFERTA",
@@ -99,16 +98,17 @@ class Stage1V2(unittest.TestCase):
         self.assertFalse(out["valid"], out)
         self.assertIn("CATALOGO_NEGOCIOS_INVALIDO", out["codes"])
 
-    def test_direct_profile_update_no_fourth_channel(self):
+    def test_unknown_field_rejected_even_without_channel(self):
         x = base(
             texto_original="Actualizar el perfil UI Architect",
             accion="actualizar",
             sujeto="perfil",
             formas_busqueda=["perfil UI Architect"],
             canal_candidato=None,
-            ruta_transversal="GESTION_ACTIVOS_IA",
+            campo_desconocido="test",
         )
-        self.assertTrue(validate(x)["valid"], validate(x))
+        self.assert_block(x, "CAMPO_NO_PERMITIDO_EN_V2")
+        self.assert_block(x, "CANAL_NO_RECONOCIDO")
 
     def test_only_three_channels(self):
         self.assert_block(base(canal_candidato="SISTEMA"), "CANAL_NO_RECONOCIDO")
@@ -188,10 +188,10 @@ class Stage1V2(unittest.TestCase):
         self.assertEqual(validate(x)["next_step"], "DIRECT_ANSWER")
         self.assert_block({**x, "alcance": {"target_type": "REGLA"}}, "NO_OPERACION_NO_TIENE_ALCANCE")
 
-    def test_transversal_with_channel_is_invalid(self):
+    def test_unknown_field_with_channel_is_invalid(self):
         self.assert_block(
-            base(ruta_transversal="GESTION_ACTIVOS_IA"),
-            "RUTA_TRANSVERSAL_INVALIDA",
+            base(campo_desconocido="test"),
+            "CAMPO_NO_PERMITIDO_EN_V2",
         )
 
 

@@ -81,7 +81,7 @@ class ChannelPolicySourceContract(unittest.TestCase):
     def test_routing_rules_cover_boundaries(self):
         rules = self.p["routing_rules"]
         self.assertEqual({r["rule_id"] for r in rules}, {
-            "R00_IA_ASSET_MAINTENANCE", "R10_READ_EXISTING_PRODUCT_STATE",
+            "R10_READ_EXISTING_PRODUCT_STATE",
             "R20_PRODUCT_DEFINITION", "R30_IMPLEMENTATION_LIFECYCLE",
             "R40_INCIDENT_DIAGNOSIS", "R50_MIXED_REQUEST", "R60_UNCERTAIN"
         })
@@ -91,14 +91,11 @@ class ChannelPolicySourceContract(unittest.TestCase):
                               "R40_INCIDENT_DIAGNOSIS")["initial_mode"],
                          "READ_ONLY_DIAGNOSIS")
 
-    def test_transversal_profile_management_not_channel(self):
+    def test_retired_profile_route_absent_and_registry_operation_preserved(self):
         self.assertNotIn("PERFILES_SKILLS", [c["code"] for c in self.p["channels"]])
-        family = self.p["transversal_operation_families"][0]
-        self.assertFalse(family["is_channel"])
-        self.assertEqual(family["entrypoint"], "ACT-0001")
+        self.assertEqual(self.p["transversal_operation_families"], [])
         example = next(x for x in self.p["examples"] if x["id"] == "UPDATE_PROFILE")
-        self.assertEqual(example["ruta_transversal"], "GESTION_ACTIVOS_IA")
-        self.assertIsNone(example["initial_channel"])
+        self.assertEqual(example["operation_code"], "ACTUALIZACION_PERFIL_LF")
 
 
     def test_no_obsolete_route_or_dead_selector_fields(self):
@@ -119,7 +116,6 @@ class ChannelPolicySourceContract(unittest.TestCase):
             "canal_candidato",
             "negocio_codigo",
             "negocios_afectados",
-            "ruta_transversal",
             "razon_seleccion",
             "alcance",
         ])
