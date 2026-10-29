@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from ig_g4_authority_contract_probe_v1 import check_authority_contract
 
 NOW = datetime(2026, 10, 28, tzinfo=timezone.utc)
-REQ = {"rule_ref": "fixture:rule", "rule_sha256": "hash-rule", "selector_sha256": "hash-selector", "scope_diff_sha256": "hash-diff", "consumer": "CONTEXT_PACK", "operation": "CHANGE_RULE_SCOPE", "execution_id": "EXEC-FIXTURE-ROOT", "ig_run_id": 123}
+REQ = {"rule_ref": "fixture:rule", "rule_sha256": "hash-rule", "selector_sha256": "hash-selector", "scope_diff_sha256": "hash-diff", "consumer": "CONTEXT_PACK", "operation": "CHANGE_RULE_SCOPE", "ig_run_id": 123}
 
 
 def fixture(domains=("D1",)):
@@ -100,9 +100,7 @@ class G4Contract(unittest.TestCase):
         self.assertEqual(check(self.source, self.routes, self.receipts, req), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
     def test_no_profile_execution_required(self):
-        request = dict(REQ)
-        request.pop("execution_id")
-        self.assertEqual(check(self.source, self.routes, self.receipts, request), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
+        self.assertEqual(check(self.source, self.routes, self.receipts), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
     def test_missing_ig_run_rejected(self):
         request = dict(REQ)
@@ -117,7 +115,6 @@ class G4Contract(unittest.TestCase):
     def test_approved_scope_not_tied_to_profile_or_one_run(self):
         # Positive is only synthetic shape; governed receipt verifier still required.
         request = dict(REQ, ig_run_id=456)
-        request.pop("execution_id")
         self.assertEqual(check(self.source, self.routes, self.receipts, request), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
     def test_no_authority_source(self):
