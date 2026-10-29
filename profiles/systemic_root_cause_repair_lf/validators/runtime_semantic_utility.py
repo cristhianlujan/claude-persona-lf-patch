@@ -100,7 +100,7 @@ def evaluate(payload, contract_gate, evidence_manifest=None):
             value = payload.get(field)
             if (
                 not isinstance(value, dict)
-                or value.get("authority_kind") != "EXISTING_AUTHORITY"
+                or value.get("authority_kind") not in ("EXISTING_AUTHORITY", "DERIVED_PROPOSAL")
             ):
                 codes.append("V03_EXISTING_AUTHORITY_KIND_REQUIRED")
                 break
