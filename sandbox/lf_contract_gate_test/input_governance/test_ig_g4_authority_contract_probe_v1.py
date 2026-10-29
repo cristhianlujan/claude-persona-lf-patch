@@ -99,6 +99,36 @@ class G4Contract(unittest.TestCase):
         req = {**REQ, "required_domains": ["EASY"]}
         self.assertEqual(check(self.source, self.routes, self.receipts, req), "PROOF_READY_FOR_TECHNICAL_ADMISSION")
 
+    def test_missing_root(self):
+        request = dict(REQ)
+        request.pop("execution_id")
+        self.assertEqual(check(self.source, self.routes, self.receipts, request), "HOLD_RUN_BINDING_MISSING")
+
+    def test_missing_child_run(self):
+        request = dict(REQ, ig_run_id=None)
+        self.assertEqual(check(self.source, self.routes, self.receipts, request), "HOLD_RUN_BINDING_MISSING")
+
+    def test_no_trusted_run_link(self):
+        outcome = check_authority_contract(
+            REQ, self.source, self.routes, self.receipts, now=NOW,
+            verify_source=lambda r: True, verify_receipt=lambda r: True)
+        self.assertEqual(outcome, "HOLD_RUN_BINDING_UNVERIFIED")
+
+    def test_receipt_with_other_root(self):
+        self.receipts[0]["execution_id"] = "EXEC-OTHER"
+        self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_RECEIPT_RUN_MISMATCH")
+
+    def test_receipt_with_other_child_run(self):
+        self.receipts[0]["ig_run_id"] = 999
+        self.assertEqual(check(self.source, self.routes, self.receipts), "HOLD_RECEIPT_RUN_MISMATCH")
+
+    def test_run_link_rejected_by_canonical_reader(self):
+        outcome = check_authority_contract(
+            REQ, self.source, self.routes, self.receipts, now=NOW,
+            verify_run_binding=lambda r: False, verify_source=lambda r: True,
+            verify_receipt=lambda r: True)
+        self.assertEqual(outcome, "HOLD_RUN_BINDING_UNVERIFIED")
+
     def test_no_authority_source(self):
         self.assertEqual(check(None, self.routes, self.receipts), "HOLD_SOURCE_UNVERIFIED")
 
