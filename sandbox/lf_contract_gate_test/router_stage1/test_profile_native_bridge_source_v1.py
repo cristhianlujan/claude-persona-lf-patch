@@ -106,5 +106,42 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.assertNotIn(value, self.sql)
 
 
+    def test_ig949_raw_with_frozen_canonical_python_validator(self):
+        """Run original Python validator on exact source-bound IG 949 output."""
+        import json
+        import subprocess
+        import sys
+
+        raw = ROOT / "sandbox/lf_contract_gate_test/input_governance/ig_run949_product_director_raw_candidate_20261029.json"
+        validator = ROOT / "profiles/product_director_lf/validators/validate_product_director_output.py"
+        schema = ROOT / "profiles/product_director_lf/schemas/product_direction_spec.schema.json"
+        shared = ROOT / "skills/profile_creator/validators/profile_output_shape_preflight_v1.py"
+        frozen = {
+            raw: "e9d12e39fdc51c0ba84b0371705a4371a14d4991",
+            validator: "fc01e73b1c5bd74e6a8b0abd3513f16211a6def9",
+            schema: "df8a988e1913b1d5d95090b67c6ab0e72c80d24b",
+            shared: "03f2a0cc23ff2de9251a373f61106538dcba308f",
+        }
+        for file, expected in frozen.items():
+            data = file.read_bytes()
+            observed = hashlib.sha1(("blob %d" % len(data)).encode() + bytes([0]) + data).hexdigest()
+            self.assertEqual(observed, expected, str(file))
+        payload = json.loads(raw.read_text(encoding="utf-8"))
+        self.assertEqual(payload["traceability"]["execution_id"], "EXEC-PROFILE-GATE2-5B9EFC77E2F1FE98A4C80968")
+        self.assertEqual(payload["traceability"]["ig_run_id"], 949)
+        self.assertFalse(payload["traceability"]["feedback_emitted"])
+        proc = subprocess.run(
+            [sys.executable, str(validator)],
+            input=raw.read_bytes(), capture_output=True, check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr.decode(errors="replace"))
+        try:
+            verdict = json.loads(proc.stdout)
+        except ValueError:
+            self.fail("CANONICAL_VALIDATOR_JSON_INVALID: " + proc.stdout.decode(errors="replace")[:1200])
+        self.assertTrue(verdict.get("valid"), json.dumps(verdict, ensure_ascii=False))
+        self.assertEqual(verdict.get("blocking_codes"), [], json.dumps(verdict, ensure_ascii=False))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
