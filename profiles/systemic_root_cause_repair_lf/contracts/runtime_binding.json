@@ -216,6 +216,38 @@
           "to be determined",
           "lorem ipsum"
         ]
+      },
+      {
+        "match": "exact",
+        "fields": [
+          "immediate_cause.statement",
+          "systemic_root_cause.statement",
+          "first_bad_control.statement",
+          "escape_control.statement",
+          "causal_chain[].statement",
+          "alternatives[].description",
+          "recurrence_evidence[].fact",
+          "systemic_root_cause.evidence_refs[]",
+          "recurrence_evidence[].ref",
+          "falsification_results[].evidence_ref"
+        ],
+        "phrases": [
+          "⠀⠀⠀⠀⠀⠀",
+          "ㅤㅤㅤㅤ",
+          "­­­",
+          "........",
+          "aaaaaaaa",
+          "xxxxxxxx",
+          "placeholder",
+          "undefined",
+          "no disponible",
+          "por confirmar",
+          "unknown / pending",
+          "N/A - see above",
+          "none, n/a",
+          "Unknоwn",
+          "un­known"
+        ]
       }
     ],
     "valid_controls": [
@@ -229,6 +261,18 @@
         "name": "pending_inside_sentence",
         "set": {
           "immediate_cause.statement": "Pending migration identity is not reserved atomically before live apply."
+        }
+      },
+      {
+        "name": "none_as_blast_radius",
+        "set": {
+          "alternatives[0].blast_radius": "None."
+        }
+      },
+      {
+        "name": "na_as_reuse",
+        "set": {
+          "alternatives[0].reuse": "N/A"
         }
       }
     ]

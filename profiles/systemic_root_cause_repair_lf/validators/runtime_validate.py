@@ -834,20 +834,60 @@ def _v04_transversal_errors(payload):
 import re as _re_ti
 import unicodedata as _ud_ti
 
-_TI_INVISIBLE = _re_ti.compile("[\u200b-\u200f\u2060\ufeff\u00a0]")
-_TI_PLACEHOLDERS = frozenset({
-    "tbd", "tba", "todo", "n a", "na", "none", "null", "nil", "unknown", "pending", "lorem ipsum",
-    "to be determined", "to be defined", "not applicable", "not available", "no data",
-    "ninguna", "ninguno", "por definir", "por determinar", "no aplica", "sin datos", "pendiente", "desconocido",
+_TI_FILLERS = frozenset("\u115f\u1160\u3164\uffa0")
+_TI_HOMOGLYPHS = str.maketrans({
+    "\u0430": "a", "\u0435": "e", "\u043e": "o", "\u0440": "p", "\u0441": "c", "\u0443": "y", "\u0445": "x",
+    "\u043a": "k", "\u0456": "i", "\u0455": "s", "\u0458": "j", "\u04cf": "l", "\u03bf": "o", "\u03b1": "a",
+    "\u03c1": "p", "\u03bd": "v", "\u03b9": "i", "\u03ba": "k", "\u03c5": "u", "\u0391": "a", "\u0392": "b",
+})
+# Placeholders: never acceptable as content in free text.
+_TI_PLACEHOLDER_WORDS = frozenset({
+    "tbd", "tba", "tbc", "todo", "unknown", "pending", "placeholder", "undefined", "nan", "asdf", "test", "lorem", "ipsum",
+    "xxx", "pendiente", "desconocido", "definir", "determinar", "confirmar", "disponible", "informacion", "datos",
+    "fill", "insert", "here", "determined", "defined", "confirmed", "data", "available", "yet", "see", "above",
+})
+# Statements of absence: legitimate in descriptive fields, never in core claims, evidence or identifiers.
+_TI_ABSENCE_WORDS = frozenset({
+    "none", "null", "nil", "na", "nd", "no", "not", "applicable", "aplica", "ninguna", "ninguno", "sin", "por", "to", "be", "in", "or", "and", "y", "o",
+})
+_TI_CORE_KEYS = frozenset({
+    "statement", "finding", "fact", "observation", "observed", "observed_failure", "decision", "rationale", "closure_statement",
+    "description", "question", "challenge", "change", "exact_delta", "leading_solution_summary", "subject", "id", "name", "ref", "refs", "locator", "source",
 })
 # Keys whose entries legitimately describe an absence or an open item.
 _TI_EXEMPT_KEYS = frozenset({"missing_evidence", "current_uncertainties", "residual_risks", "blocking_codes", "unavailable_source_assessments"})
 
 
 def _ti_fold(text):
-    text = _ud_ti.normalize("NFKD", _TI_INVISIBLE.sub("", str(text)))
-    text = "".join(c for c in text if not _ud_ti.combining(c)).lower()
+    text = "".join(c for c in str(text) if _ud_ti.category(c) not in ("Cf", "Mn", "Me"))
+    text = _ud_ti.normalize("NFKD", text).lower().translate(_TI_HOMOGLYPHS)
+    text = "".join(c for c in text if not _ud_ti.combining(c))
     return _re_ti.sub(r"[^a-z0-9]+", " ", text).strip()
+
+
+def _ti_is_blank(text):
+    return not any(c.isalnum() and c not in _TI_FILLERS for c in str(text))
+
+
+def _ti_core(key):
+    return isinstance(key, str) and (key in _TI_CORE_KEYS or key.endswith(("_ref", "_refs", "_id", "_ids")) or key == "evidence_refs")
+
+
+def _ti_is_placeholder(text, core):
+    folded = _ti_fold(text)
+    if not folded:
+        return False
+    folded = _re_ti.sub(r"\bn (a|d)\b", r"n\1", folded)
+    tokens = folded.split()
+    compact = folded.replace(" ", "")
+    if len(compact) >= 4 and len(set(compact)) <= 2:
+        return True
+    if all(t in _TI_PLACEHOLDER_WORDS for t in tokens):
+        return True
+    has_placeholder = any(t in _TI_PLACEHOLDER_WORDS for t in tokens)
+    if all(t in _TI_PLACEHOLDER_WORDS or t in _TI_ABSENCE_WORDS for t in tokens):
+        return has_placeholder or core
+    return False
 
 
 def _ti_schema():
@@ -903,23 +943,26 @@ def _ti_free(cands):
     return any(n.get("type") == "string" for n in cands)
 
 
-def _text_integrity_errors(node, path="$", exempt=False, cands=None, root=None):
+def _text_integrity_errors(node, path="$", exempt=False, cands=None, root=None, key=None):
     if root is None:
         root = _ti_schema()
-        cands = _ti_variants(root, root) if isinstance(root, dict) else []
+        if not isinstance(root, dict):
+            return [_error("TEXT_INTEGRITY_SCHEMA_UNAVAILABLE", path)]
+        cands = _ti_variants(root, root)
     errors = []
     if isinstance(node, str):
-        if not _TI_INVISIBLE.sub("", node).strip():
+        if _ti_is_blank(node):
             errors.append(_error("TEXT_BLANK_OR_INVISIBLE", path))
-        elif not exempt and _ti_free(cands) and _ti_fold(node) in _TI_PLACEHOLDERS:
+        elif not exempt and _ti_free(cands) and _ti_is_placeholder(node, _ti_core(key)):
             errors.append(_error("TEXT_PLACEHOLDER_CONTENT", path))
     elif isinstance(node, dict):
         for k, value in node.items():
-            errors.extend(_text_integrity_errors(value, f"{path}.{k}", exempt or k in _TI_EXEMPT_KEYS, _ti_children(cands, root, k), root))
+            errors.extend(_text_integrity_errors(value, f"{path}.{k}", exempt or k in _TI_EXEMPT_KEYS, _ti_children(cands, root, k), root, k))
     elif isinstance(node, list):
         for idx, value in enumerate(node):
-            errors.extend(_text_integrity_errors(value, f"{path}[{idx}]", exempt, _ti_children(cands, root, idx), root))
+            errors.extend(_text_integrity_errors(value, f"{path}[{idx}]", exempt, _ti_children(cands, root, idx), root, key))
     return errors
+
 
 def validate(payload, evidence_manifest=None):
     if evidence_manifest is None:
