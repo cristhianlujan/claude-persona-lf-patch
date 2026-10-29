@@ -860,8 +860,8 @@ _TI_EXEMPT_KEYS = frozenset({"missing_evidence", "current_uncertainties", "resid
 
 def _ti_fold(text):
     text = "".join(c for c in str(text) if _ud_ti.category(c) not in ("Cf", "Mn", "Me"))
-    text = _ud_ti.normalize("NFKD", text).translate(_TI_HOMOGLYPHS)
-    text = "".join(c for c in text if not _ud_ti.combining(c)).lower()
+    text = _ud_ti.normalize("NFKD", text).lower().translate(_TI_HOMOGLYPHS)
+    text = "".join(c for c in text if not _ud_ti.combining(c))
     return _re_ti.sub(r"[^a-z0-9]+", " ", text).strip()
 
 
