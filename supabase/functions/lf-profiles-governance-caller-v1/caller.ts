@@ -1,4 +1,5 @@
 import {CP2_PREFLIGHT_ACTION, CP2_EXECUTE_ACTION, Cp2Fault, executeCp2} from "./cp2_edge_bridge.ts";
+import { PROFILE_CONTINUATION_ACTIONS, handleProfileContinuation } from "./profile_continuation.ts";
 export const OIDC_ISSUER = "https://token.actions.githubusercontent.com";
 export const OIDC_AUDIENCE = "lf-profiles-governance-caller-v1";
 
@@ -6,6 +7,7 @@ const LEGACY_BRANCH = "governance/profiles-unblock-secure-caller-20260901";
 const LEGACY_REF = `refs/heads/${LEGACY_BRANCH}`;
 const LEGACY_WORKFLOW_NAME = "LF Profiles Governance Caller";
 const LEGACY_WORKFLOW_FILE = "lf-profiles-governance-caller.yml";
+const NATIVE_CONTINUATION_WORKFLOW_FILE = "lf-edge-deploy-credential-readback.yml";
 const RECURATION_ACTION = "input_readiness_recurate_v1";
 const RECURATION_POLL_ACTION = "input_readiness_poll_v1";
 const CONTEXT_PACK_ACTION = "input_readiness_context_pack_v1";
@@ -16,6 +18,7 @@ const SCREEN_ACTION = "input_readiness_screen_v1";
 const B2B_ACTION = "input_readiness_b2b_402_v1";
 const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
+const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -63,7 +66,7 @@ type OidcIdentity = {
   method: string;
   ref: string;
   workflowRef: string;
-  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY";
+  scope: "LEGACY_PROFILE_GOVERNANCE" | "INPUT_GOVERNANCE_RECURATION_ONLY" | "PROFILE_NATIVE_CONTINUATION_ONLY";
 };
 
 type RuntimeDeps = {
@@ -194,6 +197,21 @@ function legacyWorkflowRef(config: CallerConfig): string {
 
 export function resolveOidcIdentity(payload: JwtPayload, config: CallerConfig): OidcIdentity {
   const legacyRef = legacyWorkflowRef(config);
+  const nativeContinuationWorkflowRef =
+    `${config.repository}/.github/workflows/${NATIVE_CONTINUATION_WORKFLOW_FILE}@refs/heads/main`;
+  if (
+    payload.ref === "refs/heads/main" &&
+    payload.workflow_ref === nativeContinuationWorkflowRef &&
+    (payload.event_name === "workflow_dispatch" || payload.event_name === "issues") &&
+    payload.environment === "lf-edge-deploy"
+  ) {
+    return {
+      method: "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1",
+      ref: "refs/heads/main",
+      workflowRef: nativeContinuationWorkflowRef,
+      scope: "PROFILE_NATIVE_CONTINUATION_ONLY",
+    };
+  }
   if (
     payload.ref === LEGACY_REF &&
     payload.workflow_ref === legacyRef &&
@@ -626,6 +644,15 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
 
       const action = typeof body.action === "string" ? body.action : "";
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
+      const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
+      const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
+      const isRouterAdmitAction = action === ROUTER_PROFILE_ADMIT_ACTION;
+      if (isNativeContinuationIdentity && !isNativeContinuationAction && !isRouterAdmitAction) {
+        return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
+      }
+      if (isNativeContinuationAction && !isNativeContinuationIdentity) {
+        return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_EXACT_OIDC_IDENTITY_REQUIRED" }, 403);
+      }
       const isCp2Action = action === CP2_PREFLIGHT_ACTION || action === CP2_EXECUTE_ACTION;
       if (isCp2Action && identity.method !== "GITHUB_ACTIONS_OIDC_INPUT_GOV_RECURATION_DISPATCH_V1") {
         return json({outcome: "BLOCKED", code: "CP2_EXACT_DISPATCH_OIDC_IDENTITY_REQUIRED"}, 403);
@@ -661,6 +688,16 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         workflow_sha: workflowSha,
       };
       if (isRecurationIdentity) caller.workflow_name = config.recurationWorkflowName;
+
+      if (isNativeContinuationAction) {
+        return await handleProfileContinuation(
+          action,
+          body,
+          config,
+          deps.fetchFn,
+          String(claims.workflow_sha),
+        );
+      }
 
       if (isCp2Action) {
         // Authorization is rechecked via the canonical read-only release context
@@ -887,6 +924,57 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           required_count: PILOT_SCREENS.length,
           results,
         }, readyCount === PILOT_SCREENS.length ? 200 : 409);
+      }
+
+      if (action === ROUTER_PROFILE_ADMIT_ACTION) {
+        // Only the existing exact-profile-governance OIDC identity may cross
+        // this service-role boundary. Arbitrary JWTs and Input Governance
+        // tickets must never be promoted into profile-execution authority.
+        // The governed native workflow identity (exact main ref, exact workflow
+        // file, protected lf-edge-deploy environment) may also admit, but only
+        // for the zero-cost native executors (never REMOTE_API).
+        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
+        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_IDENTITY_REQUIRED" }, 403);
+        }
+        const context = body.context;
+        if (!context || typeof context !== "object" || Array.isArray(context)) {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CONTEXT_REQUIRED" }, 400);
+        }
+        const envelope = context as Record<string, unknown>;
+        if (
+          envelope.schema_version !== "LF_ROUTER_EXECUTION_PIPELINE_V1" ||
+          envelope.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
+          envelope.transport_mode !== "CONTEXT_TRANSPORT"
+        ) {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CONTEXT_ENVELOPE_INVALID" }, 400);
+        }
+        const mode = body.executor_mode;
+        if (mode !== "GPT_NATIVE" && mode !== "CLAUDE_NATIVE" && mode !== "REMOTE_API") {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_EXECUTOR_INVALID" }, 400);
+        }
+        if (nativeIdentity && mode === "REMOTE_API") {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_NATIVE_IDENTITY_REQUIRES_NATIVE_EXECUTOR" }, 403);
+        }
+        const response = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2`,
+          {
+            method: "POST",
+            headers: {
+              apikey: config.serviceRoleKey,
+              authorization: `Bearer ${config.serviceRoleKey}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ p_context: context, p_executor_mode: mode }),
+            signal: AbortSignal.timeout(15_000),
+          },
+        );
+        const result = await parseJsonObject(response, "ROUTER_PROFILE_ADMISSION_RESPONSE_INVALID");
+        if (!response.ok) {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_RPC_REJECTED", rpc_status: response.status }, 502);
+        }
+        return json({ outcome: result.status ?? "BLOCKED", caller, result },
+          result.status === "NATIVE_EXECUTION_READY" || result.status === "PENDING" ? 200 : 409);
       }
 
       if (action === PROFILE_INIT_ACTION) {

@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { resolveProfileRequiredSteps } from "./required_profile_steps.ts";
+import { verifyGithubReadback, verifyGithubWrite } from "./verified_write_evidence.ts";
+import { verifyEvolutionProofRun } from "./verified_proof_evidence.ts";
 
 const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
@@ -83,7 +85,7 @@ async function rows(path: string, label: string): Promise<any[]> {
   return Array.isArray(r.payload) ? r.payload : [];
 }
 async function execution(id: string): Promise<any | null> {
-  return one(`/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(id)}&select=execution_id,operation_code,target_type,target_code,target_repo,target_path,status,manifest,updated_at`, "EXECUTION_READ");
+  return one(`/rest/v1/lf_operation_execution?execution_id=eq.${encodeURIComponent(id)}&select=execution_id,operation_code,target_type,target_code,target_repo,target_path,status,manifest,created_at,updated_at`, "EXECUTION_READ");
 }
 async function initStep(id: string): Promise<any | null> {
   return one(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_order=eq.0&step_id=eq.init_execution&select=execution_id,step_order,step_id,status,evidence_ref,evidence_payload`, "INIT_STEP_READ");
@@ -382,6 +384,53 @@ Deno.serve(async (req: Request) => {
           const trusted = await deriveServerTrust(ex, before, body.evidence_payload as Record<string, unknown>);
           if (!trusted.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: trusted.code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
           evidence = trusted.evidence;
+        }
+        // Governed-route executions (opened with a Router semantic receipt) never accept caller-asserted write/readback
+        // evidence: branch/commit are verified against GitHub and every derived field is computed here.
+        if ((stepId === "github_write" || stepId === "github_readback") && typeof ex.manifest?.router_semantic_receipt_sha256 === "string") {
+          const recordedRows = await rows(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_id=in.(pre_write_execution_binding_gate,github_write)&select=step_id,evidence_payload`, "VERIFIED_WRITE_CONTEXT_READ");
+          const prewrite = recordedRows.find((r: any) => r.step_id === "pre_write_execution_binding_gate")?.evidence_payload;
+          const boundRevision = typeof prewrite?.bound_revision === "string" ? prewrite.bound_revision.trim().toLowerCase() : "";
+          const verified = await (stepId === "github_write" ? verifyGithubWrite : verifyGithubReadback)({
+            repository: REPOSITORY,
+            targetRootPath: String(ex.manifest?.target_root_path ?? ""),
+            boundRevision,
+            evidence: evidence ?? {},
+            gh: (path: string) => githubJson(`https://api.github.com/repos/${REPOSITORY}${path}`, "GITHUB_VERIFY"),
+            recordedWrite: recordedRows.find((r: any) => r.step_id === "github_write")?.evidence_payload ?? null,
+          });
+          if (!verified.ok) return json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code: verified.code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
+          evidence = verified.evidence;
+        }
+        // Governed-route executions: the structural measurement and the before/after proof are never asserted by the caller.
+        // The caller names a proof workflow run; it is read back from GitHub and bound to this execution's revisions.
+        if (["method_selection", "evolution_decision", "deterministic_validation"].includes(stepId) && typeof ex.manifest?.router_semantic_receipt_sha256 === "string") {
+          const blocked = (code: string) => json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
+          const slug = String(ex.target_path ?? "").split("/")[1] ?? "";
+          const anchored = String(ex.manifest?.initial_main_revision ?? "").trim().toLowerCase();
+          const ctxRows = await rows(`/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_id=in.(method_selection,pre_write_execution_binding_gate,github_write)&select=step_id,created_at,evidence_payload`, "VERIFIED_PROOF_CONTEXT_READ");
+          const rowOf = (name: string) => ctxRows.find((r: any) => r.step_id === name);
+          const gh = (path: string) => githubJson(`https://api.github.com/repos/${REPOSITORY}${path}`, "GITHUB_VERIFY");
+          const given = evidence ?? {};
+          if (stepId === "method_selection") {
+            const proof = await verifyEvolutionProofRun({ repository: REPOSITORY, mode: "measure", profileSlug: slug, baseSha: anchored, runId: given.baseline_proof_run_id, notBefore: String(ex.created_at ?? ""), gh });
+            if (!proof.ok) return blocked(proof.code);
+            const measured: any = (proof.evidence as any).proof;
+            evidence = { ...given, ...proof.evidence, profile_slug: slug, source_head_sha: anchored, profile_assessment_receipt_id: (proof.evidence as any).proof_run_id, profile_assessment_sha256: measured.proof_sha256, assessment_source: "ACTIONS_EVOLUTION_PROOF" };
+          } else if (stepId === "evolution_decision") {
+            const selection = rowOf("method_selection")?.evidence_payload;
+            if (!selection) return blocked("EVOLUTION_SELECTION_STEP_REQUIRED");
+            evidence = { ...given, profile_slug: slug, source_head_sha: selection.source_head_sha, profile_assessment_receipt_id: selection.profile_assessment_receipt_id, profile_assessment_sha256: selection.profile_assessment_sha256 };
+          } else {
+            const write = rowOf("github_write");
+            if (write) {
+              const bound = String(rowOf("pre_write_execution_binding_gate")?.evidence_payload?.bound_revision ?? "").trim().toLowerCase();
+              const candidate = String(write.evidence_payload?.server_trust_context?.commit_sha ?? "");
+              const proof = await verifyEvolutionProofRun({ repository: REPOSITORY, mode: "compare", profileSlug: slug, baseSha: bound, candidateSha: candidate, runId: given.evolution_proof_run_id, notBefore: String(write.created_at ?? ""), gh });
+              if (!proof.ok) return blocked(proof.code);
+              evidence = { ...given, ...proof.evidence, validator_result: "PASS", evolution_proof_verified: true };
+            }
+          }
         }
         const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
         const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;

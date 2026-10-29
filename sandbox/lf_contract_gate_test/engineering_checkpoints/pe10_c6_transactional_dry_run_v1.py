@@ -16,7 +16,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-CAPTURE = ROOT / "skills/profile_creator/evals/results/pe10_c6_same_chat_gpt_material_authoring_20261016.json"
+# La captura 2026-10-16 (GPT) quedo obsoleta: el perfil cambio (SOURCE_HEAD_DRIFT). Se conserva intacta como historia.
+CAPTURE = ROOT / "skills/profile_creator/evals/results/pe10_c6_same_chat_claude_material_authoring_20261027.json"
+NATIVE_MODES = ("GPT_NATIVE", "CLAUDE_NATIVE")
 SAME_CHAT = ROOT / "skills/profile_creator/validators/profile_updater_same_chat_v02.py"
 DISPATCH = ROOT / "skills/profile_creator/validators/execute_profile_evolution_v02.py"
 OIDC = ROOT / "skills/profile_creator/validators/profile_evolution_oidc_recorder_v02.py"
@@ -52,8 +54,8 @@ def check_material_capture() -> dict:
         raise ValueError("RAW_HANDOFF_MISMATCH")
     if capture["raw_output"]["methods_applied"] != handoff["selected_method_ids"]:
         raise ValueError("RAW_METHODS_MISMATCH")
-    if handoff["executor_mode"] != "GPT_NATIVE":
-        raise ValueError("PROVIDER_NOT_GPT_NATIVE")
+    if handoff["executor_mode"] not in NATIVE_MODES:
+        raise ValueError("EXECUTOR_NOT_NATIVE_CHAT")
     if (handoff["session_creation"] is not False
             or handoff["api_invocation"] is not False
             or capture["runtime_provider_attested"] is not False
@@ -68,6 +70,7 @@ def check_material_capture() -> dict:
             raise ValueError("SOURCE_HEAD_DRIFT")
     return {"run_id": handoff["run_id"], "methods": handoff["selected_method_ids"],
             "capture_sha256": capture["capture_sha256"],
+            "executor_mode": handoff["executor_mode"],
             "source_bound": True, "runtime_provider_attested": False}
 
 
@@ -104,7 +107,7 @@ def build_receipt() -> dict:
              "total_cases": sum(s["passed"] for s in suites),
              "suites": suites, "material_gpt_capture": capture,
              "selection_is_execution_certification": False,
-             "claude_material_execution_claimed": False,
+             "claude_material_execution_claimed": capture["executor_mode"] == "CLAUDE_NATIVE",
              "production_activated": False, "checkpoint_closed": False,
              "requires_governed_postgres_probes": True}
     proof["receipt_sha256"] = _json_sha(proof)

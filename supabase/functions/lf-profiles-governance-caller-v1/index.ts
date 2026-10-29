@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+// Deno.serve and Deno.env are native runtime globals; no remote JSR types fetch required.
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@6.0.11";
 import { createHandler, OIDC_ISSUER, type JwtPayload } from "./caller.ts";
 
