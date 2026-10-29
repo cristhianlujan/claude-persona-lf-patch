@@ -5,12 +5,12 @@ def front(fid,sid,status="REQUIRED",closure="CLOSED",kind="UI_VISUAL"):
  return {"front_id":fid,"front_kind":kind,"status":status,"closure":closure,"scope_refs":[sid]}
 def row(fid,sid,status="REQUIRED",closure="CLOSED",effect="PRESERVE"):
  return {"front_id":fid,"scope_id":sid,"front_status":status,"front_closure":closure,"effect_on_scope":effect}
-s={"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1","target_granularity":{"level":"SCREEN"},
+s={"schema_version":"PROGRAMMING_CONTEXT_SNAPSHOT_V1","target_granularity":{"level":"SCREEN","target_ref":"B2B-AUTH-001"},"stack_profile":{"source_ref":"fixture://architecture","version":"fixture-v1","active_layers":["FRONTEND"]},
 "scope_readiness":[{"scope_id":"S1","status":"READY","material_front_refs":["F1"]},{"scope_id":"S2","status":"BLOCKED","material_front_refs":["F2"]}],
 "material_front_coverage":{"all_material_fronts_accounted":True,"unmapped_material_signals":[],
 "material_fronts":[front("F1","S1"),front("F2","S2",closure="BLOCKED")]},
 "scope_front_matrix":[row("F1","S1"),row("F2","S2",closure="BLOCKED",effect="BLOCKS")]}
-m={"state":"SOURCE_ONLY_CANDIDATE","front_kind_domains":{"UI_VISUAL":["STD-FE"],"API_CONTRACT":["STD-API"]}}
+m={"state":"SOURCE_ONLY_CANDIDATE","front_kind_domains":{"UI_VISUAL":["STD-FE"],"API_CONTRACT":["STD-API"]},"domain_stack_layers":{"STD-FE":["FRONTEND"],"STD-API":["BACKEND"]}}
 o=classify_scopes(s,m)
 assert [r["state"] for r in o["scopes"]]==["READY_FOR_CLASSIFICATION","BLOCKED"]
 assert o==classify_scopes(copy.deepcopy(s),copy.deepcopy(m))
