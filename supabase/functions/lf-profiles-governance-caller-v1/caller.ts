@@ -646,7 +646,8 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
-      if (isNativeContinuationIdentity && !isNativeContinuationAction) {
+      const isRouterAdmitAction = action === ROUTER_PROFILE_ADMIT_ACTION;
+      if (isNativeContinuationIdentity && !isNativeContinuationAction && !isRouterAdmitAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
       }
       if (isNativeContinuationAction && !isNativeContinuationIdentity) {
@@ -929,7 +930,11 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         // Only the existing exact-profile-governance OIDC identity may cross
         // this service-role boundary. Arbitrary JWTs and Input Governance
         // tickets must never be promoted into profile-execution authority.
-        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1") {
+        // The governed native workflow identity (exact main ref, exact workflow
+        // file, protected lf-edge-deploy environment) may also admit, but only
+        // for the zero-cost native executors (never REMOTE_API).
+        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
+        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
           return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_IDENTITY_REQUIRED" }, 403);
         }
         const context = body.context;
@@ -947,6 +952,9 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         const mode = body.executor_mode;
         if (mode !== "GPT_NATIVE" && mode !== "CLAUDE_NATIVE" && mode !== "REMOTE_API") {
           return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_EXECUTOR_INVALID" }, 400);
+        }
+        if (nativeIdentity && mode === "REMOTE_API") {
+          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_NATIVE_IDENTITY_REQUIRES_NATIVE_EXECUTOR" }, 403);
         }
         const response = await deps.fetchFn(
           `${config.supabaseUrl}/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2`,
