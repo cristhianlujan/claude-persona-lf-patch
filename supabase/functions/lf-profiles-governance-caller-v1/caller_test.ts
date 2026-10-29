@@ -166,6 +166,7 @@ function harness(options: HarnessOptions = {}) {
           target_path: "profiles/ux_design_lf/SKILL.md",
           manifest: {
             executor_mode: "GPT_NATIVE",
+            executor_provider: "OPENAI_CHATGPT_NATIVE",
             read_only: true,
             no_write: true,
             no_promotion: true,

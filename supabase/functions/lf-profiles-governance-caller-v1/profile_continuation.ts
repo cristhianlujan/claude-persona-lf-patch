@@ -5,6 +5,12 @@ export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION] as const;
 
+// Native executors are bound to their provider; any other mode/provider pair is rejected.
+const NATIVE_EXECUTOR_PROVIDER_BY_MODE = new Set([
+  "GPT_NATIVE|OPENAI_CHATGPT_NATIVE",
+  "CLAUDE_NATIVE|ANTHROPIC_CLAUDE_NATIVE",
+]);
+
 type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 type Config = { supabaseUrl: string; serviceRoleKey: string; repository: string };
 type Execution = {
@@ -64,7 +70,8 @@ async function authorizedExecution(
     e.operation_code !== "EJECUCION_PERFIL_LF" || e.target_type !== "PERFIL" ||
     e.status !== "IN_PROGRESS" || e.target_repo !== config.repository ||
     !/^profiles\/[a-z0-9_-]+\/SKILL\.md$/.test(e.target_path) ||
-    m?.executor_mode !== "GPT_NATIVE" || m?.read_only !== true || m?.no_write !== true ||
+    !NATIVE_EXECUTOR_PROVIDER_BY_MODE.has(`${m?.executor_mode}|${m?.executor_provider}`) ||
+    m?.read_only !== true || m?.no_write !== true ||
     m?.no_promotion !== true || m?.governed_repair_write !== false ||
     handoff?.profile_code !== e.target_code || receipt?.profile_code !== e.target_code ||
     receipt?.profile_execution_allowed !== true || receipt?.effect_authority !== false

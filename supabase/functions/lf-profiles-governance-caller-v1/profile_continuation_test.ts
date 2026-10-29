@@ -25,7 +25,7 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
       execution_id:id,status:"IN_PROGRESS",operation_code:"EJECUCION_PERFIL_LF",
       target_type:"PERFIL",target_code:"PROFILE-A",target_repo:repo,
       target_path:"profiles/profile_a/SKILL.md",
-      manifest:{executor_mode:"GPT_NATIVE",read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
+      manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
         router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
           profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}},
       ...overrides,
@@ -78,4 +78,28 @@ Deno.test("continuation: fail-closed role, source, and semantic decision",async(
   const rejected=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
     execution_id:id,source_revision:sha,source_digest:digest,screen_selection_draft:{decision:"SELECTED"}},config,rejectedNet.fetchFn,sha);
   eq(rejected.status,409);
+});
+
+function manifestFor(mode:string|undefined,provider:string|undefined){
+  const m:Record<string,unknown>={read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
+    router_profile_handoff:{profile_code:"PROFILE-A",router_authorization_receipt:{
+      profile_code:"PROFILE-A",profile_execution_allowed:true,effect_authority:false}}};
+  if(mode!==undefined)m.executor_mode=mode;
+  if(provider!==undefined)m.executor_provider=provider;
+  return m;
+}
+Deno.test("continuation: GPT_NATIVE and CLAUDE_NATIVE are admitted with their own provider",async()=>{
+  for(const [mode,provider] of [["GPT_NATIVE","OPENAI_CHATGPT_NATIVE"],["CLAUDE_NATIVE","ANTHROPIC_CLAUDE_NATIVE"]]){
+    const n=network({manifest:manifestFor(mode,provider)});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status,200);
+  }
+});
+Deno.test("continuation: mismatched, missing or remote executor is rejected",async()=>{
+  for(const [mode,provider] of [["CLAUDE_NATIVE","OPENAI_CHATGPT_NATIVE"],["GPT_NATIVE","ANTHROPIC_CLAUDE_NATIVE"],
+    ["CLAUDE_NATIVE",undefined],[undefined,"ANTHROPIC_CLAUDE_NATIVE"],["REMOTE_API","HETZNER"],["claude_native","ANTHROPIC_CLAUDE_NATIVE"]]){
+    const n=network({manifest:manifestFor(mode,provider)});
+    const out=await handleProfileContinuation(PROFILE_SOURCE_BIND_ACTION,{execution_id:id},config,n.fetchFn,sha);
+    eq(out.status,403);
+  }
 });
