@@ -4,7 +4,7 @@
 Mirrors the issue entry of the profile admission flow (label on an open issue) so a
 GPT-native or Claude-native session that cannot dispatch workflows can still start the
 canonical profile-update operation. This script only validates the request and
-re-dispatches the existing governed caller workflow on `main`; the OIDC identity,
+re-dispatches the existing governed caller workflow (or the read-only evolution proof) on `main`; the OIDC identity,
 the registry binding and every operation rule stay where they already are. It never
 calls Supabase, never writes the profile and never selects a profile.
 """
@@ -18,6 +18,7 @@ from pathlib import Path
 ISSUE_LABEL = "lf-profile-update-governed"
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 WORKFLOW_FILE = "lf-customer-profile-creator-governance-caller.yml"
+PROOF_WORKFLOW_FILE = "lf-profile-evolution-proof.yml"
 DISPATCH_REF = "main"
 MAX_BODY_CHARS = 64000
 MAX_INPUT_CHARS = 60000
@@ -33,6 +34,10 @@ ALLOWED_ISSUE_FOOTER = re.compile(
 INIT_KEYS = {"schema_version", "action", "target_code", "target_path",
              "research_baseline_mode", "research_baseline_contract"}
 BATCH_KEYS = {"schema_version", "action", "execution_id", "steps"}
+PROOF_KEYS = {"schema_version", "action", "mode", "profile_slug", "base_sha", "candidate_sha"}
+PROFILE_SLUG = re.compile(r"[a-z0-9][a-z0-9_]{0,79}")
+SHA40 = re.compile(r"[0-9a-f]{40}")
+ZERO_SHA = "0" * 40
 
 
 def parse_issue_body(raw):
@@ -114,12 +119,31 @@ def governed_request(event, env):
         if len(steps_json) > MAX_INPUT_CHARS:
             raise ValueError("UPDATE_ISSUE_INPUT_SIZE_INVALID")
         return {"action": action, "execution_id": execution_id, "steps_json": steps_json}
+    if action == "profile_evolution_proof":
+        if set(data) != PROOF_KEYS:
+            raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")
+        mode, slug = data["mode"], data["profile_slug"]
+        base, cand = data["base_sha"], data["candidate_sha"]
+        if (mode not in ("measure", "compare") or not isinstance(slug, str) or not PROFILE_SLUG.fullmatch(slug)
+                or not isinstance(base, str) or not SHA40.fullmatch(base)
+                or not isinstance(cand, str) or not SHA40.fullmatch(cand)):
+            raise ValueError("UPDATE_ISSUE_PROOF_INVALID")
+        if mode == "compare" and base == cand:
+            raise ValueError("UPDATE_ISSUE_PROOF_SAME_COMMIT")
+        if mode == "measure" and cand != ZERO_SHA:
+            raise ValueError("UPDATE_ISSUE_PROOF_INVALID")
+        return {"action": action, "mode": mode, "profile_slug": slug, "base_sha": base, "candidate_sha": cand}
     raise ValueError("UPDATE_ISSUE_ACTION_INVALID")
 
 
 def dispatch_command(inputs):
-    cmd = ["gh", "workflow", "run", WORKFLOW_FILE, "--ref", DISPATCH_REF]
-    for key, value in inputs.items():
+    if inputs["action"] == "profile_evolution_proof":
+        # The read-only proof workflow has no `action` input; the action only selects the target.
+        workflow, items = PROOF_WORKFLOW_FILE, {k: v for k, v in inputs.items() if k != "action"}
+    else:
+        workflow, items = WORKFLOW_FILE, inputs
+    cmd = ["gh", "workflow", "run", workflow, "--ref", DISPATCH_REF]
+    for key, value in items.items():
         cmd += ["-f", f"{key}={value}"]
     return cmd
 
@@ -132,8 +156,9 @@ def main():
         print("::error title=UPDATE_ISSUE_REQUEST_INVALID::" + type(exc).__name__ + ":" + str(exc)[:200])
         return 1
     # Never print the steps or contract payloads in CI logs.
-    print(json.dumps({"dispatching": WORKFLOW_FILE, "ref": DISPATCH_REF, "action": inputs["action"],
-                      "target_code": inputs.get("target_code"), "execution_id": inputs.get("execution_id")}))
+    print(json.dumps({"dispatching": dispatch_command(inputs)[3], "ref": DISPATCH_REF, "action": inputs["action"],
+                      "target_code": inputs.get("target_code"), "execution_id": inputs.get("execution_id"),
+                      "profile_slug": inputs.get("profile_slug"), "mode": inputs.get("mode")}))
     if os.environ.get("LF_PROFILE_UPDATE_DISPATCH_DRY_RUN") == "1":
         return 0
     return subprocess.run(dispatch_command(inputs), check=False).returncode
