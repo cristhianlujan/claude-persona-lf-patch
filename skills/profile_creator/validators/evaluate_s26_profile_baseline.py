@@ -235,6 +235,13 @@ def evaluate(repo_root: Path, profile_slug: str) -> dict[str, Any]:
                 and all(v in {"DETERMINISTIC", "SEMANTIC", "HYBRID"} for v in classes.values())
                 and isinstance(materialization, dict)
                 and deterministic == set(materialization)
+                and isinstance(partition.get("generation_limits"), dict)
+                and all(
+                    isinstance(spec, dict)
+                    and spec.get("source") in {"literal", "profile_code", "profile_slug"}
+                    and (spec.get("source") != "literal" or "value" in spec)
+                    for spec in materialization.values()
+                )
             )
             if partition_ok:
                 partition_evidence = {
