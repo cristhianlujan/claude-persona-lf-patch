@@ -127,6 +127,22 @@ class ProofTest(unittest.TestCase):
         self.assertIn("candidate_sha=" + B40, cmd)
 
 
+class DeployTest(unittest.TestCase):
+    DEPLOY = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "profile_runtime_deploy"}
+
+    def test_valid_deploy_dispatches_only_the_fixed_governed_action(self):
+        cmd = MOD["dispatch_command"](request(self.DEPLOY))
+        self.assertEqual(cmd, ["gh", "workflow", "run", "lf-edge-deploy-credential-readback.yml", "--ref", "main",
+                               "-f", "action=deploy-profile-runtime"])
+
+    def test_deploy_accepts_no_parameters(self):
+        for extra in ({"function": "other-fn"}, {"ref": "x"}, {"execution_id": "EXEC-12345678"}, {"target_code": "PERFIL-X"}):
+            with self.assertRaises(ValueError):
+                request({**self.DEPLOY, **extra})
+        with self.assertRaises(ValueError):
+            request({"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "deploy-caller"})
+
+
 class DispatchTest(unittest.TestCase):
     def test_command_targets_registered_workflow_on_main_only(self):
         cmd = MOD["dispatch_command"](request(INIT))

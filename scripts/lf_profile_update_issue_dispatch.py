@@ -4,7 +4,7 @@
 Mirrors the issue entry of the profile admission flow (label on an open issue) so a
 GPT-native or Claude-native session that cannot dispatch workflows can still start the
 canonical profile-update operation. This script only validates the request and
-re-dispatches the existing governed caller workflow (or the read-only evolution proof) on `main`; the OIDC identity,
+re-dispatches the existing governed caller workflow (or the read-only evolution proof, or the fixed profile-runtime deploy) on `main`; the OIDC identity,
 the registry binding and every operation rule stay where they already are. It never
 calls Supabase, never writes the profile and never selects a profile.
 """
@@ -19,6 +19,8 @@ ISSUE_LABEL = "lf-profile-update-governed"
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 WORKFLOW_FILE = "lf-customer-profile-creator-governance-caller.yml"
 PROOF_WORKFLOW_FILE = "lf-profile-evolution-proof.yml"
+DEPLOY_WORKFLOW_FILE = "lf-edge-deploy-credential-readback.yml"
+DEPLOY_ACTION = "deploy-profile-runtime"  # fixed target: run-creacion-perfil-lf, exact main, readback + rollback
 DISPATCH_REF = "main"
 MAX_BODY_CHARS = 64000
 MAX_INPUT_CHARS = 60000
@@ -34,6 +36,7 @@ ALLOWED_ISSUE_FOOTER = re.compile(
 INIT_KEYS = {"schema_version", "action", "target_code", "target_path",
              "research_baseline_mode", "research_baseline_contract"}
 BATCH_KEYS = {"schema_version", "action", "execution_id", "steps"}
+DEPLOY_KEYS = {"schema_version", "action"}
 PROOF_KEYS = {"schema_version", "action", "mode", "profile_slug", "base_sha", "candidate_sha"}
 PROFILE_SLUG = re.compile(r"[a-z0-9][a-z0-9_]{0,79}")
 SHA40 = re.compile(r"[0-9a-f]{40}")
@@ -133,10 +136,17 @@ def governed_request(event, env):
         if mode == "measure" and cand != ZERO_SHA:
             raise ValueError("UPDATE_ISSUE_PROOF_INVALID")
         return {"action": action, "mode": mode, "profile_slug": slug, "base_sha": base, "candidate_sha": cand}
+    if action == "profile_runtime_deploy":
+        if set(data) != DEPLOY_KEYS:
+            raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")
+        return {"action": action}
     raise ValueError("UPDATE_ISSUE_ACTION_INVALID")
 
 
 def dispatch_command(inputs):
+    if inputs["action"] == "profile_runtime_deploy":
+        # Fixed governed deploy of the profile runtime; the deploy job itself guards main, readback and rollback.
+        return ["gh", "workflow", "run", DEPLOY_WORKFLOW_FILE, "--ref", DISPATCH_REF, "-f", f"action={DEPLOY_ACTION}"]
     if inputs["action"] == "profile_evolution_proof":
         # The read-only proof workflow has no `action` input; the action only selects the target.
         workflow, items = PROOF_WORKFLOW_FILE, {k: v for k, v in inputs.items() if k != "action"}
