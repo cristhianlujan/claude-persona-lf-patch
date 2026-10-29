@@ -110,7 +110,10 @@ BEGIN
     v_model_response_envelope:=p_validation->'native_model_response_envelope';
     IF jsonb_typeof(v_model_feedback) IS DISTINCT FROM 'object'
       OR jsonb_typeof(v_model_response_envelope) IS DISTINCT FROM 'object'
-      OR (SELECT count(*) FROM jsonb_object_keys(v_model_response_envelope) z(k))<>2
+    THEN RETURN jsonb_build_object('status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_NATIVE_FEEDBACK_ORIGIN_ENVELOPE_INVALID'); END IF;
+    -- Object-keys is type-safe only AFTER the prior shape check.
+    IF (SELECT count(*) FROM jsonb_object_keys(v_model_response_envelope) z(k))<>2
       OR NOT (v_model_response_envelope ? 'profile_output')
       OR NOT (v_model_response_envelope ? 'ig_profile_feedback')
       OR v_model_response_envelope->'profile_output' IS DISTINCT FROM p_profile_output
@@ -132,6 +135,9 @@ BEGIN
     END IF;
     -- This is a source-envelope binding, not independent authenticity proof.
     -- The trusted native executor must still verify raw evidence bytes.
+  ELSIF p_validation ? 'native_model_response_envelope' THEN
+    RETURN jsonb_build_object('status','BLOCKED',
+      'blocking_code','BLOCK_PROFILE_NATIVE_FEEDBACK_UNDECLARED_ENVELOPE');
   END IF;
 
   SELECT status INTO v_existing
@@ -174,12 +180,23 @@ BEGIN
       
       v_actor
     );
-  ELSIF v_model_feedback IS NOT NULL AND NOT EXISTS (
+  ELSIF NOT EXISTS(
+    -- Existing output is immutable. Even a normal replay must match the
+    -- already recorded output and sidecar; otherwise fail closed.
     SELECT 1 FROM public.lf_operation_execution_steps prev
     WHERE prev.execution_id=p_execution_id AND prev.step_id='execute_profile'
       AND prev.status='STEP_PASS_WITH_EVIDENCE'
-      AND prev.evidence_payload->'ig_profile_feedback_candidate' IS NOT DISTINCT FROM v_model_feedback
-      AND prev.evidence_payload->>'ig_feedback_native_response_sha256'=v_model_envelope_sha
+      AND prev.evidence_payload->'profile_output' IS NOT DISTINCT FROM p_profile_output
+      AND (
+        (v_model_feedback IS NULL
+         AND NOT (prev.evidence_payload ? 'ig_profile_feedback_candidate'))
+        OR
+        (v_model_feedback IS NOT NULL
+         AND prev.evidence_payload->'ig_profile_feedback_candidate'
+             IS NOT DISTINCT FROM v_model_feedback
+         AND prev.evidence_payload->>'ig_feedback_native_response_sha256'
+             =v_model_envelope_sha)
+      )
   ) THEN
     RETURN jsonb_build_object('status','BLOCKED',
       'blocking_code','BLOCK_PROFILE_NATIVE_FEEDBACK_REPLAY_CONFLICT');
