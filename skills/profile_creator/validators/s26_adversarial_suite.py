@@ -53,7 +53,8 @@ def declaration_errors(decl: Any) -> list[str]:
             isinstance(i, dict) and isinstance(i.get("fields"), list) and i["fields"]
             and all(isinstance(f, str) and f for f in i["fields"])
             and isinstance(i.get("phrases"), list) and i["phrases"]
-            and all(isinstance(p, str) and p.strip() for p in i["phrases"]) for i in inj)):
+            and all(isinstance(p, str) and p.strip() for p in i["phrases"])
+            and i.get("match", "contains") in {"contains", "exact"} for i in inj)):
         errs.append("SUITE_INJECTIONS_INVALID")
     dups = decl.get("case_duplicate_ids", [])
     if not (isinstance(dups, list) and all(isinstance(d, dict) and isinstance(d.get("list"), str) and isinstance(d.get("key"), str) for d in dups)):
@@ -116,6 +117,13 @@ def _phrase_variants(phrase: str) -> list[str]:
     return [phrase, phrase.upper(), phrase.replace(" ", "  "), phrase.replace(" ", "-"), phrase + "!", "Oferta: " + phrase, phrase.lower()]
 
 
+def _exact_variants(phrase: str) -> list[str]:
+    """Variants that keep the value equal to the phrase after normalisation (for rules that match the whole value)."""
+    mid = len(phrase) // 2
+    return [phrase, phrase.upper(), phrase.lower(), phrase.title(), phrase.replace(" ", "  "), phrase.replace(" ", "-"),
+            phrase + "!", phrase + ".", " " + phrase + " ", phrase[:mid] + "\u200b" + phrase[mid:]]
+
+
 def build_cases(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) -> tuple[list[tuple[str, Any]], list[tuple[str, Any]]]:
     """Return (invalid_cases, valid_controls) as lists of (name, payload)."""
     invalid: list[tuple[str, Any]] = []
@@ -138,7 +146,7 @@ def build_cases(decl: dict[str, Any], base: dict[str, Any], rng: random.Random) 
         for field in group["fields"]:
             for path in _expand(base, field):
                 for phrase in group["phrases"]:
-                    for variant in _phrase_variants(phrase):
+                    for variant in (_exact_variants(phrase) if group.get("match") == "exact" else _phrase_variants(phrase)):
                         p = copy.deepcopy(base)
                         _set(p, path, variant)
                         inj.append((f"inject:{'.'.join(map(str, path))}:{variant}", p))
