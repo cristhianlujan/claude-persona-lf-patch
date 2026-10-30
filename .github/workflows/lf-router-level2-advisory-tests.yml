@@ -172,6 +172,22 @@ jobs:
           } | docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1
           docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
             < sandbox/lf_contract_gate_test/profile_execution_runtime/test_router_one_path_pg17_isolated.sql
+          # Independent transaction/database: restore all original definitions with exact source guards.
+          docker exec "$PG_CONTAINER" createdb -U postgres rollback_probe
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/router_one_path_pg17_live_snapshot_fixture.sql
+          {
+            echo "SET check_function_bodies=off;"
+            cat sandbox/lf_contract_gate_test/profile_execution_runtime/router_stage6_readonly_admission_candidate_20261030.sql
+            echo "RESET check_function_bodies;"
+          } | docker exec -i "$PG_CONTAINER" psql -U postgres -d rollback_probe -v ON_ERROR_STOP=1
+          {
+            echo "SET check_function_bodies=off;"
+            cat sandbox/lf_contract_gate_test/profile_execution_runtime/router_one_path_guarded_rollback_20261030.sql
+            echo "RESET check_function_bodies;"
+          } | docker exec -i "$PG_CONTAINER" psql -U postgres -d rollback_probe -v ON_ERROR_STOP=1
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/test_router_one_path_pg17_rollback_readback.sql
 
   router-level2-advisory-contract:
     name: router-level2-advisory-contract
