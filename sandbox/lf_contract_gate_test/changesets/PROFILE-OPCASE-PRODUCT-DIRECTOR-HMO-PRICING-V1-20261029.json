@@ -3,6 +3,7 @@
   "paths": {
     "skills/profile_creator/operational_cases/product_director_lf/HMO-PRICING-001.case.json": "RUNTIME_TESTING",
     "skills/profile_creator/operational_cases/product_director_lf/runs/RUN-HMOPRICING001-BASELINE-20261029.json": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/PROFILE-OPCASE-PRODUCT-DIRECTOR-HMO-PRICING-V1-20261029.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-OPCASE-PRODUCT-DIRECTOR-HMO-PRICING-V1-20261029.json": "CHANGESET_MANIFEST",
+    "skills/profile_creator/operational_cases/product_director_lf/runs/RUN-HMOPRICING001-BLIND-20261029.json": "RUNTIME_TESTING"
   }
 }

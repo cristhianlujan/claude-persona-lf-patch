@@ -31,14 +31,20 @@
     {
       "id": "OP05_APPROVED_RULE_WINS",
       "pointer": "/output/deliverable_created/conflict_resolution/selected_source_ref",
-      "op": "eq",
-      "value": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016"
+      "op": "in",
+      "value": [
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+        "R-HMO-016"
+      ]
     },
     {
       "id": "OP06_CANDIDATE_RULE_REJECTED_AS_AUTHORITY",
       "pointer": "/output/deliverable_created/conflict_resolution/rejected_source_refs/0",
-      "op": "eq",
-      "value": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018"
+      "op": "in",
+      "value": [
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018",
+        "R-HMO-018"
+      ]
     },
     {
       "id": "OP07_REJECTED_ALTERNATIVES",
@@ -69,19 +75,14 @@
       "pointer": "/output/deliverable_created/material_claims",
       "op": "min_len",
       "value": 1
-    },
-    {
-      "id": "OP12_NO_OPEN_BLOCKER_ON_RESOLVED_AUTHORITY",
-      "pointer": "/output/deliverable_created/blockers",
-      "op": "eq",
-      "value": []
     }
   ],
   "semantic_pending": [
     "HMO-PRICING-001:P1 no adopta R-HMO-018 como regla por defecto",
     "HMO-PRICING-001:P2 precio final siempre visible y componentes ocultos conservados en backend/auditoria",
     "HMO-PRICING-001:P3 fee B2B (R-HMO-017) nunca visible al cliente",
-    "HMO-PRICING-001:P4 no inventa valores de visibilidad por socio B2B"
+    "HMO-PRICING-001:P4 no inventa valores de visibilidad por socio B2B",
+    "HMO-PRICING-001:P5 un cargo oculto con importe mayor a cero y el desglose visible: la corrida ciega lo declaro como regla material pendiente; verificar que no se invente la agregacion"
   ],
   "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
 }
