@@ -132,6 +132,43 @@ permissions:
   contents: read
 
 jobs:
+  router-one-path-postgres-isolated:
+    name: router-one-path-pg17-isolated-no-remote
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      pg:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: isolated-only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 4s
+          --health-retries 8
+    steps:
+      - name: Checkout candidate without production credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify source and four retired callers in ephemeral PostgreSQL 17.6
+        shell: bash
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        run: |
+          set -euo pipefail
+          test -n "$PG_CONTAINER"
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/router_one_path_pg17_live_snapshot_fixture.sql
+          {
+            echo "SET check_function_bodies=off;"
+            cat sandbox/lf_contract_gate_test/profile_execution_runtime/router_stage6_readonly_admission_candidate_20261030.sql
+            echo "RESET check_function_bodies;"
+          } | docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/test_router_one_path_pg17_isolated.sql
+
   router-level2-advisory-contract:
     name: router-level2-advisory-contract
     runs-on: ubuntu-latest
