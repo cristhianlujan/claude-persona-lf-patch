@@ -27,6 +27,8 @@ def _graph(graph: Any, slug: str, head: str) -> tuple[dict[str, dict], str | Non
             return {}, "PROFILE_STEP_ID_OR_ORDER_DUPLICATE"
         if not isinstance(step.get("source_anchor"), str) or not step["source_anchor"]:
             return {}, "PROFILE_STEP_ANCHOR_MISSING"
+        if not isinstance(step.get("content_sha256"), str) or re.fullmatch(r"[0-9a-f]{64}", step["content_sha256"]) is None:
+            return {}, "PROFILE_STEP_CONTENT_DIGEST_MISSING"
         steps[key] = step
         positions.add(position)
     ordered = sorted(steps.values(), key=lambda s: s["order"])
