@@ -6,6 +6,7 @@
     "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_screen_selector_full_catalog_pg17.sql": "RUNTIME_TESTING",
     ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
-    "supabase/migrations/20261030224500_lf_profile_screen_selector_full_catalog_fallback_v1.sql": "MIGRATION"
+    "supabase/migrations/20261030224500_lf_profile_screen_selector_full_catalog_fallback_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_rollback_20261030.sql": "RUNTIME_TESTING"
   }
 }
