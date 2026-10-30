@@ -16,8 +16,8 @@ CREATE TABLE transversal.lf_programming_std_catalog_release_v1 (
   catalog_jsonb_sha256 = encode(pg_catalog.sha256(pg_catalog.convert_to(catalog_json::text,'UTF8')),'hex')),
  CONSTRAINT catalog_c3_version_matches CHECK (catalog_json->>'catalog_version'=catalog_version),
  CONSTRAINT catalog_c3_schema_matches CHECK (catalog_json->>'schema_version'='LF_STANDARDS_CATALOG_V1'),
- CONSTRAINT catalog_c3_status_whitelist CHECK (catalog_json->>'status' IN ('APROBADO','VALIDAR_CON_LEGAL')),
- CONSTRAINT catalog_c3_rules_whitelist CHECK (jsonb_typeof(catalog_json->'rules')='array' AND NOT jsonb_path_exists(catalog_json,'$.rules[*] ? (@.status != "APROBADO" && @.status != "VALIDAR_CON_LEGAL")'))
+ CONSTRAINT catalog_c3_status_whitelist CHECK (coalesce(catalog_json->>'status','') IN ('APROBADO','VALIDAR_CON_LEGAL')),
+ CONSTRAINT catalog_c3_rules_whitelist CHECK (jsonb_typeof(catalog_json->'rules')='array' AND jsonb_array_length(catalog_json->'rules')>0 AND NOT jsonb_path_exists(catalog_json,'$.rules[*] ? (!exists(@.status) || (@.status != "APROBADO" && @.status != "VALIDAR_CON_LEGAL"))'))
 );
 ALTER TABLE transversal.lf_programming_std_catalog_release_v1 ENABLE ROW LEVEL SECURITY;
 -- Staging-only schema: no release writer exists. Even an owner INSERT cannot establish provenance.
