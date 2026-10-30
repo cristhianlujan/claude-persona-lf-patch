@@ -35,3 +35,14 @@ v05 33/33, v08 13/13, v09 7/7, v07r1 terminalidad 10/10. `v07r1_runtime_context_
 
 ## No se hizo
 Nada escrito en la base, nada en `profiles/**`, sin changeset manifest (borrador, sin label `ready-to-merge`).
+
+## Addendum de auditoría N1/N2 con datos (2026-10-30)
+
+**Alcance candidato, NO aplicado a `profiles/**`.** El parche adjunta la ampliación T4b del juez semántico independiente EXISTENTE. No introduce otro agente/juez ni migración.
+
+- Para cada dato material, el juez debe recibir o leer resultados reales N1/N2 con fuente, consulta, fecha, filas, identificadores y valores relevantes, digest/referencia y vínculo al manifest externo.
+- `N1_N2_AUDIT_V1` es la estructura de observación del juez, NO una nueva tabla ni autoridad. El juez repite una lectura acotada cuando tenga acceso. El manifiesto externo sigue siendo la fuente comprobable; texto del productor no sustituye readback.
+- Diferenciar `ROWS`, `EMPTY`, `ACCESS_DENIED`, `ERROR`; contrastar valores N1/N2, conservar divergencias y separar cada dato con su ID.
+- No permitir PASS cuando no hay consulta real o no puede recuperarse el resultado; una falsa afirmación de ausencia devuelve al trabajador o bloquea si hay evidencia fabricada.
+- **Pendiente de implementación aparte del texto del juez:** cablear suministro real de observaciones verificables N1/N2 al contexto de ejecución y los validadores deterministas, y ejecutar pruebas negativas/operacionales ligadas al hash exacto del nuevo árbol. Esta modificación de instrucciones NO prueba que ya estén cableados.
+- No cambiar `NEEDS_MORE_EVIDENCE`; no activar runtime ni publicar.
