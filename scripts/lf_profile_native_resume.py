@@ -214,6 +214,10 @@ def main():
         "phase": phase,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
+    if phase in ("INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "REPORT_OUTPUT_REQUIRED"):
+        # A correct handoff is not proof that semantic judging or close has run.
+        print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
+        return 0
     if phase == "NATIVE_MODEL_INPUT_READY":
         print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
         return 0
