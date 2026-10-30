@@ -28,9 +28,19 @@ def inspect_postapply(train_report, expected, catalog_rows):
     digest = expected.get("release_catalog_sha256")
     if not isinstance(digest, str) or HEX64.fullmatch(digest) is None:
         errors.add("INVALID_EXPECTED_DIGEST")
-    if any(not isinstance(row, dict) or set(row) != set(identity_keys)
-           for row in catalog_rows):
+    if any(
+        not isinstance(row, dict)
+        or set(row) != set(identity_keys)
+        or any(not isinstance(row.get(key), str) or not row[key]
+               for key in identity_keys)
+        or not HEX64.fullmatch(row["release_catalog_sha256"])
+        for row in catalog_rows
+    ):
         errors.add("INVALID_CATALOG_ROW_SHAPE")
+    elif any(not isinstance(expected.get(key), str) or not expected[key]
+             for key in identity_keys):
+        # Do not compare arbitrary Python objects (including cyclic lists).
+        errors.add("INVALID_EXPECTATION")
     else:
         matches = [
             row for row in catalog_rows
