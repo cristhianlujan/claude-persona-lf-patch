@@ -252,3 +252,24 @@ Estado: solo parche candidato en PR #3359. Suite completa y WEB-001 por hash nue
 - Candidato y tests registrados en el mismo PR. GitHub conserva PR DRAFT, sin escribir `profiles/**`, sin migraciones ni cambios de Supabase.
 - **NO_VERIFICADO:** ejecución del archivo exacto de GitHub en runner, extracción autenticada y normalización del grafo de pasos del perfil desde GitHub actual, llamada física en `change_scope`/`deterministic_validation`, bloqueo real por el recorder y casos de regresión transversal.
 - Siguiente lote: determinar el mínimo readback de grafo admitido por el caller nativo `run-creacion-perfil-lf` sin inventar otra fuente, y preparar **el cambio en los puntos actuales de llamada/enforcement** por `ACTUALIZACION_PERFIL_LF` antes de proponer su pase al train. Si no existe dato confiable, mantener bloqueado.
+
+## Lote adicional — readback de método y ubicación nativa (2026-10-30)
+
+**Verificación de ruta activa (solo lectura):** `supabase/functions/run-creacion-perfil-lf/index.ts` ya tiene `GITHUB_PUBLIC_API_EXACT_REF_V1` para revisión exacta y `GITHUB_ACTIONS_EVOLUTION_PROOF_V1` para medir/comparar. No se necesita otro proceso. Pero el caller todavía NO entrega un mapa nativo autenticado de pasos internos a `change_scope`.
+El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evolución para `method_selection` (35) / `evolution_decision` (37), y para los demás checkpoints invoca `lf_profile_update_substantive_block_v1`. La ubicación de nuevas capacidades deberá controlarse dentro de `change_scope` (40), `regression_plan` (50), readback de GitHub y `deterministic_validation` (90), manteniendo esos pasos, sus destinos y su enforcement.
+
+**Evidencia de perfiles distintos:** en GitHub `product_director_lf` usa `Mandatory decision trajectory`, `customer_financial_ux_decisioning` usa `Workflow / route`, y `systemic_root_cause_repair_lf` usa `Gap-resolution cascade`. Sus estructuras son diferentes; no imponer el orden 70 a todos ni inferir IDs de pasos únicamente de encabezados Markdown.
+
+**Código candidato adicional (NO integrado):**
+- `docs/profile_updater/handoffs/PROFILE_NATIVE_STEP_PLACEMENT_VALIDATOR_CANDIDATE_20261030.py`: funciones puras para comprobar `source_head_sha`, identidad del perfil, fuente, grafo nativo, IDs, adyacencias, métodos, acciones `INSERT|MODIFY|REPLACE|REMOVE`, contenido SHA256 por paso, enlaces de enforcement y diff candidato. Un renumerado ordinal legítimo no es regresión; cambios imprevistos en contenido/call/enforcement de vecinos sí lo son.
+- `docs/profile_updater/handoffs/test_profile_native_placement_candidate_20261030.py`: 22 casos definidos; una ejecución aislada de un **espejo equivalente local** pasó **22/22 PASS**. No afirmar que es ejecución del archivo exacto en GitHub, ni un readback operacional real.
+
+**Conexión obligatoria DENTRO del updater vigente (PENDIENTE):**
+1. En `change_scope` (40) el caller obtiene el grafo nativo exacto de GitHub por el lector ya existente (no del usuario/modelo), verifica la adopción específica y ejecuta el candidato. Si no hay fuente estructurada para ese perfil, resultado `NO_VERIFICADO/BLOCKED` para la adopción; nunca inventar el paso.
+2. En `regression_plan` (50), atar casos positivos, negativos y adversariales al mismo perfil/head y a la ubicación de paso realmente elegida.
+3. En `github_readback` (80) / `deterministic_validation` (90), releer la revisión escrita y comprobar llamada, enforcement, enlaces y ausencia de cambios fuera del alcance antes del PASS. Preservar la comprobación de GitHub Actions `compare` y recibos de misma ejecución.
+4. El juez del UPDATER en paso 100 revisa el sentido de la ubicación. Cada perfil adopta la capacidad en su propio paso operativo, no en el paso 100 ni universalmente en el 70.
+5. `NO_CHANGE`: si no se instala ningún método o paso, no crear ficticiamente una ubicación; preservar el flujo condicional vigente.
+
+**Bloqueos verificados:** no existe aún la provisión autenticada de un mapa de pasos nativos para todos los perfiles; el caller y recorder actuales NO invocan ese validador en 40/90; falta test físico de enforcement y perfiles cruzados. Tener el script en `docs/` no lo instala, ni emite autoridad, ni permite merge. PR #3359 DRAFT sin cambios oficiales en `profiles/**`, Supabase, runtime o Edge. WEB-001 sigue sin pase operacional.
+**Siguiente checkpoint:** proyectar el grafo nativo con fuente/hash verificables a partir del exact-ref existente; luego enlazar a llamadas ya gobernadas de 40/90 y probar bajo el mismo updater, sin otra ruta.
