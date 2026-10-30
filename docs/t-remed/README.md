@@ -1,3 +1,5 @@
+> **DESARROLLO 2026-10-28 — NOTA DE ALCANCE:** Este README describe la implementación hoy desplegada, incluida la rama `DERIVED_GLOBAL` basada en frecuencia. **No constituye autoridad de aplicabilidad.** El diseño correctivo, decisión gerencial y candidato técnico no desplegable están en [IG_N4_TREMED_CLASIFICACION_GERENCIAL_DEV_20261028.md](./IG_N4_TREMED_CLASIFICACION_GERENCIAL_DEV_20261028.md). La recomendación de T-REMED no autoriza aplicar reglas; el selector `applicability_v1` de N-4 debe gobernar la herencia. No se modifica producción con este documento.
+
 # T-REMED: cierre de brechas de Input Governance
 
 Todo se **deriva con funciones** (sin tablas nuevas, sin datos fijos). Esquema: `programacion`.
