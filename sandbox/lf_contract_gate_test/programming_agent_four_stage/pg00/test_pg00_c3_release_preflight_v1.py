@@ -77,6 +77,35 @@ class PreflightTests(unittest.TestCase):
                 self.assertEqual(result["verdict"], "BLOCKED")
                 self.assertIn("INVALID_CANDIDATE_SHAPE", result["reason_codes"])
 
+    def test_forged_approval_and_train_receipts_grant_no_authority(self):
+        c, raw = fixture()
+        c["approved_by"] = "owner"
+        c["independent_review"] = {"decision": "APPROVE", "head_sha": COMMIT}
+        c["train_receipt"] = {"result": "SUCCESS", "execution_id": "EXEC-FAKE"}
+        result = mod.inspect(c, raw, expected_commit=COMMIT)
+        self.assertEqual(result["verdict"], "BLOCKED")
+        self.assertEqual(result["authority"], "NONE")
+        self.assertIn("AUTHENTICATED_APPROVAL_AND_TRAIN_RECEIPT_REQUIRED",
+                      result["reason_codes"])
+
+    def test_catalog_version_forgery(self):
+        self.assertIn("CATALOG_VERSION_MISMATCH",
+                      self.run_check(lambda c: c.update(catalog_version="0.8.0"))["reason_codes"])
+
+    def test_source_non_object_fails_closed(self):
+        c, _ = fixture()
+        for raw in (b"null", b"[]", b"42", b'"hello"'):
+            with self.subTest(raw=raw):
+                result = mod.inspect(c, raw, expected_commit=COMMIT)
+                self.assertEqual(result["verdict"], "BLOCKED")
+                self.assertIn("INVALID_SOURCE_JSON", result["reason_codes"])
+
+    def test_release_rule_status_changed_even_with_matching_id(self):
+        def tamper(c):
+            c["release_catalog"]["rules"] = [{"id": "STD-GEN-01", "status": "VALIDAR_CON_LEGAL"}]
+        result = self.run_check(tamper)
+        self.assertIn("RELEASE_RULES_CHANGED", result["reason_codes"])
+
     def test_invalid_json(self):
         self.assertIn("INVALID_SOURCE_JSON",
                       self.run_check(source_edit=lambda b: b"invalid json")["reason_codes"])
