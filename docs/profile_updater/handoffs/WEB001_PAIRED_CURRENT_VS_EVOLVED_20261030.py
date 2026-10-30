@@ -31,10 +31,19 @@ for name,mutate in mutations.items():
     old_errors=sorted(codes(base,item));new_errors=sorted(codes(new,item))
     out[name]={"current":{"pass":not old_errors,"errors":old_errors},"evolved":{"pass":not new_errors,"errors":new_errors}}
     print(json.dumps({"scenario":name,**out[name]},ensure_ascii=False))
-assert out["complete_live_source_readback"]["current"]["pass"]
-assert out["complete_live_source_readback"]["evolved"]["pass"]
-for name in list(mutations)[1:]:
-    assert out[name]["current"]["pass"],("BASE_UNEXPECTED_REJECT",name,out[name]["current"])
-    assert not out[name]["evolved"]["pass"],("EVOLVED_DID_NOT_REJECT",name)
-print("PAIRED_WEB001_CURRENT_VS_EVOLVED=PASS verified_negative_detection=4/4 current_detection=0/4")
+# Profile-current rejects correct open-uncertainty with a generic premature-closure rule;
+# profile-evolved correctly accepts it and enforces source-origin material evidence.
+assert out["complete_live_source_readback"]["current"]["errors"]==["GAP_CASCADE_EXHAUSTED_CLOSE_WITH_SEARCH_RECORD"],out["complete_live_source_readback"]
+assert out["complete_live_source_readback"]["evolved"]["pass"],out["complete_live_source_readback"]
+expected={
+    "missing_N2":"GAP_CATALOG_N1_N2_MISSING",
+    "fabricated_owner":"GAP_CATALOG_READBACK_DIGEST_MISMATCH",
+    "wrong_datum":"GAP_CATALOG_DATUM_MISMATCH",
+    "fake_EMPTY":"GAP_CATALOG_RESULT_INCONSISTENT",
+}
+for name,needed in expected.items():
+    assert out[name]["current"]["errors"]==["GAP_CASCADE_EXHAUSTED_CLOSE_WITH_SEARCH_RECORD"],("CURRENT_UNEXPECTED",name,out[name]["current"])
+    assert needed in out[name]["evolved"]["errors"],("EVOLVED_DID_NOT_DETECT",name,needed,out[name]["evolved"])
+print("PAIRED_WEB001_CURRENT_VS_EVOLVED=PASS current_correct_resolution=FAIL evolved_correct_resolution=PASS")
+print("PAIRED_WEB001_TAMPERING_DETECTION=current_specific_0/4 evolved_specific_4/4")
 print("AUTHORITY=UNATTESTED_SAME_CHAT_FUNCTIONAL_TEST NOT_OFFICIAL_EVOLUTION_CERTIFICATION")
