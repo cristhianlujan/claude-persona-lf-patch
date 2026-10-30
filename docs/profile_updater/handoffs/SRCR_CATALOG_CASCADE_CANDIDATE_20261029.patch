@@ -584,3 +584,16 @@ diff -ruN a/manifest.json b/manifest.json
      "contracts/governed_repair_execution_v1.md"
    ],
    "method_revision": "SRCR_V0_7R1",
+
+diff -ruN a/validators/validate_pack.py b/validators/validate_pack.py
+--- a/validators/validate_pack.py
++++ b/validators/validate_pack.py
+@@ -126,5 +126,8 @@
+     "evals/v06_edge_closure_cases.py",
+     "evals/v06_control_ownership_cases.py",
+     "evals/v06_quality_receipt_materialization_cases.py",
++    "evals/v08_gap_cascade_cases.py",
++    "evals/v09_exhausted_search_cases.py",
++    "evals/v10_n1_n2_quality_gate_cases.py",
+     "evals/sandbox_b/run_cases.py",
+ ]:
