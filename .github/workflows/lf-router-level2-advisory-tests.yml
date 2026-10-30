@@ -159,6 +159,10 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$PG_CONTAINER"
+          # Exact source-first requirement: approved candidate and migration must match byte-for-byte.
+          cmp -s \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/router_stage6_readonly_admission_candidate_20261030.sql \
+            supabase/migrations/20261030220500_lf_router_one_path_stage6_stage7_v1.sql
           docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
             < sandbox/lf_contract_gate_test/profile_execution_runtime/router_one_path_pg17_live_snapshot_fixture.sql
           {
