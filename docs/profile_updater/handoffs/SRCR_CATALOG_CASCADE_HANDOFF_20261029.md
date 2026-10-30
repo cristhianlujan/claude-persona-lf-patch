@@ -158,3 +158,34 @@ Se consultaron directamente las tablas `public.lf_operation_step_contracts` y `p
 ### Estado verificable
 
 `PR #3359`: DRAFT, solo documentación/candidato; sin editar `profiles/**`, sin desplegar ni modificar Supabase. **Requiere** evidencia de activación del enlace N1/N2 bajo el enforcement vigente y corrida WEB-001 sobre el árbol resultante; no hay pase ni cierre oficial.
+
+## CHECKPOINT ENFORCEMENT VIGENTE — SIN FLUJO NUEVO (2026-10-30)
+
+### Evidencia leída de Supabase (solo lectura)
+- El activo PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF declara research_baseline_mode=NOT_REQUIRED y runtime_enabled=false. Un readback reciente de research_baseline_freeze trae mode=NOT_REQUIRED, baseline_digest=NOT_APPLICABLE y baseline_snapshot={}. El paso se ejecuta pero no aporta datos N1/N2.
+- EJECUCION_PERFIL_LF: research_baseline_freeze (47) -> execute_profile (50) -> output_validate (60) -> semantic_judge (70) -> report_output (80). Todos los contratos y jueces tienen ACTIVE_ENFORCEMENT; report_output depende del PASS semántico anterior.
+- ACTUALIZACION_PERFIL_LF: github_write (70) -> github_readback (80) -> deterministic_validation (90) -> semantic_judge (100) -> regression_after (110) -> post_merge_reconcile (115) -> close (120). Todos ACTIVE_ENFORCEMENT: esta es la ruta de actualización del perfil, no el paso 70 del runtime.
+- El trust validator público lf_profile_execution_trust_validation_v2(text,text,jsonb) compara predecesores, candidate/scope digests, identidad independiente y dictamen pero no comprueba todavía filas/valores N1/N2.
+- Los registros recientes con independent=false y PASS_SELF_REVIEW_NOT_INDEPENDENT de este perfil pertenecen a ACTUALIZACION_PERFIL_LF, NO a EJECUCION_PERFIL_LF. No mezclar recibos ni asumir equivalencia de pasos homónimos.
+- Un registro de EJECUCION_PERFIL_LF de 2026-09-22 está BLOCKED en semantic_judge con INDEPENDENT_SEMANTIC_JUDGE_EXECUTOR_NOT_WIRED; evidencia histórica no extrapolable como estado actual sin nueva prueba. Los source_refs de otra ejecución reciente de execute_profile contienen GitHub/contexto, no readback N1/N2.
+
+### Único enlace autorizado (propuesta candidata, no aplicada)
+1. Actualizar el perfil por ACTUALIZACION_PERFIL_LF (incluyendo su propio semantic_judge 100). No editar profiles/** directamente ni abrir proceso adicional.
+2. Cuando se ejecute el perfil, aportar las consultas y recibos N1/N2 por el contexto y source_refs ya disponibles en EJECUCION_PERFIL_LF. El MISMO semantic_judge 70 consulta read-only y devuelve n1_n2_audit y n1_n2_verdict dentro del semantic_judge_result existente.
+3. El enforcement EXISTENTE del paso 70, lf_profile_execution_trust_validation_v2, debe comprobar: mismo execution_id y hashes de candidato/scope; fuentes N1/N2 relevantes, observación real, datum_id, campos tipados, filas, digests y readback independiente; discrepancias y acceso denegado no son ausencia. Si el enforcement carece de estos controles, ampliar esta misma llamada por su ruta gobernada, sin nueva tabla, paso, servicio ni wrapper.
+4. Baseline NOT_REQUIRED no se emplea como evidencia de consultas. Un source_ref autodeclarado no demuestra relectura; de no poder comprobar procedencia, NO PASS.
+5. report_output 80 ya tiene enlace de enforcement con semantic_judge 70: sin PASS del 70, se bloquea 80. Preservar estado NEEDS_MORE_EVIDENCE cuando corresponda y no hacer cierre prematuro.
+
+### Matriz de verificación futura
+| Escenario | Esperado |
+|---|---|
+| N1/N2 reales, relevantes, coherentes e independientemente comprobados | PASS solo tras otros controles |
+| Solo N1 o N2 sin ausencia justificada | FAIL/RETURN |
+| Se declara EMPTY, pero fuente real devuelve fila | FAIL |
+| Valor, datum_id o hash no coinciden | FAIL |
+| Referencia de consulta independiente inventada | FAIL |
+| Baseline NOT_REQUIRED utilizado como supuesta prueba N1/N2 | FAIL |
+| Intentar report_output tras FAIL del juez | BLOCKED en paso ya existente |
+| Otros perfiles sin aplicabilidad N1/N2 | Sin regresión |
+
+Estado: solo parche candidato en PR #3359. Suite completa y WEB-001 por hash nuevo NO_VERIFICADO; runtime sin enforcement específico N1/N2 y perfil runtime_enabled=false. No aplicar cambios a función de producción desde este handoff.
