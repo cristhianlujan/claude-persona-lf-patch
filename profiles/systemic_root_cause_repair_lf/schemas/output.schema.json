@@ -4120,6 +4120,187 @@
         "ARCHITECTURE_AUDIT"
       ],
       "description": "V0.5: INCIDENT_REPAIR explains a recurring failure class; ARCHITECTURE_AUDIT maps and repairs a process/lifecycle without a triggering incident. Audit mode relaxes only recurrence evidence and the incident-length causal chain; systemic causality and controls (immediate_cause, systemic_root_cause, first_bad_control, escape_control) remain mandatory."
+    },
+    "policy_resolution": {
+      "type": "array",
+      "description": "Optional, generic scoped rule discovery evidence. No independent authority or readback.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "question_id",
+          "need",
+          "scope",
+          "decision",
+          "lookups",
+          "next_action"
+        ],
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "minLength": 2
+          },
+          "need": {
+            "type": "string",
+            "minLength": 5
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "target_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "asset_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "business": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "channel": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "action_family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "minProperties": 1
+          },
+          "decision": {
+            "enum": [
+              "POLICY_APPLICABLE",
+              "POLICY_NOT_APPLICABLE",
+              "POLICY_NOT_REGISTERED",
+              "POLICY_SOURCE_UNAVAILABLE"
+            ]
+          },
+          "selected_policy_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "selected_policy_sha": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lookups": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "level",
+                "role",
+                "source",
+                "locator",
+                "evidence_id",
+                "result_kind",
+                "applicability"
+              ],
+              "properties": {
+                "level": {
+                  "enum": [
+                    "N1",
+                    "N2",
+                    "N3",
+                    "N4",
+                    "N5"
+                  ]
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 2
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 5
+                },
+                "evidence_id": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "result_kind": {
+                  "enum": [
+                    "ROWS",
+                    "EMPTY",
+                    "ACCESS_DENIED",
+                    "ERROR"
+                  ]
+                },
+                "applicability": {
+                  "enum": [
+                    "MATCH",
+                    "NO_MATCH",
+                    "CANDIDATE_ONLY",
+                    "UNKNOWN"
+                  ]
+                },
+                "policy_code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "policy_status": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "observed_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "error_detail": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "next_action": {
+            "enum": [
+              "USE_GOVERNED_RULE",
+              "TARGETED_SOURCE_RESEARCH",
+              "PROPOSE_GOVERNED_RULE",
+              "BLOCK_UNVERIFIED"
+            ]
+          }
+        }
+      }
     }
   },
   "allOf": [

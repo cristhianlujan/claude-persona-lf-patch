@@ -252,6 +252,103 @@ def _owner_authority_research_errors(owner: Any, evidence_manifest: Any) -> list
     return errs
 
 
+
+POLICY_RESULTS = {
+    "POLICY_APPLICABLE": "USE_GOVERNED_RULE",
+    "POLICY_NOT_APPLICABLE": "TARGETED_SOURCE_RESEARCH",
+    "POLICY_NOT_REGISTERED": "PROPOSE_GOVERNED_RULE",
+    "POLICY_SOURCE_UNAVAILABLE": "BLOCK_UNVERIFIED",
+}
+POLICY_APPLICABILITY = {"MATCH", "NO_MATCH", "CANDIDATE_ONLY", "UNKNOWN"}
+POLICY_LEVELS = {"N1", "N2", "N3", "N4", "N5"}
+
+
+def _policy_resolution_errors(payload: Any, evidence_manifest: Any) -> list[dict[str, str]]:
+    """Validate generic scoped-policy evidence transport; do not decide rule meaning.
+
+    Semantic applicability and effect are verified by the existing independent judge.
+    The model's own lookups cannot authenticate a missing source or grant authority.
+    """
+    if not isinstance(payload, dict):
+        return []
+    rows = payload.get("policy_resolution")
+    if rows is None:
+        return []
+    if not isinstance(rows, list):
+        return [_err("POLICY_RESOLUTION_INVALID", "$.policy_resolution")]
+    errs: list[dict[str, str]] = []
+    proofs = _current_evidence(evidence_manifest)
+    seen_questions: set[str] = set()
+    for i, entry in enumerate(rows):
+        path = f"$.policy_resolution[{i}]"
+        if not isinstance(entry, dict):
+            errs.append(_err("POLICY_RESOLUTION_INVALID", path))
+            continue
+        qid = entry.get("question_id")
+        if not _nonempty(qid) or qid in seen_questions:
+            errs.append(_err("POLICY_QUESTION_ID_INVALID_OR_REUSED", path+".question_id"))
+        else:
+            seen_questions.add(qid)
+        scope = entry.get("scope")
+        if not isinstance(scope, dict) or not any(_nonempty(v) for v in scope.values()):
+            errs.append(_err("POLICY_SCOPE_REQUIRED", path+".scope"))
+        decision = entry.get("decision")
+        if decision not in POLICY_RESULTS or entry.get("next_action") != POLICY_RESULTS.get(decision):
+            errs.append(_err("POLICY_DECISION_ACTION_MISMATCH", path+".decision"))
+        steps = entry.get("lookups")
+        if not isinstance(steps, list):
+            errs.append(_err("POLICY_N1_N2_LOOKUPS_REQUIRED", path+".lookups"))
+            continue
+        levels = [x.get("level") if isinstance(x, dict) else None for x in steps]
+        if len(levels) < 2 or levels[:2] != ["N1", "N2"]:
+            errs.append(_err("POLICY_N1_N2_ORDER_OR_COVERAGE", path+".lookups"))
+        if any(level not in POLICY_LEVELS for level in levels):
+            errs.append(_err("POLICY_LEVEL_INVALID", path+".lookups"))
+        ids: set[str] = set()
+        for j, row in enumerate(steps):
+            loc = f"{path}.lookups[{j}]"
+            if not isinstance(row, dict):
+                errs.append(_err("POLICY_LOOKUP_INVALID", loc))
+                continue
+            eid, locator = row.get("evidence_id"), row.get("locator")
+            if not _nonempty(eid) or not _nonempty(locator) or not _nonempty(row.get("source")):
+                errs.append(_err("POLICY_LOOKUP_MISSING_FIELDS", loc))
+                continue
+            if eid in ids:
+                errs.append(_err("POLICY_EVIDENCE_REUSED", loc+".evidence_id"))
+            ids.add(eid)
+            if row.get("level") == "N1" and row.get("source") != "public.v_lf_operation_policy_snapshot":
+                errs.append(_err("POLICY_N1_SOURCE_NOT_CANONICAL", loc+".source"))
+            if row.get("level") == "N2" and row.get("source") not in {
+                "public.lf_policy_versions", "private.lf_reusable_policy_registry_v1"
+            }:
+                errs.append(_err("POLICY_N2_SOURCE_NOT_CANONICAL", loc+".source"))
+            if row.get("result_kind") in {"ACCESS_DENIED", "ERROR"} and not _nonempty(row.get("error_detail")):
+                errs.append(_err("POLICY_ACCESS_ERROR_NOT_RECORDED", loc+".error_detail"))
+            if proofs is None or eid not in proofs:
+                errs.append(_err("POLICY_EVIDENCE_NOT_CURRENT", loc+".evidence_id"))
+            elif _norm_locator(proofs[eid].get("source_locator")) != _norm_locator(locator):
+                errs.append(_err("POLICY_EVIDENCE_LOCATOR_MISMATCH", loc+".evidence_id"))
+        if decision == "POLICY_APPLICABLE":
+            if not _nonempty(entry.get("selected_policy_code")) or not _nonempty(entry.get("selected_policy_sha")):
+                errs.append(_err("POLICY_ACTIVE_REFERENCE_REQUIRED", path))
+            if not any(isinstance(row, dict) and row.get("level") == "N2"
+                       and row.get("applicability") == "MATCH" and row.get("result_kind") == "ROWS"
+                       and row.get("policy_code") == entry.get("selected_policy_code")
+                       and row.get("policy_status") in {"ACTIVE", "VIGENTE"} for row in steps):
+                errs.append(_err("POLICY_APPLICABLE_ROW_NOT_PROVEN", path+".lookups"))
+        elif decision == "POLICY_NOT_REGISTERED":
+            if any(isinstance(row, dict) and row.get("applicability") == "MATCH" for row in steps):
+                errs.append(_err("POLICY_FALSE_NOT_REGISTERED", path+".lookups"))
+            if any(isinstance(row, dict) and row.get("result_kind") in {"ERROR", "ACCESS_DENIED"}
+                   for row in steps[:2]):
+                errs.append(_err("POLICY_UNAVAILABLE_IS_NOT_ABSENCE", path+".lookups"))
+        elif decision == "POLICY_SOURCE_UNAVAILABLE":
+            if not any(isinstance(row, dict) and row.get("result_kind") in {"ERROR", "ACCESS_DENIED"} for row in steps):
+                errs.append(_err("POLICY_UNAVAILABLE_NOT_PROVEN", path+".lookups"))
+    return errs
+
+
 def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
     if not applies(payload):
         return []
@@ -262,6 +359,7 @@ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list
 
     manifest = _current_evidence(evidence_manifest)
     errors.extend(_owner_authority_research_errors(payload.get('owner'), evidence_manifest))
+    errors.extend(_policy_resolution_errors(payload, evidence_manifest))
     rows = payload.get("current_uncertainties") if isinstance(payload.get("current_uncertainties"), list) else []
     blocking_ids: set[str] = set()
     for idx, row in enumerate(rows):

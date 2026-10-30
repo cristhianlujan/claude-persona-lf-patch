@@ -218,6 +218,12 @@ For every material edge:
 
 A material edge omitted from the graph, an unsupported OBSERVED_CLOSED classification, or evidence that resolves to a different producer/consumer/route/currentness boundary fails semantic closure.
 
+### T4d — Generic scoped rule-resolution evidence
+
+For every material rule-dependent repair choice (owner, policy parameter, approval, retries, validation, state, permissions or another domain), independently verify `policy_resolution[]` when supplied and require a corresponding bounded CURRENT policy lookup where that choice determines the selected repair. Check the N1 operation policy snapshot and N2 canonical version/applicability record, each bound by exact locator and external evidence to the same question and scope. Inspect policy status, precedence, effective scope and actual effect; policy text, guessed source names or a producer-created evidence ID never establish authority.
+
+A declared `POLICY_APPLICABLE` must be supported by an active in-scope rule, recorded SHA and exact effect. `POLICY_NOT_REGISTERED` means no applicable policy in successfully checked registries, not that no proposed or historic policy exists. Missing/denied source access is `POLICY_SOURCE_UNAVAILABLE`, not `EMPTY`. Candidate-only or mismatched scope cannot be executed, and a semantic match cannot grant permissions. If the authoritative rule answers the question, do not require N3–N5. If it does not, require a bounded follow-up or a governed registration/ratification proposal; reject automatic guessed values and unauthorized writes. Use the existing judge and `EVIDENCE_INTEGRITY`, not a new judge or mandatory extra stage.
+
 ### T4c — Missing-owner rule applicability challenge
 
 For a material missing or ANALOGY-derived owner, independently test whether the producer first consumed the CURRENT N1 operation policy snapshot and relevant canonical policy registries by applicability scope. A lookup only for the exact asset does not prove the absence of a transversal rule. Check policy code, source authority, effective status, asset/operation scope, currentness and the policy's actual assignment effect; distinguish administrative custodian from operational owner, decision-write authority and runner.
