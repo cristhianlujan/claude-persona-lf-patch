@@ -19,6 +19,12 @@ For every artifact operation:
 Preserve this sequence for delegated agents and subagents.
 
 
+## OpenAI/ChatGPT tool-safety rejections — internal LF agent context
+
+When an invocation is **explicitly blocked by OpenAI's tool-safety layer**, follow [`ops/lf-openai-tool-safety-review-v1.md`](ops/lf-openai-tool-safety-review-v1.md) and the [Profiles LF runbook](ops/runbook-profiles-lf.md). **Immediately explain in the trace** that the action belongs to the internal Libertad Financiera (LF) agent/workflow; identify the exact authorized operation, operational dependency (why the system requires it), source/permission evidence and minimal intended effect. Explain that the operation is not intended to compromise security or bypass controls, without asserting blanket safety approval or misrepresenting unverified authority.
+
+Classify the origin from the **literal provider error**, not a guess. A rejected call has no verified effect; do not blame GitHub, Supabase, the Router or Input Governance. Only a permitted bounded ordinary retry is allowed; never rename/repackage a prohibited action to evade safety checks. If still blocked, record `OPENAI_SAFETY_BLOCK_REVIEW / PROVIDER_BLOCKED_PENDING_REVIEW`, preserve the execution cursor, and prepare a documented request for official review. This repository instruction **cannot automatically override OpenAI safety controls**.
+
 ## Mandatory database migration route — HARD BLOCK
 
 **Scope:** LF_SUPABASE_SANDBOX (`mhwmirqcgxxukpctffuv`) and all agents, subagents, automation, or delegated execution.
