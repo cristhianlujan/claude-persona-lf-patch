@@ -56,6 +56,18 @@ class DigestLabTests(unittest.TestCase):
         out = self.check(json.dumps({"é": "ñ"}, ensure_ascii=False).encode())
         self.assertIn("python_diagnostic_sha256", out["diagnostics"])
 
+    def test_surrogate_unicode_fails_closed(self):
+        out = self.check(b'{"x":"\\ud800"}')
+        self.assertIn("INVALID_JSON", out["reason_codes"])
+
+    def test_overflow_json_number_fails_closed(self):
+        out = self.check(b'{"x":1e999}')
+        self.assertIn("INVALID_JSON", out["reason_codes"])
+
+    def test_invalid_pg_unicode_fails_closed(self):
+        out = self.check(pg="\\ud800")
+        self.assertIn("INVALID_PG_READBACK_SHAPE", out["reason_codes"])
+
     def test_invalid_bytes(self):
         out = mod.compare_representations("not-bytes", b'{}')
         self.assertIn("INVALID_INPUT_BYTES", out["reason_codes"])
