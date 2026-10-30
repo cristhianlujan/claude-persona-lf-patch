@@ -100,6 +100,85 @@ async function rpc(config: Config, fetchFn: Fetcher, name: string, parameters: P
   return { result: data as Payload };
 }
 
+// Resolve only the existing post-model steps; never relax the pre-model 7-step guard.
+async function resolveExistingPostModelStep(
+  e: Execution,
+  prepareResult: Payload,
+  config: Config,
+  fetchFn: Fetcher,
+): Promise<Response | null> {
+  if (
+    prepareResult.status !== "BLOCKED" ||
+    prepareResult.blocking_code !== "BLOCK_PROFILE_NATIVE_BRIDGE_PRE_MODEL_STEP_COUNT" ||
+    prepareResult.expected_clean_step_count !== 7 ||
+    (prepareResult.clean_step_count !== 9 && prepareResult.clean_step_count !== 10)
+  ) return null;
+
+  const url = `${config.supabaseUrl}/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(e.execution_id)}&select=step_id,status&order=step_order.asc`;
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      method: "GET",
+      headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch { return blocked("PROFILE_POST_MODEL_STEP_READ_FAILED", 502); }
+  if (!response.ok) return blocked("PROFILE_POST_MODEL_STEP_READ_REJECTED", 502);
+  const rows = await parseResponse(response);
+  if (!Array.isArray(rows)) return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+
+  const steps = new Map<string, string>();
+  for (const row of rows) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+    }
+    const item = row as Record<string, unknown>;
+    if (typeof item.step_id !== "string" || typeof item.status !== "string" || steps.has(item.step_id)) {
+      return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+    }
+    steps.set(item.step_id, item.status);
+  }
+  const completed = [
+    "init_execution", "router", "profile_resolve", "profile_source_read",
+    "input_validate", "context_admission", "research_baseline_freeze",
+    "execute_profile", "output_validate",
+  ];
+  if (
+    steps.size !== prepareResult.clean_step_count ||
+    !completed.every(step => steps.get(step) === "STEP_PASS_WITH_EVIDENCE") ||
+    steps.has("report_output")
+  ) return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
+
+  let nextStep: string;
+  let phase: string;
+  if (steps.size === 9 && !steps.has("semantic_judge")) {
+    nextStep = "semantic_judge";
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
+  } else if (steps.size === 10 && steps.get("semantic_judge") === "STEP_PASS_WITH_EVIDENCE") {
+    nextStep = "report_output";
+    phase = "REPORT_OUTPUT_REQUIRED";
+  } else {
+    return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
+  }
+  return respond({
+    outcome: "CONTINUATION_REQUIRED",
+    phase,
+    code: null,
+    execution_id: e.execution_id,
+    profile_code: e.target_code,
+    next_action: nextStep === "semantic_judge"
+      ? "RUN_EXISTING_INDEPENDENT_SEMANTIC_JUDGE"
+      : "RECORD_EXISTING_REPORT_OUTPUT",
+    result: {
+      status: phase,
+      last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
+      next_step: nextStep,
+      clean_step_count: steps.size,
+      execution_id: e.execution_id,
+    },
+  });
+}
+
 export async function handleProfileContinuation(
   action: string,
   body: Payload,
@@ -168,6 +247,10 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  // The pre-model bridge must never be reentered to complete an existing 9/11
+  // or 10/11 execution. Read canonical step states and hand off the next gate.
+  const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
+  if (postModel) return postModel;
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",
