@@ -197,7 +197,19 @@ function harness(options: HarnessOptions = {}) {
         return new Response(JSON.stringify({ status: selectionAccepted ? "BOUND" : "BLOCKED" }), { status: 200 });
       }
       if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")) {
-        return new Response(JSON.stringify({ status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST" }), { status: 200 });
+        return new Response(JSON.stringify({
+          status: "PROFILE_HANDOFF_READY", write_performed: false, execution_id: null,
+          profile_code: "PERFIL-UX-DESIGN-LF", executor_mode: body?.p_executor_mode,
+          router_profile_handoff: { fingerprint_sha256: "a".repeat(64) },
+          next_action: "EJECUCION_PERFIL_LF_BEGIN_REQUIRED",
+        }), { status: 200 });
+      }
+      if (url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1")) {
+        return new Response(JSON.stringify({
+          status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST",
+          profile_code: "PERFIL-UX-DESIGN-LF", executor_mode: body?.p_executor_mode,
+          gate2_materialized: true, next_action: "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
+        }), { status: 200 });
       }
       if (url.endsWith("/functions/v1/run-creacion-perfil-lf")) {
         return new Response(JSON.stringify({ outcome: "INITIALIZED" }), { status: 200 });
@@ -567,10 +579,63 @@ Deno.test("router V2 profile admission: exact governed identity forwards existin
   const context = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1", status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT", stage1_payload: { texto_original: "Login B2B" } };
   const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
   assertEquals(response.status, 200);
-  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+  assertEquals(payload.result.execution_id, null);
+  assertEquals(payload.result.write_performed, false);
+  assertEquals(payload.outcome, "PROFILE_HANDOFF_READY");
   const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
   assertEquals(rpc.length, 1);
   assertEquals(rpc[0].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
+});
+
+Deno.test("router V2 Stage 06: handoff admission never invokes profile writer", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const context = {
+    schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
+    status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT",
+    stage1_payload: { texto_original: "Login B2B" },
+  };
+  const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "PROFILE_HANDOFF_READY");
+  assertEquals(payload.result.execution_id, null);
+  assertEquals(payload.result.write_performed, false);
+  assertEquals(h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1")).length, 0);
+});
+
+Deno.test("router V2 Stage 07: admitted context explicitly invokes profile execution writer", async () => {
+  const h = harness({ claims: LEGACY_CLAIMS });
+  const context = {
+    schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
+    status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT",
+    stage1_payload: { canal_candidato: "PRODUCTO", negocio_codigo: "LF", alcance: { target_type: "PANTALLA" } },
+    after_selection_result: { gate2_request: { schema_version: "LF_ROUTER_PROFILE_GATE2_REQUEST_V1" } },
+    gate2_derivation: { gate2_result: { decision: "RESOLVED" } },
+  };
+  const { response, payload } = await invoke(h, {
+    action: "profile_execution_begin_from_router_context_v1", context, executor_mode: "GPT_NATIVE",
+  });
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "NATIVE_EXECUTION_READY");
+  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+  const admit = h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
+  const writers = h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1"));
+  assertEquals(admit.length, 1);
+  assertEquals(writers.length, 1);
+  assertEquals(writers[0].body?.p_executor_mode, "GPT_NATIVE");
+  assertEquals(writers[0].body?.p_channel, "PRODUCTO");
+});
+
+Deno.test("router V2 Stage 07: unauthorized identity and REMOTE_API cannot write", async () => {
+  const context = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
+    status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" };
+  const unauthorized = harness({ claims: DISPATCH_CLAIMS });
+  const badId = await invoke(unauthorized, { action: "profile_execution_begin_from_router_context_v1", context, executor_mode: "GPT_NATIVE" });
+  assertEquals(badId.response.status, 403);
+  assertEquals(unauthorized.calls.length, 0);
+  const remote = harness({ claims: LEGACY_CLAIMS });
+  const badMode = await invoke(remote, { action: "profile_execution_begin_from_router_context_v1", context, executor_mode: "REMOTE_API" });
+  assertEquals(badMode.response.status, 400);
+  assertEquals(remote.calls.length, 0);
 });
 
 Deno.test("router V2 profile admission: unrelated OIDC identity blocked before RPC", async () => {
@@ -595,7 +660,9 @@ Deno.test("router V2 generic admission: forwards two distinct context/profile se
     };
     const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context, executor_mode: "GPT_NATIVE" });
     assertEquals(response.status, 200);
-    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    assertEquals(payload.result.execution_id, null);
+  assertEquals(payload.result.write_performed, false);
+  assertEquals(payload.outcome, "PROFILE_HANDOFF_READY");
     assertEquals(h.calls[i].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
   }
 });
@@ -655,7 +722,9 @@ Deno.test("router V2 profile admission: governed native identity admits both nat
     const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
     const { response, payload } = await invoke(h, { action: "router_profile_admit_context_v2", context: ADMIT_CONTEXT, executor_mode: mode });
     assertEquals(response.status, 200);
-    assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+    assertEquals(payload.result.execution_id, null);
+  assertEquals(payload.result.write_performed, false);
+  assertEquals(payload.outcome, "PROFILE_HANDOFF_READY");
     const rpc = h.calls.filter(x => x.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
     assertEquals(rpc.length, 1);
     assertEquals(rpc[0].body, { p_context: ADMIT_CONTEXT, p_executor_mode: mode });
