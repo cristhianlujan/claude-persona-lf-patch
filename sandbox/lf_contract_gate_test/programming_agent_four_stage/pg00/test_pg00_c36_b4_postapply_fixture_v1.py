@@ -82,6 +82,33 @@ class PostapplyTests(unittest.TestCase):
         row["approved_by"] = "FAKE"
         self.assertIn("INVALID_CATALOG_ROW_SHAPE", self.check(rows=[row]))
 
+    def test_cyclic_list_identity_fails_closed(self):
+        left = []
+        left.append(left)
+        right = []
+        right.append(right)
+        e = expected()
+        e["proposal_id"] = left
+        row = expected()
+        row["proposal_id"] = right
+        result = self.check(expectation=e, rows=[row])
+        self.assertIn("INVALID_EXPECTED_PROPOSAL_ID", result)
+        self.assertIn("INVALID_CATALOG_ROW_SHAPE", result)
+
+    def test_cyclic_row_version_fails_closed(self):
+        cycle = []
+        cycle.append(cycle)
+        row = expected()
+        row["catalog_version"] = cycle
+        self.assertIn("INVALID_CATALOG_ROW_SHAPE",
+                      self.check(rows=[row]))
+
+    def test_malformed_row_digest_type_fails_closed(self):
+        row = expected()
+        row["release_catalog_sha256"] = {"digest": "fake"}
+        self.assertIn("INVALID_CATALOG_ROW_SHAPE",
+                      self.check(rows=[row]))
+
     def test_no_catalog_rows(self):
         self.assertIn("CATALOG_EXACT_ROW_NOT_UNIQUE", self.check(rows=[]))
 
