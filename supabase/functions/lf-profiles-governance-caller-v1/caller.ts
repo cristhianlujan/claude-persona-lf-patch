@@ -1024,31 +1024,74 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             !admission.router_profile_handoff || typeof admission.router_profile_handoff !== "object") {
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMISSION_NOT_READY" }, 409);
         }
-        const stage = envelope.stage1_payload as Record<string, unknown> | undefined;
-        const after = envelope.after_selection_result as Record<string, unknown> | undefined;
-        const gate2 = envelope.gate2_derivation as Record<string, unknown> | undefined;
-        if (!stage || !after || !gate2 || typeof stage !== "object" || typeof after !== "object" ||
-            typeof gate2 !== "object" || !after.gate2_request || !gate2.gate2_result) {
-          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_GATE2_PAYLOAD_MISSING" }, 400);
+        // Preserve the EXACT admission handoff at Stage 07. Do not regenerate it
+        // through after_gate2_v1 (that creates a different issued_at/fingerprint).
+        const handoff = admission.router_profile_handoff as Record<string, unknown>;
+        const profile = handoff.profile_code;
+        const requestSha = handoff.request_sha256;
+        if (handoff.schema_version !== "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1" ||
+            handoff.operation_code !== "EJECUCION_PERFIL_LF" ||
+            handoff.effect_authority !== false ||
+            typeof profile !== "string" || !profile ||
+            typeof requestSha !== "string" || !/^[0-9a-f]{64}$/.test(requestSha) ||
+            typeof handoff.fingerprint_sha256 !== "string" ||
+            !/^[0-9a-f]{64}$/.test(handoff.fingerprint_sha256)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMITTED_HANDOFF_INVALID" }, 409);
         }
-        // Existing profile-execution materializer owns the DB INSERT and idempotency.
+
+        // Canonical target path is data, not a hardcoded profile-to-path mapping.
+        const assetResponse = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/lf_activos?codigo_activo=eq.${encodeURIComponent(profile)}&tipo_activo=eq.PERFIL&archived_at=is.null&select=codigo_activo,metadata,ruta_esperada&limit=2`,
+          { method: "GET", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+            }, signal: AbortSignal.timeout(15_000) },
+        );
+        if (!assetResponse.ok) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ASSET_READ_FAILED" }, 502);
+        }
+        const assets = await assetResponse.json();
+        if (!Array.isArray(assets) || assets.length !== 1 || assets[0]?.codigo_activo !== profile) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_ASSET_NOT_UNIQUE" }, 409);
+        }
+        const metadata = assets[0].metadata && typeof assets[0].metadata === "object" ? assets[0].metadata : {};
+        const path = typeof metadata.entrypoint_path === "string" && metadata.entrypoint_path
+          ? metadata.entrypoint_path
+          : typeof assets[0].ruta_esperada === "string" && assets[0].ruta_esperada
+          ? (assets[0].ruta_esperada.endsWith(".md")
+              ? assets[0].ruta_esperada
+              : assets[0].ruta_esperada.replace(/\\/$/, "") + "/SKILL.md")
+          : "";
+        if (!/^profiles\\/[a-z0-9_/-]+\\/SKILL\\.md$/.test(path) ||
+            path.includes("..") || path.startsWith("/")) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_PATH_INVALID" }, 409);
+        }
+
+        const executionId = "EXEC-PROFILE-GATE2-" + requestSha.slice(0, 24).toUpperCase();
+        // The existing EJECUCION_PERFIL_LF writer owns all INSERT/step recording.
         const response = await deps.fetchFn(
-          `${config.supabaseUrl}/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1`,
+          `${config.supabaseUrl}/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1`,
           { method: "POST", headers: {
               apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
               "content-type": "application/json",
             }, body: JSON.stringify({
-              p_request: after.gate2_request, p_result: gate2.gate2_result,
-              p_channel: stage.canal_candidato, p_business: stage.negocio_codigo,
-              p_scope: stage.alcance ?? null, p_executor_mode: mode,
-              p_actor_execution_id: null, p_github_backup_reason: null,
+              p_handoff: handoff, p_executor_mode: mode,
+              p_execution_id: executionId,
+              p_idempotency_key: "router-profile-gate2:" + requestSha + ":" + profile,
+              p_actor_execution_id: executionId,
+              p_target_repo: config.repository, p_target_path: path,
+              p_manifest: { gate2_auto_materialized: true,
+                channel: handoff.channel, business: handoff.business },
             }), signal: AbortSignal.timeout(15_000) },
         );
-        const result = await parseJsonObject(response, "PROFILE_EXECUTION_BEGIN_RESPONSE_INVALID");
-        if (!response.ok || result.status !== "NATIVE_EXECUTION_READY" ||
-            typeof result.execution_id !== "string" || !result.execution_id) {
-          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_NOT_READY", result }, 409);
+        const begin = await parseJsonObject(response, "PROFILE_EXECUTION_BEGIN_RESPONSE_INVALID");
+        if (!response.ok || begin.status !== "READY" ||
+            begin.execution_id !== executionId || begin.init_materialized !== true) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_NOT_READY", result: begin }, 409);
         }
+        const result = { ...begin, status: "NATIVE_EXECUTION_READY", gate2_materialized: true,
+          execution_id: executionId, executor_mode: mode, profile_code: profile,
+          next_action: "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
+          router_profile_handoff: handoff, router_reentry_required: false };
         return json({ outcome: "NATIVE_EXECUTION_READY", caller, result }, 200);
       }
 
