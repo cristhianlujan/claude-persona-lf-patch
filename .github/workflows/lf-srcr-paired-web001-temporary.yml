@@ -1,4 +1,5 @@
 name: LF SRCR Paired WEB001 Functional Proof
+# Retry paired comparison after corrected assertion: no process/contract changes.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
