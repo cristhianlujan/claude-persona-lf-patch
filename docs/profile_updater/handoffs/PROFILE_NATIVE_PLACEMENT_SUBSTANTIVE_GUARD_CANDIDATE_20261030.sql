@@ -139,6 +139,40 @@ begin
     end if;
   end if;
 
+  -- Mandatory for NEW frozen-governed placement executions only.
+  -- Keep existing step IDs (semantic_judge, regression_after) and receipts.
+  -- This establishes PASS floors; independent SOURCE/CALL authority still
+  -- needs verification from the existing governed executor before promotion.
+  if v_native_placement and v_governed
+      and p_step_id in ('semantic_judge','regression_after') then
+    select evidence_payload into v_native_scope
+      from public.lf_operation_execution_steps
+     where execution_id=p_execution_id
+       and step_id='change_scope'
+       and status='STEP_PASS_WITH_EVIDENCE';
+    if v_native_scope is null or
+       jsonb_typeof(v_native_scope->'native_step_adoptions') is distinct from 'array' then
+      return 'PROFILE_NATIVE_PLACEMENT_SCOPE_RECEIPT_REQUIRED';
+    end if;
+    if jsonb_array_length(v_native_scope->'native_step_adoptions')>0 then
+      if p_step_id='semantic_judge' then
+        if public.lf_profile_update_result_class_v1(p_payload->'semantic_judge_result')
+             is distinct from 'PASS'
+          or public.lf_profile_update_result_class_v1(p_payload->'independent_semantic_evaluation')
+             is distinct from 'PASS' then
+          return 'PROFILE_NATIVE_PLACEMENT_INDEPENDENT_SEMANTIC_PASS_REQUIRED';
+        end if;
+      else
+        if public.lf_profile_update_result_class_v1(p_payload->'adversarial_result')
+             is distinct from 'PASS'
+          or public.lf_profile_update_result_class_v1(p_payload->'holdout_result')
+             is distinct from 'PASS' then
+          return 'PROFILE_NATIVE_PLACEMENT_ADVERSARIAL_HOLDOUT_PASS_REQUIRED';
+        end if;
+      end if;
+    end if;
+  end if;
+
   if p_step_id = 'semantic_judge' then
     if public.lf_profile_update_result_class_v1(p_payload->'semantic_judge_result') = 'FAIL' then return 'PROFILE_UPDATE_SEMANTIC_JUDGE_FAILED'; end if;
     if v_golden then
