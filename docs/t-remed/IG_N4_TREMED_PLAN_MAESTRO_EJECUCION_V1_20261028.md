@@ -3,6 +3,12 @@
 **Repositorio:** `cristhianlujan/claude-persona-lf-patch` · **PR:** #3269, rama `dev/ig-n4-tremed-cascade-governed-20261028` (DRAFT, NO-GO).  
 **HEAD de evidencia congelado antes de redactar:** `04ff92e932c443555bee604dd2f7503114a3318c`. Para futuras verificaciones, fijar nuevamente commit exacto y registrar readback.  
 
+> **FRONTERA ENTRE DOS TRABAJOS INDEPENDIENTES — 30/10/2026**  
+> **Este plan y PR #3269 corresponden exclusivamente a N-4 / T-REMED (G0–G5, P00–P12)**: herencia, aplicabilidad, reglas y autorización de scope.  
+> **No forman parte del cierre del Input Governance original**: plan `IG_CURATOR_VALIDATOR_REFACTOR_V2`, lote final `M10.13`, controles `PLAN_STATE_ASIS`, `GIT_RUNTIME_PARITY`, `ZERO_LEGACY_CALLERS`, `AUD045_EVIDENCE`, `CLOSURE_GATE_REUSE`, `NEG_FALSE_CLOSURE` y `FINAL_HANDOFF`. Este último se gestiona en su propio ledger de Supabase y sus fuentes de GitHub; no hereda los G/P de N-4.  
+> **Regla de seguimiento:** registrar evidencias, errores, porcentajes, responsables y cierres por cada trabajo por separado. No usar los `0/13` checkpoints N-4 para describir el avance de M10.13 ni sus `2/7` para cerrar N-4. Ningún bloqueo o fallo de uno determina automáticamente el estado del otro.  
+> **Ejecución:** ambos trabajos siguen en curso; `DRAFT / NO-GO` significa únicamente que el candidato de N-4 no está autorizado para integración productiva, no que se suspenda su investigación, pruebas o corrección. No añadir gates al Router ni alterar el flujo Router → Perfil → Input Governance cuando corresponda; perfiles ejecutados por GPT Native o Claude Native, no por API remota de modelos.
+
 ## 0. Mandato y frontera de alcance
 
 Este documento **CONSOLIDA**, no sustituye ni duplica las definiciones de los documentos de diseño, los checkpoints P00–P12 ni los gates G0–G5. P y G son dos vistas sobre **el mismo trabajo**: P identifica entregables implementables, G decide si es admisible pasar a la siguiente etapa de la metodología. No contarlos como 19 tareas independientes. Las nuevas constataciones se añaden como evidencia a su P/G de origen.
