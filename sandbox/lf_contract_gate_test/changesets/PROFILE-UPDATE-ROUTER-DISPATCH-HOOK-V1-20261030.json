@@ -1,0 +1,8 @@
+{
+  "solution_ref": "PROFILE-UPDATE-ROUTER-DISPATCH-HOOK-V1-20261030",
+  "paths": {
+    "skills/profile_creator/contracts/resolver_dispatch_contract.json": "RUNTIME_TESTING",
+    "skills/profile_creator/evals/resolver_dispatch_contract.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-UPDATE-ROUTER-DISPATCH-HOOK-V1-20261030.json": "CHANGESET_MANIFEST"
+  }
+}
