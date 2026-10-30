@@ -1,4 +1,6 @@
--- CANDIDATE ONLY: Stage 06 read-only admission; Stage 07 remains the sole execution writer.
+-- CANDIDATE ONLY: one authorized entry Router V2 Stage 06 -> EJECUCION_PERFIL_LF Stage 07.
+-- In the same atomic patch, retire four duplicate START/WRITE entrypoints.
+-- Do NOT retire internal begin_from_handoff, begin_v1, model continuation, or step recording.
 -- Source-first design. DO NOT apply this file via a read-only session, Supabase MCP apply_migration,
 -- or directly in production. Promote through exact-head Migration Merge Train with approval/rollback.
 -- PRESTATE DB MD5: d1bc9787de30980bdff8d4f48c58d438 (30 Oct 2026).
@@ -11,6 +13,25 @@ BEGIN
         <> 'd1bc9787de30980bdff8d4f48c58d438'
   THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_STAGE6_ADMISSION_SOURCE_DRIFT';
+  END IF;
+  IF to_regprocedure('public.lf_router_pipeline_begin_v1(p_request_text text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_pipeline_begin_v1(p_request_text text)'::regprocedure)) <> '1c4977c7f17e514cd5d32e9b7b693a00' THEN
+    RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_pipeline_begin_v1';
+  END IF;
+
+  IF to_regprocedure('public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text, p_actor_execution_id text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text, p_actor_execution_id text)'::regprocedure)) <> '36a3bb6ea8a020c9b1f9cb94ee93b357' THEN
+    RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_profile_native_bridge_begin_v1';
+  END IF;
+
+  IF to_regprocedure('public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)'::regprocedure)) <> '51c05f2efc1d31c304f0126c20a14e8d' THEN
+    RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_pipeline_profile_handoff_continue_v1';
+  END IF;
+
+  IF to_regprocedure('public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)'::regprocedure)) <> '94c468133a3961cc261ea312a0d23400' THEN
+    RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_profile_execution_after_gate2_v1';
   END IF;
 END
 $source_guard$;
@@ -138,4 +159,86 @@ $function$
 
 COMMENT ON FUNCTION public.lf_router_pipeline_context_profile_admit_v2(jsonb,text)
  IS 'ACT-0001 Stage 06: validate existing context and emit authenticated handoff only, STABLE/read-only. Never instantiate EJECUCION_PERFIL_LF; Stage 07 is the explicit sole writer.';
+
+-- Disable obsolete competing launchers only after Stage 06 has become pure handoff.
+-- Preserve source history and existing execution/step rows for audit.
+-- RETIRED ENTRYPOINT: lf_router_pipeline_begin_v1. Preserve signature/ACL for clear rejection;
+-- historical execution rows remain untouched. This function never invokes its old writer.
+CREATE OR REPLACE FUNCTION public.lf_router_pipeline_begin_v1(p_request_text text)
+ RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'extensions'
+AS $retired$
+BEGIN
+  RETURN jsonb_build_object(
+    'status','BLOCKED',
+    'blocking_code','LEGACY_ROUTER_V1_ENTRY_RETIRED',
+    'canonical_route','ACT-0001_CONTEXT_V2_TO_EJECUCION_PERFIL_LF',
+    'write_performed',false,
+    'execution_id',NULL
+  );
+END;
+$retired$;
+COMMENT ON FUNCTION public.lf_router_pipeline_begin_v1(p_request_text text)
+ IS 'Deprecated competing entrypoint: no effects. Route through Router V2 stage 06 and EJECUCION_PERFIL_LF stage 07 canonical begin_from_handoff.';
+
+-- RETIRED ENTRYPOINT: lf_profile_native_bridge_begin_v1. Preserve signature/ACL for clear rejection;
+-- historical execution rows remain untouched. This function never invokes its old writer.
+CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text DEFAULT 'GPT_NATIVE'::text, p_actor_execution_id text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'extensions'
+AS $retired$
+BEGIN
+  RETURN jsonb_build_object(
+    'status','BLOCKED',
+    'blocking_code','DUPLICATE_NATIVE_BRIDGE_ENTRY_RETIRED',
+    'canonical_route','ACT-0001_CONTEXT_V2_TO_EJECUCION_PERFIL_LF',
+    'write_performed',false,
+    'execution_id',NULL
+  );
+END;
+$retired$;
+COMMENT ON FUNCTION public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text, p_actor_execution_id text)
+ IS 'Deprecated competing entrypoint: no effects. Route through Router V2 stage 06 and EJECUCION_PERFIL_LF stage 07 canonical begin_from_handoff.';
+
+-- RETIRED ENTRYPOINT: lf_router_pipeline_profile_handoff_continue_v1. Preserve signature/ACL for clear rejection;
+-- historical execution rows remain untouched. This function never invokes its old writer.
+CREATE OR REPLACE FUNCTION public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)
+ RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'extensions'
+AS $retired$
+BEGIN
+  RETURN jsonb_build_object(
+    'status','BLOCKED',
+    'blocking_code','LEGACY_ROUTER_V1_HANDOFF_WRITER_RETIRED',
+    'canonical_route','ACT-0001_CONTEXT_V2_TO_EJECUCION_PERFIL_LF',
+    'write_performed',false,
+    'execution_id',NULL
+  );
+END;
+$retired$;
+COMMENT ON FUNCTION public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)
+ IS 'Deprecated competing entrypoint: no effects. Route through Router V2 stage 06 and EJECUCION_PERFIL_LF stage 07 canonical begin_from_handoff.';
+
+-- RETIRED ENTRYPOINT: lf_router_profile_execution_after_gate2_v1. Preserve signature/ACL for clear rejection;
+-- historical execution rows remain untouched. This function never invokes its old writer.
+CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text DEFAULT NULL::text, p_github_backup_reason text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'public', 'extensions'
+AS $retired$
+BEGIN
+  RETURN jsonb_build_object(
+    'status','BLOCKED',
+    'blocking_code','DUPLICATE_GATE2_BEGIN_WRITER_RETIRED',
+    'canonical_route','ACT-0001_CONTEXT_V2_TO_EJECUCION_PERFIL_LF',
+    'write_performed',false,
+    'execution_id',NULL
+  );
+END;
+$retired$;
+COMMENT ON FUNCTION public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)
+ IS 'Deprecated competing entrypoint: no effects. Route through Router V2 stage 06 and EJECUCION_PERFIL_LF stage 07 canonical begin_from_handoff.';
 COMMIT;
