@@ -108,3 +108,15 @@ Se reprodujo mediante Python aislado, con transcripción de la lógica candidata
 **NO_VERIFICADO:** corrida Python exacta de las suites v05/v08/v09/v10 sobre checkout limpio; readback realmente producido por el runtime independiente y no por un paquete de prueba, validación del recibo de calidad en el flujo activo, ejecución operacional WEB-001 con hash nuevo, comparación evolutiva, Router/Updater/Train y eventual merge.
 
 El nombre `QUALITY_BOUNDARY` dentro de un JSON NO autentica por sí mismo al emisor. El conector/ejecutor de calidad debe suministrar este bundle fuera del canal del productor, registrando recibos de lecturas efectivas. Hasta acreditar ese transporte independiente, cualquier PASS N1/N2 real debe permanecer BLOQUEADO/NO_VERIFICADO. No prometer que la existencia de la firma del método ya equivale a cableado del ejecutor.
+
+## Readback en runtime vivo: evidencia y dependencia exacta (2026-10-30)
+
+Se inspeccionó directamente Supabase, sin escribir:
+
+- `public.lf_profile_execution_trust_validation_v2(text,text,jsonb)` **existe**; el cuerpo vigente NO contiene la cadena `quality_readback` (posición 0). Su control de `semantic_judge` compara pasos predecesores, autoridad, candidate/scope digest, `model_call_count`, `validator_status` y `semantic_judge_result`, pero no vincula un recibo independiente de valores N1/N2.
+- `public.lf_profile_execution_canonical_read_judge_v1(text)` **existe**, pero su salida determinista y condiciones de autorización son propias de `READ_PRODUCT_DEFINITION` con `LF_PRODUCT_CANONICAL_RULE_READ_V1`. NO es un verificador genérico N1/N2 para `systemic_root_cause_repair_lf`; reutilizarlo sin una evaluación gobernada mezclaría contratos.
+- En el candidato, el argumento Python `quality_readback` es un contrato de transporte propuesto, no una prueba de que el ejecutor lo provea. Un `issuer='QUALITY_BOUNDARY'` escrito por el propio productor tampoco demuestra procedencia; requiere receipt de paso/operación producido fuera del modelo y readback de consulta real.
+- **Dependencia:** preparar un cambio ACOTADO y gobernado del consumidor de calidad del `EJECUCION_PERFIL_LF` para transportar y atestar resultados N1/N2 exclusivos de casos SRCR aplicables; mantener sin cambio el `READ_PRODUCT_DEFINITION` canónico ni afectar otros perfiles. No hay autorización implícita para migrar ni desplegar producción desde este handoff.
+- Hasta tal implementación y verificación en el runtime, `N1_N2_AUDIT_V1` operativo, el judge independiente y WEB-001 permanecen NO_VERIFICADO y el PR sigue DRAFT.
+
+No se debe abrir una prueba operativa de calidad como PASS sobre datos sintéticos. La prueba Python aislada (15/15) confirma únicamente lógica de rechazo, no invocación gobernada del juez.
