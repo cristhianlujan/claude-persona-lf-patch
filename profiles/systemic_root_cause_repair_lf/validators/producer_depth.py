@@ -190,6 +190,68 @@ def _level_trace_errors(casc, manifest, uid, path, err):
     return errors
 
 
+
+OWNER_AUTHORITY_STAGES = ("DIRECT_ASSET", "DECLARED_POLICY", "GOVERNANCE_CONTRACT")
+OWNER_AUTHORITY_SURFACES = {"SUPABASE_TABLE_OR_VIEW", "SUPABASE_FUNCTION", "GITHUB_SOURCE", "OPERATION_DEFINITION", "EKB", "OTHER_GOVERNED_SOURCE"}
+OWNER_AUTHORITY_RESULTS = {"FOUND_APPLICABLE", "FOUND_NOT_APPLICABLE", "FOUND_CANDIDATE_ONLY", "NO_MATCH", "NO_SOURCE_ACCESSIBLE"}
+
+
+def _owner_authority_research_errors(owner: Any, evidence_manifest: Any) -> list[dict[str, str]]:
+    """Bound source coverage for a derived owner; never select an authority."""
+    if not isinstance(owner, dict) or owner.get("authority_kind") != "DERIVED_PROPOSAL":
+        return []
+    base = "$.owner.derivation.authority_research"
+    derivation = owner.get("derivation")
+    research = derivation.get("authority_research") if isinstance(derivation, dict) else None
+    if not isinstance(research, dict):
+        return [_err("OWNER_AUTHORITY_SEARCH_REQUIRED", base, "No general policy research before owner analogy.")]
+    errs: list[dict[str, str]] = []
+    if not _nonempty(research.get("scope_classification")):
+        errs.append(_err("OWNER_AUTHORITY_SCOPE_REQUIRED", base+".scope_classification"))
+    aliases = research.get("alias_terms")
+    if not isinstance(aliases, list) or len({x.strip().casefold() for x in aliases if _nonempty(x)}) < 3:
+        errs.append(_err("OWNER_AUTHORITY_ALIAS_EXPANSION_REQUIRED", base+".alias_terms"))
+    if research.get("authority_effect") != "PROPOSAL_REQUIRES_RATIFICATION":
+        errs.append(_err("OWNER_AUTHORITY_RATIFICATION_REQUIRED", base+".authority_effect"))
+    attempts = research.get("attempts")
+    if not isinstance(attempts, list):
+        return errs + [_err("OWNER_AUTHORITY_STAGES_REQUIRED", base+".attempts")]
+    stages = [x.get("stage") if isinstance(x, dict) else None for x in attempts]
+    if stages != list(OWNER_AUTHORITY_STAGES):
+        errs.append(_err("OWNER_AUTHORITY_STAGE_ORDER_OR_COVERAGE", base+".attempts"))
+    proofs = _current_evidence(evidence_manifest)
+    seen = set()
+    for i, item in enumerate(attempts):
+        at = base+f".attempts[{i}]"
+        if not isinstance(item, dict):
+            errs.append(_err("OWNER_AUTHORITY_ATTEMPT_INVALID", at))
+            continue
+        locator, eid = item.get("locator"), item.get("evidence_id")
+        if (item.get("surface") not in OWNER_AUTHORITY_SURFACES or
+            item.get("result") not in OWNER_AUTHORITY_RESULTS or
+            not _nonempty(locator) or not _nonempty(eid)):
+            errs.append(_err("OWNER_AUTHORITY_ATTEMPT_INCOMPLETE", at))
+            continue
+        if eid in seen:
+            errs.append(_err("OWNER_AUTHORITY_EVIDENCE_REUSED", at+".evidence_id"))
+        seen.add(eid)
+        if item.get("stage") == "DECLARED_POLICY" and item.get("surface") not in {"SUPABASE_TABLE_OR_VIEW", "SUPABASE_FUNCTION", "EKB"}:
+            errs.append(_err("OWNER_AUTHORITY_POLICY_NOT_CHECKED", at))
+        if item.get("stage") == "GOVERNANCE_CONTRACT" and item.get("surface") != "GITHUB_SOURCE":
+            errs.append(_err("OWNER_AUTHORITY_GITHUB_NOT_CHECKED", at))
+        if item.get("result") == "NO_SOURCE_ACCESSIBLE" and not _nonempty(item.get("error_detail")):
+            errs.append(_err("OWNER_AUTHORITY_ACCESS_ERROR_REQUIRED", at))
+        if proofs is None or eid not in proofs:
+            errs.append(_err("OWNER_AUTHORITY_EVIDENCE_NOT_CURRENT", at+".evidence_id"))
+        elif _norm_locator(proofs[eid].get("source_locator")) != _norm_locator(locator):
+            errs.append(_err("OWNER_AUTHORITY_EVIDENCE_LOCATOR_MISMATCH", at+".evidence_id"))
+    if len(attempts) == 3 and all(isinstance(x, dict) for x in attempts):
+        direct = _norm_locator(attempts[0].get("locator"))
+        if any(_norm_locator(x.get("locator")) == direct for x in attempts[1:]):
+            errs.append(_err("OWNER_AUTHORITY_GENERAL_POLICY_LOOKUP_REQUIRED", base+".attempts"))
+    return errs
+
+
 def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
     if not applies(payload):
         return []
@@ -199,6 +261,7 @@ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list
         errors.append(_err("V05_CASE_MODE_INVALID", "$.case_mode", "Use INCIDENT_REPAIR or ARCHITECTURE_AUDIT."))
 
     manifest = _current_evidence(evidence_manifest)
+    errors.extend(_owner_authority_research_errors(payload.get('owner'), evidence_manifest))
     rows = payload.get("current_uncertainties") if isinstance(payload.get("current_uncertainties"), list) else []
     blocking_ids: set[str] = set()
     for idx, row in enumerate(rows):

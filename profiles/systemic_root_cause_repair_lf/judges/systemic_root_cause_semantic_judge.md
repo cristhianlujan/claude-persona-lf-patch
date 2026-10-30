@@ -218,6 +218,12 @@ For every material edge:
 
 A material edge omitted from the graph, an unsupported OBSERVED_CLOSED classification, or evidence that resolves to a different producer/consumer/route/currentness boundary fails semantic closure.
 
+### T4c — Missing-owner declared-authority search challenge
+
+When a missing owner, custodian, approver or runner is proposed through ANALOGY, independently inspect evidence before accepting the producer's conclusion. Validate expanded aliases, scope-wide declared-policy lookup (not just target ID), exact-head GitHub contract/README content search, EKB and source metadata. Reconcile identity, currentness, scope, administrative custody, operational ownership, human-write authority and runner. Candidate/read-only policy is evidence, not active owner-assignment authority. Product administrator is not software-governance SUPER_ADMIN.
+
+If the producer rejected a candidate solely because other assets of the same type use another owner, or if its authority_search omits current external evidence for direct, declared and governance contract stages, return RETURN_TO_WORKER_FOR_SELF_REPAIR with OWNER_AUTHORITY_SEARCH_INCOMPLETE. Where no active rule applies, require a specific governed ratification proposal; never allow implicit owner_name mutation or privileges. Use the existing T4b judge and return fields; this is no additional engine, agent, output schema or permission.
+
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:
 - deterministic validation passed;
