@@ -61,6 +61,30 @@ def inspect_plan(proposal, *, source_bytes, release_bytes, trusted_commit, fixtu
             source = parsed
         else:
             release = parsed
+    if isinstance(source, dict):
+        reject(source.get("schema_version") != "LF_STANDARDS_CATALOG_V1",
+               "INVALID_CATALOG_SCHEMA")
+        rules = source.get("rules")
+        reject(not isinstance(rules, list) or not rules, "INVALID_SOURCE_RULES")
+        if isinstance(rules, list):
+            reject(any(not isinstance(rule, dict)
+                       or not isinstance(rule.get("id"), str)
+                       or not rule["id"].strip()
+                       or not isinstance(rule.get("status"), str)
+                       or rule["status"] not in {"APROBADO", "VALIDAR_CON_LEGAL"}
+                       for rule in rules), "INVALID_SOURCE_RULES")
+    if isinstance(release, dict):
+        reject(release.get("schema_version") != "LF_STANDARDS_CATALOG_V1",
+               "INVALID_RELEASE_SCHEMA")
+        rules = release.get("rules")
+        reject(not isinstance(rules, list) or not rules, "INVALID_RELEASE_RULES")
+        if isinstance(rules, list):
+            reject(any(not isinstance(rule, dict)
+                       or not isinstance(rule.get("id"), str)
+                       or not rule["id"].strip()
+                       or not isinstance(rule.get("status"), str)
+                       or rule["status"] not in {"APROBADO", "VALIDAR_CON_LEGAL"}
+                       for rule in rules), "INVALID_RELEASE_RULES")
     if isinstance(source, dict) and isinstance(release, dict):
         reject(source.get("status") != "BORRADOR_EN_REPO_DE_CALIFICACION",
                "INVALID_SOURCE_STATUS")
