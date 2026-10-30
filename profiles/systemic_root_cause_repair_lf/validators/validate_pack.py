@@ -126,6 +126,11 @@ for rel in [
     "evals/v06_edge_closure_cases.py",
     "evals/v06_control_ownership_cases.py",
     "evals/v06_quality_receipt_materialization_cases.py",
+    "evals/v08_gap_cascade_cases.py",
+    "evals/v09_exhausted_search_cases.py",
+    "evals/v10_n1_n2_quality_gate_cases.py",
+    "evals/v11_owner_authority_discovery_cases.py",
+    "evals/v12_scoped_policy_resolution_cases.py",
     "evals/sandbox_b/run_cases.py",
 ]:
     run_assurance(rel)

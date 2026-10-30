@@ -1,0 +1,60 @@
+{
+  "schema": "LF_WEB001_PAIRED_PROFILE_VALIDATOR_READBACK_V1",
+  "status": "PAIR_TEST_PASSED_NOT_OFFICIAL_EVOLUTION",
+  "run_id": 41112821165,
+  "run_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41112821165",
+  "date": "2026-10-30",
+  "case": "WEB-001",
+  "same_case_input": "UNC-OWNER-ACT0058: view and canonical table both report owner_name=null",
+  "current_profile_ref": "52c0f68ad243d2a98f959db8f3a935179b5681aa",
+  "evolved_source_branch": "lf/handoff-srcr-catalog-cascade-20261029",
+  "captured_source": "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CURRENT_CHAT_N1N2_READBACK_20261030.json",
+  "source_data_provenance": "SUPABASE_READONLY",
+  "provider_attested": false,
+  "independent_semantic_review": false,
+  "pair_test_kind": "SAME_NATIVE_CHAT_EVIDENCE_TWO_PROFILE_PRODUCER_DEPTH_VALIDATORS",
+  "scenario_results": [
+    {
+      "scenario": "complete_live_source_readback",
+      "current": "FAIL_PREMATURE_CLOSURE_GENERIC",
+      "evolved": "PASS"
+    },
+    {
+      "scenario": "missing_N2",
+      "current": "FAIL_GENERIC_NOT_SPECIFIC",
+      "evolved": "FAIL_SPECIFIC_MISSING_N2"
+    },
+    {
+      "scenario": "fabricated_owner",
+      "current": "FAIL_GENERIC_NOT_SPECIFIC",
+      "evolved": "FAIL_SPECIFIC_DIGEST_MISMATCH"
+    },
+    {
+      "scenario": "wrong_datum",
+      "current": "FAIL_GENERIC_NOT_SPECIFIC",
+      "evolved": "FAIL_SPECIFIC_DATUM_MISMATCH"
+    },
+    {
+      "scenario": "fake_EMPTY",
+      "current": "FAIL_GENERIC_NOT_SPECIFIC",
+      "evolved": "FAIL_SPECIFIC_EMPTY_INCONSISTENT"
+    }
+  ],
+  "behavioral_improvement": {
+    "correct_handling_of_unresolved_material_case": "current FAIL => evolved PASS",
+    "specific_negative_detection": "current 0/4 => evolved 4/4"
+  },
+  "official_evolution": {
+    "status": "NOT_COMPLETED",
+    "missing": [
+      "Two fully model-executed WEB-001 profile outputs (current and evolved) bound to exact profile tree revisions",
+      "Official group 2 run registration and comparison in existing updater step 37",
+      "Independent semantic gate and provenance attestation"
+    ],
+    "merge_authorized": false
+  },
+  "issues": [
+    "Existing WEB-001 9/9 historical run had zero material gaps, so could not assess new N1/N2 behavior.",
+    "This test uses the candidate producer-depth validator, not the entire operational profile runtime; no fake provider attestation."
+  ]
+}
