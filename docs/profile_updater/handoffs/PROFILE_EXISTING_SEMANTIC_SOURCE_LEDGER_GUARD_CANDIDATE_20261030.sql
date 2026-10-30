@@ -165,14 +165,15 @@ begin
     n12_required:=execute_step.evidence_payload#>'{profile_output,current_uncertainties}';
     if jsonb_typeof(n12_required)='array' and exists(
       select 1 from jsonb_array_elements(n12_required) x
-       where x->>'impact'='DESIGN_BLOCKING'
+       where x.value->>'impact'='DESIGN_BLOCKING'
     ) then
       n12_observed:=semantic_result#>'{result,n1_n2_audit}';
       select count(*) into n12_count
         from jsonb_array_elements(n12_required) x
-       where x->>'impact'='DESIGN_BLOCKING';
-      if jsonb_typeof(n12_observed)<>'array'
-         or jsonb_array_length(n12_observed)<>2*n12_count then
+       where x.value->>'impact'='DESIGN_BLOCKING';
+      if jsonb_typeof(n12_observed) is distinct from 'array' then
+        hard:=hard||jsonb_build_array('n1_n2_ledger_coverage_missing');
+      elsif jsonb_array_length(n12_observed)<>2*n12_count then
         hard:=hard||jsonb_build_array('n1_n2_ledger_coverage_missing');
       else
         for n12_datum in
