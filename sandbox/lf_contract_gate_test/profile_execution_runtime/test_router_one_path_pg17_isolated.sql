@@ -106,4 +106,16 @@ BEGIN
    OR EXISTS(select 1 from public.lf_operation_execution_steps)
  THEN RAISE EXCEPTION 'STAGE06_PERFORMED_WRITE'; END IF;
 END $positive$;
+-- Readback exact post-migration function hashes to build rollback guards.
+SELECT p.proname AS changed_function, md5(pg_get_functiondef(p.oid)) AS post_migration_md5
+FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+WHERE n.nspname='public' AND p.proname IN (
+ 'lf_router_pipeline_context_profile_admit_v2',
+ 'lf_router_profile_after_selection_v1',
+ 'lf_router_pipeline_begin_v1',
+ 'lf_profile_native_bridge_begin_v1',
+ 'lf_router_pipeline_profile_handoff_continue_v1',
+ 'lf_router_profile_execution_after_gate2_v1'
+)
+ORDER BY p.proname;
 SELECT 'PASS_ROUTER_ONE_PATH_PG17_ISOLATED' AS result;
