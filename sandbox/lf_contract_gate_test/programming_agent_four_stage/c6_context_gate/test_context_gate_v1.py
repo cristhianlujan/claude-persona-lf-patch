@@ -61,7 +61,8 @@ class GateTests(unittest.TestCase):
         self.check("UNKNOWN_SKILL", receipt=r)
     def test_excluded_rule(self):
         s=copy.deepcopy(self.skill);s["exclude_rule_ids"]=[{"rule_id":"STD-BE-01","reason":"bypass"}]
-        r=copy.deepcopy(self.receipt);r["skills"][0]["skill_json_sha256"]=hashlib.sha256(raw(s)).hexdigest()\n        self.check("SKILL_EXCLUSIONS_REQUIRE_REVIEW", receipt=r, source_skills={"spring-boot":raw(s)})
+        r=copy.deepcopy(self.receipt);r["skills"][0]["skill_json_sha256"]=hashlib.sha256(raw(s)).hexdigest()
+        self.check("SKILL_EXCLUSIONS_REQUIRE_REVIEW", receipt=r, source_skills={"spring-boot":raw(s)})
     def test_mandatory_rule_deleted(self):
         r=copy.deepcopy(self.receipt);r["rule_ids"].remove("STD-BE-01")
         self.check("REQUIRED_RULE_OMITTED", receipt=r)
