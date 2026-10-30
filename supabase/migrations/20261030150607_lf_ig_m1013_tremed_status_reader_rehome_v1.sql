@@ -26,7 +26,7 @@ BEGIN
        <> '7257b9bbc86b1f61e5435a37479d63a1'
   OR (SELECT md5(prosrc) FROM pg_proc WHERE oid=to_regprocedure(
      'programacion.fn_input_governance_bootstrap_classify_v2_ctx(integer,text,bigint,jsonb)'))
-       <> '60465360cf3b0a4eced2fd7b424d5041'
+       <> '11bd4af470dffc3d2ae8c1316774c1ba'
   THEN RAISE EXCEPTION 'IG_TREMED_CLASSIFIER_SOURCE_DRIFT'; END IF;
 
   v_function:=to_regprocedure(v_ident);
