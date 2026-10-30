@@ -71,7 +71,7 @@ insert into public.lf_operation_execution_steps values
             jsonb_build_object('level','N2','readback',jsonb_build_object(
               'query','SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo=''ACT-0058''',
               'source','lf_activos'))
-        )))))
+        )))))))
   );
 
 do $test$
