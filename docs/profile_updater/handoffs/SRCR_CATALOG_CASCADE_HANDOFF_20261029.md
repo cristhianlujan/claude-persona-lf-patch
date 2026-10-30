@@ -478,3 +478,24 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 - Correction commit `f9f0f04e48a3c3b73b7783ab4dd2ff7c78fc1524`: SKILL runtime capsule and N1..N6 authority method changed from mandatory broad GitHub/aliases to scoped CURRENT rule-first lookup. T4c challenges N1/N2 applicability; deterministic checker demands CURRENT DIRECT_ASSET + DECLARED_POLICY evidence and requires GITHUB only when a contract is actually implicated. Test v11 includes valid two-stage bounded query and negative missing-applicability cases. No change in owner_name, rights or runtime.
 - Source registration gap is distinct from missing evidence and from rule applicability: respond `POLICY_NOT_REGISTERED` and propose governed rule registration, NOT automatically assign SUPER_ADMIN and NOT claim the global fallback is activated.
 - Exact v11 case execution / full WEB-001 model paired run is still NOT_VERIFIED; PASE is only static/control proof.
+
+## SCOPED_POLICY_APPLICABILITY implementation (2026-10-30)
+
+**Purpose:** make the existing SRCR repair profile discover the *applicable* rule by scope before guessing an owner/value, with no hard-coded SUPER_ADMIN, no unbounded DB/GitHub search, no new DB table/service, no second judge.
+
+**Implemented in PR #3359 candidate:**
+1. Existing `contracts/dynamic_method_catalog.v1.json` now declares `SCOPED_POLICY_APPLICABILITY`, selected by semantic evidence signals (missing governed value, missing policy parameter, authority ambiguity, scope conflict, policy-driven decision). N1 = `v_lf_operation_policy_snapshot` scoped by governed operation; N2 = `lf_policy_versions` current version and optionally `private.lf_reusable_policy_registry_v1` applicability. N3–N5 only when those scoped checks cannot settle the question. Four dispositions: POLICY_APPLICABLE, POLICY_NOT_APPLICABLE, POLICY_NOT_REGISTERED (bounded to checked catalogs), POLICY_SOURCE_UNAVAILABLE.
+2. Model-facing SKILL capsule and N1–N6 method use selector and typed results; no implicit owner/permission assignment. Existing semantic judge T4d checks rule authority, effect, source provenance, status and scope. T4c preserves missing-owner challenge.
+3. Optional `policy_resolution[]` in existing strict output schema (backward-compatible, no new operation). Existing `validators/producer_depth.py` verifies N1/N2 order, correct canonical sources, scope-type, exact CURRENT manifest source locator, unavailability errors, policy code and SHA consistency, and action/decision correspondence; active scope/effect remains independent semantic judge responsibility.
+4. New `evals/v12_scoped_policy_resolution_cases.py` integrated into existing `validators/validate_pack.py`. Four materially different rule needs are covered: owner, retry, permission and validation. Adversarial cases reject missing N2, target-exact vs policy-scope confusion, superseded/borrowed evidence, candidate-only falsely active policy, mismatched SHA and source errors mistaken for absence. Historical WEB-001 missing-owner v11 retained.
+
+**Verified CI against exact code tree:**
+- GitHub Actions `41134930122` SUCCESS, tested SHA `9f681b49c3210e9f9cb69e6ba0472dde65557326`.
+- v11 original WEB-001 owner-discovery regression **16/16 PASS**.
+- v12 generic scoped-rule resolution **26/26 PASS**.
+- `PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK` full profile pack; Python `compileall` PASS.
+- Temporary CI workflow removed by commit `c2ed17fda5d57a962b7e565be5638707262defb9`; validated exact tested and after-cleanup profile tree SHA both `6f58bbc6b5fc8f6b3bfb82edcc7b9c4039b8c07f`. No permanent workflow modifications.
+
+**Live data readback before implementation:** current `v_lf_operation_policy_snapshot` for `ORQUESTACION_PIPELINE_LF` returned GOVERNANCE_LIFECYCLE, POLICY_CONSUMPTION, SOURCE_RESOLUTION, STATE_MODEL. No active owner_name NULL -> SUPER_ADMIN policy found in scoped `lf_policy_versions` or reusable policy registry; the GitHub governance Super Admin contract is read-only candidate and PASE-scoped, not automatic asset-owner authorization.
+
+**Status boundaries:** Candidate code and isolated CI tests PASS. The governed SRCR profile update/evolution step 37 is NOT VERIFIED; no new official paired WEB-001 run attested to the latest tree; independent judge T4d has not been exercised with live receipts. No merge or runtime promotion; no LF asset owner or production DB modified. Next official proof requires paired run and independent source readback on exact SHA via existing governed router/updater; no automatic approval.
