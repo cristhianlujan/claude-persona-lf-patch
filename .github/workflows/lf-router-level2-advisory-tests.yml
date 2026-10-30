@@ -83,6 +83,10 @@ on:
       - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
       - 'services/profile_runtime_api/tests/test_governed_profile_operation_bridge.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_candidate_20261030.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_screen_selector_full_catalog_pg17.sql'
+      - 'supabase/migrations/*lf_profile_screen_selector_full_catalog_fallback_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -132,6 +136,58 @@ permissions:
   contents: read
 
 jobs:
+  profile-screen-selector-fallback-pg17:
+    name: profile-screen-selector-fallback-pg17-isolated
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      pg:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: isolated-only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 4s
+          --health-retries 8
+    steps:
+      - name: Checkout isolated candidate (no production credentials)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test filtered fallback and governed semantic selector in ephemeral PostgreSQL
+        shell: bash
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        run: |
+          set -euo pipefail
+          test -n "$PG_CONTAINER"
+          cmp -s \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_candidate_20261030.sql \
+            supabase/migrations/20261030224500_lf_profile_screen_selector_full_catalog_fallback_v1.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_candidate_20261030.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_screen_selector_full_catalog_pg17.sql
+          docker exec "$PG_CONTAINER" psql -U postgres -d postgres -At -c \
+            "SELECT 'SCREEN_SELECTOR_POST_MIGRATION_MD5='||md5(pg_get_functiondef('public.lf_profile_screen_selector_semantic_prepare_v1(text,jsonb)'::regprocedure));"
+
+          docker exec "$PG_CONTAINER" createdb -U postgres selector_rollback_probe
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < supabase/migrations/20261030224500_lf_profile_screen_selector_full_catalog_fallback_v1.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_rollback_20261030.sql
+          actual_md5="$(docker exec "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -At -c \
+            "SELECT md5(pg_get_functiondef('public.lf_profile_screen_selector_semantic_prepare_v1(text,jsonb)'::regprocedure));")"
+          test "$actual_md5" = '7fefd902c745d18bf469b01b3280fe63'
+          echo 'PASS_SELECTOR_EXACT_SOURCE_ROLLBACK'
+
+
   router-one-path-postgres-isolated:
     name: router-one-path-pg17-isolated-no-remote
     if: ${{ github.event_name == 'pull_request' }}
