@@ -1,0 +1,310 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-HMOPRICING001-BASELINE-20261029",
+  "case_id": "HMO-PRICING-001",
+  "profile_slug": "product_director_lf",
+  "profile_tree_sha256": "cd2433c5b581c360b22ce0b09aa4c390d5530c33c34d6bae0b47c423d894ac80",
+  "attestation": "NONE",
+  "recorded_at": "2026-10-30T01:30:00Z",
+  "executor": {
+    "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+    "note": "Current profile tree on main; baseline of a profile with no pending update."
+  },
+  "conditions": "Isolated model given only the profile tree and case.md; iterate with the profile validator until valid; one run.",
+  "validator": {
+    "tool": "profiles/product_director_lf/validators/validate_product_director_output.py",
+    "valid": true,
+    "errors": []
+  },
+  "output": {
+    "worker": "product_director_lf",
+    "output_type": "PRODUCT_DIRECTION_SPEC",
+    "deliverable_created": {
+      "product_decision": {
+        "decision_id": "PD-HMO-CHECKOUT-CHARGE-VISIBILITY-001",
+        "selected_decision": "La visibilidad de cada concepto del desglose de cargos en el checkout del Home Multi Oferta la decide la configuracion B2B vigente (R-HMO-016, APROBADO); R-HMO-018 (CANDIDATO, percepcion no validada) no se adopta como comportamiento por defecto ni como regla: su resumen simple con detalle expandible queda solo como propuesta de presentacion no canonica, aplicable unicamente a los conceptos que la configuracion marque como visibles. El precio final a pagar hoy es siempre visible y la visibilidad nunca altera calculo, persistencia, auditoria ni comprobante.",
+        "rationale": "R-HMO-016 es APROBADO, CRITICA, decision_owner usuario y source_of_truth SUPABASE; R-HMO-018 es CANDIDATO con research_pending customer_perception y reevalua_reference. Un candidato no puede sustituir a una regla aprobada. R-HMO-006 y R-HMO-015 confirman que los importes provienen de configuracion B2B versionada y que ocultar una linea no cambia el precio final. R-HMO-018 no se contradice en lo esencial (precio final primero, no ocultar internos) y su parte compatible se conserva como propuesta etiquetada.",
+        "source_refs": [
+          {
+            "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+            "authority": "AUTHORITATIVE",
+            "supports": "Visibilidad por concepto segun configuracion B2B vigente; precio final siempre visible; visibilidad solo de presentacion; backend conserva todos los componentes.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-006",
+            "authority": "CONSTRAINT",
+            "supports": "Precio final como dato principal; formula del precio final; no inferir comisiones en frontend; ocultar una linea no modifica el precio; importes ocultos se conservan en backend, auditoria y comprobante.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-015",
+            "authority": "CONSTRAINT",
+            "supports": "Cargos obtenidos de configuracion versionada por socio B2B; guardar pricing_config_code y version por checkout; bloquear checkout si falta configuracion.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018",
+            "authority": "CONTRADICTORY",
+            "supports": "Pide resumen simple con detalle expandible por defecto; es CANDIDATO con percepcion de cliente pendiente de validar, por lo que no prevalece sobre R-HMO-016.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-017",
+            "authority": "CONTEXT",
+            "supports": "El fee B2B a LF (CANDIDATO) es independiente y no se presenta al cliente; solo contexto, no autoriza ninguna afirmacion.",
+            "current": true
+          }
+        ],
+        "rejected_alternatives": [
+          {
+            "alternative": "Mostrar por defecto resumen simple con detalle expandible segun R-HMO-018",
+            "reason": "R-HMO-018 es CANDIDATO con research_pending customer_perception; no puede imponerse sobre R-HMO-016 APROBADO ni fijar un default que anule la configuracion B2B."
+          },
+          {
+            "alternative": "Fijar en frontend un default de visibilidad independiente de la configuracion",
+            "reason": "Viola R-HMO-016 y R-HMO-006 (no inferir en frontend; frontend display_only)."
+          },
+          {
+            "alternative": "Cerrar el diseno del resumen expandible como definitivo",
+            "reason": "R-HMO-018 exige validar percepcion antes de cerrar diseno; esa validacion no esta hecha."
+          }
+        ],
+        "tradeoffs": [
+          "Se prioriza la regla aprobada y la flexibilidad por socio B2B sobre una experiencia uniforme de resumen/expandible aun no validada con clientes.",
+          "UX/UI debe disenar estados variables segun configuracion en lugar de una unica pantalla fija."
+        ],
+        "preserved_constraints": [
+          "Precio final a pagar hoy siempre visible y como dato principal.",
+          "Visibilidad es exclusivamente de presentacion: no modifica calculo, persistencia, auditoria ni precio final.",
+          "Frontend display_only: no inferir comisiones ni importes; usar solo la configuracion B2B vigente.",
+          "Backend, auditoria y comprobante conservan todos los componentes, incluidos los ocultos; la version de configuracion se persiste (pricing_config_code y version).",
+          "No presentar al cliente costos internos ni componentes asumidos por B2B o LF, ni el fee B2B (R-HMO-017).",
+          "El total final debe coincidir con el desglose visible; si no cuadra, mostrar precio final y bloquear (error de R-HMO-016)."
+        ],
+        "semantic_qualifiers": [
+          "R-HMO-018 es CANDIDATO: percepcion de cliente pendiente de validar; no es regla vigente.",
+          "El resumen simple con detalle expandible es PROPUESTA NO CANONICA (PROPOSED_NOT_CANONICAL), no politica de producto.",
+          "La visibilidad de cada concepto depende de la configuracion B2B vigente; no hay default de visibilidad aprobado fuera de ella."
+        ]
+      },
+      "included_scope": [
+        "Mostrar siempre final_customer_price como dato principal en el checkout.",
+        "Renderizar cada concepto (offers_subtotal_today, management_fee_customer, management_fee_igv_customer, niubiz_fee_customer, niubiz_fee_igv_customer) solo si la configuracion B2B vigente lo marca visible; aplicar hide_when_zero segun hide_zero_value_components.",
+        "Estados de presentacion para cualquier combinacion de visibilidad de la configuracion, con el total siempre coherente con lo visible.",
+        "Propuesta etiquetada PROPOSED_NOT_CANONICAL: agrupar los conceptos visibles en una linea resumen y detalle expandible, sujeta a validacion de percepcion."
+      ],
+      "excluded_scope": [
+        "Cualquier calculo o inferencia de comisiones en frontend.",
+        "Mostrar costos internos, componentes asumidos por B2B o LF, o el fee B2B de recuperacion.",
+        "Cambiar el modelo de pricing, la formula o la persistencia/auditoria por motivos de visibilidad.",
+        "Cierre definitivo del diseno del resumen expandible antes de validar percepcion.",
+        "Definir un default de visibilidad no respaldado por regla aprobada."
+      ],
+      "priority": {
+        "level": "ALTA",
+        "rationale": "R-HMO-016 y R-HMO-006 son CRITICAS y APROBADAS; la presentacion del checkout afecta lo que el cliente paga hoy."
+      },
+      "acceptance_criteria": [
+        {
+          "criterion_id": "AC-HMO-1",
+          "condition": "El precio final a pagar hoy es siempre visible como dato principal, con cualquier configuracion de visibilidad.",
+          "observable_check": "Por cada configuracion de prueba (todos visibles, todos ocultos, hide_zero activo), el checkout renderiza final_customer_price y la prueba falla si no aparece."
+        },
+        {
+          "criterion_id": "AC-HMO-2",
+          "condition": "Cada concepto se muestra u oculta exactamente segun la configuracion B2B vigente, sin default propio del frontend.",
+          "observable_check": "Con dos configuraciones B2B distintas para la misma oferta, el conjunto de lineas renderizadas coincide con el flag de visibilidad de cada una; una implementacion con un default fijo (p. ej. siempre resumen expandible) falla."
+        },
+        {
+          "criterion_id": "AC-HMO-3",
+          "condition": "Ocultar una linea no altera el precio final ni lo persistido.",
+          "observable_check": "Con y sin linea oculta, final_customer_price es identico y backend, auditoria y comprobante contienen los cinco componentes; se persisten pricing_config_code y version del checkout."
+        },
+        {
+          "criterion_id": "AC-HMO-4",
+          "condition": "El total coincide con el desglose visible; si no cuadra se muestra el precio final y se bloquea.",
+          "observable_check": "Caso de prueba con desglose visible inconsistente: se muestra final_customer_price y el checkout queda bloqueado (error de R-HMO-016)."
+        },
+        {
+          "criterion_id": "AC-HMO-5",
+          "condition": "No se muestran costos internos ni componentes asumidos por B2B o LF, ni el fee B2B.",
+          "observable_check": "Ningun componente fuera de los cinco conceptos del cliente aparece en la UI en ninguna configuracion."
+        },
+        {
+          "criterion_id": "AC-HMO-6",
+          "condition": "El resumen/expandible, si se implementa, esta etiquetado como propuesta pendiente de validacion de percepcion y solo cubre conceptos visibles.",
+          "observable_check": "La entrega de UX/UI declara la propuesta como PROPOSED_NOT_CANONICAL con la validacion de percepcion de R-HMO-018 pendiente; no hay texto que la presente como regla vigente."
+        },
+        {
+          "criterion_id": "AC-HMO-7",
+          "condition": "Copy no afirma ni oculta cargos de forma que contradiga lo realmente cobrado.",
+          "observable_check": "El texto de cada linea visible refleja el importe configurado; ningun texto declara 'sin cargos' o 'sin costo' cuando existe un importe mayor a cero oculto."
+        }
+      ],
+      "dependencies": [
+        "Configuracion B2B versionada vigente por socio (R-HMO-015) con flags de visibilidad por concepto.",
+        "Backend como fuente de calculo (R-HMO-006, R-HMO-007)."
+      ],
+      "risks": [
+        "Experiencia no uniforme entre socios B2B por visibilidad configurable.",
+        "Percepcion de cliente sobre cargos ocultos o resumidos sin validar (R-HMO-018).",
+        "Texto de Copy que implique ausencia de cargos cuando hay importes ocultos."
+      ],
+      "profiles_to_activate": [
+        "UX/UI",
+        "Copy"
+      ],
+      "blockers": [],
+      "next_step": {
+        "owner": "UX/UI y Copy",
+        "action": "Disenar estados del checkout por configuracion de visibilidad y redactar etiquetas de lineas visibles, tratando el resumen expandible como propuesta pendiente de validar percepcion."
+      },
+      "final_verdict": "PASS_TO_QUALITY_PACK",
+      "evidence_used": [
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-006",
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-015",
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018",
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-017"
+      ],
+      "open_assumptions": [
+        {
+          "id": "OA-1",
+          "status": "PROPOSED_NOT_CANONICAL",
+          "text": "El resumen simple con detalle expandible de R-HMO-018 puede usarse como patron de presentacion para conceptos visibles, sujeto a validacion de percepcion de cliente."
+        },
+        {
+          "id": "OA-2",
+          "status": "OPEN_NON_MATERIAL_TO_THIS_DECISION",
+          "text": "Los flags de visibilidad concretos por socio B2B no estan en el caso; se consumen de la configuracion vigente sin inventarlos."
+        }
+      ],
+      "success_metric_or_proxy": {
+        "proxy": "Porcentaje de checkouts donde lo visible cuadra con final_customer_price y la configuracion versionada persistida; objetivo de cumplimiento 100% en pruebas de aceptacion AC-1 a AC-5. Percepcion de cliente: pendiente de investigacion (R-HMO-018)."
+      },
+      "handoff_to_next": {
+        "target": "UX/UI y Copy",
+        "input_contract": "Disenar y redactar el checkout con final_customer_price siempre visible y cada concepto mostrado u oculto segun la configuracion B2B vigente; tratar el resumen con detalle expandible como propuesta no canonica pendiente de validar percepcion; no inferir importes ni mostrar costos internos.",
+        "qualifiers_to_preserve": [
+          "R-HMO-018 es CANDIDATO: percepcion de cliente pendiente de validar; no es regla vigente.",
+          "El resumen simple con detalle expandible es PROPUESTA NO CANONICA (PROPOSED_NOT_CANONICAL), no politica de producto.",
+          "La visibilidad de cada concepto depende de la configuracion B2B vigente; no hay default de visibilidad aprobado fuera de ella.",
+          "La visibilidad es solo de presentacion: ocultar no cambia el precio final ni lo persistido.",
+          "No mostrar costos internos, componentes asumidos por B2B o LF, ni el fee B2B."
+        ]
+      },
+      "authority_status": "CONFLICT_RESOLVED",
+      "conflict_resolution": {
+        "basis": "R-HMO-016 tiene status APROBADO (CRITICA, decision_owner usuario, source_of_truth SUPABASE) y R-HMO-018 tiene status CANDIDATO con research_pending customer_perception; la regla aprobada prevalece sobre la candidata.",
+        "selected_source_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+        "rejected_source_refs": [
+          "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018"
+        ]
+      },
+      "material_claims": [
+        {
+          "claim": "La visibilidad de cada concepto del desglose depende de la configuracion B2B vigente.",
+          "authority_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "El precio final a pagar hoy es siempre visible y la visibilidad nunca modifica calculo, persistencia, auditoria ni precio final.",
+          "authority_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "Los importes provienen de configuracion B2B vigente y no se infieren en frontend; los importes ocultos se conservan en backend, auditoria y comprobante.",
+          "authority_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-006",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "Los cargos se obtienen de configuracion versionada por socio B2B y se guarda pricing_config_code y version por checkout.",
+          "authority_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-015",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "El resumen simple con detalle expandible es solo una propuesta pendiente de validar percepcion de cliente, no regla vigente.",
+          "authority_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+          "status": "CONSERVATIVE_QUALIFIER"
+        }
+      ],
+      "decision_lineage": {
+        "objective": "Definir como presenta el checkout del Home Multi Oferta el desglose de cargos (gestion, IGV, comision Niubiz) junto al precio final.",
+        "selected_decision": "La visibilidad de cada concepto del desglose de cargos en el checkout del Home Multi Oferta la decide la configuracion B2B vigente (R-HMO-016, APROBADO); R-HMO-018 (CANDIDATO, percepcion no validada) no se adopta como comportamiento por defecto ni como regla: su resumen simple con detalle expandible queda solo como propuesta de presentacion no canonica, aplicable unicamente a los conceptos que la configuracion marque como visibles. El precio final a pagar hoy es siempre visible y la visibilidad nunca altera calculo, persistencia, auditoria ni comprobante.",
+        "evidence_refs": [
+          "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+          "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-006",
+          "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-015",
+          "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018"
+        ],
+        "preserved_constraints": [
+          "Precio final siempre visible",
+          "Visibilidad solo de presentacion; no altera calculo, persistencia, auditoria ni precio final",
+          "Frontend display_only; no inferir comisiones",
+          "Componentes ocultos conservados en backend, auditoria y comprobante",
+          "No mostrar costos internos ni fee B2B"
+        ],
+        "acceptance_refs": [
+          "AC-HMO-1",
+          "AC-HMO-2",
+          "AC-HMO-3",
+          "AC-HMO-4",
+          "AC-HMO-5",
+          "AC-HMO-6",
+          "AC-HMO-7"
+        ],
+        "handoff_effect": "UX/UI y Copy disenan estados por configuracion con precio final siempre visible y tratan el resumen expandible como propuesta no canonica pendiente de validar percepcion, sin inventar defaults ni fortalecer R-HMO-018."
+      }
+    },
+    "score": {
+      "product_decision_clarity": 5,
+      "scope_control_mvp_separation": 5,
+      "acceptance_criteria_quality": 5,
+      "cross_profile_handoff_quality": 5,
+      "evidence_risk_governance_traceability": 5,
+      "total": 25,
+      "evidence_by_criterion": {
+        "product_decision_clarity": [
+          "product_decision.selected_decision resuelve R-HMO-016 vs R-HMO-018",
+          "conflict_resolution.basis por status APROBADO vs CANDIDATO"
+        ],
+        "scope_control_mvp_separation": [
+          "included_scope vs excluded_scope",
+          "open_assumptions OA-1 PROPOSED_NOT_CANONICAL"
+        ],
+        "acceptance_criteria_quality": [
+          "acceptance_criteria AC-1..AC-7 con observable_check",
+          "AC-2 falla ante un default fijo en frontend"
+        ],
+        "cross_profile_handoff_quality": [
+          "handoff_to_next.qualifiers_to_preserve",
+          "handoff_to_next.input_contract para UX/UI y Copy"
+        ],
+        "evidence_risk_governance_traceability": [
+          "product_decision.source_refs con R-HMO-016/006/015/018/017",
+          "material_claims ligados a authority_ref",
+          "decision_lineage.evidence_refs"
+        ]
+      }
+    },
+    "handoff_to_next": {
+      "target": "UX/UI y Copy",
+      "qualifiers_to_preserve": [
+        "R-HMO-018 es CANDIDATO: percepcion de cliente pendiente de validar; no es regla vigente.",
+        "El resumen simple con detalle expandible es PROPUESTA NO CANONICA (PROPOSED_NOT_CANONICAL), no politica de producto.",
+        "La visibilidad de cada concepto depende de la configuracion B2B vigente; no hay default de visibilidad aprobado fuera de ella.",
+        "La visibilidad es solo de presentacion: ocultar no cambia el precio final ni lo persistido.",
+        "No mostrar costos internos, componentes asumidos por B2B o LF, ni el fee B2B."
+      ]
+    },
+    "self_verdict": "PASS",
+    "traceability": {
+      "profile": "product_director_lf",
+      "route": "EJECUCION_PERFIL_LF",
+      "rule_set": "RS-HOME-MULTIOFERTA-001",
+      "rule_set_version": "0.1"
+    }
+  },
+  "output_sha256": "6a327b5664a6bbd552f5403cb4da74eec986bbf78707aa69785eeff0dd5ac667"
+}
