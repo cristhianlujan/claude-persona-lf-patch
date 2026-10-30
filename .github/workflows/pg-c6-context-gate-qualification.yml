@@ -1,0 +1,19 @@
+name: PG C6 context gate qualification
+on:
+  pull_request:
+    paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/c6_context_gate/**'
+      - '.github/workflows/pg-c6-context-gate-qualification.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline adversarial tests (qualification only)
+        run: python -m unittest discover -s sandbox/lf_contract_gate_test/programming_agent_four_stage/c6_context_gate -p 'test_*.py' -v
