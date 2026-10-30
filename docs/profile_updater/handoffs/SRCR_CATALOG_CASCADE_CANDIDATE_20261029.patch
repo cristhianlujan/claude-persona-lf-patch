@@ -227,3 +227,26 @@ diff -ruN a/validators/terminality_gate_v1.py b/validators/terminality_gate_v1.p
      """Return a deterministic SRCR terminal verdict and blocking reasons."""
      reasons: list[str] = []
  
+diff -ruN a/judges/systemic_root_cause_semantic_judge.md b/judges/systemic_root_cause_semantic_judge.md
+--- a/judges/systemic_root_cause_semantic_judge.md
++++ b/judges/systemic_root_cause_semantic_judge.md
+@@ -181,6 +181,19 @@
+ - If a cited reference cannot be resolved in live authority, add `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
+ 
+ For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
++
++### T4b — N1/N2 data-bound research audit (mandatory on material gap-search closure)
++
++Use the existing independent judge; do not create another agent or quality authority. Before endorsing an exhausted search or a material DESIGN_BLOCKING uncertainty, the judge MUST inspect **actual read-only source results**, not just producer narrative, catalog names or a syntactically valid `search_record`.
++
++1. For each material datum/uncertainty ID, independently map `cascade.catalog_checked`, `cascade.search_record` and `attempted_sources[].evidence_id` to CURRENT evidence-manifest entries. Verify an actual N1 view query and an actual N2 canonical-table query, in that order, when those levels are accessible. A catalog label without query/receipt is not coverage. Query only relevant sources; irrelevant catalog entries cannot satisfy the requirement.
++2. Hydrate each bound evidence locator and, when read-only source access exists, re-run a bounded independent SELECT or equivalent readback. Build an **N1_N2_AUDIT_V1** observation for each inspected level and datum: `datum_id`, `level`, `source`, `query_or_locator`, `observed_at`, `source_revision_or_snapshot`, `evidence_id`, `result_kind` (`ROWS|EMPTY|ACCESS_DENIED|ERROR`), `row_count`, `sample_records` (stable row identifiers plus material field/value pairs; redact personal/sensitive values), and `digest_or_readback_ref`. Counts and field values must come from the retrieved result, not a model-generated estimate.
++3. Compare IDs, exact locators, row counts, typed field values (including NULL, false and zero), statuses and conflicts between N1 and N2. A view row and a table row may disagree: record both and resolve authority by the current operation policy. A real empty result requires observed zero rows for the exact scoped query; `ACCESS_DENIED`, timeout, cache miss or unexecuted query is **not** absence of evidence.
++4. Reconcile every open datum separately. Reject duplicate records for datum A used to hide missing evidence for datum B; reject a `NO_EVIDENCE_FOUND` claim if a retrieved row materially answers the question, or if relevant N1/N2 results were skipped. If the producer cites records the judge cannot hydrate, return `UNVERIFIABLE`, not PASS.
++5. Judge output must include `n1_n2_audit` with per-datum observations, `n1_n2_verdict` (`PASS|RETURN_TO_WORKER|UNVERIFIABLE|BLOCK_PIPELINE`), `first_failed_check` and explicit evidence refs. Codes: `N1_QUERY_NOT_PROVEN`, `N2_QUERY_NOT_PROVEN`, `SOURCE_RESULT_MISMATCH`, `DATUM_COVERAGE_MISMATCH`, `FALSE_NO_EVIDENCE`, `SOURCE_ACCESS_NOT_EVIDENCE_ABSENCE`. Return to worker for correctable investigation gaps; deliberate fabricated receipts/evidence are `BLOCK_PIPELINE`.
++
++These checks are non-scoreable prerequisites to `EVIDENCE_INTEGRITY` for applicable closures; a numerical score or an unbound textual assertion cannot override them. The deterministic validator must bind declared query receipts to CURRENT manifest entries before the judge interprets values. This judge instruction alone does not constitute an executed data transport or an independent PASS.
++
+ 
+ 
+ ### T5 — V0.6 physical edge closure
