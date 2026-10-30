@@ -28,7 +28,7 @@ checks = {
 
 steps = [
     ("DIRECT_ASSET", "SUPABASE_TABLE_OR_VIEW", "sql:select owner_name from lf_activos where codigo_activo=$1", "NO_MATCH"),
-    ("DECLARED_POLICY", "SUPABASE_TABLE_OR_VIEW", "sql:select policy_payload from lf_policy_versions where status='ACTIVE'", "NO_MATCH"),
+    ("DECLARED_POLICY", "SUPABASE_TABLE_OR_VIEW", "sql:select policy_payload from v_lf_operation_policy_snapshot where operation_code=$1", "NO_MATCH"),
     ("GOVERNANCE_CONTRACT", "GITHUB_SOURCE", "github://repo@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/contracts/governance.json", "FOUND_CANDIDATE_ONLY"),
 ]
 attempts = [
@@ -36,6 +36,7 @@ attempts = [
      "evidence_id": "EV-AUTH-" + str(i), "result": result}
     for i, (stage, surface, locator, result) in enumerate(steps)
 ]
+attempts[1]["lookup_scope"] = "SCOPE_APPLICABILITY"
 manifest = {"evidence": [
     {"evidence_id": a["evidence_id"], "source_locator": a["locator"], "state": "CURRENT",
      "digest": "sha256:" + str(i+1)*64,
@@ -56,10 +57,10 @@ def variant(fn, m=manifest):
     return codes(x, m)
 
 checks.update({
-    "NO_GITHUB_CONTRACT_REJECTED":
-      "OWNER_AUTHORITY_STAGE_ORDER_OR_COVERAGE" in variant(lambda x: x["attempts"].pop()),
-    "MISSING_ALIAS_EXPANSION_REJECTED":
-      "OWNER_AUTHORITY_ALIAS_EXPANSION_REQUIRED" in variant(lambda x: x.update(alias_terms=["ACT-0058"])),
+    "NO_DECLARED_POLICY_REJECTED":
+      "OWNER_AUTHORITY_STAGE_ORDER_OR_COVERAGE" in variant(lambda x: x["attempts"].pop(1)),
+    "POLICY_APPLICABILITY_REQUIRED":
+      "OWNER_AUTHORITY_POLICY_APPLICABILITY_REQUIRED" in variant(lambda x: x["attempts"][1].pop("lookup_scope")),
     "NO_RATIFICATION_REJECTED":
       "OWNER_AUTHORITY_RATIFICATION_REQUIRED" in variant(lambda x: x.update(authority_effect="AUTO_ASSIGN")),
     "POLICY_NOT_GENERAL_LOOKUP_REJECTED":
@@ -85,6 +86,8 @@ checks.update({
       "OWNER_AUTHORITY_POLICY_NOT_CHECKED" in variant(lambda x: x["attempts"][1].update(surface="GITHUB_SOURCE")),
     "UNRELATED_AUTHORITATIVE_OWNER_UNCHANGED":
       not codes({"authority_kind": "EXISTING_AUTHORITY"}, None),
+    "BOUNDED_TWO_STEP_AUTHORITY_SEARCH_ACCEPTED":
+      not variant(lambda x: x["attempts"].pop(2)),
 })
 for name, passed in checks.items():
     print(("PASS " if passed else "FAIL ")+name)

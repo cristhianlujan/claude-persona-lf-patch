@@ -218,11 +218,13 @@ For every material edge:
 
 A material edge omitted from the graph, an unsupported OBSERVED_CLOSED classification, or evidence that resolves to a different producer/consumer/route/currentness boundary fails semantic closure.
 
-### T4c — Missing-owner declared-authority search challenge
+### T4c — Missing-owner rule applicability challenge
 
-When a missing owner, custodian, approver or runner is proposed through ANALOGY, independently inspect evidence before accepting the producer's conclusion. Validate expanded aliases, scope-wide declared-policy lookup (not just target ID), exact-head GitHub contract/README content search, EKB and source metadata. Reconcile identity, currentness, scope, administrative custody, operational ownership, human-write authority and runner. Candidate/read-only policy is evidence, not active owner-assignment authority. Product administrator is not software-governance SUPER_ADMIN.
+For a material missing or ANALOGY-derived owner, independently test whether the producer first consumed the CURRENT N1 operation policy snapshot and relevant canonical policy registries by applicability scope. A lookup only for the exact asset does not prove the absence of a transversal rule. Check policy code, source authority, effective status, asset/operation scope, currentness and the policy's actual assignment effect; distinguish administrative custodian from operational owner, decision-write authority and runner.
 
-If the producer rejected a candidate solely because other assets of the same type use another owner, or if its authority_search omits current external evidence for direct, declared and governance contract stages, return RETURN_TO_WORKER_FOR_SELF_REPAIR with OWNER_AUTHORITY_SEARCH_INCOMPLETE. Where no active rule applies, require a specific governed ratification proposal; never allow implicit owner_name mutation or privileges. Use the existing T4b judge and return fields; this is no additional engine, agent, output schema or permission.
+When applicable CURRENT rules decide the question, stop searching. When rules are absent, inapplicable or unresolved, require a bounded, evidence-directed follow-up to EKB, registered aliases and referenced contract/content; do NOT demand global GitHub scans or a fixed number of synonyms. A CANDIDATE_READ_ONLY governance root is not an active fallback. Do not accept analogy as authority; where no rule applies, require a concrete governed registration/ratification proposal.
+
+Require `owner.derivation.authority_research` for derived owners with CURRENT external proof of DIRECT_ASSET and DECLARED_POLICY lookups by scope, optional GOVERNANCE_CONTRACT only if materially implicated. Omissions return `OWNER_AUTHORITY_SEARCH_INCOMPLETE` through existing `blocking_codes[]` / `repair_instructions[]`, never a second judge or silent assignment.
 
 ## Verdict rules
 Return `PASS_INDEPENDENT_SEMANTIC` only when:

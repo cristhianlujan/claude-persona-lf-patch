@@ -191,7 +191,7 @@ def _level_trace_errors(casc, manifest, uid, path, err):
 
 
 
-OWNER_AUTHORITY_STAGES = ("DIRECT_ASSET", "DECLARED_POLICY", "GOVERNANCE_CONTRACT")
+OWNER_AUTHORITY_STAGES = ("DIRECT_ASSET", "DECLARED_POLICY")
 OWNER_AUTHORITY_SURFACES = {"SUPABASE_TABLE_OR_VIEW", "SUPABASE_FUNCTION", "GITHUB_SOURCE", "OPERATION_DEFINITION", "EKB", "OTHER_GOVERNED_SOURCE"}
 OWNER_AUTHORITY_RESULTS = {"FOUND_APPLICABLE", "FOUND_NOT_APPLICABLE", "FOUND_CANDIDATE_ONLY", "NO_MATCH", "NO_SOURCE_ACCESSIBLE"}
 
@@ -208,16 +208,13 @@ def _owner_authority_research_errors(owner: Any, evidence_manifest: Any) -> list
     errs: list[dict[str, str]] = []
     if not _nonempty(research.get("scope_classification")):
         errs.append(_err("OWNER_AUTHORITY_SCOPE_REQUIRED", base+".scope_classification"))
-    aliases = research.get("alias_terms")
-    if not isinstance(aliases, list) or len({x.strip().casefold() for x in aliases if _nonempty(x)}) < 3:
-        errs.append(_err("OWNER_AUTHORITY_ALIAS_EXPANSION_REQUIRED", base+".alias_terms"))
     if research.get("authority_effect") != "PROPOSAL_REQUIRES_RATIFICATION":
         errs.append(_err("OWNER_AUTHORITY_RATIFICATION_REQUIRED", base+".authority_effect"))
     attempts = research.get("attempts")
     if not isinstance(attempts, list):
         return errs + [_err("OWNER_AUTHORITY_STAGES_REQUIRED", base+".attempts")]
     stages = [x.get("stage") if isinstance(x, dict) else None for x in attempts]
-    if stages != list(OWNER_AUTHORITY_STAGES):
+    if stages not in (list(OWNER_AUTHORITY_STAGES), list(OWNER_AUTHORITY_STAGES)+["GOVERNANCE_CONTRACT"]):
         errs.append(_err("OWNER_AUTHORITY_STAGE_ORDER_OR_COVERAGE", base+".attempts"))
     proofs = _current_evidence(evidence_manifest)
     seen = set()
@@ -235,8 +232,11 @@ def _owner_authority_research_errors(owner: Any, evidence_manifest: Any) -> list
         if eid in seen:
             errs.append(_err("OWNER_AUTHORITY_EVIDENCE_REUSED", at+".evidence_id"))
         seen.add(eid)
-        if item.get("stage") == "DECLARED_POLICY" and item.get("surface") not in {"SUPABASE_TABLE_OR_VIEW", "SUPABASE_FUNCTION", "EKB"}:
-            errs.append(_err("OWNER_AUTHORITY_POLICY_NOT_CHECKED", at))
+        if item.get("stage") == "DECLARED_POLICY":
+            if item.get("surface") not in {"SUPABASE_TABLE_OR_VIEW", "SUPABASE_FUNCTION"}:
+                errs.append(_err("OWNER_AUTHORITY_POLICY_NOT_CHECKED", at))
+            if item.get("lookup_scope") != "SCOPE_APPLICABILITY":
+                errs.append(_err("OWNER_AUTHORITY_POLICY_APPLICABILITY_REQUIRED", at))
         if item.get("stage") == "GOVERNANCE_CONTRACT" and item.get("surface") != "GITHUB_SOURCE":
             errs.append(_err("OWNER_AUTHORITY_GITHUB_NOT_CHECKED", at))
         if item.get("result") == "NO_SOURCE_ACCESSIBLE" and not _nonempty(item.get("error_detail")):
@@ -245,9 +245,9 @@ def _owner_authority_research_errors(owner: Any, evidence_manifest: Any) -> list
             errs.append(_err("OWNER_AUTHORITY_EVIDENCE_NOT_CURRENT", at+".evidence_id"))
         elif _norm_locator(proofs[eid].get("source_locator")) != _norm_locator(locator):
             errs.append(_err("OWNER_AUTHORITY_EVIDENCE_LOCATOR_MISMATCH", at+".evidence_id"))
-    if len(attempts) == 3 and all(isinstance(x, dict) for x in attempts):
+    if len(attempts) >= 2 and all(isinstance(x, dict) for x in attempts):
         direct = _norm_locator(attempts[0].get("locator"))
-        if any(_norm_locator(x.get("locator")) == direct for x in attempts[1:]):
+        if _norm_locator(attempts[1].get("locator")) == direct:
             errs.append(_err("OWNER_AUTHORITY_GENERAL_POLICY_LOOKUP_REQUIRED", base+".attempts"))
     return errs
 
