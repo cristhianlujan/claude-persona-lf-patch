@@ -1,0 +1,111 @@
+/**
+ * Candidate callable INSIDE existing run-creacion-perfil-lf edge.
+ * Exact GitHub content readback, never model-supplied source. Source provenance
+ * is NOT proof that a runtime enforcement call has executed.
+ */
+export type GhReader = (path: string) => Promise<any>;
+export type AdoptionIntent = {
+ method_id: string; action: "INSERT"|"MODIFY"|"REPLACE"|"REMOVE";
+ relative_path: string; target_anchor: string;
+ predecessor_anchor: string|null; successor_anchor: string|null;
+};
+export type Result = {ok:true;evidence:Record<string,unknown>}|{ok:false;code:string};
+const SHA40=/^[0-9a-f]{40}$/;
+const SLUG=/^[a-z0-9][a-z0-9_]{0,79}$/;
+const METHODS=new Set(["INSERT","MODIFY","REPLACE","REMOVE"]);
+function fail(code:string):Result{return {ok:false,code};}
+function pathFor(slug:string,relative:string):string|null{
+ if(!/^[a-zA-Z0-9_./-]{1,180}$/.test(relative)||relative.startsWith("/")||
+    relative.split("/").some(s=>s==="."||s==="..")||!/\.(md|json|ya?ml)$/.test(relative))return null;
+ return "profiles/"+slug+"/"+relative;
+}
+function enc(path:string):string{return path.split("/").map(encodeURIComponent).join("/");}
+function decodeBase64(input:string):string{
+ const bin=atob(input.replace(/\s/g,""));
+ const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+ return new TextDecoder("utf-8",{fatal:true}).decode(bytes);
+}
+async function sha256(s:string):Promise<string>{
+ const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+ return Array.from(new Uint8Array(d)).map(n=>n.toString(16).padStart(2,"0")).join("");
+}
+async function exact(gh:GhReader,slug:string,sha:string,relative:string){
+ const path=pathFor(slug,relative);if(!path)throw Error("PLACEMENT_PROFILE_PATH_INVALID");
+ const f=await gh("/contents/"+enc(path)+"?ref="+sha);
+ if(!f||f.type!=="file"||f.encoding!=="base64"||typeof f.content!=="string"||!SHA40.test(String(f.sha??"")))
+   throw Error("PLACEMENT_EXACT_GITHUB_FILE_UNVERIFIED");
+ const content=decodeBase64(f.content);
+ if(!content||content.length>200000||content.includes("\0"))throw Error("PLACEMENT_SOURCE_INVALID");
+ return {content,ref:"github://"+path+"@"+sha,blob_sha:f.sha};
+}
+type Section={anchor:string;pos:number;text:string};
+function sections(raw:string):Section[]{
+ const lines=raw.replace(/\r\n?/g,"\n").split("\n");
+ const marks:{anchor:string;pos:number;depth:number}[]=[];
+ for(let i=0;i<lines.length;i++){
+   const m=/^(#{1,6}) +(.+?)\s*$/.exec(lines[i]);
+   if(m)marks.push({anchor:lines[i],pos:i,depth:m[1].length});
+ }
+ return marks.map((a,i)=>{
+   let end=lines.length;
+   for(let j=i+1;j<marks.length;j++)if(marks[j].depth<=a.depth){end=marks[j].pos;break;}
+   return {anchor:a.anchor,pos:a.pos,text:lines.slice(a.pos,end).join("\n")};
+ });
+}
+function one(items:Section[],anchor:string|null):Section|null{
+ if(anchor===null)return null;
+ const found=items.filter(x=>x.anchor===anchor);
+ if(found.length!==1)throw Error("PLACEMENT_ANCHOR_UNVERIFIED_OR_AMBIGUOUS");
+ return found[0];
+}
+function validateOrder(items:Section[],intent:AdoptionIntent,mode:"base"|"candidate"):boolean{
+ const before=one(items,intent.predecessor_anchor),after=one(items,intent.successor_anchor);
+ if(!before&&!after)return false;
+ if(before&&after&&before.pos>=after.pos)return false;
+ if(mode==="base"&&intent.action==="INSERT")return !items.some(x=>x.anchor===intent.target_anchor);
+ if(mode==="candidate"&&intent.action==="REMOVE")return !items.some(x=>x.anchor===intent.target_anchor);
+ const target=one(items,intent.target_anchor);
+ if(!target)return false;
+ return !(before&&target.pos<=before.pos)&&!(after&&target.pos>=after.pos);
+}
+export async function verifyProfilePlacementSource(input:{
+ gh:GhReader; profileSlug:string; baseSha:string; candidateSha?:string;
+ mode:"baseline"|"compare"; selectedMethodIds:string[]; intents:AdoptionIntent[];
+}):Promise<Result>{
+ const {gh,profileSlug:slug,baseSha,candidateSha,mode,intents,selectedMethodIds}=input;
+ if(!SLUG.test(slug)||!SHA40.test(baseSha)||(mode==="compare"&&(!SHA40.test(String(candidateSha))||candidateSha===baseSha)))
+   return fail("PLACEMENT_EXACT_REVISION_INVALID");
+ if(!Array.isArray(intents)||!Array.isArray(selectedMethodIds)||new Set(selectedMethodIds).size!==selectedMethodIds.length)
+   return fail("PLACEMENT_SELECTION_INVALID");
+ if(!intents.length)return {ok:true,evidence:{state:"NO_ADOPTION_DECLARED",profile_slug:slug,base_sha:baseSha}};
+ const selected=new Set(selectedMethodIds),seen=new Set<string>(),verified:Record<string,unknown>[]=[];
+ for(const intent of intents){
+   if(!intent||!selected.has(intent.method_id)||!METHODS.has(intent.action)||seen.has(intent.method_id)||
+      typeof intent.target_anchor!=="string"||!intent.target_anchor||!pathFor(slug,intent.relative_path))
+     return fail("PLACEMENT_INTENT_INVALID");
+   seen.add(intent.method_id);
+   try{
+     const before=await exact(gh,slug,baseSha,intent.relative_path);
+     const beforeSections=sections(before.content);
+     if(!beforeSections.length||!validateOrder(beforeSections,intent,"base"))return fail("PLACEMENT_BASE_ANCHOR_OR_ORDER_INVALID");
+     const from=intent.action==="INSERT"?null:one(beforeSections,intent.target_anchor);
+     let to:Section|null=null,afterRef:string|null=null;
+     if(mode==="compare"){
+       const after=await exact(gh,slug,candidateSha!,intent.relative_path);
+       afterRef=after.ref;
+       const afterSections=sections(after.content);
+       if(!validateOrder(afterSections,intent,"candidate"))return fail("PLACEMENT_CANDIDATE_ORDER_INVALID");
+       if(intent.action!=="REMOVE")to=one(afterSections,intent.target_anchor);
+       if((intent.action==="MODIFY"||intent.action==="REPLACE")&&from&&to&&from.text===to.text)
+         return fail("PLACEMENT_CHANGE_NOT_REALIZED");
+     }
+     verified.push({method_id:intent.method_id,action:intent.action,relative_path:intent.relative_path,
+       target_anchor:intent.target_anchor,base_ref:before.ref,base_blob_sha:before.blob_sha,
+       base_section_sha256:from?await sha256(from.text):null,
+       candidate_section_sha256:to?await sha256(to.text):null,candidate_ref:afterRef});
+   }catch(error){return fail(error instanceof Error?error.message:"PLACEMENT_SOURCE_READBACK_FAILED");}
+ }
+ return {ok:true,evidence:{schema:"PROFILE_NATIVE_PLACEMENT_SOURCE_ATTESTATION_V1",
+   state:"SOURCE_ONLY_NOT_ENFORCEMENT",profile_slug:slug,base_sha:baseSha,
+   candidate_sha:candidateSha??null,records:verified,source:"EXISTING_GITHUB_EXACT_REF_READER"}};
+}
