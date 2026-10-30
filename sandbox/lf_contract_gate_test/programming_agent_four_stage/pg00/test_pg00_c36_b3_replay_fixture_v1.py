@@ -63,6 +63,16 @@ class ReplayTests(unittest.TestCase):
         f["published_releases"][0]["catalog_version"] = "bad"
         self.assertIn("INVALID_PUBLISHED_VERSION_FIXTURE", self.check(candidate(), f))
 
+    def test_huge_candidate_semver_fails_closed(self):
+        self.assertIn("INVALID_CATALOG_VERSION",
+                      self.check(candidate(version="9"*5000+".0.0"), registry()))
+
+    def test_huge_ledger_semver_fails_closed(self):
+        f = registry()
+        f["published_releases"][0]["catalog_version"] = "9"*5000+".0.0"
+        self.assertIn("INVALID_PUBLISHED_VERSION_FIXTURE",
+                      self.check(candidate(), f))
+
     def test_missing_proposal_id(self):
         self.assertIn("INVALID_PROPOSAL_ID",
                       self.check(candidate(proposal_id=None), registry()))
