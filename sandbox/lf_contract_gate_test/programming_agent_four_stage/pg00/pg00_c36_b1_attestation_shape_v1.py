@@ -18,6 +18,7 @@ REVIEW_FIELDS = frozenset({"provider", "review_id", "reviewer_id",
 ATTESTATION_FIELDS = frozenset({"schema_version", "proposal", "source",
                                 "owner_decision", "independent_review"})
 REF = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:/-]{0,127}$")
+SEMVER = re.compile(r"^(0|[1-9][0-9]{0,17})[.](0|[1-9][0-9]{0,17})[.](0|[1-9][0-9]{0,17})$")
 MIGRATION = re.compile(r"^supabase/migrations/[0-9]{14}_[a-z0-9_]+[.]sql$")
 
 
@@ -42,10 +43,13 @@ def validate_shape(manifest, attestation=None):
         value = manifest.get(field)
         reject(not isinstance(value, str) or pattern.fullmatch(value) is None,
                "INVALID_" + field.upper())
-    for field in ("proposal_id", "catalog_version", "chg_id", "policy_version"):
+    for field in ("proposal_id", "chg_id", "policy_version"):
         value = manifest.get(field)
         reject(not isinstance(value, str) or REF.fullmatch(value) is None,
                "INVALID_" + field.upper())
+    version = manifest.get("catalog_version")
+    reject(not isinstance(version, str) or SEMVER.fullmatch(version) is None,
+           "INVALID_CATALOG_VERSION")
     path = manifest.get("migration_path")
     reject(not isinstance(path, str) or MIGRATION.fullmatch(path) is None,
            "INVALID_MIGRATION_PATH")
