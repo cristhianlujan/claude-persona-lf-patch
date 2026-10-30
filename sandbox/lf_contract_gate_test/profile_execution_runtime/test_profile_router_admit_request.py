@@ -87,5 +87,40 @@ class RouterAdmitIssueTest(unittest.TestCase):
                 self.issue_request(body=body)
 
 
+
+class RouterAdmitOutcomeTest(unittest.TestCase):
+    def accepted(self, http_status=200, outcome="NATIVE_EXECUTION_READY", **overrides):
+        result = {
+            "status": "NATIVE_EXECUTION_READY",
+            "gate2_materialized": True,
+            "executor_mode": "GPT_NATIVE",
+            "execution_id": "EXEC-PROFILE-GATE2-AABBCCDDEEFF112233445566",
+            "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+            "next_action": "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
+        }
+        result.update(overrides)
+        fn = runpy.run_path(str(SCRIPT), run_name="outcome_test")["admission_success"]
+        return fn(http_status, {"outcome": outcome, "result": result}, "GPT_NATIVE")
+
+    def test_native_ready_with_receipt_accepted(self):
+        self.assertTrue(self.accepted())
+
+    def test_http_200_pending_must_not_be_success(self):
+        self.assertFalse(self.accepted(outcome="PENDING", status="PENDING"))
+        self.assertFalse(self.accepted(outcome="BLOCKED", status="BLOCKED"))
+        self.assertFalse(self.accepted(http_status=409))
+
+    def test_http_200_incomplete_or_inconsistent_receipt_must_fail(self):
+        for override in (
+            {"execution_id": ""},
+            {"profile_code": ""},
+            {"gate2_materialized": False},
+            {"status": "PENDING"},
+            {"executor_mode": "CLAUDE_NATIVE"},
+            {"next_action": "OTHER"},
+        ):
+            self.assertFalse(self.accepted(**override))
+
+
 if __name__ == "__main__":
     unittest.main()

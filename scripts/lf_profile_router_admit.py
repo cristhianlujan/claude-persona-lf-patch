@@ -101,6 +101,26 @@ def governed_request():
     return _validate(json.loads(raw), os.environ.get("EXECUTOR_MODE", ""))
 
 
+def admission_success(http_status, response, requested_mode):
+    """Only a fully materialized native execution may turn the workflow green."""
+    if http_status != 200 or not isinstance(response, dict):
+        return False
+    result = response.get("result")
+    if not isinstance(result, dict):
+        return False
+    return (
+        response.get("outcome") == "NATIVE_EXECUTION_READY"
+        and result.get("status") == "NATIVE_EXECUTION_READY"
+        and result.get("gate2_materialized") is True
+        and result.get("executor_mode") == requested_mode
+        and isinstance(result.get("execution_id"), str)
+        and bool(result["execution_id"].strip())
+        and isinstance(result.get("profile_code"), str)
+        and bool(result["profile_code"].strip())
+        and result.get("next_action") == "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT"
+    )
+
+
 def main():
     try:
         context, mode = governed_request()
@@ -124,7 +144,8 @@ def main():
         "executor_mode": mode,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
-    if code != 200:
+    accepted = admission_success(code, response, mode)
+    if not accepted:
         # Readable GitHub annotation (no context, no tokens): the outcome codes only.
         summary = {
             "http_status": code,
@@ -136,7 +157,7 @@ def main():
             "blocking_codes": result.get("blocking_codes"),
         }
         print("::error title=ROUTER_ADMIT_BLOCKED::" + json.dumps(summary, ensure_ascii=False))
-    return 0 if code == 200 else 1
+    return 0 if accepted else 1
 
 
 if __name__ == "__main__":
