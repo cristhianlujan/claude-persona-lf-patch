@@ -214,6 +214,16 @@ At minimum:
 10. never create retroactive receipts or auxiliary PRs merely to compare branches;
 11. after merge, read back from the new `main`, close the canonical execution with evidence and enrich EKB.
 
+### Single-command update (Router -> profile -> updater, native chat)
+
+When the user says "actualiza el perfil X" (or equivalent), the Router (ACT-0001) resolves the registered action `PROFILE_UPDATE` -> `ACTUALIZACION_PERFIL_LF` through the governed caller `CALLER-GHA-PROFILE-UPDATE-V1`. A native GPT or Claude chat completes it end to end with one command; the user uploads nothing:
+
+1. Read the profile and its failing evidence. Measure first if needed: `python3 scripts/lf_profile_update_run.py ... --dry-run` validates every request offline and writes nothing.
+2. Author the candidate as a full profile directory in a scratch folder, in this chat (zero-cost: the native chat is the model).
+3. Run `python3 scripts/lf_profile_update_run.py --slug <slug> --target-code <PERFIL-CODE> --candidate-dir <dir> --state <file>`. It opens the execution, measures, records the steps, pushes the branch, runs the compare proof on the exact commit, passes the Merge Train, reads back from `main` and closes. It stops with a stable code if an update is not justified, `main` moved, or a check fails; rerunning resumes from the state file. When it prints `status: BLOCKED`, nothing was opened or written: read `why`, `missing` (what, exact path, the tree hash to bind) and `how`, supply exactly that, and rerun.
+4. Do not dispatch workflows by hand, write to the database, or merge directly. Report the final status and the open limits (self-review, single run, pending semantic checks).
+5. The update does not change the profile runtime state. Enabling is the separate governed operation `ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF`.
+
 ## Governed profile execution
 
 When the user explicitly asks to use an existing repository profile, or Router resolves a request to profile execution, route it as `EJECUCION_PERFIL_LF`.

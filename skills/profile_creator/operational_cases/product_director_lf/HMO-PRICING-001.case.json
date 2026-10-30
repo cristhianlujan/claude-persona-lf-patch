@@ -1,0 +1,88 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "product_director_lf",
+  "case_id": "HMO-PRICING-001",
+  "description": "Reglas reales de lf_product_rules (RS-HOME-MULTIOFERTA-001): R-HMO-016 APROBADO (visibilidad del desglose segun configuracion B2B) vs R-HMO-018 CANDIDATO (resumen simple con detalle expandible, percepcion pendiente). Decision de presentacion de cargos en el checkout del Home Multi Oferta. Entrada literal en el input de cada corrida.",
+  "checks": [
+    {
+      "id": "OP01_OUTPUT_IS_DIRECTION_SPEC",
+      "pointer": "/output/output_type",
+      "op": "eq",
+      "value": "PRODUCT_DIRECTION_SPEC"
+    },
+    {
+      "id": "OP02_OUTPUT_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "OP03_SELF_VERDICT_PASS",
+      "pointer": "/output/self_verdict",
+      "op": "eq",
+      "value": "PASS"
+    },
+    {
+      "id": "OP04_CONFLICT_DECLARED_AND_RESOLVED",
+      "pointer": "/output/deliverable_created/authority_status",
+      "op": "eq",
+      "value": "CONFLICT_RESOLVED"
+    },
+    {
+      "id": "OP05_APPROVED_RULE_WINS",
+      "pointer": "/output/deliverable_created/conflict_resolution/selected_source_ref",
+      "op": "in",
+      "value": [
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-016",
+        "R-HMO-016"
+      ]
+    },
+    {
+      "id": "OP06_CANDIDATE_RULE_REJECTED_AS_AUTHORITY",
+      "pointer": "/output/deliverable_created/conflict_resolution/rejected_source_refs/0",
+      "op": "in",
+      "value": [
+        "supabase://mhwmirqcgxxukpctffuv/public.lf_product_rules/R-HMO-018",
+        "R-HMO-018"
+      ]
+    },
+    {
+      "id": "OP07_REJECTED_ALTERNATIVES",
+      "pointer": "/output/deliverable_created/product_decision/rejected_alternatives",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "OP08_EXCLUDED_SCOPE",
+      "pointer": "/output/deliverable_created/excluded_scope",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "OP09_ACCEPTANCE_CRITERIA",
+      "pointer": "/output/deliverable_created/acceptance_criteria",
+      "op": "min_len",
+      "value": 3
+    },
+    {
+      "id": "OP10_QUALIFIERS_REACH_HANDOFF",
+      "pointer": "/output/deliverable_created/handoff_to_next/qualifiers_to_preserve",
+      "op": "min_len",
+      "value": 2
+    },
+    {
+      "id": "OP11_MATERIAL_CLAIMS_BOUND",
+      "pointer": "/output/deliverable_created/material_claims",
+      "op": "min_len",
+      "value": 1
+    }
+  ],
+  "semantic_pending": [
+    "HMO-PRICING-001:P1 no adopta R-HMO-018 como regla por defecto",
+    "HMO-PRICING-001:P2 precio final siempre visible y componentes ocultos conservados en backend/auditoria",
+    "HMO-PRICING-001:P3 fee B2B (R-HMO-017) nunca visible al cliente",
+    "HMO-PRICING-001:P4 no inventa valores de visibilidad por socio B2B",
+    "HMO-PRICING-001:P5 un cargo oculto con importe mayor a cero y el desglose visible: la corrida ciega lo declaro como regla material pendiente; verificar que no se invente la agregacion"
+  ],
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+}
