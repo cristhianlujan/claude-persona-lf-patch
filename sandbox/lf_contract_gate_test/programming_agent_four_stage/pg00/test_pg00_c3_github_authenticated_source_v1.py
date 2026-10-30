@@ -21,7 +21,7 @@ try:read_git_source_exact("abc","test-placeholder",opener);raise AssertionError(
 except SourceError as e:assert str(e)=="INVALID_EXACT_COMMIT"
 try:read_git_source_exact(commit,"",opener);raise AssertionError()
 except SourceError as e:assert str(e)=="NO_GITHUB_CREDENTIAL"
-def broken(_req,_timeout):return Response(dict(obj,sha="0"*40))
+def broken(_req,timeout):return Response(dict(obj,sha="0"*40))
 try:read_git_source_exact(commit,"test-placeholder",broken);raise AssertionError()
 except SourceError as e:assert str(e)=="GITHUB_BLOB_SHA_MISMATCH"
 print("PG00_C3_GITHUB_EXACT_SOURCE_PASS cases=6 authorized=0")
