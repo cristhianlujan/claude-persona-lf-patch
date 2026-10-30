@@ -1,6 +1,11 @@
-# N-4 / T-REMED exclusivamente — Evidencia P00–P11 (30-10-2026)
+# Input Governance integrado — Evidencia N-4 / T-REMED (30-10-2026)
 
-> **SEGUIMIENTO EXCLUSIVO N-4 / T-REMED.** No es evidencia de cierre del Input Governance original (`IG_CURATOR_VALIDATOR_REFACTOR_V2` / `M10.13`); este último continúa con su ledger y checkpoints independientes. No utilizar el indicador N-4 `0/13` como avance de M10.13, ni su `2/7` para este PR. Ambos proyectos siguen trabajando y no se bloquean recíprocamente. **ANEXO DE EVIDENCIA, NO PLAN NUEVO Y NO GATE NUEVO.** Plan único: `IG_N4_TREMED_PLAN_MAESTRO_EJECUCION_V1_20261028.md`. PR #3269 (DRAFT/NO-GO), HEAD antes del lote `f4a85652b20d00eabb04ba2f694aeca77e4fcd6e`. Lecturas SQL de solo lectura sobre Supabase LF y fuentes Git exact-ref. Este documento **no** ratifica G0–G4, no cierra P00–P12 ni autoriza G5, publicación, reclasificación, Router, migraciones, ACL, PASE o despliegue.
+> **RECTIFICACIÓN DE ALCANCE OPERATIVO.** N-4 y T-REMED **SON parte del flujo de Input Governance**, no productos independientes. Este anexo tiene su propia trazabilidad técnica P00–P11, mientras M10.13 conserva la suya, pero ambos alimentan la **misma decisión de lanzamiento**. El plan maestro del PR #3269 recoge el corte controlado mínimo y la deuda técnica diferible. Verificación SQL en vivo: `fn_input_screen_canonical_graph` → `fn_input_effective_rule_links_v1` → `fn_input_declared_rule_links_v1` (N-4) + `fn_t_remed_global_rules_v1` (herencia histórica); `fn_t_remed_screen_status_v1` usa también grafo canónico + clasificador IG. No crear otra conexión. La versión anterior de este encabezado separaba erróneamente los proyectos.
+>
+> **EVIDENCIA, NO AUTORIZACIÓN DE PRODUCCIÓN.** Para la pantalla 51 / corrida 949 `COMPLETED`, `47/47` familias con `validator_outcome=PASS`, pero su grafo de reglas actual incluye **69 LEGACY_EXPLICIT, 2 DECLARATIVE_APPLICABILITY_V1 y 212 DERIVED_GLOBAL**. Los 212 vínculos requieren contención/alcance verificado para un lanzamiento público de ese flujo: no inferir seguridad de la corrida 949, ni afirmar que todos son erróneos. G4 carece de ruta de autoridad de scope `RULE_APPLICABILITY_CHANGE`; prohibir expansión o promoción nueva sin recibo. Los 10 FAIL de sintéticos son brechas frente a un contrato futuro propuesto, no regresiones del runtime actual ni criterio para borrar todo.
+>
+> **Mínimo de salida:** 1) canary integral de rutas/consumidores/scope efectivo; 2) falso PASS impedido por Validator independiente; 3) salida limitada con rollback y readback. El resto de mejoras se mantiene como deuda técnica dentro de Input Governance. No confundir los porcentajes de sus ledgers.
+
 
 ## 1. Arquitectura / alcance de ejecución
 
