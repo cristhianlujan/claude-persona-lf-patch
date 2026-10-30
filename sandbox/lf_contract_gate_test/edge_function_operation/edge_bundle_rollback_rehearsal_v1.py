@@ -28,10 +28,10 @@ ROLLBACK_FILES = ("index.ts", "caller.ts")
 ARTIFACT = Path("m105_edge_bundle_rollback_rehearsal.json")
 # Exact, reviewed 2026-10-28 deploy-compatibility change: remove a type-only
 # Deno import and replace it with a comment. No other entrypoint drift is accepted.
-LEGACY_DENO_TYPES_IMPORT = b'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\\n'
+LEGACY_DENO_TYPES_IMPORT = b'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n'
 CURRENT_DENO_TYPES_COMMENT = (
     b"// Deno.serve and Deno.env are native runtime globals; "
-    b"no remote JSR types fetch required.\\n"
+    b"no remote JSR types fetch required.\n"
 )
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 
