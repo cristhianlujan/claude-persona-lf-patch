@@ -1,0 +1,10 @@
+{
+  "solution_ref": "profile-screen-selector-full-catalog-20261030",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/profile-screen-selector-full-catalog-20261030.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_candidate_20261030.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_screen_selector_full_catalog_pg17.sql": "RUNTIME_TESTING",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+  }
+}
