@@ -1,0 +1,113 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "case_id": "N1N2-001",
+  "description": "Caso adversarial de reparación: una incertidumbre de diseño material continúa abierta y las dos fuentes relevantes están accesibles. El perfil debe registrar por separado la lectura de la vista operativa (N1) y la tabla canónica (N2), preservar los valores y no declarar ausencia de evidencia por un error de lectura. El juicio independiente conserva su propio pase en el proceso existente; no se da por aprobado por una referencia escrita.",
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT",
+  "input_case": {
+    "scenario": "Una decisión de diseño de reparación depende de un dato aún no ratificado. El solicitante confirma que la vista operativa y la tabla canónica pertinentes están disponibles en modo solo lectura. El perfil debe mostrar el dato pendiente como DESIGN_BLOCKING, realizar o requerir las lecturas reales N1->N2 y conservar las referencias; no puede afirmar que buscó todo ni cerrar como reparado sin recibos.",
+    "scope": "Exactamente una incertidumbre material; N1 y N2 accesibles; ninguna escritura; los demás pasos y el juez existentes permanecen intactos.",
+    "negative_controls": [
+      "Una referencia inventada no prueba una lectura",
+      "EMPTY real no equivale a ACCESS_DENIED ni ERROR",
+      "Una fuente para el dato A no sustituye el dato B",
+      "No declarar EXHAUSTED_SEARCH si N1 o N2 no se consultó",
+      "No certificar PASS sin comparación independiente de valores y origen"
+    ]
+  },
+  "checks": [
+    {
+      "id": "N12_01_PENDING_DECISION_IS_HONEST",
+      "pointer": "/output/status",
+      "op": "eq",
+      "value": "NEEDS_MORE_EVIDENCE"
+    },
+    {
+      "id": "N12_02_OUTPUT_SCHEMA_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "N12_03_MATERIAL_UNCERTAINTY_REPORTED",
+      "pointer": "/output/current_uncertainties",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "N12_04_MATERIAL_IMPACT_CLASSIFIED",
+      "pointer": "/output/current_uncertainties/0/impact",
+      "op": "eq",
+      "value": "DESIGN_BLOCKING"
+    },
+    {
+      "id": "N12_05_DATUM_HAS_IDENTITY",
+      "pointer": "/output/current_uncertainties/0/uncertainty_id",
+      "op": "nonempty"
+    },
+    {
+      "id": "N12_06_N1_QUERY_DEFINED",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/0/level",
+      "op": "eq",
+      "value": "N1"
+    },
+    {
+      "id": "N12_07_N1_EVIDENCE_IDENTIFIED",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/0/evidence_id",
+      "op": "nonempty"
+    },
+    {
+      "id": "N12_08_N2_QUERY_DEFINED",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/1/level",
+      "op": "eq",
+      "value": "N2"
+    },
+    {
+      "id": "N12_09_N2_EVIDENCE_IDENTIFIED",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/1/evidence_id",
+      "op": "nonempty"
+    },
+    {
+      "id": "N12_10_N1_SOURCE_VALUES_PRESENT",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/0/readback/row_count",
+      "op": "in",
+      "value": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "id": "N12_11_N2_SOURCE_VALUES_PRESENT",
+      "pointer": "/output/current_uncertainties/0/cascade/catalog_queries/1/readback/row_count",
+      "op": "in",
+      "value": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  ],
+  "semantic_pending": [
+    "Verificar mediante lectura independiente real que N1 y N2 son pertinentes a este datum y no listas arbitrarias",
+    "Confirmar SHA, fecha, fuente y valores tipados desde el proveedor, no del relato del productor",
+    "Probar los casos de referencias falsas, cambios de valores, duplicación, EMPTY contra ERROR y falta de acceso",
+    "Confirmar la secuencia del mismo juez ya vinculado al perfil, sin añadir pasos ni permisos"
+  ]
+}
