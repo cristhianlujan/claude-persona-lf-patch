@@ -440,3 +440,13 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 4. Registrar la brecha fuente->ledger->juez en EKB únicamente por su mecanismo gobernado al realizar el Train. No duplicar orquestador, registro de resolvedores, juez, pipeline ni perfil; no mover la escritura al Router.
 
 **Dictamen:** `CANDIDATE_VALIDATORS_CI_PASS`; `LIVE_N1_N6_RUNTIME_UNVERIFIED`; `PROFILE_EVOLUTION_UNVERIFIED`. No merge ni promoción.
+
+
+## Corte de continuidad — tres pendientes N1–N6 (30/10/2026)
+- **Integración en candidato:** migración NO APLICADA `supabase/migrations/20261030211000_lf_srcr_n1_n2_existing_execution_ledger_gate_v1.sql`. Función source-first N1/N2, anclaje mediante `fn_lf_evidence_ledger_anchor_v1`, recorder propio de EJECUCION_PERFIL paso 60, verificación por juez existente paso 70; inicializador server-side para nuevas ejecuciones. No modifica `main` ni Supabase.
+- **Prueba parcial real:** PostgreSQL 16 temporal, N1/N2 6/6 PASS (run 41121718046). Se detectó error de comillas en el recorder y se corrigió en commit `d7447d4d42970dfe737aa91749282990655f0dd4`; run corregido 41122329316 seguía QUEUED en última consulta. El test usa anclador stub en PostgreSQL temporal, no Ledger vivo.
+- **Readback real de Supabase:** 0 recibos `PROFILE_N1_N2_SOURCE` VERIFIED; `lf_profile_execution_trust_validation_v2` aún sin guard N1/N2 en runtime. No hay actor Ledger autorizado de la misma ejecución. No fingir ejecución de perfil o recibo.
+- **Comparador oficial ejecutado:** GitHub Actions 41121408503 = FAIL esperado: grupo estructural 15/15 ambos; WEB-001 UNMEASURED, `checks_total=0`, `NO_DEMONSTRATED_IMPROVEMENT`. Faltan dos corridas completas y acreditadas del mismo WEB-001 ligadas a los árboles actuales.
+- **Train:** no ejecutado; PR #3359 DRAFT y sin merge porque faltan las pruebas operacionales y atestación. No usar label `ready-to-merge`, ni insertar SQL directo. El Train existente y la ruta gobernada deben autorizar el materialize.
+- **Control de PASE:** workflows de CI temporales añadidos para pruebas provocaron `FAIL_UNAUTHORIZED_GITHUB_PATH`; su eliminación está pendiente por bloqueo de herramienta. No afirmar PASE verde.
+**Dictamen:** VALIDADORES DEL CANDIDATO PASARON; INTEGRACIÓN VIVA NO_VERIFICADA; EVOLUCIÓN OFICIAL NO_DEMOSTRADA; ACTIVACIÓN BLOQUEADA.
