@@ -108,6 +108,17 @@ checks.update({
  "WRONG_LEVEL_DATUM_REJECTED":"GAP_LEVEL_TRACE_DATUM_MISMATCH" in _level_codes([n3,dict(n4,datum_id="OTHER"),n5]),
 })
 
+
+# Regression: the previous GPT-native WEB-001 partial N1/N2 probe must NOT
+# qualify as an exhausted N1-N6 search after this change.
+import runpy
+packet_path=pathlib.Path(__file__).resolve().parents[3]/"docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CURRENT_CHAT_N1N2_READBACK_20261030.json"
+packet=json.loads(packet_path.read_text(encoding="utf-8"))
+from runtime_validate import validate as validate_runtime
+historical_result=validate_runtime(packet["raw_output"],packet["evidence_manifest"])
+historical_codes={r.get("code") for r in historical_result.get("errors",[]) if isinstance(r,dict)}
+checks["WEB001_PARTIAL_N1_N2_CANNOT_CLOSE_N6"]="GAP_LEVEL_TRACE_REQUIRED" in historical_codes
+
 for k,v in checks.items(): print("ok  " if v else "FAIL", k)
 print(f"EXHAUSTED_SEARCH_CASES={sum(checks.values())}/{len(checks)}")
 sys.exit(0 if all(checks.values()) else 1)
