@@ -48,7 +48,7 @@ def read_git_source_exact(commit: str, token: str, opener=None) -> SourceReadbac
         if payload.get("encoding") != "base64":
             raise SourceError("SOURCE_ENCODING_UNSUPPORTED")
         raw = base64.b64decode(payload["content"], validate=False)
-        blob_sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+        blob_sha = hashlib.sha1(b"blob " + str(len(raw)).encode() + bytes([0]) + raw).hexdigest()
         if payload.get("sha") != blob_sha:
             raise SourceError("GITHUB_BLOB_SHA_MISMATCH")
         catalog = json.loads(raw)
