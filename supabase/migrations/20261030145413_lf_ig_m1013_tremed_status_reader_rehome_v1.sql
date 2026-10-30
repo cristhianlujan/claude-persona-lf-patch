@@ -1,6 +1,7 @@
 -- IG M10.13 CP3: rehome the NON-FROZEN T-REMED status reader only.
 -- Retain frozen history, T-REMED recommendations/promotions, rules and scope.
 -- No DROP/REVOKE, no new engine, no historical rule reclassification.
+-- Requires the exact optimized-ctx RUNTIME_CONFIG oracle correction from PR #3367.
 BEGIN;
 DO $ig_tremed_reader$
 DECLARE
@@ -25,7 +26,7 @@ BEGIN
        <> '7257b9bbc86b1f61e5435a37479d63a1'
   OR (SELECT md5(prosrc) FROM pg_proc WHERE oid=to_regprocedure(
      'programacion.fn_input_governance_bootstrap_classify_v2_ctx(integer,text,bigint,jsonb)'))
-       <> '11bd4af470dffc3d2ae8c1316774c1ba'
+       <> '60465360cf3b0a4eced2fd7b424d5041'
   THEN RAISE EXCEPTION 'IG_TREMED_CLASSIFIER_SOURCE_DRIFT'; END IF;
 
   v_function:=to_regprocedure(v_ident);
