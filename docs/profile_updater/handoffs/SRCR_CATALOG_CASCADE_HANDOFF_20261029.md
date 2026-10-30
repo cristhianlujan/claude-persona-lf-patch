@@ -452,3 +452,21 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 
 - **Última comparación exacta 41122329316:** mismo resultado `NO_DEMONSTRATED_IMPROVEMENT`; no confundir esta corrida con el SQL PASS 41122329229.
 **Dictamen:** VALIDADORES DEL CANDIDATO PASARON; INTEGRACIÓN VIVA NO_VERIFICADA; EVOLUCIÓN OFICIAL NO_DEMOSTRADA; ACTIVACIÓN BLOQUEADA.
+
+## RCA: missing-owner policy discovery and query expansion (2026-10-30)
+
+**Trigger:** WEB-001 previously selected LF_GOVERNANCE for ACT-0058 from sibling-skill analogies (0.79), and rejected SUPER_ADMIN based on other SKILL rows. This is a documented CLAUDE_NATIVE_ISOLATED_SUBAGENT output dated 2026-10-29, but attestation=NONE, so its stated searches are not independently provider-attested tool traces.
+
+**Root cause of missed source:** the recorded DECLARED search was restricted to an ACT-0058 policy match; it was not bound to a manifest evidence ID. It did not demonstrate exact-head GitHub search of generic governance contracts, administrative aliases or the live EKB transversal ownership separation. Negative asset-specific match was mistakenly used as absence of a general rule before analogies.
+
+**Independent discovery:** searching GitHub broadly for governance/SUPER_ADMIN contract terms reveals sandbox/lf_contract_gate_test/transversal_assets/lf_governance_super_admin/lf_governance_super_admin_contract_v1.json and README.md; both define single LF_GOVERNANCE administrative root, role SUPER_ADMIN_GOVERNANCE, PASE scope and state CANDIDATE_READ_ONLY. This is NOT a global automatic owner_name NULL -> SUPER_ADMIN rule for operational SKILL records and grants NO Supabase write authority. Live EKB GOV-TRANSVERSAL-NO-PRODUCT-OWNER-001 separates transversal governance custodian from product owner. Live lf_activos ACT-0058 owner_name remains NULL. A supposedly approved general fallback from June was NOT verified in live EKB, policy/trigger or historical project file; do not claim its activation.
+
+**Patch candidate, no production changes:**
+- SKILL.md: broad alias/scope/declared-policy/contract search before ANALOGY, authoritative state/applicability checks, concrete governed fallback proposal where no current applicable rule exists.
+- judges/systemic_root_cause_semantic_judge.md: same existing judge T4c independently challenges omitted general-policy lookup and contract applicability.
+- validators/producer_depth.py: derived owner requires CURRENT externally referenced N1/N2 exact asset, general DECLARED policy and N4 governance-contract traces; a derived value cannot authorize write.
+- evals/v11_owner_authority_discovery_cases.py: adversarial tests plus replay of the historical WEB-001 output; wired into validate_pack.py.
+
+**Evidence:** code commits 3e2423f938256487d8663a7214090936cacd50eb and 5f45d612167addfdd4a437947af3754f4408a7a1. GitHub PR #3359 candidate HEAD 5f45d612, PASE 41126660521 = SUCCESS and migration name classification 41126660524 = SUCCESS. Exact v11 Python regression and full model-rerun were NOT YET EXECUTED by these workflows. These status labels MUST remain distinct.
+
+**Required next operational readback:** Run v11 and full profile pack in governed CI/runner; then re-run original WEB-001 against the exact evolved tree with independently attested N1-N5 searches and unchanged case constraints. Verify that it (1) finds the PASE-scoped governance-root contract, (2) refuses to call that a global SKILL owner default, (3) proposes governance ratification/fallback rather than falsely resolved owner, and (4) retains repair proposals for web-capture/retry without inventing writes. Keep PR draft until updater step 37 official comparison and runtime evidence.
