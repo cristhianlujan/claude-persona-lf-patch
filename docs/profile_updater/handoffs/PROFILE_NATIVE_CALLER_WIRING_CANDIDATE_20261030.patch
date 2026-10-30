@@ -9,7 +9,7 @@ diff --git a/supabase/functions/run-creacion-perfil-lf/index.ts b/supabase/funct
 +import { verifyProfilePlacementSource, type AdoptionIntent } from "./verified_native_placement_readback.ts";
  
  const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
-@@ -433,5 +433,52 @@
+@@ -433,5 +433,54 @@
            }
          }
 -        const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
