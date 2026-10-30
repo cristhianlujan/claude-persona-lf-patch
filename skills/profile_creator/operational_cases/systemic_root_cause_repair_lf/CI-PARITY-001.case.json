@@ -1,0 +1,73 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "case_id": "CI-PARITY-001",
+  "description": "Registro real de lf_error_knowledge CI-MIGRATION-SOURCE-PARITY-001 (CI_GOVERNANCE, High, freq 37): migracion aplicada en Supabase sin fuente GitHub rompe source parity. Dominio distinto a WEB-001. Entrada literal en el input de cada corrida.",
+  "checks": [
+    {
+      "id": "OP01_CLOSES_WITH_REPAIR_SPEC",
+      "pointer": "/output/status",
+      "op": "eq",
+      "value": "SYSTEMIC_REPAIR_SPEC"
+    },
+    {
+      "id": "OP02_OUTPUT_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
+      "pointer": "/output",
+      "op": "no_node",
+      "key": "status",
+      "values": [
+        "UNRESOLVED",
+        "NEEDS_MORE_EVIDENCE"
+      ]
+    },
+    {
+      "id": "OP04_OWNER_RESOLVED",
+      "pointer": "/output/owner/status",
+      "op": "eq",
+      "value": "RESOLVED"
+    },
+    {
+      "id": "OP05_DERIVED_OWNER_HAS_RATIFICATION",
+      "op": "if_then",
+      "if": {
+        "pointer": "/output/owner/authority_kind",
+        "op": "eq",
+        "value": "DERIVED_PROPOSAL"
+      },
+      "then": {
+        "pointer": "/output/owner/derivation/ratification_ref",
+        "op": "nonempty"
+      }
+    },
+    {
+      "id": "OP06_ALTERNATIVE_SELECTED",
+      "pointer": "/output/selected_alternative",
+      "op": "nonempty"
+    },
+    {
+      "id": "OP07_PLANNED_REGRESSIONS",
+      "pointer": "/output/planned_regressions",
+      "op": "min_len",
+      "value": 3
+    },
+    {
+      "id": "OP08_ACCEPTANCE_CRITERIA",
+      "pointer": "/output/acceptance_criteria",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "OP09_HARD_GUARD_FAIL_CLOSED",
+      "pointer": "/output/hard_guard/fail_closed_condition",
+      "op": "nonempty"
+    }
+  ],
+  "semantic_pending": [],
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+}
