@@ -109,6 +109,11 @@ class NativePlacementCases(unittest.TestCase):
         g["steps"][-1]["source_anchor"] = "SKILL.md#unexpected"
         self.assertIn("PLACEMENT_UNRELATED_STEP_CHANGED", confirm(g))
 
+    def test_neighbor_enforcement_mutation_rejected(self):
+        g = graph(sha=CANDIDATE, ids=("research", "n1_n2", "decision", "quality"))
+        g["steps"][0]["enforcement_ref"] = "native://unrelated"
+        self.assertIn("PLACEMENT_UNEXPECTED_NEIGHBOR_MUTATION", confirm(g))
+
     def test_candidate_head_cannot_equal_base(self):
         self.assertIn("PLACEMENT_CANDIDATE_HEAD_INVALID",
             readback(profile_slug="repair_lf", base_head_sha=BASE,
