@@ -120,3 +120,41 @@ Se inspeccionó directamente Supabase, sin escribir:
 - Hasta tal implementación y verificación en el runtime, `N1_N2_AUDIT_V1` operativo, el judge independiente y WEB-001 permanecen NO_VERIFICADO y el PR sigue DRAFT.
 
 No se debe abrir una prueba operativa de calidad como PASS sobre datos sintéticos. La prueba Python aislada (15/15) confirma únicamente lógica de rechazo, no invocación gobernada del juez.
+
+## CORRECCIÓN DE ALCANCE — misma secuencia con enforcement existente (2026-10-30)
+
+**Este apartado reemplaza expresamente las propuestas anteriores que hablaban de un transportador `quality_readback`, un emisor `QUALITY_BOUNDARY` o un nuevo consumidor de calidad. No deben implementarse.** Se conserva la trazabilidad de esas propuestas como diseños descartados, no como requisitos pendientes.
+
+### Readback del proceso vigente en Supabase
+
+Se consultaron directamente las tablas `public.lf_operation_step_contracts` y `public.lf_operation_step_judge_bindings` para `EJECUCION_PERFIL_LF`.
+
+| Paso existente | Orden | Estado enforcement | Condición / enlace |
+|---|---:|---|---|
+| `research_baseline_freeze` | 47 | `ACTIVE_ENFORCEMENT` | `research_baseline_binding`, `baseline_receipt_ref`, baseline inmutable |
+| `execute_profile` | 50 | `ACTIVE_ENFORCEMENT` | `research_baseline_digest`, `research_baseline_ref`, `profile_output`, `source_refs` |
+| `output_validate` | 60 | `ACTIVE_ENFORCEMENT` | `output_contract_result`, `deterministic_validation` |
+| `semantic_judge` | 70 | `ACTIVE_ENFORCEMENT` | `semantic_judge_result`, `unsupported_claims` |
+| `report_output` | 80 | `ACTIVE_ENFORCEMENT` | prev. juez PASS; `result`, `profile_code`, `execution_id`, `no_write_performed` |
+
+`public.lf_profile_execution_trust_validation_v2(text,text,jsonb)` **ya compara** predecessor clean de `input_validate` / `execute_profile`, scope/candidate digest, independencia del juez y limpia salida de `semantic_judge`; `report_output` exige paso 70 PASS con hashes coincidentes. **No comprueba hoy el contenido material N1/N2** ni el vínculo de un readback independiente a su fuente real.
+
+### Enlace correcto, sin proceso nuevo
+
+**Única ruta:** `EJECUCION_PERFIL_LF` -> `research_baseline_freeze` -> `execute_profile` -> `output_validate` -> `semantic_judge` -> `report_output`. Los pasos 47, 50, 60, 70 y 80 son los existentes. No añadir pasos, wrappers autónomos, segundo juez, tablas ni autoridades nuevas.
+
+- El reparador entrega los datos materiales, consultas y referencias de sus fuentes mediante los campos y evidencias existentes de `execute_profile`.
+- El **mismo juez semántico** del paso 70 lee el candidato y referencias, hace su lectura N1/N2 y emite `n1_n2_audit` / `n1_n2_verdict` **dentro de `semantic_judge_result`** con evidencia de consulta y vínculo a los recibos anteriores.
+- Los validadores deterministas verifican estructura, IDs de cada dato, fuente, filas, tipos, resultados y digest contra el manifiesto. La **autenticidad del readback y el orden** deben ser comprobados por el **enforcement existente del paso 70**, contrastando los recibos externos de ejecución y su autoridad, no una cadena textual autoemitida por el juez.
+- Si el enforcement existente carece de uno de esos controles, **solo extender `lf_profile_execution_trust_validation_v2`/el contrato ya vigente del paso 70 por la ruta gobernada**. No invocar otro proceso ni ejecutar SQL directo. FAIL / falta de readback confiable / discrepancia -> no se registra PASS en el paso 70 -> no se llega a `report_output`.
+- `lf_profile_execution_canonical_read_judge_v1` está restringido a `READ_PRODUCT_DEFINITION`; no reutilizarlo como juez N1/N2 genérico por similitud de nombre.
+
+### Cambio concreto de este lote
+
+- Parche candidato del PR #3359: se **eliminaron por completo** los argumentos y verificaciones del transporte paralelo `quality_readback`, las nuevas firmas de materialización/quality receipt y los cuatro casos asociados del v10. Se mantiene validación de integridad N1/N2 en el juez existente, sin cambiar el contrato público de quality receipt.
+- Ampliación del juez actual documenta el enlace obligado al paso 70 y su enforcement vigente.
+- **22/22 fragmentos de parche** aplican por simulación sobre los contenidos de GitHub en `173088b756d79839bb1cb7b4ba63ee53bad389bc`, 11 destinos. La prueba v10 se redujo a **10 casos propuestos**, aún NO ejecutados sobre el árbol real. El 15/15 reportado antes fue evidencia de **otra versión descartada** y no se aplica al candidato actual.
+
+### Estado verificable
+
+`PR #3359`: DRAFT, solo documentación/candidato; sin editar `profiles/**`, sin desplegar ni modificar Supabase. **Requiere** evidencia de activación del enlace N1/N2 bajo el enforcement vigente y corrida WEB-001 sobre el árbol resultante; no hay pase ni cierre oficial.
