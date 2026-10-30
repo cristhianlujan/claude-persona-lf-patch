@@ -529,7 +529,7 @@ diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_q
 diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate_cases.py
 --- /dev/null
 +++ b/evals/v10_n1_n2_quality_gate_cases.py
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,39 @@
 +#!/usr/bin/env python3
 +"""N1/N2 quality-guard regression. Isolated; no external system writes."""
 +import copy, hashlib, json, runpy, sys
