@@ -200,15 +200,28 @@ function harness(options: HarnessOptions = {}) {
         return new Response(JSON.stringify({
           status: "PROFILE_HANDOFF_READY", write_performed: false, execution_id: null,
           profile_code: "PERFIL-UX-DESIGN-LF", executor_mode: body?.p_executor_mode,
-          router_profile_handoff: { fingerprint_sha256: "a".repeat(64) },
+          router_profile_handoff: {
+            schema_version: "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+            operation_code: "EJECUCION_PERFIL_LF",
+            effect_authority: false, profile_code: "PERFIL-UX-DESIGN-LF",
+            request_sha256: "a".repeat(64), fingerprint_sha256: "b".repeat(64),
+            channel: "PRODUCTO", business: "LF",
+          },
           next_action: "EJECUCION_PERFIL_LF_BEGIN_REQUIRED",
         }), { status: 200 });
       }
-      if (url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1")) {
+      if (url.includes("/rest/v1/lf_activos?codigo_activo=eq.")) {
+        return new Response(JSON.stringify([{
+          codigo_activo: "PERFIL-UX-DESIGN-LF",
+          metadata: { entrypoint_path: "profiles/ux_design_lf/SKILL.md" },
+          ruta_esperada: "profiles/ux_design_lf",
+        }]), { status: 200 });
+      }
+      if (url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")) {
         return new Response(JSON.stringify({
-          status: "NATIVE_EXECUTION_READY", execution_id: "EXEC-PROFILE-GATE2-TEST",
-          profile_code: "PERFIL-UX-DESIGN-LF", executor_mode: body?.p_executor_mode,
-          gate2_materialized: true, next_action: "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
+          status: "READY", init_materialized: true,
+          execution_id: body?.p_execution_id,
+          next_step: "profile_resolve",
         }), { status: 200 });
       }
       if (url.endsWith("/functions/v1/run-creacion-perfil-lf")) {
@@ -616,13 +629,17 @@ Deno.test("CP2: router V2 Stage 07: admitted context explicitly invokes profile 
   });
   assertEquals(response.status, 200);
   assertEquals(payload.outcome, "NATIVE_EXECUTION_READY");
-  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-TEST");
+  assertEquals(payload.result.execution_id, "EXEC-PROFILE-GATE2-" + "A".repeat(24));
   const admit = h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"));
-  const writers = h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1"));
+  const writers = h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
+  const reads = h.calls.filter(c => c.url.includes("/rest/v1/lf_activos?codigo_activo=eq."));
   assertEquals(admit.length, 1);
+  assertEquals(reads.length, 1);
   assertEquals(writers.length, 1);
   assertEquals(writers[0].body?.p_executor_mode, "GPT_NATIVE");
-  assertEquals(writers[0].body?.p_channel, "PRODUCTO");
+  assertEquals(writers[0].body?.p_handoff?.fingerprint_sha256, "b".repeat(64));
+  assertEquals(writers[0].body?.p_target_path, "profiles/ux_design_lf/SKILL.md");
+  assertEquals(writers[0].body?.p_target_repo, REPO);
 });
 
 Deno.test("CP2: router V2 Stage 07: unauthorized identity and REMOTE_API cannot write", async () => {
