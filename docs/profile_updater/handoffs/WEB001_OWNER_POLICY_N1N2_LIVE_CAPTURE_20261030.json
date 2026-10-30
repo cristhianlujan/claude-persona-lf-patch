@@ -122,7 +122,7 @@
           "result_kind": "EMPTY",
           "applicability": "NO_MATCH",
           "lookup_scope": "SCOPE_APPLICABILITY",
-          "observed_at": "2026-10-30 23:44:29.675016+00"
+          "observed_at": "2026-10-30 23:45:13.514018+00"
         },
         {
           "level": "N2",
@@ -152,7 +152,69 @@
     "raw_model_executed": false,
     "profile_validator_pass": false,
     "independent_judge_executed": false,
-    "authoritative_execution_receipt": false
+    "authoritative_execution_receipt": false,
+    "n2_empty_query_time_proved": true,
+    "evidence_manifest_external_attestation": false
   },
-  "next_step": "PROFILE_NATIVE_MODEL_OUTPUT_COMPLETE_WITH_EVIDENCE_MANIFEST_THEN_CANDIDATE_RUNTIME_VALIDATOR"
+  "next_step": "PROFILE_NATIVE_MODEL_OUTPUT_COMPLETE_WITH_EVIDENCE_MANIFEST_THEN_CANDIDATE_RUNTIME_VALIDATOR",
+  "n2_zero_row_independent_confirmation": {
+    "query": "WITH clock AS (SELECT statement_timestamp() AS observed_at), filtered AS (SELECT policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') LIMIT 30) SELECT clock.observed_at,count(filtered.policy_code) AS row_count,coalesce(jsonb_agg(to_jsonb(filtered)) FILTER(WHERE filtered.policy_code IS NOT NULL),'[]'::jsonb) AS rows FROM clock LEFT JOIN filtered ON true GROUP BY clock.observed_at;",
+    "observed_at": "2026-10-30 23:45:13.514018+00",
+    "row_count": 0,
+    "rows": []
+  },
+  "evidence_manifest": {
+    "evidence": [
+      {
+        "evidence_id": "EV-WEB001-POLICY-N1-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,operation_code,policy_role,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_role,policy_code",
+        "source": "public.v_lf_operation_policy_snapshot",
+        "observed_at": "2026-10-30 23:44:29.675016+00",
+        "result_kind": "ROWS",
+        "row_count": 4,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-POLICY-N2-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') ORDER BY policy_code,policy_version LIMIT 30",
+        "source": "public.lf_policy_versions",
+        "observed_at": "2026-10-30 23:45:13.514018+00",
+        "result_kind": "EMPTY",
+        "row_count": 0,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-POLICY-N2-SCOPE-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code,policy_version LIMIT 30",
+        "source": "public.lf_policy_versions",
+        "observed_at": "2026-10-30 23:44:29.719528+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-ASSET-N1-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+        "source": "public.v_lf_fuente_operativa_busqueda",
+        "observed_at": "2026-10-30 23:44:29.813994+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-ASSET-N2-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+        "source": "public.lf_activos",
+        "observed_at": "2026-10-30 23:44:29.907017+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      }
+    ]
+  }
 }
