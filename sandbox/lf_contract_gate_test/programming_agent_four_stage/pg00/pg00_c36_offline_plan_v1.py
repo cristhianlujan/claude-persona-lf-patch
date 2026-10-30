@@ -64,7 +64,7 @@ def inspect_plan(proposal, *, source_bytes, release_bytes, trusted_commit, fixtu
     if isinstance(source, dict) and isinstance(release, dict):
         reject(source.get("status") != "BORRADOR_EN_REPO_DE_CALIFICACION",
                "INVALID_SOURCE_STATUS")
-        reject(release.get("status") not in {"APROBADO", "VALIDAR_CON_LEGAL"},
+        reject(not isinstance(release.get("status"), str) or\n               release["status"] not in {"APROBADO", "VALIDAR_CON_LEGAL"},
                "INVALID_RELEASE_STATUS")
         reject(proposal.get("release_status_requested") != release.get("status"),
                "RELEASE_STATUS_MISMATCH")
