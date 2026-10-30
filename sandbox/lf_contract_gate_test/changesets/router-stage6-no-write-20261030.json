@@ -8,6 +8,8 @@
     "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts": "SUPABASE_FUNCTION",
-    "supabase/functions/lf-profiles-governance-caller-v1/router_stage6_stage7_test.ts": "SUPABASE_FUNCTION"
+    "supabase/functions/lf-profiles-governance-caller-v1/router_stage6_stage7_test.ts": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/router_one_path_pg17_live_snapshot_fixture.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_router_one_path_pg17_isolated.sql": "RUNTIME_TESTING"
   }
 }
