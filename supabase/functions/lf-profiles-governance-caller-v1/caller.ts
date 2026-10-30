@@ -19,6 +19,7 @@ const B2B_ACTION = "input_readiness_b2b_402_v1";
 const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
+const PROFILE_EXECUTION_BEGIN_ACTION = "profile_execution_begin_from_router_context_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -647,7 +648,11 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
       const isRouterAdmitAction = action === ROUTER_PROFILE_ADMIT_ACTION;
-      if (isNativeContinuationIdentity && !isNativeContinuationAction && !isRouterAdmitAction) {
+      // Stage 07 belongs to this SAME exact workflow OIDC scope as Stage 06.
+      // It is still independently fenced by handoff, native mode and canonical writer checks below.
+      const isProfileExecutionBeginAction = action === PROFILE_EXECUTION_BEGIN_ACTION;
+      if (isNativeContinuationIdentity && !isNativeContinuationAction &&
+          !isRouterAdmitAction && !isProfileExecutionBeginAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
       }
       if (isNativeContinuationAction && !isNativeContinuationIdentity) {
@@ -973,8 +978,123 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         if (!response.ok) {
           return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_RPC_REJECTED", rpc_status: response.status }, 502);
         }
-        return json({ outcome: result.status ?? "BLOCKED", caller, result },
-          result.status === "NATIVE_EXECUTION_READY" || result.status === "PENDING" ? 200 : 409);
+        // Stage 06 must NOT return an execution_id or claim a write.
+        // The only accepted result is a validated handoff for Stage 07.
+        const admitted = result.status === "PROFILE_HANDOFF_READY" &&
+          result.write_performed === false &&
+          (result.execution_id === null || result.execution_id === undefined) &&
+          result.next_action === "EJECUCION_PERFIL_LF_BEGIN_REQUIRED" &&
+          result.executor_mode === mode &&
+          !!result.router_profile_handoff && typeof result.router_profile_handoff === "object";
+        return json({ outcome: admitted ? "PROFILE_HANDOFF_READY" : "BLOCKED", caller, result }, admitted ? 200 : 409);
+      }
+
+      if (action === PROFILE_EXECUTION_BEGIN_ACTION) {
+        // Stage 07 is the only explicit writer: EJECUCION_PERFIL_LF.
+        // Never allow an untrusted caller or REMOTE_API to start a native run.
+        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
+        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_IDENTITY_REQUIRED" }, 403);
+        }
+        const context = body.context;
+        if (!context || typeof context !== "object" || Array.isArray(context)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_REQUIRED" }, 400);
+        }
+        const envelope = context as Record<string, unknown>;
+        if (envelope.schema_version !== "LF_ROUTER_EXECUTION_PIPELINE_V1" ||
+            envelope.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
+            envelope.transport_mode !== "CONTEXT_TRANSPORT") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_ENVELOPE_INVALID" }, 400);
+        }
+        const mode = body.executor_mode;
+        if (mode !== "GPT_NATIVE" && mode !== "CLAUDE_NATIVE") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_NATIVE_MODE_REQUIRED" }, 400);
+        }
+        // Re-admit from the SAME canonical context immediately before the write;
+        // never trust a handoff sent by the caller.
+        const admissionResponse = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2`,
+          { method: "POST", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+              "content-type": "application/json",
+            }, body: JSON.stringify({ p_context: context, p_executor_mode: mode }),
+            signal: AbortSignal.timeout(15_000) },
+        );
+        const admission = await parseJsonObject(admissionResponse, "PROFILE_EXECUTION_ADMISSION_RESPONSE_INVALID");
+        if (!admissionResponse.ok || admission.status !== "PROFILE_HANDOFF_READY" ||
+            admission.write_performed !== false ||
+            (admission.execution_id !== null && admission.execution_id !== undefined) ||
+            admission.executor_mode !== mode ||
+            !admission.router_profile_handoff || typeof admission.router_profile_handoff !== "object") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMISSION_NOT_READY" }, 409);
+        }
+        // Preserve the EXACT admission handoff at Stage 07. Do not regenerate it
+        // through after_gate2_v1 (that creates a different issued_at/fingerprint).
+        const handoff = admission.router_profile_handoff as Record<string, unknown>;
+        const profile = handoff.profile_code;
+        const requestSha = handoff.request_sha256;
+        if (handoff.schema_version !== "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1" ||
+            handoff.operation_code !== "EJECUCION_PERFIL_LF" ||
+            handoff.effect_authority !== false ||
+            typeof profile !== "string" || !profile ||
+            typeof requestSha !== "string" || !/^[0-9a-f]{64}$/.test(requestSha) ||
+            typeof handoff.fingerprint_sha256 !== "string" ||
+            !/^[0-9a-f]{64}$/.test(handoff.fingerprint_sha256)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMITTED_HANDOFF_INVALID" }, 409);
+        }
+
+        // Canonical target path is data, not a hardcoded profile-to-path mapping.
+        const assetResponse = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/lf_activos?codigo_activo=eq.${encodeURIComponent(profile)}&tipo_activo=eq.PERFIL&archived_at=is.null&select=codigo_activo,metadata,ruta_esperada&limit=2`,
+          { method: "GET", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+            }, signal: AbortSignal.timeout(15_000) },
+        );
+        if (!assetResponse.ok) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ASSET_READ_FAILED" }, 502);
+        }
+        const assets = await assetResponse.json();
+        if (!Array.isArray(assets) || assets.length !== 1 || assets[0]?.codigo_activo !== profile) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_ASSET_NOT_UNIQUE" }, 409);
+        }
+        const metadata = assets[0].metadata && typeof assets[0].metadata === "object" ? assets[0].metadata : {};
+        const rawPath = typeof metadata.entrypoint_path === "string" && metadata.entrypoint_path
+          ? metadata.entrypoint_path
+          : typeof assets[0].ruta_esperada === "string" ? assets[0].ruta_esperada : "";
+        const path = rawPath.endsWith(".md") ? rawPath
+          : rawPath.endsWith("/") ? rawPath + "SKILL.md" : rawPath + "/SKILL.md";
+        if (!new RegExp("^profiles/[a-z0-9_/-]+/SKILL[.]md$").test(path) ||
+            path.includes("..") || path.startsWith("/")) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_PATH_INVALID" }, 409);
+        }
+
+        const executionId = "EXEC-PROFILE-GATE2-" + requestSha.slice(0, 24).toUpperCase();
+        // The existing EJECUCION_PERFIL_LF writer owns all INSERT/step recording.
+        const response = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1`,
+          { method: "POST", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+              "content-type": "application/json",
+            }, body: JSON.stringify({
+              p_handoff: handoff, p_executor_mode: mode,
+              p_execution_id: executionId,
+              p_idempotency_key: "router-profile-gate2:" + requestSha + ":" + profile,
+              p_actor_execution_id: executionId,
+              p_target_repo: config.repository, p_target_path: path,
+              p_manifest: { gate2_auto_materialized: true,
+                channel: handoff.channel, business: handoff.business },
+            }), signal: AbortSignal.timeout(15_000) },
+        );
+        const begin = await parseJsonObject(response, "PROFILE_EXECUTION_BEGIN_RESPONSE_INVALID");
+        if (!response.ok || begin.status !== "READY" ||
+            begin.execution_id !== executionId || begin.init_materialized !== true) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_NOT_READY", result: begin }, 409);
+        }
+        const result = { ...begin, status: "NATIVE_EXECUTION_READY", gate2_materialized: true,
+          execution_id: executionId, executor_mode: mode, profile_code: profile,
+          next_action: "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
+          router_profile_handoff: handoff, router_reentry_required: false };
+        return json({ outcome: "NATIVE_EXECUTION_READY", caller, result }, 200);
       }
 
       if (action === PROFILE_INIT_ACTION) {

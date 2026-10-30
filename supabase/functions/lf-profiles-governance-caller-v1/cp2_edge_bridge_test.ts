@@ -1,5 +1,7 @@
 // Exercise bounded profile continuation/OIDC security in the existing Edge test lane.
 import "./profile_continuation_test.ts";
+// The CP2 CI carrier exercises isolated Stage 06/07 no-write and writer tests.
+import "./router_stage6_stage7_test.ts";
 import {cp2Context,executeCp2,Cp2Fault,CP2_EXECUTE_ACTION,CP2_PREFLIGHT_ACTION} from "./cp2_edge_bridge.ts";
 
 const IDS=[1,2,3,5,43,51,52,53,54,55,56,57,58];
