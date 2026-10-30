@@ -88,6 +88,23 @@
       "evidence_provenance": "OBSERVED_SOURCE_REF_REQUIRED",
       "must_not_treat_declared_payload_as_observed": true,
       "must_not_fabricate_receipt": true
+    },
+    "GOVERNED_PROFILE_UPDATE_DISPATCH_V1 (issue+label lf-profile-update-governed or scripts/lf_profile_update_run.py; see CLAUDE.md \"Single-command update\"; no direct DB begin)": {
+      "mode": "GOVERNED_DISPATCH",
+      "side_effect": true,
+      "evidence_provenance": "EXACT_SHA_READBACK",
+      "caller_code": "CALLER-GHA-PROFILE-UPDATE-V1",
+      "requires": [
+        "PRE_WRITE_EXECUTION_BINDING_GATE_CLEAN",
+        "CURRENT_EXECUTION_AND_STEP",
+        "MERGE_VIA_TRAIN"
+      ],
+      "forbids": [
+        "DIRECT_DB_WRITE_FROM_CHAT",
+        "lf_profile_update_begin_v1_FROM_CHAT",
+        "MANUAL_WORKFLOW_DISPATCH",
+        "DIRECT_MERGE"
+      ]
     }
   }
 }
