@@ -104,7 +104,11 @@ def submit(gh, title, body, state_log):
         return None
     seen = {r["id"] for r in gh.api(f"actions/workflows/{CALLER_WF}/runs?event=workflow_dispatch&per_page=20")["workflow_runs"]}
     seen_p = {r["id"] for r in gh.api(f"actions/workflows/{PROOF_WF}/runs?event=workflow_dispatch&per_page=20")["workflow_runs"]}
-    issue = gh.api("issues", "POST", {"title": title, "body": json.dumps(body, separators=(",", ":"), ensure_ascii=False), "labels": [LABEL]})
+    # The governed workflow listens for issues.labeled, not issues.opened.
+    # Opening with an initial labels array does not reliably emit a separate labeled event.
+    # Persist the issue first, then emit the canonical label event explicitly.
+    issue = gh.api("issues", "POST", {"title": title, "body": json.dumps(body, separators=(",", ":"), ensure_ascii=False)})
+    gh.api(f"issues/{issue['number']}/labels", "POST", {"labels": [LABEL]})
     wf, known = (PROOF_WF, seen_p) if body["action"] == "profile_evolution_proof" else (CALLER_WF, seen)
 
     def new_run():
