@@ -1,7 +1,7 @@
 -- PostgreSQL 17 regression: execute after schema in disposable database only.
 -- Do not disable trigger in governed environments.
 CREATE ROLE pg00_c3_probe NOLOGIN;
-DO $
+DO $regression$
 DECLARE v text;
 BEGIN
  SELECT relrowsecurity::text INTO v FROM pg_class WHERE oid='transversal.lf_programming_std_catalog_release_v1'::regclass;
@@ -26,4 +26,4 @@ BEGIN
     RAISE EXCEPTION 'UNPRIVILEGED_TABLE_PERMISSION_LEAK';
  END IF;
  RAISE NOTICE 'PG00_C3_STORE_HARDENING_PASS RLS, TRIGGERS, TRUNCATE, INSERT, UNPRIVILEGED_ACL';
-END $$;
+END $regression$;
