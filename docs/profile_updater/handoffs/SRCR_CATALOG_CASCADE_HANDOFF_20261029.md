@@ -223,3 +223,32 @@ Estado: solo parche candidato en PR #3359. Suite completa y WEB-001 por hash nue
 **Pruebas a agregar en el proceso actual:** adoptar en un perfil cuyo paso receptor sea distinto de SRCR; rechazar step_id inventado, inserción fuera de orden, cambio sin llamada enforzada y reutilización de recibos entre perfiles; aceptar cuando el perfil no requiere la capacidad (NO_CHANGE). Todo sujeto a corrida gobernada; **NO probado aún**.
 
 **Estado:** se ajustó la instrucción candidata de SRCR y este handoff en el PR #3359, todavía DRAFT y sin modificaciones oficiales a perfiles/runtime. El guard de colocación por perfil requiere implementación y prueba mediante los controles vigentes; no se reporta como resuelto.
+
+## CHECKPOINT — NATIVE STEP PLACEMENT GUARD (CANDIDATO, NO INSTALADO) (2026-10-30)
+
+### Ejecución del lote
+- Se añadió a **este mismo PR #3359** el módulo candidato `docs/profile_updater/handoffs/PROFILE_NATIVE_STEP_PLACEMENT_VALIDATOR_CANDIDATE_20261030.py` y el archivo de pruebas `docs/profile_updater/handoffs/test_profile_native_placement_candidate_20261030.py`; ambos permanecen **fuera de `profiles/**` y fuera de las migraciones activas**.
+- Es **un validador puro para ser llamado por el Profile Updater vigente**, NO un nuevo workflow, proceso, operación, etapa, perfil, autoridad ni motor de métodos.
+- Contrasta el perfil y revisión de origen, grafo nativo AS-IS de pasos, IDs y orden únicos, predecesores/sucesores, método seleccionado, tipo de modificación `INSERT|MODIFY|REPLACE|REMOVE`, punto receptor y enlace de enforcement.
+- El segundo control compara el grafo de la revisión candidata contra la revisión base: inserción/remoción/reemplazo realmente materializados; llamada y enforcement presentes; sólo se alteran pasos previstos y enlaces de vecinos. La renumeración ordinal sin alteración material se permite.
+- Prueba aislada local con un espejo equivalente de la lógica: **21/21 PASS**, incluidos dos perfiles con ubicaciones diferentes, source head obsoleto, identidades cruzadas, falsos enlaces, método no seleccionado, cambio lateral al enforcement de vecino, llamadas omitidas y no-realización. Los archivos exactos de GitHub no se ejecutaron como checkout; **no elevar ese resultado a suite oficial**.
+
+### Enlace que DEBE ejecutarse mediante el proceso existente
+| Punto actual | Llamada prevista | Evidencia obligatoria |
+|---|---|---|
+| `ACTUALIZACION_PERFIL_LF.method_selection` (35) | Mantener el selector y calificación vigentes, sin colocar un paso por defecto | `selected_methods`, `source_head_sha`, recibo de calificación y evaluación existente |
+| `evolution_decision` (37) | Mantener decisión `UPDATE|NO_CHANGE`, sin presumir instalación | Decisión y AS-IS exacto |
+| **`change_scope` (40)** | Llamar a `validate_change_scope_placement` cuando el alcance incluya adopción de método/paso | Mapa de pasos **obtenido por el lector confiable GitHub exact-ref existente** (no enviado por productor), método seleccionado, acción, paso receptor y vecinos |
+| **`regression_plan` (50)** | Requerir positivos, negativos, adversariales y aislamiento de pasos para la ubicación concreta | Referencia/digest del placement admitido en 40; pruebas antes de escritura, mismas referencias del perfil |
+| `github_write` / `github_readback` (70/80) | Conservar escritura/readback ya gobernados, sin rutas alternativas | Commit, blobs leídos y `exact_head` del propio perfil |
+| **`deterministic_validation` (90)** | Llamar a `verify_candidate_placement_readback` contra mapas exactos antes/después | Call/enforcement real del paso cambiado, enlaces adyacentes, hashes base/candidato y no regresión |
+| `semantic_judge` (100), `regression_after` (110) | Revisar semántica y falsificación según el contrato existente | Evidencia independiente y casos operacionales |
+
+**Dependencia física NO RESUELTA:** el guard vivo `lf_profile_update_evolution_step_guard_v1` se invoca solo en pasos 35 y 37. El guard vivo `lf_profile_update_substantive_block_v1` se invoca desde el recorder para los demás pasos, pero hoy **no llama al validador de ubicación**. No basta con alojar el .py en docs: el caller/recorder nativo debe recibir un mapa de pasos del perfil con procedencia comprobable, y ejecutar los checks dentro de los pasos 40 y 90 existentes. Si un perfil expresa la secuencia solo en texto libre y no hay grafo estructurado/recibo fiable, detener la admisión, NO inventar IDs, ni copiar el paso 70 del reparador.
+
+**Condición de no regresión:** no reinterpretar metodologías usadas únicamente para investigar como adopciones persistentes; aplicar el placement obligatorio solo cuando `change_scope` determine incorporación/reemplazo/eliminación de un paso o capacidad del perfil. Verificar esa determinación contra el diff real en el readback posterior (la declaración del productor no es autoridad). Mantener `NO_CHANGE` legítimo sin exigir una inserción falsa.
+
+### Estado y siguiente lote
+- Candidato y tests registrados en el mismo PR. GitHub conserva PR DRAFT, sin escribir `profiles/**`, sin migraciones ni cambios de Supabase.
+- **NO_VERIFICADO:** ejecución del archivo exacto de GitHub en runner, extracción autenticada y normalización del grafo de pasos del perfil desde GitHub actual, llamada física en `change_scope`/`deterministic_validation`, bloqueo real por el recorder y casos de regresión transversal.
+- Siguiente lote: determinar el mínimo readback de grafo admitido por el caller nativo `run-creacion-perfil-lf` sin inventar otra fuente, y preparar **el cambio en los puntos actuales de llamada/enforcement** por `ACTUALIZACION_PERFIL_LF` antes de proponer su pase al train. Si no existe dato confiable, mantener bloqueado.
