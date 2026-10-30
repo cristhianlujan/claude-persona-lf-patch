@@ -272,7 +272,7 @@ begin
       for v_item in select value from jsonb_array_elements(v_uncertainties)
         where value->>'impact'='DESIGN_BLOCKING'
       loop
-        select count(*),max(value) into v_count,v_q
+        select count(*) into v_count
           from jsonb_array_elements(
             case when jsonb_typeof(v_item#>'{cascade,catalog_queries}')='array'
               then v_item#>'{cascade,catalog_queries}'
@@ -281,6 +281,9 @@ begin
         if v_count<>1 then
           raise exception 'BLOCK_SRCR_N2_QUERY_NOT_UNIQUE';
         end if;
+        select j.value into v_q
+          from jsonb_array_elements(v_item#>'{cascade,catalog_queries}') as j
+         where j.value->>'level'='N2' limit 1;
         v_asset_code:=substring(v_q#>>'{readback,query}'
           from 'WHERE codigo_activo=''([A-Z0-9][A-Z0-9_-]{1,127})'');
         if v_asset_code is null then
