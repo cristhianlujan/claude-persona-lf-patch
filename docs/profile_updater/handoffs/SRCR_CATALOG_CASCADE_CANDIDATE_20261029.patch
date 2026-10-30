@@ -171,7 +171,7 @@ diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cas
 +import copy, hashlib, json
 +def _error(code, path): return {"code": code, "path": path}
 +def _receipt(level, source, count, rows):
-+    d = {"source":source,"query":f"SELECT codigo_activo FROM public.{source} WHERE codigo_activo = $1","result_kind":"ROWS" if count else "EMPTY","row_count":count,"sample_records":rows,"observed_at":"2026-10-30T12:00:00Z","snapshot":"SOURCE_FIRST_READBACK"}
++    d = {"source":source,"source_kind":"VIEW" if level=="N1" else "BASE_TABLE","query":f"SELECT codigo_activo FROM public.{source} WHERE codigo_activo = $1","result_kind":"ROWS" if count else "EMPTY","row_count":count,"sample_records":rows,"observed_at":"2026-10-30T12:00:00Z","snapshot":"SOURCE_FIRST_READBACK"}
 +    ev = {"source_locator":d["query"],"digest":"sha256:"+hashlib.sha256(json.dumps(d,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()).hexdigest()}
 +    return {"level":level,"datum_id":"U-1","evidence_id":"EV-"+level,"readback":d},ev
 +q1,e1=_receipt("N1","v_lf_fuente_operativa_busqueda",1,[{"codigo_activo":"A"}])
@@ -304,7 +304,7 @@ diff -ruN a/judges/systemic_root_cause_semantic_judge.md b/judges/systemic_root_
 diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 --- a/validators/producer_depth.py
 +++ b/validators/producer_depth.py
-@@ -76,4 +76,55 @@
+@@ -76,4 +76,56 @@
  
  
 +def _catalog_receipt_errors(casc, manifest, uid, path, err):
@@ -329,7 +329,7 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 +        if entry.get("datum_id") != uid:
 +            errors.append(err("GAP_CATALOG_DATUM_MISMATCH", at))
 +        data = entry.get("readback")
-+        if not isinstance(data, dict) or any(k not in data for k in ("source", "query", "result_kind", "row_count", "sample_records", "observed_at", "snapshot")):
++        if not isinstance(data, dict) or any(k not in data for k in ("source", "source_kind", "query", "result_kind", "row_count", "sample_records", "observed_at", "snapshot")):
 +            errors.append(err("GAP_CATALOG_READBACK_INCOMPLETE", at))
 +            continue
 +        source, query, kind, count, rows = (data.get(k) for k in ("source", "query", "result_kind", "row_count", "sample_records"))
@@ -341,7 +341,8 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 +            errors.append(err("GAP_CATALOG_RESULT_INCONSISTENT", at))
 +        if not isinstance(query, str) or not query.lstrip().lower().startswith(("select ", "with ")):
 +            errors.append(err("GAP_CATALOG_NON_SELECT_QUERY", at))
-+        if not isinstance(source, str) or (level == "N1" and not source.startswith("v_")) or (level == "N2" and not source.startswith("lf_")):
++        kind_expected = "VIEW" if level == "N1" else "BASE_TABLE"
++        if not isinstance(source, str) or not source.strip() or data.get("source_kind") != kind_expected:
 +            errors.append(err("GAP_CATALOG_SOURCE_LEVEL_MISMATCH", at))
 +        eid = entry.get("evidence_id")
 +        if not isinstance(eid, str) or not isinstance(manifest, dict) or eid not in manifest:
