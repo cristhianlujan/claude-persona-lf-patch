@@ -1054,14 +1054,12 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_ASSET_NOT_UNIQUE" }, 409);
         }
         const metadata = assets[0].metadata && typeof assets[0].metadata === "object" ? assets[0].metadata : {};
-        const path = typeof metadata.entrypoint_path === "string" && metadata.entrypoint_path
+        const rawPath = typeof metadata.entrypoint_path === "string" && metadata.entrypoint_path
           ? metadata.entrypoint_path
-          : typeof assets[0].ruta_esperada === "string" && assets[0].ruta_esperada
-          ? (assets[0].ruta_esperada.endsWith(".md")
-              ? assets[0].ruta_esperada
-              : assets[0].ruta_esperada.replace(/\\/$/, "") + "/SKILL.md")
-          : "";
-        if (!/^profiles\\/[a-z0-9_/-]+\\/SKILL\\.md$/.test(path) ||
+          : typeof assets[0].ruta_esperada === "string" ? assets[0].ruta_esperada : "";
+        const path = rawPath.endsWith(".md") ? rawPath
+          : rawPath.endsWith("/") ? rawPath + "SKILL.md" : rawPath + "/SKILL.md";
+        if (!new RegExp("^profiles/[a-z0-9_/-]+/SKILL[.]md$").test(path) ||
             path.includes("..") || path.startsWith("/")) {
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_PATH_INVALID" }, 409);
         }
