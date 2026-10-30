@@ -104,6 +104,49 @@ class OfflinePlanTests(unittest.TestCase):
                 reasons = self.evaluate(release=altered)
                 self.assertIn("INVALID_RELEASE_STATUS", reasons)
 
+    def test_missing_schema_and_rules_even_with_consistent_hashes(self):
+        for removed, reason in (("schema_version", "INVALID_CATALOG_SCHEMA"),
+                                ("rules", "INVALID_SOURCE_RULES")):
+            with self.subTest(field=removed):
+                altered_source = {k: v for k, v in SOURCE_DOC.items() if k != removed}
+                altered_release = {**altered_source, "status": "APROBADO"}
+                raw_source = json.dumps(altered_source, sort_keys=True).encode()
+                raw_release = json.dumps(altered_release, sort_keys=True).encode()
+                def rebind(p, registry):
+                    p["source_file_sha256"] = hashlib.sha256(raw_source).hexdigest()
+                    p["release_catalog_sha256"] = hashlib.sha256(raw_release).hexdigest()
+                    registry["P1"]["source_file_sha256"] = p["source_file_sha256"]
+                    registry["P1"]["release_catalog_sha256"] = p["release_catalog_sha256"]
+                reasons = self.evaluate(rebind, source=raw_source, release=raw_release)
+                self.assertIn(reason, reasons)
+
+    def test_bad_schema_version(self):
+        altered = {**SOURCE_DOC, "schema_version": "UNKNOWN"}
+        source = json.dumps(altered, sort_keys=True).encode()
+        release = json.dumps({**altered, "status": "APROBADO"}, sort_keys=True).encode()
+        def rebind(p, registry):
+            for key, raw in (("source_file_sha256", source),
+                             ("release_catalog_sha256", release)):
+                p[key] = hashlib.sha256(raw).hexdigest()
+                registry["P1"][key] = p[key]
+        self.assertIn("INVALID_CATALOG_SCHEMA",
+                      self.evaluate(rebind, source=source, release=release))
+
+    def test_invalid_rule_shape_or_status(self):
+        for bad_rules in ([], [42], [{}], [{"id": "x", "status": "BORRADOR"}],
+                          [{"id": [], "status": "APROBADO"}]):
+            with self.subTest(rules=bad_rules):
+                altered = {**SOURCE_DOC, "rules": bad_rules}
+                source = json.dumps(altered, sort_keys=True).encode()
+                release = json.dumps({**altered, "status": "APROBADO"}, sort_keys=True).encode()
+                def rebind(p, registry):
+                    p["source_file_sha256"] = hashlib.sha256(source).hexdigest()
+                    p["release_catalog_sha256"] = hashlib.sha256(release).hexdigest()
+                    for field in ("source_file_sha256", "release_catalog_sha256"):
+                        registry["P1"][field] = p[field]
+                self.assertIn("INVALID_SOURCE_RULES",
+                              self.evaluate(rebind, source=source, release=release))
+
     def test_invalid_proposal_shape(self):
         _, registry = fixture()
         result = mod.inspect_plan(None, source_bytes=SOURCE, release_bytes=RELEASE,
