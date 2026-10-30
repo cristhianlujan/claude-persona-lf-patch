@@ -1,0 +1,11 @@
+{
+  "solution_ref": "router-stage6-no-write-20261030",
+  "paths": {
+    "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION",
+    "scripts/lf_profile_router_admit.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_router_admit_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/router_stage6_readonly_admission_candidate_20261030.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/router-stage6-no-write-20261030.json": "CHANGESET_MANIFEST"
+  }
+}
