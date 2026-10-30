@@ -121,6 +121,18 @@ A gap is a question whose answer is missing and on which a design decision depen
    - **Level 4, GitHub:** the repository tree at the exact revision of `main` (list it and search file names and contents), then open branches and pull requests that touch the subject. Work that exists only here never reached the database.
    - **Level 5, project documents and memory,** when the environment can reach them.
    - **Level 6, nothing found:** only now close as explored, listing for every level what was consulted.
+
+   An exhausted search must attach N1 and N2 source-readback, then record N3,
+   N4 and N5 in `cascade.level_trace` with per-level source, exact locator,
+   snapshot/revision, result, evidence ID and digest bound to the external
+   evidence manifest. For unavailable documents/memory, include the actual
+   access error and evidence; do not treat a missing tool as an empty result.
+   N6 is a terminal judgment, not a sixth datasource. Its
+   `EXPLORED_NO_EVIDENCE_FOUND` substate requires the five-level
+   `search_records[].levels` ledger and a reader independently provided by
+   the governed quality boundary; a model-authored string cannot attest it.
+   If unavailable, report `SEARCH_INCOMPLETE` and preserve the open gap.
+
    Record each consulted source in `cascade.catalog_checked` as `N1:<name>`, `N2:<name>`, `N3:<name>`, `N4:<path>`. A class may be declared `NO_SOURCE_ACCESSIBLE` only with entries for levels N1, N2, N3 and N4; "I did not look" is not "there is no source". A source in a level that exists but cannot be read from this environment is recorded with its exact name and the error, never as absent. When the same datum appears in two stores and they differ, or appears in only one, record both and the divergence as a finding (the authority of each datum type decides which one wins); never pick one silently.
 3. **Search by evidence class, from most to least direct:** DIRECT record of the thing; DECLARED by a policy or contract; ANALOGY from comparable instances already resolved; RELATED connected assets upstream or downstream; HISTORY of how it was decided before. Stop at the first class that settles the question with a single consistent answer.
 4. **Interpret.** Prefer direct over indirect, recent over old, and consistent over contradictory evidence. Detect when the convention changed over time and follow the current one. Count independent sources, not repetitions inside one document. When comparable resolved instances exist, hide each answer in turn using only earlier instances and measure how often the method recovers it; confidence may never exceed that measured rate. Without a way to measure, cap confidence and say so.

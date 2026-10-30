@@ -3,14 +3,23 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "validat
 from terminality_gate_v1 import decide_terminal
 CL = ["DIRECT","DECLARED","ANALOGY","RELATED","HISTORY"]
 full = [{"datum":"X","classes":[{"class":c,"source":"s","locator":"l","result":"NO_SOURCE_ACCESSIBLE"} for c in CL]}]
+LEVELS=["N1","N2","N3","N4","N5"]
+full[0]["levels"]=[{"level":v,"evidence_id":"EV-"+v,"locator":"source://"+v,
+                     "result":"NO_EVIDENCE"} for v in LEVELS]
+def trusted_levels(datum, level, locator, evidence_id):
+    if datum=="X" and level in LEVELS and locator=="source://"+level and evidence_id=="EV-"+level:
+        return {"verified":True,"datum":datum,"level":level,"source_locator":locator,
+                "evidence_id":evidence_id,"result":"NO_EVIDENCE"}
+    return None
+
 part = [{"datum":"X","classes":[{"class":c,"source":"s","locator":"l","result":"r"} for c in CL[:3]]}]
 item = [{"code":"X","status":"GAP"}]
 checks = {
- "EXHAUSTED_SEARCH_REPORTED": decide_terminal({"material_items":item,"search_records":full}).get("evidence_state")=="EXPLORED_NO_EVIDENCE_FOUND",
- "EXHAUSTED_LISTS_WHAT_WAS_SEARCHED": len(decide_terminal({"material_items":item,"search_records":full}).get("explored",[]))==1,
+ "EXHAUSTED_SEARCH_REPORTED": decide_terminal({"material_items":item,"search_records":full},trusted_level_reader=trusted_levels).get("evidence_state")=="EXPLORED_NO_EVIDENCE_FOUND",
+ "EXHAUSTED_LISTS_WHAT_WAS_SEARCHED": len(decide_terminal({"material_items":item,"search_records":full},trusted_level_reader=trusted_levels).get("explored",[]))==1,
  "PARTIAL_SEARCH_IS_INCOMPLETE": decide_terminal({"material_items":item,"search_records":part}).get("evidence_state")=="SEARCH_INCOMPLETE",
  "NO_RECORD_IS_INCOMPLETE": decide_terminal({"material_items":item}).get("evidence_state")=="SEARCH_INCOMPLETE",
- "STATUS_VALUE_UNCHANGED": decide_terminal({"material_items":item,"search_records":full})["status"]=="NEEDS_MORE_EVIDENCE",
+ "STATUS_VALUE_UNCHANGED": decide_terminal({"material_items":item,"search_records":full},trusted_level_reader=trusted_levels)["status"]=="NEEDS_MORE_EVIDENCE",
  "CLOSED_CASE_UNAFFECTED": decide_terminal({"repair_required":False,"no_repair_positive_evidence":True})=={"status":"NO_REPAIR_REQUIRED","reasons":[]},
  "PIPELINE_BLOCK_UNAFFECTED": decide_terminal({"pipeline_blocking_codes":["Z"]})["status"]=="BLOCK_PIPELINE",
 }
@@ -23,6 +32,29 @@ checks.update({
  "OTHER_DATUM_CANNOT_CLOSE": decide_terminal({"material_items": item, "search_records": wrong_datum}).get("evidence_state") == "SEARCH_INCOMPLETE",
  "DUPLICATE_CLASS_CANNOT_CLOSE": decide_terminal({"material_items": item, "search_records": duplicate}).get("evidence_state") == "SEARCH_INCOMPLETE",
  "TWO_DATUMS_REQUIRE_TWO_RECORDS": decide_terminal({"material_items": two_open, "search_records": full}).get("evidence_state") == "SEARCH_INCOMPLETE",
+})
+
+
+checks.update({
+ "NO_TRUSTED_N6_READER_IS_INCOMPLETE":
+    decide_terminal({"material_items":item,"search_records":full}).get("evidence_state")=="SEARCH_INCOMPLETE",
+ "N5_OMITTED_CANNOT_CLOSE":
+    decide_terminal({"material_items":item,"search_records":[dict(full[0],levels=full[0]["levels"][:4])]},
+                    trusted_level_reader=trusted_levels).get("evidence_state")=="SEARCH_INCOMPLETE",
+ "N4_READBACK_MISSING_CANNOT_CLOSE":
+    decide_terminal({"material_items":item,"search_records":full},
+                    trusted_level_reader=lambda datum,level,locator,eid:
+                    None if level=="N4" else trusted_levels(datum,level,locator,eid)).get("evidence_state")=="SEARCH_INCOMPLETE",
+ "N5_FALSE_UNAVAILABLE_CANNOT_CLOSE":
+    decide_terminal({"material_items":item,"search_records":[dict(full[0],levels=[
+                    dict(x,result="NO_SOURCE_ACCESSIBLE",error_detail="ACCESS_DENIED")
+                    if x["level"]=="N5" else x for x in full[0]["levels"]])]},
+                    trusted_level_reader=trusted_levels).get("evidence_state")=="SEARCH_INCOMPLETE",
+ "N6_INDEPENDENT_SOURCE_MISMATCH_REJECTED":
+    decide_terminal({"material_items":item,"search_records":full},
+                    trusted_level_reader=lambda datum,level,locator,eid:
+                    dict(trusted_levels(datum,level,locator,eid),source_locator="forged://other")
+                    if level=="N3" else trusted_levels(datum,level,locator,eid)).get("evidence_state")=="SEARCH_INCOMPLETE",
 })
 
 from producer_depth import _catalog_receipt_errors
