@@ -77,8 +77,8 @@ def gate(
             return verdict("BLOCKED", "SKILL_EXCLUSIONS_REQUIRE_REVIEW")
     active = set(expected_domains)
     known = {x["id"]: x for x in catalog["rules"]}
-    mandatory = {rid for rid in expected_required_ids if rid in known and known[rid]["status"] == "APROBADO"}
-    if len(set(expected_required_ids)) != len(expected_required_ids) or any(x not in known for x in expected_required_ids):
+    mandatory = {rid for rid, rule in known.items() if rule["domain"] in active and rule.get("status") == "APROBADO"}
+    if len(set(expected_required_ids)) != len(expected_required_ids) or set(expected_required_ids) != mandatory:
         return verdict("BLOCKED", "REQUIRED_RULE_SET_INVALID")
     if not isinstance(receipt["rule_ids"], list) or len(set(receipt["rule_ids"])) != len(receipt["rule_ids"]):
         return verdict("BLOCKED", "RULE_LIST_INVALID")
