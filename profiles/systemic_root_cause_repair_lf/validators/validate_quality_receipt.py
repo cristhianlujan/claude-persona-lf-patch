@@ -62,6 +62,8 @@ def validate_quality_receipt(
     candidate: Any,
     evidence_manifest: Any,
     semantic_result: Any,
+    *,
+    trusted_reader: Any = None,
 ) -> dict[str, Any]:
     errors: list[dict[str, str]] = []
 
@@ -150,7 +152,7 @@ def validate_quality_receipt(
             )
         )
 
-    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, trusted_reader=trusted_reader)
     if semantic_gate.get("status") != "PASS":
         errors.append(
             _err(

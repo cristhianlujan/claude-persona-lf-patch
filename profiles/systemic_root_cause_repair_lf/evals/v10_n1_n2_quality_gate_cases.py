@@ -35,6 +35,50 @@ tests["evolved_profile_still_requires_trusted_reader"]="N1_N2_TRUSTED_READER_NOT
 tests["fabricated_independent_ref"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(reader=lambda *_: {"verified":True})
 bad=copy.deepcopy(t);bad["EV-N2"]["sample_records"]=[{"x":99}]
 tests["tampered_backend_values"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(reader=lambda eid,*_:bad.get(eid))
+
+# Integration boundary: the quality verifier and materializer must propagate
+# an externally injected trusted reader, never silently invent one.
+import importlib.util
+def _load_module(name, path):
+    spec=importlib.util.spec_from_file_location(name, str(path))
+    mod=importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(mod)
+    return mod
+quality=_load_module("srcr_quality_wire_test", ROOT/"validators"/"validate_quality_receipt.py")
+materializer=_load_module("srcr_materialize_wire_test", ROOT/"validators"/"materialize_quality_receipt.py")
+reader_marker=object()
+quality_seen=[]
+orig_quality_evaluate=quality.semantic_validator.evaluate
+def _quality_probe(payload, **kwargs):
+    quality_seen.append(kwargs.get("trusted_reader"))
+    return {"status":"FAIL","blocking_codes":["TEST_CONTROLLED_REJECTION"]}
+quality.semantic_validator.evaluate=_quality_probe
+try:
+    quality.validate_quality_receipt({}, {}, {}, {}, trusted_reader=reader_marker)
+finally:
+    quality.semantic_validator.evaluate=orig_quality_evaluate
+tests["quality_reader_forwarded"]=quality_seen==[reader_marker]
+
+materializer_seen=[]
+orig_materializer_evaluate=materializer.semantic_validator.evaluate
+def _materializer_probe(payload, **kwargs):
+    materializer_seen.append(kwargs.get("trusted_reader"))
+    return {"status":"FAIL","blocking_codes":["TEST_CONTROLLED_REJECTION"]}
+materializer.semantic_validator.evaluate=_materializer_probe
+try:
+    try:
+        materializer.materialize_quality_receipt(
+            {}, {}, {}, candidate_revision="test", semantic_execution_receipt_ref="test",
+            issued_at="2026-10-30T00:00:00Z",trusted_reader=reader_marker
+        )
+    except materializer.QualityReceiptMaterializationError as exc:
+        tests["materializer_reader_forwarded"]=materializer_seen==[reader_marker] and "SEMANTIC_RESULT_INVALID" in str(exc)
+    else:
+        tests["materializer_reader_forwarded"]=False
+finally:
+    materializer.semantic_validator.evaluate=orig_materializer_evaluate
+
 for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
 print(f"N1_N2_QUALITY_CASES={sum(tests.values())}/{len(tests)}")
 sys.exit(0 if all(tests.values()) else 1)
