@@ -34,6 +34,8 @@ declare
   v_proof jsonb;
   v_results jsonb := '[]'::jsonb;
   v_expected jsonb;
+  v_existing private.lf_evidence_ledger_v1%rowtype;
+  v_existing_count integer;
 begin
   select * into v_run from public.lf_operation_execution
    where execution_id=p_execution_id and operation_code='EJECUCION_PERFIL_LF'
@@ -142,15 +144,43 @@ begin
       'observed_at',v_observed,'source_revision',v_source_head
     );
 
-    v_proof:=public.fn_lf_evidence_ledger_anchor_v1(
-      p_execution_id,'EVIDENCE_LEDGER','PROFILE_EXECUTION_SRCR_N1_N2_SOURCE',
-      'SOURCE_SNAPSHOT','PROFILE_N1_N2_SOURCE',v_subject,v_digest,v_source_head,
-      'supabase://public.lf_activos','LF_SUPABASE_READBACK_V1','SUPABASE',
-      v_query,'SUPABASE_SQL_READBACK_PLUS_DB_DIGEST','VERIFIED',
-      jsonb_build_object('provider_readback_verified',true,'digest_recomputed',true,
-        'readback_at',v_observed,'source_name',v_table,'source_kind',v_kind),
-      v_data,p_ledger_execution_id
-    );
+    -- Idempotent replay: do a fresh provider SELECT, then reuse a previously
+    -- VERIFIED receipt only when its exact typed source digest is unchanged.
+    select count(*) into v_existing_count
+      from private.lf_evidence_ledger_v1
+     where execution_id=p_execution_id
+       and gate_code='PROFILE_EXECUTION_SRCR_N1_N2_SOURCE'
+       and subject_ref=v_subject;
+    if v_existing_count>1 then
+      raise exception 'BLOCK_SRCR_LEDGER_DUPLICATE_SOURCE_RECEIPT';
+    end if;
+    if v_existing_count=1 then
+      select * into v_existing from private.lf_evidence_ledger_v1
+       where execution_id=p_execution_id
+         and gate_code='PROFILE_EXECUTION_SRCR_N1_N2_SOURCE'
+         and subject_ref=v_subject;
+      if v_existing.subject_sha256 is distinct from v_digest
+         or v_existing.created_by_execution_id is distinct from p_ledger_execution_id
+         or v_existing.verification_state is distinct from 'VERIFIED'
+         or v_existing.provider is distinct from 'SUPABASE' then
+        raise exception 'BLOCK_SRCR_LEDGER_REPLAY_SOURCE_DRIFT';
+      end if;
+      v_proof:=jsonb_build_object(
+        'verification_state','VERIFIED',
+        'receipt_id',v_existing.receipt_id,
+        'receipt_sha256',v_existing.receipt_sha256
+      );
+    else
+      v_proof:=public.fn_lf_evidence_ledger_anchor_v1(
+        p_execution_id,'EVIDENCE_LEDGER','PROFILE_EXECUTION_SRCR_N1_N2_SOURCE',
+        'SOURCE_SNAPSHOT','PROFILE_N1_N2_SOURCE',v_subject,v_digest,v_source_head,
+        'supabase://public.lf_activos','LF_SUPABASE_READBACK_V1','SUPABASE',
+        v_query,'SUPABASE_SQL_READBACK_PLUS_DB_DIGEST','VERIFIED',
+        jsonb_build_object('provider_readback_verified',true,'digest_recomputed',true,
+          'readback_at',v_observed,'source_name',v_table,'source_kind',v_kind),
+        v_data,p_ledger_execution_id
+      );
+    end if;
     if v_proof->>'verification_state' is distinct from 'VERIFIED' then
       raise exception 'BLOCK_SRCR_LEDGER_VERIFICATION_NOT_VERIFIED';
     end if;
