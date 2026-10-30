@@ -19,6 +19,9 @@ SOURCE_PATH = "standards/catalog.json"
 
 def inspect(candidate: dict, source: bytes, *, expected_commit: str) -> dict:
     """Return informative fail-closed checks; no input can yield publication authority."""
+    if not isinstance(candidate, dict):
+        return {"verdict": "BLOCKED", "reason_codes": ["INVALID_CANDIDATE_SHAPE"],
+                "authority": "NONE"}
     errors = []
     def reject(condition, reason):
         if condition:
@@ -83,8 +86,12 @@ def main():
     parser.add_argument("--trusted-commit", required=True,
                         help="SHA from trusted GitHub retrieval, never from candidate JSON")
     args = parser.parse_args()
-    result = inspect(json.loads(args.candidate.read_text(encoding="utf-8")),
-                     args.source.read_bytes(), expected_commit=args.trusted_commit)
+    try:
+        candidate = json.loads(args.candidate.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        candidate = None
+    result = inspect(candidate, args.source.read_bytes(),
+                     expected_commit=args.trusted_commit)
     print(json.dumps(result, sort_keys=True))
     return 0 if result["verdict"] == "PASS" else 2
 
