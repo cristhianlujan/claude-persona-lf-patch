@@ -103,3 +103,77 @@ Deno.test("continuation: mismatched, missing or remote executor is rejected",asy
     eq(out.status,403);
   }
 });
+
+const preModelClean = [
+  "init_execution", "router", "profile_resolve", "profile_source_read",
+  "input_validate", "context_admission", "research_baseline_freeze",
+  "execute_profile", "output_validate",
+];
+function postModelNetwork(
+  rows: Array<{step_id:string; status:string}>,
+  cleanCount: number,
+) {
+  const base = network();
+  const urls:string[] = [];
+  const fetchFn = async (input:string|URL|Request, init?:RequestInit):Promise<Response> => {
+    const url = String(input);
+    urls.push(url);
+    if (url.endsWith("/rest/v1/rpc/lf_profile_native_bridge_prepare_v1")) {
+      return new Response(JSON.stringify({
+        status:"BLOCKED", blocking_code:"BLOCK_PROFILE_NATIVE_BRIDGE_PRE_MODEL_STEP_COUNT",
+        clean_step_count:cleanCount,expected_clean_step_count:7,
+      }),{status:200});
+    }
+    if (url.includes("/rest/v1/lf_operation_execution_steps?")) {
+      return new Response(JSON.stringify(rows),{status:200});
+    }
+    return base.fetchFn(input,init);
+  };
+  return {fetchFn,urls};
+}
+function cleanRows(includeSemantic=false) {
+  const rows=preModelClean.map(step_id=>({step_id,status:"STEP_PASS_WITH_EVIDENCE"}));
+  if(includeSemantic)rows.push({step_id:"semantic_judge",status:"STEP_PASS_WITH_EVIDENCE"});
+  return rows;
+}
+Deno.test("continuation: post-model 9/11 goes to existing semantic judge, never pre-model",async()=>{
+  const n=postModelNetwork(cleanRows(),9);
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.outcome,"CONTINUATION_REQUIRED");
+  eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+  eq(body.result.next_step,"semantic_judge");
+  eq(body.execution_id,id);
+  eq(n.urls.filter(u=>u.includes("/lf_profile_native_bridge_prepare_v1")).length,1);
+  eq(n.urls.filter(u=>u.includes("/lf_operation_execution_steps?")).length,1);
+  eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+});
+Deno.test("continuation: post-model 10/11 goes to report, never reruns semantic judge",async()=>{
+  const n=postModelNetwork(cleanRows(true),10);
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.phase,"REPORT_OUTPUT_REQUIRED");
+  eq(body.result.next_step,"report_output");
+  eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+});
+Deno.test("continuation: false 9/11, blocked judge and unexpected step fail closed",async()=>{
+  const cases=[
+    {rows:cleanRows().map(x=>x.step_id==="output_validate"?{...x,status:"BLOCKED_STEP_NOT_CLEAN"}:x),count:9},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:9},
+    {rows:[...cleanRows().slice(0,8),{step_id:"unexpected",status:"STEP_PASS_WITH_EVIDENCE"}],count:9},
+    {rows:cleanRows(),count:8},
+  ];
+  for(const c of cases) {
+    const n=postModelNetwork(c.rows,c.count);
+    const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+      execution_id:id,source_revision:sha,source_digest:digest,
+    },config,n.fetchFn,sha);
+    const body=await out.json();
+    eq(out.status,409);eq(body.outcome,"BLOCKED");
+    eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+  }
+});
