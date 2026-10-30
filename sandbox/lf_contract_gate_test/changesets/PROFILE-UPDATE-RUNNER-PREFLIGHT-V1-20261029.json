@@ -1,0 +1,8 @@
+{
+  "solution_ref": "PROFILE-UPDATE-RUNNER-PREFLIGHT-V1-20261029",
+  "paths": {
+    "scripts/lf_profile_update_run.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_update_run.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-UPDATE-RUNNER-PREFLIGHT-V1-20261029.json": "CHANGESET_MANIFEST"
+  }
+}

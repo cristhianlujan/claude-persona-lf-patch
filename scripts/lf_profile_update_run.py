@@ -12,11 +12,13 @@ State is kept in --state so a stopped run resumes at the first unfinished phase.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import runpy
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -24,6 +26,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DISPATCH = runpy.run_path(str(ROOT / "scripts" / "lf_profile_update_issue_dispatch.py"), run_name="runner_validate")
+OPERATIONAL = runpy.run_path(str(ROOT / "skills" / "profile_creator" / "validators" / "operational_coverage_v1.py"), run_name="runner_operational")
+OP_REL = "skills/profile_creator/operational_cases"
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 LABEL = "lf-profile-update-governed"
 CALLER_WF = "lf-customer-profile-creator-governance-caller.yml"
@@ -36,6 +40,14 @@ OK = {"step_result": "STEP_PASS_WITH_EVIDENCE", "blocking_codes": []}
 
 class Stop(Exception):
     """Fail closed with a stable code; the state file keeps the progress."""
+
+
+class Blocked(Stop):
+    """Blocked because something that must exist does not: says what, where and in which form."""
+
+    def __init__(self, code, why, missing, how):
+        super().__init__(code)
+        self.detail = {"status": "BLOCKED", "code": code, "why": why, "missing": missing, "how": how}
 
 
 def run(cmd, check=True, **kw):
@@ -168,6 +180,65 @@ def apply_candidate(slug, cand_dir):
     return changed
 
 
+RUN_FIELDS = ["schema_version=PROFILE_OPERATIONAL_RUN_V1", "run_id", "case_id", "profile_slug", "profile_tree_sha256 (hash below)",
+              "attestation (NONE|...)", "recorded_at", "executor{mode,note}", "conditions", "validator{tool,valid,errors}",
+              "output (the profile's real output on the case)", "output_sha256 (sha256 of the canonical output)"]
+
+
+def plan_missing(slug, cases, runs, base_tree, cand_tree):
+    """Pure: which bound runs must exist on main before the update can be proven."""
+    missing = []
+    for case_id in sorted(cases):
+        for label, tree in (("BASE", base_tree), ("CANDIDATE", cand_tree)):
+            if not any(r["case_id"] == case_id and r["profile_tree_sha256"] == tree for r in runs):
+                missing.append({"what": f"{label} run of case {case_id}", "where": f"{OP_REL}/{slug}/runs/RUN-{case_id}-{label}-<yyyymmdd>.json",
+                                "bind_to": {"profile_tree_sha256": tree}, "required_fields": RUN_FIELDS})
+    return missing
+
+
+def gather_operational(slug, cand_dir):
+    """Read the trusted cases/runs and profile tree from origin/main; compute the tree the update would produce."""
+    tmp = Path(tempfile.mkdtemp(prefix="lf_op_"))
+    paths = [f"profiles/{slug}"]
+    if run(["git", "ls-tree", "-r", "--name-only", "origin/main", f"{OP_REL}/{slug}"]):
+        paths.append(f"{OP_REL}/{slug}")
+    data = subprocess.run(["git", "archive", "origin/main", *paths], capture_output=True, cwd=ROOT)
+    if data.returncode != 0:
+        raise Stop("COMMAND_FAILED:git archive:" + data.stderr.decode()[:200])
+    tarfile.open(fileobj=io.BytesIO(data.stdout)).extractall(tmp)
+    base = tmp / "profiles" / slug
+    base_tree = OPERATIONAL["tree_sha256"](base)
+    overlay = tmp / "overlay"
+    shutil.copytree(base, overlay)
+    for src in cand_dir.rglob("*"):
+        if src.is_file() and "__pycache__" not in src.parts:
+            t = overlay / src.relative_to(cand_dir)
+            t.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, t)
+    cand_tree = OPERATIONAL["tree_sha256"](overlay)
+    cases, problems = OPERATIONAL["load_cases"](tmp / OP_REL, slug)
+    runs, rejected = OPERATIONAL["load_runs"](tmp / OP_REL, slug, cases)
+    shutil.rmtree(tmp, ignore_errors=True)
+    return cases, runs, base_tree, cand_tree, problems + rejected
+
+
+def preflight_operational(slug, cand_dir):
+    cases, runs, base_tree, cand_tree, problems = gather_operational(slug, cand_dir)
+    if cand_tree == base_tree:
+        raise Blocked("BLOCKED_CANDIDATE_EQUALS_CURRENT_PROFILE", "The candidate does not change the profile on main, so there is nothing to update.",
+                      [{"what": "a candidate that differs from profiles/" + slug, "where": "--candidate-dir"}],
+                      "Edit the candidate directory so it contains the change, then rerun.")
+    if not cases:
+        return {"operational_cases": 0, "note": "no operational case defined: only a structural (S26) gap can justify an update"}
+    missing = plan_missing(slug, cases, runs, base_tree, cand_tree)
+    if missing:
+        raise Blocked("BLOCKED_MISSING_OPERATIONAL_RUNS",
+                      "The profile has operational cases, so every case needs a real run of the base profile and of the candidate bound to their exact tree hashes. Without them the improvement cannot be proven and nothing was opened or written.",
+                      missing + ([{"what": "invalid case/run files on main", "where": f"{OP_REL}/{slug}/", "detail": problems}] if problems else []),
+                      "Run the profile (base tree and candidate tree) on each case with a model, validate with the profile validator, record the result as a PROFILE_OPERATIONAL_RUN_V1 file at the given path, and merge it to main through the Merge Train (trusted root). Then rerun this command.")
+    return {"operational_cases": len(cases), "base_tree": base_tree, "candidate_tree": cand_tree}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--slug", required=True)
@@ -198,6 +269,8 @@ def main(argv=None):
         if not cand.is_dir() or not (cand / "SKILL.md").is_file():
             raise Stop("CANDIDATE_DIR_INVALID")
         target_path = f"profiles/{slug}/SKILL.md"
+        if "execution_id" not in st:
+            log.append("PREFLIGHT_OPERATIONAL " + json.dumps(preflight_operational(slug, cand)))
 
         # 1. open the governed execution, then measure after it exists (the proof must be newer than the execution)
         if "execution_id" not in st:
@@ -222,7 +295,9 @@ def main(argv=None):
                 ann = json.loads(gh.annotation(rid, "LF_PROFILE_EVOLUTION_PROOF"))
                 proof = ann["proof"]
                 if proof.get("decision") != "UPDATE_REQUIRED":
-                    raise Stop(f"NO_UPDATE_JUSTIFIED:{proof.get('decision')}")
+                    raise Blocked("BLOCKED_NO_UPDATE_JUSTIFIED", f"The trusted measurement says {proof.get('decision')}: no structural gap and no unmet operational check justifies changing the profile.",
+                                  [{"what": "an operational case whose checks the current profile does not meet", "where": f"{OP_REL}/{slug}/<CASE>.case.json (schema PROFILE_OPERATIONAL_CASE_V1) plus a base run in runs/"}],
+                                  "Define the business case the profile must solve and record the base run on main through the Train; if the current profile fails it, the measurement will then justify the update.")
                 st.update(measure_run=str(rid), measure=proof)
                 save()
         proof = st.get("measure") or {"decision": "UPDATE_REQUIRED", "update_basis": ["DRY_RUN"], "score": 15, "required": 15, "proof_sha256": "0" * 64, "schema": "S26_PROFILE_MEASUREMENT_V1", "profile_slug": slug, "blocking_codes": [], "failed_dimensions": [], "operational": {"unmet_checks": ["DRY:CHECK"]}}
@@ -319,6 +394,9 @@ def main(argv=None):
             run(["git", "merge", "-q", "--ff-only", "origin/main"])
         print(json.dumps({"status": "DRY_RUN_OK" if dry else "COMPLETED", "execution_id": execution_id, "log": log, "state": {k: v for k, v in st.items() if k not in ("measure", "compare")}}, indent=1))
         return 0
+    except Blocked as e:
+        print(json.dumps({**e.detail, "state_file": str(sp)}, indent=1, ensure_ascii=False))
+        return 2
     except Stop as e:
         print(json.dumps({"status": "STOPPED", "code": str(e), "state_file": str(sp)}, indent=1))
         return 2
