@@ -5,6 +5,7 @@ jsonb::text or RFC 8785/JCS. It emits separate domain-labelled digests only.
 """
 import hashlib
 import json
+import math
 
 
 def _unique(pairs):
@@ -14,6 +15,13 @@ def _unique(pairs):
             raise ValueError("DUPLICATE_JSON_KEY")
         result[key] = value
     return result
+
+
+def _finite_float(raw):
+    value = float(raw)
+    if not math.isfinite(value):
+        raise ValueError("NONFINITE_NUMBER")
+    return value
 
 
 def compare_representations(source_raw, release_raw, *, pg_jsonb_text=None):
@@ -26,24 +34,35 @@ def compare_representations(source_raw, release_raw, *, pg_jsonb_text=None):
               "release_bytes_sha256": hashlib.sha256(release_raw).hexdigest()}
     try:
         source = json.loads(source_raw, object_pairs_hook=_unique,
-                            parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)))
+                            parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)),
+                            parse_float=_finite_float)
         release = json.loads(release_raw, object_pairs_hook=_unique,
-                             parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)))
+                             parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)),
+                             parse_float=_finite_float)
         if not isinstance(source, dict) or not isinstance(release, dict):
             raise ValueError("ROOT_NOT_OBJECT")
     except (ValueError, UnicodeError):
         errors.append("INVALID_JSON")
     else:
         # This is Python's stable diagnostic encoding, NOT a released digest format.
-        diagnostic = json.dumps(release, sort_keys=True, separators=(",", ":"),
-                                ensure_ascii=False, allow_nan=False).encode("utf-8")
-        result["python_diagnostic_sha256"] = hashlib.sha256(diagnostic).hexdigest()
-        result["raw_release_equals_python_diagnostic"] = release_raw == diagnostic
+        try:
+            diagnostic = json.dumps(release, sort_keys=True, separators=(",", ":"),
+                                    ensure_ascii=False, allow_nan=False).encode("utf-8")
+        except (ValueError, UnicodeError, OverflowError):
+            errors.append("INVALID_JSON")
+        else:
+            result["python_diagnostic_sha256"] = hashlib.sha256(diagnostic).hexdigest()
+            result["raw_release_equals_python_diagnostic"] = release_raw == diagnostic
     if pg_jsonb_text is not None:
         if not isinstance(pg_jsonb_text, str):
             errors.append("INVALID_PG_READBACK_SHAPE")
         else:
-            result["pg_jsonb_text_sha256"] = hashlib.sha256(pg_jsonb_text.encode("utf-8")).hexdigest()
-            result["raw_release_equals_pg_jsonb_text"] = release_raw == pg_jsonb_text.encode("utf-8")
+            try:
+                pg_bytes = pg_jsonb_text.encode("utf-8")
+            except UnicodeError:
+                errors.append("INVALID_PG_READBACK_SHAPE")
+            else:
+                result["pg_jsonb_text_sha256"] = hashlib.sha256(pg_bytes).hexdigest()
+                result["raw_release_equals_pg_jsonb_text"] = release_raw == pg_bytes
     return {"verdict": "BLOCKED", "authority": "NONE",
             "reason_codes": sorted(set(errors)), "diagnostics": result}
