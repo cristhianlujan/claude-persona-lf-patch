@@ -58,6 +58,28 @@ class AttestationConsistencyTests(unittest.TestCase):
         p = proposal(); p["release_catalog_sha256"] = "invalid"
         self.assertIn("INVALID_DIGEST_FORMAT", self.evaluate(p))
 
+    def test_missing_required_key(self):
+        p = proposal(); del p["proposal_id"]
+        self.assertIn("INVALID_PROPOSAL_FIELDS", self.evaluate(p))
+
+    def test_extra_null_key(self):
+        p = proposal(); p["authority"] = None
+        self.assertIn("INVALID_PROPOSAL_FIELDS", self.evaluate(p))
+
+    def test_invalid_trusted_commit_format(self):
+        self.assertIn("INVALID_TRUSTED_COMMIT", self.evaluate(proposal(), commit="not-a-sha"))
+
+    def test_trusted_source_not_bytes(self):
+        self.assertIn("INVALID_TRUSTED_BYTES", self.evaluate(proposal(), raw=None))
+
+    def test_wrong_source_digest_even_if_well_formed(self):
+        p = proposal(); p["source_file_sha256"] = "c" * 64
+        self.assertIn("SOURCE_DIGEST_MISMATCH", self.evaluate(p))
+
+    def test_blank_policy_reference(self):
+        p = proposal(); p["policy_version"] = " "
+        self.assertIn("INVALID_REQUIRED_REFERENCE", self.evaluate(p))
+
     def test_non_object(self):
         out = mod.inspect_attestation(None, trusted_source_commit=COMMIT, trusted_source_bytes=SOURCE)
         self.assertEqual(out["authority"], "NONE")
