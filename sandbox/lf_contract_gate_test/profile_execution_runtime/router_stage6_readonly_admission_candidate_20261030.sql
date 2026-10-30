@@ -33,7 +33,7 @@ BEGIN
      OR md5(pg_get_functiondef('public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)'::regprocedure)) <> '94c468133a3961cc261ea312a0d23400' THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_profile_execution_after_gate2_v1';
   END IF;
-END
+END;
 $source_guard$;
 
 CREATE OR REPLACE FUNCTION public.lf_router_pipeline_context_profile_admit_v2(p_context jsonb, p_executor_mode text)
