@@ -317,12 +317,18 @@ def _policy_resolution_errors(payload: Any, evidence_manifest: Any) -> list[dict
             if eid in ids:
                 errs.append(_err("POLICY_EVIDENCE_REUSED", loc+".evidence_id"))
             ids.add(eid)
-            if row.get("level") == "N1" and row.get("source") != "public.v_lf_operation_policy_snapshot":
-                errs.append(_err("POLICY_N1_SOURCE_NOT_CANONICAL", loc+".source"))
-            if row.get("level") == "N2" and row.get("source") not in {
-                "public.lf_policy_versions", "private.lf_reusable_policy_registry_v1"
-            }:
-                errs.append(_err("POLICY_N2_SOURCE_NOT_CANONICAL", loc+".source"))
+            if row.get("level") == "N1":
+                if row.get("source") != "public.v_lf_operation_policy_snapshot":
+                    errs.append(_err("POLICY_N1_SOURCE_NOT_CANONICAL", loc+".source"))
+                if row.get("lookup_scope") != "OPERATION_SCOPE":
+                    errs.append(_err("POLICY_N1_OPERATION_SCOPE_REQUIRED", loc+".lookup_scope"))
+            if row.get("level") == "N2":
+                if row.get("source") not in {
+                    "public.lf_policy_versions", "private.lf_reusable_policy_registry_v1"
+                }:
+                    errs.append(_err("POLICY_N2_SOURCE_NOT_CANONICAL", loc+".source"))
+                if row.get("lookup_scope") != "SCOPE_APPLICABILITY":
+                    errs.append(_err("POLICY_N2_APPLICABILITY_SCOPE_REQUIRED", loc+".lookup_scope"))
             if row.get("result_kind") in {"ACCESS_DENIED", "ERROR"} and not _nonempty(row.get("error_detail")):
                 errs.append(_err("POLICY_ACCESS_ERROR_NOT_RECORDED", loc+".error_detail"))
             if proofs is None or eid not in proofs:
@@ -330,11 +336,15 @@ def _policy_resolution_errors(payload: Any, evidence_manifest: Any) -> list[dict
             elif _norm_locator(proofs[eid].get("source_locator")) != _norm_locator(locator):
                 errs.append(_err("POLICY_EVIDENCE_LOCATOR_MISMATCH", loc+".evidence_id"))
         if decision == "POLICY_APPLICABLE":
-            if not _nonempty(entry.get("selected_policy_code")) or not _nonempty(entry.get("selected_policy_sha")):
+            import re
+            if (not _nonempty(entry.get("selected_policy_code"))
+                    or not isinstance(entry.get("selected_policy_sha"), str)
+                    or re.fullmatch(r"[0-9a-f]{64}", entry["selected_policy_sha"]) is None):
                 errs.append(_err("POLICY_ACTIVE_REFERENCE_REQUIRED", path))
             if not any(isinstance(row, dict) and row.get("level") == "N2"
                        and row.get("applicability") == "MATCH" and row.get("result_kind") == "ROWS"
                        and row.get("policy_code") == entry.get("selected_policy_code")
+                       and row.get("policy_sha") == entry.get("selected_policy_sha")
                        and row.get("policy_status") in {"ACTIVE", "VIGENTE"} for row in steps):
                 errs.append(_err("POLICY_APPLICABLE_ROW_NOT_PROVEN", path+".lookups"))
         elif decision == "POLICY_NOT_REGISTERED":

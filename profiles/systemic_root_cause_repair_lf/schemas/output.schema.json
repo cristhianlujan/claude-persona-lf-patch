@@ -4220,7 +4220,8 @@
                 "locator",
                 "evidence_id",
                 "result_kind",
-                "applicability"
+                "applicability",
+                "lookup_scope"
               ],
               "properties": {
                 "level": {
@@ -4283,6 +4284,25 @@
                   ]
                 },
                 "error_detail": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lookup_scope": {
+                  "enum": [
+                    "OPERATION_SCOPE",
+                    "SCOPE_APPLICABILITY",
+                    "TARGETED_SOURCE"
+                  ]
+                },
+                "policy_sha": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "policy_version": {
                   "type": [
                     "string",
                     "null"

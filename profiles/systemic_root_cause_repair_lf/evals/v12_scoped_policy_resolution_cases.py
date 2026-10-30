@@ -30,6 +30,7 @@ def context(need, operation, target, decision="POLICY_NOT_REGISTERED"):
             "evidence_id": "EV-POLICY-" + str(i),
             "result_kind": "ROWS",
             "applicability": "NO_MATCH",
+            "lookup_scope": "OPERATION_SCOPE" if i == 0 else "SCOPE_APPLICABILITY",
             "observed_at": "2026-10-30T16:00:00Z",
         }
         for i, source in enumerate(SOURCES)
@@ -92,6 +93,8 @@ checks.update({
     "N1_N2_MISSING_BLOCKS": "POLICY_N1_N2_ORDER_OR_COVERAGE" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"].pop(0)),
     "WRONG_CANONICAL_VIEW_BLOCKS": "POLICY_N1_SOURCE_NOT_CANONICAL" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"][0].update(source="public.lf_activos")),
     "WRONG_N2_SOURCE_BLOCKS": "POLICY_N2_SOURCE_NOT_CANONICAL" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"][1].update(source="public.random_table")),
+    "EXACT_ASSET_IS_NOT_POLICY_SCOPE": "POLICY_N2_APPLICABILITY_SCOPE_REQUIRED" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"][1].update(lookup_scope="ASSET_EXACT")),
+    "N1_OPERATION_SCOPE_REQUIRED": "POLICY_N1_OPERATION_SCOPE_REQUIRED" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"][0].update(lookup_scope="TARGETED_SOURCE")),
     "NO_EXTERNAL_MANIFEST_BLOCKS": "POLICY_EVIDENCE_NOT_CURRENT" in errors(base[0], None),
     "BORROWED_RECEIPT_BLOCKS": "POLICY_EVIDENCE_LOCATOR_MISMATCH" in mutate(base, lambda p, m: p["policy_resolution"][0]["lookups"][0].update(locator="sql:borrowed")),
     "SUPERSEDED_RECEIPT_BLOCKS": "POLICY_EVIDENCE_NOT_CURRENT" in mutate(base, lambda p, m: m["evidence"][1].update(state="SUPERSEDED")),
@@ -103,10 +106,11 @@ checks.update({
     "EMPTY_SCOPE_BLOCKS": "POLICY_SCOPE_REQUIRED" in mutate(base, lambda p, m: p["policy_resolution"][0].update(scope={})),
     "UNAVAILABLE_MUST_HAVE_ERROR": "POLICY_UNAVAILABLE_NOT_PROVEN" in mutate(base, lambda p, m: p["policy_resolution"][0].update(decision="POLICY_SOURCE_UNAVAILABLE",next_action="BLOCK_UNVERIFIED")),
     "UNAVAILABLE_WITH_ERROR_OK": not mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_SOURCE_UNAVAILABLE",next_action="BLOCK_UNVERIFIED"), p["policy_resolution"][0]["lookups"][1].update(result_kind="ACCESS_DENIED",error_detail="READ_ACCESS_DENIED"))),
-    "CANDIDATE_IS_NOT_ACTIVE_POLICY": "POLICY_APPLICABLE_ROW_NOT_PROVEN" in mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-CANDIDATE",selected_policy_sha="a"*64),p["policy_resolution"][0]["lookups"][1].update(applicability="CANDIDATE_ONLY",policy_code="RULE-CANDIDATE",policy_status="CANDIDATE"))),
+    "CANDIDATE_IS_NOT_ACTIVE_POLICY": "POLICY_APPLICABLE_ROW_NOT_PROVEN" in mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-CANDIDATE",selected_policy_sha="a"*64),p["policy_resolution"][0]["lookups"][1].update(applicability="CANDIDATE_ONLY",policy_code="RULE-CANDIDATE",policy_status="CANDIDATE",policy_sha="a"*64))),
     "APPLICABLE_REQUIRES_CURRENT_SHA": "POLICY_ACTIVE_REFERENCE_REQUIRED" in mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-1"),p["policy_resolution"][0]["lookups"][1].update(applicability="MATCH",policy_code="RULE-1",policy_status="ACTIVE"))),
-    "CURRENT_IN_SCOPE_RULE_ACCEPTED": not mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-1",selected_policy_sha="b"*64),p["policy_resolution"][0]["lookups"][1].update(applicability="MATCH",policy_code="RULE-1",policy_status="ACTIVE"))),
+    "CURRENT_IN_SCOPE_RULE_ACCEPTED": not mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-1",selected_policy_sha="b"*64),p["policy_resolution"][0]["lookups"][1].update(applicability="MATCH",policy_code="RULE-1",policy_status="ACTIVE",policy_sha="b"*64))),
     "CANDIDATE_ONLY_RULE_CAN_ESCALATE": not mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_NOT_APPLICABLE",next_action="TARGETED_SOURCE_RESEARCH"),p["policy_resolution"][0]["lookups"][1].update(applicability="CANDIDATE_ONLY",policy_status="CANDIDATE"))),
+    "SHA_NOT_SAME_AS_N2_REJECTED": "POLICY_APPLICABLE_ROW_NOT_PROVEN" in mutate(base, lambda p, m: (p["policy_resolution"][0].update(decision="POLICY_APPLICABLE",next_action="USE_GOVERNED_RULE",selected_policy_code="RULE-1",selected_policy_sha="b"*64),p["policy_resolution"][0]["lookups"][1].update(applicability="MATCH",policy_code="RULE-1",policy_status="ACTIVE",policy_sha="a"*64))),
 })
 for name, passed in checks.items():
     print(("PASS " if passed else "FAIL ") + name)
