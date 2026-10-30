@@ -5,7 +5,7 @@ authenticated approval, Train receipt, or release publication exist here.
 """
 import re
 
-SEMVER = re.compile(r"^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$")
+SEMVER = re.compile(r"^(0|[1-9][0-9]{0,17})[.](0|[1-9][0-9]{0,17})[.](0|[1-9][0-9]{0,17})$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
