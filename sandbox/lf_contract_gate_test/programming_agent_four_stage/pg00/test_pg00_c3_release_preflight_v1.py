@@ -69,6 +69,14 @@ class PreflightTests(unittest.TestCase):
         self.assertIn("SOURCE_REPO_MISMATCH",
                       self.run_check(lambda c: c.update(source_repo="evil/repo"))["reason_codes"])
 
+    def test_non_object_candidate_fails_closed(self):
+        _, raw = fixture()
+        for value in (None, [], "string", 23):
+            with self.subTest(candidate=value):
+                result = mod.inspect(value, raw, expected_commit=COMMIT)
+                self.assertEqual(result["verdict"], "BLOCKED")
+                self.assertIn("INVALID_CANDIDATE_SHAPE", result["reason_codes"])
+
     def test_invalid_json(self):
         self.assertIn("INVALID_SOURCE_JSON",
                       self.run_check(source_edit=lambda b: b"invalid json")["reason_codes"])
