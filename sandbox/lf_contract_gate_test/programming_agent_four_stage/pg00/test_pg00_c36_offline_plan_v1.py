@@ -97,6 +97,13 @@ class OfflinePlanTests(unittest.TestCase):
         self.assertIn("INVALID_RELEASE_JSON",
                       self.evaluate(release=b'{"rules":[{"id":1,"id":2}]}'))
 
+    def test_unhashable_release_status_fails_closed(self):
+        for invalid in ([], {}, ["APROBADO"]):
+            with self.subTest(status=invalid):
+                altered = json.dumps({**SOURCE_DOC, "status": invalid}, sort_keys=True).encode()
+                reasons = self.evaluate(release=altered)
+                self.assertIn("INVALID_RELEASE_STATUS", reasons)
+
     def test_invalid_proposal_shape(self):
         _, registry = fixture()
         result = mod.inspect_plan(None, source_bytes=SOURCE, release_bytes=RELEASE,
