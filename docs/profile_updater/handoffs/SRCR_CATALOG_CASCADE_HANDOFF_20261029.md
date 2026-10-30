@@ -373,3 +373,17 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 - Las pruebas WEB-001 y S26 completas ya ejecutadas corresponden a anteriores revisiones y NO dan automáticamente PASS a v09/v10 ni al nuevo enforcement de ubicación dinámica. Ejecutar solamente esos casos delta cuando el mismo updater consuma el candidato.
 
 **Siguiente acción sin ruta nueva:** usar el Profile Updater ya operativo para consumir el parche corregido y resolver/validar este delta, con las llamadas/enforcement en los pasos NATIVOS de cada perfil. No abrir Router adicional ni repetir 17 etapas por diagnóstico. PR sigue DRAFT y sin edición de perfiles oficiales.
+
+## Corrección de prueba independiente — mismo proceso (2026-10-30)
+
+**Causa contrastada:** el nuevo control N1/N2 del candidato solo exigía `independent_source_ref`/fecha no vacíos y comprobaba valores contra el manifest del productor. Eso permitía marcar `PASS` con texto no ejecutado. No se debe atribuirle independencia real.
+
+**Parche mínimo ejecutado solo en el handoff candidato:** el validador semántico existente para SRCR exige ahora un lector de fuente confiable `trusted_reader` recibido por el ejecutor de verificación existente, no desde el JSON del productor. Si la llamada no está conectada, añade `N1_N2_TRUSTED_READER_NOT_WIRED` y bloquea la aceptación N1/N2. El lector debe devolver valores, conteo, origen, digest, dato/nivel, revisión candidata y referencia de lectura; si divergen, devuelve `N1_N2_INDEPENDENT_READBACK_NOT_PROVEN`. No se creó un juez, paso ni pipeline nuevos.
+
+**Efecto operacional previsto:** la llamada actual `validate_quality_receipt.py -> validate_semantic_judge_result.evaluate` no provee todavía ese lector y por tanto rechazará el nuevo PASS N1/N2. **Ese bloqueo es intencional para evitar auto-certificación**; conectar la comprobación fuente-real al ejecutor/guard existente y comprobar readback es parte del impacto pendiente, no un sistema nuevo.
+
+**Evidencia del lote:** parche aplicado por simulación de hunks al `main` exacto: 23/23 hunk contexts/counts, 12 archivos en alcance, manifiesto con v08/v09/v10. Tres casos negativos nuevos agregados en v10: (1) sin lector confiable, (2) referencia ficticia con objeto aparentemente verificado, (3) valores falsificados en readback. Las pruebas nuevas de este cambio **no corrieron en el ejecutor oficial**; no declarar PASS funcional definitivo por aplicabilidad del parche.
+
+**No repetir:** las anteriores 17 etapas completas y sus tests S26 / WEB-001 permanecen válidas para el alcance anterior. El nuevo conjunto de casos y la llamada fuente-real son exclusivamente delta. Mantener el mismo actualizador, sus puntos de decisión, sus llamadas y enforcement, con ubicación distinta según cada perfil.
+
+**Siguiente acción concreta:** ejecutar solo los casos nuevos junto con readback independiente N1/N2 en el paso que corresponde a SRCR, confirmar que una referencia inventada no puede superar el juicio, y luego permitir que el actualizador retome únicamente el delta bajo sus controles actuales. Sin cambios en runtime oficial ni Supabase efectuados.
