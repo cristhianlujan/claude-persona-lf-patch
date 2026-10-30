@@ -41,5 +41,33 @@ class RunnerBuildersTest(unittest.TestCase):
             M["validate_body"]({"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "other"}, REPO)
 
 
+class PreflightTest(unittest.TestCase):
+    CASES = {"C1": {}, "C2": {}}
+
+    def run_for(self, case_id, tree):
+        return {"case_id": case_id, "profile_tree_sha256": tree}
+
+    def test_nothing_missing_when_both_trees_have_a_run_per_case(self):
+        runs = [self.run_for(c, t) for c in self.CASES for t in ("B" * 64, "C" * 64)]
+        self.assertEqual(M["plan_missing"]("p_x", self.CASES, runs, "B" * 64, "C" * 64), [])
+
+    def test_missing_candidate_run_says_what_where_and_which_hash(self):
+        runs = [self.run_for(c, "B" * 64) for c in self.CASES]
+        miss = M["plan_missing"]("p_x", self.CASES, runs, "B" * 64, "C" * 64)
+        self.assertEqual(len(miss), 2)
+        self.assertEqual({m["bind_to"]["profile_tree_sha256"] for m in miss}, {"C" * 64})
+        self.assertTrue(all(m["where"].startswith("skills/profile_creator/operational_cases/p_x/runs/RUN-") for m in miss))
+        self.assertTrue(all("profile_tree_sha256 (hash below)" in m["required_fields"] for m in miss))
+
+    def test_a_run_bound_to_another_tree_does_not_count(self):
+        runs = [self.run_for("C1", "D" * 64), self.run_for("C2", "D" * 64)]
+        self.assertEqual(len(M["plan_missing"]("p_x", self.CASES, runs, "B" * 64, "C" * 64)), 4)
+
+    def test_blocked_carries_code_why_missing_and_how(self):
+        b = M["Blocked"]("X", "why", [{"what": "w"}], "how")
+        self.assertEqual(set(b.detail), {"status", "code", "why", "missing", "how"})
+        self.assertEqual(b.detail["status"], "BLOCKED")
+
+
 if __name__ == "__main__":
     unittest.main()
