@@ -587,7 +587,7 @@ Deno.test("router V2 profile admission: exact governed identity forwards existin
   assertEquals(rpc[0].body, { p_context: context, p_executor_mode: "GPT_NATIVE" });
 });
 
-Deno.test("router V2 Stage 06: handoff admission never invokes profile writer", async () => {
+Deno.test("CP2: router V2 Stage 06: handoff admission never invokes profile writer", async () => {
   const h = harness({ claims: LEGACY_CLAIMS });
   const context = {
     schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
@@ -602,7 +602,7 @@ Deno.test("router V2 Stage 06: handoff admission never invokes profile writer", 
   assertEquals(h.calls.filter(c => c.url.endsWith("/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1")).length, 0);
 });
 
-Deno.test("router V2 Stage 07: admitted context explicitly invokes profile execution writer", async () => {
+Deno.test("CP2: router V2 Stage 07: admitted context explicitly invokes profile execution writer", async () => {
   const h = harness({ claims: LEGACY_CLAIMS });
   const context = {
     schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
@@ -625,7 +625,7 @@ Deno.test("router V2 Stage 07: admitted context explicitly invokes profile execu
   assertEquals(writers[0].body?.p_channel, "PRODUCTO");
 });
 
-Deno.test("router V2 Stage 07: unauthorized identity and REMOTE_API cannot write", async () => {
+Deno.test("CP2: router V2 Stage 07: unauthorized identity and REMOTE_API cannot write", async () => {
   const context = { schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
     status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION", transport_mode: "CONTEXT_TRANSPORT" };
   const unauthorized = harness({ claims: DISPATCH_CLAIMS });
