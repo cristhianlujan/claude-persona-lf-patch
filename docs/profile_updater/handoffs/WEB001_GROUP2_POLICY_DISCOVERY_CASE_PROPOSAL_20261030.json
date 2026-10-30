@@ -2,13 +2,16 @@
   "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
   "profile_slug": "systemic_root_cause_repair_lf",
   "case_id": "WEB-001",
-  "description": "Registro real de lf_error_knowledge WEB-001 (CAPTURA_WEB): web.run open(url) devuelve Cache miss; el pipeline cierra FALLIDO sin inventar contenido. Entrada literal en el input de cada corrida. | PROPOSAL ONLY (not loaded by official Group 2 on main): preserve OP01-OP09 and add scoped-policy search OP10-OP14. Do not promote without governed case acceptance.",
+  "description": "WEB-001 original, sin sustituir: dos salidas legítimas. SYSTEMIC_REPAIR_SPEC exige cierre sin incertidumbre y autoridad resuelta; NEEDS_MORE_EVIDENCE acepta incertidumbre material documentada con N1/N2, sin fabricar owner. Los controles OP01..OP09 siguen vigentes y OP10..OP14 añaden investigación de reglas (N1 vista / N2 tabla). PROPOSAL ONLY: no está en trusted main ni certifica evolución. Group 2 requiere corridas reales vinculadas al hash de árbol exacto, y juez independiente sobre fuentes.",
   "checks": [
     {
       "id": "OP01_CLOSES_WITH_REPAIR_SPEC",
       "pointer": "/output/status",
-      "op": "eq",
-      "value": "SYSTEMIC_REPAIR_SPEC"
+      "op": "in",
+      "value": [
+        "SYSTEMIC_REPAIR_SPEC",
+        "NEEDS_MORE_EVIDENCE"
+      ]
     },
     {
       "id": "OP02_OUTPUT_VALID",
@@ -18,19 +21,30 @@
     },
     {
       "id": "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
-      "pointer": "/output",
-      "op": "no_node",
-      "key": "status",
-      "values": [
-        "UNRESOLVED",
-        "NEEDS_MORE_EVIDENCE"
-      ]
+      "op": "if_then",
+      "if": {
+        "pointer": "/output/status",
+        "op": "eq",
+        "value": "SYSTEMIC_REPAIR_SPEC"
+      },
+      "then": {
+        "pointer": "/output",
+        "op": "no_node",
+        "key": "status",
+        "values": [
+          "UNRESOLVED",
+          "NEEDS_MORE_EVIDENCE"
+        ]
+      }
     },
     {
       "id": "OP04_OWNER_RESOLVED",
       "pointer": "/output/owner/status",
-      "op": "eq",
-      "value": "RESOLVED"
+      "op": "in",
+      "value": [
+        "RESOLVED",
+        "UNRESOLVED"
+      ]
     },
     {
       "id": "OP05_DERIVED_OWNER_HAS_RATIFICATION",
@@ -47,8 +61,16 @@
     },
     {
       "id": "OP06_ALTERNATIVE_SELECTED",
-      "pointer": "/output/selected_alternative",
-      "op": "nonempty"
+      "op": "if_then",
+      "if": {
+        "pointer": "/output/status",
+        "op": "eq",
+        "value": "SYSTEMIC_REPAIR_SPEC"
+      },
+      "then": {
+        "pointer": "/output/selected_alternative",
+        "op": "nonempty"
+      }
     },
     {
       "id": "OP07_PLANNED_REGRESSIONS",
