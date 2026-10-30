@@ -48,6 +48,34 @@ checks.update({
  "NON_SELECT_REJECTED":"GAP_CATALOG_NON_SELECT_QUERY" in _codes({"catalog_queries":[dict(q1,readback=dict(q1["readback"],query="DELETE FROM lf_activos")),q2]}),
 })
 
+
+from producer_depth import _level_trace_errors
+def _trace(level, source, locator, revision, kind="NO_EVIDENCE", error_detail=None):
+    digest="sha256:"+("a" if level=="N3" else "b" if level=="N4" else "c")*64
+    record={"level":level,"datum_id":"U-1","source":source,"locator":locator,
+            "evidence_id":"EV-"+level,"result_kind":kind,
+            "source_revision":revision,"observed_at":"2026-10-30T19:00:00Z",
+            "digest":digest}
+    if error_detail is not None: record["error_detail"]=error_detail
+    return record,{"source_locator":locator,"digest":digest}
+n3,r3=_trace("N3","pg_description","SELECT obj_description(oid) FROM pg_class","DB_SNAPSHOT_20261030")
+n4,r4=_trace("N4","GITHUB","github://repo@"+("a"*40)+"/path","a"*40)
+n5,r5=_trace("N5","PROJECT_MEMORY","project://memory/owner","PROJECT_SNAPSHOT",kind="NO_SOURCE_ACCESSIBLE",error_detail="NO_AUTHORIZED_PROJECT_DOCUMENT_READER")
+levels=[n3,n4,n5]
+level_manifest={"EV-N3":r3,"EV-N4":r4,"EV-N5":r5}
+def _level_codes(ls, proofs=level_manifest):
+    return {v["code"] for v in _level_trace_errors({"level_trace":ls},proofs,"U-1","$.cascade",_error)}
+checks.update({
+ "N3_N4_N5_LEVEL_TRACE_ACCEPTED":not _level_codes(levels),
+ "N5_SKIPPED_REJECTED":"GAP_LEVEL_TRACE_ORDER_OR_COVERAGE" in _level_codes(levels[:2]),
+ "N3_SKIPPED_REJECTED":"GAP_LEVEL_TRACE_ORDER_OR_COVERAGE" in _level_codes(levels[1:]),
+ "N4_UNPINNED_REJECTED":"GAP_LEVEL_TRACE_GITHUB_REVISION_UNPINNED" in _level_codes([n3,dict(n4,source_revision="main"),n5]),
+ "N5_INACCESSIBLE_REQUIRES_ERROR":"GAP_LEVEL_TRACE_ACCESS_ERROR_MISSING" in _level_codes([n3,n4,dict(n5,error_detail="")]),
+ "N5_FAKE_DIGEST_REJECTED":"GAP_LEVEL_TRACE_PROVENANCE_MISMATCH" in _level_codes([n3,n4,dict(n5,digest="sha256:"+("d"*64))]),
+ "N4_MISSING_EXTERNAL_MANIFEST_REJECTED":"GAP_LEVEL_TRACE_EVIDENCE_MISSING" in _level_codes(levels,{"EV-N3":r3,"EV-N5":r5}),
+ "WRONG_LEVEL_DATUM_REJECTED":"GAP_LEVEL_TRACE_DATUM_MISMATCH" in _level_codes([n3,dict(n4,datum_id="OTHER"),n5]),
+})
+
 for k,v in checks.items(): print("ok  " if v else "FAIL", k)
 print(f"EXHAUSTED_SEARCH_CASES={sum(checks.values())}/{len(checks)}")
 sys.exit(0 if all(checks.values()) else 1)

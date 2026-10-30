@@ -127,6 +127,69 @@ def _catalog_receipt_errors(casc, manifest, uid, path, err):
     return errors
 
 
+
+def _level_trace_errors(casc, manifest, uid, path, err):
+    """Prove that an exhausted five-class search reached N3/N4/N5 too.
+
+    N1/N2 are validated separately with typed SELECT readbacks. These higher
+    levels reuse the CURRENT external manifest; they do not discover evidence,
+    issue queries or grant authority. An inaccessible source is a result only
+    when its failed attempt is itself recorded with evidence and error detail.
+    """
+    import re
+    errors = []
+    records = casc.get("level_trace")
+    levels = ("N3", "N4", "N5")
+    if not isinstance(records, list):
+        return [err("GAP_LEVEL_TRACE_REQUIRED", f"{path}.level_trace")]
+    observed = [x.get("level") if isinstance(x, dict) else None for x in records]
+    if observed != list(levels):
+        errors.append(err("GAP_LEVEL_TRACE_ORDER_OR_COVERAGE", f"{path}.level_trace"))
+    if not isinstance(manifest, dict):
+        return errors + [err("GAP_LEVEL_TRACE_MANIFEST_REQUIRED", f"{path}.level_trace")]
+    for i, item in enumerate(records):
+        at = f"{path}.level_trace[{i}]"
+        if not isinstance(item, dict):
+            errors.append(err("GAP_LEVEL_TRACE_INVALID", at))
+            continue
+        level = item.get("level")
+        if level not in levels:
+            errors.append(err("GAP_LEVEL_TRACE_INVALID", at))
+            continue
+        source = item.get("source")
+        locator = item.get("locator")
+        evidence_id = item.get("evidence_id")
+        state = item.get("result_kind")
+        observed_at = item.get("observed_at")
+        revision = item.get("source_revision")
+        digest = item.get("digest")
+        if item.get("datum_id") != uid:
+            errors.append(err("GAP_LEVEL_TRACE_DATUM_MISMATCH", at))
+        if any(not isinstance(x, str) or not x.strip() for x in
+               (source, locator, evidence_id, observed_at, revision, digest)):
+            errors.append(err("GAP_LEVEL_TRACE_REQUIRED_FIELDS", at))
+            continue
+        if level == "N4" and not re.fullmatch(r"[0-9a-f]{40}", revision):
+            errors.append(err("GAP_LEVEL_TRACE_GITHUB_REVISION_UNPINNED", at))
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+            errors.append(err("GAP_LEVEL_TRACE_DIGEST_INVALID", at))
+        if state not in ("FOUND_INSUFFICIENT", "NO_EVIDENCE", "NO_SOURCE_ACCESSIBLE"):
+            errors.append(err("GAP_LEVEL_TRACE_RESULT_INVALID", at))
+        if state == "NO_SOURCE_ACCESSIBLE" and (
+            not isinstance(item.get("error_detail"), str) or
+            not item["error_detail"].strip()
+        ):
+            errors.append(err("GAP_LEVEL_TRACE_ACCESS_ERROR_MISSING", at))
+        proof = manifest.get(evidence_id)
+        if not isinstance(proof, dict):
+            errors.append(err("GAP_LEVEL_TRACE_EVIDENCE_MISSING", at))
+        elif proof.get("source_locator") != locator or proof.get("digest") != digest:
+            errors.append(err("GAP_LEVEL_TRACE_PROVENANCE_MISMATCH", at))
+    if len({x.get("evidence_id") for x in records if isinstance(x, dict)}) != len(records):
+        errors.append(err("GAP_LEVEL_TRACE_EVIDENCE_REUSED", f"{path}.level_trace"))
+    return errors
+
+
 def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
     if not applies(payload):
         return []
@@ -176,6 +239,7 @@ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list
                                        "Every class was searched: state what was explored. List, for each of the five classes, the exact source, locator and result (NO_SOURCE_ACCESSIBLE where applicable), then close saying that everything reachable was explored and no evidence was found."))
                 else:
                     errors.extend(_catalog_receipt_errors(casc, manifest, uid, f"{path}.cascade", _err))
+                    errors.extend(_level_trace_errors(casc, manifest, uid, f"{path}.cascade", _err))
         attempts = row.get("attempted_sources")
         if not isinstance(attempts, list) or not attempts:
             errors.append(_err(
