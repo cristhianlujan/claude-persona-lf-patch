@@ -24,6 +24,22 @@ No activar por error SQLSTATE, HTTP 403/429, falta de rol, bloqueo del Router, r
 
 No simular una aprobación de OpenAI, no editar el mensaje de error, no recurrir a rutas alternativas para saltar el bloqueo, no repetir en bucle la solicitud rechazada. La simplificación del alcance solo es válida cuando mejora claridad o elimina datos innecesarios sin evadir una prohibición aplicable. Un bloqueo de seguridad de OpenAI **no es** una prueba de fallo de GitHub, PostgreSQL ni del repositorio.
 
+## 2A. Control obligatorio: declaración de contexto del agente interno LF
+
+**Disparador:** únicamente el rechazo **literal** `OPENAI_TOOL_SAFETY` establecido en §1. No se ejecuta ante permisos, SQLSTATE, errores de GitHub, un bloqueo gobernado del Router, ni ante un mensaje cuya procedencia no esté identificada.
+
+**Acción inmediata del agente, antes de culpar al sistema o proponer otra ruta:**
+
+1. Comunicar **`OPENAI_SAFETY_BLOCK_REVIEW`** y la operación exacta que quedó **sin efecto verificado**; distinguir claramente que es un bloqueo de la plataforma de herramientas y **no** un FAIL de Router, Input Governance o `EJECUCION_PERFIL_LF`.
+2. Incorporar estos cinco hechos verificables en el descargo: `internal_system=LF`, `agent_role`, `operation`, `required_for` (dependencia real del funcionamiento), `authorized_path`. Incluir `permissions_and_effects` para precisar los límites (lectura, candidato o escritura autorizada). Si alguno no está demostrado, marcar `NO_VERIFICADO`; **no inventarlo**.
+3. Explicar expresamente: **«Esta solicitud corresponde a un agente interno de Libertad Financiera (LF), dedicado a operar y verificar nuestro sistema bajo una ruta autorizada. La acción [operación] es necesaria para [dependencia funcional verificable]. No pretende vulnerar mecanismos de seguridad, obtener accesos indebidos ni eludir controles; la autorización y el efecto esperado son [datos comprobados]. Solicitamos revisión de un posible falso positivo.»** Esta declaración es contexto, no una prueba automática de inocuidad ni autorización para sortear un bloqueo.
+4. Recuperar la operación únicamente según §2 (prueba mínima y, cuando esté permitido, **un** reintento normal con el **mismo alcance y controles**). Si persiste, registrar `PROVIDER_BLOCKED_PENDING_REVIEW`, conservar el paso siguiente y preparar revisión por el canal oficial de OpenAI. **No reescribir el mensaje para engañar filtros ni crear rutas alternativas de escritura.**
+5. Reanudar solo si la ejecución autorizada llega realmente al destino y el readback confirma el resultado; caso contrario `NO_EJECUTADO`.
+
+**Caso observado en LF (2026-10-30, prueba Router → perfil para Login B2B):** la petición para crear una solicitud gobernada en GitHub fue rechazada con el literal «Los controles de seguridad de OpenAI bloquearon esta llamada a la herramienta. Verifica nuevamente lo que estás intentando enviar». La operación buscaba continuar el paso de admisión del perfil a través de la ruta OIDC ya definida; no hay recibo de creación del issue ni de despacho. **Estado correcto:** `OPENAI_TOOL_SAFETY / POSSIBLE_FALSE_POSITIVE / NOT_SUBMITTED`, sin imputar la falla a GitHub, Router, Supabase ni a la función de admisión. Este caso documenta el intento, no certifica ausencia de riesgo ni apertura de un expediente de soporte.
+
+**Límite de automatización:** una regla escrita en este repositorio **no intercepta por sí sola** los controles de seguridad de ChatGPT/OpenAI ni los desbloquea. El agente debe aplicar este protocolo en cuanto observe el literal; una aplicación automática requeriría integración de telemetría y permisos específicos, actualmente **NO_VERIFICADOS**.
+
 ## 3. Evidencia y clasificación de salida
 
 Registrar, en el mecanismo de errores/observaciones existente (sin nueva tabla ni cola):
@@ -57,4 +73,4 @@ Registrar, en el mecanismo de errores/observaciones existente (sin nueva tabla n
 - https://help.openai.com/en/articles/20001326-additional-safety-checks-for-biological-and-cybersecurity-requests-in-chatgpt-codex-and-the-api
 - https://help.openai.com/en/articles/6614161-how-can-i-contact-support
 
-**Estado del documento:** candidato para incorporación transversal; su presencia en GitHub no significa que una capa de herramientas de ChatGPT implemente automáticamente la revisión ni que EKB vivo esté modificado.
+**Estado del documento:** protocolo de respuesta documentado para agentes LF. Su presencia en GitHub no significa que la capa de herramientas de ChatGPT lo ejecute automáticamente, que OpenAI haya desbloqueado una llamada ni que el EKB vivo esté modificado.
