@@ -26,7 +26,8 @@ BEGIN
   IF to_regprocedure('public.lf_router_pipeline_context_profile_admit_v2(jsonb,text)') IS NULL
     OR md5(pg_get_functiondef('public.lf_router_pipeline_context_profile_admit_v2(jsonb,text)'::regprocedure)) <> '94038416c351c3809b53161926fbca8f'
   THEN RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_ROLLBACK_DRIFT:lf_router_pipeline_context_profile_admit_v2'; END IF;
-END $rollback_source_guard$;
+END;
+$rollback_source_guard$;
 
 -- Restore lf_router_profile_execution_after_gate2_v1 original hash 94c468133a3961cc261ea312a0d23400.
 CREATE OR REPLACE FUNCTION public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text DEFAULT NULL::text, p_github_backup_reason text DEFAULT NULL::text)
