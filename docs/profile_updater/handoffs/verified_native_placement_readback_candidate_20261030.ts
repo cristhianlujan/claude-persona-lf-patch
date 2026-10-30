@@ -62,6 +62,18 @@ function validateOrder(items:Section[],intent:AdoptionIntent,mode:"base"|"candid
  const before=one(items,intent.predecessor_anchor),after=one(items,intent.successor_anchor);
  if(!before&&!after)return false;
  if(before&&after&&before.pos>=after.pos)return false;
+ // A proposed pair must be adjacent among peers; textual proximity alone is insufficient.
+ if(before&&after){
+   const depthBefore=before.anchor.match(/^#+/)?.[0].length;
+   const depthAfter=after.anchor.match(/^#+/)?.[0].length;
+   if(depthBefore!==depthAfter)return false;
+   const peers=items.filter(x=>x.anchor.match(/^#+/)?.[0].length===depthBefore);
+   const inBetween=peers.filter(x=>x.pos>before.pos&&x.pos<after.pos);
+   if(mode==="base"&&intent.action==="INSERT"&&inBetween.length)return false;
+   if(mode==="candidate"&&intent.action==="INSERT"&&
+     (inBetween.length!==1||inBetween[0].anchor!==intent.target_anchor))return false;
+ }
+
  if(mode==="base"&&intent.action==="INSERT")return !items.some(x=>x.anchor===intent.target_anchor);
  if(mode==="candidate"&&intent.action==="REMOVE")return !items.some(x=>x.anchor===intent.target_anchor);
  const target=one(items,intent.target_anchor);
@@ -77,7 +89,19 @@ export async function verifyProfilePlacementSource(input:{
    return fail("PLACEMENT_EXACT_REVISION_INVALID");
  if(!Array.isArray(intents)||!Array.isArray(selectedMethodIds)||new Set(selectedMethodIds).size!==selectedMethodIds.length)
    return fail("PLACEMENT_SELECTION_INVALID");
- if(!intents.length)return {ok:true,evidence:{state:"NO_ADOPTION_DECLARED",profile_slug:slug,base_sha:baseSha}};
+ if(!intents.length){
+   // No-change is not permission to conceal a new/removed documented step.
+   if(mode==="compare"){
+     try{
+       const base=await exact(gh,slug,baseSha,"SKILL.md");
+       const candidate=await exact(gh,slug,candidateSha!,"SKILL.md");
+       const before=sections(base.content).map(x=>x.anchor);
+       const after=sections(candidate.content).map(x=>x.anchor);
+       if(JSON.stringify(before)!==JSON.stringify(after))return fail("PLACEMENT_UNDECLARED_STEP_HEADING_CHANGE");
+     }catch(error){return fail(error instanceof Error?error.message:"PLACEMENT_READBACK_FAILED");}
+   }
+   return {ok:true,evidence:{state:"NO_ADOPTION_DECLARED",profile_slug:slug,base_sha:baseSha}};
+ }
  const selected=new Set(selectedMethodIds),seen=new Set<string>(),verified:Record<string,unknown>[]=[];
  for(const intent of intents){
    if(!intent||!selected.has(intent.method_id)||!METHODS.has(intent.action)||seen.has(intent.method_id)||
