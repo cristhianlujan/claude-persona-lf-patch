@@ -53,7 +53,7 @@ RETURNS jsonb LANGUAGE sql STABLE AS $$
 $$;
 CREATE OR REPLACE FUNCTION public.lf_profile_selector_semantic_validate_v1(req jsonb, decision jsonb)
 RETURNS jsonb LANGUAGE sql STABLE AS $$ SELECT '{"status":"VALID"}'::jsonb $$;
-CREATE OR REPLACE FUNCTION public.lf_router_profile_after_selection_v1(s1 jsonb, decision jsonb)
+CREATE OR REPLACE FUNCTION public.lf_router_profile_after_selection_v1(p_stage1 jsonb, p_selection_result jsonb)
 RETURNS jsonb LANGUAGE sql STABLE AS $$
  SELECT '{"status":"READY_FOR_GATE2","gate2_request":{"action":"PROFILE_EXECUTION"}}'::jsonb
 $$;
