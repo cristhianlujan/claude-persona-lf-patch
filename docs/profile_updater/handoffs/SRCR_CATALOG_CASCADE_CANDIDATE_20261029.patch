@@ -360,3 +360,125 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 +
  def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
      if not applies(payload):
+
+diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
+--- a/validators/validate_semantic_judge_result.py
++++ b/validators/validate_semantic_judge_result.py
+@@ -12,5 +12,67 @@
+ import json
+ import sys
+-from typing import Any
++from typing import Any
++
++def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any) -> list[str]:
++    """Proof-bound auditor coverage: the candidate cannot waive this gate."""
++    import hashlib
++    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6":
++        return []
++    required = {}
++    errors = []
++    for item in candidate.get("current_uncertainties") or []:
++        if not isinstance(item, dict) or item.get("impact") != "DESIGN_BLOCKING":
++            continue
++        c = item.get("cascade")
++        if not isinstance(c, dict) or "catalog_queries" not in c:
++            continue
++        uid = item.get("uncertainty_id")
++        if not isinstance(uid, str) or not uid:
++            errors.append("N1_N2_DATUM_ID_MISSING")
++            continue
++        for q in c.get("catalog_queries") or []:
++            if not isinstance(q, dict) or q.get("level") not in ("N1", "N2"):
++                continue
++            key = (uid, q["level"])
++            if key in required:
++                errors.append("N1_N2_QUERY_DUPLICATE")
++            required[key] = q
++    if not required:
++        return errors
++    observations = result.get("n1_n2_audit")
++    if not isinstance(observations, list):
++        return errors + ["N1_N2_AUDIT_MISSING"]
++    proofs = {x.get("evidence_id"): x for x in (manifest or {}).get("evidence", [])
++              if isinstance(x, dict) and x.get("state") == "CURRENT"} if isinstance(manifest, dict) else {}
++    seen = set()
++    for a in observations:
++        if not isinstance(a, dict):
++            errors.append("N1_N2_AUDIT_INVALID")
++            continue
++        key = (a.get("datum_id"), a.get("level"))
++        if key in seen or key not in required:
++            errors.append("N1_N2_AUDIT_DUPLICATE_OR_UNEXPECTED")
++            continue
++        seen.add(key)
++        q = required[key]
++        data, eid = q.get("readback"), q.get("evidence_id")
++        proof = proofs.get(eid)
++        if not isinstance(data, dict) or not proof:
++            errors.append("N1_N2_SOURCE_PROOF_MISSING")
++            continue
++        digest = "sha256:" + hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
++        if proof.get("digest") != digest or proof.get("source_locator") != data.get("query"):
++            errors.append("N1_N2_SOURCE_DIGEST_MISMATCH")
++        if a.get("evidence_id") != eid or a.get("source_locator") != data.get("query"):
++            errors.append("N1_N2_AUDIT_PROVENANCE_MISMATCH")
++        if any(a.get(k) != data.get(k) for k in ("result_kind", "row_count", "sample_records")):
++            errors.append("N1_N2_AUDIT_VALUE_MISMATCH")
++        if a.get("comparison") != "MATCH" or not a.get("independent_source_ref") or not a.get("independent_observed_at"):
++            errors.append("N1_N2_INDEPENDENT_READBACK_NOT_PROVEN")
++    if seen != set(required):
++        errors.append("N1_N2_AUDIT_INCOMPLETE")
++    if result.get("verdict") == PASS_VERDICT and result.get("n1_n2_verdict") != "PASS":
++        errors.append("N1_N2_PASS_NOT_ISSUED")
++    return errors
+ 
+ REQUIRED_INVARIANTS = {
+
+diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
+--- a/validators/validate_semantic_judge_result.py
++++ b/validators/validate_semantic_judge_result.py
+@@ -66,3 +66,3 @@
+ 
+-def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None) -> dict[str, Any]:
++def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None) -> dict[str, Any]:
+     errors: list[str] = []
+
+diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
+--- a/validators/validate_semantic_judge_result.py
++++ b/validators/validate_semantic_judge_result.py
+@@ -155,8 +155,9 @@
+             errors.append("SEMANTIC_PASS_WITH_OPEN_DESIGN_DECISIONS")
+ 
+-    return {
+-        "status": "PASS" if not errors else "FAIL",
+-        "blocking_codes": sorted(set(errors)),
+-    }
++    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest))
++    return {
++        "status": "PASS" if not errors else "FAIL",
++        "blocking_codes": sorted(set(errors)),
++    }
+ 
+ 
+
+diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality_receipt.py
+--- a/validators/validate_quality_receipt.py
++++ b/validators/validate_quality_receipt.py
+@@ -151,5 +151,5 @@
+         )
+ 
+-    semantic_gate = semantic_validator.evaluate(semantic_result)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
+     if semantic_gate.get("status") != "PASS":
+         errors.append(
+
+diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
+--- a/validators/materialize_quality_receipt.py
++++ b/validators/materialize_quality_receipt.py
+@@ -70,5 +70,5 @@
+         raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
+ 
+-    semantic_gate = semantic_validator.evaluate(semantic_result)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
+     if semantic_gate.get("status") != "PASS":
+         raise QualityReceiptMaterializationError(
