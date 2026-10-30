@@ -298,3 +298,30 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 5. Prueba mínima siguiente: ejecutar los 10 casos TypeScript desde la misma revisión, comprobar dos rechazos adversariales 40/90 por el recorder tras desplegar el cambio gobernado, y verificar NO_CHANGE / un perfil distinto sin regresión. No reabrir baterías interminables.
 
 **Estado:** el PR #3359 sigue DRAFT y solo modifica archivos `docs/profile_updater/handoffs/**` (8 archivos en revisión). Cambios candidatos preparados; instalación, SQL materializado, enforcement real y corridas operacionales **NO_VERIFICADO**. Próxima ruta: ACT-0001 -> ACTUALIZACION_PERFIL_LF -> readback/test/semantic_judge/regression_after -> merge train según sus contratos actuales.
+
+## Lote 2026-10-30 — prueba del lector, Router y enforcement de pase
+
+### Ejecución y evidencia (separar herramientas reales de simulaciones)
+- El validador local de ubicación (Python aislado, copia/equivalente del código candidato) corrió 22 pruebas: **22 PASS / 0 FAIL**. No equivale a corrida de checkout GitHub.
+- Se leyó el fuente exacto `verified_native_placement_readback_candidate_20261030.ts` del PR y se ejecutó su lógica en un sandbox JS con tipos TypeScript retirados y mocks de `atob`, `TextDecoder`, `TextEncoder` y digest de `crypto.subtle`. **12/12 checks de comportamiento PASS**; la prueba de SHA256 criptográfico real y la compilación/ejecución nativa TypeScript no fueron verificadas.
+- Las 12 comprobaciones incluyeron inserción válida, cambio declarado, eliminación, método no seleccionado, ancla inexistente, ruta entre perfiles, referencia base/candidato idéntica, inserción no declarada, orden no adyacente y NO_CHANGE. Se observó que el helper permite modificar contenido interior de una sección sin adopción declarada si no hay cambio de títulos: **eso no certifica no-adopción**; el juez semántico debe contrastar alcance y diff. Evitar sobreprometer detección automática exhaustiva.
+- Read-only Router ACT-0001, sin pistas de target/action: pedido sobre `systemic_root_cause_repair_lf` y PR #3359 devolvió `BLOCKED / BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED`, sujeto candidato `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`, `next_governance_entrypoint=GOVERNED_SEMANTIC_CONSUMER_REQUIRED`, `downstream_execution_allowed=false`, request SHA256 `79da51c4f05247a5d7efb41d05047e9420bbdc47fc8a6120723d7fd2ac81e4cf`. Este BLOCKED no se interpreta como decisión terminal, pero la herramienta actual es Supabase **solo lectura** y no emite ni consume el recibo semántico gobernado para realizar la admisión. No fabricar recibos ni abrir otra ruta.
+- El ledger `private.lf_evidence_ledger_v1` contiene **44** `GRAPH_RECEIPT` `VERIFIED` exclusivamente de `subject_type=IG_SCREEN_GRAPH`, `gate_code=IG_GRAPH_SHA_RECEIPT`. Son de Input Governance y no pueden usarse como prueba del mapa de pasos de perfiles. No hay un recibo de tipo PROFILE_STEP_GRAPH verificado identificado en esa población.
+- GitHub Actions sobre commit `2925fb78c034a22dab5d86f89613171fd57f0cc2`: PASE workflow run **41076137909 SUCCESS**; su job `PASE / MIGRATION_SOURCE_PARITY` quedó **SKIPPED**. Esta señal demuestra aceptación de la presentación documental del PR, **no** activación del Edge, materialización SQL, juicio independiente ni regression_after de perfil.
+
+### Correcciones al candidato
+- `PROFILE_NATIVE_PLACEMENT_SUBSTANTIVE_GUARD_CANDIDATE_20261030.sql` amplió el mismo guard en sus pasos **semantic_judge** y **regression_after**, solamente para ejecuciones nuevas marcadas con `native_placement_gate_version=PROFILE_NATIVE_PLACEMENT_SOURCE_READBACK_V1`, exigiendo resultado semántico independiente PASS y adversarial/holdout PASS cuando existe adopción real. No se crean etapas ni se cambian corridas históricas.
+- El guard de fuente no prueba una llamada ejecutable a cada método. Hasta contar con evidencia independiente de ejecución por el proceso/caller vigente, el pase semántico no puede declararse certificado aun con una prueba source-first y PASE verde.
+
+### Primer error operacional y siguiente paso vigente
+| Control | Resultado |
+|---|---|
+| PR solo docs, GitHub PASE | PASS (no equivale al perfil operativo) |
+| Control determinista aislado Python/JS | 22/22 y 12/12 PASS, con límites indicados |
+| Router ACT-0001 | BLOCKED por intención de mutación sin atestación semántica |
+| Consumer semántico gobernado | NO EJECUTADO: no hay herramienta de emisión/consumo autorizada en la sesión |
+| Fuente exact-ref / ejecución independiente | CANDIDATO; no instalado ni probada la llamada real |
+| Materialización y regresiones del guard SQL | NO_VERIFICADO, sin mutación SQL |
+| WEB-001 con revisión del perfil | NO_VERIFICADO |
+
+**Siguiente paso de la secuencia existente (NO inventar otro):** consumir el handoff semántico en el `GOVERNED_SEMANTIC_CONSUMER_REQUIRED` de ACT-0001 mediante el actor/caller con autoridad, admitir a `ACTUALIZACION_PERFIL_LF` y recién entonces ejecutar el mismo train (40, 50, 70, 80, 90, 100, 110). Mientras no exista ese recibo/autoridad, mantener PR #3359 DRAFT; no modificar `profiles/**`, Supabase ni Edge vivo directamente. El cierre operacional sigue BLOQUEADO, con primer error reproducible identificado.
