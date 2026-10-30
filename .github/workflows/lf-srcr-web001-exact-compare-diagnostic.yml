@@ -25,7 +25,7 @@ jobs:
         shell: bash
         env:
           BASE_SHA: 52c0f68ad243d2a98f959db8f3a935179b5681aa
-          CAND_SHA: 92ae17608d9ece104f2b4db3c48c0db96d267a59
+          CAND_SHA: 3d2b0966d2ed4285da2b747392b0d63ef5c1bd6a
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 origin "$BASE_SHA"
