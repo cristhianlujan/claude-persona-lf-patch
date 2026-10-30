@@ -19,6 +19,7 @@ const B2B_ACTION = "input_readiness_b2b_402_v1";
 const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
+const PROFILE_EXECUTION_BEGIN_ACTION = "profile_execution_begin_from_router_context_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -973,8 +974,82 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         if (!response.ok) {
           return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_RPC_REJECTED", rpc_status: response.status }, 502);
         }
-        return json({ outcome: result.status ?? "BLOCKED", caller, result },
-          result.status === "NATIVE_EXECUTION_READY" || result.status === "PENDING" ? 200 : 409);
+        // Stage 06 must NOT return an execution_id or claim a write.
+        // The only accepted result is a validated handoff for Stage 07.
+        const admitted = result.status === "PROFILE_HANDOFF_READY" &&
+          result.write_performed === false &&
+          (result.execution_id === null || result.execution_id === undefined) &&
+          result.next_action === "EJECUCION_PERFIL_LF_BEGIN_REQUIRED" &&
+          result.executor_mode === mode &&
+          !!result.router_profile_handoff && typeof result.router_profile_handoff === "object";
+        return json({ outcome: admitted ? "PROFILE_HANDOFF_READY" : "BLOCKED", caller, result }, admitted ? 200 : 409);
+      }
+
+      if (action === PROFILE_EXECUTION_BEGIN_ACTION) {
+        // Stage 07 is the only explicit writer: EJECUCION_PERFIL_LF.
+        // Never allow an untrusted caller or REMOTE_API to start a native run.
+        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
+        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_IDENTITY_REQUIRED" }, 403);
+        }
+        const context = body.context;
+        if (!context || typeof context !== "object" || Array.isArray(context)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_REQUIRED" }, 400);
+        }
+        const envelope = context as Record<string, unknown>;
+        if (envelope.schema_version !== "LF_ROUTER_EXECUTION_PIPELINE_V1" ||
+            envelope.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
+            envelope.transport_mode !== "CONTEXT_TRANSPORT") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CONTEXT_ENVELOPE_INVALID" }, 400);
+        }
+        const mode = body.executor_mode;
+        if (mode !== "GPT_NATIVE" && mode !== "CLAUDE_NATIVE") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_NATIVE_MODE_REQUIRED" }, 400);
+        }
+        // Re-admit from the SAME canonical context immediately before the write;
+        // never trust a handoff sent by the caller.
+        const admissionResponse = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2`,
+          { method: "POST", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+              "content-type": "application/json",
+            }, body: JSON.stringify({ p_context: context, p_executor_mode: mode }),
+            signal: AbortSignal.timeout(15_000) },
+        );
+        const admission = await parseJsonObject(admissionResponse, "PROFILE_EXECUTION_ADMISSION_RESPONSE_INVALID");
+        if (!admissionResponse.ok || admission.status !== "PROFILE_HANDOFF_READY" ||
+            admission.write_performed !== false ||
+            (admission.execution_id !== null && admission.execution_id !== undefined) ||
+            admission.executor_mode !== mode ||
+            !admission.router_profile_handoff || typeof admission.router_profile_handoff !== "object") {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMISSION_NOT_READY" }, 409);
+        }
+        const stage = envelope.stage1_payload as Record<string, unknown> | undefined;
+        const after = envelope.after_selection_result as Record<string, unknown> | undefined;
+        const gate2 = envelope.gate2_derivation as Record<string, unknown> | undefined;
+        if (!stage || !after || !gate2 || typeof stage !== "object" || typeof after !== "object" ||
+            typeof gate2 !== "object" || !after.gate2_request || !gate2.gate2_result) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_GATE2_PAYLOAD_MISSING" }, 400);
+        }
+        // Existing profile-execution materializer owns the DB INSERT and idempotency.
+        const response = await deps.fetchFn(
+          `${config.supabaseUrl}/rest/v1/rpc/lf_router_profile_execution_after_gate2_v1`,
+          { method: "POST", headers: {
+              apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`,
+              "content-type": "application/json",
+            }, body: JSON.stringify({
+              p_request: after.gate2_request, p_result: gate2.gate2_result,
+              p_channel: stage.canal_candidato, p_business: stage.negocio_codigo,
+              p_scope: stage.alcance ?? null, p_executor_mode: mode,
+              p_actor_execution_id: null, p_github_backup_reason: null,
+            }), signal: AbortSignal.timeout(15_000) },
+        );
+        const result = await parseJsonObject(response, "PROFILE_EXECUTION_BEGIN_RESPONSE_INVALID");
+        if (!response.ok || result.status !== "NATIVE_EXECUTION_READY" ||
+            typeof result.execution_id !== "string" || !result.execution_id) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_NOT_READY", result }, 409);
+        }
+        return json({ outcome: "NATIVE_EXECUTION_READY", caller, result }, 200);
       }
 
       if (action === PROFILE_INIT_ACTION) {
