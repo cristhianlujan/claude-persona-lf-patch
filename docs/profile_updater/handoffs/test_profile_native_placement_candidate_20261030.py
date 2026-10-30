@@ -114,6 +114,29 @@ class NativePlacementCases(unittest.TestCase):
         g["steps"][0]["enforcement_ref"] = "native://unrelated"
         self.assertIn("PLACEMENT_UNEXPECTED_NEIGHBOR_MUTATION", confirm(g))
 
+    def test_remove_step_with_enforced_relink(self):
+        candidate = graph(sha=CANDIDATE, ids=("research", "quality"))
+        plan = adoption(action="REMOVE", target="decision", before="research", after="quality")
+        self.assertEqual(readback(profile_slug="repair_lf", base_head_sha=BASE,
+            candidate_head_sha=CANDIDATE, adoptions=[plan],
+            trusted_base_graph=graph(), trusted_candidate_graph=candidate), [])
+
+    def test_modify_step_without_unrelated_changes(self):
+        candidate = graph(sha=CANDIDATE)
+        candidate["steps"][1]["call_ref"] = "native://decision-v2"
+        plan = adoption(action="MODIFY", target="decision", before="research", after="quality")
+        self.assertEqual(readback(profile_slug="repair_lf", base_head_sha=BASE,
+            candidate_head_sha=CANDIDATE, adoptions=[plan],
+            trusted_base_graph=graph(), trusted_candidate_graph=candidate), [])
+
+    def test_replace_without_actual_change_rejected(self):
+        candidate = graph(sha=CANDIDATE)
+        plan = adoption(action="REPLACE", target="decision", before="research", after="quality")
+        self.assertIn("PLACEMENT_STEP_CHANGE_NOT_REALIZED",
+            readback(profile_slug="repair_lf", base_head_sha=BASE,
+                candidate_head_sha=CANDIDATE, adoptions=[plan],
+                trusted_base_graph=graph(), trusted_candidate_graph=candidate))
+
     def test_candidate_head_cannot_equal_base(self):
         self.assertIn("PLACEMENT_CANDIDATE_HEAD_INVALID",
             readback(profile_slug="repair_lf", base_head_sha=BASE,
