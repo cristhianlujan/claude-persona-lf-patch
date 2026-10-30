@@ -144,6 +144,34 @@ def verify_candidate_placement_readback(
                 errors.append("PLACEMENT_STEP_CHANGE_NOT_REALIZED")
             elif not new[target].get("enforcement_ref") or not new[target].get("call_ref"):
                 errors.append("PLACEMENT_ENFORCEMENT_NOT_REALIZED")
+    # Only the predecessor/successor LINK may change on adjacent steps.
+    # The plan cannot authorize changing their call, rules or source content.
+    permitted_links: dict[str, dict[str, str | None]] = {}
+    changed_targets = {a.get("target_step_id") for a in adoptions if isinstance(a, dict)
+                       and a.get("action") in {"MODIFY", "REPLACE", "INSERT", "REMOVE"}}
+    for a in adoptions:
+        if not isinstance(a, dict):
+            continue
+        target, before, after, action = (a.get(k) for k in
+                ("target_step_id", "predecessor", "successor", "action"))
+        if action in {"INSERT", "REMOVE"}:
+            if before is not None:
+                permitted_links.setdefault(before, {})["successor"] = target if action == "INSERT" else after
+            if after is not None:
+                permitted_links.setdefault(after, {})["predecessor"] = target if action == "INSERT" else before
+    for sid in old.keys() & new.keys():
+        if sid in changed_targets and sid in permitted and any(
+                a.get("target_step_id") == sid and a.get("action") in {"MODIFY", "REPLACE"}
+                for a in adoptions if isinstance(a, dict)):
+            continue
+        for field in set(old[sid]) | set(new[sid]):
+            if field == "order":
+                continue  # Numeric renumbering is valid if topology is consistent.
+            if field in permitted_links.get(sid, {}):
+                if new[sid].get(field) != permitted_links[sid][field]:
+                    errors.append("PLACEMENT_NEIGHBOR_LINK_NOT_REALIZED")
+            elif old[sid].get(field) != new[sid].get(field):
+                errors.append("PLACEMENT_UNEXPECTED_NEIGHBOR_MUTATION")
     if changed - permitted:
         errors.append("PLACEMENT_UNRELATED_STEP_CHANGED")
     return sorted(set(errors))
