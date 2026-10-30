@@ -61,17 +61,14 @@ insert into public.lf_operation_execution_steps values
   ('EXEC-SRCR','execute_profile','STEP_PASS_WITH_EVIDENCE',
     jsonb_build_object(
        'candidate_digest','sha256:'||repeat('a',64),
-       'profile_output',jsonb_build_object(
-         'current_uncertainties',jsonb_build_array(
-          jsonb_build_object('uncertainty_id','U1','impact','DESIGN_BLOCKING',
-          'cascade',jsonb_build_object('catalog_queries',jsonb_build_array(
-            jsonb_build_object('level','N1','readback',jsonb_build_object(
-              'query','SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo=''ACT-0058''',
-              'source','v_lf_fuente_operativa_busqueda')),
-            jsonb_build_object('level','N2','readback',jsonb_build_object(
-              'query','SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo=''ACT-0058''',
-              'source','lf_activos'))
-        )))))))
+       'profile_output',
+       $payload$
+       {"current_uncertainties":[{"uncertainty_id":"U1","impact":"DESIGN_BLOCKING","cascade":{"catalog_queries":[
+         {"level":"N1","readback":{"query":"SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'","source":"v_lf_fuente_operativa_busqueda"}},
+         {"level":"N2","readback":{"query":"SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'","source":"lf_activos"}}
+       ]}}]}
+       $payload$::jsonb
+    )
   );
 
 do $test$
