@@ -422,3 +422,21 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 **Error de interpretación corregido:** no bloquear por 15/15 estructural, ni por `NO_UPDATE_REQUIRED` de una matriz que no mide el defecto, ni por permiso de invocación directa a Supabase. Primero evaluar la cobertura del caso preexistente y utilizar sus corridas/ejecuciones legítimas. La nueva propuesta `N1N2-001` en PR #3370 es un borrador añadido posteriormente y NO sustituye al caso original ni se considera autoridad activa. No usarlo para afirmar que recién nació el grupo operativo.
 
 **Siguiente trabajo delimitado:** adaptar únicamente la cobertura de WEB-001 para comprobar la omisión real de N1/N2 y el readback que exige el cambio, preservando su historial y versiones, sin falsear resultados pasados. Ejecutar evaluación del mismo caso sobre el perfil vigente y sobre el candidato N1/N2, comparar por árbol exacto dentro del actualizador y registrar resultado en pasos 35/37/90/110. No reproducir automáticamente las 17 etapas completadas ni crear otro plan. Hasta medir el delta, no concluir falta de necesidad de actualización ni `EVOLUTION_DEMONSTRATED` para N1/N2.
+
+## Lote N1-N6 — Implementación candidata + regresión real CI (2026-10-30)
+
+**Ejecución en rama PR #3359; no instalada en `main` ni Supabase runtime.**
+- Commit `5fc7a97bd2205e5305504ec121c3673655a2b2ed`: el verificador y materializador de quality receipt pasan el `trusted_reader` provisto por el boundary gobernado al juez existente. Cuando falta, el juez conserva el bloqueo `N1_N2_TRUSTED_READER_NOT_WIRED`.
+- Commit `205c0414151be5306929d15a401fe272c52ce2c9`: `producer_depth.py` exige `cascade.level_trace` N3->N4->N5 en búsquedas agotadas, ligado a evidencia CURRENT, locator, digest, revisión exacta de GitHub y error por falta de acceso. Un `NO_SOURCE_ACCESSIBLE` sin error no es prueba de ausencia.
+- Commit `63892cdef824d8ba009d4176a14901e92c087b9f`: N6 `terminality_gate_v1.py` solo marca `EXPLORED_NO_EVIDENCE_FOUND` si un `trusted_level_reader` inyectado fuera del output del modelo verifica N1-N5 por datum y nivel. Sin ese lector se devuelve `SEARCH_INCOMPLETE`. No obliga N3-N5 cuando una respuesta autorizada se obtuvo antes.
+- Commit `281011c23308ec670c4894f18b27053166f32b06`: prueba negativa que aplica `runtime_validate` al RAW real previo de WEB-001 y verifica que su investigación N1/N2 sin N3-N5 no puede cerrar.
+
+**Pruebas EXACTAS en GitHub Actions**: `41118646726` SUCCESS sobre `281011c23308ec670c4894f18b27053166f32b06`. `v09`=33/33, `v10`=16/16, `v08`=13/13 y `PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK`. Los casos de lector confiable usan dobles de prueba: no acreditan un acceso independiente operativo. El workflow temporal de pruebas se elimina del branch tras conservar este run, conforme a PASE.
+
+**Pendiente operativo (NO CONFUNDIR CON PASSED):**
+1. El caller/tren de `EJECUCION_PERFIL_LF` todavía no entrega `trusted_reader` o `trusted_level_reader` respaldado por un registro `VERIFIED` en `private.lf_evidence_ledger_v1` para la ejecución exacta. `EXEC-PROFILE-GATE2-B6070E56727C1FB64437B850` permanece hasta el último readback en `output_validate` (60) PASS y sin recibo de fuente N1/N2 verificado; el siguiente control natural es su `semantic_judge` (70).
+2. `PROFILE_EXISTING_SEMANTIC_SOURCE_LEDGER_GUARD_CANDIDATE_20261030.sql` es borrador: NO aplicar directamente ni fingir migración. Primero cablear anclaje source-first/ledger por el Train con la misma identidad de ejecución, integrar verificación en el guard existente y comprobar relectura y casos negativos en el entorno gobernado.
+3. No hay nuevas corridas completas con modelo para ambas revisiones fijadas; la decisión oficial del updater paso 37 sigue `NO_DEMONSTRATED_IMPROVEMENT / NO_VERIFICADO`, no PASS.
+4. Registrar la brecha fuente->ledger->juez en EKB únicamente por su mecanismo gobernado al realizar el Train. No duplicar orquestador, registro de resolvedores, juez, pipeline ni perfil; no mover la escritura al Router.
+
+**Dictamen:** `CANDIDATE_VALIDATORS_CI_PASS`; `LIVE_N1_N6_RUNTIME_UNVERIFIED`; `PROFILE_EVOLUTION_UNVERIFIED`. No merge ni promoción.
