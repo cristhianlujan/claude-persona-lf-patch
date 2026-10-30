@@ -9,6 +9,14 @@ diff --git a/supabase/functions/run-creacion-perfil-lf/index.ts b/supabase/funct
 +import { verifyProfilePlacementSource, type AdoptionIntent } from "./verified_native_placement_readback.ts";
  
  const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
+@@ -306,5 +306,6 @@
+         router_governed_caller_code: governed.caller_code,
+         router_semantic_receipt_sha256: governed.semantic_receipt_sha256,
+-        router_semantic_request: governed.semantic_request,
++        router_semantic_request: governed.semantic_request,
++        native_placement_gate_version: "PROFILE_NATIVE_PLACEMENT_SOURCE_READBACK_V1",
+         runtime_write_executed: false,
+         github_write_executed: false,
 @@ -433,5 +433,54 @@
            }
          }
@@ -66,14 +74,6 @@ diff --git a/supabase/functions/run-creacion-perfil-lf/index.ts b/supabase/funct
          const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;
          return json({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: id, operation_code: ex.operation_code, step_id: stepId, result, snapshot_after: after, server_trust_context_derived: stepId === "pre_write_execution_binding_gate", github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
 
-@@ -306,5 +306,6 @@
-         router_governed_caller_code: governed.caller_code,
-         router_semantic_receipt_sha256: governed.semantic_receipt_sha256,
--        router_semantic_request: governed.semantic_request,
-+        router_semantic_request: governed.semantic_request,
-+        native_placement_gate_version: "PROFILE_NATIVE_PLACEMENT_SOURCE_READBACK_V1",
-         runtime_write_executed: false,
-         github_write_executed: false,
 
 diff --git a/supabase/functions/run-creacion-perfil-lf/verified_native_placement_readback.ts b/supabase/functions/run-creacion-perfil-lf/verified_native_placement_readback.ts
 new file mode 100644
