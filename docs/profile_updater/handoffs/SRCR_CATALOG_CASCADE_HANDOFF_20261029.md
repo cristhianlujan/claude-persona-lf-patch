@@ -189,3 +189,37 @@ Se consultaron directamente las tablas `public.lf_operation_step_contracts` y `p
 | Otros perfiles sin aplicabilidad N1/N2 | Sin regresión |
 
 Estado: solo parche candidato en PR #3359. Suite completa y WEB-001 por hash nuevo NO_VERIFICADO; runtime sin enforcement específico N1/N2 y perfil runtime_enabled=false. No aplicar cambios a función de producción desde este handoff.
+
+## ALCANCE DE ADOPCIÓN POR PERFIL — UBICACIÓN DINÁMICA, NO PASO UNIVERSAL (2026-10-30)
+
+**Regla del usuario:** el Profile Updater incorpora/evoluciona una capacidad o paso; **cada perfil adoptante debe ubicarla en el lugar que exige su propia naturaleza, contrato y secuencia**. El hecho de que el perfil reparador tenga un juez en paso 70 NO establece ese número, ese tipo de paso ni esa estructura para otro perfil. Esta precisión prevalece sobre cualquier instrucción anterior que pudiera interpretarse como imposición universal.
+
+### Evidencia viva de gobernanza (solo lectura)
+- `ACTUALIZACION_PERFIL_LF.method_selection` (35) tiene `ACTIVE_ENFORCEMENT`, resolver `public.lf_profile_update_evolution_step_guard_v1` y exige selección de métodos calificados con identificador, versión y recibo.
+- `ACTUALIZACION_PERFIL_LF.evolution_decision` (37) tiene `ACTIVE_ENFORCEMENT` y decide `NO_CHANGE` o `UPDATE`, modos vigentes `PATCH`, `SPECIALIZE`, `ADAPT`, `REARCHITECT`, `OPTIMIZE`.
+- La definición vigente del guard `lf_profile_update_evolution_step_guard_v1(text,text,jsonb)` **NO comprueba el `step_id` de instalación, el orden ni los enlaces predecessor/successor del perfil adoptante**. Es una brecha de evidencia, no una capacidad ya implementada.
+- El flujo existente continúa por `change_scope` (40) y `regression_plan` (50), más validaciones y readbacks gobernados. La decisión de ubicación debe quedar explícita y verificable allí; si sus actuales contratos/jueces no la comprueban, se amplían esos controles dentro de la gobernanza existente, sin crear un proceso paralelo.
+
+### Contrato de decisión por perfil (campos de evaluación; no se introduce esquema ni tabla nueva)
+| Campo a verificar | Fuente / regla |
+|---|---|
+| Perfil y revisión AS-IS | Resolver el perfil canónico y su `source_head_sha` exacto |
+| Capacidad seleccionada | `selected_methods`, `method_id`, `exact_version`, recibo de calificación |
+| Naturaleza y objetivo | Defecto/uso y alcance de evolución decidido en el perfil |
+| Paso receptor | `step_id` y operación obtenidos del contrato/ruta actuales del perfil, **sin asumir número fijo** |
+| Acciones | Adicionar, adaptar, sustituir o retirar comportamiento según su encaje, sin duplicar pasos |
+| Secuencia | Predecesor, sucesor, entradas, salidas, `next_if_pass` / `next_if_blocked` / enforcement aplicables |
+| Evidencia | Datos y recibos reales, vínculo a ejecución, hash exacto y readback posterior |
+| Regresión | Caso positivo y negativo de ese perfil; no alterar otros perfiles o caminos |
+
+**Ejemplo acotado:** para SRCR, la comprobación N1/N2 de calidad se ubica en su juez operacional existente (`EJECUCION_PERFIL_LF.semantic_judge`, 70). Otro perfil podría ubicar investigación N1/N2 antes de elaborar su resultado o durante validación; se determina leyendo su contrato antes del cambio. El juez del actualizador (`ACTUALIZACION_PERFIL_LF.semantic_judge`, 100) supervisa la evolución, NO impone la ubicación al perfil.
+
+### Enforcements mínimos para admitir adopción
+1. La selección de método calificado **no equivale** a autorización de instalación en cualquier paso.
+2. Si existe un paso compatible, enlazar al paso mediante el contrato/call y su enforcement vigente. No crear otro juez/etapa por defecto.
+3. Si se requiere un paso verdaderamente nuevo, hacer evolucionar **ese perfil** por el mismo `ACTUALIZACION_PERFIL_LF`, indicando su inserción y las dependencias con enforcement, no cambiando globalmente todos los perfiles.
+4. Sin readback del paso receptor, predecesor/sucesor y ejecución/regresiones correctas: `NO_VERIFICADO` o bloqueo. No cerrar como PASS ni promover.
+
+**Pruebas a agregar en el proceso actual:** adoptar en un perfil cuyo paso receptor sea distinto de SRCR; rechazar step_id inventado, inserción fuera de orden, cambio sin llamada enforzada y reutilización de recibos entre perfiles; aceptar cuando el perfil no requiere la capacidad (NO_CHANGE). Todo sujeto a corrida gobernada; **NO probado aún**.
+
+**Estado:** se ajustó la instrucción candidata de SRCR y este handoff en el PR #3359, todavía DRAFT y sin modificaciones oficiales a perfiles/runtime. El guard de colocación por perfil requiere implementación y prueba mediante los controles vigentes; no se reporta como resuelto.
