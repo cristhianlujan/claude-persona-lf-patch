@@ -1,0 +1,8 @@
+{
+  "solution_ref": "router-admit-strict-ready-20261029",
+  "paths": {
+    "scripts/lf_profile_router_admit.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_router_admit_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/router-admit-strict-ready-20261029.json": "CHANGESET_MANIFEST"
+  }
+}
