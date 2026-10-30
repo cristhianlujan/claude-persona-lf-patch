@@ -24,3 +24,9 @@
 `python -m unittest discover -s sandbox/lf_contract_gate_test/programming_agent_four_stage/c6_context_gate -p 'test_*.py' -v`
 
 The 3,358-token warning test is a **synthetic size-equivalent**, not a replay of the original Spring fixture. Offline test corpus exercises positive qualification and negative cases, including release refusal.
+
+## Carril E — PG-03_C2 checkpoint bridge (qualification only)
+
+Existing checkpoint source: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. `PG-03_C2` owns deterministic rule/skill assembly, after PG-01_C4 (pinned standards and budget), PG-01_C6 (handoff), PG-02_C1 (domain mapping) and PG-03_C1 (verified target stack). `checkpoint_bridge_v1.py` simulates the *pre-model* dispatch boundary and requires current run bindings and a BLOCKING_AUTOMATIC qualification decision. It does **not** write or register a checkpoint row or intercept the live model call. Runtime integration requires registry admission/qualification and authenticated current-run receipts; do not treat self-declared fixture dictionaries as authority.
+
+The nine bridge integration tests exercise mock dispatch once on synthetic PASS and zero times for missing dependencies, run mismatch, changed context, absent budget or provenance and production attempt. They are separate from the original 16 C6 unit tests. No approved workflow runs these automatically yet due to repository workflow path governance.
