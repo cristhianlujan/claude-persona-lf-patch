@@ -85,6 +85,12 @@ class B1SchemaTests(unittest.TestCase):
         self.assertIn("INVALID_RELEASE_STATUS",
                       self.check(lambda m,a: m.update(release_status_requested=[])))
 
+    def test_invalid_semver_rejected_consistently(self):
+        for value in ("0.8", "00.1.0", "9"*5000+".0.0"):
+            with self.subTest(value=value[:20]):
+                self.assertIn("INVALID_CATALOG_VERSION",
+                              self.check(lambda m,a: m.update(catalog_version=value)))
+
     def test_nonobject_manifest(self):
         result = mod.validate_shape(None)
         self.assertEqual(result["authority"], "NONE")
