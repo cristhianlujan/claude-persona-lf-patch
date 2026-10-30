@@ -529,7 +529,7 @@ diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_q
 diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate_cases.py
 --- /dev/null
 +++ b/evals/v10_n1_n2_quality_gate_cases.py
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,51 @@
 +#!/usr/bin/env python3
 +"""N1/N2 quality-guard regression. Isolated; no external system writes."""
 +import copy, hashlib, json, runpy, sys
@@ -548,7 +548,10 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +c={"profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6","current_uncertainties":[{"impact":"DESIGN_BLOCKING","uncertainty_id":"U","cascade":{"catalog_queries":[q1,q2]}}]}
 +p={"evidence":[p1,p2]}
 +j={"verdict":"PASS_INDEPENDENT_SEMANTIC","n1_n2_verdict":"PASS","n1_n2_audit":[a1,a2]}
-+def codes(jj=j,cc=c,pp=p): return set(guard(jj,cc,pp))
++def canonical(value): return "sha256:"+hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()).hexdigest()
++j["candidate_sha256"]=canonical(c)[7:]
++quality={"issuer":"QUALITY_BOUNDARY","candidate_sha256":j["candidate_sha256"],"manifest_digest":canonical(p),"observations":[{"datum_id":a["datum_id"],"level":a["level"],"evidence_id":a["evidence_id"],"source_locator":a["source_locator"],"result_kind":a["result_kind"],"row_count":a["row_count"],"sample_records":a["sample_records"],"receipt_ref":a["independent_source_ref"],"observed_at":a["independent_observed_at"],"execution_id":"fixture-quality-boundary"} for a in j["n1_n2_audit"]]}
++def codes(jj=j,cc=c,pp=p,qq=quality): return set(guard(jj,cc,pp,qq))
 +tests={"valid_pair":not codes()}
 +x=copy.deepcopy(j);x.pop("n1_n2_audit");tests["missing_judge_records"]="N1_N2_AUDIT_MISSING" in codes(jj=x)
 +x=copy.deepcopy(j);x["n1_n2_audit"]=[a1];tests["missing_N2"]="N1_N2_AUDIT_INCOMPLETE" in codes(jj=x)
@@ -559,7 +562,11 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +x=copy.deepcopy(c);x["current_uncertainties"][0]["cascade"]["catalog_queries"]=[q1];tests["omitted_level"]="N1_N2_QUALITY_LEVEL_MISSING" in codes(cc=x)
 +x=copy.deepcopy(p);x["evidence"][0]["digest"]="sha256:wrong";tests["wrong_sha"]="N1_N2_SOURCE_DIGEST_MISMATCH" in codes(pp=x)
 +x=copy.deepcopy(j);x["n1_n2_audit"][0]["independent_source_ref"]="";tests["no_independent_readback"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(jj=x)
-+for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
++x=copy.deepcopy(j);x["n1_n2_audit"][0]["independent_source_ref"]="fabricated://receipt";tests["invented_ref_rejected"]="N1_N2_INDEPENDENT_RECEIPT_MISMATCH" in codes(jj=x)
++tests["missing_quality_boundary_rejected"]="N1_N2_BOUNDARY_READBACK_MISSING" in codes(qq=None)
++x=copy.deepcopy(quality);x["manifest_digest"]="sha256:bogus";tests["wrong_manifest_binding"]="N1_N2_BOUNDARY_MANIFEST_MISMATCH" in codes(qq=x)
++x=copy.deepcopy(quality);x["observations"]=[quality["observations"][0]];tests["missing_external_N2"]="N1_N2_BOUNDARY_INCOMPLETE" in codes(qq=x)
+++for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
 +print(f"N1_N2_QUALITY_CASES={sum(tests.values())}/{len(tests)}")
 +sys.exit(0 if all(tests.values()) else 1)
 
