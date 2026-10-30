@@ -62,3 +62,26 @@ Nada escrito en la base, nada en `profiles/**`, sin changeset manifest (borrador
 **No certificado:** ejecución Python completa del árbol candidato, comparación operacional WEB-001 sobre `profile_tree_sha256` nuevo, invocación y salida efectiva del juez semántico, resultado `N1_N2_AUDIT_V1` exigido por el flujo, y transporte real desde el resolver que materializa el manifiesto de evidencia. En particular, el manifiesto V1 solo contiene referencia y digest de cada evidencia, no las filas: el readback debe llegar como dato independiente y estar vinculado al digest del manifiesto. Sin esa prueba, NO se puede declarar pase semántico o perfil actualizado.
 
 **Siguiente lote:** aplicar el parche en árbol temporal limpio, ejecutar suites incluyendo v09, probar el transporte externo de N1/N2 y conectar el dictamen T4b al validador del resultado semántico antes de realizar corridas modeladas. Mantener `profiles/**` intacto y no añadir `ready-to-merge`.
+
+## Lote siguiente: quality-boundary N1/N2 + prueba aislada (2026-10-30)
+
+**Código preparado exclusivamente en el archivo .patch del PR #3359:**
+
+- `validators/validate_semantic_judge_result.py`: agrega validación del resultado `n1_n2_audit` contra el candidato exacto, por `uncertainty_id + level` y por `evidence_id`, `source_locator`, SHA-256 del `readback`, `row_count`, `result_kind` y `sample_records`. Un `n1_n2_verdict != PASS` impide `PASS_INDEPENDENT_SEMANTIC`. Los N1/N2 ausentes se detectan a partir del caso, sin confiar en la declaración de aplicabilidad del productor.
+- `validators/validate_quality_receipt.py` y `validators/materialize_quality_receipt.py`: suministran el candidato real y el manifiesto externo al validador semántico en ambos puntos de aceptación. El resultado del juez ya no puede hacer PASS final con omisiones N1/N2 cuando el dato pendiente lo exige.
+- `judges/systemic_root_cause_semantic_judge.md`: formaliza los campos obligatorios del resultado independiente. El juez debe hacer una lectura real de control; `independent_source_ref` por sí solo no prueba que haya sido ejecutada.
+- `validators/producer_depth.py`: N1/N2 usan `source_kind=VIEW|BASE_TABLE` para evitar inferir el tipo por el prefijo del nombre. Fuente/consulta/filas deben estar referidas a evidencia externa CURRENT.
+- `evals/v10_n1_n2_quality_gate_cases.py` (nuevo): 10 pruebas reproducibles incluidas en el candidato. Ajustado el caso v05 que antes parecía aceptar búsquedas exhaustivas sin readback N1/N2.
+
+**Evidencias independientes de este lote:**
+1. Readback read-only en Supabase: `v_lf_fuente_operativa_busqueda` es `pg_class.relkind=v`; `lf_activos` es `relkind=r`. Ambas fuentes devuelven un registro para `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`, con `estado_documental=CANDIDATO` y `estado_operativo=READ_ONLY` (consultas independientes).
+2. Prueba Python local, aislada del repositorio y sin DB: **12/12 PASS** (incluye falta N2, digest equivocado, valor alterado, dato cruzado, evidencia SUPERSEDED y FAIL semántico); material experimental solo, sin equivalencia a ejecución oficial.
+3. Verificación sintáctica estructural del parche respecto de las fuentes de GitHub en commit `173088b756d79839bb1cb7b4ba63ee53bad389bc`: **22/22 hunks con contenido y tamaños de contexto correctos**, 11 destinos, 1 test file nuevo. NO es `git apply` real ni compilación Python del árbol completo.
+4. GitHub: el PR sigue DRAFT, sin tocar `profiles/**`, sin efectos en producción/Supabase ni label ready-to-merge.
+
+**Bloqueos de cierre operacional (NO_VERIFICADO):** 
+- No se ejecutó Python del árbol candidato completo ni el archivo nuevo v10 en un checkout del repositorio; la sesión local no tiene acceso de red a GitHub. No reclamar v10 PASS.
+- No hay evidencia todavía de invocación real del juez con resultados N1/N2 y un readback independiente de fuente durante la evaluación; una referencia redactada por el juez no es un recibo verificable de ejecución. Falta el proveedor/transportador de resultados hacia el límite de calidad.
+- No se realizó WEB-001 ligado al árbol candidato ni comparación evolutiva por hash, ni Router/Updater/Train, ni merge.
+
+**Dictamen:** candidato mejorado y chequeado en forma aislada; calidad oficial/actualización operativa **NO_VERIFICADO**. No modificar perfil canónico, ni marcar PASS operacional, ni cerrar el PR por esta evidencia. Siguiente lote limitado: ejecución del test v10 y las suites existentes en checkout gobernado, readback del judge real y bloqueo de PASS adversarial, luego caso WEB-001.
