@@ -325,3 +325,25 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 | WEB-001 con revisión del perfil | NO_VERIFICADO |
 
 **Siguiente paso de la secuencia existente (NO inventar otro):** consumir el handoff semántico en el `GOVERNED_SEMANTIC_CONSUMER_REQUIRED` de ACT-0001 mediante el actor/caller con autoridad, admitir a `ACTUALIZACION_PERFIL_LF` y recién entonces ejecutar el mismo train (40, 50, 70, 80, 90, 100, 110). Mientras no exista ese recibo/autoridad, mantener PR #3359 DRAFT; no modificar `profiles/**`, Supabase ni Edge vivo directamente. El cierre operacional sigue BLOQUEADO, con primer error reproducible identificado.
+
+## Rectificación 2026-10-30 — continuar desde ejecuciones existentes
+
+**Prevalece sobre todas las referencias anteriores del handoff a 'ruta nueva', 'volver a admitir Router ACT-0001', 'crear otra ejecución de actualización' o repetir las pruebas existentes.** La consulta a `lf_router_resolve_v1` con un texto nuevo en el lote previo produjo BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED solo porque se **planteó una solicitud de actualización nueva**. Ese bloqueo no es el estado del proceso histórico del reparador ni debe convertirse en requisito para retomar lo ya ejecutado.
+
+### Readback de Supabase de la operación existente
+| Ejecución vigente/histórica | Estado | Pasos | Evolución | Juez independiente |
+|---|---|---|---|---|
+| `EXEC-ACTUALIZACION-PERFIL-LF-OIDC-b62a195e-d912-4abd-a30e-0e4be5efe1e3` (2026-10-29) | COMPLETED | 17/17 `STEP_PASS_WITH_EVIDENCE` | `EVOLUTION_DEMONSTRATED` | `independent=false` |
+| `EXEC-ACTUALIZACION-PERFIL-LF-OIDC-6862980c-d902-41d7-8c43-2b0de0114350` (2026-10-29) | COMPLETED | 17/17 `STEP_PASS_WITH_EVIDENCE` | `EVOLUTION_DEMONSTRATED` | `independent=false` |
+| `EXEC-ACTUALIZACION-PERFIL-LF-OIDC-818f0acd-a1a2-47e2-9e5c-0eaeb5aef4ab` (2026-10-29) | COMPLETED | 17/17 `STEP_PASS_WITH_EVIDENCE` | `EVOLUTION_DEMONSTRATED` | `independent=false` |
+
+**Evidencia de la primera ejecución:** `method_selection` S26 15/15 y déficit operativo WEB-001; `change_scope`, `regression_plan`, `pre_write_execution_binding_gate`, `github_write`, `github_readback`, `deterministic_validation`, `semantic_judge`, `regression_after`, `post_merge_reconcile`, `close`, `report_output` ya registrados PASS. `deterministic_validation` aporta WEB-001 de 4/9 base a 9/9 candidato, sin checks regresados, `EVOLUTION_DEMONSTRATED`. La operación completó y registró un merge anterior; esta evidencia NO prueba incorporación del **nuevo parche de ubicación dinámica del PR #3359**, que continúa solo en docs y DRAFT.
+
+### Decisión de continuidad — sin ruta ni batería nueva
+1. No iniciar otro Router, no volver a ejecutar 17 pasos, ni repetir S26/WEB-001 por el solo hecho de revisar el PR en borrador.
+2. Reutilizar los recibos exactos de las tres ejecuciones como baseline histórico (step readback y hashes) y diferenciar claramente el nuevo candidato del trabajo ya integrado.
+3. Si el perfil adoptante requiere una capacidad nueva, usar el MISMO Profile Updater, sus decisiones 35/37 y su colocación individual según contrato; sin paso 70 universal y sin proceso de colocación paralelo. Solo correr delta/casos realmente nuevos al momento de su impacto gobernado.
+4. Mantener una dependencia diferenciada, no una repetición de pruebas: en la ejecución completada `independent=false`, y el reporte conserva siete verificaciones semánticas WEB-001, holdout y otros asuntos como siguientes gates no realizados. No borrar ni convertir estos avisos en PASS.
+5. Ninguna escritura de código fuente oficial, SQL de producción o habilitación de runtime se deriva de este readback. PR #3359 DRAFT hasta decisión gobernada sobre su delta.
+
+**Corrección principal:** el error 'se necesita una ruta nueva para ejecutar la evolución' queda **RETIRADO**. No era una dependencia del estado actual. Se preserva la evidencia pasada y solo se verifica el delta que no esté cubierto.
