@@ -1,6 +1,6 @@
-# LF Input Governance N-4 / P00–P11 — Readback de macrolote (30-10-2026)
+# N-4 / T-REMED exclusivamente — Evidencia P00–P11 (30-10-2026)
 
-> **ANEXO DE EVIDENCIA, NO PLAN NUEVO Y NO GATE NUEVO.** Plan único: `IG_N4_TREMED_PLAN_MAESTRO_EJECUCION_V1_20261028.md`. PR #3269 (DRAFT/NO-GO), HEAD antes del lote `f4a85652b20d00eabb04ba2f694aeca77e4fcd6e`. Lecturas SQL de solo lectura sobre Supabase LF y fuentes Git exact-ref. Este documento **no** ratifica G0–G4, no cierra P00–P12 ni autoriza G5, publicación, reclasificación, Router, migraciones, ACL, PASE o despliegue.
+> **SEGUIMIENTO EXCLUSIVO N-4 / T-REMED.** No es evidencia de cierre del Input Governance original (`IG_CURATOR_VALIDATOR_REFACTOR_V2` / `M10.13`); este último continúa con su ledger y checkpoints independientes. No utilizar el indicador N-4 `0/13` como avance de M10.13, ni su `2/7` para este PR. Ambos proyectos siguen trabajando y no se bloquean recíprocamente. **ANEXO DE EVIDENCIA, NO PLAN NUEVO Y NO GATE NUEVO.** Plan único: `IG_N4_TREMED_PLAN_MAESTRO_EJECUCION_V1_20261028.md`. PR #3269 (DRAFT/NO-GO), HEAD antes del lote `f4a85652b20d00eabb04ba2f694aeca77e4fcd6e`. Lecturas SQL de solo lectura sobre Supabase LF y fuentes Git exact-ref. Este documento **no** ratifica G0–G4, no cierra P00–P12 ni autoriza G5, publicación, reclasificación, Router, migraciones, ACL, PASE o despliegue.
 
 ## 1. Arquitectura / alcance de ejecución
 
