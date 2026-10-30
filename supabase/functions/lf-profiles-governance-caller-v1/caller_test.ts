@@ -637,7 +637,7 @@ Deno.test("CP2: router V2 Stage 07: admitted context explicitly invokes profile 
   assertEquals(reads.length, 1);
   assertEquals(writers.length, 1);
   assertEquals(writers[0].body?.p_executor_mode, "GPT_NATIVE");
-  assertEquals(writers[0].body?.p_handoff?.fingerprint_sha256, "b".repeat(64));
+  assertEquals((writers[0].body?.p_handoff as Record<string, unknown> | undefined)?.fingerprint_sha256, "b".repeat(64));
   assertEquals(writers[0].body?.p_target_path, "profiles/ux_design_lf/SKILL.md");
   assertEquals(writers[0].body?.p_target_repo, REPO);
 });
