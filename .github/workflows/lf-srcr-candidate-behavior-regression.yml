@@ -50,3 +50,39 @@ jobs:
             print(f'WEB001_REPLAY {name} {passed}/{len(case["checks"])} material={len(material)} n1n2_proven={n12}')
           print('WEB001_REPLAY_PASS_EXISTING_CASE_NO_NEW_MODEL_RUN')
           PY
+
+      - name: Validate real ChatGPT-current-chat WEB-001 source-readback with adversarial mutations
+        run: |
+          python - <<'PY'
+          import json,copy,sys
+          from pathlib import Path
+          sys.path.insert(0,"profiles/systemic_root_cause_repair_lf/validators")
+          from producer_depth import validate_producer_depth,_catalog_receipt_errors
+          packet=json.loads(Path("docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CURRENT_CHAT_N1N2_READBACK_20261030.json").read_text())
+          raw=packet["raw_output"]
+          manifest=packet["evidence_manifest"]
+          assert packet["case_id"]=="WEB-001" and packet["producer"]=="GPT_NATIVE_CURRENT_CHAT"
+          assert packet["independent_semantic_review"] is False and packet["provider_attested"] is False
+          assert raw["status"]=="NEEDS_MORE_EVIDENCE"
+          errors=validate_producer_depth(raw,manifest)
+          assert not errors,errors
+          row=raw["current_uncertainties"][0]
+          q=row["cascade"]["catalog_queries"]
+          assert [x["level"] for x in q]==["N1","N2"]
+          assert all(x["readback"]["row_count"]==1 for x in q)
+          assert all(x["readback"]["sample_records"][0]["owner_name"] is None for x in q)
+          assert q[0]["readback"]["sample_records"]==q[1]["readback"]["sample_records"]
+          print("WEB001_NATIVE_CURRENT_CHAT_SOURCE_BOUND=PASS")
+          def codes(candidate,evidence=manifest):
+            return {x["code"] for x in validate_producer_depth(candidate,evidence)}
+          broken=copy.deepcopy(raw); broken["current_uncertainties"][0]["cascade"]["catalog_queries"].pop()
+          assert "GAP_CATALOG_N1_N2_MISSING" in codes(broken)
+          broken=copy.deepcopy(raw); broken["current_uncertainties"][0]["cascade"]["catalog_queries"][0]["readback"]["sample_records"][0]["owner_name"]="FAKE_OWNER"
+          assert "GAP_CATALOG_READBACK_DIGEST_MISMATCH" in codes(broken)
+          broken=copy.deepcopy(raw); broken["current_uncertainties"][0]["cascade"]["catalog_queries"][0]["datum_id"]="OTHER"
+          assert "GAP_CATALOG_DATUM_MISMATCH" in codes(broken)
+          broken=copy.deepcopy(raw); broken["current_uncertainties"][0]["cascade"]["catalog_queries"][1]["readback"]["result_kind"]="EMPTY"
+          assert "GAP_CATALOG_RESULT_INCONSISTENT" in codes(broken)
+          print("WEB001_NATIVE_CURRENT_CHAT_FALSIFIERS=4/4")
+          print("WEB001_NATIVE_CURRENT_CHAT_NO_PROVIDER_ATTESTATION_NO_OFFICIAL_EVOLUTION_PASS")
+          PY
