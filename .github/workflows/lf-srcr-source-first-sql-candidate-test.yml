@@ -1,0 +1,34 @@
+name: LF SRCR Source First SQL Candidate Test
+on:
+  push:
+    branches: [lf/handoff-srcr-catalog-cascade-20261029]
+    paths:
+      - "docs/profile_updater/handoffs/SRCR_N1N2_SOURCE_FIRST_LEDGER_ATTEST_CANDIDATE_20261030.sql"
+      - "docs/profile_updater/handoffs/test_srcr_n1n2_source_first_ledger_20261030.sql"
+      - ".github/workflows/lf-srcr-source-first-sql-candidate-test.yml"
+permissions:
+  contents: read
+jobs:
+  verify-source-sql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: srcr_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d srcr_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute exact source SQL and negative cases on temporary PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h 127.0.0.1 -U postgres -d srcr_test -v ON_ERROR_STOP=1 \
+            -f docs/profile_updater/handoffs/test_srcr_n1n2_source_first_ledger_20261030.sql
