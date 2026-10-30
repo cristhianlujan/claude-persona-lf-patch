@@ -347,3 +347,29 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 5. Ninguna escritura de código fuente oficial, SQL de producción o habilitación de runtime se deriva de este readback. PR #3359 DRAFT hasta decisión gobernada sobre su delta.
 
 **Corrección principal:** el error 'se necesita una ruta nueva para ejecutar la evolución' queda **RETIRADO**. No era una dependencia del estado actual. Se preserva la evidencia pasada y solo se verifica el delta que no esté cubierto.
+
+## Contraste atómico contra main — delta real y no repetición (2026-10-30)
+
+**Base y conservación:** PR #3359 (`base=173088b756d79839bb1cb7b4ba63ee53bad389bc`). `main` avanzó 26 commits desde esta base, sin modificaciones a `profiles/systemic_root_cause_repair_lf/**`, `skills/profile_creator/**` ni `supabase/functions/run-creacion-perfil-lf/**` en esa comparación. No reabrir pruebas S26/WEB-001 que ya constan en ejecuciones COMPLETED 17/17; las nuevas comprobaciones aplican SOLO al delta.
+
+### Delta SRCR real contra main
+| Archivo/área | Estado respecto de main | Evidencia o acción |
+|---|---|---|
+| `SKILL.md` | Modificación propuesta | Niveles de búsqueda y terminalidad del caso; no incorporado |
+| `validators/producer_depth.py`, `terminality_gate_v1.py` | Modificaciones propuestas | Controles de búsqueda/cierre; no incorporados |
+| `evals/v05_producer_depth_cases.py`, `v08_gap_cascade_cases.py` | Modificaciones propuestas | Ampliación de pruebas existentes; no incorporadas |
+| `evals/v09_exhausted_search_cases.py` | Archivo nuevo | Casos de exhaustividad; pendiente ejecución en revisión candidata |
+| `judges/systemic_root_cause_semantic_judge.md`, `validators/validate_semantic_judge_result.py` | Modificaciones propuestas | Juez N1/N2 en el paso propio de SRCR; pendiente readback independiente real |
+| `validators/validate_quality_receipt.py`, `materialize_quality_receipt.py` | Modificaciones propuestas | Enlazan validación a candidato y manifest; no incorporados |
+| `evals/v10_n1_n2_quality_gate_cases.py` | Archivo nuevo | 10 casos declarados; pendiente ejecución exacta |
+| `manifest.json` | Modificación añadida en este lote | Registra `evals/v08_gap_cascade_cases.py`, `evals/v09_exhausted_search_cases.py`, `evals/v10_n1_n2_quality_gate_cases.py` (35 a 38 referencias) |
+
+**Verificación del parche:** 15 secciones, 12 archivos únicos, **23/23 hunks** aplican sobre `main`, sin conflictos de contexto/longitud; JSON del manifiesto candidato válido, sus tres referencias son únicas. Esto no es suite operacional ni aprobación semántica independiente.
+
+### Delta transversal del Profile Updater — permanece candidato
+- El caller `run-creacion-perfil-lf`, el guard SQL actual y el perfil runtime NO se modificaron en `main`; el PR conserva candidatos documentales en `docs/profile_updater/handoffs/**` que aún no están desplegados.
+- Para adopciones futuras, `method_selection`/`evolution_decision` ya existen; `change_scope` y `deterministic_validation` deben comprobar la ubicación NATIVA a cada perfil, NO replicar paso 70.
+- **Primera brecha material de seguridad:** el helper `_validate_n1_n2_audit` actualmente solo comprueba presencia de `independent_source_ref` y `independent_observed_at`, más coherencia de valores contra un manifest; eso NO certifica por sí mismo una consulta independiente. El juez deberá leer fuente real y `lf_profile_execution_trust_validation_v2` deberá enlazar un readback independiente acreditado dentro de la etapa `semantic_judge` existente. No declarar PASS solo con `readback://` o strings fabricados.
+- Las pruebas WEB-001 y S26 completas ya ejecutadas corresponden a anteriores revisiones y NO dan automáticamente PASS a v09/v10 ni al nuevo enforcement de ubicación dinámica. Ejecutar solamente esos casos delta cuando el mismo updater consuma el candidato.
+
+**Siguiente acción sin ruta nueva:** usar el Profile Updater ya operativo para consumir el parche corregido y resolver/validar este delta, con las llamadas/enforcement en los pasos NATIVOS de cada perfil. No abrir Router adicional ni repetir 17 etapas por diagnóstico. PR sigue DRAFT y sin edición de perfiles oficiales.
