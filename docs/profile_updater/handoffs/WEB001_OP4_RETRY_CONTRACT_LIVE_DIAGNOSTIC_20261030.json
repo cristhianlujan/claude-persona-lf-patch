@@ -1,0 +1,126 @@
+{
+  "schema": "LF_WEB001_GPT_NATIVE_CURRENT_CHAT_RESEARCH_DIAGNOSTIC_V1",
+  "case_id": "WEB-001",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "record_kind": "CURRENT_CHAT_REASONING_WITH_LIVE_READBACKS_NOT_COMPLETE_PROFILE_OUTPUT",
+  "source_profile_candidate": {
+    "head": "ba7039205ed4acc1dfd689193ee20148b3a278cf",
+    "tree_sha256": "b35b70a040d52ce196abfd552ba2f4ba6f3b4f9b5e6ebbc43a10f1691a0dc11c",
+    "profile_tree_unchanged_by_this_commit": true
+  },
+  "source_skill": {
+    "repo": "cristhianlujan/claude-persona-lf-patch",
+    "path": "skills/orquestador_pipeline_lf/SKILL.md",
+    "git_revision": "76a4de055baa7e298eaa4e564ea982023c857cd9",
+    "blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+    "relevant_literal_fragments": [
+      "retry_count ≥ 3 en una URL → Marcar FALLIDO → CONTINUAR",
+      "stage_status = FAILED y retry_count < 3 → modo RETRY",
+      "Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración"
+    ]
+  },
+  "live_queries": {
+    "step": {
+      "sql": "SELECT statement_timestamp() observed_at,step_id,step_order,purpose,pass_condition,block_condition,execution_sql,resolver_ref,status FROM public.lf_operation_step_contracts WHERE operation_code='ORQUESTACION_PIPELINE_LF' AND step_id='failed_retry'",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:50:15.367109+00",
+          "step_id": "failed_retry",
+          "step_order": 110,
+          "purpose": "Incrementar retry_count en pipeline_run fallido. Bloquear ejecucion si retry_count > 3.",
+          "pass_condition": "retry_count <= 3; error registrado y pipeline en cola de reintento",
+          "block_condition": "retry_count > 3; pipeline bloqueado definitivamente",
+          "execution_sql": "UPDATE public.lf_pipeline_runs\nSET retry_count = retry_count + 1,\n    error_detail = :error_type || ': ' || :error_detail,\n    stage_status = CASE\n      WHEN retry_count + 1 >= 3 THEN 'FAILED'\n      WHEN :error_type IN ('SCHEMA_ERROR', 'FK_VIOLATION') THEN 'FAILED'\n      ELSE 'PENDING'\n    END,\n    updated_at = NOW()\nWHERE pipeline_run_id = :pipeline_run_id\nRETURNING pipeline_run_id, retry_count, stage_status, error_detail;",
+          "resolver_ref": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "status": "ACTIVO"
+        }
+      ]
+    },
+    "queue": {
+      "sql": "SELECT statement_timestamp() observed_at,COUNT(*) FILTER (WHERE estado='FALLIDO') fallido,COUNT(*) FILTER (WHERE estado='PENDIENTE') pendiente,COUNT(*) FILTER(WHERE estado='FALLIDO' AND pipeline_run_id IS NULL) fallido_unbound,MAX(updated_at) max_updated_at FROM public.lf_url_queue",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:50:15.447282+00",
+          "fallido": 39,
+          "pendiente": 1,
+          "fallido_unbound": 19,
+          "max_updated_at": "2026-09-01 23:45:04.997278+00"
+        }
+      ]
+    },
+    "runs": {
+      "sql": "SELECT statement_timestamp() observed_at,COUNT(*) run_total,MAX(updated_at) last_updated_at,MAX(created_at) last_created_at FROM public.lf_pipeline_runs",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:50:15.44726+00",
+          "run_total": 176,
+          "last_updated_at": "2026-09-01 23:45:04.997278+00",
+          "last_created_at": "2026-09-01 23:45:04.997278+00"
+        }
+      ]
+    },
+    "asset": {
+      "sql": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo,ruta_esperada FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:50:15.756236+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO",
+          "ruta_esperada": null
+        }
+      ]
+    },
+    "registry": {
+      "sql": "SELECT statement_timestamp() observed_at,operation_code,version,status,source_repo,source_paths FROM public.lf_operation_registry WHERE operation_code='ORQUESTACION_PIPELINE_LF'",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:50:15.683366+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "version": "v0.1",
+          "status": "APROBADO_PRODUCCION_CONTROLADA",
+          "source_repo": "cristhianlujan/claude-persona-lf-patch",
+          "source_paths": [
+            "skills/orquestador_pipeline_lf/"
+          ]
+        }
+      ]
+    }
+  },
+  "causal_diagnostic": {
+    "confirmed_rule": "El SKILL ordena marcar FAILED al llegar a retry_count=3 y continuar; el SQL de failed_retry usa >=3 para stage_status FAILED.",
+    "contract_discrepancy": "El paso failed_retry declara pass_condition retry_count <=3 y block_condition retry_count >3, mientras SQL convierte a FAILED en retry_count+1 >=3. Contradicción textual/ejecutable observada; la condición declarativa no coincide con la implementación.",
+    "counter_identity": "El reintento del SKILL y contrato SQL usan lf_pipeline_runs.retry_count; lf_url_queue.intento_count es otro contador y no se demuestra un vínculo biunívoco ni una política de readmisión por este solo hecho.",
+    "first_bad_boundary": "CONTRACT_VS_EXECUTION_SQL_BOUNDARY_ON_FAILED_RETRY_THRESHOLD",
+    "no_invented_fix": "No se alteró el paso ni los valores del contrato vivo; una reparación requiere revisar autoridad de estados terminales, consumidores de FALLIDO y comparación antes/después.",
+    "current_operational_observation": "39 URLs FALLIDO, 1 PENDIENTE, última actualización de cola 2026-09-01; 176 pipeline runs, última actualización 2026-09-01. Son observaciones, no prueba de ausencia de scheduler externo.",
+    "unresolved": [
+      {
+        "id": "UNC-OWNER-ACT0058",
+        "reason": "owner_name NULL en tabla canónica y sin política activa atribuible verificada; no inferir owner de analogías"
+      },
+      {
+        "id": "UNC-RETRY-CONSUMER-LIVENESS",
+        "reason": "No se recuperó fuente activa del scheduler/consumidor externo para FALLIDO ni readback de su última ejecución"
+      },
+      {
+        "id": "UNC-RETRY-POLICY-OP4",
+        "reason": "Fuente OP4 leída, pero la contradicción pass/block condition versus SQL de failed_retry y contador de cola versus pipeline exige evaluación y cierre del contrato"
+      }
+    ],
+    "proposed_repair_operator": "ALINEAR CONTRATO DEL PASO failed_retry CON INVARIANTE EXISTENTE Y VERIFICAR RUTA REAL DEL CONSUMIDOR; NO HACER WRITE SIN GOBERNANZA",
+    "next_falsifier": "Buscar un consumidor activo que reencole FALLIDO con retry_count<3 y compruebe la interpretación de 3 intentos; verificar quién puede autorizar cambio de pass/block_condition y su migración gobernada.",
+    "model_output_status": "NEEDS_MORE_EVIDENCE",
+    "hard_guard": "NO_OWNER_INFERENCE; NO_RETRY_STATE_MUTATION; NO_KB_FROM_FAILED_FETCH",
+    "limitations": {
+      "complete_profile_output": false,
+      "full_schema_validator_executed": false,
+      "provider_attested": false,
+      "independent_semantic_review": false,
+      "operational_run_registered": false,
+      "comparator_step37_pass": false,
+      "merge_authorized": false
+    }
+  }
+}
