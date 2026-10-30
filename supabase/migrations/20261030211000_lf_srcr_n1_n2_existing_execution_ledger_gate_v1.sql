@@ -601,3 +601,143 @@ begin
   );
 end
 $function$
+
+-- Preserve legacy runs: only NEW governed profile reservations acquire
+-- SRCR_N1_N2 SOURCE_FIRST_V1 marker; profile model/user cannot opt out.
+-- Hash-preflight protects against overwriting subsequent official initializer edits.
+do $srcr_preflight$
+begin
+  if md5(pg_get_functiondef(
+    'public.lf_profile_execution_begin_v1(text,text,text,text,text,text,text,jsonb)'::regprocedure
+  )) is distinct from '7a9129c31fd11443c2ed92107bcb7d8b' then
+    raise exception 'BLOCK_SRCR_PROFILE_BEGIN_CONTRACT_DRIFT';
+  end if;
+end
+$srcr_preflight$;
+
+CREATE OR REPLACE FUNCTION public.lf_profile_execution_begin_v1(p_execution_id text, p_idempotency_key text, p_request_sha256 text, p_actor_execution_id text, p_profile_code text, p_target_repo text, p_target_path text, p_manifest jsonb DEFAULT '{}'::jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+declare
+  r jsonb;
+  b public.lf_operation_step_judge_bindings%rowtype;
+  v_baseline_mode text;
+  v_baseline_contract jsonb;
+  v_executor_mode text;
+  v_executor_admission jsonb;
+begin
+  if nullif(btrim(coalesce(p_profile_code,'')),'') is null
+     or nullif(btrim(coalesce(p_target_repo,'')),'') is null
+     or nullif(btrim(coalesce(p_target_path,'')),'') is null then
+    raise exception 'PROFILE_EXECUTION_BEGIN_TARGET_REQUIRED';
+  end if;
+
+  v_executor_mode:=upper(nullif(btrim(coalesce(p_manifest->>'executor_mode','')),''));
+  IF v_executor_mode IS NULL AND nullif(btrim(coalesce(p_manifest->>'queue_request_id','')) ,'') IS NOT NULL THEN
+    v_executor_mode:='REMOTE_API';
+  END IF;
+  v_executor_admission:=public.lf_profile_execution_executor_admission_v1(
+    p_profile_code,v_executor_mode
+  );
+  IF coalesce((v_executor_admission->>'admitted')::boolean,false) IS NOT TRUE THEN
+    raise exception 'PROFILE_EXECUTION_EXECUTOR_ADMISSION_BLOCKED:%',v_executor_admission::text;
+  END IF;
+
+  select coalesce(nullif(metadata->>'research_baseline_mode',''),'NOT_REQUIRED'),
+         metadata->'research_baseline_contract'
+    into v_baseline_mode,v_baseline_contract
+  from public.lf_activos
+  where codigo_activo=p_profile_code
+    and tipo_activo='PERFIL'
+    and archived_at is null;
+
+  if v_baseline_mode is null then
+    raise exception 'PROFILE_EXECUTION_BEGIN_PROFILE_ASSET_NOT_FOUND:%',p_profile_code;
+  end if;
+  if v_baseline_mode not in ('NOT_REQUIRED','PRE_RESEARCH_ALWAYS') then
+    raise exception 'PROFILE_RESEARCH_BASELINE_MODE_INVALID:%',v_baseline_mode;
+  end if;
+  if v_baseline_mode='PRE_RESEARCH_ALWAYS' then
+    if jsonb_typeof(v_baseline_contract)<>'object'
+       or v_baseline_contract->>'contract_version'<>'PROFILE_RESEARCH_BASELINE_BINDING_V1'
+       or nullif(btrim(coalesce(v_baseline_contract->>'capture_stage','')),'') is null
+       or v_baseline_contract->>'profile_validator_binding'<>'PROFILE_OUTPUT_VALIDATOR_BOUND_V1'
+       or jsonb_typeof(v_baseline_contract->'snapshot_schema')<>'object'
+       or octet_length((v_baseline_contract->'snapshot_schema')::text)>12000
+       or jsonb_typeof(v_baseline_contract->'snapshot_binding_paths')<>'object'
+       or exists( select 1 from jsonb_each(v_baseline_contract->'snapshot_binding_paths') b(source,path) where source not in ('input_digest','profile_source_digest','evidence_refs','capture_stage') or jsonb_typeof(path)<>'array' or jsonb_array_length(path)=0 or jsonb_array_length(path)>12 or exists(select 1 from jsonb_array_elements(path) p(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null) )
+       or (select count(*) from (select path::text from jsonb_each(v_baseline_contract->'snapshot_binding_paths') b(source,path) group by path::text having count(*)>1) d)>0
+       or jsonb_typeof(v_baseline_contract->'output_snapshot_path')<>'array'
+       or jsonb_array_length(v_baseline_contract->'output_snapshot_path')=0
+       or jsonb_typeof(v_baseline_contract->'output_digest_path')<>'array'
+       or jsonb_array_length(v_baseline_contract->'output_digest_path')=0
+       or exists(select 1 from jsonb_array_elements(v_baseline_contract->'output_snapshot_path') x(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null)
+       or exists(select 1 from jsonb_array_elements(v_baseline_contract->'output_digest_path') x(value) where jsonb_typeof(value)<>'string' or nullif(btrim(value#>>'{}'),'') is null)
+    then
+      raise exception 'PROFILE_RESEARCH_BASELINE_CONTRACT_INVALID';
+    end if;
+  else
+    v_baseline_contract:=null;
+  end if;
+
+  r:=public.fn_lf_operation_reserve_execution_v1(
+    p_execution_id,'EJECUCION_PERFIL_LF',
+    'PERFIL',p_profile_code,
+    p_idempotency_key,p_request_sha256,p_actor_execution_id,
+    p_target_repo,p_target_path,
+    coalesce(p_manifest,'{}'::jsonb)
+      ||case when p_profile_code='PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF'
+         then jsonb_build_object('srcr_n1n2_ledger_gate','SOURCE_FIRST_V1')
+         else '{}'::jsonb end
+      ||jsonb_build_object(
+      'profile_execution_governed',true,
+      'context_admission_required',true,
+      'context_delivery','COMPACT_JIT_ONLY',
+      'profile_source_mode','JIT_BY_REF',
+      'research_baseline_mode',v_baseline_mode,
+      'research_baseline_contract',v_baseline_contract,
+      'automatic_impact',false,
+      'executor_mode',v_executor_mode,
+      'executor_admission_receipt',v_executor_admission
+    )
+  );
+
+  select * into b
+  from public.lf_operation_step_judge_bindings
+  where operation_code='EJECUCION_PERFIL_LF'
+    and step_id='init_execution'
+    and status='ACTIVE_ENFORCEMENT';
+
+  if r->>'result'='RESERVED_NEW_EXECUTION' then
+    insert into public.lf_operation_execution_steps(
+      execution_id,step_order,step_id,status,evidence_ref,evidence_payload,notes,created_by_execution_id
+    ) values(
+      r->>'execution_id',0,'init_execution',b.clean_result_value,
+      'supabase://public.lf_operation_execution/'||(r->>'execution_id'),
+      jsonb_build_object(
+        'execution_id_created',true,
+        'profile_code',p_profile_code,
+        'context_admission_required',true,
+        'research_baseline_mode',v_baseline_mode,
+        'research_baseline_contract',v_baseline_contract,
+        'step_result',b.clean_result_value,
+        'blocking_codes','[]'::jsonb,
+        'mini_judge_code',b.judge_code,
+        'mini_judge_result',b.clean_result_value,
+        'recorded_by_rpc','lf_profile_execution_begin_v1'
+      ),
+      'Profile execution init materialized after canonical reserve.',
+      p_actor_execution_id
+    );
+  end if;
+
+  return r||jsonb_build_object(
+    'init_materialized',true,
+    'context_admission_required',true,
+    'research_baseline_mode',v_baseline_mode,
+    'research_baseline_contract',v_baseline_contract
+  );
+end
+$function$;
