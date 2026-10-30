@@ -57,7 +57,9 @@ diff --git a/supabase/functions/run-creacion-perfil-lf/index.ts b/supabase/funct
 +          if (!proof.ok) return denied(proof.code);
 +          if (stepId === "deterministic_validation" && scoped?.native_step_placement_readback?.base_sha !== expectedBase)
 +            return denied("PLACEMENT_BASE_ATTESTATION_NOT_BOUND");
-+          evidence = { ...evidence, native_step_placement_readback: proof.evidence,
++          evidence = { ...evidence,
++            ...(stepId === "change_scope" ? { native_step_adoptions: intents } : {}),
++            native_step_placement_readback: proof.evidence,
 +            native_step_placement_readback_source: "run-creacion-perfil-lf" };
 +        }
 +        const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
