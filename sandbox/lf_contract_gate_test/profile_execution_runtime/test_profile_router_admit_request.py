@@ -89,7 +89,24 @@ class RouterAdmitIssueTest(unittest.TestCase):
 
 
 class RouterAdmitOutcomeTest(unittest.TestCase):
-    def accepted(self, http_status=200, outcome="NATIVE_EXECUTION_READY", **overrides):
+    def script(self):
+        return runpy.run_path(str(SCRIPT), run_name="outcome_test")
+
+    def admitted(self, http_status=200, outcome="PROFILE_HANDOFF_READY", **overrides):
+        result = {
+            "status": "PROFILE_HANDOFF_READY",
+            "write_performed": False,
+            "execution_id": None,
+            "executor_mode": "GPT_NATIVE",
+            "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+            "router_profile_handoff": {"fingerprint_sha256": "a" * 64},
+            "next_action": "EJECUCION_PERFIL_LF_BEGIN_REQUIRED",
+        }
+        result.update(overrides)
+        return self.script()["admission_success"](
+            http_status, {"outcome": outcome, "result": result}, "GPT_NATIVE")
+
+    def executed(self, http_status=200, outcome="NATIVE_EXECUTION_READY", **overrides):
         result = {
             "status": "NATIVE_EXECUTION_READY",
             "gate2_materialized": True,
@@ -99,27 +116,88 @@ class RouterAdmitOutcomeTest(unittest.TestCase):
             "next_action": "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT",
         }
         result.update(overrides)
-        fn = runpy.run_path(str(SCRIPT), run_name="outcome_test")["admission_success"]
-        return fn(http_status, {"outcome": outcome, "result": result}, "GPT_NATIVE")
+        return self.script()["execution_success"](
+            http_status, {"outcome": outcome, "result": result}, "GPT_NATIVE")
 
-    def test_native_ready_with_receipt_accepted(self):
-        self.assertTrue(self.accepted())
+    def test_stage6_handoff_without_execution_is_accepted(self):
+        self.assertTrue(self.admitted())
 
-    def test_http_200_pending_must_not_be_success(self):
-        self.assertFalse(self.accepted(outcome="PENDING", status="PENDING"))
-        self.assertFalse(self.accepted(outcome="BLOCKED", status="BLOCKED"))
-        self.assertFalse(self.accepted(http_status=409))
-
-    def test_http_200_incomplete_or_inconsistent_receipt_must_fail(self):
+    def test_stage6_rejects_claim_of_execution_or_write(self):
         for override in (
-            {"execution_id": ""},
-            {"profile_code": ""},
-            {"gate2_materialized": False},
-            {"status": "PENDING"},
-            {"executor_mode": "CLAUDE_NATIVE"},
-            {"next_action": "OTHER"},
+            {"execution_id": "EXEC-PROFILE-ILLEGAL"},
+            {"write_performed": True},
+            {"router_profile_handoff": None},
+            {"status": "NATIVE_EXECUTION_READY"},
+            {"next_action": "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT"},
+            {"executor_mode": "REMOTE_API"},
         ):
-            self.assertFalse(self.accepted(**override))
+            self.assertFalse(self.admitted(**override))
+
+    def test_stage7_requires_real_execution(self):
+        self.assertTrue(self.executed())
+        for override in (
+            {"execution_id": None}, {"execution_id": ""},
+            {"gate2_materialized": False}, {"status": "PENDING"},
+            {"executor_mode": "REMOTE_API"}, {"next_action": "OTHER"},
+        ):
+            self.assertFalse(self.executed(**override))
+
+    def test_status_and_http_fail_closed(self):
+        self.assertFalse(self.admitted(http_status=409))
+        self.assertFalse(self.admitted(outcome="BLOCKED"))
+        self.assertFalse(self.executed(http_status=409))
+        self.assertFalse(self.executed(outcome="PROFILE_HANDOFF_READY"))
+
+
+class RouterAdmitSequenceTest(unittest.TestCase):
+    def test_main_invokes_stage6_then_stage7_only_after_handoff(self):
+        m = runpy.run_path(str(SCRIPT), run_name="unit_test")
+        handoff = {
+            "outcome": "PROFILE_HANDOFF_READY",
+            "result": {"status": "PROFILE_HANDOFF_READY",
+                       "write_performed": False, "execution_id": None,
+                       "executor_mode": "GPT_NATIVE",
+                       "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+                       "router_profile_handoff": {"fingerprint_sha256": "a"*64},
+                       "next_action": "EJECUCION_PERFIL_LF_BEGIN_REQUIRED"},
+        }
+        execution = {
+            "outcome": "NATIVE_EXECUTION_READY",
+            "result": {"status": "NATIVE_EXECUTION_READY",
+                       "gate2_materialized": True, "executor_mode": "GPT_NATIVE",
+                       "execution_id": "EXEC-PROFILE-GATE2-TEST",
+                       "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+                       "next_action": "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT"},
+        }
+        calls = []
+        def fake_call(url, body, headers):
+            calls.append(body["action"])
+            if len(calls) == 1:
+                return 200, handoff
+            return 200, execution
+        m["governed_request"] = lambda: (CTX, "GPT_NATIVE")
+        # runpy functions retain the initial global namespace; patch that explicitly.
+        main = m["main"]
+        with patch.dict(main.__globals__, {
+            "governed_request": lambda: (CTX, "GPT_NATIVE"),
+            "oidc": lambda: "mock-token",
+            "call_json": fake_call,
+            "EDGE_URL": "https://example.invalid",
+        }):
+            self.assertEqual(main(), 0)
+        self.assertEqual(calls, ["router_profile_admit_context_v2",
+                                 "profile_execution_begin_from_router_context_v1"])
+
+        calls.clear()
+        handoff["result"]["write_performed"] = True
+        with patch.dict(main.__globals__, {
+            "governed_request": lambda: (CTX, "GPT_NATIVE"),
+            "oidc": lambda: "mock-token",
+            "call_json": fake_call,
+            "EDGE_URL": "https://example.invalid",
+        }):
+            self.assertEqual(main(), 1)
+        self.assertEqual(calls, ["router_profile_admit_context_v2"])
 
 
 if __name__ == "__main__":

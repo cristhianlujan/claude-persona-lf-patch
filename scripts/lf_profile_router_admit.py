@@ -17,6 +17,7 @@ import urllib.request
 EDGE_URL = os.environ.get("LF_PROFILE_EDGE_URL", "").rstrip("/")
 AUDIENCE = "lf-profiles-governance-caller-v1"
 ACTION = "router_profile_admit_context_v2"
+EXECUTION_ACTION = "profile_execution_begin_from_router_context_v1"
 NATIVE_MODES = ("GPT_NATIVE", "CLAUDE_NATIVE")
 MAX_CONTEXT_CHARS = 60000
 ISSUE_LABEL = "lf-profile-admit-governed"
@@ -102,7 +103,27 @@ def governed_request():
 
 
 def admission_success(http_status, response, requested_mode):
-    """Only a fully materialized native execution may turn the workflow green."""
+    """Stage 06 is green only for a validated handoff with NO execution write."""
+    if http_status != 200 or not isinstance(response, dict):
+        return False
+    result = response.get("result")
+    if not isinstance(result, dict):
+        return False
+    return (
+        response.get("outcome") == "PROFILE_HANDOFF_READY"
+        and result.get("status") == "PROFILE_HANDOFF_READY"
+        and result.get("write_performed") is False
+        and result.get("execution_id") is None
+        and result.get("executor_mode") == requested_mode
+        and isinstance(result.get("profile_code"), str)
+        and bool(result["profile_code"].strip())
+        and isinstance(result.get("router_profile_handoff"), dict)
+        and result.get("next_action") == "EJECUCION_PERFIL_LF_BEGIN_REQUIRED"
+    )
+
+
+def execution_success(http_status, response, requested_mode):
+    """Stage 07 must create an actual governed EJECUCION_PERFIL_LF execution."""
     if http_status != 200 or not isinstance(response, dict):
         return False
     result = response.get("result")
@@ -120,7 +141,6 @@ def admission_success(http_status, response, requested_mode):
         and result.get("next_action") == "EXECUTE_PROFILE_IN_AUTHORIZED_NATIVE_CONTEXT"
     )
 
-
 def main():
     try:
         context, mode = governed_request()
@@ -133,32 +153,49 @@ def main():
         {"action": ACTION, "context": context, "executor_mode": mode},
         headers,
     )
-    result = response.get("result") if isinstance(response.get("result"), dict) else {}
-    # Never print the context or tokens in CI logs.
+    admission = response.get("result") if isinstance(response.get("result"), dict) else {}
+    admitted = admission_success(code, response, mode)
     print(json.dumps({
+        "stage": "06_ADMISSION",
         "http_status": code,
         "outcome": response.get("outcome"),
-        "code": response.get("code"),
-        "execution_id": result.get("execution_id"),
-        "profile_code": result.get("profile_code"),
-        "executor_mode": mode,
-        "next_action": result.get("next_action"),
+        "profile_code": admission.get("profile_code"),
+        "execution_id": admission.get("execution_id"),
+        "write_performed": admission.get("write_performed"),
+        "next_action": admission.get("next_action"),
     }, ensure_ascii=False))
-    accepted = admission_success(code, response, mode)
-    if not accepted:
-        # Readable GitHub annotation (no context, no tokens): the outcome codes only.
-        summary = {
-            "http_status": code,
-            "outcome": response.get("outcome"),
-            "code": response.get("code"),
-            "rpc_status": response.get("rpc_status"),
-            "result_status": result.get("status"),
-            "blocking_code": result.get("blocking_code"),
-            "blocking_codes": result.get("blocking_codes"),
-        }
-        print("::error title=ROUTER_ADMIT_BLOCKED::" + json.dumps(summary, ensure_ascii=False))
-    return 0 if accepted else 1
+    if not admitted:
+        print("::error title=ROUTER_ADMIT_BLOCKED::" + json.dumps({
+            "http_status": code, "outcome": response.get("outcome"),
+            "code": response.get("code"), "result_status": admission.get("status"),
+            "blocking_code": admission.get("blocking_code"),
+        }, ensure_ascii=False))
+        return 1
 
+    # Stage 07 is a NEW authorized action: only EJECUCION_PERFIL_LF may write.
+    code, response = call_json(
+        EDGE_URL,
+        {"action": EXECUTION_ACTION, "context": context, "executor_mode": mode},
+        headers,
+    )
+    execution = response.get("result") if isinstance(response.get("result"), dict) else {}
+    accepted = execution_success(code, response, mode)
+    print(json.dumps({
+        "stage": "07_EJECUCION_PERFIL_LF",
+        "http_status": code,
+        "outcome": response.get("outcome"),
+        "execution_id": execution.get("execution_id"),
+        "profile_code": execution.get("profile_code"),
+        "executor_mode": mode,
+        "next_action": execution.get("next_action"),
+    }, ensure_ascii=False))
+    if not accepted:
+        print("::error title=PROFILE_EXECUTION_BEGIN_BLOCKED::" + json.dumps({
+            "http_status": code, "outcome": response.get("outcome"),
+            "code": response.get("code"), "result_status": execution.get("status"),
+            "blocking_code": execution.get("blocking_code"),
+        }, ensure_ascii=False))
+    return 0 if accepted else 1
 
 if __name__ == "__main__":
     sys.exit(main())
