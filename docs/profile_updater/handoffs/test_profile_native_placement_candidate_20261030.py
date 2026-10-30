@@ -17,6 +17,7 @@ def graph(slug="repair_lf", sha=BASE, ids=("research", "decision", "quality")):
     for i, sid in enumerate(ids):
         steps.append({"step_id": sid, "order": (i + 1) * 10,
             "source_anchor": "SKILL.md#" + sid,
+            "content_sha256": "1" * 64,
             "predecessor": ids[i - 1] if i else None,
             "successor": ids[i + 1] if i + 1 < len(ids) else None,
             "call_ref": "native://" + sid,
@@ -108,6 +109,11 @@ class NativePlacementCases(unittest.TestCase):
         g = graph(sha=CANDIDATE, ids=("research", "n1_n2", "decision", "quality"))
         g["steps"][-1]["source_anchor"] = "SKILL.md#unexpected"
         self.assertIn("PLACEMENT_UNRELATED_STEP_CHANGED", confirm(g))
+
+    def test_unplanned_neighbor_content_change_rejected(self):
+        g = graph(sha=CANDIDATE, ids=("research", "n1_n2", "decision", "quality"))
+        g["steps"][0]["content_sha256"] = "2" * 64
+        self.assertIn("PLACEMENT_UNEXPECTED_NEIGHBOR_MUTATION", confirm(g))
 
     def test_neighbor_enforcement_mutation_rejected(self):
         g = graph(sha=CANDIDATE, ids=("research", "n1_n2", "decision", "quality"))
