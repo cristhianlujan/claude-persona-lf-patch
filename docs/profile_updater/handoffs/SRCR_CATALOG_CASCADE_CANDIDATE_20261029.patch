@@ -365,7 +365,7 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
 +++ b/validators/validate_semantic_judge_result.py
-@@ -12,5 +12,67 @@
+@@ -12,5 +12,70 @@
  import json
  import sys
 -from typing import Any
@@ -383,6 +383,7 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 +            continue
 +        c = item.get("cascade")
 +        if not isinstance(c, dict) or "catalog_queries" not in c:
++            errors.append("N1_N2_REQUIRED_QUERIES_MISSING")
 +            continue
 +        uid = item.get("uncertainty_id")
 +        if not isinstance(uid, str) or not uid:
@@ -395,6 +396,8 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 +            if key in required:
 +                errors.append("N1_N2_QUERY_DUPLICATE")
 +            required[key] = q
++    if any({lv for (id_, lv) in required if id_ == item.get("uncertainty_id")} != {"N1", "N2"} for item in (candidate.get("current_uncertainties") or []) if isinstance(item, dict) and item.get("impact") == "DESIGN_BLOCKING"):
++        errors.append("N1_N2_QUALITY_LEVEL_MISSING")
 +    if not required:
 +        return errors
 +    observations = result.get("n1_n2_audit")
