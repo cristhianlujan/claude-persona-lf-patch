@@ -124,6 +124,10 @@ to replay all cases. In all outcomes, producer depth, deterministic parity,
 functional execution and independent review remain separate, and no
 candidate is auto-merged or activated.
 
+## Updating an existing profile from the Router (single command)
+
+The Router resolves `PROFILE_UPDATE` -> `ACTUALIZACION_PERFIL_LF` through the registered governed caller. The native chat authors the candidate profile directory and runs `python3 scripts/lf_profile_update_run.py --slug <slug> --target-code <PERFIL-CODE> --candidate-dir <dir> --state <file>` (add `--dry-run` to validate without writing). The command opens the execution, measures, records the steps, passes the Merge Train, compares on the exact commit, reads back from `main` and closes. No manual dispatch, no direct database write, no direct merge. The profile runtime state is not changed; enabling is a separate governed operation.
+
 ## Handoff outcome rule
 
 For outputs routed to Quality Pack, the evidence layers remain distinct:
