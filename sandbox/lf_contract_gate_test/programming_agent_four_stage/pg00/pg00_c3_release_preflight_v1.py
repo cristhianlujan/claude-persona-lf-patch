@@ -17,6 +17,18 @@ SOURCE_REPO = "paulozterra/lf-programming-sandbox"
 SOURCE_PATH = "standards/catalog.json"
 
 
+def strict_json(raw):
+    """Reject duplicate object keys at every depth before integrity comparisons."""
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("DUPLICATE_JSON_KEY")
+            result[key] = value
+        return result
+    return json.loads(raw, object_pairs_hook=unique_pairs)
+
+
 def inspect(candidate: dict, source: bytes, *, expected_commit: str) -> dict:
     """Return informative fail-closed checks; no input can yield publication authority."""
     if not isinstance(candidate, dict):
@@ -28,7 +40,7 @@ def inspect(candidate: dict, source: bytes, *, expected_commit: str) -> dict:
             errors.append(reason)
 
     try:
-        doc = json.loads(source)
+        doc = strict_json(source)
     except (ValueError, UnicodeDecodeError):
         return {"verdict": "BLOCKED", "reason_codes": ["INVALID_SOURCE_JSON"],
                 "authority": "NONE"}
@@ -67,7 +79,7 @@ def inspect(candidate: dict, source: bytes, *, expected_commit: str) -> dict:
         reject(release.get("rules") != rules, "RELEASE_RULES_CHANGED")
         for field in ("domains", "waiver_settings", "decisions"):
             reject(release.get(field) != doc.get(field), "RELEASE_CONTENT_DRIFT")
-        changes = {k for k in set(doc) | set(release) if doc.get(k) != release.get(k)}
+        changes = (set(doc) ^ set(release)) | {\n            k for k in set(doc) & set(release) if doc[k] != release[k]\n        }
         reject(changes != {"status"}, "UNAUTHORIZED_RELEASE_TRANSFORMATION")
     # No external approval, signature, exact-HEAD review, or Train provenance is
     # verifiable from these self-declared inputs. Do not assert otherwise.
@@ -87,7 +99,7 @@ def main():
                         help="SHA from trusted GitHub retrieval, never from candidate JSON")
     args = parser.parse_args()
     try:
-        candidate = json.loads(args.candidate.read_text(encoding="utf-8"))
+        candidate = strict_json(args.candidate.read_text(encoding="utf-8"))
     except (ValueError, UnicodeDecodeError):
         candidate = None
     result = inspect(candidate, args.source.read_bytes(),
