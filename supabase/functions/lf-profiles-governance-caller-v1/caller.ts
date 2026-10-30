@@ -648,7 +648,11 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
       const isRouterAdmitAction = action === ROUTER_PROFILE_ADMIT_ACTION;
-      if (isNativeContinuationIdentity && !isNativeContinuationAction && !isRouterAdmitAction) {
+      // Stage 07 belongs to this SAME exact workflow OIDC scope as Stage 06.
+      // It is still independently fenced by handoff, native mode and canonical writer checks below.
+      const isProfileExecutionBeginAction = action === PROFILE_EXECUTION_BEGIN_ACTION;
+      if (isNativeContinuationIdentity && !isNativeContinuationAction &&
+          !isRouterAdmitAction && !isProfileExecutionBeginAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
       }
       if (isNativeContinuationAction && !isNativeContinuationIdentity) {

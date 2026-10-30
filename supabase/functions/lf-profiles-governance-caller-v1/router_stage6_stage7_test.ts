@@ -45,12 +45,17 @@ function check(actual: unknown, expected: unknown, label: string) {
     throw new Error(label + ": actual=" + JSON.stringify(actual) + " expected=" + JSON.stringify(expected));
   }
 }
-function rig(opts: { admitWrite?: boolean; assetPath?: string; badIdentity?: boolean } = {}) {
+function rig(opts: { admitWrite?: boolean; assetPath?: string; badIdentity?: boolean; nativeIdentity?: boolean } = {}) {
   const calls: { url: string; body?: Record<string, unknown> }[] = [];
   const fakeClaims: JwtPayload = opts.badIdentity
     ? { ...claims, workflow_ref: config.LF_CALLER_RECURATION_DISPATCH_WORKFLOW_REF,
         ref: "refs/heads/main", job_workflow_ref: config.LF_CALLER_RECURATION_WORKFLOW_REF,
-        event_name: "workflow_dispatch" } : claims;
+        event_name: "workflow_dispatch" }
+    : opts.nativeIdentity
+      ? { ...claims, ref: "refs/heads/main",
+          workflow_ref: REPO + "/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main",
+          event_name: "issues", environment: "lf-edge-deploy" }
+      : claims;
   const handler = createHandler({
     getEnv: (name: string) => config[name],
     jwks: {mock:true},
@@ -131,4 +136,26 @@ Deno.test("Stages 06/07 fail closed on invalid OIDC, REMOTE_API, bad admission a
     check(x.status,c.status,"NEGATIVE_HTTP");
     check(h.calls.some(v=>v.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")),false,"NO_WRITE_ON_BLOCK");
   }
+});
+
+Deno.test("Stage07 exact MAIN workflow issue OIDC invokes canonical writer after Stage06 handoff",async()=>{
+  const h=rig({nativeIdentity:true});
+  const admit=await h.invoke("router_profile_admit_context_v2");
+  check(admit.status,200,"NATIVE_ISSUE_STAGE06_HTTP");
+  check(admit.payload.outcome,"PROFILE_HANDOFF_READY","NATIVE_ISSUE_STAGE06_RESULT");
+  check(h.calls.length,1,"NATIVE_ISSUE_STAGE06_READ_ONLY");
+
+  const result=await h.invoke("profile_execution_begin_from_router_context_v1");
+  check(result.status,200,"NATIVE_ISSUE_STAGE07_HTTP");
+  check(result.payload.outcome,"NATIVE_EXECUTION_READY","NATIVE_ISSUE_STAGE07_RESULT");
+  check(h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")).length,1,
+    "EXACTLY_ONE_CANONICAL_WRITER");
+});
+
+Deno.test("Stage07 native OIDC remains closed for non-profile actions",async()=>{
+  const h=rig({nativeIdentity:true});
+  const x=await h.invoke("profile_creator_init_v1");
+  check(x.status,403,"NATIVE_ISSUE_CREATOR_DENIED");
+  check(x.payload.code,"NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH","NATIVE_ISSUE_SCOPE_GUARD");
+  check(h.calls.length,0,"NO_BACKEND_CALL_ON_UNRELATED_ACTION");
 });
