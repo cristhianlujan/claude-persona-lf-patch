@@ -53,6 +53,7 @@ diff -ruN a/SKILL.md b/SKILL.md
  6. **Never invent, never close with a bare gap.** A value that no class supports is not filled in. An answer that claims to close cannot contain any datum declared unresolved unless that datum carries the search record and repair step above. This applies to every datum of the answer, whatever its name.
  
  ### V0.7R1 dynamic repair method revision
+
 diff -ruN a/evals/v05_producer_depth_cases.py b/evals/v05_producer_depth_cases.py
 --- a/evals/v05_producer_depth_cases.py	2026-10-29 23:28:30.744325028 -0500
 +++ b/evals/v05_producer_depth_cases.py	2026-10-29 23:28:30.749322916 -0500
@@ -104,6 +105,7 @@ diff -ruN a/evals/v05_producer_depth_cases.py b/evals/v05_producer_depth_cases.p
  check("V05_BLOCKED_NODE_LINKED_SCHEMA_VALID", not list(schema_validator.iter_errors(linked)), [x.message for x in schema_validator.iter_errors(linked)][:3])
  
  # 18. Audit mode keeps systemic causality: a ready audit spec with a non-established causal claim fails semantic utility.
+
 diff -ruN a/evals/v08_gap_cascade_cases.py b/evals/v08_gap_cascade_cases.py
 --- a/evals/v08_gap_cascade_cases.py	2026-10-29 23:28:30.744464981 -0500
 +++ b/evals/v08_gap_cascade_cases.py	2026-10-29 23:28:30.749280379 -0500
@@ -136,6 +138,7 @@ diff -ruN a/evals/v08_gap_cascade_cases.py b/evals/v08_gap_cascade_cases.py
  bad = copy.deepcopy(ok); bad["campo_nuevo_cualquiera"]["search_record"] = rec[:3]
  check("GAP_SEARCH_RECORD_MUST_COVER_ALL_CLASSES", "GAP_SEARCH_RECORD_NOT_EXHAUSTIVE" in codes(runtime_validate.validate(bad, e6)))
  
+
 diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cases.py
 --- a/evals/v09_exhausted_search_cases.py	1969-12-31 19:00:00.000000000 -0500
 +++ b/evals/v09_exhausted_search_cases.py	2026-10-29 23:28:30.749303153 -0500
@@ -193,6 +196,7 @@ diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cas
 +for k,v in checks.items(): print("ok  " if v else "FAIL", k)
 +print(f"EXHAUSTED_SEARCH_CASES={sum(checks.values())}/{len(checks)}")
 +sys.exit(0 if all(checks.values()) else 1)
+
 diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 --- a/validators/producer_depth.py	2026-10-29 23:28:30.745144484 -0500
 +++ b/validators/producer_depth.py	2026-10-29 23:28:30.750126050 -0500
@@ -222,6 +226,7 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
          attempts = row.get("attempted_sources")
          if not isinstance(attempts, list) or not attempts:
              errors.append(_err(
+
 diff -ruN a/validators/terminality_gate_v1.py b/validators/terminality_gate_v1.py
 --- a/validators/terminality_gate_v1.py	2026-10-29 23:28:30.745200873 -0500
 +++ b/validators/terminality_gate_v1.py	2026-10-29 23:28:30.750606819 -0500
@@ -277,10 +282,11 @@ diff -ruN a/validators/terminality_gate_v1.py b/validators/terminality_gate_v1.p
      """Return a deterministic SRCR terminal verdict and blocking reasons."""
      reasons: list[str] = []
  
+
 diff -ruN a/judges/systemic_root_cause_semantic_judge.md b/judges/systemic_root_cause_semantic_judge.md
 --- a/judges/systemic_root_cause_semantic_judge.md
 +++ b/judges/systemic_root_cause_semantic_judge.md
-@@ -181,6 +181,20 @@
+@@ -181,6 +181,22 @@
  - If a cited reference cannot be resolved in live authority, add `EVIDENCE_REFERENCE_NOT_FOUND`; fabricated evidence remains a BLOCK condition.
  
  For a semantic PASS, these checks are part of `EVIDENCE_INTEGRITY`; the invariant cannot PASS while any T4 blocking code remains. A legitimate `NEEDS_MORE_EVIDENCE` with supported attempts and no omitted closing surface is valid and must not be penalized.
@@ -296,11 +302,14 @@ diff -ruN a/judges/systemic_root_cause_semantic_judge.md b/judges/systemic_root_
 +5. Judge output must include `n1_n2_audit` with per-datum observations, `n1_n2_verdict` (`PASS|RETURN_TO_WORKER|UNVERIFIABLE|BLOCK_PIPELINE`), `first_failed_check` and explicit evidence refs. Codes: `N1_QUERY_NOT_PROVEN`, `N2_QUERY_NOT_PROVEN`, `SOURCE_RESULT_MISMATCH`, `DATUM_COVERAGE_MISMATCH`, `FALSE_NO_EVIDENCE`, `SOURCE_ACCESS_NOT_EVIDENCE_ABSENCE`. Return to worker for correctable investigation gaps; deliberate fabricated receipts/evidence are `BLOCK_PIPELINE`.
 +6. Required accepted audit fields: datum_id, level, evidence_id, source_locator, result_kind, row_count, sample_records (typed values), comparison=MATCH, independent_source_ref, independent_observed_at. An independent_source_ref string is a locator, not independent proof by itself: the judge must actually re-read the source and verify object type through live metadata. If it cannot, return UNVERIFIABLE and do not PASS. The deterministic source manifest binds source digests, not the judge execution.
 +
++**Connection to the EXISTING enforced sequence:** `EJECUCION_PERFIL_LF`: `research_baseline_freeze` (47) -> `execute_profile` (50) -> `output_validate` (60) -> `semantic_judge` (70) -> `report_output` (80). Transport `n1_n2_audit` and source/tool read receipts in the existing `semantic_judge_result` plus `source_refs_inspected`. Bind independent observations to the predecessor `baseline_receipt_ref`, `research_baseline_digest`, `research_baseline_ref`, `profile_output`, `source_refs`, deterministic validation, and candidate/scope hashes. Use the existing `lf_profile_execution_trust_validation_v2` enforcement on step 70 to require correct order, independent tool read provenance, matching per-datum values and exact hashes; a FAIL means no PASS and no step 80. If the current enforcement does not check an obligation, amend the EXISTING enforcement through the governed process. Do not create a new stage, table, service, runner, or standalone quality boundary.
++
 +These checks are non-scoreable prerequisites to `EVIDENCE_INTEGRITY` for applicable closures; a numerical score or an unbound textual assertion cannot override them. The deterministic validator must bind declared query receipts to CURRENT manifest entries before the judge interprets values. This judge instruction alone does not constitute an executed data transport or an independent PASS.
 +
  
  
  ### T5 — V0.6 physical edge closure
+
 
 diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 --- a/validators/producer_depth.py
@@ -363,17 +372,18 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
  def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
      if not applies(payload):
 
+
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
 +++ b/validators/validate_semantic_judge_result.py
-@@ -12,5 +12,109 @@
+@@ -12,5 +12,70 @@
  import json
  import sys
 -from typing import Any
 +from typing import Any
 +
-+def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any, quality_readback: Any = None) -> list[str]:
-+    """Proof-bound auditor coverage: the candidate cannot waive this gate."""
++def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any) -> list[str]:
++    """N1/N2 source-value integrity; execution receipt enforced in the existing semantic_judge step."""
 +    import hashlib
 +    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6":
 +        return []
@@ -435,48 +445,10 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 +        errors.append("N1_N2_AUDIT_INCOMPLETE")
 +    if result.get("verdict") == PASS_VERDICT and result.get("n1_n2_verdict") != "PASS":
 +        errors.append("N1_N2_PASS_NOT_ISSUED")
-+    # Independent tool receipts are supplied by the quality runner, not the judge.
-+    if not isinstance(quality_readback, dict) or quality_readback.get("issuer") != "QUALITY_BOUNDARY":
-+        return errors + ["N1_N2_BOUNDARY_READBACK_MISSING"]
-+    cand_hash = hashlib.sha256(json.dumps(candidate, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
-+    if quality_readback.get("candidate_sha256") != cand_hash or result.get("candidate_sha256") != cand_hash:
-+        errors.append("N1_N2_BOUNDARY_CANDIDATE_MISMATCH")
-+    if not isinstance(manifest, dict):
-+        errors.append("N1_N2_BOUNDARY_MANIFEST_MISSING")
-+    else:
-+        normalized = {k: v for k, v in manifest.items() if k != "bundle_digest"}
-+        manifest_hash = "sha256:" + hashlib.sha256(json.dumps(normalized, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
-+        if quality_readback.get("manifest_digest") != manifest_hash:
-+            errors.append("N1_N2_BOUNDARY_MANIFEST_MISMATCH")
-+    independent = quality_readback.get("observations")
-+    if not isinstance(independent, list):
-+        return errors + ["N1_N2_BOUNDARY_OBSERVATIONS_MISSING"]
-+    bound = {}
-+    for row in independent:
-+        if not isinstance(row, dict):
-+            errors.append("N1_N2_BOUNDARY_ROW_INVALID")
-+            continue
-+        key = (row.get("datum_id"), row.get("level"))
-+        if key in bound or key not in required:
-+            errors.append("N1_N2_BOUNDARY_ROW_DUPLICATE_OR_UNEXPECTED")
-+            continue
-+        bound[key] = row
-+        claim = next((a for a in observations if isinstance(a, dict) and (a.get("datum_id"), a.get("level")) == key), None)
-+        if claim is None:
-+            continue
-+        if not all(isinstance(row.get(k), str) and row[k].strip() for k in ("receipt_ref", "execution_id", "observed_at", "source_locator")):
-+            errors.append("N1_N2_BOUNDARY_EXECUTION_PROOF_MISSING")
-+        if claim.get("independent_source_ref") != row.get("receipt_ref") or claim.get("independent_observed_at") != row.get("observed_at"):
-+            errors.append("N1_N2_INDEPENDENT_RECEIPT_MISMATCH")
-+        if row.get("evidence_id") != claim.get("evidence_id") or row.get("source_locator") != claim.get("source_locator"):
-+            errors.append("N1_N2_BOUNDARY_PROVENANCE_MISMATCH")
-+        if any(row.get(k) != claim.get(k) for k in ("result_kind", "row_count", "sample_records")):
-+            errors.append("N1_N2_BOUNDARY_VALUE_MISMATCH")
-+    if set(bound) != set(required):
-+        errors.append("N1_N2_BOUNDARY_INCOMPLETE")
 +    return errors
  
  REQUIRED_INVARIANTS = {
+
 
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
@@ -484,8 +456,9 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 @@ -66,3 +66,3 @@
  
 -def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None) -> dict[str, Any]:
-+def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None, quality_readback: Any = None) -> dict[str, Any]:
++def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None) -> dict[str, Any]:
      errors: list[str] = []
+
 
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
@@ -497,13 +470,14 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 -        "status": "PASS" if not errors else "FAIL",
 -        "blocking_codes": sorted(set(errors)),
 -    }
-+    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest, quality_readback))
++    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest))
 +    return {
 +        "status": "PASS" if not errors else "FAIL",
 +        "blocking_codes": sorted(set(errors)),
 +    }
  
  
+
 
 diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality_receipt.py
 --- a/validators/validate_quality_receipt.py
@@ -512,9 +486,10 @@ diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality
          )
  
 -    semantic_gate = semantic_validator.evaluate(semantic_result)
-+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, quality_readback=quality_readback)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
      if semantic_gate.get("status") != "PASS":
          errors.append(
+
 
 diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
 --- a/validators/materialize_quality_receipt.py
@@ -523,13 +498,14 @@ diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_q
          raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
  
 -    semantic_gate = semantic_validator.evaluate(semantic_result)
-+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, quality_readback=quality_readback)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
      if semantic_gate.get("status") != "PASS":
          raise QualityReceiptMaterializationError(
+
 diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate_cases.py
 --- /dev/null
 +++ b/evals/v10_n1_n2_quality_gate_cases.py
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,32 @@
 +#!/usr/bin/env python3
 +"""N1/N2 quality-guard regression. Isolated; no external system writes."""
 +import copy, hashlib, json, runpy, sys
@@ -548,10 +524,7 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +c={"profile_pack_id":"SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6","current_uncertainties":[{"impact":"DESIGN_BLOCKING","uncertainty_id":"U","cascade":{"catalog_queries":[q1,q2]}}]}
 +p={"evidence":[p1,p2]}
 +j={"verdict":"PASS_INDEPENDENT_SEMANTIC","n1_n2_verdict":"PASS","n1_n2_audit":[a1,a2]}
-+def canonical(value): return "sha256:"+hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()).hexdigest()
-+j["candidate_sha256"]=canonical(c)[7:]
-+quality={"issuer":"QUALITY_BOUNDARY","candidate_sha256":j["candidate_sha256"],"manifest_digest":canonical(p),"observations":[{"datum_id":a["datum_id"],"level":a["level"],"evidence_id":a["evidence_id"],"source_locator":a["source_locator"],"result_kind":a["result_kind"],"row_count":a["row_count"],"sample_records":a["sample_records"],"receipt_ref":a["independent_source_ref"],"observed_at":a["independent_observed_at"],"execution_id":"fixture-quality-boundary"} for a in j["n1_n2_audit"]]}
-+def codes(jj=j,cc=c,pp=p,qq=quality): return set(guard(jj,cc,pp,qq))
++def codes(jj=j,cc=c,pp=p): return set(guard(jj,cc,pp))
 +tests={"valid_pair":not codes()}
 +x=copy.deepcopy(j);x.pop("n1_n2_audit");tests["missing_judge_records"]="N1_N2_AUDIT_MISSING" in codes(jj=x)
 +x=copy.deepcopy(j);x["n1_n2_audit"]=[a1];tests["missing_N2"]="N1_N2_AUDIT_INCOMPLETE" in codes(jj=x)
@@ -562,53 +535,7 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +x=copy.deepcopy(c);x["current_uncertainties"][0]["cascade"]["catalog_queries"]=[q1];tests["omitted_level"]="N1_N2_QUALITY_LEVEL_MISSING" in codes(cc=x)
 +x=copy.deepcopy(p);x["evidence"][0]["digest"]="sha256:wrong";tests["wrong_sha"]="N1_N2_SOURCE_DIGEST_MISMATCH" in codes(pp=x)
 +x=copy.deepcopy(j);x["n1_n2_audit"][0]["independent_source_ref"]="";tests["no_independent_readback"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(jj=x)
-+x=copy.deepcopy(j);x["n1_n2_audit"][0]["independent_source_ref"]="fabricated://receipt";tests["invented_ref_rejected"]="N1_N2_INDEPENDENT_RECEIPT_MISMATCH" in codes(jj=x)
-+tests["missing_quality_boundary_rejected"]="N1_N2_BOUNDARY_READBACK_MISSING" in codes(qq=None)
-+x=copy.deepcopy(quality);x["manifest_digest"]="sha256:bogus";tests["wrong_manifest_binding"]="N1_N2_BOUNDARY_MANIFEST_MISMATCH" in codes(qq=x)
-+x=copy.deepcopy(quality);x["observations"]=[quality["observations"][0]];tests["missing_external_N2"]="N1_N2_BOUNDARY_INCOMPLETE" in codes(qq=x)
 +for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
 +print(f"N1_N2_QUALITY_CASES={sum(tests.values())}/{len(tests)}")
 +sys.exit(0 if all(tests.values()) else 1)
 
-diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality_receipt.py
---- a/validators/validate_quality_receipt.py
-+++ b/validators/validate_quality_receipt.py
-@@ -62,6 +62,7 @@
-     candidate: Any,
-     evidence_manifest: Any,
--    semantic_result: Any,
--) -> dict[str, Any]:
-+    semantic_result: Any,
-+    quality_readback: Any = None,
-+) -> dict[str, Any]:
-     errors: list[dict[str, str]] = []
- 
-
-diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
---- a/validators/materialize_quality_receipt.py
-+++ b/validators/materialize_quality_receipt.py
-@@ -61,6 +61,7 @@
-     producer_execution_id: str | None = None,
-     reviewer_execution_id: str | None = None,
--    producer_execution_receipt_ref: str | None = None,
--) -> dict[str, Any]:
-+    producer_execution_receipt_ref: str | None = None,
-+    quality_readback: Any = None,
-+) -> dict[str, Any]:
-     if not isinstance(candidate, dict):
-         raise QualityReceiptMaterializationError("CANDIDATE_NOT_OBJECT")
-
-diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
---- a/validators/materialize_quality_receipt.py
-+++ b/validators/materialize_quality_receipt.py
-@@ -160,7 +160,7 @@
-     }
- 
--    validation = quality_validator.validate_quality_receipt(
--        receipt, candidate, evidence_manifest, semantic_result
--    )
-+    validation = quality_validator.validate_quality_receipt(
-+        receipt, candidate, evidence_manifest, semantic_result, quality_readback=quality_readback
-+    )
-     if validation.get("status") != "PASS":
-         raise QualityReceiptMaterializationError(
