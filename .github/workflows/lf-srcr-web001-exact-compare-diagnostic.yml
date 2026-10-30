@@ -37,7 +37,7 @@ jobs:
       - name: Run trusted Group1 Group2 exact comparison, do not claim promotion
         shell: bash
         run: |
-          set -uo pipefail
+          set +e
           python "$RUNNER_TEMP/trusted/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py" systemic_root_cause_repair_lf "$RUNNER_TEMP/trusted" "$RUNNER_TEMP/base/profiles/systemic_root_cause_repair_lf" "$RUNNER_TEMP/candidate/profiles/systemic_root_cause_repair_lf" > "$RUNNER_TEMP/exact-proof.json"
           rc=$?
           cat "$RUNNER_TEMP/exact-proof.json"
