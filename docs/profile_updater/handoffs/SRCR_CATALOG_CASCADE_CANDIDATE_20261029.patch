@@ -139,7 +139,7 @@ diff -ruN a/evals/v08_gap_cascade_cases.py b/evals/v08_gap_cascade_cases.py
 diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cases.py
 --- a/evals/v09_exhausted_search_cases.py	1969-12-31 19:00:00.000000000 -0500
 +++ b/evals/v09_exhausted_search_cases.py	2026-10-29 23:28:30.749303153 -0500
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,42 @@
 +import sys, pathlib
 +sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "validators"))
 +from terminality_gate_v1 import decide_terminal
@@ -156,13 +156,36 @@ diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cas
 + "CLOSED_CASE_UNAFFECTED": decide_terminal({"repair_required":False,"no_repair_positive_evidence":True})=={"status":"NO_REPAIR_REQUIRED","reasons":[]},
 + "PIPELINE_BLOCK_UNAFFECTED": decide_terminal({"pipeline_blocking_codes":["Z"]})["status"]=="BLOCK_PIPELINE",
 +}
++from producer_depth import _catalog_receipt_errors
++import copy, hashlib, json
++def _error(code, path): return {"code": code, "path": path}
++def _receipt(level, source, count, rows):
++    d = {"source":source,"query":f"SELECT codigo_activo FROM public.{source} WHERE codigo_activo = $1","result_kind":"ROWS" if count else "EMPTY","row_count":count,"sample_records":rows,"observed_at":"2026-10-30T12:00:00Z","snapshot":"SOURCE_FIRST_READBACK"}
++    ev = {"source_locator":d["query"],"digest":"sha256:"+hashlib.sha256(json.dumps(d,sort_keys=True,ensure_ascii=False,separators=(",",":")).encode()).hexdigest()}
++    return {"level":level,"datum_id":"U-1","evidence_id":"EV-"+level,"readback":d},ev
++q1,e1=_receipt("N1","v_lf_fuente_operativa_busqueda",1,[{"codigo_activo":"A"}])
++q2,e2=_receipt("N2","lf_activos",1,[{"codigo_activo":"A"}])
++good={"catalog_queries":[q1,q2]}
++ev={"EV-N1":e1,"EV-N2":e2}
++def _codes(c,e=ev): return {x["code"] for x in _catalog_receipt_errors(c,e,"U-1","$.cascade",_error)}
++checks.update({
++ "N1_N2_RECEIPT_VERIFIED":not _codes(good),
++ "MISSING_N2_REJECTED":"GAP_CATALOG_N1_N2_MISSING" in _codes({"catalog_queries":[q1]}),
++ "FALSE_VALUE_REJECTED":"GAP_CATALOG_READBACK_DIGEST_MISMATCH" in _codes({"catalog_queries":[dict(q1,readback=dict(q1["readback"],sample_records=[{"codigo_activo":"FALSE"}])),q2]}),
++ "OTHER_DATUM_REJECTED":"GAP_CATALOG_DATUM_MISMATCH" in _codes({"catalog_queries":[dict(q1,datum_id="U-OTHER"),q2]}),
++ "EVIDENCE_REUSE_REJECTED":"GAP_CATALOG_EVIDENCE_REUSED" in _codes({"catalog_queries":[q1,dict(q2,evidence_id="EV-N1")]}),
++ "FALSE_EMPTY_REJECTED":"GAP_CATALOG_RESULT_INCONSISTENT" in _codes({"catalog_queries":[dict(q1,readback=dict(q1["readback"],result_kind="EMPTY")),q2]}),
++ "MISSING_PROOF_REJECTED":"GAP_CATALOG_MANIFEST_EVIDENCE_MISSING" in _codes(good,{"EV-N2":e2}),
++ "NON_SELECT_REJECTED":"GAP_CATALOG_NON_SELECT_QUERY" in _codes({"catalog_queries":[dict(q1,readback=dict(q1["readback"],query="DELETE FROM lf_activos")),q2]}),
++})
++
 +for k,v in checks.items(): print("ok  " if v else "FAIL", k)
 +print(f"EXHAUSTED_SEARCH_CASES={sum(checks.values())}/{len(checks)}")
 +sys.exit(0 if all(checks.values()) else 1)
 diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 --- a/validators/producer_depth.py	2026-10-29 23:28:30.745144484 -0500
 +++ b/validators/producer_depth.py	2026-10-29 23:28:30.750126050 -0500
-@@ -108,9 +108,20 @@
+@@ -108,9 +108,22 @@
                  errors.append(_err("GAP_CASCADE_NOTHING_TRIED", f"{path}.cascade.classes_tried"))
              if (tried | nosrc) != ALL or (tried & nosrc):
                  errors.append(_err("GAP_CASCADE_NOT_EXHAUSTED", f"{path}.cascade", "Every evidence class must be tried or declared without a source."))
@@ -183,6 +206,8 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 +                if got != ALL:
 +                    errors.append(_err("GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD", f"{path}.cascade.search_record",
 +                                       "Every class was searched: state what was explored. List, for each of the five classes, the exact source, locator and result (NO_SOURCE_ACCESSIBLE where applicable), then close saying that everything reachable was explored and no evidence was found."))
++                else:
++                    errors.extend(_catalog_receipt_errors(casc, manifest, uid, f"{path}.cascade", _err))
          attempts = row.get("attempted_sources")
          if not isinstance(attempts, list) or not attempts:
              errors.append(_err(
@@ -250,3 +275,63 @@ diff -ruN a/judges/systemic_root_cause_semantic_judge.md b/judges/systemic_root_
  
  
  ### T5 — V0.6 physical edge closure
+
+diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
+--- a/validators/producer_depth.py
++++ b/validators/producer_depth.py
+@@ -76,4 +76,55 @@
+ 
+ 
++def _catalog_receipt_errors(casc, manifest, uid, path, err):
++    """Require actual N1/N2 source-first readback, not catalog labels."""
++    import hashlib
++    import json
++    errors = []
++    entries = casc.get("catalog_queries")
++    if not isinstance(entries, list):
++        return [err("GAP_CATALOG_QUERIES_REQUIRED", f"{path}.catalog_queries")]
++    found = {}
++    for i, entry in enumerate(entries):
++        at = f"{path}.catalog_queries[{i}]"
++        if not isinstance(entry, dict):
++            errors.append(err("GAP_CATALOG_QUERY_INVALID", at))
++            continue
++        level = entry.get("level")
++        if level not in ("N1", "N2") or level in found:
++            errors.append(err("GAP_CATALOG_LEVEL_INVALID_OR_DUPLICATE", at))
++            continue
++        found[level] = entry
++        if entry.get("datum_id") != uid:
++            errors.append(err("GAP_CATALOG_DATUM_MISMATCH", at))
++        data = entry.get("readback")
++        if not isinstance(data, dict) or any(k not in data for k in ("source", "query", "result_kind", "row_count", "sample_records", "observed_at", "snapshot")):
++            errors.append(err("GAP_CATALOG_READBACK_INCOMPLETE", at))
++            continue
++        source, query, kind, count, rows = (data.get(k) for k in ("source", "query", "result_kind", "row_count", "sample_records"))
++        if not all(isinstance(data.get(k), str) and data[k].strip() for k in ("source", "query", "observed_at", "snapshot")):
++            errors.append(err("GAP_CATALOG_READBACK_INCOMPLETE", at))
++        if not isinstance(count, int) or isinstance(count, bool) or count < 0 or not isinstance(rows, list) or any(not isinstance(row, dict) or not row for row in rows):
++            errors.append(err("GAP_CATALOG_ROW_SHAPE_INVALID", at))
++        elif not ((kind == "EMPTY" and count == 0 and not rows) or (kind == "ROWS" and count > 0 and 0 < len(rows) <= count)):
++            errors.append(err("GAP_CATALOG_RESULT_INCONSISTENT", at))
++        if not isinstance(query, str) or not query.lstrip().lower().startswith(("select ", "with ")):
++            errors.append(err("GAP_CATALOG_NON_SELECT_QUERY", at))
++        if not isinstance(source, str) or (level == "N1" and not source.startswith("v_")) or (level == "N2" and not source.startswith("lf_")):
++            errors.append(err("GAP_CATALOG_SOURCE_LEVEL_MISMATCH", at))
++        eid = entry.get("evidence_id")
++        if not isinstance(eid, str) or not isinstance(manifest, dict) or eid not in manifest:
++            errors.append(err("GAP_CATALOG_MANIFEST_EVIDENCE_MISSING", at))
++            continue
++        proof = manifest[eid]
++        digest = "sha256:" + hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
++        if proof.get("digest") != digest or proof.get("source_locator") != query:
++            errors.append(err("GAP_CATALOG_READBACK_DIGEST_MISMATCH", at))
++    if not {"N1", "N2"}.issubset(found):
++        errors.append(err("GAP_CATALOG_N1_N2_MISSING", f"{path}.catalog_queries"))
++    if len({v.get("evidence_id") for v in found.values()}) != len(found):
++        errors.append(err("GAP_CATALOG_EVIDENCE_REUSED", f"{path}.catalog_queries"))
++    return errors
++
++
+ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
+     if not applies(payload):
