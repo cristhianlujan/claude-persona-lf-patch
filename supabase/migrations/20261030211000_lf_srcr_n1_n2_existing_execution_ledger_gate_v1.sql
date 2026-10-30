@@ -285,7 +285,7 @@ begin
           from jsonb_array_elements(v_item#>'{cascade,catalog_queries}') as j
          where j.value->>'level'='N2' limit 1;
         v_asset_code:=substring(v_q#>>'{readback,query}'
-          from 'WHERE codigo_activo=''([A-Z0-9][A-Z0-9_-]{1,127})'');
+          from $rx$WHERE codigo_activo='([A-Z0-9][A-Z0-9_-]{1,127})'$rx$);
         if v_asset_code is null then
           raise exception 'BLOCK_SRCR_N2_NOT_CANONICAL_ASSET_LOOKUP';
         end if;
