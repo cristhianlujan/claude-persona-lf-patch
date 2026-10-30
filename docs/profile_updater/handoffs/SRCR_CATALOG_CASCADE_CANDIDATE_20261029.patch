@@ -139,7 +139,7 @@ diff -ruN a/evals/v08_gap_cascade_cases.py b/evals/v08_gap_cascade_cases.py
 diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cases.py
 --- a/evals/v09_exhausted_search_cases.py	1969-12-31 19:00:00.000000000 -0500
 +++ b/evals/v09_exhausted_search_cases.py	2026-10-29 23:28:30.749303153 -0500
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,53 @@
 +import sys, pathlib
 +sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "validators"))
 +from terminality_gate_v1 import decide_terminal
@@ -156,6 +156,17 @@ diff -ruN a/evals/v09_exhausted_search_cases.py b/evals/v09_exhausted_search_cas
 + "CLOSED_CASE_UNAFFECTED": decide_terminal({"repair_required":False,"no_repair_positive_evidence":True})=={"status":"NO_REPAIR_REQUIRED","reasons":[]},
 + "PIPELINE_BLOCK_UNAFFECTED": decide_terminal({"pipeline_blocking_codes":["Z"]})["status"]=="BLOCK_PIPELINE",
 +}
++found = [{"datum": "X", "classes": [{**r, "result": "ROWS"} if r["class"] == "DIRECT" else r for r in full[0]["classes"]]}]
++wrong_datum = [{"datum": "OTHER", "classes": full[0]["classes"]}]
++duplicate = [{"datum": "X", "classes": [full[0]["classes"][0]] * 5}]
++two_open = item + [{"code": "Y", "status": "GAP"}]
++checks.update({
++ "FOUND_ROWS_CANNOT_CLAIM_ABSENCE": decide_terminal({"material_items": item, "search_records": found}).get("evidence_state") == "SEARCH_INCOMPLETE",
++ "OTHER_DATUM_CANNOT_CLOSE": decide_terminal({"material_items": item, "search_records": wrong_datum}).get("evidence_state") == "SEARCH_INCOMPLETE",
++ "DUPLICATE_CLASS_CANNOT_CLOSE": decide_terminal({"material_items": item, "search_records": duplicate}).get("evidence_state") == "SEARCH_INCOMPLETE",
++ "TWO_DATUMS_REQUIRE_TWO_RECORDS": decide_terminal({"material_items": two_open, "search_records": full}).get("evidence_state") == "SEARCH_INCOMPLETE",
++})
++
 +from producer_depth import _catalog_receipt_errors
 +import copy, hashlib, json
 +def _error(code, path): return {"code": code, "path": path}
@@ -214,7 +225,7 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 diff -ruN a/validators/terminality_gate_v1.py b/validators/terminality_gate_v1.py
 --- a/validators/terminality_gate_v1.py	2026-10-29 23:28:30.745200873 -0500
 +++ b/validators/terminality_gate_v1.py	2026-10-29 23:28:30.750606819 -0500
-@@ -29,7 +29,37 @@
+@@ -29,7 +29,51 @@
  )
  
  
@@ -224,23 +235,37 @@ diff -ruN a/validators/terminality_gate_v1.py b/validators/terminality_gate_v1.p
 +    consumers keep working; the sub-state is what the closing answer reports."""
 +    if verdict.get("status") != "NEEDS_MORE_EVIDENCE":
 +        return verdict
-+    records = list(state.get("search_records") or [])
++    records = state.get("search_records")
 +    classes = {"DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"}
 +    open_items = [i for i in (state.get("material_items") or [])
 +                  if str(i.get("status") or "UNKNOWN") in OPEN_MATERIAL_STATES]
-+    if not open_items or len(records) < len(open_items):
++    ids = [i.get("code") for i in open_items if isinstance(i, dict)]
++    if (not isinstance(records, list) or not ids or
++            len(ids) != len(set(ids)) or len(records) != len(ids)):
 +        verdict["evidence_state"] = "SEARCH_INCOMPLETE"
 +        return verdict
++    found = {}
 +    for rec in records:
-+        searched = {str(c.get("class")) for c in (rec.get("classes") or [])
-+                    if c.get("source") and c.get("locator") and c.get("result")}
-+        if searched != classes:
++        if not isinstance(rec, dict) or not isinstance(rec.get("classes"), list):
 +            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
 +            return verdict
++        datum, rows = rec.get("datum"), rec["classes"]
++        if not datum or datum in found or len(rows) != len(classes):
++            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
++            return verdict
++        observed = [c.get("class") for c in rows if isinstance(c, dict)]
++        if (set(observed) != classes or len(observed) != len(classes) or
++                any(not (c.get("source") and c.get("locator") and
++                         c.get("result") in {"NO_EVIDENCE", "NO_SOURCE_ACCESSIBLE"})
++                    for c in rows)):
++            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
++            return verdict
++        found[datum] = rec
++    if set(found) != set(ids):
++        verdict["evidence_state"] = "SEARCH_INCOMPLETE"
++        return verdict
 +    verdict["evidence_state"] = "EXPLORED_NO_EVIDENCE_FOUND"
-+    verdict["explored"] = [
-+        {"datum": r.get("datum"), "classes": r.get("classes")} for r in records
-+    ]
++    verdict["explored"] = [{"datum": d, "classes": found[d]["classes"]} for d in ids]
 +    return verdict
 +
 +
