@@ -366,13 +366,13 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
 +++ b/validators/validate_semantic_judge_result.py
-@@ -12,5 +12,70 @@
+@@ -12,5 +12,109 @@
  import json
  import sys
 -from typing import Any
 +from typing import Any
 +
-+def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any) -> list[str]:
++def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any, quality_readback: Any = None) -> list[str]:
 +    """Proof-bound auditor coverage: the candidate cannot waive this gate."""
 +    import hashlib
 +    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6":
@@ -435,6 +435,45 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 +        errors.append("N1_N2_AUDIT_INCOMPLETE")
 +    if result.get("verdict") == PASS_VERDICT and result.get("n1_n2_verdict") != "PASS":
 +        errors.append("N1_N2_PASS_NOT_ISSUED")
++    # Independent tool receipts are supplied by the quality runner, not the judge.
++    if not isinstance(quality_readback, dict) or quality_readback.get("issuer") != "QUALITY_BOUNDARY":
++        return errors + ["N1_N2_BOUNDARY_READBACK_MISSING"]
++    cand_hash = hashlib.sha256(json.dumps(candidate, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
++    if quality_readback.get("candidate_sha256") != cand_hash or result.get("candidate_sha256") != cand_hash:
++        errors.append("N1_N2_BOUNDARY_CANDIDATE_MISMATCH")
++    if not isinstance(manifest, dict):
++        errors.append("N1_N2_BOUNDARY_MANIFEST_MISSING")
++    else:
++        normalized = {k: v for k, v in manifest.items() if k != "bundle_digest"}
++        manifest_hash = "sha256:" + hashlib.sha256(json.dumps(normalized, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
++        if quality_readback.get("manifest_digest") != manifest_hash:
++            errors.append("N1_N2_BOUNDARY_MANIFEST_MISMATCH")
++    independent = quality_readback.get("observations")
++    if not isinstance(independent, list):
++        return errors + ["N1_N2_BOUNDARY_OBSERVATIONS_MISSING"]
++    bound = {}
++    for row in independent:
++        if not isinstance(row, dict):
++            errors.append("N1_N2_BOUNDARY_ROW_INVALID")
++            continue
++        key = (row.get("datum_id"), row.get("level"))
++        if key in bound or key not in required:
++            errors.append("N1_N2_BOUNDARY_ROW_DUPLICATE_OR_UNEXPECTED")
++            continue
++        bound[key] = row
++        claim = next((a for a in observations if isinstance(a, dict) and (a.get("datum_id"), a.get("level")) == key), None)
++        if claim is None:
++            continue
++        if not all(isinstance(row.get(k), str) and row[k].strip() for k in ("receipt_ref", "execution_id", "observed_at", "source_locator")):
++            errors.append("N1_N2_BOUNDARY_EXECUTION_PROOF_MISSING")
++        if claim.get("independent_source_ref") != row.get("receipt_ref") or claim.get("independent_observed_at") != row.get("observed_at"):
++            errors.append("N1_N2_INDEPENDENT_RECEIPT_MISMATCH")
++        if row.get("evidence_id") != claim.get("evidence_id") or row.get("source_locator") != claim.get("source_locator"):
++            errors.append("N1_N2_BOUNDARY_PROVENANCE_MISMATCH")
++        if any(row.get(k) != claim.get(k) for k in ("result_kind", "row_count", "sample_records")):
++            errors.append("N1_N2_BOUNDARY_VALUE_MISMATCH")
++    if set(bound) != set(required):
++        errors.append("N1_N2_BOUNDARY_INCOMPLETE")
 +    return errors
  
  REQUIRED_INVARIANTS = {
@@ -445,7 +484,7 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 @@ -66,3 +66,3 @@
  
 -def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None) -> dict[str, Any]:
-+def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None) -> dict[str, Any]:
++def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None, quality_readback: Any = None) -> dict[str, Any]:
      errors: list[str] = []
 
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
@@ -458,7 +497,7 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 -        "status": "PASS" if not errors else "FAIL",
 -        "blocking_codes": sorted(set(errors)),
 -    }
-+    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest))
++    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest, quality_readback))
 +    return {
 +        "status": "PASS" if not errors else "FAIL",
 +        "blocking_codes": sorted(set(errors)),
@@ -473,7 +512,7 @@ diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality
          )
  
 -    semantic_gate = semantic_validator.evaluate(semantic_result)
-+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, quality_readback=quality_readback)
      if semantic_gate.get("status") != "PASS":
          errors.append(
 
@@ -484,7 +523,7 @@ diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_q
          raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
  
 -    semantic_gate = semantic_validator.evaluate(semantic_result)
-+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
++    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, quality_readback=quality_readback)
      if semantic_gate.get("status") != "PASS":
          raise QualityReceiptMaterializationError(
 diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate_cases.py
@@ -523,3 +562,46 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
 +print(f"N1_N2_QUALITY_CASES={sum(tests.values())}/{len(tests)}")
 +sys.exit(0 if all(tests.values()) else 1)
+
+diff -ruN a/validators/validate_quality_receipt.py b/validators/validate_quality_receipt.py
+--- a/validators/validate_quality_receipt.py
++++ b/validators/validate_quality_receipt.py
+@@ -62,6 +62,7 @@
+     candidate: Any,
+     evidence_manifest: Any,
+-    semantic_result: Any,
+-) -> dict[str, Any]:
++    semantic_result: Any,
++    quality_readback: Any = None,
++) -> dict[str, Any]:
+     errors: list[dict[str, str]] = []
+ 
+
+diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
+--- a/validators/materialize_quality_receipt.py
++++ b/validators/materialize_quality_receipt.py
+@@ -61,6 +61,7 @@
+     producer_execution_id: str | None = None,
+     reviewer_execution_id: str | None = None,
+-    producer_execution_receipt_ref: str | None = None,
+-) -> dict[str, Any]:
++    producer_execution_receipt_ref: str | None = None,
++    quality_readback: Any = None,
++) -> dict[str, Any]:
+     if not isinstance(candidate, dict):
+         raise QualityReceiptMaterializationError("CANDIDATE_NOT_OBJECT")
+
+diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_quality_receipt.py
+--- a/validators/materialize_quality_receipt.py
++++ b/validators/materialize_quality_receipt.py
+@@ -160,7 +160,7 @@
+     }
+ 
+-    validation = quality_validator.validate_quality_receipt(
+-        receipt, candidate, evidence_manifest, semantic_result
+-    )
++    validation = quality_validator.validate_quality_receipt(
++        receipt, candidate, evidence_manifest, semantic_result, quality_readback=quality_readback
++    )
+     if validation.get("status") != "PASS":
+         raise QualityReceiptMaterializationError(
