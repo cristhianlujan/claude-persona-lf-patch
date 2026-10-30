@@ -7,6 +7,7 @@
     "scripts/lf_profile_router_admit.py": "SERVICE_RUNTIME",
     "supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profiles-governance-caller-v1/caller.ts": "SUPABASE_FUNCTION",
-    "supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts": "SUPABASE_FUNCTION"
+    "supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/router_stage6_stage7_test.ts": "SUPABASE_FUNCTION"
   }
 }
