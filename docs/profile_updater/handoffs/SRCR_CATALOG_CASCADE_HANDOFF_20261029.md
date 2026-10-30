@@ -85,3 +85,26 @@ Nada escrito en la base, nada en `profiles/**`, sin changeset manifest (borrador
 - No se realizó WEB-001 ligado al árbol candidato ni comparación evolutiva por hash, ni Router/Updater/Train, ni merge.
 
 **Dictamen:** candidato mejorado y chequeado en forma aislada; calidad oficial/actualización operativa **NO_VERIFICADO**. No modificar perfil canónico, ni marcar PASS operacional, ni cerrar el PR por esta evidencia. Siguiente lote limitado: ejecución del test v10 y las suites existentes en checkout gobernado, readback del judge real y bloqueo de PASS adversarial, luego caso WEB-001.
+
+## Lote verificable: comprobante independiente N1/N2 (2026-10-30)
+
+### Hallazgo reproducido
+Se reprodujo mediante Python aislado, con transcripción de la lógica candidata anterior, que `independent_source_ref` no vacío podía ser inventado y aun así producir un dictamen válido. **No era correcto afirmar que la revisión independiente había ocurrido.**
+
+### Reparación candidata dentro del PR #3359
+- La auditoría semántica exige un cuarto input `quality_readback` distinto del candidato, manifiesto y respuesta del juez, suministrado por el ejecutor de calidad. No se recibe desde texto del reparador.
+- `quality_readback` liga `candidate_sha256` y `manifest_digest` calculados, identifica N1/N2 por `datum_id`, y presenta `receipt_ref`, `execution_id`, `source_locator`, `observed_at`, `result_kind`, `row_count` y `sample_records`.
+- El validador rechaza referencia inventada del juez, comprobante ausente, valor divergente, hash de manifiesto erróneo, candidato ajeno y falta de nivel.
+- Ambos puntos de aceptación, `materialize_quality_receipt.py` y `validate_quality_receipt.py`, pasan el argumento independiente al validador de resultado semántico. Su default `None` preserva compatibilidad histórica, pero el caso V0.6 con N1/N2 material requiere el comprobante; sin ello falla cerrado.
+- El archivo `evals/v10_n1_n2_quality_gate_cases.py` contiene **14 aserciones sintéticas** con casos adversariales de recibos de calidad. Se corrigió una línea con prefijo extra que impedía ejecutar el script.
+
+### Evidencia
+- **15/15 pruebas de Python aisladas PASS** con reconstrucción explícita de la lógica del guard y readbacks sintéticos. Incluye reproducción del falso positivo antes de corregirlo y rechazo posterior de referencia inventada.
+- **25/25 fragmentos del parche** reconstruidos y contrastados por contenido/tamaño/contexto con los archivos de GitHub en commit `173088b756d79839bb1cb7b4ba63ee53bad389bc`. 11 destinos de archivo; no es comprobación `git apply` sobre checkout completo.
+- Readback N1/N2 en Supabase ya corroborado para el perfil: vista `v_lf_fuente_operativa_busqueda` y tabla `lf_activos`, tipo físico respectivo `v`/`r`, mismos valores materiales y una fila en cada fuente.
+- GitHub head del parche tras reparación: `c2908787781a4797ce5de3d01157bcf3d67e7231` (PR todavía DRAFT).
+
+### Evidencia faltante / cierre
+**NO_VERIFICADO:** corrida Python exacta de las suites v05/v08/v09/v10 sobre checkout limpio; readback realmente producido por el runtime independiente y no por un paquete de prueba, validación del recibo de calidad en el flujo activo, ejecución operacional WEB-001 con hash nuevo, comparación evolutiva, Router/Updater/Train y eventual merge.
+
+El nombre `QUALITY_BOUNDARY` dentro de un JSON NO autentica por sí mismo al emisor. El conector/ejecutor de calidad debe suministrar este bundle fuera del canal del productor, registrando recibos de lecturas efectivas. Hasta acreditar ese transporte independiente, cualquier PASS N1/N2 real debe permanecer BLOQUEADO/NO_VERIFICADO. No prometer que la existencia de la firma del método ya equivale a cableado del ejecutor.
