@@ -387,3 +387,26 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 **No repetir:** las anteriores 17 etapas completas y sus tests S26 / WEB-001 permanecen válidas para el alcance anterior. El nuevo conjunto de casos y la llamada fuente-real son exclusivamente delta. Mantener el mismo actualizador, sus puntos de decisión, sus llamadas y enforcement, con ubicación distinta según cada perfil.
 
 **Siguiente acción concreta:** ejecutar solo los casos nuevos junto con readback independiente N1/N2 en el paso que corresponde a SRCR, confirmar que una referencia inventada no puede superar el juicio, y luego permitir que el actualizador retome únicamente el delta bajo sus controles actuales. Sin cambios en runtime oficial ni Supabase efectuados.
+
+## Lote de enlace y pruebas nuevas — 2026-10-30
+
+### Hallazgos comprobados, sin reiniciar procesos ni repetir S26/WEB-001
+- El mismo runtime gobernado de ejecución SRCR `EXEC-PROFILE-GATE2-B6070E56727C1FB64437B850` permanece `IN_PROGRESS` con sus primeros nueve pasos registrados y `output_validate` (60) PASS. El siguiente gate natural es la revisión independiente ya existente, no abrir Router nuevo ni reejecutar el Updater.
+- La salida de esa ejecución tiene refs de GitHub y evento Supabase, pero no un par de recibos N1/N2 acreditados en el ledger con el identificador de la misma ejecución; la consulta real del ledger devolvió **0** recibos coincidentes. El estado es `NO_VERIFICADO`, no `NO_EVIDENCE_FOUND`.
+- Ejecutadas en Python local siete comprobaciones nuevas **sobre una reconstrucción del validador candidato**: 6/7 dieron el resultado deseado; una reprodujo el defecto de **falso PASS si un callback sintético devuelve un objeto completo idéntico**. No declarar suite 7/7 ni PASS independiente. El test positivo sintético no constituye consulta real.
+- Lectura independiente de diagnóstico, con SELECT de solo lectura sobre las fuentes actualmente declaradas: N1 `public.v_lf_fuente_operativa_busqueda`, N2 `public.lf_activos`, filtrando por `PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`: 1 registro en cada fuente; campos de identidad, nombre, estado documental/operativo y fecha coinciden; ambos readbacks SHA256 `5c76f435dfa66a789832e19a19facf3a2e4ef8b97c0791f42a249425341fd9f3`. Esta lectura **no quedó automáticamente anclada como recibo gobernado**, por lo que no autoriza el PASS del juez.
+- El catálogo de resolutores existente tiene el proveedor Supabase con lectura SQL y digest del proveedor en estado ACTIVO/TRUSTED_PROVIDER_BOUND. El ledger `private.lf_evidence_ledger_v1` y su anclaje gobernado existen; no es necesario crear otra tabla, ejecución paralela ni proceso de calidad.
+
+### Ajustes candidatos en el mismo flujo
+- El chequeo N1/N2 deja de depender de un número congelado de versión del paquete; se dispara por la presencia de incertidumbres materiales en la salida. Se incorporó prueba negativa para versiones posteriores (sin salto silencioso de control).
+- Se añadió al parche del perfil el enlace de pruebas de búsqueda, exhaustividad y revisión N1/N2 al validador **ya existente** del paquete. Antes figuraban solo en el manifiesto y no se ejecutaban automáticamente. Así se evita una prueba decorativa.
+- Un borrador adicional `PROFILE_EXISTING_SEMANTIC_SOURCE_LEDGER_GUARD_CANDIDATE_20261030.sql` preserva el validador vivo y agrega dentro de la **misma revisión independiente** una comparación contra recibos `VERIFIED` del ledger de la misma ejecución, resolutor activo, dos niveles y datos/digest exactos. Sin recibo oficial o con datos desiguales: bloquear. Este SQL es **candidato en docs, NO materializado ni desplegado**.
+- Validación estática del parche del perfil después de las correcciones: **24/24 fragmentos**, **13 archivos** sin conflicto contra `main`; esto verifica aplicabilidad, NO ejecución real de la suite ni cierre operacional.
+
+### Condiciones explícitas para cierre de este delta
+1. Confirmar readback de las fuentes N1/N2 emitido por el actor confiable del mismo proceso, no por la salida del modelo ni por el callback de prueba. La existencia de datos de origen se ha verificado solo en consulta de diagnóstico.
+2. Que el guard existente compruebe el recibo oficial y rechace caso sin recibo/falso completo/consulta a otra versión; preparar cambio y materialización solo a través del Profile Updater ya autorizado y su train existente.
+3. Ejecutar exclusivamente las pruebas nuevas de búsqueda y juicio, luego validar que el siguiente paso de la ejecución vigente no pueda registrar PASS con el recibo faltante; no repetir baterías históricas aprobadas.
+4. Mantener las evaluaciones del sistema operativo y el juez semántico que ya existían, sin trasladar arbitrariamente el paso del perfil reparador a otros perfiles.
+
+**Estado:** PR de candidatos DRAFT. Validación de fuente real diagnóstico PASS; parche aplicable PASS; evidencia independiente acreditada en ejecución = 0; prueba de falsificación = FAIL hasta instalar control del ledger. NO cerrar, no fusionar, no promover.
