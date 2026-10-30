@@ -1,0 +1,36 @@
+name: LF SRCR Paired WEB001 Functional Proof
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'docs/profile_updater/handoffs/WEB001_PAIRED_CURRENT_VS_EVOLVED_20261030.py'
+      - '.github/workflows/lf-srcr-paired-web001-temporary.yml'
+permissions:
+  contents: read
+jobs:
+  paired-web001:
+    if: github.event.pull_request.number == 3359
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract exact current profile without changing candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin 52c0f68ad243d2a98f959db8f3a935179b5681aa
+          mkdir -p /tmp/lf-profile-current
+          git archive 52c0f68ad243d2a98f959db8f3a935179b5681aa profiles/systemic_root_cause_repair_lf | tar -x -C /tmp/lf-profile-current
+          test -s /tmp/lf-profile-current/profiles/systemic_root_cause_repair_lf/validators/producer_depth.py
+      - name: Execute same WEB001 case against both exact profile validators
+        run: |
+          python docs/profile_updater/handoffs/WEB001_PAIRED_CURRENT_VS_EVOLVED_20261030.py /tmp/lf-profile-current/profiles/systemic_root_cause_repair_lf profiles/systemic_root_cause_repair_lf
