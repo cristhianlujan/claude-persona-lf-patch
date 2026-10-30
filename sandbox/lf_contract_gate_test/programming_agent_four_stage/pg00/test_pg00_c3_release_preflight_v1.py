@@ -106,6 +106,39 @@ class PreflightTests(unittest.TestCase):
         result = self.run_check(tamper)
         self.assertIn("RELEASE_RULES_CHANGED", result["reason_codes"])
 
+    def test_release_extra_null_key_is_structural_drift(self):
+        result = self.run_check(lambda c: c["release_catalog"].update(evil=None))
+        self.assertIn("UNAUTHORIZED_RELEASE_TRANSFORMATION", result["reason_codes"])
+
+    def test_release_missing_null_field_is_structural_drift(self):
+        c, raw = fixture()
+        source = json.loads(raw)
+        source["optional_null"] = None
+        raw = (json.dumps(source, sort_keys=True) + "\n").encode()
+        c["source_file_sha256"] = hashlib.sha256(raw).hexdigest()
+        c["release_catalog"] = {**source, "status": "APROBADO"}
+        del c["release_catalog"]["optional_null"]
+        result = mod.inspect(c, raw, expected_commit=COMMIT)
+        self.assertIn("UNAUTHORIZED_RELEASE_TRANSFORMATION", result["reason_codes"])
+
+    def test_duplicate_source_keys_rejected_at_every_depth(self):
+        c, raw = fixture()
+        for altered in (
+            raw.replace(b'"catalog_version":', b'"catalog_version":"9.9.9", "catalog_version":'),
+            raw.replace(b'"id":', b'"id":"INJECTED", "id":'),
+        ):
+            with self.subTest(altered=altered[:80]):
+                c["source_file_sha256"] = hashlib.sha256(altered).hexdigest()
+                result = mod.inspect(c, altered, expected_commit=COMMIT)
+                self.assertEqual(result["verdict"], "BLOCKED")
+                self.assertEqual(result["reason_codes"], ["INVALID_SOURCE_JSON"])
+
+    def test_duplicate_candidate_keys_rejected_by_strict_parser(self):
+        with self.assertRaisesRegex(ValueError, "DUPLICATE_JSON_KEY"):
+            mod.strict_json('{"source_repo":"evil/repo","source_repo":"paulozterra/lf-programming-sandbox"}')
+        with self.assertRaisesRegex(ValueError, "DUPLICATE_JSON_KEY"):
+            mod.strict_json('{"evidence":{"review":false,"review":true}}')
+
     def test_invalid_json(self):
         self.assertIn("INVALID_SOURCE_JSON",
                       self.run_check(source_edit=lambda b: b"invalid json")["reason_codes"])
