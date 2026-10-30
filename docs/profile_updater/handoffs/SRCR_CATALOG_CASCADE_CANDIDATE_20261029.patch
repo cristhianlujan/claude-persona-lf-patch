@@ -566,7 +566,7 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +tests["missing_quality_boundary_rejected"]="N1_N2_BOUNDARY_READBACK_MISSING" in codes(qq=None)
 +x=copy.deepcopy(quality);x["manifest_digest"]="sha256:bogus";tests["wrong_manifest_binding"]="N1_N2_BOUNDARY_MANIFEST_MISMATCH" in codes(qq=x)
 +x=copy.deepcopy(quality);x["observations"]=[quality["observations"][0]];tests["missing_external_N2"]="N1_N2_BOUNDARY_INCOMPLETE" in codes(qq=x)
-++for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
++for k,v in tests.items(): print(("PASS " if v else "FAIL ")+k)
 +print(f"N1_N2_QUALITY_CASES={sum(tests.values())}/{len(tests)}")
 +sys.exit(0 if all(tests.values()) else 1)
 
