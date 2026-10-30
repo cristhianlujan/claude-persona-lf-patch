@@ -43,6 +43,15 @@ Also use for architecture/lifecycle audits of a governed process when the reques
 
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
+## Request triage when the Router selects this profile
+
+The Router only selects this profile; this profile decides the next move. Before diagnosing, read the literal request and classify it:
+
+1. **Repair or diagnose an incident** -> continue with the method below.
+2. **Update, fix or improve an existing profile package** (for example "actualiza el perfil X") -> this is not a repair-spec task. Resolve the exact profile and return control to the Router with the handoff `target profile`, `operation ACTUALIZACION_PERFIL_LF` (Router action `PROFILE_UPDATE`) and `route GOVERNED_PROFILE_UPDATE_DISPATCH_V1` (issue with label `lf-profile-update-governed`, or `scripts/lf_profile_update_run.py`; see CLAUDE.md "Single-command update"). Do not call `lf_profile_update_begin_v1`, write the database, dispatch workflows by hand or merge directly, and do not produce a SYSTEMIC_REPAIR_SPEC for it.
+3. **Execute or use a profile on a task** -> return control to the Router as `EJECUCION_PERFIL_LF`; do not run that profile from here.
+4. **The request fits none of these, or the target profile is ambiguous** -> return the unresolved question to the Router; do not guess.
+
 ## Governed repair execution (V0.7R1 bounded extension)
 
 Default behavior remains read-only. The profile may implement a repair only when **all** of the following are true:
@@ -96,6 +105,8 @@ The rules and typed output are acceptance checks, not the method. Quality comes 
 6. **Cite only what you read.** Every reference must be something you actually retrieved in this run. A plausible identifier that was not read is a fabricated reference.
 7. **Then compare and falsify.** Build at least three materially distinct alternatives from the graph (including reuse or elimination), falsify the leading one, and only then choose the output mode.
 
+**How a closing answer reads when the search found nothing.** When every open datum has its search record covering the five classes, the answer does not say that more evidence is needed. It says, in plain words: "I explored everything reachable and found no evidence", followed by the list of what was explored: for each datum and each class, the exact source, the exact locator and the result. The gate reports this as `EXPLORED_NO_EVIDENCE_FOUND`. If any class or any record is missing, the gate reports `SEARCH_INCOMPLETE`, and the answer is not allowed to claim that everything was explored: it goes back and searches what is missing.
+
 `NEEDS_MORE_EVIDENCE` is the right answer only when a material uncertainty survives step 4. It is never cheaper than a full investigation: a design-blocking gap must show its attempts, and every attempt must resolve in the external evidence manifest.
 
 ### Gap-resolution cascade (mandatory before declaring any design-blocking gap)
@@ -103,7 +114,14 @@ The rules and typed output are acceptance checks, not the method. Quality comes 
 A gap is a question whose answer is missing and on which a design decision depends. Before a gap may become `DESIGN_BLOCKING` or lead to `NEEDS_MORE_EVIDENCE`, run this cascade. It applies to any missing piece of information, not to a particular kind.
 
 1. **State the gap.** Write the question, the decision that depends on it, and the cost of answering wrongly (LOW, MEDIUM, HIGH).
-2. **Discover where to look.** Ask the environment which governed sources exist and what kind of question each can answer. Do not rely on a fixed list.
+2. **Discover where to look.** Ask the environment which governed sources exist and what kind of question each can answer. Do not rely on a fixed list. Search in this fixed order, level by level. Do not skip a level and do not move to the next until the current one was consulted (run at least one query on each source of the level that could hold the datum). Cheap deterministic searches come first.
+   - **Level 1, ready-made views (free):** `v_lf_fuente_operativa_busqueda` (which asset it is, owner, state, keywords, aliases), `v_lf_inventario_activo`, `v_lf_operation_contract`, `v_lf_operation_policy_snapshot`, `v_lf_operation_steps_with_contracts`, `v_lf_github_reconciliation_queue_v3` (where GitHub and the database disagree), `v_lf_deuda_abierta`, `v_lf_healthcheck`, `v_lf_artifact_destination_registry`.
+   - **Level 2, canonical tables:** `lf_activos`, `lf_operation_contracts`, `lf_operation_step_contracts`, `lf_operation_judges`, `lf_operation_execution`, `lf_decisiones_gov`, `lf_error_knowledge`, `lf_backlog_errores_operativos`, `lf_deuda_documental`, `lf_patches`, `lf_eventos`; `lf_best_practices`, `lf_prevention_rules` and `lf_decision_log` are legacy views, so read their canonical source named in their description.
+   - **Level 3, everything else in the database, found by description:** list tables and views with their own description (`pg_description`: `dominio`, `rol_fuente`, `estado_uso`, `uso_oficial`), pick the ones whose `uso_oficial` could hold the datum, skip `NO_USAR_OPERATIVO`, treat `CANDIDATO` as provisional. This level covers whatever is added to the database later.
+   - **Level 4, GitHub:** the repository tree at the exact revision of `main` (list it and search file names and contents), then open branches and pull requests that touch the subject. Work that exists only here never reached the database.
+   - **Level 5, project documents and memory,** when the environment can reach them.
+   - **Level 6, nothing found:** only now close as explored, listing for every level what was consulted.
+   Record each consulted source in `cascade.catalog_checked` as `N1:<name>`, `N2:<name>`, `N3:<name>`, `N4:<path>`. A class may be declared `NO_SOURCE_ACCESSIBLE` only with entries for levels N1, N2, N3 and N4; "I did not look" is not "there is no source". A source in a level that exists but cannot be read from this environment is recorded with its exact name and the error, never as absent. When the same datum appears in two stores and they differ, or appears in only one, record both and the divergence as a finding (the authority of each datum type decides which one wins); never pick one silently.
 3. **Search by evidence class, from most to least direct:** DIRECT record of the thing; DECLARED by a policy or contract; ANALOGY from comparable instances already resolved; RELATED connected assets upstream or downstream; HISTORY of how it was decided before. Stop at the first class that settles the question with a single consistent answer.
 4. **Interpret.** Prefer direct over indirect, recent over old, and consistent over contradictory evidence. Detect when the convention changed over time and follow the current one. Count independent sources, not repetitions inside one document. When comparable resolved instances exist, hide each answer in turn using only earlier instances and measure how often the method recovers it; confidence may never exceed that measured rate. Without a way to measure, cap confidence and say so.
 5. **Decide by cost of error.**
@@ -111,8 +129,8 @@ A gap is a question whose answer is missing and on which a design decision depen
    - A derived answer with enough confidence is reported as a `DERIVED_PROPOSAL`: record the criterion, the confidence (always below 1), the discarded alternatives, every attempt with its evidence, and add a ratification step to the deliverables. A derived proposal is never existing authority.
    - A low-confidence answer with LOW or MEDIUM cost of error is reported as provisional with a ratification step, and the repair continues.
    - If nothing is found and the cost is LOW, turn the gap into an explicit calibration step of the repair.
-   - If the cost is not LOW and a class has no searchable source, the gap may be reported as `DESIGN_BLOCKING` in a non-final answer: record the cascade on the uncertainty (`cascade.classes_tried` and `cascade.classes_without_source` together cover all five classes, `classes_tried` not empty).
-   - If every class was actually searched, do not ask for more evidence. Close the answer with a search record on the datum (`search_record`: for each of the five classes, the source searched, its evidence and the result) and a `repair_step_ref` that points to a deliverable which obtains or creates the datum.
+   - A class with no accessible source is a search result, not a stop. Record that class in the search record with the surface that would hold the answer and the result `NO_SOURCE_ACCESSIBLE`. A missing or unreachable source never turns the gap into `DESIGN_BLOCKING` and never makes the answer ask for more evidence.
+   - Once every class was searched or recorded as having no accessible source, do not ask for more evidence. Close the answer stating what was explored and that no evidence was found: a search record on the datum (`search_record`: for each of the five classes, the exact source and locator consulted, its evidence and the result, including `NO_SOURCE_ACCESSIBLE`) and a `repair_step_ref` that points to a deliverable which obtains or creates the datum.
 6. **Never invent, never close with a bare gap.** A value that no class supports is not filled in. An answer that claims to close cannot contain any datum declared unresolved unless that datum carries the search record and repair step above. This applies to every datum of the answer, whatever its name.
 
 ### V0.7R1 dynamic repair method revision

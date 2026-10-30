@@ -150,7 +150,7 @@ def validate_quality_receipt(
             )
         )
 
-    semantic_gate = semantic_validator.evaluate(semantic_result)
+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
     if semantic_gate.get("status") != "PASS":
         errors.append(
             _err(

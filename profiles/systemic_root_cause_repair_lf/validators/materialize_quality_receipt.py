@@ -69,7 +69,7 @@ def materialize_quality_receipt(
     if not isinstance(semantic_result, dict):
         raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
 
-    semantic_gate = semantic_validator.evaluate(semantic_result)
+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest)
     if semantic_gate.get("status") != "PASS":
         raise QualityReceiptMaterializationError(
             "SEMANTIC_RESULT_INVALID:"

@@ -29,7 +29,51 @@ CORE_BOOLEAN_FIELDS = (
 )
 
 
+def _with_evidence_state(verdict: dict, state: dict) -> dict:
+    """Tell apart 'nothing was searched yet' from 'everything was explored and
+    nothing was found'. The terminal status value is unchanged, so existing
+    consumers keep working; the sub-state is what the closing answer reports."""
+    if verdict.get("status") != "NEEDS_MORE_EVIDENCE":
+        return verdict
+    records = state.get("search_records")
+    classes = {"DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"}
+    open_items = [i for i in (state.get("material_items") or [])
+                  if str(i.get("status") or "UNKNOWN") in OPEN_MATERIAL_STATES]
+    ids = [i.get("code") for i in open_items if isinstance(i, dict)]
+    if (not isinstance(records, list) or not ids or
+            len(ids) != len(set(ids)) or len(records) != len(ids)):
+        verdict["evidence_state"] = "SEARCH_INCOMPLETE"
+        return verdict
+    found = {}
+    for rec in records:
+        if not isinstance(rec, dict) or not isinstance(rec.get("classes"), list):
+            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
+            return verdict
+        datum, rows = rec.get("datum"), rec["classes"]
+        if not datum or datum in found or len(rows) != len(classes):
+            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
+            return verdict
+        observed = [c.get("class") for c in rows if isinstance(c, dict)]
+        if (set(observed) != classes or len(observed) != len(classes) or
+                any(not (c.get("source") and c.get("locator") and
+                         c.get("result") in {"NO_EVIDENCE", "NO_SOURCE_ACCESSIBLE"})
+                    for c in rows)):
+            verdict["evidence_state"] = "SEARCH_INCOMPLETE"
+            return verdict
+        found[datum] = rec
+    if set(found) != set(ids):
+        verdict["evidence_state"] = "SEARCH_INCOMPLETE"
+        return verdict
+    verdict["evidence_state"] = "EXPLORED_NO_EVIDENCE_FOUND"
+    verdict["explored"] = [{"datum": d, "classes": found[d]["classes"]} for d in ids]
+    return verdict
+
+
 def decide_terminal(state: dict) -> dict:
+    return _with_evidence_state(_decide_terminal(state), state)
+
+
+def _decide_terminal(state: dict) -> dict:
     """Return a deterministic SRCR terminal verdict and blocking reasons."""
     reasons: list[str] = []
 

@@ -75,6 +75,58 @@ def _norm_locator(value: Any) -> str:
     return " ".join(value.split()) if isinstance(value, str) else ""
 
 
+def _catalog_receipt_errors(casc, manifest, uid, path, err):
+    """Require actual N1/N2 source-first readback, not catalog labels."""
+    import hashlib
+    import json
+    errors = []
+    entries = casc.get("catalog_queries")
+    if not isinstance(entries, list):
+        return [err("GAP_CATALOG_QUERIES_REQUIRED", f"{path}.catalog_queries")]
+    found = {}
+    for i, entry in enumerate(entries):
+        at = f"{path}.catalog_queries[{i}]"
+        if not isinstance(entry, dict):
+            errors.append(err("GAP_CATALOG_QUERY_INVALID", at))
+            continue
+        level = entry.get("level")
+        if level not in ("N1", "N2") or level in found:
+            errors.append(err("GAP_CATALOG_LEVEL_INVALID_OR_DUPLICATE", at))
+            continue
+        found[level] = entry
+        if entry.get("datum_id") != uid:
+            errors.append(err("GAP_CATALOG_DATUM_MISMATCH", at))
+        data = entry.get("readback")
+        if not isinstance(data, dict) or any(k not in data for k in ("source", "source_kind", "query", "result_kind", "row_count", "sample_records", "observed_at", "snapshot")):
+            errors.append(err("GAP_CATALOG_READBACK_INCOMPLETE", at))
+            continue
+        source, query, kind, count, rows = (data.get(k) for k in ("source", "query", "result_kind", "row_count", "sample_records"))
+        if not all(isinstance(data.get(k), str) and data[k].strip() for k in ("source", "query", "observed_at", "snapshot")):
+            errors.append(err("GAP_CATALOG_READBACK_INCOMPLETE", at))
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0 or not isinstance(rows, list) or any(not isinstance(row, dict) or not row for row in rows):
+            errors.append(err("GAP_CATALOG_ROW_SHAPE_INVALID", at))
+        elif not ((kind == "EMPTY" and count == 0 and not rows) or (kind == "ROWS" and count > 0 and 0 < len(rows) <= count)):
+            errors.append(err("GAP_CATALOG_RESULT_INCONSISTENT", at))
+        if not isinstance(query, str) or not query.lstrip().lower().startswith(("select ", "with ")):
+            errors.append(err("GAP_CATALOG_NON_SELECT_QUERY", at))
+        kind_expected = "VIEW" if level == "N1" else "BASE_TABLE"
+        if not isinstance(source, str) or not source.strip() or data.get("source_kind") != kind_expected:
+            errors.append(err("GAP_CATALOG_SOURCE_LEVEL_MISMATCH", at))
+        eid = entry.get("evidence_id")
+        if not isinstance(eid, str) or not isinstance(manifest, dict) or eid not in manifest:
+            errors.append(err("GAP_CATALOG_MANIFEST_EVIDENCE_MISSING", at))
+            continue
+        proof = manifest[eid]
+        digest = "sha256:" + hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+        if proof.get("digest") != digest or proof.get("source_locator") != query:
+            errors.append(err("GAP_CATALOG_READBACK_DIGEST_MISMATCH", at))
+    if not {"N1", "N2"}.issubset(found):
+        errors.append(err("GAP_CATALOG_N1_N2_MISSING", f"{path}.catalog_queries"))
+    if len({v.get("evidence_id") for v in found.values()}) != len(found):
+        errors.append(err("GAP_CATALOG_EVIDENCE_REUSED", f"{path}.catalog_queries"))
+    return errors
+
+
 def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list[dict[str, str]]:
     if not applies(payload):
         return []
@@ -108,9 +160,22 @@ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list
                 errors.append(_err("GAP_CASCADE_NOTHING_TRIED", f"{path}.cascade.classes_tried"))
             if (tried | nosrc) != ALL or (tried & nosrc):
                 errors.append(_err("GAP_CASCADE_NOT_EXHAUSTED", f"{path}.cascade", "Every evidence class must be tried or declared without a source."))
-            elif tried == ALL:
-                errors.append(_err("GAP_CASCADE_EXHAUSTED_CLOSE_WITH_SEARCH_RECORD", f"{path}.cascade",
-                                   "Every class was already searched: do not request more evidence; record what was searched and where, and close with a repair step."))
+            else:
+                cc = [str(x) for x in (casc.get("catalog_checked") or []) if _nonempty(x)] if isinstance(casc.get("catalog_checked"), list) else []
+                if nosrc and not all(any(x.startswith(lv + ":") for x in cc) for lv in ("N1", "N2", "N3", "N4")):
+                    errors.append(_err("GAP_CASCADE_NO_SOURCE_NEEDS_CATALOG", f"{path}.cascade.catalog_checked",
+                                       "A class may be declared without a source only after consulting levels N1 (ready-made views), N2 (canonical tables), N3 (other tables found by description) and N4 (GitHub). Record each as N<level>:<source>."))
+                rec = casc.get("search_record")
+                got = set()
+                if isinstance(rec, list):
+                    for c in rec:
+                        if isinstance(c, dict) and _nonempty(c.get("source")) and _nonempty(c.get("locator")) and _nonempty(c.get("result")):
+                            got.add(c.get("class"))
+                if got != ALL:
+                    errors.append(_err("GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD", f"{path}.cascade.search_record",
+                                       "Every class was searched: state what was explored. List, for each of the five classes, the exact source, locator and result (NO_SOURCE_ACCESSIBLE where applicable), then close saying that everything reachable was explored and no evidence was found."))
+                else:
+                    errors.extend(_catalog_receipt_errors(casc, manifest, uid, f"{path}.cascade", _err))
         attempts = row.get("attempted_sources")
         if not isinstance(attempts, list) or not attempts:
             errors.append(_err(
