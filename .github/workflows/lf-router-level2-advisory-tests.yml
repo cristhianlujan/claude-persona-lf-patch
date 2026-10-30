@@ -175,6 +175,18 @@ jobs:
           docker exec "$PG_CONTAINER" psql -U postgres -d postgres -At -c \
             "SELECT 'SCREEN_SELECTOR_POST_MIGRATION_MD5='||md5(pg_get_functiondef('public.lf_profile_screen_selector_semantic_prepare_v1(text,jsonb)'::regprocedure));"
 
+          docker exec "$PG_CONTAINER" createdb -U postgres selector_rollback_probe
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_pg17_fixture.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < supabase/migrations/20261030224500_lf_profile_screen_selector_full_catalog_fallback_v1.sql
+          docker exec -i "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -v ON_ERROR_STOP=1 \
+            < sandbox/lf_contract_gate_test/profile_execution_runtime/lf_screen_selector_full_catalog_rollback_20261030.sql
+          actual_md5="$(docker exec "$PG_CONTAINER" psql -U postgres -d selector_rollback_probe -At -c \
+            "SELECT md5(pg_get_functiondef('public.lf_profile_screen_selector_semantic_prepare_v1(text,jsonb)'::regprocedure));")"
+          test "$actual_md5" = '7fefd902c745d18bf469b01b3280fe63'
+          echo 'PASS_SELECTOR_EXACT_SOURCE_ROLLBACK'
+
 
   router-one-path-postgres-isolated:
     name: router-one-path-pg17-isolated-no-remote
