@@ -1,0 +1,7 @@
+{
+  "solution_ref": "router-context-v2-dead-code-20261029",
+  "paths": {
+    "supabase/migrations/20261030035500_lf_router_context_v2_dead_branch_cleanup.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/router-context-v2-dead-code-20261029.json": "CHANGESET_MANIFEST"
+  }
+}
