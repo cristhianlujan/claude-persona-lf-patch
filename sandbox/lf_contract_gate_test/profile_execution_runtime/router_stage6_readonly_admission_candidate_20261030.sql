@@ -14,23 +14,23 @@ BEGIN
   THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_STAGE6_ADMISSION_SOURCE_DRIFT';
   END IF;
-  IF to_regprocedure('public.lf_router_pipeline_begin_v1(p_request_text text)') IS NULL
-     OR md5(pg_get_functiondef('public.lf_router_pipeline_begin_v1(p_request_text text)'::regprocedure)) <> '1c4977c7f17e514cd5d32e9b7b693a00' THEN
+  IF to_regprocedure('public.lf_router_pipeline_begin_v1(text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_pipeline_begin_v1(text)'::regprocedure)) <> '1c4977c7f17e514cd5d32e9b7b693a00' THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_pipeline_begin_v1';
   END IF;
 
-  IF to_regprocedure('public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text, p_actor_execution_id text)') IS NULL
-     OR md5(pg_get_functiondef('public.lf_profile_native_bridge_begin_v1(p_stage1 jsonb, p_semantic_result jsonb, p_executor_mode text, p_actor_execution_id text)'::regprocedure)) <> '36a3bb6ea8a020c9b1f9cb94ee93b357' THEN
+  IF to_regprocedure('public.lf_profile_native_bridge_begin_v1(jsonb,jsonb,text,text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_profile_native_bridge_begin_v1(jsonb,jsonb,text,text)'::regprocedure)) <> '36a3bb6ea8a020c9b1f9cb94ee93b357' THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_profile_native_bridge_begin_v1';
   END IF;
 
-  IF to_regprocedure('public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)') IS NULL
-     OR md5(pg_get_functiondef('public.lf_router_pipeline_profile_handoff_continue_v1(p_execution_id text, p_executor_mode text)'::regprocedure)) <> '51c05f2efc1d31c304f0126c20a14e8d' THEN
+  IF to_regprocedure('public.lf_router_pipeline_profile_handoff_continue_v1(text,text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_pipeline_profile_handoff_continue_v1(text,text)'::regprocedure)) <> '51c05f2efc1d31c304f0126c20a14e8d' THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_pipeline_profile_handoff_continue_v1';
   END IF;
 
-  IF to_regprocedure('public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)') IS NULL
-     OR md5(pg_get_functiondef('public.lf_router_profile_execution_after_gate2_v1(p_request jsonb, p_result jsonb, p_channel text, p_business text, p_scope jsonb, p_executor_mode text, p_actor_execution_id text, p_github_backup_reason text)'::regprocedure)) <> '94c468133a3961cc261ea312a0d23400' THEN
+  IF to_regprocedure('public.lf_router_profile_execution_after_gate2_v1(jsonb,jsonb,text,text,jsonb,text,text,text)') IS NULL
+     OR md5(pg_get_functiondef('public.lf_router_profile_execution_after_gate2_v1(jsonb,jsonb,text,text,jsonb,text,text,text)'::regprocedure)) <> '94c468133a3961cc261ea312a0d23400' THEN
     RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_SOURCE_DRIFT:lf_router_profile_execution_after_gate2_v1';
   END IF;
   IF to_regprocedure('public.lf_router_profile_after_selection_v1(jsonb,jsonb)') IS NULL
