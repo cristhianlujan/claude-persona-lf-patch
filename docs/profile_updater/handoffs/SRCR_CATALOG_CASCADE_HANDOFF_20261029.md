@@ -273,3 +273,28 @@ El recorder vivo `lf_record_profile_operation_step_v1` invoca el guard de evoluc
 
 **Bloqueos verificados:** no existe aún la provisión autenticada de un mapa de pasos nativos para todos los perfiles; el caller y recorder actuales NO invocan ese validador en 40/90; falta test físico de enforcement y perfiles cruzados. Tener el script en `docs/` no lo instala, ni emite autoridad, ni permite merge. PR #3359 DRAFT sin cambios oficiales en `profiles/**`, Supabase, runtime o Edge. WEB-001 sigue sin pase operacional.
 **Siguiente checkpoint:** proyectar el grafo nativo con fuente/hash verificables a partir del exact-ref existente; luego enlazar a llamadas ya gobernadas de 40/90 y probar bajo el mismo updater, sin otra ruta.
+
+## CHECKPOINT — ENLACE EXACT-REF AL CALLER ACTUAL (CANDIDATO 2026-10-30)
+
+### Alcance ejecutado — no se cambió ningún proceso ni perfil oficial
+- Se preparó el parche `docs/profile_updater/handoffs/PROFILE_NATIVE_CALLER_WIRING_CANDIDATE_20261030.patch`: modificaciones previstas en el Edge caller **existente** `supabase/functions/run-creacion-perfil-lf/index.ts` y su helper en el mismo directorio Edge. No se cambió el código fuente vivo ni se desplegó Edge.
+- El mismo caller obtiene los `selected_methods` desde el `method_selection` ya registrado y las `native_step_adoptions` del `change_scope` (40). No acepta un grafo enviado por el productor como fuente autorizada.
+- `verified_native_placement_readback_candidate_20261030.ts` usa el lector `githubJson` existente para recuperar archivos exactos de `profiles/<slug>` desde el commit congelado. Valida perfil/ruta, encabezados ancla reales, orden, adyacencia, fuente, blob SHA, SHA256 de la sección y acciones INSERT/MODIFY/REPLACE/REMOVE. Sin adopción declarada, compara los encabezados del SKILL.md antes/después para bloquear nuevas etapas ocultas.
+- En `deterministic_validation` (90) lee el recibo previo de `change_scope` de la **misma ejecución**, el hash base y commit del `github_write` y vuelve a consultar GitHub por exact-ref. El cambio se inscribe en el recibo normal del paso. No hay segundo pipeline ni autoridad externa.
+- La inicialización existente del updater agrega un flag **congelado para ejecuciones nuevas** `native_placement_gate_version=PROFILE_NATIVE_PLACEMENT_SOURCE_READBACK_V1`, evitando reinterpretar corridas históricas.
+- Se creó el borrador `docs/profile_updater/handoffs/PROFILE_NATIVE_PLACEMENT_SUBSTANTIVE_GUARD_CANDIDATE_20261030.sql`: copia derivada del cuerpo vivo de `lf_profile_update_substantive_block_v1`, ampliando el **mismo guard** sobre 40 y 90; verifica array de adopciones, proveedor/caller, mismo perfil/commit, cobertura, predecesor y resultado fuente. **No es una migración aplicada** ni prueba de enforcement operacional. Debe materializarse bajo gobernanza; no editar migraciones históricas.
+- Se añadió `verified_native_placement_readback_candidate_20261030.test.ts` con 10 casos negativos/positivos de la lectura GitHub exact-ref. **Definidos, todavía no ejecutados** en Node/Edge del repositorio.
+
+### Readback y verificación propios
+- Se releyó `run-creacion-perfil-lf/index.ts` desde GitHub; el diff candidato de 4 hunks se aplicó por **simulación de contextos y longitud: 4/4 PASS**, incluyendo nueva fuente helper fiel al archivo candidato. No es `git apply --check` de un checkout ni deployment.
+- Se leyó con commit fijo `173088b756d79839bb1cb7b4ba63ee53bad389bc` el `SKILL.md` de `product_director_lf` y `customer_financial_ux_decisioning`: ambos contienen pares de encabezados distintos, únicos y adyacentes. Es prueba de anclas documentales reales, **no** de la validez semántica del paso ni de un enforcement físico. Sin cambios a esos perfiles.
+- El test local Python aislado de 22/22 (lote anterior) permanece válido para su validador candidato; no debe presentarse como ejecución del nuevo helper TypeScript ni del SQL.
+
+### Riesgo de pase — BLOQUEADO, no cierre prematuro
+1. El helper de GitHub certifica **fuente**, no que una llamada de enforcement al paso nuevo realmente se ejecutó. El estado fuente es `SOURCE_ONLY_NOT_ENFORCEMENT`; jamás equipararlo a habilitación operacional.
+2. No existe en todos los perfiles un mapa canónico de pasos/contratos ejecutables. Los encabezados Markdown son anclas de revisión, NO autoridad para inventar `step_id`; si no hay mapeo/autorización específica, retornar NO_VERIFICADO/BLOCKED y pasar al mismo updater para su decisión de evolución.
+3. El archivo SQL candidato requiere materialización del guard actual con preflight/readback por ruta gobernada; la función activa de Supabase sigue intacta. El Edge caller también sigue intacto.
+4. Antes de permitir PASS final a una adopción nueva, conectar un comprobante auténtico del **enforcement de ese paso y de su secuencia** en el `regression_after`/juez existente, sin inventar paso ni runner. Fuente conocida y hash correcto son condiciones necesarias, no suficientes.
+5. Prueba mínima siguiente: ejecutar los 10 casos TypeScript desde la misma revisión, comprobar dos rechazos adversariales 40/90 por el recorder tras desplegar el cambio gobernado, y verificar NO_CHANGE / un perfil distinto sin regresión. No reabrir baterías interminables.
+
+**Estado:** el PR #3359 sigue DRAFT y solo modifica archivos `docs/profile_updater/handoffs/**` (8 archivos en revisión). Cambios candidatos preparados; instalación, SQL materializado, enforcement real y corridas operacionales **NO_VERIFICADO**. Próxima ruta: ACT-0001 -> ACTUALIZACION_PERFIL_LF -> readback/test/semantic_judge/regression_after -> merge train según sus contratos actuales.
