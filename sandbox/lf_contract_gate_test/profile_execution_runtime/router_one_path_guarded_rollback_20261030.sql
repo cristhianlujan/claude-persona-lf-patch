@@ -12,7 +12,7 @@ BEGIN
     OR md5(pg_get_functiondef('public.lf_router_profile_execution_after_gate2_v1(jsonb,jsonb,text,text,jsonb,text,text,text)'::regprocedure)) <> '6bdb732d1f33053a3a9f873cec782e1c'
   THEN RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_ROLLBACK_DRIFT:lf_router_profile_execution_after_gate2_v1'; END IF;
   IF to_regprocedure('public.lf_router_profile_after_selection_v1(jsonb,jsonb)') IS NULL
-    OR md5(pg_get_functiondef('public.lf_router_profile_after_selection_v1(jsonb,jsonb)'::regprocedure)) <> '32b60a6ad5af29395af398b29c22dc46'
+    OR md5(pg_get_functiondef('public.lf_router_profile_after_selection_v1(jsonb,jsonb)'::regprocedure)) <> 'cbc53a6ae3251b5dd54d6e0303782aca'
   THEN RAISE EXCEPTION 'BLOCK_ROUTER_ONE_PATH_ROLLBACK_DRIFT:lf_router_profile_after_selection_v1'; END IF;
   IF to_regprocedure('public.lf_profile_native_bridge_begin_v1(jsonb,jsonb,text,text)') IS NULL
     OR md5(pg_get_functiondef('public.lf_profile_native_bridge_begin_v1(jsonb,jsonb,text,text)'::regprocedure)) <> '6b0c52f209d58fba01bddbba7ed88ada'
