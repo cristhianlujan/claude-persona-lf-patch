@@ -378,7 +378,7 @@ diff -ruN a/validators/producer_depth.py b/validators/producer_depth.py
 diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_semantic_judge_result.py
 --- a/validators/validate_semantic_judge_result.py
 +++ b/validators/validate_semantic_judge_result.py
-@@ -12,5 +12,91 @@
+@@ -12,5 +12,92 @@
  import json
  import sys
 -from typing import Any
@@ -387,7 +387,8 @@ diff -ruN a/validators/validate_semantic_judge_result.py b/validators/validate_s
 +def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any, trusted_reader: Any = None) -> list[str]:
 +    """N1/N2 source-value integrity; execution receipt enforced in the existing semantic_judge step."""
 +    import hashlib
-+    if not isinstance(candidate, dict) or candidate.get("profile_pack_id") != "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6":
++    # Apply by material input contract, not a frozen profile pack version.
++    if not isinstance(candidate, dict) or not isinstance(candidate.get("current_uncertainties"), list):
 +        return []
 +    required = {}
 +    errors = []
@@ -528,7 +529,7 @@ diff -ruN a/validators/materialize_quality_receipt.py b/validators/materialize_q
 diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate_cases.py
 --- /dev/null
 +++ b/evals/v10_n1_n2_quality_gate_cases.py
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,40 @@
 +#!/usr/bin/env python3
 +"""N1/N2 quality-guard regression. Isolated; no external system writes."""
 +import copy, hashlib, json, runpy, sys
@@ -561,6 +562,8 @@ diff -ruN a/evals/v10_n1_n2_quality_gate_cases.py b/evals/v10_n1_n2_quality_gate
 +x=copy.deepcopy(p);x["evidence"][0]["digest"]="sha256:wrong";tests["wrong_sha"]="N1_N2_SOURCE_DIGEST_MISMATCH" in codes(pp=x)
 +x=copy.deepcopy(j);x["n1_n2_audit"][0]["independent_source_ref"]="";tests["no_independent_readback"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(jj=x)
 +tests["missing_trusted_reader"]="N1_N2_TRUSTED_READER_NOT_WIRED" in codes(reader=None)
++evolved=copy.deepcopy(c);evolved["profile_pack_id"]="SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_7"
++tests["evolved_profile_still_requires_trusted_reader"]="N1_N2_TRUSTED_READER_NOT_WIRED" in codes(cc=evolved,reader=None)
 +tests["fabricated_independent_ref"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(reader=lambda *_: {"verified":True})
 +bad=copy.deepcopy(t);bad["EV-N2"]["sample_records"]=[{"x":99}]
 +tests["tampered_backend_values"]="N1_N2_INDEPENDENT_READBACK_NOT_PROVEN" in codes(reader=lambda eid,*_:bad.get(eid))
