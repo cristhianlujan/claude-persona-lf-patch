@@ -90,8 +90,8 @@
   },
   "causal_diagnostic": {
     "confirmed_rule": "El SKILL ordena marcar FAILED al llegar a retry_count=3 y continuar; el SQL de failed_retry usa >=3 para stage_status FAILED.",
-    "contract_discrepancy": "El paso failed_retry declara pass_condition retry_count <=3 y block_condition retry_count >3, mientras SQL convierte a FAILED en retry_count+1 >=3. Contradicción textual/ejecutable observada; la condición declarativa no coincide con la implementación.",
-    "counter_identity": "El reintento del SKILL y contrato SQL usan lf_pipeline_runs.retry_count; lf_url_queue.intento_count es otro contador y no se demuestra un vínculo biunívoco ni una política de readmisión por este solo hecho.",
+    "contract_discrepancy": "El paso failed_retry declara pass_condition retry_count <=3 y block_condition retry_count >3, mientras SQL convierte a FAILED en retry_count+1 >=3. Contradicción textual/ejecutable observada; la condición declarativa no coincide con la implementación. Falsificador exacto: retry_before=2 produce retry_after=3, SQL failed=true y contrato block_condition=false.",
+    "counter_identity": "Comparación read-only sobre 126 filas enlazadas: en 58 q.intento_count difiere de p.retry_count. No intercambiar contadores ni inferir reintento exitoso desde q.intento_count.",
     "first_bad_boundary": "CONTRACT_VS_EXECUTION_SQL_BOUNDARY_ON_FAILED_RETRY_THRESHOLD",
     "no_invented_fix": "No se alteró el paso ni los valores del contrato vivo; una reparación requiere revisar autoridad de estados terminales, consumidores de FALLIDO y comparación antes/después.",
     "current_operational_observation": "39 URLs FALLIDO, 1 PENDIENTE, última actualización de cola 2026-09-01; 176 pipeline runs, última actualización 2026-09-01. Son observaciones, no prueba de ausencia de scheduler externo.",
@@ -122,5 +122,50 @@
       "comparator_step37_pass": false,
       "merge_authorized": false
     }
+  },
+  "readonly_boundary_falsifiers": {
+    "sql_threshold": {
+      "query": "WITH c(retry_before) AS (VALUES (0),(1),(2),(3)) SELECT retry_before,retry_before+1 AS retry_after,(retry_before+1>=3) AS sql_marks_failed,(retry_before+1>3) AS declared_block_condition,((retry_before+1>=3) IS DISTINCT FROM (retry_before+1>3)) AS disagreement FROM c ORDER BY retry_before",
+      "input_to_output": [
+        {
+          "retry_before": 0,
+          "retry_after": 1,
+          "sql_marks_failed": false,
+          "declared_block_condition": false,
+          "disagreement": false
+        },
+        {
+          "retry_before": 1,
+          "retry_after": 2,
+          "sql_marks_failed": false,
+          "declared_block_condition": false,
+          "disagreement": false
+        },
+        {
+          "retry_before": 2,
+          "retry_after": 3,
+          "sql_marks_failed": true,
+          "declared_block_condition": false,
+          "disagreement": true
+        },
+        {
+          "retry_before": 3,
+          "retry_after": 4,
+          "sql_marks_failed": true,
+          "declared_block_condition": true,
+          "disagreement": false
+        }
+      ],
+      "verdict": "CONTRADICTION_AT_RETRY_AFTER_3; READONLY_BOOLEAN_BOUNDARY_TEST_NOT_DB_WRITE"
+    },
+    "counter_identity": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) FILTER (WHERE q.pipeline_run_id IS NOT NULL) linked_queue_rows,COUNT(*) FILTER (WHERE q.pipeline_run_id IS NOT NULL AND p.pipeline_run_id IS NOT NULL) linked_to_run,COUNT(*) FILTER (WHERE p.pipeline_run_id IS NOT NULL AND q.intento_count <> p.retry_count) counters_differ FROM public.lf_url_queue q LEFT JOIN public.lf_pipeline_runs p ON p.pipeline_run_id=q.pipeline_run_id",
+      "observed_at": "2026-10-30 23:50:52.807939+00",
+      "linked_queue_rows": 126,
+      "linked_to_run": 126,
+      "counters_differ": 58,
+      "verdict": "COUNTERS_NOT_IDENTICAL_ACROSS_LINKED_QUEUE_ROWS; NOT A POLICY TO EQUATE COUNTERS"
+    },
+    "runtime_execution_not_claimed": true
   }
 }
