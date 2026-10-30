@@ -41,6 +41,60 @@ class RunnerBuildersTest(unittest.TestCase):
             M["validate_body"]({"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "other"}, REPO)
 
 
+
+class GovernedIssueTransportTest(unittest.TestCase):
+    def test_transport_emits_labeled_event_after_issue_exists(self):
+        class FakeGh:
+            repo = REPO
+            dry = False
+
+            def __init__(self):
+                self.calls = []
+
+            def api(self, path, method="GET", body=None):
+                self.calls.append((path, method, body))
+                if path == "issues" and method == "POST":
+                    return {"number": 99}
+                if path == "issues/99/labels" and method == "POST":
+                    return [{"name": "lf-profile-update-governed"}]
+                if path.startswith("actions/workflows/"):
+                    return {"workflow_runs": [{"id": 100, "status": "completed"}]}
+                raise AssertionError(("unexpected API call", path, method))
+
+            def wait(self, fn, what, timeout=900, every=15):
+                # Simulate a new workflow run only after the issue is labeled.
+                self.assert_labeled = any(path == "issues/99/labels" for path, _, _ in self.calls)
+                assert self.assert_labeled, "label event missing before polling"
+                return {"id": 101, "status": "completed", "conclusion": "success"}
+
+        gh = FakeGh()
+        request = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "profile_evolution_proof",
+                   "mode": "measure", "profile_slug": "p_x",
+                   "base_sha": A, "candidate_sha": "0" * 40}
+        run_id = M["submit"](gh, "Proof", request, [])
+        self.assertEqual(run_id, 101)
+        creates = [c for c in gh.calls if c[0] == "issues" and c[1] == "POST"]
+        labels = [c for c in gh.calls if c[0] == "issues/99/labels" and c[1] == "POST"]
+        self.assertEqual(len(creates), 1)
+        self.assertNotIn("labels", creates[0][2])
+        self.assertEqual(labels, [("issues/99/labels", "POST", {"labels": ["lf-profile-update-governed"]})])
+        self.assertLess(gh.calls.index(creates[0]), gh.calls.index(labels[0]))
+
+    def test_dry_run_does_not_open_or_label_issue(self):
+        class FakeGh:
+            repo = REPO
+            dry = True
+            def api(self, *args, **kwargs):
+                raise AssertionError("dry-run attempted an API call")
+
+        request = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "profile_evolution_proof",
+                   "mode": "measure", "profile_slug": "p_x",
+                   "base_sha": A, "candidate_sha": "0" * 40}
+        log = []
+        self.assertIsNone(M["submit"](FakeGh(), "Proof", request, log))
+        self.assertEqual(len(log), 1)
+
+
 class PreflightTest(unittest.TestCase):
     CASES = {"C1": {}, "C2": {}}
 
