@@ -1,5 +1,8 @@
 // Exercise bounded profile continuation/OIDC security in the existing Edge test lane.
 import "./profile_continuation_test.ts";
+// The CP2 CI runner executes this module without a filter; include caller regressions
+// so Stage 06/07 tests are really run rather than silently reporting 0 selected.
+import "./caller_test.ts";
 import {cp2Context,executeCp2,Cp2Fault,CP2_EXECUTE_ACTION,CP2_PREFLIGHT_ACTION} from "./cp2_edge_bridge.ts";
 
 const IDS=[1,2,3,5,43,51,52,53,54,55,56,57,58];
