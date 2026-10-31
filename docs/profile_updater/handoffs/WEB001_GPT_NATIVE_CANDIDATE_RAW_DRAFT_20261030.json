@@ -169,20 +169,20 @@
           "observation_status": "OBSERVED_CLOSED",
           "disposition": "REUSE_AS_IS",
           "producer_evidence_refs": [
-            "EV-ERR"
+            "WEB001-UNC-OWNER-ACT0058-N5-HIS_N5_EKB"
           ],
           "transport_evidence_refs": [
-            "EV-ASSET"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N2-CON_N2"
           ],
           "consumer_evidence_refs": [
-            "EV-ASSET"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N2-CON_N2"
           ],
           "enforcement_evidence_refs": [
-            "EV-EKB"
+            "WEB001-UNC-OWNER-ACT0058-N5-HIS_N5_EKB"
           ],
           "effect_readback_evidence_refs": [
-            "EV-ASSET",
-            "EV-ERR"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N2-CON_N2",
+            "WEB001-UNC-OWNER-ACT0058-N5-HIS_N5_EKB"
           ],
           "gap_evidence_refs": [],
           "next_gate": null,
@@ -223,17 +223,17 @@
           "observation_status": "UNRESOLVED",
           "disposition": "DESIGN_BLOCKING",
           "producer_evidence_refs": [
-            "EV-ASSET"
+            "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2"
           ],
           "transport_evidence_refs": [],
           "consumer_evidence_refs": [],
           "enforcement_evidence_refs": [],
           "effect_readback_evidence_refs": [
-            "EV-ASSET"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N2-CON_N2"
           ],
           "gap_evidence_refs": [
-            "EV-ASSET",
-            "EV-SKILL"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N3-CON_N3",
+            "WEB001-UNC-RETRY-POLICY-OP4-N2-RET_N2"
           ],
           "next_gate": "retry re-admission of FALLIDO rows",
           "next_gate_consumer_evidence_refs": [],
@@ -241,7 +241,7 @@
             "applicability": "REQUIRED",
             "status": "UNRESOLVED",
             "evidence_refs": [
-              "EV-SKILL"
+              "WEB001-UNC-RETRY-POLICY-OP4-N4-GIT"
             ]
           },
           "post_transition_currentness": {
@@ -253,7 +253,7 @@
             "applicability": "REQUIRED",
             "status": "UNRESOLVED",
             "evidence_refs": [
-              "EV-ASSET"
+              "WEB001-UNC-RETRY-POLICY-OP4-N2-RET_N2"
             ]
           },
           "identity_consistency": {
@@ -2264,7 +2264,7 @@
     "executed": false,
     "valid": null,
     "errors": [],
-    "reason": "Candidate draft modified after canonical Python failure; rerun required."
+    "reason": "After evidence rebinding canonical Python rerun needed. Independent semantic judge not executed."
   },
   "provisional_self_check": {
     "checks": [
@@ -2398,5 +2398,12 @@
     "owner_unchanged": "UNRESOLVED",
     "unproven_edge_refs_kept_unresolved": true,
     "not_semantic_attestation": true
+  },
+  "edge_readback_reconciliation": {
+    "source": "real current external manifests",
+    "closed_edge": "E-FETCH-CLOSE references EKB fail-closed observation and DB queue states, not a new scheduler",
+    "unresolved_edge": "E-CLOSE-READMIT references zero matching pg_cron jobs and contradictory retry contract",
+    "unresolved_consumer_not_assigned": true,
+    "semantics_not_judged": true
   }
 }
