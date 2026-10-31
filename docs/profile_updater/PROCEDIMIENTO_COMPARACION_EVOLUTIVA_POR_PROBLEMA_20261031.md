@@ -79,6 +79,15 @@ La contradicción de umbral y `ACT-0058.owner_name=NULL` cuentan con readback en
 - Pruebas unitarias en `test_profile_problem_comparison.py`: ambos problemas, aplicación a caso diferente, falta de RAW, identidad de input, antecedente condicional no ejercido y no modificación del resultado `compare()`. Deben ser ejecutadas por CI antes del merge.
 - La matriz de destinos y su unión al ledger `regression_after/report_output` siguen sujetas a PR #3420 y a prueba E2E. `functional_problem_comparison` se transporta mediante el resultado `operational` del comparador **existente**, sin aprobar el pase.
 
+## Hallazgos de revisión independiente y correcciones del 2026-10-31
+
+**Referencia de revisión:** dictamen independiente de PR #3427 recibido como `BLOQUEADO_EVIDENCIA`. Conserva `2/2 MEJORA_OBSERVADA` y `0/2 MEJORA_VERIFICADA`; no aprueba merge, ejecución ni certificación.
+
+- Se calcula `conditional_controls_all` a nivel caso para **todos** los checks `if_then`, incluidos `OP03`, `OP05`, `OP06` y `OP14`. Se registra tanto el resultado PASS/FAIL como `antecedent_true`, `total_runs`, `conditional_vacuous` y `conditional_partially_vacuous` por brazo. Un PASS vacío **no aporta** ganancia semántica.
+- `raw_file_ref` se obtiene del archivo cargado por el `loader` del trusted root; se añade `raw_file_sha256` calculado sobre sus bytes reales. `raw_source_commit_sha=null` y `raw_source_commit_status=UNVERIFIED_USE_FILE_SHA256` cuando el Git SHA de la fuente no fue vinculado. **Un hash de archivo no es acreditación de commit o de ejecución nativa.**
+- La proyección acota a **4 filas de problema, 2 RAW por brazo, 12 campos por problema y 180 caracteres por vista**. Ante límites superados emite `PARTIAL_SOURCE_LOOKUP_REQUIRED`, `projection_complete=false`, contadores de elementos omitidos y `issues[]`. Las decisiones tipadas de los controles siguen considerando todas las corridas, no solamente las vistas recortadas. **Un reporte parcial no es evidencia completa para el juez independiente.**
+- El validador Grupo 2 no cambia sus decisiones `compare()` ni `unmet()`. La aprobación semántica del paso 100, el ledger 110/130, el par auténtico de ejecución y la paridad Router/directo **permanecen pendientes** y no deben inferirse a partir de estas pruebas.
+
 ## 8. Criterios de aceptación de la formalización
 
 - Informe presenta **todas las preguntas/problemas materiales**; para cada una original, evolucionado, evidencia, estado y pendiente.
