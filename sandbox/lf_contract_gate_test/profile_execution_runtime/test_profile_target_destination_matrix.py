@@ -103,7 +103,8 @@ class GovernedRunnerSidecarTest(unittest.TestCase):
         runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"),
                                 run_name="runner_test")
         base, candidate = "a" * 64, "b" * 64
-        cases = {"CASE": {"checks": [
+        cases = {"CASE": {"profile_slug": "product_director_lf", "case_id": "CASE",
+                          "checks": [
             {"id": "C1", "pointer": "/output/status", "op": "eq", "value": "OK"},
         ]}}
         runs = [
@@ -238,6 +239,76 @@ class OfficialLedgerPayloadTest(unittest.TestCase):
         for bad, proof in (({}, "456"), (self.report, "bogus")):
             with self.assertRaises(self.runner["Stop"]):
                 self.runner["build_matrix_receipt"](bad, proof)
+
+
+
+
+class TrustedCaseDestinationIntegrationTest(unittest.TestCase):
+    """Control destination is derived from trusted case metadata, never a fixed number."""
+
+    def fixture(self, slug, section, ordinal, title):
+        return {
+            "case_id": "SYNTHETIC",
+            "profile_slug": slug,
+            "checks": [{"id": "CTRL1"}],
+            "destination_bindings": {
+                "CTRL1": {"profile_slug": slug, "section_title": section,
+                          "ordered_item": ordinal, "item_title": title,
+                          "change_type": "MODIFICAR"}
+            },
+        }
+
+    def test_product_own_0_is_resolved_through_case_bindings(self):
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        root = ROOT / "profiles" / slug
+        bindings, issues = matrix.source_bound_bindings_from_cases({"SYNTHETIC": case}, slug, root)
+        self.assertEqual(issues, [])
+        destination = matrix.resolve_destination(root, bindings["SYNTHETIC:CTRL1"])
+        self.assertEqual(destination["destination_status"], "SOURCE_ANCHORED_NOT_CANONICAL")
+        self.assertEqual(destination["destination_profile_step_id"],
+                         case["destination_bindings"]["CTRL1"]["section_title"] + "::0")
+
+    def test_repair_own_4_is_resolved_without_product_number(self):
+        slug = "systemic_root_cause_repair_lf"
+        case = self.fixture(slug, "Runtime method capsule", 4,
+            "Use the smallest search strategy that can falsify the hypothesis.")
+        root = ROOT / "profiles" / slug
+        bindings, issues = matrix.source_bound_bindings_from_cases({"SYNTHETIC": case}, slug, root)
+        self.assertEqual(issues, [])
+        destination = matrix.resolve_destination(root, bindings["SYNTHETIC:CTRL1"])
+        self.assertEqual(destination["destination_profile_step_id"], "Runtime method capsule::4")
+
+    def test_cross_profile_and_unknown_control_are_reported(self):
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        case["destination_bindings"]["CTRL1"]["profile_slug"] = "systemic_root_cause_repair_lf"
+        case["destination_bindings"]["UNDECLARED"] = case["destination_bindings"]["CTRL1"]
+        bindings, issues = matrix.source_bound_bindings_from_cases(
+            {"SYNTHETIC": case}, slug, ROOT / "profiles" / slug)
+        self.assertEqual(bindings, {})
+        self.assertTrue(any("DESTINATION_PROFILE_MISMATCH" in value for value in issues))
+        self.assertTrue(any("DESTINATION_CONTROL_NOT_DECLARED" in value for value in issues))
+
+    def test_stale_sha_rejected_and_missing_bindings_remain_pending(self):
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        case["destination_bindings"]["CTRL1"]["source_sha256"] = "a" * 64
+        bindings, issues = matrix.source_bound_bindings_from_cases(
+            {"SYNTHETIC": case}, slug, ROOT / "profiles" / slug)
+        self.assertEqual(bindings, {})
+        self.assertTrue(any("DESTINATION_SOURCE_SHA_MISMATCH" in value for value in issues))
+        case.pop("destination_bindings")
+        bindings, issues = matrix.source_bound_bindings_from_cases(
+            {"SYNTHETIC": case}, slug, ROOT / "profiles" / slug)
+        self.assertEqual(bindings, {})
+        self.assertEqual(issues, [])
 
 
 class RealRecordedWeb001ReadbackTest(unittest.TestCase):
