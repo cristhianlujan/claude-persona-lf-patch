@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 from pathlib import Path, PurePosixPath
 import sys
 import urllib.error
@@ -60,7 +61,15 @@ def oidc():
 def governed_request():
     """Accept only explicit, bounded issue data or authorized dispatch inputs."""
     if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
-        return os.environ["PROFILE_EXECUTION_ID"], os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip()
+        raw_output = os.getenv("PROFILE_OUTPUT_JSON", "").strip()
+        parsed_output = json.loads(raw_output) if raw_output else None
+        if parsed_output is not None and not isinstance(parsed_output, dict):
+            raise ValueError("PROFILE_GOVERNED_DISPATCH_OUTPUT_INVALID")
+        return (
+            os.environ["PROFILE_EXECUTION_ID"],
+            os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip(),
+            parsed_output,
+        )
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
     event = json.loads(Path(event_path).read_text(encoding="utf-8"))
@@ -78,11 +87,11 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_TRIGGER_INVALID")
 
     raw = issue.get("body")
-    if not isinstance(raw, str) or len(raw) > 8192:
+    if not isinstance(raw, str) or len(raw) > 60000:
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -91,7 +100,10 @@ def governed_request():
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
-    return execution_id, json.dumps(selection) if selection is not None else ""
+    profile_output = data.get("profile_output")
+    if profile_output is not None and not isinstance(profile_output, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_OUTPUT_INVALID")
+    return execution_id, json.dumps(selection) if selection is not None else "", profile_output
 
 
 def is_direct_validator_continuation(status, response):
