@@ -1,0 +1,20 @@
+{
+  "solution_ref": "lf-router-only-check11-20261031",
+  "paths": {
+    "scripts/lf_profile_step70_consume_v3.py": "SERVICE_RUNTIME",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "scripts/lf_semantic_fail_feedback.py": "SERVICE_RUNTIME",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "tests/test_lf_profile_step70_consume_v3.py": "RUNTIME_TESTING",
+    "tests/test_lf_router_only_semantic_applicability.py": "RUNTIME_TESTING",
+    "profiles/product_director_lf/judges/product_director_semantic_judge.md": "SERVICE_RUNTIME",
+    "profiles/ui_architect/judges/ui_architect_semantic_judge.md": "SERVICE_RUNTIME",
+    "profiles/gamification_system_architect/judges/gamification_semantic_judge.md": "SERVICE_RUNTIME",
+    "profiles/product_director_lf/SKILL.md": "SERVICE_RUNTIME",
+    "profiles/ui_architect/SKILL.md": "SERVICE_RUNTIME",
+    "profiles/gamification_system_architect/SKILL.md": "SERVICE_RUNTIME",
+    "docs/profile-execution/ROUTER_ONLY_CHECK11_APPLICABILITY_V1_20261031.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-router-only-check11-20261031.json": "CHANGESET_MANIFEST"
+  }
+}
