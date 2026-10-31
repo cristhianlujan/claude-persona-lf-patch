@@ -234,6 +234,7 @@ def problem_comparison_report(
     rows: list[dict[str, Any]] = []
     issues: list[str] = []
     for case_id, case in sorted(cases.items()):
+        seen_problems: set[str] = set()
         dimensions = case.get("comparison_dimensions", [])
         if not isinstance(dimensions, list):
             issues.append(f"COMPARISON_DIMENSIONS_INVALID:{case_id}")
@@ -258,6 +259,7 @@ def problem_comparison_report(
                                            dim.get("output_pointers"),
                                            dim.get("control_ids"))
             if (not isinstance(dim_id, str) or not dim_id
+                    or dim_id in seen_problems
                     or not isinstance(dim.get("question"), str) or not dim["question"]
                     or not isinstance(fields, list) or not fields
                     or not all(isinstance(f, str) and f.startswith("/output/") for f in fields)
@@ -265,6 +267,7 @@ def problem_comparison_report(
                     or not all(isinstance(c, str) and c in index for c in control_ids)):
                 issues.append(f"COMPARISON_DIMENSION_BINDING_INVALID:{case_id}:{dim_id}")
                 continue
+            seen_problems.add(dim_id)
             observations = []
             for arm, selected in (("original", original), ("evolved", evolved)):
                 snapshots = [{
@@ -292,11 +295,24 @@ def problem_comparison_report(
                                 {"output": r["output"], "validator": r["validator"]},
                                 c["if"]
                             ) for r in arm_runs))
+                def _applicability(arm_runs: list[dict]) -> dict[str, int | bool]:
+                    if c["op"] != "if_then":
+                        return {"total_runs": len(arm_runs), "antecedent_true": len(arm_runs),
+                                "conditional_vacuous": False,
+                                "conditional_partially_vacuous": False}
+                    true_count = sum(bool(evaluate_check(
+                        {"output": r["output"], "validator": r["validator"]}, c["if"]
+                    )) for r in arm_runs)
+                    return {"total_runs": len(arm_runs), "antecedent_true": true_count,
+                            "conditional_vacuous": bool(arm_runs) and true_count == 0,
+                            "conditional_partially_vacuous": 0 < true_count < len(arm_runs)}
                 control_rows.append({
                     "control_id": check_id,
                     "original": _state(original), "evolved": _state(evolved),
                     "original_vacuous_conditional": _vacuous(original),
                     "evolved_vacuous_conditional": _vacuous(evolved),
+                    "original_applicability": _applicability(original),
+                    "evolved_applicability": _applicability(evolved),
                 })
             if not original or not evolved:
                 evidence_status = "UNMEASURED"
@@ -305,13 +321,17 @@ def problem_comparison_report(
             elif not attested:
                 evidence_status = "PREVIEW_UNATTESTED"
             else:
-                evidence_status = "READY_FOR_INDEPENDENT_SEMANTIC_REVIEW"
+                # A declared RUNTIME_ATTESTED flag is NOT a verified provider receipt.
+                evidence_status = "PREVIEW_ATTESTATION_CLAIM_UNVERIFIED"
             rows.append({
                 "case_id": case_id, "problem_id": dim_id,
                 "question": dim["question"],
                 "evidence_status": evidence_status,
                 "same_input_literal_verified": bool(same_input),
                 "both_run_attestations_declared": bool(attested),
+                "attestation_verified_independently": False,
+                "input_identity_level": ("RECORDED_LITERAL_MATCH_ONLY" if same_input
+                                         else "NOT_VERIFIED"),
                 "semantic_verdict": "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE",
                 "observations": observations, "controls": control_rows,
             })
