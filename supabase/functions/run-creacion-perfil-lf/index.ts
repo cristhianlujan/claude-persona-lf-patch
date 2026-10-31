@@ -406,8 +406,11 @@ Deno.serve(async (req: Request) => {
       const effective = chain.length
         ? String(chain[chain.length - 1]?.candidate_commit ?? "")
         : String(write.evidence_payload?.commit_sha ?? "");
-      if (effective !== previous) {
-        // A simultaneous request or an incorrect expected predecessor cannot rebind the execution.
+      const last = chain.length ? chain[chain.length - 1] : null;
+      const idempotentReplay = last?.candidate_commit === candidate
+        && last?.previous_commit === previous;
+      if (effective !== previous && !idempotentReplay) {
+        // An incorrect predecessor or concurrent revision cannot rebind the execution.
         return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_STALE_PREDECESSOR" }, 409);
       }
       const verify = await verifyCandidateAmendment({
