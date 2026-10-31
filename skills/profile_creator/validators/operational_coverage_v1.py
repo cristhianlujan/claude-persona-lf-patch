@@ -217,7 +217,7 @@ def _problem_observed_field(run: dict[str, Any], pointer: str) -> dict[str, Any]
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
     return {"pointer": pointer, "present": True,
             "value_sha256": canonical_sha256(value),
-            "preview": raw[:240], "truncated": len(raw) > 240}
+            "preview": raw[:800], "truncated": len(raw) > 800}
 
 
 def problem_comparison_report(
@@ -268,7 +268,7 @@ def problem_comparison_report(
                 issues.append(f"COMPARISON_DIMENSION_BINDING_INVALID:{case_id}:{dim_id}")
                 continue
             seen_problems.add(dim_id)
-            observations = []
+            response_columns: dict[str, dict[str, Any]] = {}
             for arm, selected in (("original", original), ("evolved", evolved)):
                 snapshots = [{
                     "run_id": r.get("run_id"),
@@ -278,7 +278,7 @@ def problem_comparison_report(
                     "validator_valid": r.get("validator", {}).get("valid"),
                     "fields": [_problem_observed_field(r, p) for p in fields],
                 } for r in selected]
-                observations.append({"arm": arm, "runs": snapshots})
+                response_columns[arm] = {"runs": snapshots}
             control_rows = []
             for check_id in control_ids:
                 c = index[check_id]
@@ -333,7 +333,9 @@ def problem_comparison_report(
                 "input_identity_level": ("RECORDED_LITERAL_MATCH_ONLY" if same_input
                                          else "NOT_VERIFIED"),
                 "semantic_verdict": "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE",
-                "observations": observations, "controls": control_rows,
+                "original": response_columns["original"],
+                "evolved": response_columns["evolved"],
+                "controls": control_rows,
             })
     return {
         "schema": "LF_PROFILE_PROBLEM_SIDE_BY_SIDE_REPORT_V1",
