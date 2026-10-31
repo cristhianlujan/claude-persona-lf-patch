@@ -27,7 +27,7 @@ def blocked():
     return {
         "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
         "candidate_only": True,
-        "request_context": {"intent": "Change a capability with unresolved authority", "target_ref": "target://unresolved"},
+        "request_context": {"intent": "Change a capability with unresolved authority", "target_ref": "target://unresolved", "business": "LF"},
         "classification": {"target_granularity": "RULE", "depth": "L2", "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN"},
         "stage_trace": [
             {"stage": f"A{i}", "outcome": f"Stage A{i} preserved unresolved evidence", "source_refs": []}
@@ -162,6 +162,17 @@ class AnalysisCandidateContractTests(unittest.TestCase):
         jsonschema.Draft202012Validator.check_schema(schema)
         for p in (blocked(), ready_candidate()):
             self.assertEqual(list(jsonschema.Draft202012Validator(schema).iter_errors(p)), [])
+
+
+    def test_17_missing_business_rejected(self):
+        p = blocked()
+        del p["request_context"]["business"]
+        rejected(p, "ANALYSIS_BUSINESS_CONTEXT_REQUIRED")
+
+    def test_18_noncanonical_business_rejected(self):
+        p = blocked()
+        p["request_context"]["business"] = "saly"
+        rejected(p, "ANALYSIS_BUSINESS_CONTEXT_REQUIRED")
 
 
 if __name__ == "__main__":
