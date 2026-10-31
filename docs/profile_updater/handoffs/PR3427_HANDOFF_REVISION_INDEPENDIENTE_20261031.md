@@ -48,3 +48,18 @@ Para cada problema usar la clasificación `MEJORA_OBSERVADA / MEJORA_VERIFICADA 
 Tabla `id | requisito | evidencia exacta | anterior | evolucionado | evaluación | severidad/bloqueo`, con mínimo 2 problemas de WEB-001 y los 14 controles preservados. Entregar `APROBADO / CORREGIR / BLOQUEADO_EVIDENCIA`, identificando pruebas ejecutadas, claims inválidos, riesgos, recomendación y próximos pasos. **No** hacer merge ni publicar aprobación automática del productor.
 
 **Dependencias:** PR #3420 (matriz de destino dinámico), #3399 (perfil candidato Reparador), #3412 (enmienda del candidato). No sustituye sus aprobaciones ni la comparación con dos inferencias nativas frescas.
+
+
+## Continuidad tras dictamen independiente BLOQUEADO_EVIDENCIA (31/10/2026)
+
+El propietario trasladó un dictamen independiente `BLOQUEADO_EVIDENCIA`, referido al HEAD anterior `b260f047bdc2c5f8908f4d9105fa8a79885ac881`. **No considerarlo aprobación del HEAD nuevo.**
+
+El productor reparó de modo acotado en la **misma rama**:
+1. `conditional_controls_all` emite aplicabilidad real de **los cuatro** controles condicionales WEB-001 (OP03, OP05, OP06, OP14), aunque no estén asignados a `control_ids` de un problema.
+2. `raw_file_sha256` de bytes del archivo realmente leído por el loader y `raw_source_commit_sha=null` mientras no se confirme el commit Git. No falsificar procedencia.
+3. Vista acotada para múltiples problemas, RAW y campos, con `PARTIAL_SOURCE_LOOKUP_REQUIRED` y contadores de elementos omitidos; nunca confundir vista parcial con evidencia total.
+4. Pruebas adversariales adicionales para condiciones, límites y hash del RAW. Confirmar las pruebas en el HEAD de revisión; no reutilizar CI previo.
+
+**Verificar nuevamente:** semántica del método (2 problemas), 14 controles idénticos, resultado del comparador oficial inalterado, SHA de caso fuente, compatibilidad de `operational` en el consumidor, límites de payload, no fabricación de commit, no autorización automática y dictamen independiente por el HEAD final.
+
+**Bloqueos NO levantados por estas correcciones:** dos ejecuciones nativas con igual entrada certificadas, juez semántico independiente, paridad Router/directo y transporte E2E a pasos 100/110/130. El merge sigue bloqueado hasta resolverlos; PR #3420 (matriz de destino dinámico) tampoco se considera integrado solo por existir.
