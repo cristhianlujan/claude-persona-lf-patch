@@ -5,6 +5,7 @@ All inputs are synthetic and no production RPCs are performed.
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -12,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def load(path, name):
     spec = importlib.util.spec_from_file_location(name, ROOT / path)
     obj = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(obj)
+    with patch.dict("os.environ", {"LF_PROFILE_EDGE_URL": "https://example.invalid"}):
+        spec.loader.exec_module(obj)
     return obj
 
 
