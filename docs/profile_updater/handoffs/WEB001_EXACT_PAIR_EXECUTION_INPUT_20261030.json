@@ -1,0 +1,162 @@
+{
+  "schema": "LF_WEB001_EXACT_PAIR_EXECUTION_INPUT_V1",
+  "status": "PREPARED_NOT_EXECUTED",
+  "case_id": "WEB-001",
+  "operation": "EJECUCION_PERFIL_LF",
+  "updater_execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+  "source": {
+    "repo": "cristhianlujan/claude-persona-lf-patch",
+    "base_commit": "52c0f68ad243d2a98f959db8f3a935179b5681aa",
+    "candidate_commit": "5e957945c9918e3a9a057a2ed4cf4a4a9a27ca6c",
+    "base_profile_tree_sha256": "2f4ac419ee3a49b2366a684daf4df2613a28426e77f0a880851fe07841105381",
+    "candidate_profile_tree_sha256": "b35b70a040d52ce196abfd552ba2f4ba6f3b4f9b5e6ebbc43a10f1691a0dc11c",
+    "candidate_git_tree_sha": "57b10549cd9bcc2b5cd016aff1e54d8098b403d2"
+  },
+  "literal_case_input": "Investigar el incidente WEB-001 de CAPTURA_WEB: durante ACT-0058, 7 URL de Reevalúa devolvieron Cache miss al usar web.run open(url). El pipeline marcó FALLIDO sin generar conocimiento inventado. Diagnosticar control raíz, política de reintentos, consumidor de reingreso y autoridad de propietario. Preservar fail-closed, no escribir datos ni inferir owner sin fuente vigente. Registrar consultas deterministas N1 y N2, continuar búsqueda relevante si faltan datos, y distinguir hecho, hipótesis, reparación y evidencia pendiente.",
+  "same_conditions_for_both": {
+    "provider_mode": "GPT_NATIVE_CURRENT_CHAT",
+    "read_only": true,
+    "source_policy": "EACH_ARM_READ_EXACT_GIT_COMMIT_PROFILE_TREE",
+    "schema": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+    "validator": "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
+    "case_contract": "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/WEB-001.case.json",
+    "raw_capture": "FULL_JSON_OUTPUT_REQUIRED_PER_ARM",
+    "attestation": "NONE",
+    "must_not_infer_owner": true,
+    "no_model_output_submitted_as_complete": true
+  },
+  "observations": {
+    "n1_asset": {
+      "query": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:51.865736+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    },
+    "n2_asset": {
+      "query": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:52.000246+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    },
+    "n1_policy": {
+      "query": "SELECT statement_timestamp() AS observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:51.905295+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+          "policy_version": "v1.1-operational-closure",
+          "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+        },
+        {
+          "observed_at": "2026-10-31 00:54:51.905295+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-POLICY-CONSUMPTION",
+          "policy_version": "v1.3-assurance-cutover",
+          "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+        },
+        {
+          "observed_at": "2026-10-31 00:54:51.905295+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-SOURCE-RESOLUTION",
+          "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+          "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+        },
+        {
+          "observed_at": "2026-10-31 00:54:51.905295+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-STATE-MODEL",
+          "policy_version": "v2.0-canonical-lifecycle",
+          "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+        }
+      ]
+    },
+    "n2_owner_policy": {
+      "query": "WITH zero AS (SELECT policy_code,policy_version,policy_sha,status FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%')) SELECT statement_timestamp() AS observed_at,count(*) AS row_count,COALESCE(jsonb_agg(to_jsonb(zero)) FILTER (WHERE zero.policy_code IS NOT NULL),'[]'::jsonb) AS rows FROM zero",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:51.947972+00",
+          "row_count": 0,
+          "rows": []
+        }
+      ]
+    },
+    "retry_contract": {
+      "query": "SELECT statement_timestamp() AS observed_at,step_id,step_order,pass_condition,block_condition,execution_sql FROM public.lf_operation_step_contracts WHERE operation_code='ORQUESTACION_PIPELINE_LF' AND step_id='failed_retry'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:51.999803+00",
+          "step_id": "failed_retry",
+          "step_order": 110,
+          "pass_condition": "retry_count <= 3; error registrado y pipeline en cola de reintento",
+          "block_condition": "retry_count > 3; pipeline bloqueado definitivamente",
+          "execution_sql": "UPDATE public.lf_pipeline_runs\nSET retry_count = retry_count + 1,\n    error_detail = :error_type || ': ' || :error_detail,\n    stage_status = CASE\n      WHEN retry_count + 1 >= 3 THEN 'FAILED'\n      WHEN :error_type IN ('SCHEMA_ERROR', 'FK_VIOLATION') THEN 'FAILED'\n      ELSE 'PENDING'\n    END,\n    updated_at = NOW()\nWHERE pipeline_run_id = :pipeline_run_id\nRETURNING pipeline_run_id, retry_count, stage_status, error_detail;"
+        }
+      ]
+    },
+    "ekb": {
+      "query": "SELECT statement_timestamp() AS observed_at,codigo,categoria,descripcion,prevencion,frecuencia,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 00:54:52.22975+00",
+          "codigo": "WEB-001",
+          "categoria": "CAPTURA_WEB",
+          "descripcion": "Durante ACT-0058, 7 URLs de Reevalúa devolvieron Cache miss al ejecutar web.run open(url). El pipeline las cerró fail-closed como FALLIDO sin inventar contenido.",
+          "prevencion": "No crear captura, homologación, decisión ni KB si el fetch falla. Registrar FALLIDO con error_detail, conservar trazabilidad y permitir reintento posterior controlado.",
+          "frecuencia": 46,
+          "estado": "activo"
+        }
+      ]
+    }
+  },
+  "reference_skill": {
+    "repo": "cristhianlujan/claude-persona-lf-patch",
+    "path": "skills/orquestador_pipeline_lf/SKILL.md",
+    "exact_ref": "76a4de055baa7e298eaa4e564ea982023c857cd9",
+    "reason": "OP4/retry textual reference, not a proof of active scheduler"
+  },
+  "preliminary_findings": {
+    "asset_rows_n1": 1,
+    "asset_rows_n2": 1,
+    "owner_is_null_in_both": true,
+    "operation_policy_rows": 4,
+    "active_owner_policy_code_search_rows": 0,
+    "retry_contract_operator_mismatch": "SQL: retry_count + 1 >=3 yields FAILED, declarative block_condition: retry_count>3",
+    "effective_readmission_consumer": "UNVERIFIED",
+    "applicable_owner_rule": "UNVERIFIED"
+  },
+  "verification": {
+    "official_structural_baseline": "15/15",
+    "official_structural_candidate": "15/15",
+    "official_compare_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41150518675",
+    "official_operational_status": "UNMEASURED",
+    "official_improvement_verdict": "NO_DEMONSTRATED_IMPROVEMENT",
+    "required_checks": 14,
+    "runtime_validator_executed": false,
+    "paired_native_model_outputs_created": false,
+    "independent_semantic_judge_executed": false,
+    "trusted_main_paired_runs_recorded": false,
+    "production_impact": false
+  },
+  "next_steps": [
+    "Run exact base input in native model, produce FULL JSON and bind to base tree SHA",
+    "Run exact candidate input in native model, produce FULL JSON and bind to candidate tree SHA",
+    "Validate each output with pinned runtime validator; preserve exact error readback if invalid",
+    "Record actual native outputs as PROFILE_OPERATIONAL_RUN_V1 with attestation NONE unless separately verified",
+    "Independent judge must requery each material N1/N2 item and read entire candidate as required",
+    "Promote runs to trusted main only through governed Merge Train, then rerun official compare",
+    "Only after improved_check and 0 regressions continue updater steps90-130; do not merge profile PR beforehand"
+  ]
+}
