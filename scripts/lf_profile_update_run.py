@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DISPATCH = runpy.run_path(str(ROOT / "scripts" / "lf_profile_update_issue_dispatch.py"), run_name="runner_validate")
 OPERATIONAL = runpy.run_path(str(ROOT / "skills" / "profile_creator" / "validators" / "operational_coverage_v1.py"), run_name="runner_operational")
+MATRIX = runpy.run_path(str(ROOT / "skills" / "profile_creator" / "validators" / "operational_control_matrix_v1.py"), run_name="runner_matrix")
 OP_REL = "skills/profile_creator/operational_cases"
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 LABEL = "lf-profile-update-governed"
@@ -142,7 +143,7 @@ def build_pre_steps(slug, code, main, measure_run, proof, files, unmet):
     ]
 
 
-def build_post_steps(execution_id, slug, base, commit, compare_run, op):
+def build_post_steps(execution_id, slug, base, commit, compare_run, op, matrix_receipt=None):
     ev = f"actions-run:{compare_run}"
     pending = op.get("semantic_pending") or []
     limits = ["self-review by the authoring chat: no independent semantic evaluation of the final candidate",
@@ -152,15 +153,18 @@ def build_post_steps(execution_id, slug, base, commit, compare_run, op):
     return [
         {"step_id": "deterministic_validation", "evidence_ref": ev, "evidence_payload": {"proof_mode": "compare", "proof_run_id": compare_run, "evolution_proof_run_id": compare_run, "validator_result": "PASS", "negative_regressions": [], "malformed_input_result": "PASS_S26_NO_DIMENSION_REGRESSED_ON_CANDIDATE", "mini_judge_code": JUDGE, **OK}},
         {"step_id": "semantic_judge", "evidence_ref": f"review:self:{commit}", "evidence_payload": {"independent": False, "semantic_judge_result": "PASS_SELF_REVIEW_NOT_INDEPENDENT", "review_scope": f"Diff of the candidate commit under profiles/{slug}, reviewed by its author.", "known_limits": limits, "authority_checks": ["identity and runtime state preserved", "no router or card files in diff"], "router_direct_consistency": "PASS_NO_ROUTING_CHANGE_DIFF_LIMITED_TO_PROFILE_PACKAGE", "mini_judge_code": JUDGE, **OK}},
-        {"step_id": "regression_after", "evidence_ref": ev, "evidence_payload": {"holdout_result": f"PASS_OPERATIONAL_{op.get('base_passed')}_OF_{op.get('checks_total')}_TO_{op.get('candidate_passed')}_OF_{op.get('checks_total')}_NO_CHECK_REGRESSED", "adversarial_result": "PASS_S26_NO_DIMENSION_REGRESSED", "before_after_matrix": {"source": "S26_PROFILE_EVOLUTION_PROOF_V1", "base_sha": base, "candidate_sha": commit, "operational_checks_before": op.get("base_passed"), "operational_checks_after": op.get("candidate_passed"), "operational_checks_total": op.get("checks_total")}, "mini_judge_code": JUDGE, **OK}},
+        {"step_id": "regression_after", "evidence_ref": ev, "evidence_payload": {"holdout_result": f"PASS_OPERATIONAL_{op.get('base_passed')}_OF_{op.get('checks_total')}_TO_{op.get('candidate_passed')}_OF_{op.get('checks_total')}_NO_CHECK_REGRESSED", "adversarial_result": "PASS_S26_NO_DIMENSION_REGRESSED", "before_after_matrix": {"source": "S26_PROFILE_EVOLUTION_PROOF_V1", "base_sha": base, "candidate_sha": commit, "operational_checks_before": op.get("base_passed"), "operational_checks_after": op.get("candidate_passed"), "operational_checks_total": op.get("checks_total"),
+            **({"control_matrix": matrix_receipt} if matrix_receipt else {})}, "mini_judge_code": JUDGE, **OK}},
     ]
 
 
-def build_close_steps(slug, merge, commit, compare_run, manifest_sha, entry_sha, pack_id, runtime):
+def build_close_steps(slug, merge, commit, compare_run, manifest_sha, entry_sha, pack_id, runtime, matrix_receipt=None):
     return [
         {"step_id": "post_merge_reconcile", "evidence_ref": f"git:{merge}", "evidence_payload": {"merge_sha": merge, "manifest_sha": manifest_sha, "entrypoint_sha": entry_sha, "profile_pack_id": pack_id, "runtime_state_before": runtime, "runtime_state_after": runtime, "automatic_impact_preserved": True, "operational_state_preserved": True, "reconciliation_disposition": f"MERGED_VIA_MERGE_TRAIN_PROFILE_DIR_IDENTICAL_TO_CANDIDATE_{commit[:8]}", "next_gate": "independent semantic evaluation and governed runtime transition (not executed)", "mini_judge_code": JUDGE, **OK}},
         {"step_id": "close", "evidence_ref": f"git:{merge}", "evidence_payload": {"open_blockers": [], "no_auto_promotion": True, "runtime_unchanged": True, "all_required_steps_clean": True, "mini_judge_code": JUDGE, **OK}},
-        {"step_id": "report_output", "evidence_ref": f"actions:{compare_run}", "evidence_payload": {"result": f"UPDATED_{slug}", "exact_head": commit, "evidence_refs": [f"actions:{compare_run}"], "open_blockers": [], "next_gate": "independent semantic evaluation and governed runtime transition (not executed)", "mini_judge_code": JUDGE, **OK}},
+        {"step_id": "report_output", "evidence_ref": f"actions:{compare_run}", "evidence_payload": {"result": f"UPDATED_{slug}", "exact_head": commit, "evidence_refs": [f"actions:{compare_run}"], "open_blockers": [],
+            **({"control_matrix_report": matrix_receipt} if matrix_receipt else {}),
+            "next_gate": "independent semantic evaluation and governed runtime transition (not executed)", "mini_judge_code": JUDGE, **OK}},
     ]
 
 
@@ -224,6 +228,120 @@ def gather_operational(slug, cand_dir):
     runs, rejected = OPERATIONAL["load_runs"](tmp / OP_REL, slug, cases)
     shutil.rmtree(tmp, ignore_errors=True)
     return cases, runs, base_tree, cand_tree, problems + rejected
+
+
+
+def project_operational_matrix(slug, candidate_dir, official_proof):
+    """Report-only projection of trusted main cases/runs. No gate/ledger mutations.
+
+    Do not call any of these projected results an official PASS: the existing
+    signed/verified Group 2 proof remains the sole official comparator.
+    """
+    cases, runs, base_tree, cand_tree, problems = gather_operational(slug, candidate_dir)
+    baseline = OPERATIONAL["measure"](cases, runs, base_tree)
+    evolved = OPERATIONAL["measure"](cases, runs, cand_tree)
+    destination_bindings, destination_issues = MATRIX["source_bound_bindings_from_cases"](
+        cases, slug, candidate_dir)
+    report = MATRIX["build_control_matrix"](
+        cases, baseline, evolved, destination_bindings, candidate_dir)
+    comparison = OPERATIONAL["compare"](baseline, evolved)
+    official = official_proof.get("operational")
+    binding = {
+        "base_tree_sha256": base_tree,
+        "candidate_tree_sha256": cand_tree,
+        "checks_total": comparison["checks_total"],
+        "base_passed": comparison["base_passed"],
+        "candidate_passed": comparison["candidate_passed"],
+        "improved_checks": sorted(comparison["improved_checks"]),
+        "regressed_checks": sorted(comparison["regressed_checks"]),
+        "cases_unmeasured": sorted(comparison["cases_unmeasured"]),
+    }
+    mandatory = ("base_tree_sha256", "candidate_tree_sha256", "checks_total",
+                 "base_passed", "candidate_passed", "improved_checks", "regressed_checks",
+                 "cases_unmeasured")
+    matched = (isinstance(official, dict)
+               and all(official.get(k) == binding[k] for k in mandatory))
+    report.update({
+        "profile_slug": slug,
+        "source": "trusted_origin_main_operational_cases_and_runs",
+        "official_proof_run_id": official_proof.get("proof_run_id"),
+        "binding": binding,
+        "source_problems": problems,
+        "destination_binding_issues": destination_issues,
+        "destination_binding_source": "trusted_main_operational_case_definitions",
+        "status": "GROUP2_PROJECTION_MATCHED_REPORT_ONLY" if matched and not problems and not destination_issues
+                  else "NO_VERIFICADO_PROOF_OR_SOURCE",
+        "authoritative_group2_verdict": official_proof.get("verdict"),
+        "destination_authority": "UNVERIFIED",
+        "approval_effect": "NONE",
+    })
+    return report
+
+
+def build_matrix_receipt(report, proof_run_id, max_chars=16000):
+    """Bounded portable report in existing evidence payloads, never a second judge.
+
+    An embedded row points to its operational run IDs; the authoritative proof
+    remains actions:profile-evolution-proof. No local sidecar path is passed as
+    a remote evidence reference.
+    """
+    import hashlib
+    def digest(value):
+        return hashlib.sha256(json.dumps(value, sort_keys=True,
+            ensure_ascii=False, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+    if not isinstance(report, dict) or report.get("schema") != "LF_PROFILE_CONTROL_MATRIX_V1":
+        raise Stop("PROFILE_MATRIX_REPORT_SCHEMA_INVALID")
+    if not isinstance(proof_run_id, str) or not proof_run_id.isdigit():
+        raise Stop("PROFILE_MATRIX_PROOF_RUN_INVALID")
+    full_rows = report.get("rows")
+    if not isinstance(full_rows, list):
+        raise Stop("PROFILE_MATRIX_ROWS_INVALID")
+    fields = ("case_id", "control_id", "original_result", "evolved_result",
+              "comparison", "destination_status", "destination_profile_step_id",
+              "destination_profile_step_name", "original_run_ids", "evolved_run_ids",
+              "original_attestation", "evolved_attestation", "blocking_code",
+              "destination_source_path", "destination_source_sha256",
+              "destination_source_line", "change_type")
+    projected = [{key: row.get(key) for key in fields} for row in full_rows]
+    packet = {
+        "schema": "LF_PROFILE_CONTROL_MATRIX_RECEIPT_V1",
+        "status": report.get("status"),
+        "approval_effect": "NONE",
+        "destination_authority": report.get("destination_authority", "UNVERIFIED"),
+        "proof_ref": "actions:profile-evolution-proof:" + proof_run_id,
+        "report_sha256": digest(report),
+        "profile_slug": report.get("profile_slug"),
+        "binding": report.get("binding"),
+        "summary": report.get("summary"),
+        "row_count_total": len(projected),
+        "rows": [],
+    }
+    # Keep issue transport under the existing 60k limit. Report is incomplete
+    # if any rows are omitted; never imply successful verification.
+    for row in projected:
+        packet["rows"].append(row)
+        if len(json.dumps(packet, ensure_ascii=False, separators=(",", ":"))) > max_chars:
+            packet["rows"].pop()
+            break
+    packet["row_count_omitted"] = len(projected) - len(packet["rows"])
+    if packet["row_count_omitted"]:
+        packet["projection"] = "PARTIAL_ROWS_NOT_COMPLETE"
+    else:
+        packet["projection"] = "FULL_ROWS"
+    packet["receipt_sha256"] = digest({k: v for k, v in packet.items() if k != "receipt_sha256"})
+    return packet
+
+
+def save_matrix_sidecar(state_path, report):
+    """Write a report next to the existing state; never alter the ledger."""
+    import os
+    dest = Path(str(state_path) + ".matrix.json")
+    payload = json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+    tmp = dest.with_name(dest.name + ".pending")
+    tmp.write_text(payload, encoding="utf-8")
+    os.replace(tmp, dest)
+    return str(dest)
 
 
 def preflight_operational(slug, cand_dir):
@@ -354,8 +472,23 @@ def main(argv=None):
                 st.update(compare_run=str(rid), compare=cp)
                 save()
         cp = st.get("compare") or {"operational": {}}
+        # Advisory sidecar only: original Group 2 proof and governed gate remain unchanged.
+        # This does not publish a canonical destination or attest the actual execution.
+        if "matrix_report_path" not in st and not dry and st.get("compare_run"):
+            report = project_operational_matrix(slug, cand, cp)
+            report["official_proof_run_id"] = st["compare_run"]
+            matrix_path = save_matrix_sidecar(sp, report)
+            st.update(matrix_report_path=matrix_path,
+                      matrix_report_status=report["status"],
+                      matrix_summary=report["summary"],
+                      matrix_receipt=build_matrix_receipt(report, st["compare_run"]))
+            save()
+            log.append("PROFILE_CONTROL_MATRIX " + json.dumps({
+                "path": matrix_path, "status": report["status"],
+                "summary": report["summary"]}, sort_keys=True))
         if "post_steps" not in st:
-            ps = build_post_steps(execution_id, slug, base, commit, st.get("compare_run", "0"), cp.get("operational") or {})
+            ps = build_post_steps(execution_id, slug, base, commit, st.get("compare_run", "0"), cp.get("operational") or {},
+                                  st.get("matrix_receipt"))
             if submit(gh, f"Record update steps {slug} (validation, judge, regression) {execution_id[-8:]}", steps_batch(execution_id, ps), log) or dry:
                 st["post_steps"] = True
                 save()
@@ -390,7 +523,7 @@ def main(argv=None):
                 raise Stop("POST_MERGE_PROFILE_DIR_DIFFERS_FROM_CANDIDATE")
             manifest = json.loads(run(["git", "show", f"{merge}:profiles/{slug}/manifest.json"]))
             tree = {f["path"]: f["blob_sha"] for f in tree_files(merge, slug)}
-            cs = build_close_steps(slug, merge, commit, st["compare_run"], tree.get(f"profiles/{slug}/manifest.json"), tree.get(f"profiles/{slug}/SKILL.md"), manifest.get("profile_pack_id"), manifest.get("runtime", "NO_HABILITADO"))
+            cs = build_close_steps(slug, merge, commit, st["compare_run"], tree.get(f"profiles/{slug}/manifest.json"), tree.get(f"profiles/{slug}/SKILL.md"), manifest.get("profile_pack_id"), manifest.get("runtime", "NO_HABILITADO"), st.get("matrix_receipt"))
             submit(gh, f"Record update steps {slug} (post-merge, close, report) {execution_id[-8:]}", steps_batch(execution_id, cs), log)
             st["closed"] = True
             save()
