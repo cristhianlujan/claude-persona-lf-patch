@@ -72,7 +72,7 @@ BEGIN
   -- True idempotent replay, including the exact same bound predecessor and verified receipt.
   IF v_last IS NOT NULL AND v_last->>'candidate_commit'=p_candidate_commit
      AND v_last->>'previous_commit'=p_previous_commit
-     AND v_last->'verified_source'=p_evidence
+     AND (v_last->'verified_source' - 'observed_at') = (p_evidence - 'observed_at')
   THEN RETURN jsonb_build_object('outcome','AMENDMENT_RECORDED','replay',true,'execution_id',p_execution_id,
          'candidate_commit',p_candidate_commit,'amendment_count',jsonb_array_length(v_entries)); END IF;
 
