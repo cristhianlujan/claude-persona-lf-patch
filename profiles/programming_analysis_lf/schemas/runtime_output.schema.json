@@ -29,7 +29,8 @@
       "additionalProperties": false,
       "required": [
         "intent",
-        "target_ref"
+        "target_ref",
+        "business"
       ],
       "properties": {
         "intent": {
@@ -39,6 +40,11 @@
         "target_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "business": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{1,31}$",
+          "description": "Exact business from canonical Router handoff; runtime independently binds to run and authority; no default."
         }
       }
     },
