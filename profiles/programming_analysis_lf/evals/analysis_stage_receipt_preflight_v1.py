@@ -30,6 +30,17 @@ def validate_readback(packet, binding):
     if not isinstance(run, dict):
         return {"status": "FAIL", "errors": ["MISSING_CANONICAL_RUN"], "operational_ready": False}
     eid, req = run.get("execution_id"), run.get("request_sha256")
+    business = run.get("business")
+    # Router handoff is authoritative for business; this candidate binding is LF-only.
+    # Never infer LF from schema names or supply LF as an implicit default.
+    if not isinstance(business, str) or not business or business != business.strip() or business != business.upper():
+        errs.append("BUSINESS_CONTEXT_MISSING_OR_INVALID")
+    if not isinstance(binding.get("business"), str) or not binding.get("business"):
+        errs.append("BUSINESS_SOURCE_BINDING_MISSING")
+    elif business != binding["business"]:
+        errs.append("BUSINESS_AUTHORITY_SCOPE_MISMATCH")
+    if binding.get("business_source_namespace") != "lf_ops" and business == "LF":
+        errs.append("LF_SOURCE_NAMESPACE_MISMATCH")
     if not isinstance(eid, str) or not eid.strip():
         errs.append("EXECUTION_ID_MISSING")
     if not _sha(req):
@@ -48,6 +59,9 @@ def validate_readback(packet, binding):
           or not _sha(router.get("authorization_fingerprint_sha256"))
           or router.get("authorization_receipt_ref") != "router-authorization://" + router.get("authorization_fingerprint_sha256", "")):
         errs.append("ROUTER_RECEIPT_BINDING_MISMATCH")
+
+    if isinstance(router, dict) and router.get("business") != business:
+        errs.append("ROUTER_BUSINESS_CONTEXT_MISMATCH")
 
     steps = packet.get("operation_step_readback")
     if not isinstance(steps, list) or [s.get("step_id") for s in steps if isinstance(s, dict)] != list(OP_STEPS):
@@ -75,6 +89,8 @@ def validate_readback(packet, binding):
         blobs = binding.get("source_readback", {}).get("stage_git_blobs", {})
         for s in stages:
             a = s["stage"]
+            if s.get("business") != business:
+                errs.append(f"{a}_BUSINESS_CONTEXT_MISMATCH")
             if s.get("execution_id") != eid or s.get("request_sha256") != req:
                 errs.append(f"{a}_RUN_BINDING_MISMATCH")
             if (s.get("source_ref") != expected.get(a)
@@ -88,7 +104,8 @@ def validate_readback(packet, binding):
                 errs.append(f"{a}_RAW_HASH_MISSING")
 
     model = packet.get("model_readback")
-    if (not isinstance(model, dict) or model.get("execution_id") != eid
+    if (not isinstance(model, dict) or model.get("business") != business
+        or model.get("execution_id") != eid
         or not model.get("raw_ref") or not _sha(model.get("raw_sha256"))):
         errs.append("MODEL_RAW_READBACK_MISSING")
     for key, failure in (
