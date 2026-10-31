@@ -4,7 +4,7 @@
     ".github/workflows/lf-customer-profile-creator-governance-caller.yml": "WORKFLOW",
     "supabase/functions/run-creacion-perfil-lf/index.ts": "SUPABASE_FUNCTION",
     "supabase/functions/run-creacion-perfil-lf/verified_write_evidence.ts": "SUPABASE_FUNCTION",
-    "supabase/functions/run-creacion-perfil-lf/verified_write_evidence.test.mjs": "RUNTIME_TESTING",
+    "supabase/functions/run-creacion-perfil-lf/verified_write_evidence.test.mjs": "SUPABASE_FUNCTION",
     "supabase/functions/lf-profile-creator-governance-caller-v1/index.ts": "SUPABASE_FUNCTION",
     "scripts/lf_profile_update_issue_dispatch.py": "SERVICE_RUNTIME",
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_update_issue_request.py": "RUNTIME_TESTING",
