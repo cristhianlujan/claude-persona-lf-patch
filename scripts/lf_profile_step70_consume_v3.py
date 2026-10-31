@@ -6,7 +6,6 @@ Usage: python scripts/lf_profile_step70_consume_v3.py --execution-id EXEC-... --
 Environment: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 """
 import argparse
-import hashlib
 import json
 import os
 import sys
@@ -43,7 +42,7 @@ def api(method, path, data=None):
 
 
 def check_verdict(v):
-    require(v.get("verdict") == PASS, "Only a genuine independent PASS can be registered as PASS")
+    require(v.get("verdict") == PASS, "Step 70 PASS registration requires a genuine independent PASS; non-PASS verdicts must be returned as structured errors to the final reporter")
     checks = v.get("decision_checks")
     require(isinstance(checks, dict) and set(checks) == set(CHECKS), "Exactly 12 V3 checks required")
     for name, check in checks.items():
