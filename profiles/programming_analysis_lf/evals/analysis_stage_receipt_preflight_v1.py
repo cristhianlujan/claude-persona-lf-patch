@@ -39,8 +39,17 @@ def validate_readback(packet, binding):
         errs.append("BUSINESS_SOURCE_BINDING_MISSING")
     elif business != binding["business"]:
         errs.append("BUSINESS_AUTHORITY_SCOPE_MISMATCH")
-    if binding.get("business_source_namespace") != "lf_ops" and business == "LF":
+    namespace = binding.get("business_source_namespace")
+    if not isinstance(namespace, str) or not namespace.strip():
+        errs.append("BUSINESS_SOURCE_NAMESPACE_MISSING")
+    elif business == "LF" and namespace != "lf_ops":
         errs.append("LF_SOURCE_NAMESPACE_MISMATCH")
+    elif business != "LF":
+        # SALY has a distinct schema but no currently approved Analysis binding.
+        # Require qualified business authority rather than cloning the LF candidate.
+        if (namespace == "lf_ops"
+            or binding.get("business_scope_binding_status") != "CURRENT_RELEASED"):
+            errs.append("NON_LF_BUSINESS_SOURCE_NOT_QUALIFIED")
     if not isinstance(eid, str) or not eid.strip():
         errs.append("EXECUTION_ID_MISSING")
     if not _sha(req):
