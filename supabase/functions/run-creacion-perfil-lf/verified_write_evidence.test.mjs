@@ -209,13 +209,15 @@ test('candidate amendment: missing prior server write and altered resolver rejec
 });
 
 test('candidate amendment: stale head, changed parent and fake same-SHA blocked', async () => {
-  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader({refSha: HEAD}))),
-    {ok: false, code: 'PROFILE_AMEND_HEAD_MISMATCH'});
-  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader({ancestry:
-    {status: 'diverged', ahead_by: 1, behind_by: 1, files: []}})),
-    {ok: false, code: 'PROFILE_AMEND_NOT_DESCENDANT'});
-  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader(), {candidateCommit: HEAD})),
-    {ok: false, code: 'PROFILE_AMEND_INPUT_INVALID'});
+  const stale = await verifyCandidateAmendment(amendInput(amendmentReader({refSha: HEAD})));
+  assert.deepEqual(stale, {ok: false, code: 'PROFILE_AMEND_HEAD_MISMATCH'});
+
+  const badAncestry = {status: 'diverged', ahead_by: 1, behind_by: 1, files: []};
+  const diverged = await verifyCandidateAmendment(amendInput(amendmentReader({ancestry: badAncestry})));
+  assert.deepEqual(diverged, {ok: false, code: 'PROFILE_AMEND_NOT_DESCENDANT'});
+
+  const sameSha = await verifyCandidateAmendment(amendInput(amendmentReader(), {candidateCommit: HEAD}));
+  assert.deepEqual(sameSha, {ok: false, code: 'PROFILE_AMEND_INPUT_INVALID'});
 });
 
 test('candidate amendment: outside-profile modifications, new workflows and migrations fail closed', async () => {
