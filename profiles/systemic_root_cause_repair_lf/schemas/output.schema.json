@@ -4519,20 +4519,32 @@
                 "$ref": "#/$defs/authority_ref"
               },
               {
-                "required": [
-                  "authority_kind",
-                  "evidence_id"
-                ],
-                "properties": {
-                  "authority_kind": {
-                    "enum": [
-                      "EXISTING_AUTHORITY",
-                      "DERIVED_PROPOSAL"
-                    ]
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "RESOLVED"
+                    }
                   },
-                  "evidence_id": {
-                    "type": "string",
-                    "minLength": 3
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "authority_kind",
+                    "evidence_id"
+                  ],
+                  "properties": {
+                    "authority_kind": {
+                      "enum": [
+                        "EXISTING_AUTHORITY",
+                        "DERIVED_PROPOSAL"
+                      ]
+                    },
+                    "evidence_id": {
+                      "type": "string",
+                      "minLength": 3
+                    }
                   }
                 }
               }
@@ -4544,20 +4556,32 @@
                 "$ref": "#/$defs/authority_ref"
               },
               {
-                "required": [
-                  "authority_kind",
-                  "evidence_id"
-                ],
-                "properties": {
-                  "authority_kind": {
-                    "enum": [
-                      "EXISTING_AUTHORITY",
-                      "DERIVED_PROPOSAL"
-                    ]
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "RESOLVED"
+                    }
                   },
-                  "evidence_id": {
-                    "type": "string",
-                    "minLength": 3
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "authority_kind",
+                    "evidence_id"
+                  ],
+                  "properties": {
+                    "authority_kind": {
+                      "enum": [
+                        "EXISTING_AUTHORITY",
+                        "DERIVED_PROPOSAL"
+                      ]
+                    },
+                    "evidence_id": {
+                      "type": "string",
+                      "minLength": 3
+                    }
                   }
                 }
               }
@@ -4569,20 +4593,32 @@
                 "$ref": "#/$defs/authority_ref"
               },
               {
-                "required": [
-                  "authority_kind",
-                  "evidence_id"
-                ],
-                "properties": {
-                  "authority_kind": {
-                    "enum": [
-                      "EXISTING_AUTHORITY",
-                      "DERIVED_PROPOSAL"
-                    ]
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "RESOLVED"
+                    }
                   },
-                  "evidence_id": {
-                    "type": "string",
-                    "minLength": 3
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "authority_kind",
+                    "evidence_id"
+                  ],
+                  "properties": {
+                    "authority_kind": {
+                      "enum": [
+                        "EXISTING_AUTHORITY",
+                        "DERIVED_PROPOSAL"
+                      ]
+                    },
+                    "evidence_id": {
+                      "type": "string",
+                      "minLength": 3
+                    }
                   }
                 }
               }
