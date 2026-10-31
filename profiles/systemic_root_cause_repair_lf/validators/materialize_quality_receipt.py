@@ -61,6 +61,7 @@ def materialize_quality_receipt(
     producer_execution_id: str | None = None,
     reviewer_execution_id: str | None = None,
     producer_execution_receipt_ref: str | None = None,
+    trusted_reader: Any = None,
 ) -> dict[str, Any]:
     if not isinstance(candidate, dict):
         raise QualityReceiptMaterializationError("CANDIDATE_NOT_OBJECT")
@@ -69,7 +70,7 @@ def materialize_quality_receipt(
     if not isinstance(semantic_result, dict):
         raise QualityReceiptMaterializationError("SEMANTIC_RESULT_NOT_OBJECT")
 
-    semantic_gate = semantic_validator.evaluate(semantic_result)
+    semantic_gate = semantic_validator.evaluate(semantic_result, candidate=candidate, evidence_manifest=evidence_manifest, trusted_reader=trusted_reader)
     if semantic_gate.get("status") != "PASS":
         raise QualityReceiptMaterializationError(
             "SEMANTIC_RESULT_INVALID:"
@@ -160,7 +161,8 @@ def materialize_quality_receipt(
     }
 
     validation = quality_validator.validate_quality_receipt(
-        receipt, candidate, evidence_manifest, semantic_result
+        receipt, candidate, evidence_manifest, semantic_result,
+        trusted_reader=trusted_reader,
     )
     if validation.get("status") != "PASS":
         raise QualityReceiptMaterializationError(
