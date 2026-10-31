@@ -222,7 +222,7 @@ def run_bound_validator(target_path, profile_code, profile_output):
 
 
 def main():
-    execution_id, raw_draft = governed_request()
+    execution_id, raw_draft, profile_output = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
@@ -331,8 +331,40 @@ def main():
         print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
         return 0
     if phase == "NATIVE_MODEL_INPUT_READY":
-        print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
-        return 0
+        if profile_output is None:
+            print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
+            return 0
+        try:
+            validation, raw_ref, validator_ref = run_bound_validator(
+                target_path, source.get("profile_code"), profile_output
+            )
+        except ValueError as exc:
+            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            return 1
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "profile_output": profile_output,
+            "validation_result": validation,
+            "raw_evidence_ref": raw_ref,
+            "validator_evidence_ref": validator_ref,
+        }
+        code, recorded = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"OUTPUT_RECORD","status":code,
+                "code":recorded.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": recorded.get("profile_code"),
+            "phase": recorded.get("phase"),
+            "next_action": recorded.get("next_action"),
+        }, ensure_ascii=False))
+        return 0 if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED" else 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
         print("PROFILE_NATIVE_SEMANTIC_OR_IG_CONTINUATION_REQUIRED_NOT_COMPLETE")
         return 0
