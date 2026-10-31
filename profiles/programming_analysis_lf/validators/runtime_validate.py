@@ -24,6 +24,10 @@ def validate(payload):
     if payload.get("candidate_only") is not True:
         reject("ANALYSIS_CANDIDATE_ONLY_REQUIRED")
 
+    business = (payload.get("request_context") or {}).get("business") if isinstance(payload.get("request_context"), dict) else None
+    if not isinstance(business, str) or len(business) < 2 or len(business) > 32 or not business.replace("_", "").isalnum() or not business[0].isalpha() or business != business.upper():
+        reject("ANALYSIS_BUSINESS_CONTEXT_REQUIRED", "$.request_context.business")
+
     stages = payload.get("stage_trace")
     if not isinstance(stages, list) or [x.get("stage") if isinstance(x, dict) else None for x in stages] != list(STAGES):
         reject("ANALYSIS_A1_A9_SEQUENCE_REQUIRED", "$.stage_trace")
