@@ -113,3 +113,46 @@ Estas dos lecturas **no demuestran** original → evolucionado: verifican divers
 **Hallazgo pendiente:** no se identificó catálogo de IDs canónicos de pasos de cada perfil en la inspección acotada de tablas con nombres de paso/perfil. Las anclas textuales se mantienen como `SOURCE_ANCHORED_NOT_CANONICAL` y los destinos sin referencia como `DESTINO_PENDIENTE`; no se inventan numeraciones.
 
 **Cierre del lote:** implementación de reporte y pruebas CI completadas en PR Draft. No hay merge, despliegue, actualización de ledger real ni prueba E2E nueva ejecutada de original/evolucionado. El readback real de datos y los 14 tests son evidencia limitada, no certificación de evolución.
+
+
+## Lote 5 — auditoría del destino dinámico y corrección de cableado
+
+### Hallazgo comprobado y reparación
+
+**Defecto:** la versión inicial de `project_operational_matrix()` suministraba `destination_bindings={}` sin leer ningún mapping. Por lo tanto, todas las filas devolvían `DESTINO_PENDIENTE` incluso cuando el caso aportara una ubicación válida.
+
+**Corrección en el código:** `source_bound_bindings_from_cases(cases,slug,candidate_dir)` obtiene destinos opcionales **solo de los casos del Grupo 2 recuperados del trusted root/main**, vincula cada control por `case_id:check_id`, exige el mismo `profile_slug` y verifica contra el SHA-256 real del `SKILL.md` del candidato. Referencias a otro perfil, controles inexistentes, estructura inválida o SHA desactualizado producen incidencia y estado `NO_VERIFICADO_PROOF_OR_SOURCE`; nunca aportan PASS. El runner conecta estos bindings al generador de matriz. Un caso anterior sin metadatos sigue siendo válido, pero sus destinos permanecen pendientes.
+
+**Ejemplo de metadato opcional para un caso ya gobernado (no insertado en WEB-001):**
+
+```json
+{
+  "destination_bindings": {
+    "CONTROL_EXISTENTE": {
+      "profile_slug": "product_director_lf",
+      "section_title": "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+      "ordered_item": 0,
+      "item_title": "AUTHORITY RESOLUTION FIRST.",
+      "change_type": "MODIFICAR"
+    }
+  }
+}
+```
+
+La definición de un destino dentro de un caso debe pasar por la misma ruta gobernada de cambios del caso trusted-main. No se permite que el candidato cambie el contrato de pruebas para declarar mejora. El ejemplo solo muestra cómo se materializa el vínculo, **no** es una asignación aprobada para ningún caso real.
+
+### Verificación de fuentes canónicas
+
+- Supabase `public.lf_operation_steps`: 17 pasos activos de `ACTUALIZACION_PERFIL_LF` y 11 de `EJECUCION_PERFIL_LF`. Son pasos de operaciones transversales, **no** la numeración interna de cada perfil.
+- `public.lf_artifact_destination_registry`: registros de destino de artefactos/carpetas, no de pasos internos por perfil.
+- `public.lf_profile_selection_registry_v1`: descriptores de selección con `profile_slug`, `source_ref` y revisión; no se observaron IDs de los pasos internos en los campos inventariados.
+- `public.v_lf_profile_runtime_protocol`: tiene `canonical_steps`, pero los registros leídos corresponden a protocolos de creación/test y no a las estructuras internas de Product Director ni Reparador.
+- El `SKILL.md` exacto sí permite localizar un ítem/encabezado con evidencia de SHA. Ese vínculo se emite como `SOURCE_ANCHORED_NOT_CANONICAL`: **no** se eleva a paso canónico sin fuente adicional.
+
+### Dictamen del productor / auditoría técnica propia
+
+- Corrige el fallo de cableado de destinos vacíos y conserva el principio de no inventar numeración.
+- Mantiene `approval_effect=NONE` y el criterio oficial de Grupo 2 intacto.
+- Pruebas con dos perfiles demuestran la resolución de anclas diferentes, además de casos negativos de vínculo cruzado y stale SHA.
+- **No es revisión independiente:** este lote es una autoauditoría del productor. Se requiere un revisor distinto antes de merge.
+- **No hay destinos reales asignados en WEB-001**, ni nueva corrida atestada ni aprobación de Grupo 2.
