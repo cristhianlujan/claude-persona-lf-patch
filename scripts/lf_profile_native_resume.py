@@ -393,10 +393,71 @@ def main():
         "phase": phase,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
-    if phase in ("INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "REPORT_OUTPUT_REQUIRED"):
-        # A correct handoff is not proof that semantic judging or close has run.
-        print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
-        return 0
+    if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
+        if semantic_review is None:
+            print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
+            return 0
+        try:
+            validate_independent_semantic_review(semantic_review)
+        except ValueError as exc:
+            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+            return 1
+        semantic_path = Path.cwd() / "profile-semantic-judge.json"
+        semantic_path.write_text(
+            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+        repository = os.environ["GITHUB_REPOSITORY"]
+        artifact = f"profile-native-output-{run_id}"
+        semantic_ref = (
+            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+        )
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "semantic_judge_result": build_semantic_receipt(semantic_review),
+            "semantic_evidence_ref": semantic_ref,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
+    if phase == "REPORT_OUTPUT_REQUIRED":
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "finalize_report": True,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
     if phase == "NATIVE_MODEL_INPUT_READY":
         if profile_output is None:
             print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
