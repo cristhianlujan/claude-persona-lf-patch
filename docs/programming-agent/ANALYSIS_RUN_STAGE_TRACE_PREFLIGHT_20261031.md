@@ -5,11 +5,11 @@ Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL
 ## Autoridad y flujo
 
 1. ACT-0001 clasifica y emite un handoff válido; **no reserva un RUN en cada consulta**.
-2. \`public.lf_profile_execution_begin_from_handoff_v1\` valida handoff y delega en \`public.lf_profile_execution_begin_v1\`, que llama \`public.fn_lf_operation_reserve_execution_v1\`. La clave idempotente hace \`RESERVED_NEW_EXECUTION\` o \`REPLAY_EXISTING_EXECUTION\`.
-3. Se conservan los once pasos transversales: \`init_execution, router, profile_resolve, profile_source_read, input_validate, context_admission, research_baseline_freeze, execute_profile, output_validate, semantic_judge, report_output\`.
-4. El paso \`input_validate\` invoca Input Governance **solo cuando aplica**; puede reutilizar un RUN IG vigente o generar uno propio, referenciado desde el \`execution_id\` principal. No hay reingreso al Router por recuración.
-5. Los pasos funcionales internos **A1–A9** pertenecen al perfil Análisis, no al Router ni a la definición transversal de once pasos. Deben producir recibos persistidos por la operación o su recorder autorizado, vinculados con el **mismo** \`execution_id\` y \`request_sha256\`.
-6. \`stage_trace\` declarado por el LLM en el JSON final **no equivale** a nueve pasos materialmente recorridos. Un recibo propio del modelo jamás satisface por sí solo el paso.
+2. `public.lf_profile_execution_begin_from_handoff_v1` valida handoff y delega en `public.lf_profile_execution_begin_v1`, que llama `public.fn_lf_operation_reserve_execution_v1`. La clave idempotente hace `RESERVED_NEW_EXECUTION` o `REPLAY_EXISTING_EXECUTION`.
+3. Se conservan los once pasos transversales: `init_execution, router, profile_resolve, profile_source_read, input_validate, context_admission, research_baseline_freeze, execute_profile, output_validate, semantic_judge, report_output`.
+4. El paso `input_validate` invoca Input Governance **solo cuando aplica**; puede reutilizar un RUN IG vigente o generar uno propio, referenciado desde el `execution_id` principal. No hay reingreso al Router por recuración.
+5. Los pasos funcionales internos **A1–A9** pertenecen al perfil Análisis, no al Router ni a la definición transversal de once pasos. Deben producir recibos persistidos por la operación o su recorder autorizado, vinculados con el **mismo** `execution_id` y `request_sha256`.
+6. `stage_trace` declarado por el LLM en el JSON final **no equivale** a nueve pasos materialmente recorridos. Un recibo propio del modelo jamás satisface por sí solo el paso.
 7. Contrastar recibos por etapa, SHA exactos de la fuente A1–A9, currentness, RAW, juez independiente y eventual readback PG-01 antes de declarar cualquier READY.
 
 ## Parámetro obligatorio de negocio (`business`)
@@ -25,7 +25,7 @@ Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL
 
 ## Dos numeraciones diferentes
 
-| RUN externo \`EJECUCION_PERFIL_LF\` | Interno Análisis |
+| RUN externo `EJECUCION_PERFIL_LF` | Interno Análisis |
 |---|---|
 | 00 init_execution; 10 router; 20 profile_resolve; 30 profile_source_read | A1 / paso funcional 10 (comprensión) |
 | 40 input_validate; 45 context_admission; 47 research_baseline_freeze | A2–A8 / pasos funcionales 20–80 |
@@ -34,17 +34,31 @@ Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL
 
 ## Preflight de contrato — NO es una integración
 
-\`profiles/programming_analysis_lf/evals/analysis_stage_receipt_preflight_v1.py\` verifica estructura y vínculo interno de un **paquete armado de readbacks**. \`test_analysis_stage_receipt_preflight_v1.py\` contiene controles positivos y negativos. Incluso un positivo devuelve solo \`STRUCTURAL_CANDIDATE_ONLY\` y \`operational_ready=false\`: referencias autodeclaradas no son autoridad independiente.
+`profiles/programming_analysis_lf/evals/analysis_stage_receipt_preflight_v1.py` verifica estructura y vínculo interno de un **paquete armado de readbacks**. `test_analysis_stage_receipt_preflight_v1.py` contiene controles positivos y negativos. Incluso un positivo devuelve solo `STRUCTURAL_CANDIDATE_ONLY` y `operational_ready=false`: referencias autodeclaradas no son autoridad independiente.
 
 ## Evidencia de fuentes, 31-10-2026
 
-Git \`main\` inspeccionado: \`7b9cf78fbccfea5992174cd66d311858f9cb5af1\`. Los nueve Git blob SHA de \`contracts/analysis_source_binding.json\` coinciden 9/9 con las fuentes de main. **Existencia y coincidencia de blob NO prueban currentness externo, consumo del modelo ni RUN operativo.**
+Git `main` inspeccionado: `7b9cf78fbccfea5992174cd66d311858f9cb5af1`. Los nueve Git blob SHA de `contracts/analysis_source_binding.json` coinciden 9/9 con las fuentes de main. **Existencia y coincidencia de blob NO prueban currentness externo, consumo del modelo ni RUN operativo.**
 
-EKB: \`PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001\`, \`PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001\`, \`PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001\`, \`PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001\`.
+EKB: `PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001`, `PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001`, `PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001`, `PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001`.
+
+## Checkpoint progresivo A1–A9 dentro del RUN (candidato)
+
+Se verificó en Supabase que `public.fn_lf_operation_checkpoint_v1(execution_id,lease_owner,lease_fence,checkpoint_seq,checkpoint_payload,actor_execution_id)` ya implementa control de lease/fence, secuencia monotónica y replay idempotente. No crea RUN nuevo. Su campo `checkpoint_payload` conserva la **última** versión; por eso cada nuevo checkpoint debe acumular las evidencias precedentes sin sobrescribirlas.
+
+- El archivo `profiles/programming_analysis_lf/evals/analysis_stage_checkpoint_prepare_v1.py` **solo prepara** el snapshot acumulativo de A1–A9; no consulta ni modifica la base. Su salida `persisted=false` y `operational_ready=false` es invariante.
+- El consumidor, cuando quede vinculado, debe recuperar el `execution_id` exacto creado desde handoff, proyectar explícitamente `business` desde el manifest/handoff del Router (el ledger no tiene una columna `business`), obtener el lease canónico vigente, resolver la fuente CURRENT y capturar **una observación genuina por etapa**.
+- Solo entonces llama la función de checkpoint existente con seq siguiente; lee de vuelta `checkpoint_seq`, `checkpoint_payload`, `execution_id` y comprueba el snapshot **completo** del mismo RUN. Ni la preparación local ni un campo `stage_receipts` escrito por el modelo prueban que persistió.
+- Cada observación debe venir del productor real con identidad, evidencia RAW de ese hito, timestamp y fuente inmutable. **Prohibido transformar un único resultado final que declara A1–A9 en nueve supuestas ejecuciones históricas**. Si el runtime solo produce un RAW final, ese RAW debe etiquetarse como resultado único, no como nueve receipts operacionales.
+- Input Governance sigue siendo condicional y su propio run/recibo se enlaza al mismo RUN principal. SALY requiere su propio binding y fuente; no se permite inferir LF de un esquema por defecto.
+- El preparador valida estructura y orden; no acredita la procedencia, el timestamp, el actor autorizado, la autenticidad de la fuente o el modelo. Esas verificaciones son obligaciones del **consumidor y juez independientes** antes de cualquier PASS.
+- El recorder de once pasos `lf_record_profile_execution_step_v1` permanece intacto: insertar A1–A9 como `step_id` nuevos allí rompería los contratos compartidos. El único mecanismo aquí propuesto para progreso es el checkpoint ya existente.
+
+**Acceptance E2E pendiente**: Router real → RUN reservado → lease vigente → cada etapa con evidencia del productor y fuente actual → checkpoint persistido → readback por etapa → RAW final → output validator → juez independiente → cierre gobernado. Este PR no integra ese consumidor, no cambia Supabase y no ejecuta esta prueba.
 
 ## Pendientes de implementación en su dueño canónico
 
-- Registrar/autorizar el activo \`PERFIL-PROGRAMMING-ANALYSIS-LF\` en las capas gobernadas, sin activarlo en producción.
+- Registrar/autorizar el activo `PERFIL-PROGRAMMING-ANALYSIS-LF` en las capas gobernadas, sin activarlo en producción.
 - Conectar **un recorder existente** a cada checkpoint A1–A9; investigar el soporte de readback preciso antes de elegir almacenamiento. No insertar falsos recibos ni sobrecargar el RUN transversal con pasos universales A1–A9.
 - Corregir vínculo real Router/run/modelo de la cola que hoy puede omitir la operación gobernada; readback antes de inferencia.
 - Implementar un comprobador independiente que lea cada recibo desde su fuente (no solo acepte URIs), verifique currentness/issuer/identidad/digest y evalúe utilidad del resultado.
