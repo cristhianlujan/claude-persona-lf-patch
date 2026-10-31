@@ -1,0 +1,111 @@
+name: LF SRCR WEB001 Candidate Validation
+
+# Candidate PR-only diagnostic; never dispatches profiles, updates Supabase, or merges.
+on:
+  push:
+    branches:
+      - "lf/srcr-governed-evolution-a4b04585-20261030"
+    paths:
+      - "profiles/systemic_root_cause_repair_lf/**"
+      - "docs/profile_updater/handoffs/WEB001_*.json"
+      - ".github/workflows/lf-srcr-web001-candidate-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-validator:
+    name: SRCR Python pack and WEB001 runtime validation (read-only)
+    if: ${{ github.ref == 'refs/heads/lf/srcr-governed-evolution-a4b04585-20261030' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR head without stored credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned schema validation package
+        run: python -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
+
+      - name: Run existing canonical pack validator
+        id: pack
+        shell: bash
+        run: |
+          set +e
+          python3 profiles/systemic_root_cause_repair_lf/validators/validate_pack.py profiles/systemic_root_cause_repair_lf > "$RUNNER_TEMP/srcr_pack.log" 2>&1
+          rc=$?
+          cat "$RUNNER_TEMP/srcr_pack.log"
+          echo "pack_return_code=$rc" >> "$GITHUB_OUTPUT"
+          exit "$rc"
+
+      - name: Run existing canonical runtime validator against source-bound WEB001 draft
+        if: always() && steps.pack.outcome != 'skipped'
+        shell: bash
+        run: |
+          python3 - "$RUNNER_TEMP/srcr_runtime_result.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+          import jsonschema
+
+          from profiles.systemic_root_cause_repair_lf.validators.runtime_validate import validate
+
+          root = pathlib.Path(".")
+          pf = root / "profiles/systemic_root_cause_repair_lf"
+          artifact = root / "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CANDIDATE_RAW_DRAFT_20261030.json"
+          bundle = root / "docs/profile_updater/handoffs/WEB001_CANONICAL_EXTERNAL_EVIDENCE_MANIFEST_20261030.json"
+          raw = json.loads(artifact.read_text(encoding="utf-8"))
+          evidence = json.loads(bundle.read_text(encoding="utf-8"))
+          payload = raw["raw_output"]
+
+          raw_schema = json.loads((pf / "schemas/output.schema.json").read_text(encoding="utf-8"))
+          manifest_schema = json.loads((pf / "contracts/evidence_manifest.schema.json").read_text(encoding="utf-8"))
+          def schema_errors(schema, data):
+              klass = jsonschema.validators.validator_for(schema)
+              klass.check_schema(schema)
+              return sorted([{"path": "/".join(map(str, err.absolute_path)), "message": err.message} for err in klass(schema).iter_errors(data)], key=lambda e: e["path"])
+
+          output_errors = schema_errors(raw_schema, payload)
+          bundle_errors = schema_errors(manifest_schema, evidence)
+          runtime = validate(payload, evidence)
+          summary = {
+              "result_kind": "CANONICAL_PYTHON_VALIDATION_ONLY_NOT_SEMANTIC_JUDGE",
+              "case_id": "WEB-001",
+              "profile_git_commit": "${{ github.sha }}",
+              "profile_source_tree_sha256": raw.get("candidate_profile_tree_sha256"),
+              "source_manifest_digest": evidence.get("bundle_digest"),
+              "output_schema_error_count": len(output_errors),
+              "output_schema_errors": output_errors[:50],
+              "manifest_schema_error_count": len(bundle_errors),
+              "manifest_schema_errors": bundle_errors[:50],
+              "runtime_valid": runtime.get("valid", False),
+              "runtime_error_count": len(runtime.get("errors", [])),
+              "runtime_errors": runtime.get("errors", [])[:75],
+              "runtime_blocking_codes": runtime.get("blocking_codes", []),
+              "provider_attested": raw.get("provider_attested", False),
+              "independent_judge_executed": False,
+              "benchmark_admitted": False,
+          }
+          pathlib.Path(sys.argv[1]).write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+          print("::notice title=LF_SRCR_WEB001_PYTHON_VALIDATION::" + json.dumps({key: val for key,val in summary.items() if key.endswith("_count") or key in ("runtime_valid","runtime_blocking_codes","case_id","provider_attested")}, separators=(",", ":")))
+          print(json.dumps(summary, indent=2, ensure_ascii=False)[:26000])
+          if output_errors or bundle_errors or not runtime.get("valid", False):
+              sys.exit(1)
+          PY
+
+      - name: Attach failure evidence (not a profile run receipt)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: srcr-web001-candidate-validation-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/srcr_pack.log
+            ${{ runner.temp }}/srcr_runtime_result.json
+          if-no-files-found: ignore
+          retention-days: 30
