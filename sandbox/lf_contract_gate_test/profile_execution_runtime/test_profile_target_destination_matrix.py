@@ -93,5 +93,74 @@ class ProfileTargetDestinationTest(unittest.TestCase):
         self.assertEqual(out["summary"]["no_verificados"], 1)
 
 
+
+
+class GovernedRunnerSidecarTest(unittest.TestCase):
+    """Compare a local report to the already published Group 2 proof."""
+
+    def payload(self):
+        import runpy
+        runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"),
+                                run_name="runner_test")
+        base, candidate = "a" * 64, "b" * 64
+        cases = {"CASE": {"checks": [
+            {"id": "C1", "pointer": "/output/status", "op": "eq", "value": "OK"},
+        ]}}
+        runs = [
+            {"run_id": "base-run", "case_id": "CASE", "profile_tree_sha256": base,
+             "attestation": "NONE", "output": {"status": "BAD"}, "validator": {"valid": True}},
+            {"run_id": "candidate-run", "case_id": "CASE", "profile_tree_sha256": candidate,
+             "attestation": "NONE", "output": {"status": "OK"}, "validator": {"valid": True}},
+        ]
+        official = {"base_tree_sha256": base, "candidate_tree_sha256": candidate,
+                    "checks_total": 1, "base_passed": 0, "candidate_passed": 1,
+                    "improved_checks": ["CASE:C1"], "regressed_checks": [],
+                    "cases_unmeasured": []}
+        proof = {"operational": official, "verdict": "EVOLUTION_DEMONSTRATED"}
+        return runner, cases, runs, base, candidate, proof
+
+    def test_projection_matches_exact_group2_without_conferring_authority(self):
+        from unittest.mock import patch
+        runner, cases, runs, base, candidate, proof = self.payload()
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {
+            "gather_operational": lambda *_: (cases, runs, base, candidate, [])}):
+            report = func("product_director_lf", ROOT / "profiles/product_director_lf", proof)
+        self.assertEqual(report["status"], "GROUP2_PROJECTION_MATCHED_REPORT_ONLY")
+        self.assertEqual(report["summary"]["mejorados"], 1)
+        self.assertEqual(report["summary"]["destinos_pendientes"], 1)
+        self.assertEqual(report["destination_authority"], "UNVERIFIED")
+        self.assertEqual(report["approval_effect"], "NONE")
+        self.assertEqual(report["rows"][0]["original_run_ids"], ["base-run"])
+
+    def test_mismatched_official_proof_is_not_verified(self):
+        from unittest.mock import patch
+        runner, cases, runs, base, candidate, proof = self.payload()
+        proof["operational"]["candidate_passed"] = 0
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {
+            "gather_operational": lambda *_: (cases, runs, base, candidate, [])}):
+            report = func("product_director_lf", ROOT / "profiles/product_director_lf", proof)
+        self.assertEqual(report["status"], "NO_VERIFICADO_PROOF_OR_SOURCE")
+        self.assertEqual(report["approval_effect"], "NONE")
+
+    def test_sidecar_is_independent_file_and_replay_overwrites_atomically(self):
+        import json
+        import tempfile
+        import runpy
+        runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"), run_name="test")
+        with tempfile.TemporaryDirectory() as temp:
+            state = Path(temp) / "run.json"
+            state.write_text("{}", encoding="utf-8")
+            report = {"schema": "LF_PROFILE_CONTROL_MATRIX_V1", "status": "READ_ONLY_REPORT_NOT_AUTHORITY"}
+            path = runner["save_matrix_sidecar"](state, report)
+            self.assertEqual(json.loads(Path(path).read_text()), report)
+            report["status"] = "NO_VERIFICADO_PROOF_OR_SOURCE"
+            self.assertEqual(path, runner["save_matrix_sidecar"](state, report))
+            self.assertEqual(json.loads(Path(path).read_text()), report)
+            self.assertEqual(state.read_text(), "{}")
+            self.assertFalse(Path(path + ".pending").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
