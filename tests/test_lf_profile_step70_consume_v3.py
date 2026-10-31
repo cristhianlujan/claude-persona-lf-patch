@@ -84,8 +84,8 @@ class Step70Tests(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", encoding="utf-8") as f:
             json.dump(v, f)
             f.flush()
-            with patch.object(sys, "argv", ["consumer", "--execution-id", "EXEC-TEST-70", "--verdict", f.name, "--dry-run"]), \\
-                 patch.object(step70, "api", return_value=rows) as api, \\
+            with patch.object(sys, "argv", ["consumer", "--execution-id", "EXEC-TEST-70", "--verdict", f.name, "--dry-run"]), \
+                 patch.object(step70, "api", return_value=rows) as api, \
                  redirect_stdout(io.StringIO()) as captured:
                 step70.main()
             result = json.loads(captured.getvalue())
@@ -102,7 +102,7 @@ class Step70Tests(unittest.TestCase):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", encoding="utf-8") as f:
             json.dump(v, f)
             f.flush()
-            with patch.object(sys, "argv", ["consumer", "--execution-id", "EXEC-TEST-70", "--verdict", f.name]), \\
+            with patch.object(sys, "argv", ["consumer", "--execution-id", "EXEC-TEST-70", "--verdict", f.name]), \
                  patch.object(step70, "api", return_value=[]) as api:
                 with self.assertRaisesRegex(ValueError, "9 predecessor"):
                     step70.main()
