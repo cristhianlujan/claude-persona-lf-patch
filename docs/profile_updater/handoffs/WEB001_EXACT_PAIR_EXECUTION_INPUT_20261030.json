@@ -7,10 +7,10 @@
   "source": {
     "repo": "cristhianlujan/claude-persona-lf-patch",
     "base_commit": "52c0f68ad243d2a98f959db8f3a935179b5681aa",
-    "candidate_commit": "5e957945c9918e3a9a057a2ed4cf4a4a9a27ca6c",
+    "candidate_commit": "779fd6943c1f85d09d34bea00b7d8763c442c382",
     "base_profile_tree_sha256": "2f4ac419ee3a49b2366a684daf4df2613a28426e77f0a880851fe07841105381",
-    "candidate_profile_tree_sha256": "b35b70a040d52ce196abfd552ba2f4ba6f3b4f9b5e6ebbc43a10f1691a0dc11c",
-    "candidate_git_tree_sha": "57b10549cd9bcc2b5cd016aff1e54d8098b403d2"
+    "candidate_profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
+    "candidate_git_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f"
   },
   "literal_case_input": "Investigar el incidente WEB-001 de CAPTURA_WEB: durante ACT-0058, 7 URL de Reevalúa devolvieron Cache miss al usar web.run open(url). El pipeline marcó FALLIDO sin generar conocimiento inventado. Diagnosticar control raíz, política de reintentos, consumidor de reingreso y autoridad de propietario. Preservar fail-closed, no escribir datos ni inferir owner sin fuente vigente. Registrar consultas deterministas N1 y N2, continuar búsqueda relevante si faltan datos, y distinguir hecho, hipótesis, reparación y evidencia pendiente.",
   "same_conditions_for_both": {
@@ -140,7 +140,7 @@
   "verification": {
     "official_structural_baseline": "15/15",
     "official_structural_candidate": "15/15",
-    "official_compare_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41150518675",
+    "official_compare_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41156302815",
     "official_operational_status": "UNMEASURED",
     "official_improvement_verdict": "NO_DEMONSTRATED_IMPROVEMENT",
     "required_checks": 14,
@@ -158,5 +158,12 @@
     "Independent judge must requery each material N1/N2 item and read entire candidate as required",
     "Promote runs to trusted main only through governed Merge Train, then rerun official compare",
     "Only after improved_check and 0 regressions continue updater steps90-130; do not merge profile PR beforehand"
-  ]
+  ],
+  "source_rebinding": {
+    "reason": "Schema bug fixed on candidate tree only; original 11 updater receipts not modified",
+    "profile_source_commit": "779fd6943c1f85d09d34bea00b7d8763c442c382",
+    "profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
+    "source": "OFFICIAL_PROFILE_EVOLUTION_PROOF_41156302815",
+    "not_full_runtime_attestation": true
+  }
 }
