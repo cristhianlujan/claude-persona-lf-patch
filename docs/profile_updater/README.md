@@ -168,3 +168,14 @@ python3 scripts/lf_profile_update_run.py \
 - [ ] Cierre registrado, EKB actualizado; runtime sigue sin activación automática.
 
 **Regla de cierre:** una **causa investigada** puede quedar `DIAGNOSTICO_VERIFICADO` aunque `EVOLUCION_CERTIFICADA` y `ACTUALIZACION_COMPLETADA` sigan pendientes. Nunca colapsar los tres estados.
+
+
+## 10. Comparación funcional por problema (protocolo candidato)
+
+**Decisión del dueño 2026-10-31:** evaluar la evolución por cada problema material, comparando las **respuestas reales originales y evolucionadas en columnas**, explicando qué mejora, qué se conserva y qué se pierde. Referencia: [PROCEDIMIENTO_COMPARACION_EVOLUTIVA_POR_PROBLEMA_20261031.md](PROCEDIMIENTO_COMPARACION_EVOLUTIVA_POR_PROBLEMA_20261031.md).
+
+La implementación propuesta usa el evaluador existente `skills/profile_creator/validators/operational_coverage_v1.py`: si el caso confiable incluye `comparison_dimensions`, `evaluate()` proyecta `functional_problem_comparison` con dos columnas de respuestas, fuentes y checks; el juez independiente debe emitir el veredicto. No cambia el comparador oficial ni obliga a introducir dimensiones en todos los perfiles.
+
+El resultado por problema se registra como `MEJORA_OBSERVADA`, `MEJORA_VERIFICADA`, `CONSERVADO`, `SIN_MEJORA`, `REGRESION` o `NO_VERIFICADO`. Reconocer una mejora de investigación o diagnóstico **no obliga a que la reparación del incidente ya esté lista**. Se permite `NEEDS_MORE_EVIDENCE` cuando la incertidumbre está sustentada. No dar PASS semántico a un `if_then` que pasó únicamente porque la premisa dejó de aplicar.
+
+Conservar las garantías actuales: dos ejecuciones sobre el mismo input con RAW/árbol/validator exactos, juez independiente, ningún control tipado regresado, `EVOLUTION_DEMONSTRATED` solo si lo certifica el comparador vigente, y reporte en los pasos existentes 100/110/130 (sin segundo orquestador ni ruta). Hasta que este protocolo pase revisión, PASE, Merge Train y readback de la política vigente en Supabase, **es un cambio propuesto, no un cambio operativo ya activado**.

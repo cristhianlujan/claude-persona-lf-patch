@@ -45,9 +45,29 @@ def check_verdict(v):
     require(v.get("verdict") == PASS, "Step 70 PASS registration requires a genuine independent PASS; non-PASS verdicts must be returned as structured errors to the final reporter")
     checks = v.get("decision_checks")
     require(isinstance(checks, dict) and set(checks) == set(CHECKS), "Exactly 12 V3 checks required")
+    route_status = v.get("router_direct_consistency")
+    require(route_status in ("NOT_TESTED", "PASS"), "Router/direct unexplained divergence")
     for name, check in checks.items():
-        require(isinstance(check, dict) and check.get("result") in (True, "true"), f"{name} not PASS")
-        require(check.get("reason") and isinstance(check.get("source_refs"), list), f"{name}: missing rationale/refs")
+        require(isinstance(check, dict), f"{name}: check must be object")
+        require(isinstance(check.get("reason"), str) and check["reason"].strip()
+                and isinstance(check.get("source_refs"), list) and check["source_refs"],
+                f"{name}: missing rationale/refs")
+        if name == "router_direct_consistency" and route_status == "NOT_TESTED":
+            require(check.get("result") == "not_applicable" and check.get("applicability") == "ROUTER_ONLY",
+                    "Router-only check must be explicitly not_applicable, not a fabricated PASS")
+        elif name == "router_direct_consistency":
+            require(check.get("result") in (True, "true")
+                    and check.get("applicability") == "AUTHORIZED_COMPARISON"
+                    and isinstance(check.get("router_execution_ref"), str)
+                    and bool(check["router_execution_ref"].strip())
+                    and isinstance(check.get("direct_execution_ref"), str)
+                    and bool(check["direct_execution_ref"].strip())
+                    and check["router_execution_ref"] != check["direct_execution_ref"]
+                    and check["router_execution_ref"] in check["source_refs"]
+                    and check["direct_execution_ref"] in check["source_refs"],
+                    "Router/direct PASS requires distinct, cited authorized comparison")
+        else:
+            require(check.get("result") in (True, "true"), f"{name} not PASS")
     require(v.get("producer_independence_proven") is True, "Independence unproven")
     require(v.get("model_call_count") == 1, "Requires one real independent judge model call")
     require(v.get("unsupported_claims") == [], "Unsupported claims must be empty")
@@ -55,7 +75,6 @@ def check_verdict(v):
     require(isinstance(v.get("source_refs"), list) and v["source_refs"], "Inspected sources required")
     require(isinstance(v.get("resolved_context_refs"), list) and v["resolved_context_refs"], "Context required")
     require(v.get("independent_semantic_receipt_ref"), "Independent receipt ref required")
-    require(v.get("router_direct_consistency") in ("NOT_TESTED", "PASS"), "Router/direct unexplained divergence")
     require(v.get("counterfactual_result"), "Counterfactual evaluation required")
 
 

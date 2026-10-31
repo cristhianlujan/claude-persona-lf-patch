@@ -1,0 +1,14 @@
+{
+  "solution_ref": "profile-native-output-step50-60-20261031",
+  "paths": {
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "profiles/product_director_lf/contracts/runtime_binding.json": "TRANSVERSAL_ASSETS",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "skills/profile_creator/validators/run_bound_profile_output_validator_v1.py": "TRANSVERSAL_ASSETS",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "supabase/migrations/20261031122000_lf_profile_ig_open_work_traceability_path_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/profile-native-output-step50-60-20261031.json": "CHANGESET_MANIFEST"
+  }
+}

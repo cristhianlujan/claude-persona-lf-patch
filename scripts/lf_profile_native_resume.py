@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 from pathlib import Path, PurePosixPath
 import sys
 import urllib.error
@@ -60,7 +61,20 @@ def oidc():
 def governed_request():
     """Accept only explicit, bounded issue data or authorized dispatch inputs."""
     if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
-        return os.environ["PROFILE_EXECUTION_ID"], os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip()
+        raw_output = os.getenv("PROFILE_OUTPUT_JSON", "").strip()
+        parsed_output = json.loads(raw_output) if raw_output else None
+        if parsed_output is not None and not isinstance(parsed_output, dict):
+            raise ValueError("PROFILE_GOVERNED_DISPATCH_OUTPUT_INVALID")
+        raw_semantic = os.getenv("PROFILE_SEMANTIC_REVIEW_JSON", "").strip()
+        parsed_semantic = json.loads(raw_semantic) if raw_semantic else None
+        if parsed_semantic is not None and not isinstance(parsed_semantic, dict):
+            raise ValueError("PROFILE_GOVERNED_DISPATCH_SEMANTIC_INVALID")
+        return (
+            os.environ["PROFILE_EXECUTION_ID"],
+            os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip(),
+            parsed_output,
+            parsed_semantic,
+        )
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
     event = json.loads(Path(event_path).read_text(encoding="utf-8"))
@@ -78,11 +92,11 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_TRIGGER_INVALID")
 
     raw = issue.get("body")
-    if not isinstance(raw, str) or len(raw) > 8192:
+    if not isinstance(raw, str) or len(raw) > 60000:
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -91,7 +105,13 @@ def governed_request():
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
-    return execution_id, json.dumps(selection) if selection is not None else ""
+    profile_output = data.get("profile_output")
+    if profile_output is not None and not isinstance(profile_output, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_OUTPUT_INVALID")
+    semantic_review = data.get("semantic_judge_review")
+    if semantic_review is not None and not isinstance(semantic_review, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_INVALID")
+    return execution_id, json.dumps(selection) if selection is not None else "", profile_output, semantic_review
 
 
 def is_direct_validator_continuation(status, response):
@@ -109,8 +129,184 @@ def is_direct_validator_continuation(status, response):
     )
 
 
+def sha256_file(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run_bound_validator(target_path, profile_code, profile_output):
+    """Run only the validator declared by the exact profile runtime binding."""
+    source_path = PurePosixPath(target_path)
+    slug = source_path.parts[1]
+    repo_root = Path.cwd().resolve()
+    binding_path = repo_root / "profiles" / slug / "contracts" / "runtime_binding.json"
+    if not binding_path.is_file():
+        raise ValueError("PROFILE_RUNTIME_BINDING_REQUIRED")
+    try:
+        binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise ValueError("PROFILE_RUNTIME_BINDING_UNREADABLE")
+    if (binding.get("profile_slug") != slug
+        or binding.get("profile_code") != profile_code):
+        raise ValueError("PROFILE_RUNTIME_BINDING_IDENTITY_INVALID")
+
+    runtime_schema = binding.get("runtime_schema")
+    validator = binding.get("canonical_validator")
+    if (not isinstance(runtime_schema, dict)
+        or not isinstance(runtime_schema.get("default"), str)
+        or not isinstance(validator, dict)
+        or not isinstance(validator.get("path"), str)
+        or validator.get("callable") != "validate"
+        or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
+        raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
+
+    schema_ref = f"profiles/{slug}/{runtime_schema['default']}"
+    validator_ref = f"profiles/{slug}/{validator['path']}"
+    for ref in (schema_ref, validator_ref):
+        ref_path = PurePosixPath(ref)
+        if ref_path.is_absolute() or ".." in ref_path.parts:
+            raise ValueError("PROFILE_RUNTIME_BINDING_PATH_UNSAFE")
+    schema_path = (repo_root / schema_ref).resolve()
+    validator_path = (repo_root / validator_ref).resolve()
+    profile_root = (repo_root / "profiles" / slug).resolve()
+    if (not schema_path.is_file() or not validator_path.is_file()
+        or not schema_path.is_relative_to(profile_root)
+        or not validator_path.is_relative_to(profile_root)):
+        raise ValueError("PROFILE_RUNTIME_BINDING_SOURCE_UNRESOLVED")
+
+    raw_path = repo_root / "profile-native-output.json"
+    raw_bytes = json.dumps(
+        profile_output, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    raw_path.write_bytes(raw_bytes)
+
+    packet = {
+        "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_slug": slug,
+        "validator_transport": validator["transport"],
+        "expected_valid": True,
+        "runtime_binding_sha256": sha256_file(binding_path),
+        "schema_ref": schema_ref,
+        "schema_sha256": sha256_file(schema_path),
+        "validator_ref": validator_ref,
+        "validator_sha256": sha256_file(validator_path),
+        "raw_output_ref": raw_path.relative_to(repo_root).as_posix(),
+        "raw_output_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+    }
+    packet_path = repo_root / "profile-native-validation-binding.json"
+    packet_path.write_text(
+        json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+
+    runner = repo_root / "skills" / "profile_creator" / "validators" / "run_bound_profile_output_validator_v1.py"
+    proc = subprocess.run(
+        [sys.executable, str(runner), "--root", str(repo_root), "--binding", str(packet_path)],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=repo_root, timeout=30, check=False,
+    )
+    validation_path = repo_root / "profile-native-validation.json"
+    validation_path.write_bytes(proc.stdout)
+    try:
+        receipt = json.loads(proc.stdout)
+    except ValueError:
+        raise ValueError("PROFILE_BOUND_VALIDATOR_NON_JSON")
+    if (proc.returncode != 0
+        or not isinstance(receipt, dict)
+        or receipt.get("status") != "CANDIDATE_OUTPUT_PARITY_OBSERVED"
+        or receipt.get("structural_check_executed") is not True
+        or receipt.get("profile_validator_executed") is not True
+        or receipt.get("source_readback_matched") is not True
+        or receipt.get("blocking_codes") != []):
+        raise ValueError("PROFILE_BOUND_VALIDATOR_NOT_PASS")
+
+    run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+    repository = os.environ["GITHUB_REPOSITORY"]
+    artifact = f"profile-native-output-{run_id}"
+    raw_ref = f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-native-output.json"
+    validator_ref_evidence = (
+        f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-native-validation.json"
+    )
+    return receipt, raw_ref, validator_ref_evidence
+
+
+SEMANTIC_CHECKS = (
+    "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
+    "authority_resolution_valid", "constraints_preserved", "claims_authorized",
+    "materiality_handled_correctly", "tradeoff_defensible",
+    "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
+    "router_direct_consistency", "counterfactual_trajectory",
+)
+
+
+def validate_independent_semantic_review(review):
+    if review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_NOT_PASS")
+    checks = review.get("decision_checks")
+    if not isinstance(checks, dict) or set(checks) != set(SEMANTIC_CHECKS):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECKS_INVALID")
+    route_status = review.get("router_direct_consistency")
+    if route_status not in ("NOT_TESTED", "PASS"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_ROUTER_DIRECT_INVALID")
+    for name, check in checks.items():
+        if (not isinstance(check, dict)
+            or not isinstance(check.get("reason"), str) or not check["reason"].strip()
+            or not isinstance(check.get("source_refs"), list) or not check["source_refs"]):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+        if name == "router_direct_consistency" and route_status == "NOT_TESTED":
+            if check.get("result") != "not_applicable" or check.get("applicability") != "ROUTER_ONLY":
+                raise ValueError("PROFILE_SEMANTIC_ROUTER_ONLY_APPLICABILITY_INVALID")
+        elif name == "router_direct_consistency":
+            router_ref = check.get("router_execution_ref")
+            direct_ref = check.get("direct_execution_ref")
+            if (check.get("result") not in (True, "true")
+                or check.get("applicability") != "AUTHORIZED_COMPARISON"
+                or not isinstance(router_ref, str) or not router_ref.strip()
+                or not isinstance(direct_ref, str) or not direct_ref.strip()
+                or direct_ref == router_ref
+                or router_ref not in check["source_refs"]
+                or direct_ref not in check["source_refs"]):
+                raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
+        elif check.get("result") not in (True, "true"):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+    if review.get("producer_independence_proven") is not True:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
+    if review.get("model_call_count") != 1:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
+    if review.get("unsupported_claims") != [] or review.get("blocking_codes") != []:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_BLOCKED")
+    if not isinstance(review.get("source_refs"), list) or not review["source_refs"]:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_SOURCE_REFS_REQUIRED")
+    if not isinstance(review.get("resolved_context_refs"), list) or not review["resolved_context_refs"]:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_CONTEXT_REFS_REQUIRED")
+    if not review.get("counterfactual_result"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_COUNTERFACTUAL_REQUIRED")
+    for key in ("candidate_sha256", "scope_packet_sha256"):
+        if not isinstance(review.get(key), str) or not re.fullmatch(r"[0-9a-f]{64}", review[key]):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_HASH_INVALID:" + key)
+
+
+def build_semantic_receipt(review):
+    return {
+        "status": "PASS",
+        "verdict": "PASS_INDEPENDENT_SEMANTIC",
+        "validator_status": "PASS",
+        "producer_independence_proven": True,
+        "model_call_count": 1,
+        "candidate_sha256": review["candidate_sha256"],
+        "scope_packet_sha256": review["scope_packet_sha256"],
+        "result": {
+            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "candidate_sha256": review["candidate_sha256"],
+            "scope_packet_sha256": review["scope_packet_sha256"],
+            "unsupported_claims": [],
+            "blocking_codes": [],
+        },
+        "judge_v3_evidence": review,
+    }
+
+
 def main():
-    execution_id, raw_draft = governed_request()
+    execution_id, raw_draft, profile_output, semantic_review = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
@@ -214,13 +410,123 @@ def main():
         "phase": phase,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
-    if phase in ("INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "REPORT_OUTPUT_REQUIRED"):
-        # A correct handoff is not proof that semantic judging or close has run.
-        print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
-        return 0
+    if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
+        if semantic_review is None:
+            print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
+            return 0
+        if semantic_review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+            from lf_semantic_fail_feedback import persist_feedback
+            try:
+                feedback = persist_feedback(
+                    semantic_review, execution_id, source.get("profile_code"),
+                    Path.cwd() / "profile-semantic-judge.json",
+                )
+            except (ValueError, TypeError) as exc:
+                print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
+                return 1
+            print(json.dumps({
+                "phase": feedback["phase"], "outcome": feedback["outcome"],
+                "verdict": feedback["verdict"],
+                "execution_id": feedback["execution_id"],
+                "next_action": feedback["next_action"],
+            }, ensure_ascii=False))
+            return 1
+        try:
+            validate_independent_semantic_review(semantic_review)
+        except ValueError as exc:
+            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+            return 1
+        semantic_path = Path.cwd() / "profile-semantic-judge.json"
+        semantic_path.write_text(
+            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+        repository = os.environ["GITHUB_REPOSITORY"]
+        artifact = f"profile-native-output-{run_id}"
+        semantic_ref = (
+            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+        )
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "semantic_judge_result": build_semantic_receipt(semantic_review),
+            "semantic_evidence_ref": semantic_ref,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
+    if phase == "REPORT_OUTPUT_REQUIRED":
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "finalize_report": True,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
     if phase == "NATIVE_MODEL_INPUT_READY":
-        print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
-        return 0
+        if profile_output is None:
+            print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
+            return 0
+        try:
+            validation, raw_ref, validator_ref = run_bound_validator(
+                target_path, source.get("profile_code"), profile_output
+            )
+        except ValueError as exc:
+            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            return 1
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "profile_output": profile_output,
+            "validation_result": validation,
+            "raw_evidence_ref": raw_ref,
+            "validator_evidence_ref": validator_ref,
+        }
+        code, recorded = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"OUTPUT_RECORD","status":code,
+                "code":recorded.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": recorded.get("profile_code"),
+            "phase": recorded.get("phase"),
+            "next_action": recorded.get("next_action"),
+        }, ensure_ascii=False))
+        return 0 if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED" else 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
         print("PROFILE_NATIVE_SEMANTIC_OR_IG_CONTINUATION_REQUIRED_NOT_COMPLETE")
         return 0

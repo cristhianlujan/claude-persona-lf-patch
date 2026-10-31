@@ -247,10 +247,252 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  const semanticKeys = [
+    "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
+    "authority_resolution_valid", "constraints_preserved", "claims_authorized",
+    "materiality_handled_correctly", "tradeoff_defensible",
+    "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
+    "router_direct_consistency", "counterfactual_trajectory",
+  ];
+
+  if (Object.prototype.hasOwnProperty.call(body, "semantic_judge_result")) {
+    const semantic = body.semantic_judge_result;
+    const semanticRef = body.semantic_evidence_ref;
+    if (
+      !semantic || typeof semantic !== "object" || Array.isArray(semantic) ||
+      typeof semanticRef !== "string" || !semanticRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_SUBMISSION_INVALID", 400);
+
+    const receipt = semantic as Payload;
+    const review = receipt.judge_v3_evidence;
+    const resultObj = receipt.result;
+    if (
+      receipt.status !== "PASS" ||
+      receipt.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      receipt.validator_status !== "PASS" ||
+      receipt.producer_independence_proven !== true ||
+      receipt.model_call_count !== 1 ||
+      typeof receipt.candidate_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.candidate_sha256) ||
+      typeof receipt.scope_packet_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.scope_packet_sha256) ||
+      !resultObj || typeof resultObj !== "object" || Array.isArray(resultObj) ||
+      (resultObj as Payload).verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      (resultObj as Payload).candidate_sha256 !== receipt.candidate_sha256 ||
+      (resultObj as Payload).scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray((resultObj as Payload).unsupported_claims) ||
+      ((resultObj as Payload).unsupported_claims as unknown[]).length !== 0 ||
+      !Array.isArray((resultObj as Payload).blocking_codes) ||
+      ((resultObj as Payload).blocking_codes as unknown[]).length !== 0 ||
+      !review || typeof review !== "object" || Array.isArray(review)
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_RECEIPT_NOT_PASS", 409);
+
+    const v3 = review as Payload;
+    const checks = v3.decision_checks;
+    if (
+      v3.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      v3.producer_independence_proven !== true ||
+      v3.model_call_count !== 1 ||
+      v3.candidate_sha256 !== receipt.candidate_sha256 ||
+      v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
+      !Array.isArray(v3.blocking_codes) || v3.blocking_codes.length !== 0 ||
+      !Array.isArray(v3.source_refs) || v3.source_refs.length === 0 ||
+      !Array.isArray(v3.resolved_context_refs) || v3.resolved_context_refs.length === 0 ||
+      !["PASS", "NOT_TESTED"].includes(String(v3.router_direct_consistency ?? "")) ||
+      !v3.counterfactual_result ||
+      !checks || typeof checks !== "object" || Array.isArray(checks) ||
+      Object.keys(checks).sort().join("|") !== [...semanticKeys].sort().join("|")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_V3_EVIDENCE_INVALID", 409);
+
+    for (const key of semanticKeys) {
+      const check = (checks as Payload)[key];
+      if (!check || typeof check !== "object" || Array.isArray(check)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      const item = check as Payload;
+      const refs = item.source_refs;
+      if (typeof item.reason !== "string" || !item.reason.trim() ||
+          !Array.isArray(refs) || refs.length === 0) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      if (key === "router_direct_consistency" && v3.router_direct_consistency === "NOT_TESTED") {
+        // No direct production route exists. NOT_TESTED is neither PASS nor divergence.
+        if (item.result !== "not_applicable" || item.applicability !== "ROUTER_ONLY") {
+          return blocked("PROFILE_NATIVE_ROUTER_ONLY_APPLICABILITY_INVALID", 409);
+        }
+      } else if (key === "router_direct_consistency") {
+        const routerRef = item.router_execution_ref;
+        const directRef = item.direct_execution_ref;
+        if (![true, "true"].includes(item.result as true | string) ||
+            item.applicability !== "AUTHORIZED_COMPARISON" ||
+            typeof routerRef !== "string" || !routerRef.trim() ||
+            typeof directRef !== "string" || !directRef.trim() ||
+            directRef === routerRef ||
+            !refs.includes(routerRef) || !refs.includes(directRef)) {
+          return blocked("PROFILE_NATIVE_ROUTER_DIRECT_COMPARISON_UNPROVEN", 409);
+        }
+      } else if (![true, "true"].includes(item.result as true | string)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+    }
+
+    const recordedSemantic = await rpc(config, fetchFn, "lf_profile_native_bridge_record_semantic_v1", {
+      p_execution_id: e.execution_id,
+      p_semantic_judge_result: receipt,
+      p_evidence_ref: semanticRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedSemantic.error) return recordedSemantic.error;
+    if (
+      recordedSemantic.result?.status !== "SEMANTIC_JUDGE_RECORDED" ||
+      Number(recordedSemantic.result?.clean_step_count ?? 0) !== 10
+    ) {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "SEMANTIC_RECORD",
+        code: recordedSemantic.result?.blocking_code ?? "PROFILE_NATIVE_SEMANTIC_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedSemantic.result,
+      }, 409);
+    }
+
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
+  if (body.finalize_report === true) {
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
   // The pre-model bridge must never be reentered to complete an existing 9/11
   // or 10/11 execution. Read canonical step states and hand off the next gate.
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
+
+  // Post-model submission is accepted only from this already-authorized OIDC
+  // continuation transport. The model supplies only its RAW profile output;
+  // deterministic validity must come from the source-bound canonical runner.
+  if (Object.prototype.hasOwnProperty.call(body, "profile_output")) {
+    if (result.status !== "NATIVE_MODEL_INPUT_READY") {
+      return blocked("PROFILE_NATIVE_OUTPUT_NOT_REQUESTED", 409);
+    }
+    const profileOutput = body.profile_output;
+    const validation = body.validation_result;
+    const rawEvidenceRef = body.raw_evidence_ref;
+    const validatorEvidenceRef = body.validator_evidence_ref;
+    if (
+      !profileOutput || typeof profileOutput !== "object" || Array.isArray(profileOutput) ||
+      !validation || typeof validation !== "object" || Array.isArray(validation) ||
+      typeof rawEvidenceRef !== "string" || !rawEvidenceRef.startsWith("actions://") ||
+      typeof validatorEvidenceRef !== "string" || !validatorEvidenceRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_OUTPUT_SUBMISSION_INVALID", 400);
+
+    const receipt = validation as Payload;
+    const blockingCodes = receipt.blocking_codes;
+    const validatorErrors = receipt.validator_errors;
+    if (
+      receipt.schema !== "PROFILE_OUTPUT_VALIDATION_RESULT_V1" ||
+      receipt.status !== "CANDIDATE_OUTPUT_PARITY_OBSERVED" ||
+      receipt.structural_check_executed !== true ||
+      receipt.profile_validator_executed !== true ||
+      receipt.source_readback_matched !== true ||
+      receipt.independent_review_executed !== false ||
+      receipt.provider_attested !== false ||
+      receipt.admission_authorized !== false ||
+      receipt.profile_write_authorized !== false ||
+      receipt.runtime_activation_authorized !== false ||
+      !Array.isArray(blockingCodes) || blockingCodes.length !== 0 ||
+      !Array.isArray(validatorErrors) || validatorErrors.length !== 0 ||
+      typeof receipt.raw_output_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.raw_output_sha256)
+    ) return blocked("PROFILE_NATIVE_OUTPUT_VALIDATOR_RECEIPT_NOT_PASS", 409);
+
+    const recorded = await rpc(config, fetchFn, "lf_profile_native_bridge_record_output_v1", {
+      p_execution_id: e.execution_id,
+      p_profile_output: profileOutput,
+      p_validation: {
+        valid: true,
+        errors: validatorErrors,
+        blocking_codes: blockingCodes,
+        source_bound_validation: receipt,
+      },
+      p_raw_evidence_ref: rawEvidenceRef,
+      p_validator_evidence_ref: validatorEvidenceRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recorded.error) return recorded.error;
+    if (recorded.result?.status !== "NATIVE_PRODUCER_VALIDATED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "OUTPUT_RECORD",
+        code: recorded.result?.blocking_code ?? "PROFILE_NATIVE_OUTPUT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recorded.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "CONTINUATION_REQUIRED",
+      phase: "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_action: "RUN_EXISTING_INDEPENDENT_SEMANTIC_JUDGE",
+      result: recorded.result,
+    });
+  }
+
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",

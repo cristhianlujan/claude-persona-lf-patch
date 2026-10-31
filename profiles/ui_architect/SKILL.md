@@ -98,7 +98,7 @@ These rules apply only to REMEDIATE_EXISTING work.
 - Do not move a CTA farther from its governing state.
 - Never strengthen unsupported guarantees, eligibility, urgency, debt-closure, or precision.
 - Preserve supplied qualifiers.
-- Router and Direct materially agree for the same governed input.
+- ACT-0001 Router → UI Architect is the single operational route. Router/direct comparison is diagnostic only when independently authorized and evidenced; otherwise check 11 is NOT_TESTED/not_applicable (ROUTER_ONLY), not a failure or fabricated PASS. Never create a direct production route for this test.
 
 ## New-screen invariants
 These rules apply to CREATE_NEW work.
