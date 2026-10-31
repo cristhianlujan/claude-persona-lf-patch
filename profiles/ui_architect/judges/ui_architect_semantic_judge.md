@@ -130,6 +130,18 @@ Required behavioral expectations:
 - `FAIL_NOT_IMPLEMENTABLE`
 - `BLOCKED_SOURCE_INSUFFICIENT`
 
+## Router-only operational applicability (mandatory for V3)
+
+LF's authorized operational route is **ACT-0001 Router → profile**. A direct profile execution is **not** a second production route, nor a prerequisite for semantic closure. Do not request, create, or simulate a direct run solely to satisfy `router_direct_consistency`.
+
+The check remains present among all V3 checks, but has conditional applicability:
+
+- **Normal Router-only execution (no authorized, genuinely comparable direct evaluation):** set `router_direct_consistency: "NOT_TESTED"`, and `decision_checks.router_direct_consistency` to `{"result":"not_applicable","applicability":"ROUTER_ONLY","reason":"<specific evidence-based reason>","source_refs":["<current Router receipt/source>"]}`. This is neither PASS nor FAIL for the comparison and **must not produce** `BLOCKED_SOURCE_INSUFFICIENT` or `FAIL_ROUTER_DIRECT_DIVERGENCE` by itself.
+- **An independently authorized diagnostic pair exists:** assess materially identical requests, source authority and profile version. Only a supported equivalence permits `router_direct_consistency: "PASS"` with check `result: true`, `applicability: "AUTHORIZED_COMPARISON"`, distinct nonempty `router_execution_ref` and `direct_execution_ref` included in check `source_refs`. A material divergence remains a hard semantic failure.
+- **False evidence, a claimed PASS without the two authentic refs, or a disguised direct production bypass:** fail closed. All other 11 applicable semantic checks must still pass, and reviewer independence, current sources, canonical digests, counterfactual and adversarial checks remain mandatory.
+
+This rule governs **applicability of the comparison only**. It does not waive the source-evidence requirements of any other check or authorize step 70/80 without an independently produced V3 review.
+
 ## Output
 Return:
 - `verdict`
