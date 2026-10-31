@@ -6,6 +6,8 @@ on:
     paths:
       - 'scripts/lf_profile_step70_consume_v3.py'
       - 'tests/test_lf_profile_step70_consume_v3.py'
+      - 'supabase/migrations/20261031032500_lf_profile_native_semantic_bridge_v1.sql'
+      - 'docs/profile-execution/EXEC-PROFILE-GATE2-103C8E016D6F6B6ACABEA975_semantic_judge_v3.json'
       - '.github/workflows/lf-step70-v3-consumer-ci.yml'
 permissions:
   contents: read
