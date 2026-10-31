@@ -208,6 +208,10 @@ class OfficialLedgerPayloadTest(unittest.TestCase):
         self.assertEqual(receipt["approval_effect"], "NONE")
         self.assertEqual(receipt["destination_authority"], "UNVERIFIED")
         self.assertEqual(receipt["proof_ref"], "actions:profile-evolution-proof:456")
+        self.assertIn("destination_source_path", receipt["rows"][0])
+        self.assertIn("destination_source_sha256", receipt["rows"][0])
+        self.assertIn("destination_source_line", receipt["rows"][0])
+        self.assertIn("change_type", receipt["rows"][0])
         for steps in (post, close):
             request = self.runner["steps_batch"](
                 "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678-aaaa", steps)
@@ -359,6 +363,28 @@ class TrustedCaseDestinationIntegrationTest(unittest.TestCase):
         self.assertEqual(report["status"], "NO_VERIFICADO_PROOF_OR_SOURCE")
         self.assertTrue(report["destination_binding_issues"])
         self.assertEqual(report["approval_effect"], "NONE")
+
+    def test_declared_nonexistent_anchor_is_rejected_as_evidence(self):
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        case["destination_bindings"]["CTRL1"]["item_title"] = "INVENTED_STEP"
+        bindings, issues = matrix.source_bound_bindings_from_cases(
+            {"SYNTHETIC": case}, slug, ROOT / "profiles" / slug)
+        self.assertEqual(bindings, {})
+        self.assertEqual(len(issues), 1)
+        self.assertIn("DESTINATION_ANCHOR_AMBIGUOUS_OR_NOT_FOUND", issues[0])
+
+    def test_declared_invalid_change_type_does_not_bind(self):
+        slug = "systemic_root_cause_repair_lf"
+        case = self.fixture(slug, "Runtime method capsule", 4,
+            "Use the smallest search strategy that can falsify the hypothesis.")
+        case["destination_bindings"]["CTRL1"]["change_type"] = "FORCE_DELETE"
+        bindings, issues = matrix.source_bound_bindings_from_cases(
+            {"SYNTHETIC": case}, slug, ROOT / "profiles" / slug)
+        self.assertEqual(bindings, {})
+        self.assertTrue(any("DESTINATION_CHANGE_TYPE_INVALID" in issue for issue in issues))
 
     def test_stale_sha_rejected_and_missing_bindings_remain_pending(self):
         slug = "product_director_lf"
