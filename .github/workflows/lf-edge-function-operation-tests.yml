@@ -10,7 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
       - run: python -m unittest discover -s sandbox/lf_contract_gate_test/edge_function_operation -p 'test_*.py' -v
