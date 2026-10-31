@@ -79,6 +79,29 @@ class SemanticFailFeedbackTest(unittest.TestCase):
         b = classify_failure(review(), "EXEC-B", "UI-ARCHITECT")
         self.assertEqual(a["failed_checks"], b["failed_checks"])
 
+    def test_observed_independent_review_shape_is_accepted(self):
+        r = review()
+        r["decision_checks"] = [dict(check=k, **v) for k, v in r["decision_checks"].items()]
+        r["candidate_sha"] = "sha256:" + r.pop("candidate_sha256")
+        r["scope_sha"] = "sha256:" + r.pop("scope_packet_sha256")
+        out = classify_failure(r, "EXEC-EXAMPLE", "PROFILE-A")
+        self.assertEqual(out["candidate_sha256"], "a" * 64)
+        self.assertEqual(out["scope_packet_sha256"], "b" * 64)
+        self.assertEqual(len(out["failed_checks"]), 2)
+
+    def test_duplicate_list_checks_rejected(self):
+        r = review()
+        r["decision_checks"] = [dict(check=k, **v) for k, v in r["decision_checks"].items()]
+        r["decision_checks"][0] = r["decision_checks"][1].copy()
+        with self.assertRaisesRegex(ValueError, "CHECKS_MISMATCH"):
+            classify_failure(r, "EXEC-EXAMPLE", "PROFILE-A")
+
+    def test_conflicting_hash_alias_rejected(self):
+        r = review()
+        r["candidate_sha"] = "sha256:" + "f" * 64
+        with self.assertRaisesRegex(ValueError, "DIGESTS_INVALID"):
+            classify_failure(r, "EXEC-EXAMPLE", "PROFILE-A")
+
     def test_blocked_review_does_not_pass(self):
         r = review()
         r["verdict"] = "BLOCKED_SOURCE_INSUFFICIENT"
