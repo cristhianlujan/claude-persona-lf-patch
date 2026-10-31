@@ -34,7 +34,7 @@ BEGIN
   IF NOT FOUND OR v_exec.operation_code <> 'ACTUALIZACION_PERFIL_LF'
      OR v_exec.status <> 'IN_PROGRESS'
      OR v_exec.target_type <> 'PERFIL'
-     OR v_exec.target_repo <> 'cristhianlujan/claude-persona-lf-patch'
+     OR NULLIF(btrim(v_exec.target_repo),'') IS NULL
      OR coalesce(v_exec.manifest->>'router_semantic_receipt_sha256','') = ''
   THEN RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_EXECUTION_NOT_ELIGIBLE'); END IF;
 
