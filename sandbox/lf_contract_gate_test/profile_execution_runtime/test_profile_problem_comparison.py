@@ -131,6 +131,8 @@ class ProblemComparisonTest(unittest.TestCase):
             self.assertEqual(len(matrix['rows']), 2)
             self.assertEqual(matrix['rows'][0]['original']['runs'][0]['raw_file_ref'],
                              slug + '/runs/old.json')
+            self.assertEqual(len(matrix['conditional_controls_all']['WEB-001']), 4)
+            self.assertEqual(len(matrix['rows'][0]['original']['runs'][0]['raw_file_sha256']), 64)
             self.assertEqual(matrix['rows'][0]['evolved']['runs'][0]['raw_file_ref'],
                              slug + '/runs/new.json')
             self.assertEqual(matrix['rows'][0]['evidence_status'], 'PREVIEW_UNATTESTED')
@@ -181,6 +183,58 @@ class ProblemComparisonTest(unittest.TestCase):
                       if x['pointer'] == '/output/first_bad_control/statement')
         self.assertTrue(target['present'])
         self.assertIn('retry >3 versus >=3', target['preview'])
+    def test_all_four_conditional_controls_are_reported(self):
+        x = self.report()
+        full = x['conditional_controls_all']['WEB-001']
+        self.assertEqual({i['control_id'] for i in full},
+                         {'OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER',
+                          'OP05_DERIVED_OWNER_HAS_RATIFICATION',
+                          'OP06_ALTERNATIVE_SELECTED',
+                          'OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH'})
+        for c in full:
+            self.assertEqual(c['original_applicability']['total_runs'], 1)
+            self.assertEqual(c['evolved_applicability']['total_runs'], 1)
+        op14 = next(i for i in full if i['control_id'].startswith('OP14'))
+        self.assertTrue(op14['evolved_applicability']['conditional_vacuous'])
+        self.assertFalse(op14['original_applicability']['conditional_vacuous'])
+
+    def test_projection_is_bounded_without_silent_pass_for_multiple_runs(self):
+        extras = [run('a'*64, 'old') for _ in range(6)]
+        for i, v in enumerate(extras):
+            v['run_id'] = 'old-%s' % i
+        x = report({'WEB-001': self.c},
+                   extras + [self.evolved], 'a'*64, 'b'*64)
+        self.assertEqual(x['status'], 'PARTIAL_SOURCE_LOOKUP_REQUIRED')
+        self.assertFalse(x['projection_complete'])
+        self.assertEqual(x['rows'][0]['original']['total_run_count'], 6)
+        self.assertEqual(x['rows'][0]['original']['omitted_run_count'], 4)
+        self.assertEqual(len(x['rows'][0]['original']['runs']), 2)
+        self.assertTrue(any('RUNS_TRUNCATED' in q for q in x['issues']))
+        self.assertEqual(len(x['conditional_controls_all']['WEB-001']), 4)
+
+    def test_projection_problem_and_field_limits_are_explicit(self):
+        c = dict(self.c)
+        dims = [dict(v) for v in c['comparison_dimensions']]
+        dims[0]['output_pointers'] = ['/output/a%d' % i for i in range(20)]
+        c['comparison_dimensions'] = dims + [{
+            'problem_id': 'extra-%d' % i, 'question': 'Extra',
+            'output_pointers': ['/output/owner/status'], 'control_ids': []
+        } for i in range(4)]
+        x = self.report(case_override=c)
+        self.assertEqual(x['status'], 'PARTIAL_SOURCE_LOOKUP_REQUIRED')
+        self.assertEqual(len(x['rows']), 4)
+        self.assertEqual(x['omitted_problem_rows'], 2)
+        self.assertEqual(x['rows'][0]['field_count_omitted'], 8)
+        self.assertEqual(len(x['rows'][0]['original']['runs'][0]['fields']), 12)
+        self.assertFalse(x['projection_complete'])
+
+    def test_raw_provenance_content_hash_and_commit_not_fabricated(self):
+        x = self.report()
+        row = x['rows'][0]['original']['runs'][0]
+        self.assertEqual(row['raw_file_sha256'], None)
+        self.assertIsNone(row['raw_source_commit_sha'])
+        self.assertEqual(row['raw_source_commit_status'],
+                         'UNVERIFIED_USE_FILE_SHA256')
     def test_untrusted_run_path_claim_is_overridden_by_loader(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
@@ -198,6 +252,9 @@ class ProblemComparisonTest(unittest.TestCase):
             self.assertFalse(problems)
             self.assertFalse(rejects)
             self.assertEqual(runs[0]['_trusted_run_file'], slug + '/runs/actual.json')
+            import hashlib
+            self.assertEqual(runs[0]['_trusted_run_file_sha256'],
+                             hashlib.sha256((directory / 'actual.json').read_bytes()).hexdigest())
 
     def test_declared_provider_attestation_never_promoted_to_verified(self):
         base = run('a'*64, 'old', 'RUNTIME_ATTESTED', 'LITERAL')
