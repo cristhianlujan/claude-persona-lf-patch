@@ -174,3 +174,90 @@ export async function verifyGithubReadback(input: Input): Promise<Verified> {
     },
   };
 }
+
+
+/**
+ * A post-write profile amendment is a new verified revision, not a replay of steps 70/80.
+ * Compare the same registered branch against the last effective commit and enforce that
+ * this branch's net private delta contains only the profile package and evidence docs.
+ * External upstream main changes may appear in the ancestry but are not an amendment.
+ */
+export async function verifyCandidateAmendment(input: Input & {
+  previousCommit: string;
+  candidateCommit: string;
+}): Promise<Verified> {
+  const { repository, targetRootPath: root, gh } = input;
+  const recorded = input.recordedWrite;
+  const trust = recorded && typeof recorded.server_trust_context === "object"
+    ? recorded.server_trust_context as Record<string, any> : null;
+  if (!recorded || recorded.server_trust_context_valid !== true
+      || !trust || trust.resolver !== WRITE_RESOLVER
+      || trust.repository !== repository || trust.target_root_path !== root) {
+    return { ok: false, code: "PROFILE_AMEND_VERIFIED_WRITE_REQUIRED" };
+  }
+  const branch = String(trust.branch ?? "");
+  const previous = input.previousCommit;
+  const candidate = input.candidateCommit;
+  if (!BRANCH.test(branch) || !SHA40.test(previous) || !SHA40.test(candidate)
+      || previous === candidate || !under("profiles", root + "/SKILL.md")) {
+    return { ok: false, code: "PROFILE_AMEND_INPUT_INVALID" };
+  }
+  const ref = await gh(`/git/ref/heads/${encodePath(branch)}`);
+  if (String(ref?.object?.sha ?? "").toLowerCase() !== candidate) {
+    return { ok: false, code: "PROFILE_AMEND_HEAD_MISMATCH" };
+  }
+  const ancestry = await gh(`/compare/${previous}...${candidate}`);
+  if (ancestry?.status !== "ahead" || !(ancestry.ahead_by >= 1) || ancestry.behind_by !== 0) {
+    return { ok: false, code: "PROFILE_AMEND_NOT_DESCENDANT" };
+  }
+  const changes = Array.isArray(ancestry.files) ? ancestry.files : [];
+  if (changes.length === 0 || changes.length >= 300) {
+    return { ok: false, code: "PROFILE_AMEND_COMPARE_UNVERIFIABLE" };
+  }
+  const privateDiff = await gh(`/compare/main...${candidate}`);
+  const onlyCandidate = Array.isArray(privateDiff?.files) ? privateDiff.files : [];
+  if (onlyCandidate.length >= 300 || (!["ahead", "diverged", "identical"].includes(String(privateDiff?.status ?? "")))) {
+    return { ok: false, code: "PROFILE_AMEND_PRIVATE_DIFF_UNVERIFIABLE" };
+  }
+  // Keep technical source changes only in this profile. Supporting receipts/changesets are
+  // documents; workflows, database migrations, other profiles or operational runs are forbidden.
+  const supporting = (path: string): boolean =>
+    path.startsWith("docs/profile_updater/handoffs/")
+    || path.startsWith("sandbox/lf_contract_gate_test/changesets/");
+  for (const file of onlyCandidate) {
+    const path = String(file?.filename ?? "");
+    if (!under(root, path) && !supporting(path)) {
+      return { ok: false, code: "PROFILE_AMEND_OUT_OF_SCOPE_DELTA" };
+    }
+    if (!ALLOWED_STATUS.has(String(file?.status ?? ""))) {
+      return { ok: false, code: "PROFILE_AMEND_REMOVAL_FORBIDDEN" };
+    }
+  }
+  const changed = changes.filter((file: any) => under(root, String(file?.filename ?? "")));
+  if (changed.length === 0 || changed.some((file: any) =>
+      !ALLOWED_STATUS.has(String(file?.status ?? ""))
+      || !SHA40.test(String(file?.sha ?? "")))) {
+    return { ok: false, code: "PROFILE_AMEND_PROFILE_DIFF_INVALID" };
+  }
+  const preserved = await identityPreserved(gh, root, previous, candidate);
+  if (!preserved) return { ok: false, code: "PROFILE_AMEND_IDENTITY_NOT_PRESERVED" };
+  return {
+    ok: true,
+    evidence: {
+      source: SERVER_SOURCE,
+      resolver: "GITHUB_PROFILE_AMENDMENT_V1",
+      repository,
+      target_root_path: root,
+      branch,
+      previous_commit: previous,
+      candidate_commit: candidate,
+      identity_preserved: true,
+      head_verified: true,
+      changed_profile_files: changed.map((file: any) => ({
+        path: file.filename, status: file.status, blob_sha: String(file.sha).toLowerCase(),
+      })).sort((a: any, b: any) => a.path.localeCompare(b.path)),
+      private_delta_scope_verified: true,
+      observed_at: (input.now ?? (() => new Date().toISOString()))(),
+    },
+  };
+}
