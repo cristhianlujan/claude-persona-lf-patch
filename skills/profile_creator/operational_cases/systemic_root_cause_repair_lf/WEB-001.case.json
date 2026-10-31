@@ -138,5 +138,41 @@
     "WEB-001:P10 declara lo no probado (sitio vs herramienta)",
     "WEB-001:P11 auditoria independiente de aplicabilidad de regla, vigencia y efecto en fuente canonica"
   ],
-  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT",
+  "comparison_dimensions": [
+    {
+      "problem_id": "DISCOVERY_OF_APPLICABLE_RULE_OWNER",
+      "question": "¿La version evolucionada investiga mejor las reglas aplicables y evita inferir un owner sin autoridad?",
+      "output_pointers": [
+        "/output/owner",
+        "/output/policy_resolution",
+        "/output/current_uncertainties"
+      ],
+      "control_ids": [
+        "OP10_RULE_METHOD_RECORDED",
+        "OP11_RULE_LOOKUPS_N1_N2",
+        "OP12_RULE_N1_FIRST",
+        "OP13_RULE_N2_SECOND",
+        "OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH"
+      ]
+    },
+    {
+      "problem_id": "CONTROLLED_RETRY_AND_READMISSION",
+      "question": "¿La version evolucionada diagnostica mejor el control de reintentos, el consumidor de reingreso y la seguridad del cierre?",
+      "output_pointers": [
+        "/output/systemic_root_cause",
+        "/output/first_bad_control",
+        "/output/escape_control",
+        "/output/hard_guard",
+        "/output/next_gate",
+        "/output/blocking_codes"
+      ],
+      "control_ids": [
+        "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
+        "OP07_PLANNED_REGRESSIONS",
+        "OP08_ACCEPTANCE_CRITERIA",
+        "OP09_HARD_GUARD_FAIL_CLOSED"
+      ]
+    }
+  ]
 }
