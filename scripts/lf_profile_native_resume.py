@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 from pathlib import Path, PurePosixPath
 import sys
 import urllib.error
@@ -60,7 +61,15 @@ def oidc():
 def governed_request():
     """Accept only explicit, bounded issue data or authorized dispatch inputs."""
     if os.getenv("LF_PROFILE_RESUME_REQUEST_MODE") != "ISSUE":
-        return os.environ["PROFILE_EXECUTION_ID"], os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip()
+        raw_output = os.getenv("PROFILE_OUTPUT_JSON", "").strip()
+        parsed_output = json.loads(raw_output) if raw_output else None
+        if parsed_output is not None and not isinstance(parsed_output, dict):
+            raise ValueError("PROFILE_GOVERNED_DISPATCH_OUTPUT_INVALID")
+        return (
+            os.environ["PROFILE_EXECUTION_ID"],
+            os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip(),
+            parsed_output,
+        )
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
     event = json.loads(Path(event_path).read_text(encoding="utf-8"))
@@ -78,11 +87,11 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_TRIGGER_INVALID")
 
     raw = issue.get("body")
-    if not isinstance(raw, str) or len(raw) > 8192:
+    if not isinstance(raw, str) or len(raw) > 60000:
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -91,7 +100,10 @@ def governed_request():
     selection = data.get("screen_selection_draft")
     if selection is not None and not isinstance(selection, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_DRAFT_INVALID")
-    return execution_id, json.dumps(selection) if selection is not None else ""
+    profile_output = data.get("profile_output")
+    if profile_output is not None and not isinstance(profile_output, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_OUTPUT_INVALID")
+    return execution_id, json.dumps(selection) if selection is not None else "", profile_output
 
 
 def is_direct_validator_continuation(status, response):
@@ -109,8 +121,108 @@ def is_direct_validator_continuation(status, response):
     )
 
 
+def sha256_file(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run_bound_validator(target_path, profile_code, profile_output):
+    """Run only the validator declared by the exact profile runtime binding."""
+    source_path = PurePosixPath(target_path)
+    slug = source_path.parts[1]
+    repo_root = Path.cwd().resolve()
+    binding_path = repo_root / "profiles" / slug / "contracts" / "runtime_binding.json"
+    if not binding_path.is_file():
+        raise ValueError("PROFILE_RUNTIME_BINDING_REQUIRED")
+    try:
+        binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise ValueError("PROFILE_RUNTIME_BINDING_UNREADABLE")
+    if (binding.get("profile_slug") != slug
+        or binding.get("profile_code") != profile_code):
+        raise ValueError("PROFILE_RUNTIME_BINDING_IDENTITY_INVALID")
+
+    runtime_schema = binding.get("runtime_schema")
+    validator = binding.get("canonical_validator")
+    if (not isinstance(runtime_schema, dict)
+        or not isinstance(runtime_schema.get("default"), str)
+        or not isinstance(validator, dict)
+        or not isinstance(validator.get("path"), str)
+        or validator.get("callable") != "validate"
+        or validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}):
+        raise ValueError("PROFILE_RUNTIME_BINDING_VALIDATOR_INVALID")
+
+    schema_ref = f"profiles/{slug}/{runtime_schema['default']}"
+    validator_ref = f"profiles/{slug}/{validator['path']}"
+    for ref in (schema_ref, validator_ref):
+        ref_path = PurePosixPath(ref)
+        if ref_path.is_absolute() or ".." in ref_path.parts:
+            raise ValueError("PROFILE_RUNTIME_BINDING_PATH_UNSAFE")
+    schema_path = (repo_root / schema_ref).resolve()
+    validator_path = (repo_root / validator_ref).resolve()
+    profile_root = (repo_root / "profiles" / slug).resolve()
+    if (not schema_path.is_file() or not validator_path.is_file()
+        or not schema_path.is_relative_to(profile_root)
+        or not validator_path.is_relative_to(profile_root)):
+        raise ValueError("PROFILE_RUNTIME_BINDING_SOURCE_UNRESOLVED")
+
+    raw_path = repo_root / "profile-native-output.json"
+    raw_bytes = json.dumps(
+        profile_output, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    raw_path.write_bytes(raw_bytes)
+
+    packet = {
+        "schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1",
+        "operation_code": "EJECUCION_PERFIL_LF",
+        "profile_slug": slug,
+        "validator_transport": validator["transport"],
+        "expected_valid": True,
+        "runtime_binding_sha256": sha256_file(binding_path),
+        "schema_ref": schema_ref,
+        "schema_sha256": sha256_file(schema_path),
+        "validator_ref": validator_ref,
+        "validator_sha256": sha256_file(validator_path),
+        "raw_output_ref": raw_path.relative_to(repo_root).as_posix(),
+        "raw_output_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+    }
+    packet_path = repo_root / "profile-native-validation-binding.json"
+    packet_path.write_text(
+        json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+
+    runner = repo_root / "skills" / "profile_creator" / "validators" / "run_bound_profile_output_validator_v1.py"
+    proc = subprocess.run(
+        [sys.executable, str(runner), "--root", str(repo_root), "--binding", str(packet_path)],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=repo_root, timeout=30, check=False,
+    )
+    validation_path = repo_root / "profile-native-validation.json"
+    validation_path.write_bytes(proc.stdout)
+    try:
+        receipt = json.loads(proc.stdout)
+    except ValueError:
+        raise ValueError("PROFILE_BOUND_VALIDATOR_NON_JSON")
+    if (proc.returncode != 0
+        or not isinstance(receipt, dict)
+        or receipt.get("status") != "CANDIDATE_OUTPUT_PARITY_OBSERVED"
+        or receipt.get("structural_check_executed") is not True
+        or receipt.get("profile_validator_executed") is not True
+        or receipt.get("source_readback_matched") is not True
+        or receipt.get("blocking_codes") != []):
+        raise ValueError("PROFILE_BOUND_VALIDATOR_NOT_PASS")
+
+    run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+    repository = os.environ["GITHUB_REPOSITORY"]
+    artifact = f"profile-native-output-{run_id}"
+    raw_ref = f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-native-output.json"
+    validator_ref_evidence = (
+        f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-native-validation.json"
+    )
+    return receipt, raw_ref, validator_ref_evidence
+
+
 def main():
-    execution_id, raw_draft = governed_request()
+    execution_id, raw_draft, profile_output = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
@@ -219,8 +331,40 @@ def main():
         print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
         return 0
     if phase == "NATIVE_MODEL_INPUT_READY":
-        print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
-        return 0
+        if profile_output is None:
+            print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
+            return 0
+        try:
+            validation, raw_ref, validator_ref = run_bound_validator(
+                target_path, source.get("profile_code"), profile_output
+            )
+        except ValueError as exc:
+            print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
+            return 1
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "profile_output": profile_output,
+            "validation_result": validation,
+            "raw_evidence_ref": raw_ref,
+            "validator_evidence_ref": validator_ref,
+        }
+        code, recorded = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"OUTPUT_RECORD","status":code,
+                "code":recorded.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": recorded.get("profile_code"),
+            "phase": recorded.get("phase"),
+            "next_action": recorded.get("next_action"),
+        }, ensure_ascii=False))
+        return 0 if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED" else 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
         print("PROFILE_NATIVE_SEMANTIC_OR_IG_CONTINUATION_REQUIRED_NOT_COMPLETE")
         return 0

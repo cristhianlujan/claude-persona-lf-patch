@@ -33,6 +33,9 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
     else if(url.endsWith("/lf_profile_native_bridge_prepare_v1"))out={status:state,next_action:"RETRY_BRIDGE"};
     else if(url.endsWith("/lf_profile_screen_selector_semantic_submit_v1")){
       out={status:selectStatus};if(selectStatus==="BOUND")state="NATIVE_MODEL_INPUT_READY";
+    }else if(url.endsWith("/lf_profile_native_bridge_record_output_v1")){
+      out={status:"NATIVE_PRODUCER_VALIDATED",execution_id:id,profile_code:"PROFILE-A",
+        clean_step_count:9,next_step:"semantic_judge"};
     }else throw Error("UNEXPECTED_URL "+url);
     return new Response(JSON.stringify(out),{status:200});
   };
@@ -63,6 +66,55 @@ Deno.test("continuation: screen semantic handoff preserves ordering and source",
     "lf_profile_screen_selector_semantic_submit_v1","lf_profile_native_bridge_prepare_v1"]);
   eq(n.calls[2].body?.p_draft,draft);
 });
+Deno.test("continuation: source-bound validator receipt records native output and advances to semantic judge",async()=>{
+  const n=network();
+  const receipt={
+    schema:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",
+    status:"CANDIDATE_OUTPUT_PARITY_OBSERVED",
+    structural_check_executed:true,
+    profile_validator_executed:true,
+    source_readback_matched:true,
+    independent_review_executed:false,
+    provider_attested:false,
+    admission_authorized:false,
+    profile_write_authorized:false,
+    runtime_activation_authorized:false,
+    blocking_codes:[],
+    validator_errors:[],
+    raw_output_sha256:"d".repeat(64),
+  };
+  const output={worker:"profile_a",traceability:{ig_open_work_resolution:[]}};
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    profile_output:output,validation_result:receipt,
+    raw_evidence_ref:"actions://test/lf/runs/100/artifact/raw",
+    validator_evidence_ref:"actions://test/lf/runs/100/artifact/validator",
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+  const record=n.calls.find(c=>c.url.endsWith("/lf_profile_native_bridge_record_output_v1"));
+  if(!record)throw Error("record_output not called");
+  eq(record.body?.p_profile_output,output);
+  const validation=record.body?.p_validation as Record<string,unknown>;
+  eq(validation.valid,true);eq(validation.blocking_codes,[]);
+  eq((validation.source_bound_validation as Record<string,unknown>).status,"CANDIDATE_OUTPUT_PARITY_OBSERVED");
+});
+Deno.test("continuation: model cannot self-assert validator PASS",async()=>{
+  const n=network();
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    screen_selection_draft:{decision:"SELECTED",selected_screen_code:"DYNAMIC-SELECTED-CODE"},
+    profile_output:{worker:"profile_a"},
+    validation_result:{valid:true,status:"PASS"},
+    raw_evidence_ref:"actions://test/lf/runs/100/artifact/raw",
+    validator_evidence_ref:"actions://test/lf/runs/100/artifact/validator",
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,409);eq(body.code,"PROFILE_NATIVE_OUTPUT_VALIDATOR_RECEIPT_NOT_PASS");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_output_v1")),false);
+});
+
 Deno.test("continuation: fail-closed role, source, and semantic decision",async()=>{
   for(const override of [{status:"SUCCEEDED"},{operation_code:"ACTUALIZACION_PERFIL_LF"},
     {target_path:"../secret"},{target_repo:"untrusted/repo"},{manifest:{read_only:true}}]){
