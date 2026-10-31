@@ -59,8 +59,11 @@ def classify_failure(review: dict, execution_id: str, profile_code: str) -> dict
     failures = []
     for name in CHECKS:
         check = checks[name]
-        if not isinstance(check, dict) or check.get("result") not in (True, False, "true", "false", "blocked"):
+        if not isinstance(check, dict) or check.get("result") not in (True, False, "true", "false", "blocked", "not_applicable"):
             raise ValueError("SEMANTIC_REVIEW_CHECK_RESULT_INVALID")
+        if check["result"] == "not_applicable":
+            if name != "router_direct_consistency" or review.get("router_direct_consistency") != "NOT_TESTED" or check.get("applicability") != "ROUTER_ONLY":
+                raise ValueError("SEMANTIC_REVIEW_UNAUTHORIZED_NOT_APPLICABLE")
         if not isinstance(check.get("reason"), str) or not check["reason"].strip():
             raise ValueError("SEMANTIC_REVIEW_CHECK_REASON_MISSING")
         if not isinstance(check.get("source_refs"), list):
