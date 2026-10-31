@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DISPATCH = runpy.run_path(str(ROOT / "scripts" / "lf_profile_update_issue_dispatch.py"), run_name="runner_validate")
 OPERATIONAL = runpy.run_path(str(ROOT / "skills" / "profile_creator" / "validators" / "operational_coverage_v1.py"), run_name="runner_operational")
+MATRIX = runpy.run_path(str(ROOT / "skills" / "profile_creator" / "validators" / "operational_control_matrix_v1.py"), run_name="runner_matrix")
 OP_REL = "skills/profile_creator/operational_cases"
 SCHEMA = "LF_PROFILE_UPDATE_REQUEST_V1"
 LABEL = "lf-profile-update-governed"
@@ -226,6 +227,61 @@ def gather_operational(slug, cand_dir):
     return cases, runs, base_tree, cand_tree, problems + rejected
 
 
+
+def project_operational_matrix(slug, candidate_dir, official_proof):
+    """Report-only projection of trusted main cases/runs. No gate/ledger mutations.
+
+    Do not call any of these projected results an official PASS: the existing
+    signed/verified Group 2 proof remains the sole official comparator.
+    """
+    cases, runs, base_tree, cand_tree, problems = gather_operational(slug, candidate_dir)
+    baseline = OPERATIONAL["measure"](cases, runs, base_tree)
+    evolved = OPERATIONAL["measure"](cases, runs, cand_tree)
+    report = MATRIX["build_control_matrix"](
+        cases, baseline, evolved, {}, candidate_dir)
+    comparison = OPERATIONAL["compare"](baseline, evolved)
+    official = official_proof.get("operational")
+    binding = {
+        "base_tree_sha256": base_tree,
+        "candidate_tree_sha256": cand_tree,
+        "checks_total": comparison["checks_total"],
+        "base_passed": comparison["base_passed"],
+        "candidate_passed": comparison["candidate_passed"],
+        "improved_checks": sorted(comparison["improved_checks"]),
+        "regressed_checks": sorted(comparison["regressed_checks"]),
+        "cases_unmeasured": sorted(comparison["cases_unmeasured"]),
+    }
+    mandatory = ("base_tree_sha256", "candidate_tree_sha256", "checks_total",
+                 "base_passed", "candidate_passed", "improved_checks", "regressed_checks",
+                 "cases_unmeasured")
+    matched = (isinstance(official, dict)
+               and all(official.get(k) == binding[k] for k in mandatory))
+    report.update({
+        "profile_slug": slug,
+        "source": "trusted_origin_main_operational_cases_and_runs",
+        "official_proof_run_id": official_proof.get("proof_run_id"),
+        "binding": binding,
+        "source_problems": problems,
+        "status": "GROUP2_PROJECTION_MATCHED_REPORT_ONLY" if matched and not problems
+                  else "NO_VERIFICADO_PROOF_OR_SOURCE",
+        "authoritative_group2_verdict": official_proof.get("verdict"),
+        "destination_authority": "UNVERIFIED",
+        "approval_effect": "NONE",
+    })
+    return report
+
+
+def save_matrix_sidecar(state_path, report):
+    """Write a report next to the existing state; never alter the ledger."""
+    import os
+    dest = Path(str(state_path) + ".matrix.json")
+    payload = json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+    tmp = dest.with_name(dest.name + ".pending")
+    tmp.write_text(payload, encoding="utf-8")
+    os.replace(tmp, dest)
+    return str(dest)
+
+
 def preflight_operational(slug, cand_dir):
     cases, runs, base_tree, cand_tree, problems = gather_operational(slug, cand_dir)
     if cand_tree == base_tree:
@@ -354,6 +410,19 @@ def main(argv=None):
                 st.update(compare_run=str(rid), compare=cp)
                 save()
         cp = st.get("compare") or {"operational": {}}
+        # Advisory sidecar only: original Group 2 proof and governed gate remain unchanged.
+        # This does not publish a canonical destination or attest the actual execution.
+        if "matrix_report_path" not in st and not dry and st.get("compare_run"):
+            report = project_operational_matrix(slug, cand, cp)
+            report["official_proof_run_id"] = st["compare_run"]
+            matrix_path = save_matrix_sidecar(sp, report)
+            st.update(matrix_report_path=matrix_path,
+                      matrix_report_status=report["status"],
+                      matrix_summary=report["summary"])
+            save()
+            log.append("PROFILE_CONTROL_MATRIX " + json.dumps({
+                "path": matrix_path, "status": report["status"],
+                "summary": report["summary"]}, sort_keys=True))
         if "post_steps" not in st:
             ps = build_post_steps(execution_id, slug, base, commit, st.get("compare_run", "0"), cp.get("operational") or {})
             if submit(gh, f"Record update steps {slug} (validation, judge, regression) {execution_id[-8:]}", steps_batch(execution_id, ps), log) or dry:
