@@ -99,7 +99,7 @@ def main():
         "independent_semantic_receipt_ref": review["independent_semantic_receipt_ref"],
     }
     if args.dry_run:
-        print(json.dumps({"status": "DRY_RUN_VALID", "step": 70, "execution_id": eid}))
+        print(json.dumps({"status": "DRY_RUN_VALID", "step": 70, "execution_id": eid, "validated_payload": payload, "rpc": "lf_record_profile_execution_step_v1"}))
         return
     response = api("POST", "/rest/v1/rpc/lf_record_profile_execution_step_v1", {
         "p_execution_id": eid, "p_step_id": "semantic_judge",
