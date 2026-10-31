@@ -162,5 +162,111 @@ class GovernedRunnerSidecarTest(unittest.TestCase):
             self.assertFalse(Path(path + ".pending").exists())
 
 
+
+
+class OfficialLedgerPayloadTest(unittest.TestCase):
+    """Projection is visible in existing step evidence, never a replacement gate."""
+
+    def setUp(self):
+        import runpy
+        self.runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"),
+                                     run_name="matrix_test")
+        self.report = {
+            "schema": "LF_PROFILE_CONTROL_MATRIX_V1",
+            "status": "GROUP2_PROJECTION_MATCHED_REPORT_ONLY",
+            "profile_slug": "systemic_root_cause_repair_lf",
+            "destination_authority": "UNVERIFIED",
+            "summary": {"total": 1, "mejorados": 1, "preservados": 0,
+                        "regresados": 0, "no_verificados": 0, "destinos_pendientes": 1,
+                        "destinos_solo_textuales": 0},
+            "binding": {"base_tree_sha256": "a"*64, "candidate_tree_sha256": "b"*64},
+            "rows": [{"case_id": "WEB-001", "control_id": "OP01",
+                      "original_result": "FAIL", "evolved_result": "PASS",
+                      "comparison": "MEJORA", "original_run_ids": ["BASE_RUN"],
+                      "evolved_run_ids": ["CAND_RUN"],
+                      "original_attestation": ["NONE"],
+                      "evolved_attestation": ["NONE"],
+                      "destination_status": "DESTINO_PENDIENTE",
+                      "blocking_code": "DESTINATION_BINDING_MISSING"}],
+        }
+
+    def test_existing_step_payloads_carry_same_bound_receipt(self):
+        from importlib.util import module_from_spec
+        receipt = self.runner["build_matrix_receipt"](self.report, "456")
+        post = self.runner["build_post_steps"](
+            "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678-aaaa",
+            "systemic_root_cause_repair_lf", "a"*40, "b"*40, "456",
+            {"base_passed": 0, "candidate_passed": 1, "checks_total": 1},
+            receipt)
+        close = self.runner["build_close_steps"](
+            "systemic_root_cause_repair_lf", "c"*40, "b"*40, "456",
+            "d"*40, "e"*40, "PACK", "NO_HABILITADO", receipt)
+        self.assertEqual(post[-1]["evidence_payload"]["before_after_matrix"]["control_matrix"], receipt)
+        self.assertEqual(close[-1]["evidence_payload"]["control_matrix_report"], receipt)
+        self.assertEqual(receipt["projection"], "FULL_ROWS")
+        self.assertEqual(receipt["approval_effect"], "NONE")
+        self.assertEqual(receipt["destination_authority"], "UNVERIFIED")
+        self.assertEqual(receipt["proof_ref"], "actions:profile-evolution-proof:456")
+        for steps in (post, close):
+            request = self.runner["steps_batch"](
+                "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678-aaaa", steps)
+            self.assertEqual(
+                self.runner["validate_body"](request, "o/r")["action"],
+                "profile_update_record_batch")
+
+    def test_old_step_callers_work_without_matrix(self):
+        steps = self.runner["build_post_steps"](
+            "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678-aaaa", "p_x",
+            "a"*40, "b"*40, "456", {})
+        self.assertNotIn("control_matrix", steps[-1]["evidence_payload"]["before_after_matrix"])
+        close = self.runner["build_close_steps"](
+            "p_x", "c"*40, "b"*40, "456", "d"*40, "e"*40, "PACK", "NO_HABILITADO")
+        self.assertNotIn("control_matrix_report", close[-1]["evidence_payload"])
+
+    def test_report_is_bounded_with_explicit_omissions(self):
+        report = dict(self.report)
+        report["rows"] = [
+            {**self.report["rows"][0], "control_id": f"LONG-CONTROL-{n}",
+             "destination_profile_step_name": "x"*200} for n in range(60)]
+        receipt = self.runner["build_matrix_receipt"](report, "456", max_chars=1600)
+        self.assertGreater(receipt["row_count_omitted"], 0)
+        self.assertEqual(receipt["projection"], "PARTIAL_ROWS_NOT_COMPLETE")
+        self.assertEqual(receipt["row_count_omitted"]+len(receipt["rows"]), 60)
+        self.assertEqual(receipt["approval_effect"], "NONE")
+
+    def test_invalid_report_and_proof_ref_rejected(self):
+        for bad, proof in (({}, "456"), (self.report, "bogus")):
+            with self.assertRaises(self.runner["Stop"]):
+                self.runner["build_matrix_receipt"](bad, proof)
+
+
+class RealRecordedWeb001ReadbackTest(unittest.TestCase):
+    """Recorded data, not a live run; attestation NONE cannot become provider proof."""
+
+    def test_report_rows_from_existing_web001_case_and_two_stored_runs(self):
+        import operational_coverage_v1 as coverage
+        path = ROOT / "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf"
+        cases, errors = coverage.load_cases(path.parent, "systemic_root_cause_repair_lf")
+        self.assertEqual(errors, [])
+        self.assertIn("WEB-001", cases)
+        runs, errors = coverage.load_runs(path.parent, "systemic_root_cause_repair_lf", cases)
+        self.assertEqual(errors, [])
+        base = next(r for r in runs if r["run_id"] == "RUN-WEB001-BASE-20261029")
+        evolved = next(r for r in runs if r["run_id"] == "RUN-WEB001-CANDIDATE-20261029")
+        m0 = coverage.measure({"WEB-001": cases["WEB-001"]}, runs, base["profile_tree_sha256"])
+        m1 = coverage.measure({"WEB-001": cases["WEB-001"]}, runs, evolved["profile_tree_sha256"])
+        outcome = matrix.build_control_matrix({"WEB-001": cases["WEB-001"]},
+                   m0, m1, {}, ROOT/"profiles/systemic_root_cause_repair_lf")
+        self.assertEqual(outcome["summary"]["total"], 14)
+        self.assertEqual(outcome["summary"]["destinos_pendientes"], 14)
+        self.assertTrue(all("NONE" in row["original_attestation"]
+                            for row in outcome["rows"]))
+        self.assertTrue(all(row["destination_status"] == "DESTINO_PENDIENTE"
+                            for row in outcome["rows"]))
+        official = coverage.compare(m0, m1)
+        self.assertEqual(outcome["summary"]["mejorados"], len(official["improved_checks"]))
+        self.assertEqual(outcome["summary"]["regresados"], len(official["regressed_checks"]))
+
+
 if __name__ == "__main__":
     unittest.main()
