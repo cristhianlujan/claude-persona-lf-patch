@@ -2,6 +2,7 @@
   "solution_ref": "profile-updater-dynamic-destination-matrix-20261031",
   "paths": {
     "docs/profile_updater/MATRIZ_EVOLUCION_DESTINO_DINAMICO_V1_20261031.md": "ENGINEERING_CHECKPOINTS",
+    "docs/profile_updater/PR3420_HANDOFF_REVISION_INDEPENDIENTE_20261031.md": "ENGINEERING_CHECKPOINTS",
     "docs/profile_updater/WEB001_MAPA_CONTROL_DESTINO_PROPUESTO_20261031.md": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/changesets/profile-updater-dynamic-destination-matrix-20261031.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_target_destination_matrix_lane.py": "RUNTIME_TESTING",
