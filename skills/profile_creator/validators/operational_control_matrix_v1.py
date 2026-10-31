@@ -80,6 +80,56 @@ def resolve_destination(profile_dir: Path, binding: dict[str, Any] | None) -> di
     }
 
 
+def source_bound_bindings_from_cases(
+    cases: dict[str, dict[str, Any]],
+    slug: str,
+    profile_dir: Path,
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Consume optional destinations from trusted Group-2 case definitions.
+
+    The existing canonical case reader is responsible for sourcing cases from
+    trusted main. A candidate profile can never supply or rewrite these case
+    bindings. Every destination is still re-verified against the exact target
+    SKILL source and remains TEXTUAL, not an operational step ID.
+    """
+    result: dict[str, dict[str, Any]] = {}
+    issues: list[str] = []
+    path = profile_dir / "SKILL.md"
+    if path.is_symlink() or not path.is_file():
+        return result, ["DESTINATION_PROFILE_SOURCE_UNAVAILABLE"]
+    actual_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    for case_id, case in sorted(cases.items()):
+        if case.get("profile_slug") != slug or case.get("case_id") != case_id:
+            issues.append(f"DESTINATION_CASE_IDENTITY_MISMATCH:{case_id}")
+            continue
+        declared = case.get("destination_bindings")
+        if declared is None:
+            continue  # Old cases remain valid; unknown destinations stay pending.
+        if not isinstance(declared, dict):
+            issues.append(f"DESTINATION_BINDINGS_INVALID:{case_id}")
+            continue
+        check_ids = {c["id"] for c in case["checks"]}
+        for check_id, value in sorted(declared.items()):
+            key = f"{case_id}:{check_id}"
+            if check_id not in check_ids or not isinstance(value, dict):
+                issues.append(f"DESTINATION_CONTROL_NOT_DECLARED_OR_INVALID:{key}")
+                continue
+            if value.get("profile_slug") != slug:
+                issues.append(f"DESTINATION_PROFILE_MISMATCH:{key}")
+                continue
+            if value.get("source_sha256") not in (None, actual_sha):
+                issues.append(f"DESTINATION_SOURCE_SHA_MISMATCH:{key}")
+                continue
+            result[key] = {
+                "source_sha256": actual_sha,
+                "section_title": value.get("section_title"),
+                "ordered_item": value.get("ordered_item"),
+                "item_title": value.get("item_title"),
+                "change_type": value.get("change_type"),
+            }
+    return result, issues
+
+
 def build_control_matrix(
     cases: dict[str, dict[str, Any]],
     base_results: dict[str, dict[str, Any]],
