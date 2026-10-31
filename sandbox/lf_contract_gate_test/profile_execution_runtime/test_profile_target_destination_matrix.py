@@ -429,6 +429,24 @@ class RealRecordedWeb001ReadbackTest(unittest.TestCase):
         official = coverage.compare(m0, m1)
         self.assertEqual(outcome["summary"]["mejorados"], len(official["improved_checks"]))
         self.assertEqual(outcome["summary"]["regresados"], len(official["regressed_checks"]))
+        import json
+        print("WEB001_TRUSTED_GROUP2_READBACK " + json.dumps({
+            "case": "WEB-001",
+            "base_tree": base["profile_tree_sha256"],
+            "evolved_tree": evolved["profile_tree_sha256"],
+            "base_run": base["run_id"],
+            "evolved_run": evolved["run_id"],
+            "attestation": [base["attestation"], evolved["attestation"]],
+            "base_output_sha256": base["output_sha256"],
+            "evolved_output_sha256": evolved["output_sha256"],
+            "conditions_same": base.get("conditions") == evolved.get("conditions"),
+            "checks": [
+                {"id": row["control_id"], "original": row["original_result"],
+                 "evolved": row["evolved_result"],
+                 "comparison": row["comparison"]}
+                for row in outcome["rows"]
+            ],
+        }, separators=(",", ":"), sort_keys=True))
 
 
 if __name__ == "__main__":
