@@ -120,13 +120,20 @@ def source_bound_bindings_from_cases(
             if value.get("source_sha256") not in (None, actual_sha):
                 issues.append(f"DESTINATION_SOURCE_SHA_MISMATCH:{key}")
                 continue
-            result[key] = {
+            bound = {
                 "source_sha256": actual_sha,
                 "section_title": value.get("section_title"),
                 "ordered_item": value.get("ordered_item"),
                 "item_title": value.get("item_title"),
                 "change_type": value.get("change_type"),
             }
+            # A trusted case's declaration is not proof that a destination
+            # actually exists. Re-verify exact source before admitting it.
+            resolved = resolve_destination(profile_dir, bound)
+            if resolved["destination_status"] != "SOURCE_ANCHORED_NOT_CANONICAL":
+                issues.append(f"{resolved['blocking_code']}:{key}")
+                continue
+            result[key] = bound
     return result, issues
 
 
