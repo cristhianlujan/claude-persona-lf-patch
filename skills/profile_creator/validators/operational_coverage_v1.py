@@ -137,6 +137,7 @@ def load_runs(operational_root: Path, slug: str, cases: dict[str, dict]) -> tupl
             # Report-only provenance: the trusted file path comes from the loader,
             # never from a run's self-declared source or model-generated output.
             run["_trusted_run_file"] = str(path.relative_to(operational_root))
+            run["_trusted_run_file_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
             runs.append(run)
         else:
             rejected.append(f"RUN_REJECTED:{path.name}")
@@ -212,6 +213,32 @@ def unmet(operational_root: Path, slug: str, profile_dir: Path) -> dict[str, Any
             "profile_tree_sha256": tree_sha256(profile_dir)}
 
 
+MAX_PROBLEM_ROWS = 4
+MAX_RUNS_PER_ARM = 2
+MAX_FIELDS_PER_PROBLEM = 12
+MAX_PREVIEW_CHARS = 180
+
+
+def _problem_check_state(check: dict[str, Any], arm_runs: list[dict]) -> str:
+    if not arm_runs:
+        return "NO_VERIFICADO"
+    return "PASS" if all(evaluate_check(
+        {"output": r["output"], "validator": r["validator"]}, check
+    ) for r in arm_runs) else "FAIL"
+
+
+def _problem_applicability(check: dict[str, Any], arm_runs: list[dict]) -> dict[str, int | bool]:
+    if check["op"] != "if_then":
+        return {"total_runs": len(arm_runs), "antecedent_true": len(arm_runs),
+                "conditional_vacuous": False, "conditional_partially_vacuous": False}
+    true_count = sum(bool(evaluate_check(
+        {"output": r["output"], "validator": r["validator"]}, check["if"]
+    )) for r in arm_runs)
+    return {"total_runs": len(arm_runs), "antecedent_true": true_count,
+            "conditional_vacuous": bool(arm_runs) and true_count == 0,
+            "conditional_partially_vacuous": 0 < true_count < len(arm_runs)}
+
+
 def _problem_observed_field(run: dict[str, Any], pointer: str) -> dict[str, Any]:
     """Short read-only preview; the full JSON RAW remains the source of truth."""
     value = _get({"output": run.get("output", {})}, pointer)
@@ -220,7 +247,7 @@ def _problem_observed_field(run: dict[str, Any], pointer: str) -> dict[str, Any]
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
     return {"pointer": pointer, "present": True,
             "value_sha256": canonical_sha256(value),
-            "preview": raw[:800], "truncated": len(raw) > 800}
+            "preview": raw[:MAX_PREVIEW_CHARS], "truncated": len(raw) > MAX_PREVIEW_CHARS}
 
 
 def problem_comparison_report(
@@ -236,6 +263,9 @@ def problem_comparison_report(
     """
     rows: list[dict[str, Any]] = []
     issues: list[str] = []
+    conditional_controls: dict[str, list[dict[str, Any]]] = {}
+    projection_partial = False
+    omitted_problem_rows = 0
     for case_id, case in sorted(cases.items()):
         seen_problems: set[str] = set()
         dimensions = case.get("comparison_dimensions", [])
@@ -254,6 +284,14 @@ def problem_comparison_report(
                     and all(r.get("attestation") == "RUNTIME_ATTESTED"
                             for r in original + evolved))
         index = {c["id"]: c for c in case["checks"]}
+        # All conditional checks, not only those bound to comparison_dimensions.
+        conditional_controls[case_id] = [{
+            "control_id": c["id"],
+            "original": _problem_check_state(c, original),
+            "evolved": _problem_check_state(c, evolved),
+            "original_applicability": _problem_applicability(c, original),
+            "evolved_applicability": _problem_applicability(c, evolved),
+        } for c in case["checks"] if c["op"] == "if_then"]
         for dim in dimensions:
             if not isinstance(dim, dict):
                 issues.append(f"COMPARISON_DIMENSION_INVALID:{case_id}")
@@ -271,52 +309,47 @@ def problem_comparison_report(
                 issues.append(f"COMPARISON_DIMENSION_BINDING_INVALID:{case_id}:{dim_id}")
                 continue
             seen_problems.add(dim_id)
+            if len(rows) >= MAX_PROBLEM_ROWS:
+                projection_partial = True
+                omitted_problem_rows += 1
+                issues.append(f"PROBLEM_REPORT_LIMIT_REQUIRES_SOURCE_LOOKUP:{case_id}:{dim_id}")
+                continue
+            if len(fields) > MAX_FIELDS_PER_PROBLEM:
+                projection_partial = True
+                issues.append(f"PROBLEM_FIELDS_TRUNCATED_SOURCE_LOOKUP_REQUIRED:{case_id}:{dim_id}")
+            displayed_fields = fields[:MAX_FIELDS_PER_PROBLEM]
             response_columns: dict[str, dict[str, Any]] = {}
             for arm, selected in (("original", original), ("evolved", evolved)):
+                if len(selected) > MAX_RUNS_PER_ARM:
+                    projection_partial = True
+                    issues.append(f"PROBLEM_RUNS_TRUNCATED_SOURCE_LOOKUP_REQUIRED:{case_id}:{dim_id}:{arm}")
                 snapshots = [{
                     "run_id": r.get("run_id"),
                     "raw_file_ref": r.get("_trusted_run_file"),
+                    "raw_file_sha256": r.get("_trusted_run_file_sha256"),
+                    "raw_source_commit_sha": None,
+                    "raw_source_commit_status": "UNVERIFIED_USE_FILE_SHA256",
                     "tree_sha256": r.get("profile_tree_sha256"),
                     "output_sha256": r.get("output_sha256"),
                     "attestation": r.get("attestation"),
                     "validator_valid": r.get("validator", {}).get("valid"),
-                    "fields": [_problem_observed_field(r, p) for p in fields],
-                } for r in selected]
-                response_columns[arm] = {"runs": snapshots}
+                    "fields": [_problem_observed_field(r, p) for p in displayed_fields],
+                } for r in selected[:MAX_RUNS_PER_ARM]]
+                response_columns[arm] = {"runs": snapshots, "total_run_count": len(selected),
+                                         "omitted_run_count": max(0, len(selected) - MAX_RUNS_PER_ARM)}
             control_rows = []
             for check_id in control_ids:
                 c = index[check_id]
-                def _state(arm_runs: list[dict]) -> str:
-                    if not arm_runs:
-                        return "NO_VERIFICADO"
-                    return ("PASS" if all(evaluate_check(
-                        {"output": r["output"], "validator": r["validator"]}, c
-                    ) for r in arm_runs) else "FAIL")
-                # A conditional may pass vacuously if its antecedent was not exercised.
-                def _vacuous(arm_runs: list[dict]) -> bool:
-                    return (c["op"] == "if_then" and bool(arm_runs)
-                            and all(not evaluate_check(
-                                {"output": r["output"], "validator": r["validator"]},
-                                c["if"]
-                            ) for r in arm_runs))
-                def _applicability(arm_runs: list[dict]) -> dict[str, int | bool]:
-                    if c["op"] != "if_then":
-                        return {"total_runs": len(arm_runs), "antecedent_true": len(arm_runs),
-                                "conditional_vacuous": False,
-                                "conditional_partially_vacuous": False}
-                    true_count = sum(bool(evaluate_check(
-                        {"output": r["output"], "validator": r["validator"]}, c["if"]
-                    )) for r in arm_runs)
-                    return {"total_runs": len(arm_runs), "antecedent_true": true_count,
-                            "conditional_vacuous": bool(arm_runs) and true_count == 0,
-                            "conditional_partially_vacuous": 0 < true_count < len(arm_runs)}
+                oa = _problem_applicability(c, original)
+                ea = _problem_applicability(c, evolved)
                 control_rows.append({
                     "control_id": check_id,
-                    "original": _state(original), "evolved": _state(evolved),
-                    "original_vacuous_conditional": _vacuous(original),
-                    "evolved_vacuous_conditional": _vacuous(evolved),
-                    "original_applicability": _applicability(original),
-                    "evolved_applicability": _applicability(evolved),
+                    "original": _problem_check_state(c, original),
+                    "evolved": _problem_check_state(c, evolved),
+                    "original_vacuous_conditional": oa["conditional_vacuous"],
+                    "evolved_vacuous_conditional": ea["conditional_vacuous"],
+                    "original_applicability": oa,
+                    "evolved_applicability": ea,
                 })
             if not original or not evolved:
                 evidence_status = "UNMEASURED"
@@ -340,10 +373,16 @@ def problem_comparison_report(
                 "original": response_columns["original"],
                 "evolved": response_columns["evolved"],
                 "controls": control_rows,
+                "field_count_total": len(fields),
+                "field_count_omitted": max(0, len(fields) - MAX_FIELDS_PER_PROBLEM),
             })
     return {
         "schema": "LF_PROFILE_PROBLEM_SIDE_BY_SIDE_REPORT_V1",
-        "status": "READ_ONLY_REPORT_NOT_AUTHORITY",
+        "status": ("PARTIAL_SOURCE_LOOKUP_REQUIRED" if projection_partial
+                   else "READ_ONLY_REPORT_NOT_AUTHORITY"),
+        "projection_complete": not projection_partial,
+        "omitted_problem_rows": omitted_problem_rows,
+        "conditional_controls_all": conditional_controls,
         "base_tree_sha256": base_tree_sha256,
         "candidate_tree_sha256": candidate_tree_sha256,
         "rows": rows,
