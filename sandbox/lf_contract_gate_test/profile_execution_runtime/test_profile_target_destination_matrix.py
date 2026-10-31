@@ -1,4 +1,5 @@
 """Read-only matrix tests: actual source structures are different across profiles."""
+import json
 import hashlib
 import sys
 import unittest
