@@ -88,8 +88,12 @@ BEGIN
      OR p_evidence->>'candidate_commit' IS DISTINCT FROM p_candidate_commit
      OR p_evidence->>'identity_preserved' IS DISTINCT FROM 'true'
      OR p_evidence->>'head_verified' IS DISTINCT FROM 'true'
-     OR coalesce(jsonb_array_length(p_evidence->'changed_profile_files'),0)=0
+     OR jsonb_typeof(p_evidence->'changed_profile_files') IS DISTINCT FROM 'array'
   THEN RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_SERVER_PROOF_INVALID'); END IF;
+
+  IF jsonb_array_length(p_evidence->'changed_profile_files') = 0 THEN
+    RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_PROFILE_DIFF_EMPTY');
+  END IF;
 
   v_receipt := jsonb_build_object(
     'ordinal',jsonb_array_length(v_entries)+1,'previous_commit',p_previous_commit,
