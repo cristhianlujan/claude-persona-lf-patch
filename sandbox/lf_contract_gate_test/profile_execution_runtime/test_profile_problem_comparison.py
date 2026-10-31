@@ -1,6 +1,7 @@
 """Regression tests: problem-by-problem read-only projection on the EXISTING Group2 evaluator."""
 import json
 import runpy
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -99,6 +100,42 @@ class ProblemComparisonTest(unittest.TestCase):
     def test_missing_run_is_unmeasured(self):
         r = report({"WEB-001": self.c}, [self.base], "a"*64, "b"*64)
         self.assertTrue(all(x["evidence_status"] == "UNMEASURED" for x in r["rows"]))
+
+    def test_existing_group2_evaluate_embeds_report_without_changing_verdict(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            op_root = root / 'operational_cases'
+            slug = 'systemic_root_cause_repair_lf'
+            source = op_root / slug
+            (source / 'runs').mkdir(parents=True)
+            (source / 'WEB-001.case.json').write_text(
+                json.dumps(self.c, ensure_ascii=False), encoding='utf-8')
+            base_dir = root / 'base_profile'
+            evolved_dir = root / 'evolved_profile'
+            for directory, value in ((base_dir, 'base'), (evolved_dir, 'evolved')):
+                directory.mkdir()
+                (directory / 'SKILL.md').write_text(value, encoding='utf-8')
+            bsha = M['tree_sha256'](base_dir)
+            esha = M['tree_sha256'](evolved_dir)
+            old = run(bsha, 'old', 'NONE', 'SAME WEB-001')
+            new = run(esha, 'new', 'NONE', 'SAME WEB-001')
+            for name, record in (('old', old), ('new', new)):
+                (source / 'runs' / (name + '.json')).write_text(
+                    json.dumps(record, ensure_ascii=False), encoding='utf-8')
+            out = M['evaluate'](op_root, slug, base_dir, evolved_dir)
+            self.assertEqual(out['status'], 'MEASURED')
+            self.assertIn('functional_problem_comparison', out)
+            matrix = out['functional_problem_comparison']
+            self.assertEqual(len(matrix['rows']), 2)
+            self.assertEqual(matrix['rows'][0]['evidence_status'], 'PREVIEW_UNATTESTED')
+            self.assertEqual(matrix['rows'][0]['semantic_verdict'],
+                             'NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE')
+            a = M['measure']({'WEB-001': self.c}, [old, new], bsha)
+            b = M['measure']({'WEB-001': self.c}, [old, new], esha)
+            original_result = M['compare'](a, b)
+            for key in ('checks_total', 'base_passed', 'candidate_passed',
+                        'improved_checks', 'regressed_checks', 'cases_unmeasured'):
+                self.assertEqual(out[key], original_result[key])
 
     def test_invalid_control_binding_never_claimed(self):
         malformed = dict(self.c)
