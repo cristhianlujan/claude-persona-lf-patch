@@ -13,7 +13,7 @@ CHECKS = (
     "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
     "router_direct_consistency", "counterfactual_trajectory",
 )
-SHA256 = re.compile(r"[0-9a-f]{64}\\Z".replace("\\\\", "\\"))
+SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def classify_failure(review: dict, execution_id: str, profile_code: str) -> dict:
