@@ -1826,7 +1826,9 @@
     "blocking_codes": [
       "OWNER_ACT0058_NO_APPLICABLE_AUTHORITY",
       "RETRY_CONTRACT_SQL_DISAGREEMENT",
-      "FALLIDO_READMISSION_CONSUMER_UNVERIFIED"
+      "FALLIDO_READMISSION_CONSUMER_UNVERIFIED",
+      "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
+      "EXECUTION_EFFECT_PRODUCER_UNRESOLVED"
     ],
     "next_gate": {
       "gate": "VERIFY_OWNER_RETRY_CONSUMER_THEN_AUTHORIZE_REPAIR",
@@ -2251,8 +2253,7 @@
     "executed": false,
     "valid": null,
     "errors": [],
-    "pending_validator": "profiles/systemic_root_cause_repair_lf/validators/runtime_validate.py",
-    "source_status": "DRAFT_NOT_ATTESTED"
+    "reason": "Source-bound draft modified after first canonical Python FAIL; do not reuse old green validation or claim approval."
   },
   "provisional_self_check": {
     "checks": [
@@ -2370,5 +2371,13 @@
     "proof_run_id": 41156302815,
     "profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
     "git_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f"
+  },
+  "runtime_diagnostic": {
+    "run_id": 41159686368,
+    "canonical_result": "FAIL",
+    "source_head_at_test": "6256eb4bd39273bfdf28d448b06177935b591108",
+    "original_error_count": 26,
+    "diagnosis": "Added mandatory gap-blocking codes after exact Python diagnostics; not yet rerun",
+    "not_provider_attestation": true
   }
 }
