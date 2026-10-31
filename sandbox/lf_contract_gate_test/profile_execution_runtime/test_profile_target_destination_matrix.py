@@ -294,6 +294,72 @@ class TrustedCaseDestinationIntegrationTest(unittest.TestCase):
         self.assertTrue(any("DESTINATION_PROFILE_MISMATCH" in value for value in issues))
         self.assertTrue(any("DESTINATION_CONTROL_NOT_DECLARED" in value for value in issues))
 
+    def test_runner_consumes_trusted_case_mapping_end_to_end(self):
+        import runpy
+        from unittest.mock import patch
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        case["checks"][0].update({"pointer": "/output/status", "op": "eq", "value": "OK"})
+        original_tree, candidate_tree = "a" * 64, "b" * 64
+        runs = [
+            {"run_id": "ORIGINAL", "case_id": "SYNTHETIC",
+             "profile_tree_sha256": original_tree, "attestation": "NONE",
+             "output": {"status": "BAD"}, "validator": {"valid": True}},
+            {"run_id": "EVOLVED", "case_id": "SYNTHETIC",
+             "profile_tree_sha256": candidate_tree, "attestation": "NONE",
+             "output": {"status": "OK"}, "validator": {"valid": True}},
+        ]
+        official = {"operational": {
+            "base_tree_sha256": original_tree, "candidate_tree_sha256": candidate_tree,
+            "checks_total": 1, "base_passed": 0, "candidate_passed": 1,
+            "improved_checks": ["SYNTHETIC:CTRL1"], "regressed_checks": [],
+            "cases_unmeasured": []}, "verdict": "EVOLUTION_DEMONSTRATED"}
+        runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"),
+                                run_name="matrix_integrated_test")
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {"gather_operational":
+                lambda *_: ({"SYNTHETIC": case}, runs, original_tree, candidate_tree, [])}):
+            report = func(slug, ROOT / "profiles" / slug, official)
+        self.assertEqual(report["status"], "GROUP2_PROJECTION_MATCHED_REPORT_ONLY")
+        self.assertEqual(report["summary"]["destinos_solo_textuales"], 1)
+        self.assertEqual(report["summary"]["destinos_pendientes"], 0)
+        self.assertEqual(report["rows"][0]["destination_profile_step_id"],
+                         case["destination_bindings"]["CTRL1"]["section_title"] + "::0")
+        self.assertEqual(report["destination_authority"], "UNVERIFIED")
+
+    def test_invalid_governed_mapping_marks_projection_unverified(self):
+        import runpy
+        from unittest.mock import patch
+        slug = "product_director_lf"
+        case = self.fixture(slug,
+            "RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES",
+            0, "AUTHORITY RESOLUTION FIRST.")
+        case["destination_bindings"]["CTRL1"]["profile_slug"] = "wrong_profile"
+        case["checks"][0].update({"pointer": "/output/status", "op": "eq", "value": "OK"})
+        tree0, tree1 = "a" * 64, "b" * 64
+        runs = [
+            {"run_id": "A", "case_id": "SYNTHETIC", "profile_tree_sha256": tree0,
+             "attestation": "NONE", "output": {"status": "BAD"}, "validator": {"valid": True}},
+            {"run_id": "B", "case_id": "SYNTHETIC", "profile_tree_sha256": tree1,
+             "attestation": "NONE", "output": {"status": "OK"}, "validator": {"valid": True}},
+        ]
+        official = {"operational": {
+            "base_tree_sha256": tree0, "candidate_tree_sha256": tree1,
+            "checks_total": 1, "base_passed": 0, "candidate_passed": 1,
+            "improved_checks": ["SYNTHETIC:CTRL1"], "regressed_checks": [],
+            "cases_unmeasured": []}, "verdict": "EVOLUTION_DEMONSTRATED"}
+        runner = runpy.run_path(str(ROOT / "scripts/lf_profile_update_run.py"),
+                                run_name="matrix_integrated_invalid_test")
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {"gather_operational":
+                lambda *_: ({"SYNTHETIC": case}, runs, tree0, tree1, [])}):
+            report = func(slug, ROOT / "profiles" / slug, official)
+        self.assertEqual(report["status"], "NO_VERIFICADO_PROOF_OR_SOURCE")
+        self.assertTrue(report["destination_binding_issues"])
+        self.assertEqual(report["approval_effect"], "NONE")
+
     def test_stale_sha_rejected_and_missing_bindings_remain_pending(self):
         slug = "product_director_lf"
         case = self.fixture(slug,
