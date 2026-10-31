@@ -22,4 +22,9 @@ class ProfileUpdaterControlMatrixLane(unittest.TestCase):
                          "Profile destination matrix tests failed:\n" + proc.stdout[-6000:] +
                          "\n" + proc.stderr[-12000:])
         self.assertIn("Ran 22 tests", proc.stderr)
+        # The canonical evaluator emits this diagnostic from recorded runs;
+        # print only its compact row summary, never the full model RAW.
+        for line in proc.stdout.splitlines():
+            if line.startswith("WEB001_TRUSTED_GROUP2_READBACK "):
+                print(line)
         self.assertIn("OK", proc.stderr)
