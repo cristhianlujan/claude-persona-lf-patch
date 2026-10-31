@@ -38,12 +38,16 @@ def validate_readback(packet, binding):
         errs.append("OPERATION_MISMATCH")
     if run.get("profile_code") != "PERFIL-PROGRAMMING-ANALYSIS-LF":
         errs.append("PROFILE_MISMATCH")
+    if run.get("status") != "COMPLETED":
+        errs.append("OPERATION_NOT_TERMINAL")
 
     router = packet.get("router_handoff")
     if not isinstance(router, dict) or router.get("router") != "ACT-0001" or not router.get("authorization_receipt_ref"):
         errs.append("ROUTER_HANDOFF_RECEIPT_MISSING")
-    elif router.get("execution_id") != eid or router.get("request_sha256") != req:
-        errs.append("ROUTER_RUN_BINDING_MISMATCH")
+    elif (router.get("request_sha256") != req
+          or not _sha(router.get("authorization_fingerprint_sha256"))
+          or router.get("authorization_receipt_ref") != "router-authorization://" + router.get("authorization_fingerprint_sha256", "")):
+        errs.append("ROUTER_RECEIPT_BINDING_MISMATCH")
 
     steps = packet.get("operation_step_readback")
     if not isinstance(steps, list) or [s.get("step_id") for s in steps if isinstance(s, dict)] != list(OP_STEPS):
@@ -56,6 +60,12 @@ def validate_readback(packet, binding):
             if s.get("status") != "STEP_PASS_WITH_EVIDENCE":
                 errs.append("OPERATION_STEP_NOT_PASS")
                 break
+
+    if isinstance(router, dict) and isinstance(steps, list):
+        router_step = next((s for s in steps if isinstance(s, dict) and s.get("step_id") == "router"), None)
+        if (not isinstance(router_step, dict)
+            or router_step.get("evidence_ref") != router.get("authorization_receipt_ref")):
+            errs.append("ROUTER_STEP_RECEIPT_NOT_BOUND")
 
     stages = packet.get("stage_readback")
     if not isinstance(stages, list) or [s.get("stage") for s in stages if isinstance(s, dict)] != list(STAGES):
