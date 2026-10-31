@@ -1,0 +1,1183 @@
+{
+  "schema": "LF_WEB001_N3_N5_SOURCE_FIRST_LIVE_READBACK_V1",
+  "case_id": "WEB-001",
+  "authored_for_updater_execution": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+  "source_candidate_revision": "8a7b317ad23e0b9fc3305390610597650ec07c2f",
+  "research_status": "BOUNDED_LEVELS_RETRIEVED_NOT_FULL_MODEL_VALIDATION",
+  "read_only": true,
+  "untrusted_search_results_not_authority": true,
+  "data_query_results": {
+    "OWN_N1": {
+      "query": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590119+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    },
+    "OWN_N2": {
+      "query": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590306+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    },
+    "OWN_N3_REL": {
+      "query": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
+      "rows": []
+    },
+    "OWN_N3_DEC": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) AS matching_decisions FROM public.lf_decisiones_gov WHERE coalesce(decision,'') ILIKE '%ACT-0058%' OR coalesce(contexto,'') ILIKE '%ACT-0058%' OR coalesce(observaciones,'') ILIKE '%ACT-0058%'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590378+00",
+          "matching_decisions": 0
+        }
+      ]
+    },
+    "OWN_N3_POL": {
+      "query": "SELECT statement_timestamp() observed_at,policy_code,policy_version,status FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%ORQUESTACION_PIPELINE_LF%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:53.595931+00",
+          "policy_code": "POL-PROFILE-UPDATE-PASS",
+          "policy_version": "v1.4-evolved-routing-candidate",
+          "status": "ACTIVE"
+        }
+      ]
+    },
+    "RET_N1": {
+      "query": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+          "policy_version": "v1.1-operational-closure",
+          "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-POLICY-CONSUMPTION",
+          "policy_version": "v1.3-assurance-cutover",
+          "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-SOURCE-RESOLUTION",
+          "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+          "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-STATE-MODEL",
+          "policy_version": "v2.0-canonical-lifecycle",
+          "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+        }
+      ]
+    },
+    "RET_N2": {
+      "query": "SELECT statement_timestamp() observed_at,step_id,step_order,pass_condition,block_condition,execution_sql FROM public.lf_operation_step_contracts WHERE operation_code='ORQUESTACION_PIPELINE_LF' AND step_id='failed_retry'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.396531+00",
+          "step_id": "failed_retry",
+          "step_order": 110,
+          "pass_condition": "retry_count <= 3; error registrado y pipeline en cola de reintento",
+          "block_condition": "retry_count > 3; pipeline bloqueado definitivamente",
+          "execution_sql": "UPDATE public.lf_pipeline_runs\nSET retry_count = retry_count + 1,\n    error_detail = :error_type || ': ' || :error_detail,\n    stage_status = CASE\n      WHEN retry_count + 1 >= 3 THEN 'FAILED'\n      WHEN :error_type IN ('SCHEMA_ERROR', 'FK_VIOLATION') THEN 'FAILED'\n      ELSE 'PENDING'\n    END,\n    updated_at = NOW()\nWHERE pipeline_run_id = :pipeline_run_id\nRETURNING pipeline_run_id, retry_count, stage_status, error_detail;"
+        }
+      ]
+    },
+    "RET_N3": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) FILTER(WHERE q.pipeline_run_id IS NOT NULL) linked,COUNT(*) FILTER(WHERE p.pipeline_run_id IS NOT NULL AND q.intento_count<>p.retry_count) mismatched_count FROM public.lf_url_queue q LEFT JOIN public.lf_pipeline_runs p ON p.pipeline_run_id=q.pipeline_run_id",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.148225+00",
+          "linked": 126,
+          "mismatched_count": 58
+        }
+      ]
+    },
+    "CON_N2": {
+      "query": "SELECT statement_timestamp() observed_at,estado,COUNT(*) rows,MAX(updated_at) max_updated FROM public.lf_url_queue GROUP BY estado ORDER BY estado",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "DESCARTADO",
+          "rows": 1,
+          "max_updated": "2026-08-28 13:17:03.173793+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "FALLIDO",
+          "rows": 39,
+          "max_updated": "2026-09-01 23:45:04.997278+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "PENDIENTE",
+          "rows": 1,
+          "max_updated": "2026-09-01 23:43:44.572941+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "PROCESADO",
+          "rows": 177,
+          "max_updated": "2026-08-28 13:16:24.679073+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "SKIP",
+          "rows": 105,
+          "max_updated": "2026-09-01 10:15:22.390999+00"
+        }
+      ]
+    },
+    "CON_N3": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) matching_jobs FROM cron.job WHERE command ILIKE '%lf_url_queue%' OR command ILIKE '%lf_pipeline_runs%' OR command ILIKE '%ORQUESTACION_PIPELINE_LF%' OR jobname ILIKE '%pipeline%' OR jobname ILIKE '%retry%'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.254952+00",
+          "matching_jobs": 0
+        }
+      ]
+    },
+    "CON_N3_ALL": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) total_jobs,COUNT(*) FILTER(WHERE active) active_jobs FROM cron.job",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.632709+00",
+          "total_jobs": 11,
+          "active_jobs": 9
+        }
+      ]
+    },
+    "HIS_N5_EKB": {
+      "query": "SELECT statement_timestamp() observed_at,codigo,descripcion,prevencion,frecuencia,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.742787+00",
+          "codigo": "WEB-001",
+          "descripcion": "Durante ACT-0058, 7 URLs de Reevalúa devolvieron Cache miss al ejecutar web.run open(url). El pipeline las cerró fail-closed como FALLIDO sin inventar contenido.",
+          "prevencion": "No crear captura, homologación, decisión ni KB si el fetch falla. Registrar FALLIDO con error_detail, conservar trazabilidad y permitir reintento posterior controlado.",
+          "frecuencia": 46,
+          "estado": "activo"
+        }
+      ]
+    },
+    "HIS_N5_RUNS": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) runs,MAX(updated_at) latest,COUNT(*) FILTER(WHERE stage_status='FAILED') failed,COUNT(*) FILTER(WHERE retry_count>0) retried FROM public.lf_pipeline_runs",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:54.825535+00",
+          "runs": 176,
+          "latest": "2026-09-01 23:45:04.997278+00",
+          "failed": 53,
+          "retried": 37
+        }
+      ]
+    },
+    "HIS_N5_EVENTS": {
+      "query": "SELECT statement_timestamp() observed_at,COUNT(*) matched_events,MAX(created_at) last_event_at FROM public.lf_eventos WHERE entidad_codigo='ACT-0058' OR evento_tipo ILIKE '%RETRY%' OR descripcion ILIKE '%WEB-001%' OR payload::text ILIKE '%WEB-001%'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 01:30:55.010593+00",
+          "matched_events": 133,
+          "last_event_at": "2026-09-01 23:04:36.214383+00"
+        }
+      ]
+    }
+  },
+  "git_exact_sources": {
+    "skills/orquestador_pipeline_lf/SKILL.md": {
+      "path": "skills/orquestador_pipeline_lf/SKILL.md",
+      "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+      "lines": [
+        {
+          "line": 92,
+          "text": "Todas deben quedar en `PROCESADO` o `FALLIDO`."
+        },
+        {
+          "line": 131,
+          "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+        },
+        {
+          "line": 141,
+          "text": "SELECT pipeline_run_id, stage_current, stage_status, retry_count"
+        },
+        {
+          "line": 148,
+          "text": "- `stage_status = FAILED` y `retry_count < 3` → modo RETRY"
+        },
+        {
+          "line": 177,
+          "text": "OP-4.  Captura web real — seleccionar motor según agente ejecutor"
+        },
+        {
+          "line": 198,
+          "text": "       ## RESULTADO ESPERADO de OP-4"
+        },
+        {
+          "line": 200,
+          "text": "       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'"
+        },
+        {
+          "line": 209,
+          "text": "         run_type       = 'SCHEDULED'"
+        },
+        {
+          "line": 355,
+          "text": "- Saltar OP-4 a OP-7. Usar `run_id` y `record_id` existentes."
+        },
+        {
+          "line": 359,
+          "text": "### MODO RETRY — pipeline_run fallido, retry_count < 3"
+        },
+        {
+          "line": 363,
+          "text": "SET retry_count = retry_count + 1, stage_status = 'PENDING', updated_at = NOW()"
+        },
+        {
+          "line": 368,
+          "text": "- Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración."
+        },
+        {
+          "line": 426,
+          "text": "| `lf_capture_runs` | `run_type` | MANUAL / SCHEDULED / BACKFILL / TEST / DRY_RUN |"
+        },
+        {
+          "line": 445,
+          "text": "| `lf_url_queue` | `estado` | PENDIENTE / PROCESADO / FALLIDO / DESCARTADO / SKIP |"
+        }
+      ]
+    },
+    "skills/orquestador_pipeline_lf/judges/mini_judge.md": {
+      "path": "skills/orquestador_pipeline_lf/judges/mini_judge.md",
+      "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "git_blob_sha": "b90c4c5cc623a3219ec3b4f7d7ec390f64ed9849",
+      "lines": [
+        {
+          "line": 14,
+          "text": "10. ¿retry_count no supera 3?"
+        },
+        {
+          "line": 33,
+          "text": "| MAX_RETRY_EXCEEDED | retry_count > 3 |"
+        }
+      ]
+    },
+    "supabase/migrations/20261008075421_human_decision_policy_registry_v1.sql": {
+      "path": "supabase/migrations/20261008075421_human_decision_policy_registry_v1.sql",
+      "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "git_blob_sha": "debbc853b874ae6a9a3e6fd57ddabe27fee980d0",
+      "lines": [
+        {
+          "line": 348,
+          "text": "        'LF_GOVERNANCE','contract://LF_GOVERNANCE_SUPER_ADMIN_V1',"
+        },
+        {
+          "line": 349,
+          "text": "        'STATIC','SUPER_ADMIN_GOVERNANCE','STATIC',"
+        },
+        {
+          "line": 352,
+          "text": "        '{\"blocker\":\"LF_GOVERNANCE_SUPER_ADMIN_V1_IS_CANDIDATE_READ_ONLY\"}'::jsonb"
+        },
+        {
+          "line": 357,
+          "text": "        'LF_GOVERNANCE','contract://LF_GOVERNANCE_SUPER_ADMIN_V1',"
+        },
+        {
+          "line": 358,
+          "text": "        'STATIC','SUPER_ADMIN_GOVERNANCE','STATIC',"
+        },
+        {
+          "line": 361,
+          "text": "        '{\"blocker\":\"LF_GOVERNANCE_SUPER_ADMIN_V1_IS_CANDIDATE_READ_ONLY\"}'::jsonb"
+        }
+      ]
+    }
+  },
+  "per_datum_observations": [
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N1",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N1-OWN_N1",
+      "source_locator": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+      "source_kind": "VIEW",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590119+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:53.590119+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:53.590119+00",
+            "codigo_activo": "ACT-0058",
+            "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+            "owner_name": null,
+            "estado_operativo": "APROBADO"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N2",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2",
+      "source_locator": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590306+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_operativo": "APROBADO"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:53.590306+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:53.590306+00",
+            "codigo_activo": "ACT-0058",
+            "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+            "owner_name": null,
+            "estado_operativo": "APROBADO"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_REL",
+      "source_locator": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "EMPTY",
+      "row_count": 0,
+      "sample_records": [],
+      "observed_at": null,
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
+        "rows": []
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_DEC",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) AS matching_decisions FROM public.lf_decisiones_gov WHERE coalesce(decision,'') ILIKE '%ACT-0058%' OR coalesce(contexto,'') ILIKE '%ACT-0058%' OR coalesce(observaciones,'') ILIKE '%ACT-0058%'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:53.590378+00",
+          "matching_decisions": 0
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:53.590378+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) AS matching_decisions FROM public.lf_decisiones_gov WHERE coalesce(decision,'') ILIKE '%ACT-0058%' OR coalesce(contexto,'') ILIKE '%ACT-0058%' OR coalesce(observaciones,'') ILIKE '%ACT-0058%'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:53.590378+00",
+            "matching_decisions": 0
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_POL",
+      "source_locator": "SELECT statement_timestamp() observed_at,policy_code,policy_version,status FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%ORQUESTACION_PIPELINE_LF%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:53.595931+00",
+          "policy_code": "POL-PROFILE-UPDATE-PASS",
+          "policy_version": "v1.4-evolved-routing-candidate",
+          "status": "ACTIVE"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:53.595931+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,policy_code,policy_version,status FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%ORQUESTACION_PIPELINE_LF%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:53.595931+00",
+            "policy_code": "POL-PROFILE-UPDATE-PASS",
+            "policy_version": "v1.4-evolved-routing-candidate",
+            "status": "ACTIVE"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-POLICY-OP4",
+      "level": "N1",
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N1-RET_N1",
+      "source_locator": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+      "source_kind": "VIEW",
+      "result_kind": "ROWS",
+      "row_count": 4,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+          "policy_version": "v1.1-operational-closure",
+          "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-POLICY-CONSUMPTION",
+          "policy_version": "v1.3-assurance-cutover",
+          "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-SOURCE-RESOLUTION",
+          "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+          "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-STATE-MODEL",
+          "policy_version": "v2.0-canonical-lifecycle",
+          "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.012372+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+            "policy_version": "v1.1-operational-closure",
+            "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-POLICY-CONSUMPTION",
+            "policy_version": "v1.3-assurance-cutover",
+            "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-SOURCE-RESOLUTION",
+            "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+            "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-STATE-MODEL",
+            "policy_version": "v2.0-canonical-lifecycle",
+            "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-POLICY-OP4",
+      "level": "N2",
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N2-RET_N2",
+      "source_locator": "SELECT statement_timestamp() observed_at,step_id,step_order,pass_condition,block_condition,execution_sql FROM public.lf_operation_step_contracts WHERE operation_code='ORQUESTACION_PIPELINE_LF' AND step_id='failed_retry'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.396531+00",
+          "step_id": "failed_retry",
+          "step_order": 110,
+          "pass_condition": "retry_count <= 3; error registrado y pipeline en cola de reintento",
+          "block_condition": "retry_count > 3; pipeline bloqueado definitivamente",
+          "execution_sql": "UPDATE public.lf_pipeline_runs\nSET retry_count = retry_count + 1,\n    error_detail = :error_type || ': ' || :error_detail,\n    stage_status = CASE\n      WHEN retry_count + 1 >= 3 THEN 'FAILED'\n      WHEN :error_type IN ('SCHEMA_ERROR', 'FK_VIOLATION') THEN 'FAILED'\n      ELSE 'PENDING'\n    END,\n    updated_at = NOW()\nWHERE pipeline_run_id = :pipeline_run_id\nRETURNING pipeline_run_id, retry_count, stage_status, error_detail;"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.396531+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,step_id,step_order,pass_condition,block_condition,execution_sql FROM public.lf_operation_step_contracts WHERE operation_code='ORQUESTACION_PIPELINE_LF' AND step_id='failed_retry'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.396531+00",
+            "step_id": "failed_retry",
+            "step_order": 110,
+            "pass_condition": "retry_count <= 3; error registrado y pipeline en cola de reintento",
+            "block_condition": "retry_count > 3; pipeline bloqueado definitivamente",
+            "execution_sql": "UPDATE public.lf_pipeline_runs\nSET retry_count = retry_count + 1,\n    error_detail = :error_type || ': ' || :error_detail,\n    stage_status = CASE\n      WHEN retry_count + 1 >= 3 THEN 'FAILED'\n      WHEN :error_type IN ('SCHEMA_ERROR', 'FK_VIOLATION') THEN 'FAILED'\n      ELSE 'PENDING'\n    END,\n    updated_at = NOW()\nWHERE pipeline_run_id = :pipeline_run_id\nRETURNING pipeline_run_id, retry_count, stage_status, error_detail;"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-POLICY-OP4",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N3-RET_N3",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) FILTER(WHERE q.pipeline_run_id IS NOT NULL) linked,COUNT(*) FILTER(WHERE p.pipeline_run_id IS NOT NULL AND q.intento_count<>p.retry_count) mismatched_count FROM public.lf_url_queue q LEFT JOIN public.lf_pipeline_runs p ON p.pipeline_run_id=q.pipeline_run_id",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.148225+00",
+          "linked": 126,
+          "mismatched_count": 58
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.148225+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) FILTER(WHERE q.pipeline_run_id IS NOT NULL) linked,COUNT(*) FILTER(WHERE p.pipeline_run_id IS NOT NULL AND q.intento_count<>p.retry_count) mismatched_count FROM public.lf_url_queue q LEFT JOIN public.lf_pipeline_runs p ON p.pipeline_run_id=q.pipeline_run_id",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.148225+00",
+            "linked": 126,
+            "mismatched_count": 58
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N1",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N1-RET_N1",
+      "source_locator": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+      "source_kind": "VIEW",
+      "result_kind": "ROWS",
+      "row_count": 4,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+          "policy_version": "v1.1-operational-closure",
+          "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-POLICY-CONSUMPTION",
+          "policy_version": "v1.3-assurance-cutover",
+          "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-SOURCE-RESOLUTION",
+          "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+          "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.012372+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_code": "POL-LF-STATE-MODEL",
+          "policy_version": "v2.0-canonical-lifecycle",
+          "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.012372+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+            "policy_version": "v1.1-operational-closure",
+            "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-POLICY-CONSUMPTION",
+            "policy_version": "v1.3-assurance-cutover",
+            "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-SOURCE-RESOLUTION",
+            "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+            "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.012372+00",
+            "operation_code": "ORQUESTACION_PIPELINE_LF",
+            "policy_code": "POL-LF-STATE-MODEL",
+            "policy_version": "v2.0-canonical-lifecycle",
+            "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N2",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N2-CON_N2",
+      "source_locator": "SELECT statement_timestamp() observed_at,estado,COUNT(*) rows,MAX(updated_at) max_updated FROM public.lf_url_queue GROUP BY estado ORDER BY estado",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 5,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "DESCARTADO",
+          "rows": 1,
+          "max_updated": "2026-08-28 13:17:03.173793+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "FALLIDO",
+          "rows": 39,
+          "max_updated": "2026-09-01 23:45:04.997278+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "PENDIENTE",
+          "rows": 1,
+          "max_updated": "2026-09-01 23:43:44.572941+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "PROCESADO",
+          "rows": 177,
+          "max_updated": "2026-08-28 13:16:24.679073+00"
+        },
+        {
+          "observed_at": "2026-10-31 01:30:54.236155+00",
+          "estado": "SKIP",
+          "rows": 105,
+          "max_updated": "2026-09-01 10:15:22.390999+00"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.236155+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,estado,COUNT(*) rows,MAX(updated_at) max_updated FROM public.lf_url_queue GROUP BY estado ORDER BY estado",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.236155+00",
+            "estado": "DESCARTADO",
+            "rows": 1,
+            "max_updated": "2026-08-28 13:17:03.173793+00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.236155+00",
+            "estado": "FALLIDO",
+            "rows": 39,
+            "max_updated": "2026-09-01 23:45:04.997278+00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.236155+00",
+            "estado": "PENDIENTE",
+            "rows": 1,
+            "max_updated": "2026-09-01 23:43:44.572941+00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.236155+00",
+            "estado": "PROCESADO",
+            "rows": 177,
+            "max_updated": "2026-08-28 13:16:24.679073+00"
+          },
+          {
+            "observed_at": "2026-10-31 01:30:54.236155+00",
+            "estado": "SKIP",
+            "rows": 105,
+            "max_updated": "2026-09-01 10:15:22.390999+00"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N3-CON_N3",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) matching_jobs FROM cron.job WHERE command ILIKE '%lf_url_queue%' OR command ILIKE '%lf_pipeline_runs%' OR command ILIKE '%ORQUESTACION_PIPELINE_LF%' OR jobname ILIKE '%pipeline%' OR jobname ILIKE '%retry%'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.254952+00",
+          "matching_jobs": 0
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.254952+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) matching_jobs FROM cron.job WHERE command ILIKE '%lf_url_queue%' OR command ILIKE '%lf_pipeline_runs%' OR command ILIKE '%ORQUESTACION_PIPELINE_LF%' OR jobname ILIKE '%pipeline%' OR jobname ILIKE '%retry%'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.254952+00",
+            "matching_jobs": 0
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N3",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N3-CON_N3_ALL",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) total_jobs,COUNT(*) FILTER(WHERE active) active_jobs FROM cron.job",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.632709+00",
+          "total_jobs": 11,
+          "active_jobs": 9
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.632709+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) total_jobs,COUNT(*) FILTER(WHERE active) active_jobs FROM cron.job",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.632709+00",
+            "total_jobs": 11,
+            "active_jobs": 9
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N5",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N5-HIS_N5_EKB",
+      "source_locator": "SELECT statement_timestamp() observed_at,codigo,descripcion,prevencion,frecuencia,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.742787+00",
+          "codigo": "WEB-001",
+          "descripcion": "Durante ACT-0058, 7 URLs de Reevalúa devolvieron Cache miss al ejecutar web.run open(url). El pipeline las cerró fail-closed como FALLIDO sin inventar contenido.",
+          "prevencion": "No crear captura, homologación, decisión ni KB si el fetch falla. Registrar FALLIDO con error_detail, conservar trazabilidad y permitir reintento posterior controlado.",
+          "frecuencia": 46,
+          "estado": "activo"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.742787+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,codigo,descripcion,prevencion,frecuencia,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.742787+00",
+            "codigo": "WEB-001",
+            "descripcion": "Durante ACT-0058, 7 URLs de Reevalúa devolvieron Cache miss al ejecutar web.run open(url). El pipeline las cerró fail-closed como FALLIDO sin inventar contenido.",
+            "prevencion": "No crear captura, homologación, decisión ni KB si el fetch falla. Registrar FALLIDO con error_detail, conservar trazabilidad y permitir reintento posterior controlado.",
+            "frecuencia": 46,
+            "estado": "activo"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-POLICY-OP4",
+      "level": "N5",
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N5-HIS_N5_RUNS",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) runs,MAX(updated_at) latest,COUNT(*) FILTER(WHERE stage_status='FAILED') failed,COUNT(*) FILTER(WHERE retry_count>0) retried FROM public.lf_pipeline_runs",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:54.825535+00",
+          "runs": 176,
+          "latest": "2026-09-01 23:45:04.997278+00",
+          "failed": 53,
+          "retried": 37
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:54.825535+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) runs,MAX(updated_at) latest,COUNT(*) FILTER(WHERE stage_status='FAILED') failed,COUNT(*) FILTER(WHERE retry_count>0) retried FROM public.lf_pipeline_runs",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:54.825535+00",
+            "runs": 176,
+            "latest": "2026-09-01 23:45:04.997278+00",
+            "failed": 53,
+            "retried": 37
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N5",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N5-HIS_N5_EVENTS",
+      "source_locator": "SELECT statement_timestamp() observed_at,COUNT(*) matched_events,MAX(created_at) last_event_at FROM public.lf_eventos WHERE entidad_codigo='ACT-0058' OR evento_tipo ILIKE '%RETRY%' OR descripcion ILIKE '%WEB-001%' OR payload::text ILIKE '%WEB-001%'",
+      "source_kind": "BASE_TABLE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 01:30:55.010593+00",
+          "matched_events": 133,
+          "last_event_at": "2026-09-01 23:04:36.214383+00"
+        }
+      ],
+      "observed_at": "2026-10-31 01:30:55.010593+00",
+      "readback": {
+        "query": "SELECT statement_timestamp() observed_at,COUNT(*) matched_events,MAX(created_at) last_event_at FROM public.lf_eventos WHERE entidad_codigo='ACT-0058' OR evento_tipo ILIKE '%RETRY%' OR descripcion ILIKE '%WEB-001%' OR payload::text ILIKE '%WEB-001%'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 01:30:55.010593+00",
+            "matched_events": 133,
+            "last_event_at": "2026-09-01 23:04:36.214383+00"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-OWNER-ACT0058",
+      "level": "N4",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N4-GIT",
+      "source_locator": "repo://cristhianlujan/claude-persona-lf-patch/skills/orquestador_pipeline_lf/SKILL.md@75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "source_kind": "GITHUB_SOURCE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "path": "skills/orquestador_pipeline_lf/SKILL.md",
+          "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+          "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+          "matched_lines": []
+        }
+      ],
+      "observed_at": "2026-10-31T01:28:00Z",
+      "source_revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "readback": {
+        "path": "skills/orquestador_pipeline_lf/SKILL.md",
+        "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+        "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+        "lines": [
+          {
+            "line": 92,
+            "text": "Todas deben quedar en `PROCESADO` o `FALLIDO`."
+          },
+          {
+            "line": 131,
+            "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+          },
+          {
+            "line": 141,
+            "text": "SELECT pipeline_run_id, stage_current, stage_status, retry_count"
+          },
+          {
+            "line": 148,
+            "text": "- `stage_status = FAILED` y `retry_count < 3` → modo RETRY"
+          },
+          {
+            "line": 177,
+            "text": "OP-4.  Captura web real — seleccionar motor según agente ejecutor"
+          },
+          {
+            "line": 198,
+            "text": "       ## RESULTADO ESPERADO de OP-4"
+          },
+          {
+            "line": 200,
+            "text": "       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'"
+          },
+          {
+            "line": 209,
+            "text": "         run_type       = 'SCHEDULED'"
+          },
+          {
+            "line": 355,
+            "text": "- Saltar OP-4 a OP-7. Usar `run_id` y `record_id` existentes."
+          },
+          {
+            "line": 359,
+            "text": "### MODO RETRY — pipeline_run fallido, retry_count < 3"
+          },
+          {
+            "line": 363,
+            "text": "SET retry_count = retry_count + 1, stage_status = 'PENDING', updated_at = NOW()"
+          },
+          {
+            "line": 368,
+            "text": "- Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración."
+          },
+          {
+            "line": 426,
+            "text": "| `lf_capture_runs` | `run_type` | MANUAL / SCHEDULED / BACKFILL / TEST / DRY_RUN |"
+          },
+          {
+            "line": 445,
+            "text": "| `lf_url_queue` | `estado` | PENDIENTE / PROCESADO / FALLIDO / DESCARTADO / SKIP |"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-POLICY-OP4",
+      "level": "N4",
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N4-GIT",
+      "source_locator": "repo://cristhianlujan/claude-persona-lf-patch/skills/orquestador_pipeline_lf/SKILL.md@75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "source_kind": "GITHUB_SOURCE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "path": "skills/orquestador_pipeline_lf/SKILL.md",
+          "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+          "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+          "matched_lines": [
+            {
+              "line": 131,
+              "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+            },
+            {
+              "line": 141,
+              "text": "SELECT pipeline_run_id, stage_current, stage_status, retry_count"
+            },
+            {
+              "line": 148,
+              "text": "- `stage_status = FAILED` y `retry_count < 3` → modo RETRY"
+            },
+            {
+              "line": 359,
+              "text": "### MODO RETRY — pipeline_run fallido, retry_count < 3"
+            },
+            {
+              "line": 363,
+              "text": "SET retry_count = retry_count + 1, stage_status = 'PENDING', updated_at = NOW()"
+            },
+            {
+              "line": 368,
+              "text": "- Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración."
+            }
+          ]
+        }
+      ],
+      "observed_at": "2026-10-31T01:28:00Z",
+      "source_revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "readback": {
+        "path": "skills/orquestador_pipeline_lf/SKILL.md",
+        "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+        "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+        "lines": [
+          {
+            "line": 92,
+            "text": "Todas deben quedar en `PROCESADO` o `FALLIDO`."
+          },
+          {
+            "line": 131,
+            "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+          },
+          {
+            "line": 141,
+            "text": "SELECT pipeline_run_id, stage_current, stage_status, retry_count"
+          },
+          {
+            "line": 148,
+            "text": "- `stage_status = FAILED` y `retry_count < 3` → modo RETRY"
+          },
+          {
+            "line": 177,
+            "text": "OP-4.  Captura web real — seleccionar motor según agente ejecutor"
+          },
+          {
+            "line": 198,
+            "text": "       ## RESULTADO ESPERADO de OP-4"
+          },
+          {
+            "line": 200,
+            "text": "       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'"
+          },
+          {
+            "line": 209,
+            "text": "         run_type       = 'SCHEDULED'"
+          },
+          {
+            "line": 355,
+            "text": "- Saltar OP-4 a OP-7. Usar `run_id` y `record_id` existentes."
+          },
+          {
+            "line": 359,
+            "text": "### MODO RETRY — pipeline_run fallido, retry_count < 3"
+          },
+          {
+            "line": 363,
+            "text": "SET retry_count = retry_count + 1, stage_status = 'PENDING', updated_at = NOW()"
+          },
+          {
+            "line": 368,
+            "text": "- Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración."
+          },
+          {
+            "line": 426,
+            "text": "| `lf_capture_runs` | `run_type` | MANUAL / SCHEDULED / BACKFILL / TEST / DRY_RUN |"
+          },
+          {
+            "line": 445,
+            "text": "| `lf_url_queue` | `estado` | PENDIENTE / PROCESADO / FALLIDO / DESCARTADO / SKIP |"
+          }
+        ]
+      }
+    },
+    {
+      "datum_id": "UNC-RETRY-CONSUMER-LIVENESS",
+      "level": "N4",
+      "evidence_id": "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N4-GIT",
+      "source_locator": "repo://cristhianlujan/claude-persona-lf-patch/skills/orquestador_pipeline_lf/SKILL.md@75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "source_kind": "GITHUB_SOURCE",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "path": "skills/orquestador_pipeline_lf/SKILL.md",
+          "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+          "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+          "matched_lines": [
+            {
+              "line": 92,
+              "text": "Todas deben quedar en `PROCESADO` o `FALLIDO`."
+            },
+            {
+              "line": 131,
+              "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+            },
+            {
+              "line": 200,
+              "text": "       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'"
+            },
+            {
+              "line": 209,
+              "text": "         run_type       = 'SCHEDULED'"
+            },
+            {
+              "line": 426,
+              "text": "| `lf_capture_runs` | `run_type` | MANUAL / SCHEDULED / BACKFILL / TEST / DRY_RUN |"
+            },
+            {
+              "line": 445,
+              "text": "| `lf_url_queue` | `estado` | PENDIENTE / PROCESADO / FALLIDO / DESCARTADO / SKIP |"
+            }
+          ]
+        }
+      ],
+      "observed_at": "2026-10-31T01:28:00Z",
+      "source_revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+      "readback": {
+        "path": "skills/orquestador_pipeline_lf/SKILL.md",
+        "revision": "75116c2978f0d8fc1161f7da8a56e78218cf021e",
+        "git_blob_sha": "3e465ffb8fe2e6ab45ac95c813fd8da3e4c83495",
+        "lines": [
+          {
+            "line": 92,
+            "text": "Todas deben quedar en `PROCESADO` o `FALLIDO`."
+          },
+          {
+            "line": 131,
+            "text": "| retry_count ≥ 3 en una URL | Marcar FALLIDO → **CONTINUAR con siguiente URL** |"
+          },
+          {
+            "line": 141,
+            "text": "SELECT pipeline_run_id, stage_current, stage_status, retry_count"
+          },
+          {
+            "line": 148,
+            "text": "- `stage_status = FAILED` y `retry_count < 3` → modo RETRY"
+          },
+          {
+            "line": 177,
+            "text": "OP-4.  Captura web real — seleccionar motor según agente ejecutor"
+          },
+          {
+            "line": 198,
+            "text": "       ## RESULTADO ESPERADO de OP-4"
+          },
+          {
+            "line": 200,
+            "text": "       · 403/timeout/error de red → UPDATE lf_url_queue SET estado='FALLIDO'"
+          },
+          {
+            "line": 209,
+            "text": "         run_type       = 'SCHEDULED'"
+          },
+          {
+            "line": 355,
+            "text": "- Saltar OP-4 a OP-7. Usar `run_id` y `record_id` existentes."
+          },
+          {
+            "line": 359,
+            "text": "### MODO RETRY — pipeline_run fallido, retry_count < 3"
+          },
+          {
+            "line": 363,
+            "text": "SET retry_count = retry_count + 1, stage_status = 'PENDING', updated_at = NOW()"
+          },
+          {
+            "line": 368,
+            "text": "- Si retry_count llega a 3 → marcar FAILED definitivo → siguiente iteración."
+          },
+          {
+            "line": 426,
+            "text": "| `lf_capture_runs` | `run_type` | MANUAL / SCHEDULED / BACKFILL / TEST / DRY_RUN |"
+          },
+          {
+            "line": 445,
+            "text": "| `lf_url_queue` | `estado` | PENDIENTE / PROCESADO / FALLIDO / DESCARTADO / SKIP |"
+          }
+        ]
+      }
+    }
+  ],
+  "scoped_findings": {
+    "owner": "N1/N2 ACT-0058 owner_name null; N3 relations zero; decisions with ACT-0058 zero; ACTIVE policy payload with owner/SUPER search returned only POL-PROFILE-UPDATE-PASS, no applicable assignment established. Github SUPER_ADMIN references concern governance/software routes or candidate-only conditions, not asset assignment.",
+    "retry": "N4 SKILL has retry_count >=3 final and a retry branch <3; N2 step failed_retry says block_condition >3 but SQL terminal when retry_count+1 >=3. N3 58 of 126 linked queue attempts differ from pipeline retry counter. No re-use of counts as equivalent.",
+    "consumer": "N3 pg_cron 11 jobs, 9 active, 0 direct command/jobname matches queue/pipeline/retry; N2 queue 39 FALLIDO and one PENDIENTE last updated 2026-09-01. N5 133 related events, last 2026-09-01. An external consumer may exist; its runtime not proven absent."
+  },
+  "limits": [
+    "The examined policy payload/name search is not an exhaustive authority lookup across all schemas.",
+    "No evidence of currently active EXTERNAL scheduler; pg_cron snapshot cannot prove its absence.",
+    "N4 git source is normative workflow prose, not observed native execution.",
+    "N5 historical events and EKB do not establish current caller liveness.",
+    "No full canonical profile validator, independent semantic judge, or Group2 proof has been executed as a result of this capture."
+  ],
+  "next_required": "Bind source digests and per-datum evidence into native raw, execute full original/candidate outputs with exact schema and judge; if any evidence class remains uncovered, keep NEEDS_MORE_EVIDENCE without falsely claiming exhausted search."
+}
