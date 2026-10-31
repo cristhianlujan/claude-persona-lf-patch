@@ -28,6 +28,7 @@
     "docs/profile_updater/handoffs/WEB001_CANONICAL_EXTERNAL_EVIDENCE_MANIFEST_20261030.json": "RUNTIME_TESTING",
     "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CURRENT_CHAT_N1N2_READBACK_20261030.json": "RUNTIME_TESTING",
     "docs/profile_updater/handoffs/WEB001_CANONICAL_PYTHON_VALIDATOR_READBACK_20261030.json": "RUNTIME_TESTING",
-    "docs/profile_updater/handoffs/WEB001_GROUP2_EXECUTOR_AND_INDEPENDENT_JUDGE_HANDOFF_20261030.md": "RUNTIME_TESTING"
+    "docs/profile_updater/handoffs/WEB001_GROUP2_EXECUTOR_AND_INDEPENDENT_JUDGE_HANDOFF_20261030.md": "RUNTIME_TESTING",
+    "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-GPTNATIVE-REPLAY-CANDIDATE-20261031.json": "RUNTIME_TESTING"
   }
 }
