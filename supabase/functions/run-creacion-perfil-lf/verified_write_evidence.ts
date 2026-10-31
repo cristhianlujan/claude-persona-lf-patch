@@ -215,8 +215,9 @@ export async function verifyCandidateAmendment(input: Input & {
     return { ok: false, code: "PROFILE_AMEND_COMPARE_UNVERIFIABLE" };
   }
   const privateDiff = await gh(`/compare/main...${candidate}`);
-  const onlyCandidate = Array.isArray(privateDiff?.files) ? privateDiff.files : [];
-  if (onlyCandidate.length >= 300 || (!["ahead", "diverged", "identical"].includes(String(privateDiff?.status ?? "")))) {
+  const onlyCandidate = privateDiff?.files;
+  if (!Array.isArray(onlyCandidate) || onlyCandidate.length === 0 || onlyCandidate.length >= 300
+      || !["ahead", "diverged"].includes(String(privateDiff?.status ?? ""))) {
     return { ok: false, code: "PROFILE_AMEND_PRIVATE_DIFF_UNVERIFIABLE" };
   }
   // Keep technical source changes only in this profile. Supporting receipts/changesets are
