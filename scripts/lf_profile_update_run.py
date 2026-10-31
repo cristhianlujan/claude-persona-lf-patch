@@ -240,8 +240,10 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
     cases, runs, base_tree, cand_tree, problems = gather_operational(slug, candidate_dir)
     baseline = OPERATIONAL["measure"](cases, runs, base_tree)
     evolved = OPERATIONAL["measure"](cases, runs, cand_tree)
+    destination_bindings, destination_issues = MATRIX["source_bound_bindings_from_cases"](
+        cases, slug, candidate_dir)
     report = MATRIX["build_control_matrix"](
-        cases, baseline, evolved, {}, candidate_dir)
+        cases, baseline, evolved, destination_bindings, candidate_dir)
     comparison = OPERATIONAL["compare"](baseline, evolved)
     official = official_proof.get("operational")
     binding = {
@@ -265,7 +267,9 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
         "official_proof_run_id": official_proof.get("proof_run_id"),
         "binding": binding,
         "source_problems": problems,
-        "status": "GROUP2_PROJECTION_MATCHED_REPORT_ONLY" if matched and not problems
+        "destination_binding_issues": destination_issues,
+        "destination_binding_source": "trusted_main_operational_case_definitions",
+        "status": "GROUP2_PROJECTION_MATCHED_REPORT_ONLY" if matched and not problems and not destination_issues
                   else "NO_VERIFICADO_PROOF_OR_SOURCE",
         "authoritative_group2_verdict": official_proof.get("verdict"),
         "destination_authority": "UNVERIFIED",
