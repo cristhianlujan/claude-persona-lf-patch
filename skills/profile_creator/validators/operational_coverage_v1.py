@@ -202,3 +202,119 @@ def unmet(operational_root: Path, slug: str, profile_dir: Path) -> dict[str, Any
     any_measured = any(m["measured"] for m in measured.values())
     return {"status": "MEASURED" if any_measured else "UNMEASURED", "unmet_checks": unmet_checks, "problems": problems + rejected,
             "profile_tree_sha256": tree_sha256(profile_dir)}
+
+
+def _problem_observed_field(run: dict[str, Any], pointer: str) -> dict[str, Any]:
+    """Short read-only preview; the full JSON RAW remains the source of truth."""
+    value = _get({"output": run.get("output", {})}, pointer)
+    if value is _MISSING:
+        return {"pointer": pointer, "present": False, "preview": None}
+    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+    return {"pointer": pointer, "present": True,
+            "value_sha256": canonical_sha256(value),
+            "preview": raw[:240], "truncated": len(raw) > 240}
+
+
+def problem_comparison_report(
+    cases: dict[str, dict],
+    runs: list[dict],
+    base_tree_sha256: str,
+    candidate_tree_sha256: str,
+) -> dict[str, Any]:
+    """Side-by-side evidence for independent per-problem review, NEVER a new proof gate.
+
+    comparison_dimensions are optional and read ONLY from trusted operational cases.
+    This helper does not decide functional improvement and is not a model executor.
+    """
+    rows: list[dict[str, Any]] = []
+    issues: list[str] = []
+    for case_id, case in sorted(cases.items()):
+        dimensions = case.get("comparison_dimensions", [])
+        if not isinstance(dimensions, list):
+            issues.append(f"COMPARISON_DIMENSIONS_INVALID:{case_id}")
+            continue
+        original = [r for r in runs if r.get("case_id") == case_id
+                    and r.get("profile_tree_sha256") == base_tree_sha256]
+        evolved = [r for r in runs if r.get("case_id") == case_id
+                   and r.get("profile_tree_sha256") == candidate_tree_sha256]
+        same_input = (bool(original) and bool(evolved)
+                      and all(isinstance(r.get("input_literal"), str) and r["input_literal"]
+                              for r in original + evolved)
+                      and len({r["input_literal"] for r in original + evolved}) == 1)
+        attested = (bool(original) and bool(evolved)
+                    and all(r.get("attestation") == "RUNTIME_ATTESTED"
+                            for r in original + evolved))
+        index = {c["id"]: c for c in case["checks"]}
+        for dim in dimensions:
+            if not isinstance(dim, dict):
+                issues.append(f"COMPARISON_DIMENSION_INVALID:{case_id}")
+                continue
+            dim_id, fields, control_ids = (dim.get("problem_id"),
+                                           dim.get("output_pointers"),
+                                           dim.get("control_ids"))
+            if (not isinstance(dim_id, str) or not dim_id
+                    or not isinstance(dim.get("question"), str) or not dim["question"]
+                    or not isinstance(fields, list) or not fields
+                    or not all(isinstance(f, str) and f.startswith("/output/") for f in fields)
+                    or not isinstance(control_ids, list)
+                    or not all(isinstance(c, str) and c in index for c in control_ids)):
+                issues.append(f"COMPARISON_DIMENSION_BINDING_INVALID:{case_id}:{dim_id}")
+                continue
+            observations = []
+            for arm, selected in (("original", original), ("evolved", evolved)):
+                snapshots = [{
+                    "run_id": r.get("run_id"),
+                    "tree_sha256": r.get("profile_tree_sha256"),
+                    "output_sha256": r.get("output_sha256"),
+                    "attestation": r.get("attestation"),
+                    "validator_valid": r.get("validator", {}).get("valid"),
+                    "fields": [_problem_observed_field(r, p) for p in fields],
+                } for r in selected]
+                observations.append({"arm": arm, "runs": snapshots})
+            control_rows = []
+            for check_id in control_ids:
+                c = index[check_id]
+                def _state(arm_runs: list[dict]) -> str:
+                    if not arm_runs:
+                        return "NO_VERIFICADO"
+                    return ("PASS" if all(evaluate_check(
+                        {"output": r["output"], "validator": r["validator"]}, c
+                    ) for r in arm_runs) else "FAIL")
+                # A conditional may pass vacuously if its antecedent was not exercised.
+                def _vacuous(arm_runs: list[dict]) -> bool:
+                    return (c["op"] == "if_then" and bool(arm_runs)
+                            and all(not evaluate_check(
+                                {"output": r["output"], "validator": r["validator"]},
+                                c["if"]
+                            ) for r in arm_runs))
+                control_rows.append({
+                    "control_id": check_id,
+                    "original": _state(original), "evolved": _state(evolved),
+                    "original_vacuous_conditional": _vacuous(original),
+                    "evolved_vacuous_conditional": _vacuous(evolved),
+                })
+            if not original or not evolved:
+                evidence_status = "UNMEASURED"
+            elif not same_input:
+                evidence_status = "PREVIEW_INPUT_IDENTITY_UNVERIFIED"
+            elif not attested:
+                evidence_status = "PREVIEW_UNATTESTED"
+            else:
+                evidence_status = "READY_FOR_INDEPENDENT_SEMANTIC_REVIEW"
+            rows.append({
+                "case_id": case_id, "problem_id": dim_id,
+                "question": dim["question"],
+                "evidence_status": evidence_status,
+                "same_input_literal_verified": bool(same_input),
+                "both_run_attestations_declared": bool(attested),
+                "semantic_verdict": "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE",
+                "observations": observations, "controls": control_rows,
+            })
+    return {
+        "schema": "LF_PROFILE_PROBLEM_SIDE_BY_SIDE_REPORT_V1",
+        "status": "READ_ONLY_REPORT_NOT_AUTHORITY",
+        "base_tree_sha256": base_tree_sha256,
+        "candidate_tree_sha256": candidate_tree_sha256,
+        "rows": rows,
+        "issues": issues,
+    }
