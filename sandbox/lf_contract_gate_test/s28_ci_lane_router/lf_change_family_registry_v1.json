@@ -277,6 +277,7 @@
       ".github/workflows/lf-pack-validation-core.yml",
       ".github/workflows/lf-profile-evolution-proof.yml",
       ".github/workflows/lf-router-level2-advisory-tests.yml",
+      ".github/workflows/lf-step70-v3-consumer-ci.yml",
       ".github/workflows/pase-merge-gate.yml",
       ".github/workflows/pase.yml",
       ".github/workflows/profile-driven-screen-generation.yml",
