@@ -2,10 +2,11 @@
   "solution_ref": "profile-updater-dynamic-destination-matrix-20261031",
   "paths": {
     "docs/profile_updater/MATRIZ_EVOLUCION_DESTINO_DINAMICO_V1_20261031.md": "ENGINEERING_CHECKPOINTS",
-    "skills/profile_creator/validators/operational_control_matrix_v1.py": "RUNTIME_TESTING",
-    "scripts/lf_profile_update_run.py": "SERVICE_RUNTIME",
-    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_target_destination_matrix.py": "RUNTIME_TESTING",
+    "docs/profile_updater/WEB001_MAPA_CONTROL_DESTINO_PROPUESTO_20261031.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/profile-updater-dynamic-destination-matrix-20261031.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_target_destination_matrix_lane.py": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/profile-updater-dynamic-destination-matrix-20261031.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_target_destination_matrix.py": "RUNTIME_TESTING",
+    "scripts/lf_profile_update_run.py": "SERVICE_RUNTIME",
+    "skills/profile_creator/validators/operational_control_matrix_v1.py": "RUNTIME_TESTING"
   }
 }
