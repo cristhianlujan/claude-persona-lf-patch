@@ -61,12 +61,12 @@ class ProblemComparisonTest(unittest.TestCase):
         self.assertEqual({x["problem_id"] for x in r["rows"]},
                          {"DISCOVERY_OF_APPLICABLE_RULE_OWNER", "CONTROLLED_RETRY_AND_READMISSION"})
         for x in r["rows"]:
-            self.assertEqual(len(x["observations"]), 2)
+            self.assertIn("original", x)
+            self.assertIn("evolved", x)
             self.assertEqual(x["semantic_verdict"], "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE")
             self.assertEqual(x["evidence_status"], "PREVIEW_INPUT_IDENTITY_UNVERIFIED")
-            self.assertEqual(x["observations"][0]["arm"], "original")
-            self.assertEqual(x["observations"][1]["arm"], "evolved")
-            self.assertTrue(x["observations"][0]["runs"][0]["fields"])
+            self.assertTrue(x["original"]["runs"][0]["fields"])
+            self.assertTrue(x["evolved"]["runs"][0]["fields"])
 
     def test_conditional_pass_is_flagged_vacuous(self):
         r = self.report()
@@ -163,6 +163,20 @@ class ProblemComparisonTest(unittest.TestCase):
         self.assertTrue(row['evolved_applicability']['conditional_vacuous'])
         self.assertEqual(row['evolved_applicability']['antecedent_true'], 0)
 
+    def test_owner_and_retry_answers_have_explicit_column_fields(self):
+        old = run('a'*64, 'old')
+        new = run('b'*64, 'new')
+        rows = self.report(old, new)['rows']
+        governance, retry = rows
+        self.assertEqual(governance['original']['runs'][0]['fields'][0]['pointer'],
+                         '/output/owner/status')
+        self.assertEqual(governance['evolved']['runs'][0]['fields'][0]['pointer'],
+                         '/output/owner/status')
+        new_retry = retry['evolved']['runs'][0]['fields']
+        target = next(x for x in new_retry
+                      if x['pointer'] == '/output/first_bad_control/statement')
+        self.assertTrue(target['present'])
+        self.assertIn('retry >3 versus >=3', target['preview'])
     def test_declared_provider_attestation_never_promoted_to_verified(self):
         base = run('a'*64, 'old', 'RUNTIME_ATTESTED', 'LITERAL')
         evolved = run('b'*64, 'new', 'RUNTIME_ATTESTED', 'LITERAL')
