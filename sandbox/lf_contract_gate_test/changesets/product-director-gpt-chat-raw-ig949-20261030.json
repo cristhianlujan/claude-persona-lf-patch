@@ -4,6 +4,8 @@
     "sandbox/lf_contract_gate_test/changesets/product-director-gpt-chat-raw-ig949-20261030.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_gpt_native_ig949_20261030/raw_output.json": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_login_b2b_gpt_chat_raw.py": "RUNTIME_TESTING",
-    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_product_director_ig949_chat_raw_record_candidate_20261030.sql": "RUNTIME_TESTING",
+    "supabase/migrations/20261031004000_lf_profile_product_director_ig949_chat_raw_record_v1.sql": "MIGRATION"
   }
 }
