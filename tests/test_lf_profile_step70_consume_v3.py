@@ -17,7 +17,14 @@ spec.loader.exec_module(step70)
 def verdict():
     return {
         "verdict": "PASS_INDEPENDENT_SEMANTIC",
-        "decision_checks": {k: {"result": True, "reason": "Verified against source", "source_refs": ["supabase://test"]} for k in step70.CHECKS},
+        "decision_checks": {
+            k: ({"result": "not_applicable", "applicability": "ROUTER_ONLY",
+                 "reason": "ACT-0001 is the only authorized runtime route; no direct counterpart exists.",
+                 "source_refs": ["supabase://router/execution"]} if k == "router_direct_consistency"
+                else {"result": True, "reason": "Verified against source",
+                      "source_refs": ["supabase://test"]})
+            for k in step70.CHECKS
+        },
         "producer_independence_proven": True,
         "model_call_count": 1,
         "unsupported_claims": [],
@@ -62,6 +69,41 @@ class Step70Tests(unittest.TestCase):
         v = verdict()
         v["router_direct_consistency"] = "FAIL"
         with self.assertRaisesRegex(ValueError, "divergence"):
+            step70.check_verdict(v)
+
+    def test_router_only_is_explicit_na_not_pass(self):
+        v = verdict()
+        step70.check_verdict(v)
+        v["decision_checks"]["router_direct_consistency"]["result"] = True
+        with self.assertRaisesRegex(ValueError, "not_applicable"):
+            step70.check_verdict(v)
+
+    def test_no_direct_evidence_cannot_be_forged_as_pass(self):
+        v = verdict()
+        v["router_direct_consistency"] = "PASS"
+        v["decision_checks"]["router_direct_consistency"].update({
+            "result": True, "applicability": "AUTHORIZED_COMPARISON",
+        })
+        with self.assertRaisesRegex(ValueError, "distinct"):
+            step70.check_verdict(v)
+
+    def test_authorized_comparison_requires_both_source_refs(self):
+        v = verdict()
+        c = v["decision_checks"]["router_direct_consistency"]
+        c.update({"result": True, "applicability": "AUTHORIZED_COMPARISON",
+                  "router_execution_ref": "actions://router/100",
+                  "direct_execution_ref": "actions://direct/101",
+                  "source_refs": ["actions://router/100", "actions://direct/101"]})
+        v["router_direct_consistency"] = "PASS"
+        step70.check_verdict(v)
+        c["source_refs"] = ["actions://router/100"]
+        with self.assertRaisesRegex(ValueError, "distinct"):
+            step70.check_verdict(v)
+
+    def test_router_only_missing_provenance_fails(self):
+        v = verdict()
+        v["decision_checks"]["router_direct_consistency"]["source_refs"] = []
+        with self.assertRaisesRegex(ValueError, "rationale/refs"):
             step70.check_verdict(v)
 
     def test_dry_run_with_existing_nine_steps_does_not_write(self):

@@ -23,7 +23,7 @@ Validate that UI Architect produced an executable UI artifact and that no PASS i
 8. Semantic judge evaluates issue evidence -> selected decision -> issue resolved + adjacent constraints preserved.
 9. Meaning-changing COPY/RISK/STATE changes have source authority.
 10. LF safety remains fail-closed.
-11. Router/direct same-input decisions are materially equivalent unless context differs.
+11. Only **when an independently authorized and authentic Router/direct diagnostic pair exists**, same-input decisions must be materially equivalent unless context differs. A Router-only operational run has no required direct counterpart and is NOT_TESTED, not automatically BLOCKED or PASS.
 12. Handoff is implementation-ready without invention.
 
 ## Production UI Spec automatic fail
@@ -51,7 +51,7 @@ The deterministic validator is not semantic authority. The semantic judge must f
 - adjacent authoritative constraints are dropped;
 - new business state/copy is stronger than source authority;
 - LF safety is violated;
-- Router/direct same-input decisions materially diverge.
+- an independently authorized and evidenced Router/direct same-input diagnostic pair materially diverges; no direct pair is not itself a failure.
 
 Known required semantic negatives:
 - remove `payment_summary` while leaving duplicate `top_amount_strip`;

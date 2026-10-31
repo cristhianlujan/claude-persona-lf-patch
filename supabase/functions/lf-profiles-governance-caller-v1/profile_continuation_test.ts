@@ -130,7 +130,11 @@ function semanticReceipt(){
     "materiality_handled_correctly","tradeoff_defensible",
     "acceptance_detects_wrong_implementation","handoff_implementation_ready",
     "router_direct_consistency","counterfactual_trajectory",
-  ]) checks[key]={result:true,reason:"supported by inspected current sources",source_refs:refs};
+  ]) checks[key]=key==="router_direct_consistency"
+    ? {result:"not_applicable",applicability:"ROUTER_ONLY",
+       reason:"ACT-0001 is the only governed runtime path; no direct counterpart was authorized.",
+       source_refs:refs}
+    : {result:true,reason:"supported by inspected current sources",source_refs:refs};
   const review={
     verdict:"PASS_INDEPENDENT_SEMANTIC",decision_checks:checks,
     producer_independence_proven:true,model_call_count:1,
@@ -161,6 +165,47 @@ Deno.test("continuation: independent semantic PASS records 70 and deterministic 
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),true);
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_report_v1")),true);
 });
+Deno.test("continuation: Router-only N/A is not a fabricated comparison PASS",async()=>{
+  const n=network();const receipt=semanticReceipt() as Record<string,unknown>;
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/independent.json",
+  },config,n.fetchFn,sha);
+  eq(out.status,200);eq((await out.json()).phase,"PROFILE_EXECUTION_COMPLETED");
+});
+
+Deno.test("continuation: Router-only check11 cannot self-assert true when not tested",async()=>{
+  const n=network();const receipt=semanticReceipt() as Record<string,unknown>;
+  const v3=receipt.judge_v3_evidence as Record<string,unknown>;
+  const checks=v3.decision_checks as Record<string,unknown>;
+  (checks.router_direct_consistency as Record<string,unknown>).result=true;
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/independent.json",
+  },config,n.fetchFn,sha);
+  eq(out.status,409);eq((await out.json()).code,"PROFILE_NATIVE_ROUTER_ONLY_APPLICABILITY_INVALID");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+
+Deno.test("continuation: claimed Router/direct PASS without paired authentic refs blocks",async()=>{
+  const n=network();const receipt=semanticReceipt() as Record<string,unknown>;
+  const v3=receipt.judge_v3_evidence as Record<string,unknown>;
+  const checks=v3.decision_checks as Record<string,unknown>;
+  v3.router_direct_consistency="PASS";
+  Object.assign(checks.router_direct_consistency as Record<string,unknown>,{
+    result:true,applicability:"AUTHORIZED_COMPARISON",
+  });
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/independent.json",
+  },config,n.fetchFn,sha);
+  eq(out.status,409);eq((await out.json()).code,"PROFILE_NATIVE_ROUTER_DIRECT_COMPARISON_UNPROVEN");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+
 Deno.test("continuation: semantic review cannot self-assert PASS without V3 evidence",async()=>{
   const n=network();
   const receipt=semanticReceipt() as Record<string,unknown>;

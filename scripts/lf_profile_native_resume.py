@@ -244,10 +244,29 @@ def validate_independent_semantic_review(review):
     checks = review.get("decision_checks")
     if not isinstance(checks, dict) or set(checks) != set(SEMANTIC_CHECKS):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECKS_INVALID")
+    route_status = review.get("router_direct_consistency")
+    if route_status not in ("NOT_TESTED", "PASS"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_ROUTER_DIRECT_INVALID")
     for name, check in checks.items():
-        if (not isinstance(check, dict) or check.get("result") not in (True, "true")
-            or not isinstance(check.get("reason"), str) or not check.get("reason")
-            or not isinstance(check.get("source_refs"), list)):
+        if (not isinstance(check, dict)
+            or not isinstance(check.get("reason"), str) or not check["reason"].strip()
+            or not isinstance(check.get("source_refs"), list) or not check["source_refs"]):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+        if name == "router_direct_consistency" and route_status == "NOT_TESTED":
+            if check.get("result") != "not_applicable" or check.get("applicability") != "ROUTER_ONLY":
+                raise ValueError("PROFILE_SEMANTIC_ROUTER_ONLY_APPLICABILITY_INVALID")
+        elif name == "router_direct_consistency":
+            router_ref = check.get("router_execution_ref")
+            direct_ref = check.get("direct_execution_ref")
+            if (check.get("result") not in (True, "true")
+                or check.get("applicability") != "AUTHORIZED_COMPARISON"
+                or not isinstance(router_ref, str) or not router_ref.strip()
+                or not isinstance(direct_ref, str) or not direct_ref.strip()
+                or direct_ref == router_ref
+                or router_ref not in check["source_refs"]
+                or direct_ref not in check["source_refs"]):
+                raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
+        elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
     if review.get("producer_independence_proven") is not True:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
@@ -259,8 +278,6 @@ def validate_independent_semantic_review(review):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_SOURCE_REFS_REQUIRED")
     if not isinstance(review.get("resolved_context_refs"), list) or not review["resolved_context_refs"]:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_CONTEXT_REFS_REQUIRED")
-    if review.get("router_direct_consistency") not in ("NOT_TESTED", "PASS"):
-        raise ValueError("PROFILE_SEMANTIC_REVIEW_ROUTER_DIRECT_INVALID")
     if not review.get("counterfactual_result"):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_COUNTERFACTUAL_REQUIRED")
     for key in ("candidate_sha256", "scope_packet_sha256"):
