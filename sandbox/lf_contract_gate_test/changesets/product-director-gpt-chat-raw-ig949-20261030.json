@@ -1,0 +1,9 @@
+{
+  "solution_ref": "product-director-gpt-chat-raw-ig949-20261030",
+  "paths": {
+    "sandbox/lf_contract_gate_test/changesets/product-director-gpt-chat-raw-ig949-20261030.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_gpt_native_ig949_20261030/raw_output.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_login_b2b_gpt_chat_raw.py": "RUNTIME_TESTING",
+    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+  }
+}
