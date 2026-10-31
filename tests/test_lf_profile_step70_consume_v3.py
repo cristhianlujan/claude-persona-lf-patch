@@ -108,6 +108,35 @@ class Step70Tests(unittest.TestCase):
                     step70.main()
             self.assertEqual(api.call_count, 1)
 
+    def test_semantic_bridge_migration_contract(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        sql = (root / "supabase/migrations/20261031032500_lf_profile_native_semantic_bridge_v1.sql").read_text(encoding="utf-8")
+        self.assertIn("lf_profile_native_bridge_record_semantic_v1", sql)
+        self.assertIn("SECURITY DEFINER", sql)
+        self.assertIn("SET search_path TO 'pg_catalog','public','extensions'", sql)
+        self.assertIn("lf_record_profile_execution_step_v1", sql)
+        self.assertIn("'semantic_judge'", sql)
+        self.assertIn("STEP_PASS_WITH_EVIDENCE", sql)
+        self.assertIn("expected_clean_step_count',10", sql)
+        self.assertIn("TO service_role", sql)
+        self.assertIn("supabase_read_only_user", sql)
+
+    def test_semantic_receipt_v3_contract(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        p = root / "docs/profile-execution/EXEC-PROFILE-GATE2-103C8E016D6F6B6ACABEA975_semantic_judge_v3.json"
+        data = json.loads(p.read_text(encoding="utf-8"))
+        self.assertEqual(data["verdict"], "PASS_INDEPENDENT_SEMANTIC")
+        self.assertTrue(data["producer_independence_proven"])
+        self.assertEqual(data["model_call_count"], 1)
+        self.assertEqual(set(data["decision_checks"]), set(step70.CHECKS))
+        self.assertTrue(all(v["result"] is True for v in data["decision_checks"].values()))
+        self.assertEqual(data["unsupported_claims"], [])
+        self.assertEqual(data["blocking_codes"], [])
+        self.assertEqual(data["candidate_sha256"], "09e647fe47e111620bbfe7da95a2ac885f1e59f3f3f29f5782150371a17b2d8f")
+        self.assertEqual(data["scope_packet_sha256"], "d5f6ba9a2b51b90d0dc0e96def4b31ac8592a609cee80b032d2d8565f8bc6ee8")
+
 
 if __name__ == "__main__":
     unittest.main()
