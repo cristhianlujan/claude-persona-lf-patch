@@ -129,6 +129,10 @@ class ProblemComparisonTest(unittest.TestCase):
             self.assertIn('functional_problem_comparison', out)
             matrix = out['functional_problem_comparison']
             self.assertEqual(len(matrix['rows']), 2)
+            self.assertEqual(matrix['rows'][0]['original']['runs'][0]['raw_file_ref'],
+                             slug + '/runs/old.json')
+            self.assertEqual(matrix['rows'][0]['evolved']['runs'][0]['raw_file_ref'],
+                             slug + '/runs/new.json')
             self.assertEqual(matrix['rows'][0]['evidence_status'], 'PREVIEW_UNATTESTED')
             self.assertEqual(matrix['rows'][0]['semantic_verdict'],
                              'NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE')
@@ -177,6 +181,24 @@ class ProblemComparisonTest(unittest.TestCase):
                       if x['pointer'] == '/output/first_bad_control/statement')
         self.assertTrue(target['present'])
         self.assertIn('retry >3 versus >=3', target['preview'])
+    def test_untrusted_run_path_claim_is_overridden_by_loader(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            slug = 'systemic_root_cause_repair_lf'
+            directory = root / slug / 'runs'
+            directory.mkdir(parents=True)
+            (root / slug / 'WEB-001.case.json').write_text(
+                json.dumps(self.c), encoding='utf-8')
+            fake = run('a'*64, 'old')
+            fake['_trusted_run_file'] = '../../fake.json'
+            (directory / 'actual.json').write_text(
+                json.dumps(fake), encoding='utf-8')
+            cases, problems = M['load_cases'](root, slug)
+            runs, rejects = M['load_runs'](root, slug, cases)
+            self.assertFalse(problems)
+            self.assertFalse(rejects)
+            self.assertEqual(runs[0]['_trusted_run_file'], slug + '/runs/actual.json')
+
     def test_declared_provider_attestation_never_promoted_to_verified(self):
         base = run('a'*64, 'old', 'RUNTIME_ATTESTED', 'LITERAL')
         evolved = run('b'*64, 'new', 'RUNTIME_ATTESTED', 'LITERAL')
