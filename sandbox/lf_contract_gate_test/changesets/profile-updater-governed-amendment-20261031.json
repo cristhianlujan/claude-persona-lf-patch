@@ -10,7 +10,6 @@
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_update_issue_request.py": "RUNTIME_TESTING",
     "supabase/migrations/20261031041500_lf_profile_update_candidate_amendment_v1.sql": "MIGRATION",
     "sandbox/lf_contract_gate_test/changesets/profile-updater-governed-amendment-20261031.json": "CHANGESET_MANIFEST",
-    ".github/workflows/lf-edge-function-operation-tests.yml": "WORKFLOW",
     "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_updater_candidate_amendment.py": "RUNTIME_TESTING"
   }
 }
