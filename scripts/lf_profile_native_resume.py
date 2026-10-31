@@ -65,10 +65,15 @@ def governed_request():
         parsed_output = json.loads(raw_output) if raw_output else None
         if parsed_output is not None and not isinstance(parsed_output, dict):
             raise ValueError("PROFILE_GOVERNED_DISPATCH_OUTPUT_INVALID")
+        raw_semantic = os.getenv("PROFILE_SEMANTIC_REVIEW_JSON", "").strip()
+        parsed_semantic = json.loads(raw_semantic) if raw_semantic else None
+        if parsed_semantic is not None and not isinstance(parsed_semantic, dict):
+            raise ValueError("PROFILE_GOVERNED_DISPATCH_SEMANTIC_INVALID")
         return (
             os.environ["PROFILE_EXECUTION_ID"],
             os.getenv("PROFILE_SCREEN_SELECTION_DRAFT_JSON", "").strip(),
             parsed_output,
+            parsed_semantic,
         )
 
     event_path = os.environ["GITHUB_EVENT_PATH"]
@@ -91,7 +96,7 @@ def governed_request():
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
     if not isinstance(data, dict) or set(data) - {
-        "schema_version", "execution_id", "screen_selection_draft", "profile_output"
+        "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_SCHEMA_INVALID")
     execution_id = data.get("execution_id")
@@ -103,7 +108,10 @@ def governed_request():
     profile_output = data.get("profile_output")
     if profile_output is not None and not isinstance(profile_output, dict):
         raise ValueError("PROFILE_GOVERNED_ISSUE_OUTPUT_INVALID")
-    return execution_id, json.dumps(selection) if selection is not None else "", profile_output
+    semantic_review = data.get("semantic_judge_review")
+    if semantic_review is not None and not isinstance(semantic_review, dict):
+        raise ValueError("PROFILE_GOVERNED_ISSUE_SEMANTIC_INVALID")
+    return execution_id, json.dumps(selection) if selection is not None else "", profile_output, semantic_review
 
 
 def is_direct_validator_continuation(status, response):
@@ -221,8 +229,67 @@ def run_bound_validator(target_path, profile_code, profile_output):
     return receipt, raw_ref, validator_ref_evidence
 
 
+SEMANTIC_CHECKS = (
+    "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
+    "authority_resolution_valid", "constraints_preserved", "claims_authorized",
+    "materiality_handled_correctly", "tradeoff_defensible",
+    "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
+    "router_direct_consistency", "counterfactual_trajectory",
+)
+
+
+def validate_independent_semantic_review(review):
+    if review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_NOT_PASS")
+    checks = review.get("decision_checks")
+    if not isinstance(checks, dict) or set(checks) != set(SEMANTIC_CHECKS):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECKS_INVALID")
+    for name, check in checks.items():
+        if (not isinstance(check, dict) or check.get("result") not in (True, "true")
+            or not isinstance(check.get("reason"), str) or not check.get("reason")
+            or not isinstance(check.get("source_refs"), list)):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
+    if review.get("producer_independence_proven") is not True:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
+    if review.get("model_call_count") != 1:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
+    if review.get("unsupported_claims") != [] or review.get("blocking_codes") != []:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_BLOCKED")
+    if not isinstance(review.get("source_refs"), list) or not review["source_refs"]:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_SOURCE_REFS_REQUIRED")
+    if not isinstance(review.get("resolved_context_refs"), list) or not review["resolved_context_refs"]:
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_CONTEXT_REFS_REQUIRED")
+    if review.get("router_direct_consistency") not in ("NOT_TESTED", "PASS"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_ROUTER_DIRECT_INVALID")
+    if not review.get("counterfactual_result"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_COUNTERFACTUAL_REQUIRED")
+    for key in ("candidate_sha256", "scope_packet_sha256"):
+        if not isinstance(review.get(key), str) or not re.fullmatch(r"[0-9a-f]{64}", review[key]):
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_HASH_INVALID:" + key)
+
+
+def build_semantic_receipt(review):
+    return {
+        "status": "PASS",
+        "verdict": "PASS_INDEPENDENT_SEMANTIC",
+        "validator_status": "PASS",
+        "producer_independence_proven": True,
+        "model_call_count": 1,
+        "candidate_sha256": review["candidate_sha256"],
+        "scope_packet_sha256": review["scope_packet_sha256"],
+        "result": {
+            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "candidate_sha256": review["candidate_sha256"],
+            "scope_packet_sha256": review["scope_packet_sha256"],
+            "unsupported_claims": [],
+            "blocking_codes": [],
+        },
+        "judge_v3_evidence": review,
+    }
+
+
 def main():
-    execution_id, raw_draft, profile_output = governed_request()
+    execution_id, raw_draft, profile_output, semantic_review = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
@@ -326,10 +393,71 @@ def main():
         "phase": phase,
         "next_action": result.get("next_action"),
     }, ensure_ascii=False))
-    if phase in ("INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "REPORT_OUTPUT_REQUIRED"):
-        # A correct handoff is not proof that semantic judging or close has run.
-        print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
-        return 0
+    if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
+        if semantic_review is None:
+            print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
+            return 0
+        try:
+            validate_independent_semantic_review(semantic_review)
+        except ValueError as exc:
+            print(json.dumps({"phase":"SEMANTIC_REVIEW","code":str(exc)}))
+            return 1
+        semantic_path = Path.cwd() / "profile-semantic-judge.json"
+        semantic_path.write_text(
+            json.dumps(semantic_review, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        run_id = os.environ.get("GITHUB_RUN_ID", "UNKNOWN")
+        repository = os.environ["GITHUB_REPOSITORY"]
+        artifact = f"profile-native-output-{run_id}"
+        semantic_ref = (
+            f"actions://{repository}/runs/{run_id}/artifact/{artifact}/profile-semantic-judge.json"
+        )
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "semantic_judge_result": build_semantic_receipt(semantic_review),
+            "semantic_evidence_ref": semantic_ref,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"SEMANTIC_OR_REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
+
+    if phase == "REPORT_OUTPUT_REQUIRED":
+        submit = {
+            "action": "profile_native_continue_v1",
+            "execution_id": execution_id,
+            "source_revision": source_revision,
+            "source_digest": digest,
+            "finalize_report": True,
+        }
+        code, closed = call_json(EDGE_URL, submit, headers)
+        if code != 200:
+            print(json.dumps({
+                "phase":"REPORT_RECORD","status":code,
+                "code":closed.get("code"),
+            }))
+            return 1
+        print(json.dumps({
+            "execution_id": execution_id,
+            "profile_code": closed.get("profile_code"),
+            "phase": closed.get("phase"),
+            "next_gate": closed.get("next_gate"),
+        }, ensure_ascii=False))
+        return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
     if phase == "NATIVE_MODEL_INPUT_READY":
         if profile_output is None:
             print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")

@@ -247,6 +247,152 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  const semanticKeys = [
+    "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
+    "authority_resolution_valid", "constraints_preserved", "claims_authorized",
+    "materiality_handled_correctly", "tradeoff_defensible",
+    "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
+    "router_direct_consistency", "counterfactual_trajectory",
+  ];
+
+  if (Object.prototype.hasOwnProperty.call(body, "semantic_judge_result")) {
+    const semantic = body.semantic_judge_result;
+    const semanticRef = body.semantic_evidence_ref;
+    if (
+      !semantic || typeof semantic !== "object" || Array.isArray(semantic) ||
+      typeof semanticRef !== "string" || !semanticRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_SUBMISSION_INVALID", 400);
+
+    const receipt = semantic as Payload;
+    const review = receipt.judge_v3_evidence;
+    const resultObj = receipt.result;
+    if (
+      receipt.status !== "PASS" ||
+      receipt.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      receipt.validator_status !== "PASS" ||
+      receipt.producer_independence_proven !== true ||
+      receipt.model_call_count !== 1 ||
+      typeof receipt.candidate_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.candidate_sha256) ||
+      typeof receipt.scope_packet_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.scope_packet_sha256) ||
+      !resultObj || typeof resultObj !== "object" || Array.isArray(resultObj) ||
+      (resultObj as Payload).verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      (resultObj as Payload).candidate_sha256 !== receipt.candidate_sha256 ||
+      (resultObj as Payload).scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray((resultObj as Payload).unsupported_claims) ||
+      ((resultObj as Payload).unsupported_claims as unknown[]).length !== 0 ||
+      !Array.isArray((resultObj as Payload).blocking_codes) ||
+      ((resultObj as Payload).blocking_codes as unknown[]).length !== 0 ||
+      !review || typeof review !== "object" || Array.isArray(review)
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_RECEIPT_NOT_PASS", 409);
+
+    const v3 = review as Payload;
+    const checks = v3.decision_checks;
+    if (
+      v3.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      v3.producer_independence_proven !== true ||
+      v3.model_call_count !== 1 ||
+      v3.candidate_sha256 !== receipt.candidate_sha256 ||
+      v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
+      !Array.isArray(v3.blocking_codes) || v3.blocking_codes.length !== 0 ||
+      !Array.isArray(v3.source_refs) || v3.source_refs.length === 0 ||
+      !Array.isArray(v3.resolved_context_refs) || v3.resolved_context_refs.length === 0 ||
+      !["PASS", "NOT_TESTED"].includes(String(v3.router_direct_consistency ?? "")) ||
+      !v3.counterfactual_result ||
+      !checks || typeof checks !== "object" || Array.isArray(checks) ||
+      Object.keys(checks).sort().join("|") !== [...semanticKeys].sort().join("|")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_V3_EVIDENCE_INVALID", 409);
+
+    for (const key of semanticKeys) {
+      const check = (checks as Payload)[key];
+      if (
+        !check || typeof check !== "object" || Array.isArray(check) ||
+        ![true, "true"].includes((check as Payload).result as true | string) ||
+        typeof (check as Payload).reason !== "string" || !(check as Payload).reason ||
+        !Array.isArray((check as Payload).source_refs)
+      ) return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+    }
+
+    const recordedSemantic = await rpc(config, fetchFn, "lf_profile_native_bridge_record_semantic_v1", {
+      p_execution_id: e.execution_id,
+      p_semantic_judge_result: receipt,
+      p_evidence_ref: semanticRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedSemantic.error) return recordedSemantic.error;
+    if (
+      recordedSemantic.result?.status !== "SEMANTIC_JUDGE_RECORDED" ||
+      Number(recordedSemantic.result?.clean_step_count ?? 0) !== 10
+    ) {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "SEMANTIC_RECORD",
+        code: recordedSemantic.result?.blocking_code ?? "PROFILE_NATIVE_SEMANTIC_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedSemantic.result,
+      }, 409);
+    }
+
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
+  if (body.finalize_report === true) {
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
   // The pre-model bridge must never be reentered to complete an existing 9/11
   // or 10/11 execution. Read canonical step states and hand off the next gate.
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);

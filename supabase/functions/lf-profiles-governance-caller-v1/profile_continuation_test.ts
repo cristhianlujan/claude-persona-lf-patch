@@ -36,6 +36,12 @@ function network(overrides:Record<string,unknown>={},selectStatus="BOUND"){
     }else if(url.endsWith("/lf_profile_native_bridge_record_output_v1")){
       out={status:"NATIVE_PRODUCER_VALIDATED",execution_id:id,profile_code:"PROFILE-A",
         clean_step_count:9,next_step:"semantic_judge"};
+    }else if(url.endsWith("/lf_profile_native_bridge_record_semantic_v1")){
+      out={status:"SEMANTIC_JUDGE_RECORDED",execution_id:id,profile_code:"PROFILE-A",
+        clean_step_count:10,next_step:"report_output"};
+    }else if(url.endsWith("/lf_profile_native_bridge_record_report_v1")){
+      out={status:"PROFILE_EXECUTION_COMPLETED",execution_id:id,profile_code:"PROFILE-A",
+        clean_step_count:11,execution_status:"COMPLETED",next_gate:"RETURN_TO_ROUTER"};
     }else throw Error("UNEXPECTED_URL "+url);
     return new Response(JSON.stringify(out),{status:200});
   };
@@ -113,6 +119,69 @@ Deno.test("continuation: model cannot self-assert validator PASS",async()=>{
   const body=await out.json();
   eq(out.status,409);eq(body.code,"PROFILE_NATIVE_OUTPUT_VALIDATOR_RECEIPT_NOT_PASS");
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_output_v1")),false);
+});
+
+function semanticReceipt(){
+  const refs=["supabase://source/a"];
+  const checks:Record<string,unknown>={};
+  for(const key of [
+    "context_resolution_valid","evidence_supported","decision_resolves_objective",
+    "authority_resolution_valid","constraints_preserved","claims_authorized",
+    "materiality_handled_correctly","tradeoff_defensible",
+    "acceptance_detects_wrong_implementation","handoff_implementation_ready",
+    "router_direct_consistency","counterfactual_trajectory",
+  ]) checks[key]={result:true,reason:"supported by inspected current sources",source_refs:refs};
+  const review={
+    verdict:"PASS_INDEPENDENT_SEMANTIC",decision_checks:checks,
+    producer_independence_proven:true,model_call_count:1,
+    unsupported_claims:[],blocking_codes:[],source_refs:refs,resolved_context_refs:refs,
+    router_direct_consistency:"NOT_TESTED",counterfactual_result:"PASS",
+    candidate_sha256:"c".repeat(64),scope_packet_sha256:"s".repeat(64).replace(/s/g,"a"),
+  };
+  return {
+    status:"PASS",verdict:"PASS_INDEPENDENT_SEMANTIC",validator_status:"PASS",
+    producer_independence_proven:true,model_call_count:1,
+    candidate_sha256:review.candidate_sha256,scope_packet_sha256:review.scope_packet_sha256,
+    result:{verdict:"PASS_INDEPENDENT_SEMANTIC",candidate_sha256:review.candidate_sha256,
+      scope_packet_sha256:review.scope_packet_sha256,unsupported_claims:[],blocking_codes:[]},
+    judge_v3_evidence:review,
+  };
+}
+Deno.test("continuation: independent semantic PASS records 70 and deterministic report 80",async()=>{
+  const n=network();
+  const receipt=semanticReceipt();
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/profile-semantic-judge.json",
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.phase,"PROFILE_EXECUTION_COMPLETED");
+  eq(body.next_gate,"RETURN_TO_ROUTER");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),true);
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_report_v1")),true);
+});
+Deno.test("continuation: semantic review cannot self-assert PASS without V3 evidence",async()=>{
+  const n=network();
+  const receipt=semanticReceipt() as Record<string,unknown>;
+  receipt.judge_v3_evidence={verdict:"PASS_INDEPENDENT_SEMANTIC"};
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/profile-semantic-judge.json",
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,409);eq(body.code,"PROFILE_NATIVE_SEMANTIC_V3_EVIDENCE_INVALID");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+Deno.test("continuation: report-only finalization uses existing bridge",async()=>{
+  const n=network();
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,finalize_report:true,
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.phase,"PROFILE_EXECUTION_COMPLETED");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_report_v1")),true);
 });
 
 Deno.test("continuation: fail-closed role, source, and semantic decision",async()=>{
