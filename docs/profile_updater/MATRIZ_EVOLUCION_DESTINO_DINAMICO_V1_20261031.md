@@ -90,3 +90,26 @@ Estas dos lecturas **no demuestran** original → evolucionado: verifican divers
 4. Validar tests nuevos en CI de ejecución real, incluir caso sin corrida, cambio de SHA, destino cruzado, regresión y rechazo a destino ambiguo. Solo después proponer enforcement en el consumidor.
 
 **Estado del lote:** lectura real y código propuesto en draft; no se ha integrado al ejecutor ni ejecutado una prueba E2E con RAW de original y evolucionado. PASE SUCCESS del commit del PR no equivale a la ejecución de los seis tests nuevos.
+
+
+## Lote 4 — Reporte complementario en pasos existentes (2026-10-31)
+
+**Fuentes verificadas:** `public.lf_operation_step_contracts` leído en Supabase, operación `ACTUALIZACION_PERFIL_LF`, contratos `ACTIVE_ENFORCEMENT`: `regression_after` (orden 110) exige `before_after_matrix,adversarial_result,holdout_result`; `report_output` (orden 130) exige `result,exact_head,evidence_refs,open_blockers,next_gate`. El paso `deterministic_validation` (90) permanece intacto. Estos son números de **Updater**, no de pasos del perfil destino.
+
+**Código incorporado en la rama draft:**
+- `scripts/lf_profile_update_run.py` prepara una proyección acotada `LF_PROFILE_CONTROL_MATRIX_RECEIPT_V1` que incluye ID de caso/control, original/evolucionado, comparación, IDs de corridas, atestación, destino (o pendiente), resumen, hashes de árboles, hash SHA-256 del reporte, referencias `actions:profile-evolution-proof:<run_id>` y `approval_effect=NONE`.
+- `regression_after.evidence_payload.before_after_matrix.control_matrix` adjunta **solo este recibo complementario**, sin sustituir `holdout_result` ni `before_after_matrix` preexistentes.
+- `report_output.evidence_payload.control_matrix_report` adjunta el mismo recibo, sin alterar `result/exact_head/evidence_refs/open_blockers/next_gate`.
+- Si la matriz supera el límite acotado de 16000 caracteres, el recibo declara `PARTIAL_ROWS_NOT_COMPLETE` y `row_count_omitted`. El reporte íntegro sigue en `<state>.matrix.json` local; **no** debe citarse esa ruta como evidencia accesible remotamente.
+- La matriz no produce un PASS independiente; el resultado del comparador oficial y el juicio semántico conservan su propia autoridad. No hay SQL, Edge Function, cambio de contrato o mutación en Supabase.
+
+**Pruebas y resultados de GitHub Actions sobre commit `78e1eb1a82d45c411a513926f5abdbc3d3901e04`:**
+- Edge R17 `#41207860544`: SUCCESS, 115 pruebas del lane; su wrapper interno exige **14 pruebas** de la matriz.
+- PASE `#41207860401`: SUCCESS.
+- Se probaron compatibilidad con payload anterior, validación de transporte, enlace a corrida oficial, límite de tamaño, errores de schema y análisis del caso registrado WEB-001.
+
+**Caso WEB-001:** se leen `WEB-001.case.json` (14 checks) y las dos corridas conservadas `RUN-WEB001-BASE-20261029.json` / `RUN-WEB001-CANDIDATE-20261029.json`. Ambos outputs tienen hash y árbol declarados; **ambos tienen `attestation=NONE`**. Esto prueba el readback del reporte usando registros existentes; no representa una ejecución actual, atestación de proveedor ni certificación semántica independiente.
+
+**Hallazgo pendiente:** no se identificó catálogo de IDs canónicos de pasos de cada perfil en la inspección acotada de tablas con nombres de paso/perfil. Las anclas textuales se mantienen como `SOURCE_ANCHORED_NOT_CANONICAL` y los destinos sin referencia como `DESTINO_PENDIENTE`; no se inventan numeraciones.
+
+**Cierre del lote:** implementación de reporte y pruebas CI completadas en PR Draft. No hay merge, despliegue, actualización de ledger real ni prueba E2E nueva ejecutada de original/evolucionado. El readback real de datos y los 14 tests son evidencia limitada, no certificación de evolución.
