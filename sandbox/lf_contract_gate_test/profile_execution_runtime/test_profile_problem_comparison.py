@@ -82,7 +82,9 @@ class ProblemComparisonTest(unittest.TestCase):
         old = run("a"*64, "old", "RUNTIME_ATTESTED", "SAME LITERAL")
         new = run("b"*64, "new", "RUNTIME_ATTESTED", "SAME LITERAL")
         x = self.report(old, new)["rows"][0]
-        self.assertEqual(x["evidence_status"], "READY_FOR_INDEPENDENT_SEMANTIC_REVIEW")
+        self.assertEqual(x["evidence_status"], "PREVIEW_ATTESTATION_CLAIM_UNVERIFIED")
+        self.assertFalse(x["attestation_verified_independently"])
+        self.assertEqual(x["input_identity_level"], "RECORDED_LITERAL_MATCH_ONLY")
         self.assertTrue(x["same_input_literal_verified"])
         self.assertEqual(x["semantic_verdict"], "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE")
 
@@ -136,6 +138,38 @@ class ProblemComparisonTest(unittest.TestCase):
             for key in ('checks_total', 'base_passed', 'candidate_passed',
                         'improved_checks', 'regressed_checks', 'cases_unmeasured'):
                 self.assertEqual(out[key], original_result[key])
+
+    def test_duplicate_problem_id_is_not_reported_twice(self):
+        malformed = dict(self.c)
+        dims = list(self.c['comparison_dimensions'])
+        malformed['comparison_dimensions'] = dims + [dict(dims[0])]
+        x = self.report(case_override=malformed)
+        self.assertEqual(len(x['rows']), 2)
+        self.assertIn(
+            'COMPARISON_DIMENSION_BINDING_INVALID:WEB-001:DISCOVERY_OF_APPLICABLE_RULE_OWNER',
+            x['issues'])
+
+    def test_conditional_applicability_counts_in_multi_run(self):
+        old2 = run('a'*64, 'new')
+        old2['run_id'] = 'old-vacant'
+        new2 = run('b'*64, 'new')
+        new2['run_id'] = 'new-vacant'
+        x = report({'WEB-001': self.c},
+                   [self.base, old2, self.evolved, new2], 'a'*64, 'b'*64)
+        row = next(c for c in x['rows'][0]['controls']
+                   if c['control_id'] == 'OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH')
+        self.assertTrue(row['original_applicability']['conditional_partially_vacuous'])
+        self.assertEqual(row['original_applicability']['antecedent_true'], 1)
+        self.assertTrue(row['evolved_applicability']['conditional_vacuous'])
+        self.assertEqual(row['evolved_applicability']['antecedent_true'], 0)
+
+    def test_declared_provider_attestation_never_promoted_to_verified(self):
+        base = run('a'*64, 'old', 'RUNTIME_ATTESTED', 'LITERAL')
+        evolved = run('b'*64, 'new', 'RUNTIME_ATTESTED', 'LITERAL')
+        for arm in self.report(base, evolved)['rows']:
+            self.assertEqual(arm['evidence_status'],
+                             'PREVIEW_ATTESTATION_CLAIM_UNVERIFIED')
+            self.assertFalse(arm['attestation_verified_independently'])
 
     def test_invalid_control_binding_never_claimed(self):
         malformed = dict(self.c)
