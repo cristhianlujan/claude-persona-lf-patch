@@ -317,19 +317,28 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
         "row_count_total": len(projected),
         "rows": [],
     }
-    # Keep issue transport under the existing 60k limit. Report is incomplete
-    # if any rows are omitted; never imply successful verification.
+    # The transport budget includes final metadata and the receipt digest.
+    # Bound actual UTF-8 bytes (not character count), including non-ASCII
+    # evidence. If even an empty projection exceeds the budget, fail closed.
+    def seal_projection():
+        packet["row_count_omitted"] = len(projected) - len(packet["rows"])
+        packet["projection"] = ("PARTIAL_ROWS_NOT_COMPLETE"
+                                if packet["row_count_omitted"] else "FULL_ROWS")
+        packet["receipt_sha256"] = digest(
+            {k: v for k, v in packet.items() if k != "receipt_sha256"})
+        return len(json.dumps(packet, ensure_ascii=False,
+                              separators=(",", ":")).encode("utf-8"))
+
+    if seal_projection() > max_chars:
+        raise Stop("PROFILE_MATRIX_RECEIPT_BASE_EXCEEDS_LIMIT")
     for row in projected:
         packet["rows"].append(row)
-        if len(json.dumps(packet, ensure_ascii=False, separators=(",", ":"))) > max_chars:
+        if seal_projection() > max_chars:
             packet["rows"].pop()
+            seal_projection()
             break
-    packet["row_count_omitted"] = len(projected) - len(packet["rows"])
-    if packet["row_count_omitted"]:
-        packet["projection"] = "PARTIAL_ROWS_NOT_COMPLETE"
-    else:
-        packet["projection"] = "FULL_ROWS"
-    packet["receipt_sha256"] = digest({k: v for k, v in packet.items() if k != "receipt_sha256"})
+    if seal_projection() > max_chars:
+        raise Stop("PROFILE_MATRIX_RECEIPT_EXCEEDS_LIMIT")
     return packet
 
 
