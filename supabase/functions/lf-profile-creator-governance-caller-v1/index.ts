@@ -206,6 +206,29 @@ Deno.serve(async (req: Request) => {
       });
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
+    if (body.action === "profile_update_amend_candidate_v1") {
+      if (caller.method !== UPDATE_CALLER_METHOD || caller.workflow_ref !== UPDATE_WORKFLOW_REF) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_CALLER_NOT_ALLOWED" }, 403);
+      }
+      const executionId = String(body.execution_id ?? "").trim();
+      const previous = String(body.previous_commit ?? "").trim().toLowerCase();
+      const candidate = String(body.candidate_commit ?? "").trim().toLowerCase();
+      if (!/^EXEC-[A-Za-z0-9][A-Za-z0-9_-]{7,172}$/.test(executionId)
+          || !/^[0-9a-f]{40}$/.test(previous) || !/^[0-9a-f]{40}$/.test(candidate)
+          || previous === candidate) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_INPUT_INVALID" }, 400);
+      }
+      const result = await callRuntime({
+        action: "amend_profile_update_candidate_v1",
+        execution_id: executionId,
+        previous_commit: previous,
+        candidate_commit: candidate,
+        caller,
+      });
+      return json({ outcome: result.outcome ?? "BLOCKED", caller, result },
+        result.outcome === "AMENDMENT_RECORDED" ? 200 : 409);
+    }
+
     if (body.action === "profile_operation_next_step_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_EXECUTION_ID_INVALID", caller }, 400);
