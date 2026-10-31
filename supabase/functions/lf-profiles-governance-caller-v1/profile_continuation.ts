@@ -307,12 +307,34 @@ export async function handleProfileContinuation(
 
     for (const key of semanticKeys) {
       const check = (checks as Payload)[key];
-      if (
-        !check || typeof check !== "object" || Array.isArray(check) ||
-        ![true, "true"].includes((check as Payload).result as true | string) ||
-        typeof (check as Payload).reason !== "string" || !(check as Payload).reason ||
-        !Array.isArray((check as Payload).source_refs)
-      ) return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      if (!check || typeof check !== "object" || Array.isArray(check)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      const item = check as Payload;
+      const refs = item.source_refs;
+      if (typeof item.reason !== "string" || !item.reason.trim() ||
+          !Array.isArray(refs) || refs.length === 0) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      if (key === "router_direct_consistency" && v3.router_direct_consistency === "NOT_TESTED") {
+        // No direct production route exists. NOT_TESTED is neither PASS nor divergence.
+        if (item.result !== "not_applicable" || item.applicability !== "ROUTER_ONLY") {
+          return blocked("PROFILE_NATIVE_ROUTER_ONLY_APPLICABILITY_INVALID", 409);
+        }
+      } else if (key === "router_direct_consistency") {
+        const routerRef = item.router_execution_ref;
+        const directRef = item.direct_execution_ref;
+        if (![true, "true"].includes(item.result as true | string) ||
+            item.applicability !== "AUTHORIZED_COMPARISON" ||
+            typeof routerRef !== "string" || !routerRef.trim() ||
+            typeof directRef !== "string" || !directRef.trim() ||
+            directRef === routerRef ||
+            !refs.includes(routerRef) || !refs.includes(directRef)) {
+          return blocked("PROFILE_NATIVE_ROUTER_DIRECT_COMPARISON_UNPROVEN", 409);
+        }
+      } else if (![true, "true"].includes(item.result as true | string)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
     }
 
     const recordedSemantic = await rpc(config, fetchFn, "lf_profile_native_bridge_record_semantic_v1", {
