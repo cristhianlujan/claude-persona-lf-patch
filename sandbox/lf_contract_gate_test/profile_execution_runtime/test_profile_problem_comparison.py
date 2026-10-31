@@ -1,0 +1,115 @@
+"""Regression tests: problem-by-problem read-only projection on the EXISTING Group2 evaluator."""
+import json
+import runpy
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+M = runpy.run_path(str(ROOT / "skills/profile_creator/validators/operational_coverage_v1.py"))
+report = M["problem_comparison_report"]
+echeck = M["evaluate_check"]
+
+
+def case():
+    p = (ROOT / "skills/profile_creator/operational_cases"
+         / "systemic_root_cause_repair_lf/WEB-001.case.json")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def run(tree, ident, attestation="NONE", exact_input=None):
+    out = {
+        "owner": {"authority_kind": "DERIVED_PROPOSAL" if ident == "old" else "UNKNOWN"},
+        "policy_resolution": [] if ident == "old" else [
+            {"lookups": [{"level": "N1"}, {"level": "N2"}]}],
+        "systemic_root_cause": {"status": "ESTABLISHED" if ident == "old" else "HYPOTHESIS",
+                                "statement": ident},
+        "first_bad_control": {"statement": "retry >3 versus >=3" if ident == "new" else "untyped"},
+        "escape_control": {"statement": "consumer unverified" if ident == "new" else "missing lineage"},
+        "current_uncertainties": [], "hard_guard": {"fail_closed_condition": "block unsafe"},
+        "next_gate": {"gate": "REVIEW"}, "blocking_codes": [],
+        "planned_regressions": [], "acceptance_criteria": [],
+    }
+    value = {"schema_version": "PROFILE_OPERATIONAL_RUN_V1", "case_id": "WEB-001",
+             "profile_slug": "systemic_root_cause_repair_lf",
+             "profile_tree_sha256": tree, "run_id": ident,
+             "output_sha256": M["canonical_sha256"](out),
+             "attestation": attestation, "validator": {"valid": True}, "output": out}
+    if exact_input is not None:
+        value["input_literal"] = exact_input
+    return value
+
+
+class ProblemComparisonTest(unittest.TestCase):
+    def setUp(self):
+        self.c = case()
+        self.base = run("a"*64, "old")
+        self.evolved = run("b"*64, "new")
+
+    def report(self, old=None, new=None, case_override=None):
+        cs = {"WEB-001": self.c if case_override is None else case_override}
+        return report(cs, [old or self.base, new or self.evolved], "a"*64, "b"*64)
+
+    def test_14_original_controls_intact(self):
+        self.assertEqual(len(self.c["checks"]), 14)
+        self.assertEqual(len({c["id"] for c in self.c["checks"]}), 14)
+
+    def test_two_questions_and_all_fields_side_by_side(self):
+        r = self.report()
+        self.assertEqual(r["status"], "READ_ONLY_REPORT_NOT_AUTHORITY")
+        self.assertEqual(len(r["rows"]), 2)
+        self.assertEqual({x["problem_id"] for x in r["rows"]},
+                         {"DISCOVERY_OF_APPLICABLE_RULE_OWNER", "CONTROLLED_RETRY_AND_READMISSION"})
+        for x in r["rows"]:
+            self.assertEqual(len(x["observations"]), 2)
+            self.assertEqual(x["semantic_verdict"], "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE")
+            self.assertEqual(x["evidence_status"], "PREVIEW_INPUT_IDENTITY_UNVERIFIED")
+            self.assertEqual(x["observations"][0]["arm"], "original")
+            self.assertEqual(x["observations"][1]["arm"], "evolved")
+            self.assertTrue(x["observations"][0]["runs"][0]["fields"])
+
+    def test_conditional_pass_is_flagged_vacuous(self):
+        r = self.report()
+        governance = r["rows"][0]
+        c = next(x for x in governance["controls"]
+                 if x["control_id"] == "OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH")
+        self.assertFalse(c["original_vacuous_conditional"])
+        self.assertTrue(c["evolved_vacuous_conditional"])
+        self.assertEqual(c["original"], "FAIL")
+        self.assertEqual(c["evolved"], "PASS")
+
+    def test_matching_input_does_not_claim_semantic_certification(self):
+        old = run("a"*64, "old", "RUNTIME_ATTESTED", "SAME LITERAL")
+        new = run("b"*64, "new", "RUNTIME_ATTESTED", "SAME LITERAL")
+        x = self.report(old, new)["rows"][0]
+        self.assertEqual(x["evidence_status"], "READY_FOR_INDEPENDENT_SEMANTIC_REVIEW")
+        self.assertTrue(x["same_input_literal_verified"])
+        self.assertEqual(x["semantic_verdict"], "NO_VERIFICADO_PENDING_INDEPENDENT_JUDGE")
+
+    def test_different_input_remains_preliminary(self):
+        old = run("a"*64, "old", "RUNTIME_ATTESTED", "A")
+        new = run("b"*64, "new", "RUNTIME_ATTESTED", "B")
+        self.assertEqual(self.report(old, new)["rows"][0]["evidence_status"],
+                         "PREVIEW_INPUT_IDENTITY_UNVERIFIED")
+
+    def test_not_universal_when_other_case_has_no_dimensions(self):
+        plain = dict(self.c)
+        plain.pop("comparison_dimensions", None)
+        self.assertEqual(self.report(case_override=plain)["rows"], [])
+
+    def test_missing_run_is_unmeasured(self):
+        r = report({"WEB-001": self.c}, [self.base], "a"*64, "b"*64)
+        self.assertTrue(all(x["evidence_status"] == "UNMEASURED" for x in r["rows"]))
+
+    def test_invalid_control_binding_never_claimed(self):
+        malformed = dict(self.c)
+        malformed["comparison_dimensions"] = [{
+            "problem_id": "UNTRUSTED", "question": "Question",
+            "output_pointers": ["/output/owner"], "control_ids": ["MADE_UP_CONTROL"]
+        }]
+        x = self.report(case_override=malformed)
+        self.assertEqual(x["rows"], [])
+        self.assertIn("COMPARISON_DIMENSION_BINDING_INVALID:WEB-001:UNTRUSTED", x["issues"])
+
+
+if __name__ == "__main__":
+    unittest.main()
