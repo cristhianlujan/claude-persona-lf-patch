@@ -14,7 +14,6 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from lf_semantic_fail_feedback import persist_feedback
 
 EDGE_URL = os.environ["LF_PROFILE_EDGE_URL"].rstrip("/")
 AUDIENCE = "lf-profiles-governance-caller-v1"
@@ -399,6 +398,7 @@ def main():
             print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
             return 0
         if semantic_review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+            from lf_semantic_fail_feedback import persist_feedback
             try:
                 feedback = persist_feedback(
                     semantic_review, execution_id, source.get("profile_code"),
