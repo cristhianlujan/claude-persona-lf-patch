@@ -251,6 +251,80 @@ export async function handleProfileContinuation(
   // or 10/11 execution. Read canonical step states and hand off the next gate.
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
+
+  // Post-model submission is accepted only from this already-authorized OIDC
+  // continuation transport. The model supplies only its RAW profile output;
+  // deterministic validity must come from the source-bound canonical runner.
+  if (Object.prototype.hasOwnProperty.call(body, "profile_output")) {
+    if (result.status !== "NATIVE_MODEL_INPUT_READY") {
+      return blocked("PROFILE_NATIVE_OUTPUT_NOT_REQUESTED", 409);
+    }
+    const profileOutput = body.profile_output;
+    const validation = body.validation_result;
+    const rawEvidenceRef = body.raw_evidence_ref;
+    const validatorEvidenceRef = body.validator_evidence_ref;
+    if (
+      !profileOutput || typeof profileOutput !== "object" || Array.isArray(profileOutput) ||
+      !validation || typeof validation !== "object" || Array.isArray(validation) ||
+      typeof rawEvidenceRef !== "string" || !rawEvidenceRef.startsWith("actions://") ||
+      typeof validatorEvidenceRef !== "string" || !validatorEvidenceRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_OUTPUT_SUBMISSION_INVALID", 400);
+
+    const receipt = validation as Payload;
+    const blockingCodes = receipt.blocking_codes;
+    const validatorErrors = receipt.validator_errors;
+    if (
+      receipt.schema !== "PROFILE_OUTPUT_VALIDATION_RESULT_V1" ||
+      receipt.status !== "CANDIDATE_OUTPUT_PARITY_OBSERVED" ||
+      receipt.structural_check_executed !== true ||
+      receipt.profile_validator_executed !== true ||
+      receipt.source_readback_matched !== true ||
+      receipt.independent_review_executed !== false ||
+      receipt.provider_attested !== false ||
+      receipt.admission_authorized !== false ||
+      receipt.profile_write_authorized !== false ||
+      receipt.runtime_activation_authorized !== false ||
+      !Array.isArray(blockingCodes) || blockingCodes.length !== 0 ||
+      !Array.isArray(validatorErrors) || validatorErrors.length !== 0 ||
+      typeof receipt.raw_output_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.raw_output_sha256)
+    ) return blocked("PROFILE_NATIVE_OUTPUT_VALIDATOR_RECEIPT_NOT_PASS", 409);
+
+    const recorded = await rpc(config, fetchFn, "lf_profile_native_bridge_record_output_v1", {
+      p_execution_id: e.execution_id,
+      p_profile_output: profileOutput,
+      p_validation: {
+        valid: true,
+        errors: validatorErrors,
+        blocking_codes: blockingCodes,
+        source_bound_validation: receipt,
+      },
+      p_raw_evidence_ref: rawEvidenceRef,
+      p_validator_evidence_ref: validatorEvidenceRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recorded.error) return recorded.error;
+    if (recorded.result?.status !== "NATIVE_PRODUCER_VALIDATED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "OUTPUT_RECORD",
+        code: recorded.result?.blocking_code ?? "PROFILE_NATIVE_OUTPUT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recorded.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "CONTINUATION_REQUIRED",
+      phase: "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_action: "RUN_EXISTING_INDEPENDENT_SEMANTIC_JUDGE",
+      result: recorded.result,
+    });
+  }
+
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",
