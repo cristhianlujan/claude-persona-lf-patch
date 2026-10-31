@@ -70,7 +70,16 @@ La contradicción de umbral y `ACT-0058.owner_name=NULL` cuentan con readback en
 - **Paso 130** `report_output`: mostrar comparaciones por problema, cambios, riesgos, veredicto de mejora y estado formal, con referencias verificables.
 - **Router, resolución dinámica, Supabase, política activa, registro de pasos y Merge Train:** sin alteración por esta propuesta. La política `POL-PROFILE-UPDATE-PASS` actualmente activa prevalece; cualquier enforcement nuevo requiere admisión gobernada de sus contratos, sin cambiar unilateralmente autoridad.
 
-## 7. Criterios de aceptación de la formalización
+## 7. Código y contrato de lectura implementados en esta rama
+
+- El caso `WEB-001.case.json` conserva **14 checks sin modificarlos** y agrega `comparison_dimensions[]` para los dos problemas materiales. Los campos son dinámicos y opcionales para todos los demás casos/perfiles.
+- La función read-only `problem_comparison_report` está en **el mismo** `operational_coverage_v1.py`; `evaluate()` la incorpora como `functional_problem_comparison` únicamente cuando el caso confiable declara dimensiones. No existe segundo comparador ni ruta.
+- Por cada problema y cada versión guarda `run_id`, huellas, attestation, `JSON.pointer`, preview acotada y hash de valor; compara los resultados de controles existentes y expone `*_vacuous_conditional` para evitar falso mérito semántico.
+- Los estados `UNMEASURED`, `PREVIEW_INPUT_IDENTITY_UNVERIFIED`, `PREVIEW_UNATTESTED` y `READY_FOR_INDEPENDENT_SEMANTIC_REVIEW` describen **calidad de evidencia**, **no** un veredicto de mejora. La valoración de mejora funcional sigue reservada al juez independiente del paso 100.
+- Pruebas unitarias en `test_profile_problem_comparison.py`: ambos problemas, aplicación a caso diferente, falta de RAW, identidad de input, antecedente condicional no ejercido y no modificación del resultado `compare()`. Deben ser ejecutadas por CI antes del merge.
+- La matriz de destinos y su unión al ledger `regression_after/report_output` siguen sujetas a PR #3420 y a prueba E2E. `functional_problem_comparison` se transporta mediante el resultado `operational` del comparador **existente**, sin aprobar el pase.
+
+## 8. Criterios de aceptación de la formalización
 
 - Informe presenta **todas las preguntas/problemas materiales**; para cada una original, evolucionado, evidencia, estado y pendiente.
 - No usa `WEB-001` ni N1/N2 como condición universal; el método funciona para distintos perfiles y casos.
