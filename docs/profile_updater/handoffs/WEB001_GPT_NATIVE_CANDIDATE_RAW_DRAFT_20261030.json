@@ -889,22 +889,22 @@
     "origin_asset": {
       "status": "RESOLVED",
       "code": "ACT-0058",
-      "evidence_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_activos/ACT-0058",
+      "evidence_ref": "SELECT statement_timestamp() observed_at,codigo_activo,nombre_canonico,owner_name,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
       "missing_evidence": [],
       "authority_kind": "EXISTING_AUTHORITY",
-      "evidence_id": "EV-OP",
-      "subject": "ACT-0058-PIPELINE-ORCHESTRATOR",
-      "observed_revision": "2026-10-29T16:05:00Z"
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2",
+      "subject": "ACT-0058",
+      "observed_revision": "2026-10-31 01:30:53.590306+00"
     },
     "origin_operation": {
       "status": "RESOLVED",
-      "code": "ACT-0058-PIPELINE-ORCHESTRATOR",
-      "evidence_ref": "supabase://mhwmirqcgxxukpctffuv/public.lf_activos/ACT-0058",
+      "code": "ORQUESTACION_PIPELINE_LF",
+      "evidence_ref": "SELECT statement_timestamp() observed_at,operation_code,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_code",
       "missing_evidence": [],
       "authority_kind": "EXISTING_AUTHORITY",
-      "evidence_id": "EV-OP",
-      "subject": "ACT-0058-PIPELINE-ORCHESTRATOR",
-      "observed_revision": "2026-10-29T16:05:00Z"
+      "evidence_id": "WEB001-UNC-RETRY-POLICY-OP4-N1-RET_N1",
+      "subject": "ORQUESTACION_PIPELINE_LF",
+      "observed_revision": "2026-10-31 01:30:54.012372+00"
     },
     "owner": {
       "status": "UNRESOLVED",
@@ -1909,7 +1909,8 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-SKILL"
+            "WEB001-CURRENT-POLICY-N1-20261031",
+            "WEB001-CURRENT-POLICY-N2-20261031"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -1926,7 +1927,8 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-ASSET"
+            "WEB001-UNC-RETRY-POLICY-OP4-N2-RET_N2",
+            "WEB001-UNC-RETRY-POLICY-OP4-N3-RET_N3"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -1943,8 +1945,8 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-OP",
-            "EV-REG"
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N3-CON_N3",
+            "WEB001-UNC-RETRY-CONSUMER-LIVENESS-N5-HIS_N5_EVENTS"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -1962,7 +1964,7 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-ASSET"
+            "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -1979,7 +1981,8 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-SKILL"
+            "WEB001-UNC-RETRY-POLICY-OP4-N4-GIT",
+            "WEB001-UNC-OWNER-ACT0058-N5-HIS_N5_EKB"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -1996,8 +1999,8 @@
           ],
           "status": "OPEN",
           "evidence_ids": [
-            "EV-OP",
-            "EV-REG"
+            "WEB001-UNC-OWNER-ACT0058-N1-OWN_N1",
+            "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2"
           ],
           "decision_refs": [],
           "missing_requirements": [
@@ -2009,11 +2012,19 @@
       ],
       "authority_bindings": [
         {
-          "subject": "ACT-0058-PIPELINE-ORCHESTRATOR",
+          "subject": "ACT-0058",
           "authority_kind": "EXISTING_AUTHORITY",
           "used_as_existing_authority": true,
           "evidence_ids": [
-            "EV-OP"
+            "WEB001-UNC-OWNER-ACT0058-N2-OWN_N2"
+          ]
+        },
+        {
+          "subject": "ORQUESTACION_PIPELINE_LF",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "WEB001-UNC-RETRY-POLICY-OP4-N1-RET_N1"
           ]
         }
       ],
@@ -2253,7 +2264,7 @@
     "executed": false,
     "valid": null,
     "errors": [],
-    "reason": "Source-bound draft modified after first canonical Python FAIL; do not reuse old green validation or claim approval."
+    "reason": "Candidate draft modified after canonical Python failure; rerun required."
   },
   "provisional_self_check": {
     "checks": [
@@ -2379,5 +2390,13 @@
     "original_error_count": 26,
     "diagnosis": "Added mandatory gap-blocking codes after exact Python diagnostics; not yet rerun",
     "not_provider_attestation": true
+  },
+  "evidence_binding_reconciliation": {
+    "run_source": "canonical Python validator #41159686368",
+    "scope": "resolved existing asset/operation identity and OPEN proof obligations only",
+    "open_obligations_retained": true,
+    "owner_unchanged": "UNRESOLVED",
+    "unproven_edge_refs_kept_unresolved": true,
+    "not_semantic_attestation": true
   }
 }
