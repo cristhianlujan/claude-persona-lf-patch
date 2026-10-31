@@ -134,6 +134,9 @@ def load_runs(operational_root: Path, slug: str, cases: dict[str, dict]) -> tupl
               and run.get("attestation") in ATTESTATIONS and isinstance(run.get("validator"), dict)
               and isinstance(run.get("output"), dict) and run.get("output_sha256") == canonical_sha256(run.get("output")))
         if ok:
+            # Report-only provenance: the trusted file path comes from the loader,
+            # never from a run's self-declared source or model-generated output.
+            run["_trusted_run_file"] = str(path.relative_to(operational_root))
             runs.append(run)
         else:
             rejected.append(f"RUN_REJECTED:{path.name}")
@@ -272,6 +275,7 @@ def problem_comparison_report(
             for arm, selected in (("original", original), ("evolved", evolved)):
                 snapshots = [{
                     "run_id": r.get("run_id"),
+                    "raw_file_ref": r.get("_trusted_run_file"),
                     "tree_sha256": r.get("profile_tree_sha256"),
                     "output_sha256": r.get("output_sha256"),
                     "attestation": r.get("attestation"),
