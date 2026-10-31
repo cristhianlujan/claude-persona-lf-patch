@@ -1,6 +1,6 @@
-# LF / Análisis — RUN canónico y trazas A1–A9 (source-only)
+# Análisis — RUN canónico A1–A9 con contexto de negocio (source-only)
 
-Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL, despliegue ni autorización PG-01. Alcance aprobado: reutilizar el RUN de EJECUCION_PERFIL_LF e identificar cómo conservar la evidencia de Análisis.
+Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL, despliegue ni autorización PG-01. Los cambios del PR solo afectan al binding candidato LF y al preflight; no habilitan SALY. Alcance aprobado: reutilizar el RUN de EJECUCION_PERFIL_LF e identificar cómo conservar la evidencia de Análisis.
 
 ## Autoridad y flujo
 
@@ -11,6 +11,17 @@ Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL
 5. Los pasos funcionales internos **A1–A9** pertenecen al perfil Análisis, no al Router ni a la definición transversal de once pasos. Deben producir recibos persistidos por la operación o su recorder autorizado, vinculados con el **mismo** \`execution_id\` y \`request_sha256\`.
 6. \`stage_trace\` declarado por el LLM en el JSON final **no equivale** a nueve pasos materialmente recorridos. Un recibo propio del modelo jamás satisface por sí solo el paso.
 7. Contrastar recibos por etapa, SHA exactos de la fuente A1–A9, currentness, RAW, juez independiente y eventual readback PG-01 antes de declarar cualquier READY.
+
+## Parámetro obligatorio de negocio (`business`)
+
+- **Variable canónica**: `business`, provista por ACT-0001 en `router_profile_handoff.business` y vinculada al mismo `execution_id`; **sin valor por defecto** y sin deducirla de palabras sueltas o tablas.
+- El RUN conserva `business` en su manifest/contexto; las evidencias A1–A9 y RAW deben ser congruentes con el negocio del handoff. El preflight acepta la identidad exacta `execution.business == router_handoff.business == binding.business == stage_readback[].business == model_readback.business`.
+- **LF (configuración del PR)**: el contrato candidato `profiles/programming_analysis_lf/contracts/analysis_source_binding.json` declara `business=LF` y `business_source_namespace=lf_ops`. Esto es un límite de alcance, no una autorización runtime. Las fuentes de pantalla/reglas se resuelven únicamente desde autoridades LF vigentes.
+- **SALY (fuera del alcance de activación)**: Supabase contiene esquema `saly`, pero sus tablas/consultas/autoridades aplicables a Análisis **no están verificadas ni vinculadas** al Router/profile runtime actual. El preflight rechaza SALY cuando se le pasa binding LF o binding SALY sin estado de autoridad `CURRENT_RELEASED`; no consulta ni interpreta `lf_ops` como respaldo.
+- El Router `public.lf_router_profile_execution_handoff_v1` verificado en vivo actualmente exige `p_business='LF'`; **este PR no cambia esa política**. Para SALY futuro, el owner del Router deberá proporcionar soporte gobernado, manifest/authority de negocio y perfil/capacidad aplicable antes de iniciar RUN.
+- Las funciones SQL, selecciones de pantallas y consultas son responsabilidad de los resolvers/adapters canónicos específicos del negocio; nunca `if business=='SALY': usar tabla inventada`. No introducir segundo Router, segundo RUN, lógica global acoplada a `lf_ops`, ni fallback cruzado.
+
+**Control negativo obligatorio**: petición SALY + binding LF, consulta/table source LF, `business` perdido o alterado durante el recorrido, o binding SALY sin currentness/autorización: `BLOCKED` antes de inferencia, sin declarar READY.
 
 ## Dos numeraciones diferentes
 
