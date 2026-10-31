@@ -3,6 +3,7 @@
 No workflow added; this suite is invoked by lf-edge-function-operation-tests.yml
 using unittest discovery whenever this directory changes.
 """
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -21,7 +22,14 @@ class ProfileUpdaterControlMatrixLane(unittest.TestCase):
         self.assertEqual(proc.returncode, 0,
                          "Profile destination matrix tests failed:\n" + proc.stdout[-6000:] +
                          "\n" + proc.stderr[-12000:])
-        self.assertIn("Ran 22 tests", proc.stderr)
+        summary = re.search(r"Ran (\\d+) tests in", proc.stderr)
+        self.assertIsNotNone(summary, "No suite summary found in test output")
+        self.assertGreaterEqual(int(summary.group(1)), 22)
+        for expected in (
+            "test_utf8_receipt_budget_includes_digest_and_metadata",
+            "test_unbounded_header_fails_closed",
+        ):
+            self.assertIn(expected, proc.stderr)
         # The canonical evaluator emits this diagnostic from recorded runs;
         # print only its compact row summary, never the full model RAW.
         for line in proc.stdout.splitlines():
