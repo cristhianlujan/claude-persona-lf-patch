@@ -24,6 +24,8 @@
     "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CANDIDATE_RAW_DRAFT_20261030.json": "RUNTIME_TESTING",
     "docs/profile_updater/handoffs/WEB001_N3_N5_LIVE_SOURCE_CASCADE_20261030.json": "RUNTIME_TESTING",
     "docs/profile_updater/handoffs/WEB001_N1_N5_SOURCE_EVIDENCE_MANIFEST_20261030.json": "RUNTIME_TESTING",
-    "docs/profile_updater/handoffs/WEB001_NONREADY_AUTHORITY_SCHEMA_READBACK_20261030.json": "RUNTIME_TESTING"
+    "docs/profile_updater/handoffs/WEB001_NONREADY_AUTHORITY_SCHEMA_READBACK_20261030.json": "RUNTIME_TESTING",
+    ".github/workflows/lf-srcr-web001-candidate-validation.yml": "WORKFLOW",
+    "docs/profile_updater/handoffs/WEB001_CANONICAL_EXTERNAL_EVIDENCE_MANIFEST_20261030.json": "RUNTIME_TESTING"
   }
 }
