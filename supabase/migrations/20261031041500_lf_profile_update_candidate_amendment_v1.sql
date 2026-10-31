@@ -57,8 +57,10 @@ BEGIN
   ) THEN RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_AFTER_VALIDATION_FORBIDDEN'); END IF;
 
   v_entries := coalesce(v_exec.manifest->'candidate_amendments','[]'::jsonb);
-  IF jsonb_typeof(v_entries) <> 'array' OR jsonb_array_length(v_entries) > 50
+  IF jsonb_typeof(v_entries) IS DISTINCT FROM 'array'
   THEN RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_CHAIN_INVALID'); END IF;
+  IF jsonb_array_length(v_entries) >= 50
+  THEN RETURN jsonb_build_object('outcome','BLOCKED','code','PROFILE_AMEND_CHAIN_LIMIT_REACHED'); END IF;
   IF jsonb_array_length(v_entries)>0 THEN
     v_last := v_entries->(jsonb_array_length(v_entries)-1);
     v_prior := v_last->>'candidate_commit';
