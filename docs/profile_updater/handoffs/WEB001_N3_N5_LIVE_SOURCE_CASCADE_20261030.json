@@ -32,8 +32,13 @@
       ]
     },
     "OWN_N3_REL": {
-      "query": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
-      "rows": []
+      "query": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-31 02:19:24.173222+00",
+          "matched_relations": 0
+        }
+      ]
     },
     "OWN_N3_DEC": {
       "query": "SELECT statement_timestamp() observed_at,COUNT(*) AS matching_decisions FROM public.lf_decisiones_gov WHERE coalesce(decision,'') ILIKE '%ACT-0058%' OR coalesce(contexto,'') ILIKE '%ACT-0058%' OR coalesce(observaciones,'') ILIKE '%ACT-0058%'",
@@ -379,15 +384,25 @@
       "datum_id": "UNC-OWNER-ACT0058",
       "level": "N3",
       "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_REL",
-      "source_locator": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
+      "source_locator": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
       "source_kind": "BASE_TABLE",
-      "result_kind": "EMPTY",
-      "row_count": 0,
-      "sample_records": [],
-      "observed_at": null,
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "sample_records": [
+        {
+          "observed_at": "2026-10-31 02:19:24.173222+00",
+          "matched_relations": 0
+        }
+      ],
+      "observed_at": "2026-10-31 02:19:24.173222+00",
       "readback": {
-        "query": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
-        "rows": []
+        "query": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
+        "rows": [
+          {
+            "observed_at": "2026-10-31 02:19:24.173222+00",
+            "matched_relations": 0
+          }
+        ]
       }
     },
     {
@@ -1168,7 +1183,7 @@
     }
   ],
   "scoped_findings": {
-    "owner": "N1/N2 ACT-0058 owner_name null; N3 relations zero; decisions with ACT-0058 zero; ACTIVE policy payload with owner/SUPER search returned only POL-PROFILE-UPDATE-PASS, no applicable assignment established. Github SUPER_ADMIN references concern governance/software routes or candidate-only conditions, not asset assignment.",
+    "owner": "N1/N2 ACT-0058 owner_name null; N3 relations zero; decisions with ACT-0058 zero; ACTIVE policy payload with owner/SUPER search returned only POL-PROFILE-UPDATE-PASS, no applicable assignment established. Github SUPER_ADMIN references concern governance/software routes or candidate-only conditions, not asset assignment. N3 zero rows now attested by aggregate SELECT timestamp and matched_relations=0, without inferring global absence.",
     "retry": "N4 SKILL has retry_count >=3 final and a retry branch <3; N2 step failed_retry says block_condition >3 but SQL terminal when retry_count+1 >=3. N3 58 of 126 linked queue attempts differ from pipeline retry counter. No re-use of counts as equivalent.",
     "consumer": "N3 pg_cron 11 jobs, 9 active, 0 direct command/jobname matches queue/pipeline/retry; N2 queue 39 FALLIDO and one PENDIENTE last updated 2026-09-01. N5 133 related events, last 2026-09-01. An external consumer may exist; its runtime not proven absent."
   },
@@ -1179,5 +1194,15 @@
     "N5 historical events and EKB do not establish current caller liveness.",
     "No full canonical profile validator, independent semantic judge, or Group2 proof has been executed as a result of this capture."
   ],
-  "next_required": "Bind source digests and per-datum evidence into native raw, execute full original/candidate outputs with exact schema and judge; if any evidence class remains uncovered, keep NEEDS_MORE_EVIDENCE without falsely claiming exhausted search."
+  "next_required": "Bind source digests and per-datum evidence into native raw, execute full original/candidate outputs with exact schema and judge; if any evidence class remains uncovered, keep NEEDS_MORE_EVIDENCE without falsely claiming exhausted search.",
+  "evidence_corrections": [
+    {
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_REL",
+      "old_problem": "SELECT returning [] has no observed_at row",
+      "resolution": "Read-only count(*) aggregate with query timestamp; matched_relations=0",
+      "observed_at": "2026-10-31 02:19:24.173222+00",
+      "query": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
+      "source": "public.lf_activo_relaciones"
+    }
+  ]
 }
