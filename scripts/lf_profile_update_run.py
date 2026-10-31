@@ -300,7 +300,9 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
     fields = ("case_id", "control_id", "original_result", "evolved_result",
               "comparison", "destination_status", "destination_profile_step_id",
               "destination_profile_step_name", "original_run_ids", "evolved_run_ids",
-              "original_attestation", "evolved_attestation", "blocking_code")
+              "original_attestation", "evolved_attestation", "blocking_code",
+              "destination_source_path", "destination_source_sha256",
+              "destination_source_line", "change_type")
     projected = [{key: row.get(key) for key in fields} for row in full_rows]
     packet = {
         "schema": "LF_PROFILE_CONTROL_MATRIX_RECEIPT_V1",
