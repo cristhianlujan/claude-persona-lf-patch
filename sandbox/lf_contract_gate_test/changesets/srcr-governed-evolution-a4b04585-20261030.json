@@ -20,6 +20,7 @@
     "profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py": "RUNTIME_TESTING",
     "profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/changesets/srcr-governed-evolution-a4b04585-20261030.json": "CHANGESET_MANIFEST",
-    "docs/profile_updater/handoffs/WEB001_EXACT_PAIR_EXECUTION_INPUT_20261030.json": "RUNTIME_TESTING"
+    "docs/profile_updater/handoffs/WEB001_EXACT_PAIR_EXECUTION_INPUT_20261030.json": "RUNTIME_TESTING",
+    "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CANDIDATE_RAW_DRAFT_20261030.json": "RUNTIME_TESTING"
   }
 }
