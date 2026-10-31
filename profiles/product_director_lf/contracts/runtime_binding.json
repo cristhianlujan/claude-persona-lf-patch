@@ -1,0 +1,12 @@
+{
+  "schema_version": "PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "product_director_lf",
+  "runtime_schema": {
+    "default": "schemas/product_direction_spec.schema.json"
+  },
+  "canonical_validator": {
+    "path": "validators/validate_product_director_output.py",
+    "callable": "validate",
+    "transport": "STDIN_JSON"
+  }
+}
