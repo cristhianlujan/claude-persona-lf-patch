@@ -22,7 +22,7 @@ class ProfileUpdaterControlMatrixLane(unittest.TestCase):
         self.assertEqual(proc.returncode, 0,
                          "Profile destination matrix tests failed:\n" + proc.stdout[-6000:] +
                          "\n" + proc.stderr[-12000:])
-        summary = re.search(r"Ran (\\d+) tests in", proc.stderr)
+        summary = re.search(r"Ran (\d+) tests in", proc.stderr)
         self.assertIsNotNone(summary, "No suite summary found in test output")
         self.assertGreaterEqual(int(summary.group(1)), 22)
         for expected in (
