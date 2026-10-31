@@ -56,3 +56,37 @@ Los resultados anteriores **son ejemplos**, no prueba de que N1/N2 existan en cu
 `execution_id | profile_slug | case_id | original_tree_sha | candidate_tree_sha | controles_total | mejorados | preservados | regresados | no_verificados | destinos_pendientes | Group1 | Group2 | semantic_review | PR/commit | dictamen | siguiente_accion`.
 
 **Dictamen:** `APTO_PARA_GATES` solo con evidencia real, cero regresiones materiales, destinos resueltos y requisitos del snapshot; de otro modo `CORREGIR` o `BLOQUEADO_EVIDENCIA`. La integración y cierre son fases posteriores.
+
+
+## Lote 2 — contraste real e integración conservadora (2026-10-31)
+
+### Perfil A: `product_director_lf`
+- Fuente: `profiles/product_director_lf/SKILL.md`, blob Git `479ccb9261980100999935c8e84e32dac3adc160` leído desde `main`.
+- Sección textual observada: `RUNTIME CRITICAL GATE — EXECUTE FIRST; OVERRIDES LATER FORMAT RULES`.
+- Ítem dentro de esa sección: `0. AUTHORITY RESOLUTION FIRST.` (precede a 1–7).
+- Contrato runtime en `contracts/runtime_binding.json` vincula schema/validator, **no publica catálogo formal de ID de pasos**.
+- Resultado de lectura: paso textual ubicable; `CANONICAL_STEP_AUTHORITY_NOT_VERIFIED` para su uso como destino gobernado.
+
+### Perfil B: `systemic_root_cause_repair_lf`
+- Fuente: `profiles/systemic_root_cause_repair_lf/SKILL.md`, blob Git `39fe66baf7608eef5117edd5a5f40578c594a115` leído desde `main`.
+- Sección textual observada: `Runtime method capsule`.
+- Ítem: `4. Use the smallest search strategy that can falsify the hypothesis.` (cápsula 1–12).
+- `manifest.json` y `contracts/runtime_binding.json` identifican pack/método y proyección; **no afirman que cada número de la cápsula sea un paso canónico de ejecución**.
+- Resultado de lectura: paso textual ubicable; `CANONICAL_STEP_AUTHORITY_NOT_VERIFIED` para destino gobernado.
+
+Estas dos lecturas **no demuestran** original → evolucionado: verifican diversidad de estructuras y anclaje textual de destinos. Los controles N1/N2 de diagnóstico no se deben reinterpretar como numeraciones universales.
+
+### Código añadido al PR en modalidad solo lectura
+
+- `skills/profile_creator/validators/operational_control_matrix_v1.py`: proyecta filas por `case_id:check_id` usando únicamente la medición existente de `operational_coverage_v1.measure`, sin re-evaluar checks ni alterar `EVOLUTION_DEMONSTRATED`.
+- Resuelve una referencia de destino en `SKILL.md` por sección+ítem+título y hash SHA-256 del texto fuente. Ante ausencia, fuente desactualizada o ambigüedad, devuelve `DESTINO_PENDIENTE`. Un ancla textual válida devuelve `SOURCE_ANCHORED_NOT_CANONICAL`, no un PASS de autoridad.
+- `sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_target_destination_matrix.py`: seis pruebas diseñadas para los dos perfiles, cambios/regresiones y fuente inexistente/desactualizada. **Ejecución automatizada de esas seis pruebas no verificada**.
+
+### Integración siguiente en la ruta existente
+
+1. El consumidor existente de Grupo 2 ejecuta `load_cases/load_runs/measure` sobre trusted root para ambos árboles. Solo **ese consumidor** pasa las mediciones a `build_control_matrix`; no aceptar resultados PASS declarados por el perfil.
+2. El actualizador descubre el identificador canónico del paso **en cada perfil destino** (contrato, definición de ejecución o fuente de autoridad consultada), anexa ese recibo al binding y verifica su vigencia. Las anclas de Markdown son pistas, nunca autorización.
+3. Agregar el reporte como evidencia complementaria de `regression_after` y `report_output` **después de resolver el contrato de consumidor**. No cambiar por este lote el comparador, el ledger, la política de Grupo 2 ni la ruta OIDC.
+4. Validar tests nuevos en CI de ejecución real, incluir caso sin corrida, cambio de SHA, destino cruzado, regresión y rechazo a destino ambiguo. Solo después proponer enforcement en el consumidor.
+
+**Estado del lote:** lectura real y código propuesto en draft; no se ha integrado al ejecutor ni ejecutado una prueba E2E con RAW de original y evolucionado. PASE SUCCESS del commit del PR no equivale a la ejecución de los seis tests nuevos.
