@@ -188,6 +188,11 @@ def evaluate(operational_root: Path, slug: str, base_dir: Path, candidate_dir: P
     result.update({"status": "MEASURED" if result["checks_total"] else "UNMEASURED", "problems": problems + rejected,
                    "base_tree_sha256": base_sha, "candidate_tree_sha256": cand_sha,
                    "semantic_pending": sorted({p for c in cases.values() for p in c.get("semantic_pending", [])})})
+    # Complementary side-by-side report, automatically carried by the EXISTING Group2 proof.
+    # Never changes compare() verdict, measured checks, or the independent semantic gate.
+    if any(c.get("comparison_dimensions") for c in cases.values()):
+        result["functional_problem_comparison"] = problem_comparison_report(
+            cases, runs, base_sha, cand_sha)
     return result
 
 
