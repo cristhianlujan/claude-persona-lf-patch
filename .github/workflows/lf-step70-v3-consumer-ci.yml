@@ -1,0 +1,24 @@
+name: LF step 70 V3 consumer tests
+on:
+  push:
+    branches: [fix/issue-3401-step70-v3-consumer]
+  pull_request:
+    paths:
+      - 'scripts/lf_profile_step70_consume_v3.py'
+      - 'tests/test_lf_profile_step70_consume_v3.py'
+      - '.github/workflows/lf-step70-v3-consumer-ci.yml'
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check syntax
+        run: python -m py_compile scripts/lf_profile_step70_consume_v3.py tests/test_lf_profile_step70_consume_v3.py
+      - name: Unit tests (no credentials or writes)
+        run: python -m unittest discover -s tests -p 'test_lf_profile_step70_consume_v3.py' -v
