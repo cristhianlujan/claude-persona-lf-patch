@@ -21,5 +21,5 @@ class ProfileUpdaterControlMatrixLane(unittest.TestCase):
         self.assertEqual(proc.returncode, 0,
                          "Profile destination matrix tests failed:\n" + proc.stdout[-6000:] +
                          "\n" + proc.stderr[-12000:])
-        self.assertIn("Ran 6 tests", proc.stderr)
+        self.assertIn("Ran 9 tests", proc.stderr)
         self.assertIn("OK", proc.stderr)
