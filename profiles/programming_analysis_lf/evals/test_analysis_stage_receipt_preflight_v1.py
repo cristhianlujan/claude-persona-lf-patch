@@ -12,6 +12,9 @@ spec.loader.exec_module(gate)
 H = "e" * 64
 E = "EXEC-TEST-ANALYSIS-NONPROD"
 B = {
+    "business": "LF",
+    "business_source_namespace": "lf_ops",
+    "business_scope_binding_status": "CANDIDATE_NOT_RELEASED",
     "required_stage_sources": {f"A{i}": f"git://stage/{i}" for i in range(1, 10)},
     "source_readback": {"stage_git_blobs": {f"A{i}": "a" * 40 for i in range(1, 10)}},
 }
@@ -19,11 +22,11 @@ B = {
 
 def packet():
     return {
-        "execution": {"execution_id": E, "operation_code": "EJECUCION_PERFIL_LF", "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF", "request_sha256": H, "status": "COMPLETED"},
-        "router_handoff": {"router": "ACT-0001", "request_sha256": H, "authorization_fingerprint_sha256": H, "authorization_receipt_ref": "router-authorization://" + H},
+        "execution": {"execution_id": E, "operation_code": "EJECUCION_PERFIL_LF", "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF", "request_sha256": H, "status": "COMPLETED", "business": "LF"},
+        "router_handoff": {"router": "ACT-0001", "business": "LF", "request_sha256": H, "authorization_fingerprint_sha256": H, "authorization_receipt_ref": "router-authorization://" + H},
         "operation_step_readback": [{"execution_id": E, "step_id": x, "status": "STEP_PASS_WITH_EVIDENCE", "evidence_ref": ("router-authorization://" + H if x == "router" else "supabase://step/" + x) for x in gate.OP_STEPS],
-        "stage_readback": [{"stage": f"A{i}", "execution_id": E, "request_sha256": H, "source_ref": f"git://stage/{i}", "source_git_blob": "a" * 40, "evidence_origin": "OPERATIONAL_RECORDER", "stage_receipt_ref": f"supabase://stage/{i}", "raw_output_sha256": H} for i in range(1, 10)],
-        "model_readback": {"execution_id": E, "raw_ref": "supabase://raw", "raw_sha256": H},
+        "stage_readback": [{"stage": f"A{i}", "business": "LF", "execution_id": E, "request_sha256": H, "source_ref": f"git://stage/{i}", "source_git_blob": "a" * 40, "evidence_origin": "OPERATIONAL_RECORDER", "stage_receipt_ref": f"supabase://stage/{i}", "raw_output_sha256": H} for i in range(1, 10)],
+        "model_readback": {"business": "LF", "execution_id": E, "raw_ref": "supabase://raw", "raw_sha256": H},
         "independent_semantic_judge_ref": "supabase://judge",
         "currentness_authority_receipt_ref": "supabase://currentness",
         "downstream_readback_ref": "supabase://PG01",
@@ -84,6 +87,47 @@ class AnalysisStageRunPreflightTests(unittest.TestCase):
 
     def test_15_router_step_not_bound_to_receipt(self):
         p=packet(); p["operation_step_readback"][1]["evidence_ref"]="unbound"; self.rejects(p,"ROUTER_STEP_RECEIPT_NOT_BOUND")
+
+
+    def test_16_run_business_missing(self):
+        p=packet(); del p["execution"]["business"]
+        self.rejects(p,"BUSINESS_CONTEXT_MISSING_OR_INVALID")
+
+    def test_17_router_business_mismatch(self):
+        p=packet(); p["router_handoff"]["business"]="SALY"
+        self.rejects(p,"ROUTER_BUSINESS_CONTEXT_MISMATCH")
+
+    def test_18_saly_cannot_use_lf_sources(self):
+        p=packet(); p["execution"]["business"]="SALY"; p["router_handoff"]["business"]="SALY"
+        self.rejects(p,"BUSINESS_AUTHORITY_SCOPE_MISMATCH")
+
+    def test_19_lf_stage_cannot_be_attached_to_saly_context(self):
+        p=packet(); p["stage_readback"][3]["business"]="SALY"
+        self.rejects(p,"A4_BUSINESS_CONTEXT_MISMATCH")
+
+    def test_20_model_readback_must_match_business(self):
+        p=packet(); p["model_readback"]["business"]="SALY"
+        self.rejects(p,"MODEL_RAW_READBACK_MISSING")
+
+    def test_21_wrong_lf_namespace(self):
+        p=packet(); b=dict(B); b["business_source_namespace"]="saly"
+        r=gate.validate_readback(p,b)
+        self.assertEqual(r["status"],"FAIL"); self.assertIn("LF_SOURCE_NAMESPACE_MISMATCH",r["errors"])
+
+    def test_22_copied_lf_candidate_cannot_authorize_saly(self):
+        p=packet(); p["execution"]["business"]="SALY"; p["router_handoff"]["business"]="SALY"
+        for stage in p["stage_readback"]: stage["business"]="SALY"
+        p["model_readback"]["business"]="SALY"
+        b=dict(B); b["business"]="SALY"; b["business_source_namespace"]="saly"
+        r=gate.validate_readback(p,b)
+        self.assertEqual(r["status"],"FAIL")
+        self.assertIn("NON_LF_BUSINESS_SOURCE_NOT_QUALIFIED",r["errors"])
+
+    def test_23_business_binding_missing(self):
+        p=packet(); b=dict(B); del b["business"]
+        r=gate.validate_readback(p,b)
+        self.assertEqual(r["status"],"FAIL")
+        self.assertIn("BUSINESS_SOURCE_BINDING_MISSING",r["errors"])
 
 
 if __name__ == "__main__":
