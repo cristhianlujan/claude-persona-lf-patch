@@ -2,8 +2,8 @@
   "schema": "LF_GPT_NATIVE_WEB001_DRAFT_RAW_V1",
   "status": "SOURCE_BOUND_RAW_DRAFT_CANONICAL_VALIDATION_PENDING",
   "profile_slug": "systemic_root_cause_repair_lf",
-  "profile_source_commit": "5e957945c9918e3a9a057a2ed4cf4a4a9a27ca6c",
-  "candidate_profile_tree_sha256": "b35b70a040d52ce196abfd552ba2f4ba6f3b4f9b5e6ebbc43a10f1691a0dc11c",
+  "profile_source_commit": "779fd6943c1f85d09d34bea00b7d8763c442c382",
+  "candidate_profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
   "case_id": "WEB-001",
   "authorship": "GPT_NATIVE_CHAT_THIS_TURN_HISTORICAL_STRUCTURAL_SCAFFOLD_REUSED_SUBSTANTIVE_CASE_FACTS_REASSESSED",
   "model_cold_run": false,
@@ -2226,7 +2226,7 @@
     "executed": false,
     "valid": null,
     "errors": [],
-    "reason": "Canonical Python runtime_validate.validate has not been run; deterministic source and shape checks are only preliminary."
+    "schema_preflight": "JS subset checked; canonical Python validator remains outstanding"
   },
   "provisional_self_check": {
     "checks": [
@@ -2339,5 +2339,10 @@
       "Official Group2 remains UNMEASURED",
       "Provider-attested model execution not claimed"
     ]
+  },
+  "source_readback": {
+    "proof_run_id": 41156302815,
+    "profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
+    "git_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f"
   }
 }
