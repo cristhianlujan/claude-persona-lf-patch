@@ -137,7 +137,8 @@
       "repair_disposition": "HYBRID",
       "quantitative_decisions": "HYBRID",
       "material_process_graph": "HYBRID",
-      "case_mode": "SEMANTIC"
+      "case_mode": "SEMANTIC",
+      "policy_resolution": "HYBRID"
     },
     "deterministic_materialization": {},
     "generation_limits": {}

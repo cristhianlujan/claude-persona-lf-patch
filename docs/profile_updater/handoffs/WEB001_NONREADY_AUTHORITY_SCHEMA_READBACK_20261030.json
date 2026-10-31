@@ -1,0 +1,61 @@
+{
+  "schema": "LF_WEB001_NONREADY_AUTHORITY_SCHEMA_CORRECTION_READBACK_V1",
+  "status": "CANDIDATE_SCHEMA_CORRECTED_STRUCTURAL_PREFLIGHT_PASS_OPERATIONAL_UNMEASURED",
+  "case_id": "WEB-001",
+  "profile": "systemic_root_cause_repair_lf",
+  "baseline_git_revision": "52c0f68ad243d2a98f959db8f3a935179b5681aa",
+  "candidate_schema_correction_commit": "779fd6943c1f85d09d34bea00b7d8763c442c382",
+  "candidate_git_profile_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f",
+  "candidate_profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
+  "source": "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json",
+  "defect": "V0.3-V0.6 allOf applied evidence_id string and EXISTING_AUTHORITY|DERIVED_PROPOSAL to origin_asset/origin_operation/owner even when status UNRESOLVED. It conflicted with root authority_ref allowing UNKNOWN and evidence_id:null, and with NEEDS_MORE_EVIDENCE.",
+  "fix": "Make strict authority-kind and evidence-id obligations conditional on status=RESOLVED for all three fields. Status=UNRESOLVED retains missing_evidence>=1 in #/$defs/authority_ref, must not infer owner or assign a code.",
+  "evaluated_with": "Pure JS JSON Schema keyword subset, not canonical python jsonschema or runtime_validate",
+  "positive": {
+    "output_status": "NEEDS_MORE_EVIDENCE",
+    "owner_status": "UNRESOLVED",
+    "owner_authority_kind": "UNKNOWN",
+    "owner_evidence_id": null,
+    "before_error_count": 2,
+    "before_errors": [
+      "owner.authority_kind enum",
+      "owner.evidence_id type"
+    ],
+    "after_error_count": 0
+  },
+  "negative": {
+    "mutation": "owner.status = RESOLVED without code,evidence_ref,authority_kind/evidence_id authority",
+    "after_error_count": 6,
+    "negative_rejected": true
+  },
+  "official_coverage": {
+    "run_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41156302815",
+    "verdict": "NO_DEMONSTRATED_IMPROVEMENT",
+    "base_s26_score": "15/15",
+    "candidate_s26_score": "15/15",
+    "regressed_dimensions": [],
+    "case": "WEB-001",
+    "operational_status": "UNMEASURED",
+    "cases_unmeasured": [
+      "WEB-001"
+    ],
+    "improved_checks": [],
+    "regressed_checks": [],
+    "checks_total": 0
+  },
+  "preserved_guards": [
+    "Owner remains UNRESOLVED until an actually applicable canonical rule exists",
+    "No source user-identity or owner inference from SUPER_ADMIN or LF_GOVERNANCE analogy",
+    "Ready SYSTEMIC_REPAIR_SPEC still requires RESOLVED authoritative refs",
+    "No change to runtime, updater execution ledger, policy or SQL"
+  ],
+  "limits": [
+    "Unit regression source-file write for v03_contract_schema_cases was blocked by platform; not registered nor counted as passed.",
+    "Canonical Python schema and producer-depth validator not executed.",
+    "This is not full paired native MODEL execution, independent semantic judge, or Group2 evidence.",
+    "Previously measured candidate tree b35b70... is superseded; no old run may be relabeled as current tree."
+  ],
+  "next": "Execute existing pack validators with positive and adversarial tests; obtain two real exact-tree model RAWs and independent judge; then official Group2 compares 14 checks before merge.",
+  "merge_authorized": false,
+  "production_changed": false
+}

@@ -26,7 +26,7 @@ def check(label, cond, detail=""):
 
 e5 = add_manifest_evidence(e, "EV-ATTEMPT-1")
 good = to_nonready(c, [attempt()])
-check("GAP_CASCADE_COMPLETE_ACCEPTED", runtime_validate.validate(good, e5)["valid"], runtime_validate.validate(good, e5)["errors"][:2])
+check("GAP_ALL_CLASSES_COVERED_WITHOUT_SEARCH_RECORD_REJECTED", "GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD" in codes(runtime_validate.validate(good, e5)))
 
 g = copy.deepcopy(good); g["current_uncertainties"][0].pop("cascade")
 check("GAP_CASCADE_RECORD_REQUIRED", "GAP_CASCADE_RECORD_REQUIRED" in codes(runtime_validate.validate(g, e5)))
@@ -42,7 +42,7 @@ check("GAP_CASCADE_CLASS_CANNOT_BE_BOTH", "GAP_CASCADE_NOT_EXHAUSTED" in codes(r
 
 ALL5 = ["DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"]
 g = copy.deepcopy(good); g["current_uncertainties"][0]["cascade"] = {"classes_tried": ALL5, "classes_without_source": []}
-check("GAP_CASCADE_ALL_SEARCHED_CANNOT_REQUEST_EVIDENCE", "GAP_CASCADE_EXHAUSTED_CLOSE_WITH_SEARCH_RECORD" in codes(runtime_validate.validate(g, e5)))
+check("GAP_CASCADE_ALL_SEARCHED_NEEDS_SEARCH_RECORD", "GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD" in codes(runtime_validate.validate(g, e5)))
 
 e6 = add_manifest_evidence(e, "EV-S1")
 ref = c["implementation_package"]["deliverables"][0]["artifact_ref"]
@@ -53,6 +53,10 @@ rec = [{"class": k, "source": "fuente-" + k, "evidence_id": "EV-S1", "result": "
 ok = copy.deepcopy(inv); ok["campo_nuevo_cualquiera"].update({"search_record": rec, "repair_step_ref": ref})
 r = runtime_validate.validate(ok, e6)
 check("GAP_ABSENCE_WITH_SEARCH_RECORD_AND_REPAIR_STEP_ACCEPTED", r["valid"], r["errors"][:2])
+
+nos = copy.deepcopy(ok); nos["campo_nuevo_cualquiera"]["search_record"] = [dict(x, result="NO_SOURCE_ACCESSIBLE") if x["class"] in ("ANALOGY", "HISTORY") else x for x in rec]
+r = runtime_validate.validate(nos, e6)
+check("GAP_NO_SOURCE_ACCESSIBLE_IS_A_SEARCH_RESULT_ACCEPTED", r["valid"], r["errors"][:2])
 
 bad = copy.deepcopy(ok); bad["campo_nuevo_cualquiera"]["search_record"] = rec[:3]
 check("GAP_SEARCH_RECORD_MUST_COVER_ALL_CLASSES", "GAP_SEARCH_RECORD_NOT_EXHAUSTIVE" in codes(runtime_validate.validate(bad, e6)))

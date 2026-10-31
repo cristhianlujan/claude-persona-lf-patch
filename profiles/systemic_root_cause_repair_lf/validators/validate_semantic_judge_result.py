@@ -13,6 +13,93 @@ import json
 import sys
 from typing import Any
 
+def _validate_n1_n2_audit(result: dict, candidate: Any, manifest: Any, trusted_reader: Any = None) -> list[str]:
+    """N1/N2 source-value integrity; execution receipt enforced in the existing semantic_judge step."""
+    import hashlib
+    # Apply by material input contract, not a frozen profile pack version.
+    if not isinstance(candidate, dict) or not isinstance(candidate.get("current_uncertainties"), list):
+        return []
+    required = {}
+    errors = []
+    for item in candidate.get("current_uncertainties") or []:
+        if not isinstance(item, dict) or item.get("impact") != "DESIGN_BLOCKING":
+            continue
+        c = item.get("cascade")
+        if not isinstance(c, dict) or "catalog_queries" not in c:
+            errors.append("N1_N2_REQUIRED_QUERIES_MISSING")
+            continue
+        uid = item.get("uncertainty_id")
+        if not isinstance(uid, str) or not uid:
+            errors.append("N1_N2_DATUM_ID_MISSING")
+            continue
+        for q in c.get("catalog_queries") or []:
+            if not isinstance(q, dict) or q.get("level") not in ("N1", "N2"):
+                continue
+            key = (uid, q["level"])
+            if key in required:
+                errors.append("N1_N2_QUERY_DUPLICATE")
+            required[key] = q
+    if any({lv for (id_, lv) in required if id_ == item.get("uncertainty_id")} != {"N1", "N2"} for item in (candidate.get("current_uncertainties") or []) if isinstance(item, dict) and item.get("impact") == "DESIGN_BLOCKING"):
+        errors.append("N1_N2_QUALITY_LEVEL_MISSING")
+    if not required:
+        return errors
+    observations = result.get("n1_n2_audit")
+    if not isinstance(observations, list):
+        return errors + ["N1_N2_AUDIT_MISSING"]
+    proofs = {x.get("evidence_id"): x for x in (manifest or {}).get("evidence", [])
+              if isinstance(x, dict) and x.get("state") == "CURRENT"} if isinstance(manifest, dict) else {}
+    seen = set()
+    for a in observations:
+        if not isinstance(a, dict):
+            errors.append("N1_N2_AUDIT_INVALID")
+            continue
+        key = (a.get("datum_id"), a.get("level"))
+        if key in seen or key not in required:
+            errors.append("N1_N2_AUDIT_DUPLICATE_OR_UNEXPECTED")
+            continue
+        seen.add(key)
+        q = required[key]
+        data, eid = q.get("readback"), q.get("evidence_id")
+        proof = proofs.get(eid)
+        if not isinstance(data, dict) or not proof:
+            errors.append("N1_N2_SOURCE_PROOF_MISSING")
+            continue
+        digest = "sha256:" + hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+        # A producer-supplied locator is not independently executed evidence.
+        # The existing trusted caller must supply a real source-reader callback.
+        if not callable(trusted_reader):
+            errors.append("N1_N2_TRUSTED_READER_NOT_WIRED")
+        else:
+            try:
+                observed = trusted_reader(eid, data.get("query"), key[0], key[1])
+            except Exception:
+                observed = None
+            if not isinstance(observed, dict) or any((
+                observed.get("verified") is not True,
+                observed.get("source_locator") != data.get("query"),
+                observed.get("source_digest") != digest,
+                observed.get("datum_id") != key[0],
+                observed.get("level") != key[1],
+                observed.get("candidate_sha256") != result.get("candidate_sha256"),
+                observed.get("independent_source_ref") != a.get("independent_source_ref"),
+                observed.get("row_count") != data.get("row_count"),
+                observed.get("sample_records") != data.get("sample_records"),
+            )):
+                errors.append("N1_N2_INDEPENDENT_READBACK_NOT_PROVEN")
+        if proof.get("digest") != digest or proof.get("source_locator") != data.get("query"):
+            errors.append("N1_N2_SOURCE_DIGEST_MISMATCH")
+        if a.get("evidence_id") != eid or a.get("source_locator") != data.get("query"):
+            errors.append("N1_N2_AUDIT_PROVENANCE_MISMATCH")
+        if any(a.get(k) != data.get(k) for k in ("result_kind", "row_count", "sample_records")):
+            errors.append("N1_N2_AUDIT_VALUE_MISMATCH")
+        if a.get("comparison") != "MATCH" or not a.get("independent_source_ref") or not a.get("independent_observed_at"):
+            errors.append("N1_N2_INDEPENDENT_READBACK_NOT_PROVEN")
+    if seen != set(required):
+        errors.append("N1_N2_AUDIT_INCOMPLETE")
+    if result.get("verdict") == PASS_VERDICT and result.get("n1_n2_verdict") != "PASS":
+        errors.append("N1_N2_PASS_NOT_ISSUED")
+    return errors
+
 REQUIRED_INVARIANTS = {
     "SCOPE_AUTHORITY_INTEGRITY",
     "EVIDENCE_INTEGRITY",
@@ -64,7 +151,7 @@ def _scope_ids(scope_packet: Any) -> set[str]:
     return out
 
 
-def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None) -> dict[str, Any]:
+def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: str | None = None, expected_scope_packet_sha256: str | None = None, candidate: Any = None, evidence_manifest: Any = None, trusted_reader: Any = None) -> dict[str, Any]:
     errors: list[str] = []
     if not isinstance(payload, dict):
         return {"status": "FAIL", "blocking_codes": ["SEMANTIC_JUDGE_RESULT_NOT_OBJECT"]}
@@ -154,6 +241,7 @@ def evaluate(payload: Any, scope_packet: Any = None, expected_candidate_sha256: 
         if payload.get("open_design_decisions_found"):
             errors.append("SEMANTIC_PASS_WITH_OPEN_DESIGN_DECISIONS")
 
+    errors.extend(_validate_n1_n2_audit(payload, candidate, evidence_manifest, trusted_reader))
     return {
         "status": "PASS" if not errors else "FAIL",
         "blocking_codes": sorted(set(errors)),
