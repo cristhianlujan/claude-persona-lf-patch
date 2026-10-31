@@ -1,0 +1,24 @@
+{
+  "solution_ref": "srcr-governed-evolution-a4b04585-20261030",
+  "paths": {
+    "profiles/systemic_root_cause_repair_lf/SKILL.md": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/contracts/dynamic_method_catalog.v1.json": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/contracts/runtime_binding.json": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v05_producer_depth_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v08_gap_cascade_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v09_exhausted_search_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v10_n1_n2_quality_gate_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v11_owner_authority_discovery_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/evals/v12_scoped_policy_resolution_cases.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/judges/systemic_root_cause_semantic_judge.md": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/manifest.json": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/schemas/output.schema.json": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/materialize_quality_receipt.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/producer_depth.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/terminality_gate_v1.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_pack.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_quality_receipt.py": "RUNTIME_TESTING",
+    "profiles/systemic_root_cause_repair_lf/validators/validate_semantic_judge_result.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/srcr-governed-evolution-a4b04585-20261030.json": "CHANGESET_MANIFEST"
+  }
+}
