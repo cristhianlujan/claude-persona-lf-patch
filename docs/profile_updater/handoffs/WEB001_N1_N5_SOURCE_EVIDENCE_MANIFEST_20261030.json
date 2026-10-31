@@ -146,16 +146,27 @@
       "level": "N3",
       "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_REL",
       "state": "CURRENT",
-      "source_locator": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
-      "source_revision": null,
+      "source_locator": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
+      "source_revision": "2026-10-31 02:19:24.173222+00",
       "readback": {
-        "query": "SELECT statement_timestamp() observed_at,id,codigo_activo,relacionado_codigo,relacion_tipo,fuente FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058' ORDER BY id LIMIT 100",
-        "rows": []
+        "source": "public.lf_activo_relaciones",
+        "source_kind": "BASE_TABLE",
+        "query": "SELECT statement_timestamp() AS observed_at, count(*)::int AS matched_relations FROM public.lf_activo_relaciones WHERE codigo_activo='ACT-0058' OR relacionado_codigo='ACT-0058'",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "sample_records": [
+          {
+            "observed_at": "2026-10-31 02:19:24.173222+00",
+            "matched_relations": 0
+          }
+        ],
+        "observed_at": "2026-10-31 02:19:24.173222+00",
+        "snapshot": "SUPABASE_READONLY_20261031_021924Z"
       },
-      "digest": "sha256:0e3d15670b0c37204d15b0876933f5da524f5b70f40b4f1bf6bf0ea9c59f446a",
-      "result_kind": "EMPTY",
-      "row_count": 0,
-      "observed_at": null
+      "digest": "sha256:bd7440841366ec85bf450e8046c8e5433ec8a866d785ba3cb0b35b3499903c53",
+      "result_kind": "ROWS",
+      "row_count": 1,
+      "observed_at": "2026-10-31 02:19:24.173222+00"
     },
     {
       "datum_id": "UNC-OWNER-ACT0058",
@@ -697,6 +708,11 @@
       "proof": "Q0 returned zero rows; separate COUNT query observed zero matches at 2026-10-31 01:32:29.7039+00",
       "scope": "ONLY_ACTIVE_OWNER_ASSET_CUSTOD_SUPER_CODE_PATTERNS",
       "caution": "Not evidence that all owner policies are absent in other registries."
+    },
+    {
+      "fix": "Empty N3 source now has timestamped aggregate query returning matched_relations=0",
+      "evidence_id": "WEB001-UNC-OWNER-ACT0058-N3-OWN_N3_REL",
+      "readback_digest": "sha256:bd7440841366ec85bf450e8046c8e5433ec8a866d785ba3cb0b35b3499903c53"
     }
   ]
 }
