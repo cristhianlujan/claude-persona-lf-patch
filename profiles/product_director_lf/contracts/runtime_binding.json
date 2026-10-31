@@ -1,12 +1,20 @@
 {
-  "schema_version": "PROFILE_RUNTIME_BINDING_V1",
   "profile_slug": "product_director_lf",
   "runtime_schema": {
-    "default": "schemas/product_direction_spec.schema.json"
+    "default": "schemas/product_direction_spec.schema.json",
+    "output_modes": {}
   },
   "canonical_validator": {
     "path": "validators/validate_product_director_output.py",
     "callable": "validate",
     "transport": "STDIN_JSON"
+  },
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF",
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true
   }
 }
