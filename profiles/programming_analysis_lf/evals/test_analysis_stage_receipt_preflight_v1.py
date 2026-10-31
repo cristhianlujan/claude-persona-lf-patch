@@ -19,9 +19,9 @@ B = {
 
 def packet():
     return {
-        "execution": {"execution_id": E, "operation_code": "EJECUCION_PERFIL_LF", "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF", "request_sha256": H},
-        "router_handoff": {"router": "ACT-0001", "execution_id": E, "request_sha256": H, "authorization_receipt_ref": "supabase://router"},
-        "operation_step_readback": [{"execution_id": E, "step_id": x, "status": "STEP_PASS_WITH_EVIDENCE", "evidence_ref": "supabase://step/" + x} for x in gate.OP_STEPS],
+        "execution": {"execution_id": E, "operation_code": "EJECUCION_PERFIL_LF", "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF", "request_sha256": H, "status": "COMPLETED"},
+        "router_handoff": {"router": "ACT-0001", "request_sha256": H, "authorization_fingerprint_sha256": H, "authorization_receipt_ref": "router-authorization://" + H},
+        "operation_step_readback": [{"execution_id": E, "step_id": x, "status": "STEP_PASS_WITH_EVIDENCE", "evidence_ref": ("router-authorization://" + H if x == "router" else "supabase://step/" + x) for x in gate.OP_STEPS],
         "stage_readback": [{"stage": f"A{i}", "execution_id": E, "request_sha256": H, "source_ref": f"git://stage/{i}", "source_git_blob": "a" * 40, "evidence_origin": "OPERATIONAL_RECORDER", "stage_receipt_ref": f"supabase://stage/{i}", "raw_output_sha256": H} for i in range(1, 10)],
         "model_readback": {"execution_id": E, "raw_ref": "supabase://raw", "raw_sha256": H},
         "independent_semantic_judge_ref": "supabase://judge",
@@ -47,7 +47,7 @@ class AnalysisStageRunPreflightTests(unittest.TestCase):
         p=packet(); del p["router_handoff"]; self.rejects(p,"ROUTER_HANDOFF_RECEIPT_MISSING")
 
     def test_03_router_input_drift(self):
-        p=packet(); p["router_handoff"]["request_sha256"]="f"*64; self.rejects(p,"ROUTER_RUN_BINDING_MISMATCH")
+        p=packet(); p["router_handoff"]["request_sha256"]="f"*64; self.rejects(p,"ROUTER_RECEIPT_BINDING_MISMATCH")
 
     def test_04_missing_stage(self):
         p=packet(); p["stage_readback"].pop(); self.rejects(p,"A1_A9_STAGE_READBACK_MISSING_OR_OUT_OF_ORDER")
@@ -78,6 +78,12 @@ class AnalysisStageRunPreflightTests(unittest.TestCase):
 
     def test_13_no_currentness(self):
         p=packet(); del p["currentness_authority_receipt_ref"]; self.rejects(p,"CURRENTNESS_AUTHORITY_RECEIPT_MISSING")
+
+    def test_14_run_not_closed(self):
+        p=packet(); p["execution"]["status"]="IN_PROGRESS"; self.rejects(p,"OPERATION_NOT_TERMINAL")
+
+    def test_15_router_step_not_bound_to_receipt(self):
+        p=packet(); p["operation_step_readback"][1]["evidence_ref"]="unbound"; self.rejects(p,"ROUTER_STEP_RECEIPT_NOT_BOUND")
 
 
 if __name__ == "__main__":
