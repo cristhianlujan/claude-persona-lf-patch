@@ -15,6 +15,9 @@
     "profiles/ui_architect/SKILL.md": "SERVICE_RUNTIME",
     "profiles/gamification_system_architect/SKILL.md": "SERVICE_RUNTIME",
     "docs/profile-execution/ROUTER_ONLY_CHECK11_APPLICABILITY_V1_20261031.md": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/lf-router-only-check11-20261031.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/lf-router-only-check11-20261031.json": "CHANGESET_MANIFEST",
+    "profiles/ui_architect/judges/ui_architect_mini_judge.md": "SERVICE_RUNTIME",
+    "profiles/quality_pack/judges/quality_pack_mini_judge.md": "SERVICE_RUNTIME",
+    "profiles/customer_financial_ux_decisioning/SKILL.md": "SERVICE_RUNTIME"
   }
 }
