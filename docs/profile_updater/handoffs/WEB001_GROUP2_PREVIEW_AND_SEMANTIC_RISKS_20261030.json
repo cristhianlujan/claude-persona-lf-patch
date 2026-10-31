@@ -15,7 +15,7 @@
     "validator_valid": true
   },
   "candidate": {
-    "source": "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-GPTNATIVE-REPLAY-CANDIDATE-20261031.json",
+    "source": "docs/profile_updater/handoffs/WEB001_GPT_NATIVE_CANDIDATE_RUN_UNADMITTED_20261031.json",
     "git_blob_sha": "3714ab5b412cb1e1e807b21a85e23d930219bde7",
     "run_id": "RUN-WEB001-GPTNATIVE-REPLAY-CANDIDATE-20261031",
     "tree": "6ac9063859b13e65c5cdf15b22969b097b859d8053b2af6e4747731bb28b10ac",
@@ -24,7 +24,9 @@
     "model_cold_run": false,
     "previous_scaffold_reused": true,
     "benchmark_admitted": false,
-    "validator_valid": true
+    "validator_valid": true,
+    "not_in_trusted_main": true,
+    "admission_guard": "Quarantined outside skills/profile_creator/operational_cases so main comparator cannot auto-consume."
   },
   "status": "PREVIEW_ONLY_NOT_FULLY_COMPARABLE",
   "checks_total": 14,
@@ -148,7 +150,8 @@
     "Need same literal case input proof for both profile runs. Historical base record mentions case.md and does not preserve exact current literal.",
     "Candidate is same-chat scaffold-assisted draft, not independently cold executed; do not claim provider attestation.",
     "Official Group2 requires trusted main run file with matching hash and source proof; staged candidate in PR is not trusted main.",
-    "Do not register step90 or merge profile PR without official compare EVOLUTION_DEMONSTRATED and semantic sufficiency."
+    "Do not register step90 or merge profile PR without official compare EVOLUTION_DEMONSTRATED and semantic sufficiency.",
+    "Source file stored outside the official RUN glob; any copy into trusted main requires separate independent approval/readback."
   ],
   "approval_state": "NOT_APPROVED_FOR_TRUSTED_MAIN_OR_MERGE",
   "production_changed": false
