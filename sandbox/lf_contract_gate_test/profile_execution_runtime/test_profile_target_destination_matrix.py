@@ -238,6 +238,35 @@ class OfficialLedgerPayloadTest(unittest.TestCase):
         self.assertEqual(receipt["projection"], "PARTIAL_ROWS_NOT_COMPLETE")
         self.assertEqual(receipt["row_count_omitted"]+len(receipt["rows"]), 60)
         self.assertEqual(receipt["approval_effect"], "NONE")
+        # The published budget applies AFTER final counters and digest.
+        serialized = json.dumps(receipt, ensure_ascii=False, separators=(",", ":"))
+        self.assertLessEqual(len(serialized.encode("utf-8")), 1600)
+
+    def test_utf8_receipt_budget_includes_digest_and_metadata(self):
+        report = dict(self.report)
+        report["rows"] = [{**self.report["rows"][0], "control_id": f"OP-{n}",
+                           "destination_profile_step_name": "Investigación Ñandú 🔎" * 10}
+                          for n in range(30)]
+        limit = 1450
+        receipt = self.runner["build_matrix_receipt"](report, "456", max_chars=limit)
+        encoded = json.dumps(receipt, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        self.assertLessEqual(len(encoded), limit)
+        self.assertEqual(receipt["projection"], "PARTIAL_ROWS_NOT_COMPLETE")
+        self.assertEqual(len(receipt["rows"])+receipt["row_count_omitted"], 30)
+        self.assertEqual(receipt["approval_effect"], "NONE")
+        import hashlib
+        digest_input = {k:v for k,v in receipt.items() if k!="receipt_sha256"}
+        digest_bytes = json.dumps(digest_input, sort_keys=True, ensure_ascii=False,
+                                  separators=(",", ":")).encode("utf-8")
+        self.assertEqual(receipt["receipt_sha256"], hashlib.sha256(digest_bytes).hexdigest())
+
+    def test_unbounded_header_fails_closed(self):
+        report = dict(self.report)
+        report["rows"] = []
+        report["binding"] = {**report["binding"], "unexpected": "ñ"*2000}
+        with self.assertRaisesRegex(self.runner["Stop"],
+                                    "PROFILE_MATRIX_RECEIPT_BASE_EXCEEDS_LIMIT"):
+            self.runner["build_matrix_receipt"](report, "456", max_chars=900)
 
     def test_invalid_report_and_proof_ref_rejected(self):
         for bad, proof in (({}, "456"), (self.report, "bogus")):
