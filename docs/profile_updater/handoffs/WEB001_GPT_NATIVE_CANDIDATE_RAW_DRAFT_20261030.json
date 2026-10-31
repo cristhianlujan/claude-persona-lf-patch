@@ -2,8 +2,8 @@
   "schema": "LF_GPT_NATIVE_WEB001_DRAFT_RAW_V1",
   "status": "SOURCE_BOUND_RAW_DRAFT_CANONICAL_VALIDATION_PENDING",
   "profile_slug": "systemic_root_cause_repair_lf",
-  "profile_source_commit": "779fd6943c1f85d09d34bea00b7d8763c442c382",
-  "candidate_profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
+  "profile_source_commit": "f3a922ab54d951da506220703429e2c079843096",
+  "candidate_profile_tree_sha256": "6ac9063859b13e65c5cdf15b22969b097b859d8053b2af6e4747731bb28b10ac",
   "case_id": "WEB-001",
   "authorship": "GPT_NATIVE_CHAT_THIS_TURN_HISTORICAL_STRUCTURAL_SCAFFOLD_REUSED_SUBSTANTIVE_CASE_FACTS_REASSESSED",
   "model_cold_run": false,
@@ -2264,7 +2264,7 @@
     "executed": false,
     "valid": null,
     "errors": [],
-    "reason": "After evidence rebinding canonical Python rerun needed. Independent semantic judge not executed."
+    "note": "Python validator passed raw_output+canonical manifest at source run 41160169385; full envelope changed only for source-tree provenance. Independent semantic review not executed."
   },
   "provisional_self_check": {
     "checks": [
@@ -2379,9 +2379,10 @@
     ]
   },
   "source_readback": {
-    "proof_run_id": 41156302815,
-    "profile_tree_sha256": "409ccf4136764df6a530ca8be503b61b6ec2dafa8c1051928fb30fd4469b7d23",
-    "git_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f"
+    "proof_run_id": 41160540021,
+    "profile_tree_sha256": "6ac9063859b13e65c5cdf15b22969b097b859d8053b2af6e4747731bb28b10ac",
+    "git_tree_sha": "c93d30de86367df4cf4b86935445fe24aae55e0f",
+    "measure_status": "15/15, WEB001 UNMEASURED"
   },
   "runtime_diagnostic": {
     "run_id": 41159686368,
