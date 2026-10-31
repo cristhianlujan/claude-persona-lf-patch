@@ -1,0 +1,9 @@
+{
+  "solution_ref": "PROFILE-STEP70-SEMANTIC-BRIDGE-20261031",
+  "paths": {
+    "docs/profile-execution/EXEC-PROFILE-GATE2-103C8E016D6F6ACABEA975_semantic_judge_v3.json": "RUNTIME_TESTING",
+    "scripts/lf_profile_step70_consume_v3.py": "RUNTIME_TESTING",
+    "tests/test_lf_profile_step70_consume_v3.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-STEP70-SEMANTIC-BRIDGE-20261031.json": "CHANGESET_MANIFEST"
+  }
+}
