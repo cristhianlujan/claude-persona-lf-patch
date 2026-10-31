@@ -89,6 +89,8 @@ on:
       - 'supabase/migrations/*lf_profile_screen_selector_full_catalog_fallback_v1.sql'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_gpt_native_ig949_20261030/raw_output.json'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/test_login_b2b_gpt_chat_raw.py'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/lf_product_director_ig949_chat_raw_record_candidate_20261030.sql'
+      - 'supabase/migrations/20261031004000_lf_profile_product_director_ig949_chat_raw_record_v1.sql'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -151,6 +153,9 @@ jobs:
       - name: Run official Product Director validator on exact RAW and negative evidence
         run: |
           set -euo pipefail
+          cmp -s \
+            sandbox/lf_contract_gate_test/profile_execution_runtime/lf_product_director_ig949_chat_raw_record_candidate_20261030.sql \
+            supabase/migrations/20261031004000_lf_profile_product_director_ig949_chat_raw_record_v1.sql
           python3 sandbox/lf_contract_gate_test/profile_execution_runtime/test_login_b2b_gpt_chat_raw.py
 
   profile-screen-selector-fallback-pg17:
