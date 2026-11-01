@@ -46,6 +46,27 @@ def validate(payload):
     classification = payload.get("classification") or {}
     if not isinstance(classification, dict):
         classification = {}
+    initial_kind = classification.get("initial_intent_kind")
+    initial_class = classification.get("initial_development_class")
+    initial_refs = classification.get("initial_evidence_refs")
+    initial_map = {
+        "CREATE": "NEW_CANDIDATE",
+        "EVOLVE": "EXISTING_EVOLUTION_CANDIDATE",
+        "COMBINE": "MIXED_CANDIDATE",
+        "REPAIR": "REPAIR_HANDOFF",
+        "UNKNOWN": "NEED_MORE_EVIDENCE",
+    }
+    if initial_kind not in initial_map or initial_class != initial_map.get(initial_kind):
+        reject("ANALYSIS_10_1_INITIAL_CLASSIFICATION_MISMATCH", "$.classification")
+    if (not isinstance(initial_refs, list) or not initial_refs
+            or any(not isinstance(x, str) or not x.strip() for x in initial_refs)
+            or len(initial_refs) != len(set(initial_refs))):
+        reject("ANALYSIS_10_1_INTENT_EVIDENCE_MISSING", "$.classification.initial_evidence_refs")
+    if initial_kind in ("REPAIR", "UNKNOWN"):
+        if any(s.get("readiness_candidate") == READY for s in scopes):
+            reject("ANALYSIS_10_1_UNRESOLVED_OR_REPAIR_FALSE_READY")
+        if payload.get("package_readiness_candidate") in ("READY_CANDIDATE", "PARTIAL_READY_CANDIDATE"):
+            reject("ANALYSIS_10_1_UNRESOLVED_OR_REPAIR_FALSE_READY")
     unknown_state = (classification.get("authority_state") == "UNKNOWN" or
                      classification.get("implementation_state") == "UNKNOWN")
     if unknown_state and classification.get("depth") == "L1":
