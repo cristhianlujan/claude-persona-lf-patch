@@ -135,6 +135,52 @@ class GovernedRunnerSidecarTest(unittest.TestCase):
         self.assertEqual(report["approval_effect"], "NONE")
         self.assertEqual(report["rows"][0]["original_run_ids"], ["base-run"])
 
+    def test_trusted_raw_refs_are_bound_without_false_input_certification(self):
+        from unittest.mock import patch
+        runner, cases, runs, base, candidate, proof = self.payload()
+        runs[0].update(_trusted_run_file="product_director_lf/runs/base.json",
+                       _trusted_run_file_sha256="1"*64,
+                       input_literal="SAME CASE", output_sha256="a"*64)
+        runs[1].update(_trusted_run_file="product_director_lf/runs/evolved.json",
+                       _trusted_run_file_sha256="2"*64,
+                       input_literal="SAME CASE", output_sha256="b"*64)
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {
+            "gather_operational": lambda *_: (cases, runs, base, candidate, [])}):
+            report = func("product_director_lf", ROOT / "profiles/product_director_lf", proof)
+        row = report["rows"][0]
+        self.assertEqual(row["original_raw_refs"][0]["raw_file_ref"],
+                         "skills/profile_creator/operational_cases/product_director_lf/runs/base.json")
+        self.assertEqual(row["evolved_raw_refs"][0]["raw_file_sha256"], "2"*64)
+        self.assertEqual(row["original_raw_refs"][0]["output_sha256"], "a"*64)
+        self.assertEqual(row["case_input_status"], "RECORDED_LITERAL_MATCH_ONLY")
+        self.assertEqual(row["case_input_sha256"],
+                         runner["OPERATIONAL"]["canonical_sha256"]("SAME CASE"))
+        self.assertEqual(row["raw_provenance_status"],
+                         "TRUSTED_FILE_HASH_ONLY_NO_RUNTIME_ATTESTATION")
+        receipt = runner["build_matrix_receipt"](report, "456")
+        self.assertEqual(receipt["rows"][0]["case_input_status"],
+                         "RECORDED_LITERAL_MATCH_ONLY")
+        self.assertEqual(receipt["rows"][0]["original_raw_refs"],
+                         row["original_raw_refs"])
+        runs[1]["input_literal"] = "DIFFERENT CASE"
+        with patch.dict(func.__globals__, {
+            "gather_operational": lambda *_: (cases, runs, base, candidate, [])}):
+            mismatch = func("product_director_lf", ROOT / "profiles/product_director_lf", proof)
+        self.assertEqual(mismatch["rows"][0]["case_input_status"], "NOT_VERIFIED")
+        self.assertIsNone(mismatch["rows"][0]["case_input_sha256"])
+
+    def test_missing_trusted_run_hash_is_explicit(self):
+        from unittest.mock import patch
+        runner, cases, runs, base, candidate, proof = self.payload()
+        func = runner["project_operational_matrix"]
+        with patch.dict(func.__globals__, {
+            "gather_operational": lambda *_: (cases, runs, base, candidate, [])}):
+            row = func("product_director_lf", ROOT / "profiles/product_director_lf", proof)["rows"][0]
+        self.assertEqual(row["raw_provenance_status"], "MISSING_TRUSTED_FILE_EVIDENCE")
+        self.assertEqual(row["case_input_status"], "NOT_VERIFIED")
+        self.assertIsNone(row["original_raw_refs"][0]["raw_file_sha256"])
+
     def test_mismatched_official_proof_is_not_verified(self):
         from unittest.mock import patch
         runner, cases, runs, base, candidate, proof = self.payload()
