@@ -165,6 +165,68 @@ Deno.test("continuation: independent semantic PASS records 70 and deterministic 
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),true);
   eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_report_v1")),true);
 });
+Deno.test("continuation: owner-authorized current-context V3 PASS remains honestly non-independent",async()=>{
+  const n=network();
+  const receipt=semanticReceipt() as Record<string,unknown>;
+  const v3=receipt.judge_v3_evidence as Record<string,unknown>;
+  for(const item of [receipt,v3]){
+    item.verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+    item.review_mode="CURRENT_CONTEXT_REVIEW";
+    item.producer_independence_proven=false;
+    item.reviewer_is_producer=true;
+    item.model_call_count=0;
+  }
+  (receipt.result as Record<string,unknown>).verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/current-context-review.json",
+  },config,n.fetchFn,sha);
+  const body=await out.json();
+  eq(out.status,200);eq(body.phase,"PROFILE_EXECUTION_COMPLETED");
+  const call=n.calls.find(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1"));
+  if(!call)throw Error("CURRENT_CONTEXT_SEMANTIC_NOT_RECORDED");
+  eq((call.body?.p_semantic_judge_result as Record<string,unknown>).producer_independence_proven,false);
+});
+Deno.test("continuation: current-context review cannot falsely claim independence",async()=>{
+  const n=network();
+  const receipt=semanticReceipt() as Record<string,unknown>;
+  const v3=receipt.judge_v3_evidence as Record<string,unknown>;
+  for(const item of [receipt,v3]){
+    item.verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+    item.review_mode="CURRENT_CONTEXT_REVIEW";
+    item.model_call_count=0;
+    item.reviewer_is_producer=true;
+  }
+  (receipt.result as Record<string,unknown>).verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/current-context-review.json",
+  },config,n.fetchFn,sha);
+  eq(out.status,409);eq((await out.json()).code,"PROFILE_NATIVE_SEMANTIC_RECEIPT_NOT_PASS");
+  eq(n.calls.some(c=>c.url.endsWith("/lf_profile_native_bridge_record_semantic_v1")),false);
+});
+Deno.test("continuation: current-context cannot omit counterfactual evidence",async()=>{
+  const n=network();
+  const receipt=semanticReceipt() as Record<string,unknown>;
+  const v3=receipt.judge_v3_evidence as Record<string,unknown>;
+  for(const item of [receipt,v3]){
+    item.verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+    item.review_mode="CURRENT_CONTEXT_REVIEW";
+    item.producer_independence_proven=false;
+    item.reviewer_is_producer=true;
+    item.model_call_count=0;
+  }
+  (receipt.result as Record<string,unknown>).verdict="PASS_REVIEWED_CURRENT_CONTEXT";
+  v3.counterfactual_result=null;
+  const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    execution_id:id,source_revision:sha,source_digest:digest,
+    semantic_judge_result:receipt,
+    semantic_evidence_ref:"actions://test/lf/runs/100/artifact/current-context-review.json",
+  },config,n.fetchFn,sha);
+  eq(out.status,409);eq((await out.json()).code,"PROFILE_NATIVE_SEMANTIC_V3_EVIDENCE_INVALID");
+});
 Deno.test("continuation: Router-only N/A is not a fabricated comparison PASS",async()=>{
   const n=network();const receipt=semanticReceipt() as Record<string,unknown>;
   const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{

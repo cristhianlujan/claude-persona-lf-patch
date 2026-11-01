@@ -95,6 +95,22 @@ def governed_request():
     if not isinstance(raw, str) or len(raw) > 60000:
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
+    # The selected profile may BEGIN through this EXISTING governed workflow.
+    # Router never dispatches this. Carry only validated context, never a
+    # Supabase service_role secret or any credential in the issue payload.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_BEGIN_REQUEST_V1":
+        if set(data) != {"schema_version", "router_context", "executor_mode"}:
+            raise ValueError("PROFILE_NATIVE_BEGIN_SCHEMA_INVALID")
+        context = data.get("router_context")
+        mode = data.get("executor_mode")
+        if (not isinstance(context, dict)
+            or context.get("schema_version") != "LF_ROUTER_EXECUTION_PIPELINE_V1"
+            or context.get("status") != "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"
+            or context.get("transport_mode") != "CONTEXT_TRANSPORT"
+            or mode not in {"GPT_NATIVE", "CLAUDE_NATIVE"}
+            or len(json.dumps(context)) > 55000):
+            raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
+        return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
@@ -239,7 +255,14 @@ SEMANTIC_CHECKS = (
 
 
 def validate_independent_semantic_review(review):
-    if review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+    mode = review.get("review_mode", "INDEPENDENT_SEMANTIC")
+    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODE_INVALID")
+    expected_verdict = (
+        "PASS_REVIEWED_CURRENT_CONTEXT" if mode == "CURRENT_CONTEXT_REVIEW"
+        else "PASS_INDEPENDENT_SEMANTIC"
+    )
+    if review.get("verdict") != expected_verdict:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_NOT_PASS")
     checks = review.get("decision_checks")
     if not isinstance(checks, dict) or set(checks) != set(SEMANTIC_CHECKS):
@@ -268,10 +291,17 @@ def validate_independent_semantic_review(review):
                 raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
         elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
-    if review.get("producer_independence_proven") is not True:
-        raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
-    if review.get("model_call_count") != 1:
-        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
+    if mode == "CURRENT_CONTEXT_REVIEW":
+        # Owner-authorized current-context review is NOT an independent judge call.
+        if (review.get("producer_independence_proven") is not False
+                or review.get("reviewer_is_producer") is not True
+                or review.get("model_call_count") != 0):
+            raise ValueError("PROFILE_CURRENT_CONTEXT_REVIEW_PROVENANCE_INVALID")
+    else:
+        if review.get("producer_independence_proven") is not True:
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
+        if review.get("model_call_count") != 1:
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
     if review.get("unsupported_claims") != [] or review.get("blocking_codes") != []:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_BLOCKED")
     if not isinstance(review.get("source_refs"), list) or not review["source_refs"]:
@@ -286,16 +316,21 @@ def validate_independent_semantic_review(review):
 
 
 def build_semantic_receipt(review):
+    current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
+    verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
+               else "PASS_INDEPENDENT_SEMANTIC")
     return {
         "status": "PASS",
-        "verdict": "PASS_INDEPENDENT_SEMANTIC",
+        "verdict": verdict,
         "validator_status": "PASS",
-        "producer_independence_proven": True,
-        "model_call_count": 1,
+        "review_mode": "CURRENT_CONTEXT_REVIEW" if current_context else "INDEPENDENT_SEMANTIC",
+        "reviewer_is_producer": bool(current_context),
+        "producer_independence_proven": not current_context,
+        "model_call_count": 0 if current_context else 1,
         "candidate_sha256": review["candidate_sha256"],
         "scope_packet_sha256": review["scope_packet_sha256"],
         "result": {
-            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "verdict": verdict,
             "candidate_sha256": review["candidate_sha256"],
             "scope_packet_sha256": review["scope_packet_sha256"],
             "unsupported_claims": [],
@@ -306,10 +341,38 @@ def build_semantic_receipt(review):
 
 
 def main():
-    execution_id, raw_draft, profile_output, semantic_review = governed_request()
+    request = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "BEGIN":
+        # Profile invokes its own existing governed operation. Server-side
+        # Edge authenticates OIDC and applies service_role at the canonical
+        # writer. No credential is serialized to Router/profile context.
+        code, started = call_json(EDGE_URL, {
+            "action": "profile_native_begin_from_context_v1",
+            "context": request["router_context"],
+            "executor_mode": request["executor_mode"],
+        }, headers)
+        result = started.get("result") if isinstance(started.get("result"), dict) else {}
+        execution_id = result.get("execution_id")
+        if (code != 200 or started.get("outcome") != "NATIVE_EXECUTION_READY"
+            or result.get("status") != "NATIVE_EXECUTION_READY"
+            or not isinstance(execution_id, str)
+            or not execution_id.startswith("EXEC-PROFILE-GATE2-")):
+            print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",
+                "http_status":code,"code":started.get("code"),
+                "outcome":started.get("outcome")}))
+            return 1
+        raw_draft = ""
+        profile_output = None
+        semantic_review = None
+        print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",
+            "execution_id":execution_id,
+            "profile_code":result.get("profile_code"),
+            "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    else:
+        execution_id, raw_draft, profile_output, semantic_review = request
 
     code, source = call_json(EDGE_URL, {
         "action": "profile_native_source_bind_v1",
@@ -414,7 +477,7 @@ def main():
         if semantic_review is None:
             print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
             return 0
-        if semantic_review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
             from lf_semantic_fail_feedback import persist_feedback
             try:
                 feedback = persist_feedback(

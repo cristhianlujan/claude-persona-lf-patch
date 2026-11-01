@@ -24,138 +24,111 @@ const claims: JwtPayload = {
   workflow: "LF Profiles Governance Caller", event_name: "push",
   run_id: "9004", workflow_sha: "a".repeat(40),
 };
-const context = {
-  schema_version: "LF_ROUTER_EXECUTION_PIPELINE_V1",
-  status: "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
-  transport_mode: "CONTEXT_TRANSPORT",
-  stage1_payload: { canal_candidato: "PRODUCTO", negocio_codigo: "LF",
-    alcance: { target_type: "PANTALLA" } },
-  after_selection_result: { gate2_request: { schema_version: "LF_ROUTER_PROFILE_GATE2_REQUEST_V1" } },
-  gate2_derivation: { gate2_result: { decision: "RESOLVED" } },
-};
-const handoff = {
-  schema_version: "LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
-  operation_code: "EJECUCION_PERFIL_LF", effect_authority: false,
-  profile_code: "PERFIL-UX-DESIGN-LF",
-  request_sha256: "a".repeat(64), fingerprint_sha256: "b".repeat(64),
-  channel: "PRODUCTO", business: "LF",
-};
-function check(actual: unknown, expected: unknown, label: string) {
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error(label + ": actual=" + JSON.stringify(actual) + " expected=" + JSON.stringify(expected));
+
+// The original Router Stage 06/07 path was not an authorized profile launcher.
+// These actions must not re-enter Router nor invoke any profile or Supabase RPC.
+Deno.test("retired Router-to-profile actions never call any backend", async () => {
+  for (const action of ["router_profile_admit_context_v2", "profile_execution_begin_from_router_context_v1"]) {
+    for (const identity of [claims, {
+      ...claims, ref:"refs/heads/main",
+      workflow_ref:REPO+"/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main",
+      event_name:"issues",environment:"lf-edge-deploy",
+    }]) {
+      let backendCalls = 0;
+      const handler = createHandler({
+        getEnv: (name: string) => config[name],
+        jwks:{mock:true},jwtVerifyFn:async()=>({payload:identity}),
+        fetchFn:async()=>{backendCalls++;throw new Error("BACKEND_CALL_FORBIDDEN");},
+      });
+      const resp = await handler(new Request("https://caller.test",{
+        method:"POST",
+        headers:{authorization:"Bearer mock-token","content-type":"application/json"},
+        body:JSON.stringify({action,context:{schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+          status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",transport_mode:"CONTEXT_TRANSPORT"},
+          executor_mode:"GPT_NATIVE"}),
+      }));
+      const body=await resp.json();
+      if (resp.status!==410 || body.code!=="ROUTER_PROFILE_DIRECT_OR_INTERMEDIATE_CALL_RETIRED" ||
+          backendCalls!==0) throw new Error("ROUTER_RETIRED_ACTION_LEAK:"+JSON.stringify({status:resp.status,body,backendCalls}));
+    }
   }
-}
-function rig(opts: { admitWrite?: boolean; assetPath?: string; badIdentity?: boolean; nativeIdentity?: boolean } = {}) {
-  const calls: { url: string; body?: Record<string, unknown> }[] = [];
-  const fakeClaims: JwtPayload = opts.badIdentity
-    ? { ...claims, workflow_ref: config.LF_CALLER_RECURATION_DISPATCH_WORKFLOW_REF,
-        ref: "refs/heads/main", job_workflow_ref: config.LF_CALLER_RECURATION_WORKFLOW_REF,
-        event_name: "workflow_dispatch" }
-    : opts.nativeIdentity
-      ? { ...claims, ref: "refs/heads/main",
-          workflow_ref: REPO + "/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main",
-          event_name: "issues", environment: "lf-edge-deploy" }
-      : claims;
-  const handler = createHandler({
-    getEnv: (name: string) => config[name],
-    jwks: {mock:true},
-    jwtVerifyFn: async () => ({payload: fakeClaims}),
-    fetchFn: async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
-      const url = String(input);
-      const body = typeof init?.body === "string" && init.body ? JSON.parse(init.body) : undefined;
-      calls.push({url,body});
-      if (url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")) {
+});
+
+const nativeClaims: JwtPayload = {
+  ...claims, ref:"refs/heads/main",
+  workflow_ref:REPO+"/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main",
+  event_name:"issues", environment:"lf-edge-deploy",
+};
+const nativeContext = {
+  schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+  status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+  transport_mode:"CONTEXT_TRANSPORT",
+  stage1_payload:{canal_candidato:"PRODUCTO",negocio_codigo:"LF",alcance:{target_type:"PANTALLA"}},
+};
+Deno.test("profile-owned BEGIN applies service_role only inside Edge canonical writer", async () => {
+  const calls:{url:string,body:Record<string,unknown>,headers:Record<string,string>}[]=[];
+  const h = createHandler({getEnv:(n:string)=>config[n], jwks:{mock:true},
+    jwtVerifyFn:async()=>({payload:nativeClaims}),
+    fetchFn:async(input: string|URL|Request, init?:RequestInit)=>{
+      const url=String(input);
+      const body=(typeof init?.body==="string" && init.body?JSON.parse(init.body):{}) as Record<string,unknown>;
+      const headers=(init?.headers||{}) as Record<string,string>;
+      calls.push({url,body,headers});
+      if(url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"))
         return new Response(JSON.stringify({
-          status: "PROFILE_HANDOFF_READY", executor_mode: body?.p_executor_mode,
-          profile_code: handoff.profile_code, write_performed: opts.admitWrite === true,
-          execution_id: null, router_profile_handoff: handoff,
-          next_action: "EJECUCION_PERFIL_LF_BEGIN_REQUIRED",
-        }), {status:200});
-      }
-      if (url.includes("/rest/v1/lf_activos?codigo_activo=eq.")) {
-        return new Response(JSON.stringify([{
-          codigo_activo: handoff.profile_code,
-          metadata: {entrypoint_path: opts.assetPath ?? "profiles/ux_design_lf/SKILL.md"},
-          ruta_esperada: "profiles/ux_design_lf",
-        }]),{status:200});
-      }
-      if (url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")) {
+          status:"PROFILE_HANDOFF_READY",write_performed:false,execution_id:null,
+          executor_mode:"GPT_NATIVE",
+          router_profile_handoff:{
+            schema_version:"LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+            operation_code:"EJECUCION_PERFIL_LF",effect_authority:false,
+            profile_code:"PERFIL-UX-DESIGN-LF",
+            request_sha256:"a".repeat(64),fingerprint_sha256:"b".repeat(64),
+            channel:"PRODUCTO",business:"LF",
+          }
+        }),{status:200});
+      if(url.includes("/rest/v1/lf_activos?codigo_activo=eq."))
+        return new Response(JSON.stringify([{codigo_activo:"PERFIL-UX-DESIGN-LF",
+          metadata:{entrypoint_path:"profiles/ux_design_lf/SKILL.md"},
+          ruta_esperada:"profiles/ux_design_lf"}]),{status:200});
+      if(url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"))
         return new Response(JSON.stringify({
-          status: "READY", init_materialized: true, execution_id: body?.p_execution_id,
-          next_step: "profile_resolve",
-        }), {status:200});
-      }
-      return new Response(JSON.stringify({code:"UNEXPECTED_CALL"}),{status:404});
+          status:"READY",init_materialized:true,
+          execution_id:"EXEC-PROFILE-GATE2-"+"A".repeat(24),
+        }),{status:200});
+      throw new Error("UNEXPECTED_BACKEND_CALL:"+url);
     },
   });
-  async function invoke(action: string, mode = "GPT_NATIVE") {
-    const response = await handler(new Request("https://caller.test",{
-      method:"POST",
-      headers:{authorization:"Bearer mock-token","content-type":"application/json"},
-      body:JSON.stringify({action,context,executor_mode:mode}),
-    }));
-    return {status:response.status,payload:await response.json()};
-  }
-  return {calls,invoke};
-}
-
-Deno.test("Stage 06 read-only: returns verified handoff and does not touch execution writer",async()=>{
-  const h=rig();
-  const x=await h.invoke("router_profile_admit_context_v2");
-  check(x.status,200,"ADMIT_HTTP");
-  check(x.payload.outcome,"PROFILE_HANDOFF_READY","ADMIT_STATUS");
-  check(x.payload.result.write_performed,false,"ADMIT_WRITE");
-  check(x.payload.result.execution_id,null,"ADMIT_EXECUTION_ID");
-  check(h.calls.length,1,"ONLY_ADMISSION_RPC");
-  check(h.calls[0].url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"),true,"ADMIT_RPC");
+  const response=await h(new Request("https://caller.test",{
+    method:"POST",headers:{authorization:"Bearer test-oidc","content-type":"application/json"},
+    body:JSON.stringify({action:"profile_native_begin_from_context_v1",
+      context:nativeContext,executor_mode:"GPT_NATIVE"}),
+  }));
+  const result=await response.json();
+  if(response.status!==200 || result.outcome!=="NATIVE_EXECUTION_READY" ||
+     result.result?.execution_id!=="EXEC-PROFILE-GATE2-"+"A".repeat(24))
+    throw new Error("PROFILE_BEGIN_NOT_READY:"+JSON.stringify(result));
+  if(calls.length!==3)throw new Error("EXPECTED_THREE_CANONICAL_CALLS");
+  if(!calls[0].url.endsWith("/rpc/lf_router_pipeline_context_profile_admit_v2")||
+     !calls[1].url.includes("/rest/v1/lf_activos?")||
+     !calls[2].url.endsWith("/rpc/lf_profile_execution_begin_from_handoff_v1"))
+    throw new Error("WRONG_CALL_SEQUENCE");
+  if(calls[2].headers.authorization!=="Bearer service-role-test-key")
+    throw new Error("SERVICE_ROLE_NOT_APPLIED_AT_WRITER");
+  if(JSON.stringify(calls[2].body).includes("service-role-test-key")||
+     JSON.stringify(result).includes("service-role-test-key"))
+    throw new Error("SERVICE_ROLE_LEAK_IN_PAYLOAD_OR_RESPONSE");
 });
-
-Deno.test("Stage 07 execution writer: preserves exact handoff fingerprint and canonical source",async()=>{
-  const h=rig();
-  const x=await h.invoke("profile_execution_begin_from_router_context_v1");
-  check(x.status,200,"BEGIN_HTTP");
-  check(x.payload.outcome,"NATIVE_EXECUTION_READY","BEGIN_OUTCOME");
-  check(h.calls.length,3,"EXACT_THREE_CALLS");
-  check(h.calls[0].url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"),true,"PREWRITE_ADMISSION");
-  check(h.calls[2].url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"),true,"PROFILE_ONLY_WRITER");
-  check((h.calls[2].body?.p_handoff as Record<string,unknown>).fingerprint_sha256,handoff.fingerprint_sha256,"SAME_HANDOFF");
-  check(h.calls[2].body?.p_target_path,"profiles/ux_design_lf/SKILL.md","CANONICAL_TARGET");
-  check(h.calls[2].body?.p_target_repo,REPO,"CANONICAL_REPO");
-  check(x.payload.result.execution_id,"EXEC-PROFILE-GATE2-"+"A".repeat(24),"EXECUTION_ID");
-});
-
-Deno.test("Stages 06/07 fail closed on invalid OIDC, REMOTE_API, bad admission and unsafe profile path",async()=>{
-  for(const c of [
-    {opts:{badIdentity:true},mode:"GPT_NATIVE",status:403},
-    {opts:{},mode:"REMOTE_API",status:400},
-    {opts:{admitWrite:true},mode:"GPT_NATIVE",status:409},
-    {opts:{assetPath:"../private/SKILL.md"},mode:"GPT_NATIVE",status:409},
-  ]) {
-    const h=rig(c.opts);
-    const x=await h.invoke("profile_execution_begin_from_router_context_v1",c.mode);
-    check(x.status,c.status,"NEGATIVE_HTTP");
-    check(h.calls.some(v=>v.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")),false,"NO_WRITE_ON_BLOCK");
-  }
-});
-
-Deno.test("Stage07 exact MAIN workflow issue OIDC invokes canonical writer after Stage06 handoff",async()=>{
-  const h=rig({nativeIdentity:true});
-  const admit=await h.invoke("router_profile_admit_context_v2");
-  check(admit.status,200,"NATIVE_ISSUE_STAGE06_HTTP");
-  check(admit.payload.outcome,"PROFILE_HANDOFF_READY","NATIVE_ISSUE_STAGE06_RESULT");
-  check(h.calls.length,1,"NATIVE_ISSUE_STAGE06_READ_ONLY");
-
-  const result=await h.invoke("profile_execution_begin_from_router_context_v1");
-  check(result.status,200,"NATIVE_ISSUE_STAGE07_HTTP");
-  check(result.payload.outcome,"NATIVE_EXECUTION_READY","NATIVE_ISSUE_STAGE07_RESULT");
-  check(h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")).length,1,
-    "EXACTLY_ONE_CANONICAL_WRITER");
-});
-
-Deno.test("Stage07 native OIDC remains closed for non-profile actions",async()=>{
-  const h=rig({nativeIdentity:true});
-  const x=await h.invoke("profile_creator_init_v1");
-  check(x.status,403,"NATIVE_ISSUE_CREATOR_DENIED");
-  check(x.payload.code,"NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH","NATIVE_ISSUE_SCOPE_GUARD");
-  check(h.calls.length,0,"NO_BACKEND_CALL_ON_UNRELATED_ACTION");
+Deno.test("profile begin denies non-native OIDC before any backend call", async()=>{
+  let calls=0;
+  const h=createHandler({getEnv:(n:string)=>config[n],jwks:{mock:true},
+    jwtVerifyFn:async()=>({payload:claims}),
+    fetchFn:async()=>{calls++;throw new Error("SHOULD_NOT_CALL");}});
+  const response=await h(new Request("https://caller.test",{
+    method:"POST",headers:{authorization:"Bearer test-oidc","content-type":"application/json"},
+    body:JSON.stringify({action:"profile_native_begin_from_context_v1",
+      context:nativeContext,executor_mode:"GPT_NATIVE"}),
+  }));
+  const result=await response.json();
+  if(response.status!==403 || result.code!=="PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"||calls!==0)
+    throw new Error("UNAUTHENTICATED_PROFILE_BEGIN"+JSON.stringify(result));
 });

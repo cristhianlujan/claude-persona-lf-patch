@@ -245,6 +245,16 @@ Before Composer, image generation, a tool payload, or a final artifact may use t
 7. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
 8. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
 
+### Certification for governed `EJECUCION_PERFIL_LF` — mandatory Supabase readback
+
+For the existing `ACT-0001 -> Perfil` native governed route, **the operational certification source is the persisted Supabase readback for the same `execution_id`**, not an additional external certificate or a chat assertion. Apply [the canonical step 70/80 accreditation procedure](docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md) and [Profiles LF runbook](ops/runbook-profiles-lf.md):
+
+1. After a genuine independent V3 judge result is submitted through the **existing** `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` / `lf-profile-resume-governed` transport, query `public.lf_operation_execution_steps` in Supabase. For step 70 require `semantic_judge = STEP_PASS_WITH_EVIDENCE`, the governed `actions://` receipt, canonical recorder, `trust_validation.valid=true` and candidate/scope hashes matching persisted steps 50/40. Check V3 scope and Router-only check 11 applicability; do not use a self-verdict or a historical receipt.
+2. For terminal certification require `report_output = STEP_PASS_WITH_EVIDENCE` (80), `lf_operation_execution.status=COMPLETED`, exactly 11 clean steps and the existing terminal authority receipt `READY`. Without these readbacks report `IN_PROGRESS / NOT_CERTIFIED`, even if a workflow says SUCCESS.
+3. Do **not** demand a second proof outside this governed route for **operational persistence/closure**. `model_call_count` and independence fields in the stored V3 receipt are declarations accepted by the gate, not a standalone provider HTTP log. This does not waive a genuine independent review or weaken semantic fail-closed checks. Do not change Router responsibility, invoke a second judge or manufacture a PASS.
+
+This rule is an **operational reading requirement**, not a new RPC, controller, model route, database permission, gate or mutation.
+
 ## Zero-cost runtime policy
 
 Operational profile execution is `ZERO_COST_ONLY`.

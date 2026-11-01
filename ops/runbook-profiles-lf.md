@@ -91,6 +91,35 @@ Allowed stop classifications:
 - `EXECUTION_LIMIT_REACHED` only with an observed runtime/tool limit signal
 - `PARTIAL_RUN` when real progress was made and the execution window ended before remaining safe work could be completed
 
+## 7.1. Canonical certification — profile semantic judge (70) and report (80)
+
+**Required for `EJECUCION_PERFIL_LF` closures, even when GitHub Actions reports SUCCESS.** Apply [the approved Supabase accreditation procedure](../docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md). Do not invent a separate reviewer, transport, gate or external certification receipt. The accepted operational certificate is the **live readback in Supabase**, for the same `execution_id` and the already registered V3 result.
+
+1. Check that the producer RAW and deterministic validation are already persisted at steps `execute_profile` (50) and `output_validate` (60) with `STEP_PASS_WITH_EVIDENCE`.
+2. Read `public.lf_operation_execution_steps` where `step_id='semantic_judge'` (70). Require `STEP_PASS_WITH_EVIDENCE`, `evidence_ref` pointing to the governed Actions artifact, `recorded_by_rpc=lf_record_profile_execution_step_v1`, `trust_validation.valid=true`, and `candidate_sha256` / `scope_packet_sha256` equal to the original hashes in steps 50/40. Inspect the V3 receipt, including the 12 checks and the `NOT_TESTED/not_applicable/ROUTER_ONLY` exception for check 11 when appropriate.
+3. Read step `report_output` (80) and the run. Require step 80 `STEP_PASS_WITH_EVIDENCE`, run `COMPLETED`, **11/11 clean steps** and the existing terminal authority receipt `READY`. If any is absent, keep `IN_PROGRESS / NOT_CERTIFIED` and continue only through the governed procedure. Do not ask for an authorization already granted.
+4. Report separately (a) **verified operational registration/closure** versus (b) a claimed underlying model/provider call. The accepted `model_call_count=1` / `producer_independence_proven=true` fields in the V3 receipt are part of the governed record; Supabase is not a network trace to the model provider. Do not require an extra external log to certify operational closure, and do not fabricate a new V3 result.
+
+Read-only reference query, replace `<EXECUTION_ID>` with the run actually verified:
+
+```sql
+select e.execution_id, e.status as run_status, s.step_order, s.step_id,
+       s.status as step_status, s.evidence_ref,
+       s.evidence_payload->>'recorded_by_rpc' as recorded_by_rpc,
+       s.evidence_payload#>>'{trust_validation,valid}' as trust_valid,
+       s.evidence_payload#>>'{semantic_judge_result,candidate_sha256}' as candidate_sha256,
+       s.evidence_payload#>>'{semantic_judge_result,scope_packet_sha256}' as scope_packet_sha256,
+       s.evidence_payload#>>'{semantic_judge_result,model_call_count}' as declared_model_call_count,
+       s.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}' as declared_independence
+from public.lf_operation_execution e
+join public.lf_operation_execution_steps s using (execution_id)
+where e.execution_id = '<EXECUTION_ID>'
+  and s.step_id in ('semantic_judge', 'report_output')
+order by s.step_order;
+```
+
+Read this together with steps 40, 50 and all 11 step statuses; check the `lf_profile_execution_terminal_authority_receipt_v1` result through its authorized read path. Failing EKB `PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001` remains independent of a successful single-run closeout.
+
 ## 8. Report
 Persist and show:
 `FIN — <hora Lima> — duración real — SUPABASE=<OK|SQL_ERROR|CONNECTOR_DENIED|PROVIDER_BLOCKED>`
