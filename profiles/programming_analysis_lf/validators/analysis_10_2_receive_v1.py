@@ -61,20 +61,30 @@ def receive(previous, run, transfer, sources):
         if (sources.get("business") != "LF"
                 or sources.get("source_namespace") != "lf_ops"):
             errors.append("CROSS_BUSINESS_SOURCE_FORBIDDEN")
-        if (sources.get("target_type") != "SCREEN"
+        if (not isinstance(sources.get("target_type"), str)
+                or not sources["target_type"].strip()
+                or sources.get("target_type") != transfer.get("target_type")
                 or not isinstance(sources.get("target_code"), str)
                 or not sources["target_code"].strip()
                 or sources.get("target_code") != transfer.get("target_code")):
             errors.append("TARGET_NOT_EXACTLY_RESOLVED")
-        if type(sources.get("screen_id")) is not int or sources["screen_id"] < 1:
-            errors.append("SCREEN_ID_INVALID")
-        for key in ("screen_source_ref", "rule_relation_source_ref", "screen_status",
-                    "screen_version", "resolved_by", "source_receipt_ref"):
+        target_id = sources.get("definition_id")
+        if (not isinstance(target_id, (str, int)) or isinstance(target_id, bool)
+            or (isinstance(target_id, int) and target_id < 1)
+            or (isinstance(target_id, str) and not target_id.strip())):
+            errors.append("DEFINITION_ID_INVALID")
+        for key in ("definition_source_ref", "definition_status",
+                    "definition_version", "resolved_by", "source_receipt_ref"):
             if not isinstance(sources.get(key), str) or not sources[key].strip():
                 errors.append("SOURCE_READBACK_FIELD_MISSING")
                 break
         if type(sources.get("rule_count")) is not int or sources["rule_count"] < 0:
             errors.append("RULE_COUNT_INVALID")
+        if isinstance(sources.get("rule_count"), int) and sources["rule_count"] > 0 and (
+            not isinstance(sources.get("rule_relation_source_ref"), str)
+            or not sources["rule_relation_source_ref"].strip()
+        ):
+            errors.append("RULE_RELATION_SOURCE_REQUIRED")
 
     if errors:
         return {"schema_version": SCHEMA, "status": "BLOCKED",
@@ -90,11 +100,12 @@ def receive(previous, run, transfer, sources):
         "from_step": "10.1",
         "to_step": "10.2",
         "target_code": sources["target_code"],
-        "screen_id": sources["screen_id"],
-        "definition_status": sources["screen_status"],
-        "definition_version": sources["screen_version"],
-        "screen_source_ref": sources["screen_source_ref"],
-        "rule_relation_source_ref": sources["rule_relation_source_ref"],
+        "target_type": sources["target_type"],
+        "definition_id": sources["definition_id"],
+        "definition_status": sources["definition_status"],
+        "definition_version": sources["definition_version"],
+        "definition_source_ref": sources["definition_source_ref"],
+        "rule_relation_source_ref": sources.get("rule_relation_source_ref"),
         "rule_count": sources["rule_count"],
         "source_receipt_ref": sources["source_receipt_ref"],
         "source_currentness": "NOT_ATTESTED",
