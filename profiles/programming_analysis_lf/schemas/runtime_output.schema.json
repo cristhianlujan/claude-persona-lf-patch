@@ -15,7 +15,8 @@
     "material_fronts",
     "scope_proposals",
     "research_stop",
-    "package_readiness_candidate"
+    "package_readiness_candidate",
+    "definition_source_reception"
   ],
   "properties": {
     "schema_version": {
@@ -398,6 +399,58 @@
         "REQUIRES_DECISION",
         "BLOCKED"
       ]
+    },
+    "definition_source_reception": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "business",
+        "target_ref",
+        "source_refs",
+        "source_currentness",
+        "transport_status",
+        "rule_count"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "FOUND_UNATTESTED",
+            "UNRESOLVED"
+          ]
+        },
+        "business": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{1,31}$"
+        },
+        "target_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "source_currentness": {
+          "const": "NOT_ATTESTED"
+        },
+        "transport_status": {
+          "const": "NOT_ATTESTED"
+        },
+        "rule_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
     }
   }
 }
