@@ -305,6 +305,46 @@ def build_semantic_receipt(review):
     }
 
 
+def validate_negative_semantic_review(review):
+    """A real independent FAIL/BLOCKED can be recorded as blocked, never as PASS."""
+    from lf_semantic_fail_feedback import normalize_checks, digest_from_review
+    verdict = review.get("verdict")
+    if not isinstance(verdict, str) or not verdict.startswith(("FAIL_", "BLOCKED_")):
+        raise ValueError("PROFILE_NEGATIVE_JUDGE_VERDICT_REQUIRED")
+    checks = normalize_checks(review.get("decision_checks"))
+    if not any(c.get("result") in (False, "false", "blocked") for c in checks.values()):
+        raise ValueError("PROFILE_NEGATIVE_JUDGE_FAILED_CHECK_REQUIRED")
+    if review.get("producer_independence_proven") is not True or review.get("model_call_count") != 1:
+        raise ValueError("PROFILE_NEGATIVE_JUDGE_INDEPENDENCE_UNPROVEN")
+    for key in ("source_refs", "resolved_context_refs"):
+        if not isinstance(review.get(key), list) or not review[key]:
+            raise ValueError("PROFILE_NEGATIVE_JUDGE_SOURCES_REQUIRED")
+    for key, alias in (("candidate_sha256", "candidate_sha"), ("scope_packet_sha256", "scope_sha")):
+        digest_from_review(review, key, alias)
+    if not isinstance(review.get("unsupported_claims", []), list) or not isinstance(review.get("blocking_codes", []), list):
+        raise ValueError("PROFILE_NEGATIVE_JUDGE_CLAIMS_INVALID")
+
+
+def build_negative_semantic_receipt(review):
+    """Preserve the judge's negative decision; do not synthesize PASS/independence."""
+    verdict = review["verdict"]
+    return {
+        "status": "BLOCKED" if verdict.startswith("BLOCKED_") else "FAIL",
+        "verdict": verdict, "validator_status": "PASS",
+        "producer_independence_proven": review["producer_independence_proven"],
+        "model_call_count": review["model_call_count"],
+        "candidate_sha256": review["candidate_sha256"],
+        "scope_packet_sha256": review["scope_packet_sha256"],
+        "result": {
+            "verdict": verdict, "candidate_sha256": review["candidate_sha256"],
+            "scope_packet_sha256": review["scope_packet_sha256"],
+            "unsupported_claims": review.get("unsupported_claims", []),
+            "blocking_codes": review.get("blocking_codes", []),
+        },
+        "judge_v3_evidence": review,
+    }
+
+
 def main():
     execution_id, raw_draft, profile_output, semantic_review = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
@@ -417,20 +457,37 @@ def main():
         if semantic_review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
             from lf_semantic_fail_feedback import persist_feedback
             try:
+                validate_negative_semantic_review(semantic_review)
                 feedback = persist_feedback(
                     semantic_review, execution_id, source.get("profile_code"),
                     Path.cwd() / "profile-semantic-judge.json",
                 )
-            except (ValueError, TypeError) as exc:
+            except (ValueError, TypeError, KeyError) as exc:
                 print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": str(exc)}))
                 return 1
+            run_id = os.environ.get("GITHUB_RUN_ID", "")
+            if not run_id.isdigit():
+                print(json.dumps({"phase": "SEMANTIC_REVIEW", "code": "JUDGE_ACTIONS_RUN_ID_REQUIRED"}))
+                return 1
+            semantic_ref = (
+                f"actions://{os.environ['GITHUB_REPOSITORY']}/runs/{run_id}/artifact/"
+                f"profile-native-output-{run_id}/profile-semantic-judge.json"
+            )
+            code, recorded = call_json(EDGE_URL, {
+                "action": "profile_native_continue_v1",
+                "execution_id": execution_id,
+                "source_revision": source_revision,
+                "source_digest": digest,
+                "semantic_judge_result": build_negative_semantic_receipt(semantic_review),
+                "semantic_evidence_ref": semantic_ref,
+            }, headers)
             print(json.dumps({
-                "phase": feedback["phase"], "outcome": feedback["outcome"],
-                "verdict": feedback["verdict"],
-                "execution_id": feedback["execution_id"],
-                "next_action": feedback["next_action"],
+                "phase": "SEMANTIC_REVIEW", "verdict": feedback["verdict"],
+                "execution_id": execution_id, "http_status": code,
+                "registration_phase": recorded.get("phase"),
+                "registration_code": recorded.get("code"),
             }, ensure_ascii=False))
-            return 1
+            return 0 if code == 200 and recorded.get("phase") == "SEMANTIC_JUDGE_RECORDED_BLOCKED" else 1
         try:
             validate_independent_semantic_review(semantic_review)
         except ValueError as exc:
