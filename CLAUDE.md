@@ -230,30 +230,27 @@ When the user says "actualiza el perfil X" (or equivalent), the Router (ACT-0001
 4. Do not dispatch workflows by hand, write to the database, or merge directly. Report the final status and the open limits (self-review, single run, pending semantic checks).
 5. The update does not change the profile runtime state. Enabling is the separate governed operation `ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF`.
 
-## Governed profile execution
+## Governed profile execution — LF native route (mandatory and first)
 
-When the user explicitly asks to use an existing repository profile, or Router resolves a request to profile execution, route it as `EJECUCION_PERFIL_LF`.
+**DO NOT STOP AT ROUTER HANDOFF.** When a user requests an LF profile execution, a Router `GATE2_DERIVED_PENDING_GOVERNED_ADMISSION` / `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` response means the profile **has not yet received** the request. It is a profile-owned continuation obligation, not a permission request to the user. Read the live EKB first; use `ops/runbook-profiles-lf.md` §6.9 for the proven exact actions.
 
-Before Composer, image generation, a tool payload, or a final artifact may use that profile's result:
+- **Router responsibility (read-only):** process ACT-0001, preserve the literal original request and validated semantic selection, output the unchanged LF Router V2 context. The Router **does not** invoke a profile, grant execute permission or carry `service_role`.
+- **Profile-owned BEGIN:** use the already deployed GitHub Issues / Actions transport. Create an Issue with `{"schema_version":"LF_PROFILE_NATIVE_BEGIN_REQUEST_V1","router_context":<FULL_VALIDATED_GATE2_CONTEXT>,"executor_mode":"GPT_NATIVE"}` (or authorized native mode) and apply the existing label `lf-profile-resume-governed`. The existing workflow passes GitHub OIDC to `lf-profiles-governance-caller-v1`, where the restricted `lf_router_pipeline_context_profile_admit_v2(jsonb,text)` is invoked **with Edge's own service-role credential**, then `lf_profile_execution_begin_from_handoff_v1` starts the **new** `EJECUCION_PERFIL_LF` run. The Edge action is `profile_native_begin_from_context_v1`; no direct profile call or extra Router dispatcher.
+- **Never invoke** `lf_router_pipeline_context_profile_admit_v2` through a `supabase_read_only_user` SQL connector. PostgreSQL `42501` on that call is **an expected ACL denial on the wrong caller**, not evidence of missing permission for the canonical OIDC/Edge transport. Never extend the ACL or ask for a key to fix this.
+- **Freshness rule:** if user requested a **new** execution, persist and read back a **new execution ID** before claiming delivery. Matching request text, identical hash, or an older `COMPLETED` run may be used as background only. Never substitute it for a new profile invocation. If no new ID exists, report `NOT_EXECUTED` and keep the handoff pending.
+- **Profile-owned continuation:** when the runner emits `CONTINUATION_REQUIRED_NOT_COMPLETE`, continue the **same execution ID** via `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` with a source-supported `screen_selection_draft` (if needed), original real GPT-native `profile_output`, and 12-check `semantic_judge_review` V3. This is a nonterminal boundary, even if the Actions job exits nonzero. Do not ask for repeated owner permission; do not manufacture RAW, evidence, model-call receipts, verdicts or provider identities.
+- **Judge modes:** the old `INDEPENDENT_SEMANTIC_JUDGE_REQUIRED` phase name does not prohibit the separately governed `CURRENT_CONTEXT_REVIEW` on `read_only/no_write/no_promotion` runs. Set `producer_independence_proven=false`, `reviewer_is_producer=true` and `model_call_count=0` when no separate judge call happened, and enforce all applicable V3 checks and genuine source evidence. If independent review actually occurred and its evidence is verified, retain `INDEPENDENT_SEMANTIC`. Neither mode bypasses material controls.
+- **Final readback:** accept only the **same newly created ID** with steps 0–80, `semantic_judge` and `report_output` both `STEP_PASS_WITH_EVIDENCE`, exactly `11/11` clean, `lf_operation_execution.status=COMPLETED`, terminal authority receipt `READY`. Never treat an incomplete run or successful API call as equivalent to actual profile execution.
 
-1. resolve exactly one `PERFIL` and read its real source;
-2. preserve the literal user input;
-3. execute the profile through a trusted runtime adapter in a real model runtime;
-4. capture the model's RAW profile output without summarizing or reconstructing it;
-5. independently verify the runtime attestation against the exact request and response;
-6. produce `PROFILE_EXECUTION_RECEIPT_V1` binding profile source, input, RAW output, runtime attestation and independent verification evidence;
-7. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
-8. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
+The live positive example is `EXEC-PROFILE-GATE2-31340B34D5B0E320E3B83C00`: #3449 BEGIN, #3450 screen selection, #3451 real RAW, #3452 V3; GitHub Actions `41293887404` succeeded, Supabase `11/11 / COMPLETED / READY`. This is proof that OIDC/Edge transport works; it is **not permission to reuse that old run**.
 
-### Certification for governed `EJECUCION_PERFIL_LF` — mandatory Supabase readback
+### Separate legacy provenance contracts
 
-For the existing `ACT-0001 -> Perfil` native governed route, **the operational certification source is the persisted Supabase readback for the same `execution_id`**, not an additional external certificate or a chat assertion. Apply [the canonical step 70/80 accreditation procedure](docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md) and [Profiles LF runbook](ops/runbook-profiles-lf.md):
+The older `PROFILE_EXECUTION_RECEIPT_V1` / `PASS_PROFILE_EXECUTION_PROVENANCE` provenance path applies only when **explicitly demanded by its own active consumer contract**. It must not silently supersede the already-active LF `EJECUCION_PERFIL_LF` native operation, create a second judge/adapter, or block a current-context review already permitted by its live trust validator. In any case, only actual real model RAW and source-bound validation count; fixtures or reconstructed responses never prove execution.
 
-1. After a genuine independent V3 judge result is submitted through the **existing** `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` / `lf-profile-resume-governed` transport, query `public.lf_operation_execution_steps` in Supabase. For step 70 require `semantic_judge = STEP_PASS_WITH_EVIDENCE`, the governed `actions://` receipt, canonical recorder, `trust_validation.valid=true` and candidate/scope hashes matching persisted steps 50/40. Check V3 scope and Router-only check 11 applicability; do not use a self-verdict or a historical receipt.
-2. For terminal certification require `report_output = STEP_PASS_WITH_EVIDENCE` (80), `lf_operation_execution.status=COMPLETED`, exactly 11 clean steps and the existing terminal authority receipt `READY`. Without these readbacks report `IN_PROGRESS / NOT_CERTIFIED`, even if a workflow says SUCCESS.
-3. Do **not** demand a second proof outside this governed route for **operational persistence/closure**. `model_call_count` and independence fields in the stored V3 receipt are declarations accepted by the gate, not a standalone provider HTTP log. This does not waive a genuine independent review or weaken semantic fail-closed checks. Do not change Router responsibility, invoke a second judge or manufacture a PASS.
+### Certification for governed `EJECUCION_PERFIL_LF` — Supabase readback
 
-This rule is an **operational reading requirement**, not a new RPC, controller, model route, database permission, gate or mutation.
+Use the [canonical step 70/80 accreditation procedure](docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md) and [Profiles LF runbook](ops/runbook-profiles-lf.md). The persisted server trust validator verifies V3 and original hashes. The operational readback certifies acceptance/transport, **not** an external HTTP trace or independent-model identity that has not been observed. Do not demand a second, external attestation for the same operational persistence. If the current scope's evidence is insufficient, block with exact codes rather than claiming PASS.
 
 ## Zero-cost runtime policy
 
