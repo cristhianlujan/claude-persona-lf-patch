@@ -122,7 +122,7 @@ check("V05_CASE_MODE_SCHEMA_REQUIRED", list(schema_validator.iter_errors(c2)))
 # 3. Cheap stop: design-blocking gap with no attempts fails in V0.5.
 lazy = to_nonready(c)
 r = runtime_validate.validate(lazy, e)
-check("V05_LAZY_NEEDS_REJECTED", codes(r) == {"V05_DESIGN_BLOCKER_WITHOUT_ATTEMPT"}, codes(r))
+check("V05_LAZY_NEEDS_REJECTED", "V05_DESIGN_BLOCKER_WITHOUT_ATTEMPT" in codes(r), codes(r))
 
 # 4. Backward compatibility: the same payload under V0.4 keeps V0.4 behavior (known gap, documented).
 c4, e4 = v04_pair()
@@ -134,7 +134,19 @@ check("V04_BEHAVIOR_UNCHANGED_LAZY_NEEDS_STILL_ACCEPTED", r["valid"], codes(r))
 e5 = add_manifest_evidence(e, "EV-ATTEMPT-1")
 genuine = to_nonready(c, [attempt()])
 r = runtime_validate.validate(genuine, e5)
-check("V05_GENUINE_NEEDS_ACCEPTED", r["valid"], r["errors"][:3])
+check("V05_GAP_WITH_ALL_CLASSES_COVERED_NEEDS_SEARCH_RECORD", "GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD" in codes(r), codes(r))
+import copy as _copy
+_ok = _copy.deepcopy(genuine)
+for _u in _ok.get("current_uncertainties", []):
+    if _u.get("impact") == "DESIGN_BLOCKING":
+        _u["cascade"] = {"classes_tried": ["DIRECT", "DECLARED"], "classes_without_source": ["ANALOGY", "RELATED", "HISTORY"], "catalog_checked": ["N1:v_lf_fuente_operativa_busqueda", "N2:lf_activos", "N3:lf_patches", "N4:skills/"],
+                         "search_record": [{"class": k, "source": "src", "locator": "loc", "result": "NO_EVIDENCE"} for k in ["DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"]]}
+r = runtime_validate.validate(_ok, e5)
+check("V05_SEARCH_RECORD_ALONE_REJECTED_WITHOUT_N1_N2", "GAP_CATALOG_QUERIES_REQUIRED" in codes(r), codes(r))
+_nc = _copy.deepcopy(_ok)
+for _u in _nc["current_uncertainties"]:
+    if _u.get("impact") == "DESIGN_BLOCKING": _u["cascade"].pop("catalog_checked", None)
+check("V05_NO_SOURCE_WITHOUT_CATALOG_REJECTED", "GAP_CASCADE_NO_SOURCE_NEEDS_CATALOG" in codes(runtime_validate.validate(_nc, e5)), "")
 check("V05_GENUINE_NEEDS_SCHEMA_VALID", not list(schema_validator.iter_errors(genuine)), [x.message for x in schema_validator.iter_errors(genuine)][:3])
 
 # 6. Claimed attempt that the external manifest does not contain is rejected.
@@ -199,7 +211,7 @@ check("V05_BORROWED_EVIDENCE_REJECTED", "V05_ATTEMPT_EVIDENCE_LOCATOR_MISMATCH" 
 # 13. Whitespace-only differences in the locator are not a mismatch.
 spaced = attempt(); spaced["locator"] = "  " + LOCATOR.replace(" ", "   ") + " "
 r = runtime_validate.validate(to_nonready(c, [spaced]), e5)
-check("V05_LOCATOR_WHITESPACE_TOLERATED", r["valid"], r["errors"][:3])
+check("V05_LOCATOR_WHITESPACE_TOLERATED", codes(r) <= {"GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD", "GAP_CASCADE_NO_SOURCE_NEEDS_CATALOG"}, codes(r))
 
 # 14. Design-blocking uncertainty must carry an id.
 no_id = to_nonready(c, [attempt()]); del no_id["current_uncertainties"][0]["uncertainty_id"]
@@ -228,7 +240,7 @@ check("V05_BLOCKED_NODE_BAD_REF", "V05_BLOCKED_NODE_REF_NOT_DESIGN_BLOCKING" in 
 # 17. Blocked node linked to a design-blocking uncertainty with resolved attempts passes.
 linked = with_blocked_node(to_nonready(c, [attempt()]), "U-WIRING")
 r = runtime_validate.validate(linked, e5)
-check("V05_BLOCKED_NODE_LINKED_ACCEPTED", r["valid"], r["errors"][:3])
+check("V05_BLOCKED_NODE_LINKED_ACCEPTED", codes(r) <= {"GAP_CASCADE_EXHAUSTED_NEEDS_SEARCH_RECORD", "GAP_CASCADE_NO_SOURCE_NEEDS_CATALOG"}, codes(r))
 check("V05_BLOCKED_NODE_LINKED_SCHEMA_VALID", not list(schema_validator.iter_errors(linked)), [x.message for x in schema_validator.iter_errors(linked)][:3])
 
 # 18. Audit mode keeps systemic causality: a ready audit spec with a non-established causal claim fails semantic utility.

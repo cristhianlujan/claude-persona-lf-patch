@@ -1,0 +1,218 @@
+{
+  "schema": "LF_WEB001_CURRENT_CHAT_NATIVE_FUNCTIONAL_PROBE_V1",
+  "case_id": "WEB-001",
+  "variant": "historical_material_gap_ACT0058_OWNER",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "source_branch": "lf/handoff-srcr-catalog-cascade-20261029",
+  "producer": "GPT_NATIVE_CURRENT_CHAT",
+  "provenance": "MODEL_AUTHORED_IN_CURRENT_CHAT_NOT_PROVIDER_ATTESTED",
+  "provider_attested": false,
+  "independent_semantic_review": false,
+  "comparison_approval": false,
+  "run_context": {
+    "benchmark_code": "WEB-001",
+    "prior_run": "RUN-WEB001-BASE-20261029",
+    "profile_candidate_head": "8dc8af9d6181b7fd1ff1e901b0ca8a8c5325d4ac",
+    "readbacks": "SUPABASE_READONLY_TOOL",
+    "observed_at": "2026-10-30 18:50:10.915965+00",
+    "source_revision": "current_live_tables_not_pinned_historical_snapshot"
+  },
+  "raw_output": {
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "case_mode": "INCIDENT_REPAIR",
+    "status": "NEEDS_MORE_EVIDENCE",
+    "case_id": "WEB-001",
+    "current_uncertainties": [
+      {
+        "uncertainty_id": "UNC-OWNER-ACT0058",
+        "uncertainty": "The authoritative ACT-0058 owner is not assigned. N1 operational view and N2 canonical table both return owner_name=NULL; nearby owner assignments cannot authorize inferring an owner.",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": [
+          "Ratified owner assignment from the governed owner registry or explicit governance decision"
+        ],
+        "design_consequence": "Do not close the operational repair or assign a retry controller without an authority-bound owner.",
+        "containment_ref": null,
+        "attempted_sources": [
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "One ACT-0058 row returned, with owner_name=NULL; result is not EMPTY and does not authorize a guessed owner.",
+            "evidence_id": "EV-WEB001-N1-LIVE"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "The canonical ACT-0058 row agrees with the view and also has owner_name=NULL.",
+            "evidence_id": "EV-WEB001-N2-LIVE"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "SELECT codigo_activo,tipo_activo,owner_name FROM public.lf_activos WHERE codigo_activo LIKE 'ACT-005%'",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Other asset owners have assignments, but ACT-0054 to ACT-0058 remain NULL; analogy is not ratification.",
+            "evidence_id": "EV-WEB001-N3-OWNERS"
+          },
+          {
+            "surface": "EKB",
+            "locator": "SELECT codigo,descripcion,prevencion,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "WEB-001 mandates fail-closed capture and a controlled retry, but does not name the ACT-0058 owner.",
+            "evidence_id": "EV-WEB001-EKB"
+          },
+          {
+            "surface": "GITHUB_SOURCE",
+            "locator": "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-BASE-20261029.json",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "The recorded earlier WEB-001 run also identified ACT-0058 ownership as DESIGN_BLOCKING and had no N1/N2 readback.",
+            "evidence_id": "EV-WEB001-HISTORIC"
+          }
+        ],
+        "cascade": {
+          "classes_tried": [
+            "DIRECT",
+            "DECLARED",
+            "ANALOGY",
+            "RELATED",
+            "HISTORY"
+          ],
+          "classes_without_source": [],
+          "catalog_checked": [
+            "N1:v_lf_fuente_operativa_busqueda",
+            "N2:lf_activos",
+            "N3:lf_activos neighbors",
+            "N4:skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-BASE-20261029.json"
+          ],
+          "catalog_queries": [
+            {
+              "level": "N1",
+              "datum_id": "UNC-OWNER-ACT0058",
+              "evidence_id": "EV-WEB001-N1-LIVE",
+              "readback": {
+                "source": "v_lf_fuente_operativa_busqueda",
+                "source_kind": "VIEW",
+                "query": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+                "result_kind": "ROWS",
+                "row_count": 1,
+                "sample_records": [
+                  {
+                    "owner_name": null,
+                    "codigo_activo": "ACT-0058",
+                    "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+                    "estado_operativo": "APROBADO",
+                    "estado_documental": "APROBADO"
+                  }
+                ],
+                "observed_at": "2026-10-30 18:50:10.915965+00",
+                "snapshot": "SUPABASE_READONLY_20261030_185010Z"
+              }
+            },
+            {
+              "level": "N2",
+              "datum_id": "UNC-OWNER-ACT0058",
+              "evidence_id": "EV-WEB001-N2-LIVE",
+              "readback": {
+                "source": "lf_activos",
+                "source_kind": "BASE_TABLE",
+                "query": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+                "result_kind": "ROWS",
+                "row_count": 1,
+                "sample_records": [
+                  {
+                    "owner_name": null,
+                    "codigo_activo": "ACT-0058",
+                    "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+                    "estado_operativo": "APROBADO",
+                    "estado_documental": "APROBADO"
+                  }
+                ],
+                "observed_at": "2026-10-30 18:50:10.915965+00",
+                "snapshot": "SUPABASE_READONLY_20261030_185010Z"
+              }
+            }
+          ],
+          "search_record": [
+            {
+              "class": "DIRECT",
+              "source": "v_lf_fuente_operativa_busqueda",
+              "locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+              "result": "FOUND_INSUFFICIENT"
+            },
+            {
+              "class": "DECLARED",
+              "source": "lf_activos",
+              "locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+              "result": "FOUND_INSUFFICIENT"
+            },
+            {
+              "class": "ANALOGY",
+              "source": "lf_activos (ACT-0050..0058)",
+              "locator": "SELECT codigo_activo,tipo_activo,owner_name FROM public.lf_activos WHERE codigo_activo LIKE 'ACT-005%'",
+              "result": "FOUND_INSUFFICIENT"
+            },
+            {
+              "class": "RELATED",
+              "source": "lf_error_knowledge WEB-001",
+              "locator": "SELECT codigo,descripcion,prevencion,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'",
+              "result": "FOUND_INSUFFICIENT"
+            },
+            {
+              "class": "HISTORY",
+              "source": "WEB-001 historic model run",
+              "locator": "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-BASE-20261029.json",
+              "result": "FOUND_INSUFFICIENT"
+            }
+          ]
+        }
+      }
+    ],
+    "blocking_codes": [
+      "OWNER_AUTHORITY_NOT_RATIFIED"
+    ],
+    "next_gate": "Return to governed worker for ratified owner assignment, then repeat N1 and N2 source-readback before retry policy decisions.",
+    "source_conclusion": "N1 and N2 agree on a single ACT-0058 record with no assigned owner. The sources were actually read; they do not prove an owner, and the fact that related assets have an owner is not sufficient authority. Retain fail-closed; do not invent retry policy or claim repaired.",
+    "observed_queue_state": {
+      "total_fallido": 39,
+      "fetch_or_cache_text_matches": 32,
+      "note": "Counts observed at the query timestamp and classification differs from historic counts. Not a repaired-state assertion."
+    }
+  },
+  "evidence_manifest": {
+    "evidence": [
+      {
+        "evidence_id": "EV-WEB001-N1-LIVE",
+        "state": "CURRENT",
+        "source_locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+        "digest": "sha256:ef12c3d648a1ffe8e7456779c961ceec5fe7a3dc66d0d74fca0cb5385d36f139"
+      },
+      {
+        "evidence_id": "EV-WEB001-N2-LIVE",
+        "state": "CURRENT",
+        "source_locator": "SELECT codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+        "digest": "sha256:7c65c46192d9a4f52b2d243c4b9600983f0925ab8be743aa9248a68aae5938f9"
+      },
+      {
+        "evidence_id": "EV-WEB001-N3-OWNERS",
+        "state": "CURRENT",
+        "source_locator": "SELECT codigo_activo,tipo_activo,owner_name FROM public.lf_activos WHERE codigo_activo LIKE 'ACT-005%'"
+      },
+      {
+        "evidence_id": "EV-WEB001-EKB",
+        "state": "CURRENT",
+        "source_locator": "SELECT codigo,descripcion,prevencion,estado FROM public.lf_error_knowledge WHERE codigo='WEB-001'"
+      },
+      {
+        "evidence_id": "EV-WEB001-HISTORIC",
+        "state": "CURRENT",
+        "source_locator": "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/runs/RUN-WEB001-BASE-20261029.json"
+      }
+    ]
+  },
+  "judgement": {
+    "reasoning": "The operational view and canonical table agree that ACT-0058 owner_name is NULL. Governed decision authority is missing. The correct answer is an open, attributed DESIGN_BLOCKING uncertainty, not fabricated closure.",
+    "expected_n1_n2_deterministic_guard": "PASS_FOR_DATUM",
+    "expected_full_profile_runtime": "UNTESTED",
+    "expected_official_comparison": "UNTESTED"
+  }
+}

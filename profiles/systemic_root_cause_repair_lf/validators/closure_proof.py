@@ -405,6 +405,13 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
             continue
         if value.get("authority_kind") == "DERIVED_PROPOSAL":
             continue  # validated by the generic walk; never counted as existing authority
+        if candidate.get("status") == "NEEDS_MORE_EVIDENCE" and value.get("status") == "UNRESOLVED":
+            # Non-final cases may report an actual source gap; they must not fabricate a binding.
+            # The authority_ref schema and producer-depth cascade still require missing evidence.
+            missing = value.get("missing_evidence")
+            if not isinstance(missing, list) or not missing:
+                errors.append(_err("SRCR_NONREADY_AUTHORITY_WITHOUT_MISSING_EVIDENCE", path + ".missing_evidence"))
+            continue
         if value.get("status") != "RESOLVED" or value.get("authority_kind") != EXISTING_AUTHORITY:
             errors.append(_err("SRCR_EXISTING_AUTHORITY_REQUIRED", path))
             continue
