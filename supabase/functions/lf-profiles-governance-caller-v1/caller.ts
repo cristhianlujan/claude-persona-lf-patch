@@ -20,6 +20,7 @@ const PROFILE_INIT_ACTION = "profile_creator_init_v1";
 const PROFILE_STEP_ACTION = "profile_creator_record_step_v1";
 const ROUTER_PROFILE_ADMIT_ACTION = "router_profile_admit_context_v2";
 const PROFILE_EXECUTION_BEGIN_ACTION = "profile_execution_begin_from_router_context_v1";
+const PROFILE_NATIVE_BEGIN_ACTION = "profile_native_begin_from_context_v1";
 const STORY_CREATOR_CONSUMER = "STORY_CREATOR";
 const CONTEXT_PACK_CONSUMER = "CONTEXT_PACK";
 const MANUAL_CONSUMER = "MANUAL";
@@ -644,16 +645,20 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
       }
 
       const action = typeof body.action === "string" ? body.action : "";
+      // Router derives only: neither a direct profile call nor a relay writer.
+      if (action === ROUTER_PROFILE_ADMIT_ACTION || action === PROFILE_EXECUTION_BEGIN_ACTION) {
+        return json({outcome:"BLOCKED",
+          code:"ROUTER_PROFILE_DIRECT_OR_INTERMEDIATE_CALL_RETIRED"}, 410);
+      }
       const isRecurationIdentity = identity.scope === "INPUT_GOVERNANCE_RECURATION_ONLY";
       const isNativeContinuationIdentity = identity.scope === "PROFILE_NATIVE_CONTINUATION_ONLY";
       const isNativeContinuationAction = (PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(action);
-      const isRouterAdmitAction = action === ROUTER_PROFILE_ADMIT_ACTION;
-      // Stage 07 belongs to this SAME exact workflow OIDC scope as Stage 06.
-      // It is still independently fenced by handoff, native mode and canonical writer checks below.
-      const isProfileExecutionBeginAction = action === PROFILE_EXECUTION_BEGIN_ACTION;
-      if (isNativeContinuationIdentity && !isNativeContinuationAction &&
-          !isRouterAdmitAction && !isProfileExecutionBeginAction) {
+      const isProfileNativeBeginAction = action === PROFILE_NATIVE_BEGIN_ACTION;
+      if (isNativeContinuationIdentity && !isNativeContinuationAction && !isProfileNativeBeginAction) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_OIDC_ACTION_SCOPE_MISMATCH" }, 403);
+      }
+      if (isProfileNativeBeginAction && !isNativeContinuationIdentity) {
+        return json({outcome:"BLOCKED",code:"PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"},403);
       }
       if (isNativeContinuationAction && !isNativeContinuationIdentity) {
         return json({ outcome: "BLOCKED", code: "NATIVE_CONTINUATION_EXACT_OIDC_IDENTITY_REQUIRED" }, 403);
@@ -931,70 +936,12 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
         }, readyCount === PILOT_SCREENS.length ? 200 : 409);
       }
 
-      if (action === ROUTER_PROFILE_ADMIT_ACTION) {
-        // Only the existing exact-profile-governance OIDC identity may cross
-        // this service-role boundary. Arbitrary JWTs and Input Governance
-        // tickets must never be promoted into profile-execution authority.
-        // The governed native workflow identity (exact main ref, exact workflow
-        // file, protected lf-edge-deploy environment) may also admit, but only
-        // for the zero-cost native executors (never REMOTE_API).
-        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
-        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_IDENTITY_REQUIRED" }, 403);
-        }
-        const context = body.context;
-        if (!context || typeof context !== "object" || Array.isArray(context)) {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CONTEXT_REQUIRED" }, 400);
-        }
-        const envelope = context as Record<string, unknown>;
-        if (
-          envelope.schema_version !== "LF_ROUTER_EXECUTION_PIPELINE_V1" ||
-          envelope.status !== "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION" ||
-          envelope.transport_mode !== "CONTEXT_TRANSPORT"
-        ) {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_CONTEXT_ENVELOPE_INVALID" }, 400);
-        }
-        const mode = body.executor_mode;
-        if (mode !== "GPT_NATIVE" && mode !== "CLAUDE_NATIVE" && mode !== "REMOTE_API") {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_EXECUTOR_INVALID" }, 400);
-        }
-        if (nativeIdentity && mode === "REMOTE_API") {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_NATIVE_IDENTITY_REQUIRES_NATIVE_EXECUTOR" }, 403);
-        }
-        const response = await deps.fetchFn(
-          `${config.supabaseUrl}/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2`,
-          {
-            method: "POST",
-            headers: {
-              apikey: config.serviceRoleKey,
-              authorization: `Bearer ${config.serviceRoleKey}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ p_context: context, p_executor_mode: mode }),
-            signal: AbortSignal.timeout(15_000),
-          },
-        );
-        const result = await parseJsonObject(response, "ROUTER_PROFILE_ADMISSION_RESPONSE_INVALID");
-        if (!response.ok) {
-          return json({ outcome: "BLOCKED", code: "ROUTER_PROFILE_ADMISSION_RPC_REJECTED", rpc_status: response.status }, 502);
-        }
-        // Stage 06 must NOT return an execution_id or claim a write.
-        // The only accepted result is a validated handoff for Stage 07.
-        const admitted = result.status === "PROFILE_HANDOFF_READY" &&
-          result.write_performed === false &&
-          (result.execution_id === null || result.execution_id === undefined) &&
-          result.next_action === "EJECUCION_PERFIL_LF_BEGIN_REQUIRED" &&
-          result.executor_mode === mode &&
-          !!result.router_profile_handoff && typeof result.router_profile_handoff === "object";
-        return json({ outcome: admitted ? "PROFILE_HANDOFF_READY" : "BLOCKED", caller, result }, admitted ? 200 : 409);
-      }
-
-      if (action === PROFILE_EXECUTION_BEGIN_ACTION) {
-        // Stage 07 is the only explicit writer: EJECUCION_PERFIL_LF.
-        // Never allow an untrusted caller or REMOTE_API to start a native run.
-        const nativeIdentity = identity.method === "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1";
-        if (identity.method !== "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_GOV_V1" && !nativeIdentity) {
-          return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_BEGIN_IDENTITY_REQUIRED" }, 403);
+      if (action === PROFILE_NATIVE_BEGIN_ACTION) {
+        // Profile-owned operation only. Router transports context and never calls
+        // this action. The OIDC bearer authorizes the trusted existing workflow.
+        // The service-role key stays in this Edge and is never put into the context.
+        if (!isNativeContinuationIdentity) {
+          return json({outcome:"BLOCKED",code:"PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"},403);
         }
         const context = body.context;
         if (!context || typeof context !== "object" || Array.isArray(context)) {
@@ -1028,7 +975,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             !admission.router_profile_handoff || typeof admission.router_profile_handoff !== "object") {
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_ADMISSION_NOT_READY" }, 409);
         }
-        // Preserve the EXACT admission handoff at Stage 07. Do not regenerate it
+        // Preserve the EXACT admission handoff for the profile operation. Do not regenerate it
         // through after_gate2_v1 (that creates a different issued_at/fingerprint).
         const handoff = admission.router_profile_handoff as Record<string, unknown>;
         const profile = handoff.profile_code;
@@ -1082,6 +1029,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
               p_actor_execution_id: executionId,
               p_target_repo: config.repository, p_target_path: path,
               p_manifest: { gate2_auto_materialized: true,
+                profile_operation_begin: true,
                 channel: handoff.channel, business: handoff.business },
             }), signal: AbortSignal.timeout(15_000) },
         );
