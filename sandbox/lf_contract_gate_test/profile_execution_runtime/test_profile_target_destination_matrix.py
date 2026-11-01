@@ -223,7 +223,22 @@ class GovernedRunnerSidecarTest(unittest.TestCase):
                          runner["OPERATIONAL"]["canonical_sha256"]("SAME CASE"))
         self.assertEqual(row["raw_provenance_status"],
                          "TRUSTED_FILE_HASH_ONLY_NO_RUNTIME_ATTESTATION")
+        self.assertEqual(row["case_definition_ref"],
+                         "skills/profile_creator/operational_cases/product_director_lf/CASE.case.json")
+        self.assertEqual(row["case_definition_canonical_sha256"],
+                         runner["OPERATIONAL"]["canonical_sha256"](cases["CASE"]))
+        self.assertEqual(row["case_definition_hash_kind"], "CANONICAL_JSON_NOT_FILE_BYTES")
+        self.assertEqual(row["control_predicate_ref"],
+                         row["case_definition_ref"] + "#/checks/0")
+        self.assertEqual(row["control_predicate_sha256"],
+                         runner["OPERATIONAL"]["canonical_sha256"](cases["CASE"]["checks"][0]))
+        self.assertEqual(row["verification_method"], "operational_coverage_v1.measure")
+        self.assertIn("CASE:C1:DESTINATION_NOT_CANONICAL", report["open_report_findings"])
         receipt = runner["build_matrix_receipt"](report, "456")
+        self.assertEqual(receipt["rows"][0]["control_predicate_sha256"],
+                         row["control_predicate_sha256"])
+        self.assertEqual(receipt["open_report_findings_total"],
+                         len(report["open_report_findings"]))
         self.assertEqual(receipt["rows"][0]["case_input_status"],
                          "RECORDED_LITERAL_MATCH_ONLY")
         self.assertEqual(receipt["rows"][0]["original_raw_refs"],
