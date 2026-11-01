@@ -1,0 +1,73 @@
+{
+  "schema_version": "ANALYSIS_10_1_DEVELOPMENT_ENTRY_CONTRACT_V1",
+  "status": "CANDIDATE_NOT_RELEASED",
+  "business_binding": "LF",
+  "business_authority": "ROUTER_HANDOFF.business",
+  "analysis_stage": "A1_INTAKE_NORMALIZE / 10.1_PRELIMINARY_DEVELOPMENT_TYPE",
+  "integration_note": "Auxiliary candidate preflight only. A2 still owns source-evidence-derived change type, granularity and depth, and A3/10.4 owns separate implementation_state readback.",
+  "required_input": [
+    "execution_id",
+    "business",
+    "literal_request",
+    "request_sha256",
+    "intent_kind",
+    "intent_evidence_refs"
+  ],
+  "intent_kind_source": "EXPLICIT_USER_INTENT_OR_ROUTER_HANDOFF (not keyword-only, no model inference treated as authority)",
+  "intent_kind_values": [
+    "CREATE",
+    "EVOLVE",
+    "COMBINE",
+    "REPAIR",
+    "UNKNOWN"
+  ],
+  "result_vocabulary": [
+    {
+      "intent_kind": "CREATE",
+      "development_class": "NEW_CANDIDATE",
+      "action": "CONTINUE_ANALYSIS"
+    },
+    {
+      "intent_kind": "EVOLVE",
+      "development_class": "EXISTING_EVOLUTION_CANDIDATE",
+      "action": "CONTINUE_ANALYSIS"
+    },
+    {
+      "intent_kind": "COMBINE",
+      "development_class": "MIXED_CANDIDATE",
+      "action": "CONTINUE_ANALYSIS"
+    },
+    {
+      "intent_kind": "REPAIR",
+      "development_class": "REPAIR_HANDOFF",
+      "action": "RETURN_TO_ROUTER"
+    },
+    {
+      "intent_kind": "UNKNOWN",
+      "development_class": "NEED_MORE_EVIDENCE",
+      "action": "CLARIFY_INTENT"
+    }
+  ],
+  "source_rules": {
+    "definitions_first": true,
+    "canonical_definitions_resolver": "10.2",
+    "definition_sufficiency_resolver": "10.3",
+    "implementation_state_resolver": "10.4/A3",
+    "no_assumed_implementation_absence": true,
+    "existence_of_rules_does_not_prove_code": true,
+    "no_query_at_10_1": true,
+    "no_default_business": true,
+    "no_direct_repair_activation": true,
+    "material_unknown_not_ready": true
+  },
+  "non_authority": [
+    "initial_development_class_is_provisional",
+    "does_not_register_run",
+    "does_not_create_tables_or_code",
+    "does_not_authorize_programming",
+    "does_not_validate_genuine_router_receipts",
+    "no_self_issued_stage_receipts"
+  ],
+  "checkpoint_binding": "Same execution_id and request_sha256. Use existing lease-fenced checkpoint function only through qualified consumer.",
+  "business_extension": "SALY needs qualified separate source binding; this LF candidate must fail closed for SALY."
+}
