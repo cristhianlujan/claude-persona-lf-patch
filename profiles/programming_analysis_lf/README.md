@@ -8,10 +8,22 @@ La infraestructura existente de `ProfileRuntimeEngine`, `RepositoryBindings`, `O
 
 El candidato **NO** queda registrado como capacidad `CURRENT RELEASED` en Supabase, no participa todavía del Router y no ejecuta PG-01. Ningún archivo habilita producción ni programación de producto.
 
+## Paso 10.1 — clasificación inicial de desarrollo (candidato, 2026-10-31)
+
+- El **Router** determina el negocio y entrega un handoff; `EJECUCION_PERFIL_LF` reserva un único RUN idempotente. 10.1 **no crea otro RUN**.
+- El A1 normaliza solicitud e intención tipificada `CREATE/EVOLVE/COMBINE/REPAIR/UNKNOWN`. 10.1 devuelve `NEW_CANDIDATE/EXISTING_EVOLUTION_CANDIDATE/MIXED_CANDIDATE/REPAIR_HANDOFF/NEED_MORE_EVIDENCE`. No hace búsqueda por palabras; la corrección semántica de la tipificación corresponde al Router/A1 y juez independiente.
+- **10.1 es provisional**: 10.2 resuelve definiciones, 10.3 comprueba vigencia y suficiencia, 10.4 verifica implementación/AS-IS/reutilización. Un login con reglas existentes y sin implementación acreditada es NEW_CANDIDATE, no NEW confirmado.
+- `REPAIR` retorna al Router para eventual perfil Reparador, sin activarlo directamente.
+- `business=LF` obligatorio; con SALY no se aplica binding LF. Se verifica RUN, hash exacto UTF-8, intención tipificada y referencias al origen. Ninguno de esos valores autodeclarados es prueba de autoridad.
+- Código: `validators/analysis_10_1_classify_v1.py`, contrato `contracts/analysis_10_1_development_entry_v1.json`, tests `evals/test_analysis_10_1_classify_v1.py`. El schema del paquete candidato ahora exige la clasificación inicial y `runtime_validate.py` rechaza correspondencias inválidas o READY desde `REPAIR/UNKNOWN`.
+- Se requiere el contrato 10.1 como tercera fuente de `contracts/runtime_binding.json` (junto a `SKILL.md` y `analysis_source_binding.json`). Los resultados históricos de dos fuentes **no prueban** este nuevo binding.
+- **Prueba local exacta**: 18/18 `unittest` PASS. Comparación Git blob SHA sobre los bytes ejecutados = `9fe3531ce5cdcf6b82af71a4b0aae614fc46cbe3` (clasificador) y `a21686d503118565114e7a9f3a574b0e2b606fee` (tests), coincidentes con GitHub. Los cuatro controles agregados al `test_runtime_candidate_v1.py` quedan pendientes de ejecución específica.
+- **Cierre**: diseño e implementación del candidato 10.1 **PASS local**; ejecución del RUN/receipts A1 real **NO TESTED**. No marcar `STEP_PASS_WITH_EVIDENCE` ni `ANALYSIS_READY`.
+
 ## Archivos
 
 - `SKILL.md` — método model-facing A1–A9 basado en los contratos existentes, preservando autoridad y desconocidos.
-- `contracts/runtime_binding.json` — usa los hooks del runtime existente; requiere el SKILL y el manifiesto de fuente como entradas canónicas.
+- `contracts/runtime_binding.json` — usa los hooks del runtime existente; requiere SKILL, manifiesto A1–A9 y contrato 10.1 en la versión candidata de esta rama; el resultado histórico de dos fuentes fue anterior.
 - `contracts/analysis_source_binding.json` — relación exacta con contratos A1–A9, procedimiento en PR #2145; `current_release_verified=false`.
 - `schemas/runtime_output.schema.json` — modelo solo entrega `ANALYSIS_IMPLEMENTATION_PACKAGE_V1` **candidate_only**; no huellas/recibos de proveedor autogenerados.
 - `validators/runtime_validate.py` — fail-closed para faltantes, L1 con UNKNOWN, falsos READY, decisiones, material fronts, matrix bidireccional y research STOP.
