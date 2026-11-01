@@ -18,6 +18,11 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+## STOP CONDITION — LF Router handoff is NOT terminal (high priority)
+
+**For every new LF Router→Perfil request:** a selected profile plus `Gate 2 READY` and `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` means **continue now** via GitHub Issue `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1`, label `lf-profile-resume-governed`, existing GitHub OIDC→Edge→service_role path, then reuse that NEW run's ID through stages 0–80. The Router merely transports context. **Never call `lf_router_pipeline_context_profile_admit_v2` with `supabase_read_only_user`**, never request/relocate a role secret, never stop at 42501, and never present a previous completed run as the current execution. New ID missing = `NOT_EXECUTED`. For precise contract and live positive proof, read `ops/runbook-profiles-lf.md` §6.9 and EKB `LF-PROFILE-HANDOFF-DIRECT-42501-OLD-RUN-SUBSTITUTION-001`.
+
+
 
 ## OpenAI/ChatGPT tool-safety rejections — internal LF agent context
 
