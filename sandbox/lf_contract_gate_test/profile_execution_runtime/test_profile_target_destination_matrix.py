@@ -91,7 +91,7 @@ class ProfileTargetDestinationTest(unittest.TestCase):
             lines = (dest / "SKILL.md").read_text(encoding="utf-8")
             # A second prefix-compatible heading is ambiguous even if
             # only the first contains the numbered target.
-            lines += "\\n## Output trajectory (duplicated heading)\\n"
+            lines += "\n## Output trajectory (duplicated heading)\n"
             (dest / "SKILL.md").write_text(lines, encoding="utf-8")
             body = bind(self.REPAIR, "Output trajectory", 33,
                         "origin_asset`, `origin_operation` and `owner` refer to the systemic repair boundary/authority, not necessarily the unknown historical caller. If the systemic boundary itself cannot be proven, mark it `UNRESOLVED`.")
