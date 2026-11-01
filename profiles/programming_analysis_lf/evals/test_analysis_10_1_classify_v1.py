@@ -108,5 +108,16 @@ class DevelopmentEntryTests(unittest.TestCase):
         self.blocked(None,"INPUT_NOT_OBJECT")
 
 
+    def test_17_unhashable_intent_fails_closed(self):
+        x=request(); x["intent_kind"]=[]
+        self.blocked(x,"INTENT_KIND_NOT_CANONICAL")
+
+    def test_18_invalid_input_never_grants_write(self):
+        r=M.classify(None)
+        self.assertIs(r.get("programming_authorized"),False)
+        x=request(); x["business"]="SALY"
+        self.assertIs(M.classify(x).get("programming_authorized"),False)
+
+
 if __name__=="__main__":
     unittest.main(verbosity=2)
