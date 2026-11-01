@@ -235,10 +235,10 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
 
     def test_cli_no_longer_returns_zero_on_missing_v3_or_raw(self):
         source = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn('if semantic_review is None:\\n            return record_incomplete_continuation(', source)
-        self.assertIn('if profile_output is None:\\n            return record_incomplete_continuation(', source)
-        self.assertNotIn('print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")\\n            return 0', source)
-        self.assertNotIn('print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")\\n            return 0', source)
+        self.assertIn('if semantic_review is None:\n            return record_incomplete_continuation(', source)
+        self.assertIn('if profile_output is None:\n            return record_incomplete_continuation(', source)
+        self.assertNotIn('print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")\n            return 0', source)
+        self.assertNotIn('print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")\n            return 0', source)
 
     def test_only_exact_governed_202_allows_direct_resume(self):
         valid = {
