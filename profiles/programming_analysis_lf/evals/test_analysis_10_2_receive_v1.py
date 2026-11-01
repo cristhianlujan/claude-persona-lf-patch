@@ -36,11 +36,11 @@ def fixture():
     transfer = {"from_step": "10.1", "to_step": "10.2",
                 "sender_payload_sha256": A2.digest(previous),
                 "execution_id": run["execution_id"], "request_sha256": req_sha,
-                "business": "LF", "target_code": "B2B-AUTH-001"}
+                "business": "LF", "target_code": "B2B-AUTH-001", "target_type": "SCREEN"}
     sources = {"status": "FOUND", "business": "LF", "source_namespace": "lf_ops",
                "target_type": "SCREEN", "target_code": "B2B-AUTH-001",
-               "screen_id": 51, "screen_status": "CANDIDATO", "screen_version": "v0.5",
-               "screen_source_ref": "fixture://lf_ops.pantallas/51",
+               "definition_id": 51, "definition_status": "CANDIDATO", "definition_version": "v0.5",
+               "definition_source_ref": "fixture://lf_ops.pantallas/51",
                "rule_relation_source_ref": "fixture://lf_ops.reglas_pantallas/51",
                "rule_count": 71, "resolved_by": "FIXTURE_AUTHORITY_ADAPTER",
                "source_receipt_ref": "fixture://source-observation"}
@@ -59,7 +59,7 @@ class SourceReceiveTests(unittest.TestCase):
         p, r, t, s = fixture()
         output = A2.receive(p, r, t, s)
         self.assertEqual(output["status"], "RECEIVED_CANDIDATE")
-        self.assertEqual(output["screen_id"], 51)
+        self.assertEqual(output["definition_id"], 51)
         self.assertEqual(output["definition_status"], "CANDIDATO")
         self.assertEqual(output["source_currentness"], "NOT_ATTESTED")
         self.assertEqual(output["next_action"], "10.3")
@@ -128,8 +128,8 @@ class SourceReceiveTests(unittest.TestCase):
 
     def test_14_duplicate_screen_id_type(self):
         p, r, t, s = fixture()
-        s["screen_id"] = True
-        self.bad(p, r, t, s, "SCREEN_ID_INVALID")
+        s["definition_id"] = True
+        self.bad(p, r, t, s, "DEFINITION_ID_INVALID")
 
     def test_15_wrong_business_from_router(self):
         p, r, t, s = fixture()
@@ -149,6 +149,32 @@ class SourceReceiveTests(unittest.TestCase):
         v = A2.receive(p, r, t, s)
         self.assertEqual(v["status"], "RECEIVED_CANDIDATE")
         self.assertEqual(v["implementation_state"], "UNVERIFIED_PENDING_10_4")
+
+
+    def test_18_non_screen_definition_is_supported(self):
+        p, r, t, s = fixture()
+        t["target_type"] = "MODULE"
+        t["target_code"] = "B2B_AUTH_MODULE"
+        s["target_type"] = "MODULE"
+        s["target_code"] = "B2B_AUTH_MODULE"
+        s["definition_id"] = "module://B2B_AUTH_MODULE"
+        self.assertEqual(A2.receive(p, r, t, s)["status"], "RECEIVED_CANDIDATE")
+
+    def test_19_target_type_drift_rejected(self):
+        p, r, t, s = fixture()
+        s["target_type"] = "API"
+        self.bad(p, r, t, s, "TARGET_NOT_EXACTLY_RESOLVED")
+
+    def test_20_source_rule_relation_missing(self):
+        p, r, t, s = fixture()
+        s.pop("rule_relation_source_ref")
+        self.bad(p, r, t, s, "RULE_RELATION_SOURCE_REQUIRED")
+
+    def test_21_zero_rules_does_not_require_fake_relation(self):
+        p, r, t, s = fixture()
+        s["rule_count"] = 0
+        s.pop("rule_relation_source_ref")
+        self.assertEqual(A2.receive(p, r, t, s)["status"], "RECEIVED_CANDIDATE")
 
 
 if __name__ == "__main__":
