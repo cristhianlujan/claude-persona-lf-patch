@@ -619,13 +619,74 @@ Deno.test("CP2: selected profile owns BEGIN and Edge uses existing canonical ser
   });
   assertEquals(response.status,200);
   assertEquals(payload.outcome,"NATIVE_EXECUTION_READY");
-  assertEquals(payload.result.execution_id,"EXEC-PROFILE-GATE2-"+"A".repeat(24));
+  const frame = JSON.stringify([
+    "LF_PROFILE_NATIVE_WORKFLOW_RUN_ID_V1", REPO, "9021",
+    "PERFIL-UX-DESIGN-LF", "a".repeat(64),
+  ]);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(frame)));
+  const identityHex = [...digest].map(b=>b.toString(16).padStart(2,"0")).join("");
+  const expectedId = "EXEC-PROFILE-GATE2-" + identityHex.slice(0,24).toUpperCase();
+  assertEquals(payload.result.execution_id,expectedId);
   const writers=h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
   assertEquals(writers.length,1);
   assertEquals(writers[0].body?.p_executor_mode,"GPT_NATIVE");
   assertEquals(writers[0].body?.p_target_repo,REPO);
+  assertEquals(writers[0].body?.p_execution_id,expectedId);
+  assertEquals(writers[0].body?.p_idempotency_key,"router-profile-gate2-run-v1:"+identityHex);
   assertEquals((writers[0].body?.p_manifest as Record<string,unknown>).profile_operation_begin,true);
+  assertEquals((writers[0].body?.p_manifest as Record<string,unknown>).profile_native_execution_identity,"GITHUB_OIDC_RUN_ID_V1");
+  assertEquals((writers[0].body?.p_manifest as Record<string,unknown>).profile_native_workflow_run_id,"9021");
   assertEquals(h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")).length,1);
+});
+
+Deno.test("native profile: identical request SHA creates a new ID for a distinct authenticated workflow run",async()=>{
+  const context={
+    schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+    status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+    transport_mode:"CONTEXT_TRANSPORT",
+    stage1_payload:{canal_candidato:"PRODUCTO",negocio_codigo:"LF",
+      alcance:{target_type:"PANTALLA"}},
+    after_selection_result:{gate2_request:{schema_version:"LF_ROUTER_PROFILE_GATE2_REQUEST_V1"}},
+    gate2_derivation:{gate2_result:{decision:"RESOLVED"}},
+  };
+  const a=harness({claims:NATIVE_CONTINUATION_CLAIMS});
+  const b=harness({claims:{...NATIVE_CONTINUATION_CLAIMS,run_id:"9022"}});
+  const payload={action:"profile_native_begin_from_context_v1",context,executor_mode:"GPT_NATIVE"};
+  const first=await invoke(a,payload);
+  const fresh=await invoke(b,payload);
+  assertEquals(first.response.status,200);
+  assertEquals(fresh.response.status,200);
+  assert(first.payload.result.execution_id!==fresh.payload.result.execution_id,
+    "A distinct OIDC run with identical literal SHA must create a distinct profile execution");
+  const firstWriter=a.calls.find(x=>x.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
+  const freshWriter=b.calls.find(x=>x.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
+  assert(firstWriter && freshWriter);
+  assert(firstWriter.body?.p_idempotency_key!==freshWriter.body?.p_idempotency_key);
+  assertEquals(firstWriter.body?.p_handoff && (firstWriter.body.p_handoff as Record<string,unknown>).request_sha256,"a".repeat(64));
+  assertEquals(freshWriter.body?.p_handoff && (freshWriter.body.p_handoff as Record<string,unknown>).request_sha256,"a".repeat(64));
+  // Re-running the same GitHub Actions run (same signed run_id, different attempt) is idempotent.
+  const retry=harness({claims:{...NATIVE_CONTINUATION_CLAIMS,run_attempt:"2"} as JwtPayload});
+  const again=await invoke(retry,payload);
+  assertEquals(again.response.status,200);
+  assertEquals(first.payload.result.execution_id,again.payload.result.execution_id);
+  const retryWriter=retry.calls.find(x=>x.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
+  assertEquals(firstWriter.body?.p_idempotency_key,retryWriter?.body?.p_idempotency_key);
+});
+
+Deno.test("native profile: malformed signed run_id blocks before a begin writer",async()=>{
+  const h=harness({claims:{...NATIVE_CONTINUATION_CLAIMS,run_id:"not-a-number"}});
+  const {response,payload}=await invoke(h,{
+    action:"profile_native_begin_from_context_v1",
+    context:{
+      schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+      status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+      transport_mode:"CONTEXT_TRANSPORT",
+    },
+    executor_mode:"GPT_NATIVE",
+  });
+  assertEquals(response.status,401);
+  assertEquals(payload.code,"PROFILE_NATIVE_OIDC_RUN_ID_INVALID");
+  assertEquals(h.calls.filter(x=>x.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1")).length,0);
 });
 
 Deno.test("CP2: profile BEGIN refuses legacy OIDC without calling service-role writer",async()=>{
