@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-profile-native-continuity-70-80-20261101",
+  "paths": {
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "ops/runbook-profiles-lf.md": "SERVICE_RUNTIME",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-native-continuity-70-80-20261101.json": "CHANGESET_MANIFEST"
+  }
+}
