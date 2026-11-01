@@ -97,6 +97,8 @@ Allowed stop classifications:
 
 **ACL is intentional:** migration `20261028050614_lf_router_v2_profile_admission_acl_hardening_v1.sql` grants `EXECUTE` on `lf_router_pipeline_context_profile_admit_v2` to `service_role` but **not** `supabase_read_only_user`, `anon`, or `authenticated`. **Never grant these roles execute, transport `service_role` via Router or prompts, or treat `42501` from an unauthorized direct call as proof that the governed profile-owned route is unavailable.**
 
+**Instance identity (Edge, not Router):** The existing `profile_native_begin_from_context_v1` derives `execution_id` and `idempotency_key` from the **verified GitHub OIDC workflow run_id**, canonical repository, selected profile and original request SHA, never from the request SHA alone. Two independently requested workflows with identical text receive distinct IDs; retries of the *same* workflow run retain their instance identity. Original `request_sha256` remains unchanged and lineage-bound. `service_role` continues solely inside Edge; no new RPC or intermediary is introduced.
+
 **Mandatory process for an explicitly new execution, even when the literal input/hash matches a prior run:**
 
 1. Start from the user's original text. Use only the existing *read-only Router context* functions: `lf_router_pipeline_context_begin_v2`, `lf_router_pipeline_context_stage1_submit_v2`, `lf_router_pipeline_context_profile_semantic_prepare_v2`, and `lf_router_pipeline_context_profile_semantic_submit_v2`. Stage 1 is source-bound; the semantic selector must supply actual candidate evidence, and the deterministic finalize/receipt must return `VALID`. **Do not** execute `lf_router_pipeline_context_profile_admit_v2` directly with the inspection principal.
