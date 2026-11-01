@@ -266,18 +266,24 @@ export async function handleProfileContinuation(
     const receipt = semantic as Payload;
     const review = receipt.judge_v3_evidence;
     const resultObj = receipt.result;
+    const currentContext = receipt.review_mode === "CURRENT_CONTEXT_REVIEW";
+    const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
+    const reviewerFactsValid = currentContext
+      ? receipt.producer_independence_proven === false &&
+        receipt.reviewer_is_producer === true && receipt.model_call_count === 0
+      : (receipt.review_mode === undefined || receipt.review_mode === "INDEPENDENT_SEMANTIC") &&
+        receipt.producer_independence_proven === true && receipt.model_call_count === 1;
     if (
       receipt.status !== "PASS" ||
-      receipt.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      receipt.verdict !== expectedVerdict ||
       receipt.validator_status !== "PASS" ||
-      receipt.producer_independence_proven !== true ||
-      receipt.model_call_count !== 1 ||
+      !reviewerFactsValid ||
       typeof receipt.candidate_sha256 !== "string" ||
       !/^[0-9a-f]{64}$/.test(receipt.candidate_sha256) ||
       typeof receipt.scope_packet_sha256 !== "string" ||
       !/^[0-9a-f]{64}$/.test(receipt.scope_packet_sha256) ||
       !resultObj || typeof resultObj !== "object" || Array.isArray(resultObj) ||
-      (resultObj as Payload).verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
+      (resultObj as Payload).verdict !== expectedVerdict ||
       (resultObj as Payload).candidate_sha256 !== receipt.candidate_sha256 ||
       (resultObj as Payload).scope_packet_sha256 !== receipt.scope_packet_sha256 ||
       !Array.isArray((resultObj as Payload).unsupported_claims) ||
@@ -290,9 +296,12 @@ export async function handleProfileContinuation(
     const v3 = review as Payload;
     const checks = v3.decision_checks;
     if (
-      v3.verdict !== "PASS_INDEPENDENT_SEMANTIC" ||
-      v3.producer_independence_proven !== true ||
-      v3.model_call_count !== 1 ||
+      v3.verdict !== expectedVerdict ||
+      (currentContext
+        ? v3.review_mode !== "CURRENT_CONTEXT_REVIEW" ||
+          v3.reviewer_is_producer !== true ||
+          v3.producer_independence_proven !== false || v3.model_call_count !== 0
+        : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
       v3.candidate_sha256 !== receipt.candidate_sha256 ||
       v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
       !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
