@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-profile-handoff-instructions-ekb-20261101",
+  "paths": {
+    "CLAUDE.md": "CLAUDE_GUIDANCE",
+    "docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md": "SERVICE_RUNTIME",
+    "supabase/migrations/20261101101400_lf_profile_handoff_42501_prevention_ekb_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-handoff-instructions-ekb-20261101.json": "CHANGESET_MANIFEST"
+  }
+}

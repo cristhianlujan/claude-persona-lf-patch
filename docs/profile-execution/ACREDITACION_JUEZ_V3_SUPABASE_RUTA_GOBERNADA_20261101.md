@@ -13,7 +13,7 @@ Este registro es **la acreditación operativa que utiliza el flujo vigente**. **
 ## 2. Recorrido existente, sin crear otro juez
 
 ```text
-Dictamen independiente V3 sobre RAW y scope exactos (no reutilizar otro run)
+Dictamen V3 con modo y procedencia acreditados (INDEPENDENT_SEMANTIC o CURRENT_CONTEXT_REVIEW en lectura autorizada), para el RAW y scope exactos (no reutilizar otro run)
     -> GitHub Issue: LF_PROFILE_NATIVE_RESUME_REQUEST_V1
        campo semantic_judge_review, execution_id exacto
     -> etiqueta lf-profile-resume-governed
@@ -73,13 +73,12 @@ order by s.step_order;
 
 **Veredicto probatorio:** cierre gobernado y validación de contrato del recibo **ACREDITADOS**; una traza independiente del proveedor de la llamada de modelo **NO OBSERVADA** (no es requisito de readback adicional del procedimiento actual). No extrapolar estos hashes a otro run.
 
-## 5. Estado del nuevo caso PR #3438 (no confundir con el anterior)
+## 5. Caso histórico PR #3438 — estado verificado posteriormente (no confundir)
 
-- Run `EXEC-PROFILE-GATE2-FB71EBD7D1A89272BFF20E44`.
-- RAW original: `f497633c50d83d55b6247474c909f2b075eb531f3c069173698a7972ea4cfb87`.
-- Scope: `7e8583e01c5dfa833838b73f68f4e08e15019da9b315f6ddabc97468ca066e0d`.
-- [Actions #41266315589](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41266315589): `execute_profile` y `output_validate` PASS.
-- **Readback de 2026-11-01:** `IN_PROGRESS`, 9/11, sin `semantic_judge` ni `report_output`. Este caso **aún no está acreditado ni cerrado**. Debe recibir un dictamen V3 del juez sobre **estos hashes**, mediante el mismo Issue/label/Edge/RPC; una vez registrado, comprobar terminal 11/11 y `READY`. No inventar una invocación para saltar esta precondición.
+- Run `EXEC-PROFILE-GATE2-FB71EBD7D1A89272BFF20E44`: posteriormente completado **11/11, COMPLETED, READY** por Issue #3446; no está pendiente en 9/11. El contexto y hashes de ese caso no constituyen un nuevo run.
+- Ejecución distinta y nueva `EXEC-PROFILE-GATE2-31340B34D5B0E320E3B83C00`: se inició mediante Issue #3449 por la ruta OIDC/Edge, siguió pantalla #3450, RAW #3451 y juicio V3 #3452, [Actions 41293887404](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41293887404). Supabase certificó **11/11, COMPLETED, READY**.
+- El modo `CURRENT_CONTEXT_REVIEW` permitido para un diagnóstico solo lectura **no implica** independencia: `producer_independence_proven=false`, `reviewer_is_producer=true`, `model_call_count=0`, `PASS_REVIEWED_CURRENT_CONTEXT`. Los 12 controles y los hashes exactos siguen siendo obligatorios.
+- La parte de admisión que requiere `service_role` ocurre **dentro del caller Edge**, no en el Router ni en las herramientas SQL de inspección. Ante 42501 desde `supabase_read_only_user`, continuar por `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1`/Issue/label/OIDC, sin conceder privilegios.
 
 ## 6. Control de interpretación y EKB
 
