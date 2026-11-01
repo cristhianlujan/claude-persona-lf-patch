@@ -258,6 +258,21 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
         }
 
     for row in report["rows"]:
+        case = cases[row["case_id"]]
+        control_index, control = next(
+            (idx, item) for idx, item in enumerate(case["checks"])
+            if item["id"] == row["control_id"])
+        # Hash the canonical JSON definition, not the on-disk source bytes.
+        # No source revision or execution receipt is claimed by this digest.
+        row["case_definition_ref"] = f"{OP_REL}/{slug}/{row['case_id']}.case.json"
+        row["case_definition_canonical_sha256"] = OPERATIONAL["canonical_sha256"](case)
+        row["case_definition_hash_kind"] = "CANONICAL_JSON_NOT_FILE_BYTES"
+        row["control_description"] = control.get("description")
+        row["control_predicate_ref"] = (
+            f"{row['case_definition_ref']}#/checks/{control_index}")
+        row["control_predicate_sha256"] = OPERATIONAL["canonical_sha256"](control)
+        row["verification_method"] = "operational_coverage_v1.measure"
+        row["verification_scope"] = "STRUCTURAL_PREDICATE_REPORT_ONLY"
         case_runs = [run for run in runs if run.get("case_id") == row["case_id"]]
         original = [run for run in case_runs if run.get("profile_tree_sha256") == base_tree]
         evolved_runs = [run for run in case_runs if run.get("profile_tree_sha256") == cand_tree]
@@ -306,6 +321,16 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
                   else "NO_VERIFICADO_PROOF_OR_SOURCE",
         "authoritative_group2_verdict": official_proof.get("verdict"),
         "destination_authority": "UNVERIFIED",
+        "open_report_findings": sorted({
+            f"{row['case_id']}:{row['control_id']}:{reason}"
+            for row in report["rows"] for reason in (
+                (["DESTINATION_NOT_CANONICAL"] if row["destination_status"]
+                 != "CANONICAL_VERIFIED" else []) +
+                (["REGRESSION_OBSERVED"] if row["comparison"] == "REGRESION" else []) +
+                (["EVIDENCE_NOT_VERIFIED"] if row.get("case_input_status") != "RECORDED_LITERAL_MATCH_ONLY"
+                 or row.get("raw_provenance_status") !=
+                    "TRUSTED_FILE_HASH_ONLY_NO_RUNTIME_ATTESTATION" else [])
+            )}),
         "approval_effect": "NONE",
     })
     return report
@@ -337,7 +362,11 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
               "destination_source_path", "destination_source_sha256",
               "destination_source_line", "change_type",
               "original_raw_refs", "evolved_raw_refs", "case_input_sha256",
-              "case_input_status", "raw_provenance_status")
+              "case_input_status", "raw_provenance_status",
+              "case_definition_ref", "case_definition_canonical_sha256",
+              "case_definition_hash_kind", "control_description",
+              "control_predicate_ref", "control_predicate_sha256",
+              "verification_method", "verification_scope")
     projected = [{key: row.get(key) for key in fields} for row in full_rows]
     packet = {
         "schema": "LF_PROFILE_CONTROL_MATRIX_RECEIPT_V1",
@@ -349,6 +378,8 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
         "profile_slug": report.get("profile_slug"),
         "binding": report.get("binding"),
         "summary": report.get("summary"),
+        "open_report_findings_total": len(report.get("open_report_findings") or []),
+        "open_report_findings_sha256": digest(report.get("open_report_findings") or []),
         "row_count_total": len(projected),
         "rows": [],
     }
