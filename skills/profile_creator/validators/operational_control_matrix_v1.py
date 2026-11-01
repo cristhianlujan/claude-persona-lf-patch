@@ -18,7 +18,7 @@ CHANGE_TYPES = {"CONSERVAR", "MODIFICAR", "AGREGAR", "SUSTITUIR", "RETIRAR"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MD_HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 # Keep the ordered number, but do not assume all profiles bold the item title.
-MD_ITEM = re.compile(r"^\\s*(\\d+)\\.\\s+(.+?)\\s*$")
+MD_ITEM = re.compile(r"^\s*(\d+)\.\s+(.+?)\s*$")
 
 
 def _section_matches(actual: str, declared: str) -> bool:
@@ -30,7 +30,7 @@ def _item_matches(item_body: str, declared: str) -> bool:
     """Allow a full plain-text item or exact bold-title match; never keyword search."""
     body = item_body.strip()
     if body.startswith("**"):
-        m = re.match(r"^\\*\\*(.+?)\\*\\*", body)
+        m = re.match(r"^\*\*(.+?)\*\*", body)
         return bool(m and m.group(1).strip() == declared)
     # Plain numbered steps may have no bold title. Require the complete line
     # (or the first sentence, delimited by '. '), never a loose substring.
