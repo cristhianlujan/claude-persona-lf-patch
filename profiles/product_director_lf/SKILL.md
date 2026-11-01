@@ -117,17 +117,6 @@ Block or request input when:
 
 Provenance or schema validity does not prove semantic correctness.
 
-## Step 70/80 governed operational certification
-
-For an `EJECUCION_PERFIL_LF` run after the producer's RAW and deterministic step 60, the semantic V3 result must be submitted **only** by the existing governed continuation `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` + `lf-profile-resume-governed`. The Router routes and never launches the profile. Do not create a second judge or a separate direct invocation just for attestation.
-
-**Certify the result by reading Supabase**, as specified in [the canonical step 70/80 document](../../docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md) and [Profiles LF runbook](../../ops/runbook-profiles-lf.md):
-
-- Step 70: `public.lf_operation_execution_steps.semantic_judge` is `STEP_PASS_WITH_EVIDENCE`, with actual `actions://` artifact, `trust_validation.valid=true`, canonical recorder, and original candidate/scope hashes matched to steps 50/40.
-- Step 80: `report_output` is `STEP_PASS_WITH_EVIDENCE`, run status `COMPLETED`, **11/11** clean, and existing terminal authority receipt `READY`.
-- No extra external certificate is required to attest **governed operational recording**. A stored field claiming model invocation or independence is not itself a provider-side invocation log; the V3 decision must nevertheless genuinely originate from the independent reviewer and follow all source/evidence requirements.
-- Without the exact readback, do not report completed; without the actual V3 result, do not fabricate a PASS or copy a different run's receipt. Keep `IN_PROGRESS` and preserve the original RAW.
-
 ## Behavioral proof boundary
 `evals/remediation_20260827/run_cases.py` is a deterministic contract regression suite. It does **not** execute this profile and must never be described as RAW profile behavior.
 
