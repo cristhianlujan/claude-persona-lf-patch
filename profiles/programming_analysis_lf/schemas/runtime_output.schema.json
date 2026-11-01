@@ -55,7 +55,10 @@
         "target_granularity",
         "depth",
         "authority_state",
-        "implementation_state"
+        "implementation_state",
+        "initial_intent_kind",
+        "initial_development_class",
+        "initial_evidence_refs"
       ],
       "properties": {
         "target_granularity": {
@@ -82,6 +85,35 @@
             "NEW",
             "UNKNOWN"
           ]
+        },
+        "initial_intent_kind": {
+          "enum": [
+            "CREATE",
+            "EVOLVE",
+            "COMBINE",
+            "REPAIR",
+            "UNKNOWN"
+          ]
+        },
+        "initial_development_class": {
+          "enum": [
+            "NEW_CANDIDATE",
+            "EXISTING_EVOLUTION_CANDIDATE",
+            "MIXED_CANDIDATE",
+            "REPAIR_HANDOFF",
+            "NEED_MORE_EVIDENCE"
+          ],
+          "description": "Step 10.1 provisional; A3/10.4 verifies actual implementation separately."
+        },
+        "initial_evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "References to original intent and Router handoff; verified externally, not model authority."
         }
       }
     },
