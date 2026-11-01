@@ -28,7 +28,9 @@ def blocked():
         "schema_version": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
         "candidate_only": True,
         "request_context": {"intent": "Change a capability with unresolved authority", "target_ref": "target://unresolved", "business": "LF"},
-        "classification": {"target_granularity": "RULE", "depth": "L2", "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN"},
+        "classification": {"target_granularity": "RULE", "depth": "L2", "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN",
+                           "initial_intent_kind": "UNKNOWN", "initial_development_class": "NEED_MORE_EVIDENCE",
+                           "initial_evidence_refs": ["router-handoff://candidate", "user-request://candidate"]},
         "stage_trace": [
             {"stage": f"A{i}", "outcome": f"Stage A{i} preserved unresolved evidence", "source_refs": []}
             for i in range(1, 10)
@@ -50,7 +52,9 @@ def blocked():
 def ready_candidate():
     payload = blocked()
     payload["request_context"]["target_ref"] = "authority://verified-target"
-    payload["classification"].update(depth="L2", authority_state="EXISTING", implementation_state="EXISTING")
+    payload["classification"].update(depth="L2", authority_state="EXISTING", implementation_state="EXISTING",
+                                     initial_intent_kind="EVOLVE",
+                                     initial_development_class="EXISTING_EVOLUTION_CANDIDATE")
     payload["material_unknowns"] = []
     payload["requirements"] = [{"requirement_id": "R1", "scope_id": "S1",
                                  "outcome": "Preserve governed current behavior while changing requested state",
@@ -173,6 +177,28 @@ class AnalysisCandidateContractTests(unittest.TestCase):
         p = blocked()
         p["request_context"]["business"] = "saly"
         rejected(p, "ANALYSIS_BUSINESS_CONTEXT_REQUIRED")
+
+
+    def test_19_10_1_invalid_pair_must_block(self):
+        p = blocked()
+        p["classification"]["initial_intent_kind"] = "CREATE"
+        rejected(p, "ANALYSIS_10_1_INITIAL_CLASSIFICATION_MISMATCH")
+
+    def test_20_10_1_repair_must_never_be_ready(self):
+        p = ready_candidate()
+        p["classification"].update(initial_intent_kind="REPAIR", initial_development_class="REPAIR_HANDOFF")
+        rejected(p, "ANALYSIS_10_1_UNRESOLVED_OR_REPAIR_FALSE_READY")
+
+    def test_21_10_1_missing_evidence_rejected(self):
+        p = blocked()
+        p["classification"]["initial_evidence_refs"] = []
+        rejected(p, "ANALYSIS_10_1_INTENT_EVIDENCE_MISSING")
+
+    def test_22_10_1_new_with_existing_definitions_and_unknown_code(self):
+        p = blocked()
+        p["classification"].update(initial_intent_kind="CREATE", initial_development_class="NEW_CANDIDATE",
+                                  authority_state="EXISTING", implementation_state="UNKNOWN")
+        self.assertEqual(V.validate(p)["status"], "PASS")
 
 
 if __name__ == "__main__":
