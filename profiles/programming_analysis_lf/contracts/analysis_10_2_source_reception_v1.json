@@ -1,0 +1,68 @@
+{
+  "schema_version": "ANALYSIS_10_2_SOURCE_RECEPTION_CONTRACT_V1",
+  "status": "CANDIDATE_NOT_RELEASED",
+  "unit": "A1_SUBSTEP_10_2 / SOURCE_LOCATION",
+  "purpose": "Receive business-scoped canonical source references from governed authority adapter, never issue database queries in model or invent source refs.",
+  "prerequisites": [
+    "10.1 exact payload readback",
+    "canonical RUN from Router",
+    "business LF binding",
+    "source readback from qualified resolver"
+  ],
+  "boundary": {
+    "resolver_owner": "SOURCE_RESOLUTION_POLICY + TYPED_DATA_ACCESS + CURRENTNESS_AUTHORITY",
+    "source_catalog": "Business-scoped resolver; LF references lf_ops authority definitions, SALY must have separate qualified binding",
+    "adapter_transport": "ProfileTask.lf_adapter_sources (existing) via Router, not a new transport",
+    "no_hardcoded_screen": true,
+    "no_guess_from_user_phrase": true,
+    "definitions_are_not_runtime_code": true,
+    "candidates_are_not_approved": true,
+    "ignore_unrelated_records": true,
+    "do_not_query_or_write_from_model": true
+  },
+  "source_evidence": {
+    "business": "LF",
+    "required_fields": [
+      "business",
+      "source_namespace",
+      "target_type",
+      "target_code",
+      "definition_id",
+      "definition_status",
+      "definition_version",
+      "definition_source_ref",
+      "rule_count",
+      "resolved_by",
+      "source_receipt_ref"
+    ],
+    "screen_source": "LF SCREEN example: lf_ops.pantallas or governed contract view; not universal for other types",
+    "rule_relation_source": "LF SCREEN example: lf_ops.reglas_pantallas join lf_ops.reglas; other targets via qualified resolver",
+    "currentness_attestation": "10.3 owns approval; source readback does not imply authoritative approval",
+    "exact_lookup_not_open_search": true,
+    "rule_relation_required_if_rule_count_positive": true,
+    "target_granularity": "EVIDENCE_DERIVED_OPEN_CATALOG, never hardcode SCREEN"
+  },
+  "transport": {
+    "same_execution_id": true,
+    "same_business": true,
+    "same_request_sha256": true,
+    "original_10_1_sha256_required": true,
+    "ack_is_structural_only": true,
+    "real_transport_receipt_required_for_operational_pass": true,
+    "checkpoint_runtime_owner": "existing lease-fenced RUN checkpoint",
+    "explicit_target_type_and_code_must_match": true
+  },
+  "output": [
+    "RECEIVED_CANDIDATE",
+    "SOURCE_NOT_FOUND",
+    "BLOCKED"
+  ],
+  "forbidden_claims": [
+    "10_2_SOURCE_APPROVED",
+    "10_2_RUNTIME_PASS",
+    "STAGE_PERSISTED",
+    "MODEL_RECEIPT_VERIFIED",
+    "IMPLEMENTATION_EXISTS"
+  ],
+  "next_step": "10.3 validates exact source currentness, rule statuses, dependencies and sufficiency"
+}

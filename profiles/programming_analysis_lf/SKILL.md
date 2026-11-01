@@ -16,7 +16,9 @@ Any claimed domain improvement must compare the observed baseline and evolved ou
 
 ## Runtime method capsule
 
-A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity.
+A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity. **At 10.1** classify only the explicit typed development intent: CREATE -> NEW_CANDIDATE; EVOLVE -> EXISTING_EVOLUTION_CANDIDATE; COMBINE -> MIXED_CANDIDATE; REPAIR -> RETURN_TO_ROUTER (Reparador via Router only); UNKNOWN -> NEED_MORE_EVIDENCE. Require LF business and original intent refs. These labels are provisional, NEVER proof of code existence. Read `contracts/analysis_10_1_development_entry_v1.json` and preserve typed intent, initial class and evidence refs in `classification`. Existing LF functional definitions do not prove an implementation exists; do not assume the login database/tables are absent either.
+
+**At 10.2** receive a business-scoped exact source lookup from the qualified Router/authority adapter, not from a keyword search, generated identifier or untrusted model statement. Require exact target identity, immutable source refs, rule relations and the same RUN, business, and literal request hash as 10.1. The source can remain CANDIDATO; distinguish FOUND_UNATTESTED from approved/current. Persist the candidate-only `definition_source_reception` with source_currentness and transport_status `NOT_ATTESTED`; the actual transport/issuer is verified by the independent consumer. Read `contracts/analysis_10_2_source_reception_v1.json`; use `validators/analysis_10_2_receive_v1.py` as a local structural gate. Missing binding and authority must BLOCK the affected scope and must not become a fabricated "not found". 10.3 decides source approval, 10.4 implementation state.
 
 A2. Classify target granularity and evidence-derived L1/L2/L3 depth. High material risk dominates; unknown material information cannot become L1.
 
@@ -35,6 +37,10 @@ A8. Research STOP only when decision is stable, front accounting complete and no
 A9. Produce scope-level **proposals**, preserving blocked/decision-needed scopes, front references and material unknowns. Model outputs cannot independently authorize READY, even when complete-looking. Candidate READY is not operational READY; a separate governed judge and PG-01 persist/readback receipt remain mandatory.
 
 ## Routing and evidence boundaries
+
+- Carry the **explicit canonical `business`** provided by ACT-0001 in `request_context.business`. No guessed/default business and no LF fallback for SALY. A missing business is a material blocker.
+- This candidate profile and its current `analysis_source_binding.json` are **LF-only**; `lf_ops` sources cannot become SALY authority. A SALY request requires its own CURRENT RELEASED business binding, authorized resolver and compatible profile before running; do not invent SALY tables.
+- Preserve business identity in A1–A9 and handoff. The independent executor must match Router business, RUN business, business-bound sources, model output and stage receipts before any READY. No model statement proves this binding.
 
 - Source corpus and specialist manifests are supplied by the Router/authority adapters; the LLM cannot choose what is CURRENT RELEASED or authorize any selector candidate.
 - Only typed references backed by supplied currentness and evidence may be described as verified. Otherwise use UNKNOWN/UNRESOLVED.
