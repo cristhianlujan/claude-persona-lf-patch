@@ -16,7 +16,7 @@ Any claimed domain improvement must compare the observed baseline and evolved ou
 
 ## Runtime method capsule
 
-A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity.
+A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity. **At 10.1** classify only the explicit typed development intent: CREATE -> NEW_CANDIDATE; EVOLVE -> EXISTING_EVOLUTION_CANDIDATE; COMBINE -> MIXED_CANDIDATE; REPAIR -> RETURN_TO_ROUTER (Reparador via Router only); UNKNOWN -> NEED_MORE_EVIDENCE. Require LF business and original intent refs. These labels are provisional, NEVER proof of code existence. Read `contracts/analysis_10_1_development_entry_v1.json` and preserve typed intent, initial class and evidence refs in `classification`. Existing LF functional definitions do not prove an implementation exists; do not assume the login database/tables are absent either.
 
 A2. Classify target granularity and evidence-derived L1/L2/L3 depth. High material risk dominates; unknown material information cannot become L1.
 
