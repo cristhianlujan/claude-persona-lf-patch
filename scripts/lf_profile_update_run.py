@@ -267,7 +267,9 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
         row["case_definition_ref"] = f"{OP_REL}/{slug}/{row['case_id']}.case.json"
         row["case_definition_canonical_sha256"] = OPERATIONAL["canonical_sha256"](case)
         row["case_definition_hash_kind"] = "CANONICAL_JSON_NOT_FILE_BYTES"
-        row["control_description"] = control.get("description")
+        row["control_description"] = (control.get("description") or
+                                      f"predicado {control['op']} sobre "
+                                      f"{control.get('pointer', 'condicion compuesta')}")
         row["control_predicate_ref"] = (
             f"{row['case_definition_ref']}#/checks/{control_index}")
         row["control_predicate_sha256"] = OPERATIONAL["canonical_sha256"](control)
@@ -380,6 +382,8 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
         "summary": report.get("summary"),
         "open_report_findings_total": len(report.get("open_report_findings") or []),
         "open_report_findings_sha256": digest(report.get("open_report_findings") or []),
+        "open_report_findings_preview": (report.get("open_report_findings") or [])[:6],
+        "open_report_findings_omitted": max(0, len(report.get("open_report_findings") or []) - 6),
         "row_count_total": len(projected),
         "rows": [],
     }
