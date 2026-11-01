@@ -95,6 +95,22 @@ def governed_request():
     if not isinstance(raw, str) or len(raw) > 60000:
         raise ValueError("PROFILE_GOVERNED_ISSUE_REQUEST_BODY_INVALID")
     data = parse_issue_body(raw)
+    # The selected profile may BEGIN through this EXISTING governed workflow.
+    # Router never dispatches this. Carry only validated context, never a
+    # Supabase service_role secret or any credential in the issue payload.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_BEGIN_REQUEST_V1":
+        if set(data) != {"schema_version", "router_context", "executor_mode"}:
+            raise ValueError("PROFILE_NATIVE_BEGIN_SCHEMA_INVALID")
+        context = data.get("router_context")
+        mode = data.get("executor_mode")
+        if (not isinstance(context, dict)
+            or context.get("schema_version") != "LF_ROUTER_EXECUTION_PIPELINE_V1"
+            or context.get("status") != "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION"
+            or context.get("transport_mode") != "CONTEXT_TRANSPORT"
+            or mode not in {"GPT_NATIVE", "CLAUDE_NATIVE"}
+            or len(json.dumps(context)) > 55000):
+            raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
+        return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
@@ -306,10 +322,38 @@ def build_semantic_receipt(review):
 
 
 def main():
-    execution_id, raw_draft, profile_output, semantic_review = governed_request()
+    request = governed_request()
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "BEGIN":
+        # Profile invokes its own existing governed operation. Server-side
+        # Edge authenticates OIDC and applies service_role at the canonical
+        # writer. No credential is serialized to Router/profile context.
+        code, started = call_json(EDGE_URL, {
+            "action": "profile_native_begin_from_context_v1",
+            "context": request["router_context"],
+            "executor_mode": request["executor_mode"],
+        }, headers)
+        result = started.get("result") if isinstance(started.get("result"), dict) else {}
+        execution_id = result.get("execution_id")
+        if (code != 200 or started.get("outcome") != "NATIVE_EXECUTION_READY"
+            or result.get("status") != "NATIVE_EXECUTION_READY"
+            or not isinstance(execution_id, str)
+            or not execution_id.startswith("EXEC-PROFILE-GATE2-")):
+            print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",
+                "http_status":code,"code":started.get("code"),
+                "outcome":started.get("outcome")}))
+            return 1
+        raw_draft = ""
+        profile_output = None
+        semantic_review = None
+        print(json.dumps({"phase":"PROFILE_NATIVE_BEGIN",
+            "execution_id":execution_id,
+            "profile_code":result.get("profile_code"),
+            "status":"NATIVE_EXECUTION_READY"},ensure_ascii=False))
+    else:
+        execution_id, raw_draft, profile_output, semantic_review = request
 
     code, source = call_json(EDGE_URL, {
         "action": "profile_native_source_bind_v1",
