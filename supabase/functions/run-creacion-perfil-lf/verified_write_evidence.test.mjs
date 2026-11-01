@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {verifyGithubWrite, verifyGithubReadback, IDENTITY_FIELDS} from './verified_write_evidence.ts';
+import {verifyGithubWrite, verifyGithubReadback, verifyCandidateAmendment, IDENTITY_FIELDS} from './verified_write_evidence.ts';
 
 const R = 'cristhianlujan/claude-persona-lf-patch';
 const ROOT = 'profiles/demo_profile';
@@ -151,4 +151,95 @@ test('readback: tampered recorded write outside scope blocks', async () => {
 test('reader errors propagate (fail closed, no silent pass)', async () => {
   const gh = async () => { throw new Error('GITHUB_REF_500'); };
   await assert.rejects(verifyGithubWrite(base(gh)), /GITHUB_REF_500/);
+});
+
+
+const AMENDED = 'f'.repeat(40);
+function amendmentReader(over = {}) {
+  const changed = [{filename: `${ROOT}/schemas/output.schema.json`, status: 'modified', sha: BLOB2}];
+  const state = {
+    refSha: AMENDED,
+    ancestry: {status: 'ahead', ahead_by: 3, behind_by: 0, files: changed},
+    privateDiff: {status: 'ahead', ahead_by: 3, behind_by: 0, files: [
+      ...changed,
+      {filename: 'docs/profile_updater/handoffs/WEB001.json', status: 'added', sha: BLOB},
+    ]},
+    beforeManifest: manifest(),
+    afterManifest: manifest(),
+    ...over,
+  };
+  return async (path) => {
+    if (path.startsWith('/git/ref/heads/')) return {object: {sha: state.refSha}};
+    if (path.startsWith('/compare/main...')) return state.privateDiff;
+    if (path.startsWith('/compare/')) return state.ancestry;
+    if (path.startsWith(`/contents/${ROOT}/manifest.json`)) {
+      return {encoding: 'base64', content: path.endsWith(`ref=${AMENDED}`) ? state.afterManifest : state.beforeManifest};
+    }
+    throw new Error('UNEXPECTED_GITHUB_PATH:' + path);
+  };
+}
+const originalReceipt = {
+  server_trust_context_valid: true,
+  server_trust_context: {resolver: 'GITHUB_PUBLIC_API_EXACT_COMMIT_V1', branch: 'lf/demo-1',
+    repository: R, target_root_path: ROOT, commit_sha: HEAD},
+};
+const amendInput = (gh = amendmentReader(), patch = {}) => ({
+  repository: R, targetRootPath: ROOT, boundRevision: BASE, evidence: {}, gh,
+  previousCommit: HEAD, candidateCommit: AMENDED, recordedWrite: originalReceipt,
+  now: () => '2026-10-31T04:15:00Z', ...patch,
+});
+
+test('candidate amendment: real ancestry, branch, profile scope and unchanged identity produce bound receipt', async () => {
+  const result = await verifyCandidateAmendment(amendInput());
+  assert.equal(result.ok, true);
+  assert.equal(result.evidence.previous_commit, HEAD);
+  assert.equal(result.evidence.candidate_commit, AMENDED);
+  assert.equal(result.evidence.resolver, 'GITHUB_PROFILE_AMENDMENT_V1');
+  assert.equal(result.evidence.identity_preserved, true);
+  assert.equal(result.evidence.private_delta_scope_verified, true);
+  assert.equal(result.evidence.changed_profile_files.length, 1);
+});
+
+test('candidate amendment: missing prior server write and altered resolver rejected', async () => {
+  for (const write of [null, {}, {...originalReceipt, server_trust_context_valid: false},
+    {...originalReceipt, server_trust_context: {...originalReceipt.server_trust_context, resolver: 'FRAUD'}}]) {
+    const r = await verifyCandidateAmendment(amendInput(amendmentReader(), {recordedWrite: write}));
+    assert.deepEqual(r, {ok: false, code: 'PROFILE_AMEND_VERIFIED_WRITE_REQUIRED'});
+  }
+});
+
+test('candidate amendment: stale head, changed parent and fake same-SHA blocked', async () => {
+  const stale = await verifyCandidateAmendment(amendInput(amendmentReader({refSha: HEAD})));
+  assert.deepEqual(stale, {ok: false, code: 'PROFILE_AMEND_HEAD_MISMATCH'});
+
+  const badAncestry = {status: 'diverged', ahead_by: 1, behind_by: 1, files: []};
+  const diverged = await verifyCandidateAmendment(amendInput(amendmentReader({ancestry: badAncestry})));
+  assert.deepEqual(diverged, {ok: false, code: 'PROFILE_AMEND_NOT_DESCENDANT'});
+
+  const sameSha = await verifyCandidateAmendment(amendInput(amendmentReader(), {candidateCommit: HEAD}));
+  assert.deepEqual(sameSha, {ok: false, code: 'PROFILE_AMEND_INPUT_INVALID'});
+});
+
+test('candidate amendment: outside-profile modifications, new workflows and migrations fail closed', async () => {
+  for (const path of ['profiles/other/SKILL.md', '.github/workflows/other.yml',
+    'supabase/migrations/unrelated.sql', 'skills/profile_creator/operational_cases/x/runs/new.json']) {
+    const privateDiff = {status: 'ahead', files: [
+      {filename: `${ROOT}/schemas/output.schema.json`, status: 'modified', sha: BLOB2},
+      {filename: path, status: 'modified', sha: BLOB},
+    ]};
+    const r = await verifyCandidateAmendment(amendInput(amendmentReader({privateDiff})));
+    assert.deepEqual(r, {ok: false, code: 'PROFILE_AMEND_OUT_OF_SCOPE_DELTA'}, path);
+  }
+});
+
+test('candidate amendment: no material profile changes, removals, identity changes rejected', async () => {
+  const noChange = {status: 'ahead', ahead_by: 1, behind_by: 0,
+    files: [{filename: 'docs/profile_updater/handoffs/foo.json', status: 'added', sha: BLOB}]};
+  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader({ancestry: noChange}))),
+    {ok: false, code: 'PROFILE_AMEND_PROFILE_DIFF_INVALID'});
+  const removed = {status: 'ahead', files: [{filename: `${ROOT}/SKILL.md`, status: 'removed', sha: BLOB}]};
+  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader({privateDiff: removed}))),
+    {ok: false, code: 'PROFILE_AMEND_REMOVAL_FORBIDDEN'});
+  assert.deepEqual(await verifyCandidateAmendment(amendInput(amendmentReader({afterManifest: manifest({runtime_enabled: true})}))),
+    {ok: false, code: 'PROFILE_AMEND_IDENTITY_NOT_PRESERVED'});
 });
