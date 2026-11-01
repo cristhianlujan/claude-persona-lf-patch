@@ -130,6 +130,42 @@ def governed_request():
     return execution_id, json.dumps(selection) if selection is not None else "", profile_output, semantic_review
 
 
+def record_incomplete_continuation(execution_id, profile_code, phase, next_step, required_input):
+    """Persist a bounded cursor, never report an incomplete governed execution as success.
+
+    This does not run a semantic model or open a new route. The LF agent that
+    owns the review must supply real V3 evidence via the existing OIDC bridge.
+    """
+    if next_step not in {
+        "screen_selection", "input_governance", "execute_profile", "semantic_judge",
+    }:
+        raise ValueError("PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP")
+    checkpoint = {
+        "schema_version": "LF_PROFILE_NATIVE_CONTINUATION_CHECKPOINT_V1",
+        "execution_id": execution_id,
+        "profile_code": profile_code,
+        "status": "CONTINUATION_REQUIRED_NOT_COMPLETE",
+        "phase": phase,
+        "last_run_completed": False,
+        "next_step": next_step,
+        "required_input": required_input,
+        "reuse_execution_id": True,
+        "transport": "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+        "request_schema_version": "LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+        "issue_label": "lf-profile-resume-governed",
+        "credential_route": "GITHUB_OIDC_TO_EDGE_ONLY",
+        "next_action": "PRODUCE_REAL_REQUIRED_INPUT_AND_RESUME_GOVERNED",
+        "owner_reauthorization_required": False,
+    }
+    (Path.cwd() / "profile-native-continuation.json").write_text(
+        json.dumps(checkpoint, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(checkpoint, ensure_ascii=False, sort_keys=True))
+    # Nonzero is deliberate: an incomplete 9/11 run must never make CI green.
+    return 1
+
+
 def is_direct_validator_continuation(status, response):
     """Only the exact governed 202 response may request a fresh one-time ticket."""
     return (
@@ -475,8 +511,10 @@ def main():
     }, ensure_ascii=False))
     if phase == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
         if semantic_review is None:
-            print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
-            return 0
+            return record_incomplete_continuation(
+                execution_id, source.get("profile_code"), phase,
+                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+            )
         if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
             from lf_semantic_fail_feedback import persist_feedback
             try:
@@ -557,8 +595,10 @@ def main():
         return 0 if closed.get("phase") == "PROFILE_EXECUTION_COMPLETED" else 1
     if phase == "NATIVE_MODEL_INPUT_READY":
         if profile_output is None:
-            print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")
-            return 0
+            return record_incomplete_continuation(
+                execution_id, source.get("profile_code"), phase,
+                "execute_profile", "NATIVE_PROFILE_RAW_OUTPUT",
+            )
         try:
             validation, raw_ref, validator_ref = run_bound_validator(
                 target_path, source.get("profile_code"), profile_output
@@ -589,10 +629,19 @@ def main():
             "phase": recorded.get("phase"),
             "next_action": recorded.get("next_action"),
         }, ensure_ascii=False))
-        return 0 if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED" else 1
+        if recorded.get("phase") == "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED":
+            return record_incomplete_continuation(
+                execution_id, source.get("profile_code"), recorded["phase"],
+                "semantic_judge", "SOURCE_SUPPORTED_V3_REVIEW",
+            )
+        return 1
     if phase in ("SCREEN_SELECTION_REQUIRED", "INPUT_GOVERNANCE_RUNTIME_REQUIRED"):
-        print("PROFILE_NATIVE_SEMANTIC_OR_IG_CONTINUATION_REQUIRED_NOT_COMPLETE")
-        return 0
+        return record_incomplete_continuation(
+            execution_id, source.get("profile_code"), phase,
+            "screen_selection" if phase == "SCREEN_SELECTION_REQUIRED" else "input_governance",
+            "AUTHORIZED_SCREEN_SELECTION" if phase == "SCREEN_SELECTION_REQUIRED"
+            else "GOVERNED_INPUT_READINESS_RESULT",
+        )
     print("PROFILE_NATIVE_BRIDGE_BLOCKED_OR_MANUAL_DECISION_REQUIRED")
     return 1
 
