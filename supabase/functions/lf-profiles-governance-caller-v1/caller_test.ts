@@ -603,6 +603,44 @@ Deno.test("Router is derivation only: no direct call or intermediary starts a pr
   }
 });
 
+Deno.test("CP2: selected profile owns BEGIN and Edge uses existing canonical service-role writer", async () => {
+  const h = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
+  const context = {
+    schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+    status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+    transport_mode:"CONTEXT_TRANSPORT",
+    stage1_payload: { canal_candidato:"PRODUCTO", negocio_codigo:"LF",
+      alcance:{target_type:"PANTALLA"} },
+    after_selection_result: { gate2_request:{schema_version:"LF_ROUTER_PROFILE_GATE2_REQUEST_V1"} },
+    gate2_derivation:{gate2_result:{decision:"RESOLVED"}},
+  };
+  const {response,payload} = await invoke(h, {
+    action:"profile_native_begin_from_context_v1",context,executor_mode:"GPT_NATIVE",
+  });
+  assertEquals(response.status,200);
+  assertEquals(payload.outcome,"NATIVE_EXECUTION_READY");
+  assertEquals(payload.result.execution_id,"EXEC-PROFILE-GATE2-"+"A".repeat(24));
+  const writers=h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"));
+  assertEquals(writers.length,1);
+  assertEquals(writers[0].body?.p_executor_mode,"GPT_NATIVE");
+  assertEquals(writers[0].body?.p_target_repo,REPO);
+  assertEquals((writers[0].body?.p_manifest as Record<string,unknown>).profile_operation_begin,true);
+  assertEquals(h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")).length,1);
+});
+
+Deno.test("CP2: profile BEGIN refuses legacy OIDC without calling service-role writer",async()=>{
+  const h=harness({claims:LEGACY_CLAIMS});
+  const {response,payload}=await invoke(h, {
+    action:"profile_native_begin_from_context_v1",
+    context:{schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+      status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",transport_mode:"CONTEXT_TRANSPORT"},
+    executor_mode:"GPT_NATIVE",
+  });
+  assertEquals(response.status,403);
+  assertEquals(payload.code,"PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED");
+  assertEquals(h.calls.length,0);
+});
+
 Deno.test("CP2: native profile resume: only exact protected main-branch workflow may read source", async () => {
   const approved = harness({ claims: NATIVE_CONTINUATION_CLAIMS });
   const { response, payload } = await invoke(approved, {
