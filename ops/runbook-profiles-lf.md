@@ -91,6 +91,16 @@ Allowed stop classifications:
 - `EXECUTION_LIMIT_REACHED` only with an observed runtime/tool limit signal
 - `PARTIAL_RUN` when real progress was made and the execution window ended before remaining safe work could be completed
 
+## 7.0. Mandatory continuation of the already-authorized profile execution (60 → 70 → 80)
+
+A governed profile execution is **not** complete after `execute_profile`/50 or `output_validate`/60. This rule applies across LF profiles, including Product Director; it does not extend the Router's role or require a new dispatcher.
+
+When the live Edge bridge reports `INDEPENDENT_SEMANTIC_JUDGE_REQUIRED` (legacy phase name), interpret it as **V3 semantic review needed**, not a command to open an independent reviewer or request an owner permission. The existing `CURRENT_CONTEXT_REVIEW` mode is allowed only when the manifest is `read_only/no_write/no_promotion` and evidence supports all applicable V3 checks. The live semantics are authoritative, not the outdated phase label.
+
+**Authorized next step within the same scope:** the current LF agent must (a) read original run 40/50/60 and the live sources, (b) evaluate all 12 V3 checks with real support, (c) preserve original hashes and honest reviewer provenance, (d) submit `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` using the existing `lf-profile-resume-governed` Issue/Actions route, (e) verify exact-run 70/80 and terminal receipt in Supabase. No other run, no change to ACT-0001, no `service_role` in prompts or Router. An authorized next-step operation needs no repeated owner permission. Missing evidence or a genuine authority gap must be recorded, not guessed.
+
+**False-green prevention:** the native executor emits `profile-native-continuation.json` and returns nonzero while any step remains incomplete. The checkpoint includes `next_step`, `execution_id`, existing transport and required input; it is a cursor, **not an accepted semantic verdict**. A red Actions job whose readback shows `CONTINUATION_REQUIRED_NOT_COMPLETE` is an actionable handoff, not a request for secret or user approval. The agent must process the next phase with its real evidence, not mark the run failed or finished merely from the GitHub job conclusion. Only `COMPLETED + 11/11 + READY` is terminal success.
+
 ## 7.1. Canonical certification — profile semantic judge (70) and report (80)
 
 **Required for `EJECUCION_PERFIL_LF` closures, even when GitHub Actions reports SUCCESS.** Apply [the approved Supabase accreditation procedure](../docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md). Do not invent a separate reviewer, transport, gate or external certification receipt. The accepted operational certificate is the **live readback in Supabase**, for the same `execution_id` and the already registered V3 result.
