@@ -101,6 +101,34 @@ Se verificó en Supabase que `public.fn_lf_operation_checkpoint_v1(execution_id,
 
 **Cadena mínima para remediar:** corregir tipificación/selección ACT-0001 por procedimiento transversal, registrar y autorizar perfil Análisis como `CURRENT RELEASED` solo tras sus gates de calificación, vincular el adapter de fuentes LF, reservar un RUN real idempotente, ejecutar 10.1 y registrar checkpoint con lease, transmitir payload/fingerprint a 10.2, emitir source receipt tipado y readback en el **mismo** RUN, juez independiente y validación 10.3. Sin ese readback, stop.
 
+## Lote siguiente 10.2 — registro y admisión (diagnóstico de autoridad)
+
+**Fecha:** 2026-10-31. **Alcance:** lectura live + propuesta selector + readback SQL. Sin RUN sintético, SQL de mutación, migración aplicada, nuevo Router, merge ni activación.
+
+### Hallazgo de selección
+
+- `lf_router_action_registry` ya tiene `PERFIL / PROFILE_EXECUTION → EJECUCION_PERFIL_LF` en `ACTIVE`. No debe duplicarse.
+- El código de `lf_router_resolve_v1` bloquea solicitudes sin tipo de activo resuelto: `BLOCK_ASSET_TYPE_UNRESOLVED`. La prueba con hint exacto del perfil también bloquea en `BLOCK_EXPLICIT_TARGET_INTENT_ATTESTATION_REQUIRED`. Un hint, por sí solo, no autoriza la selección.
+- `lf_profile_execution_source_eligibility_v1('PERFIL-PROGRAMMING-ANALYSIS-LF')` devolvió `eligible=false / PROFILE_NOT_CURRENT`.
+- `lf_activos` contiene 11 filas no archivadas tipo PERFIL, 10 con canonical_profile_key y `lf_profile_selection_registry_v1` contiene 10 descriptores CURRENT. Análisis no está en ninguna de las dos fuentes. No cambiar el set o su cardinalidad sin revisión del proceso de creación/actualización de perfiles.
+- El Router sólo puede pasar un perfil **registrado y habilitado por su autoridad**. No tiene una llamada directa a un perfil; produce/valida handoff, desde el cual se reserva la ejecución existente.
+
+### Artefactos preparados sin registro oficial
+
+- `profiles/programming_analysis_lf/contracts/selection_descriptor_candidate_v1.json`: propuesta de descriptor para selección semántica en el formato `LF_PROFILE_SELECTION_DESCRIPTOR_V1`. Estado `CANDIDATE_NOT_REGISTERED`; indicadores de cualificación todos falsos. No es una fila en Supabase y no habilita el perfil.
+- `profiles/programming_analysis_lf/evals/test_analysis_selection_descriptor_candidate_v1.py`: ocho controles source-only propuestos, incluida falsa activación, identidad negocio LF, negación de llamada Router→perfil directo y falta de evidencia. **No se declara ejecución exacta de esta suite** sin CI especializado.
+- `docs/programming-agent/ANALYSIS_10_2_CANONICAL_RUN_READBACK_V1.sql`: consulta READ-ONLY que agrupa registro, catálogo, adapter, RUN, checkpoints y pasos. Ejecutada en vivo: todos los contadores 0, `source_eligibility.reason=PROFILE_NOT_CURRENT`, `diagnostic_only=BLOCKED_PROFILE_NOT_REGISTERED`.
+
+### Camino gobernado correcto para permitir un RUN real
+
+1. Conservar el expediente de Análisis y obtener cualificación de fuentes A1–A9, evidencia actual, paridad del consumidor, juez independiente y readback de continuidad. EKB activo: `PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001`, `PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001`, `PROFILE-RUNTIME-GOVERNED-STEP-BYPASS-001`.
+2. Una vez superados sus gates, registrar el perfil por operación `CREACION_PERFIL_LF` y autoridades de catálogo correspondiente; mantener separados `estado_documental`, elegibilidad de fuente y `runtime_estado`. **El descriptor de este PR no concede CURRENT**.
+3. Habilitar binding de autoridad/adapters sólo donde el resolvedor de fuentes LF esté atestiguado; Input Governance aplica condicionalmente, no sustituye el Router.
+4. Reejecutar ACT-0001 con solicitud literal, selección semántica autorizada y handoff. El consumidor debe llamar `lf_profile_execution_begin_from_handoff_v1`, verificar `execution_id`, `manifest.business=LF`, lease y secuencia gobernada antes de inferencia.
+5. Recorrer 10.1, persistir evidencia genuina, transportar SHA/refs al 10.2 por el mismo RUN, registrar recepción, readback SQL y juez. Un replay de fixtures nunca es E2E.
+
+**Bloqueador vigente:** sin alta autorizada y sin transporte real, `10.2_GOVERNED_RUNTIME=BLOCKED`. No se puede declarar RUN creado, transporte efectuado ni recepción del consumidor. Mantener abierto 10.2; no avanzar a 10.3 como completado.
+
 ## Pendientes de implementación en su dueño canónico
 
 - Registrar/autorizar el activo `PERFIL-PROGRAMMING-ANALYSIS-LF` en las capas gobernadas, sin activarlo en producción.
