@@ -244,6 +244,39 @@ def project_operational_matrix(slug, candidate_dir, official_proof):
         cases, slug, candidate_dir)
     report = MATRIX["build_control_matrix"](
         cases, baseline, evolved, destination_bindings, candidate_dir)
+    # File provenance is read from trusted Group 2 loader metadata; never from
+    # untrusted model text. A file hash is NOT a native execution attestation.
+    def evidence_for(run):
+        trusted = run.get("_trusted_run_file")
+        return {
+            "run_id": run.get("run_id"),
+            "raw_file_ref": f"{OP_REL}/{trusted}" if trusted else None,
+            "raw_file_sha256": run.get("_trusted_run_file_sha256"),
+            "output_sha256": run.get("output_sha256"),
+            "profile_tree_sha256": run.get("profile_tree_sha256"),
+            "attestation": run.get("attestation"),
+        }
+
+    for row in report["rows"]:
+        case_runs = [run for run in runs if run.get("case_id") == row["case_id"]]
+        original = [run for run in case_runs if run.get("profile_tree_sha256") == base_tree]
+        evolved_runs = [run for run in case_runs if run.get("profile_tree_sha256") == cand_tree]
+        row["original_raw_refs"] = [evidence_for(run) for run in original]
+        row["evolved_raw_refs"] = [evidence_for(run) for run in evolved_runs]
+        pair = original + evolved_runs
+        literals = [run.get("input_literal") for run in pair]
+        same_literal = (bool(original) and bool(evolved_runs)
+                        and all(isinstance(value, str) and value for value in literals)
+                        and len(set(literals)) == 1)
+        row["case_input_sha256"] = (OPERATIONAL["canonical_sha256"](literals[0])
+                                   if same_literal else None)
+        row["case_input_status"] = ("RECORDED_LITERAL_MATCH_ONLY" if same_literal
+                                    else "NOT_VERIFIED")
+        row["raw_provenance_status"] = (
+            "TRUSTED_FILE_HASH_ONLY_NO_RUNTIME_ATTESTATION"
+            if pair and all(run.get("_trusted_run_file") and
+                            run.get("_trusted_run_file_sha256") for run in pair)
+            else "MISSING_TRUSTED_FILE_EVIDENCE")
     comparison = OPERATIONAL["compare"](baseline, evolved)
     official = official_proof.get("operational")
     binding = {
@@ -302,7 +335,9 @@ def build_matrix_receipt(report, proof_run_id, max_chars=16000):
               "destination_profile_step_name", "original_run_ids", "evolved_run_ids",
               "original_attestation", "evolved_attestation", "blocking_code",
               "destination_source_path", "destination_source_sha256",
-              "destination_source_line", "change_type")
+              "destination_source_line", "change_type",
+              "original_raw_refs", "evolved_raw_refs", "case_input_sha256",
+              "case_input_status", "raw_provenance_status")
     projected = [{key: row.get(key) for key in fields} for row in full_rows]
     packet = {
         "schema": "LF_PROFILE_CONTROL_MATRIX_RECEIPT_V1",
