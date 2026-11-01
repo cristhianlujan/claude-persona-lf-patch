@@ -17,7 +17,26 @@ VALID_RESULTS = {"PASS", "FAIL", "NO_VERIFICADO"}
 CHANGE_TYPES = {"CONSERVAR", "MODIFICAR", "AGREGAR", "SUSTITUIR", "RETIRAR"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MD_HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
-MD_ITEM = re.compile(r"^\s*(\d+)\.\s+\*\*(.+?)\*\*")
+# Keep the ordered number, but do not assume all profiles bold the item title.
+MD_ITEM = re.compile(r"^\\s*(\\d+)\\.\\s+(.+?)\\s*$")
+
+
+def _section_matches(actual: str, declared: str) -> bool:
+    """Exact title, or its unambiguous short form before a parenthetical suffix."""
+    return actual == declared or actual.startswith(declared + " (")
+
+
+def _item_matches(item_body: str, declared: str) -> bool:
+    """Allow a full plain-text item or exact bold-title match; never keyword search."""
+    body = item_body.strip()
+    if body.startswith("**"):
+        m = re.match(r"^\\*\\*(.+?)\\*\\*", body)
+        return bool(m and m.group(1).strip() == declared)
+    # Plain numbered steps may have no bold title. Require the complete line
+    # (or the first sentence, delimited by '. '), never a loose substring.
+    return body == declared or (body.startswith(declared) and
+                                body[len(declared):].startswith(". "))
+
 
 
 def resolve_destination(profile_dir: Path, binding: dict[str, Any] | None) -> dict[str, Any]:
@@ -57,14 +76,15 @@ def resolve_destination(profile_dir: Path, binding: dict[str, Any] | None) -> di
         m = MD_HEADING.match(line)
         if m:
             level = len(line) - len(line.lstrip("#"))
-            if m.group(1).strip() == section:
+            if _section_matches(m.group(1).strip(), section):
                 heading_count += 1
                 in_section, section_level = True, level
             elif in_section and section_level is not None and level <= section_level:
                 in_section = False
         item = MD_ITEM.match(line)
-        if in_section and item and int(item.group(1)) == number and item.group(2).strip() == title:
-            matches.append((index, item.group(2).strip()))
+        if (in_section and item and int(item.group(1)) == number
+                and _item_matches(item.group(2), title)):
+            matches.append((index, title))
     if heading_count != 1 or len(matches) != 1:
         return {**unresolved, "blocking_code": "DESTINATION_ANCHOR_AMBIGUOUS_OR_NOT_FOUND"}
     line, text = matches[0]
