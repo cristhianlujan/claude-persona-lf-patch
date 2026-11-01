@@ -35,6 +35,9 @@ def blocked():
             {"stage": f"A{i}", "outcome": f"Stage A{i} preserved unresolved evidence", "source_refs": []}
             for i in range(1, 10)
         ],
+        "definition_source_reception": {"status": "UNRESOLVED", "business": "LF", "target_ref": None,
+                                        "source_refs": [], "source_currentness": "NOT_ATTESTED",
+                                        "transport_status": "NOT_ATTESTED", "rule_count": None},
         "material_unknowns": [{"unknown_id": "U1", "scope_id": "S1", "question": "Which canonical authority owns the rule?"}],
         "decisions_pending": [],
         "requirements": [],
@@ -55,6 +58,8 @@ def ready_candidate():
     payload["classification"].update(depth="L2", authority_state="EXISTING", implementation_state="EXISTING",
                                      initial_intent_kind="EVOLVE",
                                      initial_development_class="EXISTING_EVOLUTION_CANDIDATE")
+    payload["definition_source_reception"].update(status="FOUND_UNATTESTED",target_ref="source://fictional-fixture",
+                                                  source_refs=["source://evidence-fixture"],rule_count=3)
     payload["material_unknowns"] = []
     payload["requirements"] = [{"requirement_id": "R1", "scope_id": "S1",
                                  "outcome": "Preserve governed current behavior while changing requested state",
@@ -199,6 +204,27 @@ class AnalysisCandidateContractTests(unittest.TestCase):
         p["classification"].update(initial_intent_kind="CREATE", initial_development_class="NEW_CANDIDATE",
                                   authority_state="EXISTING", implementation_state="UNKNOWN")
         self.assertEqual(V.validate(p)["status"], "PASS")
+
+
+    def test_23_10_2_business_mismatch(self):
+        p = blocked()
+        p["definition_source_reception"]["business"] = "SALY"
+        rejected(p, "ANALYSIS_10_2_BUSINESS_MISMATCH")
+
+    def test_24_10_2_no_false_currentness(self):
+        p = blocked()
+        p["definition_source_reception"]["source_currentness"] = "CURRENT"
+        rejected(p, "ANALYSIS_10_2_UNVERIFIED_AUTHORITY_OVERCLAIM")
+
+    def test_25_10_2_sources_need_refs(self):
+        p = blocked()
+        p["definition_source_reception"]["status"] = "FOUND_UNATTESTED"
+        rejected(p, "ANALYSIS_10_2_SOURCE_REFS_MISSING")
+
+    def test_26_10_2_unresolved_no_fake_refs(self):
+        p = blocked()
+        p["definition_source_reception"]["source_refs"] = ["source://invented"]
+        rejected(p, "ANALYSIS_10_2_UNRESOLVED_SOURCE_FALSE_RECEIVED")
 
 
 if __name__ == "__main__":
