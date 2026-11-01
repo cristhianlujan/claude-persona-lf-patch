@@ -42,6 +42,71 @@ class ProfileTargetDestinationTest(unittest.TestCase):
         self.assertEqual(outcome["destination_status"], "SOURCE_ANCHORED_NOT_CANONICAL")
         self.assertEqual(outcome["destination_profile_step_id"], "Runtime method capsule::4")
 
+    def test_all_fourteen_web001_textual_destinations_resolve_without_step_promotion(self):
+        # Line numbers are from the exact Reparador SKILL in the independent
+        # handoff. Repeated targets are intentional; these are NOT runtime IDs.
+        profile = ROOT / "profiles" / self.REPAIR
+        declared = [
+            ("OP01", "Runtime method capsule", 10, 27),
+            ("OP02", "Working method", 3, 92),
+            ("OP03", "Runtime method capsule", 9, 26),
+            ("OP04", "Output trajectory", 33, 243),
+            ("OP05", "Gap-resolution cascade", 5, 109),
+            ("OP06", "Output trajectory", 21, 216),
+            ("OP07", "Output trajectory", 31, 241),
+            ("OP08", "Output trajectory", 27, 233),
+            ("OP09", "Output trajectory", 24, 222),
+            ("OP10", "Gap-resolution cascade", 3, 107),
+            ("OP11", "Gap-resolution cascade", 2, 106),
+            ("OP12", "Gap-resolution cascade", 3, 107),
+            ("OP13", "Gap-resolution cascade", 3, 107),
+            ("OP14", "Gap-resolution cascade", 5, 109),
+        ]
+        lines = (profile / "SKILL.md").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(declared), 14)
+        for code, section, ordinal, expected_line in declared:
+            with self.subTest(control=code):
+                text = lines[expected_line - 1].strip()
+                self.assertTrue(text.startswith(f"{ordinal}. "), code)
+                item = text.split(". ", 1)[1]
+                # The name comes from the exact numbered line, not an
+                # invented universal title or a keyword search.
+                title = (item.split("**", 2)[1] if item.startswith("**")
+                         else item)
+                result = matrix.resolve_destination(
+                    profile, bind(self.REPAIR, section, ordinal, title))
+                self.assertEqual(result["destination_status"],
+                                 "SOURCE_ANCHORED_NOT_CANONICAL", code)
+                self.assertEqual(result["destination_source_line"], expected_line)
+                self.assertEqual(result["blocking_code"],
+                                 "CANONICAL_STEP_AUTHORITY_NOT_VERIFIED")
+
+    def test_abbreviated_heading_collision_and_plain_item_lookalike_fail_closed(self):
+        import tempfile
+        import shutil
+        profile = ROOT / "profiles" / self.REPAIR
+        with tempfile.TemporaryDirectory() as temp:
+            dest = Path(temp)
+            shutil.copyfile(profile / "SKILL.md", dest / "SKILL.md")
+            lines = (dest / "SKILL.md").read_text(encoding="utf-8")
+            # A second prefix-compatible heading is ambiguous even if
+            # only the first contains the numbered target.
+            lines += "\\n## Output trajectory (duplicated heading)\\n"
+            (dest / "SKILL.md").write_text(lines, encoding="utf-8")
+            body = bind(self.REPAIR, "Output trajectory", 33,
+                        "origin_asset`, `origin_operation` and `owner` refer to the systemic repair boundary/authority, not necessarily the unknown historical caller. If the systemic boundary itself cannot be proven, mark it `UNRESOLVED`.")
+            body["source_sha256"] = hashlib.sha256((dest / "SKILL.md").read_bytes()).hexdigest()
+            result = matrix.resolve_destination(dest, body)
+            self.assertEqual(result["destination_status"], "DESTINO_PENDIENTE")
+            self.assertEqual(result["blocking_code"],
+                             "DESTINATION_ANCHOR_AMBIGUOUS_OR_NOT_FOUND")
+            lines = (profile / "SKILL.md").read_text(encoding="utf-8")
+            (dest / "SKILL.md").write_text(lines, encoding="utf-8")
+            fake = bind(self.REPAIR, "Output trajectory", 33,
+                        "origin_asset")
+            self.assertEqual(matrix.resolve_destination(dest, fake)["destination_status"],
+                             "DESTINO_PENDIENTE")
+
     def test_number_from_other_profile_is_not_inherited(self):
         profile = ROOT / "profiles" / self.REPAIR
         foreign = bind(self.PRODUCT,
