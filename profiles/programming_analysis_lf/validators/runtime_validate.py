@@ -28,6 +28,23 @@ def validate(payload):
     if not isinstance(business, str) or len(business) < 2 or len(business) > 32 or not business.replace("_", "").isalnum() or not business[0].isalpha() or business != business.upper():
         reject("ANALYSIS_BUSINESS_CONTEXT_REQUIRED", "$.request_context.business")
 
+    reception = payload.get("definition_source_reception")
+    if not isinstance(reception, dict):
+        reject("ANALYSIS_10_2_RECEPTION_REQUIRED", "$.definition_source_reception")
+    else:
+        if reception.get("business") != business:
+            reject("ANALYSIS_10_2_BUSINESS_MISMATCH", "$.definition_source_reception.business")
+        if reception.get("source_currentness") != "NOT_ATTESTED" or reception.get("transport_status") != "NOT_ATTESTED":
+            reject("ANALYSIS_10_2_UNVERIFIED_AUTHORITY_OVERCLAIM", "$.definition_source_reception")
+        if reception.get("status") == "FOUND_UNATTESTED":
+            if not reception.get("source_refs") or not reception.get("target_ref"):
+                reject("ANALYSIS_10_2_SOURCE_REFS_MISSING", "$.definition_source_reception")
+        elif reception.get("status") == "UNRESOLVED":
+            if reception.get("source_refs") or reception.get("rule_count") is not None:
+                reject("ANALYSIS_10_2_UNRESOLVED_SOURCE_FALSE_RECEIVED", "$.definition_source_reception")
+        else:
+            reject("ANALYSIS_10_2_RECEPTION_STATUS_INVALID", "$.definition_source_reception")
+
     stages = payload.get("stage_trace")
     if not isinstance(stages, list) or [x.get("stage") if isinstance(x, dict) else None for x in stages] != list(STAGES):
         reject("ANALYSIS_A1_A9_SEQUENCE_REQUIRED", "$.stage_trace")
