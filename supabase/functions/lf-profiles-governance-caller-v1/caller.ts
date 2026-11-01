@@ -1015,7 +1015,22 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           return json({ outcome: "BLOCKED", code: "PROFILE_EXECUTION_CANONICAL_PATH_INVALID" }, 409);
         }
 
-        const executionId = "EXEC-PROFILE-GATE2-" + requestSha.slice(0, 24).toUpperCase();
+        // Request SHA identifies the *text*, not an execution instance.
+        // Bind the instance to GitHub's VERIFIED OIDC workflow run_id.
+        // A rerun of the same Actions run remains idempotent (same run_id);
+        // a fresh issue/workflow with identical text gets a distinct ID.
+        // Never accept a user-supplied instance key or move a role secret to Router.
+        if (!/^[1-9][0-9]{0,19}$/.test(runId)) {
+          return json({ outcome: "BLOCKED", code: "PROFILE_NATIVE_OIDC_RUN_ID_INVALID" }, 401);
+        }
+        const identityFrame = JSON.stringify([
+          "LF_PROFILE_NATIVE_WORKFLOW_RUN_ID_V1", config.repository, runId, profile, requestSha,
+        ]);
+        const identityBytes = new TextEncoder().encode(identityFrame);
+        const identityDigest = new Uint8Array(await crypto.subtle.digest("SHA-256", identityBytes));
+        const identityHex = [...identityDigest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+        const executionId = "EXEC-PROFILE-GATE2-" + identityHex.slice(0, 24).toUpperCase();
+        const idempotencyKey = "router-profile-gate2-run-v1:" + identityHex;
         // The existing EJECUCION_PERFIL_LF writer owns all INSERT/step recording.
         const response = await deps.fetchFn(
           `${config.supabaseUrl}/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1`,
@@ -1025,11 +1040,13 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
             }, body: JSON.stringify({
               p_handoff: handoff, p_executor_mode: mode,
               p_execution_id: executionId,
-              p_idempotency_key: "router-profile-gate2:" + requestSha + ":" + profile,
+              p_idempotency_key: idempotencyKey,
               p_actor_execution_id: executionId,
               p_target_repo: config.repository, p_target_path: path,
               p_manifest: { gate2_auto_materialized: true,
                 profile_operation_begin: true,
+                profile_native_execution_identity: "GITHUB_OIDC_RUN_ID_V1",
+                profile_native_workflow_run_id: runId,
                 channel: handoff.channel, business: handoff.business },
             }), signal: AbortSignal.timeout(15_000) },
         );
