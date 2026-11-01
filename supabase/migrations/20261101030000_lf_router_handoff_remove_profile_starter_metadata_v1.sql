@@ -61,10 +61,40 @@ BEGIN
   IF v_prev=v_src THEN RAISE EXCEPTION 'BLOCK_ROUTER_ADMIT_HANDOFF_PATCH_NOT_APPLIED'; END IF;
   EXECUTE v_src;
 
+  -- Remove explicit Edge starter metadata from Router's after-selection
+  -- response. Return selected-profile ownership, never a launcher/fallback.
+  SELECT pg_get_functiondef(
+    'public.lf_router_profile_after_selection_v1(jsonb,jsonb)'::regprocedure
+  ) INTO v_src;
+  IF v_src IS NULL
+     OR position('profile_execution_begin_from_router_context_v1' in v_src)=0
+  THEN RAISE EXCEPTION 'BLOCK_ROUTER_AFTER_SELECTION_SOURCE_DRIFT'; END IF;
+  v_prev:=v_src;
+  v_src:=replace(v_src,$old$    'gate2_pass_entrypoint','public.lf_router_pipeline_context_profile_admit_v2',
+    'siguiente_operacion',jsonb_build_object(
+      'operation_code','EJECUCION_PERFIL_LF',
+      'entrypoint','profile_execution_begin_from_router_context_v1',
+      'materializer','public.lf_profile_execution_begin_from_handoff_v1',
+      'context_hydrator','public.lf_profile_execution_channel_context_v1',
+      'router_reentry_before_execution',false,
+      'return_to_router_after_profile_result',true,
+      'effect_authority',false
+    ),$old$,$new$    'gate2_pass_entrypoint','public.lf_router_pipeline_context_profile_admit_v2',
+    'siguiente_operacion',jsonb_build_object(
+      'operation_code','EJECUCION_PERFIL_LF',
+      'execution_owner','SELECTED_PROFILE',
+      'context_hydrator','public.lf_profile_execution_channel_context_v1',
+      'router_reentry_before_execution',false,
+      'return_to_router_after_profile_result',true,
+      'effect_authority',false
+    ),$new$);
+  IF v_prev=v_src THEN RAISE EXCEPTION 'BLOCK_ROUTER_AFTER_SELECTION_PATCH_NOT_APPLIED'; END IF;
+  EXECUTE v_src;
+
   IF EXISTS (
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
     WHERE n.nspname='public'
-      AND p.proname IN ('lf_router_pipeline_context_profile_semantic_submit_v2','lf_router_pipeline_context_profile_admit_v2')
+      AND p.proname IN ('lf_router_pipeline_context_profile_semantic_submit_v2','lf_router_pipeline_context_profile_admit_v2','lf_router_profile_after_selection_v1')
       AND (
         position('scripts/lf_profile_router_admit.py' in pg_get_functiondef(p.oid))>0
         OR position('profile_execution_begin_from_router_context_v1' in pg_get_functiondef(p.oid))>0
