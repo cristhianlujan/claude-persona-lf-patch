@@ -23,6 +23,22 @@ Estado: **CANDIDATE / NOT_WIRED / NO_RUNTIME_ACTIVATION**. Rama aislada, sin SQL
 
 **Control negativo obligatorio**: petición SALY + binding LF, consulta/table source LF, `business` perdido o alterado durante el recorrido, o binding SALY sin currentness/autorización: `BLOCKED` antes de inferencia, sin declarar READY.
 
+## Cierre técnico 10.1 — clasificación inicial (no activación)
+
+| Input tipificado | Salida 10.1 | Siguiente acción |
+|---|---|---|
+| CREATE | NEW_CANDIDATE | 10.2 fuentes |
+| EVOLVE | EXISTING_EVOLUTION_CANDIDATE | 10.2 fuentes |
+| COMBINE | MIXED_CANDIDATE | 10.2 fuentes |
+| REPAIR | REPAIR_HANDOFF | RETURN_TO_ROUTER, sin invocación directa |
+| UNKNOWN | NEED_MORE_EVIDENCE | Clarificar intención |
+
+10.1 requiere `business=LF`, `execution_id` ya reservado, literal original y `request_sha256` coincidentes, intención tipificada y refs de origen. El clasificador determinista no ejecuta SQL ni clasifica por regex sobre palabras del usuario. El tipo devuelto es provisional y distinto de `authority_state` y `implementation_state`, que se determinarán por evidencia en 10.2–10.4. Reglas documentadas `B2B-AUTH-001` existentes no prueban implementación de login.
+
+**Ejecución y verificación:** 18/18 controles de clasificador `unittest` locales, con hash Git blob idéntico al archivo en GitHub (clasificador `9fe3531ce5cdcf6b82af71a4b0aae614fc46cbe3`, tests `a21686d503118565114e7a9f3a574b0e2b606fee`). El paquete de modelo candidato exige campos `initial_intent_kind`, `initial_development_class`, `initial_evidence_refs` y rechaza READY ante REPAIR/UNKNOWN; no se presume ejecución de los controles extra del paquete sin evidencia independiente.
+
+**Criterio de cierre:** `10.1_SOURCE_AND_LOCAL_TESTS=PASS`, `10.1_GOVERNED_RUN_READBACK=NOT_TESTED`. No escribir PASS operacional ni continuar acreditando 10.2/10.3 por este dictamen. Perfil `CANDIDATE_NOT_RELEASED`; sin merge, sin SQL ni despliegue.
+
 ## Dos numeraciones diferentes
 
 | RUN externo `EJECUCION_PERFIL_LF` | Interno Análisis |
