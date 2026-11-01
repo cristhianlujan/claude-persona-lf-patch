@@ -72,6 +72,35 @@ Se verificó en Supabase que `public.fn_lf_operation_checkpoint_v1(execution_id,
 
 **Acceptance E2E pendiente**: Router real → RUN reservado → lease vigente → cada etapa con evidencia del productor y fuente actual → checkpoint persistido → readback por etapa → RAW final → output validator → juez independiente → cierre gobernado. Este PR no integra ese consumidor, no cambia Supabase y no ejecuta esta prueba.
 
+## Paso 10.2 — localización de fuentes y auditoría E2E (2026-10-31)
+
+**Contrato fuente y receptor candidato:** `contracts/analysis_10_2_source_reception_v1.json`, `validators/analysis_10_2_receive_v1.py`, `evals/test_analysis_10_2_receive_v1.py`. Se añaden como requerimientos del perfil `contracts/runtime_binding.json` y en `definition_source_reception` del schema/modelo. El resolver de fuentes real será `SOURCE_RESOLUTION_POLICY / TYPED_DATA_ACCESS` y `CURRENTNESS_AUTHORITY`, transportado por adapters existentes. **Ninguno de estos archivos consulta Supabase, registra RUN o produce receipt runtime.**
+
+### Evidencia localizada directamente (read-only)
+
+- Negocio `LF`, fuente `lf_ops.pantallas`: pantalla `B2B-AUTH-001` (`id=51`), estado `CANDIDATO`, versión `v0.5`, decisión `DEC-B2B-HANDOFF-SCREEN-PACKAGE-001`, 71 reglas directas relacionadas en `lf_ops.reglas_pantallas`, 38 vigentes.
+- Source lookup de prueba via read-only SQL **no** equivale al source receipt del adapter del perfil, ni a CURRENTNESS o autorización 10.3.
+- El receptor soporta targets tipados (`SCREEN`, `MODULE`, `RULE`, etc.) del resolver, sin fijar B2B; exige identidad `business=LF`, `execution_id` y `request_sha256` iguales al resultado 10.1, `sender_payload_sha256` exacto, target type/code exactos, refs de fuentes y reglas cuando existan.
+- Rechaza SALY/LF cruzado, hash alterado, RUN distinto, resultado 10.1 bloqueado, target equivocado, ausencia de source receipt; si recibe fuente válida marca únicamente `RECEIVED_CANDIDATE`, `source_currentness=NOT_ATTESTED`, `persisted=false`, `operationally_verified=false`.
+- Pruebas locales ejecutadas: 21/21 `unittest` PASS con fixture sintético, receptor byte-identical Git blob `de81274fd87085f7bc276372c5c757afeb138e8f`; tests del repo incluyen los 21 escenarios, pero su Git blob exacto no es el de la copia local y no se afirma test exact-head CI.
+
+### Comprobación solicitada: recorrido real (lecturas Supabase)
+
+| Punto | Readback real | Dictamen |
+|---|---|---|
+| ACT-0001 | solicitud literal de desarrollar Login B2B -> `BLOCKED / BLOCK_ASSET_TYPE_UNRESOLVED`; `candidate_basis=LEXICAL_TOKEN_OVERLAP_NOT_IDENTITY_NOT_AUTHORITY`; no downstream | **FAIL** |
+| Registro de perfil de Análisis | `public.lf_activos` con `PERFIL-PROGRAMMING-ANALYSIS-LF`: **0 registros** | **NO** |
+| Adapter Router para Análisis | `public.v_lf_router_adapter_bindings` con target `PERFIL-PROGRAMMING-ANALYSIS-LF`: **0 filas** | **NO** |
+| RUN oficial | `public.lf_operation_execution` con `operation_code=EJECUCION_PERFIL_LF` y `target_code=PERFIL-PROGRAMMING-ANALYSIS-LF`: **0 filas** | **NO CREADO** |
+| Persistencia de A1–A9 | `checkpoint_payload ? 'analysis_stage_progress_v1'` en cualquier RUN: **0 filas** | **NO** |
+| Pasos externos asociados | JOIN `public.lf_operation_execution_steps` por target del perfil Análisis: **0 filas** | **NO** |
+| Transferencia 10.1→10.2 | Sin RUN/step upstream, no receipt de transporte ni lectura del consumidor | **NO EJECUTADA** |
+| Recepción real 10.2 | Receptor probado sobre fixtures sintéticos; no recepción del runtime ni registro | **NO ACREDITADA** |
+
+**Conclusión verificable:** `10.2_SOURCE_AND_LOCAL_TESTS=PASS` (source-only), `10.2_END_TO_END=BLOCKED`. La operación `EJECUCION_PERFIL_LF` tiene RUN de otros perfiles, pero no son prueba de Análisis. No mezclar pruebas de código con ejecución de perfil. Ningún RUN fue creado en esta investigación (solo SELECT y lectura de fuentes). No declarar paso 10.2 cerrado gobernadamente.
+
+**Cadena mínima para remediar:** corregir tipificación/selección ACT-0001 por procedimiento transversal, registrar y autorizar perfil Análisis como `CURRENT RELEASED` solo tras sus gates de calificación, vincular el adapter de fuentes LF, reservar un RUN real idempotente, ejecutar 10.1 y registrar checkpoint con lease, transmitir payload/fingerprint a 10.2, emitir source receipt tipado y readback en el **mismo** RUN, juez independiente y validación 10.3. Sin ese readback, stop.
+
 ## Pendientes de implementación en su dueño canónico
 
 - Registrar/autorizar el activo `PERFIL-PROGRAMMING-ANALYSIS-LF` en las capas gobernadas, sin activarlo en producción.
