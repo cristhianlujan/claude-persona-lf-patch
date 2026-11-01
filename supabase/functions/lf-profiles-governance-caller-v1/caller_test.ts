@@ -639,7 +639,7 @@ Deno.test("CP2: selected profile owns BEGIN and Edge uses existing canonical ser
   assertEquals(h.calls.filter(c=>c.url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2")).length,1);
 });
 
-Deno.test("native profile: identical request SHA creates a new ID for a distinct authenticated workflow run",async()=>{
+Deno.test("CP2: native profile identical request SHA creates a new ID for a distinct authenticated workflow run",async()=>{
   const context={
     schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
     status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
@@ -673,7 +673,7 @@ Deno.test("native profile: identical request SHA creates a new ID for a distinct
   assertEquals(firstWriter.body?.p_idempotency_key,retryWriter?.body?.p_idempotency_key);
 });
 
-Deno.test("native profile: malformed signed run_id blocks before a begin writer",async()=>{
+Deno.test("CP2: native profile malformed signed run_id blocks before a begin writer",async()=>{
   const h=harness({claims:{...NATIVE_CONTINUATION_CLAIMS,run_id:"not-a-number"}});
   const {response,payload}=await invoke(h,{
     action:"profile_native_begin_from_context_v1",
