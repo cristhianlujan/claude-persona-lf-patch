@@ -186,6 +186,60 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.check()
 
+    def test_incomplete_semantic_checkpoint_is_not_success_or_new_authorization(self):
+        with patch.dict(os.environ, self.env, clear=True):
+            module = runpy.run_path(str(SCRIPT), run_name="continuation_checkpoint_test")
+            with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+                code = module["record_incomplete_continuation"](
+                    "EXEC-PROFILE-GATE2-EXAMPLE", "PERFIL-PRODUCT-DIRECTOR-LF",
+                    "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED", "semantic_judge",
+                    "SOURCE_SUPPORTED_V3_REVIEW",
+                )
+        self.assertNotEqual(code, 0)
+        checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertEqual(checkpoint["status"], "CONTINUATION_REQUIRED_NOT_COMPLETE")
+        self.assertFalse(checkpoint["last_run_completed"])
+        self.assertEqual(checkpoint["next_step"], "semantic_judge")
+        self.assertEqual(checkpoint["execution_id"], "EXEC-PROFILE-GATE2-EXAMPLE")
+        self.assertEqual(checkpoint["request_schema_version"], SCHEMA)
+        self.assertEqual(checkpoint["issue_label"], LABEL)
+        self.assertTrue(checkpoint["reuse_execution_id"])
+        self.assertFalse(checkpoint["owner_reauthorization_required"])
+        self.assertEqual(checkpoint["credential_route"], "GITHUB_OIDC_TO_EDGE_ONLY")
+        self.assertNotIn("service_role", json.dumps(checkpoint))
+
+    def test_all_preterminal_boundaries_cannot_report_success(self):
+        with patch.dict(os.environ, self.env, clear=True):
+            module = runpy.run_path(str(SCRIPT), run_name="preterminal_checkpoint_test")
+            with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+                for next_step in ("screen_selection", "input_governance", "execute_profile", "semantic_judge"):
+                    code = module["record_incomplete_continuation"](
+                        "EXEC-PROFILE-GATE2-EXAMPLE", "PERFIL-PRODUCT-DIRECTOR-LF",
+                        "CONTINUATION_REQUIRED", next_step, "REQUIRED_EVIDENCE",
+                    )
+                    self.assertNotEqual(code, 0)
+                    checkpoint = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+                    self.assertEqual(checkpoint["next_step"], next_step)
+                    self.assertEqual(checkpoint["status"], "CONTINUATION_REQUIRED_NOT_COMPLETE")
+
+    def test_unknown_continuation_step_blocks_without_writing_artifact(self):
+        with patch.dict(os.environ, self.env, clear=True):
+            module = runpy.run_path(str(SCRIPT), run_name="bad_continuation_test")
+            with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+                with self.assertRaisesRegex(ValueError, "PROFILE_NATIVE_CONTINUATION_UNRECOGNIZED_STEP"):
+                    module["record_incomplete_continuation"](
+                        "EXEC-PROFILE-GATE2-EXAMPLE", "PERFIL-PRODUCT-DIRECTOR-LF",
+                        "CONTINUATION_REQUIRED", "arbitrary_write", "UNAUTHORIZED",
+                    )
+        self.assertFalse((Path(self.tmp.name) / "profile-native-continuation.json").exists())
+
+    def test_cli_no_longer_returns_zero_on_missing_v3_or_raw(self):
+        source = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('if semantic_review is None:\\n            return record_incomplete_continuation(', source)
+        self.assertIn('if profile_output is None:\\n            return record_incomplete_continuation(', source)
+        self.assertNotIn('print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")\\n            return 0', source)
+        self.assertNotIn('print("PROFILE_NATIVE_PRE_MODEL_PREPARATION_PASS_MODEL_OUTPUT_NOT_PRODUCED")\\n            return 0', source)
+
     def test_only_exact_governed_202_allows_direct_resume(self):
         valid = {
             "outcome": "CONTINUATION_REQUIRED",
