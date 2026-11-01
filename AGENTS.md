@@ -2,6 +2,9 @@
 
 Follow [CLAUDE.md](CLAUDE.md), including **Mandatory database migration route — HARD BLOCK**, before any write. That rule applies to all agents and tools regardless of provider, runtime, or route.
 
+**LF Router entry precedence:** When the user asks to **run a profile** to inspect/review/improve existing product definitions (for example Login B2B rules), use the existing **ACT-0001 context V2** path, starting at `lf_router_pipeline_context_begin_v2`, then Stage 1 V2, semantic profile selection and `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` as defined in [Profiles LF runbook §6.9](ops/runbook-profiles-lf.md). Do **not** run `lf_router_resolve_v1` first on that whole sentence: its legacy asset-inspection/mutation result is **not** the profile execution gate. Words such as "mejorar/completar" do not authorize changing official rules; the selected profile diagnoses in read-only mode, and any actual write requires its separately governed operation. `lf_router_resolve_v1` remains the canonical resolver for its **asset/DB write** operations, not a competing entry for `EJECUCION_PERFIL_LF`. Never invent profile selection, call it directly, bypass Gate 2, move secrets to the Router or use an old run as proof of a new one.
+
+
 Agents MUST NOT create or modify workflows that read `LF_SUPABASE_DB_PASSWORD` or any DB credential. All database migration changes go through PR + `ready-to-merge` + the authorized Merge Train. Unauthorized database writes are `BLOCK_DB_WRITE_OUTSIDE_MERGE_TRAIN`.
 
 Before naming a migration, apply **Migration naming** in [CLAUDE.md](CLAUDE.md): the Merge Train rejects migration names that are not classified in `sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py`.

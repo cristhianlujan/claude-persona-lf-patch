@@ -1,5 +1,8 @@
 # Flujo del Router ACT-0001 (LF) — V1
 
+**Referencia histórica para el resolvedor V1 de activos:** no usar como instrucción de entrada a `EJECUCION_PERFIL_LF`. Para ejecución de perfiles prevalece la ruta vigente del **mismo ACT-0001**: contexto V2 → `LF_ROUTER_STAGE1_V2` → selección semántica → Gate 2 → `HANDOFF_CONTEXT_TO_SELECTED_PROFILE`, conforme a [runbook perfiles §6.9](../../ops/runbook-profiles-lf.md). La resolución de activos por `lf_router_resolve_v1` no bloquea esa operación ni sustituye la entrega nativa al perfil.
+
+
 Estado: **contrato de diseño**. Lo construido y probado se marca así; lo demás es objetivo y no se declara operativo.
 Ámbito: LF ahora. Un solo Router para LF, Saly y otros; la dimensión de sistema se agrega después.
 Todo el flujo es de solo lectura; ningún resultado autoriza efectos (`downstream_execution_allowed=false`).

@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-router-profile-v2-entry-precedence-20261101",
+  "paths": {
+    "AGENTS.md": "AGENTS_GUIDANCE",
+    "CLAUDE.md": "CLAUDE_GUIDANCE",
+    "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md": "SERVICE_RUNTIME",
+    "docs/programming-agent/LF_ROUTER_FLOW_V1.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-router-profile-v2-entry-precedence-20261101.json": "CHANGESET_MANIFEST"
+  }
+}

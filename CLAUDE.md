@@ -18,6 +18,15 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+## Router ACT-0001 — operation-specific entry precedence (mandatory)
+
+The user request determines the **operation before asset discovery**. For `EJECUCION_PERFIL_LF` (e.g. "entra por el Router y revisa/mejora/completa reglas de Login B2B"), the **same ACT-0001** must use its **context V2** entry: `lf_router_pipeline_context_begin_v2` → `lf_router_pipeline_context_stage1_submit_v2` (`LF_ROUTER_STAGE1_V2`, `PRODUCTO`, `LF`, `ambiguo=false` when clear) → semantic profile selection → Gate 2 `READY` → `HANDOFF_CONTEXT_TO_SELECTED_PROFILE`. The profile owns BEGIN via the existing GitHub Issue/OIDC/Edge transport, not the Router.
+
+**Do not call `lf_router_resolve_v1` first for profile-execution intent.** Its legacy `ASSET_INSPECTION` / `BLOCK_ASSET_TYPE_UNRESOLVED` / `BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED` are not authoritative blockers for this operation; repeating the same request through that generic path is a wrong-route diagnostic, not a reason to ask the user to restate it. The word "mejorar" does not itself request a direct DB mutation. Stage 1 identifies the `PANTALLA` target as `UNRESOLVED` with grounded search hints; final screen identity is resolved by the profile. Never force Product Director or screen identity without semantic evidence.
+
+`lf_router_resolve_v1` remains the entry only for its separately governed asset/DB-write operations (e.g. `ACTUALIZACION_DB_LF`); this routing precedence never authorizes effect, circumvents Gate 2 or changes any permission. Follow [the active compact Router protocol](docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md) and [Profiles runbook §6.9](ops/runbook-profiles-lf.md). This paragraph controls profile-execution intent when an older V1 generic instruction says "every resolution".
+
+
 ## STOP CONDITION — LF Router handoff is NOT terminal (high priority)
 
 **For every new LF Router→Perfil request:** a selected profile plus `Gate 2 READY` and `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` means **continue now** via GitHub Issue `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1`, label `lf-profile-resume-governed`, existing GitHub OIDC→Edge→service_role path, then reuse that NEW run's ID through stages 0–80. The Router merely transports context. **Never call `lf_router_pipeline_context_profile_admit_v2` with `supabase_read_only_user`**, never request/relocate a role secret, never stop at 42501, and never present a previous completed run as the current execution. New ID missing = `NOT_EXECUTED`. For precise contract and live positive proof, read `ops/runbook-profiles-lf.md` §6.9 and EKB `LF-PROFILE-HANDOFF-DIRECT-42501-OLD-RUN-SUBSTITUTION-001`.
