@@ -25,7 +25,8 @@
     "full_source_to_model": false,
     "required_source_refs": [
       "profiles/programming_analysis_lf/SKILL.md",
-      "profiles/programming_analysis_lf/contracts/analysis_source_binding.json"
+      "profiles/programming_analysis_lf/contracts/analysis_source_binding.json",
+      "profiles/programming_analysis_lf/contracts/analysis_10_1_development_entry_v1.json"
     ],
     "allow_additional_sources": true,
     "source_projection": {
