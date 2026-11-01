@@ -57,6 +57,37 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertEqual(self.check(), {
             "kind": "BEGIN", "router_context": context, "executor_mode": "GPT_NATIVE"})
 
+    def test_profile_begin_calls_only_native_writer_then_source_bind(self):
+        context = {"schema_version": "LF_ROUTER_EXECUTION_PIPELINE_V1",
+                   "status": "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+                   "transport_mode": "CONTEXT_TRANSPORT"}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": "LF_PROFILE_NATIVE_BEGIN_REQUEST_V1",
+            "router_context": context, "executor_mode": "GPT_NATIVE"})
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        with patch.dict(os.environ, {**self.env, "GITHUB_SHA": "a" * 40}, clear=True):
+            m = runpy.run_path(str(SCRIPT), run_name="native_begin_test")
+            main = m["main"]
+            calls = []
+            def fake_call(url, body, headers):
+                calls.append(body["action"])
+                if body["action"] == "profile_native_begin_from_context_v1":
+                    self.assertEqual(body["context"], context)
+                    return 200, {"outcome": "NATIVE_EXECUTION_READY", "result": {
+                        "status": "NATIVE_EXECUTION_READY",
+                        "execution_id": "EXEC-PROFILE-GATE2-" + "A" * 24,
+                        "profile_code": "PERFIL-PRODUCT-DIRECTOR-LF"}}
+                return 403, {"outcome": "BLOCKED", "code": "TEST_STOP_AFTER_SOURCE_BIND"}
+            with patch.dict(main.__globals__, {
+                "oidc": lambda: "test-oidc-token",
+                "call_json": fake_call,
+            }):
+                self.assertEqual(main(), 1)
+            self.assertEqual(calls, [
+                "profile_native_begin_from_context_v1",
+                "profile_native_source_bind_v1",
+            ])
+
     def test_begin_rejects_role_secret_mode_or_context_bypass(self):
         context = {"schema_version": "LF_ROUTER_EXECUTION_PIPELINE_V1",
                    "status": "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
