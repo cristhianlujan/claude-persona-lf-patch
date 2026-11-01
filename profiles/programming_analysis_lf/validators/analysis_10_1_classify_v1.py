@@ -27,7 +27,8 @@ def classify(request: dict) -> dict:
     if not isinstance(request, dict):
         return {"schema_version": SCHEMA, "status": "BLOCKED",
                 "blocking_codes": ["INPUT_NOT_OBJECT"],
-                "operationally_verified": False, "persisted": False}
+                "operationally_verified": False, "persisted": False,
+                "programming_authorized": False}
     business = request.get("business")
     execution = request.get("execution_id")
     literal = request.get("literal_request")
@@ -44,7 +45,7 @@ def classify(request: dict) -> dict:
         errors.append("REQUEST_SHA256_INVALID")
     elif isinstance(literal, str) and sha256(literal.encode("utf-8")).hexdigest() != input_hash:
         errors.append("REQUEST_LITERAL_HASH_MISMATCH")
-    if intent not in KINDS:
+    if not isinstance(intent, str) or intent not in KINDS:
         errors.append("INTENT_KIND_NOT_CANONICAL")
     if not isinstance(refs, list) or len(refs) == 0 or any(
         not isinstance(ref, str) or not ref.strip() for ref in refs
@@ -53,7 +54,8 @@ def classify(request: dict) -> dict:
     if errors:
         return {"schema_version": SCHEMA, "status": "BLOCKED",
                 "blocking_codes": sorted(set(errors)),
-                "operationally_verified": False, "persisted": False}
+                "operationally_verified": False, "persisted": False,
+                "programming_authorized": False}
     development_class, next_action = KINDS[intent]
     return {
         "schema_version": SCHEMA,
