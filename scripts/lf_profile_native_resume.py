@@ -255,7 +255,14 @@ SEMANTIC_CHECKS = (
 
 
 def validate_independent_semantic_review(review):
-    if review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+    mode = review.get("review_mode", "INDEPENDENT_SEMANTIC")
+    if mode not in ("INDEPENDENT_SEMANTIC", "CURRENT_CONTEXT_REVIEW"):
+        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODE_INVALID")
+    expected_verdict = (
+        "PASS_REVIEWED_CURRENT_CONTEXT" if mode == "CURRENT_CONTEXT_REVIEW"
+        else "PASS_INDEPENDENT_SEMANTIC"
+    )
+    if review.get("verdict") != expected_verdict:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_NOT_PASS")
     checks = review.get("decision_checks")
     if not isinstance(checks, dict) or set(checks) != set(SEMANTIC_CHECKS):
@@ -284,10 +291,17 @@ def validate_independent_semantic_review(review):
                 raise ValueError("PROFILE_SEMANTIC_ROUTER_DIRECT_COMPARISON_UNPROVEN")
         elif check.get("result") not in (True, "true"):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_CHECK_FAILED:" + name)
-    if review.get("producer_independence_proven") is not True:
-        raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
-    if review.get("model_call_count") != 1:
-        raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
+    if mode == "CURRENT_CONTEXT_REVIEW":
+        # Owner-authorized current-context review is NOT an independent judge call.
+        if (review.get("producer_independence_proven") is not False
+                or review.get("reviewer_is_producer") is not True
+                or review.get("model_call_count") != 0):
+            raise ValueError("PROFILE_CURRENT_CONTEXT_REVIEW_PROVENANCE_INVALID")
+    else:
+        if review.get("producer_independence_proven") is not True:
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_INDEPENDENCE_UNPROVEN")
+        if review.get("model_call_count") != 1:
+            raise ValueError("PROFILE_SEMANTIC_REVIEW_MODEL_CALL_COUNT_INVALID")
     if review.get("unsupported_claims") != [] or review.get("blocking_codes") != []:
         raise ValueError("PROFILE_SEMANTIC_REVIEW_BLOCKED")
     if not isinstance(review.get("source_refs"), list) or not review["source_refs"]:
@@ -302,16 +316,21 @@ def validate_independent_semantic_review(review):
 
 
 def build_semantic_receipt(review):
+    current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
+    verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
+               else "PASS_INDEPENDENT_SEMANTIC")
     return {
         "status": "PASS",
-        "verdict": "PASS_INDEPENDENT_SEMANTIC",
+        "verdict": verdict,
         "validator_status": "PASS",
-        "producer_independence_proven": True,
-        "model_call_count": 1,
+        "review_mode": "CURRENT_CONTEXT_REVIEW" if current_context else "INDEPENDENT_SEMANTIC",
+        "reviewer_is_producer": bool(current_context),
+        "producer_independence_proven": not current_context,
+        "model_call_count": 0 if current_context else 1,
         "candidate_sha256": review["candidate_sha256"],
         "scope_packet_sha256": review["scope_packet_sha256"],
         "result": {
-            "verdict": "PASS_INDEPENDENT_SEMANTIC",
+            "verdict": verdict,
             "candidate_sha256": review["candidate_sha256"],
             "scope_packet_sha256": review["scope_packet_sha256"],
             "unsupported_claims": [],
@@ -458,7 +477,7 @@ def main():
         if semantic_review is None:
             print("PROFILE_NATIVE_POST_MODEL_CONTINUATION_REQUIRED_NOT_COMPLETE")
             return 0
-        if semantic_review.get("verdict") != "PASS_INDEPENDENT_SEMANTIC":
+        if semantic_review.get("verdict") not in ("PASS_INDEPENDENT_SEMANTIC", "PASS_REVIEWED_CURRENT_CONTEXT"):
             from lf_semantic_fail_feedback import persist_feedback
             try:
                 feedback = persist_feedback(
