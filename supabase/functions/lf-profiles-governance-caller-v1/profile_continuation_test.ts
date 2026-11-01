@@ -99,6 +99,12 @@ Deno.test("continuation: source-bound validator receipt records native output an
   },config,n.fetchFn,sha);
   const body=await out.json();
   eq(out.status,200);eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+  eq(body.next_action,"PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION");
+  eq(body.governed_continuation?.schema_version,"LF_PROFILE_NATIVE_RESUME_REQUEST_V1");
+  eq(body.governed_continuation?.issue_label,"lf-profile-resume-governed");
+  eq(body.governed_continuation?.reuse_execution_id,true);
+  eq(body.governed_continuation?.owner_reauthorization_required,false);
+  eq(body.governed_continuation?.credential_route,"GITHUB_OIDC_TO_EDGE_ONLY");
   const record=n.calls.find(c=>c.url.endsWith("/lf_profile_native_bridge_record_output_v1"));
   if(!record)throw Error("record_output not called");
   eq(record.body?.p_profile_output,output);
