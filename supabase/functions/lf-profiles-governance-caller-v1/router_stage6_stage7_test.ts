@@ -53,3 +53,82 @@ Deno.test("retired Router-to-profile actions never call any backend", async () =
     }
   }
 });
+
+const nativeClaims: JwtPayload = {
+  ...claims, ref:"refs/heads/main",
+  workflow_ref:REPO+"/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main",
+  event_name:"issues", environment:"lf-edge-deploy",
+};
+const nativeContext = {
+  schema_version:"LF_ROUTER_EXECUTION_PIPELINE_V1",
+  status:"GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",
+  transport_mode:"CONTEXT_TRANSPORT",
+  stage1_payload:{canal_candidato:"PRODUCTO",negocio_codigo:"LF",alcance:{target_type:"PANTALLA"}},
+};
+Deno.test("profile-owned BEGIN applies service_role only inside Edge canonical writer", async () => {
+  const calls:{url:string,body:Record<string,unknown>,headers:Record<string,string>}[]=[];
+  const h = createHandler({getEnv:(n:string)=>config[n], jwks:{mock:true},
+    jwtVerifyFn:async()=>({payload:nativeClaims}),
+    fetchFn:async(input: string|URL|Request, init?:RequestInit)=>{
+      const url=String(input);
+      const body=(typeof init?.body==="string" && init.body?JSON.parse(init.body):{}) as Record<string,unknown>;
+      const headers=(init?.headers||{}) as Record<string,string>;
+      calls.push({url,body,headers});
+      if(url.endsWith("/rest/v1/rpc/lf_router_pipeline_context_profile_admit_v2"))
+        return new Response(JSON.stringify({
+          status:"PROFILE_HANDOFF_READY",write_performed:false,execution_id:null,
+          executor_mode:"GPT_NATIVE",
+          router_profile_handoff:{
+            schema_version:"LF_ROUTER_PROFILE_EXECUTION_HANDOFF_V1",
+            operation_code:"EJECUCION_PERFIL_LF",effect_authority:false,
+            profile_code:"PERFIL-UX-DESIGN-LF",
+            request_sha256:"a".repeat(64),fingerprint_sha256:"b".repeat(64),
+            channel:"PRODUCTO",business:"LF",
+          }
+        }),{status:200});
+      if(url.includes("/rest/v1/lf_activos?codigo_activo=eq."))
+        return new Response(JSON.stringify([{codigo_activo:"PERFIL-UX-DESIGN-LF",
+          metadata:{entrypoint_path:"profiles/ux_design_lf/SKILL.md"},
+          ruta_esperada:"profiles/ux_design_lf"}]),{status:200});
+      if(url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"))
+        return new Response(JSON.stringify({
+          status:"READY",init_materialized:true,
+          execution_id:"EXEC-PROFILE-GATE2-"+"A".repeat(24),
+        }),{status:200});
+      throw new Error("UNEXPECTED_BACKEND_CALL:"+url);
+    },
+  });
+  const response=await h(new Request("https://caller.test",{
+    method:"POST",headers:{authorization:"Bearer test-oidc","content-type":"application/json"},
+    body:JSON.stringify({action:"profile_native_begin_from_context_v1",
+      context:nativeContext,executor_mode:"GPT_NATIVE"}),
+  }));
+  const result=await response.json();
+  if(response.status!==200 || result.outcome!=="NATIVE_EXECUTION_READY" ||
+     result.result?.execution_id!=="EXEC-PROFILE-GATE2-"+"A".repeat(24))
+    throw new Error("PROFILE_BEGIN_NOT_READY:"+JSON.stringify(result));
+  if(calls.length!==3)throw new Error("EXPECTED_THREE_CANONICAL_CALLS");
+  if(!calls[0].url.endsWith("/rpc/lf_router_pipeline_context_profile_admit_v2")||
+     !calls[1].url.includes("/rest/v1/lf_activos?")||
+     !calls[2].url.endsWith("/rpc/lf_profile_execution_begin_from_handoff_v1"))
+    throw new Error("WRONG_CALL_SEQUENCE");
+  if(calls[2].headers.authorization!=="Bearer service-role-test-key")
+    throw new Error("SERVICE_ROLE_NOT_APPLIED_AT_WRITER");
+  if(JSON.stringify(calls[2].body).includes("service-role-test-key")||
+     JSON.stringify(result).includes("service-role-test-key"))
+    throw new Error("SERVICE_ROLE_LEAK_IN_PAYLOAD_OR_RESPONSE");
+});
+Deno.test("profile begin denies non-native OIDC before any backend call", async()=>{
+  let calls=0;
+  const h=createHandler({getEnv:(n:string)=>config[n],jwks:{mock:true},
+    jwtVerifyFn:async()=>({payload:claims}),
+    fetchFn:async()=>{calls++;throw new Error("SHOULD_NOT_CALL");}});
+  const response=await h(new Request("https://caller.test",{
+    method:"POST",headers:{authorization:"Bearer test-oidc","content-type":"application/json"},
+    body:JSON.stringify({action:"profile_native_begin_from_context_v1",
+      context:nativeContext,executor_mode:"GPT_NATIVE"}),
+  }));
+  const result=await response.json();
+  if(response.status!==403 || result.code!=="PROFILE_NATIVE_BEGIN_EXACT_OIDC_REQUIRED"||calls!==0)
+    throw new Error("UNAUTHENTICATED_PROFILE_BEGIN"+JSON.stringify(result));
+});
