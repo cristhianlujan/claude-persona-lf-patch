@@ -167,8 +167,18 @@ async function resolveExistingPostModelStep(
     execution_id: e.execution_id,
     profile_code: e.target_code,
     next_action: nextStep === "semantic_judge"
-      ? "RUN_EXISTING_INDEPENDENT_SEMANTIC_JUDGE"
+      ? "PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION"
       : "RECORD_EXISTING_REPORT_OUTPUT",
+    governed_continuation: nextStep === "semantic_judge" ? {
+      transport: "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+      schema_version: "LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+      payload_field: "semantic_judge_review",
+      issue_label: "lf-profile-resume-governed",
+      reuse_execution_id: true,
+      owner_reauthorization_required: false,
+      credential_route: "GITHUB_OIDC_TO_EDGE_ONLY",
+      completion_status: "NOT_COMPLETE",
+    } : null,
     result: {
       status: phase,
       last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
@@ -497,7 +507,17 @@ export async function handleProfileContinuation(
       code: null,
       execution_id: e.execution_id,
       profile_code: e.target_code,
-      next_action: "RUN_EXISTING_INDEPENDENT_SEMANTIC_JUDGE",
+      next_action: "PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION",
+      governed_continuation: {
+        transport: "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+        schema_version: "LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+        payload_field: "semantic_judge_review",
+        issue_label: "lf-profile-resume-governed",
+        reuse_execution_id: true,
+        owner_reauthorization_required: false,
+        credential_route: "GITHUB_OIDC_TO_EDGE_ONLY",
+        completion_status: "NOT_COMPLETE",
+      },
       result: recorded.result,
     });
   }
