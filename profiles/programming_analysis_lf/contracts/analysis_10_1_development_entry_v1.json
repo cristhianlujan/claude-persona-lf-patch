@@ -6,6 +6,8 @@
   "analysis_stage": "A1_INTAKE_NORMALIZE / 10.1_PRELIMINARY_DEVELOPMENT_TYPE",
   "integration_note": "Auxiliary candidate preflight only. A2 still owns source-evidence-derived change type, granularity and depth, and A3/10.4 owns separate implementation_state readback.",
   "required_input": [
+    "profile_code",
+    "operation_code",
     "execution_id",
     "business",
     "literal_request",
@@ -69,5 +71,15 @@
     "no_self_issued_stage_receipts"
   ],
   "checkpoint_binding": "Same execution_id and request_sha256. Use existing lease-fenced checkpoint function only through qualified consumer.",
-  "business_extension": "SALY needs qualified separate source binding; this LF candidate must fail closed for SALY."
+  "business_extension": "SALY needs qualified separate source binding; this LF candidate must fail closed for SALY.",
+  "owner_profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF",
+  "owner_operation_code": "EJECUCION_PERFIL_LF",
+  "output_identity": [
+    "business",
+    "profile_code",
+    "operation_code",
+    "execution_id",
+    "request_sha256"
+  ],
+  "owner_assertion": "ProfileTask identity is canonical only if Router-selected profile is CURRENT and begin_from_handoff has created the ledger RUN; local preflight does not prove admission"
 }
