@@ -229,6 +229,22 @@ class IndependentReviewCounterexamples(unittest.TestCase):
                 self.assertEqual(r["decision"], "DEFER_TO_GATE2_RECEIPT_GUARD")
                 self.assertFalse(r["canonical_effect_allowed"])
 
+    def test_provider_denial_without_structured_router_stays_unverified(self):
+        for mode in ("GPT_NATIVE", "CLAUDE_NATIVE"):
+            with self.subTest(mode=mode):
+                denied = self.run_case(
+                    mode, "Entra por Router y define regla LF",
+                    "BLOCK_SCOPE_SEMANTICS_UNATTESTED TOOL_ACCESS_DENIED",
+                    "NOT_EXECUTED TOOL_ACCESS_DENIED")
+                self.assertEqual(denied["decision"], "REPORT_NOT_EXECUTED_UNVERIFIED")
+                self.assertEqual(denied["reason_code"],
+                                 "PROVIDER_DENIAL_WITHOUT_STRUCTURED_ROUTER")
+                verified = self.run_case(
+                    mode, "Entra por Router y define regla LF",
+                    ROUTER_JSON + " TOOL_ACCESS_DENIED",
+                    "NOT_EXECUTED TOOL_ACCESS_DENIED")
+                self.assertEqual(verified["decision"], "ALLOW_TRUTHFUL_BLOCK")
+
     def test_structured_blocker_must_come_from_a_json_object(self):
         # A blocker string quoted inside prose or a string value is not an object.
         for mode in ("GPT_NATIVE", "CLAUDE_NATIVE"):
