@@ -19,6 +19,8 @@ KINDS = {
     "UNKNOWN": ("NEED_MORE_EVIDENCE", "CLARIFY_INTENT"),
 }
 SCHEMA = "ANALYSIS_10_1_DEVELOPMENT_ENTRY_V1"
+OWNER_PROFILE = "PERFIL-PROGRAMMING-ANALYSIS-LF"
+OWNER_OPERATION = "EJECUCION_PERFIL_LF"
 
 
 def classify(request: dict) -> dict:
@@ -30,6 +32,8 @@ def classify(request: dict) -> dict:
                 "operationally_verified": False, "persisted": False,
                 "programming_authorized": False}
     business = request.get("business")
+    profile = request.get("profile_code")
+    operation = request.get("operation_code")
     execution = request.get("execution_id")
     literal = request.get("literal_request")
     input_hash = request.get("request_sha256")
@@ -37,6 +41,10 @@ def classify(request: dict) -> dict:
     refs = request.get("intent_evidence_refs")
     if business != "LF":
         errors.append("LF_BUSINESS_BINDING_REQUIRED")
+    if profile != OWNER_PROFILE:
+        errors.append("ANALYSIS_PROFILE_BINDING_REQUIRED")
+    if operation != OWNER_OPERATION:
+        errors.append("CANONICAL_OPERATION_BINDING_REQUIRED")
     if not isinstance(execution, str) or not execution.strip():
         errors.append("RUN_ID_MISSING")
     if not isinstance(literal, str) or not literal.strip():
@@ -63,6 +71,8 @@ def classify(request: dict) -> dict:
         "development_class": development_class,
         "next_action": next_action,
         "business": business,
+        "profile_code": profile,
+        "operation_code": operation,
         "execution_id": execution,
         "request_sha256": input_hash,
         "intent_kind": intent,
