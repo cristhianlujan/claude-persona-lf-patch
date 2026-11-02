@@ -127,6 +127,69 @@ class Gate2StopGuard(unittest.TestCase):
     def test_fallback_explicit_pair(self):
         self.assertEqual(module.evaluate(event(G + ': stage 7 pendiente'))['decision'], 'block')
 
+    def test_pre_gate2_scope_block_plus_propose_only_cannot_claim_100_percent(self):
+        receipt = ('ACT-0001 BLOCK_SCOPE_SEMANTICS_UNATTESTED '
+                   'lf_router_dispatch_v1 PROPOSE_ONLY_OPEN')
+        e = self.with_transcript(
+            'Entra por Router y define la política de intentos fallidos B2B',
+            receipt,
+            'Definición registrada — 100%. Issue #3505 preparado.')
+        self.assertEqual(module.evaluate(e)['decision'], 'block')
+        self.assertIn('PRE_GATE2_ROUTE_CONTINUITY_BLOCK',
+                      module.evaluate(e)['reason'])
+
+    def test_pre_gate2_proposal_issue_is_not_equivalent_to_run(self):
+        e = self.with_transcript(
+            'Continúa por el Router y registra la regla LF',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED; PROPOSE_ONLY_OPEN',
+            'Se entregó el Issue #3505 como resultado del recorrido.')
+        self.assertEqual(module.evaluate(e)['decision'], 'block')
+
+    def test_pre_gate2_honest_blocked_state_can_stop(self):
+        e = self.with_transcript(
+            'Entra por el Router y define una regla B2B',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED; PROPOSE_ONLY_OPEN',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED / NOT_EXECUTED / '
+            'NO_CANONICAL_EFFECT. Sin sujeto resuelto ni escritura oficial; '
+            'se necesita una decisión de la autoridad correspondiente.')
+        self.assertIsNone(module.evaluate(e))
+
+    def test_pre_gate2_explicit_denial_with_tool_receipt_can_stop(self):
+        e = self.with_transcript(
+            'Entra por el Router y define una regla B2B',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED; PROPOSE_ONLY_OPEN; '
+            'TOOL_ACCESS_DENIED: missing Github authorization',
+            'NOT_EXECUTED / TOOL_ACCESS_DENIED: la operación no puede continuar')
+        self.assertIsNone(module.evaluate(e))
+
+    def test_pre_gate2_honest_block_with_completed_claim_still_blocks(self):
+        e = self.with_transcript(
+            'Ejecuta la actualización de regla LF',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED; PROPOSE_ONLY_OPEN',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED / NOT_EXECUTED / '
+            'NO_CANONICAL_EFFECT. Definición registrada y completada 100%.')
+        self.assertEqual(module.evaluate(e)['decision'], 'block')
+
+    def test_pre_gate2_block_without_proposal_does_not_create_new_gate(self):
+        e = self.with_transcript(
+            'Entra por el Router y revisa la definición LF',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED',
+            'El Router bloqueó la resolución; no hay operación ejecutada.')
+        self.assertIsNone(module.evaluate(e))
+
+    def test_subsequent_valid_gate2_run_uses_existing_terminal_guard(self):
+        rid = 'EXEC-PROFILE-GATE2-' + 'A' * 24
+        receipts = [
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED PROPOSE_ONLY_OPEN',
+            G,
+            json.dumps({'execution_id': rid, 'run_status': 'COMPLETED',
+                        'terminal_authority_receipt': {'status': 'READY'},
+                        'required_steps_pass': 11, 'required_steps': 11}),
+        ]
+        e = self.with_transcript('Ejecuta perfil por Router',
+                                 receipts, '11/11 COMPLETED READY ' + rid)
+        self.assertIsNone(module.evaluate(e))
+
     def test_no_direct_writes(self):
         source = M.read_text()
         for x in ('UPDATE lf_ops.reglas', 'service_role_key',
