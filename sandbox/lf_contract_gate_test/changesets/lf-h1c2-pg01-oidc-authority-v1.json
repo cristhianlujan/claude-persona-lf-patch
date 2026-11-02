@@ -1,0 +1,13 @@
+{
+  "solution_ref": "lf-h1c2-pg01-oidc-authority-v1",
+  "paths": {
+    ".github/workflows/lf-pg01-oidc-review-auditor.yml": "WORKFLOW",
+    ".github/workflows/lf-pg01-oidc-subject-verifier.yml": "WORKFLOW",
+    "scripts/lf_pg01_oidc_receipt_reverify.ts": "SERVICE_RUNTIME",
+    "supabase/functions/lf-pg01-oidc-authority-v1/auth.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-pg01-oidc-authority-v1/auth_test.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-pg01-oidc-authority-v1/index.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-pg01-oidc-authority-v1/integration_test.ts": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/changesets/lf-h1c2-pg01-oidc-authority-v1.json": "CHANGESET_MANIFEST"
+  }
+}
