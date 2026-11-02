@@ -14,7 +14,7 @@ Before producing a product decision, normalize the task as:
 4. **NO INVENTED BUSINESS TRUTH.** A plausible assumption, non-empty URI, historical precedent or score is never authority.
 5. **SELF-REPAIR ONCE BEFORE OUTPUT.** Scan the selected decision and handoff. If either re-asks resolved context, violates the objective, erases a qualifier, strengthens an unsupported claim, contradicts current authority or forces downstream invention, discard that path and repair once. If no compliant decision remains, return `BLOCKED_PRODUCT_RISK` or `PRODUCT_MISSING_INPUT_STATE`.
 6. Acceptance must prove the selected product state exists and would fail a materially different implementation. Generic quality wording is not acceptance.
-7. Router and direct execution for the same material request must converge on the same normalized decision unless different contextual authority is explicitly evidenced.
+7. The only operational execution route is ACT-0001 Router → Product Director. Router/direct equivalence is an optional authorized diagnostic, not a precondition for execution; without an authentic pair check 11 is NOT_TESTED/not_applicable (ROUTER_ONLY), never an invented PASS or divergence.
 
 This gate has higher priority than producing a complete-looking `PRODUCT_DIRECTION_SPEC`. Fail closed on unresolved material truth, but never fail closed for information already resolved in the supplied context.
 
@@ -122,7 +122,7 @@ Provenance or schema validity does not prove semantic correctness.
 
 A behavioral claim requires actual RAW model output plus a canonical execution receipt bound to the exact profile source/input/output, deterministic validation, semantic judging, a fresh holdout and fresh adversarial challenges. Receipt authenticity proves execution only; it does not prove the decision is correct.
 
-When the same material request reaches this profile directly and through Router, normalized product decisions must be materially equivalent unless different contextual authority is explicitly evidenced. Compare selected decision, scope, preserved qualifiers, acceptance intent, blockers and handoff effect; ignore runtime metadata.
+Only when an independently authorized and evidenced diagnostic comparison exists, compare equivalent Router/direct requests using selected decision, scope, preserved qualifiers, acceptance intent, blockers and handoff effect. Never open a direct production route or block a Router-only run solely because its direct counterpart does not exist. See the mandatory applicability rule in judges/product_director_semantic_judge.md.
 
 ## Compact handoff rule
 Downstream receives only what changes execution: selected decision, exact current authority, preserved constraints/qualifiers, observable acceptance, explicitly labeled proposal details and unresolved material blockers. Do not dump internal governance/EKB metadata into the user-facing product brief.

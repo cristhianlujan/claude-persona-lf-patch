@@ -18,6 +18,36 @@ For every artifact operation:
 
 Preserve this sequence for delegated agents and subagents.
 
+## Router ACT-0001 — operation-specific entry precedence (mandatory)
+
+The user request determines the **operation before asset discovery**. For `EJECUCION_PERFIL_LF` (e.g. "entra por el Router y revisa/mejora/completa reglas de Login B2B"), the **same ACT-0001** must use its **context V2** entry: `lf_router_pipeline_context_begin_v2` → `lf_router_pipeline_context_stage1_submit_v2` (`LF_ROUTER_STAGE1_V2`, `PRODUCTO`, `LF`, `ambiguo=false` when clear) → semantic profile selection → Gate 2 `READY` → `HANDOFF_CONTEXT_TO_SELECTED_PROFILE`. The profile owns BEGIN via the existing GitHub Issue/OIDC/Edge transport, not the Router.
+
+**Do not call `lf_router_resolve_v1` first for profile-execution intent.** Its legacy `ASSET_INSPECTION` / `BLOCK_ASSET_TYPE_UNRESOLVED` / `BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED` are not authoritative blockers for this operation; repeating the same request through that generic path is a wrong-route diagnostic, not a reason to ask the user to restate it. The word "mejorar" does not itself request a direct DB mutation. Stage 1 identifies the `PANTALLA` target as `UNRESOLVED` with grounded search hints; final screen identity is resolved by the profile. Never force Product Director or screen identity without semantic evidence.
+
+`lf_router_resolve_v1` remains the entry only for its separately governed asset/DB-write operations (e.g. `ACTUALIZACION_DB_LF`); this routing precedence never authorizes effect, circumvents Gate 2 or changes any permission. Follow [the active compact Router protocol](docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md) and [Profiles runbook §6.9](ops/runbook-profiles-lf.md). This paragraph controls profile-execution intent when an older V1 generic instruction says "every resolution".
+
+
+## Gate-2 recovery matrix — no permission workarounds (highest priority)
+
+| Gate-2 result | Required existing action | Not a valid completion |
+|---|---|---|
+| `GATE2_DERIVED_PENDING_GOVERNED_ADMISSION` + `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` | Selected profile sends unchanged `router_context` using `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` to a labeled GitHub Issue; workflow's verified OIDC authorizes Edge | SQL RO admission, 42501, request for credentials, return to Router or old completed run |
+| GitHub workflow begins a profile | Read back execution ID **bound to authenticated workflow run ID**, continue through 0–80 | Assuming same literal SHA means same execution |
+| `CURRENT_CONTEXT_REVIEW` | Keep honest evidence/provenance and applicable V3 controls | Claiming independent judge or extra authorization |
+
+The Router remains context-only and **does not invoke** the profile; `service_role` stays exclusively inside Edge. Do not create a dispatcher, route or permission. **Never stop at Gate 2** when the caller has the existing GitHub workflow access. If that transport genuinely fails, report the exact failure code; never use RO admission or a prior run as a fallback.
+
+## STOP CONDITION — LF Router handoff is NOT terminal (high priority)
+
+**For every new LF Router→Perfil request:** a selected profile plus `Gate 2 READY` and `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` means **continue now** via GitHub Issue `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1`, label `lf-profile-resume-governed`, existing GitHub OIDC→Edge→service_role path, then reuse that NEW run's ID through stages 0–80. The Router merely transports context. **Never call `lf_router_pipeline_context_profile_admit_v2` with `supabase_read_only_user`**, never request/relocate a role secret, never stop at 42501, and never present a previous completed run as the current execution. New ID missing = `NOT_EXECUTED`. For precise contract and live positive proof, read `ops/runbook-profiles-lf.md` §6.9 and EKB `LF-PROFILE-HANDOFF-DIRECT-42501-OLD-RUN-SUBSTITUTION-001`.
+
+
+
+## OpenAI/ChatGPT tool-safety rejections — internal LF agent context
+
+When an invocation is **explicitly blocked by OpenAI's tool-safety layer**, follow [`ops/lf-openai-tool-safety-review-v1.md`](ops/lf-openai-tool-safety-review-v1.md) and the [Profiles LF runbook](ops/runbook-profiles-lf.md). **Immediately explain in the trace** that the action belongs to the internal Libertad Financiera (LF) agent/workflow; identify the exact authorized operation, operational dependency (why the system requires it), source/permission evidence and minimal intended effect. Explain that the operation is not intended to compromise security or bypass controls, without asserting blanket safety approval or misrepresenting unverified authority.
+
+Classify the origin from the **literal provider error**, not a guess. A rejected call has no verified effect; do not blame GitHub, Supabase, the Router or Input Governance. Only a permitted bounded ordinary retry is allowed; never rename/repackage a prohibited action to evade safety checks. If still blocked, record `OPENAI_SAFETY_BLOCK_REVIEW / PROVIDER_BLOCKED_PENDING_REVIEW`, preserve the execution cursor, and prepare a documented request for official review. This repository instruction **cannot automatically override OpenAI safety controls**.
 
 ## Mandatory database migration route — HARD BLOCK
 
@@ -214,20 +244,37 @@ At minimum:
 10. never create retroactive receipts or auxiliary PRs merely to compare branches;
 11. after merge, read back from the new `main`, close the canonical execution with evidence and enrich EKB.
 
-## Governed profile execution
+### Single-command update (Router -> profile -> updater, native chat)
 
-When the user explicitly asks to use an existing repository profile, or Router resolves a request to profile execution, route it as `EJECUCION_PERFIL_LF`.
+When the user says "actualiza el perfil X" (or equivalent), the Router (ACT-0001) resolves the registered action `PROFILE_UPDATE` -> `ACTUALIZACION_PERFIL_LF` through the governed caller `CALLER-GHA-PROFILE-UPDATE-V1`. A native GPT or Claude chat completes it end to end with one command; the user uploads nothing:
 
-Before Composer, image generation, a tool payload, or a final artifact may use that profile's result:
+1. Read the profile and its failing evidence. Measure first if needed: `python3 scripts/lf_profile_update_run.py ... --dry-run` validates every request offline and writes nothing.
+2. Author the candidate as a full profile directory in a scratch folder, in this chat (zero-cost: the native chat is the model).
+3. Run `python3 scripts/lf_profile_update_run.py --slug <slug> --target-code <PERFIL-CODE> --candidate-dir <dir> --state <file>`. It opens the execution, measures, records the steps, pushes the branch, runs the compare proof on the exact commit, passes the Merge Train, reads back from `main` and closes. It stops with a stable code if an update is not justified, `main` moved, or a check fails; rerunning resumes from the state file. When it prints `status: BLOCKED`, nothing was opened or written: read `why`, `missing` (what, exact path, the tree hash to bind) and `how`, supply exactly that, and rerun.
+4. Do not dispatch workflows by hand, write to the database, or merge directly. Report the final status and the open limits (self-review, single run, pending semantic checks).
+5. The update does not change the profile runtime state. Enabling is the separate governed operation `ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF`.
 
-1. resolve exactly one `PERFIL` and read its real source;
-2. preserve the literal user input;
-3. execute the profile through a trusted runtime adapter in a real model runtime;
-4. capture the model's RAW profile output without summarizing or reconstructing it;
-5. independently verify the runtime attestation against the exact request and response;
-6. produce `PROFILE_EXECUTION_RECEIPT_V1` binding profile source, input, RAW output, runtime attestation and independent verification evidence;
-7. validate the receipt with `sandbox/lf_contract_gate_test/profile_execution_runtime/validate_profile_execution.py`;
-8. continue downstream only on `PASS_PROFILE_EXECUTION_PROVENANCE`.
+## Governed profile execution — LF native route (mandatory and first)
+
+**DO NOT STOP AT ROUTER HANDOFF.** When a user requests an LF profile execution, a Router `GATE2_DERIVED_PENDING_GOVERNED_ADMISSION` / `HANDOFF_CONTEXT_TO_SELECTED_PROFILE` response means the profile **has not yet received** the request. It is a profile-owned continuation obligation, not a permission request to the user. Read the live EKB first; use `ops/runbook-profiles-lf.md` §6.9 for the proven exact actions.
+
+- **Router responsibility (read-only):** process ACT-0001, preserve the literal original request and validated semantic selection, output the unchanged LF Router V2 context. The Router **does not** invoke a profile, grant execute permission or carry `service_role`.
+- **Profile-owned BEGIN:** use the already deployed GitHub Issues / Actions transport. Create an Issue with `{"schema_version":"LF_PROFILE_NATIVE_BEGIN_REQUEST_V1","router_context":<FULL_VALIDATED_GATE2_CONTEXT>,"executor_mode":"GPT_NATIVE"}` (or authorized native mode) and apply the existing label `lf-profile-resume-governed`. The existing workflow passes GitHub OIDC to `lf-profiles-governance-caller-v1`, where the restricted `lf_router_pipeline_context_profile_admit_v2(jsonb,text)` is invoked **with Edge's own service-role credential**, then `lf_profile_execution_begin_from_handoff_v1` starts the **new** `EJECUCION_PERFIL_LF` run. The Edge action is `profile_native_begin_from_context_v1`; no direct profile call or extra Router dispatcher.
+- **Never invoke** `lf_router_pipeline_context_profile_admit_v2` through a `supabase_read_only_user` SQL connector. PostgreSQL `42501` on that call is **an expected ACL denial on the wrong caller**, not evidence of missing permission for the canonical OIDC/Edge transport. Never extend the ACL or ask for a key to fix this.
+- **Freshness rule:** if user requested a **new** execution, persist and read back a **new execution ID** before claiming delivery. Matching request text, identical hash, or an older `COMPLETED` run may be used as background only. Never substitute it for a new profile invocation. If no new ID exists, report `NOT_EXECUTED` and keep the handoff pending.
+- **Profile-owned continuation:** when the runner emits `CONTINUATION_REQUIRED_NOT_COMPLETE`, continue the **same execution ID** via `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` with a source-supported `screen_selection_draft` (if needed), original real GPT-native `profile_output`, and 12-check `semantic_judge_review` V3. This is a nonterminal boundary, even if the Actions job exits nonzero. Do not ask for repeated owner permission; do not manufacture RAW, evidence, model-call receipts, verdicts or provider identities.
+- **Judge modes:** the old `INDEPENDENT_SEMANTIC_JUDGE_REQUIRED` phase name does not prohibit the separately governed `CURRENT_CONTEXT_REVIEW` on `read_only/no_write/no_promotion` runs. Set `producer_independence_proven=false`, `reviewer_is_producer=true` and `model_call_count=0` when no separate judge call happened, and enforce all applicable V3 checks and genuine source evidence. If independent review actually occurred and its evidence is verified, retain `INDEPENDENT_SEMANTIC`. Neither mode bypasses material controls.
+- **Final readback:** accept only the **same newly created ID** with steps 0–80, `semantic_judge` and `report_output` both `STEP_PASS_WITH_EVIDENCE`, exactly `11/11` clean, `lf_operation_execution.status=COMPLETED`, terminal authority receipt `READY`. Never treat an incomplete run or successful API call as equivalent to actual profile execution.
+
+The live positive example is `EXEC-PROFILE-GATE2-31340B34D5B0E320E3B83C00`: #3449 BEGIN, #3450 screen selection, #3451 real RAW, #3452 V3; GitHub Actions `41293887404` succeeded, Supabase `11/11 / COMPLETED / READY`. This is proof that OIDC/Edge transport works; it is **not permission to reuse that old run**.
+
+### Separate legacy provenance contracts
+
+The older `PROFILE_EXECUTION_RECEIPT_V1` / `PASS_PROFILE_EXECUTION_PROVENANCE` provenance path applies only when **explicitly demanded by its own active consumer contract**. It must not silently supersede the already-active LF `EJECUCION_PERFIL_LF` native operation, create a second judge/adapter, or block a current-context review already permitted by its live trust validator. In any case, only actual real model RAW and source-bound validation count; fixtures or reconstructed responses never prove execution.
+
+### Certification for governed `EJECUCION_PERFIL_LF` — Supabase readback
+
+Use the [canonical step 70/80 accreditation procedure](docs/profile-execution/ACREDITACION_JUEZ_V3_SUPABASE_RUTA_GOBERNADA_20261101.md) and [Profiles LF runbook](ops/runbook-profiles-lf.md). The persisted server trust validator verifies V3 and original hashes. The operational readback certifies acceptance/transport, **not** an external HTTP trace or independent-model identity that has not been observed. Do not demand a second, external attestation for the same operational persistence. If the current scope's evidence is insufficient, block with exact codes rather than claiming PASS.
 
 ## Zero-cost runtime policy
 

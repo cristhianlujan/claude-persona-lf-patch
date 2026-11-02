@@ -1,0 +1,8 @@
+{
+  "solution_ref": "r17-rollback-entrypoint-drift-20261029",
+  "paths": {
+    "sandbox/lf_contract_gate_test/edge_function_operation/edge_bundle_rollback_rehearsal_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_edge_bundle_rollback_rehearsal_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/r17-rollback-entrypoint-drift-20261029.json": "CHANGESET_MANIFEST"
+  }
+}

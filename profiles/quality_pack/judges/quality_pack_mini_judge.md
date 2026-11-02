@@ -37,7 +37,7 @@ For provenance PASS, `receipt_ref` and `receipt_sha256` must resolve independent
 12. If an artifact is required, it exists through resolver readback and remains parseable under its domain validator.
 13. If an upstream is required, its exact SHA matches resolver bytes, its resolver-derived revision is current and its current validator status is compatible.
 14. Semantic judgment is independent from the producer oracle; `UNCERTAIN` never becomes PASS.
-15. Router/direct outputs that are materially equivalent inputs cannot diverge without an explicit governed reason.
+15. If an independently authorized, authenticated Router/direct comparison pair exists for the same material inputs, its outputs cannot diverge without a governed reason. LF's operational route remains ACT-0001 Router → profile; no direct counterpart is required solely to produce Quality Pack PASS. Do not claim equivalence or divergence without an authentic pair.
 
 ## Automatic FAIL conditions
 - Score exists without criterion evidence or evidence is nominal.

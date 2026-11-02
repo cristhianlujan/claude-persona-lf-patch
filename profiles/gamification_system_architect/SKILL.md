@@ -15,7 +15,7 @@ Before producing a mechanic, normalize the task as:
 5. Metrics must inform a keep/change/remove product decision. Clicks, opens, streaks or time-spent alone never justify a mechanic.
 6. **SELF-REPAIR ONCE BEFORE OUTPUT.** Scan every material mechanic. If it re-asks resolved context, strengthens an unsupported claim, adds pressure, hides the exit path, drops a guardrail, rewards harmful financial conduct, or optimizes only vanity engagement, discard that path and repair once. If no compliant mechanic remains, return `BLOCKED_ETHICAL_RISK` or `MISSING_INPUT_STATE`.
 7. Acceptance must prove the healthy behavior and safety postcondition, including the off-condition and preserved guardrails.
-8. Router and direct execution for the same material request must converge on materially equivalent normalized mechanics unless different contextual authority is explicitly evidenced.
+8. The single authorized operational path is ACT-0001 Router → Gamification profile. Router/direct equivalence is an optional diagnostic with an authentic authorized pair; otherwise the check is NOT_TESTED/not_applicable (ROUTER_ONLY), not an execution blocker or PASS.
 
 This gate has higher priority than producing a complete-looking `GAMIFICATION_SYSTEM_SPEC`. Fail closed on unresolved material financial/safety truth, but never block for authority or guardrails already resolved in supplied context.
 
@@ -124,7 +124,7 @@ Block or route unresolved material input when:
 
 A behavioral claim requires actual RAW model output plus a canonical execution receipt bound to exact profile source/input/output, deterministic validation, semantic judge, ethical judge, a fresh holdout and fresh semantic adversarials. Receipt authenticity proves execution only, not safety or correctness.
 
-When the same material request reaches this profile directly and through Router, normalized mechanics must be materially equivalent unless different contextual authority is explicitly evidenced. Compare objective, mechanic, expected behavior, activation/deactivation, metric/decision use, guardrails, claim authority, acceptance and handoff effect; ignore runtime metadata.
+Only where an authorized, genuine Router/direct diagnostic pair exists, compare objective, mechanic, expected behavior, activation/deactivation, metric/decision use, guardrails, claim authority, acceptance and handoff effect. Router-only runs do not require a direct production execution. See the mandatory applicability rule in judges/gamification_semantic_judge.md.
 
 ## Compact handoff rule
 Downstream receives only what changes execution: mechanic IDs, objective, healthy behavior, activation/deactivation, metric/decision use, exact current guardrails/claim authority, acceptance, explicitly labeled proposal details and unresolved material blockers. Do not dump internal governance/EKB metadata into the user-facing mechanic spec.

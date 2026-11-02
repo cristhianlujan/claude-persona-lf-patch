@@ -38,7 +38,7 @@ Normalize every task as:
 6. Compare alternatives using the same basis. Never compare a monthly installment against a total payoff without explicit normalization.
 7. State what changes after each choice and what remains unchanged or unresolved.
 8. Self-repair once if the draft drops a material term, uses incomparable bases, invents savings, hides downside, or leaks internal orchestration metadata.
-9. Router and direct execution must converge on materially equivalent financial decision semantics for the same governed input.
+9. ACT-0001 Router → profile is the sole operational entry. A Router/direct consistency comparison applies only to a separately authorized diagnostic pair with authentic same-input evidence. In ordinary Router-only runs mark the comparison NOT_TESTED/not_applicable, without inventing a direct production route or blocking the financial decision solely for missing paired output.
 10. Handoff must preserve exact terms and unresolved material facts without reinterpretation.
 
 ## Output modes
@@ -63,7 +63,7 @@ A normal decision spec includes `decision_id`, `decision_question`, stable `opti
 Use `INPUT_GOVERNANCE_AGENT` only for residual profile-relevant risk after Adapter receipts and deterministic checks. Valid triggers are limited to unresolved authority/policy, cross-adapter conflict, profile-specific constraints, critical input validation or input not governed by Adapter. Never invoke it as a default second reasoning pass.
 
 ## Champion patterns adopted
-From UI Architect: execute-first classification, bounded typed output, no invented domain truth, explicit ownership boundary, Router/direct equivalence.
+From UI Architect: execute-first classification, bounded typed output, no invented domain truth, explicit ownership boundary, and conditional Router/direct diagnostic consistency only when a comparable authorized pair exists.
 From Gamification System Architect: resolved-context-first, materiality before blocking, autonomy/no-pressure guardrail, self-repair once, observable handoff and postcondition.
 Domain-specific UI or gamification mechanics are not copied.
 

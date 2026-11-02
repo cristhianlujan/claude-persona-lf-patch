@@ -6,6 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 contract = json.loads((ROOT / 'contracts/resolver_dispatch_contract.json').read_text(encoding='utf-8'))
 resolvers = contract['resolvers']
 
+GOVERNED_UPDATE_DISPATCH = 'GOVERNED_PROFILE_UPDATE_DISPATCH_V1 (issue+label lf-profile-update-governed or scripts/lf_profile_update_run.py; see CLAUDE.md "Single-command update"; no direct DB begin)'
+
 observed_live_refs = {
     'public.lf_operation_execution',
     'public.v_lf_fuente_operativa',
@@ -21,6 +23,7 @@ observed_live_refs = {
     'run-github-readback-perfil-lf',
     'run-github-write-perfil-lf',
     'GPT_RUNTIME_WITH_SUPABASE_CONTEXT',
+    GOVERNED_UPDATE_DISPATCH,
 }
 
 checks = {
@@ -32,6 +35,7 @@ checks = {
     'judge_ref_read_only': resolvers['public.lf_operation_step_judge_bindings + public.lf_operation_judges'].get('must_not_execute_judge_as_resolver') is True,
     'gpt_requires_observed_source': resolvers['GPT_RUNTIME_WITH_SUPABASE_CONTEXT'].get('evidence_provenance') == 'OBSERVED_SOURCE_REF_REQUIRED',
     'gpt_no_fabricated_receipt': resolvers['GPT_RUNTIME_WITH_SUPABASE_CONTEXT'].get('must_not_fabricate_receipt') is True,
+    'update_dispatch_no_direct_db': 'DIRECT_DB_WRITE_FROM_CHAT' in resolvers[GOVERNED_UPDATE_DISPATCH].get('forbids', []) and 'MERGE_VIA_TRAIN' in resolvers[GOVERNED_UPDATE_DISPATCH].get('requires', []),
     'github_write_has_prewrite': 'PRE_WRITE_EXECUTION_BINDING_GATE_CLEAN' in resolvers['run-github-write-perfil-lf'].get('requires', []),
     'github_write_has_currentness': 'CURRENT_EXECUTION_AND_STEP' in resolvers['run-github-write-perfil-lf'].get('requires', []),
     'read_modes_side_effect_free': all(not resolvers[name].get('side_effect') for name in observed_live_refs if resolvers[name]['mode'] in {'SUPABASE_READ','JUDGE_CONTRACT_READ_ONLY','GITHUB_READ','GITHUB_READBACK'}),

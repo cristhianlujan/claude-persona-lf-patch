@@ -207,7 +207,8 @@
                   "EXISTING_AUTHORITY",
                   "EXISTING_REUSABLE_CAPABILITY",
                   "PROPOSED_DELIVERABLE",
-                  "UNKNOWN"
+                  "UNKNOWN",
+                  "DERIVED_PROPOSAL"
                 ]
               },
               "used_as_existing_authority": {
@@ -229,7 +230,10 @@
                 "then": {
                   "properties": {
                     "authority_kind": {
-                      "const": "EXISTING_AUTHORITY"
+                      "enum": [
+                        "EXISTING_AUTHORITY",
+                        "DERIVED_PROPOSAL"
+                      ]
                     }
                   }
                 }
@@ -263,7 +267,10 @@
           }
         },
         "authority_kind": {
-          "const": "EXISTING_AUTHORITY"
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "DERIVED_PROPOSAL"
+          ]
         },
         "evidence_id": {
           "type": "string",
@@ -311,7 +318,10 @@
           }
         },
         "authority_kind": {
-          "const": "EXISTING_AUTHORITY"
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "DERIVED_PROPOSAL"
+          ]
         },
         "evidence_id": {
           "type": "string",
@@ -359,7 +369,10 @@
           }
         },
         "authority_kind": {
-          "const": "EXISTING_AUTHORITY"
+          "enum": [
+            "EXISTING_AUTHORITY",
+            "DERIVED_PROPOSAL"
+          ]
         },
         "evidence_id": {
           "type": "string",

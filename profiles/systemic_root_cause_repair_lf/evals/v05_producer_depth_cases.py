@@ -79,6 +79,7 @@ def to_nonready(candidate, attempts=None):
         "evidence_needed": ["physical wiring proof"],
         "design_consequence": "Can change the enforcement point.",
         "containment_ref": None,
+        "cascade": {"classes_tried": ["DIRECT"], "classes_without_source": ["DECLARED", "ANALOGY", "RELATED", "HISTORY"]},
     }
     if attempts is not None:
         row["attempted_sources"] = attempts

@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-current-context-review-v3-20261101",
+  "paths": {
+    "docs/profile-execution/CURRENT_CONTEXT_V3_REVIEW_MODE_20261101.md": "SERVICE_RUNTIME",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "supabase/migrations/20261101053000_lf_profile_current_context_semantic_review_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-current-context-review-v3-20261101.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -26,6 +26,13 @@ TARGET_DIR = "supabase/functions/" + TARGET_SLUG
 RUNTIME_FILES = ("index.ts", "caller.ts", "cp2_edge_bridge.ts")
 ROLLBACK_FILES = ("index.ts", "caller.ts")
 ARTIFACT = Path("m105_edge_bundle_rollback_rehearsal.json")
+# Exact, reviewed 2026-10-28 deploy-compatibility change: remove a type-only
+# Deno import and replace it with a comment. No other entrypoint drift is accepted.
+LEGACY_DENO_TYPES_IMPORT = b'import "jsr:@supabase/functions-js/edge-runtime.d.ts";\n'
+CURRENT_DENO_TYPES_COMMENT = (
+    b"// Deno.serve and Deno.env are native runtime globals; "
+    b"no remote JSR types fetch required.\n"
+)
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -80,8 +87,18 @@ def validate_manifests(current: dict[str, bytes],
     if b'"./caller.ts"' not in current["index.ts"]:
         raise CanaryBlocked("R17_CALLER_IMPORT_MISSING")
     if current["index.ts"] != rollback["index.ts"]:
-        # Any entrypoint delta needs separate, explicit deployment review.
-        raise CanaryBlocked("R17_INDEX_ENTRYPOINT_DRIFT")
+        # Only the exact, reviewed type-declaration-only prefix transition is
+        # permitted. The executable entrypoint bytes following it stay equal.
+        legacy = rollback["index.ts"]
+        updated = current["index.ts"]
+        known_safe_transition = (
+            legacy.startswith(LEGACY_DENO_TYPES_IMPORT)
+            and updated.startswith(CURRENT_DENO_TYPES_COMMENT)
+            and legacy[len(LEGACY_DENO_TYPES_IMPORT):]
+                == updated[len(CURRENT_DENO_TYPES_COMMENT):]
+        )
+        if not known_safe_transition:
+            raise CanaryBlocked("R17_INDEX_ENTRYPOINT_DRIFT")
 
 
 def state(directory: Path) -> dict[str, str]:

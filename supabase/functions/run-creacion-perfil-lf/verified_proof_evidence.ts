@@ -29,6 +29,20 @@ type Input = {
   now?: () => string;
 };
 
+/** Group 1: at least one structural S26 dimension improved. */
+function structuralImprovement(proof: any): boolean {
+  return Array.isArray(proof.improved_dimensions) && proof.improved_dimensions.length >= 1;
+}
+
+/** Group 2: operational coverage rose and no operational check regressed (trusted cases, runs bound to the exact trees). */
+function operationalImprovement(proof: any): boolean {
+  const op = proof.operational;
+  return Array.isArray(proof.evolution_basis) && proof.evolution_basis.includes("OPERATIONAL_COVERAGE")
+    && !!op && typeof op === "object" && op.status === "MEASURED"
+    && Array.isArray(op.improved_checks) && op.improved_checks.length >= 1
+    && Array.isArray(op.regressed_checks) && op.regressed_checks.length === 0;
+}
+
 export async function verifyEvolutionProofRun(input: Input): Promise<ProofVerified> {
   const { repository, mode, profileSlug, baseSha, gh } = input;
   const candidate = mode === "compare" ? String(input.candidateSha ?? "") : ZERO40;
@@ -71,8 +85,8 @@ export async function verifyEvolutionProofRun(input: Input): Promise<ProofVerifi
       return { ok: false, code: "PROOF_MEASUREMENT_INVALID" };
     }
   } else if (proof.schema !== "S26_PROFILE_EVOLUTION_PROOF_V1" || proof.verdict !== "EVOLUTION_DEMONSTRATED"
-      || !Array.isArray(proof.improved_dimensions) || proof.improved_dimensions.length < 1
-      || !Array.isArray(proof.regressed_dimensions) || proof.regressed_dimensions.length !== 0) {
+      || !Array.isArray(proof.regressed_dimensions) || proof.regressed_dimensions.length !== 0
+      || !(structuralImprovement(proof) || operationalImprovement(proof))) {
     return { ok: false, code: "PROOF_COMPARISON_NOT_DEMONSTRATED" };
   }
 

@@ -41,7 +41,7 @@ def validate_bound_output(root: Path, packet: dict) -> dict:
     if not isinstance(packet, dict) or packet.get("schema") != SCHEMA:
         return block("BINDING_SCHEMA_INVALID")
     op = packet.get("operation_code")
-    if op not in ("ACTUALIZACION_PERFIL_LF", "CREACION_PERFIL_LF"):
+    if op not in ("ACTUALIZACION_PERFIL_LF", "CREACION_PERFIL_LF", "EJECUCION_PERFIL_LF"):
         return block("OPERATION_SCOPE_INVALID")
     slug = packet.get("profile_slug")
     if not isinstance(slug, str) or not SLUG.fullmatch(slug):

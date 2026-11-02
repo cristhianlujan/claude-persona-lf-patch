@@ -1,0 +1,7 @@
+{
+  "solution_ref": "PROFILE-UPDATE-ANNOTATE-EXECUTION-V1-20261029",
+  "paths": {
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_update_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/PROFILE-UPDATE-ANNOTATE-EXECUTION-V1-20261029.json": "CHANGESET_MANIFEST"
+  }
+}

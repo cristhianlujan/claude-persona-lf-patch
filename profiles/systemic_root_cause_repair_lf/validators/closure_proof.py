@@ -337,6 +337,65 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
             elif row.get("used_as_existing_authority") is True and entry.get("evidence_class") not in CURRENT_AUTHORITY_EVIDENCE_CLASSES:
                 errors.append(_err("SRCR_AUTHORITY_EVIDENCE_CLASS_INSUFFICIENT", f"{path}.evidence_ids", eid))
 
+    # Gap closure (generic): no field names. Three rules apply to every node of the answer.
+    ALL_CLASSES = {"DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"}
+    deliverable_refs = {x.get("artifact_ref") for x in ((candidate.get("implementation_package") or {}).get("deliverables") or []) if isinstance(x, dict)} if isinstance(candidate, dict) else set()
+
+    def _check_derivation(node: dict, path: str) -> None:
+        d = node.get("derivation")
+        if not isinstance(d, dict):
+            errors.append(_err("GAP_DERIVED_PROPOSAL_RECORD_REQUIRED", f"{path}.derivation")); return
+        conf = d.get("confidence")
+        if not isinstance(conf, (int, float)) or isinstance(conf, bool) or not (0 <= conf < 1):
+            errors.append(_err("GAP_DERIVED_CONFIDENCE_INVALID", f"{path}.derivation.confidence"))
+        if not isinstance(d.get("criterion"), str) or not d["criterion"].strip():
+            errors.append(_err("GAP_DERIVED_CRITERION_REQUIRED", f"{path}.derivation.criterion"))
+        if not isinstance(d.get("alternatives"), list) or not d["alternatives"]:
+            errors.append(_err("GAP_DERIVED_ALTERNATIVES_REQUIRED", f"{path}.derivation.alternatives"))
+        attempts = d.get("attempts")
+        if not isinstance(attempts, list) or not attempts:
+            errors.append(_err("GAP_DERIVED_ATTEMPTS_REQUIRED", f"{path}.derivation.attempts"))
+        else:
+            for at in attempts:
+                if not isinstance(at, dict) or at.get("evidence_id") not in evidence_by_id:
+                    errors.append(_err("GAP_DERIVED_ATTEMPT_EVIDENCE_UNRESOLVED", f"{path}.derivation.attempts"))
+        if d.get("ratification_ref") not in deliverable_refs:
+            errors.append(_err("GAP_DERIVED_RATIFICATION_STEP_REQUIRED", f"{path}.derivation.ratification_ref"))
+
+    def _check_search_record(node: dict, path: str) -> bool:
+        """An unresolved datum is acceptable only as a documented absence: what was searched, where, and the repair step."""
+        rec = node.get("search_record")
+        if not isinstance(rec, list) or not rec:
+            return False
+        seen = set()
+        for r in rec:
+            if not isinstance(r, dict) or r.get("class") not in ALL_CLASSES or not r.get("source") or r.get("evidence_id") not in evidence_by_id:
+                errors.append(_err("GAP_SEARCH_RECORD_ENTRY_INVALID", f"{path}.search_record")); return True
+            seen.add(r["class"])
+        if seen != ALL_CLASSES:
+            errors.append(_err("GAP_SEARCH_RECORD_NOT_EXHAUSTIVE", f"{path}.search_record", "every evidence class must appear with the source searched"))
+        if node.get("repair_step_ref") not in deliverable_refs:
+            errors.append(_err("GAP_SEARCH_RECORD_REPAIR_STEP_REQUIRED", f"{path}.repair_step_ref"))
+        return True
+
+    def _walk(node: Any, path: str, closing: bool) -> None:
+        if isinstance(node, dict):
+            if node.get("authority_kind") == "DERIVED_PROPOSAL" and not path.startswith("$.closure_proof.authority_bindings"):
+                _check_derivation(node, path)  # binding rows only reference the proposal; the record lives on the datum
+            unresolved = (node.get("status") in ("UNRESOLVED", "NEEDS_MORE_EVIDENCE") and path != "$") or \
+                         (isinstance(node.get("missing_evidence"), list) and bool(node.get("missing_evidence")))
+            if closing and unresolved and not _check_search_record(node, path):
+                errors.append(_err("GAP_UNRESOLVED_CANNOT_CLOSE", path,
+                                   "run the gap-resolution cascade; close with existing authority, a derived proposal, or a search record plus repair step"))
+            for k, v in node.items():
+                _walk(v, f"{path}.{k}", closing)
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                _walk(v, f"{path}[{i}]", closing)
+
+    # A non-final NEEDS_MORE_EVIDENCE answer keeps its own rules (attempt + cascade, see producer_depth).
+    _walk(candidate, "$", closing=isinstance(candidate, dict) and candidate.get("status") != "NEEDS_MORE_EVIDENCE")
+
     # Origin authority slots must be current existing authority and bind exact evidence subjects.
     for field in ("origin_asset", "origin_operation", "owner"):
         value = candidate.get(field)
@@ -344,6 +403,8 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
         if not isinstance(value, dict):
             errors.append(_err("SRCR_EXISTING_AUTHORITY_SLOT_INVALID", path))
             continue
+        if value.get("authority_kind") == "DERIVED_PROPOSAL":
+            continue  # validated by the generic walk; never counted as existing authority
         if value.get("status") != "RESOLVED" or value.get("authority_kind") != EXISTING_AUTHORITY:
             errors.append(_err("SRCR_EXISTING_AUTHORITY_REQUIRED", path))
             continue

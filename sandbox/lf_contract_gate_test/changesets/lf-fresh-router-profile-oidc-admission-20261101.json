@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-fresh-router-profile-oidc-admission-20261101",
+  "paths": {
+    "ops/runbook-profiles-lf.md": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-fresh-router-profile-oidc-admission-20261101.json": "CHANGESET_MANIFEST"
+  }
+}

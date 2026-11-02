@@ -9,6 +9,7 @@ from unittest.mock import patch
 from edge_bundle_rollback_rehearsal_v1 import (
     ROLLBACK_REF, RUNTIME_FILES, TARGET_SLUG, CanaryBlocked,
     apply_bundle, rehearse, run, sha256, state,
+    LEGACY_DENO_TYPES_IMPORT, CURRENT_DENO_TYPES_COMMENT,
 )
 
 OLD = {
@@ -21,6 +22,9 @@ NEW = {
     "cp2_edge_bridge.ts": b'export const executeCp2 = () => null;\n',
 }
 HEAD = "a" * 40
+# Same executable entrypoint, exact reviewed removal of a type-only import.
+LEGACY_INDEX = LEGACY_DENO_TYPES_IMPORT + OLD["index.ts"]
+CURRENT_INDEX = CURRENT_DENO_TYPES_COMMENT + OLD["index.ts"]
 
 def get_live(token):
     return {
@@ -82,6 +86,33 @@ class RollbackRehearsalTests(unittest.TestCase):
     def test_modified_entrypoint_rejected(self):
         with self.assertRaisesRegex(CanaryBlocked, "R17_INDEX_ENTRYPOINT_DRIFT"):
             rehearse({**NEW, "index.ts": NEW["index.ts"] + b"// unexpected change\n"}, OLD)
+
+    def test_exact_types_only_entrypoint_change_allowed(self):
+        receipt = rehearse({**NEW, "index.ts": CURRENT_INDEX}, {**OLD, "index.ts": LEGACY_INDEX})
+        self.assertEqual(receipt["local_file_rehearsal"], "VERIFIED")
+        self.assertEqual(receipt["local_file_idempotency"], "VERIFIED")
+        self.assertEqual(receipt["local_forward_repeat_changes"], 0)
+        self.assertEqual(receipt["local_rollback_repeat_changes"], 0)
+        self.assertNotEqual(receipt["source_file_sha256"]["index.ts"], receipt["rollback_file_sha256"]["index.ts"])
+
+    def test_types_only_exception_rejects_executable_entrypoint_change(self):
+        old = {**OLD, "index.ts": LEGACY_INDEX}
+        for changed in (
+            CURRENT_INDEX + b"\nDeno.exit(1);\n",
+            CURRENT_INDEX.replace(b"createHandler", b"createHandlerEvil"),
+            CURRENT_INDEX.replace(b"\n", b"\n// changed other part\n", 1),
+            CURRENT_INDEX.replace(CURRENT_DENO_TYPES_COMMENT, b"// near but not exact\n"),
+            LEGACY_INDEX.replace(LEGACY_DENO_TYPES_IMPORT, b'import "./evil.ts";\n'),
+        ):
+            with self.subTest(changed=changed[:70]):
+                with self.assertRaisesRegex(CanaryBlocked, "R17_INDEX_ENTRYPOINT_DRIFT"):
+                    rehearse({**NEW, "index.ts": changed}, old)
+
+    def test_types_only_exception_rejects_modified_baseline_import(self):
+        current = {**NEW, "index.ts": CURRENT_INDEX}
+        mutated = LEGACY_INDEX.replace(LEGACY_DENO_TYPES_IMPORT, b'import "./evil.ts";\n')
+        with self.assertRaisesRegex(CanaryBlocked, "R17_INDEX_ENTRYPOINT_DRIFT"):
+            rehearse(current, {**OLD, "index.ts": mutated})
 
     def test_missing_bridge_import_rejected(self):
         with self.assertRaisesRegex(CanaryBlocked, "R17_BRIDGE_IMPORT_MISSING"):

@@ -97,6 +97,20 @@ def validate_producer_depth(payload: Any, evidence_manifest: Any = None) -> list
             errors.append(_err("V05_DESIGN_BLOCKER_ID_DUPLICATE", f"{path}.uncertainty_id"))
         else:
             blocking_ids.add(uid)
+        casc = row.get("cascade")
+        ALL = {"DIRECT", "DECLARED", "ANALOGY", "RELATED", "HISTORY"}
+        if not isinstance(casc, dict):
+            errors.append(_err("GAP_CASCADE_RECORD_REQUIRED", f"{path}.cascade", "A design-blocking gap must show the gap-resolution cascade."))
+        else:
+            tried = set(casc.get("classes_tried") or [])
+            nosrc = set(casc.get("classes_without_source") or [])
+            if not tried:
+                errors.append(_err("GAP_CASCADE_NOTHING_TRIED", f"{path}.cascade.classes_tried"))
+            if (tried | nosrc) != ALL or (tried & nosrc):
+                errors.append(_err("GAP_CASCADE_NOT_EXHAUSTED", f"{path}.cascade", "Every evidence class must be tried or declared without a source."))
+            elif tried == ALL:
+                errors.append(_err("GAP_CASCADE_EXHAUSTED_CLOSE_WITH_SEARCH_RECORD", f"{path}.cascade",
+                                   "Every class was already searched: do not request more evidence; record what was searched and where, and close with a repair step."))
         attempts = row.get("attempted_sources")
         if not isinstance(attempts, list) or not attempts:
             errors.append(_err(

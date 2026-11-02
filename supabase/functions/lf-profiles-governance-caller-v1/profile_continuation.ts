@@ -100,6 +100,95 @@ async function rpc(config: Config, fetchFn: Fetcher, name: string, parameters: P
   return { result: data as Payload };
 }
 
+// Resolve only the existing post-model steps; never relax the pre-model 7-step guard.
+async function resolveExistingPostModelStep(
+  e: Execution,
+  prepareResult: Payload,
+  config: Config,
+  fetchFn: Fetcher,
+): Promise<Response | null> {
+  if (
+    prepareResult.status !== "BLOCKED" ||
+    prepareResult.blocking_code !== "BLOCK_PROFILE_NATIVE_BRIDGE_PRE_MODEL_STEP_COUNT" ||
+    prepareResult.expected_clean_step_count !== 7 ||
+    (prepareResult.clean_step_count !== 9 && prepareResult.clean_step_count !== 10)
+  ) return null;
+
+  const url = `${config.supabaseUrl}/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(e.execution_id)}&select=step_id,status&order=step_order.asc`;
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      method: "GET",
+      headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch { return blocked("PROFILE_POST_MODEL_STEP_READ_FAILED", 502); }
+  if (!response.ok) return blocked("PROFILE_POST_MODEL_STEP_READ_REJECTED", 502);
+  const rows = await parseResponse(response);
+  if (!Array.isArray(rows)) return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+
+  const steps = new Map<string, string>();
+  for (const row of rows) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+    }
+    const item = row as Record<string, unknown>;
+    if (typeof item.step_id !== "string" || typeof item.status !== "string" || steps.has(item.step_id)) {
+      return blocked("PROFILE_POST_MODEL_STEPS_INVALID", 409);
+    }
+    steps.set(item.step_id, item.status);
+  }
+  const completed = [
+    "init_execution", "router", "profile_resolve", "profile_source_read",
+    "input_validate", "context_admission", "research_baseline_freeze",
+    "execute_profile", "output_validate",
+  ];
+  if (
+    steps.size !== prepareResult.clean_step_count ||
+    !completed.every(step => steps.get(step) === "STEP_PASS_WITH_EVIDENCE") ||
+    steps.has("report_output")
+  ) return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
+
+  let nextStep: string;
+  let phase: string;
+  if (steps.size === 9 && !steps.has("semantic_judge")) {
+    nextStep = "semantic_judge";
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
+  } else if (steps.size === 10 && steps.get("semantic_judge") === "STEP_PASS_WITH_EVIDENCE") {
+    nextStep = "report_output";
+    phase = "REPORT_OUTPUT_REQUIRED";
+  } else {
+    return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
+  }
+  return respond({
+    outcome: "CONTINUATION_REQUIRED",
+    phase,
+    code: null,
+    execution_id: e.execution_id,
+    profile_code: e.target_code,
+    next_action: nextStep === "semantic_judge"
+      ? "PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION"
+      : "RECORD_EXISTING_REPORT_OUTPUT",
+    governed_continuation: nextStep === "semantic_judge" ? {
+      transport: "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+      schema_version: "LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+      payload_field: "semantic_judge_review",
+      issue_label: "lf-profile-resume-governed",
+      reuse_execution_id: true,
+      owner_reauthorization_required: false,
+      credential_route: "GITHUB_OIDC_TO_EDGE_ONLY",
+      completion_status: "NOT_COMPLETE",
+    } : null,
+    result: {
+      status: phase,
+      last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
+      next_step: nextStep,
+      clean_step_count: steps.size,
+      execution_id: e.execution_id,
+    },
+  });
+}
+
 export async function handleProfileContinuation(
   action: string,
   body: Payload,
@@ -168,6 +257,271 @@ export async function handleProfileContinuation(
     if (prepared.error) return prepared.error;
     result = prepared.result!;
   }
+  const semanticKeys = [
+    "context_resolution_valid", "evidence_supported", "decision_resolves_objective",
+    "authority_resolution_valid", "constraints_preserved", "claims_authorized",
+    "materiality_handled_correctly", "tradeoff_defensible",
+    "acceptance_detects_wrong_implementation", "handoff_implementation_ready",
+    "router_direct_consistency", "counterfactual_trajectory",
+  ];
+
+  if (Object.prototype.hasOwnProperty.call(body, "semantic_judge_result")) {
+    const semantic = body.semantic_judge_result;
+    const semanticRef = body.semantic_evidence_ref;
+    if (
+      !semantic || typeof semantic !== "object" || Array.isArray(semantic) ||
+      typeof semanticRef !== "string" || !semanticRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_SUBMISSION_INVALID", 400);
+
+    const receipt = semantic as Payload;
+    const review = receipt.judge_v3_evidence;
+    const resultObj = receipt.result;
+    const currentContext = receipt.review_mode === "CURRENT_CONTEXT_REVIEW";
+    const expectedVerdict = currentContext ? "PASS_REVIEWED_CURRENT_CONTEXT" : "PASS_INDEPENDENT_SEMANTIC";
+    const reviewerFactsValid = currentContext
+      ? receipt.producer_independence_proven === false &&
+        receipt.reviewer_is_producer === true && receipt.model_call_count === 0
+      : (receipt.review_mode === undefined || receipt.review_mode === "INDEPENDENT_SEMANTIC") &&
+        receipt.producer_independence_proven === true && receipt.model_call_count === 1;
+    if (
+      receipt.status !== "PASS" ||
+      receipt.verdict !== expectedVerdict ||
+      receipt.validator_status !== "PASS" ||
+      !reviewerFactsValid ||
+      typeof receipt.candidate_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.candidate_sha256) ||
+      typeof receipt.scope_packet_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.scope_packet_sha256) ||
+      !resultObj || typeof resultObj !== "object" || Array.isArray(resultObj) ||
+      (resultObj as Payload).verdict !== expectedVerdict ||
+      (resultObj as Payload).candidate_sha256 !== receipt.candidate_sha256 ||
+      (resultObj as Payload).scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray((resultObj as Payload).unsupported_claims) ||
+      ((resultObj as Payload).unsupported_claims as unknown[]).length !== 0 ||
+      !Array.isArray((resultObj as Payload).blocking_codes) ||
+      ((resultObj as Payload).blocking_codes as unknown[]).length !== 0 ||
+      !review || typeof review !== "object" || Array.isArray(review)
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_RECEIPT_NOT_PASS", 409);
+
+    const v3 = review as Payload;
+    const checks = v3.decision_checks;
+    if (
+      v3.verdict !== expectedVerdict ||
+      (currentContext
+        ? v3.review_mode !== "CURRENT_CONTEXT_REVIEW" ||
+          v3.reviewer_is_producer !== true ||
+          v3.producer_independence_proven !== false || v3.model_call_count !== 0
+        : v3.producer_independence_proven !== true || v3.model_call_count !== 1) ||
+      v3.candidate_sha256 !== receipt.candidate_sha256 ||
+      v3.scope_packet_sha256 !== receipt.scope_packet_sha256 ||
+      !Array.isArray(v3.unsupported_claims) || v3.unsupported_claims.length !== 0 ||
+      !Array.isArray(v3.blocking_codes) || v3.blocking_codes.length !== 0 ||
+      !Array.isArray(v3.source_refs) || v3.source_refs.length === 0 ||
+      !Array.isArray(v3.resolved_context_refs) || v3.resolved_context_refs.length === 0 ||
+      !["PASS", "NOT_TESTED"].includes(String(v3.router_direct_consistency ?? "")) ||
+      !v3.counterfactual_result ||
+      !checks || typeof checks !== "object" || Array.isArray(checks) ||
+      Object.keys(checks).sort().join("|") !== [...semanticKeys].sort().join("|")
+    ) return blocked("PROFILE_NATIVE_SEMANTIC_V3_EVIDENCE_INVALID", 409);
+
+    for (const key of semanticKeys) {
+      const check = (checks as Payload)[key];
+      if (!check || typeof check !== "object" || Array.isArray(check)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      const item = check as Payload;
+      const refs = item.source_refs;
+      if (typeof item.reason !== "string" || !item.reason.trim() ||
+          !Array.isArray(refs) || refs.length === 0) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+      if (key === "router_direct_consistency" && v3.router_direct_consistency === "NOT_TESTED") {
+        // No direct production route exists. NOT_TESTED is neither PASS nor divergence.
+        if (item.result !== "not_applicable" || item.applicability !== "ROUTER_ONLY") {
+          return blocked("PROFILE_NATIVE_ROUTER_ONLY_APPLICABILITY_INVALID", 409);
+        }
+      } else if (key === "router_direct_consistency") {
+        const routerRef = item.router_execution_ref;
+        const directRef = item.direct_execution_ref;
+        if (![true, "true"].includes(item.result as true | string) ||
+            item.applicability !== "AUTHORIZED_COMPARISON" ||
+            typeof routerRef !== "string" || !routerRef.trim() ||
+            typeof directRef !== "string" || !directRef.trim() ||
+            directRef === routerRef ||
+            !refs.includes(routerRef) || !refs.includes(directRef)) {
+          return blocked("PROFILE_NATIVE_ROUTER_DIRECT_COMPARISON_UNPROVEN", 409);
+        }
+      } else if (![true, "true"].includes(item.result as true | string)) {
+        return blocked("PROFILE_NATIVE_SEMANTIC_V3_CHECK_FAILED", 409);
+      }
+    }
+
+    const recordedSemantic = await rpc(config, fetchFn, "lf_profile_native_bridge_record_semantic_v1", {
+      p_execution_id: e.execution_id,
+      p_semantic_judge_result: receipt,
+      p_evidence_ref: semanticRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedSemantic.error) return recordedSemantic.error;
+    if (
+      recordedSemantic.result?.status !== "SEMANTIC_JUDGE_RECORDED" ||
+      Number(recordedSemantic.result?.clean_step_count ?? 0) !== 10
+    ) {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "SEMANTIC_RECORD",
+        code: recordedSemantic.result?.blocking_code ?? "PROFILE_NATIVE_SEMANTIC_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedSemantic.result,
+      }, 409);
+    }
+
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
+  if (body.finalize_report === true) {
+    const reportRef = `supabase://public.lf_operation_execution_steps/${e.execution_id}/report_output`;
+    const recordedReport = await rpc(config, fetchFn, "lf_profile_native_bridge_record_report_v1", {
+      p_execution_id: e.execution_id,
+      p_evidence_ref: reportRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recordedReport.error) return recordedReport.error;
+    if (recordedReport.result?.status !== "PROFILE_EXECUTION_COMPLETED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "REPORT_RECORD",
+        code: recordedReport.result?.blocking_code ?? "PROFILE_NATIVE_REPORT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recordedReport.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "TERMINAL",
+      phase: "PROFILE_EXECUTION_COMPLETED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_gate: recordedReport.result?.next_gate ?? "RETURN_TO_ROUTER",
+      result: recordedReport.result,
+    });
+  }
+
+  // The pre-model bridge must never be reentered to complete an existing 9/11
+  // or 10/11 execution. Read canonical step states and hand off the next gate.
+  const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
+  if (postModel) return postModel;
+
+  // Post-model submission is accepted only from this already-authorized OIDC
+  // continuation transport. The model supplies only its RAW profile output;
+  // deterministic validity must come from the source-bound canonical runner.
+  if (Object.prototype.hasOwnProperty.call(body, "profile_output")) {
+    if (result.status !== "NATIVE_MODEL_INPUT_READY") {
+      return blocked("PROFILE_NATIVE_OUTPUT_NOT_REQUESTED", 409);
+    }
+    const profileOutput = body.profile_output;
+    const validation = body.validation_result;
+    const rawEvidenceRef = body.raw_evidence_ref;
+    const validatorEvidenceRef = body.validator_evidence_ref;
+    if (
+      !profileOutput || typeof profileOutput !== "object" || Array.isArray(profileOutput) ||
+      !validation || typeof validation !== "object" || Array.isArray(validation) ||
+      typeof rawEvidenceRef !== "string" || !rawEvidenceRef.startsWith("actions://") ||
+      typeof validatorEvidenceRef !== "string" || !validatorEvidenceRef.startsWith("actions://")
+    ) return blocked("PROFILE_NATIVE_OUTPUT_SUBMISSION_INVALID", 400);
+
+    const receipt = validation as Payload;
+    const blockingCodes = receipt.blocking_codes;
+    const validatorErrors = receipt.validator_errors;
+    if (
+      receipt.schema !== "PROFILE_OUTPUT_VALIDATION_RESULT_V1" ||
+      receipt.status !== "CANDIDATE_OUTPUT_PARITY_OBSERVED" ||
+      receipt.structural_check_executed !== true ||
+      receipt.profile_validator_executed !== true ||
+      receipt.source_readback_matched !== true ||
+      receipt.independent_review_executed !== false ||
+      receipt.provider_attested !== false ||
+      receipt.admission_authorized !== false ||
+      receipt.profile_write_authorized !== false ||
+      receipt.runtime_activation_authorized !== false ||
+      !Array.isArray(blockingCodes) || blockingCodes.length !== 0 ||
+      !Array.isArray(validatorErrors) || validatorErrors.length !== 0 ||
+      typeof receipt.raw_output_sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(receipt.raw_output_sha256)
+    ) return blocked("PROFILE_NATIVE_OUTPUT_VALIDATOR_RECEIPT_NOT_PASS", 409);
+
+    const recorded = await rpc(config, fetchFn, "lf_profile_native_bridge_record_output_v1", {
+      p_execution_id: e.execution_id,
+      p_profile_output: profileOutput,
+      p_validation: {
+        valid: true,
+        errors: validatorErrors,
+        blocking_codes: blockingCodes,
+        source_bound_validation: receipt,
+      },
+      p_raw_evidence_ref: rawEvidenceRef,
+      p_validator_evidence_ref: validatorEvidenceRef,
+      p_actor_execution_id: e.execution_id,
+    });
+    if (recorded.error) return recorded.error;
+    if (recorded.result?.status !== "NATIVE_PRODUCER_VALIDATED") {
+      return respond({
+        outcome: "BLOCKED",
+        phase: "OUTPUT_RECORD",
+        code: recorded.result?.blocking_code ?? "PROFILE_NATIVE_OUTPUT_RECORD_REJECTED",
+        execution_id: e.execution_id,
+        profile_code: e.target_code,
+        result: recorded.result,
+      }, 409);
+    }
+    return respond({
+      outcome: "CONTINUATION_REQUIRED",
+      phase: "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED",
+      code: null,
+      execution_id: e.execution_id,
+      profile_code: e.target_code,
+      next_action: "PRODUCE_EVIDENCED_V3_AND_SUBMIT_GOVERNED_CONTINUATION",
+      governed_continuation: {
+        transport: "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+        schema_version: "LF_PROFILE_NATIVE_RESUME_REQUEST_V1",
+        payload_field: "semantic_judge_review",
+        issue_label: "lf-profile-resume-governed",
+        reuse_execution_id: true,
+        owner_reauthorization_required: false,
+        credential_route: "GITHUB_OIDC_TO_EDGE_ONLY",
+        completion_status: "NOT_COMPLETE",
+      },
+      result: recorded.result,
+    });
+  }
+
   const status = String(result.status ?? "BLOCKED");
   const expected = [
     "SCREEN_SELECTION_REQUIRED",

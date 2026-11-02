@@ -96,6 +96,30 @@ test('compare must demonstrate improvement without regressions', async () => {
   }
 });
 
+const OP = {status: 'MEASURED', improved_checks: ['WEB-001:OP01'], regressed_checks: []};
+
+test('compare accepts an operational-coverage improvement when no structural dimension improved', async () => {
+  const ok = await call(setup({proof: {improved_dimensions: [], evolution_basis: ['OPERATIONAL_COVERAGE'], operational: OP}}));
+  assert.equal(ok.ok, true);
+  assert.deepEqual(ok.evidence.proof.operational, OP);
+});
+
+test('operational improvement is rejected when it is incomplete, regressed or not the declared basis', async () => {
+  const base = {improved_dimensions: [], evolution_basis: ['OPERATIONAL_COVERAGE']};
+  for (const proof of [
+    {...base, operational: undefined},
+    {...base, operational: {...OP, status: 'UNMEASURED'}},
+    {...base, operational: {...OP, improved_checks: []}},
+    {...base, operational: {...OP, regressed_checks: ['WEB-001:OP02']}},
+    {...base, evolution_basis: ['STRUCTURAL_S26'], operational: OP},
+    {...base, evolution_basis: undefined, operational: OP},
+    {...base, regressed_dimensions: ['B07'], operational: OP},
+    {...base, verdict: 'NO_DEMONSTRATED_IMPROVEMENT', operational: OP},
+  ]) {
+    assert.equal((await call(setup({proof}))).code, 'PROOF_COMPARISON_NOT_DEMONSTRATED');
+  }
+});
+
 test('measure rejects blocked or malformed measurements', async () => {
   const st = (proof) => setup({mode: 'measure', proof});
   for (const proof of [{decision: 'BLOCKED'}, {score: 'x'}, {schema: 'OTHER'}]) {
