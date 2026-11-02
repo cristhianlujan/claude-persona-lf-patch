@@ -5,6 +5,17 @@ Not an authorization to deploy on its own. Requires separate credential/issuer
 provenance review before being wired to deployment.
 """
 from __future__ import annotations
+from datetime import datetime, timezone
+
+def parse_time(value):
+    if not isinstance(value,str):
+        return None
+    try:
+        result=datetime.fromisoformat(value.replace("Z","+00:00"))
+        return result if result.tzinfo is not None else None
+    except ValueError:
+        return None
+
 
 def qualify(main: str, pr: object, status: object, run: object) -> str | None:
     if not isinstance(main, str) or len(main) != 40 or any(c not in "0123456789abcdef" for c in main):
@@ -37,4 +48,13 @@ def qualify(main: str, pr: object, status: object, run: object) -> str | None:
     # source SHA, not the resulting merge commit on main.
     if run.get("head_sha") != source:
         return "TRAIN_SOURCE_HEAD_MISMATCH"
+    if run.get("workflow_id") != 375839198 or type(run.get("id")) is not int or run["id"] <= 0:
+        return "TRAIN_WORKFLOW_ID_MISMATCH"
+    started = parse_time(run.get("run_started_at"))
+    stamped = parse_time(st.get("created_at"))
+    merged = parse_time(pr.get("merged_at"))
+    if started is None or stamped is None or merged is None:
+        return "TRAIN_PROVENANCE_TIME_MISSING"
+    if not (started <= stamped <= merged):
+        return "TRAIN_PROVENANCE_TIME_ORDER_MISMATCH"
     return None
