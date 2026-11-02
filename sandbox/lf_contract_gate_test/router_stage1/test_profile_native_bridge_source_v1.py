@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import hashlib
+import subprocess
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -89,9 +90,26 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.sql,
         )
         self.assertIn("profiles/product_director_lf/SKILL.md", self.sql)
-        source = ROOT / "profiles" / "product_director_lf" / "SKILL.md"
+        # Compare with the immutable Git object sealed in the migration.
+        # Mutable HEAD may legitimately evolve after this historical canary.
+        pinned_commit = "fc88aca0874f3bee7d4dbe29379e975989b26cb2"
+        pinned_path = "profiles/product_director_lf/SKILL.md"
+        tree_ref = f"{pinned_commit}:{pinned_path}"
+        check = subprocess.run(
+            ["git", "cat-file", "-e", tree_ref],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        if check.returncode != 0:
+            subprocess.run(
+                ["git", "fetch", "--no-tags", "--depth=1", "origin", pinned_commit],
+                cwd=ROOT, capture_output=True, check=True, timeout=60,
+            )
+        source = subprocess.run(
+            ["git", "show", tree_ref], cwd=ROOT,
+            capture_output=True, check=True, timeout=30,
+        ).stdout
         self.assertEqual(
-            hashlib.sha256(source.read_bytes()).hexdigest(),
+            hashlib.sha256(source).hexdigest(),
             "1ddca16b29e65e6748f61fdc31e02081ca3990c67b079be705dde3a6a3c58209",
         )
 
