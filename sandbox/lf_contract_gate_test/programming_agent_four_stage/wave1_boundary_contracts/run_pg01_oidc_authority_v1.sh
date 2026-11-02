@@ -88,5 +88,12 @@ awk -v mig="$MIG_OIDC" '{print} /^\\gexec$/ && !done {print "TRUNCATE src_lines;
 "$PGBIN/pg_ctl" -D "$WORK/reg" -o "-p $((PORT+1)) -k $WORK -c listen_addresses=''" -l "$WORK/reg.log" -w start >/dev/null
 "$PGBIN/psql" -X -h "$WORK" -p $((PORT+1)) -U postgres -d postgres -f "$WORK/reg.sql" 2>&1 | grep -ioE "PG01_AUTHORITY_ATTESTATION_TESTS_PASSED:[0-9]+|TEST_FAIL.*|error:.*" | head -3
 "$PGBIN/pg_ctl" -D "$WORK/reg" -m immediate stop >/dev/null
+echo "== 4. JWKS pin generator round-trip (governed pin migration, test keys) =="
+( cd "$WORK" && $DENO run $DENO_FLAGS -A "$OLDPWD/$DIR/pg01_oidc_jwks_fixture.ts" pin-fixture >/dev/null )
+python3 scripts/lf_pg01_oidc_jwks_pin_sql.py "$WORK/jwks_a.json" > "$WORK/pin_a.sql"
+PG -f "$WORK/pin_a.sql" >/dev/null && echo "PIN_MIGRATION_APPLIED_AS_POSTGRES"
+SU -Atc "select 'PIN_VERIFY_FIXTURE_TOKEN='||private.fn_lf_pg01_rs256_verify_v1('$(cat "$WORK/token_a.txt")')"
+python3 scripts/lf_pg01_oidc_jwks_pin_sql.py "$WORK/jwks_b_same_kid.json" > "$WORK/pin_b.sql"
+if PG -f "$WORK/pin_b.sql" >/dev/null 2>"$WORK/pinb.err"; then echo "FAIL pin replacement accepted"; exit 1; else grep -o 'PG01_OIDC_JWKS_PIN_MISMATCH' "$WORK/pinb.err" | sed 's/^/PIN_SAME_KID_OTHER_KEY_REJECTED=/'; fi
 echo "SERVER_VERSION=$VERSION"
 grep -q "PG01_OIDC_INTEGRATION_PASSED" "$WORK/it.txt"

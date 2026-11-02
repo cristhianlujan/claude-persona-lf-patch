@@ -1,6 +1,6 @@
-// Offline re-verification of PG-01 OIDC receipts (H1-C2). Anyone holding a DB readback of
-// private.lf_pg01_oidc_authority_receipts_v1 can confirm each stored token was signed by
-// GitHub for the fixed PG-01 policy, independently of the writer. Exit 0 only if all pass.
+// Optional independent audit of PG-01 OIDC receipts (H1-C2). The database already RS256-verifies
+// every receipt against pinned keys at insert; this re-checks a DB readback against GitHub's live
+// JWKS from outside the database (e.g. to detect a wrong pin). Exit 0 only if all pass.
 // Usage: deno run -A scripts/lf_pg01_oidc_receipt_reverify.ts receipts.json [--jwks-file jwks.json]
 //   receipts.json: [{"kind":"SUBJECT_VERIFICATION","token":"...","token_sha256":"..."}, ...]
 import { createLocalJWKSet, decodeJwt } from "npm:jose@6.0.11";

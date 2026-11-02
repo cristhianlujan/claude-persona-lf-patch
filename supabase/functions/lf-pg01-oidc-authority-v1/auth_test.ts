@@ -26,8 +26,9 @@ export const subjectPayload = (run = "1001", over: Record<string, unknown> = {})
   context_id: "aaaaaaaa-0000-4000-8000-000000000001", subject_sha256: "a".repeat(64), source_head_sha: "1".repeat(40),
   github_readback: { head_commit_verified: true, head_sha: "1".repeat(40) }, ...over });
 export const reviewPayload = (run = "2001", over: Record<string, unknown> = {}) => ({
-  workflow_run_id: run, workflow_run_attempt: "1", judge_execution_id: "J1",
-  verifier_token_sha256: "b".repeat(64), verifier_token_reverified: true, ...over });
+  workflow_run_id: run, workflow_run_attempt: "1", judge_execution_id: "J1", verifier_run_id: "1001",
+  verifier_run_readback: { workflow_path: ".github/workflows/lf-pg01-oidc-subject-verifier.yml", conclusion: "success", head_branch: "main", run_id: "1001" },
+  ...over });
 
 Deno.test("PG-01 OIDC boundary matrix (synthetic)", async () => {
   const k = await testKeys(), other = await testKeys(), S = "SUBJECT_VERIFICATION" as Kind, R = "REVIEW_ATTESTATION" as Kind;
@@ -52,7 +53,10 @@ Deno.test("PG-01 OIDC boundary matrix (synthetic)", async () => {
     ["no_github_readback", sign(k.privateKey, claimsFor(S), A), S, subjectPayload("1001", { github_readback: undefined }), "PAYLOAD_GITHUB_READBACK_MISSING"],
     ["readback_other_head", sign(k.privateKey, claimsFor(S), A), S, subjectPayload("1001", { github_readback: { head_commit_verified: true, head_sha: "2".repeat(40) } }), "PAYLOAD_GITHUB_READBACK_MISSING"],
     ["declared_verified_only", sign(k.privateKey, claimsFor(S), A), S, { workflow_run_id: "1001", workflow_run_attempt: "1", verification_state: "VERIFIED" }, "PAYLOAD_SUBJECT_INVALID"],
-    ["auditor_without_reverify", sign(k.privateKey, claimsFor(R, "2001"), AR), R, reviewPayload("2001", { verifier_token_reverified: false }), "PAYLOAD_VERIFIER_TOKEN_NOT_REVERIFIED"],
+    ["auditor_without_verifier_run_readback", sign(k.privateKey, claimsFor(R, "2001"), AR), R, reviewPayload("2001", { verifier_run_readback: undefined }), "PAYLOAD_VERIFIER_RUN_READBACK_MISSING"],
+    ["auditor_readback_failed_run", sign(k.privateKey, claimsFor(R, "2001"), AR), R, reviewPayload("2001", { verifier_run_readback: { workflow_path: ".github/workflows/lf-pg01-oidc-subject-verifier.yml", conclusion: "failure", head_branch: "main", run_id: "1001" } }), "PAYLOAD_VERIFIER_RUN_READBACK_MISSING"],
+    ["auditor_names_own_run", sign(k.privateKey, claimsFor(R, "1001"), AR), R, reviewPayload("1001"), "PAYLOAD_SAME_RUN_NOT_INDEPENDENT"],
+    ["auditor_declares_hash_only", sign(k.privateKey, claimsFor(R, "2001"), AR), R, { workflow_run_id: "2001", workflow_run_attempt: "1", judge_execution_id: "J1", verifier_token_sha256: "b".repeat(64), verifier_token_reverified: true }, "PAYLOAD_REVIEW_INVALID"],
   ];
   const failures: string[] = [];
   for (const [name, tok, kind, payload, expect] of cases) {

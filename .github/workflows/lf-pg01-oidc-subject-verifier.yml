@@ -1,6 +1,7 @@
 name: LF PG-01 OIDC Subject Verifier
 # H1-C2 D-A. Identity = this workflow file on main + GitHub environment lf-pg01-verifier.
-# GitHub-side readback of the source HEAD here; Supabase-side readback inside the recorder RPC.
+# GitHub-side readback of the source HEAD here; Supabase-side readback + RS256 verification in the DB.
+# The OIDC token is never written to disk, logs or artifacts.
 on:
   workflow_dispatch:
     inputs:
@@ -63,13 +64,6 @@ jobs:
           code=$(curl -sS -o response.json -w '%{http_code}' -X POST "$EDGE_URL" \
             -H "Authorization: Bearer $token" -H "content-type: application/json" --data @body.json)
           cat response.json; echo
-          tsha=$(printf '%s' "$token" | sha256sum | cut -d' ' -f1)
-          jq -n --arg t "$token" --arg s "$tsha" --slurpfile r response.json \
-            '[{kind:"SUBJECT_VERIFICATION",token:$t,token_sha256:$s,edge_response:$r[0]}]' > verifier-receipt.json
           [[ "$code" == "200" ]] || { echo "EDGE_REJECTED:$code"; exit 4; }
-      - name: Publish verifier receipt for the independent auditor
-        uses: actions/upload-artifact@v4
-        with:
-          name: lf-pg01-verifier-receipt
-          path: verifier-receipt.json
-          retention-days: 7
+          # No token, token file or artifact is published: the DB keeps the RS256-verified receipt and
+          # the auditor binds this run id through its own GitHub API readback.

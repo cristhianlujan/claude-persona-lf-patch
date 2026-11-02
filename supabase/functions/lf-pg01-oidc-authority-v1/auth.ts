@@ -16,6 +16,7 @@ export const POLICY: Record<Kind, { audience: string; workflow: string; environm
 const HEX40 = /^[0-9a-f]{40}$/, HEX64 = /^[0-9a-f]{64}$/, UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const val = (x: unknown) => String(x ?? "");
 
+export const VERIFIER_WORKFLOW_PATH = ".github/workflows/lf-pg01-oidc-subject-verifier.yml";
 export function isKind(k: unknown): k is Kind { return k === "SUBJECT_VERIFICATION" || k === "REVIEW_ATTESTATION"; }
 
 export function requirePg01Claims(kind: Kind, c: JWTPayload, payload: Record<string, unknown> | null): void {
@@ -36,9 +37,13 @@ export function requirePg01Claims(kind: Kind, c: JWTPayload, payload: Record<str
     const gr = (payload.github_readback ?? {}) as Record<string, unknown>;
     if (gr.head_commit_verified !== true || gr.head_sha !== payload.source_head_sha) throw Error("PAYLOAD_GITHUB_READBACK_MISSING");
   } else {
-    if (val(payload.judge_execution_id).length < 2 || !HEX64.test(val(payload.verifier_token_sha256)))
-      throw Error("PAYLOAD_REVIEW_INVALID");
-    if (payload.verifier_token_reverified !== true) throw Error("PAYLOAD_VERIFIER_TOKEN_NOT_REVERIFIED");
+    // The auditor binds the verifier RUN it read back on GitHub (no producer-supplied token, hash or flag).
+    const vr = val(payload.verifier_run_id);
+    if (val(payload.judge_execution_id).length < 2 || !/^[0-9]+$/.test(vr)) throw Error("PAYLOAD_REVIEW_INVALID");
+    if (vr === val(c.run_id)) throw Error("PAYLOAD_SAME_RUN_NOT_INDEPENDENT");
+    const rb = (payload.verifier_run_readback ?? {}) as Record<string, unknown>;
+    if (rb.workflow_path !== VERIFIER_WORKFLOW_PATH || rb.conclusion !== "success" || rb.head_branch !== "main" || val(rb.run_id) !== vr)
+      throw Error("PAYLOAD_VERIFIER_RUN_READBACK_MISSING");
   }
 }
 

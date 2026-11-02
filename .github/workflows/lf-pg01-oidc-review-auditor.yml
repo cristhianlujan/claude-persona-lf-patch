@@ -1,7 +1,8 @@
 name: LF PG-01 OIDC Review Auditor
 # H1-C2 D-B. Identity = this workflow file on main + GitHub environment lf-pg01-auditor
-# (a different workflow, run and environment than the verifier). Before attesting, it
-# re-verifies the verifier's GitHub signature itself; the DB binds that exact token hash.
+# (a different workflow, run and environment than the verifier). It reads the verifier run back
+# from the GitHub API itself; the DB accepts it only if that run id is the one whose RS256-verified
+# token recorded the subject verification. No verifier token or artifact is consumed.
 on:
   workflow_dispatch:
     inputs:
@@ -26,41 +27,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout verifier code on main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          persist-credentials: false
-      - name: Read back the verifier run (must be the verifier workflow, successful)
+      - name: Independent GitHub readback of the verifier run and attestation submission
         env:
           GH_TOKEN: ${{ github.token }}
           VERIFIER_RUN_ID: ${{ inputs.verifier_run_id }}
-        run: |
-          set -euo pipefail
-          [[ "$VERIFIER_RUN_ID" =~ ^[0-9]+$ ]] || { echo "INPUT_RUN_INVALID"; exit 2; }
-          [[ "$VERIFIER_RUN_ID" != "$GITHUB_RUN_ID" ]] || { echo "SAME_RUN_NOT_INDEPENDENT"; exit 2; }
-          meta=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$VERIFIER_RUN_ID" --jq '[.path,.conclusion,.head_branch]|@tsv')
-          [[ "$meta" == $'.github/workflows/lf-pg01-oidc-subject-verifier.yml\tsuccess\tmain' ]] || { echo "VERIFIER_RUN_NOT_ACCEPTED:$meta"; exit 3; }
-          gh run download "$VERIFIER_RUN_ID" -n lf-pg01-verifier-receipt -D verifier
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-      - name: Re-verify the verifier's GitHub OIDC signature independently
-        run: deno run -A scripts/lf_pg01_oidc_receipt_reverify.ts verifier/verifier-receipt.json
-      - name: OIDC token and attestation submission
-        env:
           JUDGE_EXECUTION_ID: ${{ inputs.judge_execution_id }}
           EDGE_URL: ${{ vars.LF_PG01_OIDC_EDGE_URL }}
         run: |
           set -euo pipefail
+          [[ "$VERIFIER_RUN_ID" =~ ^[0-9]+$ ]] || { echo "INPUT_RUN_INVALID"; exit 2; }
+          [[ "$VERIFIER_RUN_ID" != "$GITHUB_RUN_ID" ]] || { echo "SAME_RUN_NOT_INDEPENDENT"; exit 2; }
           [[ "$JUDGE_EXECUTION_ID" =~ ^[A-Za-z0-9._:-]{2,200}$ ]] || { echo "INPUT_JUDGE_INVALID"; exit 2; }
-          vsha=$(jq -r '.[0].token_sha256' verifier/verifier-receipt.json)
+          [[ -n "$EDGE_URL" ]] || { echo "EDGE_URL_MISSING"; exit 2; }
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$VERIFIER_RUN_ID" \
+            --jq '{workflow_path:.path,conclusion:.conclusion,head_branch:.head_branch,run_id:(.id|tostring)}' > readback.json
+          cat readback.json
+          jq -e '.workflow_path==".github/workflows/lf-pg01-oidc-subject-verifier.yml" and .conclusion=="success" and .head_branch=="main"' readback.json >/dev/null \
+            || { echo "VERIFIER_RUN_NOT_ACCEPTED"; exit 3; }
           token=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=lf-pg01-review-attestation" | jq -r .value)
           echo "::add-mask::$token"
-          jq -n --arg j "$JUDGE_EXECUTION_ID" --arg v "$vsha" --arg run "$GITHUB_RUN_ID" --arg att "$GITHUB_RUN_ATTEMPT" \
+          jq -n --arg j "$JUDGE_EXECUTION_ID" --arg v "$VERIFIER_RUN_ID" --arg run "$GITHUB_RUN_ID" --arg att "$GITHUB_RUN_ATTEMPT" \
+            --slurpfile rb readback.json \
             '{kind:"REVIEW_ATTESTATION",payload:{workflow_run_id:$run,workflow_run_attempt:$att,judge_execution_id:$j,
-              verifier_token_sha256:$v,verifier_token_reverified:true}}' > body.json
+              verifier_run_id:$v,verifier_run_readback:$rb[0]}}' > body.json
           code=$(curl -sS -o response.json -w '%{http_code}' -X POST "$EDGE_URL" \
             -H "Authorization: Bearer $token" -H "content-type: application/json" --data @body.json)
           cat response.json; echo

@@ -5,11 +5,13 @@
 -- PG-01 tables, readback logic and append-only trigger. Separate audiences, workflows,
 -- environments and receipt table: deploy readback receipts are NOT PG-01 authority.
 --
--- Trust boundary: the Edge function verifies the RS256 signature against GitHub JWKS.
--- The database cannot verify RSA; it decodes the stored token itself (claims are never taken
--- from the caller), enforces the fixed policy, and keeps the raw token so any reader can
--- re-verify the signature offline (scripts/lf_pg01_oidc_receipt_reverify.ts). The auditor
--- workflow re-verifies the verifier token before attesting, and the DB binds that exact token.
+-- Trust boundary: the RS256 signature is verified INSIDE PostgreSQL (private.fn_lf_pg01_rs256_verify_v1)
+-- against GitHub signing keys pinned in private.lf_pg01_oidc_jwks_v1, which only a governed
+-- migration (Train) can write. A BEFORE INSERT trigger on the receipt table enforces it, so neither
+-- the Edge function nor a direct service_role call can record an unverified token. The Edge
+-- function verifies too (first gate). With no pinned key every intake fails closed
+-- (PG01_OIDC_KID_NOT_PINNED); keys are pinned by a separate migration generated from the live
+-- GitHub JWKS (scripts/lf_pg01_oidc_jwks_pin_sql.py).
 --
 -- The legacy external-login path of the guards is preserved unchanged (no consumer break);
 -- retiring it is a separate decision once the OIDC path has an authentic positive.
@@ -34,6 +36,66 @@ END $pre$;
 CREATE ROLE lf_pg01_oidc_recorder NOLOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 COMMENT ON ROLE lf_pg01_oidc_recorder IS 'PG-01 GitHub OIDC recorder (H1-C2). NOLOGIN; reachable only through public.lf_pg01_oidc_authority_record_v1.';
 
+-- Pinned GitHub Actions OIDC signing keys. Written only by governed migrations (table owner);
+-- no API role can read or write it except the recorder (read).
+CREATE TABLE private.lf_pg01_oidc_jwks_v1(
+ kid text PRIMARY KEY,
+ kty text NOT NULL CHECK (kty='RSA'),
+ n bytea NOT NULL CHECK (length(n) >= 256),
+ e bytea NOT NULL,
+ issuer text NOT NULL CHECK (issuer='https://token.actions.githubusercontent.com'),
+ source_ref text NOT NULL,
+ active boolean NOT NULL DEFAULT true,
+ pinned_at timestamptz NOT NULL DEFAULT clock_timestamp());
+ALTER TABLE private.lf_pg01_oidc_jwks_v1 ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON private.lf_pg01_oidc_jwks_v1 FROM PUBLIC, anon, authenticated, service_role;
+CREATE POLICY pol_lf_pg01_oidc_jwks_recorder_select ON private.lf_pg01_oidc_jwks_v1 FOR SELECT TO lf_pg01_oidc_recorder USING (active);
+
+CREATE FUNCTION private.fn_lf_pg01_b64url_v1(p text) RETURNS bytea
+LANGUAGE sql IMMUTABLE STRICT SET search_path TO pg_catalog AS $fn$
+ SELECT decode(rpad(translate(p,'-_','+/'),((length(p)+3)/4)*4,'='),'base64')
+$fn$;
+CREATE FUNCTION private.fn_lf_pg01_bytes_to_num_v1(b bytea) RETURNS numeric
+LANGUAGE plpgsql IMMUTABLE STRICT SET search_path TO pg_catalog AS $fn$
+DECLARE r numeric := 0; i int;
+BEGIN FOR i IN 0..length(b)-1 LOOP r := r*256 + get_byte(b,i); END LOOP; RETURN r; END $fn$;
+CREATE FUNCTION private.fn_lf_pg01_modpow_v1(b numeric, e numeric, m numeric) RETURNS numeric
+LANGUAGE plpgsql IMMUTABLE STRICT SET search_path TO pg_catalog AS $fn$
+DECLARE r numeric := 1;
+BEGIN
+ b := mod(b,m);
+ WHILE e > 0 LOOP
+   IF mod(e,2) = 1 THEN r := mod(r*b,m); END IF;
+   e := div(e,2);
+   IF e > 0 THEN b := mod(b*b,m); END IF;
+ END LOOP;
+ RETURN r;
+END $fn$;
+-- RSASSA-PKCS1-v1_5 / SHA-256 (RFC 8017 sec. 8.2.2) over "<header>.<payload>". Returns the kid or raises.
+CREATE FUNCTION private.fn_lf_pg01_rs256_verify_v1(p_token text) RETURNS text
+LANGUAGE plpgsql STABLE SET search_path TO pg_catalog, private AS $fn$
+DECLARE h jsonb; k record; sig bytea; nlen int; s numeric; nn numeric; em bytea;
+BEGIN
+ IF coalesce(p_token,'') !~ '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$' THEN RAISE EXCEPTION 'PG01_OIDC_TOKEN_MALFORMED'; END IF;
+ BEGIN h := private.fn_lf_pg01_jwt_part_v1(p_token,1);
+ EXCEPTION WHEN others THEN RAISE EXCEPTION 'PG01_OIDC_TOKEN_MALFORMED'; END;
+ IF h->>'alg' IS DISTINCT FROM 'RS256' OR coalesce(h->>'kid','') = '' THEN RAISE EXCEPTION 'PG01_OIDC_ALG_INVALID'; END IF;
+ SELECT * INTO k FROM private.lf_pg01_oidc_jwks_v1 WHERE kid = h->>'kid' AND active AND kty='RSA';
+ IF NOT FOUND THEN RAISE EXCEPTION 'PG01_OIDC_KID_NOT_PINNED'; END IF;
+ BEGIN sig := private.fn_lf_pg01_b64url_v1(split_part(p_token,'.',3));
+ EXCEPTION WHEN others THEN RAISE EXCEPTION 'PG01_OIDC_SIGNATURE_INVALID'; END;
+ nlen := length(k.n);
+ IF length(sig) <> nlen THEN RAISE EXCEPTION 'PG01_OIDC_SIGNATURE_INVALID'; END IF;
+ s := private.fn_lf_pg01_bytes_to_num_v1(sig); nn := private.fn_lf_pg01_bytes_to_num_v1(k.n);
+ IF s >= nn THEN RAISE EXCEPTION 'PG01_OIDC_SIGNATURE_INVALID'; END IF;
+ em := '\x0001'::bytea || decode(repeat('ff', nlen-3-51),'hex') || '\x00'::bytea
+       || '\x3031300d060960864801650304020105000420'::bytea
+       || sha256(convert_to(split_part(p_token,'.',1)||'.'||split_part(p_token,'.',2),'UTF8'));
+ IF private.fn_lf_pg01_modpow_v1(s, private.fn_lf_pg01_bytes_to_num_v1(k.e), nn) <> private.fn_lf_pg01_bytes_to_num_v1(em) THEN
+   RAISE EXCEPTION 'PG01_OIDC_SIGNATURE_INVALID'; END IF;
+ RETURN k.kid;
+END $fn$;
+
 CREATE TABLE private.lf_pg01_oidc_authority_receipts_v1(
  oidc_receipt_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
  kind text NOT NULL CHECK (kind IN ('SUBJECT_VERIFICATION','REVIEW_ATTESTATION')),
@@ -46,11 +108,28 @@ CREATE TABLE private.lf_pg01_oidc_authority_receipts_v1(
  workflow_run_attempt text NOT NULL,
  payload jsonb NOT NULL,
  authenticated_by text NOT NULL DEFAULT 'GITHUB_OIDC' CHECK (authenticated_by='GITHUB_OIDC'),
+ signature_kid text NOT NULL,
+ signature_verifier text NOT NULL CHECK (signature_verifier='LF_PG_RS256_V1'),
  recorded_txid bigint NOT NULL DEFAULT txid_current(),
  recorded_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  UNIQUE (workflow_run_id, workflow_run_attempt),
  UNIQUE (kind, subject_key));
 ALTER TABLE private.lf_pg01_oidc_authority_receipts_v1 ENABLE ROW LEVEL SECURITY;
+-- Authoritative boundary: every receipt row is signature-verified in the DB and its token-derived
+-- fields are recomputed from the token, whoever inserts it.
+CREATE FUNCTION private.fn_lf_pg01_oidc_receipt_signature_guard_v1() RETURNS trigger
+LANGUAGE plpgsql SET search_path TO pg_catalog, private AS $fn$
+BEGIN
+ NEW.signature_kid := private.fn_lf_pg01_rs256_verify_v1(NEW.token);
+ NEW.signature_verifier := 'LF_PG_RS256_V1';
+ NEW.claims := private.fn_lf_pg01_jwt_part_v1(NEW.token,2);
+ NEW.token_sha256 := encode(sha256(convert_to(NEW.token,'UTF8')),'hex');
+ IF NEW.workflow_run_id IS DISTINCT FROM NEW.claims->>'run_id' OR NEW.workflow_run_attempt IS DISTINCT FROM NEW.claims->>'run_attempt' THEN
+   RAISE EXCEPTION 'PG01_OIDC_RUN_BINDING_MISMATCH'; END IF;
+ RETURN NEW;
+END $fn$;
+CREATE TRIGGER trg_00_lf_pg01_oidc_receipt_signature_guard_v1 BEFORE INSERT ON private.lf_pg01_oidc_authority_receipts_v1
+ FOR EACH ROW EXECUTE FUNCTION private.fn_lf_pg01_oidc_receipt_signature_guard_v1();
 CREATE TRIGGER trg_01_lf_pg01_oidc_receipt_append_only_v1 BEFORE UPDATE OR DELETE ON private.lf_pg01_oidc_authority_receipts_v1
  FOR EACH ROW EXECUTE FUNCTION private.fn_lf_pg01_attestation_append_only_v1();
 REVOKE ALL ON private.lf_pg01_oidc_authority_receipts_v1 FROM PUBLIC, anon, authenticated, service_role;
@@ -62,6 +141,7 @@ CREATE POLICY pol_lf_pg01_oidc_receipts_authority_select ON private.lf_pg01_oidc
  FOR SELECT TO programacion_verifier, programacion_auditor USING (true);
 GRANT USAGE ON SCHEMA private TO lf_pg01_oidc_recorder;
 GRANT SELECT, INSERT ON private.lf_pg01_oidc_authority_receipts_v1 TO lf_pg01_oidc_recorder;
+GRANT SELECT ON private.lf_pg01_oidc_jwks_v1 TO lf_pg01_oidc_recorder;
 GRANT SELECT ON private.lf_pg01_oidc_authority_receipts_v1 TO programacion_verifier, programacion_auditor;
 
 -- Same reads/writes the existing guards need, granted to the recorder (no new privilege class).
@@ -86,6 +166,13 @@ LANGUAGE sql IMMUTABLE STRICT SET search_path TO pg_catalog AS $fn$
 $fn$;
 REVOKE ALL ON FUNCTION private.fn_lf_pg01_jwt_part_v1(text,int) FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION private.fn_lf_pg01_jwt_part_v1(text,int) TO lf_pg01_oidc_recorder;
+
+REVOKE ALL ON FUNCTION private.fn_lf_pg01_b64url_v1(text), private.fn_lf_pg01_bytes_to_num_v1(bytea),
+ private.fn_lf_pg01_modpow_v1(numeric,numeric,numeric), private.fn_lf_pg01_rs256_verify_v1(text),
+ private.fn_lf_pg01_oidc_receipt_signature_guard_v1() FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION private.fn_lf_pg01_b64url_v1(text), private.fn_lf_pg01_bytes_to_num_v1(bytea),
+ private.fn_lf_pg01_modpow_v1(numeric,numeric,numeric), private.fn_lf_pg01_rs256_verify_v1(text),
+ private.fn_lf_pg01_oidc_receipt_signature_guard_v1() TO lf_pg01_oidc_recorder;
 
 -- Principal resolver used by both guards: OIDC receipt recorded in this same transaction by the
 -- recorder, otherwise the unchanged legacy external-login assertion.
@@ -185,6 +272,7 @@ BEGIN
  EXCEPTION WHEN others THEN RAISE EXCEPTION 'PG01_OIDC_TOKEN_MALFORMED';
  END;
  IF h->>'alg' IS DISTINCT FROM 'RS256' OR coalesce(h->>'kid','')='' THEN RAISE EXCEPTION 'PG01_OIDC_ALG_INVALID'; END IF;
+ PERFORM private.fn_lf_pg01_rs256_verify_v1(p_token);  -- cryptographic gate before any policy or write
  v_aud := CASE p_kind WHEN 'SUBJECT_VERIFICATION' THEN 'lf-pg01-subject-verification' ELSE 'lf-pg01-review-attestation' END;
  v_wf := c_repo||'/.github/workflows/'||CASE p_kind WHEN 'SUBJECT_VERIFICATION' THEN 'lf-pg01-oidc-subject-verifier.yml'
           ELSE 'lf-pg01-oidc-review-auditor.yml' END||'@refs/heads/main';
@@ -227,22 +315,28 @@ BEGIN
    IF r.observed_subject_sha256 IS DISTINCT FROM p_payload->>'subject_sha256' OR r.source_head_sha IS DISTINCT FROM p_payload->>'source_head_sha' THEN
      RAISE EXCEPTION 'PG01_OIDC_PAYLOAD_READBACK_MISMATCH'; END IF;
    RETURN jsonb_build_object('decision','VERIFIED_RECORDED','kind',p_kind,'oidc_receipt_id',v_id,'principal',v_principal,
-     'token_sha256',v_tsha,'verification_sha256',r.verification_sha256);
+     'token_sha256',v_tsha,'verification_sha256',r.verification_sha256,'signature_verifier','LF_PG_RS256_V1');
  END IF;
 
- -- REVIEW_ATTESTATION: the auditor must bind (and have re-verified) the exact verifier token.
- IF coalesce(p_payload->>'judge_execution_id','') = '' OR coalesce(p_payload->>'verifier_token_sha256','') !~ '^[0-9a-f]{64}$' THEN
+ -- REVIEW_ATTESTATION: the auditor names the verifier run it read back on GitHub; the DB accepts it only
+ -- if that run is exactly the one whose DB-verified token recorded this judge's subject verification.
+ IF coalesce(p_payload->>'judge_execution_id','') = '' OR coalesce(p_payload->>'verifier_run_id','') !~ '^[0-9]+$' THEN
    RAISE EXCEPTION 'PG01_OIDC_REVIEW_PAYLOAD_INVALID'; END IF;
- IF p_payload->>'verifier_token_reverified' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'PG01_OIDC_VERIFIER_TOKEN_NOT_REVERIFIED'; END IF;
- SELECT o.token_sha256 INTO sv_tok FROM public.lf_operation_execution j
+ IF p_payload->>'verifier_run_id' = v_run THEN RAISE EXCEPTION 'PG01_OIDC_SAME_RUN_NOT_INDEPENDENT'; END IF;
+ IF p_payload->'verifier_run_readback'->>'workflow_path' IS DISTINCT FROM '.github/workflows/lf-pg01-oidc-subject-verifier.yml'
+ OR p_payload->'verifier_run_readback'->>'conclusion' IS DISTINCT FROM 'success'
+ OR p_payload->'verifier_run_readback'->>'head_branch' IS DISTINCT FROM 'main'
+ OR p_payload->'verifier_run_readback'->>'run_id' IS DISTINCT FROM p_payload->>'verifier_run_id' THEN
+   RAISE EXCEPTION 'PG01_OIDC_VERIFIER_RUN_READBACK_MISSING'; END IF;
+ SELECT o.workflow_run_id INTO sv_tok FROM public.lf_operation_execution j
    JOIN private.lf_pg01_oidc_authority_receipts_v1 o ON o.kind='SUBJECT_VERIFICATION' AND o.subject_key=j.manifest->>'subject_receipt_id'
-  WHERE j.execution_id=p_payload->>'judge_execution_id';
- IF sv_tok IS DISTINCT FROM p_payload->>'verifier_token_sha256' THEN RAISE EXCEPTION 'PG01_OIDC_VERIFIER_RECEIPT_MISMATCH'; END IF;
+  WHERE j.execution_id=p_payload->>'judge_execution_id' AND o.signature_verifier='LF_PG_RS256_V1';
+ IF sv_tok IS DISTINCT FROM p_payload->>'verifier_run_id' THEN RAISE EXCEPTION 'PG01_OIDC_VERIFIER_RECEIPT_MISMATCH'; END IF;
  v_subject := p_payload->>'judge_execution_id';
  INSERT INTO private.lf_pg01_oidc_authority_receipts_v1(kind,subject_key,token,token_sha256,claims,principal,workflow_run_id,workflow_run_attempt,payload)
  VALUES (p_kind,v_subject,p_token,v_tsha,c,v_principal,v_run,v_att,p_payload) RETURNING oidc_receipt_id INTO v_id;
  INSERT INTO private.lf_pg01_review_attestations_v1(judge_execution_id) VALUES (v_subject);
- RETURN jsonb_build_object('decision','ATTESTED_RECORDED','kind',p_kind,'oidc_receipt_id',v_id,'principal',v_principal,'token_sha256',v_tsha);
+ RETURN jsonb_build_object('decision','ATTESTED_RECORDED','kind',p_kind,'oidc_receipt_id',v_id,'principal',v_principal,'token_sha256',v_tsha,'signature_verifier','LF_PG_RS256_V1');
 END $fn$;
 REVOKE ALL ON FUNCTION private.fn_lf_pg01_oidc_record_core_v1(text,text,jsonb) FROM PUBLIC, anon, authenticated, service_role;
 
@@ -270,14 +364,19 @@ REVOKE ALL ON FUNCTION public.lf_pg01_oidc_authority_record_v1(text,text,jsonb) 
 GRANT EXECUTE ON FUNCTION public.lf_pg01_oidc_authority_record_v1(text,text,jsonb) TO service_role;
 
 COMMENT ON TABLE private.lf_pg01_oidc_authority_receipts_v1 IS
- 'PG-01 H1-C2 GitHub OIDC receipts (raw token kept for offline signature re-verification). Distinct from deploy readback receipts.';
+ 'PG-01 H1-C2 GitHub OIDC receipts; each row RS256-verified in the DB against pinned keys (LF_PG_RS256_V1). Raw token kept (expired, single-use, not API-readable) for independent re-verification. Distinct from deploy readback receipts.';
+COMMENT ON TABLE private.lf_pg01_oidc_jwks_v1 IS
+ 'Pinned GitHub Actions OIDC signing keys for PG-01. Write only via governed migration generated by scripts/lf_pg01_oidc_jwks_pin_sql.py from the live JWKS.';
 
 DO $post$
 BEGIN
  IF has_table_privilege('service_role','private.lf_pg01_oidc_authority_receipts_v1','INSERT')
  OR has_table_privilege('service_role','private.lf_pg01_subject_verifications_v1','INSERT')
  OR has_table_privilege('service_role','private.lf_pg01_review_attestations_v1','INSERT')
- OR has_function_privilege('service_role','private.fn_lf_pg01_oidc_record_core_v1(text,text,jsonb)','EXECUTE') THEN
+ OR has_function_privilege('service_role','private.fn_lf_pg01_oidc_record_core_v1(text,text,jsonb)','EXECUTE')
+ OR has_table_privilege('service_role','private.lf_pg01_oidc_jwks_v1','INSERT')
+ OR has_table_privilege('service_role','private.lf_pg01_oidc_jwks_v1','UPDATE')
+ OR has_table_privilege('service_role','private.lf_pg01_oidc_jwks_v1','SELECT') THEN
    RAISE EXCEPTION 'PG01_OIDC_PERMISSIONS_INVALID'; END IF;
  IF EXISTS (SELECT 1 FROM pg_auth_members m JOIN pg_roles g ON g.oid=m.roleid
              WHERE g.rolname='lf_pg01_oidc_recorder' AND (m.set_option OR m.inherit_option)) THEN
