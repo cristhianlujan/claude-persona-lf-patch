@@ -54,13 +54,22 @@ def evaluate(payload):
                 "canonical_effect_allowed": False}
 
     blocker = next((code for code in BLOCKERS if code in receipts), None)
-    if not blocker or ADVISORY not in receipts:
+    if not blocker:
         return {"decision": "NOT_APPLICABLE",
-                "reason_code": "NO_PRE_GATE2_ADVISORY_DETOUR_CONFIRMED",
+                "reason_code": "NO_PRE_GATE2_ROUTER_BLOCK_OBSERVED",
                 "canonical_effect_allowed": False}
 
+    # Even without an advisory dispatch, a blocked Router cannot be followed
+    # by an unsupported success claim. Absence of PROPOSE_ONLY_OPEN is not
+    # proof that the canonical scope was subsequently resolved.
     if FALSE_CLOSE.search(final):
         return {"decision": "BLOCK", "reason_code": "PRE_GATE2_FALSE_COMPLETION",
+                "router_blocking_code": blocker, "canonical_effect_allowed": False}
+    if ADVISORY not in receipts:
+        # A truthful observation of the blocking condition is allowed;
+        # it carries no effect authority and no completion certificate.
+        return {"decision": "ALLOW_TRUTHFUL_BLOCK",
+                "reason_code": "ROUTER_BLOCK_UNRESOLVED_NO_SUCCESS_CLAIM",
                 "router_blocking_code": blocker, "canonical_effect_allowed": False}
     if (blocker in final and "NOT_EXECUTED" in final
             and "NO_CANONICAL_EFFECT" in final):
