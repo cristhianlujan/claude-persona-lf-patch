@@ -1,0 +1,91 @@
+{
+  "schema_version": "LF_PG_INTEGRATION_ADMISSION_AUTHORITY_CANDIDATE_V1",
+  "status": "CANDIDATE_NOT_OPERATIONAL",
+  "scope": {
+    "plan_code": "PROGRAMMING_AGENT_PROGRAMMING_REMEDIATION_V1",
+    "source_prs": [
+      3324,
+      3372,
+      3402
+    ],
+    "prohibits": [
+      "runtime_grant",
+      "checkpoint_transition",
+      "fabricated_receipt",
+      "hosted_write"
+    ]
+  },
+  "integration": {
+    "producer": "PG01_EXACT_ANALYSIS_PACKAGE",
+    "consumer": "PG02_SCOPE_CLASSIFIER",
+    "c6_gate": "PG03_C2_CONTEXT_GATE",
+    "sequence": [
+      "verify_approved_analysis_handoff",
+      "validate_plan_run_checkpoint_pins",
+      "classify_pg02_scope",
+      "qualify_c6_context",
+      "invoke_authorized_dispatcher"
+    ],
+    "requirements": [
+      "exact_context_id",
+      "context_sha256",
+      "catalog_version",
+      "inventory_sha256",
+      "run_id",
+      "head_sha",
+      "checkpoint_code",
+      "provenance_readback"
+    ],
+    "fail_closed": true
+  },
+  "admission": {
+    "required": [
+      "authentic_pg01_admissible",
+      "exact_binding_exists",
+      "required_checkpoints_validated",
+      "inventory_and_head_pinned",
+      "no_drift",
+      "c6_context_qualified",
+      "qualified_runtime_identity"
+    ],
+    "admitted_only_if_all": true,
+    "missing_result": "BLOCKED",
+    "unknown_result": "BLOCKED"
+  },
+  "authority": {
+    "required": [
+      "approved_operation_for_pip1",
+      "canonical_run_writer_and_readback",
+      "independent_receipt_provider",
+      "provider_identity_attested",
+      "receipt_binds_run_checkpoint_head_inventory",
+      "router_authorized_effect",
+      "post_transition_independent_readback"
+    ],
+    "authorization_source": "TRUSTED_RUNTIME_ONLY",
+    "forbidden_sources": [
+      "chat_text",
+      "fixture",
+      "self_signed_json",
+      "candidate_operation",
+      "simple_hash_match"
+    ],
+    "no_grant_from_this_contract": true
+  },
+  "acceptance": {
+    "negative_cases": [
+      "cross_run",
+      "cross_checkpoint",
+      "head_drift",
+      "inventory_drift",
+      "fixture_pass",
+      "receipt_replay",
+      "candidate_operation",
+      "missing_binding",
+      "unknown_provider",
+      "readback_mismatch"
+    ],
+    "positive_case": "AUTHORITY_OWNER_APPROVAL_PLUS_INDEPENDENT_END_TO_END_TEST",
+    "readiness": "NO_GO_OPERATIONAL"
+  }
+}
