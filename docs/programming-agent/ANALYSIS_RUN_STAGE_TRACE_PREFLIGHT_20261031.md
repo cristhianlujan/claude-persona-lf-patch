@@ -129,6 +129,17 @@ Se verificó en Supabase que `public.fn_lf_operation_checkpoint_v1(execution_id,
 
 **Bloqueador vigente:** sin alta autorizada y sin transporte real, `10.2_GOVERNED_RUNTIME=BLOCKED`. No se puede declarar RUN creado, transporte efectuado ni recepción del consumidor. Mantener abierto 10.2; no avanzar a 10.3 como completado.
 
+## Corrección del enlace al perfil — 2026-11-02
+
+El 10.1 y el 10.2 se ejecutan como **subpasos del mismo `PERFIL-PROGRAMMING-ANALYSIS-LF`**, dentro de `EJECUCION_PERFIL_LF`. El 10.1 antes omitía `profile_code` / `operation_code` en entrada/salida; el receptor 10.2 solo validaba que el RUN declarara el perfil correcto, no la identidad del productor. Eso permitía una transferencia estructuralmente compatible desde otro productor.
+
+Se actualizan ambos contratos, clasificadores/receptores y tests:
+- `10.1` exige y devuelve `profile_code` y `operation_code` exactos.
+- `10.2` coteja `previous.profile_code == transfer.profile_code == run.profile_code` y lo mismo para `operation_code`; bloquea drift, campo faltante y contaminación con otro perfil.
+- La identidad de negocio `LF`, el `execution_id` y `request_sha256` siguen sin cambiar.
+- Tests nuevos: 4 escenarios negativos de 10.1 y 6 de 10.2; totales en el código del PR **22** y **27**, respectivamente; **no** contabilizar solo la existencia como PASS de ejecución.
+- Sigue faltando registro/descriptor autorizado del perfil en Supabase, creación RUN y readback de entrega 10.1→10.2. No se activa producción.
+
 ## Pendientes de implementación en su dueño canónico
 
 - Registrar/autorizar el activo `PERFIL-PROGRAMMING-ANALYSIS-LF` en las capas gobernadas, sin activarlo en producción.
