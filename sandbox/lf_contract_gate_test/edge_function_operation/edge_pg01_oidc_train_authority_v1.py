@@ -23,8 +23,8 @@ def qualify(main: str, pr: object, status: object, run: object) -> str | None:
         return "INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS"
     st = candidates[0]
     creator = st.get("creator", {})
-    if creator.get("type") != "Bot" or not creator.get("login", "").endswith("[bot]"):
-        return "STATUS_NOT_BOT_ISSUED"
+    if not isinstance(creator, dict) or creator.get("type") != "Bot" or creator.get("login") != "lf-migration-train[bot]" or creator.get("id") != 338337340:
+        return "STATUS_NOT_TRUSTED_TRAIN_APP"
     if not isinstance(run, dict) or run.get("conclusion") != "success" or run.get("status") != "completed":
         return "TRAIN_RUN_NOT_SUCCESS"
     if run.get("path") != ".github/workflows/lf-migration-merge-train.yml":
@@ -33,6 +33,8 @@ def qualify(main: str, pr: object, status: object, run: object) -> str | None:
         return "TRAIN_EVENT_MISMATCH"
     if run.get("repository", {}).get("full_name") != "cristhianlujan/claude-persona-lf-patch":
         return "TRAIN_REPO_MISMATCH"
-    if run.get("head_sha") != main:
-        return "TRAIN_MAIN_MISMATCH"
+    # On pull_request_target the successful workflow run is bound to the PR
+    # source SHA, not the resulting merge commit on main.
+    if run.get("head_sha") != source:
+        return "TRAIN_SOURCE_HEAD_MISMATCH"
     return None

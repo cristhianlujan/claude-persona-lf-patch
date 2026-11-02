@@ -9,8 +9,8 @@ MAIN="a"*40
 HEAD="b"*40
 def fixture():
     pr={"state":"closed","merged_at":"2026-11-02T00:00:00Z","merge_commit_sha":MAIN,"base":{"ref":"main"},"head":{"sha":HEAD}}
-    status={"sha":HEAD,"statuses":[{"context":"lf-merge-train/verified","state":"success","creator":{"type":"Bot","login":"lf-merge-train[bot]"}}]}
-    run={"status":"completed","conclusion":"success","path":".github/workflows/lf-migration-merge-train.yml","event":"pull_request_target","head_sha":MAIN,"repository":{"full_name":"cristhianlujan/claude-persona-lf-patch"}}
+    status={"sha":HEAD,"statuses":[{"context":"lf-merge-train/verified","state":"success","creator":{"type":"Bot","login":"lf-migration-train[bot]","id":338337340}}]}
+    run={"status":"completed","conclusion":"success","path":".github/workflows/lf-migration-merge-train.yml","event":"pull_request_target","head_sha":HEAD,"repository":{"full_name":"cristhianlujan/claude-persona-lf-patch"}}
     return [MAIN,pr,status,run]
 class Tests(unittest.TestCase):
     def test_pass(self):self.assertIsNone(m.qualify(*fixture()))
@@ -21,7 +21,13 @@ class Tests(unittest.TestCase):
     def test_status_wrong_head(self):
         x=fixture();x[2]["sha"]="c"*40;self.assertEqual(m.qualify(*x),"STATUS_HEAD_MISMATCH")
     def test_status_self_issued(self):
-        x=fixture();x[2]["statuses"][0]["creator"]={"type":"User","login":"paulozterra"};self.assertEqual(m.qualify(*x),"STATUS_NOT_BOT_ISSUED")
+        x=fixture();x[2]["statuses"][0]["creator"]={"type":"User","login":"paulozterra"};self.assertEqual(m.qualify(*x),"STATUS_NOT_TRUSTED_TRAIN_APP")
+    def test_impostor_bot(self):
+        x=fixture();x[2]["statuses"][0]["creator"]={"type":"Bot","login":"other[bot]","id":338337340}
+        self.assertEqual(m.qualify(*x),"STATUS_NOT_TRUSTED_TRAIN_APP")
+    def test_wrong_app_id(self):
+        x=fixture();x[2]["statuses"][0]["creator"]["id"]=123
+        self.assertEqual(m.qualify(*x),"STATUS_NOT_TRUSTED_TRAIN_APP")
     def test_no_status(self):
         x=fixture();x[2]["statuses"]=[];self.assertEqual(m.qualify(*x),"INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS")
     def test_duplicated_status(self):
@@ -33,5 +39,5 @@ class Tests(unittest.TestCase):
     def test_run_fail(self):
         x=fixture();x[3]["conclusion"]="failure";self.assertEqual(m.qualify(*x),"TRAIN_RUN_NOT_SUCCESS")
     def test_stale_main(self):
-        x=fixture();x[3]["head_sha"]="c"*40;self.assertEqual(m.qualify(*x),"TRAIN_MAIN_MISMATCH")
+        x=fixture();x[3]["head_sha"]="c"*40;self.assertEqual(m.qualify(*x),"TRAIN_SOURCE_HEAD_MISMATCH")
 if __name__=="__main__":unittest.main()
