@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/sandbox/lf_contract_gate_test/profile_execution_runtime/lf_profile_gate2_stop_guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

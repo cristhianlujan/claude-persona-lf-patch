@@ -1,0 +1,12 @@
+{
+  "solution_ref": "lf-profile-consumer-gate2-auto-20261102",
+  "paths": {
+    ".claude/settings.json": "CLAUDE_GUIDANCE",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_profile_gate2_stop_guard.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_profile_gate2_stop_guard.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_profile_begin_payload.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_profile_begin_payload.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/README_GATE2_CONSUMER_AUTOMATION_20261102.md": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-consumer-gate2-auto-20261102.json": "CHANGESET_MANIFEST"
+  }
+}
