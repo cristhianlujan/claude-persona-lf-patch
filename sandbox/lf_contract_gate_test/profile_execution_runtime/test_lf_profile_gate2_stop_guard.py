@@ -3,8 +3,11 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import sys
 
 M = Path(__file__).with_name('lf_profile_gate2_stop_guard.py')
+# The hook imports the shared evaluator by sibling module name.
+sys.path.insert(0, str(M.parent))
 spec = importlib.util.spec_from_file_location('lf_guard', M)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
