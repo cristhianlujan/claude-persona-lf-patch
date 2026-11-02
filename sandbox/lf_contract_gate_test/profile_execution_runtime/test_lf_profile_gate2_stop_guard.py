@@ -173,12 +173,18 @@ class Gate2StopGuard(unittest.TestCase):
             'NO_CANONICAL_EFFECT. Definición registrada y completada 100%.')
         self.assertEqual(module.evaluate(e)['decision'], 'block')
 
-    def test_pre_gate2_block_without_proposal_does_not_create_new_gate(self):
+    def test_pre_gate2_block_without_proposal_requires_explicit_no_effect(self):
         e = self.with_transcript(
             'Entra por el Router y revisa la definición LF',
             'BLOCK_SCOPE_SEMANTICS_UNATTESTED',
-            'El Router bloqueó la resolución; no hay operación ejecutada.')
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED / NOT_EXECUTED / '
+            'NO_CANONICAL_EFFECT. No se aplicó ninguna modificación.')
         self.assertIsNone(module.evaluate(e))
+        e = self.with_transcript(
+            'Entra por el Router y revisa la definición LF',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED',
+            'La política quedó VIGENTE en Supabase.')
+        self.assertEqual(module.evaluate(e)['decision'], 'block')
 
     def test_pre_gate2_alternate_blocker_can_close_only_as_blocked(self):
         e = self.with_transcript(
