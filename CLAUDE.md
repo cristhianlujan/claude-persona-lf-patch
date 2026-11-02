@@ -40,7 +40,17 @@ The user request determines the **operation before asset discovery**. For `EJECU
 5. Before a final closure, **read back** a fresh execution bound to the current request, target, operation, and actual workflow/run, with the governing contract's required evidence and final state. A Github Issue, a plan, a completed run for a different scope, or a profile's read-only verdict cannot substitute.
 6. If no canonical semantic target, route, authority, or valid transport can be verified, stop that unit truthfully and report exactly: `BLOCK_SCOPE_SEMANTICS_UNATTESTED / NOT_EXECUTED / NO_CANONICAL_EFFECT` (or the actual observed blocking code), missing item and next governed action. Preserve any preparatory artifact as `PROPOSAL_ONLY` and do not claim official completion. This is a valid **blocked outcome**, not a successful execution.
 
-**Consumer enforcement scope:** `.claude/settings.json` uses the existing `lf_profile_gate2_stop_guard.py` Stop hook; its pre-Gate2 guard rejects premature completion after a Router semantic block followed by an advisory-only detour. This applies in Claude Code with transcript evidence. It **does not** enforce ChatGPT, GitHub issues, or Supabase writes. Official server-side write enforcement and Merge Train remain separate. No new Router service, intermediate dispatcher, or direct role escalation is introduced.
+**Shared GPT + Claude consumer gate:** `sandbox/lf_contract_gate_test/profile_execution_runtime/lf_pre_gate2_consumer_gate_v1.py` is the **same fail-closed classifier** for `GPT_NATIVE` and `CLAUDE_NATIVE`. Input fields are `consumer_mode`, `request_text`, `tool_receipts` (actual Router/advisory readback from the current turn), and `final_text` (proposed response). It distinguishes `BLOCK`, `ALLOW_TRUTHFUL_BLOCK`, `DEFER_TO_GATE2_RECEIPT_GUARD`, and `NOT_APPLICABLE`. All returns set `canonical_effect_allowed=false` because the shared check is not the source of execution authority.
+
+**How both consume it:** Claude Code uses the existing automatic Stop hook in `.claude/settings.json`, now calling that shared classifier. ChatGPT / `GPT_NATIVE` must invoke the same classifier before a governed LF closeout, using its available code-execution tool with the exact input data; if that execution is unavailable, conservatively apply the same fail-closed decision and report `NOT_EXECUTED`, **never** `PASS` or `100%`. For a current Gate2 receipt, the classifier **defers**: the real 11/11 terminal authority receipt must still be read from Supabase, not copied from a previous run. For DB/rule operations, use their own official execution/effect receipt. Example for the shared CLI:
+
+```bash
+printf '%s\n' '{"consumer_mode":"GPT_NATIVE","request_text":"LF B2B - política de intentos fallidos","tool_receipts":"BLOCK_SCOPE_SEMANTICS_UNATTESTED PROPOSE_ONLY_OPEN","final_text":"Definición registrada — 100%"}' \\
+  | python3 sandbox/lf_contract_gate_test/profile_execution_runtime/lf_pre_gate2_consumer_gate_v1.py
+# exit 2 = BLOCK; 0 = truthful blocked state, out-of-scope, or defer to existing authority guard
+```
+
+**Scope limitation:** there is **no universal ChatGPT Stop hook installed** by a GitHub file. This is shared logic and a mandatory consumer procedure, not an enforcement of every ChatGPT UI message. Server-side admission and Merge Train remain the only hard effect boundaries. The shared classifier never modifies ACT-0001, invokes a profile, creates a dispatcher, carries `service_role` or grants write authority.
 
 ## Gate-2 recovery matrix — no permission workarounds (highest priority)
 
