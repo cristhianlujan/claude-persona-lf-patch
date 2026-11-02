@@ -1,0 +1,75 @@
+name: LF PG-01 OIDC Subject Verifier
+# H1-C2 D-A. Identity = this workflow file on main + GitHub environment lf-pg01-verifier.
+# GitHub-side readback of the source HEAD here; Supabase-side readback inside the recorder RPC.
+on:
+  workflow_dispatch:
+    inputs:
+      receipt_id:
+        description: Evidence ledger receipt (uuid) of the PROGRAMMING_ANALYSIS_PACKAGE
+        required: true
+        type: string
+      context_id:
+        description: Decision context snapshot (uuid)
+        required: true
+        type: string
+      subject_sha256:
+        description: Expected subject sha256 (64 hex)
+        required: true
+        type: string
+      source_head_sha:
+        description: Exact 40-hex source HEAD
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: lf-pg01-oidc-subject-${{ inputs.receipt_id }}
+  cancel-in-progress: false
+jobs:
+  verify-subject:
+    environment: lf-pg01-verifier
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history for HEAD readback
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: GitHub readback, OIDC token and submission
+        env:
+          RECEIPT_ID: ${{ inputs.receipt_id }}
+          CONTEXT_ID: ${{ inputs.context_id }}
+          SUBJECT_SHA256: ${{ inputs.subject_sha256 }}
+          SOURCE_HEAD_SHA: ${{ inputs.source_head_sha }}
+          EDGE_URL: ${{ vars.LF_PG01_OIDC_EDGE_URL }}
+        run: |
+          set -euo pipefail
+          uuid='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          [[ "$RECEIPT_ID" =~ $uuid && "$CONTEXT_ID" =~ $uuid ]] || { echo "INPUT_UUID_INVALID"; exit 2; }
+          [[ "$SUBJECT_SHA256" =~ ^[0-9a-f]{64}$ && "$SOURCE_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "INPUT_DIGEST_INVALID"; exit 2; }
+          [[ -n "$EDGE_URL" ]] || { echo "EDGE_URL_MISSING"; exit 2; }
+          git fetch --quiet origin "+refs/heads/*:refs/remotes/origin/*" || true
+          git cat-file -e "${SOURCE_HEAD_SHA}^{commit}" || { echo "GITHUB_READBACK_HEAD_NOT_FOUND"; exit 3; }
+          token=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=lf-pg01-subject-verification" | jq -r .value)
+          echo "::add-mask::$token"
+          jq -n --arg rid "$RECEIPT_ID" --arg cid "$CONTEXT_ID" --arg sha "$SUBJECT_SHA256" --arg head "$SOURCE_HEAD_SHA" \
+            --arg run "$GITHUB_RUN_ID" --arg att "$GITHUB_RUN_ATTEMPT" \
+            '{kind:"SUBJECT_VERIFICATION",payload:{workflow_run_id:$run,workflow_run_attempt:$att,receipt_id:$rid,context_id:$cid,
+              subject_sha256:$sha,source_head_sha:$head,github_readback:{head_commit_verified:true,head_sha:$head}}}' > body.json
+          code=$(curl -sS -o response.json -w '%{http_code}' -X POST "$EDGE_URL" \
+            -H "Authorization: Bearer $token" -H "content-type: application/json" --data @body.json)
+          cat response.json; echo
+          tsha=$(printf '%s' "$token" | sha256sum | cut -d' ' -f1)
+          jq -n --arg t "$token" --arg s "$tsha" --slurpfile r response.json \
+            '[{kind:"SUBJECT_VERIFICATION",token:$t,token_sha256:$s,edge_response:$r[0]}]' > verifier-receipt.json
+          [[ "$code" == "200" ]] || { echo "EDGE_REJECTED:$code"; exit 4; }
+      - name: Publish verifier receipt for the independent auditor
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-pg01-verifier-receipt
+          path: verifier-receipt.json
+          retention-days: 7

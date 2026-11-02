@@ -15,7 +15,7 @@ GRANT USAGE ON SCHEMA private TO service_role;
 GRANT SELECT,INSERT,UPDATE ON public.lf_operation_execution, public.lf_operation_execution_steps TO service_role;
 -- Load the REAL migration; its BEGIN/COMMIT are removed only for this disposable transaction.
 CREATE TEMP TABLE src_lines(n bigint GENERATED ALWAYS AS IDENTITY,line text);
-\copy src_lines(line) FROM 'supabase/migrations/20261029160000_lf_pg01_authority_attestations_v1.sql' WITH (FORMAT csv, DELIMITER E'\x01', QUOTE E'\x02', ESCAPE E'\x03')
+\copy src_lines(line) FROM 'supabase/migrations/20261029194051_lf_pg01_authority_attestations_v1.sql' WITH (FORMAT csv, DELIMITER E'\x01', QUOTE E'\x02', ESCAPE E'\x03')
 SELECT replace(replace(string_agg(coalesce(line,''),E'\n' ORDER BY n),E'\nBEGIN;\n',E'\n'),E'\nCOMMIT;',E'\n') FROM src_lines
 \gexec
 CREATE TEMP TABLE res(case_id text PRIMARY KEY, got text, expect text);
