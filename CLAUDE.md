@@ -27,6 +27,21 @@ The user request determines the **operation before asset discovery**. For `EJECU
 `lf_router_resolve_v1` remains the entry only for its separately governed asset/DB-write operations (e.g. `ACTUALIZACION_DB_LF`); this routing precedence never authorizes effect, circumvents Gate 2 or changes any permission. Follow [the active compact Router protocol](docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md) and [Profiles runbook §6.9](ops/runbook-profiles-lf.md). This paragraph controls profile-execution intent when an older V1 generic instruction says "every resolution".
 
 
+## PRE-GATE2 continuity gate — no proposal-as-execution fallback (mandatory)
+
+**Observed regression (2026-11-02, LF B2B password-attempt policy):** the Router returned `BLOCK_SCOPE_SEMANTICS_UNATTESTED` for a requested governed rule/policy definition. The consumer then called `lf_router_dispatch_v1` (`REGLA_CREAR`) and received `PROPOSE_ONLY_OPEN`, wrote a manually authored Issue #3505 and presented that issue as a 100%-complete definition. No rule-policy execution was opened and no official Supabase policy was persisted. This is **not** a Router permission failure; it is consumer route substitution.
+
+**Mandatory consumer rule for an operational LF request:**
+
+1. Keep `literal_request`, `business_scope=LF`, resolved intent, Router status and `blocking_code` unchanged. A semantic block is a required resolution checkpoint, never authorization to change the operation to a lower-privilege advisory capability.
+2. If `BLOCK_SCOPE_SEMANTICS_UNATTESTED` or `BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED` is observed, perform the canonical semantic-target resolution and re-derive the path through ACT-0001 using the current supported contract. Only choose an existing canonical asset/operation from verified source data. Do not fabricate a Security profile, approval, candidate subject, or receipt.
+3. `lf_router_dispatch_v1` with `PROPOSE_ONLY_OPEN` is permitted **only as ancillary analysis**. It is **not** an alternative execution route and its artifact/Issue is not a run or a canonical policy. Never convert an optional proposal into `COMPLETED`, `PASS`, `100%` or an official definition.
+4. A profile execution follows context V2 and the original Gate2 route without an intermediary. A candidate rule or central policy write must follow its **separate** governed operation and own authority. A Security approval must be verified independently; Product Director/Router do not grant Security authority.
+5. Before a final closure, **read back** a fresh execution bound to the current request, target, operation, and actual workflow/run, with the governing contract's required evidence and final state. A Github Issue, a plan, a completed run for a different scope, or a profile's read-only verdict cannot substitute.
+6. If no canonical semantic target, route, authority, or valid transport can be verified, stop that unit truthfully and report exactly: `BLOCK_SCOPE_SEMANTICS_UNATTESTED / NOT_EXECUTED / NO_CANONICAL_EFFECT` (or the actual observed blocking code), missing item and next governed action. Preserve any preparatory artifact as `PROPOSAL_ONLY` and do not claim official completion. This is a valid **blocked outcome**, not a successful execution.
+
+**Consumer enforcement scope:** `.claude/settings.json` uses the existing `lf_profile_gate2_stop_guard.py` Stop hook; its pre-Gate2 guard rejects premature completion after a Router semantic block followed by an advisory-only detour. This applies in Claude Code with transcript evidence. It **does not** enforce ChatGPT, GitHub issues, or Supabase writes. Official server-side write enforcement and Merge Train remain separate. No new Router service, intermediate dispatcher, or direct role escalation is introduced.
+
 ## Gate-2 recovery matrix — no permission workarounds (highest priority)
 
 | Gate-2 result | Required existing action | Not a valid completion |
