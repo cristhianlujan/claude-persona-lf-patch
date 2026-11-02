@@ -28,10 +28,19 @@ class Tests(unittest.TestCase):
     def test_wrong_app_id(self):
         x=fixture();x[2]["statuses"][0]["creator"]["id"]=123
         self.assertEqual(m.qualify(*x),"STATUS_NOT_TRUSTED_TRAIN_APP")
+    def test_untrusted_status_competes(self):
+        x=fixture();x[2]["statuses"].append({"context":"lf-merge-train/verified","state":"failure"})
+        self.assertEqual(m.qualify(*x),"TRAIN_STATUS_AMBIGUOUS_OR_MISSING")
+    def test_malformed_statuses(self):
+        x=fixture();x[2]["statuses"]="success";self.assertEqual(m.qualify(*x),"TRAIN_STATUSES_INVALID")
+    def test_malformed_pr_head(self):
+        x=fixture();x[1]["head"]=None;self.assertEqual(m.qualify(*x),"PR_SOURCE_SHA_INVALID")
+    def test_malformed_run_repo(self):
+        x=fixture();x[3]["repository"]=None;self.assertEqual(m.qualify(*x),"TRAIN_REPO_MISMATCH")
     def test_no_status(self):
-        x=fixture();x[2]["statuses"]=[];self.assertEqual(m.qualify(*x),"INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS")
+        x=fixture();x[2]["statuses"]=[];self.assertEqual(m.qualify(*x),"TRAIN_STATUS_AMBIGUOUS_OR_MISSING")
     def test_duplicated_status(self):
-        x=fixture();x[2]["statuses"]*=2;self.assertEqual(m.qualify(*x),"INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS")
+        x=fixture();x[2]["statuses"]*=2;self.assertEqual(m.qualify(*x),"TRAIN_STATUS_AMBIGUOUS_OR_MISSING")
     def test_wrong_run(self):
         x=fixture();x[3]["path"]=".github/workflows/other.yml";self.assertEqual(m.qualify(*x),"TRAIN_WORKFLOW_MISMATCH")
     def test_wrong_event(self):

@@ -22,18 +22,25 @@ def qualify(main: str, pr: object, status: object, run: object) -> str | None:
         return "MAIN_SHA_INVALID"
     if not isinstance(pr, dict) or pr.get("merged_at") is None or pr.get("state") != "closed":
         return "PR_NOT_MERGED"
-    if pr.get("base", {}).get("ref") != "main" or pr.get("merge_commit_sha") != main:
+    if not isinstance(pr.get("base"), dict) or pr["base"].get("ref") != "main" or pr.get("merge_commit_sha") != main:
         return "MERGE_SHA_NOT_CURRENT_MAIN"
-    source = pr.get("head", {}).get("sha")
+    source = pr.get("head", {}).get("sha") if isinstance(pr.get("head"), dict) else None
     if not isinstance(source, str) or len(source) != 40:
         return "PR_SOURCE_SHA_INVALID"
     if not isinstance(status, dict) or status.get("sha") != source:
         return "STATUS_HEAD_MISMATCH"
-    candidates = [s for s in status.get("statuses", []) if isinstance(s, dict) and s.get("context") == "lf-merge-train/verified" and s.get("state") == "success"]
+    statuses = status.get("statuses")
+    if not isinstance(statuses, list):
+        return "TRAIN_STATUSES_INVALID"
+    relevant = [s for s in statuses if isinstance(s, dict) and s.get("context") == "lf-merge-train/verified"]
+    candidates = [s for s in relevant if s.get("state") == "success"]
+    # No competing historical status can be used as an alternate approval.
+    if len(relevant) != 1:
+        return "TRAIN_STATUS_AMBIGUOUS_OR_MISSING"
     if len(candidates) != 1:
         return "INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS"
     st = candidates[0]
-    creator = st.get("creator", {})
+    creator = st.get("creator")
     if not isinstance(creator, dict) or creator.get("type") != "Bot" or creator.get("login") != "lf-migration-train[bot]" or creator.get("id") != 338337340:
         return "STATUS_NOT_TRUSTED_TRAIN_APP"
     if not isinstance(run, dict) or run.get("conclusion") != "success" or run.get("status") != "completed":
@@ -42,7 +49,7 @@ def qualify(main: str, pr: object, status: object, run: object) -> str | None:
         return "TRAIN_WORKFLOW_MISMATCH"
     if run.get("event") != "pull_request_target":
         return "TRAIN_EVENT_MISMATCH"
-    if run.get("repository", {}).get("full_name") != "cristhianlujan/claude-persona-lf-patch":
+    if not isinstance(run.get("repository"),dict) or run["repository"].get("full_name") != "cristhianlujan/claude-persona-lf-patch":
         return "TRAIN_REPO_MISMATCH"
     # On pull_request_target the successful workflow run is bound to the PR
     # source SHA, not the resulting merge commit on main.
