@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Claude Code consumer Stop guard. Never invokes a Router, provider, Issue or RPC.
+"""Claude Code Stop hook: shared PRE-Gate2 + existing Gate2 proof guard.
 
-This is NOT a server-side attestation or universal ChatGPT control.
-It blocks only one premature close for a recent LF Router Gate2 handoff.
+Never invokes Router, provider, Issue or RPC. This is NOT server-side
+attestation or a universal ChatGPT hook; GPT uses the shared pre-Gate2
+classifier explicitly and existing server-side terminal receipts.
 """
 import json
 import re
