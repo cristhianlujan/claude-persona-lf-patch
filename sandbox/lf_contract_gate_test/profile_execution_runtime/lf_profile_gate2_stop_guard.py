@@ -23,6 +23,26 @@ KNOWN_PROVIDER_FAILURE = re.compile(r'\b(?:TOOL_ACCESS_DENIED|CONNECTOR_DENIED|'
                                     r'PROVIDER_BLOCKED_PENDING_REVIEW|'
                                     r'PROVIDER_BLOCKED|PERMISSION_DENIED|'
                                     r'ERROR_HTTP_[45]\d\d)\b', re.I)
+# Pre-Gate2 semantic blockers + fallback to advisory-only dispatch are not a
+# governed execution. This guards premature close; it never selects a profile.
+PRE_GATE2_SCOPE_BLOCK = re.compile(
+    r'\b(?:BLOCK_SCOPE_SEMANTICS_UNATTESTED|'
+    r'BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED)\b'
+)
+PROPOSE_ONLY_RECEIPT = re.compile(r'\bPROPOSE_ONLY_OPEN\b')
+PRE_GATE2_FALSE_CLOSE = re.compile(
+    r'\b(?:COMPLETED|READY|PASS|finalizad[oa]|completad[oa]|aprobada|'
+    r'registrad[oa]|ejecutad[oa])\b|100\s*%', re.I
+)
+PRE_GATE2_REASON = (
+    'LF PRE_GATE2_ROUTE_CONTINUITY_BLOCK: ACT-0001 no autorizó una ruta. '
+    'PROPOSE_ONLY_OPEN es exploración/propuesta, nunca continuidad del run. '
+    'Retoma la resolución semántica oficial y sigue la operación gobernada '
+    'con run nuevo y readback. Si no existe sujeto canónico o autoridad, '
+    'cierra honestamente con BLOCK_SCOPE_SEMANTICS_UNATTESTED, '
+    'NOT_EXECUTED y NO_CANONICAL_EFFECT, sin reclamar 100%, PASSED, '
+    'regla/política creada ni usar un Issue manual como recibo.'
+)
 CLOSED_CLAIM = re.compile(r'\bCOMPLETED\b', re.I)
 READY_CLAIM = re.compile(r'\bREADY\b', re.I)
 BLOCK_REASON = (
@@ -124,6 +144,23 @@ def evaluate(event):
     if event.get('stop_hook_active') is True:
         return None
     prompt, receipts = read_current_turn(event.get('transcript_path'))
+    # The existing Gate2 proof gate below is authoritative once actual Gate2
+    # evidence exists. Before Gate2, a blocked Router plus an advisory dispatch
+    # must NOT be silently turned into a completed governed task.
+    if (prompt and (ACTION.search(prompt) or APPROVAL.fullmatch(prompt.strip()))
+        and PRE_GATE2_SCOPE_BLOCK.search(receipts)
+        and PROPOSE_ONLY_RECEIPT.search(receipts)
+        and GATE2 not in receipts):
+        if (KNOWN_PROVIDER_FAILURE.search(final) and 'NOT_EXECUTED' in final
+            and KNOWN_PROVIDER_FAILURE.search(receipts)):
+            return None
+        if (all(marker in final for marker in (
+                'BLOCK_SCOPE_SEMANTICS_UNATTESTED', 'NOT_EXECUTED',
+                'NO_CANONICAL_EFFECT'))
+            and not PRE_GATE2_FALSE_CLOSE.search(final)):
+            return None
+        return {'decision': 'block', 'reason': PRE_GATE2_REASON}
+
     if prompt:
         # Explanations, quote reviews and 'how does this work?' are not
         # a profile execution command. Avoid an unrelated user turn stall.
