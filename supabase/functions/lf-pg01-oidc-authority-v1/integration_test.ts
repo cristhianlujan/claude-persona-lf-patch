@@ -3,7 +3,7 @@
 // Driven by sandbox/.../run_pg01_oidc_authority_v1.sh (env PG01_IT_*). Never point it at a hosted DB.
 import { type Kind, POLICY } from "./auth.ts";
 import { handle } from "./index.ts";
-import { claimsFor, reviewPayload, sign, subjectPayload, testKeys } from "./auth_test.ts";
+import { claimsFor, githubShape, reviewPayload, sign, subjectPayload, testKeys } from "./auth_test.ts";
 import { reverify } from "../../../scripts/lf_pg01_oidc_receipt_reverify.ts";
 
 const E = (k: string) => Deno.env.get(k) ?? "";
@@ -64,7 +64,8 @@ Deno.test({ name: "PG-01 OIDC integration RED/GREEN (Edge -> RPC -> PostgreSQL)"
   check("N_rollback_left_no_receipts", (await su("SELECT count(*) FROM private.lf_pg01_oidc_authority_receipts_v1")).out, /^0$/);
 
   // ---- GREEN 1: verifier identity (workflow + environment lf-pg01-verifier)
-  const vTok = await sTok("1001");
+  // Positives use the authentic GitHub claim shape (job_workflow_ref == workflow_ref).
+  const vTok = await sign(k.privateKey, githubShape(S, "1001"), POLICY[S].audience);
   check("G1_subject_verified", await viaEdge(vTok, S, subj("1001", R1, C1, ctx1)), /^200:.*VERIFIED_RECORDED.*lf-pg01-oidc-subject-verifier\.yml/);
   check("N_replay_same_token", await viaEdge(vTok, S, subj("1001", R1, C1, ctx1)), /^409:/);
   check("N_replay_new_run_same_receipt", await viaEdge(await sTok("1002"), S, subj("1002", R1, C1, ctx1)), /^409:/);
@@ -86,6 +87,7 @@ Deno.test({ name: "PG-01 OIDC integration RED/GREEN (Edge -> RPC -> PostgreSQL)"
   check("N_rpc_bypass_verifier_identity_as_auditor", (await asService(rpcSql(R, await sign(k.privateKey, claimsFor(R, "2005", { workflow_ref: POLICY[S].workflow, job_workflow_ref: POLICY[S].workflow, environment: "lf-pg01-verifier" }), POLICY[R].audience), rev("2005")))).out, /PG01_OIDC_WORKFLOW_MISMATCH/);
   check("N_rpc_bypass_verifier_audience_on_review", (await asService(rpcSql(R, await sign(k.privateKey, claimsFor(R, "2006"), POLICY[S].audience), rev("2006")))).out, /PG01_OIDC_AUDIENCE_MISMATCH/);
   check("N_rpc_bypass_expired", (await asService(rpcSql(R, await rTok("2007", {}, k.privateKey, { expired: true }), rev("2007")))).out, /PG01_OIDC_TOKEN_EXPIRED/);
+  check("N_rpc_reusable_job_workflow_ref", (await asService(rpcSql(R, await rTok("2022", { job_workflow_ref: "cristhianlujan/claude-persona-lf-patch/.github/workflows/some-reusable.yml@refs/heads/main" }), rev("2022")))).out, /PG01_OIDC_WORKFLOW_MISMATCH/);
   check("N_rpc_bypass_unpinned_kid", (await asService(rpcSql(R, await rTok("2017", {}, k.privateKey, { kid: "not-pinned" }), rev("2017")))).out, /PG01_OIDC_KID_NOT_PINNED/);
   check("N_rpc_bypass_other_repo", (await asService(rpcSql(S, await sTok("2008", { repository: "evil/repo" }), subj("2008", R1, C1, ctx1)))).out, /PG01_OIDC_REPOSITORY_MISMATCH/);
   check("N_rpc_bypass_other_branch", (await asService(rpcSql(S, await sTok("2009", { ref: "refs/heads/x" }), subj("2009", R1, C1, ctx1)))).out, /PG01_OIDC_REF_MISMATCH/);
@@ -103,7 +105,7 @@ Deno.test({ name: "PG-01 OIDC integration RED/GREEN (Edge -> RPC -> PostgreSQL)"
   check("N_service_role_call_core", (await asService(`SELECT private.fn_lf_pg01_oidc_record_core_v1('SUBJECT_VERIFICATION','a.b.c','{}');`)).out, /permission denied/);
 
   // ---- GREEN 2: auditor identity (different workflow + environment lf-pg01-auditor)
-  const aTok = await rTok("2001");
+  const aTok = await sign(k.privateKey, githubShape(R, "2001"), POLICY[R].audience);
   check("G2_review_attested", await viaEdge(aTok, R, rev("2001")), /^200:.*ATTESTED_RECORDED.*lf-pg01-oidc-review-auditor\.yml.*LF_PG_RS256_V1/);
   check("N_replay_review_new_run", await viaEdge(await rTok("2013"), R, rev("2013")), /^409:/);
   check("N_replay_review_same_token", await viaEdge(aTok, R, rev("2001")), /^409:/);

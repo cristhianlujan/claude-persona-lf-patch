@@ -283,7 +283,8 @@ BEGIN
  IF c->>'repository' IS DISTINCT FROM c_repo OR c->>'repository_id' IS DISTINCT FROM '1244397752' THEN RAISE EXCEPTION 'PG01_OIDC_REPOSITORY_MISMATCH'; END IF;
  IF c->>'ref' IS DISTINCT FROM 'refs/heads/main' THEN RAISE EXCEPTION 'PG01_OIDC_REF_MISMATCH'; END IF;
  IF c->>'event_name' IS DISTINCT FROM 'workflow_dispatch' THEN RAISE EXCEPTION 'PG01_OIDC_EVENT_MISMATCH'; END IF;
- IF c->>'workflow_ref' IS DISTINCT FROM v_wf OR c ? 'job_workflow_ref' THEN RAISE EXCEPTION 'PG01_OIDC_WORKFLOW_MISMATCH'; END IF;
+ -- job_workflow_ref: GitHub also emits it for plain workflows (= workflow_ref); absent or identical only.
+ IF c->>'workflow_ref' IS DISTINCT FROM v_wf OR (c ? 'job_workflow_ref' AND c->>'job_workflow_ref' IS DISTINCT FROM v_wf) THEN RAISE EXCEPTION 'PG01_OIDC_WORKFLOW_MISMATCH'; END IF;
  IF c->>'environment' IS DISTINCT FROM v_env THEN RAISE EXCEPTION 'PG01_OIDC_ENVIRONMENT_MISMATCH'; END IF;
  v_run := coalesce(c->>'run_id',''); v_att := coalesce(c->>'run_attempt','');
  IF v_run !~ '^[0-9]+$' OR v_att !~ '^[0-9]+$' THEN RAISE EXCEPTION 'PG01_OIDC_RUN_INVALID'; END IF;

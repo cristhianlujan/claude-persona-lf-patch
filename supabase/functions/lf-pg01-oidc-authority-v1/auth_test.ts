@@ -15,6 +15,11 @@ export function claimsFor(kind: Kind, run = "1001", over: Record<string, unknown
     workflow_ref: p.workflow, environment: p.environment,
     run_id: run, run_attempt: "1", ...over };
 }
+export function githubShape(kind: Kind, run = "1001", over: Record<string, unknown> = {}) {
+  const p = POLICY[kind];
+  return claimsFor(kind, run, { job_workflow_ref: p.workflow, job_workflow_sha: "a".repeat(40), workflow_sha: "a".repeat(40),
+    sub: `repo:${REPO}:environment:${p.environment}`, ref_type: "branch", runner_environment: "github-hosted", ...over });
+}
 export async function sign(privateKey: CryptoKey, claims: Record<string, unknown>, aud: string,
   o: { expired?: boolean; kid?: string; iss?: string } = {}) {
   return await new SignJWT(claims).setProtectedHeader({ alg: "RS256", kid: o.kid ?? "pg01-test" })
@@ -44,7 +49,9 @@ Deno.test("PG-01 OIDC boundary matrix (synthetic)", async () => {
     ["other_repository_id", sign(k.privateKey, claimsFor(S, "1001", { repository_id: "1" }), A), S, subjectPayload(), "OIDC_REPOSITORY_MISMATCH"],
     ["other_branch", sign(k.privateKey, claimsFor(S, "1001", { ref: "refs/heads/feature" }), A), S, subjectPayload(), "OIDC_REF_MISMATCH"],
     ["pull_request_event", sign(k.privateKey, claimsFor(S, "1001", { event_name: "pull_request" }), A), S, subjectPayload(), "OIDC_EVENT_MISMATCH"],
-    ["unexpected_reusable_claim", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: POLICY[S].workflow }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
+    ["unexpected_reusable_claim", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: REPO + "/.github/workflows/some-reusable.yml@" + REF }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
+    ["reusable_claim_other_repo", sign(k.privateKey, claimsFor(R, "2001", { job_workflow_ref: "evil/repo/.github/workflows/lf-pg01-oidc-review-auditor.yml@" + REF }), AR), R, reviewPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
+    ["reusable_claim_other_branch", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: POLICY[S].workflow.replace("@refs/heads/main", "@refs/heads/x") }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["deploy_workflow", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: REPO + "/.github/workflows/lf-runtime-independent-readback.yml@" + REF }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["auditor_workflow_as_verifier", sign(k.privateKey, claimsFor(S, "1001", { workflow_ref: POLICY[R].workflow, job_workflow_ref: POLICY[R].workflow }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["verifier_workflow_as_auditor", sign(k.privateKey, claimsFor(R, "2001", { workflow_ref: POLICY[S].workflow, job_workflow_ref: POLICY[S].workflow }), AR), R, reviewPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
@@ -67,9 +74,11 @@ Deno.test("PG-01 OIDC boundary matrix (synthetic)", async () => {
   }
   for (const [kind, run, payload] of [[S, "1001", subjectPayload()], [R, "2001", reviewPayload()]] as Array<[Kind, string, Record<string, unknown>]>) {
     await verifyPg01Token(await sign(k.privateKey, claimsFor(kind, run), POLICY[kind].audience), kind, payload, k.jwks);
+    // Authentic GitHub shape for a plain workflow_dispatch workflow: job_workflow_ref == workflow_ref.
+    await verifyPg01Token(await sign(k.privateKey, githubShape(kind, run), POLICY[kind].audience), kind, payload, k.jwks);
   }
   if (failures.length) throw Error(failures.join("\n"));
-  console.log(`PG01_OIDC_BOUNDARY_SYNTHETIC_PASSED:${cases.length + 2}`);
+  console.log(`PG01_OIDC_BOUNDARY_SYNTHETIC_PASSED:${cases.length + 4}`);
 });
 
 Deno.test("PG-01 OIDC handler never records an unauthenticated request (synthetic)", async () => {

@@ -17,7 +17,7 @@ export async function reverify(rows: Array<Record<string, unknown>>, jwks?: Para
       const iat = Number(decodeJwt(token).iat ?? 0);
       // Signature + policy as of issuance (tokens are short-lived; expiry is enforced at intake).
       await verifyPg01Token(token, kind, null, jwks, new Date((iat + 1) * 1000));
-    } catch (e) { reason = String((e as Error).code ?? (e as Error).message); }
+    } catch (e) { reason = String((e as Error & { code?: string }).code ?? (e as Error).message); }
     results.push({ kind, token_sha256: r.token_sha256, reverified: reason === "OK", reason });
   }
   return { all_reverified: results.length > 0 && results.every((x) => x.reverified), results };
