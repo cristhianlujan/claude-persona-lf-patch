@@ -147,17 +147,19 @@ def evaluate(event):
     # The existing Gate2 proof gate below is authoritative once actual Gate2
     # evidence exists. Before Gate2, a blocked Router plus an advisory dispatch
     # must NOT be silently turned into a completed governed task.
+    pre_gate2_block = PRE_GATE2_SCOPE_BLOCK.search(receipts)
     if (prompt and (ACTION.search(prompt) or APPROVAL.fullmatch(prompt.strip()))
-        and PRE_GATE2_SCOPE_BLOCK.search(receipts)
+        and pre_gate2_block
         and PROPOSE_ONLY_RECEIPT.search(receipts)
         and GATE2 not in receipts):
+        # A provider error does not license a success claim, even with NOT_EXECUTED.
+        if PRE_GATE2_FALSE_CLOSE.search(final):
+            return {'decision': 'block', 'reason': PRE_GATE2_REASON}
         if (KNOWN_PROVIDER_FAILURE.search(final) and 'NOT_EXECUTED' in final
             and KNOWN_PROVIDER_FAILURE.search(receipts)):
             return None
-        if (all(marker in final for marker in (
-                'BLOCK_SCOPE_SEMANTICS_UNATTESTED', 'NOT_EXECUTED',
-                'NO_CANONICAL_EFFECT'))
-            and not PRE_GATE2_FALSE_CLOSE.search(final)):
+        if all(marker in final for marker in (
+                pre_gate2_block.group(), 'NOT_EXECUTED', 'NO_CANONICAL_EFFECT')):
             return None
         return {'decision': 'block', 'reason': PRE_GATE2_REASON}
 
