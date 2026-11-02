@@ -29,13 +29,19 @@ def receive(previous, run, transfer, sources):
     eid = run.get("execution_id")
     request_sha = run.get("request_sha256")
     business = run.get("business")
+    profile = run.get("profile_code")
+    operation = run.get("operation_code")
     if (business != "LF" or previous.get("business") != "LF"
             or transfer.get("business") != "LF"):
         errors.append("BUSINESS_BINDING_MISMATCH")
     if not isinstance(eid, str) or not eid.strip():
         errors.append("CANONICAL_RUN_MISSING")
-    if run.get("operation_code") != "EJECUCION_PERFIL_LF" or run.get("profile_code") != "PERFIL-PROGRAMMING-ANALYSIS-LF":
+    if operation != "EJECUCION_PERFIL_LF" or profile != "PERFIL-PROGRAMMING-ANALYSIS-LF":
         errors.append("WRONG_RUN_OWNER")
+    if previous.get("profile_code") != profile or transfer.get("profile_code") != profile:
+        errors.append("PROFILE_TRANSPORT_BINDING_MISMATCH")
+    if previous.get("operation_code") != operation or transfer.get("operation_code") != operation:
+        errors.append("OPERATION_TRANSPORT_BINDING_MISMATCH")
     if run.get("status") != "IN_PROGRESS":
         errors.append("RUN_NOT_IN_PROGRESS")
     if not isinstance(request_sha, str) or HEX.fullmatch(request_sha) is None:
@@ -94,6 +100,8 @@ def receive(previous, run, transfer, sources):
         "schema_version": SCHEMA,
         "status": "RECEIVED_CANDIDATE",
         "business": business,
+        "profile_code": profile,
+        "operation_code": operation,
         "execution_id": eid,
         "request_sha256": request_sha,
         "sender_payload_sha256": digest(previous),
