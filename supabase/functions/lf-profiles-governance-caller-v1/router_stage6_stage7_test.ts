@@ -93,7 +93,7 @@ Deno.test("profile-owned BEGIN applies service_role only inside Edge canonical w
       if(url.endsWith("/rest/v1/rpc/lf_profile_execution_begin_from_handoff_v1"))
         return new Response(JSON.stringify({
           status:"READY",init_materialized:true,
-          execution_id:"EXEC-PROFILE-GATE2-"+"A".repeat(24),
+          execution_id:body.p_execution_id,
         }),{status:200});
       throw new Error("UNEXPECTED_BACKEND_CALL:"+url);
     },
@@ -104,9 +104,20 @@ Deno.test("profile-owned BEGIN applies service_role only inside Edge canonical w
       context:nativeContext,executor_mode:"GPT_NATIVE"}),
   }));
   const result=await response.json();
+  const identityFrame=JSON.stringify([
+    "LF_PROFILE_NATIVE_WORKFLOW_RUN_ID_V1",REPO,nativeClaims.run_id,
+    "PERFIL-UX-DESIGN-LF","a".repeat(64),
+  ]);
+  const identityDigest=new Uint8Array(await crypto.subtle.digest(
+    "SHA-256",new TextEncoder().encode(identityFrame)));
+  const identityHex=[...identityDigest].map(x=>x.toString(16).padStart(2,"0")).join("");
+  const expectedId="EXEC-PROFILE-GATE2-"+identityHex.slice(0,24).toUpperCase();
   if(response.status!==200 || result.outcome!=="NATIVE_EXECUTION_READY" ||
-     result.result?.execution_id!=="EXEC-PROFILE-GATE2-"+"A".repeat(24))
+     result.result?.execution_id!==expectedId)
     throw new Error("PROFILE_BEGIN_NOT_READY:"+JSON.stringify(result));
+  if(calls[2].body.p_execution_id!==expectedId ||
+    calls[2].body.p_idempotency_key!=="router-profile-gate2-run-v1:"+identityHex)
+    throw new Error("PROFILE_BEGIN_INSTANCE_NOT_BOUND_TO_OIDC_RUN");
   if(calls.length!==3)throw new Error("EXPECTED_THREE_CANONICAL_CALLS");
   if(!calls[0].url.endsWith("/rpc/lf_router_pipeline_context_profile_admit_v2")||
      !calls[1].url.includes("/rest/v1/lf_activos?")||

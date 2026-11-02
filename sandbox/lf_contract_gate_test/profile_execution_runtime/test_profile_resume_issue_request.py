@@ -46,6 +46,26 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
     def test_valid_issue_payload(self):
         self.assertEqual(self.check(), ("EXEC-PROFILE-GATE2-EXAMPLE", "", None, None))
 
+    def test_router_profile_entry_is_v2_and_not_generic_asset_lookup(self):
+        """Prevent reintroducing the wrong V1 asset resolver for profile execution."""
+        root = SCRIPT.parents[1]
+        agent = (root / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (root / "CLAUDE.md").read_text(encoding="utf-8")
+        compact = (root / "docs/operations/PROTOCOLO_CONSUMO_COMPACTO_ROUTER_LF.md").read_text(encoding="utf-8")
+        historical = (root / "docs/programming-agent/LF_ROUTER_FLOW_V1.md").read_text(encoding="utf-8")
+        for doc in (agent, claude, compact):
+            self.assertIn("lf_router_pipeline_context_begin_v2", doc)
+            self.assertIn("EJECUCION_PERFIL_LF", doc)
+            self.assertIn("lf_router_resolve_v1", doc)
+            self.assertIn("HANDOFF_CONTEXT_TO_SELECTED_PROFILE", doc)
+        self.assertIn("Do **not** run `lf_router_resolve_v1` first", agent)
+        self.assertIn("Do not call `lf_router_resolve_v1` first", claude)
+        self.assertNotIn("Toda resolución entra por `public.lf_router_resolve_v1`", compact)
+        self.assertIn("No es la entrada de `EJECUCION_PERFIL_LF`", compact)
+        self.assertIn("Referencia histórica", historical)
+        self.assertIn("LF_PROFILE_NATIVE_BEGIN_REQUEST_V1", claude)
+        self.assertIn("lf-profile-resume-governed", claude)
+
     def test_profile_owned_begin_uses_existing_governed_issue_label(self):
         context = {"schema_version": "LF_ROUTER_EXECUTION_PIPELINE_V1",
                    "status": "GATE2_DERIVED_PENDING_GOVERNED_ADMISSION",

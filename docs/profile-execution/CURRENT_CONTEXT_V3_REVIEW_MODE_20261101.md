@@ -3,7 +3,7 @@
 Estado: **candidato gobernado**. Solo entra en vigor al integrar código + migración + despliegue, con readback positivo y negativo.
 
 ## Decisión de alcance (usuario propietario, 2026-10-31)
-Se permite completar un **diagnóstico de solo lectura** en el mismo contexto que generó el RAW, sin abrir otro chat de revisor. No se denomina revisión independiente. No se aplica a modificaciones de fuente, producción, despliegue de producto, promoción, políticas de seguridad ni a otras operaciones.
+Se permite completar un **diagnóstico de solo lectura** en el mismo contexto que generó el RAW, conservando procedencia real y los controles V3. No se denomina revisión independiente. No se aplica a modificaciones de fuente, producción, despliegue de producto, promoción, políticas de seguridad ni a otras operaciones.
 
 ## Contrato propuesto de dictamen
 - `review_mode: CURRENT_CONTEXT_REVIEW`.

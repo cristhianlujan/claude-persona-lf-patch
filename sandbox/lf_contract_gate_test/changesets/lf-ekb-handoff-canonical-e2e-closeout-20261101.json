@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-ekb-handoff-canonical-e2e-closeout-20261101",
+  "paths": {
+    "supabase/migrations/20261101134500_lf_profile_handoff_ekb_canonical_e2e_closeout_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-ekb-handoff-canonical-e2e-closeout-20261101.json": "CHANGESET_MANIFEST"
+  }
+}

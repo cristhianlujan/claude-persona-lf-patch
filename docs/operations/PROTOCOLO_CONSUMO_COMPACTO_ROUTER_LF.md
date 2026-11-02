@@ -5,6 +5,9 @@ Router rector: ACT-0001
 Consumidores: Claude y GPT
 Alcance de modo: solo `distribution_mode = 'ROUTER'`
 
+**Ámbito de este contrato:** resolución compacta de **activos / operaciones de BD** mediante `lf_router_resolve_v1`. **No es la entrada de `EJECUCION_PERFIL_LF`**. Esa operación usa el Router ACT-0001 por el contrato de contexto V2 (`lf_router_pipeline_context_begin_v2`, Stage 1 V2 y selección semántica), seguido del handoff gobernado al perfil. No existen dos Routers ni un bypass: son contratos de consumo por tipo de operación.
+
+
 ## 1. Objetivo
 
 Reducir el contexto que el Router propaga al modelo sin alterar discovery, bloqueos, operación, contratos, pasos ni adapters. Se mide en bytes; los tokens se registran por modelo/tokenizador cuando estén disponibles.
@@ -20,7 +23,7 @@ ACT-0001 Router -> v_lf_fuente_operativa_busqueda -> activo canónico vigente
 
 ACT-0001 sigue siendo rector. No entrar directo por profiles, skills, cards, adapters, prompts ni checklists. Supabase es la fuente operativa principal. Sin verificación de Supabase o sin readback del activo vigente: bloquear.
 
-Toda resolución entra por `public.lf_router_resolve_v1`. Cada llamada pasa `action_hint` explícito y omite por completo `target_hint`.
+Toda **resolución de activo/BD de este modo compacto** entra por `public.lf_router_resolve_v1`. Cada llamada de ese contrato pasa `action_hint` explícito y omite por completo `target_hint`. En `EJECUCION_PERFIL_LF` no se invoca esta función como primer filtro: la entrada es Stage 1 por contexto V2; el perfil resuelve la pantalla y propone mejoras sin escribir.
 
 
 ### 2.1 Guard blando de desviación de ruta
@@ -168,7 +171,10 @@ El costo observado fue de 1.4 a 2.4 puntos porcentuales de ahorro. La v1.0 conse
 
 Rehidratación del payload completo desde la proyección v0.2, comparada por `md5` contra la salida real del Router en modo ROUTER: 6 de 6 idénticas, ninguna clave distinta.
 
-## 9. Resolución canónica
+## 9. Resolución canónica de activos y DB (no de ejecución de perfiles)
+
+**Precedencia para ejecución de perfiles:** ante "entra por el Router y mejora/completa las reglas de Login B2B", conservar la solicitud original en `lf_router_pipeline_context_begin_v2`, construir/validar Stage 1 V2 con canal `PRODUCTO` y alcance de pantalla todavía `UNRESOLVED`, solicitar selección semántica entre perfiles CURRENT y continuar sólo con Gate 2 `READY` mediante `HANDOFF_CONTEXT_TO_SELECTED_PROFILE`. Si el resolvedor de activos V1 devuelve `BLOCK_ASSET_TYPE_UNRESOLVED` o `BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED` para ese texto, **no reinterpretar ese error como bloqueo de `EJECUCION_PERFIL_LF`**. La entrada oficial de perfiles y su readback están en [runbook §6.9](../../ops/runbook-profiles-lf.md). Cualquier cambio de regla posterior usa una operación gobernada distinta.
+
 
 ### 9.1 Regla de invocación
 
