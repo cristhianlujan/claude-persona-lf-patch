@@ -283,6 +283,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: PG-02 candidate exact-head regressions (advisory only)
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02
+          for test in test_*.py; do
+            echo "PG02_ADVISORY_RUNNING=$test"
+            python3 "$test"
+          done
+          echo "PG02_ADVISORY_ALL_TEST_SCRIPTS_PASS"
+
       - name: Execute ACT-0001 Stage1 V1/V2 and Stage2 handoff regression tests
         run: |
           set -euo pipefail
@@ -739,12 +749,3 @@ jobs:
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
 
-      - name: PG-02 candidate exact-head regressions (advisory only)
-        run: |
-          set -euo pipefail
-          cd sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02
-          for test in test_*.py; do
-            echo "PG02_ADVISORY_RUNNING=$test"
-            python3 "$test"
-          done
-          echo "PG02_ADVISORY_ALL_TEST_SCRIPTS_PASS"
