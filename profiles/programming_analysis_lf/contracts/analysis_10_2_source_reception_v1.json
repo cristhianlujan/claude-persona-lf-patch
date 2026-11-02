@@ -4,6 +4,7 @@
   "unit": "A1_SUBSTEP_10_2 / SOURCE_LOCATION",
   "purpose": "Receive business-scoped canonical source references from governed authority adapter, never issue database queries in model or invent source refs.",
   "prerequisites": [
+    "10.1.profile_code and 10.1.operation_code verified against same canonical RUN",
     "10.1 exact payload readback",
     "canonical RUN from Router",
     "business LF binding",
@@ -50,7 +51,10 @@
     "ack_is_structural_only": true,
     "real_transport_receipt_required_for_operational_pass": true,
     "checkpoint_runtime_owner": "existing lease-fenced RUN checkpoint",
-    "explicit_target_type_and_code_must_match": true
+    "explicit_target_type_and_code_must_match": true,
+    "same_profile_code": true,
+    "same_operation_code": true,
+    "prohibit_parallel_profile": true
   },
   "output": [
     "RECEIVED_CANDIDATE",
@@ -64,5 +68,7 @@
     "MODEL_RECEIPT_VERIFIED",
     "IMPLEMENTATION_EXISTS"
   ],
-  "next_step": "10.3 validates exact source currentness, rule statuses, dependencies and sufficiency"
+  "next_step": "10.3 validates exact source currentness, rule statuses, dependencies and sufficiency",
+  "owner_profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF",
+  "owner_operation_code": "EJECUCION_PERFIL_LF"
 }
