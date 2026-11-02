@@ -41,6 +41,36 @@ Consumer regression: `test_pg01_authority_attestations_v1.sql` (path fixed to th
 
 A synthetic positive does **not** accredit an authentic Supabase verification.
 
+Executed on PostgreSQL **17.6** (theseus-rs portable 17.6.0, tarball sha256
+`19dbf09f0fc33255ff7596fc3ceb7696647286dd15fdf60f3f65c583aae6ad5d`) and 16.15: 38/38 each.
+Added cases: creator membership is ADMIN-only (ADR-EKB-030), the migration fails closed if
+`createrole_self_grant` would give `postgres` SET/INHERIT, and two RESIDUAL cases (below).
+
+## Architecture: conflict with PROG-ADR-AUTH-001 (requires owner decision)
+
+`transversal.decision_log` keeps **PROG-ADR-AUTH-001** (16/08), **-002** (25/08) and **-003**
+(26/08) as `vigente`: Programming Agent authority must not depend on dedicated PostgreSQL
+logins/`session_user`; reason: such logins are not independent of the PostgreSQL control plane.
+`lf_pg01_authority_attestations_v1` (29/10) re-introduced exactly that gate for PG-01 D-A/D-B
+without a superseding ADR. This PR only provisions what that migration already requires; it does
+not create the conflict, but it makes it operational.
+
+The ADR's reason is reproduced here as RESIDUAL cases: `postgres` holds ADMIN on the logins
+(implicit creator grant, same as `lf_runtime_readback_oidc_writer`) and can rotate a login secret
+and then authenticate as it. Independence therefore equals custody separation of the `postgres`
+credential vs. each login secret (plus platform `supabase_admin`).
+
+Options for the owner (none is implemented here):
+1. Record a scoped exception ADR for PG-01 D-A/D-B (dedicated logins, custody rules, acceptance of
+   the residual) through its own governed write, then merge this PR.
+2. Keep PROG-ADR-AUTH-001/002 and re-base the PG-01 guards on GitHub OIDC identity (separate,
+   larger change to the 29/10 migration); this PR would then be dropped.
+
+Unaffected consumers (read-only check 02/11): only the two PG-01 guards and the historical
+`programacion.fn_guard_authority_attestation_insert` call `fn_assert_external_authority_session`;
+no live gate enumerates `lf_%` roles; `fn_governance_role_separation_v7_valid` checks only its own
+two roles.
+
 ## Activation (Supabase admin, after Train applies the migration)
 
 1. Set each secret out-of-band from a psql session as `postgres`, with client-side hashing:

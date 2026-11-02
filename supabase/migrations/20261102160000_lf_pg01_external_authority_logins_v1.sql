@@ -61,6 +61,13 @@ BEGIN
   WHERE rolname IN ('lf_pg01_verifier_login','lf_pg01_auditor_login')
     AND (NOT rolcanlogin OR rolsuper OR rolcreatedb OR rolcreaterole OR rolinherit OR rolreplication OR rolbypassrls);
  IF n_bad_attr <> 0 THEN RAISE EXCEPTION 'PG01_EXTERNAL_LOGIN_NOT_LEAST_PRIVILEGE'; END IF;
+ -- ADR-EKB-030: the creator's implicit membership in the new logins must stay ADMIN-only
+ -- (SET=false, INHERIT=false), as for lf_runtime_readback_oidc_writer.
+ IF EXISTS (SELECT 1 FROM pg_auth_members m JOIN pg_roles g ON g.oid=m.roleid
+             WHERE g.rolname IN ('lf_pg01_verifier_login','lf_pg01_auditor_login')
+               AND (m.set_option OR m.inherit_option)) THEN
+   RAISE EXCEPTION 'PG01_EXTERNAL_LOGIN_ADMIN_MEMBERSHIP_NOT_ADMIN_ONLY';
+ END IF;
 END $post$;
 
 COMMIT;

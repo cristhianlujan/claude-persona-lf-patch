@@ -85,6 +85,11 @@ expect APPLY_as_postgres '^OK' postgres "$PW_PG" "$(cat "$MIG_PROV")"
 expect APPLY_rerun_fail_closed 'ERR:.*PG01_EXTERNAL_LOGIN_ALREADY_EXISTS_REVIEW_MANUALLY' postgres "$PW_PG" "$(cat "$MIG_PROV")"
 expect CAT_exact_memberships '^OK:lf_pg01_auditor_login>programacion_auditor:true:false:false lf_pg01_verifier_login>programacion_verifier:true:false:false *$' postgres "$PW_PG" \
  "select l.rolname||'>'||g.rolname||':'||m.set_option||':'||m.inherit_option||':'||m.admin_option from pg_auth_members m join pg_roles g on g.oid=m.roleid join pg_roles l on l.oid=m.member where l.rolname like 'lf_pg01_%' order by 1"
+expect CAT_creator_membership_admin_only '^OK:postgres>lf_pg01_auditor_login:false:false:true postgres>lf_pg01_verifier_login:false:false:true *$' postgres "$PW_PG" \
+ "select l.rolname||'>'||g.rolname||':'||m.set_option||':'||m.inherit_option||':'||m.admin_option from pg_auth_members m join pg_roles g on g.oid=m.roleid join pg_roles l on l.oid=m.member where g.rolname like 'lf_pg01_%' order by 1"
+expect RED_self_grant_set_rejected 'ERR:.*PG01_EXTERNAL_LOGIN_ADMIN_MEMBERSHIP_NOT_ADMIN_ONLY' postgres "$PW_PG" \
+ "SET createrole_self_grant='set'; $(sed -e 's/lf_pg01_verifier_login/lf_pg01_x_verifier_login/g; s/lf_pg01_auditor_login/lf_pg01_x_auditor_login/g' "$MIG_PROV")"
+expect CAT_self_grant_attempt_left_no_roles '^OK:0 *$' postgres "$PW_PG" "select count(*) from pg_roles where rolname like 'lf_pg01_x_%'"
 expect RED1_null_password_cannot_login 'ERR:.*password authentication failed' lf_pg01_verifier_login "$PW_VER" "select 1"
 
 echo "== admin sets secrets out-of-band (simulated; random, not persisted) =="
@@ -132,6 +137,13 @@ if [[ "$(cat "$WORK/rb.txt")" == "lf_pg01_auditor_login|lf_pg01_verifier_login|P
   PASS=$((PASS+1)); echo "PASS G2_readback_two_principals (superuser readback)" | tee -a "$LOG"
 else FAIL=$((FAIL+1)); echo "FAIL G2_readback_two_principals :: $(cat "$WORK/rb.txt")" | tee -a "$LOG"; fi
 expect N_service_role_read_attestations 'ERR:.*permission denied' authenticator "$PW_AUTH" "SET ROLE service_role; SELECT 1 FROM private.lf_pg01_review_attestations_v1"
+
+echo "== RESIDUAL trust boundary (documented, expected to SUCCEED; see PROG-ADR-AUTH-001) =="
+# postgres holds ADMIN on the logins (implicit creator grant, same as lf_runtime_readback_oidc_writer),
+# so whoever holds the postgres credential can rotate a login secret and then act as that login.
+PW_STOLEN=$(rnd)
+expect RESIDUAL_postgres_can_rotate_login_secret '^OK' postgres "$PW_PG" "ALTER ROLE lf_pg01_auditor_login PASSWORD '$PW_STOLEN'"
+expect RESIDUAL_rotated_secret_authenticates '^OK:lf_pg01_auditor_login *$' lf_pg01_auditor_login "$PW_STOLEN" "select session_user"
 
 TOTAL=$((PASS+FAIL))
 echo "SERVER_VERSION=$VERSION PASS=$PASS FAIL=$FAIL TOTAL=$TOTAL"
