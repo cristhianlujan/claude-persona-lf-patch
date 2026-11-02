@@ -142,10 +142,17 @@ def evaluate(event):
             "tool_receipts": receipts,
             "final_text": final,
         })
-        if shared["decision"] == "BLOCK":
+        if (shared["decision"] == "BLOCK"
+                and shared["reason_code"] != "GATE2_CONTEXT_UNAUTHENTICATED"):
             return {"decision": "block", "reason": PRE_GATE2_REASON}
-        if shared["decision"] == "ALLOW_TRUTHFUL_BLOCK":
+        # Honest NOT_EXECUTED reports may end the turn. Only a structured,
+        # Router-observed blocker is certified (ALLOW_TRUTHFUL_BLOCK); the
+        # UNVERIFIED variant is allowed to stop but never counts as success.
+        if shared["decision"] in ("ALLOW_TRUTHFUL_BLOCK",
+                                  "REPORT_NOT_EXECUTED_UNVERIFIED"):
             return None
+        # GATE2_CONTEXT_UNAUTHENTICATED falls through: the existing terminal
+        # readback guard below is stricter than the shared classifier.
         # DEFER_TO_GATE2_RECEIPT_GUARD is NOT a PASS. The existing
         # same-run terminal-readback check continues below.
 
