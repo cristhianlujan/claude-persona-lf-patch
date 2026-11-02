@@ -16,6 +16,8 @@ spec.loader.exec_module(M)
 def request(intent="CREATE", literal="Programar el login B2B LF"):
     return {
         "business": "LF",
+        "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF",
+        "operation_code": "EJECUCION_PERFIL_LF",
         "execution_id": "EXEC-ANALYSIS-CANDIDATE-TEST",
         "literal_request": literal,
         "request_sha256": sha256(literal.encode("utf-8")).hexdigest(),
@@ -37,6 +39,8 @@ class DevelopmentEntryTests(unittest.TestCase):
         self.assertEqual(r["implementation_state"],"UNVERIFIED_PENDING_10_4")
         self.assertEqual(r["authority_state"],"UNVERIFIED_PENDING_10_2")
         self.assertEqual(r["business"],"LF")
+        self.assertEqual(r["profile_code"],"PERFIL-PROGRAMMING-ANALYSIS-LF")
+        self.assertEqual(r["operation_code"],"EJECUCION_PERFIL_LF")
         self.assertFalse(r["programming_authorized"])
         self.assertFalse(r["persisted"])
 
@@ -117,6 +121,22 @@ class DevelopmentEntryTests(unittest.TestCase):
         self.assertIs(r.get("programming_authorized"),False)
         x=request(); x["business"]="SALY"
         self.assertIs(M.classify(x).get("programming_authorized"),False)
+
+    def test_19_wrong_profile_blocks(self):
+        x=request(); x["profile_code"]="PERFIL-OTHER"
+        self.blocked(x,"ANALYSIS_PROFILE_BINDING_REQUIRED")
+
+    def test_20_missing_profile_blocks(self):
+        x=request(); del x["profile_code"]
+        self.blocked(x,"ANALYSIS_PROFILE_BINDING_REQUIRED")
+
+    def test_21_wrong_operation_blocks(self):
+        x=request(); x["operation_code"]="ANALYSIS_PARALLEL_ENGINE"
+        self.blocked(x,"CANONICAL_OPERATION_BINDING_REQUIRED")
+
+    def test_22_missing_operation_blocks(self):
+        x=request(); del x["operation_code"]
+        self.blocked(x,"CANONICAL_OPERATION_BINDING_REQUIRED")
 
 
 if __name__=="__main__":
