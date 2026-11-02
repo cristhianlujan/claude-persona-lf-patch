@@ -126,6 +126,8 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
                     applicable = scoped_layers.get(domain)
                     if not isinstance(applicable,list) or not applicable:
                         raise PG02Blocked("MISSING:DOMAIN_STACK_BINDING:"+str(domain))
+                    if any(not isinstance(layer, str) or not layer for layer in applicable) or len(set(applicable)) != len(applicable):
+                        raise PG02Blocked("CONTRADICTION:DOMAIN_STACK_LAYERS_INVALID:"+str(domain))
                     if active_layers.intersection(applicable):
                         domains.add(domain)
                     else:
