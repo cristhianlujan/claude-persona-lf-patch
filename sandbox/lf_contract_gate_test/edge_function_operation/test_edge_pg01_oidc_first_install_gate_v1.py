@@ -14,6 +14,11 @@ def sample():
                 source_parity='EXACT_MAIN_BUNDLE_VERIFIED',
                 failure_remediation='GOVERNED_DISABLE_AND_READBACK_VERIFIED')
 class Tests(unittest.TestCase):
+    def test_workflow_remains_fail_closed_before_operations_activation(self):
+        wf=(Path(__file__).resolve().parents[3]/'.github/workflows/lf-edge-deploy-credential-readback.yml').read_text(encoding='utf8')
+        block=wf.split('  deploy-pg01-oidc:',1)[1]
+        self.assertIn("if: ${{ false && github.event_name == 'workflow_dispatch' && inputs.action == 'deploy-pg01-oidc' }}",block)
+        self.assertIn('supabase functions deploy "$PG01_OIDC_SLUG"',block)
     def test_invalid_packet(self):
         self.assertEqual(mod.assess(None)['blockers'],['SNAPSHOT_INVALID'])
     def test_complete_claim_is_not_permission(self):
