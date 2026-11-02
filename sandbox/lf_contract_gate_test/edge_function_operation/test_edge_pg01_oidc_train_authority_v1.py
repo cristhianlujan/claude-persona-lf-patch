@@ -1,0 +1,37 @@
+import importlib.util
+from pathlib import Path
+import unittest
+
+p=Path(__file__).with_name("edge_pg01_oidc_train_authority_v1.py")
+s=importlib.util.spec_from_file_location("pg01_train_auth",p)
+m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+MAIN="a"*40
+HEAD="b"*40
+def fixture():
+    pr={"state":"closed","merged_at":"2026-11-02T00:00:00Z","merge_commit_sha":MAIN,"base":{"ref":"main"},"head":{"sha":HEAD}}
+    status={"sha":HEAD,"statuses":[{"context":"lf-merge-train/verified","state":"success","creator":{"type":"Bot","login":"lf-merge-train[bot]"}}]}
+    run={"status":"completed","conclusion":"success","path":".github/workflows/lf-migration-merge-train.yml","event":"pull_request_target","head_sha":MAIN,"repository":{"full_name":"cristhianlujan/claude-persona-lf-patch"}}
+    return [MAIN,pr,status,run]
+class Tests(unittest.TestCase):
+    def test_pass(self):self.assertIsNone(m.qualify(*fixture()))
+    def test_unmerged(self):
+        x=fixture();x[1]["merged_at"]=None;self.assertEqual(m.qualify(*x),"PR_NOT_MERGED")
+    def test_main_mismatch(self):
+        x=fixture();x[1]["merge_commit_sha"]="c"*40;self.assertEqual(m.qualify(*x),"MERGE_SHA_NOT_CURRENT_MAIN")
+    def test_status_wrong_head(self):
+        x=fixture();x[2]["sha"]="c"*40;self.assertEqual(m.qualify(*x),"STATUS_HEAD_MISMATCH")
+    def test_status_self_issued(self):
+        x=fixture();x[2]["statuses"][0]["creator"]={"type":"User","login":"paulozterra"};self.assertEqual(m.qualify(*x),"STATUS_NOT_BOT_ISSUED")
+    def test_no_status(self):
+        x=fixture();x[2]["statuses"]=[];self.assertEqual(m.qualify(*x),"INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS")
+    def test_duplicated_status(self):
+        x=fixture();x[2]["statuses"]*=2;self.assertEqual(m.qualify(*x),"INDEPENDENT_TRAIN_STATUS_MISSING_OR_AMBIGUOUS")
+    def test_wrong_run(self):
+        x=fixture();x[3]["path"]=".github/workflows/other.yml";self.assertEqual(m.qualify(*x),"TRAIN_WORKFLOW_MISMATCH")
+    def test_wrong_event(self):
+        x=fixture();x[3]["event"]="workflow_dispatch";self.assertEqual(m.qualify(*x),"TRAIN_EVENT_MISMATCH")
+    def test_run_fail(self):
+        x=fixture();x[3]["conclusion"]="failure";self.assertEqual(m.qualify(*x),"TRAIN_RUN_NOT_SUCCESS")
+    def test_stale_main(self):
+        x=fixture();x[3]["head_sha"]="c"*40;self.assertEqual(m.qualify(*x),"TRAIN_MAIN_MISMATCH")
+if __name__=="__main__":unittest.main()
