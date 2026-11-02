@@ -23,27 +23,15 @@ KNOWN_PROVIDER_FAILURE = re.compile(r'\b(?:TOOL_ACCESS_DENIED|CONNECTOR_DENIED|'
                                     r'PROVIDER_BLOCKED_PENDING_REVIEW|'
                                     r'PROVIDER_BLOCKED|PERMISSION_DENIED|'
                                     r'ERROR_HTTP_[45]\d\d)\b', re.I)
-# Pre-Gate2 semantic blockers + fallback to advisory-only dispatch are not a
-# governed execution. This guards premature close; it never selects a profile.
-PRE_GATE2_SCOPE_BLOCK = re.compile(
-    r'\b(?:BLOCK_SCOPE_SEMANTICS_UNATTESTED|'
-    r'BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED)\b'
-)
-PROPOSE_ONLY_RECEIPT = re.compile(r'\bPROPOSE_ONLY_OPEN\b')
-PRE_GATE2_FALSE_CLOSE = re.compile(
-    r'\b(?:COMPLETED|READY|PASS)\b|100\s*%|'
-    r'\b(?:definici[oó]n|regla|pol[ií]tica)\s+'
-    r'(?:(?:can[oó]nica|oficial)\s+)?'
-    r'(?:creada|registrada|publicada|completada|finalizada)\b', re.I
-)
+# Shared pre-Gate2 classifier is also callable by ChatGPT (GPT_NATIVE).
+# Claude Code's existing Stop hook is its local automatic entry point.
+from lf_pre_gate2_consumer_gate_v1 import evaluate as evaluate_shared_continuity
+
 PRE_GATE2_REASON = (
-    'LF PRE_GATE2_ROUTE_CONTINUITY_BLOCK: ACT-0001 no autorizó una ruta. '
-    'PROPOSE_ONLY_OPEN es exploración/propuesta, nunca continuidad del run. '
-    'Retoma la resolución semántica oficial y sigue la operación gobernada '
-    'con run nuevo y readback. Si no existe sujeto canónico o autoridad, '
-    'cierra honestamente con BLOCK_SCOPE_SEMANTICS_UNATTESTED, '
-    'NOT_EXECUTED y NO_CANONICAL_EFFECT, sin reclamar 100%, PASSED, '
-    'regla/política creada ni usar un Issue manual como recibo.'
+    "LF PRE_GATE2_ROUTE_CONTINUITY_BLOCK: no sustituir ACT-0001 por "
+    "PROPOSE_ONLY_OPEN. Retoma la resolución semántica gobernada; "
+    "si es imposible, informa NOT_EXECUTED / NO_CANONICAL_EFFECT "
+    "con bloqueo real y evidencia, sin declarar PASS ni 100%."
 )
 CLOSED_CLAIM = re.compile(r'\bCOMPLETED\b', re.I)
 READY_CLAIM = re.compile(r'\bREADY\b', re.I)
@@ -146,24 +134,19 @@ def evaluate(event):
     if event.get('stop_hook_active') is True:
         return None
     prompt, receipts = read_current_turn(event.get('transcript_path'))
-    # The existing Gate2 proof gate below is authoritative once actual Gate2
-    # evidence exists. Before Gate2, a blocked Router plus an advisory dispatch
-    # must NOT be silently turned into a completed governed task.
-    pre_gate2_block = PRE_GATE2_SCOPE_BLOCK.search(receipts)
-    if (prompt and (ACTION.search(prompt) or APPROVAL.fullmatch(prompt.strip()))
-        and pre_gate2_block
-        and PROPOSE_ONLY_RECEIPT.search(receipts)
-        and GATE2 not in receipts):
-        # A provider error does not license a success claim, even with NOT_EXECUTED.
-        if PRE_GATE2_FALSE_CLOSE.search(final):
-            return {'decision': 'block', 'reason': PRE_GATE2_REASON}
-        if (KNOWN_PROVIDER_FAILURE.search(final) and 'NOT_EXECUTED' in final
-            and KNOWN_PROVIDER_FAILURE.search(receipts)):
+    if prompt and (ACTION.search(prompt) or APPROVAL.fullmatch(prompt.strip())):
+        shared = evaluate_shared_continuity({
+            "consumer_mode": "CLAUDE_NATIVE",
+            "request_text": prompt,
+            "tool_receipts": receipts,
+            "final_text": final,
+        })
+        if shared["decision"] == "BLOCK":
+            return {"decision": "block", "reason": PRE_GATE2_REASON}
+        if shared["decision"] == "ALLOW_TRUTHFUL_BLOCK":
             return None
-        if all(marker in final for marker in (
-                pre_gate2_block.group(), 'NOT_EXECUTED', 'NO_CANONICAL_EFFECT')):
-            return None
-        return {'decision': 'block', 'reason': PRE_GATE2_REASON}
+        # DEFER_TO_GATE2_RECEIPT_GUARD is NOT a PASS. The existing
+        # same-run terminal-readback check continues below.
 
     if prompt:
         # Explanations, quote reviews and 'how does this work?' are not
