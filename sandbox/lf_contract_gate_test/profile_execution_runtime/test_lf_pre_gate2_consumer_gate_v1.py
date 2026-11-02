@@ -59,12 +59,16 @@ class BothNativeConsumers(unittest.TestCase):
                 r = self.case(mode, final, RECEIPTS + " TOOL_ACCESS_DENIED")
                 self.assertEqual(r["decision"], "ALLOW_TRUTHFUL_BLOCK")
 
-    def test_trusted_pre_gate2_block_alone_is_not_advisory_detour(self):
+    def test_router_block_without_advisory_never_justifies_success(self):
         for mode in ("GPT_NATIVE", "CLAUDE_NATIVE"):
             with self.subTest(mode=mode):
-                r = self.case(mode, "Bloqueado por el Router", "BLOCK_SCOPE_SEMANTICS_UNATTESTED")
-                self.assertEqual(r["decision"], "NOT_APPLICABLE")
+                blocked = "BLOCK_SCOPE_SEMANTICS_UNATTESTED"
+                r = self.case(mode, "Bloqueado por el Router", blocked)
+                self.assertEqual(r["decision"], "ALLOW_TRUTHFUL_BLOCK")
                 self.assertFalse(r["canonical_effect_allowed"])
+                r = self.case(mode, "Definición registrada — 100%", blocked)
+                self.assertEqual(r["decision"], "BLOCK")
+
 
     def test_invalid_consumer_or_missing_evidence_fails_closed(self):
         for mode in ("GPT", "CLAUDE", None):
