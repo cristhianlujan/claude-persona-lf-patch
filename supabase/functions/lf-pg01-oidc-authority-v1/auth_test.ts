@@ -44,6 +44,7 @@ Deno.test("PG-01 OIDC boundary matrix (synthetic)", async () => {
     ["other_repository_id", sign(k.privateKey, claimsFor(S, "1001", { repository_id: "1" }), A), S, subjectPayload(), "OIDC_REPOSITORY_MISMATCH"],
     ["other_branch", sign(k.privateKey, claimsFor(S, "1001", { ref: "refs/heads/feature" }), A), S, subjectPayload(), "OIDC_REF_MISMATCH"],
     ["pull_request_event", sign(k.privateKey, claimsFor(S, "1001", { event_name: "pull_request" }), A), S, subjectPayload(), "OIDC_EVENT_MISMATCH"],
+    ["unexpected_reusable_claim", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: POLICY[S].workflow }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["deploy_workflow", sign(k.privateKey, claimsFor(S, "1001", { job_workflow_ref: REPO + "/.github/workflows/lf-runtime-independent-readback.yml@" + REF }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["auditor_workflow_as_verifier", sign(k.privateKey, claimsFor(S, "1001", { workflow_ref: POLICY[R].workflow, job_workflow_ref: POLICY[R].workflow }), A), S, subjectPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
     ["verifier_workflow_as_auditor", sign(k.privateKey, claimsFor(R, "2001", { workflow_ref: POLICY[S].workflow, job_workflow_ref: POLICY[S].workflow }), AR), R, reviewPayload(), "OIDC_WORKFLOW_REF_MISMATCH"],
@@ -84,6 +85,6 @@ Deno.test("PG-01 OIDC handler never records an unauthenticated request (syntheti
   if (r1.status !== 401 || r2.status !== 401 || r3.status !== 422 || r4.status !== 405 || calls !== 0)
     throw Error(`unexpected ${r1.status} ${r2.status} ${r3.status} ${r4.status} calls=${calls}`);
   const ok = await post(await sign(k.privateKey, claimsFor(S), POLICY[S].audience), { kind: S, payload: subjectPayload() });
-  if (ok.status !== 200 || calls !== 1) throw Error(`positive ${ok.status} calls=${calls}`);
+  if (ok.status !== 200 || Number(calls) !== 1) throw Error(`positive ${ok.status} calls=${calls}`);
   console.log("PG01_OIDC_HANDLER_SYNTHETIC_PASSED:5");
 });
