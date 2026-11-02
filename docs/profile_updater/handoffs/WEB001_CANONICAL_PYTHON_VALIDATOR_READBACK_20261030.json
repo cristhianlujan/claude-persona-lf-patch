@@ -1,0 +1,53 @@
+{
+  "schema": "LF_WEB001_RUNTIME_VALIDATION_READBACK_V1",
+  "case_id": "WEB-001",
+  "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+  "candidate_source_revision": "ba8d16eeb14b2219ad089f1d74b2386a49b1a4d7",
+  "validation_source": "profiles/systemic_root_cause_repair_lf/validators/validate_pack.py + runtime_validate.py",
+  "official_python_validation": {
+    "run_id": 41160169385,
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41160169385",
+    "job_id": 124415772566,
+    "job_conclusion": "success",
+    "pack": "PASS_SYSTEMIC_ROOT_CAUSE_REPAIR_PACK",
+    "output_schema_error_count": 0,
+    "manifest_schema_error_count": 0,
+    "runtime_valid": true,
+    "runtime_error_count": 0,
+    "runtime_blocking_codes": []
+  },
+  "history": [
+    {
+      "run_id": 41159686368,
+      "pack": "FAIL_MISSING_HISTORICAL_N1N2_FIXTURE",
+      "runtime_error_count": 26
+    },
+    {
+      "run_id": 41160067120,
+      "pack": "PASS",
+      "runtime_error_count": 12,
+      "only_failure": "V06_EDGE_EVIDENCE_NOT_IN_MANIFEST"
+    },
+    {
+      "run_id": 41160169385,
+      "pack": "PASS",
+      "runtime_error_count": 0
+    }
+  ],
+  "source_resolution": "Original N1/N2 negative fixture copied byte-for-byte from PR #3359; canonical external manifest built from 17 true source readbacks, no authoritative owner attributed.",
+  "blocking_design_gap": "ACT-0058 owner unresolved, retry contract >=3 vs >3 mismatch, external consumer liveness unverified; remain NEEDS_MORE_EVIDENCE.",
+  "limits": {
+    "provider_attested": false,
+    "model_cold_run": false,
+    "independent_semantic_review": false,
+    "raw_base_current_tree_available": false,
+    "paired_profile_operational_runs_registered": false,
+    "official_group2_improvement_demonstrated": false,
+    "merge_permitted": false,
+    "production_changed": false
+  },
+  "governance": {
+    "PASE_single_PR_entrypoint": "Restored after removing pull_request test workflow; diagnostic push-only test workflow must also be removed before integration.",
+    "updater_ledger": "Original 11 approved steps remain untouched, no new profile update execution."
+  }
+}

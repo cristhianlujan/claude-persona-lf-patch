@@ -49,6 +49,9 @@
     "contracts/dynamic_method_catalog.v1.json",
     "validators/terminality_gate_v1.py",
     "evals/v07r1_terminality_gate_cases.py",
+    "evals/v08_gap_cascade_cases.py",
+    "evals/v09_exhausted_search_cases.py",
+    "evals/v10_n1_n2_quality_gate_cases.py",
     "contracts/governed_repair_execution_v1.md"
   ],
   "method_revision": "SRCR_V0_7R1",

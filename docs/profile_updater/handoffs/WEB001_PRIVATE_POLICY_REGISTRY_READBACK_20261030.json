@@ -1,0 +1,67 @@
+{
+  "schema": "LF_WEB001_INDEPENDENT_POLICY_REGISTRY_READBACK_V1",
+  "case_id": "WEB-001",
+  "source": "private.lf_reusable_policy_registry_v1",
+  "query": "SELECT statement_timestamp() AS observed_at,policy_code,status,business_scope,channel_scope,capabilities_any,action_families_any,asset_types_any,semantic_descriptor,execution_constraints,source_ref,priority,required,updated_at FROM private.lf_reusable_policy_registry_v1 ORDER BY priority DESC,policy_code LIMIT 5",
+  "observed_at": "2026-10-31 03:30:30.407736+00",
+  "rows": [
+    {
+      "observed_at": "2026-10-31 03:30:30.407736+00",
+      "policy_code": "LF-DESIGN-TOKEN-REFERENCE-POLICY-V1",
+      "status": "VIGENTE",
+      "business_scope": [
+        "LF"
+      ],
+      "channel_scope": [
+        "PRODUCTO",
+        "PROGRAMACION"
+      ],
+      "capabilities_any": [
+        "DESIGN_TOKENS",
+        "VISUAL_DEFINITION",
+        "FRONTEND_IMPLEMENTATION",
+        "UI_BEHAVIOR"
+      ],
+      "action_families_any": [
+        "CREATE",
+        "UPDATE",
+        "REPAIR",
+        "DEFINE",
+        "IMPLEMENT"
+      ],
+      "asset_types_any": [
+        "PANTALLA",
+        "SCREEN",
+        "COMPONENT",
+        "PROTOTYPE",
+        "UI"
+      ],
+      "semantic_descriptor": "Applies when governed visual/UI assets consume Design System values. Preserve canonical token identity instead of persisting resolved literals.",
+      "execution_constraints": [
+        "PERSIST_CANONICAL_TOKEN_NAME_OR_CODE_NOT_LITERAL_VALUE",
+        "FORBID_LITERAL_VISUAL_VALUES_IN_GOVERNED_BINDINGS",
+        "DO_NOT_CREATE_DUPLICATE_VALUE_ALIAS_TOKEN",
+        "VIGENTE_COMPONENT_REQUIRES_VIGENTE_GOVERNED_TOKENS"
+      ],
+      "source_ref": "github://cristhianlujan/claude-persona-lf-patch/main/docs/standards/LF_DESIGN_TOKEN_REFERENCE_POLICY_V1.md",
+      "priority": 50,
+      "required": true,
+      "updated_at": "2026-10-25 05:07:31.964753+00"
+    }
+  ],
+  "row_count": 1,
+  "interpretation": {
+    "intent": "check owner/SUPER_ADMIN allocation for ACT-0058 under LF operation",
+    "matched_applicable_owner_rules": 0,
+    "source_policy": "Design token reference required for visual UI asset types and channels PRODUCTO/PROGRAMACION",
+    "applicability": "NOT_APPLICABLE_TO_ACT0058_OWNER",
+    "scoped_not_global_absence": true,
+    "owner_decision": "UNRESOLVED",
+    "semantic_judge_required": true
+  },
+  "limits": [
+    "One row in this private reusable policy registry does not exclude authority elsewhere",
+    "No runtime state changes or policy writes were made",
+    "This source was rechecked after authoring candidate run and is supplementary audit evidence; does not attest candidate model output"
+  ]
+}
