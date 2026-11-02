@@ -177,6 +177,22 @@ class Gate2StopGuard(unittest.TestCase):
             'El Router bloqueó la resolución; no hay operación ejecutada.')
         self.assertIsNone(module.evaluate(e))
 
+    def test_pre_gate2_alternate_blocker_can_close_only_as_blocked(self):
+        e = self.with_transcript(
+            'Entra por el Router y actualiza las reglas LF',
+            'BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED; PROPOSE_ONLY_OPEN',
+            'BLOCK_UNSTRUCTURED_MUTATION_INTENT_UNATTESTED / NOT_EXECUTED / '
+            'NO_CANONICAL_EFFECT. No se han registrado cambios.')
+        self.assertIsNone(module.evaluate(e))
+
+    def test_pre_gate2_provider_denial_cannot_mask_claimed_completion(self):
+        e = self.with_transcript(
+            'Entra por Router y define regla LF',
+            'BLOCK_SCOPE_SEMANTICS_UNATTESTED; PROPOSE_ONLY_OPEN; '
+            'TOOL_ACCESS_DENIED',
+            'NOT_EXECUTED / TOOL_ACCESS_DENIED. Definición registrada al 100%.')
+        self.assertEqual(module.evaluate(e)['decision'], 'block')
+
     def test_subsequent_valid_gate2_run_uses_existing_terminal_guard(self):
         rid = 'EXEC-PROFILE-GATE2-' + 'A' * 24
         receipts = [
