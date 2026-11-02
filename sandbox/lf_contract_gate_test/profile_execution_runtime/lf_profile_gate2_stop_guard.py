@@ -31,8 +31,10 @@ PRE_GATE2_SCOPE_BLOCK = re.compile(
 )
 PROPOSE_ONLY_RECEIPT = re.compile(r'\bPROPOSE_ONLY_OPEN\b')
 PRE_GATE2_FALSE_CLOSE = re.compile(
-    r'\b(?:COMPLETED|READY|PASS|finalizad[oa]|completad[oa]|aprobada|'
-    r'registrad[oa]|ejecutad[oa])\b|100\s*%', re.I
+    r'\b(?:COMPLETED|READY|PASS)\b|100\s*%|'
+    r'\b(?:definici[oó]n|regla|pol[ií]tica)\s+'
+    r'(?:(?:can[oó]nica|oficial)\s+)?'
+    r'(?:creada|registrada|publicada|completada|finalizada)\b', re.I
 )
 PRE_GATE2_REASON = (
     'LF PRE_GATE2_ROUTE_CONTINUITY_BLOCK: ACT-0001 no autorizó una ruta. '
