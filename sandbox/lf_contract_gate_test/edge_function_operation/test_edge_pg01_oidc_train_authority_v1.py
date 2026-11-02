@@ -13,6 +13,16 @@ def fixture():
     run={"status":"completed","conclusion":"success","workflow_id":375839198,"id":41514055490,"run_started_at":"2026-11-02T00:00:00Z","path":".github/workflows/lf-migration-merge-train.yml","event":"pull_request_target","head_sha":HEAD,"repository":{"full_name":"cristhianlujan/claude-persona-lf-patch"}}
     return [MAIN,pr,status,run]
 class Tests(unittest.TestCase):
+    def test_deploy_binding_positive(self):
+        self.assertIsNone(m.qualify_deploy_binding(MAIN,"lf-pg01-oidc-authority-v1",MAIN,["supabase/functions/lf-pg01-oidc-authority-v1/index.ts","supabase/functions/lf-pg01-oidc-authority-v1/auth.ts"]))
+    def test_deploy_binding_wrong_target(self):
+        self.assertEqual(m.qualify_deploy_binding(MAIN,"other",MAIN,list(m.TARGET_PATHS)),"DEPLOY_TARGET_MISMATCH")
+    def test_deploy_binding_wrong_commit(self):
+        self.assertEqual(m.qualify_deploy_binding(MAIN,m.TARGET_SLUG,HEAD,list(m.TARGET_PATHS)),"DEPLOY_CHECKOUT_SHA_MISMATCH")
+    def test_deploy_binding_wrong_source(self):
+        self.assertEqual(m.qualify_deploy_binding(MAIN,m.TARGET_SLUG,MAIN,["other.ts"]),"DEPLOY_SOURCE_PATHS_MISMATCH")
+    def test_deploy_binding_repeated_path(self):
+        self.assertEqual(m.qualify_deploy_binding(MAIN,m.TARGET_SLUG,MAIN,["other.ts","other.ts"]),"DEPLOY_SOURCE_PATHS_MISMATCH")
     def test_pass(self):self.assertIsNone(m.qualify(*fixture()))
     def test_unmerged(self):
         x=fixture();x[1]["merged_at"]=None;self.assertEqual(m.qualify(*x),"PR_NOT_MERGED")

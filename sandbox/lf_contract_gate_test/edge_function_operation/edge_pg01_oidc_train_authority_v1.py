@@ -17,6 +17,30 @@ def parse_time(value):
         return None
 
 
+TARGET_REPO = "cristhianlujan/claude-persona-lf-patch"
+TARGET_SLUG = "lf-pg01-oidc-authority-v1"
+TARGET_PATHS = frozenset({
+    "supabase/functions/lf-pg01-oidc-authority-v1/index.ts",
+    "supabase/functions/lf-pg01-oidc-authority-v1/auth.ts",
+})
+
+
+def qualify_deploy_binding(main: str, slug: str, checked_out_sha: str, source_paths: object) -> str | None:
+    """Fail-closed binding of a candidate to the exact deployment target.
+
+    This is not a replay-protected permit or an operational deploy authorization.
+    """
+    if slug != TARGET_SLUG:
+        return "DEPLOY_TARGET_MISMATCH"
+    if checked_out_sha != main:
+        return "DEPLOY_CHECKOUT_SHA_MISMATCH"
+    if not isinstance(source_paths, list) or any(not isinstance(p, str) for p in source_paths):
+        return "DEPLOY_SOURCE_PATHS_INVALID"
+    if set(source_paths) != TARGET_PATHS or len(source_paths) != len(TARGET_PATHS):
+        return "DEPLOY_SOURCE_PATHS_MISMATCH"
+    return None
+
+
 def qualify(main: str, pr: object, status: object, run: object) -> str | None:
     if not isinstance(main, str) or len(main) != 40 or any(c not in "0123456789abcdef" for c in main):
         return "MAIN_SHA_INVALID"
