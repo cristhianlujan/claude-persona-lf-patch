@@ -29,6 +29,7 @@ def fixture():
            "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF"}
     previous = A1.classify({
         "business": "LF", "execution_id": run["execution_id"],
+        "profile_code": run["profile_code"], "operation_code": run["operation_code"],
         "literal_request": literal, "request_sha256": req_sha,
         "intent_kind": "CREATE",
         "intent_evidence_refs": ["fixture://original", "fixture://router"],
@@ -36,7 +37,8 @@ def fixture():
     transfer = {"from_step": "10.1", "to_step": "10.2",
                 "sender_payload_sha256": A2.digest(previous),
                 "execution_id": run["execution_id"], "request_sha256": req_sha,
-                "business": "LF", "target_code": "B2B-AUTH-001", "target_type": "SCREEN"}
+                "business": "LF", "profile_code": run["profile_code"],
+                "operation_code": run["operation_code"], "target_code": "B2B-AUTH-001", "target_type": "SCREEN"}
     sources = {"status": "FOUND", "business": "LF", "source_namespace": "lf_ops",
                "target_type": "SCREEN", "target_code": "B2B-AUTH-001",
                "definition_id": 51, "definition_status": "CANDIDATO", "definition_version": "v0.5",
@@ -60,6 +62,8 @@ class SourceReceiveTests(unittest.TestCase):
         output = A2.receive(p, r, t, s)
         self.assertEqual(output["status"], "RECEIVED_CANDIDATE")
         self.assertEqual(output["definition_id"], 51)
+        self.assertEqual(output["profile_code"], r["profile_code"])
+        self.assertEqual(output["operation_code"], r["operation_code"])
         self.assertEqual(output["definition_status"], "CANDIDATO")
         self.assertEqual(output["source_currentness"], "NOT_ATTESTED")
         self.assertEqual(output["next_action"], "10.3")
@@ -175,6 +179,39 @@ class SourceReceiveTests(unittest.TestCase):
         s["rule_count"] = 0
         s.pop("rule_relation_source_ref")
         self.assertEqual(A2.receive(p, r, t, s)["status"], "RECEIVED_CANDIDATE")
+
+    def test_22_previous_profile_drift_blocks(self):
+        p, r, t, s = fixture()
+        p["profile_code"] = "PERFIL-OTHER"
+        t["sender_payload_sha256"] = A2.digest(p)
+        self.bad(p, r, t, s, "PROFILE_TRANSPORT_BINDING_MISMATCH")
+
+    def test_23_transfer_profile_drift_blocks(self):
+        p, r, t, s = fixture()
+        t["profile_code"] = "PERFIL-OTHER"
+        self.bad(p, r, t, s, "PROFILE_TRANSPORT_BINDING_MISMATCH")
+
+    def test_24_previous_operation_drift_blocks(self):
+        p, r, t, s = fixture()
+        p["operation_code"] = "PARALLEL_ENGINE"
+        t["sender_payload_sha256"] = A2.digest(p)
+        self.bad(p, r, t, s, "OPERATION_TRANSPORT_BINDING_MISMATCH")
+
+    def test_25_transfer_operation_drift_blocks(self):
+        p, r, t, s = fixture()
+        t["operation_code"] = "PARALLEL_ENGINE"
+        self.bad(p, r, t, s, "OPERATION_TRANSPORT_BINDING_MISMATCH")
+
+    def test_26_missing_transfer_profile_blocks(self):
+        p, r, t, s = fixture()
+        del t["profile_code"]
+        self.bad(p, r, t, s, "PROFILE_TRANSPORT_BINDING_MISMATCH")
+
+    def test_27_missing_10_1_profile_blocks(self):
+        p, r, t, s = fixture()
+        del p["profile_code"]
+        t["sender_payload_sha256"] = A2.digest(p)
+        self.bad(p, r, t, s, "PROFILE_TRANSPORT_BINDING_MISMATCH")
 
 
 if __name__ == "__main__":
