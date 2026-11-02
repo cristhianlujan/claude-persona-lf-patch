@@ -24,7 +24,7 @@ export function requirePg01Claims(kind: Kind, c: JWTPayload, payload: Record<str
   if (c.repository !== REPO || val(c.repository_id) !== REPO_ID) throw Error("OIDC_REPOSITORY_MISMATCH");
   if (c.ref !== REF) throw Error("OIDC_REF_MISMATCH");
   if (c.event_name !== "workflow_dispatch") throw Error("OIDC_EVENT_MISMATCH");
-  if (c.workflow_ref !== p.workflow || c.job_workflow_ref !== p.workflow) throw Error("OIDC_WORKFLOW_REF_MISMATCH");
+  if (c.workflow_ref !== p.workflow || c.job_workflow_ref !== undefined) throw Error("OIDC_WORKFLOW_REF_MISMATCH");
   if (c.environment !== p.environment) throw Error("OIDC_ENVIRONMENT_MISMATCH");
   if (!/^[0-9]+$/.test(val(c.run_id)) || !/^[0-9]+$/.test(val(c.run_attempt))) throw Error("OIDC_RUN_INVALID");
   if (payload === null) return; // offline re-verification of a stored receipt

@@ -12,7 +12,7 @@ export async function testKeys(kid = "pg01-test") {
 export function claimsFor(kind: Kind, run = "1001", over: Record<string, unknown> = {}) {
   const p = POLICY[kind];
   return { repository: REPO, repository_id: REPO_ID, ref: REF, event_name: "workflow_dispatch",
-    workflow_ref: p.workflow, job_workflow_ref: p.workflow, environment: p.environment,
+    workflow_ref: p.workflow, environment: p.environment,
     run_id: run, run_attempt: "1", ...over };
 }
 export async function sign(privateKey: CryptoKey, claims: Record<string, unknown>, aud: string,
