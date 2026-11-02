@@ -91,8 +91,11 @@ def classify(snapshot, mapping, *, expected_catalog_ref=None, expected_catalog_s
     stack = pg01_binding.get("architecture_profile")
     if not isinstance(stack,dict) or not isinstance(stack.get("active_layers"),list) or not stack["active_layers"]:
         raise PG02Blocked("MISSING:PG01_C4_ARCHITECTURE_LAYERS")
-    active_layers = set(stack["active_layers"])
-    if len(active_layers)!=len(stack["active_layers"]) or any(not isinstance(x,str) or not x for x in active_layers):
+    layers = stack["active_layers"]
+    if any(not isinstance(x, str) or not x for x in layers):
+        raise PG02Blocked("CONTRADICTION:STACK_LAYERS_INVALID")
+    active_layers = set(layers)
+    if len(active_layers) != len(layers):
         raise PG02Blocked("CONTRADICTION:STACK_LAYERS_INVALID")
     scoped_layers = mapping.get("domain_stack_layers")
     if not isinstance(scoped_layers,dict):
