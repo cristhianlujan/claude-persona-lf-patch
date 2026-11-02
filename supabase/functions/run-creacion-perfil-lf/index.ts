@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { resolveProfileRequiredSteps } from "./required_profile_steps.ts";
-import { verifyGithubReadback, verifyGithubWrite } from "./verified_write_evidence.ts";
+import { verifyGithubReadback, verifyGithubWrite, verifyCandidateAmendment } from "./verified_write_evidence.ts";
 import { verifyEvolutionProofRun } from "./verified_proof_evidence.ts";
 
 const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
@@ -366,6 +366,83 @@ Deno.serve(async (req: Request) => {
       return json({ outcome: snapshot.next_step ? "NEXT_STEP_RESOLVED" : "NO_REQUIRED_STEP_REMAINING", endpoint_version: ENDPOINT_VERSION, execution_id: id, snapshot, write_executed: false }, 200);
     }
 
+    if (body.action === "amend_profile_update_candidate_v1") {
+      // The original step 70/80 receipts remain immutable. This is an append-only
+      // candidate-revision readback under the already authorized OIDC caller.
+      if (caller.method !== UPDATE_CALLER_METHOD || caller.workflow_ref !== UPDATE_WORKFLOW) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_CALLER_NOT_ALLOWED" }, 403);
+      }
+      const id = String(body.execution_id ?? "");
+      const previous = String(body.previous_commit ?? "").trim().toLowerCase();
+      const candidate = String(body.candidate_commit ?? "").trim().toLowerCase();
+      if (!/^EXEC-[A-Za-z0-9][A-Za-z0-9_-]{7,172}$/.test(id)
+          || !SHA40.test(previous) || !SHA40.test(candidate) || previous === candidate) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_INPUT_INVALID" }, 400);
+      }
+      const ex = await execution(id);
+      if (!ex || ex.status !== "IN_PROGRESS" || ex.operation_code !== "ACTUALIZACION_PERFIL_LF"
+          || ex.target_type !== "PERFIL" || ex.target_repo !== REPOSITORY
+          || ex.manifest?.governed_caller_method !== caller.method
+          || ex.manifest?.caller_workflow_ref !== caller.workflow_ref
+          || !ex.manifest?.router_semantic_receipt_sha256) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_EXECUTION_NOT_ELIGIBLE" }, 409);
+      }
+      const snapshot = await operationSnapshot(ex);
+      if (snapshot?.next_step?.step_id !== "deterministic_validation") {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_AFTER_VALIDATION_FORBIDDEN" }, 409);
+      }
+      const recorded = await rows(
+        `/rest/v1/lf_operation_execution_steps?execution_id=eq.${encodeURIComponent(id)}&step_id=in.(github_write,github_readback)&select=step_id,status,evidence_payload`,
+        "PROFILE_AMEND_ORIGINAL_READBACK",
+      );
+      const write = recorded.find((r: any) => r.step_id === "github_write");
+      const readback = recorded.find((r: any) => r.step_id === "github_readback");
+      if (!write || !readback || write.status !== "STEP_PASS_WITH_EVIDENCE"
+          || readback.status !== "STEP_PASS_WITH_EVIDENCE"
+          || write.evidence_payload?.commit_sha !== readback.evidence_payload?.exact_head) {
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_ORIGINAL_RECEIPTS_UNVERIFIED" }, 409);
+      }
+      const chain = Array.isArray(ex.manifest?.candidate_amendments) ? ex.manifest.candidate_amendments : [];
+      const effective = chain.length
+        ? String(chain[chain.length - 1]?.candidate_commit ?? "")
+        : String(write.evidence_payload?.commit_sha ?? "");
+      const last = chain.length ? chain[chain.length - 1] : null;
+      const idempotentReplay = last?.candidate_commit === candidate
+        && last?.previous_commit === previous;
+      if (effective !== previous && !idempotentReplay) {
+        // An incorrect predecessor or concurrent revision cannot rebind the execution.
+        return json({ outcome: "BLOCKED", code: "PROFILE_AMEND_STALE_PREDECESSOR" }, 409);
+      }
+      const verify = await verifyCandidateAmendment({
+        repository: REPOSITORY,
+        targetRootPath: String(ex.manifest.target_root_path ?? ""),
+        boundRevision: String(ex.manifest.initial_main_revision ?? ""),
+        evidence: {},
+        gh: (path: string) => githubJson(`https://api.github.com/repos/${REPOSITORY}${path}`, "GITHUB_AMEND_VERIFY"),
+        recordedWrite: write.evidence_payload,
+        previousCommit: previous,
+        candidateCommit: candidate,
+      });
+      if (!verify.ok) {
+        return json({ outcome: "BLOCKED", code: verify.code, write_executed: false }, 409);
+      }
+      const amended = await rpc("lf_profile_update_candidate_amend_v1", {
+        p_execution_id: id,
+        p_previous_commit: previous,
+        p_candidate_commit: candidate,
+        p_evidence: verify.evidence,
+        p_actor_execution_id: id,
+      });
+      const after = await execution(id);
+      const latest = Array.isArray(after?.manifest?.candidate_amendments)
+        ? after.manifest.candidate_amendments.at(-1) : null;
+      const ok = amended?.outcome === "AMENDMENT_RECORDED"
+        && latest?.candidate_commit === candidate && latest?.previous_commit === previous;
+      return json({ outcome: ok ? "AMENDMENT_RECORDED" : "BLOCKED", endpoint_version: ENDPOINT_VERSION,
+        result: amended, effective_candidate_commit: latest?.candidate_commit ?? null,
+        historical_write_preserved: true, write_executed: false }, ok ? 200 : 409);
+    }
+
     if (body.action === "record_profile_operation_step_v1" || body.action === "record_profile_creation_step_v1") {
       const id = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       const stepId = typeof body.step_id === "string" ? body.step_id.trim() : "";
@@ -425,8 +502,11 @@ Deno.serve(async (req: Request) => {
             const write = rowOf("github_write");
             if (write) {
               const bound = String(rowOf("pre_write_execution_binding_gate")?.evidence_payload?.bound_revision ?? "").trim().toLowerCase();
-              const candidate = String(write.evidence_payload?.server_trust_context?.commit_sha ?? "");
-              const proof = await verifyEvolutionProofRun({ repository: REPOSITORY, mode: "compare", profileSlug: slug, baseSha: bound, candidateSha: candidate, runId: given.evolution_proof_run_id, notBefore: String(write.created_at ?? ""), gh });
+              const chain = Array.isArray(ex.manifest?.candidate_amendments) ? ex.manifest.candidate_amendments : [];
+              const latest = chain.length ? chain[chain.length - 1] : null;
+              const candidate = String(latest?.candidate_commit ?? write.evidence_payload?.server_trust_context?.commit_sha ?? "");
+              const notBefore = String(latest?.recorded_at ?? write.created_at ?? "");
+              const proof = await verifyEvolutionProofRun({ repository: REPOSITORY, mode: "compare", profileSlug: slug, baseSha: bound, candidateSha: candidate, runId: given.evolution_proof_run_id, notBefore, gh });
               if (!proof.ok) return blocked(proof.code);
               evidence = { ...given, ...proof.evidence, validator_result: "PASS", evolution_proof_verified: true };
             }

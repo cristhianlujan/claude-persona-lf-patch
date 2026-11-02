@@ -38,6 +38,7 @@ INIT_KEYS = {"schema_version", "action", "target_code", "target_path",
 BATCH_KEYS = {"schema_version", "action", "execution_id", "steps"}
 DEPLOY_KEYS = {"schema_version", "action"}
 PROOF_KEYS = {"schema_version", "action", "mode", "profile_slug", "base_sha", "candidate_sha"}
+AMEND_KEYS = {"schema_version", "action", "execution_id", "previous_commit", "candidate_commit"}
 PROFILE_SLUG = re.compile(r"[a-z0-9][a-z0-9_]{0,79}")
 SHA40 = re.compile(r"[0-9a-f]{40}")
 ZERO_SHA = "0" * 40
@@ -122,6 +123,19 @@ def governed_request(event, env):
         if len(steps_json) > MAX_INPUT_CHARS:
             raise ValueError("UPDATE_ISSUE_INPUT_SIZE_INVALID")
         return {"action": action, "execution_id": execution_id, "steps_json": steps_json}
+    if action == "profile_update_amend_candidate":
+        if set(data) != AMEND_KEYS:
+            raise ValueError("UPDATE_ISSUE_AMEND_SCHEMA_INVALID")
+        execution_id = data["execution_id"]
+        prev = data["previous_commit"]
+        candidate = data["candidate_commit"]
+        if (not isinstance(execution_id, str) or not EXECUTION_ID.fullmatch(execution_id)
+                or not isinstance(prev, str) or not SHA40.fullmatch(prev)
+                or not isinstance(candidate, str) or not SHA40.fullmatch(candidate)
+                or prev == candidate):
+            raise ValueError("UPDATE_ISSUE_AMEND_INPUT_INVALID")
+        return {"action": action, "execution_id": execution_id,
+                "previous_commit": prev, "candidate_commit": candidate}
     if action == "profile_evolution_proof":
         if set(data) != PROOF_KEYS:
             raise ValueError("UPDATE_ISSUE_SCHEMA_INVALID")

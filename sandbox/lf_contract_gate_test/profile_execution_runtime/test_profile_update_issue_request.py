@@ -127,6 +127,39 @@ class ProofTest(unittest.TestCase):
         self.assertIn("candidate_sha=" + B40, cmd)
 
 
+
+class CandidateAmendmentTransportTest(unittest.TestCase):
+    AMEND = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1",
+             "action": "profile_update_amend_candidate",
+             "execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678",
+             "previous_commit": A40, "candidate_commit": B40}
+
+    def test_amendment_targets_existing_oidc_caller_on_main(self):
+        inputs = request(self.AMEND)
+        self.assertEqual(inputs, {k: self.AMEND[k] for k in
+                                  ("action", "execution_id", "previous_commit", "candidate_commit")})
+        command = MOD["dispatch_command"](inputs)
+        self.assertEqual(command[:6], ["gh", "workflow", "run",
+                         "lf-customer-profile-creator-governance-caller.yml", "--ref", "main"])
+        self.assertIn("action=profile_update_amend_candidate", command)
+        self.assertIn("previous_commit=" + A40, command)
+
+    def test_amendment_invalid_identity_and_scope_hints_fail_closed(self):
+        for patch in ({"execution_id": "EXEC-x"}, {"previous_commit": "bad"},
+                      {"candidate_commit": "g" * 40},
+                      {"candidate_commit": A40}, {"profile_slug": "other_profile"},
+                      {"steps": []}, {"trust_context": {"server_verified": True}}):
+            with self.assertRaises(ValueError):
+                request({**self.AMEND, **patch})
+
+    def test_workflow_is_existing_oidc_route(self):
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("profile_update_amend_candidate", text)
+        self.assertIn("Amend governed Profile candidate", text)
+        self.assertIn("OIDC_TOKEN", text)
+
+
+
 class AnnotationTest(unittest.TestCase):
     def test_workflow_publishes_execution_id_and_batch_outcome_as_annotations(self):
         wf = open(".github/workflows/lf-customer-profile-creator-governance-caller.yml", encoding="utf-8").read()
