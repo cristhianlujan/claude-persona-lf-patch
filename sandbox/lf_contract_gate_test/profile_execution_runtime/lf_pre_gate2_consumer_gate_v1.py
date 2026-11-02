@@ -169,9 +169,15 @@ def evaluate(payload):
                 "router_blocking_code": blocker, "canonical_effect_allowed": False}
     if (DENIAL.search(final) and "NOT_EXECUTED" in final
             and DENIAL.search(receipts)):
-        return {"decision": "ALLOW_TRUTHFUL_BLOCK",
-                "reason_code": "PROVIDER_DENIAL_OBSERVED",
-                "router_blocking_code": blocker, "canonical_effect_allowed": False}
+        if structured_blocker == blocker:
+            return {"decision": "ALLOW_TRUTHFUL_BLOCK",
+                    "reason_code": "PROVIDER_DENIAL_OBSERVED",
+                    "router_blocking_code": blocker,
+                    "canonical_effect_allowed": False}
+        return {"decision": "REPORT_NOT_EXECUTED_UNVERIFIED",
+                "reason_code": "PROVIDER_DENIAL_WITHOUT_STRUCTURED_ROUTER",
+                "router_blocking_code": blocker,
+                "canonical_effect_allowed": False}
     return {"decision": "BLOCK", "reason_code": "PRE_GATE2_ROUTE_CONTINUITY_BLOCK",
             "router_blocking_code": blocker, "canonical_effect_allowed": False}
 
