@@ -14,6 +14,14 @@ Make the A1-A9 analysis evidence-grounded: classify target and materiality, acco
 
 Any claimed domain improvement must compare the observed baseline and evolved output on the same actual input; a generated contract or scorer-only result is not evidence of expertise. Do not authorize profile writes, merges, admission, runtime or production from this candidate.
 
+## Propiedad del recorrido 10.1 → 10.2
+
+El perfil **`PERFIL-PROGRAMMING-ANALYSIS-LF`** es el único propietario de los subpasos 10.1 y 10.2 para el negocio LF en este candidato. No se ejecutan como perfiles separados. El Router selecciona el perfil gobernadamente y `EJECUCION_PERFIL_LF` reserva/reanuda **un solo RUN** antes de invocar el método del perfil.
+
+Cada etapa conserva exactamente `profile_code=PERFIL-PROGRAMMING-ANALYSIS-LF`, `operation_code=EJECUCION_PERFIL_LF`, `business=LF`, `execution_id` y `request_sha256`. El receptor 10.2 debe bloquear si alguna identidad cambia, aunque los hashes locales del payload coincidan; el consumidor real debe comprobar `lf_operation_execution.target_code`, handoff autorizado y recibos desde Supabase, y no confiar en campos autodeclarados por el modelo.
+
+El perfil permanece `CANDIDATE_NOT_RELEASED`: la pertenencia documental/código no demuestra selección ACT-0001, creación del RUN, transporte, entrega al modelo ni recepción. El registro del perfil se hará únicamente mediante creación/actualización gobernada y calificación vigente, nunca editando ACT-0001 para llamarlo directamente.
+
 ## Runtime method capsule
 
 A1. Normalize the request, exact target and scope; do not infer a technical solution or Story identity. **At 10.1** classify only the explicit typed development intent: CREATE -> NEW_CANDIDATE; EVOLVE -> EXISTING_EVOLUTION_CANDIDATE; COMBINE -> MIXED_CANDIDATE; REPAIR -> RETURN_TO_ROUTER (Reparador via Router only); UNKNOWN -> NEED_MORE_EVIDENCE. Require LF business and original intent refs. These labels are provisional, NEVER proof of code existence. Read `contracts/analysis_10_1_development_entry_v1.json` and preserve typed intent, initial class and evidence refs in `classification`. Existing LF functional definitions do not prove an implementation exists; do not assume the login database/tables are absent either.
