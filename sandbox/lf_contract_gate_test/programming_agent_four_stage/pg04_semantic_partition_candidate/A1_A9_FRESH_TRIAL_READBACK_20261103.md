@@ -70,3 +70,11 @@ Esto es **un ensayo de forma sobre una solicitud y análisis de fuentes**, no ej
 - Este informe: resultados observados y límites.
 
 Sin SQL mutante, sin operación real de Análisis, sin PG01 admitido, sin cambio de producto ni merge.
+
+## Lectura adicional de definición de producto — por qué B2B no se puede forzar
+
+Consulta directa de `lf_ops.app_shells`: `B2B_APP_SHELL` versión `v1.0` tiene `status=CANDIDATO`, `source_decision_id=OWNER_GLOBAL_MESSAGE_BANNER_2026-10-07`, `source_decision_number=52`. Todos los 10 módulos de `lf_ops.modulos` asociados que devolvió la consulta también tienen `status=CANDIDATO`; algunos `is_active=true`, lo cual **no** convierte la definición del módulo en `VIGENTE`. El snapshot A9 además contiene `source_currentness_qualification=NOT_ADMITTED`. Esta combinación confirma el problema de autoridad en A3 para el objetivo seleccionado.
+
+Para localizar un caso de prueba futuro más prometedor, se consultó `lf_ops.app_shells` por `status=VIGENTE` y se encontró `CLIENT_APP_SHELL` `v1.1`, decisión `DEC-CLIENT-AUTH-NAV-IA-001` #117. Su módulo `CLIENT_HOME` está `VIGENTE` e `is_active=true` (decisión `DEC-CLIENT-AUTH-SESSION-RUNTIME-001` #105). **Esto solo acredita una definición de producto en la base**, no existencia del código AS-IS, un delta autorizado ni un A9 CURRENT. No se cambió el objetivo de la solicitud ni se emitió un falso paquete READY.
+
+**Conclusión adicional:** para maximizar probabilidades de un A9 legítimo, la siguiente solicitud puede acotarse a un cambio **ya autorizado** del `CLIENT_APP_SHELL/CLIENT_HOME`, siempre que el agente de Análisis localice una fuente CURRENT de la modificación y valide el AS-IS real. No inventar una mejora solo porque el componente esté vigente.
