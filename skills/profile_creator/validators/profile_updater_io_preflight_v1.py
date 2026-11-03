@@ -44,6 +44,25 @@ def _present(value: Any, allow_empty: bool) -> bool:
     return True
 
 
+VALID_TYPES = {"string", "sha40", "array", "object", "boolean", "run_id"}
+
+
+def _type_valid(value: Any, value_type: str) -> bool:
+    if value_type == "string":
+        return isinstance(value, str)
+    if value_type == "sha40":
+        return isinstance(value, str) and SHA40.fullmatch(value) is not None
+    if value_type == "array":
+        return isinstance(value, list)
+    if value_type == "object":
+        return isinstance(value, dict)
+    if value_type == "boolean":
+        return isinstance(value, bool)
+    if value_type == "run_id":
+        return (isinstance(value, (int, str)) and not isinstance(value, bool))
+    return False
+
+
 def validate_catalog(spec: dict) -> list[str]:
     failures: list[str] = []
     if spec.get("schema_version") != SCHEMA or spec.get("operation_code") != "ACTUALIZACION_PERFIL_LF":
@@ -66,6 +85,8 @@ def validate_catalog(spec: dict) -> list[str]:
             if not isinstance(b, dict) or b.get("source") not in {"execution", "request", "prior_step"}:
                 failures.append("CATALOG_SOURCE_INVALID:" + stage["step_id"])
                 continue
+            if b.get("value_type") not in VALID_TYPES:
+                failures.append("CATALOG_VALUE_TYPE_INVALID:" + stage["step_id"])
             path = b.get("path")
             if not isinstance(path, str) or not re.fullmatch(r"[a-z_][a-z_0-9]*(\.[a-z_][a-z_0-9]*)*", path):
                 failures.append("CATALOG_PATH_INVALID:" + stage["step_id"])
@@ -75,6 +96,17 @@ def validate_catalog(spec: dict) -> list[str]:
                     failures.append("CATALOG_FORWARD_OR_UNKNOWN_REFERENCE:" + stage["step_id"])
             elif "step_id" in b:
                 failures.append("CATALOG_UNEXPECTED_STEP_REF:" + stage["step_id"])
+    conditional = stages[0].get("conditional_inputs")
+    if (not isinstance(conditional, list) or len(conditional) != 1
+            or conditional[0] != {
+                "name": "research_baseline_contract",
+                "source": "request",
+                "path": "research_baseline_contract",
+                "value_type": "object",
+                "required_if": {"research_baseline_mode": "PRE_RESEARCH_ALWAYS"},
+                "otherwise": "MUST_BE_NULL",
+            }):
+        failures.append("CATALOG_INIT_CONDITIONAL_INPUT_INVALID")
     mapping = {s["step_id"]: s["input_required"] for s in stages}
     if mapping.get("method_selection") != [
         "profile_assessment_receipt_id", "selector_version", "selected_methods"
@@ -119,6 +151,8 @@ def check_init_request(spec: dict, request: dict) -> dict:
         value = _get(request, binding["path"])
         if not _present(value, False):
             report["missing"].append(f"{name}:INPUT_REQUIRED_MISSING")
+        elif not _type_valid(value, binding["value_type"]):
+            report["inconsistent"].append(f"{name}:INPUT_VALUE_TYPE_INVALID")
         else:
             report["bindings"].append({"name": name, "source": "request", "status": "PRESENT_NOT_ATTESTED"})
     code = request.get("target_code")
@@ -204,6 +238,9 @@ def check_step(spec: dict, step_id: str, execution: dict, request: dict,
         value = _get(origin, path)
         if not _present(value, (step_id, name) in EMPTY_ALLOWED):
             report["missing"].append(f"{name}:INPUT_REQUIRED_MISSING")
+            continue
+        if not _type_valid(value, binding["value_type"]):
+            report["inconsistent"].append(f"{name}:INPUT_VALUE_TYPE_INVALID")
             continue
         values[name] = value
         report["bindings"].append({"name": name, "source": source,
