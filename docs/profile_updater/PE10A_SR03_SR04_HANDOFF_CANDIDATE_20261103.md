@@ -12,13 +12,13 @@ El Router clasifica/deriva; SRCR diagnostica y solicita, pero no llama otro perf
 
 - Contrato tipado en contracts/LF_SRCR_UPDATER_HANDOFF_V1_CANDIDATE.json.
 - Preflight determinista en skills/profile_creator/validators/srcr_updater_handoff_v1.py y pruebas negativas.
-- Exige parent run, perfil SRCR, misma solicitud, target/path/scope exactos, SHA de Router, policy y diagnóstico.
+- Exige parent run, perfil SRCR, misma solicitud, target/path/scope exactos, SHA40 de main y blob objetivo, SHA256 de Router, policy y diagnóstico.
 - Devuelve READY_FOR_SERVER_VERIFICATION, nunca PASS, dispatch_authorized ni escritura.
 - No reutiliza repair_execution_authority de SRCR: su único intent actual de escritura es REPAIR_MISSING_PRODUCT_STRUCTURE, que no da permiso general para Updater.
 
 ## SR04: integración pendiente y bloqueada por autoridad
 
-Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF autorizado; (2) lee la salida real de SRCR y autoriza la solicitud de Updater con alcance exacto; (3) congela parent/child/scope/SHAs en init de Updater; (4) transporta por issue+label y OIDC sin nueva ruta Router ni servicio-role en Router; (5) retorna recibo terminal auténtico a SRCR y registra recepción; (6) juez independiente verifica readback Github/Supabase/runtime. Una estructura JSON sola no demuestra ninguno de estos pasos.
+Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF autorizado; (2) lee la salida real de SRCR y autoriza la solicitud de Updater con alcance exacto; (3) congela parent/child/scope/SHAs en init de Updater; (4) transporta por issue+label y OIDC sin nueva ruta Router ni servicio-role en Router; (5) retorna recibo terminal auténtico y HEAD SHA exacto a SRCR y registra recepción; (6) juez independiente verifica readback Github/Supabase/runtime. Una estructura JSON sola no demuestra ninguno de estos pasos.
 
 ## Evidencia LIVE de partida
 
