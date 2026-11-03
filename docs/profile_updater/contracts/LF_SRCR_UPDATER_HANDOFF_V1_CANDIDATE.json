@@ -1,0 +1,57 @@
+{
+  "contract_code": "LF_SRCR_UPDATER_HANDOFF_V1_CANDIDATE",
+  "status": "STRUCTURE_ONLY_NOT_ENFORCED",
+  "entrance": {
+    "route": "ACT-0001 -> EJECUCION_PERFIL_LF (SRCR) -> orchestrator",
+    "mode": "REQUEST_ONLY",
+    "required_keys": [
+      "schema_version",
+      "business",
+      "mode",
+      "source_operation",
+      "source_profile_code",
+      "source_execution_id",
+      "target_operation",
+      "target_code",
+      "target_path",
+      "request_sha256",
+      "router_authorization_receipt_sha256",
+      "policy_snapshot_sha256",
+      "diagnosis_ref",
+      "diagnosis_sha256",
+      "authorized_scope"
+    ]
+  },
+  "process": {
+    "server_binding_required": true,
+    "proof": "read parent run, Router receipt, scope, policy and SRCR diagnosis from LIVE DB; never trust client envelope",
+    "no_direct_profile_invocation": true
+  },
+  "transport": {
+    "method": "issue+label -> GHA OIDC -> Edge -> RPC",
+    "parent_child_correlation_required": true,
+    "no_router_change": true,
+    "no_service_role_in_router": true
+  },
+  "return": {
+    "schema_version": "LF_SRCR_UPDATER_RETURN_V1",
+    "required": [
+      "source_execution_id",
+      "child_execution_id",
+      "target_code",
+      "status",
+      "terminal_receipt_ref",
+      "terminal_receipt_sha256",
+      "next_action"
+    ],
+    "independent_readback_required": true
+  },
+  "blocking": {
+    "no_parent": "BLOCK_UNVERIFIED_SRCR_PARENT",
+    "scope_drift": "BLOCK_SRCR_SCOPE_DRIFT",
+    "no_receipt": "BLOCK_UPDATER_RETURN_RECEIPT_MISSING",
+    "untrusted_intent": "BLOCK_SRCR_UNAUTHORIZED_INTENT"
+  },
+  "enforcement_status": "NOT_IMPLEMENTED",
+  "e2e_status": "NOT_TESTED"
+}
