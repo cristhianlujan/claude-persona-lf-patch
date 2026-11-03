@@ -81,6 +81,8 @@ En la columna «entrada» se describen **dependencias propuestas**, NO valores y
 
 Los 44 bindings propuestos en `skills/profile_creator/contracts/profile_updater_io_bindings_v1.json` declaran `name`, `source`, `path` y `value_type`; la validación de tipos y procedencia es **local/candidata**, no está aún conectada al runtime del Updater. `READY_FOR_GOVERNED_INITIALIZATION` y `READY_FOR_SERVER_VERIFICATION` significan únicamente *preflight satisfecho*, **no** ejecución, autoridad o PASS. El verificador Edge/RPC existente permanece obligatorio.
 
+**Compatibilidad de tipos históricos:** en la operación LIVE `ACTUALIZACION_PERFIL_LF`, `semantic_judge_result` se observó como `string` y como `object`; `before_after_matrix` como `object` y excepcionalmente como `array`. El catálogo propone tipos unión (`string_or_object`, `object_or_array`) en esas dos entradas. No migrar ni rechazar recibos históricos por normalización tácita; cualquier estandarización de formato requiere un cambio independiente y pruebas de consumidores.
+
 **Dato de compatibilidad:** en el run observado, 26/29 referencias comprobadas inicialmente contra recibos de 00–80 coincidieron. Las 3 referencias del paso 00 no aparecen en su **recibo de salida**, porque provienen del **Issue de inicialización**; compararlas con la salida de INIT no representa un fallo de transporte. Deben auditarse contra su entrada previa real, sin inventar datos del Issue histórico.
 
 ## 4. Paso 90 — comparación explícita del productor anterior
