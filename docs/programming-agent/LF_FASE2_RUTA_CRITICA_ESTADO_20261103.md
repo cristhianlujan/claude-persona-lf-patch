@@ -652,6 +652,16 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Importante:** esto resuelve la preparación del remedio, **no** los hallazgos normativos hasta que existan implementación y revisión independiente reales. `PG-00_C9`, `PG-00_C3`, `PG-03_C2` continúan `PENDING`; no se cambió catálogo vigente, no hubo merge, Supabase write ni activación.
 
+## 4.11. CHG-0009 — preflight reforzado y mandato a revisor externo (03/11)
+
+**[PR #18](https://github.com/paulozterra/lf-programming-sandbox/pull/18)** continúa DRAFT, **HEAD de propuesta `bf260568fadd81c3db2841d88a896f79b3310961`**. Auditoría del expediente detectó un error real introducido en la revisión anterior: la sustitución textual había insertado un duplicado de cabecera/matriz y dejado un párrafo cortado en el documento de propuesta; la CI previa no lo había detectado. Se corrigió ese defecto (`646aafb0`) y se reforzó `test_chg0009_std_api_proposal_v1.py` (`bf260568`) con 3 tests nuevos: singularidad del documento, obligatoriedad de carry-forward de seguridad y no colisión de IDs propuestos.
+
+**Mandato al revisor realmente independiente:** comentario GitHub [#6609742807](https://github.com/paulozterra/lf-programming-sandbox/pull/18#issuecomment-6609742807). Revisa nueve reglas y seis ID nuevos, `NON_WAIVABLE` + `SECURITY_IDS`, obligaciones D1/D2/D8/D9/D10, comportamiento de la precedencia y separación de autorización preliminar vs normativa. Solicita hallazgos tipados y separación de autoría. **No se ha recibido aquí ningún dictamen externo**; el examen de este chat no se hace pasar por independencia.
+
+**CI exacto a verificar:** [run #41675719772](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41675719772), iniciado sobre `bf260568fadd81c3db2841d88a896f79b3310961`. A la elaboración de esta sección seguía en ejecución: consultar resultado final antes de considerar el paquete técnicamente validado.
+
+**Estados:** `PROPOSAL_PREFLIGHT_REPAIRED / INDEPENDENT_REVIEW_PENDING / NO_GO_NORMATIVE`. Se mantiene `PG-00_C9=PENDING`, `PG-00_C3=PENDING` y `PG-03_C2=PENDING`. No se editó `standards/catalog.json`, no CHG activo, no merge, no publicación C3 ni mutación de Supabase.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
