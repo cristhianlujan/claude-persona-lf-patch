@@ -673,7 +673,7 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 - `BLOCK_LEGACY_SECURITY_GUARD_REMOVED` si se desprotege el ID original antes de completar la migración.
 - Incluso tras simular ambas actualizaciones, `STRUCTURAL_PREVIEW_ONLY_NO_AUTHORITY`; no implica permiso para escritura real.
 
-**CI:** [sandbox run #41677453357](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41677453357), job `estándares (catálogo y checks)` SUCCESS con la nueva suite. Verificar estado final de los demás jobs al readback definitivo.
+**CI:** [sandbox run #41677453357](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41677453357), **SUCCESS final, 5/5 jobs** (estándares/catálogo, sombra, backend, frontend e infraestructura) sobre HEAD exacto; la nueva suite se ejecuta mediante `unittest discover` del workflow de estándares. Es una calificación de simulación, no un GO de gobernanza.
 
 **Límites y pendientes:** `standards/catalog.json` no fue editado; CHG-0009 permanece bajo `standards/changes/proposals/`, no existe release C3 ni revisión independiente válida. Para aplicar de verdad las reglas, seguirá siendo necesario un diff normativo con CHG clasificado, revisión de seguridad independiente, aprobación explícita del owner, migración de referencias, semver, cambio de pins y readback. Estados oficiales `PG-00_C9=PENDING`, `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
 
