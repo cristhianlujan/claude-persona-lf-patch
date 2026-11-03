@@ -20,7 +20,7 @@ def _ids(rows):
     return (isinstance(rows,list) and all(isinstance(x,str) and bool(x.strip()) for x in rows)
             and len(rows)==len(set(rows)))
 
-def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
+def prepare_dod(*,partition,standards_catalog_version,standards,validation_registry,solution_plans):
     """Freeze planned checks for every solution and material acceptance signal."""
     if not isinstance(partition,dict) or partition.get("schema_version")!="PG04_SEMANTIC_PARTITION_CANDIDATE_V1" or partition.get("status")!="CANDIDATE_NOT_ADMITTED" or partition.get("production_authority") is not False or partition.get("handoff_allowed") is not False:
         _fail("PARTITION_NOT_UNTRUSTED_CANDIDATE")
@@ -42,6 +42,18 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
         code=item["standard_code"]
         if code in catalog:_fail("STANDARD_DUPLICATE")
         catalog[code]=item
+    if not isinstance(validation_registry,list) or not validation_registry:
+        _fail("DOD_VALIDATOR_REGISTRY_REQUIRED")
+    validator_codes=set()
+    for validator in validation_registry:
+        if not isinstance(validator,dict) or set(validator)!={"validation_code","status","source_ref"}:
+            _fail("DOD_VALIDATOR_REGISTRY_INVALID")
+        if any(not isinstance(validator.get(k),str) or not validator[k].strip()
+               for k in ("validation_code","source_ref")) or validator.get("status")!="ACTIVE":
+            _fail("DOD_VALIDATOR_REGISTRY_INVALID")
+        if validator["validation_code"] in validator_codes:
+            _fail("DOD_VALIDATOR_DUPLICATE")
+        validator_codes.add(validator["validation_code"])
     sols=partition.get("solutions")
     if not isinstance(sols,list) or not sols:
         _fail("PARTITION_SOLUTIONS_MISSING")
@@ -89,6 +101,8 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
             optional_fields={"standard_code"}
             if not required_fields.issubset(check) or set(check)-required_fields-optional_fields:
                 _fail("DOD_CHECK_FIELDS_INVALID")
+            if check["validation_code"] not in validator_codes:
+                _fail("DOD_VALIDATOR_NOT_ACTIVE_OR_UNDECLARED")
             cid=check["check_id"]
             if cid in observed:_fail("DOD_CHECK_DUPLICATE")
             observed.add(cid)
@@ -135,6 +149,8 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
         "partition_sha256":sha,
         "standards_catalog_version":standards_catalog_version,
         "standards_manifest_sha256":_digest(standards),
+        "validator_registry_manifest_sha256":_digest(validation_registry),
+        "validator_registry_authenticity":"CALLER_SUPPLIED_UNVERIFIED",
         "standards_authenticity":"CALLER_SUPPLIED_UNVERIFIED",
         "standard_resolution_mode":"WRITE_SCOPE_FILTERED",
         "solutions":sorted(output,key=lambda x:x["solution_id"]),
