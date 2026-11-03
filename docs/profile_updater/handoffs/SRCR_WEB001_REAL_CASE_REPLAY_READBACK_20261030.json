@@ -1,0 +1,106 @@
+{
+  "status": "EXECUTED_READONLY_BASELINE_REPLAY_NOT_NEW_CANDIDATE",
+  "date": "2026-10-30",
+  "source_case": "WEB-001",
+  "case_file_sha": "9cc091715a86630c86768766f158991a1b729370",
+  "existing_two_group_mechanism": {
+    "structural_last_official_score": "15/15",
+    "operational_last_verified": [
+      "4/9",
+      "9/9"
+    ],
+    "current_official_decision": "NO_UPDATE_REQUIRED",
+    "proof_run_id": "41088275460"
+  },
+  "historical_case_replay": {
+    "earlier_tree": {
+      "run_id": "RUN-WEB001-BASE-20261029",
+      "tree_sha256": "db152f0aa2c72a4476e4e428a28a619a7b402d70f866cbe294de60ef230cb701",
+      "attestation": "NONE",
+      "status": "NEEDS_MORE_EVIDENCE",
+      "output_validator_valid": false,
+      "passed": 4,
+      "total": 9,
+      "failed": [
+        "OP01_CLOSES_WITH_REPAIR_SPEC",
+        "OP02_OUTPUT_VALID",
+        "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
+        "OP04_OWNER_RESOLVED",
+        "OP06_ALTERNATIVE_SELECTED"
+      ],
+      "material_open": [
+        {
+          "id": "UNC-OWNER-ACT0058",
+          "n1_proven": false,
+          "n2_proven": false
+        },
+        {
+          "id": "UNC-RETRY-POLICY-OP4",
+          "n1_proven": false,
+          "n2_proven": false
+        },
+        {
+          "id": "UNC-RETRY-CONSUMER-LIVENESS",
+          "n1_proven": false,
+          "n2_proven": false
+        }
+      ]
+    },
+    "now_current_tree": {
+      "run_id": "RUN-WEB001-CANDIDATE-20261029",
+      "tree_sha256": "2f4ac419ee3a49b2366a684daf4df2613a28426e77f0a880851fe07841105381",
+      "attestation": "NONE",
+      "status": "SYSTEMIC_REPAIR_SPEC",
+      "output_validator_valid": true,
+      "passed": 9,
+      "total": 9,
+      "failed": [],
+      "material_open": []
+    }
+  },
+  "live_source_n1_n2": {
+    "n1_view": "public.v_lf_fuente_operativa_busqueda",
+    "n2_table": "public.lf_activos",
+    "filter": "ACT-0058",
+    "n1": {
+      "codigo_activo": "ACT-0058",
+      "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+      "estado_operativo": "APROBADO",
+      "estado_documental": "APROBADO"
+    },
+    "n2": {
+      "codigo_activo": "ACT-0058",
+      "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+      "estado_operativo": "APROBADO",
+      "estado_documental": "APROBADO"
+    },
+    "same_values": true,
+    "ekb": {
+      "codigo": "WEB-001",
+      "estado": "activo",
+      "categoria": "CAPTURA_WEB",
+      "frecuencia": 46
+    },
+    "queue": {
+      "fallido_total": 39,
+      "fallido_captura": 32
+    },
+    "previous_fetch_failure_count": 33,
+    "current_count_method": "error_detail contains fetch or cache (not exact historic class mapping)"
+  },
+  "delta_assessment": {
+    "legacy_case_replayed": true,
+    "material_N1_N2_benchmark_present": false,
+    "new_profile_candidate_executed": false,
+    "independent_judge_receipt": false,
+    "why": "Current successful WEB-001 output has no DESIGN_BLOCKING uncertainty; 9/9 is not an N1/N2 behavioral proof. The proposed N1/N2 source guard remains only in the draft patch.",
+    "first_missing_evidence": "An actual run of WEB-001 (material-gap variant) against the current exact tree and the modified exact tree, with N1/N2 source receipts."
+  },
+  "governance": {
+    "prior_case_not_replaced": true,
+    "update_execution_id": "EXEC-ACTUALIZACION-PERFIL-LF-OIDC-a4b04585-e518-482c-ab02-855a807ee0ae",
+    "live_profile_modified": false,
+    "merge_performed": false,
+    "pr_draft": true
+  }
+}

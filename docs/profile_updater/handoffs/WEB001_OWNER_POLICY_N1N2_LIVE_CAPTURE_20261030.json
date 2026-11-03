@@ -1,0 +1,220 @@
+{
+  "schema": "LF_WEB001_OWNER_POLICY_DISCOVERY_CAPTURE_V1",
+  "case_id": "WEB-001",
+  "purpose": "N1 operation policy plus N2 canonical policy readbacks for owner applicability; partial GPT-native reasoning input, NOT full model output",
+  "profile_candidate_commit": "a84226b2d43fb3f531f9cd45c140809496cb16c7",
+  "profile_candidate_tree_sha256": "b35b70a040d52ce196abfd552ba2f4ba6f3b4f9b5e6ebbc43a10f1691a0dc11c",
+  "authority": "SUPABASE_READONLY_ACTUAL_QUERIES",
+  "query_results": {
+    "N1": {
+      "query": "SELECT statement_timestamp() AS observed_at,operation_code,policy_role,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_role,policy_code",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:44:29.675016+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_role": "GOVERNANCE_LIFECYCLE",
+          "policy_code": "POL-LF-OPERATION-LIFECYCLE",
+          "policy_version": "v1.1-operational-closure",
+          "policy_sha": "2adb62f8b47a599fd6a6ce2ed1f7b545678b15b0283a07dccdc235bea37e3c00"
+        },
+        {
+          "observed_at": "2026-10-30 23:44:29.675016+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_role": "POLICY_CONSUMPTION",
+          "policy_code": "POL-LF-POLICY-CONSUMPTION",
+          "policy_version": "v1.3-assurance-cutover",
+          "policy_sha": "a6bd42d3f6d94c4ae9c16bf1792d26fe85300d038382906f81cca079e77aa22f"
+        },
+        {
+          "observed_at": "2026-10-30 23:44:29.675016+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_role": "SOURCE_RESOLUTION",
+          "policy_code": "POL-LF-SOURCE-RESOLUTION",
+          "policy_version": "v1.4-transversal-supabase-authority-visual-support",
+          "policy_sha": "5fab0c7fec2d7cc88fa13a54db8dfd15c8b7e008b381364f69c707a3675aae46"
+        },
+        {
+          "observed_at": "2026-10-30 23:44:29.675016+00",
+          "operation_code": "ORQUESTACION_PIPELINE_LF",
+          "policy_role": "STATE_MODEL",
+          "policy_code": "POL-LF-STATE-MODEL",
+          "policy_version": "v2.0-canonical-lifecycle",
+          "policy_sha": "f0d039a7a0f5588494c1f31b27a57ed7de8877a2a191bcd205cd38a6d5b495b3"
+        }
+      ]
+    },
+    "N2": {
+      "query": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') ORDER BY policy_code,policy_version LIMIT 30",
+      "rows": []
+    },
+    "N2_SCOPE": {
+      "query": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code,policy_version LIMIT 30",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:44:29.719528+00",
+          "policy_code": "POL-PROFILE-UPDATE-PASS",
+          "policy_version": "v1.4-evolved-routing-candidate",
+          "status": "ACTIVE",
+          "source_ref": "skills/profile_creator/contracts/profile_update_evolved_routing_candidate_v1.json",
+          "policy_sha": "5ae6804ded17dea94a7ec2d8c4ebe588b1017222ab8d92b912bc8607996892b5"
+        }
+      ]
+    },
+    "ASSET_N1": {
+      "query": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:44:29.813994+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_documental": "APROBADO",
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    },
+    "ASSET_N2": {
+      "query": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+      "rows": [
+        {
+          "observed_at": "2026-10-30 23:44:29.907017+00",
+          "codigo_activo": "ACT-0058",
+          "nombre_canonico": "SKILL_ORQUESTADOR_PIPELINE_LF",
+          "owner_name": null,
+          "estado_documental": "APROBADO",
+          "estado_operativo": "APROBADO"
+        }
+      ]
+    }
+  },
+  "policy_resolution": [
+    {
+      "question_id": "OWNER_POLICY_ACT0058",
+      "need": "Regla vigente y aplicable que asigna autoridad de owner de ACT-0058, sin deducir desde activos similares",
+      "scope": {
+        "operation_code": "ORQUESTACION_PIPELINE_LF",
+        "target_code": "ACT-0058",
+        "asset_type": "SKILL",
+        "business": "LF"
+      },
+      "decision": "POLICY_NOT_REGISTERED",
+      "selected_policy_code": null,
+      "selected_policy_sha": null,
+      "next_action": "PROPOSE_GOVERNED_RULE",
+      "lookups": [
+        {
+          "level": "N1",
+          "role": "ENUMERATE_SCOPED_POLICIES",
+          "source": "public.v_lf_operation_policy_snapshot",
+          "locator": "SELECT statement_timestamp() AS observed_at,operation_code,policy_role,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_role,policy_code",
+          "evidence_id": "EV-WEB001-POLICY-N1-20261030",
+          "result_kind": "ROWS",
+          "applicability": "NO_MATCH",
+          "lookup_scope": "OPERATION_SCOPE",
+          "observed_at": "2026-10-30 23:44:29.675016+00"
+        },
+        {
+          "level": "N2",
+          "role": "CANONICAL_OWNER_POLICY_CODES",
+          "source": "public.lf_policy_versions",
+          "locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') ORDER BY policy_code,policy_version LIMIT 30",
+          "evidence_id": "EV-WEB001-POLICY-N2-20261030",
+          "result_kind": "EMPTY",
+          "applicability": "NO_MATCH",
+          "lookup_scope": "SCOPE_APPLICABILITY",
+          "observed_at": "2026-10-30 23:45:13.514018+00"
+        },
+        {
+          "level": "N2",
+          "role": "CANONICAL_OWNER_POLICY_CONTENT",
+          "source": "public.lf_policy_versions",
+          "locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code,policy_version LIMIT 30",
+          "evidence_id": "EV-WEB001-POLICY-N2-SCOPE-20261030",
+          "result_kind": "ROWS",
+          "applicability": "NO_MATCH",
+          "lookup_scope": "SCOPE_APPLICABILITY",
+          "observed_at": "2026-10-30 23:44:29.719528+00"
+        }
+      ]
+    }
+  ],
+  "inference_ceiling": {
+    "asset_owner_resolved": false,
+    "asset_owner_candidate": null,
+    "policy_not_registered_scope": "only checked active operational and public policy version surfaces; unrelated scope or inaccessible private sources unproven",
+    "n1_policy_codes": [
+      "POL-LF-OPERATION-LIFECYCLE",
+      "POL-LF-POLICY-CONSUMPTION",
+      "POL-LF-SOURCE-RESOLUTION",
+      "POL-LF-STATE-MODEL"
+    ],
+    "applicable_existing_rule": "NO_SIMILARITY_BASED_AUTHORITY_INFERENCE on POL-LF-SOURCE-RESOLUTION",
+    "raw_model_executed": false,
+    "profile_validator_pass": false,
+    "independent_judge_executed": false,
+    "authoritative_execution_receipt": false,
+    "n2_empty_query_time_proved": true,
+    "evidence_manifest_external_attestation": false
+  },
+  "next_step": "PROFILE_NATIVE_MODEL_OUTPUT_COMPLETE_WITH_EVIDENCE_MANIFEST_THEN_CANDIDATE_RUNTIME_VALIDATOR",
+  "n2_zero_row_independent_confirmation": {
+    "query": "WITH clock AS (SELECT statement_timestamp() AS observed_at), filtered AS (SELECT policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') LIMIT 30) SELECT clock.observed_at,count(filtered.policy_code) AS row_count,coalesce(jsonb_agg(to_jsonb(filtered)) FILTER(WHERE filtered.policy_code IS NOT NULL),'[]'::jsonb) AS rows FROM clock LEFT JOIN filtered ON true GROUP BY clock.observed_at;",
+    "observed_at": "2026-10-30 23:45:13.514018+00",
+    "row_count": 0,
+    "rows": []
+  },
+  "evidence_manifest": {
+    "evidence": [
+      {
+        "evidence_id": "EV-WEB001-POLICY-N1-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,operation_code,policy_role,policy_code,policy_version,policy_sha FROM public.v_lf_operation_policy_snapshot WHERE operation_code='ORQUESTACION_PIPELINE_LF' ORDER BY policy_role,policy_code",
+        "source": "public.v_lf_operation_policy_snapshot",
+        "observed_at": "2026-10-30 23:44:29.675016+00",
+        "result_kind": "ROWS",
+        "row_count": 4,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-POLICY-N2-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_code ILIKE '%OWNER%' OR policy_code ILIKE '%ASSET%' OR policy_code ILIKE '%CUSTOD%' OR policy_code ILIKE '%SUPER%') ORDER BY policy_code,policy_version LIMIT 30",
+        "source": "public.lf_policy_versions",
+        "observed_at": "2026-10-30 23:45:13.514018+00",
+        "result_kind": "EMPTY",
+        "row_count": 0,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-POLICY-N2-SCOPE-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,policy_code,policy_version,status,source_ref,policy_sha FROM public.lf_policy_versions WHERE status='ACTIVE' AND (policy_payload::text ILIKE '%ACT-0058%' OR policy_payload::text ILIKE '%owner_name%' OR policy_payload::text ILIKE '%SUPER_ADMIN%') ORDER BY policy_code,policy_version LIMIT 30",
+        "source": "public.lf_policy_versions",
+        "observed_at": "2026-10-30 23:44:29.719528+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-ASSET-N1-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.v_lf_fuente_operativa_busqueda WHERE codigo_activo='ACT-0058'",
+        "source": "public.v_lf_fuente_operativa_busqueda",
+        "observed_at": "2026-10-30 23:44:29.813994+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      },
+      {
+        "evidence_id": "EV-WEB001-ASSET-N2-20261030",
+        "state": "CURRENT",
+        "source_locator": "SELECT statement_timestamp() AS observed_at,codigo_activo,nombre_canonico,owner_name,estado_documental,estado_operativo FROM public.lf_activos WHERE codigo_activo='ACT-0058'",
+        "source": "public.lf_activos",
+        "observed_at": "2026-10-30 23:44:29.907017+00",
+        "result_kind": "ROWS",
+        "row_count": 1,
+        "readback_ref": "Supabase read-only SQL query output; not a signed or independently attested oracle"
+      }
+    ]
+  }
+}

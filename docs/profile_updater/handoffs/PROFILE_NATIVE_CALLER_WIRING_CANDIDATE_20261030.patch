@@ -1,0 +1,217 @@
+diff --git a/supabase/functions/run-creacion-perfil-lf/index.ts b/supabase/functions/run-creacion-perfil-lf/index.ts
+--- a/supabase/functions/run-creacion-perfil-lf/index.ts
++++ b/supabase/functions/run-creacion-perfil-lf/index.ts
+@@ -2,5 +2,6 @@
+ import { resolveProfileRequiredSteps } from "./required_profile_steps.ts";
+ import { verifyGithubReadback, verifyGithubWrite } from "./verified_write_evidence.ts";
+-import { verifyEvolutionProofRun } from "./verified_proof_evidence.ts";
++import { verifyEvolutionProofRun } from "./verified_proof_evidence.ts";
++import { verifyProfilePlacementSource, type AdoptionIntent } from "./verified_native_placement_readback.ts";
+ 
+ const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
+@@ -306,5 +306,6 @@
+         router_governed_caller_code: governed.caller_code,
+         router_semantic_receipt_sha256: governed.semantic_receipt_sha256,
+-        router_semantic_request: governed.semantic_request,
++        router_semantic_request: governed.semantic_request,
++        native_placement_gate_version: "PROFILE_NATIVE_PLACEMENT_SOURCE_READBACK_V1",
+         runtime_write_executed: false,
+         github_write_executed: false,
+@@ -433,5 +433,54 @@
+           }
+         }
+-        const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
++        // Reuse the SAME governed caller and SAME checkpoints, no added runtime stage.
++        if (typeof ex.manifest?.router_semantic_receipt_sha256 === "string" &&
++            (stepId === "change_scope" || stepId === "deterministic_validation")) {
++          const denied = (code: string) => json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION,
++            code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
++          const boundRows = await rows("/rest/v1/lf_operation_execution_steps?execution_id=eq." +
++            encodeURIComponent(id) +
++            "&step_id=in.(method_selection,change_scope,pre_write_execution_binding_gate,github_write)&select=step_id,evidence_payload,status",
++            "PLACEMENT_EXISTING_STEP_READ");
++          const recorded = (name: string) => boundRows.find((r: any) => r.step_id === name &&
++            r.status === "STEP_PASS_WITH_EVIDENCE")?.evidence_payload;
++          const methods = recorded("method_selection")?.selected_methods;
++          if (!Array.isArray(methods)) return denied("PLACEMENT_SELECTION_NOT_VERIFIED");
++          const selected = methods.map((m: any) => m?.method_id).filter((x: unknown) => typeof x === "string") as string[];
++          if (selected.length !== methods.length) return denied("PLACEMENT_SELECTED_METHOD_IDS_INVALID");
++          const slug = String(ex.target_path ?? "").split("/")[1] ?? "";
++          const original = String(ex.manifest?.initial_main_revision ?? "");
++          const scoped = recorded("change_scope");
++          if (stepId === "deterministic_validation" && !scoped)
++            return denied("PLACEMENT_SCOPE_PREDECESSOR_MISSING");
++          const scope = stepId === "change_scope" ? evidence : scoped;
++          const intents = scope.native_step_adoptions === undefined ? [] : scope.native_step_adoptions;
++          if (!Array.isArray(intents)) return denied("PLACEMENT_ADOPTION_LIST_INVALID");
++          const write = recorded("github_write");
++          if (stepId === "deterministic_validation" && !write && intents.length)
++            return denied("PLACEMENT_CANDIDATE_WRITE_MISSING");
++          const expectedBase = stepId === "deterministic_validation" ?
++            String(recorded("pre_write_execution_binding_gate")?.bound_revision ?? "") : original;
++          if (stepId === "deterministic_validation" && expectedBase !== original)
++            return denied("PLACEMENT_SCOPE_BASE_REVISION_DRIFT");
++          const candidateSha = stepId === "deterministic_validation" ?
++            String(write?.server_trust_context?.commit_sha ?? "") : undefined;
++          // Ignore any caller-asserted readback. It MUST come from GitHub exact-ref.
++          delete evidence.native_step_placement_readback;
++          const proof = await verifyProfilePlacementSource({
++            gh: (path: string) => githubJson("https://api.github.com/repos/" + REPOSITORY + path,
++              "PLACEMENT_GITHUB_SOURCE_READ"),
++            profileSlug: slug, baseSha: expectedBase, candidateSha,
++            mode: stepId === "change_scope" ? "baseline" : "compare",
++            selectedMethodIds: selected, intents: intents as AdoptionIntent[],
++          });
++          if (!proof.ok) return denied(proof.code);
++          if (stepId === "deterministic_validation" && scoped?.native_step_placement_readback?.base_sha !== expectedBase)
++            return denied("PLACEMENT_BASE_ATTESTATION_NOT_BOUND");
++          evidence = { ...evidence,
++            ...(stepId === "change_scope" ? { native_step_adoptions: intents } : {}),
++            native_step_placement_readback: proof.evidence,
++            native_step_placement_readback_source: "run-creacion-perfil-lf" };
++        }
++        const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
+         const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;
+         return json({ outcome: result?.outcome ?? "BLOCKED", endpoint_version: ENDPOINT_VERSION, execution_id: id, operation_code: ex.operation_code, step_id: stepId, result, snapshot_after: after, server_trust_context_derived: stepId === "pre_write_execution_binding_gate", github_write_executed: false }, result?.outcome === "STEP_RECORDED" ? 200 : 409);
+
+
+diff --git a/supabase/functions/run-creacion-perfil-lf/verified_native_placement_readback.ts b/supabase/functions/run-creacion-perfil-lf/verified_native_placement_readback.ts
+new file mode 100644
+--- /dev/null
++++ b/supabase/functions/run-creacion-perfil-lf/verified_native_placement_readback.ts
+@@ -0,0 +1,135 @@
++/**
++ * Candidate callable INSIDE existing run-creacion-perfil-lf edge.
++ * Exact GitHub content readback, never model-supplied source. Source provenance
++ * is NOT proof that a runtime enforcement call has executed.
++ */
++export type GhReader = (path: string) => Promise<any>;
++export type AdoptionIntent = {
++ method_id: string; action: "INSERT"|"MODIFY"|"REPLACE"|"REMOVE";
++ relative_path: string; target_anchor: string;
++ predecessor_anchor: string|null; successor_anchor: string|null;
++};
++export type Result = {ok:true;evidence:Record<string,unknown>}|{ok:false;code:string};
++const SHA40=/^[0-9a-f]{40}$/;
++const SLUG=/^[a-z0-9][a-z0-9_]{0,79}$/;
++const METHODS=new Set(["INSERT","MODIFY","REPLACE","REMOVE"]);
++function fail(code:string):Result{return {ok:false,code};}
++function pathFor(slug:string,relative:string):string|null{
++ if(!/^[a-zA-Z0-9_./-]{1,180}$/.test(relative)||relative.startsWith("/")||
++    relative.split("/").some(s=>s==="."||s==="..")||!/\.(md|json|ya?ml)$/.test(relative))return null;
++ return "profiles/"+slug+"/"+relative;
++}
++function enc(path:string):string{return path.split("/").map(encodeURIComponent).join("/");}
++function decodeBase64(input:string):string{
++ const bin=atob(input.replace(/\s/g,""));
++ const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
++ return new TextDecoder("utf-8",{fatal:true}).decode(bytes);
++}
++async function sha256(s:string):Promise<string>{
++ const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
++ return Array.from(new Uint8Array(d)).map(n=>n.toString(16).padStart(2,"0")).join("");
++}
++async function exact(gh:GhReader,slug:string,sha:string,relative:string){
++ const path=pathFor(slug,relative);if(!path)throw Error("PLACEMENT_PROFILE_PATH_INVALID");
++ const f=await gh("/contents/"+enc(path)+"?ref="+sha);
++ if(!f||f.type!=="file"||f.encoding!=="base64"||typeof f.content!=="string"||!SHA40.test(String(f.sha??"")))
++   throw Error("PLACEMENT_EXACT_GITHUB_FILE_UNVERIFIED");
++ const content=decodeBase64(f.content);
++ if(!content||content.length>200000||content.includes("\0"))throw Error("PLACEMENT_SOURCE_INVALID");
++ return {content,ref:"github://"+path+"@"+sha,blob_sha:f.sha};
++}
++type Section={anchor:string;pos:number;text:string};
++function sections(raw:string):Section[]{
++ const lines=raw.replace(/\r\n?/g,"\n").split("\n");
++ const marks:{anchor:string;pos:number;depth:number}[]=[];
++ for(let i=0;i<lines.length;i++){
++   const m=/^(#{1,6}) +(.+?)\s*$/.exec(lines[i]);
++   if(m)marks.push({anchor:lines[i],pos:i,depth:m[1].length});
++ }
++ return marks.map((a,i)=>{
++   let end=lines.length;
++   for(let j=i+1;j<marks.length;j++)if(marks[j].depth<=a.depth){end=marks[j].pos;break;}
++   return {anchor:a.anchor,pos:a.pos,text:lines.slice(a.pos,end).join("\n")};
++ });
++}
++function one(items:Section[],anchor:string|null):Section|null{
++ if(anchor===null)return null;
++ const found=items.filter(x=>x.anchor===anchor);
++ if(found.length!==1)throw Error("PLACEMENT_ANCHOR_UNVERIFIED_OR_AMBIGUOUS");
++ return found[0];
++}
++function validateOrder(items:Section[],intent:AdoptionIntent,mode:"base"|"candidate"):boolean{
++ const before=one(items,intent.predecessor_anchor),after=one(items,intent.successor_anchor);
++ if(!before&&!after)return false;
++ if(before&&after&&before.pos>=after.pos)return false;
++ // A proposed pair must be adjacent among peers; textual proximity alone is insufficient.
++ if(before&&after){
++   const depthBefore=before.anchor.match(/^#+/)?.[0].length;
++   const depthAfter=after.anchor.match(/^#+/)?.[0].length;
++   if(depthBefore!==depthAfter)return false;
++   const peers=items.filter(x=>x.anchor.match(/^#+/)?.[0].length===depthBefore);
++   const inBetween=peers.filter(x=>x.pos>before.pos&&x.pos<after.pos);
++   if(mode==="base"&&intent.action==="INSERT"&&inBetween.length)return false;
++   if(mode==="candidate"&&intent.action==="INSERT"&&
++     (inBetween.length!==1||inBetween[0].anchor!==intent.target_anchor))return false;
++ }
++
++ if(mode==="base"&&intent.action==="INSERT")return !items.some(x=>x.anchor===intent.target_anchor);
++ if(mode==="candidate"&&intent.action==="REMOVE")return !items.some(x=>x.anchor===intent.target_anchor);
++ const target=one(items,intent.target_anchor);
++ if(!target)return false;
++ return !(before&&target.pos<=before.pos)&&!(after&&target.pos>=after.pos);
++}
++export async function verifyProfilePlacementSource(input:{
++ gh:GhReader; profileSlug:string; baseSha:string; candidateSha?:string;
++ mode:"baseline"|"compare"; selectedMethodIds:string[]; intents:AdoptionIntent[];
++}):Promise<Result>{
++ const {gh,profileSlug:slug,baseSha,candidateSha,mode,intents,selectedMethodIds}=input;
++ if(!SLUG.test(slug)||!SHA40.test(baseSha)||(mode==="compare"&&(!SHA40.test(String(candidateSha))||candidateSha===baseSha)))
++   return fail("PLACEMENT_EXACT_REVISION_INVALID");
++ if(!Array.isArray(intents)||!Array.isArray(selectedMethodIds)||new Set(selectedMethodIds).size!==selectedMethodIds.length)
++   return fail("PLACEMENT_SELECTION_INVALID");
++ if(!intents.length){
++   // No-change is not permission to conceal a new/removed documented step.
++   if(mode==="compare"){
++     try{
++       const base=await exact(gh,slug,baseSha,"SKILL.md");
++       const candidate=await exact(gh,slug,candidateSha!,"SKILL.md");
++       const before=sections(base.content).map(x=>x.anchor);
++       const after=sections(candidate.content).map(x=>x.anchor);
++       if(JSON.stringify(before)!==JSON.stringify(after))return fail("PLACEMENT_UNDECLARED_STEP_HEADING_CHANGE");
++     }catch(error){return fail(error instanceof Error?error.message:"PLACEMENT_READBACK_FAILED");}
++   }
++   return {ok:true,evidence:{state:"NO_ADOPTION_DECLARED",profile_slug:slug,base_sha:baseSha}};
++ }
++ const selected=new Set(selectedMethodIds),seen=new Set<string>(),verified:Record<string,unknown>[]=[];
++ for(const intent of intents){
++   if(!intent||!selected.has(intent.method_id)||!METHODS.has(intent.action)||seen.has(intent.method_id)||
++      typeof intent.target_anchor!=="string"||!intent.target_anchor||!pathFor(slug,intent.relative_path))
++     return fail("PLACEMENT_INTENT_INVALID");
++   seen.add(intent.method_id);
++   try{
++     const before=await exact(gh,slug,baseSha,intent.relative_path);
++     const beforeSections=sections(before.content);
++     if(!beforeSections.length||!validateOrder(beforeSections,intent,"base"))return fail("PLACEMENT_BASE_ANCHOR_OR_ORDER_INVALID");
++     const from=intent.action==="INSERT"?null:one(beforeSections,intent.target_anchor);
++     let to:Section|null=null,afterRef:string|null=null;
++     if(mode==="compare"){
++       const after=await exact(gh,slug,candidateSha!,intent.relative_path);
++       afterRef=after.ref;
++       const afterSections=sections(after.content);
++       if(!validateOrder(afterSections,intent,"candidate"))return fail("PLACEMENT_CANDIDATE_ORDER_INVALID");
++       if(intent.action!=="REMOVE")to=one(afterSections,intent.target_anchor);
++       if((intent.action==="MODIFY"||intent.action==="REPLACE")&&from&&to&&from.text===to.text)
++         return fail("PLACEMENT_CHANGE_NOT_REALIZED");
++     }
++     verified.push({method_id:intent.method_id,action:intent.action,relative_path:intent.relative_path,
++       target_anchor:intent.target_anchor,base_ref:before.ref,base_blob_sha:before.blob_sha,
++       base_section_sha256:from?await sha256(from.text):null,
++       candidate_section_sha256:to?await sha256(to.text):null,candidate_ref:afterRef});
++   }catch(error){return fail(error instanceof Error?error.message:"PLACEMENT_SOURCE_READBACK_FAILED");}
++ }
++ return {ok:true,evidence:{schema:"PROFILE_NATIVE_PLACEMENT_SOURCE_ATTESTATION_V1",
++   state:"SOURCE_ONLY_NOT_ENFORCEMENT",profile_slug:slug,base_sha:baseSha,
++   candidate_sha:candidateSha??null,records:verified,source:"EXISTING_GITHUB_EXACT_REF_READER"}};
++}

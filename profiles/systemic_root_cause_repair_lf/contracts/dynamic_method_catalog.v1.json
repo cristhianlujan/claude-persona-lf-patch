@@ -233,5 +233,93 @@
     "path": "sandbox/lf_contract_gate_test/srcr_v07r1_candidate_20261007",
     "merge_commit": "dda7252f2cfcab21faa9fa7c778a35ba10e655a0",
     "scoring_event_id": 20556
+  },
+  "policy_resolution_method": {
+    "method_id": "SCOPED_POLICY_APPLICABILITY",
+    "trigger_signals": [
+      "MISSING_GOVERNED_VALUE",
+      "AMBIGUOUS_OR_CONFLICTING_RULE",
+      "UNPROVEN_AUTHORITY",
+      "UNKNOWN_POLICY_PARAMETER",
+      "POLICY_DRIVEN_DECISION"
+    ],
+    "source_precedence": "CURRENT_CANONICAL_SUPABASE_FIRST",
+    "discovery_strategy": "selective_by_operation_scope_and_need_not_by_target_identifier_only",
+    "sources": [
+      {
+        "level": "N1",
+        "role": "POLICY_SNAPSHOT",
+        "source": "public.v_lf_operation_policy_snapshot",
+        "filter": "governed operation_code, currently effective policy scope",
+        "purpose": "transversal plus operation policy once"
+      },
+      {
+        "level": "N2",
+        "role": "CANONICAL_VERSION",
+        "source": "public.lf_policy_versions",
+        "filter": "candidate policy_code plus active effective version",
+        "purpose": "hydrate only relevant rules and authoritative effect"
+      },
+      {
+        "level": "N2",
+        "role": "REUSABLE_POLICY",
+        "source": "private.lf_reusable_policy_registry_v1",
+        "filter": "business/channel/asset/action/capability applicability if available",
+        "purpose": "find reusable policies by registered semantic_descriptor and scope"
+      },
+      {
+        "level": "N3",
+        "role": "TARGETED_EKB_OR_ALIAS",
+        "source": "existing EKB/catalog",
+        "when": "no applicable registered rule or conflict",
+        "purpose": "seed a bounded query from actual rule need"
+      },
+      {
+        "level": "N4",
+        "role": "REFERENCED_CONTRACT",
+        "source": "GitHub exact pinned source",
+        "when": "an authorized source points to a contract, or N3 has an unresolved material candidate",
+        "purpose": "evidence of candidate vs current authority only"
+      },
+      {
+        "level": "N5",
+        "role": "PROJECT_DOCUMENT",
+        "source": "project/history",
+        "when": "remaining material uncertainty and source accessible",
+        "purpose": "context; never silently promotes policy"
+      }
+    ],
+    "selectors": [
+      {
+        "signal": "policy row scoped and current with explicit relevant effect",
+        "decision": "POLICY_APPLICABLE",
+        "action": "USE_GOVERNED_RULE"
+      },
+      {
+        "signal": "checked policy is outside scope, superseded or candidate-only",
+        "decision": "POLICY_NOT_APPLICABLE",
+        "action": "TARGETED_SOURCE_RESEARCH"
+      },
+      {
+        "signal": "no applicable rule among successfully checked canonical sources",
+        "decision": "POLICY_NOT_REGISTERED",
+        "action": "PROPOSE_GOVERNED_RULE"
+      },
+      {
+        "signal": "source failed, no independent readback, scope or effect ambiguous",
+        "decision": "POLICY_SOURCE_UNAVAILABLE",
+        "action": "BLOCK_UNVERIFIED"
+      }
+    ],
+    "guardrails": [
+      "EVIDENCE_MANIFEST_CURRENT_AND_EXACT_LOCATOR_REQUIRED",
+      "MISSING_IN_SCOPED_CATALOG_NOT_EQUIVALENT_TO_NEVER_EXISTED",
+      "CANDIDATE_OR_DOCUMENT_NOT_OPERATIONAL_AUTHORITY",
+      "SEMANTIC_DISCOVERY_NOT_PERMISSION",
+      "NEVER_ASSIGN_OWNER_OR_MUTATE_RUNTIME_BY_INFERENCE",
+      "DO_NOT_FORCE_N3_TO_N5_IF_N1_N2_SETTLE",
+      "NO_SECOND_SELECTOR_OR_POLICY_STORE"
+    ],
+    "output": "optional policy_resolution[] in existing SRCR output: scope, choice, exact external receipts, next_action"
   }
 }
