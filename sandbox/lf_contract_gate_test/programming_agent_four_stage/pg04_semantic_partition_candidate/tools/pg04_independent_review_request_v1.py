@@ -97,9 +97,13 @@ def prepare_partition_review_request(*, partition, sources, producer_execution_i
         }) != coverage_dossier_sha:
             _block("REVIEW_COVERAGE_DOSSIER_DIGEST_DRIFT")
         dossier_rows = coverage_dossier.get("solutions")
-        if not isinstance(dossier_rows, list) or sorted(
-            row.get("solution_id") for row in dossier_rows if isinstance(row, dict)
-        ) != sorted(ids):
+        if (not isinstance(dossier_rows, list)
+            or len(dossier_rows) != len(ids)
+            or any(not isinstance(row, dict)
+                   or not isinstance(row.get("solution_id"), str)
+                   or not row["solution_id"].strip()
+                   for row in dossier_rows)
+            or sorted(row["solution_id"] for row in dossier_rows) != sorted(ids)):
             _block("REVIEW_COVERAGE_DOSSIER_SOLUTIONS_DRIFT")
     criteria = [
         "A9_REQUIREMENT_AND_ACCEPTANCE_BIDIRECTIONAL_COVERAGE",
