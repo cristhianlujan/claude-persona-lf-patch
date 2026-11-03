@@ -48,3 +48,9 @@ Se recomienda la ejecución exacta en la rama y el CI. Las pruebas de partición
 `tools/pg04_local_semantic_judge_v1.py` congela el paquete sintético y la partición PG04 y admite `--model <ollama-model>` para obtener un juicio semántico de laboratorio, `--prompt-only` para revisión independiente manual o `--response-file` para validar su JSON. Tiene 10 criterios y controles de hash/punteros/veredicto. `tests/test_pg04_local_semantic_judge_v1.py` cubre su frontera de respuesta. **No ejecuta INDEPENDENT_ASSURANCE ni acredita independencia o autoridad**.
 
 Comandos y limitaciones: `PG04_LOCAL_SEMANTIC_JUDGE_20261103.md`.
+
+## PG-04_C6 — Retorno PG-07 por presupuesto
+
+`tools/pg04_pg07_budget_feedback_candidate_v1.py` prepara una arista de control `PG-07_C3 → PG-04_C6` para `GREEN/YELLOW/RED` reportados desde `CONTEXT_BUDGET_GOVERNANCE`, vinculada al SHA exacto de partición y al ID de solución. `RED` solicita evaluación JIT o repartición, **no** trunca contexto ni dispara repartición automática. El presupuesto se lee en PG-07 según perfil del modelo; PG-04 **no implementa otro contador**. Sin recibo vigente, la entrada y salida son candidatas y no autorizan ejecución.
+
+Detalle: `PG04_C6_PG07_BUDGET_REPAIR_EDGE_20261103.md`. Por decisión actual se aplazan las pruebas de esta iteración.
