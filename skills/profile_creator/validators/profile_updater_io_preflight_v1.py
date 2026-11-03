@@ -202,6 +202,9 @@ def check_step(spec: dict, step_id: str, execution: dict, request: dict,
     if step_id not in STEPS:
         report["inconsistent"].append("UNKNOWN_STEP")
         return report
+    if step_id == "init_execution":
+        report["inconsistent"].append("INIT_REQUIRES_PRE_EXECUTION_REQUEST")
+        return report
     if (execution.get("operation_code") != "ACTUALIZACION_PERFIL_LF"
             or execution.get("status") != "IN_PROGRESS"
             or not isinstance(execution.get("execution_id"), str)
