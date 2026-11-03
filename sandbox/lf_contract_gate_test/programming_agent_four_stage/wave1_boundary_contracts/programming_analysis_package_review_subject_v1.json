@@ -1,0 +1,32 @@
+{
+  "schema_version": "PROGRAMMING_ANALYSIS_PACKAGE_REVIEW_SUBJECT_V1",
+  "capability_code": "INDEPENDENT_ASSURANCE",
+  "capability_version": "2.0.1",
+  "current_capability_manifest_sha256": "f87727d3c81f3cda4c4ea8f5c23d7715bcda9e0f08bd1b2eae1188117b946d35",
+  "subject_type": "PROGRAMMING_ANALYSIS_PACKAGE",
+  "operation_code": "REVISION_INDEPENDIENTE_ESTRATEGIA_LF",
+  "new_operation_allowed": false,
+  "subject_ref_template": "PROGRAMMING_ANALYSIS_PACKAGE/<context_id>",
+  "subject_sha256_rule": "Equals private.lf_decision_context_asof_v1.context_sha256: the subject is the exact persisted context_payload JSONB, hashed as SHA256(UTF8(jsonb::text)); do not hash a differently serialized Python snapshot.",
+  "required_snapshot_fields": ["analysis_stop_rule", "applicable_invariants", "applicable_rules", "authority_bindings", "authority_fingerprint_sha256", "authority_state", "currentness_refs", "decision_context", "implementability_schema", "implementation_state", "material_front_coverage", "objective", "package_readiness", "preserve", "requirements", "scope_front_matrix", "scope_readiness", "snapshot_schema_digest_sha256", "source_refs", "source_snapshot_sha256", "target", "target_granularity", "unresolved_material_items"],
+  "required_dimensions": [
+    {"code":"REQUEST_DEFINITION_TARGET_FIDELITY","pass":"Pedido, definición, target, revisión y autoridad del QUÉ son coherentes y trazables.","fail":"Cualquier contradicción o salto de autoridad material.","minimum_evidence":"Referencias concretas al pedido, objetivo, target, decisiones y authority_bindings."},
+    {"code":"LOSSLESS_PRESERVATION","pass":"A3–A8, requisitos, decisiones y bindings se preservan sin pérdida material.","fail":"Omisión, cambio semántico o proyección no justificada.","minimum_evidence":"Correspondencias comprobables entre preserve, requirements, decision_context y source_refs."},
+    {"code":"MATERIAL_FRONT_COMPLETENESS","pass":"Frentes materiales completos, matriz bidireccional y razones explícitas para REQUIRED, REUSE_AS_IS y NOT_APPLICABLE.","fail":"Frente ausente, sentido sin correspondencia o cierre sin razón.","minimum_evidence":"Entradas relevantes de material_front_coverage y scope_front_matrix con justificación."},
+    {"code":"SCOPE_READY_SOUNDNESS","pass":"Cada READY carece de dependencias/frentes/decisiones materiales bloqueantes; PARTIAL_READY se limita a scopes independientes.","fail":"READY prematuro o PARTIAL_READY de alcance dependiente.","minimum_evidence":"scope_readiness, sus dependencias y relación con scope_front_matrix/blockers."},
+    {"code":"CURRENTNESS_AND_REFERENCES","pass":"Vigencia, versiones, huellas y referencias están sustentadas; STOP no se confunde con READY.","fail":"Referencia stale/no verificable, hash inconsistente o promoción de STOP a READY.","minimum_evidence":"currentness_refs, authority_fingerprint_sha256, source_snapshot_sha256, analysis_stop_rule."},
+    {"code":"NO_TECHNICAL_STRATEGY_OR_PROMOTION","pass":"Análisis define el QUÉ sin escoger estrategia técnica ni promover estados implícitamente.","fail":"Selección técnica no autorizada o transición de estado implícita.","minimum_evidence":"objective, implementability_schema, implementation_state y package_readiness."},
+    {"code":"RETURNS_AND_TRACEABILITY","pass":"Retornos dirigidos, blockers y trazabilidad llegan a la entrada exacta.","fail":"Bloqueo sin destinatario, causa sin origen o referencia no rastreable.","minimum_evidence":"unresolved_material_items, blockers/reason y source_refs/decision_context."}
+  ],
+  "review_verdict_rule": {
+    "PASS":"Todas las dimensiones PASS con evidencia no vacía.",
+    "RETURN_TO_WORKER":"Una o más dimensiones FAIL verificadas, sin UNKNOWN.",
+    "BLOCKED":"Una o más dimensiones UNKNOWN, independientemente de FAIL; falta evidencia para decisión segura."
+  },
+  "evidence_levels": {
+    "OWNER_APPROVED_GPT_NATIVE_IN_CHAT_EQUIVALENT":{"provider_attested":false,"description":"Revisión independiente en chat GPT Native; la transcripción es una copia, no atestación del proveedor."},
+    "GOVERNED_RUNTIME":{"provider_attested":true,"description":"Nivel futuro: solo los receipts emitidos por transporte/runtime gobernado pueden sustentar atestación; nunca inferirla del chat."}
+  },
+  "forbidden_chat_fields":["governed_execution_id","router_dispatch_receipt_id","provider_response_id_attested_by_transport","evidence_ledger_verified_ref"],
+  "limits":{"runtime_activation":false,"production_activation":false,"business_effect_allowed":false,"planning_or_execution_granted":false}
+}
