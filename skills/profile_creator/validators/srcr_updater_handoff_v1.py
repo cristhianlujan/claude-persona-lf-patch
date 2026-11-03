@@ -4,6 +4,7 @@ import json
 import re
 import sys
 SHA = re.compile(r"[0-9a-f]{64}")
+SHA40 = re.compile(r"[0-9a-f]{40}")
 EXEC = re.compile(r"EXEC-[A-Za-z0-9][A-Za-z0-9_-]{7,172}")
 CODE = re.compile(r"PERFIL-[A-Z0-9][A-Z0-9-]{2,119}")
 PATH = re.compile(r"profiles/[a-z0-9][a-z0-9_-]{1,100}/SKILL\.md")
@@ -14,6 +15,7 @@ FIXED = dict(schema_version="LF_SRCR_UPDATER_HANDOFF_V1", business="LF",
 REQUIRED = set(FIXED) | {"source_execution_id", "target_code", "target_path",
     "request_sha256", "router_authorization_receipt_sha256",
     "policy_snapshot_sha256", "diagnosis_ref", "diagnosis_sha256",
+    "target_main_revision_sha", "target_blob_sha",
     "authorized_scope"}
 FORBIDDEN = {"repair_execution_authority", "direct_dispatch_authorized",
              "service_role", "jwt", "oidc_token", "production_authorized"}
@@ -30,6 +32,9 @@ def inspect(h):
     for key in ("request_sha256", "router_authorization_receipt_sha256",
                 "policy_snapshot_sha256", "diagnosis_sha256"):
         if not isinstance(h.get(key),str) or not SHA.fullmatch(h[key]):
+            errors.append("HANDOFF_SHA_"+key.upper())
+    for key in ("target_main_revision_sha", "target_blob_sha"):
+        if not isinstance(h.get(key),str) or not SHA40.fullmatch(h[key]):
             errors.append("HANDOFF_SHA_"+key.upper())
     if not isinstance(h.get("source_execution_id"),str) or not EXEC.fullmatch(h["source_execution_id"]):
         errors.append("HANDOFF_PARENT_INVALID")
@@ -51,7 +56,7 @@ def inspect_return(h, r):
                 "terminal_verified":False}
     required = {"schema_version", "source_execution_id", "child_execution_id",
                 "target_code", "status", "terminal_receipt_ref",
-                "terminal_receipt_sha256", "next_action"}
+                "terminal_receipt_sha256", "exact_head_sha", "next_action"}
     errors=[]
     if not isinstance(r,dict):
         errors.append("RETURN_NOT_OBJECT")
@@ -67,6 +72,9 @@ def inspect_return(h, r):
             errors.append("RETURN_STATUS")
         sha=r.get("terminal_receipt_sha256")
         if not isinstance(sha,str) or not SHA.fullmatch(sha): errors.append("RETURN_RECEIPT_SHA")
+        head=r.get("exact_head_sha")
+        if not isinstance(head,str) or not SHA40.fullmatch(head):
+            errors.append("RETURN_EXACT_HEAD_SHA")
         for key in ("terminal_receipt_ref","next_action"):
             if not isinstance(r.get(key),str) or not r[key].strip():
                 errors.append("RETURN_"+key.upper())
