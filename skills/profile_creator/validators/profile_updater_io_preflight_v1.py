@@ -67,7 +67,7 @@ def validate_catalog(spec: dict) -> list[str]:
                 failures.append("CATALOG_SOURCE_INVALID:" + stage["step_id"])
                 continue
             path = b.get("path")
-            if not isinstance(path, str) or not re.fullmatch(r"[a-z_][a-z_0-9]*(\\.[a-z_][a-z_0-9]*)*", path):
+            if not isinstance(path, str) or not re.fullmatch(r"[a-z_][a-z_0-9]*(\.[a-z_][a-z_0-9]*)*", path):
                 failures.append("CATALOG_PATH_INVALID:" + stage["step_id"])
             if b["source"] == "prior_step":
                 parent = b.get("step_id")
