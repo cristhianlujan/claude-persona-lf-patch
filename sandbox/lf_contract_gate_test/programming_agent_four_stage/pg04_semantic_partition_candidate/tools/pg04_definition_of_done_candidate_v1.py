@@ -17,7 +17,8 @@ def _digest(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=True).encode()).hexdigest()
 
 def _ids(rows):
-    return isinstance(rows,list) and len(rows)==len(set(rows)) and all(isinstance(x,str) and bool(x.strip()) for x in rows)
+    return (isinstance(rows,list) and all(isinstance(x,str) and bool(x.strip()) for x in rows)
+            and len(rows)==len(set(rows)))
 
 def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
     """Freeze planned checks for every solution and material acceptance signal."""
@@ -36,6 +37,8 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
     for item in standards:
         if not isinstance(item,dict) or any(not isinstance(item.get(k),str) or not item[k].strip() for k in ("standard_code","source_ref","source_sha256")) or not re.fullmatch(r"[0-9a-f]{64}",item["source_sha256"]) or not _ids(item.get("applies_to_write_scopes")) or not item["applies_to_write_scopes"]:
             _fail("STANDARD_SCOPE_SOURCE_INVALID")
+        if set(item) != {"standard_code","source_ref","source_sha256","applies_to_write_scopes"}:
+            _fail("STANDARD_FIELDS_INVALID")
         code=item["standard_code"]
         if code in catalog:_fail("STANDARD_DUPLICATE")
         catalog[code]=item
@@ -61,6 +64,8 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
         accs=sol.get("acceptance_ids")
         if not _ids(scopes) or not scopes or not _ids(reqs) or not _ids(accs) or (not reqs and not accs):
             _fail("DOD_SOLUTION_OBLIGATIONS_INVALID")
+        if set(plan) != {"solution_id","standard_codes","checks"}:
+            _fail("DOD_PLAN_FIELDS_INVALID")
         selected=plan.get("standard_codes")
         if not _ids(selected) or not selected:
             _fail("DOD_STANDARDS_SELECTION_REQUIRED")
@@ -80,6 +85,10 @@ def prepare_dod(*,partition,standards_catalog_version,standards,solution_plans):
         for check in checks:
             if not isinstance(check,dict) or any(not isinstance(check.get(k),str) or not check[k].strip() for k in ("check_id","kind","validation_code","input_ref")):
                 _fail("DOD_CHECK_INVALID")
+            required_fields={"check_id","kind","validation_code","input_ref","requirement_ids","acceptance_ids"}
+            optional_fields={"standard_code"}
+            if not required_fields.issubset(check) or set(check)-required_fields-optional_fields:
+                _fail("DOD_CHECK_FIELDS_INVALID")
             cid=check["check_id"]
             if cid in observed:_fail("DOD_CHECK_DUPLICATE")
             observed.add(cid)
