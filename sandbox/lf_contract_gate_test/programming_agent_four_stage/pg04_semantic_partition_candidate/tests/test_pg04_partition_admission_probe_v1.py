@@ -120,6 +120,54 @@ class ProbeTests(unittest.TestCase):
         with self.assertRaisesRegex(PartitionProbeBlocked, "STRATEGY_REQUIREMENTS_INVALID"):
             inspect_candidate(**case)
 
+    def test_existing_atom_binding_matches_envelope(self):
+        a=args()
+        a["solutions"][0]["atom_ids"]=["ATOM-1"]
+        a["solutions"][0]["source_bindings"]=[{
+            "atom_id":"ATOM-1","implementation_state":"EXISTING",
+            "as_is_ref":"git://as-is","delta_ref":"analysis://delta"}]
+        self.assertEqual(inspect_candidate(**a)["status"],"CANDIDATE_NOT_ADMITTED")
+
+    def test_existing_atom_delta_drift_blocked(self):
+        def bad(a):
+            a["solutions"][0]["atom_ids"]=["ATOM-1"]
+            a["solutions"][0]["source_bindings"]=[{
+                "atom_id":"ATOM-1","implementation_state":"EXISTING",
+                "as_is_ref":"git://as-is","delta_ref":"analysis://other"}]
+        self.block("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT",bad)
+
+    def test_existing_atom_state_drift_blocked(self):
+        def bad(a):
+            a["solutions"][0]["source_bindings"]=[{
+                "atom_id":"ATOM-1","implementation_state":"NEW",
+                "bounded_reuse_assessment_ref":"analysis://reuse"}]
+        self.block("ATOM_IMPLEMENTATION_STATE_DRIFT",bad)
+
+    def test_duplicate_atom_binding_blocked(self):
+        def bad(a):
+            row={"atom_id":"A1","implementation_state":"EXISTING",
+                 "as_is_ref":"git://as-is","delta_ref":"analysis://delta"}
+            a["solutions"][0]["source_bindings"]=[row,copy.deepcopy(row)]
+        self.block("ATOM_IMPLEMENTATION_BINDINGS_INVALID",bad)
+
+    def test_new_atom_reuse_binding_mismatch_blocked(self):
+        def bad(a):
+            sol=a["solutions"][0]
+            sol.pop("as_is_ref")
+            sol.pop("delta_ref")
+            sol["implementation_state"]="NEW"
+            sol["bounded_reuse_assessment_ref"]="analysis://reused"
+            sol["source_bindings"]=[{
+                "atom_id":"ATOM-1","implementation_state":"NEW",
+                "bounded_reuse_assessment_ref":"analysis://forged"}]
+        self.block("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT",bad)
+
+    def test_new_solution_forbids_existing_fields(self):
+        def bad(a):
+            a["solutions"][0].update(implementation_state="NEW",
+                bounded_reuse_assessment_ref="analysis://reuse")
+        self.block("NEW_CONTAINS_EXISTING_EVIDENCE",bad)
+
     def test_source_trace(self):
         self.block("SOURCE_TRACE_MISSING", lambda a: a["source_refs"].pop("j02_source_path"))
 
