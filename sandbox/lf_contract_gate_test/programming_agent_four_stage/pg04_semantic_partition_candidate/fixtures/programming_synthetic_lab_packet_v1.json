@@ -85,7 +85,7 @@
         "contract://payment-event-v1"
       ],
       "implementation_state": "NEW",
-      "bounded_reuse_assessment_ref": "synthetic://reuse/API",
+      "bounded_reuse_assessment_ref": "synthetic://reuse/PAY",
       "requirement_ids": [
         "R1"
       ],
@@ -110,7 +110,7 @@
         "contract://payment-event-v1"
       ],
       "implementation_state": "NEW",
-      "bounded_reuse_assessment_ref": "synthetic://reuse/DB",
+      "bounded_reuse_assessment_ref": "synthetic://reuse/PAY",
       "requirement_ids": [
         "R2"
       ],
