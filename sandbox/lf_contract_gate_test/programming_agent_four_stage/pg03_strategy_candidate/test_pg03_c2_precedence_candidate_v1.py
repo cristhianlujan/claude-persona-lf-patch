@@ -85,8 +85,18 @@ neg("conflict_register_missing","CONFLICT_REGISTER_MISSING",
     lambda a:a.update(conflicts=None))
 neg("unknown_rule","SELECTED_RULES_INVALID",
     lambda a:a.update(selected_rule_ids=["STD-SEC-999"]))
-assert len(cases)==18
-print("PASS_PG03_C2_PRECEDENCE_CANDIDATE positive=1 negative=18 "
+neg("empty_catalog_selection","SELECTED_RULES_INVALID",
+    lambda a:a.update(selected_rule_ids=[]))
+neg("duplicate_catalog_selection","SELECTED_RULES_INVALID",
+    lambda a:a.update(selected_rule_ids=["STD-BE-01","STD-BE-01"]))
+neg("unhashable_catalog_selection","SELECTED_RULES_INVALID",
+    lambda a:a.update(selected_rule_ids=[{"id":"STD-BE-01"}]))
+neg("null_catalog_selection","SELECTED_RULES_INVALID",
+    lambda a:a.update(selected_rule_ids=None))
+neg("mixed_valid_invalid_selection","SELECTED_RULES_INVALID",
+    lambda a:a.update(selected_rule_ids=["STD-BE-01",None]))
+assert len(cases)==23
+print("PASS_PG03_C2_PRECEDENCE_CANDIDATE positive=1 negative=23 "
       "order=L1_A_B_L2 mixed_domain_fail_closed=true "
       "semantic_conflicts_verified=false precedence_verified=false "
       "authority=NONE runtime_verified=false")
