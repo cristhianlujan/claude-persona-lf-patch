@@ -202,6 +202,17 @@ class Gate2StopGuard(unittest.TestCase):
             'NOT_EXECUTED / TOOL_ACCESS_DENIED. Definición registrada al 100%.')
         self.assertEqual(module.evaluate(e)['decision'], 'block')
 
+    def test_unverified_gate2_literal_cannot_escape_before_receipt_check(self):
+        # Regression: a forged Gate2 literal lacking HANDOFF previously escaped
+        # through the 'not found' early return even for terminal claims.
+        for final in ('11/11 COMPLETED READY', 'Definición registrada 100%'):
+            with self.subTest(final=final):
+                e = self.with_transcript(
+                    'Ejecuta el perfil LF por Router',
+                    'GATE2_DERIVED_PENDING_GOVERNED_ADMISSION',
+                    final)
+                self.assertEqual(module.evaluate(e)['decision'], 'block')
+
     def test_subsequent_valid_gate2_run_uses_existing_terminal_guard(self):
         rid = 'EXEC-PROFILE-GATE2-' + 'A' * 24
         receipts = [
