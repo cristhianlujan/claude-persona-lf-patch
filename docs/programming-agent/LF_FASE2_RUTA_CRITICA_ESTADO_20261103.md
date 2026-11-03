@@ -297,6 +297,19 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Dictamen:** `PG03_C2_SOURCE_RECONCILED / STD_API_OWNER_DECISION_9_OF_9_PENDING / C3_RELEASE_NOT_VERIFIED / OFFICIAL_PENDING`.
 
+## 4.8. PG-03_C2 / PG-00_C9 — propuesta del owner STD-API 2/4/3 (03/11)
+
+**Decisión:** el propietario autorizó la **clasificación como base de trabajo**, no un GO normativo, publicación ni merge: L1 `STD-API-06` y `STD-API-09`; L2 `STD-API-01`, `02`, `03`, `07`; tres reglas mixtas a descomponer `STD-API-04`, `05` y `08`.
+
+**Artefacto nuevo en [sandbox PR #18](https://github.com/paulozterra/lf-programming-sandbox/pull/18)** DRAFT, HEAD `8f199a14d074bd39054f0c36af181070e33393d1`, apilado sobre [PR #17](https://github.com/paulozterra/lf-programming-sandbox/pull/17):
+- `docs/programming/CHG-0009_STD_API_LEVEL_SPLIT_PROPOSAL_20261103.md`: matriz 9/9 con obligaciones preservadas, alcance de L1/L2, tres desdobles y gates de revisión.
+- `standards/changes/proposals/CHG-0009.draft.json`: expediente **no activo** de C9; `CHG-0008` ya estaba ocupado. No es `standards/changes/CHG-0009.json` ni una norma aprobada.
+- `standards/tests/test_chg0009_std_api_proposal_v1.py`: controles de cobertura 9/9, integridad del status de propuesta y rechazo de indicadores de aprobación falsa.
+
+**Límites deliberados:** no se editó `standards/catalog.json` v0.7.0 ni `CATALOGO.md`, Skills, pins o Supabase. La división interna propone temporalmente `STD-API-04-L1/L2`, `05-L1/L2`, `08-L1/L2` como identificadores **no canónicos** que requieren confirmar el esquema real de IDs y migrar todas las referencias.
+
+**Pendiente para C9 efectivo:** revisión independiente exact HEAD con cobertura de seguridad `STD-API-04`, aplicabilidad de idempotencia, tasa límite, contratos y monto; decisión final del owner sobre textos/IDs y clasificación exacta del diff (posible `SECURITY` con invalidación de pins o separación de cambios incompatibles); crear un CHG activo solo después de esas verificaciones, versionar catálogo y generar derivados; CI, merge autorizado, publicación C3 y readback. Hasta entonces `PG-00_C9=PENDING`, `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
