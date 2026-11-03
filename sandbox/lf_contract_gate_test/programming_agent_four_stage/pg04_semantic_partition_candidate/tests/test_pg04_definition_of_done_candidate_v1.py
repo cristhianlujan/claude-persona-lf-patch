@@ -38,7 +38,10 @@ def fixtures():
                  check("A3","ACCEPTANCE",acc=["A3"]),
                  check("D1","DEPENDENCY")]}]
     return {"partition":partition,"standards_catalog_version":"TEST-CATALOG-01",
-            "standards":standards,"solution_plans":plans}
+            "standards":standards,
+            "validation_registry":[{"validation_code":"PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1",
+                                    "status":"ACTIVE","source_ref":"fixture://registry/current"}],
+            "solution_plans":plans}
 
 class Tests(unittest.TestCase):
     def denied(self,code,mutate):
@@ -144,6 +147,18 @@ class Tests(unittest.TestCase):
     def test_malformed_standard_scope_list_blocked(self):
         self.denied("STANDARD_SCOPE_SOURCE_INVALID",
                     lambda a:a["standards"][0].update(applies_to_write_scopes=[{"scope":"backend/api"}]))
+
+    def test_unknown_validator_blocked(self):
+        self.denied("DOD_VALIDATOR_NOT_ACTIVE_OR_UNDECLARED",
+                    lambda a:a["solution_plans"][0]["checks"][0].update(validation_code="INVENTED_VALIDATOR"))
+
+    def test_inactive_validator_blocked(self):
+        self.denied("DOD_VALIDATOR_REGISTRY_INVALID",
+                    lambda a:a["validation_registry"][0].update(status="PROPOSED"))
+
+    def test_duplicate_validator_declaration_blocked(self):
+        self.denied("DOD_VALIDATOR_DUPLICATE",
+                    lambda a:a["validation_registry"].append(copy.deepcopy(a["validation_registry"][0])))
 
     def test_empty_requirement_binding_in_check_fails(self):
         self.denied("DOD_REQUIREMENT_CHECK_UNBOUND",
