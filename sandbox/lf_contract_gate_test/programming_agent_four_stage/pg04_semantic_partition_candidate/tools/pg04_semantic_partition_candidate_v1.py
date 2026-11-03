@@ -69,10 +69,14 @@ def partition_by_semantic_outcome(*,strategy,partition_contract,obligations,outc
         if state=="EXISTING":
             if not _text(a.get("as_is_ref")) or not _text(a.get("delta_ref")):
                 _block("EXISTING_DELTA_MISSING")
+            if "bounded_reuse_assessment_ref" in a:
+                _block("EXISTING_CONTAINS_NEW_EVIDENCE")
             binding=("EXISTING",a["as_is_ref"],a["delta_ref"])
         elif state=="NEW":
             if not _text(a.get("bounded_reuse_assessment_ref")):
                 _block("NEW_REUSE_EVIDENCE_MISSING")
+            if "as_is_ref" in a or "delta_ref" in a:
+                _block("NEW_CONTAINS_EXISTING_EVIDENCE")
             binding=("NEW",a["bounded_reuse_assessment_ref"])
         else:
             _block("IMPLEMENTATION_STATE_UNKNOWN")
@@ -148,10 +152,16 @@ def partition_by_semantic_outcome(*,strategy,partition_contract,obligations,outc
             "depends_on":sorted({atom_solution[d] for x in rows for d in x["depends_on"] if atom_solution[d]!=sid}),
             "atom_ids":members,
             "source_bindings":[
-                {"atom_id":x["atom_id"],"source_ref":x["source_ref"],"scope_id":x["scope_id"],
-                 "outcome_evidence_ref":outcomes[x["outcome_id"]]["evidence_ref"],
-                 "semantic_rationale":x["semantic_rationale"],
-                 "write_scope_reason":x["write_scope_reason"],"risk_level":x["risk_level"]}
+                dict(
+                    {"atom_id":x["atom_id"],"source_ref":x["source_ref"],"scope_id":x["scope_id"],
+                     "outcome_evidence_ref":outcomes[x["outcome_id"]]["evidence_ref"],
+                     "semantic_rationale":x["semantic_rationale"],
+                     "write_scope_reason":x["write_scope_reason"],"risk_level":x["risk_level"],
+                     "implementation_state":x["implementation_state"]},
+                    **({"as_is_ref":x["as_is_ref"],"delta_ref":x["delta_ref"]}
+                       if x["implementation_state"]=="EXISTING" else
+                       {"bounded_reuse_assessment_ref":x["bounded_reuse_assessment_ref"]})
+                )
                 for x in rows],
         }
         if binding[0]=="EXISTING":solution["as_is_ref"],solution["delta_ref"]=binding[1:]
