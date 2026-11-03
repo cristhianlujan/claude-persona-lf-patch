@@ -30,7 +30,7 @@ Ejemplo de intención — **fixtures sintéticos, no estándares canónicos de L
 | `SOL-001` | `backend/api` + `database/migration` | `STD-API`, `STD-DB` | STD por scope, requisitos y aceptaciones del lote |
 | `SOL-002` | `frontend/ui` | `STD-UI` | STD UI, requisitos/aceptaciones, check de dependencia `SOL-001` |
 
-Se incluyó `tests/test_pg04_definition_of_done_candidate_v1.py` con **27 casos** positivos y negativos (revisar contador en ejecución real). No atribuir PASS sin ejecutar las suites en checkout exacto.
+Se incluyó `tests/test_pg04_definition_of_done_candidate_v1.py` con **30 casos definidos** positivos y negativos (contados en el archivo; ejecución real pendiente). No atribuir PASS sin ejecutar las suites en checkout exacto.
 
 ### Ejecución que debe calificarse
 
