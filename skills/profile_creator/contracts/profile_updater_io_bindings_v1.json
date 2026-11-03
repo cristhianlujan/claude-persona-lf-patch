@@ -9,7 +9,8 @@
     "request": "Field of the existing governed request; no new top-level fields",
     "execution": "Field of the canonical operation execution",
     "validation": "Preflight diagnoses missing/mismatched bindings; does not authorize a PASS or substitute server verification",
-    "value_type": "Expected local preflight value type; does NOT introduce or replace server Edge/RPC enforcement"
+    "value_type": "Expected local preflight value type; does NOT introduce or replace server Edge/RPC enforcement",
+    "historical_output_type_compatibility": "Updater LIVE receipts observed semantic_judge_result as string/object and before_after_matrix as object/array; union types avoid retroactive rejection"
   },
   "steps": [
     {
@@ -370,7 +371,7 @@
           "name": "semantic_judge_result",
           "source": "request",
           "path": "evidence_payload.semantic_judge_result",
-          "value_type": "string"
+          "value_type": "string_or_object"
         }
       ]
     },
@@ -400,7 +401,7 @@
           "name": "before_after_matrix",
           "source": "request",
           "path": "evidence_payload.before_after_matrix",
-          "value_type": "object"
+          "value_type": "object_or_array"
         }
       ]
     },
