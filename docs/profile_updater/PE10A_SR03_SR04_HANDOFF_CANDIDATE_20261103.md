@@ -1,42 +1,43 @@
-# PE10A SR03/SR04 — Implementación parcial controlada (2026-11-03)
+# LF — PE10A_SR03 / SR04 | Llamada del Reparador a la habilidad Profile Updater
 
-Estado: CANDIDATE / NO_ENFORCEMENT / NO_E2E. No es autorización de producción ni cierre de checkpoints.
+**Estado:** candidato, sin enforcement server-side ni E2E. **Alcance exacto:** habilidad Profile Updater (entrada, ejecución interna y respuesta). Router ACT-0001 y encaminamiento del perfil quedan FUERA DE ALCANCE.
 
-## Arquitectura que debe respetarse
+## Flujo aprobado
 
-ACT-0001 → EJECUCION_PERFIL_LF (Reparador SRCR) → llamada de capacidad del perfil (CONTEXT_PACK) → ACTUALIZACION_PERFIL_LF (17 etapas) → recibo verificable → continuar run SRCR.
+```text
+Router ACT-0001 (encaminamiento existente, no tocar)
+  -> Perfil Reparador LF (ya ejecutándose)
+     -> LLAMADA a habilidad PROFILE_UPDATER
+        -> habilidad recibe y valida solicitud
+        -> habilidad ejecuta autónomamente sus 17 etapas y su motor GitHub/OIDC + Edge/RPC
+        -> habilidad devuelve RAW + estado + evidencias/recibos + siguiente acción
+     <- Perfil Reparador recibe, valida, registra y continúa en el MISMO run
+```
 
-**Patrón reutilizado de Input Governance:** `input_validate(40)` evalúa aplicabilidad y retorna `INPUT_GOVERNANCE_RUNTIME_REQUIRED` o `READY`, asociado a `consumer=CONTEXT_PACK` y `resume_via=EJECUCION_PERFIL_LF/input_validate`. El Updater debe usar **el mismo mecanismo de capacidad perteneciente al perfil**, pero **después del diagnóstico validado por `semantic_judge(70)` y antes del `report_output(80)` terminal**, no durante `input_validate`. El mismo run activo permanece abierto mientras el Updater retorna su recibo. Si 80 ya fue registrado, bloquear; no reabrir el run. No se duplica el Router ni se vuelve a decidir la intención.
+**La habilidad es dueña de su ejecución.** GitHub Actions, Edge y RPC son implementación interna de Updater. No se introduce un Router B, un orquestador externo adicional, ni se altera ACT-0001. El Reparador no ejecuta el Updater etapa por etapa: realiza una llamada y procesa la respuesta recibida.
 
-**El contrato JSON de este PR es el payload especializado de la capacidad, NO un contrato de nueva ruta de navegación.** Mantiene campos de trazabilidad necesarios para ligar parent/child y el recibo; los campos no son autoridad, el servidor los relee.
+## Entradas / proceso / salidas
 
-El Router clasifica/deriva; SRCR diagnostica y solicita, pero no llama otro perfil ni escribe por su cuenta. GitHub Actions/OIDC, Edge y RPC son transporte técnico, no autoridad para decidir.
+| Frontera | Productor / consumidor | Contrato mínimo y comprobación |
+| --- | --- | --- |
+| Solicitud | Reparador -> habilidad | Run del Reparador, identidad de perfil, solicitud, diagnóstico probado, target exacto, scope y referencias de autoridad/política |
+| Admisión | Habilidad | Releer run padre y evidencia SERVER-SIDE; comprobar que existe decisión de actualización válida, que el scope coincide y que el padre está activo |
+| Motor interno | Habilidad Updater | Reutilizar `ACTUALIZACION_PERFIL_LF`, 17 etapas, GitHub Actions/OIDC + Edge/RPC y ledger propios; el Reparador no sustituye el motor |
+| Respuesta | Habilidad -> Reparador | `source_execution_id`, `child_execution_id`, estado, RAW/referencia, evidence refs, SHA de recibo y HEAD, siguiente acción |
+| Recepción | Reparador | Validar vínculo hijo/padre y recibo real; registrar respuesta y continuar en el MISMO run; en SRCR actual antes de `report_output(80)` |
 
-## Lote entregado: SR03 (contrato candidato)
+La condición de paso SRCR vigente es diagnóstico real `execute_profile(50)`, `output_validate(60)`, `semantic_judge(70)` y retorno antes de `report_output(80)`. **Estos números describen el perfil SRCR actual, no un contrato transversal que imponga numeración a otros perfiles.**
 
-- Contrato tipado en contracts/LF_SRCR_UPDATER_HANDOFF_V1_CANDIDATE.json.
-- Preflight determinista en skills/profile_creator/validators/srcr_updater_handoff_v1.py y pruebas negativas.
-- Exige parent run, perfil SRCR, mismo request, target/path/scope exactos, SHA40 de main y blob objetivo, SHA256 de Router, policy y diagnóstico, `context_transport=CONTEXT_PACK`, `consumer=PROFILE_EXECUTION`, `resume_via=EJECUCION_PERFIL_LF`.
-- Devuelve READY_FOR_SERVER_VERIFICATION, nunca PASS, dispatch_authorized ni escritura.
-- No reutiliza repair_execution_authority de SRCR: su único intent actual de escritura es REPAIR_MISSING_PRODUCT_STRUCTURE, que no da permiso general para Updater.
-- La entrada/continuación del Reparador sigue por el mecanismo existente `LF_PROFILE_NATIVE_BEGIN_REQUEST_V1` / `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` (Issue `lf-profile-resume-governed` → GitHub OIDC → Edge → RPC). Este PR no altera ni duplica ese transporte.
+## Reutilización de IG (solo el patrón)
 
-## SR04: integración pendiente y bloqueada por autoridad
+IG: perfil solicita -> IG ejecuta internamente -> IG devuelve al perfil. Updater: Reparador solicita -> habilidad Updater ejecuta internamente -> Updater devuelve al Reparador.
 
-Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF autorizado y comprueba salida real `execute_profile(50)`, validación `output_validate(60)` y juez `semantic_judge(70)` limpios, y exige que `report_output(80)` todavía no se haya registrado; (2) lee la salida real de SRCR y autoriza la solicitud de Updater con alcance exacto; (3) congela parent/child/scope/SHAs en init de Updater; (4) emite ticket server-side de un solo uso vinculado al mismo run (patrón IG) y usa la ruta de continuación del perfil existente y el dispatcher Updater existente (issue+label/OIDC) como adaptador técnico de capacidad, sin nueva ruta Router ni service_role en Router; (5) retorna recibo terminal auténtico y HEAD SHA exacto al run SRCR todavía activo, sin crear otro run de perfil, registra recepción y solo entonces permite `report_output(80)`; (6) juez independiente verifica readback Github/Supabase/runtime. Una estructura JSON sola no demuestra ninguno de estos pasos.
+NO copiar `CONTEXT_PACK`, `consumer=PROFILE_EXECUTION` o `resume_via` como campos normativos del Updater. Son detalles de la implementación IG; su ticket no autoriza escrituras GitHub.
 
-## Evidencia LIVE de partida
+## Evidencia y bloqueo
 
-- En 92 manifests de ACTUALIZACION_PERFIL_LF: 0 con parent_profile_execution_id, 0 con repair_execution_authority.
-- El run SRCR EXEC-PROFILE-GATE2-B6070E56727C1FB64437B850 está READ_ONLY y repair_execution_authority=null.
-- PE10A_SR03, PE10A_SR04, PE10A_ST12 y PE10A_OP08 están PENDING, sin recibo final.
+PR candidato #3520 incluye contrato tipado, validador fail-closed y pruebas estructurales. **No** implementa aún la conexión real del perfil con la habilidad, validación servidor de la invocación ni la recepción terminal; no afirmar PASS, no cerrar SR03/SR04/ST12/OP08 y no merge sin prueba E2E.
 
-## Falsificadores para siguiente lote
+El controlador de habilidad debe rechazar: run padre inexistente o terminal, falta de diagnóstico, origen SALY, target incorrecto, path no canónico, SHA/scope obsoleto, autorización autodeclarada, respuesta no correlacionada y recibo inexistente. Un JSON de prueba o un PASE de CI no reemplaza recibo LIVE.
 
-Rechazar sin parent, SALY, target equivocado, path traversal, scope extra, digest inválido, autoridad fabricada, política obsoleta, retorno con otro child, PASS autodeclarado, recibo ausente, replay, cambio de permisos o nueva ruta directa.
-
-No merge hasta revisión independiente, enforcement server-side y E2E. No se modifica ACT-0001, Edge, RPC, perfiles, permisos ni producción con este PR.
-
-## Diferencia importante respecto de IG
-
-IG se invoca en `input_validate(40)` antes de ejecutar el perfil y usa ticket `CONTEXT_PACK` de un solo uso. Updater es capacidad posterior al diagnóstico: requiere output(50), validación(60) y juez(70), y espera retorno **antes** de report_output(80). Reutilizar el protocolo de decisión, ticket, invocación y retorno, no la función IG vinculada a pantalla/CONTEXT_PACK ni su autorización. El adaptador GitHub/OIDC existente sirve solo al motor de escritura del Updater.
+**Siguiente lote:** implementar SOLAMENTE la función/adaptador de entrada y salida de Profile Updater usando su motor actual. Sin cambios en Router, permisos globales, motor de IG o servicio de orquestación genérico.
