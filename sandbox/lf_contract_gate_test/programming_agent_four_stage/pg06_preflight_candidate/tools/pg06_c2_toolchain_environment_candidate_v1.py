@@ -63,7 +63,12 @@ def prepare_pg06_c2(*,pg05_exit,pg06_c1,toolchain_catalog,environment_observatio
         or not isinstance(cat["catalog_sha256"],str) or not _SHA.fullmatch(cat["catalog_sha256"])):
         _fail("PG06_C2_CATALOG_SOURCE_INVALID")
     bind=pg05_exit.get("target_binding")
-    if not isinstance(bind,dict) or cat["target_repo"]!=bind.get("repo_full_name") or cat["target_base_head_sha"]!=bind.get("base_head_sha"):
+    if (not isinstance(bind,dict)
+        or not _text(bind.get("repo_full_name"))
+        or not isinstance(bind.get("base_head_sha"),str)
+        or not re.fullmatch(r"[0-9a-f]{40}",bind["base_head_sha"])):
+        _fail("PG06_C2_TARGET_BINDING_MISSING")
+    if cat["target_repo"]!=bind["repo_full_name"] or cat["target_base_head_sha"]!=bind["base_head_sha"]:
         _fail("PG06_C2_TARGET_BINDING_DRIFT")
     required=cat["requirements"]
     if not isinstance(required,list) or not required:
