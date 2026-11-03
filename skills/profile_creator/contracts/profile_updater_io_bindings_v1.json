@@ -1,0 +1,475 @@
+{
+  "schema_version": "LF_PROFILE_UPDATER_INPUT_CONTRACT_V1",
+  "operation_code": "ACTUALIZACION_PERFIL_LF",
+  "mode": "PROPOSAL_NO_LIVE_ENFORCEMENT",
+  "source_authority": "public.lf_operation_step_contracts.input_required AFTER GOVERNED_MERGE_ONLY",
+  "semantics": {
+    "input_required": "Names consumed before a stage; not judge output requirements",
+    "prior_step": "Read from same execution_id and a clean receipt",
+    "request": "Field of the existing governed request; no new top-level fields",
+    "execution": "Field of the canonical operation execution",
+    "validation": "Preflight diagnoses missing/mismatched bindings; does not authorize a PASS or substitute server verification",
+    "value_type": "Expected local preflight value type; does NOT introduce or replace server Edge/RPC enforcement",
+    "historical_output_type_compatibility": "Updater LIVE receipts observed semantic_judge_result as string/object and before_after_matrix as object/array; union types avoid retroactive rejection"
+  },
+  "steps": [
+    {
+      "step_id": "init_execution",
+      "input_required": [
+        "target_code",
+        "target_path",
+        "research_baseline_mode"
+      ],
+      "bindings": [
+        {
+          "name": "target_code",
+          "source": "request",
+          "path": "target_code",
+          "value_type": "string"
+        },
+        {
+          "name": "target_path",
+          "source": "request",
+          "path": "target_path",
+          "value_type": "string"
+        },
+        {
+          "name": "research_baseline_mode",
+          "source": "request",
+          "path": "research_baseline_mode",
+          "value_type": "string"
+        }
+      ],
+      "conditional_inputs": [
+        {
+          "name": "research_baseline_contract",
+          "source": "request",
+          "path": "research_baseline_contract",
+          "value_type": "object",
+          "required_if": {
+            "research_baseline_mode": "PRE_RESEARCH_ALWAYS"
+          },
+          "otherwise": "MUST_BE_NULL"
+        }
+      ]
+    },
+    {
+      "step_id": "router",
+      "input_required": [
+        "execution_id",
+        "init_execution_ref",
+        "router_read"
+      ],
+      "bindings": [
+        {
+          "name": "execution_id",
+          "source": "execution",
+          "path": "execution_id",
+          "value_type": "string"
+        },
+        {
+          "name": "init_execution_ref",
+          "source": "prior_step",
+          "step_id": "init_execution",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "router_read",
+          "source": "request",
+          "path": "evidence_payload.router_read",
+          "value_type": "boolean"
+        }
+      ]
+    },
+    {
+      "step_id": "profile_resolve",
+      "input_required": [
+        "target_code",
+        "router_receipt_ref",
+        "profile_slug"
+      ],
+      "bindings": [
+        {
+          "name": "target_code",
+          "source": "execution",
+          "path": "target_code",
+          "value_type": "string"
+        },
+        {
+          "name": "router_receipt_ref",
+          "source": "prior_step",
+          "step_id": "router",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "profile_slug",
+          "source": "request",
+          "path": "evidence_payload.profile_slug",
+          "value_type": "string"
+        }
+      ]
+    },
+    {
+      "step_id": "baseline_read",
+      "input_required": [
+        "profile_repo_path",
+        "baseline_revision"
+      ],
+      "bindings": [
+        {
+          "name": "profile_repo_path",
+          "source": "prior_step",
+          "step_id": "profile_resolve",
+          "path": "evidence_payload.repo_path",
+          "value_type": "string"
+        },
+        {
+          "name": "baseline_revision",
+          "source": "request",
+          "path": "evidence_payload.baseline_revision",
+          "value_type": "sha40"
+        }
+      ]
+    },
+    {
+      "step_id": "method_selection",
+      "input_required": [
+        "profile_assessment_receipt_id",
+        "selector_version",
+        "selected_methods"
+      ],
+      "bindings": [
+        {
+          "name": "profile_assessment_receipt_id",
+          "source": "request",
+          "path": "evidence_payload.profile_assessment_receipt_id",
+          "value_type": "string"
+        },
+        {
+          "name": "selector_version",
+          "source": "request",
+          "path": "evidence_payload.selector_version",
+          "value_type": "string"
+        },
+        {
+          "name": "selected_methods",
+          "source": "request",
+          "path": "evidence_payload.selected_methods",
+          "value_type": "array"
+        }
+      ]
+    },
+    {
+      "step_id": "evolution_decision",
+      "input_required": [
+        "profile_assessment_receipt_id",
+        "decision",
+        "evolution_mode"
+      ],
+      "bindings": [
+        {
+          "name": "profile_assessment_receipt_id",
+          "source": "request",
+          "path": "evidence_payload.profile_assessment_receipt_id",
+          "value_type": "string"
+        },
+        {
+          "name": "decision",
+          "source": "request",
+          "path": "evidence_payload.decision",
+          "value_type": "string"
+        },
+        {
+          "name": "evolution_mode",
+          "source": "request",
+          "path": "evidence_payload.evolution_mode",
+          "value_type": "string"
+        }
+      ]
+    },
+    {
+      "step_id": "change_scope",
+      "input_required": [
+        "decision",
+        "baseline_revision"
+      ],
+      "bindings": [
+        {
+          "name": "decision",
+          "source": "prior_step",
+          "step_id": "evolution_decision",
+          "path": "evidence_payload.decision",
+          "value_type": "string"
+        },
+        {
+          "name": "baseline_revision",
+          "source": "prior_step",
+          "step_id": "baseline_read",
+          "path": "evidence_payload.baseline_revision",
+          "value_type": "sha40"
+        }
+      ]
+    },
+    {
+      "step_id": "regression_plan",
+      "input_required": [
+        "minimal_patch_scope",
+        "positive_cases"
+      ],
+      "bindings": [
+        {
+          "name": "minimal_patch_scope",
+          "source": "prior_step",
+          "step_id": "change_scope",
+          "path": "evidence_payload.minimal_patch_scope",
+          "value_type": "array"
+        },
+        {
+          "name": "positive_cases",
+          "source": "request",
+          "path": "evidence_payload.positive_cases",
+          "value_type": "array"
+        }
+      ]
+    },
+    {
+      "step_id": "pre_write_execution_binding_gate",
+      "input_required": [
+        "execution_id",
+        "target_path",
+        "regression_plan_ref",
+        "write_plan"
+      ],
+      "bindings": [
+        {
+          "name": "execution_id",
+          "source": "execution",
+          "path": "execution_id",
+          "value_type": "string"
+        },
+        {
+          "name": "target_path",
+          "source": "execution",
+          "path": "target_path",
+          "value_type": "string"
+        },
+        {
+          "name": "regression_plan_ref",
+          "source": "prior_step",
+          "step_id": "regression_plan",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "write_plan",
+          "source": "request",
+          "path": "evidence_payload.write_plan",
+          "value_type": "string"
+        }
+      ]
+    },
+    {
+      "step_id": "github_write",
+      "input_required": [
+        "bound_revision",
+        "written_files"
+      ],
+      "bindings": [
+        {
+          "name": "bound_revision",
+          "source": "prior_step",
+          "step_id": "pre_write_execution_binding_gate",
+          "path": "evidence_payload.bound_revision",
+          "value_type": "sha40"
+        },
+        {
+          "name": "written_files",
+          "source": "request",
+          "path": "evidence_payload.written_files",
+          "value_type": "array"
+        }
+      ]
+    },
+    {
+      "step_id": "github_readback",
+      "input_required": [
+        "commit_sha",
+        "written_files"
+      ],
+      "bindings": [
+        {
+          "name": "commit_sha",
+          "source": "prior_step",
+          "step_id": "github_write",
+          "path": "evidence_payload.commit_sha",
+          "value_type": "sha40"
+        },
+        {
+          "name": "written_files",
+          "source": "prior_step",
+          "step_id": "github_write",
+          "path": "evidence_payload.written_files",
+          "value_type": "array"
+        }
+      ]
+    },
+    {
+      "step_id": "deterministic_validation",
+      "input_required": [
+        "bound_revision",
+        "candidate_commit_sha",
+        "readback_exact_head",
+        "evolution_proof_run_id"
+      ],
+      "bindings": [
+        {
+          "name": "bound_revision",
+          "source": "prior_step",
+          "step_id": "pre_write_execution_binding_gate",
+          "path": "evidence_payload.bound_revision",
+          "value_type": "sha40"
+        },
+        {
+          "name": "candidate_commit_sha",
+          "source": "prior_step",
+          "step_id": "github_write",
+          "path": "evidence_payload.server_trust_context.commit_sha",
+          "value_type": "sha40"
+        },
+        {
+          "name": "readback_exact_head",
+          "source": "prior_step",
+          "step_id": "github_readback",
+          "path": "evidence_payload.exact_head",
+          "value_type": "sha40"
+        },
+        {
+          "name": "evolution_proof_run_id",
+          "source": "request",
+          "path": "evidence_payload.evolution_proof_run_id",
+          "value_type": "run_id"
+        }
+      ]
+    },
+    {
+      "step_id": "semantic_judge",
+      "input_required": [
+        "deterministic_receipt_ref",
+        "semantic_judge_result"
+      ],
+      "bindings": [
+        {
+          "name": "deterministic_receipt_ref",
+          "source": "prior_step",
+          "step_id": "deterministic_validation",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "semantic_judge_result",
+          "source": "request",
+          "path": "evidence_payload.semantic_judge_result",
+          "value_type": "string_or_object"
+        }
+      ]
+    },
+    {
+      "step_id": "regression_after",
+      "input_required": [
+        "deterministic_receipt_ref",
+        "semantic_receipt_ref",
+        "before_after_matrix"
+      ],
+      "bindings": [
+        {
+          "name": "deterministic_receipt_ref",
+          "source": "prior_step",
+          "step_id": "deterministic_validation",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "semantic_receipt_ref",
+          "source": "prior_step",
+          "step_id": "semantic_judge",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "before_after_matrix",
+          "source": "request",
+          "path": "evidence_payload.before_after_matrix",
+          "value_type": "object_or_array"
+        }
+      ]
+    },
+    {
+      "step_id": "post_merge_reconcile",
+      "input_required": [
+        "regression_receipt_ref",
+        "merge_sha"
+      ],
+      "bindings": [
+        {
+          "name": "regression_receipt_ref",
+          "source": "prior_step",
+          "step_id": "regression_after",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "merge_sha",
+          "source": "request",
+          "path": "evidence_payload.merge_sha",
+          "value_type": "sha40"
+        }
+      ]
+    },
+    {
+      "step_id": "close",
+      "input_required": [
+        "reconciliation_receipt_ref",
+        "open_blockers"
+      ],
+      "bindings": [
+        {
+          "name": "reconciliation_receipt_ref",
+          "source": "prior_step",
+          "step_id": "post_merge_reconcile",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "open_blockers",
+          "source": "request",
+          "path": "evidence_payload.open_blockers",
+          "value_type": "array"
+        }
+      ]
+    },
+    {
+      "step_id": "report_output",
+      "input_required": [
+        "closure_receipt_ref",
+        "exact_head"
+      ],
+      "bindings": [
+        {
+          "name": "closure_receipt_ref",
+          "source": "prior_step",
+          "step_id": "close",
+          "path": "evidence_ref",
+          "value_type": "string"
+        },
+        {
+          "name": "exact_head",
+          "source": "request",
+          "path": "evidence_payload.exact_head",
+          "value_type": "sha40"
+        }
+      ]
+    }
+  ]
+}
