@@ -5,6 +5,8 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c7_material_sufficiency_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c7_material_sufficiency_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/test_pg01_c4_six_source_frame_synthetic_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c5_negative_guard_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c5_negative_guard_v1.py'
@@ -321,6 +323,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c5_negative_guard_v1.py
+
+      - name: PG-01 C7 five material categories and analysis return (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c7_material_sufficiency_v1.py
 
       - name: PG-02 candidate exact-head regressions (advisory only)
         run: |
