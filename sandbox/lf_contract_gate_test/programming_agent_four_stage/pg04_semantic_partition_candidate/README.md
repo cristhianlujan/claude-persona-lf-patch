@@ -36,3 +36,9 @@ Se recomienda la ejecución exacta en la rama y el CI. Las pruebas de partición
 `tools/pg04_definition_of_done_candidate_v1.py` prepara `PG04_SOLUTION_DOD_CANDIDATE_V1` ligado al digest de partición. Usa manifest de estándares con `applies_to_write_scopes` y manifiesto de validadores `ACTIVE` suministrados por el llamador; **no verifica** su currentness ni ejecuta esos validadores. Exige un check por estándar aplicable, por requisito, por aceptación y por dependencia `SOL-*` concreta. Nunca declara DoD cumplida: `PLANNED_NOT_EXECUTED`, `receipt_id=null`, `handoff_allowed=false`.
 
 `tests/test_pg04_definition_of_done_candidate_v1.py` contiene 30 pruebas definidas (no atribuir PASS hasta ejecución exact-HEAD). Documentación completa: `PG04_C5_DEFINITION_OF_DONE_CANDIDATE_20261103.md`.
+
+## Laboratorio sintético PG-01 → PG-03 → PG-04 con gates conmutables
+
+`fixtures/programming_synthetic_lab_packet_v1.json` es un caso totalmente inventado de pagos e historial. `tools/pg_programming_offline_lab_v1.py` realiza una ejecución **offline y sin autoridad**, que simula solo la recepción PG-01 y la estrategia PG-03, pero ejecuta los componentes candidatos reales C2/C3/C4/C5/preflight C7 de PG-04.
+
+`--mode strict` conserva barreras; `--mode diagnostic --skip-gates ...` puede omitir **solo las barreras de admisión del laboratorio** para observar resultados posteriores, dejando cada una como `SKIPPED_FOR_DIAGNOSTICS`. Nunca modifica validadores canónicos ni concede PASS, receipt o permiso productivo. Ver `PG_SYNTHETIC_OFFLINE_LAB_SWITCHES_20261103.md` para modos y comandos y `tests/test_pg_programming_offline_lab_v1.py` para regresiones.
