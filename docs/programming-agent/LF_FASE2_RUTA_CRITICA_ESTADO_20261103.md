@@ -226,6 +226,28 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Siguiente cambio necesario (en el carril dueño de registros/Router, con autoridad aprobada):** registrar el activo canónico en `lf_activos` con identidad y source GitHub auténticos; publicar descriptor CURRENT en el registro existente mediante su circuito de gobernanza; revalidar `lf_profile_execution_source_eligibility_v1` y agregar solo el binding de adapter requerido. Primero ejecutar el SQL read-only anterior. No habilitar `service_role` ad hoc, no ejecutar el perfil ni modificar registros por un script documental.
 
+## 4.3. Reconciliación de trabajo previo A1–A9 y alta gobernada (03/11)
+
+**Importante: este frente NO es nuevo.** Antes del diagnóstico del Router se trabajaron A9 y PG-01 mediante estos PR, verificados nuevamente en GitHub:
+
+| Componente | PR | Estado Git al 03/11 | Límite |
+|---|---|---|---|
+| Receptor PG-01, C4/C7, mapping A9 | [#3135](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3135) | OPEN DRAFT | diseño y pruebas; no PG-01 E2E |
+| Ensamblador A9, 23 campos | [#3174](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3174) | OPEN DRAFT | funciones puras, no productor runtime |
+| Juez A9 mediante capacidad existente | [#3172](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3172) | OPEN DRAFT | adapter puro, no juez ejecutado |
+| Envelope V2 y resolver | [#3181](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3181) | **MERGED 29/10** | solo admite recibo auténtico |
+| Writer runtime inicial | [#3193](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3193) | OPEN DRAFT | SQL real instalado por cadena posterior |
+| Writer final con autoridad | [#3320](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3320) | **MERGED 29/10** | instalado no significa ejecutado |
+| Fuentes A1–A9 y perfil de Análisis | [#2071](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2071), [#2145](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2145), [#2214](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2214) | **MERGED 12/10** | `CANDIDATE_NOT_RELEASED` en fuente |
+
+**No reimplementar** A9, receptor, juez, writer ni la guarda de 23 campos. Diferenciar `PR #3193 OPEN` (histórico/candidato) y `#3320 MERGED` (writer de la cadena consolidada). El SQL del writer se confirmó existente en Supabase por firma, no con una ejecución del productor.
+
+**Guardas del inventario comprobadas en vivo**: `public.lf_activos` requiere `id`, `source_spreadsheet_id`, `source_spreadsheet_title`, `source_sheet_name`, `source_row_number`, `migration_batch_id`, `created_by_execution_id` y otros campos. No hay registro del código `PERFIL-PROGRAMMING-ANALYSIS-LF` ni `lf_profile_selection_registry_v1` CURRENT. La mera presencia de su SKILL en GitHub no autoriza inventar procedencia de una hoja, un `migration_batch_id` o un propietario. La función `lf_profile_execution_source_eligibility_v1` responde `PROFILE_NOT_CURRENT`, coherente con ambas ausencias.
+
+**Ruta mínima correcta**: localizar autoridad de alta de activo/perfil y su procedencia válida; obtener aprobación y calificación `CURRENT RELEASED` de los nueve contratos antes de habilitar selección; registrar el activo por ruta gobernada (no `INSERT` manual); generar descriptor fuente vigente y binding Router/adapter, con lectura independiente; ejecutar el perfil mediante `EJECUCION_PERFIL_LF` y juzgar su A9, luego writer ya instalado y readback `ACCEPT`. Si el circuito no admite un perfil nacido en GitHub sin hoja fuente, **es decisión de gobernanza**, no licencia para falsear campos.
+
+**Bloqueo de esta iteración:** `PROFILE_REGISTRATION_AUTHORITY_AND_PROVENANCE_NOT_EVIDENCED`. No se intentó alta SQL de falso origen ni se activó runtime. La ruta actual de solo lectura sigue respondiendo `BLOCK_ANALYSIS_PROFILE_SOURCE_NOT_REGISTERED_OR_ELIGIBLE`.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
