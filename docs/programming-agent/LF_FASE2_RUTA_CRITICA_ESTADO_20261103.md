@@ -262,6 +262,17 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Próxima verificación útil:** trazabilidad de la solicitud original: Router execution/receipt → propietario de análisis → A9 `DECISION_CONTEXT_ASOF` → recibo `PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1` → `resolve_v2` PG-01. Identificar el punto real de continuidad sin otra selección. Conservar los PR previos y no crear un engine o juez paralelo.
 
+## 4.5. Avance independiente PG-03_C5 — integridad del contexto de reglas (03/11)
+
+**PR [#3526](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3526)**, HEAD `ed7c2e9302b1b3707f95206e9fb77de582ddaaa6`, DRAFT, stacked sobre #3524. **No toca Análisis ni habilita programación real.**
+
+- **Defecto hallado** en `pg03_domain_judges_v1.py::deterministic_judge_complete`: el validador verificaba IDs obligatorios, pero no recomputaba `projection_sha256` ni `estimated_tokens`. Modificar contenido de una regla, dominio o `source_catalog_sha256` después de proyectar podía conservar un `PASS_CANDIDATE_ONLY` estructural. También el borrado de una regla ajustando `required_rule_ids` podía ocultarse en la paridad interna.
+- **Corrección mínima**: reutilizar el **mismo juez determinista**, conservar sus errores específicos, recomputar digest y tokens sobre todos los campos proyectados antes de devolver PASS candidato. No se creó otro juez/rúbrica.
+- **Regresión adversarial** nueva `test_pg03_c5_projection_integrity_v1.py`: 1 positivo y **9 negativos** sobre texto de regla, dominio, texto de regla A, source_ref, SHA catálogo, dominio pedido, SHA proyección, tokens y regla omitida con required IDs acomodados.
+- **CI exacto HEAD:** PASE run [#41668732317](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41668732317) `SUCCESS`; F0 [#41668731730](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41668731730) `SUCCESS`; Router Level2 Advisory [#41668731830](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/41668731830) **4/4 jobs SUCCESS** incluyendo `router-level2-advisory-contract` que llama a la prueba nueva y a las regresiones previas.
+- **Límite:** es **integridad local**, no firma de procedencia. Un productor podría recalcular todo; catálogo de C3 CURRENT, L1/L2, fuente real y juez semántico independiente siguen siendo dependencias. No cambiar `PG-03_C5=PENDING` (Supabase 03/11).
+- **Estado de avance técnico:** `PG03_C5_SOURCE_ONLY_INTEGRITY_HARDENED / CI_PASS / NO_AUTHORITY`. **Siguiente avance autónomo**: revisar qué campos de catálogo de PG-03_C2 deben estar ligados a fuente C3 autenticada antes de aceptar el proyector; solo si hay delta comprobable, implementarlo en componente existente, sin rehacer A1–A9.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
