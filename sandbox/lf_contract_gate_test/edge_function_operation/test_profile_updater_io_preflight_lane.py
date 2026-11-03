@@ -17,7 +17,7 @@ class ProfileUpdaterInputPreflightLane(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True, timeout=90,
         )
         self.assertEqual(p.returncode, 0, p.stdout[-4000:] + "\n" + p.stderr[-12000:])
-        match = re.search(r"Ran (\\d+) tests in", p.stderr)
+        match = re.search(r"Ran (\d+) tests in", p.stderr)
         self.assertIsNotNone(match, p.stderr)
         self.assertGreaterEqual(int(match.group(1)), 13)
         for name in (
