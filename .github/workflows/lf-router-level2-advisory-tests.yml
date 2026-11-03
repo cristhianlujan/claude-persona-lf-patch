@@ -298,6 +298,10 @@ jobs:
           set -euo pipefail
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_strategy_v1.py
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_reuse_binding_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_domain_judges_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_analysis_rule_projection_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_semantic_adapter_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_assurance_envelope_v1.py
 
       - name: PG-02 candidate exact-head regressions (advisory only)
         run: |
