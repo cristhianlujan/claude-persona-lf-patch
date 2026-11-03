@@ -237,16 +237,30 @@ def check_step(spec: dict, step_id: str, execution: dict, request: dict,
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--step-id", required=True, choices=STEPS)
-    parser.add_argument("--context-json", type=Path, required=True,
-                        help="Local JSON with execution, request and prior_steps (no credentials).")
+    parser.add_argument("--step-id", choices=STEPS)
+    parser.add_argument("--context-json", type=Path,
+                        help="Recorded-stage context: execution, request and prior_steps (no credentials).")
+    parser.add_argument("--init-request-json", type=Path,
+                        help="Pre-execution LF_PROFILE_UPDATE_REQUEST_V1/profile_update_init issue JSON.")
     args = parser.parse_args()
     spec = json.loads(CATALOG.read_text(encoding="utf-8"))
-    ctx = json.loads(args.context_json.read_text(encoding="utf-8"))
-    result = check_step(spec, args.step_id, ctx["execution"], ctx["request"],
-                        ctx.get("prior_steps", {}))
+    if args.init_request_json is not None:
+        if args.step_id is not None or args.context_json is not None:
+            parser.error("--init-request-json excludes --step-id and --context-json")
+        request = json.loads(args.init_request_json.read_text(encoding="utf-8"))
+        result = check_init_request(spec, request)
+    else:
+        if args.step_id is None or args.context_json is None:
+            parser.error("--step-id and --context-json are both required for recorded stages")
+        if args.step_id == "init_execution":
+            parser.error("init_execution is pre-execution; use --init-request-json")
+        ctx = json.loads(args.context_json.read_text(encoding="utf-8"))
+        result = check_step(spec, args.step_id, ctx["execution"], ctx["request"],
+                            ctx.get("prior_steps", {}))
     print(json.dumps(result, sort_keys=True, ensure_ascii=False))
-    return 0 if result["status"] == "READY_FOR_SERVER_VERIFICATION" else 1
+    return 0 if result["status"] in {
+        "READY_FOR_SERVER_VERIFICATION", "READY_FOR_GOVERNED_INITIALIZATION"
+    } else 1
 
 
 if __name__ == "__main__":
