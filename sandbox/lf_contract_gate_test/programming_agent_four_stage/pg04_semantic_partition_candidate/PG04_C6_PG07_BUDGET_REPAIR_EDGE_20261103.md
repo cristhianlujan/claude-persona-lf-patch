@@ -38,6 +38,22 @@ Se preserva en el paquete congelado la solución original, sus átomos, requisit
 
 `PG04_C6_REPAIR_EDGE_SOURCE_READY / CURRENT_BUDGET_RECEIPT_NOT_VERIFIED / REPARTITION_NOT_EXECUTED / NO_RUNTIME_AUTHORITY`.
 
-**No se añadieron ni ejecutaron pruebas**, siguiendo la decisión de aplazarlas por ahora. No se cerró ningún checkpoint en Supabase. No se alteró Análisis, PG-07, las funciones de context budget ni `main`.
+**No se añadieron ni ejecutaron pruebas de C6**, siguiendo la decisión de aplazarlas por ahora. No se cerró ningún checkpoint en Supabase. No se alteró Análisis, PG-07, las funciones de context budget ni `main`.
 
 El siguiente checkpoint de desarrollo de PG-04 es **C7**, aseguramiento independiente de la cobertura. El preflight de C7 ya está preparado en `tools/pg04_independent_review_request_v1.py`; faltan el sujeto real VERIFIED y la revisión gobernada, que no deben reemplazarse con el laboratorio.
+
+## Continuación — repartición controlada de una solución RED
+
+Se añadió tools/pg04_c6_repartition_proposal_v1.py con propose_repartition(partition, budget_edge, original_obligations, split_plan).
+
+Entradas: partición candidata y SHA original, arista de presupuesto RED con digest válido, obligaciones originales y propuesta explícita de al menos dos grupos con su justificación semántica y evidencia de que JIT no resulta suficiente o no aplica. Las referencias aportadas por el llamador NO están autenticadas.
+
+Controles estructurales: todo átomo original se asigna una sola vez y a un único grupo; coinciden la fuente, el scope y las referencias EXISTING/NEW; requisitos y aceptaciones de cada átomo y del conjunto no se pierden; coimplement_with no se separa; las dependencias atómicas de la solución se convierten en dependencias entre los nuevos grupos y se exige un DAG acíclico. Las dependencias externas no resolubles bloquean.
+
+Una solución externa que dependía de la original pasa a depender conservadoramente de todos los hijos. Se registra downstream_rebound_conservatively para que el juez revise si es posible una relación más precisa. Este comportamiento no autoriza duplicar las obligaciones.
+
+Salida: PG04_C6_REPARTITION_PROPOSAL_V1 con proposed_solutions, el hash original y nuevo, cobertura global y next_gate=INDEPENDENT_SEMANTIC_REVIEW_THEN_PG07_CURRENT_REMEASUREMENT. Mantiene semantic_boundary_verified=false, budget_readback_attested=false, pg07_remeasurement_executed=false, independent_judge_executed=false, production_authority=false y handoff_allowed=false.
+
+Límite: la división propuesta NO prueba que el contexto ahora quepa; no se consultó PG-07 ni se ejecutó juez. No se afirmó PASS ni se cerró C6. La semántica y autoridad de las referencias deben validarse fuera de este componente, y un actor autorizado debe aceptar la separación antes de un nuevo intento de PG-07.
+
+Se aplazan las pruebas siguiendo la instrucción del Owner; sin cambios en Análisis, Supabase ni main.
