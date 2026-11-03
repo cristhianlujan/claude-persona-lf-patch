@@ -5,6 +5,8 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c3_scope_front_clean_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c3_scope_front_clean_v1.py'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/**'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/**'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/test_h2c4_pg03_c6_integration_v1.py'
@@ -306,6 +308,11 @@ jobs:
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_exception_routing_v1.py
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_handoff_boundary_v1.py
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_architecture_d15_v1.py
+
+      - name: PG-01 C3 scope/front clean candidate (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c3_scope_front_clean_v1.py
 
       - name: PG-02 candidate exact-head regressions (advisory only)
         run: |
