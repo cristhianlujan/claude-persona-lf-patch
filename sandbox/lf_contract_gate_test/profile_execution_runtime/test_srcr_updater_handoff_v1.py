@@ -14,9 +14,6 @@ def sample():
             "source_profile_code":"PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
             "source_execution_id":"EXEC-PROFILE-GATE2-AAAAAAAAAAAAAAAAAAAAAAAA",
             "target_operation":"ACTUALIZACION_PERFIL_LF",
-            "context_transport":"CONTEXT_PACK",
-            "consumer":"PROFILE_EXECUTION",
-            "resume_via":"EJECUCION_PERFIL_LF",
             "target_code":"PERFIL-UI-ARCHITECT",
             "target_path":"profiles/ui_architect/SKILL.md",
             "request_sha256":"a"*64,
@@ -39,9 +36,6 @@ class SRCRHandoffTest(unittest.TestCase):
         for field,value in [("business","SALY"),("mode","GOVERNED_REPAIR_WRITE"),
                             ("source_profile_code","PERFIL-OTHER"),
                             ("source_operation","ACTUALIZACION_PERFIL_LF"),
-                            ("context_transport","DIRECT"),
-                            ("consumer","ROUTER"),
-                            ("resume_via","ACT-0001"),
                             ("authorized_scope",["PERFIL-OTHER"]),
                             ("target_path","profiles/../secret/SKILL.md"),
                             ("request_sha256","wrong"),
@@ -58,6 +52,10 @@ class SRCRHandoffTest(unittest.TestCase):
                 self.assertEqual(gate.inspect(h)["status"],"BLOCKED")
         h=sample();del h["source_execution_id"]
         self.assertEqual(gate.inspect(h)["status"],"BLOCKED")
+        for obsolete in ("context_transport","consumer","resume_via"):
+            h=sample();h[obsolete]="CONTEXT_PACK"
+            with self.subTest(obsolete=obsolete):
+                self.assertEqual(gate.inspect(h)["status"],"BLOCKED")
 
     def test_return_requires_independent_readback(self):
         h=sample()
