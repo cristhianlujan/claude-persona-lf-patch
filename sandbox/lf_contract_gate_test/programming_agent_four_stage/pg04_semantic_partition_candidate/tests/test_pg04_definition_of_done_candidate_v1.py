@@ -18,11 +18,12 @@ def fixtures():
        "source_sha256":"b"*64,"applies_to_write_scopes":["database/migration"]},
       {"standard_code":"STD-UI","source_ref":"git://std/ui",
        "source_sha256":"c"*64,"applies_to_write_scopes":["frontend/ui"]}]
-    def check(cid,kind,req=None,acc=None,std=None):
+    def check(cid,kind,req=None,acc=None,std=None,deps=None):
         row={"check_id":cid,"kind":kind,"validation_code":"PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1",
              "input_ref":"fixture://"+cid,"requirement_ids":req or [],
              "acceptance_ids":acc or []}
         if std:row["standard_code"]=std
+        if deps is not None:row["dependency_ids"]=deps
         return row
     plans=[
       {"solution_id":"SOL-001","standard_codes":["STD-API","STD-DB"],
@@ -36,7 +37,7 @@ def fixtures():
        "checks":[check("S-UI","STANDARD",std="STD-UI"),
                  check("R3","REQUIREMENT",req=["R3"]),
                  check("A3","ACCEPTANCE",acc=["A3"]),
-                 check("D1","DEPENDENCY")]}]
+                 check("D1","DEPENDENCY",deps=["SOL-001"])]}]
     return {"partition":partition,"standards_catalog_version":"TEST-CATALOG-01",
             "standards":standards,
             "validation_registry":[{"validation_code":"PROGRAMMING_GITHUB_FILE_TEXT_ASSERT_V1",
@@ -116,6 +117,18 @@ class Tests(unittest.TestCase):
     def test_missing_dependency_check_fails(self):
         self.denied("DOD_DEPENDENCY_CHECK_MISSING",
                     lambda a:a["solution_plans"][1]["checks"].pop(3))
+
+    def test_dependency_check_must_be_bound(self):
+        self.denied("DOD_DEPENDENCY_CHECK_UNBOUND",
+                    lambda a:a["solution_plans"][1]["checks"][3].pop("dependency_ids"))
+
+    def test_foreign_dependency_rejected(self):
+        self.denied("DOD_DEPENDENCY_CHECK_FOREIGN",
+                    lambda a:a["solution_plans"][1]["checks"][3].update(dependency_ids=["SOL-999"]))
+
+    def test_dependency_binding_for_other_check_forbidden(self):
+        self.denied("DOD_NONDEPENDENCY_BINDING_FORBIDDEN",
+                    lambda a:a["solution_plans"][0]["checks"][0].update(dependency_ids=["SOL-001"]))
 
     def test_foreign_acceptance_not_allowed(self):
         self.denied("DOD_CHECK_FOREIGN_OBLIGATION",
