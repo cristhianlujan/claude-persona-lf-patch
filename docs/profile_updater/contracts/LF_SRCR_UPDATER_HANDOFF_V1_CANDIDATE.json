@@ -19,12 +19,14 @@
       "policy_snapshot_sha256",
       "diagnosis_ref",
       "diagnosis_sha256",
-      "authorized_scope"
+      "authorized_scope",
+      "target_main_revision_sha",
+      "target_blob_sha"
     ]
   },
   "process": {
     "server_binding_required": true,
-    "proof": "read parent run, Router receipt, scope, policy and SRCR diagnosis from LIVE DB; never trust client envelope",
+    "proof": "read parent run, Router receipt, scope, policy, exact main revision+target blob and SRCR diagnosis from LIVE DB; never trust client envelope",
     "no_direct_profile_invocation": true
   },
   "transport": {
@@ -42,7 +44,8 @@
       "status",
       "terminal_receipt_ref",
       "terminal_receipt_sha256",
-      "next_action"
+      "next_action",
+      "exact_head_sha"
     ],
     "independent_readback_required": true
   },
