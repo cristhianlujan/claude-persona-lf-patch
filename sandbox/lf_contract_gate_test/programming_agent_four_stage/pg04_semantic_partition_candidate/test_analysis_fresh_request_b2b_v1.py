@@ -5,7 +5,7 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
-ROOT=Path(__file__).resolve().parents[5]
+ROOT=Path(__file__).resolve().parents[4]
 HERE=Path(__file__).resolve().parent
 PROFILE=ROOT/"profiles/programming_analysis_lf"
 
