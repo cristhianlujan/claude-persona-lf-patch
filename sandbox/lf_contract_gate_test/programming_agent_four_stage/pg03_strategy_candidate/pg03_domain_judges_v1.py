@@ -99,6 +99,18 @@ def deterministic_judge_complete(*, projection):
     """Self-contained structural floor; does not accept caller-selected required IDs."""
     if not isinstance(projection,dict) or projection.get("status")!="CANDIDATE_NOT_ADMITTED":
         return {"status":"BLOCKED","code":"PROJECTION_NOT_CANDIDATE"}
+    # Detect post-projection mutations before evaluating the collection.
+    # This is local integrity only; the producer/caller SHA still needs
+    # independent, governed source attestation before real admission.
+    content = json.dumps(
+        {k:v for k,v in projection.items()
+         if k not in ("projection_sha256","estimated_tokens")},
+        sort_keys=True,separators=(",",":"),
+    ).encode()
+    digest = hashlib.sha256(content).hexdigest()
+    if (projection.get("projection_sha256") != digest or
+            projection.get("estimated_tokens") != (len(content)+3)//4):
+        return {"status":"BLOCKED","code":"PROJECTION_CONTENT_DIGEST_DRIFT"}
     rules=projection.get("rules")
     analysis=projection.get("analysis_rules")
     ids=projection.get("required_rule_ids")
