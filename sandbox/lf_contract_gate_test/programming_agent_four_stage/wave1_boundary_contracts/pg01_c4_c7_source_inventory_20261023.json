@@ -1,0 +1,77 @@
+{
+  "schema_version": "PG01_C4_C7_DESIGN_SOURCE_INVENTORY_V1",
+  "state": "SOURCE_ONLY_PROPOSAL",
+  "date": "2026-10-23",
+  "receiver_head": "80db71a7e240da70445fecc875e3f0615f53f17f",
+  "sources": [
+    {
+      "repo": "paulozterra/lf-programming-sandbox",
+      "commit": "9f35f69cab231ad683f39431585236b78c9d96b9",
+      "path": "standards/catalog.json",
+      "version": "0.6.1",
+      "status": "BORRADOR_EN_REPO_DE_CALIFICACION"
+    },
+    {
+      "repo": "paulozterra/lf-programming-sandbox",
+      "commit": "9f35f69cab231ad683f39431585236b78c9d96b9",
+      "path": "standards/consumption/policy.json",
+      "version": "0.1.0",
+      "budget": {
+        "amount": "POR_DEFINIR",
+        "currency": "USD",
+        "warning_percent": 80,
+        "decision_percent": 100,
+        "unconfigured_action": "BUDGET_UNCONFIGURED_MEASURE_ONLY",
+        "unmeasured_at_warning": "REQUIRES_DECISION"
+      }
+    },
+    {
+      "repo": "paulozterra/lf-programming-sandbox",
+      "commit": "9f35f69cab231ad683f39431585236b78c9d96b9",
+      "path": "standards/consumption/pricing.json",
+      "version": "0.1.0",
+      "model_approval_flags": [
+        {
+          "provider": "openai",
+          "model": "gpt-6.1-sol",
+          "approved_for_use": false
+        },
+        {
+          "provider": "anthropic",
+          "model": "claude-sonnet-5",
+          "approved_for_use": false
+        }
+      ]
+    },
+    {
+      "repo": "paulozterra/lf-architecture",
+      "commit": "bbe718c6a5981a2e873818dc1e5fd0313723501f",
+      "path": "README.md"
+    },
+    {
+      "repo": "cristhianlujan/libertad-financiera",
+      "commit": "994bda4aac4f92ea40531a2e84fdad6765397e84",
+      "inspection": "FULL_TREE_PATH_INVENTORY",
+      "technical_manifest_identified": false,
+      "qualification": "No identified L3 manifest in this tree; does not assert absence in other branches/repos"
+    }
+  ],
+  "candidate_code_written": false,
+  "proposed_tests_executed": false,
+  "github_push": false,
+  "database_write": false,
+  "execution_allowed": false,
+  "pg01_closed": false,
+  "pending": [
+    "C4_VALIDATOR",
+    "C7_VALIDATOR",
+    "C7_BINDING_MAP",
+    "PROJECT_TECHNICAL_MANIFEST",
+    "TECHNICAL_PINS_ADMISSION",
+    "CONFIGURED_REQUEST_BUDGET",
+    "OPERATIONAL_CURRENTNESS_PROVIDER",
+    "C6_PERSISTENCE_D7",
+    "REAL_ADMITTED_A9",
+    "INDEPENDENT_REVIEW"
+  ]
+}
