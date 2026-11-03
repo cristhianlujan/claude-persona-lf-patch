@@ -101,8 +101,12 @@ def inspect_candidate(*, partition_policy, strategy, source_refs, solutions):
                         _deny("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT")
                 elif atom.get("bounded_reuse_assessment_ref") != sol["bounded_reuse_assessment_ref"] or "as_is_ref" in atom or "delta_ref" in atom:
                     _deny("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT")
-            if "atom_ids" in sol and (not isinstance(sol["atom_ids"], list) or len(sol["atom_ids"]) != len(set(sol["atom_ids"])) or set(sol["atom_ids"]) != bound_ids):
-                _deny("ATOM_IMPLEMENTATION_BINDINGS_INVALID")
+            if "atom_ids" in sol:
+                ids = sol["atom_ids"]
+                if (not isinstance(ids, list) or
+                    any(not isinstance(aid, str) or not aid.strip() for aid in ids) or
+                    len(ids) != len(set(ids)) or set(ids) != bound_ids):
+                    _deny("ATOM_IMPLEMENTATION_BINDINGS_INVALID")
         for key, owners in (("requirement_ids", req_owners), ("acceptance_ids", acc_owners)):
             for identifier in _ids(sol.get(key), key.upper(), allow_empty=True):
                 if identifier in owners:
