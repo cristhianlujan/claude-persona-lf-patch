@@ -273,6 +273,16 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 - **Límite:** es **integridad local**, no firma de procedencia. Un productor podría recalcular todo; catálogo de C3 CURRENT, L1/L2, fuente real y juez semántico independiente siguen siendo dependencias. No cambiar `PG-03_C5=PENDING` (Supabase 03/11).
 - **Estado de avance técnico:** `PG03_C5_SOURCE_ONLY_INTEGRITY_HARDENED / CI_PASS / NO_AUTHORITY`. **Siguiente avance autónomo**: revisar qué campos de catálogo de PG-03_C2 deben estar ligados a fuente C3 autenticada antes de aceptar el proyector; solo si hay delta comprobable, implementarlo en componente existente, sin rehacer A1–A9.
 
+## 4.6. PG-03_C2 — fail-closed en selección de reglas de precedencia (03/11)
+
+**PR [#3527](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3527)**, HEAD `b1957859d1872574417a345cf9b307a1500d9167`, DRAFT apilado sobre [#3526](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3526). Se reusó `pg03_c2_precedence_candidate_v1.py`, sin nuevo motor, juez, SQL ni cambios a Análisis.
+
+**Brecha concreta:** `selected_rule_ids=[]` anteriormente podía producir `CANDIDATE_NOT_ADMITTED` aun sin regla del catálogo (solo A/B); IDs duplicados se introducían sin rechazo específico y payloads no-string no quedaban bien delimitados. **Delta:** `SELECTED_RULES_INVALID` para lista vacía, IDs repetidos, nulos y tipos incorrectos. Test previo 1 positivo+18 negativos; test ampliado **1 positivo+23 negativos** (5 casos nuevos). La salida candidata no concede autoridad. CI del HEAD exacto: ejecutar/comprobar PASE y LF Router Level2 Advisory; no inferir éxito mientras estén corriendo.
+
+**Readback oficial:** `PG-03_C2=PENDING` y `PG-00_C3=PENDING`. No hay tabla de catálogo STD-* gobernada inequívoca entre los registros de Supabase inspeccionados (no concluir ausencia absoluta de un catálogo contractual almacenado en otra familia de tablas); **aún no hay release CURRENT/C3 con origen autenticado probado para este consumidor**.
+
+**Bloqueos tras la corrección:** publicación C3 del catálogo, decisión L1/L2 por cada regla `STD-API` mixta, L3 B real y consistente con PG-01_C4, recibo del selector C6 realmente ejecutado, precedencia semántica y punto de despacho. Los PR #3518/#3519/#3521/#3522 ya modelan los límites source-only: **no reimplementarlos**. La siguiente integración debe autenticar fuente/autoridad con mecanismo existente, no aceptar un SHA elegido por el mismo caller.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
