@@ -662,6 +662,21 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Estados:** `PROPOSAL_PREFLIGHT_REPAIRED / INDEPENDENT_REVIEW_PENDING / NO_GO_NORMATIVE`. Se mantiene `PG-00_C9=PENDING`, `PG-00_C3=PENDING` y `PG-03_C2=PENDING`. No se editó `standards/catalog.json`, no CHG activo, no merge, no publicación C3 ni mutación de Supabase.
 
+## 4.12. CHG-0009 — simulación normativa sin publicación (03/11)
+
+**Alcance autónomo:** [sandbox PR #18](https://github.com/paulozterra/lf-programming-sandbox/pull/18) HEAD `320b57e4da31236430eb5384a65be41ff11f1183`. Se agrega `standards/tests/test_chg0009_normative_preview_v1.py`, una **simulación en memoria** del catálogo STD-API: 9 reglas originales → 12 reglas propuestas (6 individuales y 6 provenientes de 3 desdobles), reutilizando `validate_catalog.validate`, `NON_WAIVABLE` y `SECURITY_IDS` existentes. **No se crean reglas normativas ni motores productivos**.
+
+**Controles de la simulación:** paridad de IDs/niveles, versión y status de borrador, compatibilidad con validador existente, trazabilidad mínima de obligaciones, prohibición de waiver a nuevo ID L1, conservación del ID legado durante transición y cierre por falta de actualizaciones de autoridad:
+- `BLOCK_MISSING_L1_NON_WAIVABLE` si se intenta tratar `STD-API-10` como L1 sin migrar `NON_WAIVABLE`.
+- `BLOCK_MISSING_SECURITY_DIFF_CLASSIFICATION` si falta marca SECURITY en `SECURITY_IDS`.
+- `BLOCK_L1_WAIVER` si la regla nueva autoriza waiver.
+- `BLOCK_LEGACY_SECURITY_GUARD_REMOVED` si se desprotege el ID original antes de completar la migración.
+- Incluso tras simular ambas actualizaciones, `STRUCTURAL_PREVIEW_ONLY_NO_AUTHORITY`; no implica permiso para escritura real.
+
+**CI:** [sandbox run #41677453357](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41677453357), job `estándares (catálogo y checks)` SUCCESS con la nueva suite. Verificar estado final de los demás jobs al readback definitivo.
+
+**Límites y pendientes:** `standards/catalog.json` no fue editado; CHG-0009 permanece bajo `standards/changes/proposals/`, no existe release C3 ni revisión independiente válida. Para aplicar de verdad las reglas, seguirá siendo necesario un diff normativo con CHG clasificado, revisión de seguridad independiente, aprobación explícita del owner, migración de referencias, semver, cambio de pins y readback. Estados oficiales `PG-00_C9=PENDING`, `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
