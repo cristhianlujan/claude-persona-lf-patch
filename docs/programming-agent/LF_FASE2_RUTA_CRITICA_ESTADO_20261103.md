@@ -639,6 +639,17 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Siguiente trabajo técnico autorizado:** preparar *propuesta de remedios*, sin tocar el catálogo normativo ni crear CHG activo; revisión de seguridad realmente independiente del SHA definitivo y decisión humana antes de fusionar. **Estados oficiales** permanecen `PG-00_C9=PENDING`, `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
 
+## 4.10. CHG-0009 — remedios propuestos H01–H04 preparados (03/11)
+
+**PR [sandbox #18](https://github.com/paulozterra/lf-programming-sandbox/pull/18) sigue DRAFT**. Nuevo HEAD `afa2711fd929a0c51abbe6a8b1675c3211fea841`. Correcciones exclusivamente en expediente `docs/programming/CHG-0009_STD_API_LEVEL_SPLIT_PROPOSAL_20261103.md`, `standards/changes/proposals/CHG-0009.draft.json` y pruebas `standards/tests/test_chg0009_std_api_proposal_v1.py`.
+
+- H01: seis IDs provisionales conformes `STD-API-10..15`; asignación `04→10/11`, `05→12/13`, `08→14/15`. **No** reservados/aprobados; colisiones y fuentes deben releerse al HEAD de publicación.
+- H02: carry-forward propuesto del `NON_WAIVABLE` de STD-API-04 a `STD-API-10`, con clasificación `SECURITY_IDS` para 10/11 y conservación de 04 durante migración. **No** editados todavía `policy_invariants.py` ni `changes.py`; requerirá change normativo y pruebas negativas tras la aprobación.
+- H03: matriz de 10 obligaciones atómicas trazadas a nuevas reglas/ADR/REG/tests, para preservar SQL/stack trace, D1/D2, idempotencia, correlación, rate limit/429/Retry-After, exactitud monetaria, decimal/currency y numeric(18,2).
+- H04: propuesta mantiene schema no activo y `owner_normative_go=false`, `independent_security_review=false`, `C3_release_verified=false`; tras revisión separada del autor se necesitará CHG activo, semver, clasificación de diff, invalidación de pins, CI/regresión y GO humano antes de merge/publicación.
+
+**Importante:** esto resuelve la preparación del remedio, **no** los hallazgos normativos hasta que existan implementación y revisión independiente reales. `PG-00_C9`, `PG-00_C3`, `PG-03_C2` continúan `PENDING`; no se cambió catálogo vigente, no hubo merge, Supabase write ni activación.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
