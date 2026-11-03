@@ -129,6 +129,22 @@ class Tests(unittest.TestCase):
         self.denied("DOD_CHECK_NONSTANDARD_CODE_FORBIDDEN",
                     lambda a:a["solution_plans"][0]["checks"][4].update(standard_code="STD-API"))
 
+    def test_fake_pass_field_rejected(self):
+        self.denied("DOD_CHECK_FIELDS_INVALID",
+                    lambda a:a["solution_plans"][0]["checks"][0].update(status="PASS",receipt_id="invented"))
+
+    def test_fake_done_plan_rejected(self):
+        self.denied("DOD_PLAN_FIELDS_INVALID",
+                    lambda a:a["solution_plans"][0].update(done=True))
+
+    def test_fake_standard_authority_rejected(self):
+        self.denied("STANDARD_FIELDS_INVALID",
+                    lambda a:a["standards"][0].update(current_release_verified=True))
+
+    def test_malformed_standard_scope_list_blocked(self):
+        self.denied("STANDARD_SCOPE_SOURCE_INVALID",
+                    lambda a:a["standards"][0].update(applies_to_write_scopes=[{"scope":"backend/api"}]))
+
     def test_empty_requirement_binding_in_check_fails(self):
         self.denied("DOD_REQUIREMENT_CHECK_UNBOUND",
                     lambda a:a["solution_plans"][0]["checks"][2].update(requirement_ids=[]))
