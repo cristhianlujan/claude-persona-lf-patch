@@ -112,4 +112,16 @@ def deterministic_judge_complete(*, projection):
     for r in analysis:
         if not isinstance(r.get("source_ref"),str) or not r["source_ref"]:
             return {"status":"BLOCKED","code":"ANALYSIS_PROVENANCE_MISSING"}
+    # Detect post-projection mutations before returning PASS on the collection.
+    # This is local integrity only; the producer/caller SHA still needs
+    # independent, governed source attestation before real admission.
+    content = json.dumps(
+        {k:v for k,v in projection.items()
+         if k not in ("projection_sha256","estimated_tokens")},
+        sort_keys=True,separators=(",",":"),
+    ).encode()
+    digest = hashlib.sha256(content).hexdigest()
+    if (projection.get("projection_sha256") != digest or
+            projection.get("estimated_tokens") != (len(content)+3)//4):
+        return {"status":"BLOCKED","code":"PROJECTION_CONTENT_DIGEST_DRIFT"}
     return {"status":"PASS_CANDIDATE_ONLY","code":"DETERMINISTIC_COLLECTION_PARITY_NOT_AUTHORIZED"}
