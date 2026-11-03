@@ -26,7 +26,7 @@
       "consumer",
       "resume_via"
     ],
-    "invocation_after": "EJECUCION_PERFIL_LF semantic_judge(70) and report_output(80), verified against same parent execution; do not invoke at input_validate(40)",
+    "invocation_after": "EJECUCION_PERFIL_LF semantic_judge(70) PASS on diagnosis, BEFORE terminal report_output(80); return to same active parent execution",
     "fixed_values": {
       "context_transport": "CONTEXT_PACK",
       "consumer": "PROFILE_EXECUTION",
@@ -38,9 +38,11 @@
     "proof": "read parent run, Router receipt, scope, policy, exact main revision+target blob and SRCR diagnosis from LIVE DB; never trust client envelope",
     "no_direct_profile_invocation": true,
     "pattern_reused": "IG profile-owned capability invocation: applicability decision -> executor-needed/READY receipt -> resume same parent run",
-    "parent_readback": "Step70 independent judge + step80 terminal report must be real, clean and bound to current SRCR parent before requesting updater",
+    "parent_readback": "Exact step50 profile output, step60 output validator and step70 independent semantic judge must be clean on current SRCR parent before requesting Updater",
     "avoids": "No new top-level Router path and no new profile begin/operation. SRCR delegates using existing governed profile-native continuation.",
-    "not_a_direct_write_authority": true
+    "not_a_direct_write_authority": true,
+    "decision": "RETURN_PROFILE_CAPABILITY_REQUIRED with one-use server-bound ticket (analogous to IG); never infer from an arbitrary JSON or from Router PROFILE_UPDATE directly",
+    "ticket_model": "Short-lived single-use ticket bound server-side to active parent execution, profile code, target, scope, policy and requested capability; distinct consumer and authorization from IG CONTEXT_PACK"
   },
   "transport": {
     "method": "issue+label -> GHA OIDC -> Edge -> RPC",
@@ -65,14 +67,16 @@
       "exact_head_sha"
     ],
     "independent_readback_required": true,
-    "resume_parent": "Same EJECUCION_PERFIL_LF parent run; preserve linked child run evidence, never restart Router/new user intent",
-    "scope": "only after child terminal receipt independent readback"
+    "resume_parent": "Same still-active EJECUCION_PERFIL_LF parent run; consume verified Updater child result before report_output(80); preserve evidence and revalidate final report, never restart Router",
+    "scope": "only after child terminal receipt independent readback",
+    "resume_precondition": "report_output(80) NOT recorded before capability return; if already terminal, reject continuation and require explicit governed remediation, no reopen"
   },
   "blocking": {
     "no_parent": "BLOCK_UNVERIFIED_SRCR_PARENT",
     "scope_drift": "BLOCK_SRCR_SCOPE_DRIFT",
     "no_receipt": "BLOCK_UPDATER_RETURN_RECEIPT_MISSING",
-    "untrusted_intent": "BLOCK_SRCR_UNAUTHORIZED_INTENT"
+    "untrusted_intent": "BLOCK_SRCR_UNAUTHORIZED_INTENT",
+    "parent_terminal": "BLOCK_SRCR_PARENT_TERMINAL_BEFORE_CAPABILITY_RETURN"
   },
   "enforcement_status": "NOT_IMPLEMENTED",
   "e2e_status": "NOT_TESTED"
