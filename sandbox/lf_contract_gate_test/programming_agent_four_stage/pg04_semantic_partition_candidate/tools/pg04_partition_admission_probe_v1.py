@@ -8,8 +8,8 @@ class PartitionProbeBlocked(ValueError):
 def _deny(code):
     raise PartitionProbeBlocked(code)
 
-def _ids(rows, label):
-    if not isinstance(rows, list) or not rows or any(not isinstance(x, str) or not x.strip() for x in rows) or len(rows) != len(set(rows)):
+def _ids(rows, label, allow_empty=False):
+    if not isinstance(rows, list) or (not rows and not allow_empty) or any(not isinstance(x, str) or not x.strip() for x in rows) or len(rows) != len(set(rows)):
         _deny(label + "_INVALID")
     return set(rows)
 
@@ -80,10 +80,12 @@ def inspect_candidate(*, partition_policy, strategy, source_refs, solutions):
                 not sol["bounded_reuse_assessment_ref"].strip()):
             _deny("NEW_REUSE_ASSESSMENT_MISSING")
         for key, owners in (("requirement_ids", req_owners), ("acceptance_ids", acc_owners)):
-            for identifier in _ids(sol.get(key), key.upper()):
+            for identifier in _ids(sol.get(key), key.upper(), allow_empty=True):
                 if identifier in owners:
                     _deny("DUPLICATE_MATERIAL_OWNERSHIP")
                 owners[identifier] = sid
+        if not sol["requirement_ids"] and not sol["acceptance_ids"]:
+            _deny("SOLUTION_WITHOUT_MATERIAL_OBLIGATION")
         dependencies = sol.get("depends_on")
         if not isinstance(dependencies, list) or any(not isinstance(x, str) or not x.strip() for x in dependencies) or len(set(dependencies)) != len(dependencies) or sid in dependencies:
             _deny("DEPENDENCIES_INVALID")
