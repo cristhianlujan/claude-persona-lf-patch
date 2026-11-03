@@ -102,7 +102,7 @@ def prepare_pg07_c5(*,pg07_c2,pg07_c3,pg07_c4,iteration_proposals):
     referrals=[]
     for sid in sorted(specs):
         proposals=by_solution[sid]
-        if len(proposals)>1:
+        if proposals:
             # Strict sequencing is mandatory; don't infer history from ordering.
             for i,p in enumerate(proposals):
                 if i==0 and p["previous_iteration_ref"] is not None:
