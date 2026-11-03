@@ -283,6 +283,20 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Bloqueos tras la corrección:** publicación C3 del catálogo, decisión L1/L2 por cada regla `STD-API` mixta, L3 B real y consistente con PG-01_C4, recibo del selector C6 realmente ejecutado, precedencia semántica y punto de despacho. Los PR #3518/#3519/#3521/#3522 ya modelan los límites source-only: **no reimplementarlos**. La siguiente integración debe autenticar fuente/autoridad con mecanismo existente, no aceptar un SHA elegido por el mismo caller.
 
+## 4.7. PG-03_C2 — reconciliación C3 y decisión STD-API ya inventariada (03/11)
+
+**Auditoría diferencial realizada para no duplicar avances.** En vez de crear otro inventario o un motor de niveles, se verificó el existente [sandbox PR #17](https://github.com/paulozterra/lf-programming-sandbox/pull/17), HEAD `75ae4b84d2a1d213985b2d60412b4bf507520713`, CI [run #41656428942](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41656428942) **SUCCESS**. El PR incluye `docs/programming/PG03_C2_STD_API_MIXED_LEVEL_DECISION_20261103.md` y `standards/tests/test_pg03_c2_mixed_api_level_inventory_v1.py`; es fuente de decisión pendiente, **no niveles aprobados**.
+
+**Readback de GitHub** catálogo `standards/catalog.json` al commit `ab361cf947fb9a34c874bf3e786b7f7478c85aa9`: `catalog_version=0.7.0`, `status=BORRADOR_EN_REPO_DE_CALIFICACION`, `canonical_store_target=transversal (vía Router→Train, pendiente)`. El dominio `STD-API` declara `level=L1/L2`; las **nueve reglas `STD-API-01..09` carecen de `level` propio**. Sus `severity` BLOCK/WARN y referencias REG/ADR **no permiten inferir L1/L2**.
+
+**Readback limitado de Supabase:** `transversal` tiene tablas `best_practices`, `decision_log`, `error_knowledge`, `prevention_rules`, ninguna tabla STD catalog identificable por nombre; `public.lf_capability_current` no devolvió filas para códigos parecidos a STANDARD/CATALOG/STD/C3/SKILL. `transversal.decision_log` no devolvió decisiones individualizadas de `STD-API-01..09` en la búsqueda realizada. **No afirmar ausencia global**: puede existir otra superficie contractual no consultada. En ledger: `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
+
+**Siguiente acción que desbloquea la decisión de reglas**: propietario del reglamento revisa **la matriz que ya está en el PR #17** y elige L1, L2 o descomposición para cada una de nueve reglas; si requieren cambio normativo, tramitar un `CHG` por C9 y revisión independiente, publicar catálogo C3 y leer back autoridad, versión, digest, fuente y niveles exactos por regla. No fusionar #17 suponiendo que su CI sustituye la decisión. No aplicar migración o inserción sin ruta gobernada.
+
+**Otras dependencias PG-03_C2, separadas y existentes en código:** selector C6 real, L3 tipo B del proyecto, origen/receipt por mismo run, resolución de conflictos semánticos y `programming_checkpoint_bindings`. Los PR #3518/#3519/#3521/#3522 y #3527 ya tienen candidatos: **NO crear adaptadores, evaluadores ni rúbricas duplicados**. El siguiente trabajo independiente de Programación sería verificar el mecanismo exacto de publicación C3 en código/contratos y la autoridad de origen, sin requerir intervenir en Análisis.
+
+**Dictamen:** `PG03_C2_SOURCE_RECONCILED / STD_API_OWNER_DECISION_9_OF_9_PENDING / C3_RELEASE_NOT_VERIFIED / OFFICIAL_PENDING`.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
