@@ -203,6 +203,29 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Siguiente trabajo del dueño de Análisis/Router**: calificar la fuente de Análisis A1–A9 y sus contratos, registrar el perfil mediante la gobernanza existente; verificar Router→`EJECUCION_PERFIL_LF`, invocar un caso fresco controlado y obtener respuesta real, A9 snapshot CURRENT y revisión independiente; solo después usar el escritor existente, readback de recibo y resolver V2 en ejecución autorizada. No crear escritor, juez ni engine paralelo. Mantener PG-01_C6 `PENDING` hasta prueba real completa.
 
+## 4.2. Bloqueo exacto de registro y despacho del perfil A1–A9 (03/11)
+
+**Se confirmó en GitHub:**
+- [PR #2071](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2071), [#2145](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2145), [#2214](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2214) y [#2416](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/2416) están **MERGED a main** (12–13/10). **No pedir fusionar otra vez** ni tratar los informes históricos de esos PR como estado de hoy.
+- El perfil `profiles/programming_analysis_lf/` está implementado como **CANDIDATE_NOT_RELEASED**. El `analysis_source_binding.json` declara `current_release_verified=false`, `source_readback.tier=GIT_BLOB_EXISTENCE_ONLY`, `external_currentness=NOT_ATTESTED`, `governed_adapter_candidate.router_binding=MISSING` y `activation_allowed=false`.
+
+**Consulta SQL reutilizable y ejecutada contra Supabase:** [`LF_ANALYSIS_A1_A9_ROUTER_SOURCE_ADMISSION_READBACK_V1.sql`](sql/LF_ANALYSIS_A1_A9_ROUTER_SOURCE_ADMISSION_READBACK_V1.sql).
+
+| Precondición real | Resultado |
+|---|---|
+| `lf_activos`, código `PERFIL-PROGRAMMING-ANALYSIS-LF` | **0** filas |
+| `lf_profile_selection_registry_v1` para el código | **0** descriptores |
+| `v_lf_router_adapter_bindings` hacia el perfil | **0** bindings |
+| `lf_profile_execution_source_eligibility_v1` | `eligible=false`, `PROFILE_NOT_CURRENT` |
+| `EJECUCION_PERFIL_LF` atribuible al perfil en registros consultados | **0** ejecuciones |
+| `lf_programming_context_handoff_receipts_v1` | **0** filas; **0** ACCEPT |
+
+**Control contrastivo:** `PERFIL-UI-ARCHITECT` sí tiene `lf_activos`, descriptor CURRENT, `repo_path=profiles/ui_architect` y `lf_profile_execution_source_eligibility_v1` devuelve `PROFILE_EXECUTION_SOURCE_READY`; ello solo prueba elegibilidad de fuente, **no** permiso de ejecución. No copiar valores de ese perfil a Análisis.
+
+**Primer bloqueo exacto:** `BLOCK_ANALYSIS_PROFILE_SOURCE_NOT_REGISTERED_OR_ELIGIBLE`. El escritor runtime PG-01 existe, pero no se puede alimentar desde un productor A1–A9 gobernado que no es elegible. Después de resolver el registro habrá que verificar: contrato A1–A9 CURRENT RELEASED, adapter agregado/Router binding atestado, ejecución real con provider receipt, juez semántico independiente, snapshot current y recibo PG-01 ACCEPT; el sondeo no los sustituye.
+
+**Siguiente cambio necesario (en el carril dueño de registros/Router, con autoridad aprobada):** registrar el activo canónico en `lf_activos` con identidad y source GitHub auténticos; publicar descriptor CURRENT en el registro existente mediante su circuito de gobernanza; revalidar `lf_profile_execution_source_eligibility_v1` y agregar solo el binding de adapter requerido. Primero ejecutar el SQL read-only anterior. No habilitar `service_role` ad hoc, no ejecutar el perfil ni modificar registros por un script documental.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
