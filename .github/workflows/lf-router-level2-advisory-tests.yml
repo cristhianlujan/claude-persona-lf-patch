@@ -5,6 +5,7 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/**'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/test_h2c4_pg03_c6_integration_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_level2_advisory_handoff_v1.py'
@@ -284,6 +285,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: PG-03 C1 exact Git object stack candidate (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_source_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_semantics_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_lock_v1.py
+
       - name: PG-02 candidate exact-head regressions (advisory only)
         run: |
           set -euo pipefail
