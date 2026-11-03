@@ -19,7 +19,7 @@ class ProfileUpdaterInputPreflightLane(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stdout[-4000:] + "\n" + p.stderr[-12000:])
         match = re.search(r"Ran (\d+) tests in", p.stderr)
         self.assertIsNotNone(match, p.stderr)
-        self.assertGreaterEqual(int(match.group(1)), 13)
+        self.assertGreaterEqual(int(match.group(1)), 22)
         for name in (
             "test_missing_proof_is_blocked",
             "test_cross_execution_receipt_is_blocked",
