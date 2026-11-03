@@ -248,6 +248,20 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Bloqueo de esta iteración:** `PROFILE_REGISTRATION_AUTHORITY_AND_PROVENANCE_NOT_EVIDENCED`. No se intentó alta SQL de falso origen ni se activó runtime. La ruta actual de solo lectura sigue respondiendo `BLOCK_ANALYSIS_PROFILE_SOURCE_NOT_REGISTERED_OR_ELIGIBLE`.
 
+## 4.4. Rectificación arquitectónica — el Router no es un segundo ingreso obligatorio (03/11)
+
+**Pregunta del owner:** si la solicitud ingresó por Router y completó Análisis, ¿por qué volver a conectarla al Router para ingresar a Programación?
+
+**Respuesta contractual:** **no se debe volver a seleccionar ni enrutar desde cero una petición que conserva el mismo run, contexto y autoridad**. Los contratos `ANALYSIS_PROCEDURE_V1.md`, `analysis_programming_handoff_parity_contract_v1.json` y `programming_entry_contract_v1.json` establecen el **límite directo A9 (productor) → PG-01 (consumidor)** con snapshot exacto, context_id, digests y recibo. No listan una selección semántica del Router como checkpoint intermediario A9→PG-01.
+
+**Lo que la ruta operativa general SÍ hace:** `lf_router_profile_execution_handoff_v1` en Supabase incorpora `reenter_router_before_execution=false`, `return_to_router_after_profile_result=true`. La función `lf_profile_result_router_return_classify_v1` define `REENTER_ROUTER_STAGE1` para determinados retornos tipados del perfil (ej. faltan datos, redirección al orquestador). Es **una continuación condicional**, no permiso para repetir Router ante todo A9 válido. La selección inicial de perfil sigue bajo autoridad Router cuando el Router efectivamente es el iniciador de `EJECUCION_PERFIL_LF`.
+
+**Distinción decisiva pendiente de verificar antes de cualquier alta:** `profiles/programming_analysis_lf` es un **perfil candidato autónomo** (`CANDIDATE_NOT_RELEASED`); su ausencia en `lf_activos` y `lf_profile_selection_registry_v1` sí bloquea **esa vía concreta de selección de perfil**. Pero **no prueba** que el flujo **A1–A9 del agente de programación ya elegido por un Router previo** necesite registrar un perfil separado. Para ese flujo, el contrato que manda es la paridad A9→PG-01 y la operación productor/ejecutor autorizada que efectivamente se haya elegido.
+
+**Decisión de alcance:** NO registrar automáticamente `PERFIL-PROGRAMMING-ANALYSIS-LF` en Supabase como requisito de PG-01_C6, ni reenrutar la petición. Primero rastrear el **`execution_id` original**, identificar el ejecutor efectivo de A1–A9 y leer su handoff A9. Si se usa la alternativa de perfil seleccionado de forma independiente, registrar ese perfil solo con su autoridad y procedencia gobernadas. El bloqueo universal aún comprobado es **0 recibos A9/PG-01 ACCEPT y ninguna ejecución A1–A9 apta acreditada**, no necesariamente la inexistencia del descriptor de este perfil candidato.
+
+**Próxima verificación útil:** trazabilidad de la solicitud original: Router execution/receipt → propietario de análisis → A9 `DECISION_CONTEXT_ASOF` → recibo `PROGRAMMING_CONTEXT_HANDOFF_RECEIPT_V1` → `resolve_v2` PG-01. Identificar el punto real de continuidad sin otra selección. Conservar los PR previos y no crear un engine o juez paralelo.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
