@@ -109,6 +109,39 @@ class Tests(unittest.TestCase):
         self.assertEqual(verdict["acceptance_coverage_count"],3)
         self.assertFalse(verdict["production_authority"])
 
+    def test_new_per_atom_reuse_provenance_is_preserved(self):
+        p=partition(**args())
+        for sol in p["solutions"]:
+            for item in sol["source_bindings"]:
+                self.assertEqual(item["implementation_state"],"NEW")
+                self.assertEqual(item["bounded_reuse_assessment_ref"],sol["bounded_reuse_assessment_ref"])
+                self.assertNotIn("as_is_ref",item)
+
+    def test_existing_per_atom_as_is_delta_preserved(self):
+        a=args()
+        for item in a["obligations"]:
+            item.pop("bounded_reuse_assessment_ref")
+            item.update(implementation_state="EXISTING",as_is_ref="git://as-is/123",
+                        delta_ref="change://delta/123")
+        p=partition(**a)
+        for sol in p["solutions"]:
+            self.assertEqual(sol["implementation_state"],"EXISTING")
+            for item in sol["source_bindings"]:
+                self.assertEqual(item["implementation_state"],"EXISTING")
+                self.assertEqual(item["as_is_ref"],"git://as-is/123")
+                self.assertEqual(item["delta_ref"],"change://delta/123")
+                self.assertNotIn("bounded_reuse_assessment_ref",item)
+
+    def test_new_rejects_stale_existing_fields(self):
+        self.denied("NEW_CONTAINS_EXISTING_EVIDENCE",
+                    lambda a:a["obligations"][0].update(as_is_ref="git://stale"))
+
+    def test_existing_rejects_stale_new_reuse_field(self):
+        def bad(a):
+            a["obligations"][0].update(implementation_state="EXISTING",
+                                      as_is_ref="git://as-is",delta_ref="change://delta")
+        self.denied("EXISTING_CONTAINS_NEW_EVIDENCE",bad)
+
     def test_determinism(self):
         self.assertEqual(partition(**args()),partition(**args()))
     def test_order_independent(self):
@@ -165,6 +198,7 @@ class Tests(unittest.TestCase):
     def test_atomicity_conflicting_implementation(self):
         def bad(a):
             a["obligations"][0].update(coimplement_with=["UI"],coimplement_evidence_ref="analysis://join")
+            a["obligations"][2].pop("bounded_reuse_assessment_ref")
             a["obligations"][2].update(coimplement_with=["API"],coimplement_evidence_ref="analysis://join",implementation_state="EXISTING",as_is_ref="git://s",delta_ref="analysis://delta")
         self.denied("COIMPLEMENT_STATE_CONFLICT",bad)
     def test_atomicity_conflicting_risk(self):
