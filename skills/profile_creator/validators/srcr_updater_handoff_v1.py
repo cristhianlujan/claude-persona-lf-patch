@@ -11,9 +11,7 @@ PATH = re.compile(r"profiles/[a-z0-9][a-z0-9_-]{1,100}/SKILL\.md")
 FIXED = dict(schema_version="LF_SRCR_UPDATER_HANDOFF_V1", business="LF",
              mode="REQUEST_ONLY", source_operation="EJECUCION_PERFIL_LF",
              source_profile_code="PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
-             target_operation="ACTUALIZACION_PERFIL_LF",
-             context_transport="CONTEXT_PACK", consumer="PROFILE_EXECUTION",
-             resume_via="EJECUCION_PERFIL_LF")
+             target_operation="ACTUALIZACION_PERFIL_LF")
 REQUIRED = set(FIXED) | {"source_execution_id", "target_code", "target_path",
     "request_sha256", "router_authorization_receipt_sha256",
     "policy_snapshot_sha256", "diagnosis_ref", "diagnosis_sha256",
