@@ -116,6 +116,18 @@ class ProfileUpdaterInputPreflight(unittest.TestCase):
         self.assertEqual(conditional[0]["name"], "research_baseline_contract")
         self.assertEqual(conditional[0]["otherwise"], "MUST_BE_NULL")
 
+    def test_historical_judge_and_matrix_union_types(self):
+        self.assertTrue(v._type_valid("PASS_SELF_REVIEW_NOT_INDEPENDENT", "string_or_object"))
+        self.assertTrue(v._type_valid({"status": "BLOCKED"}, "string_or_object"))
+        self.assertFalse(v._type_valid(["PASS"], "string_or_object"))
+        self.assertTrue(v._type_valid({"controls": []}, "object_or_array"))
+        self.assertTrue(v._type_valid([{"control": "WEB-001"}], "object_or_array"))
+        self.assertFalse(v._type_valid("unstructured result", "object_or_array"))
+        types = {s["step_id"]: {x["name"]: x["value_type"] for x in s["bindings"]}
+                 for s in self.catalog["steps"]}
+        self.assertEqual(types["semantic_judge"]["semantic_judge_result"], "string_or_object")
+        self.assertEqual(types["regression_after"]["before_after_matrix"], "object_or_array")
+
     def test_wrong_value_type_is_rejected_before_server_receipt(self):
         e, req, prior = self.fixture()
         req["evidence_payload"]["evolution_proof_run_id"] = ["wrong"]
