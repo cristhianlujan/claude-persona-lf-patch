@@ -79,6 +79,30 @@ def inspect_candidate(*, partition_policy, strategy, source_refs, solutions):
                 not isinstance(sol.get("bounded_reuse_assessment_ref"), str) or
                 not sol["bounded_reuse_assessment_ref"].strip()):
             _deny("NEW_REUSE_ASSESSMENT_MISSING")
+        if state == "EXISTING" and "bounded_reuse_assessment_ref" in sol:
+            _deny("EXISTING_CONTAINS_NEW_EVIDENCE")
+        if state == "NEW" and ("as_is_ref" in sol or "delta_ref" in sol):
+            _deny("NEW_CONTAINS_EXISTING_EVIDENCE")
+        # Detailed source bindings are optional for older caller-supplied shapes;
+        # when present, each atom must preserve the exact solution state/evidence.
+        if "source_bindings" in sol:
+            bindings = sol["source_bindings"]
+            if not isinstance(bindings, list) or not bindings:
+                _deny("ATOM_IMPLEMENTATION_BINDINGS_INVALID")
+            bound_ids = set()
+            for atom in bindings:
+                if not isinstance(atom, dict) or not isinstance(atom.get("atom_id"), str) or not atom["atom_id"].strip() or atom["atom_id"] in bound_ids:
+                    _deny("ATOM_IMPLEMENTATION_BINDINGS_INVALID")
+                bound_ids.add(atom["atom_id"])
+                if atom.get("implementation_state") != state:
+                    _deny("ATOM_IMPLEMENTATION_STATE_DRIFT")
+                if state == "EXISTING":
+                    if atom.get("as_is_ref") != sol["as_is_ref"] or atom.get("delta_ref") != sol["delta_ref"] or "bounded_reuse_assessment_ref" in atom:
+                        _deny("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT")
+                elif atom.get("bounded_reuse_assessment_ref") != sol["bounded_reuse_assessment_ref"] or "as_is_ref" in atom or "delta_ref" in atom:
+                    _deny("ATOM_IMPLEMENTATION_EVIDENCE_DRIFT")
+            if "atom_ids" in sol and (not isinstance(sol["atom_ids"], list) or len(sol["atom_ids"]) != len(set(sol["atom_ids"])) or set(sol["atom_ids"]) != bound_ids):
+                _deny("ATOM_IMPLEMENTATION_BINDINGS_INVALID")
         for key, owners in (("requirement_ids", req_owners), ("acceptance_ids", acc_owners)):
             for identifier in _ids(sol.get(key), key.upper(), allow_empty=True):
                 if identifier in owners:
