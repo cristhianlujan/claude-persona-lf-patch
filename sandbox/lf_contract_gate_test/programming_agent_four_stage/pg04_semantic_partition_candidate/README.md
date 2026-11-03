@@ -42,3 +42,9 @@ Se recomienda la ejecución exacta en la rama y el CI. Las pruebas de partición
 `fixtures/programming_synthetic_lab_packet_v1.json` es un caso totalmente inventado de pagos e historial. `tools/pg_programming_offline_lab_v1.py` realiza una ejecución **offline y sin autoridad**, que simula solo la recepción PG-01 y la estrategia PG-03, pero ejecuta los componentes candidatos reales C2/C3/C4/C5/preflight C7 de PG-04.
 
 `--mode strict` conserva barreras; `--mode diagnostic --skip-gates ...` puede omitir **solo las barreras de admisión del laboratorio** para observar resultados posteriores, dejando cada una como `SKIPPED_FOR_DIAGNOSTICS`. Nunca modifica validadores canónicos ni concede PASS, receipt o permiso productivo. Ver `PG_SYNTHETIC_OFFLINE_LAB_SWITCHES_20261103.md` para modos y comandos y `tests/test_pg_programming_offline_lab_v1.py` para regresiones.
+
+## Juez semántico local opcional (no gobernado)
+
+`tools/pg04_local_semantic_judge_v1.py` congela el paquete sintético y la partición PG04 y admite `--model <ollama-model>` para obtener un juicio semántico de laboratorio, `--prompt-only` para revisión independiente manual o `--response-file` para validar su JSON. Tiene 10 criterios y controles de hash/punteros/veredicto. `tests/test_pg04_local_semantic_judge_v1.py` cubre su frontera de respuesta. **No ejecuta INDEPENDENT_ASSURANCE ni acredita independencia o autoridad**.
+
+Comandos y limitaciones: `PG04_LOCAL_SEMANTIC_JUDGE_20261103.md`.
