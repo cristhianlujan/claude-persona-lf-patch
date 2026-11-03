@@ -677,6 +677,18 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Límites y pendientes:** `standards/catalog.json` no fue editado; CHG-0009 permanece bajo `standards/changes/proposals/`, no existe release C3 ni revisión independiente válida. Para aplicar de verdad las reglas, seguirá siendo necesario un diff normativo con CHG clasificado, revisión de seguridad independiente, aprobación explícita del owner, migración de referencias, semver, cambio de pins y readback. Estados oficiales `PG-00_C9=PENDING`, `PG-00_C3=PENDING`, `PG-03_C2=PENDING`.
 
+## 4.13. PG-03_C2 — selección ambigua de Skills compartidas (03/11)
+
+**Contexto de ruta crítica:** PG-03_C2 **consume** las reglas y Skills de PG-00, pero no necesita interrumpir su desarrollo para volver a resolver CHG-0009. Ese expediente queda como dependencia pendiente; la actividad de esta sección pertenece a **PG-03_C2**.
+
+**Hallazgo nuevo dentro del sandbox:** en `standards/tools/skills.py::select`, cuando los únicos dominios activos eran compartidos (`STD-API`, `STD-GEN`, `STD-SEC`) y el repositorio presentaba más de un stack, el selector entregaba varias Skills sin evidencia de cuál frente concreto correspondía. El contexto podía crecer y mezclar instrucciones ajenas al alcance.
+
+**Corrección incremental:** [sandbox PR #19](https://github.com/paulozterra/lf-programming-sandbox/pull/19), DRAFT, sobre la rama de PR #18 por continuidad del sandbox; modificar el selector original para devolver `STACK_AMBIGUOUS: REQUIRES_DECISION` con candidatos, en vez de elegir todos. Se agregaron tres regresiones: Spring+Next con solo API, Spring+Flyway con solo dominios compartidos, y dominios específicos BE/FE que eliminan ambigüedad. No se inventa una clasificación PG-02 ni un selector paralelo.
+
+**Exigencia transversal del CI:** la primera corrida de PR #19, [#41678462209](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41678462209), reportó `MISSING_CHG` en el circuito C9 al cambiar el código de `standards/tools/skills.py`. Se agregó **CHG-0010** con clase `TIGHTENING` y la fila derivada `standards/CAMBIOS.md`, declarando aprobación del owner/revisión independiente todavía pendientes. **Este es registro obligatorio del cambio de PG-03, no reanudación de los trabajos de diseño normativo de PG-00.**
+
+**CI nuevo:** HEAD `07aec8358fce0230b6204b4b76192494b26c92d9` del PR #19, [run #41678777923](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41678777923); comprobar su conclusión antes de registrar PASS. Sin merge/publicación/Supabase-write, `PG-03_C2=PENDING` oficial, el cambio es un endurecimiento candidato offline.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
