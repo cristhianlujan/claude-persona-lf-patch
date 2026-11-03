@@ -67,6 +67,21 @@ class Tests(unittest.TestCase):
         self.assertEqual(p["solutions"][1]["depends_on"],["SOL-001"])
         self.assertEqual(p["coverage"],{"requirements":3,"acceptance":3,"orphans":0,"duplicate_owners":0})
         self.assertFalse(p["handoff_allowed"])
+    def test_split_requirement_and_acceptance_atoms_pass_probe(self):
+        a=args()
+        a["obligations"][0]["acceptance_ids"]=[]
+        a["obligations"][1]["requirement_ids"]=[]
+        a["obligations"].append(atom("API-ACC","PAY", "R2", "A1",
+                                     requirement_ids=["R2"],acceptance_ids=["A1"]))
+        # The PAY solution still has both families, but an atom may have one only.
+        p=partition(**a)
+        self.assertEqual(p["coverage"]["requirements"],3)
+        self.assertEqual(p["coverage"]["acceptance"],3)
+        sources={"contract_path":"contract.json","contract_commit":"a"*40,
+                 "j02_source_path":"j02.md","j02_source_commit":"b"*40}
+        verdict=inspect_candidate(partition_policy=POLICY,strategy=STRATEGY,
+                                   source_refs=sources,solutions=p["solutions"])
+        self.assertEqual(verdict["status"],"CANDIDATE_NOT_ADMITTED")
     def test_determinism(self):
         self.assertEqual(partition(**args()),partition(**args()))
     def test_order_independent(self):
