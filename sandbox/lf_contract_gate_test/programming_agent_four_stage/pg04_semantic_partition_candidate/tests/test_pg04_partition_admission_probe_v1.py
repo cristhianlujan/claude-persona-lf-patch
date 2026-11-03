@@ -83,6 +83,43 @@ class ProbeTests(unittest.TestCase):
     def test_deterministic(self):
         self.assertEqual(inspect_candidate(**args()), inspect_candidate(**args()))
 
+    def test_disjoint_requirement_and_acceptance_solutions(self):
+        case = args()
+        case["solutions"][0]["acceptance_ids"] = []
+        case["solutions"][1]["requirement_ids"] = []
+        case["solutions"].append({
+            **copy.deepcopy(case["solutions"][0]),
+            "id": "S3", "requirement_ids": ["R2"], "acceptance_ids": [],
+            "depends_on": ["S1"],
+        })
+        case["solutions"].append({
+            **copy.deepcopy(case["solutions"][1]),
+            "id": "S4", "requirement_ids": [], "acceptance_ids": ["A1"],
+            "depends_on": ["S2"],
+        })
+        case["solutions"][1]["acceptance_ids"] = ["A2"]
+        case["solutions"][1]["requirement_ids"] = []
+        result = inspect_candidate(**case)
+        self.assertEqual(result["requirement_coverage_count"], 2)
+        self.assertEqual(result["acceptance_coverage_count"], 2)
+        self.assertFalse(result["handoff_allowed"])
+
+    def test_empty_material_solution_rejected(self):
+        self.block("SOLUTION_WITHOUT_MATERIAL_OBLIGATION",
+                   lambda a: a["solutions"][0].update(requirement_ids=[], acceptance_ids=[]))
+
+    def test_empty_global_coverage_rejected(self):
+        case = args()
+        case["strategy"]["requirement_ids"] = []
+        case["strategy"]["candidate_sha256"] = hashlib.sha256(
+            json.dumps({k: v for k, v in case["strategy"].items() if k != "candidate_sha256"},
+                       sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        for row in case["solutions"]:
+            row["strategy_ref"] = case["strategy"]["candidate_sha256"]
+            row["requirement_ids"] = []
+        with self.assertRaisesRegex(PartitionProbeBlocked, "STRATEGY_REQUIREMENTS_INVALID"):
+            inspect_candidate(**case)
+
     def test_source_trace(self):
         self.block("SOURCE_TRACE_MISSING", lambda a: a["source_refs"].pop("j02_source_path"))
 
