@@ -60,6 +60,54 @@ class ProfileUpdaterInputPreflight(unittest.TestCase):
                             r if request is None else request,
                             p if prior is None else prior)
 
+    def init_request(self, mode="NOT_REQUIRED", contract=None):
+        return {
+            "schema_version": "LF_PROFILE_UPDATE_REQUEST_V1",
+            "action": "profile_update_init",
+            "target_code": "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF",
+            "target_path": "profiles/systemic_root_cause_repair_lf/SKILL.md",
+            "research_baseline_mode": mode,
+            "research_baseline_contract": contract,
+        }
+
+    def test_init_is_pre_execution_and_requires_no_existing_run(self):
+        result = v.check_init_request(self.catalog, self.init_request())
+        self.assertEqual(result["status"], "READY_FOR_GOVERNED_INITIALIZATION")
+        self.assertIsNone(result["execution_id"])
+        self.assertEqual(result["approval_effect"], "NONE")
+        self.assertEqual(len(result["bindings"]), 3)
+
+    def test_init_research_contract_required_only_in_pre_research_mode(self):
+        invalid = v.check_init_request(
+            self.catalog, self.init_request(mode="PRE_RESEARCH_ALWAYS"))
+        self.assertEqual(invalid["status"], "BLOCKED_MISSING_INPUT")
+        self.assertIn("research_baseline_contract:INPUT_REQUIRED_FOR_MODE",
+                      invalid["missing"])
+        valid = v.check_init_request(self.catalog, self.init_request(
+            mode="PRE_RESEARCH_ALWAYS",
+            contract={"contract_version": "PROFILE_RESEARCH_BASELINE_BINDING_V1"}))
+        self.assertEqual(valid["status"], "READY_FOR_GOVERNED_INITIALIZATION")
+
+    def test_init_rejects_unexpected_contract_and_noncanonical_path(self):
+        c = self.init_request(contract={"contract_version": "anything"})
+        self.assertEqual(
+            v.check_init_request(self.catalog, c)["status"],
+            "BLOCKED_INCONSISTENT_INPUT")
+        c = self.init_request()
+        c["target_path"] = "profiles/../admin/SKILL.md"
+        result = v.check_init_request(self.catalog, c)
+        self.assertIn("INIT_TARGET_PATH_INVALID", result["inconsistent"])
+
+    def test_init_rejects_wrong_schema_or_unapproved_extra_key(self):
+        req = self.init_request()
+        req["schema_version"] = "LF_OTHER_SCHEMA"
+        self.assertIn("INIT_ACTION_OR_SCHEMA_INVALID",
+                      v.check_init_request(self.catalog, req)["inconsistent"])
+        req = self.init_request()
+        req["admin_override"] = True
+        self.assertIn("INIT_REQUEST_KEYS_MISMATCH",
+                      v.check_init_request(self.catalog, req)["inconsistent"])
+
     def test_canonical_catalog_has_seventeen_ordered_stage_bindings(self):
         self.assertEqual(v.validate_catalog(self.catalog), [])
         self.assertEqual(len(self.catalog["steps"]), 17)
