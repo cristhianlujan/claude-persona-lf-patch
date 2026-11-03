@@ -21,6 +21,8 @@ def sample():
             "policy_snapshot_sha256":"c"*64,
             "diagnosis_ref":"supabase://public/lf_operation_execution_steps/parent",
             "diagnosis_sha256":"d"*64,
+            "target_main_revision_sha":"e"*40,
+            "target_blob_sha":"f"*40,
             "authorized_scope":["PERFIL-UI-ARCHITECT"]}
 
 class SRCRHandoffTest(unittest.TestCase):
@@ -36,7 +38,9 @@ class SRCRHandoffTest(unittest.TestCase):
                             ("source_operation","ACTUALIZACION_PERFIL_LF"),
                             ("authorized_scope",["PERFIL-OTHER"]),
                             ("target_path","profiles/../secret/SKILL.md"),
-                            ("request_sha256","wrong")]:
+                            ("request_sha256","wrong"),
+                            ("target_main_revision_sha","wrong"),
+                            ("target_blob_sha","wrong")]:
             h=sample();h[field]=value
             with self.subTest(field=field):
                 self.assertEqual(gate.inspect(h)["status"],"BLOCKED")
@@ -56,7 +60,8 @@ class SRCRHandoffTest(unittest.TestCase):
            "child_execution_id":"EXEC-ACTUALIZACION-PERFIL-LF-OIDC-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
            "target_code":h["target_code"],"status":"COMPLETED",
            "terminal_receipt_ref":"supabase://public/lf_operation_execution_steps/child",
-           "terminal_receipt_sha256":"f"*64,"next_action":"RETURN_TO_SRCR"}
+           "terminal_receipt_sha256":"f"*64,
+           "exact_head_sha":"a"*40,"next_action":"RETURN_TO_SRCR"}
         result=gate.inspect_return(h,r)
         self.assertEqual(result["status"],"READY_FOR_INDEPENDENT_READBACK")
         self.assertFalse(result["terminal_verified"])
