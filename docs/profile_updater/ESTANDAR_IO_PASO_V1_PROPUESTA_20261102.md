@@ -73,6 +73,16 @@ En la columna «entrada» se describen **dependencias propuestas**, NO valores y
 | 120 | `close` | receipts de todos los gates y reconciliación + bloqueos | Validar ruta limpia sin impactos prohibidos | all_required_steps_clean, open_blockers, runtime_unchanged, no_auto_promotion | report_output |
 | 130 | `report_output` | cierre 120 + exact main + refs de evidencia y siguiente gate | Emitir respuesta y dejar recibo persistente del mismo execution_id | result, exact_head, evidence_refs, open_blockers, next_gate | terminal |
 
+## 3.1 Dos contratos de entrada distintos: INIT y pasos registrados
+
+**Paso 00 (INIT, antes de existir `execution_id`):** la entrada real es el Issue `LF_PROFILE_UPDATE_REQUEST_V1` con `action=profile_update_init`, `target_code`, `target_path`, `research_baseline_mode` y `research_baseline_contract`. Los tres primeros valores se consumen obligatoriamente; `research_baseline_contract` debe ser `null` cuando el modo es `NOT_REQUIRED`, y debe contener un objeto de versión `PROFILE_RESEARCH_BASELINE_BINDING_V1` cuando el modo es `PRE_RESEARCH_ALWAYS`. El propio paso 00 crea `execution_id`; **no es válido exigir un recibo anterior**. El preflight usa `--init-request-json`.
+
+**Pasos 10–130 (después de INIT):** la entrada real se entrega mediante `profile_update_record_batch`, que posee `execution_id` y `steps[]`; cada item contiene `step_id`, `evidence_ref`, `evidence_payload`. El preflight recibe un contexto de lectura con fila de ejecución y recibos previos del mismo `execution_id`, usando `--step-id` y `--context-json`. No se agregan claves al transporte.
+
+Los 44 bindings propuestos en `skills/profile_creator/contracts/profile_updater_io_bindings_v1.json` declaran `name`, `source`, `path` y `value_type`; la validación de tipos y procedencia es **local/candidata**, no está aún conectada al runtime del Updater. `READY_FOR_GOVERNED_INITIALIZATION` y `READY_FOR_SERVER_VERIFICATION` significan únicamente *preflight satisfecho*, **no** ejecución, autoridad o PASS. El verificador Edge/RPC existente permanece obligatorio.
+
+**Dato de compatibilidad:** en el run observado, 26/29 referencias comprobadas inicialmente contra recibos de 00–80 coincidieron. Las 3 referencias del paso 00 no aparecen en su **recibo de salida**, porque provienen del **Issue de inicialización**; compararlas con la salida de INIT no representa un fallo de transporte. Deben auditarse contra su entrada previa real, sin inventar datos del Issue histórico.
+
 ## 4. Paso 90 — comparación explícita del productor anterior
 
 **Entrada contractual documentada (PROPUESTA):**
