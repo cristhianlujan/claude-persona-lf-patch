@@ -85,6 +85,70 @@ def validate_catalog(spec: dict) -> list[str]:
     return failures
 
 
+
+def check_init_request(spec: dict, request: dict) -> dict:
+    """Inspect the *pre-execution* INIT issue. No run exists at this boundary.
+
+    This is the LF_PROFILE_UPDATE_REQUEST_V1/profile_update_init input rather
+    than an LF_PROFILE_UPDATE_REQUEST_V1/profile_update_record_batch payload.
+    """
+    report = {
+        "schema_version": "LF_PROFILE_UPDATER_IO_PREFLIGHT_RECEIPT_V1",
+        "step_id": "init_execution",
+        "execution_id": None,
+        "status": "BLOCKED",
+        "approval_effect": "NONE",
+        "missing": [], "inconsistent": [], "bindings": [],
+        "server_proof_verification": "NOT_PERFORMED",
+    }
+    problems = validate_catalog(spec)
+    if problems:
+        report["inconsistent"].extend(problems)
+        return report
+    if not isinstance(request, dict) or request.get("schema_version") != "LF_PROFILE_UPDATE_REQUEST_V1" or request.get("action") != "profile_update_init":
+        report["inconsistent"].append("INIT_ACTION_OR_SCHEMA_INVALID")
+        return report
+    allowed = {
+        "schema_version", "action", "target_code", "target_path",
+        "research_baseline_mode", "research_baseline_contract"
+    }
+    if set(request) != allowed:
+        report["inconsistent"].append("INIT_REQUEST_KEYS_MISMATCH")
+    for binding in spec["steps"][0]["bindings"]:
+        name = binding["name"]
+        value = _get(request, binding["path"])
+        if not _present(value, False):
+            report["missing"].append(f"{name}:INPUT_REQUIRED_MISSING")
+        else:
+            report["bindings"].append({"name": name, "source": "request", "status": "PRESENT_NOT_ATTESTED"})
+    code = request.get("target_code")
+    path = request.get("target_path")
+    if not isinstance(code, str) or not re.fullmatch(r"PERFIL-[A-Z0-9][A-Z0-9-]{2,119}", code):
+        report["inconsistent"].append("INIT_TARGET_CODE_INVALID")
+    if (not isinstance(path, str) or
+            not re.fullmatch(r"profiles/[a-z0-9][a-z0-9_-]{1,100}/[A-Za-z0-9_./-]{1,200}", path) or
+            ".." in path.split("/")):
+        report["inconsistent"].append("INIT_TARGET_PATH_INVALID")
+    mode = request.get("research_baseline_mode")
+    contract = request.get("research_baseline_contract")
+    if mode == "NOT_REQUIRED":
+        if contract is not None:
+            report["inconsistent"].append("INIT_UNEXPECTED_RESEARCH_CONTRACT")
+    elif mode == "PRE_RESEARCH_ALWAYS":
+        if not isinstance(contract, dict) or not contract:
+            report["missing"].append("research_baseline_contract:INPUT_REQUIRED_FOR_MODE")
+        elif contract.get("contract_version") != "PROFILE_RESEARCH_BASELINE_BINDING_V1":
+            report["inconsistent"].append("INIT_RESEARCH_CONTRACT_VERSION_INVALID")
+    else:
+        report["inconsistent"].append("INIT_RESEARCH_BASELINE_MODE_INVALID")
+    report["status"] = (
+        "BLOCKED_MISSING_INPUT" if report["missing"] else
+        "BLOCKED_INCONSISTENT_INPUT" if report["inconsistent"] else
+        "READY_FOR_GOVERNED_INITIALIZATION"
+    )
+    return report
+
+
 def check_step(spec: dict, step_id: str, execution: dict, request: dict,
                prior_steps: dict[str, dict]) -> dict:
     """Diagnose the input boundary. READY never means an approved step."""
