@@ -168,6 +168,11 @@ def evaluate(event):
     # Once Gate 2 is observed, final phrasing cannot silently bypass handoff.
     found = (GATE2 in receipts and HANDOFF in receipts)
     if not found and (GATE2 not in final or HANDOFF not in final):
+        # Do not bypass the proof gate for a forged/free-text Gate2 literal.
+        # The shared classifier explicitly rejected its unverified context.
+        if (prompt and shared["decision"] == "BLOCK"
+                and shared["reason_code"] == "GATE2_CONTEXT_UNAUTHENTICATED"):
+            return {"decision": "block", "reason": RECEIPT_REASON}
         return None
 
     # A denied connector can finish honestly only if the denial is observable
