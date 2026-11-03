@@ -152,6 +152,18 @@ class ProfileUpdaterInputPreflight(unittest.TestCase):
         self.assertIn("CATALOG_HISTORICAL_35_37_CHANGED",
                       v.validate_catalog(c))
 
+    def test_migration_input_arrays_match_exact_config(self):
+        migration = (ROOT / "supabase/migrations"
+                     / "20261103030000_lf_profile_updater_input_bindings_v1.sql")
+        sql = migration.read_text(encoding="utf-8")
+        for item in self.catalog["steps"]:
+            canonical = json.dumps(item["input_required"], separators=(",", ":"))
+            value = f"('{item['step_id']}', '{canonical}'::jsonb)"
+            self.assertIn(value, sql)
+        self.assertNotIn("lf_router_pipeline_context", sql)
+        self.assertNotIn("GRANT ", sql.upper())
+        self.assertNotIn("CREATE OR REPLACE FUNCTION", sql.upper())
+
     def test_all_inputs_do_not_claim_runtime_attestation(self):
         for stage in self.catalog["steps"]:
             self.assertFalse(any(
