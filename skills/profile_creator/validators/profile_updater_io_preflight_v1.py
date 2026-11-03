@@ -44,7 +44,7 @@ def _present(value: Any, allow_empty: bool) -> bool:
     return True
 
 
-VALID_TYPES = {"string", "sha40", "array", "object", "boolean", "run_id"}
+VALID_TYPES = {"string", "sha40", "array", "object", "boolean", "run_id", "string_or_object", "object_or_array"}
 
 
 def _type_valid(value: Any, value_type: str) -> bool:
@@ -58,6 +58,10 @@ def _type_valid(value: Any, value_type: str) -> bool:
         return isinstance(value, dict)
     if value_type == "boolean":
         return isinstance(value, bool)
+    if value_type == "string_or_object":
+        return isinstance(value, (str, dict))
+    if value_type == "object_or_array":
+        return isinstance(value, (dict, list))
     if value_type == "run_id":
         return (isinstance(value, (int, str)) and not isinstance(value, bool))
     return False
