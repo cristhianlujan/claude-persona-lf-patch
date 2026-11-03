@@ -2,7 +2,7 @@
   "contract_code": "LF_SRCR_UPDATER_HANDOFF_V1_CANDIDATE",
   "status": "STRUCTURE_ONLY_NOT_ENFORCED",
   "entrance": {
-    "route": "ACT-0001 -> EJECUCION_PERFIL_LF (SRCR) -> orchestrator",
+    "route": "ACT-0001 -> EJECUCION_PERFIL_LF (SRCR) -> profile-owned capability invocation; no alternate Router operation",
     "mode": "REQUEST_ONLY",
     "required_keys": [
       "schema_version",
@@ -21,19 +21,36 @@
       "diagnosis_sha256",
       "authorized_scope",
       "target_main_revision_sha",
-      "target_blob_sha"
-    ]
+      "target_blob_sha",
+      "context_transport",
+      "consumer",
+      "resume_via"
+    ],
+    "invocation_after": "EJECUCION_PERFIL_LF semantic_judge(70) and report_output(80), verified against same parent execution; do not invoke at input_validate(40)",
+    "fixed_values": {
+      "context_transport": "CONTEXT_PACK",
+      "consumer": "PROFILE_EXECUTION",
+      "resume_via": "EJECUCION_PERFIL_LF"
+    }
   },
   "process": {
     "server_binding_required": true,
     "proof": "read parent run, Router receipt, scope, policy, exact main revision+target blob and SRCR diagnosis from LIVE DB; never trust client envelope",
-    "no_direct_profile_invocation": true
+    "no_direct_profile_invocation": true,
+    "pattern_reused": "IG profile-owned capability invocation: applicability decision -> executor-needed/READY receipt -> resume same parent run",
+    "parent_readback": "Step70 independent judge + step80 terminal report must be real, clean and bound to current SRCR parent before requesting updater",
+    "avoids": "No new top-level Router path and no new profile begin/operation. SRCR delegates using existing governed profile-native continuation.",
+    "not_a_direct_write_authority": true
   },
   "transport": {
     "method": "issue+label -> GHA OIDC -> Edge -> RPC",
     "parent_child_correlation_required": true,
     "no_router_change": true,
-    "no_service_role_in_router": true
+    "no_service_role_in_router": true,
+    "profile_entry": "Existing LF_PROFILE_NATIVE_BEGIN_REQUEST_V1 and RESUME_REQUEST_V1 route creates and advances parent SRCR; new capability call consumes parent context; Updater existing workflow issue+label/OIDC remains child technical dispatch",
+    "reuse_context_transport": "CONTEXT_PACK",
+    "direct_router_to_updater": false,
+    "existing_updater_workflow_reused": true
   },
   "return": {
     "schema_version": "LF_SRCR_UPDATER_RETURN_V1",
@@ -47,7 +64,9 @@
       "next_action",
       "exact_head_sha"
     ],
-    "independent_readback_required": true
+    "independent_readback_required": true,
+    "resume_parent": "Same EJECUCION_PERFIL_LF parent run; preserve linked child run evidence, never restart Router/new user intent",
+    "scope": "only after child terminal receipt independent readback"
   },
   "blocking": {
     "no_parent": "BLOCK_UNVERIFIED_SRCR_PARENT",
