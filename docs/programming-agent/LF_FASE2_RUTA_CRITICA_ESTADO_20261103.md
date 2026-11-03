@@ -648,6 +648,8 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 - H03: matriz de 10 obligaciones atómicas trazadas a nuevas reglas/ADR/REG/tests, para preservar SQL/stack trace, D1/D2, idempotencia, correlación, rate limit/429/Retry-After, exactitud monetaria, decimal/currency y numeric(18,2).
 - H04: propuesta mantiene schema no activo y `owner_normative_go=false`, `independent_security_review=false`, `C3_release_verified=false`; tras revisión separada del autor se necesitará CHG activo, semver, clasificación de diff, invalidación de pins, CI/regresión y GO humano antes de merge/publicación.
 
+**CI exacto:** sandbox [run #41674672910](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41674672910) = **SUCCESS** sobre HEAD `afa2711fd929a0c51abbe6a8b1675c3211fea841` (5 jobs: estándares, sombra, backend, frontend, infra). Seguimiento de la auditoría publicado en comentario GitHub #6609609643. Este éxito es **solo de propuesta**, no certificación de seguridad ni release.
+
 **Importante:** esto resuelve la preparación del remedio, **no** los hallazgos normativos hasta que existan implementación y revisión independiente reales. `PG-00_C9`, `PG-00_C3`, `PG-03_C2` continúan `PENDING`; no se cambió catálogo vigente, no hubo merge, Supabase write ni activación.
 
 ## 5. Reglas de actualización del documento
