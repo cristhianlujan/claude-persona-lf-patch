@@ -6,7 +6,7 @@ Estado: CANDIDATE / NO_ENFORCEMENT / NO_E2E. No es autorización de producción 
 
 ACT-0001 → EJECUCION_PERFIL_LF (Reparador SRCR) → llamada de capacidad del perfil (CONTEXT_PACK) → ACTUALIZACION_PERFIL_LF (17 etapas) → recibo verificable → continuar run SRCR.
 
-**Patrón reutilizado de Input Governance:** `input_validate(40)` evalúa aplicabilidad y retorna `INPUT_GOVERNANCE_RUNTIME_REQUIRED` o `READY`, asociado a `consumer=CONTEXT_PACK` y `resume_via=EJECUCION_PERFIL_LF/input_validate`. El Updater debe usar **el mismo mecanismo de capacidad perteneciente al perfil**, pero **después de resultado real del Reparador validado por `semantic_judge(70)` y `report_output(80)`**, no durante `input_validate`. No se duplica el Router ni se vuelve a decidir la intención.
+**Patrón reutilizado de Input Governance:** `input_validate(40)` evalúa aplicabilidad y retorna `INPUT_GOVERNANCE_RUNTIME_REQUIRED` o `READY`, asociado a `consumer=CONTEXT_PACK` y `resume_via=EJECUCION_PERFIL_LF/input_validate`. El Updater debe usar **el mismo mecanismo de capacidad perteneciente al perfil**, pero **después del diagnóstico validado por `semantic_judge(70)` y antes del `report_output(80)` terminal**, no durante `input_validate`. El mismo run activo permanece abierto mientras el Updater retorna su recibo. Si 80 ya fue registrado, bloquear; no reabrir el run. No se duplica el Router ni se vuelve a decidir la intención.
 
 **El contrato JSON de este PR es el payload especializado de la capacidad, NO un contrato de nueva ruta de navegación.** Mantiene campos de trazabilidad necesarios para ligar parent/child y el recibo; los campos no son autoridad, el servidor los relee.
 
@@ -23,7 +23,7 @@ El Router clasifica/deriva; SRCR diagnostica y solicita, pero no llama otro perf
 
 ## SR04: integración pendiente y bloqueada por autoridad
 
-Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF autorizado y comprueba `semantic_judge(70)` + `report_output(80)` limpios; (2) lee la salida real de SRCR y autoriza la solicitud de Updater con alcance exacto; (3) congela parent/child/scope/SHAs en init de Updater; (4) usa la ruta de continuación del perfil existente y el dispatcher Updater existente (issue+label/OIDC) como adaptador de capacidad, sin nueva ruta Router ni service_role en Router; (5) retorna recibo terminal auténtico y HEAD SHA exacto al run SRCR identificado, sin crear otro run de perfil y registra recepción; (6) juez independiente verifica readback Github/Supabase/runtime. Una estructura JSON sola no demuestra ninguno de estos pasos.
+Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF autorizado y comprueba salida real `execute_profile(50)`, validación `output_validate(60)` y juez `semantic_judge(70)` limpios, y exige que `report_output(80)` todavía no se haya registrado; (2) lee la salida real de SRCR y autoriza la solicitud de Updater con alcance exacto; (3) congela parent/child/scope/SHAs en init de Updater; (4) emite ticket server-side de un solo uso vinculado al mismo run (patrón IG) y usa la ruta de continuación del perfil existente y el dispatcher Updater existente (issue+label/OIDC) como adaptador técnico de capacidad, sin nueva ruta Router ni service_role en Router; (5) retorna recibo terminal auténtico y HEAD SHA exacto al run SRCR todavía activo, sin crear otro run de perfil, registra recepción y solo entonces permite `report_output(80)`; (6) juez independiente verifica readback Github/Supabase/runtime. Una estructura JSON sola no demuestra ninguno de estos pasos.
 
 ## Evidencia LIVE de partida
 
@@ -36,3 +36,7 @@ Para integrar: (1) orquestador relee del servidor parent EJECUCION_PERFIL_LF aut
 Rechazar sin parent, SALY, target equivocado, path traversal, scope extra, digest inválido, autoridad fabricada, política obsoleta, retorno con otro child, PASS autodeclarado, recibo ausente, replay, cambio de permisos o nueva ruta directa.
 
 No merge hasta revisión independiente, enforcement server-side y E2E. No se modifica ACT-0001, Edge, RPC, perfiles, permisos ni producción con este PR.
+
+## Diferencia importante respecto de IG
+
+IG se invoca en `input_validate(40)` antes de ejecutar el perfil y usa ticket `CONTEXT_PACK` de un solo uso. Updater es capacidad posterior al diagnóstico: requiere output(50), validación(60) y juez(70), y espera retorno **antes** de report_output(80). Reutilizar el protocolo de decisión, ticket, invocación y retorno, no la función IG vinculada a pantalla/CONTEXT_PACK ni su autorización. El adaptador GitHub/OIDC existente sirve solo al motor de escritura del Updater.
