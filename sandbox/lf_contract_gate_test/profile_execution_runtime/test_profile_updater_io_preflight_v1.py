@@ -108,6 +108,30 @@ class ProfileUpdaterInputPreflight(unittest.TestCase):
         self.assertIn("INIT_REQUEST_KEYS_MISMATCH",
                       v.check_init_request(self.catalog, req)["inconsistent"])
 
+    def test_catalog_has_typed_bindings_and_conditional_init_contract(self):
+        for step in self.catalog["steps"]:
+            for binding in step["bindings"]:
+                self.assertIn(binding["value_type"], v.VALID_TYPES)
+        conditional = self.catalog["steps"][0]["conditional_inputs"]
+        self.assertEqual(conditional[0]["name"], "research_baseline_contract")
+        self.assertEqual(conditional[0]["otherwise"], "MUST_BE_NULL")
+
+    def test_wrong_value_type_is_rejected_before_server_receipt(self):
+        e, req, prior = self.fixture()
+        req["evidence_payload"]["evolution_proof_run_id"] = ["wrong"]
+        result = self.check(e, req, prior)
+        self.assertIn("evolution_proof_run_id:INPUT_VALUE_TYPE_INVALID",
+                      result["inconsistent"])
+        self.assertEqual(result["approval_effect"], "NONE")
+
+    def test_wrong_sha_format_is_not_promoted_to_pass(self):
+        e, req, prior = self.fixture()
+        prior["github_write"]["evidence_payload"]["server_trust_context"]["commit_sha"] = "not-a-sha"
+        result = self.check(e, req, prior)
+        self.assertIn("candidate_commit_sha:INPUT_VALUE_TYPE_INVALID",
+                      result["inconsistent"])
+        self.assertNotEqual(result["status"], "READY_FOR_SERVER_VERIFICATION")
+
     def test_canonical_catalog_has_seventeen_ordered_stage_bindings(self):
         self.assertEqual(v.validate_catalog(self.catalog), [])
         self.assertEqual(len(self.catalog["steps"]), 17)
