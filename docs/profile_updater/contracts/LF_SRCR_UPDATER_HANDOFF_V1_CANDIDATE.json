@@ -2,7 +2,7 @@
   "contract_code": "LF_SRCR_UPDATER_HANDOFF_V1_CANDIDATE",
   "status": "STRUCTURE_ONLY_NOT_ENFORCED",
   "entrance": {
-    "route": "ACT-0001 -> EJECUCION_PERFIL_LF (SRCR) -> profile-owned capability invocation; no alternate Router operation",
+    "route": "Router ACT-0001 (ya resuelto) -> Perfil Reparador -> llamada a habilidad Profile Updater -> respuesta a Perfil Reparador",
     "mode": "REQUEST_ONLY",
     "required_keys": [
       "schema_version",
@@ -21,36 +21,29 @@
       "diagnosis_sha256",
       "authorized_scope",
       "target_main_revision_sha",
-      "target_blob_sha",
-      "context_transport",
-      "consumer",
-      "resume_via"
+      "target_blob_sha"
     ],
-    "invocation_after": "EJECUCION_PERFIL_LF semantic_judge(70) PASS on diagnosis, BEFORE terminal report_output(80); return to same active parent execution",
-    "fixed_values": {
-      "context_transport": "CONTEXT_PACK",
-      "consumer": "PROFILE_EXECUTION",
-      "resume_via": "EJECUCION_PERFIL_LF"
-    }
+    "invocation_after": "El perfil determina el punto de llamada según su contrato; en SRCR actual exige diagnóstico efectivo validado (50/60/70) y retorno antes del reporte terminal (80)"
   },
   "process": {
     "server_binding_required": true,
     "proof": "read parent run, Router receipt, scope, policy, exact main revision+target blob and SRCR diagnosis from LIVE DB; never trust client envelope",
     "no_direct_profile_invocation": true,
-    "pattern_reused": "IG profile-owned capability invocation: applicability decision -> executor-needed/READY receipt -> resume same parent run",
+    "pattern_reused": "IG: perfil llama a capacidad, ésta ejecuta autónomamente su proceso interno y devuelve resultado al mismo perfil; no se reutilizan campos ni función CONTEXT_PACK",
     "parent_readback": "Exact step50 profile output, step60 output validator and step70 independent semantic judge must be clean on current SRCR parent before requesting Updater",
-    "avoids": "No new top-level Router path and no new profile begin/operation. SRCR delegates using existing governed profile-native continuation.",
+    "avoids": "No nueva ruta Router, nuevo orquestador externo ni motor transversal. Updater es la capacidad llamada; administra internamente sus 17 etapas, motor y evidencia.",
     "not_a_direct_write_authority": true,
-    "decision": "RETURN_PROFILE_CAPABILITY_REQUIRED with one-use server-bound ticket (analogous to IG); never infer from an arbitrary JSON or from Router PROFILE_UPDATE directly",
-    "ticket_model": "Short-lived single-use ticket bound server-side to active parent execution, profile code, target, scope, policy and requested capability; distinct consumer and authorization from IG CONTEXT_PACK"
+    "decision": "El Reparador solicita PROFILE_UPDATE tras diagnóstico verificado; el receptor valida server-side el vínculo al run padre y la autoridad aplicable. Un preflight JSON nunca concede ejecución.",
+    "ticket_model": "Aplicar admisión ligada a ejecución y de un uso si el transporte lo requiere, en el límite de la habilidad Updater; no exponer ticket IG/CONTEXT_PACK ni exigir un sistema genérico nuevo",
+    "skill_execution_owner": "PROFILE_UPDATER ejecuta y controla internamente todas sus etapas, con reintentos, gates, juez y readback; el Reparador no sustituye su motor"
   },
   "transport": {
-    "method": "issue+label -> GHA OIDC -> Edge -> RPC",
+    "method": "El adaptador INTERNO de Profile Updater reutiliza su flujo ya existente issue+label -> GitHub Actions/OIDC -> Edge -> RPC",
     "parent_child_correlation_required": true,
     "no_router_change": true,
     "no_service_role_in_router": true,
-    "profile_entry": "Existing LF_PROFILE_NATIVE_BEGIN_REQUEST_V1 and RESUME_REQUEST_V1 route creates and advances parent SRCR; new capability call consumes parent context; Updater existing workflow issue+label/OIDC remains child technical dispatch",
-    "reuse_context_transport": "CONTEXT_PACK",
+    "profile_entry": "El Router ya entregó ejecución del Reparador; éste llama a la habilidad sin reingresar al Router. La habilidad utiliza su transporte técnico existente.",
+    "reuse_context_transport": "NO; CONTEXT_PACK es específico de Input Governance",
     "direct_router_to_updater": false,
     "existing_updater_workflow_reused": true
   },
@@ -67,8 +60,8 @@
       "exact_head_sha"
     ],
     "independent_readback_required": true,
-    "resume_parent": "Same still-active EJECUCION_PERFIL_LF parent run; consume verified Updater child result before report_output(80); preserve evidence and revalidate final report, never restart Router",
-    "scope": "only after child terminal receipt independent readback",
+    "resume_parent": "Devolver RAW, status, recibos/evidencias y próxima acción al mismo run del Reparador. Éste valida y continúa su paso pendiente; no reinicia Router.",
+    "scope": "Un resultado solo se acepta tras leer el recibo auténtico del Updater y correlación al run padre; no implica cierre automático del perfil.",
     "resume_precondition": "report_output(80) NOT recorded before capability return; if already terminal, reject continuation and require explicit governed remediation, no reopen"
   },
   "blocking": {
