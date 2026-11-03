@@ -50,7 +50,12 @@ def candidate_precedence(*, catalog_bytes, expected_catalog_sha256,
         if not isinstance(r,dict) or not isinstance(r.get("id"),str) or not r["id"] or r["id"] in rmap or r.get("domain") not in dmap:
             return blocked("CATALOG_RULE_INVALID")
         rmap[r["id"]]=r
-    if not isinstance(selected_rule_ids,list) or len(set(map(str,selected_rule_ids)))!=len(selected_rule_ids) or any(not isinstance(x,str) or x not in rmap for x in selected_rule_ids):
+    # A nonempty, unique selection from the upstream C2/C5 projection is
+    # required. Never treat an empty catalogue selection as a strategy.
+    # Check types before set() to fail closed on unhashable caller payloads.
+    if (not isinstance(selected_rule_ids,list) or not selected_rule_ids
+        or any(not isinstance(x,str) or not x or x not in rmap for x in selected_rule_ids)
+        or len(set(selected_rule_ids))!=len(selected_rule_ids)):
         return blocked("SELECTED_RULES_INVALID")
     if not isinstance(level_evidence,dict):
         return blocked("LEVEL_EVIDENCE_INVALID")
