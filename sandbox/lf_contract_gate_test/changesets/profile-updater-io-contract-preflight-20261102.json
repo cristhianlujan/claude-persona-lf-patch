@@ -1,0 +1,12 @@
+{
+  "solution_ref": "profile-updater-io-contract-preflight-20261102",
+  "paths": {
+    "docs/profile_updater/ESTANDAR_IO_PASO_V1_PROPUESTA_20261102.md": "ENGINEERING_CHECKPOINTS",
+    "skills/profile_creator/contracts/profile_updater_io_bindings_v1.json": "RUNTIME_TESTING",
+    "skills/profile_creator/validators/profile_updater_io_preflight_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_updater_io_preflight_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_updater_io_preflight_lane.py": "RUNTIME_TESTING",
+    "supabase/migrations/20261103030000_lf_profile_updater_input_bindings_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/profile-updater-io-contract-preflight-20261102.json": "CHANGESET_MANIFEST"
+  }
+}
