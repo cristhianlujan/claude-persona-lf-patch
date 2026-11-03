@@ -658,7 +658,7 @@ Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros 
 
 **Mandato al revisor realmente independiente:** comentario GitHub [#6609742807](https://github.com/paulozterra/lf-programming-sandbox/pull/18#issuecomment-6609742807). Revisa nueve reglas y seis ID nuevos, `NON_WAIVABLE` + `SECURITY_IDS`, obligaciones D1/D2/D8/D9/D10, comportamiento de la precedencia y separación de autorización preliminar vs normativa. Solicita hallazgos tipados y separación de autoría. **No se ha recibido aquí ningún dictamen externo**; el examen de este chat no se hace pasar por independencia.
 
-**CI exacto a verificar:** [run #41675719772](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41675719772), iniciado sobre `bf260568fadd81c3db2841d88a896f79b3310961`. A la elaboración de esta sección seguía en ejecución: consultar resultado final antes de considerar el paquete técnicamente validado.
+**CI exacto a verificar:** [run #41675719772](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/41675719772), iniciado sobre `bf260568fadd81c3db2841d88a896f79b3310961`. **Resultado final verificado: SUCCESS** del run sobre ese HEAD (validación de propuesta; no certificación independiente ni autorización normativa).
 
 **Estados:** `PROPOSAL_PREFLIGHT_REPAIRED / INDEPENDENT_REVIEW_PENDING / NO_GO_NORMATIVE`. Se mantiene `PG-00_C9=PENDING`, `PG-00_C3=PENDING` y `PG-03_C2=PENDING`. No se editó `standards/catalog.json`, no CHG activo, no merge, no publicación C3 ni mutación de Supabase.
 
