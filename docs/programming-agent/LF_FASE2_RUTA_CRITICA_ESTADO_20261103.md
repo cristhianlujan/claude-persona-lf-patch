@@ -186,6 +186,23 @@ Ruta versionada en [PR #3524](https://github.com/cristhianlujan/claude-persona-l
 
 Usar el **HEAD exacto** y estado OPEN/DRAFT/MERGED de cada PR citado; no asumir que CI de una rama heredada equivale al estado de main. Los PR #3497–#3524 de PG01–PG03 y #3193, #3372, #13, #16, #17 consultados al corte estaban **OPEN DRAFT**. Una dependencia apilada no equivale a merge.
 
+## 4.1. Auditoría puntual A9→PG-01_C6 (03/11, sin repetir paquetes)
+
+Se releyeron en **Supabase vivo, solo lectura**, las firmas, grants y registros de las piezas existentes; y en GitHub los PR [#3193](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3193) y [#3320](https://github.com/cristhianlujan/claude-persona-lf-patch/pull/3320). Resultado:
+
+| Pieza | Evidencia actual | Dictamen |
+|---|---|---|
+| Escritor runtime PG-01 | `private.fn_lf_programming_receipt_record_runtime_v1(p_source_execution_id,p_router_action_binding,p_programming_handoff,p_judge_execution_id)` existe; `service_role` tiene EXECUTE | **Implementado en SQL**, no falta crear otro |
+| Receptor PG-01 | `private.fn_lf_programming_context_handoff_receive_v1(context_id,context_sha256)` existe | Implementado, sin prueba completa con productor real |
+| Resolver D7/V2 | `private.fn_lf_programming_context_handoff_receipt_resolve_v2(binding)` existe, no accesible directamente desde identidad RO | No intentar conceder GRANT ni atribuir PASS a una llamada denegada |
+| Perfil de Análisis A1–A9 | Fuente candidata `profiles/programming_analysis_lf/`; no listado en las 10 filas de `public.lf_profile_selection_registry_v1` CURRENT | **No se encuentra registrado en el selector operativo examinado** |
+| Ejecución real | `lf_operation_execution` con perfil de Análisis en target o manifest: 0 | No existe prueba operacional de productor válido |
+| Recibos de handoff | `private.lf_programming_context_handoff_receipts_v1`: 0/0 (total/ACCEPT) | Primer handoff productivo no realizado |
+
+**Interpretación exacta:** el escritor de #3193 **sí está en Supabase** y el flujo SQL tiene las piezas principales; el bloqueador más temprano identificado es la **ausencia de perfil A1–A9 registrado CURRENT, despacho con fuente/autoridad y ejecución `EJECUCION_PERFIL_LF` finalizada con juicio independiente**. Un perfil fuente candidata no se habilita por copiar archivos ni por GREEN CI. No usar paquetes históricos para `ACCEPT`.
+
+**Siguiente trabajo del dueño de Análisis/Router**: calificar la fuente de Análisis A1–A9 y sus contratos, registrar el perfil mediante la gobernanza existente; verificar Router→`EJECUCION_PERFIL_LF`, invocar un caso fresco controlado y obtener respuesta real, A9 snapshot CURRENT y revisión independiente; solo después usar el escritor existente, readback de recibo y resolver V2 en ejecución autorizada. No crear escritor, juez ni engine paralelo. Mantener PG-01_C6 `PENDING` hasta prueba real completa.
+
 ## 5. Reglas de actualización del documento
 
 1. **Actualizar fecha de corte y SQL** antes de cambiar la columna oficial. No poner `DONE` por pruebas locales.
