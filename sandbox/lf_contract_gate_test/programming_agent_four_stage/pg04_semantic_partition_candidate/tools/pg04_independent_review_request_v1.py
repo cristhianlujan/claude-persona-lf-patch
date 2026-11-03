@@ -21,7 +21,7 @@ def _sha(value):
 def _block(reason):
     raise ReviewRequestBlocked(reason)
 
-def prepare_partition_review_request(*, partition, sources, producer_execution_id):
+def prepare_partition_review_request(*, partition, sources, producer_execution_id, coverage_dossier=None):
     """Freeze the exact candidate and its caller-supplied source manifest.
 
     The returned packet is a REVIEW PREPARATION, not an assurance receipt.
@@ -76,6 +76,31 @@ def prepare_partition_review_request(*, partition, sources, producer_execution_i
         _block("REVIEW_STRATEGY_SOURCE_DRIFT")
     if not isinstance(producer_execution_id, str) or not producer_execution_id.strip():
         _block("PRODUCER_ID_MISSING")
+    coverage_dossier_sha = None
+    if coverage_dossier is not None:
+        if not isinstance(coverage_dossier, dict) or (
+            coverage_dossier.get("schema_version") != "PG04_C7_DETERMINISTIC_COVERAGE_DOSSIER_V1"
+            or coverage_dossier.get("status") != "CANDIDATE_NOT_ADMITTED"
+            or coverage_dossier.get("partition_sha256") != expected
+            or coverage_dossier.get("strategy_sha256") != strategy_sha
+            or coverage_dossier.get("bidirectional_requirement_coverage") != "STRUCTURALLY_COMPLETE"
+            or coverage_dossier.get("bidirectional_acceptance_coverage") != "STRUCTURALLY_COMPLETE"
+            or coverage_dossier.get("semantic_fidelity_judged") is not False
+            or coverage_dossier.get("independent_review_executed") is not False
+            or coverage_dossier.get("production_authority") is not False
+            or coverage_dossier.get("handoff_allowed") is not False
+        ):
+            _block("REVIEW_COVERAGE_DOSSIER_BINDING_INVALID")
+        coverage_dossier_sha = coverage_dossier.get("candidate_sha256")
+        if not isinstance(coverage_dossier_sha, str) or not SHA256.fullmatch(coverage_dossier_sha) or _sha({
+            k: v for k, v in coverage_dossier.items() if k != "candidate_sha256"
+        }) != coverage_dossier_sha:
+            _block("REVIEW_COVERAGE_DOSSIER_DIGEST_DRIFT")
+        dossier_rows = coverage_dossier.get("solutions")
+        if not isinstance(dossier_rows, list) or sorted(
+            row.get("solution_id") for row in dossier_rows if isinstance(row, dict)
+        ) != sorted(ids):
+            _block("REVIEW_COVERAGE_DOSSIER_SOLUTIONS_DRIFT")
     criteria = [
         "A9_REQUIREMENT_AND_ACCEPTANCE_BIDIRECTIONAL_COVERAGE",
         "SOURCE_OUTCOME_FIDELITY_AND_NO_FALSE_SEMANTIC_MERGE",
@@ -92,6 +117,7 @@ def prepare_partition_review_request(*, partition, sources, producer_execution_i
         "subject_sha256": _sha(partition),
         "candidate_sha256": expected,
         "source_manifest_sha256": _sha(sources),
+        "deterministic_coverage_dossier_sha256": coverage_dossier_sha,
         "strategy_sha256": strategy_sha,
         "source_manifest": deepcopy(sources),
         "solution_ids": sorted(ids),
