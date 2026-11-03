@@ -30,3 +30,9 @@ Se recomienda la ejecución exacta en la rama y el CI. Las pruebas de partición
 `CANDIDATE_NOT_ADMITTED` obligatorio. `semantic_judge_executed=false`, `source_readback_verified=false`, `ledger_receipt_verified=false`, `review_execution_allowed=false`, `production_authority=false`. La forma del manifiesto y sus hashes provienen del caller; una cadena `fixture://` no acredita nada. Exige A9 vigente con recibo real, PG03 aprobado, vínculo de sujeto PG04 y revisor independiente auténtico. PG01_C6, PG03_C3/C9 y PG04_C2/C7 permanecían `PENDING` en el último readback.
 
 **Sin promoción a producción, sin merge, sin escrituras Supabase, sin cambios de workflows protegidos.** El PR debe permanecer draft hasta revisión y evidencia exact-HEAD.
+
+## PG-04_C5: plan de Definition of Done por solución
+
+`tools/pg04_definition_of_done_candidate_v1.py` prepara `PG04_SOLUTION_DOD_CANDIDATE_V1` ligado al digest de partición. Usa manifest de estándares con `applies_to_write_scopes` y manifiesto de validadores `ACTIVE` suministrados por el llamador; **no verifica** su currentness ni ejecuta esos validadores. Exige un check por estándar aplicable, por requisito, por aceptación y por dependencia `SOL-*` concreta. Nunca declara DoD cumplida: `PLANNED_NOT_EXECUTED`, `receipt_id=null`, `handoff_allowed=false`.
+
+`tests/test_pg04_definition_of_done_candidate_v1.py` contiene 30 pruebas definidas (no atribuir PASS hasta ejecución exact-HEAD). Documentación completa: `PG04_C5_DEFINITION_OF_DONE_CANDIDATE_20261103.md`.
