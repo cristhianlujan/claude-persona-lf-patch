@@ -82,6 +82,33 @@ class Tests(unittest.TestCase):
         verdict=inspect_candidate(partition_policy=POLICY,strategy=STRATEGY,
                                    source_refs=sources,solutions=p["solutions"])
         self.assertEqual(verdict["status"],"CANDIDATE_NOT_ADMITTED")
+    def test_requirement_only_and_acceptance_only_solutions_integrate(self):
+        a=args()
+        a["outcome_registry"].extend([
+            {"outcome_id":"REQ_ONLY","business_outcome":"Independent requirement","evidence_ref":"analysis://O3"},
+            {"outcome_id":"ACC_ONLY","business_outcome":"Independent acceptance","evidence_ref":"analysis://O4"},
+        ])
+        a["obligations"][0]["outcome_id"]="REQ_ONLY"
+        a["obligations"][0]["acceptance_ids"]=[]
+        a["obligations"][1]["acceptance_ids"]=["A1"]
+        a["obligations"][2]["acceptance_ids"]=["A2"]
+        a["obligations"].append(atom(
+            "ACCEPTANCE_ONLY","ACC_ONLY","R3","A3",
+            requirement_ids=[],acceptance_ids=["A3"]))
+        # Keep the third requirement with UI only and avoid duplicate R3.
+        p=partition(**a)
+        req_only=[x for x in p["solutions"] if x["outcome_ids"]==["REQ_ONLY"]][0]
+        acc_only=[x for x in p["solutions"] if x["outcome_ids"]==["ACC_ONLY"]][0]
+        self.assertEqual(req_only["acceptance_ids"],[])
+        self.assertEqual(acc_only["requirement_ids"],[])
+        sources={"contract_path":"contract.json","contract_commit":"a"*40,
+                 "j02_source_path":"j02.md","j02_source_commit":"b"*40}
+        verdict=inspect_candidate(partition_policy=POLICY,strategy=STRATEGY,
+                                   source_refs=sources,solutions=p["solutions"])
+        self.assertEqual(verdict["requirement_coverage_count"],3)
+        self.assertEqual(verdict["acceptance_coverage_count"],3)
+        self.assertFalse(verdict["production_authority"])
+
     def test_determinism(self):
         self.assertEqual(partition(**args()),partition(**args()))
     def test_order_independent(self):
