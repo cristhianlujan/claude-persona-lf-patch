@@ -65,7 +65,7 @@ def prepare_dod(*,partition,standards_catalog_version,standards,validation_regis
             _fail("DOD_SOLUTION_PLAN_MISMATCH")
         plan_by_id[plan["solution_id"]]=plan
     solution_ids=[s.get("id") if isinstance(s,dict) else None for s in sols]
-    if len(set(solution_ids))!=len(solution_ids) or set(plan_by_id)!=set(solution_ids):
+    if not _ids(solution_ids) or set(plan_by_id)!=set(solution_ids):
         _fail("DOD_SOLUTION_PLAN_MISMATCH")
     output=[]
     for sol in sols:
@@ -93,12 +93,13 @@ def prepare_dod(*,partition,standards_catalog_version,standards,validation_regis
         covered_acc=set()
         covered_req=set()
         std_checked=set()
+        covered_dependencies=set()
         planned=[]
         for check in checks:
             if not isinstance(check,dict) or any(not isinstance(check.get(k),str) or not check[k].strip() for k in ("check_id","kind","validation_code","input_ref")):
                 _fail("DOD_CHECK_INVALID")
             required_fields={"check_id","kind","validation_code","input_ref","requirement_ids","acceptance_ids"}
-            optional_fields={"standard_code"}
+            optional_fields={"standard_code","dependency_ids"}
             if not required_fields.issubset(check) or set(check)-required_fields-optional_fields:
                 _fail("DOD_CHECK_FIELDS_INVALID")
             if check["validation_code"] not in validator_codes:
@@ -122,8 +123,14 @@ def prepare_dod(*,partition,standards_catalog_version,standards,validation_regis
                 _fail("DOD_CHECK_NONSTANDARD_CODE_FORBIDDEN")
             if kind=="REQUIREMENT" and not rq:_fail("DOD_REQUIREMENT_CHECK_UNBOUND")
             if kind=="ACCEPTANCE" and not ac:_fail("DOD_ACCEPTANCE_CHECK_UNBOUND")
-            if kind=="DEPENDENCY" and not sol.get("depends_on"):
-                _fail("DOD_DEPENDENCY_CHECK_WITHOUT_DEPENDENCY")
+            if kind=="DEPENDENCY":
+                if not _ids(check.get("dependency_ids")) or not check["dependency_ids"]:
+                    _fail("DOD_DEPENDENCY_CHECK_UNBOUND")
+                if not set(check["dependency_ids"]).issubset(sol.get("depends_on",[])):
+                    _fail("DOD_DEPENDENCY_CHECK_FOREIGN")
+                covered_dependencies.update(check["dependency_ids"])
+            elif "dependency_ids" in check:
+                _fail("DOD_NONDEPENDENCY_BINDING_FORBIDDEN")
             covered_req.update(rq if kind=="REQUIREMENT" else ())
             covered_acc.update(ac if kind=="ACCEPTANCE" else ())
             planned.append(dict(check,status="NOT_EXECUTED",receipt_id=None,pass_claim_allowed=False))
@@ -131,7 +138,7 @@ def prepare_dod(*,partition,standards_catalog_version,standards,validation_regis
             _fail("DOD_STANDARD_WITHOUT_CHECK")
         if covered_req!=set(reqs) or covered_acc!=set(accs):
             _fail("DOD_OBLIGATION_CHECK_COVERAGE_MISMATCH")
-        if sol.get("depends_on") and not any(x["kind"]=="DEPENDENCY" for x in checks):
+        if covered_dependencies!=set(sol.get("depends_on",[])):
             _fail("DOD_DEPENDENCY_CHECK_MISSING")
         output.append({
             "solution_id":sid,"partition_sha256":sha,
