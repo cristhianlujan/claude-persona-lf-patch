@@ -76,6 +76,7 @@ def run(data: Any) -> dict:
     base = {
         "schema_version": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
         "skill_code": "PROGRAMMING_ANALYSIS_LF",
+        "step_code": "A1",
         "business": data.get("business") if isinstance(data, dict) else None,
         "status": "BLOCKED",
         "payload": None,
