@@ -6,11 +6,14 @@ source-of-truth path under sandbox/lf_contract_gate_test/... .
 from __future__ import annotations
 
 import copy
+import importlib.util
+import json
+import re
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
-import json
 
 BASE = Path(__file__).resolve().parents[1]
 ROOT = BASE.parents[1]
@@ -31,6 +34,35 @@ def _unique(values: list[str]) -> list[str]:
     return list(dict.fromkeys(v.strip() for v in values))
 
 
+def _explicit_other_business_source(ref: str) -> bool:
+    """Only deny explicit known cross-business namespaces, never guess authority."""
+    return bool(re.match(r"(?i)^(?:saly(?=[:./]|$)|supabase://saly(?=[:./]|$))", ref))
+
+
+def _normalized_prompt(payload: dict) -> str:
+    objective = payload["objective"]
+    lines = [
+        "Solicitud: " + objective["problem_statement"],
+        "Resultado esperado: " + objective["desired_outcome"],
+    ]
+    if payload["target_hints"]:
+        lines.append("Identificadores o referencias recibidas (sin verificar): " + ", ".join(payload["target_hints"]))
+    if payload["constraints"]:
+        lines.append("Restricciones recibidas: " + "; ".join(payload["constraints"]))
+    return "\n".join(lines)
+
+
+def _guard_check(data: dict, result: dict) -> list[str]:
+    spec = importlib.util.spec_from_file_location(
+        "a1_deterministic_guard", BASE / "judges/semantic_guard.py"
+    )
+    if spec is None or spec.loader is None:
+        return ["GUARD_UNAVAILABLE"]
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.check(data, result)
+
+
 def run(data: Any) -> dict:
     """Return candidate skill result; never claims external verification or effects."""
     base = {
@@ -40,6 +72,10 @@ def run(data: Any) -> dict:
         "status": "BLOCKED",
         "payload": None,
         "declared_intent_kind": None,
+        "normalized_prompt": None,
+        "original_request_sha256": None,
+        "semantic_review_required": False,
+        "interpretation_state": "NO_VALID_INTERPRETATION",
         "blocking_codes": [],
         "next_capability": None,
         "external_authority_verified": False,
@@ -50,6 +86,15 @@ def run(data: Any) -> dict:
         base["blocking_codes"] = ["INPUT_NOT_OBJECT"]
         return base
     errors = _problems(data, _schema(BASE / "schemas/input.schema.json"))
+    original = data.get("original_request")
+    mode = data.get("input_mode", "STRUCTURED")
+    if isinstance(original, str) and original.strip():
+        base["original_request_sha256"] = sha256(original.encode("utf-8")).hexdigest()
+        base["semantic_review_required"] = True
+    if mode == "SEMANTIC_CANDIDATE" and not isinstance(original, str):
+        errors.append("ORIGINAL_LITERAL_REQUIRED_FOR_SEMANTIC_CANDIDATE")
+    if isinstance(original, str) and not original.strip():
+        errors.append("ORIGINAL_LITERAL_EMPTY")
     if data.get("business") != "LF":
         errors.append("BUSINESS_BINDING_NOT_QUALIFIED")
     if errors:
@@ -80,6 +125,9 @@ def run(data: Any) -> dict:
     if any(x["source_ref"] not in normalized["source_refs"] for x in facts):
         base["blocking_codes"] = ["UNSUPPORTED_PROVIDED_FACT_REF"]
         return base
+    if any(_explicit_other_business_source(ref) for ref in normalized["source_refs"]):
+        base["blocking_codes"] = ["CROSS_BUSINESS_SOURCE_REQUIRES_QUALIFIED_BINDING"]
+        return base
     payload = {k: normalized[k] for k in (
         "request_identity", "objective", "target_hints", "source_refs",
         "provided_facts", "constraints", "ambiguities"
@@ -91,6 +139,12 @@ def run(data: Any) -> dict:
         return base
     base["payload"] = payload
     base["declared_intent_kind"] = normalized["declared_intent_kind"]
+    base["normalized_prompt"] = _normalized_prompt(payload)
+    base["interpretation_state"] = (
+        "SEMANTIC_CANDIDATE_UNATTESTED"
+        if base["semantic_review_required"]
+        else "PRESTRUCTURED_UNATTESTED"
+    )
     if any(a["resolution_state"] == "OPEN" and a["materiality"] in ("MATERIAL", "UNKNOWN")
            for a in payload["ambiguities"]):
         base["status"] = "REQUIRES_DECISION"
@@ -103,4 +157,12 @@ def run(data: Any) -> dict:
         base["next_capability"] = "A2"
     if _problems(base, _schema(BASE / "schemas/output.schema.json")):
         raise ValueError("A1_INTERNAL_OUTPUT_SCHEMA_FAILURE")
+    faults = _guard_check(data, base)
+    if faults:
+        base["status"] = "BLOCKED"
+        base["payload"] = None
+        base["normalized_prompt"] = None
+        base["next_capability"] = None
+        base["interpretation_state"] = "NO_VALID_INTERPRETATION"
+        base["blocking_codes"] = sorted(set(faults))
     return base
