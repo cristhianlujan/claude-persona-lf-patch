@@ -24,16 +24,16 @@ from pg12_git_identity_and_pg11_bridge_v1 import (
 
 
 def oid(kind,content):
-    return hashlib.sha1((kind+" "+str(len(content))+"\\0").encode()+content).hexdigest()
+    return hashlib.sha1((kind+" "+str(len(content))+"\0").encode()+content).hexdigest()
 
 def raw_git_objects():
-    tree=b"100644 file.txt\\0"+bytes.fromhex("b"*40)
+    tree=b"100644 file.txt\0"+bytes.fromhex("b"*40)
     tree_oid=oid("tree",tree)
-    base=(f"tree {tree_oid}\\nauthor Test <test@example.org> 1000000000 +0000\\n"
-          "committer Test <test@example.org> 1000000000 +0000\\n\\nbase\\n").encode()
-    head=(f"tree {tree_oid}\\nparent {oid('commit',base)}\\n"
-          "author Test <test@example.org> 1000000001 +0000\\n"
-          "committer Test <test@example.org> 1000000001 +0000\\n\\ncandidate\\n").encode()
+    base=(f"tree {tree_oid}\nauthor Test <test@example.org> 1000000000 +0000\n"
+          "committer Test <test@example.org> 1000000000 +0000\n\nbase\n").encode()
+    head=(f"tree {tree_oid}\nparent {oid('commit',base)}\n"
+          "author Test <test@example.org> 1000000001 +0000\n"
+          "committer Test <test@example.org> 1000000001 +0000\n\ncandidate\n").encode()
     return base,head,tree
 
 def cost(stage,cost,waste="0"):
