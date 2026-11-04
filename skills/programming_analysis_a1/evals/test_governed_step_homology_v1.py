@@ -115,5 +115,12 @@ class GovernedStepHomologyTests(unittest.TestCase):
         self.assertEqual(CONSUMER["existing_skill_execution_recorder"],"NOT_FOUND_IN_LIVE_PUBLIC_PG_PROC")
         self.assertEqual(CONTRACT["status"],"CANDIDATE_SOURCE_ONLY_NOT_WIRED")
 
+    def test_14_profile_skill_invoker_not_a1_execution_recorder(self):
+        existing = CONTRACT["existing_profile_skill_invoker"]
+        self.assertEqual(existing["function"], "public.lf_skill_invoke_v1(text,text,jsonb)")
+        self.assertEqual(existing["profile_parent_operation"], "EJECUCION_PERFIL_LF")
+        self.assertFalse(existing["A1_catalog_entry_found"])
+        self.assertFalse(existing["approved_as_A1_EJECUCION_SKILL_LF_registrar"])
+
 if __name__=="__main__":
     unittest.main()
