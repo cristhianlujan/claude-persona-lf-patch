@@ -48,5 +48,7 @@
   "step_recording_from_read_only_connector": false,
   "existing_skill_execution_recorder": "NOT_FOUND_IN_LIVE_PUBLIC_PG_PROC",
   "historical_analysis_unit_state": "A1_AND_A1Q_DONE_NOT_REUSABLE_AS_NEW_RUN",
-  "read_only_denial_treatment": "RO_ROLE_IS_FOR_INSPECTION_ONLY; USE_AUTHORIZED_TRANSPORT_NOT_ROLE_GRANTS"
+  "read_only_denial_treatment": "RO_ROLE_IS_FOR_INSPECTION_ONLY; USE_AUTHORIZED_TRANSPORT_NOT_ROLE_GRANTS",
+  "preflight_candidate": "adapters/governed_skill_step_preflight_v1.py",
+  "preflight_is_authority": false
 }
