@@ -184,7 +184,10 @@ def prepare_pg08_c2(*, pg06_c4, pg08_c1, lint_observations):
                                      "tool_version": cmd["tool_version"],
                                      "config_sha256": cmd["config_sha256"],
                                      "execution_receipt_ref": cmd["execution_receipt_ref"],
-                                     "command_id": cmd["command_id"]})
+                                     "command_id": cmd["command_id"],
+                                     "command_ref": cmd["command_ref"],
+                                     "stdout_sha256": cmd["stdout_sha256"],
+                                     "stderr_sha256": cmd["stderr_sha256"]})
         if kinds != _KINDS:
             _fail("PG08_C2_FORMAT_LINT_COVERAGE_INVALID")
         new_block = sorted({
