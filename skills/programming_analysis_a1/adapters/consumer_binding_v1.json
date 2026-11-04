@@ -1,0 +1,26 @@
+{
+  "schema": "ANALYSIS_SKILL_CONSUMER_ADAPTER_CANDIDATE_V1",
+  "status": "NOT_WIRED",
+  "skill_code": "PROGRAMMING_ANALYSIS_A1",
+  "consumer_owns": [
+    "profile_selection",
+    "run_identity",
+    "ticket_one_use",
+    "receipt_verification",
+    "ledger_write",
+    "continuation"
+  ],
+  "skill_owns": [
+    "input_check",
+    "normalize",
+    "canonical_payload",
+    "deterministic_guard"
+  ],
+  "business_binding": "LF",
+  "skill_entrypoint": "skills/programming_analysis_a1/validators/run.py:run",
+  "result_contract": "A1_SKILL_CANDIDATE_RESULT_V1",
+  "transport": "FUTURE_COMMON_STANDARD_NOT_IMPLEMENTED",
+  "no_new_router_or_executor": true,
+  "no_embedded_profile_or_run": true,
+  "next_skill_invocation_requires_consumer_decision": true
+}
