@@ -32,6 +32,12 @@ class AnalysisStagePackage(unittest.TestCase):
   self.assertEqual([s['source_contract'] for s in M['steps'][:9]],[s['source_contract'] for s in src['steps']])
  def test_a2_to_a15_are_not_fake_executors(self):
   self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][1:]))
+ def test_A10_A15_requirements_not_falsely_empty(self):
+  for s in M['steps'][9:]:
+   with self.subTest(step=s['step_id']):
+    self.assertIsNone(s['requires'])
+    self.assertEqual(s['input_required_state'],'NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE')
+    self.assertTrue(s['no_input_inference_allowed'])
  def test_exactly_one_skill_file(self):
   self.assertEqual([x.relative_to(P).as_posix() for x in P.rglob('SKILL.md')],['SKILL.md'])
  def test_a1_step_envelope_identifies_parent(self):
