@@ -37,7 +37,8 @@
         "VALID_OUTPUT",
         "NEED_MORE_EVIDENCE",
         "REQUIRES_DECISION",
-        "BLOCKED"
+        "BLOCKED",
+        "REQUIRES_SEMANTIC_REVIEW"
       ]
     },
     "payload": {
