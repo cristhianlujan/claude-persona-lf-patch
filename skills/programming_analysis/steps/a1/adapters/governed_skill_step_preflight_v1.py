@@ -9,7 +9,7 @@ import copy
 import re
 
 OPERATION = "EJECUCION_SKILL_LF"
-SKILL = "PROGRAMMING_ANALYSIS_A1"
+SKILL = "PROGRAMMING_ANALYSIS_LF"
 STEPS = {
     "init_execution": ("execution_id_created",),
     "router": ("router_read", "action"),
