@@ -30,5 +30,15 @@
   "semantic_input_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:prepare",
   "semantic_candidate_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:evaluate_model_candidate",
   "semantic_review_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:validate_review",
-  "semantic_review_trust": "EXTERNAL_NOT_WIRED"
+  "semantic_review_trust": "EXTERNAL_NOT_WIRED_AND_NOT_ATTESTED",
+  "existing_operation_candidate": "EJECUCION_SKILL_LF",
+  "existing_operation_binding_contract": "adapters/existing_skill_operation_binding_v1.json",
+  "existing_operation_observed_state": "SANDBOX_ACTIVE",
+  "binding_blocked_reasons": [
+    "SKILL_NOT_REGISTERED",
+    "OPERATION_RELEASE_NOT_ATTESTED",
+    "INDEPENDENT_JUDGE_ENFORCEMENT_NOT_ATTESTED",
+    "MODEL_JUDGE_REAL_RECEIPTS_MISSING"
+  ],
+  "next_step": "QUALIFY_A1_SKILL_SOURCE_AND_VERIFY_EXISTING_OPERATION_CONSUMER_BEFORE_WIRING"
 }
