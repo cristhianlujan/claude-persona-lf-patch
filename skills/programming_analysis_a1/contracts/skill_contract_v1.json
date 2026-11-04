@@ -1,0 +1,26 @@
+{
+  "schema": "ANALYSIS_A1_SKILL_CONTRACT_V1",
+  "skill_code": "PROGRAMMING_ANALYSIS_A1",
+  "status": "CANDIDATE_TESTED_LOCAL",
+  "consumer": "GOVERNED_PROFILE_SELECTED_BY_ROUTER",
+  "operation": "PURE_LOCAL_TRANSFORMATION",
+  "business_binding": {
+    "business": "LF",
+    "saly_binding": "NOT_QUALIFIED"
+  },
+  "input_schema": "schemas/input.schema.json",
+  "output_schema": "schemas/output.schema.json",
+  "canonical_output_schema": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_request_context_v1.schema.json",
+  "canonical_output_name": "REQUEST_CONTEXT_V1",
+  "implementation": "validators/run.py:run",
+  "self_consistency_guard": "judges/semantic_guard.py:check",
+  "next_capability_candidate": "A2",
+  "runtime_authorization": "EXTERNAL_FUTURE_EXECUTION_STANDARD",
+  "no_internal_profile_code": true,
+  "no_internal_execution_id": true,
+  "no_implicit_router_or_SQL": true,
+  "effects_allowed": false,
+  "independent_semantic_qualification": "NOT_TESTED",
+  "currentness_attested": false,
+  "integrated_with_profile": false
+}
