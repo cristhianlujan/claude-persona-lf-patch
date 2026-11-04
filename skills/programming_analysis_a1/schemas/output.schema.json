@@ -13,7 +13,11 @@
     "next_capability",
     "external_authority_verified",
     "operationally_integrated",
-    "effects_executed"
+    "effects_executed",
+    "normalized_prompt",
+    "original_request_sha256",
+    "semantic_review_required",
+    "interpretation_state"
   ],
   "properties": {
     "schema_version": {
@@ -69,6 +73,32 @@
     },
     "effects_executed": {
       "const": false
+    },
+    "normalized_prompt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Formato estructurado del objetivo y contexto recibido; no constituye validación semántica."
+    },
+    "original_request_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Hash del texto original literal si fue suministrado."
+    },
+    "semantic_review_required": {
+      "type": "boolean"
+    },
+    "interpretation_state": {
+      "enum": [
+        "PRESTRUCTURED_UNATTESTED",
+        "SEMANTIC_CANDIDATE_UNATTESTED",
+        "NO_VALID_INTERPRETATION"
+      ],
+      "description": "No representa aprobación semántica ni habilita el paso A2."
     }
   }
 }
