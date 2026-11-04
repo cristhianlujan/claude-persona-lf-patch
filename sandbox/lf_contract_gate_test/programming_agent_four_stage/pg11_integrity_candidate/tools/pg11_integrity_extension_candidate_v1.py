@@ -158,3 +158,54 @@ def guard_pg11_reviewer_aliases(*,pg11_c5,principal_alias_records):
        "independence_verified":False,"production_authority":False,"handoff_allowed":False}
     result["candidate_sha256"]=digest(result)
     return result
+
+
+def reject_waiver_expired_at(*, pg11_c3, waiver_observations, evaluated_at):
+    """Check expiry using explicit timezone-aware ISO-8601 evaluation instant.
+
+    Each waiver must supply expires_at as an ISO-8601 instant with timezone.
+    EXPIRES_AT <= EVALUATED_AT is expired (exact boundary is blocked).
+    Inputs/clock remain caller-supplied; no source/clock authentication here.
+    """
+    from datetime import datetime, timezone
+    original = reject_invalid_waiver(
+        pg11_c3=pg11_c3, waiver_observations=waiver_observations)
+    def instant(value, error):
+        if (not isinstance(value, str) or not value.strip()
+                or value != value.strip()):
+            block(error)
+        try:
+            parsed = datetime.fromisoformat(
+                value[:-1] + "+00:00" if value.endswith("Z") else value)
+        except ValueError:
+            block(error)
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            block(error)
+        return parsed.astimezone(timezone.utc)
+    current = instant(evaluated_at, "PG11_WAIVER_EVALUATION_TIME_INVALID")
+    dates = []
+    for w in waiver_observations:
+        if "expires_at" not in w:
+            block("PG11_WAIVER_EXPIRY_MISSING")
+        expiry = instant(w["expires_at"], "PG11_WAIVER_EXPIRES_AT_INVALID")
+        if current >= expiry:
+            block("PG11_WAIVER_EXPIRED_BY_TIMESTAMP")
+        dates.append({"waiver_ref": w["waiver_ref"],
+            "expires_at_reported": w["expires_at"]})
+    result = {
+        "schema_version": "PG11_C3_WAIVER_TIME_BOUNDARY_CANDIDATE_V1",
+        "status": "CANDIDATE_NOT_ADMITTED",
+        "source_pg11_c3_sha256": original["source_pg11_c3_sha256"],
+        "waiver_observations_sha256": digest(waiver_observations),
+        "evaluated_at_reported": evaluated_at,
+        "expiration_rows_reported": sorted(dates, key=lambda x: x["waiver_ref"]),
+        "expiry_compared_to_supplied_clock": True,
+        "evaluation_clock_authenticated": False,
+        "waiver_registry_authenticated": False,
+        "suppression_allowed": False,
+        "handoff_allowed": False,
+        "production_authority": False,
+        "next_gate": "TRUSTED_UTC_CLOCK_AND_CANONICAL_STD_GEN_05_WAIVER_READBACK",
+    }
+    result["candidate_sha256"] = digest(result)
+    return result
