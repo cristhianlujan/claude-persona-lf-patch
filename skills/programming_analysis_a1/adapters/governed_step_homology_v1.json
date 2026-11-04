@@ -201,11 +201,14 @@
     "source": "adapters/governed_skill_step_preflight_v1.py",
     "tests": "evals/test_governed_skill_step_preflight_v1.py",
     "state": "SOURCE_ONLY_NOT_EXECUTION_AUTHORITY",
-    "test_cases_defined": 25,
+    "test_cases_defined": 26,
     "tests_executed_on_branch_head": false,
     "preflight_positive": "PREFLIGHT_ONLY",
     "synthetic_readback_positive": "READBACK_SHAPE_MATCH_ONLY",
-    "notes": "No OIDC verification, no RPC invocation, no server-side trust, no operational receipt"
+    "notes": "No OIDC verification, no RPC invocation, no server-side trust, no operational receipt",
+    "init_step_result": "REQUIRES_CANONICAL_BEGIN",
+    "model_step_result": "REQUIRES_SERVER_SIDE_INDEPENDENT_JUDGE",
+    "note": "Shape-only. Cannot attest role, OIDC, trust, persistence, judge independence, or active asset. Requires official operation begin at step 0."
   },
   "judge_enforcement_observed": {
     "source": "public.lf_operation_judges/JUDGE-EJECUCION-SKILL-LF-v0.1",
