@@ -77,6 +77,16 @@ def preflight(request: object) -> dict:
         return _blocked("CANONICAL_EVIDENCE_MISSING")
     if payload.get("blocking_codes") not in (None, []):
         return _blocked("DECLARED_BLOCKING_CODES")
+    if step == "init_execution":
+        # No recorder fallback: generic operation core intentionally forbids init.
+        return {
+            "status": "REQUIRES_CANONICAL_BEGIN",
+            "code": "INIT_STEP_OWNED_BY_OPERATION_BEGIN",
+            "step_id": step,
+            "authority_verified": False,
+            "readback_verified": False,
+            "writes_performed": False,
+        }
     if step == "skill_resolve" and payload["codigo_activo"] != SKILL:
         return _blocked("SKILL_RESOLVE_CODE_MISMATCH")
     if step == "skill_source_read":
