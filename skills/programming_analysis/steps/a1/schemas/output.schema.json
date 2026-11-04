@@ -17,7 +17,8 @@
     "normalized_prompt",
     "original_request_sha256",
     "semantic_review_required",
-    "interpretation_state"
+    "interpretation_state",
+    "step_code"
   ],
   "properties": {
     "schema_version": {
@@ -100,6 +101,9 @@
         "NO_VALID_INTERPRETATION"
       ],
       "description": "No representa aprobación semántica ni habilita el paso A2."
+    },
+    "step_code": {
+      "const": "A1"
     }
   }
 }
