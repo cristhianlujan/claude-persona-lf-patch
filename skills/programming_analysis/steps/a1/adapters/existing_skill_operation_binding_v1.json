@@ -1,7 +1,7 @@
 {
   "schema_version": "A1_EXISTING_SKILL_OPERATION_BINDING_V1",
   "status": "CANDIDATE_BLOCKED_NOT_WIRED",
-  "skill_code": "PROGRAMMING_ANALYSIS_A1",
+  "skill_code": "PROGRAMMING_ANALYSIS_LF",
   "operation_code": "EJECUCION_SKILL_LF",
   "operation_source": "public.lf_operation_registry",
   "observed_operation_status": "SANDBOX_ACTIVE",
@@ -23,7 +23,7 @@
     "deterministic_result_validation",
     "semantic_judge_result_structural_validation"
   ],
-  "a1_interpretation_module": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py",
+  "a1_interpretation_module": "skills/programming_analysis/steps/a1/semantic/semantic_boundary_v1.py",
   "step_binding": [
     {
       "canonical_step": "init_execution",
@@ -108,5 +108,8 @@
     "read_only_connector_is_writer": false,
     "governed_readback_required": true
   },
-  "preflight_candidate": "adapters/governed_skill_step_preflight_v1.py"
+  "preflight_candidate": "adapters/governed_skill_step_preflight_v1.py",
+  "skill_internal_steps": "A1-A15",
+  "skill_package": "skills/programming_analysis",
+  "registration_granularity": "WHOLE_ANALYSIS_SKILL"
 }
