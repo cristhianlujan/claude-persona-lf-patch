@@ -32,7 +32,7 @@ def policy():
             "existing_worker_limit_ref":"fixture://existing-worker-v08/attempt-limit"}
 def cost_observations(x,cost="79.99",mode="WORKER_API",attempts=1):
     rows=[]
-    for i,sol in enumerate(x["pg07"]["tasks"]):
+    for i,sol in enumerate(x["tasks"]):
         sid=sol["solution_id"]
         rows.append({"solution_id":sid,"executor_mode":mode,"batch_id":"batch-1",
             "attempts_used":attempts,"attempt_limit_source_ref":"fixture://worker/attempts",
