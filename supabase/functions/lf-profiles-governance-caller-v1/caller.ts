@@ -706,6 +706,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config,
           deps.fetchFn,
           String(claims.workflow_sha),
+          { method: identity.method, repository: config.repository, workflow_ref: identity.workflowRef, run_id: runId, workflow_sha: workflowSha },
         );
       }
 
