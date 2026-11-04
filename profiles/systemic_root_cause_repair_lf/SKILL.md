@@ -123,6 +123,17 @@ A gap is a question whose answer is missing and on which a design decision depen
    - If every class was actually searched, do not ask for more evidence. Close the answer with a search record on the datum (`search_record`: for each of the five classes, the source searched, its evidence and the result) and a `repair_step_ref` that points to a deliverable which obtains or creates the datum.
 6. **Never invent, never close with a bare gap.** A value that no class supports is not filled in. An answer that claims to close cannot contain any datum declared unresolved unless that datum carries the search record and repair step above. This applies to every datum of the answer, whatever its name.
 
+### Rule and authority search (`policy_resolution`)
+
+When an owner, responsible party, applicable rule, policy, destination or consumer is missing or must be assumed, search for it before deciding, and record the search in `policy_resolution`. Never infer authority from role, name similarity or analogy.
+
+1. **N1 first:** consult the operational view/snapshot appropriate to the operation or subject. Finding rows is not proof that a rule applies.
+2. **N2 second:** consult the canonical table and its active versions/scopes. Record zero rows with an aggregate query and timestamp; never infer an empty result.
+3. **N3-N5 when material and N1/N2 did not resolve it:** other catalog sources, then GitHub at the exact revision, then history/EKB/relations.
+4. Record each lookup as `{level, source, query, result, evidence_id}` in `policy_resolution[].lookups`, in level order, and the outcome in `decision`: `FOUND_APPLICABLE` (scope, version and effect shown), `NO_APPLICABLE_RULE_FOUND`, `DERIVED_PROPOSAL` or `NEEDS_MORE_EVIDENCE`. Cite only what you actually read in this run.
+5. When `owner.authority_kind` is `DERIVED_PROPOSAL`, record at least two research attempts in `owner.derivation.authority_research.attempts` (`class`, `source`, `result`, `evidence_id`). A derived proposal is never existing authority and needs a ratification step.
+6. When no authority is needed for the case, omit `policy_resolution`; do not fabricate a search.
+
 ### V0.7R1 dynamic repair method revision
 
 V0.7R1 is a method/terminality revision inside the canonical V0.6 profile pack. All V0.6 schemas, deterministic validators, semantic judges, closure-proof obligations and historical compatibility remain in force. The public `profile_pack_id` remains `SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6` until a separately governed pack-version migration updates every validator allowlist.
@@ -349,7 +360,7 @@ Must not present a final selected alternative or residual risk as if a repair sp
 
 ## Typed output
 The output must include:
-status, profile_pack_id, case_mode, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, case_mode, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, policy_resolution, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.
