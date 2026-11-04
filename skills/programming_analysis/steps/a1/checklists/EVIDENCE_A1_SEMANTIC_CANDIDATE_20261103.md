@@ -1,7 +1,9 @@
+> **Nota de arquitectura 2026-11-04:** A1 es un paso **interno** de la única skill `PROGRAMMING_ANALYSIS_LF`. Este artefacto procede del antiguo candidato individual; sus referencias a ejecución/registro deben interpretarse a nivel de la **skill completa**. No documenta una habilidad A1 registrable ni recibos operativos.
+
 # A1 — Evidencia de regresión local del paquete semántico
 
 ## Alcance
-Habilidad `PROGRAMMING_ANALYSIS_A1`, PR #3529, rama `agent/analysis-a1-independent-skill-20261103`.
+Habilidad `PROGRAMMING_ANALYSIS_LF`, PR #3529, rama `agent/analysis-a1-independent-skill-20261103`.
 Sin ejecución real de modelo, juez independiente, perfil, Router, Supabase, RUN, merge ni despliegue.
 
 ## Fuente verificada por Git blob SHA (idéntica a lo ejecutado)
@@ -17,7 +19,7 @@ Los demás schemas y la fuente canónica de `REQUEST_CONTEXT_V1` estaban present
 
 ## Ejecución
 Comando local (raíz de árbol):
-`python -m coverage run --branch --source=skills/programming_analysis_a1/semantic,skills/programming_analysis_a1/validators,skills/programming_analysis_a1/judges -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -q`
+`python -m coverage run --branch --source=skills/programming_analysis/steps/a1/semantic,skills/programming_analysis/steps/a1/validators,skills/programming_analysis/steps/a1/judges -m unittest discover -s skills/programming_analysis/steps/a1/evals -p 'test_*.py' -q`
 
 **Resultado: 69 pruebas PASS** (35 del normalizador y 34 de frontera semántica).
 Cobertura total de tres módulos evaluados: **86%**.
