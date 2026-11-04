@@ -28,3 +28,11 @@ Contrato de mapeo: `adapters/existing_skill_operation_binding_v1.json`.
 5. Registrar/leer los recibos en el mismo RUN gobernado y solo entonces retornar resultado al perfil. Sin direct-call Router→skill y sin `service_role` en Router.
 
 **No cerrar A1 como `SKILL_READY` ni `SKILL_INTEGRATED` con este handoff.** Ninguno de estos gates operativos se ejecutó aquí.
+
+## Homologación del transporte y ACL (readback 2026-11-04)
+
+Ver `handoffs/A1_STEP_HOMOLOGY_DECISION_20261104.md` y `adapters/governed_step_homology_v1.json`. Input Governance cuenta con RPC pública OIDC bajo autoridad de worker; Profile Updater/Creator utilizan workflow GitHub OIDC → Edge con `service_role` restringido al servidor y registradores por operación. **Ningún conector de lectura debe ejecutar RPC de escritura directamente.**
+
+La función `public.lf_record_creacion_skill_step_v1` registra **pasos de creación**, no la ejecución A1. La operación `EJECUCION_SKILL_LF` tiene 9/9 contratos y bindings, pero **no se identificó en `pg_proc` un wrapper público de registro de sus pasos**. Su núcleo común disponible no admite confianza autodeclarada desde el usuario. El patrón de transporte puede reutilizarse; no está conectado a destino SKILL.
+
+La unidad histórica `A1` y su `A1Q` permanecen DONE y no se reciclarán como nuevo RUN. La habilidad `PROGRAMMING_ANALYSIS_A1` permanece sin registro oficial.
