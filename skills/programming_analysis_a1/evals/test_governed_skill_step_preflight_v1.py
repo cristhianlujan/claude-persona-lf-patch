@@ -34,7 +34,9 @@ class A1PreflightTests(unittest.TestCase):
             with self.subTest(step=step):
                 result=M.preflight(envelope(step))
                 expected=("REQUIRES_SERVER_SIDE_INDEPENDENT_JUDGE"
-                          if step=="semantic_judge" else "PREFLIGHT_ONLY")
+                          if step=="semantic_judge" else
+                          "REQUIRES_CANONICAL_BEGIN" if step=="init_execution" else
+                          "PREFLIGHT_ONLY")
                 self.assertEqual(result["status"],expected)
                 self.assertFalse(result["authority_verified"])
                 self.assertFalse(result["readback_verified"])
@@ -145,6 +147,12 @@ class A1PreflightTests(unittest.TestCase):
     def test_25_report_same_run_exact(self):
         e=envelope("report_output")
         self.assertEqual(M.preflight(e)["status"],"PREFLIGHT_ONLY")
+
+    def test_26_init_is_reserved_for_canonical_operation_begin(self):
+        e=envelope("init_execution")
+        result=M.preflight(e)
+        self.assertEqual(result["status"],"REQUIRES_CANONICAL_BEGIN")
+        self.assertFalse(result["writes_performed"])
 
 if __name__=="__main__":
     unittest.main()
