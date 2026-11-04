@@ -124,7 +124,7 @@ class SkillA1Tests(unittest.TestCase):
         x["original_request"]="Evalúa las reglas del login B2B e implementa lo que falta"
         x["input_mode"]="SEMANTIC_CANDIDATE"
         r=RUN.run(x)
-        self.assertEqual(r["status"],"VALID_OUTPUT")
+        self.assertEqual(r["status"],"REQUIRES_SEMANTIC_REVIEW")
         self.assertEqual(r["original_request_sha256"],sha256(x["original_request"].encode("utf-8")).hexdigest())
         self.assertTrue(r["semantic_review_required"])
         self.assertEqual(r["interpretation_state"],"SEMANTIC_CANDIDATE_UNATTESTED")
@@ -227,7 +227,7 @@ class SkillA1Tests(unittest.TestCase):
         x=valid();x["original_request"]="Evalúa el login B2B e implementa lo que falta"
         x["input_mode"]="SEMANTIC_CANDIDATE"
         r=RUN.run(x)
-        self.assertEqual(r["status"],"VALID_OUTPUT")
+        self.assertEqual(r["status"],"REQUIRES_SEMANTIC_REVIEW")
         self.assertIsNone(r["next_capability"])
         self.assertTrue(r["semantic_review_required"])
 
