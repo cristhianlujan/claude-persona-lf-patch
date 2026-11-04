@@ -35,8 +35,8 @@ def verify_git_object(*,object_kind,object_bytes,declared_oid):
     return actual
 
 def bridge_pg11_to_pg12_identity(*,pg10_pg11_bridge,pg11_c5,pg12_c1,
-                                repo_ref,base_commit_bytes,candidate_commit_bytes,
-                                candidate_tree_bytes):
+                                repo_ref,base_commit_bytes=None,candidate_commit_bytes=None,
+                                candidate_tree_bytes=None):
     h11=freeze(pg11_c5,"PG11_C5_INDEPENDENT_REVIEW_CANDIDATE_V1")
     h12=freeze(pg12_c1,"PG12_C1_CANDIDATE_IDENTITY_V1")
     hb=freeze(pg10_pg11_bridge,"PG10_C5_TO_PG11_C1_HANDOFF_CANDIDATE_V1")
@@ -53,16 +53,21 @@ def bridge_pg11_to_pg12_identity(*,pg10_pg11_bridge,pg11_c5,pg12_c1,
     base=pg12_c1["base_commit_sha_reported"]
     head=pg12_c1["candidate_commit_sha_reported"]
     tree=pg12_c1["candidate_tree_sha_reported"]
-    verify_git_object(object_kind="commit",object_bytes=base_commit_bytes,declared_oid=base)
-    verify_git_object(object_kind="commit",object_bytes=candidate_commit_bytes,declared_oid=head)
-    verify_git_object(object_kind="tree",object_bytes=candidate_tree_bytes,declared_oid=tree)
-    try:
-        lines=candidate_commit_bytes.split(b"\n\n",1)[0].split(b"\n")
-        tree_lines=[l for l in lines if l.startswith(b"tree ")]
-        parsed=tree_lines[0].split(b" ",1)[1].decode("ascii")
-    except (UnicodeDecodeError,IndexError):
-        block("PG12_GIT_COMMIT_TREE_PARSE_INVALID")
-    if len(tree_lines)!=1 or parsed!=tree:block("PG12_GIT_COMMIT_TREE_DRIFT")
+    present=[v is not None for v in (
+        base_commit_bytes,candidate_commit_bytes,candidate_tree_bytes)]
+    if any(present) and not all(present):
+        block("PG12_GIT_OBJECT_PROOF_INCOMPLETE")
+    if all(present):
+        verify_git_object(object_kind="commit",object_bytes=base_commit_bytes,declared_oid=base)
+        verify_git_object(object_kind="commit",object_bytes=candidate_commit_bytes,declared_oid=head)
+        verify_git_object(object_kind="tree",object_bytes=candidate_tree_bytes,declared_oid=tree)
+        try:
+            lines=candidate_commit_bytes.split(b"\n\n",1)[0].split(b"\n")
+            tree_lines=[l for l in lines if l.startswith(b"tree ")]
+            parsed=tree_lines[0].split(b" ",1)[1].decode("ascii")
+        except (UnicodeDecodeError,IndexError):
+            block("PG12_GIT_COMMIT_TREE_PARSE_INVALID")
+        if len(tree_lines)!=1 or parsed!=tree:block("PG12_GIT_COMMIT_TREE_DRIFT")
     return {
         "schema_version":"PG11_C5_TO_PG12_C1_GIT_BOUND_CANDIDATE_V1",
         "status":"CANDIDATE_NOT_ADMITTED",
@@ -71,7 +76,7 @@ def bridge_pg11_to_pg12_identity(*,pg10_pg11_bridge,pg11_c5,pg12_c1,
         "run_ref":pg10_pg11_bridge.get("run_ref"),
         "target_repo":repo_ref,"base_commit_sha":base,
         "candidate_commit_sha":head,"candidate_tree_sha":tree,
-        "git_object_sha1_recomputed_from_supplied_bytes":True,
+        "git_object_sha1_recomputed_from_supplied_bytes":all(present),
         "git_object_source_authenticated":False,
         "diff_readback_verified":False,"independent_review_executed":False,
         "handoff_allowed":False,"production_authority":False}
