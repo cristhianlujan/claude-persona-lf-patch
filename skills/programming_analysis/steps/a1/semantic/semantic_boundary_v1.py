@@ -86,7 +86,7 @@ def prepare(context: Any) -> dict:
     packet = copy.deepcopy(context)
     packet["schema_version"] = "A1_SEMANTIC_MODEL_INPUT_V1"
     packet["original_request_sha256"] = hashlib.sha256(literal.encode("utf-8")).hexdigest()
-    packet["semantic_instruction_ref"] = "skills/programming_analysis_a1/prompts/semantic_interpretation_v1.md"
+    packet["semantic_instruction_ref"] = "skills/programming_analysis/steps/a1/prompts/semantic_interpretation_v1.md"
     packet["task"] = "EXTRACT_REQUEST_CONTEXT_CANDIDATE"
     return packet
 
