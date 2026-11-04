@@ -14,7 +14,9 @@
     "input_check",
     "normalize",
     "canonical_payload",
-    "deterministic_guard"
+    "deterministic_guard",
+    "semantic_candidate_validation",
+    "semantic_review_structural_validation"
   ],
   "business_binding": "LF",
   "skill_entrypoint": "skills/programming_analysis_a1/validators/run.py:run",
@@ -22,5 +24,11 @@
   "transport": "FUTURE_COMMON_STANDARD_NOT_IMPLEMENTED",
   "no_new_router_or_executor": true,
   "no_embedded_profile_or_run": true,
-  "next_skill_invocation_requires_consumer_decision": true
+  "next_skill_invocation_requires_consumer_decision": true,
+  "semantic_model_invocation_owner": "FUTURE_AUTHORIZED_CONSUMER",
+  "independent_semantic_judge_owner": "FUTURE_AUTHORIZED_CONSUMER",
+  "semantic_input_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:prepare",
+  "semantic_candidate_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:evaluate_model_candidate",
+  "semantic_review_entrypoint": "skills/programming_analysis_a1/semantic/semantic_boundary_v1.py:validate_review",
+  "semantic_review_trust": "EXTERNAL_NOT_WIRED"
 }
