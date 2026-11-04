@@ -27,3 +27,7 @@ No leer Supabase, GitHub ni EKB por sí sola. No escribir RUN ni hacer `service_
 
 ## Pruebas
 `python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v` ejecutado en raíz del repositorio con `jsonschema`. Las pruebas de esta habilidad no prueban transporte real, selección por perfil ni registro de receipts.
+
+## Semántica pendiente de cualificación
+
+Para solicitudes literales, ver `prompts/semantic_interpretation_v1.md` y `semantic/semantic_boundary_v1.py`. El productor y revisor son llamadas externas del futuro consumidor: no son funciones que consulten el Router ni implementen código. La salida semántica sigue en `REQUIRES_SEMANTIC_REVIEW` hasta recibir revisión independiente acreditada. Los contratos y pruebas sintéticas no prueban que el modelo haya ejecutado una inferencia real.
