@@ -21,10 +21,10 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "A1_SKILL_CANDIDATE_RESULT_V1"
+      "const": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1"
     },
     "skill_code": {
-      "const": "PROGRAMMING_ANALYSIS_A1"
+      "const": "PROGRAMMING_ANALYSIS_LF"
     },
     "business": {
       "type": [
