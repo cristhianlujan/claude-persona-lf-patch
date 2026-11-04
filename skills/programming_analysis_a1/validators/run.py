@@ -47,6 +47,14 @@ def _normalized_prompt(payload: dict) -> str:
     ]
     if payload["target_hints"]:
         lines.append("Identificadores o referencias recibidas (sin verificar): " + ", ".join(payload["target_hints"]))
+    if payload["provided_facts"]:
+        lines.append("Datos recibidos (declarados, no verificados): " + "; ".join(
+            fact["fact_code"] + "=" + (
+                fact["value"] if isinstance(fact["value"], str)
+                else json.dumps(fact["value"], ensure_ascii=False, sort_keys=True)
+            ) + " [fuente: " + fact["source_ref"] + "]"
+            for fact in payload["provided_facts"]
+        ))
     if payload["constraints"]:
         lines.append("Restricciones recibidas: " + "; ".join(payload["constraints"]))
     return "\n".join(lines)
