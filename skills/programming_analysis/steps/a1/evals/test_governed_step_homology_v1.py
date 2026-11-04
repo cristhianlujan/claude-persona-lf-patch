@@ -24,16 +24,16 @@ def check(candidate):
         problems.append("FALSE_SKILL_RELEASE")
     required_names = {x["name"]:x for x in candidate["observed_paths"]}
     if len(required_names) != len(candidate["observed_paths"]) or set(required_names) != {
-        "INPUT_GOVERNANCE", "PROFILE_UPDATER", "PROFILE_CREATOR", "SKILL_CREATOR", "A1_SKILL_EXECUTION"
+        "INPUT_GOVERNANCE", "PROFILE_UPDATER", "PROFILE_CREATOR", "SKILL_CREATOR", "ANALYSIS_SKILL_EXECUTION"
     }:
         problems.append("EXISTING_OPERATIONS_NOT_MATCHED")
-    if required_names["A1_SKILL_EXECUTION"]["step_writer"] is not None:
+    if required_names["ANALYSIS_SKILL_EXECUTION"]["step_writer"] is not None:
         problems.append("UNVERIFIED_SKILL_RECORDER")
     if any(required_names[k]["can_reuse_for_A1"] for k in (
         "INPUT_GOVERNANCE", "PROFILE_UPDATER", "PROFILE_CREATOR", "SKILL_CREATOR"
     )):
         problems.append("CROSS_OPERATION_RECORDER_BYPASS")
-    if required_names["A1_SKILL_EXECUTION"]["core_available"] != "public.lf_record_operation_step_core_v1":
+    if required_names["ANALYSIS_SKILL_EXECUTION"]["core_available"] != "public.lf_record_operation_step_core_v1":
         problems.append("WRONG_CORE")
     permission = candidate["permission_path"]
     if any(permission[k] for k in (
@@ -82,7 +82,7 @@ class GovernedStepHomologyTests(unittest.TestCase):
 
     def test_07_no_fabricated_skill_recorder(self):
         tampered = copy.deepcopy(CONTRACT)
-        next(r for r in tampered["observed_paths"] if r["name"]=="A1_SKILL_EXECUTION")["step_writer"]="lf_fake_record_step"
+        next(r for r in tampered["observed_paths"] if r["name"]=="ANALYSIS_SKILL_EXECUTION")["step_writer"]="lf_fake_record_step"
         self.assertIn("UNVERIFIED_SKILL_RECORDER",check(tampered))
 
     def test_08_old_A1_done_cannot_be_rewritten(self):
