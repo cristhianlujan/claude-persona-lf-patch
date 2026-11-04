@@ -74,4 +74,33 @@ class SRCRHandoffTest(unittest.TestCase):
         r["target_code"]=h["target_code"];r["terminal_receipt_sha256"]="not-a-sha"
         self.assertEqual(gate.inspect_return(h,r)["status"],"BLOCKED")
 
+
+    def test_existing_runner_outcome_is_not_trusted_as_receipt(self):
+        h=sample()
+        runner={"status":"COMPLETED",
+                "execution_id":"EXEC-ACTUALIZACION-PERFIL-LF-OIDC-12345678-1234-4123-8123-123456789abc",
+                "state":{"closed":True,"commit":"a"*40,"merge_sha":"b"*40,"pr":3520}}
+        out=gate.inspect_existing_runner_result(h,runner)
+        self.assertEqual(out["status"],"AWAITING_SERVER_READBACK")
+        self.assertFalse(out["server_verified"])
+        self.assertFalse(out["terminal_verified"])
+        self.assertEqual(out["source_execution_id"],h["source_execution_id"])
+        self.assertEqual(out["child_execution_id"],runner["execution_id"])
+
+        runner["state"]["closed"]=False
+        self.assertEqual(gate.inspect_existing_runner_result(h,runner)["status"],"BLOCKED")
+        runner["state"]["closed"]=True
+        runner["execution_id"]=h["source_execution_id"]
+        self.assertEqual(gate.inspect_existing_runner_result(h,runner)["status"],"BLOCKED")
+
+    def test_existing_runner_dry_or_stopped_does_not_close_parent(self):
+        h=sample()
+        dry=gate.inspect_existing_runner_result(h,{"status":"DRY_RUN_OK"})
+        self.assertEqual(dry["status"],"NOT_EXECUTED")
+        blocked=gate.inspect_existing_runner_result(h,{"status":"STOPPED","code":"MAIN_ADVANCED_SINCE_EXECUTION_ANCHOR"})
+        self.assertEqual(blocked["status"],"BLOCKED")
+        self.assertEqual(blocked["next_action"],"RETURN_BLOCKER_TO_PARENT")
+        self.assertFalse(blocked["terminal_verified"])
+        self.assertEqual(gate.inspect_existing_runner_result(h,{"status":"COMPLETED","state":{}})["status"],"BLOCKED")
+
 if __name__=="__main__": unittest.main()
