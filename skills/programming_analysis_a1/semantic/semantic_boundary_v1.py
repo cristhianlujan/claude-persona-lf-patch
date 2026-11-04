@@ -118,7 +118,8 @@ def evaluate_model_candidate(packet: Any, proposed: Any) -> dict:
         for k in ("problem_statement", "desired_outcome")
     ):
         return _blocked("MODEL_OBJECTIVE_INVALID")
-    if proposed["declared_intent_kind"] not in ALLOWED_INTENTS:
+    if (not isinstance(proposed["declared_intent_kind"], str)
+            or proposed["declared_intent_kind"] not in ALLOWED_INTENTS):
         return _blocked("MODEL_INTENT_INVALID")
     # The interpreter may improve wording, but cannot discard received data.
     for key in ("target_hints", "source_refs", "constraints"):
