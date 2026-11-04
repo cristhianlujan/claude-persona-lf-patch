@@ -30,7 +30,7 @@ def verify_git_object(*,object_kind,object_bytes,declared_oid):
         block("PG12_GIT_OBJECT_FORMAT_INVALID")
     if not isinstance(declared_oid,str) or not OID.fullmatch(declared_oid):
         block("PG12_GIT_OID_SHAPE_INVALID")
-    actual=hashlib.sha1((object_kind+" "+str(len(object_bytes))+"\\0").encode()+object_bytes).hexdigest()
+    actual=hashlib.sha1((object_kind+" "+str(len(object_bytes))+"\0").encode()+object_bytes).hexdigest()
     if declared_oid!=actual:block("PG12_GIT_OBJECT_OID_MISMATCH")
     return actual
 
@@ -57,7 +57,7 @@ def bridge_pg11_to_pg12_identity(*,pg10_pg11_bridge,pg11_c5,pg12_c1,
     verify_git_object(object_kind="commit",object_bytes=candidate_commit_bytes,declared_oid=head)
     verify_git_object(object_kind="tree",object_bytes=candidate_tree_bytes,declared_oid=tree)
     try:
-        lines=candidate_commit_bytes.split(b"\\n\\n",1)[0].split(b"\\n")
+        lines=candidate_commit_bytes.split(b"\n\n",1)[0].split(b"\n")
         tree_lines=[l for l in lines if l.startswith(b"tree ")]
         parsed=tree_lines[0].split(b" ",1)[1].decode("ascii")
     except (UnicodeDecodeError,IndexError):
