@@ -55,7 +55,7 @@ def make_chain(cost="79.99"):
     pg08=pg08_chain()
     pg07=pg08["upstream"]
     c1=prepare_pg09_c1(pg07_c1=pg07["c1"],pg07_c5=pg07["c5"],
-                       budget_policy=policy(),usage_observations=cost_observations(pg08,cost))
+                       budget_policy=policy(),usage_observations=cost_observations(pg07,cost))
     c2=prepare_pg09_c2(pg07_c5=pg07["c5"],pg09_c1=c1,
         iteration_observations=snapshots(pg07["c5"]))
     observations=snapshots(pg07["c5"])
@@ -85,7 +85,7 @@ def with_iteration(kind="NORMAL_CHANGE"):
     pg07c5=prepare_pg07_c5(pg07_c2=pg07["c2"],pg07_c3=pg07["c3"],
                            pg07_c4=pg07["c4"],iteration_proposals=[proposal])
     c1=prepare_pg09_c1(pg07_c1=pg07["c1"],pg07_c5=pg07c5,
-                       budget_policy=policy(),usage_observations=cost_observations(pg08,"1"))
+                       budget_policy=policy(),usage_observations=cost_observations(pg07,"1"))
     snaps=snapshots(pg07c5)
     item={"iteration_id":"iter-1","previous_iteration_ref":None,
           "before_finding_refs":["finding-1"],"after_finding_refs":[],
@@ -163,7 +163,7 @@ class PG09Tests(unittest.TestCase):
         self.assertIn("BUDGET_DECISION",x["c4"]["solutions"][0]["reason_codes"])
     def test_c1_undeclared_provider_cost_not_free(self):
         x=make_chain("1")
-        observed=cost_observations(x["pg08"],"1")
+        observed=cost_observations(x["pg07"],"1")
         observed[0]["calls"][0]["reported_cost"]=None
         r=prepare_pg09_c1(pg07_c1=x["pg07"]["c1"],pg07_c5=x["pg07"]["c5"],
             budget_policy=policy(),usage_observations=observed)
@@ -174,7 +174,7 @@ class PG09Tests(unittest.TestCase):
         fake["production_authority"]=True;resign(fake)
         with self.assertRaises(PG09C1Blocked):
             prepare_pg09_c1(pg07_c1=x["pg07"]["c1"],pg07_c5=fake,
-                budget_policy=policy(),usage_observations=cost_observations(x["pg08"]))
+                budget_policy=policy(),usage_observations=cost_observations(x["pg07"]))
     def test_c2_cross_stage_digest_change_blocks(self):
         x=make_chain();fake=copy.deepcopy(x["c1"])
         fake["source_pg07_c5_sha256"]="f"*64;resign(fake)
