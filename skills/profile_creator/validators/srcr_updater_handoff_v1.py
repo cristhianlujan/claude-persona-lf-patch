@@ -81,6 +81,64 @@ def inspect_return(h, r):
     return {"status":"BLOCKED" if errors else "READY_FOR_INDEPENDENT_READBACK",
             "blocking_codes":sorted(set(errors)), "terminal_verified":False}
 
+
+def inspect_existing_runner_result(handoff, runner):
+    """Normalize the output of scripts/lf_profile_update_run.py without granting PASS.
+
+    The runner already owns the internal GitHub/Edge/RPC execution. This adapter
+    makes its response consumable by a parent profile. Real child/parent binding,
+    status and terminal receipts MUST be confirmed by trusted server readback.
+    """
+    if inspect(handoff)["status"] != "READY_FOR_SERVER_VERIFICATION":
+        return {"status":"BLOCKED", "blocking_codes":["HANDOFF_REQUEST_INVALID"],
+                "server_verified":False, "terminal_verified":False}
+    if not isinstance(runner,dict):
+        return {"status":"BLOCKED", "blocking_codes":["UPDATER_RESULT_NOT_OBJECT"],
+                "server_verified":False, "terminal_verified":False}
+    status=runner.get("status")
+    if status in ("BLOCKED","STOPPED"):
+        code=runner.get("code")
+        if not isinstance(code,str) or not code.strip():
+            code="UPDATER_BLOCKED_NO_STABLE_REASON"
+        return {"status":"BLOCKED", "blocking_codes":[code],
+                "next_action":"RETURN_BLOCKER_TO_PARENT",
+                "server_verified":False, "terminal_verified":False}
+    if status == "DRY_RUN_OK":
+        return {"status":"NOT_EXECUTED", "blocking_codes":["UPDATER_DRY_RUN_ONLY"],
+                "next_action":"EXECUTE_ONLY_AFTER_GOVERNED_ADMISSION",
+                "server_verified":False, "terminal_verified":False}
+    if status != "COMPLETED":
+        return {"status":"BLOCKED", "blocking_codes":["UPDATER_RESULT_STATUS_INVALID"],
+                "server_verified":False, "terminal_verified":False}
+    child=runner.get("execution_id")
+    state=runner.get("state")
+    if (not isinstance(child,str) or not EXEC.fullmatch(child) or
+            child == handoff["source_execution_id"] or not isinstance(state,dict)):
+        return {"status":"BLOCKED", "blocking_codes":["UPDATER_RESULT_EXECUTION_INVALID"],
+                "server_verified":False, "terminal_verified":False}
+    commit=state.get("commit")
+    merge=state.get("merge_sha")
+    if (state.get("closed") is not True or
+            not isinstance(commit,str) or not SHA40.fullmatch(commit) or
+            not isinstance(merge,str) or not SHA40.fullmatch(merge) or
+            not isinstance(state.get("pr"),int) or isinstance(state.get("pr"),bool) or
+            state["pr"] <= 0):
+        return {"status":"BLOCKED", "blocking_codes":["UPDATER_RESULT_CLOSURE_INCOMPLETE"],
+                "server_verified":False, "terminal_verified":False}
+    return {
+        "status":"AWAITING_SERVER_READBACK",
+        "source_execution_id":handoff["source_execution_id"],
+        "child_execution_id":child,
+        "target_code":handoff["target_code"],
+        "reported_commit_sha":commit,
+        "reported_merge_sha":merge,
+        "reported_pr":state["pr"],
+        "next_action":"VERIFY_CHILD_LEDGER_THEN_RESUME_PARENT",
+        "blocking_codes":[],
+        "server_verified":False,
+        "terminal_verified":False,
+    }
+
 if __name__=="__main__":
     payload=json.load(sys.stdin)
     outcome=inspect(payload)
