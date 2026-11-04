@@ -36,11 +36,12 @@
       "must_not_mutate": true
     },
     "new_skill": {
-      "skill_code": "PROGRAMMING_ANALYSIS_A1",
+      "skill_code": "PROGRAMMING_ANALYSIS_LF",
       "asset_type": "SKILL",
       "observed_asset_count": 0,
       "source_status": "DRAFT_PR_3529",
-      "runtime_activation_allowed": false
+      "runtime_activation_allowed": false,
+      "internal_steps": "A1-A15"
     }
   },
   "observed_paths": [
@@ -81,7 +82,7 @@
       "note": "Records creation steps; neither inserts the SKILL asset nor records an execution of A1"
     },
     {
-      "name": "A1_SKILL_EXECUTION",
+      "name": "ANALYSIS_SKILL_EXECUTION",
       "operation": "EJECUCION_SKILL_LF",
       "step_writer": null,
       "core_available": "public.lf_record_operation_step_core_v1",
@@ -218,5 +219,8 @@
     "hard_pass_may_not_be_inferred": true
   },
   "readonly_scope": "Executing a read-only SKILL can persist operation-step receipts by authorized worker; it must not mutate business objects or GitHub.",
-  "init_execution_exception": "init_execution must be opened/recorded by canonical operation begin; lf_record_operation_step_core_v1 explicitly rejects init_execution."
+  "init_execution_exception": "init_execution must be opened/recorded by canonical operation begin; lf_record_operation_step_core_v1 explicitly rejects init_execution.",
+  "skill_package": "skills/programming_analysis",
+  "standalone_a1_registration_allowed": false,
+  "external_skill_code": "PROGRAMMING_ANALYSIS_LF"
 }
