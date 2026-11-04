@@ -3,7 +3,7 @@
 **Estado:** `CANDIDATE_TESTED_LOCAL`, no CURRENT / no integrado. **Código de habilidad:** `PROGRAMMING_ANALYSIS_A1`.
 
 ## Objetivo
-Convertir datos tipados de una solicitud en `REQUEST_CONTEXT_V1` sin inferir implementación ni decidir la clasificación funcional (A2) ni consultar autoridades (A3).
+Normalizar la solicitud literal y el contexto ya recibido como `REQUEST_CONTEXT_V1`, sin perder acciones, códigos, nombres ni procedencia. La interpretación del texto libre se produce externamente y debe superar revisión semántica independiente antes de continuar; A2 clasifica y A3 resuelve fuentes.
 
 ## Activación
 Solo cuando el consumidor autorice A1 y entregue el input tipado. El perfil selecciona; la habilidad trabaja; el perfil registra su propia evidencia y decide la siguiente llamada.
@@ -20,7 +20,7 @@ Ver `schemas/input.schema.json`. Negocio `business=LF` autorizado solo como bind
 6. Devolver `A1_SKILL_CANDIDATE_RESULT_V1` solo al consumidor. El `next_capability=A2` es una recomendación, nunca invocación automática.
 
 ## Salida
-`VALID_OUTPUT`, `NEED_MORE_EVIDENCE`, `REQUIRES_DECISION` o `BLOCKED`. Incluye `payload` con forma `REQUEST_CONTEXT_V1`, estado, códigos de bloqueo y `declared_intent_kind` sin adjudicar clasificación.
+`VALID_OUTPUT` para entrada estructurada, `REQUIRES_SEMANTIC_REVIEW` para candidato extraído de texto libre, `NEED_MORE_EVIDENCE`, `REQUIRES_DECISION` o `BLOCKED`. La frontera del modelo puede devolver `REQUIRES_INDEPENDENT_SEMANTIC_REVIEW`; no declara autonomía, integración ni autorización A2.
 
 ## Límites
 No leer Supabase, GitHub ni EKB por sí sola. No escribir RUN ni hacer `service_role`, no operar Router, no ejecutar perfiles, no llamar A2/A3 directamente. `effects_executed=false`, `operationally_integrated=false`, `external_authority_verified=false`. No reemplaza un juez semántico independiente.
