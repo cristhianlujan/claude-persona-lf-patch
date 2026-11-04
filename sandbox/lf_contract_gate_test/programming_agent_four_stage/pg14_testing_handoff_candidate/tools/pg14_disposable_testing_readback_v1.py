@@ -61,6 +61,17 @@ def main():
     if (os.environ.get("PG14_DISPOSABLE_DB")!="YES"
         or not database_from_dsn(dsn).startswith("pg14_test_")):
         fail("PG14_DISPOSABLE_LOCAL_POSTGRES_REQUIRED")
+    for key in ("PGHOST","PGHOSTADDR"):
+        if os.environ.get(key) not in (None,"","localhost","127.0.0.1","::1"):
+            fail("PG14_REMOTE_ENV_HOST_FORBIDDEN")
+    if os.environ.get("PGSERVICE") or os.environ.get("PGSERVICEFILE"):
+        fail("PG14_PG_SERVICE_REDIRECTION_FORBIDDEN")
+    # Verify the connected database itself rather than relying on DSN naming alone.
+    connected=psql(dsn,"SELECT current_database() || '|' || coalesce(inet_server_addr()::text,'LOCAL_SOCKET');")
+    parts=connected.split("|")
+    if len(parts)!=2 or not parts[0].startswith("pg14_test_") or parts[1] not in (
+            "LOCAL_SOCKET","127.0.0.1","::1"):
+        fail("PG14_NOT_LOCAL_DISPOSABLE_POSTGRES")
     responses=build_fixture_verdicts()
     schema="pg14_local_"+uuid.uuid4().hex[:16]
     stored_keys={}
