@@ -72,5 +72,25 @@
     "parent_terminal": "BLOCK_SRCR_PARENT_TERMINAL_BEFORE_CAPABILITY_RETURN"
   },
   "enforcement_status": "NOT_IMPLEMENTED",
-  "e2e_status": "NOT_TESTED"
+  "e2e_status": "NOT_TESTED",
+  "scope": "Only two missing boundaries: validated call from existing EJECUCION_PERFIL_LF parent and verifiable child response to same parent. Reuse current Updater runner and issue-labeled OIDC dispatch unchanged.",
+  "reused_existing": {
+    "runner": "scripts/lf_profile_update_run.py",
+    "request": "scripts/lf_profile_update_issue_dispatch.py (LF_PROFILE_UPDATE_REQUEST_V1; profile_update_init)",
+    "workflow": ".github/workflows/lf-customer-profile-creator-governance-caller.yml",
+    "server": "supabase/functions/run-creacion-perfil-lf/index.ts (initialize_profile_update_v1)",
+    "operation": "ACTUALIZACION_PERFIL_LF",
+    "technical_entry": "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1"
+  },
+  "unsatisfied_boundaries": {
+    "call": "SERVER_GUARD_NOT_IMPLEMENTED: validate Router-authorized SRCR parent, current diagnostic result, exact target/scope and policy before triggering existing Updater request; bind parent+child in live ledgers",
+    "return": "SERVER_READBACK_NOT_IMPLEMENTED: authenticate child status, commit/merge and terminal receipt; deliver/store result in same active parent before terminal report_output"
+  },
+  "runner_response_adapter": {
+    "implementation": "skills/profile_creator/validators/srcr_updater_handoff_v1.py::inspect_existing_runner_result",
+    "input": "existing CLI JSON {status, execution_id, state}",
+    "output": "AWAITING_SERVER_READBACK or fail-closed BLOCKED/NOT_EXECUTED",
+    "authority": "NONE",
+    "terminal_state_verified": false
+  }
 }
