@@ -161,7 +161,7 @@ def run(data: Any) -> dict:
         base["status"] = "NEED_MORE_EVIDENCE"
         base["blocking_codes"] = ["TARGET_HINT_MISSING"]
     else:
-        base["status"] = "VALID_OUTPUT"
+        base["status"] = "REQUIRES_SEMANTIC_REVIEW" if base["semantic_review_required"] else "VALID_OUTPUT"
         base["next_capability"] = None if base["semantic_review_required"] else "A2"
     if _problems(base, _schema(BASE / "schemas/output.schema.json")):
         raise ValueError("A1_INTERNAL_OUTPUT_SCHEMA_FAILURE")
