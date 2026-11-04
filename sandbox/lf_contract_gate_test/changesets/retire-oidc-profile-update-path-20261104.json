@@ -1,0 +1,9 @@
+{
+  "solution_ref": "retire-oidc-profile-update-path-20261104",
+  "paths": {
+    "CLAUDE.md": "CLAUDE_GUIDANCE",
+    "sandbox/lf_contract_gate_test/profile_creator_customer_caller_source_test.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_update_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/retire-oidc-profile-update-path-20261104.json": "CHANGESET_MANIFEST"
+  }
+}
