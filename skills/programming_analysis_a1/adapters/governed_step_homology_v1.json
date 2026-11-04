@@ -177,12 +177,24 @@
     "manual_supabase_readonly_DML_or_DDL",
     "new_ROUTER_to_SKILL_direct_route",
     "service_role_moved_to_router",
-    "synthetic_receipt_or_legacy_execution_replay"
+    "synthetic_receipt_or_legacy_execution_replay",
+    "public.lf_skill_invoke_v1_substituted_for_EJECUCION_SKILL_LF_without_qualification"
   ],
   "asset_registration_out_of_scope": {
     "asset_registry": "public.lf_activos",
     "requires_separate_governed_creation_and_authorized_write": true,
     "db_migration_if_needed": "EXACT_VERSION_DB_WRITE_TRANSPORT_VIA_MIGRATION_MERGE_TRAIN",
     "this_document_is_not_asset_registration": true
+  },
+  "existing_profile_skill_invoker": {
+    "function": "public.lf_skill_invoke_v1(text,text,jsonb)",
+    "status": "AVAILABLE_FOR_EXISTING_CATALOG_ONLY",
+    "profile_parent_operation": "EJECUCION_PERFIL_LF",
+    "catalog": "public.lf_skill_catalog_v1",
+    "invocation_ledger": "public.lf_skill_invocation_v1",
+    "observed_total_invocations": 0,
+    "A1_catalog_entry_found": false,
+    "approved_as_A1_EJECUCION_SKILL_LF_registrar": false,
+    "reason": "different ledger/operation and catalog binding; do not silently substitute for nine-step EJECUCION_SKILL_LF"
   }
 }
