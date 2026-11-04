@@ -175,6 +175,19 @@ def evaluate_model_candidate(packet: Any, proposed: Any) -> dict:
     }
     result = _load_runner().run(a1_input)
     if result["status"] != "REQUIRES_SEMANTIC_REVIEW":
+        if result["status"] in {"NEED_MORE_EVIDENCE", "REQUIRES_DECISION"}:
+            return {
+                "schema_version": SCHEMA,
+                "status": result["status"],
+                "blocking_codes": list(result["blocking_codes"]),
+                "candidate_sha256": digest(proposed),
+                "original_request_sha256": packet["original_request_sha256"],
+                "observed_actions": copy.deepcopy(mentions),
+                "a1_result": result,
+                "semantic_verified": False,
+                "operationally_verified": False,
+                "next_capability": None,
+            }
         return _blocked("A1_CORE_REQUIRES_ATTENTION_" + result["status"])
     return {
         "schema_version": SCHEMA,
