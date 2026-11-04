@@ -158,7 +158,7 @@ class PG07ChainTests(unittest.TestCase):
             prepare_pg07_c2(pg07_c1=bad,worker_spec_projections=x["specs"],
                             verifier_oracle_bindings=x["oracle"])
     def test_c3_budget_overflow_fails_closed(self):
-        x=make_chain();profile=copy.deepcopy(x["profile"]);profile["context_window_tokens"]=1001
+        x=make_chain();profile=copy.deepcopy(x["profile"]);profile["context_window_tokens"]=2099
         r=prepare_pg07_c3(pg07_c1=x["c1"],pg07_c2=x["c2"],model_context_profile=profile,
                           task_context_selections=x["selections"])
         self.assertTrue(all(s["diagnostic_status"]=="BLOCK_CONTEXT_BUDGET" for s in r["solutions"]))
