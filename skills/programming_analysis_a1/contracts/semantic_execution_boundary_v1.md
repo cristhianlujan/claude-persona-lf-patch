@@ -35,4 +35,4 @@ El máximo resultado **local** es `REVIEW_STRUCTURAL_PASS_ONLY` con `independenc
 - Sin proveedor semántico real conectado, `fixtures/semantic_model_candidate_fixture_v1.json` es solo un stand-in; no es un recibo de modelo.
 - Ningún control determinista demuestra que el juez descubrió todas las acciones que existen en el texto original. Es una obligación de su prueba semántica independiente.
 - Las referencias conservadas todavía pueden requerir currentness en A3.
-- Las 31 pruebas de esta frontera usan stand-ins; no constituyen prueba operativa del modelo ni de independencia.
+- Las 33 pruebas de esta frontera usan stand-ins: 33/33 PASS sobre los mismos archivos publicados (Git blob SHA), no constituyen prueba operativa del modelo ni de independencia.
