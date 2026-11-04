@@ -19,7 +19,6 @@
     "semantic_review_structural_validation"
   ],
   "business_binding": "LF",
-  "skill_entrypoint": "skills/programming_analysis/steps/a1/validators/run.py:run",
   "result_contract": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
   "transport": "GOVERNED_ISSUE_OIDC_EDGE_PATTERN_REUSED_AS_DESIGN_SKILL_TARGET_NOT_YET_WIRED",
   "no_new_router_or_executor": true,
@@ -42,7 +41,7 @@
     "SKILL_EXECUTION_SCOPED_RECORDER_NOT_QUALIFIED",
     "APPROVED_SKILL_TARGET_EXECUTOR_MISSING"
   ],
-  "next_step": "INTERNAL_A2_ONCE_GOVERNED",
+  "next_step": "INTERNAL_A2_ONLY",
   "step_homologation_contract": "adapters/governed_step_homology_v1.json",
   "step_recording_permission_model": "AUTHORIZED_EXECUTOR_RPC_WITH_INDEPENDENT_READBACK",
   "step_recording_from_read_only_connector": false,
@@ -55,5 +54,8 @@
   "consumer_scope": "ANALYSIS_STAGE_INTERNAL_A1",
   "registration_granularity": "WHOLE_ANALYSIS_SKILL",
   "independent_skill_registration_allowed": false,
-  "external_direct_selection_allowed": false
+  "external_direct_selection_allowed": false,
+  "internal_step_entrypoint": "skills/programming_analysis/steps/a1/validators/run.py:run",
+  "external_skill_entrypoint": "skills/programming_analysis/SKILL.md",
+  "external_asset_scope": "WHOLE_ANALYSIS_STAGE"
 }
