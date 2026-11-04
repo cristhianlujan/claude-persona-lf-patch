@@ -150,6 +150,18 @@
         "REPAIR",
         "UNKNOWN"
       ]
+    },
+    "original_request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Texto literal opcional del usuario; conservar intacto. A1 no lo sustituye por la interpretación."
+    },
+    "input_mode": {
+      "enum": [
+        "STRUCTURED",
+        "SEMANTIC_CANDIDATE"
+      ],
+      "description": "SEMANTIC_CANDIDATE exige original_request y revisión semántica externa de la extracción. Default legacy STRUCTURED."
     }
   }
 }
