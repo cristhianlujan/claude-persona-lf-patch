@@ -1,3 +1,5 @@
+> **Nota de arquitectura 2026-11-04:** A1 es un paso **interno** de la única skill `PROGRAMMING_ANALYSIS_LF`. Este artefacto procede del antiguo candidato individual; sus referencias a ejecución/registro deben interpretarse a nivel de la **skill completa**. No documenta una habilidad A1 registrable ni recibos operativos.
+
 # A1 — Handoff de integración con EJECUCION_SKILL_LF
 
 **Tipo:** preparación source-only. **Estado:** `BLOCKED_NOT_WIRED`. No implica ejecución real ni modificación de Router.
@@ -8,7 +10,7 @@
 - `public.lf_router_action_registry`: `SKILL_EXECUTION`, `ACTIVE`, exige target existente, `write_allowed=false`.
 - `public.lf_operation_step_contracts`: `init_execution → router → skill_resolve → skill_source_read → input_validate → execute_skill → output_validate → semantic_judge → report_output`.
 - `public.lf_operation_judges`: `JUDGE-EJECUCION-SKILL-LF-v0.1` tiene `pass_if=[]` y `fail_if=[]`; eso no acredita por sí mismo enforcement server-side de resultados `FAIL`.
-- `public.lf_activos`: A1 `PROGRAMMING_ANALYSIS_A1` no registrada (0).
+- `public.lf_activos`: A1 `PROGRAMMING_ANALYSIS_LF` no registrada (0).
 - `public.lf_operation_execution`: A1 bajo `EJECUCION_SKILL_LF` (0); 414 ejecuciones históricas de skills ajenas, no prueban A1.
 
 ## Integración propuesta
@@ -35,4 +37,4 @@ Ver `handoffs/A1_STEP_HOMOLOGY_DECISION_20261104.md` y `adapters/governed_step_h
 
 La función `public.lf_record_creacion_skill_step_v1` registra **pasos de creación**, no la ejecución A1. La operación `EJECUCION_SKILL_LF` tiene 9/9 contratos y bindings, pero **no se identificó en `pg_proc` un wrapper público de registro de sus pasos**. Su núcleo común disponible no admite confianza autodeclarada desde el usuario. El patrón de transporte puede reutilizarse; no está conectado a destino SKILL.
 
-La unidad histórica `A1` y su `A1Q` permanecen DONE y no se reciclarán como nuevo RUN. La habilidad `PROGRAMMING_ANALYSIS_A1` permanece sin registro oficial.
+La unidad histórica `A1` y su `A1Q` permanecen DONE y no se reciclarán como nuevo RUN. La habilidad `PROGRAMMING_ANALYSIS_LF` permanece sin registro oficial.
