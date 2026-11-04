@@ -5,6 +5,7 @@ explicitly NOT READY and a source-only PG13-to-PG14 bridge. ACCEPT means
 the local fixture has intact shape; not Testing production admission.
 """
 import hashlib,json
+from pg14_c2_completeness_guard_v1 import validate_pg14_c2_completeness,PG14C2CompletenessBlocked
 
 class PG14LocalReceiverBlocked(ValueError):pass
 def block(s):raise PG14LocalReceiverBlocked(s)
@@ -24,6 +25,7 @@ def simulate_testing_receiver(*,pg14_bridge,pg14_c1,pg14_c2,pg14_c3,request_payl
         h1=valid(pg14_c1,"PG14_C1_TESTING_EXECUTION_HANDOFF_CANDIDATE_V1")
         h2=valid(pg14_c2,"PG14_C2_TESTING_SPEC_PAYLOAD_CANDIDATE_V1")
         h3=valid(pg14_c3,"PG14_C3_TESTING_ADMISSION_READBACK_REQUEST_CANDIDATE_V1")
+        validate_pg14_c2_completeness(pg14_c2)
         if (pg14_bridge.get("source_pg14_c1_sha256")!=h1
             or pg14_c2.get("source_pg14_c1_sha256")!=h1
             or pg14_c3.get("source_pg14_c2_sha256")!=h2
@@ -57,7 +59,7 @@ def simulate_testing_receiver(*,pg14_bridge,pg14_c1,pg14_c2,pg14_c3,request_payl
             block("PG14_RECEIVER_TAMPERED_REQUEST")
         verdict="ACCEPT"
         reason="LOCAL_FIXTURE_SHAPE_ACCEPTED_ONLY"
-    except PG14LocalReceiverBlocked as exc:
+    except (PG14LocalReceiverBlocked,PG14C2CompletenessBlocked) as exc:
         verdict="BLOCK"
         reason=str(exc)
     result={
