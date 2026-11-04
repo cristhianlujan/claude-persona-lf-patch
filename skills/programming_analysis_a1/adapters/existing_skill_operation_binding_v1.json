@@ -80,7 +80,9 @@
     "SKILL_OPERATION_SANDBOX_ACTIVE_NOT_RELEASED_FOR_A1",
     "INDEPENDENT_SEMANTIC_JUDGE_ENFORCEMENT_NOT_ATTESTED_FOR_A1",
     "NEW_STANDARD_CONSUMER_NOT_WIRED",
-    "REAL_PRODUCER_AND_JUDGE_RECEIPTS_MISSING"
+    "REAL_PRODUCER_AND_JUDGE_RECEIPTS_MISSING",
+    "SKILL_EXECUTION_RECORDER_NOT_QUALIFIED",
+    "GOVERNED_EXECUTOR_PERMISSION_BOUNDARY_NOT_YET_WIRED"
   ],
   "fail_closed_rules": [
     "do not run model directly from Router",
@@ -95,5 +97,14 @@
   "allowed_current_result": "SOURCE_BINDING_PROPOSAL_ONLY",
   "independent_execution_verified": false,
   "release_approved": false,
-  "merged": false
+  "merged": false,
+  "step_homologation_contract": "adapters/governed_step_homology_v1.json",
+  "step_recording": {
+    "observed_public_skill_execution_recorder": null,
+    "core_ref": "public.lf_record_operation_step_core_v1",
+    "direct_core_invocation_authorized": false,
+    "execution_channel": "AUTHORIZED_GITHUB_OIDC_EDGE_PATTERN_TO_BE_QUALIFIED_FOR_SKILL",
+    "read_only_connector_is_writer": false,
+    "governed_readback_required": true
+  }
 }
