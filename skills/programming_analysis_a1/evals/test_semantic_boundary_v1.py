@@ -36,6 +36,10 @@ def review(candidate):
         "original_request_sha256": candidate["original_request_sha256"],
         "status": "PASS",
         "covered_action_ids": [r["id"] for r in candidate["observed_actions"]],
+        "independently_observed_actions": [
+            {"literal_span": r["literal_span"], "normalized_action": r["normalized_action"]}
+            for r in candidate["observed_actions"]
+        ],
         "unsupported_claims": [],
         "omitted_actions": [],
         "scope_expansions": [],
@@ -182,6 +186,32 @@ class SemanticBoundaryTests(unittest.TestCase):
     def test_27_forged_issuer_claim_not_permitted(self):
         _,p,m=fixture();m["model_call_ref"]="fake://self"
         self.assert_block(p,m,"MODEL_CANDIDATE_CONTRACT_INVALID")
+
+
+    def test_28_judge_independent_finds_extra_literal_action(self):
+        _,p,m=fixture();c=M.evaluate_model_candidate(p,m);r=review(c)
+        r["independently_observed_actions"].append(
+            {"literal_span":"reglas","normalized_action":"comprobar reglas"}
+        )
+        v=M.validate_review(c,r)
+        self.assertEqual(v["status"],"BLOCKED")
+        self.assertIn("INDEPENDENT_ACTION_RECONCILIATION_MISMATCH",v["blocking_codes"])
+
+    def test_29_judge_independent_missing_implementation_action(self):
+        _,p,m=fixture();c=M.evaluate_model_candidate(p,m);r=review(c)
+        r["independently_observed_actions"] = r["independently_observed_actions"][:1]
+        v=M.validate_review(c,r)
+        self.assertIn("INDEPENDENT_ACTION_RECONCILIATION_MISMATCH",v["blocking_codes"])
+
+    def test_30_model_task_tamper_rejected(self):
+        _,p,m=fixture();p["original_request"] += " Alterado"
+        self.assert_block(p,m,"PREPARED_LITERAL_HASH_INVALID")
+
+    def test_31_independent_action_fake_span_rejected(self):
+        _,p,m=fixture();c=M.evaluate_model_candidate(p,m);r=review(c)
+        r["independently_observed_actions"][0]["literal_span"]="desplegar a producción"
+        v=M.validate_review(c,r)
+        self.assertIn("INDEPENDENT_ACTION_EVIDENCE_INVALID",v["blocking_codes"])
 
 
 if __name__ == "__main__":
