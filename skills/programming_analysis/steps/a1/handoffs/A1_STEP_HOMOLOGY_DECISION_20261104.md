@@ -1,3 +1,5 @@
+> **Nota de arquitectura 2026-11-04:** A1 es un paso **interno** de la única skill `PROGRAMMING_ANALYSIS_LF`. Este artefacto procede del antiguo candidato individual; sus referencias a ejecución/registro deben interpretarse a nivel de la **skill completa**. No documenta una habilidad A1 registrable ni recibos operativos.
+
 # A1 — Homologación de registro de pasos y transporte autorizado
 
 Fecha de consulta: 2026-11-04. Tipo: decisión de integración `SOURCE_ONLY`; **no es un registro de RUN ni un cambio de ACL**.
@@ -6,7 +8,7 @@ Fecha de consulta: 2026-11-04. Tipo: decisión de integración `SOURCE_ONLY`; **
 
 - Unidad histórica `PROGRAMMING_AGENT_ANALYSIS_REMEDIATION_V1/A1`: `DONE`, con evidencia de PR/merge previa; **no reabrir ni reescribir**.
 - Calificación histórica `A1Q`: 3 checkpoints C1/C2/C3 `DONE`; no usarlos como evidencia de una ejecución nueva de skill.
-- Habilidad nueva `PROGRAMMING_ANALYSIS_A1`: código en PR #3529, `DRAFT`; **0 activos vigentes** en `public.lf_activos` y **0 ejecución A1** en `EJECUCION_SKILL_LF`. Dos asuntos distintos: dar de alta el activo y registrar la ejecución del skill.
+- Habilidad nueva `PROGRAMMING_ANALYSIS_LF`: código en PR #3529, `DRAFT`; **0 activos vigentes** en `public.lf_activos` y **0 ejecución A1** en `EJECUCION_SKILL_LF`. Dos asuntos distintos: dar de alta el activo y registrar la ejecución del skill.
 
 ## 2. Patrones ya existentes (readback Supabase + GitHub)
 
