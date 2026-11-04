@@ -111,6 +111,17 @@ def governed_request():
             or len(json.dumps(context)) > 55000):
             raise ValueError("PROFILE_NATIVE_BEGIN_CONTEXT_INVALID")
         return {"kind": "BEGIN", "router_context": context, "executor_mode": mode}
+    # A read-only profile invokes a governed skill through its own route. The server uses the
+    # authenticated execution as the parent and the skill invoker checks authority and inputs.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "skill_code", "input"}:
+            raise ValueError("PROFILE_SKILL_INVOKE_SCHEMA_INVALID")
+        execution_id, skill, skill_input = data["execution_id"], data["skill_code"], data["input"]
+        if (not isinstance(execution_id, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+                or not isinstance(skill, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]{2,63}", skill)
+                or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
+            raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
+        return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
@@ -381,6 +392,21 @@ def main():
     source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "SKILL_INVOKE":
+        code, invoked = call_json(EDGE_URL, {
+            "action": "profile_native_skill_invoke_v1",
+            "execution_id": request["execution_id"],
+            "skill_code": request["skill_code"],
+            "input": request["input"],
+        }, headers)
+        result = invoked.get("result") if isinstance(invoked.get("result"), dict) else {}
+        ok = code == 200 and invoked.get("outcome") == "SKILL_INVOKED"
+        # Bounded evidence only: never echo the skill input.
+        print(json.dumps({"phase": "PROFILE_SKILL_INVOKE", "http_status": code, "outcome": invoked.get("outcome"),
+                          "code": invoked.get("code"), "detail": invoked.get("detail"),
+                          "skill_code": request["skill_code"], "execution_id": request["execution_id"],
+                          "result": result if ok else None}, ensure_ascii=False))
+        return 0 if ok else 1
     if isinstance(request, dict) and request.get("kind") == "BEGIN":
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical
