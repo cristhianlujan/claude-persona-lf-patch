@@ -50,3 +50,11 @@ Para A1: reutilizar **ese patrón** pero **no invocar directamente el workflow e
 5. Registrar y leer recibos del mismo RUN; solo entonces calificar `SKILL_INTEGRATED`.
 
 **Estado:** homologación de contrato y política terminada en candidato GitHub; transporte operacional, wrapper, permisos y registro real no modificados. Ver `adapters/governed_step_homology_v1.json`.
+
+## 6. Lote siguiente: preflight del contrato de transporte, no ejecución
+
+Se creó `adapters/governed_skill_step_preflight_v1.py` con 26 pruebas sintéticas en `evals/test_governed_skill_step_preflight_v1.py`. Esta pieza **solo verifica estructura del sobre A1, operación/destino, identidad de ejecución, claves de evidencia y coincidencia de forma contra una respuesta de readback proporcionada externamente**. No es otro runtime, registrador, juez semántico ni proveedor de autenticación. `PREFLIGHT_ONLY` y `READBACK_SHAPE_MATCH_ONLY` **no autorizan ni prueban una escritura**.
+
+Se rehúsa `init_execution` como llamada normal al registrador (`REQUIRES_CANONICAL_BEGIN`); el núcleo genérico lo prohíbe. `semantic_judge` queda `REQUIRES_SERVER_SIDE_INDEPENDENT_JUDGE` aunque alguien declare `PASS`. En Supabase el juez `JUDGE-EJECUCION-SKILL-LF-v0.1` sigue con `pass_if=[]` y `fail_if=[]`; **no hay enforcement semántico E2E acreditado**.
+
+La prueba negativa con el consumidor/worker y la creación del RUN siguen pendientes. **No se ejecutaron las 26 pruebas Python nuevas en este lote**. La identidad OIDC nunca se acepta desde el JSON enviado por el solicitante.
