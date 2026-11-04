@@ -3,7 +3,12 @@
 // write authority. All substantive transitions use existing canonical RPCs.
 export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
-export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION] as const;
+// A read-only profile calls a governed skill through its own route. The skill invoker
+// (lf_skill_invoke_v1) owns the authority/input checks; this action only transports the call.
+export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
+export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION] as const;
+const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
+const MAX_SKILL_INPUT_BYTES = 65536;
 
 // Native executors are bound to their provider; any other mode/provider pair is rejected.
 const NATIVE_EXECUTOR_PROVIDER_BY_MODE = new Set([
@@ -189,6 +194,32 @@ async function resolveExistingPostModelStep(
   });
 }
 
+async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn: Fetcher): Promise<Response> {
+  const skill = body.skill_code;
+  const input = body.input;
+  if (typeof skill !== "string" || !SKILL_CODE_RE.test(skill)) return blocked("PROFILE_SKILL_CODE_INVALID", 400);
+  if (!input || typeof input !== "object" || Array.isArray(input) || JSON.stringify(input).length > MAX_SKILL_INPUT_BYTES) {
+    return blocked("PROFILE_SKILL_INPUT_INVALID", 400);
+  }
+  let response: Response;
+  try {
+    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_skill_invoke_v1`, {
+      method: "POST",
+      headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`, "content-type": "application/json" },
+      // The parent is always the authenticated, read-only profile execution, never a caller-supplied id.
+      body: JSON.stringify({ p_skill: skill, p_execution_id: e.execution_id, p_input: input }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch { return blocked("PROFILE_SKILL_INVOKE_TRANSPORT_FAILED", 502); }
+  const data = await parseResponse(response) as Payload | null;
+  if (!response.ok) {
+    // The invoker raises explicit, human-readable block reasons (what is missing and where): pass them on.
+    const detail = typeof data?.message === "string" ? data.message.slice(0, 400) : null;
+    return respond({ outcome: "BLOCKED", code: "PROFILE_SKILL_INVOKE_REJECTED", skill_code: skill, execution_id: e.execution_id, detail }, 409);
+  }
+  return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
+}
+
 export async function handleProfileContinuation(
   action: string,
   body: Payload,
@@ -210,6 +241,7 @@ export async function handleProfileContinuation(
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
+  if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
   const revision = body.source_revision;
   const digest = body.source_digest;

@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -410,4 +410,54 @@ Deno.test("continuation: false 9/11, blocked judge and unexpected step fail clos
     eq(out.status,409);eq(body.outcome,"BLOCKED");
     eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
   }
+});
+
+// --- skill invocation from a read-only profile through its own governed route ---
+function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;body:unknown}={status:200,body:{status:"CHILD_OPENED",child_execution_id:"EXEC-SKILL-0123456789ABCDEF"}}){
+  const n=network(overrides);
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_skill_invoke_v1")){
+      n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null});
+      return new Response(JSON.stringify(invoke.body),{status:invoke.status});
+    }
+    return n.fetchFn(input,init);
+  };
+  return {fetchFn,calls:n.calls};
+}
+const skillInput={target_code:"PERFIL-X-LF",target_path:"profiles/x/SKILL.md"};
+Deno.test("skill invoke: action is in the native-continuation scope",()=>{
+  eq((PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(PROFILE_SKILL_INVOKE_ACTION),true);
+});
+Deno.test("skill invoke: parent is the authenticated execution, never caller-supplied",async()=>{
+  const n=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,parent_execution_id:"EXEC-ATTACKER-0000000000",p_execution_id:"EXEC-ATTACKER-0000000000",
+    skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha);
+  const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");eq(b.result.child_execution_id,"EXEC-SKILL-0123456789ABCDEF");
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq(call?.body,{p_skill:"PROFILE_UPDATE_APPLY",p_execution_id:id,p_input:skillInput});
+});
+Deno.test("skill invoke: invalid skill code or input never reaches the invoker",async()=>{
+  for(const bad of [{skill_code:"profile_update_apply",input:skillInput},{skill_code:"X; DROP",input:skillInput},
+    {skill_code:"PROFILE_UPDATE_APPLY",input:"text"},{skill_code:"PROFILE_UPDATE_APPLY",input:[1]},{skill_code:"PROFILE_UPDATE_APPLY"},{input:skillInput}]){
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,...bad},config,n.fetchFn,sha);
+    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+Deno.test("skill invoke: execution that is not a governed read-only profile run is refused before the invoker",async()=>{
+  for(const o of [{status:"COMPLETED"},{operation_code:"ACTUALIZACION_PERFIL_LF"},
+    {manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,no_write:false,no_promotion:true,governed_repair_write:true}}]){
+    const n=skillNetwork(o);
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha);
+    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+Deno.test("skill invoke: invoker block reason is passed on, truncated, and is not a success",async()=>{
+  const reason="SKILL_AUTHORITY_MISSING: el perfil no tiene autoridad para ACTUALIZACION_PERFIL_LF. "+"x".repeat(900);
+  const n=skillNetwork({},{status:400,body:{code:"P0001",message:reason}});
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha);
+  const b=await out.json();eq(out.status,409);eq(b.outcome,"BLOCKED");eq(b.code,"PROFILE_SKILL_INVOKE_REJECTED");
+  eq(b.detail.startsWith("SKILL_AUTHORITY_MISSING"),true);eq(b.detail.length,400);
 });
