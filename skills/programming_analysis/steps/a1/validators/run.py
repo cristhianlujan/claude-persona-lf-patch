@@ -1,4 +1,4 @@
-"""A1 / Intake Normalize. Reusable pure skill: no Router, RUN, SQL, or profile dependency.
+"""A1 / Intake Normalize. Internal analysis step: no Router, RUN, SQL, or profile dependency.
 
 Canonical functional payload: REQUEST_CONTEXT_V1, schema kept only in its
 source-of-truth path under sandbox/lf_contract_gate_test/... .
@@ -16,7 +16,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 BASE = Path(__file__).resolve().parents[1]
-ROOT = BASE.parents[1]
+ROOT = BASE.parents[3]
 CANONICAL_SCHEMA = ROOT / "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_request_context_v1.schema.json"
 
 
@@ -72,10 +72,10 @@ def _guard_check(data: dict, result: dict) -> list[str]:
 
 
 def run(data: Any) -> dict:
-    """Return candidate skill result; never claims external verification or effects."""
+    """Return candidate internal-step result; never claims external verification or effects."""
     base = {
-        "schema_version": "A1_SKILL_CANDIDATE_RESULT_V1",
-        "skill_code": "PROGRAMMING_ANALYSIS_A1",
+        "schema_version": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
+        "skill_code": "PROGRAMMING_ANALYSIS_LF",
         "business": data.get("business") if isinstance(data, dict) else None,
         "status": "BLOCKED",
         "payload": None,
