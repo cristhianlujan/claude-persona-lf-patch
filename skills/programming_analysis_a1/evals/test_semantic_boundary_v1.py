@@ -237,5 +237,11 @@ class SemanticBoundaryTests(unittest.TestCase):
         self.assertIsNone(r["next_capability"])
 
 
+    def test_34_unhashable_model_intent_fails_closed(self):
+        _,p,m=fixture()
+        m["declared_intent_kind"]=["EVOLVE"]
+        self.assert_block(p,m,"MODEL_INTENT_INVALID")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
