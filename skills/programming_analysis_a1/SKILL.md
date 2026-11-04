@@ -1,6 +1,6 @@
 # A1 — Intake y normalización (Agente de Programación)
 
-**Estado:** `CANDIDATE_TESTED_LOCAL`, no CURRENT / no integrado. **Código de habilidad:** `PROGRAMMING_ANALYSIS_A1`.
+**Estado:** `CANDIDATE_SOURCE_PREPARED_PENDING_QUALIFICATION`, no CURRENT / no integrado. **Código de habilidad:** `PROGRAMMING_ANALYSIS_A1`.
 
 ## Objetivo
 Normalizar la solicitud literal y el contexto ya recibido como `REQUEST_CONTEXT_V1`, sin perder acciones, códigos, nombres ni procedencia. La interpretación del texto libre se produce externamente y debe superar revisión semántica independiente antes de continuar; A2 clasifica y A3 resuelve fuentes.
@@ -26,7 +26,7 @@ Ver `schemas/input.schema.json`. Negocio `business=LF` autorizado solo como bind
 No leer Supabase, GitHub ni EKB por sí sola. No escribir RUN ni hacer `service_role`, no operar Router, no ejecutar perfiles, no llamar A2/A3 directamente. `effects_executed=false`, `operationally_integrated=false`, `external_authority_verified=false`. No reemplaza un juez semántico independiente.
 
 ## Pruebas
-`python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v` ejecutado en raíz del repositorio con `jsonschema`. Las pruebas de esta habilidad no prueban transporte real, selección por perfil ni registro de receipts.
+`python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v` ejecutado en raíz del repositorio con `jsonschema`: 68/68 PASS sobre Git blobs idénticos al PR. No prueba inferencia real, independencia del juez, transporte, perfil ni recibos.
 
 ## Semántica pendiente de cualificación
 
