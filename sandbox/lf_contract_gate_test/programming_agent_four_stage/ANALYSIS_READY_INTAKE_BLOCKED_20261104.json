@@ -1,0 +1,113 @@
+{
+  "schema_version": "LF_ANALYSIS_READY_INTAKE_PREPARATION_V1",
+  "status": "BLOCKED_AWAITING_AUTHENTIC_ANALYSIS_PACKAGE",
+  "prepared_at_utc_date": "2026-11-04",
+  "target_programming_stack": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "stack_head_sha": "d675a7248ac686049623c7f2c0906504bdfb6f34",
+    "pr_number": 3550,
+    "authoritative_release": false
+  },
+  "canonical_contracts": {
+    "analysis_package_schema": "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
+    "analysis_snapshot_schema": "PROGRAMMING_CONTEXT_SNAPSHOT_V1",
+    "analysis_to_programming_parity_schema": "ANALYSIS_PROGRAMMING_HANDOFF_PARITY_CONTRACT_V1",
+    "programming_entry_schema": "PROGRAMMING_ENTRY_CONTRACT_V1",
+    "testing_admission_schema": "TESTING_ADMISSION_CONTRACT_V1",
+    "testing_mode": "EXECUTION"
+  },
+  "source_references": {
+    "programming_entry_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/programming_entry_contract_v1.json",
+    "analysis_handoff_parity_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_programming_handoff_parity_contract_v1.json",
+    "testing_admission_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/testing_admission_contract_v1.json",
+    "analysis_candidate_validator": "profiles/programming_analysis_lf/validators/runtime_validate.py"
+  },
+  "authentic_analysis_inputs": {
+    "analysis_package_ref": null,
+    "analysis_package_sha256": null,
+    "source_currentness_ref": null,
+    "context_id": null,
+    "context_sha256": null,
+    "snapshot_schema_digest_sha256": null,
+    "authority_fingerprint_sha256": null,
+    "source_snapshot_sha256": null,
+    "producer_execution_ref": null,
+    "target_repo_full_name": null,
+    "target_base_head_sha": null,
+    "authorized_scope_ids": null,
+    "scope_readiness": null,
+    "material_front_coverage_ref": null,
+    "analysis_stop_rule_ref": null,
+    "implementability_schema_ref": null,
+    "decisions_and_material_unknowns_disposition": null,
+    "asof_context_receipt_ref": null,
+    "a9_pg01_parity_receipt_ref": null,
+    "independent_semantic_judge_receipt_ref": null,
+    "analysis_ready_verdict": null
+  },
+  "testing_execution_requirements": {
+    "analysis_package_ref": null,
+    "analysis_package_sha256": null,
+    "source_currentness_ref": null,
+    "frozen_candidate_ref": null,
+    "frozen_candidate_sha256": null,
+    "current_admission_allowed": false
+  },
+  "status_flags": {
+    "analysis_source_authenticated": false,
+    "analysis_ready_verified": false,
+    "semantic_judge_accepted": false,
+    "asof_context_readback_verified": false,
+    "pg01_parity_verified": false,
+    "package_currentness_verified": false,
+    "testing_real_invoked": false,
+    "worker_real_invoked": false,
+    "production_authority": false,
+    "super_admin_single_signature_present": false
+  },
+  "gates": [
+    {
+      "gate": "A9_CANONICAL_PACKAGE",
+      "status": "BLOCKED",
+      "reason": "No authentic source-specific A9 package supplied"
+    },
+    {
+      "gate": "ASOF_CONTEXT_RECEIPT",
+      "status": "BLOCKED",
+      "reason": "No exact context receipt supplied"
+    },
+    {
+      "gate": "A9_PG01_PARITY",
+      "status": "BLOCKED",
+      "reason": "No authenticated parity/readback supplied"
+    },
+    {
+      "gate": "CURRENTNESS_AND_SCOPE",
+      "status": "BLOCKED",
+      "reason": "No authoritative currentness and ready scopes supplied"
+    },
+    {
+      "gate": "INDEPENDENT_JUDGE",
+      "status": "BLOCKED",
+      "reason": "No current qualified independent judge receipt supplied"
+    },
+    {
+      "gate": "SUPER_ADMIN_RELEASE",
+      "status": "BLOCKED",
+      "reason": "No unique authorized signature supplied"
+    },
+    {
+      "gate": "TESTING_EXECUTION",
+      "status": "BLOCKED",
+      "reason": "No authentic Analysis READY and no production Testing admission"
+    }
+  ],
+  "policy": {
+    "missing_fields_mean": "BLOCK",
+    "synthetic_receipts_never_promote_ready": true,
+    "do_not_modify_analysis": true,
+    "do_not_write_supabase": true,
+    "do_not_invoke_testing": true,
+    "do_not_merge": true
+  }
+}
