@@ -31,3 +31,7 @@ No leer Supabase, GitHub ni EKB por sí sola. No escribir RUN ni hacer `service_
 ## Semántica pendiente de cualificación
 
 Para solicitudes literales, ver `prompts/semantic_interpretation_v1.md` y `semantic/semantic_boundary_v1.py`. El productor y revisor son llamadas externas del futuro consumidor: no son funciones que consulten el Router ni implementen código. La salida semántica sigue en `REQUIRES_SEMANTIC_REVIEW` hasta recibir revisión independiente acreditada. Los contratos y pruebas sintéticas no prueban que el modelo haya ejecutado una inferencia real.
+
+## Registro de pasos homologado (source-only)
+
+Ver `adapters/governed_step_homology_v1.json` y `handoffs/A1_STEP_HOMOLOGY_DECISION_20261104.md`. El perfil prepara el resultado y la evidencia; únicamente el ejecutor gobernado persistirá los pasos con su autoridad, verificación de `execution_id`, operación y juez, más readback. **No ejecutar RPC desde `supabase_read_only_user`** ni convertir `lf_record_creacion_skill_step_v1` en registrador de ejecuciones. `EJECUCION_SKILL_LF` todavía necesita binding y cualificación del recorder específico. Propuesta no conectada; no equivale a `SKILL_READY`.
