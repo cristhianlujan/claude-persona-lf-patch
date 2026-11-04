@@ -162,7 +162,7 @@ def run(data: Any) -> dict:
         base["blocking_codes"] = ["TARGET_HINT_MISSING"]
     else:
         base["status"] = "VALID_OUTPUT"
-        base["next_capability"] = "A2"
+        base["next_capability"] = None if base["semantic_review_required"] else "A2"
     if _problems(base, _schema(BASE / "schemas/output.schema.json")):
         raise ValueError("A1_INTERNAL_OUTPUT_SCHEMA_FAILURE")
     faults = _guard_check(data, base)
