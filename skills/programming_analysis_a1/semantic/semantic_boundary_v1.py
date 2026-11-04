@@ -96,6 +96,11 @@ def evaluate_model_candidate(packet: Any, proposed: Any) -> dict:
     """Validate *external model* candidate against the original and received refs."""
     if not isinstance(packet, dict) or packet.get("schema_version") != "A1_SEMANTIC_MODEL_INPUT_V1":
         return _blocked("PREPARED_TASK_REQUIRED")
+    if (not isinstance(packet.get("original_request"), str)
+            or packet.get("original_request_sha256") != hashlib.sha256(
+                packet["original_request"].encode("utf-8")
+            ).hexdigest()):
+        return _blocked("PREPARED_LITERAL_HASH_INVALID")
     if not isinstance(proposed, dict):
         return _blocked("MODEL_CANDIDATE_NOT_OBJECT")
     required = {
@@ -178,6 +183,7 @@ def evaluate_model_candidate(packet: Any, proposed: Any) -> dict:
         "candidate_sha256": digest(proposed),
         "original_request_sha256": packet["original_request_sha256"],
         "observed_actions": copy.deepcopy(mentions),
+        "original_request": literal,
         "a1_result": result,
         "semantic_verified": False,
         "operationally_verified": False,
@@ -192,7 +198,8 @@ def validate_review(candidate: Any, review: Any) -> dict:
                 "independence_verified": False, "next_capability": None}
     if not isinstance(review, dict) or set(review) != {
         "candidate_sha256", "original_request_sha256", "status", "covered_action_ids",
-        "unsupported_claims", "omitted_actions", "scope_expansions", "review_ref"
+        "unsupported_claims", "omitted_actions", "scope_expansions", "review_ref",
+        "independently_observed_actions"
     }:
         return {"status": "BLOCKED", "blocking_codes": ["REVIEW_CONTRACT_INVALID"],
                 "independence_verified": False, "next_capability": None}
@@ -210,6 +217,25 @@ def validate_review(candidate: Any, review: Any) -> dict:
         errors.append("REVIEW_FINDINGS_INVALID")
     elif any(review[key] for key in ("unsupported_claims", "omitted_actions", "scope_expansions")):
         errors.append("REVIEW_HAS_MATERIAL_FINDINGS")
+    independent = review["independently_observed_actions"]
+    if not isinstance(independent, list) or not independent:
+        errors.append("INDEPENDENT_ACTIONS_MISSING")
+    else:
+        actual = set()
+        for row in independent:
+            if (not isinstance(row, dict)
+                    or set(row) != {"literal_span", "normalized_action"}
+                    or any(not isinstance(v, str) or not v.strip() for v in row.values())
+                    or row["literal_span"].casefold() not in candidate["original_request"].casefold()):
+                errors.append("INDEPENDENT_ACTION_EVIDENCE_INVALID")
+                break
+            actual.add((row["literal_span"].casefold(), row["normalized_action"].casefold()))
+        produced = {
+            (row["literal_span"].casefold(), row["normalized_action"].casefold())
+            for row in candidate["observed_actions"]
+        }
+        if actual != produced:
+            errors.append("INDEPENDENT_ACTION_RECONCILIATION_MISMATCH")
     if review["status"] != "PASS":
         errors.append("REVIEW_VERDICT_NOT_PASS")
     if not isinstance(review["review_ref"], str) or not review["review_ref"].strip():
