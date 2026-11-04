@@ -9,3 +9,9 @@
 **Corrección de arquitectura respecto al PR #3434:** `PERFIL-PROGRAMMING-ANALYSIS-LF` es una identidad de perfil candidata anterior, **no** el propietario de A1–A9. 10.1 es intake (A1); clasificación completa corresponde a A2; búsqueda de fuentes a A3. El PR #3434 no puede fusionarse como diseño vigente de habilidades sin reconciliación.
 
 Pruebas: `python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v`.
+
+## Frontera semántica A1 (candidata)
+
+`semantic/semantic_boundary_v1.py` define `prepare` (literal + contexto), `evaluate_model_candidate` (contrasta contenido recibido, referencias y acciones con spans literales) y `validate_review` (coteja la observación independiente con el productor). Ninguna de estas funciones llama por sí misma al modelo. El consumidor futuro debe ejecutar dos invocaciones independientes y acreditar su recibo.
+
+El resultado local máximo es `REVIEW_STRUCTURAL_PASS_ONLY`; no acredita independencia, currentness ni autorización para A2. Las pruebas `evals/test_semantic_boundary_v1.py` usan stand-ins y deben ejecutarse en el HEAD actual; PASE SUCCESS no prueba las pruebas de A1. La regla de interpretación permanece en `prompts/semantic_interpretation_v1.md`.
