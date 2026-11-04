@@ -1,7 +1,7 @@
 {
   "schema": "ANALYSIS_A1_SKILL_CONTRACT_V1",
   "skill_code": "PROGRAMMING_ANALYSIS_A1",
-  "status": "CANDIDATE_TESTED_LOCAL",
+  "status": "CANDIDATE_SOURCE_PREPARED_PENDING_QUALIFICATION",
   "consumer": "GOVERNED_PROFILE_SELECTED_BY_ROUTER",
   "operation": "PURE_LOCAL_TRANSFORMATION",
   "business_binding": {
@@ -22,5 +22,16 @@
   "effects_allowed": false,
   "independent_semantic_qualification": "NOT_TESTED",
   "currentness_attested": false,
-  "integrated_with_profile": false
+  "integrated_with_profile": false,
+  "semantic_boundary": {
+    "prepare": "semantic/semantic_boundary_v1.py:prepare",
+    "validate_model_candidate": "semantic/semantic_boundary_v1.py:evaluate_model_candidate",
+    "validate_review": "semantic/semantic_boundary_v1.py:validate_review",
+    "instruction_ref": "prompts/semantic_interpretation_v1.md",
+    "contract_ref": "contracts/semantic_execution_boundary_v1.md",
+    "model_runtime_wired": false,
+    "independent_judge_wired": false,
+    "local_review_pass_is_operational_authority": false,
+    "semantic_test_standins": "evals/test_semantic_boundary_v1.py"
+  }
 }
