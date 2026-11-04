@@ -214,5 +214,28 @@ class SemanticBoundaryTests(unittest.TestCase):
         self.assertIn("INDEPENDENT_ACTION_EVIDENCE_INVALID",v["blocking_codes"])
 
 
+    def test_32_missing_target_preserves_need_more_evidence(self):
+        _,p,m=fixture()
+        p["target_hints"]=[]
+        m["target_hints"]=[]
+        r=M.evaluate_model_candidate(p,m)
+        self.assertEqual(r["status"],"NEED_MORE_EVIDENCE")
+        self.assertIsNone(r["next_capability"])
+        self.assertFalse(r["operationally_verified"])
+
+    def test_33_material_ambiguity_preserves_decision(self):
+        _,p,m=fixture()
+        m["ambiguities"]=[{
+            "code":"A1-SCOPE-OPEN",
+            "statement":"El alcance de la implementación no está definido",
+            "materiality":"MATERIAL",
+            "resolution_state":"OPEN",
+        }]
+        r=M.evaluate_model_candidate(p,m)
+        self.assertEqual(r["status"],"REQUIRES_DECISION")
+        self.assertFalse(r["semantic_verified"])
+        self.assertIsNone(r["next_capability"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
