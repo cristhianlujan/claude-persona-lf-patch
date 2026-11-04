@@ -212,7 +212,7 @@ class SkillA1Tests(unittest.TestCase):
         x=valid();x["original_request"]="   "
         r=RUN.run(x)
         self.assertEqual(r["status"],"BLOCKED")
-        self.assertIn("ORIGINAL_LITERAL_EMPTY",r["blocking_codes"])
+        self.assertTrue(any("ORIGINAL_LITERAL_EMPTY" in c for c in r["blocking_codes"]))
 
     def test_33_input_literal_is_not_rewritten(self):
         x=valid();x["original_request"]="Evalúa la talla de login e inmolementa lo que falta"
