@@ -231,6 +231,19 @@ class SkillA1Tests(unittest.TestCase):
         self.assertIsNone(r["next_capability"])
         self.assertTrue(r["semantic_review_required"])
 
+    def test_35_semantic_candidate_reuses_screen_code_and_both_actions(self):
+        x=json.loads((ROOT / "fixtures/semantic_candidate_lf.json").read_text(encoding="utf-8"))
+        r=RUN.run(x)
+        self.assertEqual(r["status"],"REQUIRES_SEMANTIC_REVIEW")
+        self.assertIn("B2B-AUTH-001",r["normalized_prompt"])
+        self.assertIn("Inicio de sesión B2B",r["normalized_prompt"])
+        self.assertIn("Evaluar",r["normalized_prompt"])
+        self.assertIn("implementar",r["normalized_prompt"])
+        self.assertEqual(r["payload"]["target_hints"],["B2B-AUTH-001"])
+        self.assertIsNone(r["next_capability"])
+        self.assertFalse(r["external_authority_verified"])
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
