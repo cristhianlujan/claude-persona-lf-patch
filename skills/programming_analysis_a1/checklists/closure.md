@@ -13,6 +13,6 @@
 **No declarar `SKILL_READY` ni `SKILL_INTEGRATED` antes de acreditar todos los controles aplicables.**
 
 - [x] Frontera de producción semántica y revisión estructural incorporada como código candidato.
-- [x] 33 casos de regresión semántica con stand-ins añadidos; **su ejecución en el HEAD actual aún no está acreditada**.
-- [ ] Ejecutar la suite completa del HEAD exacto, no inferir PASS del workflow PASE.
+- [x] 33 casos de regresión semántica con stand-ins ejecutados: PASS, no constituyen llamadas reales del modelo.
+- [x] Ejecutar 68/68 pruebas del HEAD exacto (35 A1 + 33 frontera semántica), con paridad verificada por Git blob SHA; cobertura de módulos de ejecución 86%.
 - [ ] Conectar invocación de modelo y juez independientes mediante el futuro consumidor autorizado; no generar recibos sintéticos como operativos.
