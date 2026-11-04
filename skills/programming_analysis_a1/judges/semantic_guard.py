@@ -22,9 +22,9 @@ def check(source, output):
     if payload is not None:
         if payload.get("no_solution_inferred") is not True:
             faults.append("INFERRED_SOLUTION_CLAIM")
-        if set(payload.get("source_refs", [])) - set(source.get("source_refs", [])):
+        if set(payload.get("source_refs", [])) - {ref.strip() for ref in source.get("source_refs", [])}:
             faults.append("SOURCE_REF_INVENTED")
-        if set(payload.get("target_hints", [])) - set(source.get("target_hints", [])):
+        if set(payload.get("target_hints", [])) - {ref.strip() for ref in source.get("target_hints", [])}:
             faults.append("TARGET_INVENTED")
         prompt = output.get("normalized_prompt")
         if not isinstance(prompt, str):
