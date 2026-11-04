@@ -192,4 +192,52 @@ class PG08ChainTests(unittest.TestCase):
         with self.assertRaisesRegex(PG08FinalReceiptBlocked,"INDEPENDENT_OBSERVATION_INCONSISTENT"):
             reject_falsified_pass_fingerprint(reported_check=check,independent_observation=obs)
 
+    def test_required_c7_c8_receipts_are_in_final_c6_feedback(self):
+        x=make_chain()
+        arch=copy.deepcopy(x["arch"])
+        a=next(c for c in arch[0]["checks"] if c["kind"]=="ARCHUNIT")
+        a.update({"applicability":"REQUIRED","command_id":"arch",
+            "command_ref":"fixture://arch/cmd","tool_name":"archunit","tool_version":"fixture",
+            "config_sha256":SHA,"execution_receipt_ref":"fixture://arch/receipt",
+            "stdout_sha256":"b"*64,"stderr_sha256":"c"*64,
+            "result":"PASS","exit_code":0})
+        c7=prepare_pg08_c7(pg08_c1=x["c1"],pg08_c6=x["c6"],architecture_observations=arch)
+        iac=copy.deepcopy(x["iac"])
+        for k in ("CONTAINER_BUILD","DOCKER_COMPOSE_UP","CONTAINER_HEALTHCHECK"):
+            r=next(row for row in iac[0]["checks"] if row["kind"]==k)
+            r.update({"applicability":"REQUIRED",
+                "command_id":"cmd-"+k,"command_ref":"fixture://iac/"+k,
+                "tool_name":"docker","tool_version":"fixture-v1",
+                "config_sha256":SHA,"stdout_sha256":"b"*64,"stderr_sha256":"c"*64,
+                "execution_receipt_ref":"fixture://iac/receipt/"+k,
+                "result":"PASS","exit_code":0,
+                "execution_target_type":"LOCAL_ISOLATED",
+                "execution_target_ref":"fixture://local/compose"})
+        c8=prepare_pg08_c8(pg08_c1=x["c1"],pg08_c7=c7,infrastructure_observations=iac)
+        final=consolidate_pg08_c6_c7_c8(pg08_c6=x["c6"],pg08_c7=c7,pg08_c8=c8)
+        checks=final["solutions"][0]["feedback_checks"]
+        bykind={row["kind"]:row for row in checks if row["checkpoint"] in ("PG-08_C7","PG-08_C8")}
+        self.assertEqual(bykind["ARCHUNIT"]["reported_result"],"PASS")
+        self.assertEqual(bykind["CONTAINER_HEALTHCHECK"]["reported_result"],"PASS")
+        self.assertEqual(bykind["CONTAINER_HEALTHCHECK"]["execution_receipt_ref_reported"],"fixture://iac/receipt/CONTAINER_HEALTHCHECK")
+        self.assertFalse(bykind["ARCHUNIT"]["receipt_authenticated"])
+        self.assertFalse(bykind["CONTAINER_HEALTHCHECK"]["tool_execution_verified"])
+        self.assertFalse(final["final_verdict_issued"])
+
+    def test_healthcheck_pass_when_compose_failed_is_blocked(self):
+        x=make_chain()
+        bad=copy.deepcopy(x["iac"])
+        for k,result,code in (("CONTAINER_HEALTHCHECK","PASS",0),("DOCKER_COMPOSE_UP","FAIL",1)):
+            r=next(row for row in bad[0]["checks"] if row["kind"]==k)
+            r.update({"applicability":"REQUIRED",
+                "command_id":"cmd-"+k,"command_ref":"fixture://iac/"+k,
+                "tool_name":"docker","tool_version":"fixture-v1",
+                "config_sha256":SHA,"stdout_sha256":"b"*64,"stderr_sha256":"c"*64,
+                "execution_receipt_ref":"fixture://iac/receipt/"+k,
+                "result":result,"exit_code":code,
+                "execution_target_type":"LOCAL_ISOLATED",
+                "execution_target_ref":"fixture://local/compose"})
+        with self.assertRaisesRegex(PG08C8Blocked,"HEALTHCHECK_PASS_WITHOUT_COMPOSE_PASS"):
+            prepare_pg08_c8(pg08_c1=x["c1"],pg08_c7=x["c7"],infrastructure_observations=bad)
+
 if __name__=="__main__":unittest.main()
