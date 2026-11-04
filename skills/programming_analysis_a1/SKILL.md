@@ -26,7 +26,7 @@ Ver `schemas/input.schema.json`. Negocio `business=LF` autorizado solo como bind
 No leer Supabase, GitHub ni EKB por sí sola. No escribir RUN ni hacer `service_role`, no operar Router, no ejecutar perfiles, no llamar A2/A3 directamente. `effects_executed=false`, `operationally_integrated=false`, `external_authority_verified=false`. No reemplaza un juez semántico independiente.
 
 ## Pruebas
-`python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v` ejecutado en raíz del repositorio con `jsonschema`: 68/68 PASS sobre Git blobs idénticos al PR. No prueba inferencia real, independencia del juez, transporte, perfil ni recibos.
+`python -m unittest discover -s skills/programming_analysis_a1/evals -p 'test_*.py' -v` ejecutado en raíz del repositorio con `jsonschema`: 69/69 PASS sobre Git blobs idénticos al PR. No prueba inferencia real, independencia del juez, transporte, perfil ni recibos.
 
 ## Semántica pendiente de cualificación
 
