@@ -158,6 +158,7 @@ def prepare_pg08_c7(*, pg08_c1, pg08_c6, architecture_observations):
             if not isinstance(findings, list):
                 fail("PG08_C7_FINDINGS_INVALID")
             finding_refs = set()
+            local_blockers = []
             for finding in findings:
                 if not isinstance(finding, dict) or set(finding) != {
                     "finding_ref", "severity", "source_module", "target_module",
@@ -171,7 +172,8 @@ def prepare_pg08_c7(*, pg08_c1, pg08_c6, architecture_observations):
                 finding_refs.add(finding["finding_ref"])
                 if finding["severity"] == "BLOCK":
                     blockers.append(finding["finding_ref"])
-            if state == "PASS" and blockers:
+                    local_blockers.append(finding["finding_ref"])
+            if state == "PASS" and local_blockers:
                 fail("PG08_C7_PASS_WITH_BLOCKING_FINDINGS")
             reported.append({"kind": kind, "applicability_reported": "REQUIRED",
                 "applicability_ref_reported": check["applicability_ref"],
