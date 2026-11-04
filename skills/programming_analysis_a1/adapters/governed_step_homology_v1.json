@@ -196,5 +196,24 @@
     "A1_catalog_entry_found": false,
     "approved_as_A1_EJECUCION_SKILL_LF_registrar": false,
     "reason": "different ledger/operation and catalog binding; do not silently substitute for nine-step EJECUCION_SKILL_LF"
-  }
+  },
+  "local_envelope_preflight": {
+    "source": "adapters/governed_skill_step_preflight_v1.py",
+    "tests": "evals/test_governed_skill_step_preflight_v1.py",
+    "state": "SOURCE_ONLY_NOT_EXECUTION_AUTHORITY",
+    "test_cases_defined": 25,
+    "tests_executed_on_branch_head": false,
+    "preflight_positive": "PREFLIGHT_ONLY",
+    "synthetic_readback_positive": "READBACK_SHAPE_MATCH_ONLY",
+    "notes": "No OIDC verification, no RPC invocation, no server-side trust, no operational receipt"
+  },
+  "judge_enforcement_observed": {
+    "source": "public.lf_operation_judges/JUDGE-EJECUCION-SKILL-LF-v0.1",
+    "pass_if_count": 0,
+    "fail_if_count": 0,
+    "negative_semantic_judge_e2e_tested": false,
+    "hard_pass_may_not_be_inferred": true
+  },
+  "readonly_scope": "Executing a read-only SKILL can persist operation-step receipts by authorized worker; it must not mutate business objects or GitHub.",
+  "init_execution_exception": "init_execution must be opened/recorded by canonical operation begin; lf_record_operation_step_core_v1 explicitly rejects init_execution."
 }
