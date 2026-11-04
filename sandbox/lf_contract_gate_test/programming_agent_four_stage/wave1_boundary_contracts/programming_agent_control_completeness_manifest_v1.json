@@ -1,0 +1,164 @@
+{
+  "schema_version": "PROGRAMMING_AGENT_CONTROL_COMPLETENESS_MANIFEST_V1",
+  "state": "SOURCE_ONLY_CANDIDATE",
+  "repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "faf71e4c700af201c74537e392dfdca0394d19b7",
+  "coverage_units": [
+    {
+      "unit": "A1",
+      "contract_ref": "analysis_request_context_v1.schema.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "b47d9b77d63fece5df1c7a1b24936c6398e96d13ff6b020b2b572c8f43eb2744",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_request_context"
+    },
+    {
+      "unit": "A2",
+      "contract_ref": "analysis_change_classification_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "7360cc4f81ddf3e9d80f87382219858b3c2e4e1895f2c85cc3bdd5db0d29cc04",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_change_classification"
+    },
+    {
+      "unit": "A3",
+      "contract_ref": "analysis_targeted_evidence_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "b2ca8318f6bd4a9f8cd28f44dc0f228cd25cf7392fd14d9c4148b82d9dac4f83",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_targeted_evidence"
+    },
+    {
+      "unit": "A4",
+      "contract_ref": "shared_change_impact_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "8dbe08a396ce375094d11d77dee4dc80cfe180a3e7703ea5af549399b8231765",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_shared_impact"
+    },
+    {
+      "unit": "A5",
+      "contract_ref": "analysis_decision_context_adr_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "d96d6f1bc20ee7fba30a9c60f23895b515ec13b961843eedc53cf259cbaea0f9",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_decision_context"
+    },
+    {
+      "unit": "A6",
+      "contract_ref": "analysis_implementability_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "487715da22c498da0ebd1d551dffd788316fa3fdd088db331f130d882233d0ae",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_implementability"
+    },
+    {
+      "unit": "A7",
+      "contract_ref": "analysis_material_front_coverage_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "8c6c674ff1939086496b72669824f3f42af134acb2bb36d50f687c2d2497f85b",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_material_front_coverage"
+    },
+    {
+      "unit": "A8",
+      "contract_ref": "analysis_stop_rule_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "3cf3036be40a8f8f86b77a435614239c57a2b06e7689ff781f05a3a6cc8a8d7c",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_stop_rule"
+    },
+    {
+      "unit": "A9",
+      "contract_ref": "analysis_implementation_package_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "5b1277a43cfbde6d9f9d4cdf51ff6306906ab2eb0062c9832b2142f04f29c7a4",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_analysis_package"
+    },
+    {
+      "unit": "A9_PG01",
+      "contract_ref": "analysis_programming_handoff_parity_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "90b41ca8fe9163bb2299bb4acf51f31fe9a6abdde936a645d3155f17bbd946df",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_handoff_parity"
+    },
+    {
+      "unit": "PG-01",
+      "contract_ref": "programming_entry_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "5ecaec8328a4dc20fa8878b755dbf75ab2c04705f2dcbec4ddaa3da306453152",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_programming_entry"
+    },
+    {
+      "unit": "PG-04",
+      "contract_ref": "programming_solution_partition_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "source_sha256": "e6e2f23645151247598c341ecdefdc9d6f4a7698bfad3223b1e1e05c0b1149bb",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_pg04_partition"
+    },
+    {
+      "unit": "PG-07",
+      "contract_ref": "programming_context_budget_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "receipt_contract_required": true,
+      "source_sha256": "36035eb3d879b3aafaba01f7b8184d4e59532c4ad3c7701e93b35845058ed995",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_pg07_context_budget"
+    },
+    {
+      "unit": "PG-10",
+      "contract_ref": "programming_human_decision_routing_contract_v1.json",
+      "source_contract_required": true,
+      "validator_required": true,
+      "receipt_contract_required": true,
+      "source_sha256": "30538112c9aa9998c663ba53a0caaeb1a9fe47a08d0896fd5f31cc3ec025a36e",
+      "validator_ref": "validate_wave1_boundary_contracts_v1.py",
+      "validator_symbol": "validate_pg10_human"
+    }
+  ],
+  "critical_families": {
+    "AUTHORITY_VS_IMPLEMENTATION": "analysis_material_front_coverage_contract_v1.json#blocker_semantics",
+    "EXISTING_DECISION_REUSE": "analysis_decision_context_adr_contract_v1.json#existing_decision_resolution",
+    "HUMAN_DECISION_ROUTING": "analysis_decision_context_adr_contract_v1.json#human_decision_routing",
+    "A9_PACKAGE_MATERIALIZATION": "analysis_implementation_package_contract_v1.json",
+    "SOLUTION_PARTITION": "programming_solution_partition_contract_v1.json",
+    "CONTEXT_BUDGET": "programming_context_budget_contract_v1.json",
+    "PROGRAMMING_CONFLICT_ROUTING": "programming_human_decision_routing_contract_v1.json",
+    "RUNTIME_PAYLOAD_CONFORMANCE": "programacion.fn_programming_context_snapshot_validate_v1"
+  },
+  "completeness_gate": {
+    "plan_only_control_is_not_implemented": true,
+    "every_covered_unit_must_have_source_contract": true,
+    "every_covered_unit_must_have_validator": true,
+    "runtime_or_human_action_control_requires_receipt_contract": true,
+    "missing_contract_or_validator_fails_closed": true,
+    "source_contract_without_runtime_payload_conformance_is_not_execution_proof": true,
+    "runtime_payload_conformance_source_must_exist": true,
+    "source_sha256_must_match": true,
+    "validator_symbol_must_exist": true
+  },
+  "runtime_payload_conformance_source_ref": "supabase/migrations/20261007183500_programming_context_snapshot_runtime_guard_v1.sql",
+  "runtime_payload_conformance_functions": [
+    "programacion.fn_programming_context_snapshot_validate_v1",
+    "programacion.fn_programming_context_record_v1",
+    "programacion.fn_programming_context_resolve_v1"
+  ],
+  "runtime_payload_conformance_source_sha256": "553fb44145399483cb28d4277cff87fa528afe1420466188ceeb3165e20fff60"
+}
