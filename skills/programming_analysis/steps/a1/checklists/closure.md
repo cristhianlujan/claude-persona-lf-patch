@@ -1,3 +1,5 @@
+> **Nota de arquitectura 2026-11-04:** A1 es un paso **interno** de la única skill `PROGRAMMING_ANALYSIS_LF`. Este artefacto procede del antiguo candidato individual; sus referencias a ejecución/registro deben interpretarse a nivel de la **skill completa**. No documenta una habilidad A1 registrable ni recibos operativos.
+
 # Evidencia y cierre A1
 
 - [x] Fuente canónica localizada: `REQUEST_CONTEXT_V1`.
