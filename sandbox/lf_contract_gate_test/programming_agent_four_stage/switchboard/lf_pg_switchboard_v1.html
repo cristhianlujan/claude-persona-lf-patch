@@ -82,4 +82,64 @@ byId("import").onchange=async e=>{const file=e.target.files&&e.target.files[0];i
  e.target.value="";
 };
 draw();
-</script></body></html>
+</script>
+<script>
+/* Tour narrativo: datos de ejemplo, nunca salidas autenticadas de productores. */
+(() => {
+ const examples=[
+  ["Solicitud de Análisis", "contexto + requisitos", "Recibo y contexto candidatos"],
+  ["Contexto recibido", "clasificación EXISTING / DELTA", "Reglas aplicables"],
+  ["Clasificación y reglas", "estrategia de extensión de GET /users", "Plan técnico"],
+  ["Plan y requisitos", "lotes API + pruebas", "DAG de lotes"],
+  ["Lotes", "archivos permitidos: users.py y test_users.py", "Scope de escritura"],
+  ["Scope autorizado candidato", "Python 3.12 y baseline declarado", "Preflight y rollback"],
+  ["Baseline + lotes", "plan de despacho del Worker (no ejecutado)", "Proyección de tareas"],
+  ["Evidencia ficticia del Worker", "build/lint/tests NOT_RUN", "Calidad declarada, sin PASS real"],
+  ["Calidad declarada", "iteración sin retry solicitado", "Presupuesto y decisión"],
+  ["Reglas y decisión", "cero conflictos reportados", "Ruta de decisiones"],
+  ["Diff declarado", "hunks vinculados a requisito R-01", "Trazabilidad (sin revisión real)"],
+  ["Hunks y evidencias", "manifest candidato + recibo solicitado", "Identidad del candidato"],
+  ["Manifest y commit", "tag frozen candidato, sin freeze productivo", "Identidad congelada sintética"],
+  ["Candidato y paquete de Análisis ficticio", "ACCEPT local del fixture, NO Testing real", "Recibo local simulado"]
+ ];
+ const section=document.createElement("section");
+ section.style.cssText="background:#eff7fe;border:1px solid #c5dae9;border-radius:12px;padding:15px;margin-bottom:18px";
+ section.innerHTML='<h2>🧪 Ejemplo: filtro de usuarios en FastAPI</h2><p style="font-size:13px;color:#48627a">Solicitud <b>SOL-TEST-001</b>: agregar <code>?status=active</code> a <code>GET /users</code>. Paquete de Análisis, Worker y recibos son sintéticos.</p><div class="bar"><button class="primary" id="demoAll">▶ Ejecutar ejemplo completo</button><button id="demoSkip">Omitir PG-08</button><button id="demoBlock">Bloquear PG-11_C3</button></div>';
+ document.querySelector(".layout").before(section);
+ const panel=document.querySelector("#results").parentElement;
+ const journey=document.createElement("div");journey.id="journey";
+ const intro=document.createElement("div");
+ intro.innerHTML='<h2 style="margin-top:18px">Cómo viajó y qué respondió</h2><p style="font-size:12px;color:#63768a">Haz clic en una etapa: verás qué recibió, qué respondió y qué le entregó a la siguiente. Son ejemplos ilustrativos, no ejecuciones reales.</p>';
+ document.querySelector("#results").after(intro,journey);
+ const style=document.createElement("style");
+ style.textContent="#journey{max-height:680px;overflow:auto}.travel{border:1px solid #dde7ef;border-radius:9px;margin:7px 0;overflow:hidden}.travel summary{padding:10px 12px;background:#f6f9fc;cursor:pointer;font-weight:700;font-size:12px}.travel-body{padding:10px;font-size:12px}.travel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.travel-grid section{background:#f5f8fb;border-radius:6px;padding:8px;min-width:0}.travel-grid b{display:block;margin-bottom:6px}.travel-grid pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:11px/1.5 ui-monospace,monospace}.travel-next{padding:8px;margin-top:8px;background:#ebf5fc;border-radius:6px}@media(max-width:700px){.travel-grid{grid-template-columns:1fr}}";
+ document.head.appendChild(style);
+ const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ function showJourney(){
+  if(!report)return;
+  const stagesNow=report.stages;
+  const rows=report.checkpoints;
+  const data=stagesNow.map((s,i)=>{
+   const sample=examples[i];const previous=i?stagesNow[i-1].stage:"ANÁLISIS (fixture)";
+   const received={from:previous,input:sample[0],request_id:"SOL-TEST-001"};
+   const failed=rows.find(r=>r.stage===s.stage&&r.status==="BLOCKED_SYNTHETIC");
+   let response,next;
+   if(s.status==="NOT_REACHED"){response={status:"NOT_REACHED",reason:"Bloqueo previo"};next=null}
+   else if(failed){response={status:"BLOCKED_SYNTHETIC",reason:failed.reason_code};next=null}
+   else if(s.status==="DIAGNOSTIC_BYPASS_PRESENT"){response={status:"BYPASSED_DIAGNOSTIC",example:sample[1],warning:"No se ejecutó todo; no equivale a PASS"};next="Fixture inyectado; sin validación real"}
+   else{response={status:"SIMULATED_CANDIDATE",example:sample[1]};next=sample[2]}
+   return{stage:s.stage,title:names[i],status:s.status,received,response,delivered:next,
+    checkpoints:rows.filter(r=>r.stage===s.stage).map(r=>({id:r.checkpoint,status:r.status}))};
+  });
+  report.journey=data;
+  journey.innerHTML=data.map((s,i)=>'<details class="travel" '+(i===0?'open':'')+'><summary>'+esc(s.stage)+' · '+esc(s.title)+' · '+esc(s.status)+'</summary><div class="travel-body"><div class="travel-grid"><section><b>⬇ RECIBIÓ</b><pre>'+esc(JSON.stringify(s.received,null,2))+'</pre></section><section><b>↩ RESPONDIÓ</b><pre>'+esc(JSON.stringify(s.response,null,2))+'</pre></section></div><div class="travel-next"><b>➡ Entregó a la siguiente: </b>'+esc(s.delivered||"Nada; ruta detenida o no alcanzada")+'</div><small>Checkpoints: '+esc(s.checkpoints.map(c=>c.id+" "+c.status).join(" | "))+'</small></div></details>').join("");
+ }
+ const oldSimulate=simulate;
+ simulate=function(){oldSimulate();showJourney()};
+ document.querySelector("#demoAll").onclick=()=>{config={schema_version:"LF_PG_DIAGNOSTIC_SWITCHBOARD_V1",case_id:"SOL-TEST-001",mode:"SYNTHETIC_TEST",simulation_only:true,defaults:"ON",stage_overrides:{},checkpoint_overrides:{},fixture:{objective:"Agregar filtro status a GET /users",analysis_ready_authentic:false}};draw();journey.scrollIntoView({behavior:"smooth"})};
+ document.querySelector("#demoSkip").onclick=()=>{document.querySelector("#demoAll").click();config.stage_overrides["PG-08"]="OFF";draw()};
+ document.querySelector("#demoBlock").onclick=()=>{document.querySelector("#demoAll").click();config.checkpoint_overrides["PG-11_C3"]="FAULT";draw()};
+ showJourney();
+})();
+</script>
+</body></html>
