@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LF — Switchboard diagnóstico</title>
+<style>
+*{box-sizing:border-box}body{font:14px system-ui,sans-serif;background:#f4f7fa;color:#182c40;margin:0}
+header{background:#18334a;color:white;padding:24px max(16px,calc((100vw - 1150px)/2))}
+h1{margin:0 0 7px;font-size:25px}p{line-height:1.5}header p{color:#d2deea}
+main{max-width:1150px;margin:20px auto;padding:0 14px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+button,.button{background:white;color:#18334a;border:1px solid #b5c5d5;border-radius:8px;padding:9px 12px;font:inherit;cursor:pointer}
+button.primary{background:#256184;color:white;border-color:#256184}
+.layout{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+article{background:white;border:1px solid #e0e8f0;border-radius:12px;padding:16px;min-width:0}
+.stage{border:1px solid #e1e8ef;border-radius:9px;margin:8px 0;overflow:hidden}
+.stageHead{background:#f8fafc;display:flex;justify-content:space-between;align-items:center;gap:7px;padding:9px}
+.stageHead strong{font-size:14px}.stageHead small{display:block;font-size:11px;color:#627387}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;padding:8px}
+.cp{display:flex;align-items:center;justify-content:space-between;gap:5px;border:1px solid #e9eef3;border-radius:6px;padding:5px;font-size:12px}
+select{background:white;border:1px solid #bbcad6;border-radius:6px;padding:5px;font:inherit;font-size:11px}
+.status{display:inline-block;padding:4px 7px;border-radius:16px;font-size:11px;font-weight:bold}
+.ok{background:#d9f5e5;color:#136744}.skip{background:#fff0ce;color:#8a5405}
+.fail{background:#ffe1e2;color:#a32e39}.muted{background:#eef2f6;color:#627284}
+.result{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #e7edf4;padding:9px 0}
+.notice{background:#fff8e7;border:1px solid #efddba;padding:10px;border-radius:8px;color:#6a521b;font-size:12px}
+pre{background:#172b40;color:#dcecf7;max-height:230px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border-radius:8px;font-size:11px}
+input[type=file]{display:none}.actions label{background:white;border:1px solid #b5c5d5;border-radius:8px;padding:9px 12px;cursor:pointer}
+@media(max-width:850px){.layout{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><h1>LF — Interruptores PG-01 a PG-14</h1><p>Activa, omite o fuerza errores por etapa y checkpoint. Este panel es una simulación sintética, nunca un bypass de la gobernanza real.</p></header>
+<main><div class="actions"><button class="primary" id="run">Ejecutar simulación</button><button id="on">Todos ON</button><button id="off">Todos OFF</button><button id="reset">Restaurar</button><button id="exportConfig">Exportar switches</button><button id="exportReport">Exportar reporte</button><label for="import">Importar JSON</label><input id="import" type="file" accept=".json,application/json"></div>
+<div class="layout"><article><h3>Switches independientes</h3><p>ON: simulado · OFF: omitido sin PASS · FAULT: fallo sintético que detiene la cadena. Los checkpoints prevalecen sobre la etapa.</p><div id="stages"></div></article>
+<article><h3>Recorrido SOL-TEST-001</h3><div class="notice">El panel no ejecuta el backend ni los productores reales. Para ejecutar unittests existentes con etapas ON usa el CLI Python y <b>--run-tests</b>. El modo real nunca se habilita aquí.</div><p id="summary"></p><div id="results"></div><h3>Extracto de salida</h3><pre id="preview"></pre></article></div></main>
+<script>
+"use strict";
+const counts=[7,5,10,7,5,5,6,8,5,5,5,4,3,3];
+const names=["Admisión","Clasificación","Estrategia","Lotes","Escritura","Entorno","Worker","Calidad","Iteraciones","Conflictos","Diff","Manifiesto","Freeze","Testing local"];
+const stages=counts.map((count,i)=>({name:"PG-"+String(i+1).padStart(2,"0"),count,title:names[i]}));
+const modes=["ON","OFF","FAULT"];
+const defaultConfig=()=>({schema_version:"LF_PG_DIAGNOSTIC_SWITCHBOARD_V1",case_id:"SOL-TEST-001",mode:"SYNTHETIC_TEST",simulation_only:true,defaults:"ON",stage_overrides:{},checkpoint_overrides:{},fixture:{objective:"Filtro status para GET /users",target:"fixture://fastapi/users",analysis_ready_authentic:false}});
+let config=defaultConfig(),report=null;
+const byId=id=>document.getElementById(id);
+function options(selected){return ["HEREDAR",...modes].map(v=>'<option value="'+v+'"'+(v===selected?' selected':'')+'>'+v+'</option>').join("")}
+function draw(){
+ byId("stages").innerHTML=stages.map(s=>'<section class="stage"><div class="stageHead"><div><strong>'+s.name+'</strong><small>'+s.title+'</small></div><label>Etapa <select data-stage="'+s.name+'">'+options(config.stage_overrides[s.name]||"HEREDAR")+'</select></label></div><div class="checks">'+Array.from({length:s.count},(_,i)=>{const cp=s.name+"_C"+(i+1);return '<label class="cp">'+cp+'<select data-checkpoint="'+cp+'">'+options(config.checkpoint_overrides[cp]||"HEREDAR")+'</select></label>'}).join("")+'</div></section>').join("");
+ document.querySelectorAll("[data-stage]").forEach(el=>el.onchange=()=>{if(el.value==="HEREDAR")delete config.stage_overrides[el.dataset.stage];else config.stage_overrides[el.dataset.stage]=el.value;simulate()});
+ document.querySelectorAll("[data-checkpoint]").forEach(el=>el.onchange=()=>{if(el.value==="HEREDAR")delete config.checkpoint_overrides[el.dataset.checkpoint];else config.checkpoint_overrides[el.dataset.checkpoint]=el.value;simulate()});
+ simulate();
+}
+function simulate(){
+ let blocker=null;const rows=[],groups=[];
+ for(const s of stages){let on=0,off=0,fail=0,notReached=0;
+  for(let i=1;i<=s.count;i++){const cp=s.name+"_C"+i;const mode=config.checkpoint_overrides[cp]||config.stage_overrides[s.name]||config.defaults;let status;
+   if(blocker){status="NOT_REACHED";notReached++}
+   else if(mode==="FAULT"){status="BLOCKED_SYNTHETIC";blocker=cp;fail++}
+   else if(mode==="OFF"){status="BYPASSED_DIAGNOSTIC";off++}
+   else{status="SIMULATED_CANDIDATE";on++}
+   rows.push({checkpoint:cp,stage:s.name,switch:mode,status,production_authority:false,handoff_allowed:false});
+  }
+  let status=fail?"BLOCKED_SYNTHETIC":notReached===s.count?"NOT_REACHED":off?"DIAGNOSTIC_BYPASS_PRESENT":"SIMULATED_CANDIDATE";
+  groups.push({stage:s.name,title:s.title,status,simulated:on,bypassed:off,blocked:fail,not_reached:notReached});
+ }
+ report={schema_version:"LF_PG_DIAGNOSTIC_TRACE_UI_V1",case_id:config.case_id,mode:"SYNTHETIC_TEST",simulation_only:true,stages:groups,checkpoints:rows,first_blocker:blocker,production_authority:false,admission_allowed:false,testing_real_invoked:false,checkpoint_closure_allowed:false};
+ byId("summary").textContent=blocker?"BLOCK en "+blocker+"; etapas siguientes no alcanzadas.":"14 etapas recorribles en simulación; ninguna obtiene autoridad.";
+ byId("results").innerHTML=groups.map(s=>'<div class="result"><div><b>'+s.stage+' · '+s.title+'</b><small style="display:block;color:#607487">ON '+s.simulated+' · OFF '+s.bypassed+' · BLOCK '+s.blocked+'</small></div><span class="status '+(s.status==="BLOCKED_SYNTHETIC"?"fail":s.status==="NOT_REACHED"?"muted":s.status==="DIAGNOSTIC_BYPASS_PRESENT"?"skip":"ok")+'">'+s.status+'</span></div>').join("");
+ byId("preview").textContent=JSON.stringify({case_id:report.case_id,first_blocker:blocker,stages:groups,simulation_only:true,production_authority:false},null,2);
+}
+function save(filename,obj){const u=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)+"\n"],{type:"application/json"}));const a=document.createElement("a");a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),500);}
+byId("on").onclick=()=>{config.defaults="ON";config.stage_overrides={};config.checkpoint_overrides={};draw()};
+byId("off").onclick=()=>{config.defaults="OFF";config.stage_overrides={};config.checkpoint_overrides={};draw()};
+byId("reset").onclick=()=>{config=defaultConfig();draw()};
+byId("run").onclick=simulate;
+byId("exportConfig").onclick=()=>save("lf_switchboard_config.json",config);
+byId("exportReport").onclick=()=>save("lf_switchboard_report.json",report);
+byId("import").onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{const c=JSON.parse(await file.text());const knownStage=new Set(stages.map(s=>s.name)),knownCp=new Set(stages.flatMap(s=>Array.from({length:s.count},(_,i)=>s.name+"_C"+(i+1))));
+  if(c.schema_version!=="LF_PG_DIAGNOSTIC_SWITCHBOARD_V1"||c.mode!=="SYNTHETIC_TEST"||c.simulation_only!==true||c.fixture?.analysis_ready_authentic!==false||!modes.includes(c.defaults))throw Error("modo no permitido");
+  for(const [key,val] of Object.entries(c.stage_overrides||{}))if(!knownStage.has(key)||!modes.includes(val))throw Error("etapa no válida");
+  for(const [key,val] of Object.entries(c.checkpoint_overrides||{}))if(!knownCp.has(key)||!modes.includes(val))throw Error("checkpoint no válido");
+  config=c;draw();
+ }catch(err){alert("Configuración rechazada: "+err.message)}
+ e.target.value="";
+};
+draw();
+</script>
+<script>
+/* Tour narrativo: datos de ejemplo, nunca salidas autenticadas de productores. */
+(() => {
+ const examples=[
+  ["Solicitud de Análisis", "contexto + requisitos", "Recibo y contexto candidatos"],
+  ["Contexto recibido", "clasificación EXISTING / DELTA", "Reglas aplicables"],
+  ["Clasificación y reglas", "estrategia de extensión de GET /users", "Plan técnico"],
+  ["Plan y requisitos", "lotes API + pruebas", "DAG de lotes"],
+  ["Lotes", "archivos permitidos: users.py y test_users.py", "Scope de escritura"],
+  ["Scope autorizado candidato", "Python 3.12 y baseline declarado", "Preflight y rollback"],
+  ["Baseline + lotes", "plan de despacho del Worker (no ejecutado)", "Proyección de tareas"],
+  ["Evidencia ficticia del Worker", "build/lint/tests NOT_RUN", "Calidad declarada, sin PASS real"],
+  ["Calidad declarada", "iteración sin retry solicitado", "Presupuesto y decisión"],
+  ["Reglas y decisión", "cero conflictos reportados", "Ruta de decisiones"],
+  ["Diff declarado", "hunks vinculados a requisito R-01", "Trazabilidad (sin revisión real)"],
+  ["Hunks y evidencias", "manifest candidato + recibo solicitado", "Identidad del candidato"],
+  ["Manifest y commit", "tag frozen candidato, sin freeze productivo", "Identidad congelada sintética"],
+  ["Candidato y paquete de Análisis ficticio", "ACCEPT local del fixture, NO Testing real", "Recibo local simulado"]
+ ];
+ const section=document.createElement("section");
+ section.style.cssText="background:#eff7fe;border:1px solid #c5dae9;border-radius:12px;padding:15px;margin-bottom:18px";
+ section.innerHTML='<h2>🧪 Ejemplo: filtro de usuarios en FastAPI</h2><p style="font-size:13px;color:#48627a">Solicitud <b>SOL-TEST-001</b>: agregar <code>?status=active</code> a <code>GET /users</code>. Paquete de Análisis, Worker y recibos son sintéticos.</p><div class="bar"><button class="primary" id="demoAll">▶ Ejecutar ejemplo completo</button><button id="demoSkip">Omitir PG-08</button><button id="demoBlock">Bloquear PG-11_C3</button></div>';
+ document.querySelector(".layout").before(section);
+ const panel=document.querySelector("#results").parentElement;
+ const journey=document.createElement("div");journey.id="journey";
+ const intro=document.createElement("div");
+ intro.innerHTML='<h2 style="margin-top:18px">Cómo viajó y qué respondió</h2><p style="font-size:12px;color:#63768a">Haz clic en una etapa: verás qué recibió, qué respondió y qué le entregó a la siguiente. Son ejemplos ilustrativos, no ejecuciones reales.</p>';
+ document.querySelector("#results").after(intro,journey);
+ const style=document.createElement("style");
+ style.textContent="#journey{max-height:680px;overflow:auto}.travel{border:1px solid #dde7ef;border-radius:9px;margin:7px 0;overflow:hidden}.travel summary{padding:10px 12px;background:#f6f9fc;cursor:pointer;font-weight:700;font-size:12px}.travel-body{padding:10px;font-size:12px}.travel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.travel-grid section{background:#f5f8fb;border-radius:6px;padding:8px;min-width:0}.travel-grid b{display:block;margin-bottom:6px}.travel-grid pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:11px/1.5 ui-monospace,monospace}.travel-next{padding:8px;margin-top:8px;background:#ebf5fc;border-radius:6px}@media(max-width:700px){.travel-grid{grid-template-columns:1fr}}";
+ document.head.appendChild(style);
+ const esc=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ function showJourney(){
+  if(!report)return;
+  const stagesNow=report.stages;
+  const rows=report.checkpoints;
+  const data=stagesNow.map((s,i)=>{
+   const sample=examples[i];const previous=i?stagesNow[i-1].stage:"ANÁLISIS (fixture)";
+   const received={from:previous,input:sample[0],request_id:"SOL-TEST-001"};
+   const failed=rows.find(r=>r.stage===s.stage&&r.status==="BLOCKED_SYNTHETIC");
+   let response,next;
+   if(s.status==="NOT_REACHED"){response={status:"NOT_REACHED",reason:"Bloqueo previo"};next=null}
+   else if(failed){response={status:"BLOCKED_SYNTHETIC",reason:failed.reason_code};next=null}
+   else if(s.status==="DIAGNOSTIC_BYPASS_PRESENT"){response={status:"BYPASSED_DIAGNOSTIC",example:sample[1],warning:"No se ejecutó todo; no equivale a PASS"};next="Fixture inyectado; sin validación real"}
+   else{response={status:"SIMULATED_CANDIDATE",example:sample[1]};next=sample[2]}
+   return{stage:s.stage,title:names[i],status:s.status,received,response,delivered:next,
+    checkpoints:rows.filter(r=>r.stage===s.stage).map(r=>({id:r.checkpoint,status:r.status}))};
+  });
+  report.journey=data;
+  journey.innerHTML=data.map((s,i)=>'<details class="travel" '+(i===0?'open':'')+'><summary>'+esc(s.stage)+' · '+esc(s.title)+' · '+esc(s.status)+'</summary><div class="travel-body"><div class="travel-grid"><section><b>⬇ RECIBIÓ</b><pre>'+esc(JSON.stringify(s.received,null,2))+'</pre></section><section><b>↩ RESPONDIÓ</b><pre>'+esc(JSON.stringify(s.response,null,2))+'</pre></section></div><div class="travel-next"><b>➡ Entregó a la siguiente: </b>'+esc(s.delivered||"Nada; ruta detenida o no alcanzada")+'</div><small>Checkpoints: '+esc(s.checkpoints.map(c=>c.id+" "+c.status).join(" | "))+'</small></div></details>').join("");
+ }
+ const oldSimulate=simulate;
+ simulate=function(){oldSimulate();showJourney()};
+ document.querySelector("#demoAll").onclick=()=>{config={schema_version:"LF_PG_DIAGNOSTIC_SWITCHBOARD_V1",case_id:"SOL-TEST-001",mode:"SYNTHETIC_TEST",simulation_only:true,defaults:"ON",stage_overrides:{},checkpoint_overrides:{},fixture:{objective:"Agregar filtro status a GET /users",analysis_ready_authentic:false}};draw();journey.scrollIntoView({behavior:"smooth"})};
+ document.querySelector("#demoSkip").onclick=()=>{document.querySelector("#demoAll").click();config.stage_overrides["PG-08"]="OFF";draw()};
+ document.querySelector("#demoBlock").onclick=()=>{document.querySelector("#demoAll").click();config.checkpoint_overrides["PG-11_C3"]="FAULT";draw()};
+ showJourney();
+})();
+</script>
+</body></html>
