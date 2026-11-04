@@ -21,3 +21,5 @@ Entrada literal + contexto transportado por el perfil. A1 preserva códigos/nomb
 
 ## Control de ejecución
 Este PR corrige el **paquete y el alcance de la skill**; solo A1 dispone de implementación local candidata. A2–A15 tienen referencias de contrato y **no están cableados ni calificados** como módulos operativos de la skill. Sin modelo/juez independiente real, transporte/readback del mismo RUN y validación de todos los pasos necesarios, `SKILL_READY` y `SKILL_INTEGRATED` están prohibidos. No ejecutar SQL desde rol read-only, no ampliar ACL, no cambiar Router, no usar `lf_record_creacion_skill_step_v1` para un step de ejecución y no reutilizar `DONE` históricos de A1/A1Q.
+
+**Input required:** A1–A9 reutilizan las dependencias tipadas del contrato canónico. A10–A15 mantienen `requires=null` y `input_required_state=NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE` hasta leer sus validadores: **null significa pendiente, nunca que no exijan datos**.
