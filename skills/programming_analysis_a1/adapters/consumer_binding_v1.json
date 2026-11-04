@@ -21,7 +21,7 @@
   "business_binding": "LF",
   "skill_entrypoint": "skills/programming_analysis_a1/validators/run.py:run",
   "result_contract": "A1_SKILL_CANDIDATE_RESULT_V1",
-  "transport": "FUTURE_COMMON_STANDARD_NOT_IMPLEMENTED",
+  "transport": "GOVERNED_ISSUE_OIDC_EDGE_PATTERN_REUSED_AS_DESIGN_SKILL_TARGET_NOT_YET_WIRED",
   "no_new_router_or_executor": true,
   "no_embedded_profile_or_run": true,
   "next_skill_invocation_requires_consumer_decision": true,
@@ -38,7 +38,15 @@
     "SKILL_NOT_REGISTERED",
     "OPERATION_RELEASE_NOT_ATTESTED",
     "INDEPENDENT_JUDGE_ENFORCEMENT_NOT_ATTESTED",
-    "MODEL_JUDGE_REAL_RECEIPTS_MISSING"
+    "MODEL_JUDGE_REAL_RECEIPTS_MISSING",
+    "SKILL_EXECUTION_SCOPED_RECORDER_NOT_QUALIFIED",
+    "APPROVED_SKILL_TARGET_EXECUTOR_MISSING"
   ],
-  "next_step": "QUALIFY_A1_SKILL_SOURCE_AND_VERIFY_EXISTING_OPERATION_CONSUMER_BEFORE_WIRING"
+  "next_step": "REUSE_GOVERNED_EXECUTOR_PATTERN_WITH_SKILL_SPECIFIC_SCOPED_RECORDER_QUALIFICATION",
+  "step_homologation_contract": "adapters/governed_step_homology_v1.json",
+  "step_recording_permission_model": "AUTHORIZED_EXECUTOR_RPC_WITH_INDEPENDENT_READBACK",
+  "step_recording_from_read_only_connector": false,
+  "existing_skill_execution_recorder": "NOT_FOUND_IN_LIVE_PUBLIC_PG_PROC",
+  "historical_analysis_unit_state": "A1_AND_A1Q_DONE_NOT_REUSABLE_AS_NEW_RUN",
+  "read_only_denial_treatment": "RO_ROLE_IS_FOR_INSPECTION_ONLY; USE_AUTHORIZED_TRANSPORT_NOT_ROLE_GRANTS"
 }
