@@ -1,0 +1,50 @@
+{
+  "schema_version": "LF_PROFILE_SELECTOR_CANDIDATE_PROPOSAL_V1",
+  "status": "CANDIDATE_NOT_REGISTERED",
+  "profile_code": "PERFIL-PROGRAMMING-ANALYSIS-LF",
+  "profile_slug": "programming_analysis_lf",
+  "source_kind": "GITHUB_SKILL",
+  "source_path": "profiles/programming_analysis_lf/SKILL.md",
+  "action_code": "PROFILE_EXECUTION",
+  "operation_code": "EJECUCION_PERFIL_LF",
+  "business": "LF",
+  "proposed_descriptor": {
+    "schema_version": "LF_PROFILE_SELECTION_DESCRIPTOR_V1",
+    "description": "Analyze authorized software change requests for LF by normalizing intent, deriving scope and risk, resolving governed functional definitions, tracing current implementation and reuse, and preparing a bounded implementation handoff for Programming. It does not implement changes, authorize writes, merge, or deploy.",
+    "selection_evidence": [
+      {
+        "kind": "PURPOSE",
+        "source_section": "Purpose",
+        "value": "Analyze authorized software changes by producing candidate Analysis A1-A9 outputs grounded in canonical definitions and traceable scope, without implementing."
+      },
+      {
+        "kind": "ACTIVATION",
+        "source_section": "Runtime method capsule",
+        "value": "Candidate for an explicitly authorized LF software-analysis request requiring source-first definition lookup, evidence-driven change classification, impact review and eventual technical handoff; selected semantically by the Router from a CURRENT descriptor."
+      },
+      {
+        "kind": "EXCLUSION",
+        "source_section": "Critical separation",
+        "value": "Not a Product Director, screen designer, code producer or Reparador. Do not activate for unresolved profile/source currentness, direct API bypass, repairs, unknown business, SALY using LF sources, ungoverned model calls, deployment or production writes."
+      }
+    ]
+  },
+  "qualification": {
+    "source_currentness_verified": false,
+    "source_attestation_A1_A9_verified": false,
+    "router_admission_verified": false,
+    "governed_run_execution_verified": false,
+    "transition_10_1_10_2_verified": false,
+    "model_output_semantic_judge_verified": false,
+    "status": "BLOCKED_PENDING_GOVERNED_QUALIFICATION"
+  },
+  "rules": {
+    "no_direct_router_profile_call": true,
+    "no_manual_run_without_valid_router_handoff": true,
+    "never_infer_current_from_candidate": true,
+    "no_catalog_registration_from_this_file": true,
+    "profile_code_must_be_current_eligible": true,
+    "dynamic_business_source_resolution_required": true,
+    "do_not_hardcode_B2B_target": true
+  }
+}

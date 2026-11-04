@@ -24,6 +24,27 @@ def validate(payload):
     if payload.get("candidate_only") is not True:
         reject("ANALYSIS_CANDIDATE_ONLY_REQUIRED")
 
+    business = (payload.get("request_context") or {}).get("business") if isinstance(payload.get("request_context"), dict) else None
+    if not isinstance(business, str) or len(business) < 2 or len(business) > 32 or not business.replace("_", "").isalnum() or not business[0].isalpha() or business != business.upper():
+        reject("ANALYSIS_BUSINESS_CONTEXT_REQUIRED", "$.request_context.business")
+
+    reception = payload.get("definition_source_reception")
+    if not isinstance(reception, dict):
+        reject("ANALYSIS_10_2_RECEPTION_REQUIRED", "$.definition_source_reception")
+    else:
+        if reception.get("business") != business:
+            reject("ANALYSIS_10_2_BUSINESS_MISMATCH", "$.definition_source_reception.business")
+        if reception.get("source_currentness") != "NOT_ATTESTED" or reception.get("transport_status") != "NOT_ATTESTED":
+            reject("ANALYSIS_10_2_UNVERIFIED_AUTHORITY_OVERCLAIM", "$.definition_source_reception")
+        if reception.get("status") == "FOUND_UNATTESTED":
+            if not reception.get("source_refs") or not reception.get("target_ref"):
+                reject("ANALYSIS_10_2_SOURCE_REFS_MISSING", "$.definition_source_reception")
+        elif reception.get("status") == "UNRESOLVED":
+            if reception.get("source_refs") or reception.get("rule_count") is not None:
+                reject("ANALYSIS_10_2_UNRESOLVED_SOURCE_FALSE_RECEIVED", "$.definition_source_reception")
+        else:
+            reject("ANALYSIS_10_2_RECEPTION_STATUS_INVALID", "$.definition_source_reception")
+
     stages = payload.get("stage_trace")
     if not isinstance(stages, list) or [x.get("stage") if isinstance(x, dict) else None for x in stages] != list(STAGES):
         reject("ANALYSIS_A1_A9_SEQUENCE_REQUIRED", "$.stage_trace")
@@ -42,6 +63,27 @@ def validate(payload):
     classification = payload.get("classification") or {}
     if not isinstance(classification, dict):
         classification = {}
+    initial_kind = classification.get("initial_intent_kind")
+    initial_class = classification.get("initial_development_class")
+    initial_refs = classification.get("initial_evidence_refs")
+    initial_map = {
+        "CREATE": "NEW_CANDIDATE",
+        "EVOLVE": "EXISTING_EVOLUTION_CANDIDATE",
+        "COMBINE": "MIXED_CANDIDATE",
+        "REPAIR": "REPAIR_HANDOFF",
+        "UNKNOWN": "NEED_MORE_EVIDENCE",
+    }
+    if initial_kind not in initial_map or initial_class != initial_map.get(initial_kind):
+        reject("ANALYSIS_10_1_INITIAL_CLASSIFICATION_MISMATCH", "$.classification")
+    if (not isinstance(initial_refs, list) or not initial_refs
+            or any(not isinstance(x, str) or not x.strip() for x in initial_refs)
+            or len(initial_refs) != len(set(initial_refs))):
+        reject("ANALYSIS_10_1_INTENT_EVIDENCE_MISSING", "$.classification.initial_evidence_refs")
+    if initial_kind in ("REPAIR", "UNKNOWN"):
+        if any(s.get("readiness_candidate") == READY for s in scopes):
+            reject("ANALYSIS_10_1_UNRESOLVED_OR_REPAIR_FALSE_READY")
+        if payload.get("package_readiness_candidate") in ("READY_CANDIDATE", "PARTIAL_READY_CANDIDATE"):
+            reject("ANALYSIS_10_1_UNRESOLVED_OR_REPAIR_FALSE_READY")
     unknown_state = (classification.get("authority_state") == "UNKNOWN" or
                      classification.get("implementation_state") == "UNKNOWN")
     if unknown_state and classification.get("depth") == "L1":
