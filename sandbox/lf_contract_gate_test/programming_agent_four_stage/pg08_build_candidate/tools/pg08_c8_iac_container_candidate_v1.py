@@ -201,9 +201,18 @@ def prepare_pg08_c8(*, pg08_c1, pg08_c7, infrastructure_observations):
                    plan_check["execution_target_ref_reported"]
                 or plan_check["reported_result"] != "PASS"):
                 fail("PG08_C8_FLOCI_APPLY_WITHOUT_VALID_PLAN")
-        if (reported_by_kind["CONTAINER_HEALTHCHECK"]["applicability_reported"] == "REQUIRED"
-            and reported_by_kind["DOCKER_COMPOSE_UP"]["applicability_reported"] != "REQUIRED"):
-            fail("PG08_C8_HEALTHCHECK_WITHOUT_COMPOSE")
+        if reported_by_kind["CONTAINER_HEALTHCHECK"]["applicability_reported"] == "REQUIRED":
+            compose = reported_by_kind["DOCKER_COMPOSE_UP"]
+            if compose["applicability_reported"] != "REQUIRED":
+                fail("PG08_C8_HEALTHCHECK_WITHOUT_COMPOSE")
+            if (reported_by_kind["CONTAINER_HEALTHCHECK"]["reported_result"] == "PASS"
+                and compose["reported_result"] != "PASS"):
+                fail("PG08_C8_HEALTHCHECK_PASS_WITHOUT_COMPOSE_PASS")
+        if (reported_by_kind["DOCKER_COMPOSE_UP"]["applicability_reported"] == "REQUIRED"
+            and reported_by_kind["DOCKER_COMPOSE_UP"]["reported_result"] == "PASS"
+            and reported_by_kind["CONTAINER_BUILD"]["applicability_reported"] == "REQUIRED"
+            and reported_by_kind["CONTAINER_BUILD"]["reported_result"] != "PASS"):
+            fail("PG08_C8_COMPOSE_PASS_WITH_FAILED_BUILD")
         output.append({"solution_id": sid,
             "executor_mode_reported": mode,
             "candidate_head_sha_reported": head,
