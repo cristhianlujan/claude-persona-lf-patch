@@ -1,0 +1,2643 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-WEB001-CANDIDATE-POLICYRES-20261104",
+  "case_id": "WEB-001",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "profile_tree_sha256": "198173520e230da8ccaafc95887bd34f6032e8f32eefe6edc360eef1f64bcab7",
+  "attestation": "NONE",
+  "recorded_at": "2026-11-04T20:50:00Z",
+  "executor": {
+    "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+    "note": "Profile tree candidate commit 6474e54744f633bd1b883c3dc8cc6f9699bd032a (policy_resolution N1/N2 + PROFILE_UPDATE_APPLY section). Isolated model given only the profile tree and input_literal; read-only SQL against LF_SUPABASE_SANDBOX; iterated with the profile validator; one run. attestation NONE: not a provider-attested run."
+  },
+  "conditions": "Same case WEB-001 (ACT-0058 Cache miss). Input literal frozen below; the historical base run did not record its input_literal. Evidence manifest built by the executor, not by an independent resolver.",
+  "input_literal": "Investiga el incidente WEB-001 del proceso ACT-0058. Identifica la causa sistémica del fallo Cache miss, verifica los controles de reintento y readmisión, busca las reglas aplicables y determina si existe autoridad suficiente para identificar un responsable. No inventes propietario, política, ejecución ni reparación. Conserva las evidencias, fuentes, incertidumbres y criterios de aceptación.",
+  "input_sha256": "619305c88da1ead498b8fb40d3ae57e664c71eb02b6f9f98edccd90f17282feb",
+  "validator": {
+    "tool": "profile validators/runtime_validate.py (validate(payload, evidence_manifest)) via run_validate.py",
+    "valid": true,
+    "errors": []
+  },
+  "output": {
+    "status": "NEEDS_MORE_EVIDENCE",
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "case_mode": "INCIDENT_REPAIR",
+    "repair_disposition": {
+      "decision": "REPAIR_REQUIRED",
+      "rationale": "WEB-001 is active (frecuencia 46) and 32 cache-miss URLs remain FALLIDO without readmission; the declared retry control is unwired and contradicts observed state, so a systemic repair is justified, but its design is blocked.",
+      "evidence_refs": [
+        "EV-01",
+        "EV-08",
+        "EV-14",
+        "EV-10"
+      ],
+      "currentness_refs": [
+        "EV-14",
+        "EV-08"
+      ],
+      "active_failure_present": true,
+      "material_repair_justified": true,
+      "verification": {
+        "executable": true,
+        "method": "Re-run the EV-14 read-only aggregate on lf_url_queue joined to lf_pipeline_runs for FALLIDO cache-miss rows",
+        "expected_result": "Non-zero FALLIDO rows with intento_count below 3 and no readmission confirms the disposition",
+        "evidence_refs": [
+          "EV-14"
+        ]
+      }
+    },
+    "quantitative_decisions": [
+      {
+        "decision_id": "QD-01",
+        "parameter": "attempt budget for capture failures",
+        "proposed_value": null,
+        "materiality": "MATERIAL",
+        "affects": [
+          "terminality",
+          "readmission"
+        ],
+        "grounding_type": "IMPLEMENTATION_PRECONDITION",
+        "grounding_ref": null,
+        "evidence_refs": [
+          "EV-07"
+        ],
+        "incident_specific_only": false,
+        "closure_state": "PRECONDITION",
+        "precondition_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+      },
+      {
+        "decision_id": "QD-02",
+        "parameter": "readmission delay between attempts",
+        "proposed_value": null,
+        "materiality": "MATERIAL",
+        "affects": [
+          "retry",
+          "transience handling"
+        ],
+        "grounding_type": "IMPLEMENTATION_PRECONDITION",
+        "grounding_ref": null,
+        "evidence_refs": [
+          "EV-11"
+        ],
+        "incident_specific_only": false,
+        "closure_state": "PRECONDITION",
+        "precondition_ref": "$.implementation_package.decision_closure.implementation_preconditions[1]"
+      }
+    ],
+    "material_process_graph": {
+      "applies": true,
+      "rationale": "The failure class lives in the ACT-0058 capture -> retry -> queue lifecycle.",
+      "nodes": [
+        {
+          "node_id": "N1-RESTOCK",
+          "phase": "restock_queue (ORC-RESTOCK-01, order 105)",
+          "authority_refs": [
+            "EV-07",
+            "EV-06"
+          ],
+          "inputs": [
+            "keyword",
+            "allowed domain"
+          ],
+          "outputs": [
+            "lf_url_queue PENDIENTE"
+          ],
+          "state_transition": "none -> PENDIENTE (ON CONFLICT DO NOTHING)",
+          "producer_refs": [
+            "GPT_RUNTIME_WITH_SUPABASE_CONTEXT"
+          ],
+          "consumer_refs": [
+            "N2-CAPTURE"
+          ],
+          "wiring_refs": [
+            "EV-07"
+          ],
+          "control_refs": [
+            "MINI_JUDGE_ACT0058_RESTOCK"
+          ],
+          "failure_recovery": "No feedback from prior fetch failures of the same domain; cannot readmit existing FALLIDO URLs.",
+          "disposition": "IMPLEMENTABLE",
+          "evidence_refs": [
+            "EV-07",
+            "EV-08",
+            "EV-01"
+          ],
+          "acceptance_refs": [
+            "AC-03"
+          ]
+        },
+        {
+          "node_id": "N2-CAPTURE",
+          "phase": "stage_captura (CONTRACT_ACT0058_S5A, order 50)",
+          "authority_refs": [
+            "EV-07"
+          ],
+          "inputs": [
+            "url",
+            "pipeline_run_id"
+          ],
+          "outputs": [
+            "capture_run_id or failure"
+          ],
+          "state_transition": "PENDING -> HOMOLOGACION or FAILED_UPDATE",
+          "producer_refs": [
+            "ACT-0052"
+          ],
+          "consumer_refs": [
+            "N3-RETRY"
+          ],
+          "wiring_refs": [
+            "EV-07",
+            "EV-09"
+          ],
+          "control_refs": [
+            "MINI_JUDGE_ACT0058_CAPTURA"
+          ],
+          "failure_recovery": "On web.run failure the contract requires WEB_FETCH_UNAVAILABLE event and FALLIDO; events were not observed for Aug-Sep failures.",
+          "disposition": "IMPLEMENTABLE",
+          "evidence_refs": [
+            "EV-07",
+            "EV-10",
+            "EV-08"
+          ],
+          "acceptance_refs": [
+            "AC-04"
+          ]
+        },
+        {
+          "node_id": "N3-RETRY",
+          "phase": "failed_retry (CONTRACT_ACT0058_S11A, order 110, required=false)",
+          "authority_refs": [
+            "EV-07",
+            "EV-06"
+          ],
+          "inputs": [
+            "pipeline_run_id",
+            "error_type",
+            "error_detail"
+          ],
+          "outputs": [
+            "retry_count",
+            "stage_status"
+          ],
+          "state_transition": "FAILED_UPDATE -> PENDING | FAILED",
+          "producer_refs": [
+            "SKILL_ORQUESTADOR_PIPELINE_LF"
+          ],
+          "consumer_refs": [
+            "N4-QUEUE"
+          ],
+          "wiring_refs": [
+            "EV-10"
+          ],
+          "control_refs": [
+            "MINI_JUDGE_ACT0058_RETRY"
+          ],
+          "failure_recovery": "Declared but never receipted; actual FAILED writes come from unresolved producers.",
+          "disposition": "DESIGN_BLOCKING",
+          "evidence_refs": [
+            "EV-07",
+            "EV-10",
+            "EV-14"
+          ],
+          "acceptance_refs": [
+            "AC-01"
+          ],
+          "blocking_uncertainty_id": "UNC-01-RETRY-PRODUCER"
+        },
+        {
+          "node_id": "N4-QUEUE",
+          "phase": "lf_url_queue readmission / terminal state",
+          "authority_refs": [
+            "EV-07",
+            "EV-05"
+          ],
+          "inputs": [
+            "FALLIDO row",
+            "intento_count"
+          ],
+          "outputs": [
+            "PENDIENTE readmission or terminal"
+          ],
+          "state_transition": "FALLIDO -> (no governed transition observed)",
+          "producer_refs": [
+            "unresolved"
+          ],
+          "consumer_refs": [
+            "N1-RESTOCK"
+          ],
+          "wiring_refs": [
+            "EV-14"
+          ],
+          "control_refs": [],
+          "failure_recovery": "26 FALLIDO rows with intento_count below 3 stranded since 2026-09-01 or earlier; no readmission rule.",
+          "disposition": "DESIGN_BLOCKING",
+          "evidence_refs": [
+            "EV-14",
+            "EV-08",
+            "EV-11"
+          ],
+          "acceptance_refs": [
+            "AC-02"
+          ],
+          "blocking_uncertainty_id": "UNC-03-READMISSION-POLICY"
+        },
+        {
+          "node_id": "N5-EKB",
+          "phase": "EKB recurrence recording (CONTRACT-PRE-EKB-GATE-LF-v0.1)",
+          "authority_refs": [
+            "EV-11"
+          ],
+          "inputs": [
+            "failure summary"
+          ],
+          "outputs": [
+            "lf_error_knowledge WEB-001 evidencia append"
+          ],
+          "state_transition": null,
+          "producer_refs": [
+            "lf_write_pipeline_ekb_v1"
+          ],
+          "consumer_refs": [
+            "Architect"
+          ],
+          "wiring_refs": [
+            "EV-01"
+          ],
+          "control_refs": [
+            "PRE_EKB_GATE"
+          ],
+          "failure_recovery": "Recurrence recorded as free text only; no structured link to retry or restock decisions.",
+          "disposition": "IMPLEMENTABLE",
+          "evidence_refs": [
+            "EV-01",
+            "EV-11"
+          ],
+          "acceptance_refs": [
+            "AC-04"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "ED1",
+          "from_node": "N1-RESTOCK",
+          "to_node": "N2-CAPTURE",
+          "edge_kind": "CONTROL_FLOW",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "producer_evidence_refs": [
+            "EV-07"
+          ],
+          "transport_evidence_refs": [],
+          "consumer_evidence_refs": [
+            "EV-08"
+          ],
+          "enforcement_evidence_refs": [
+            "EV-07"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-08"
+          ],
+          "gap_evidence_refs": [
+            "EV-07",
+            "EV-01"
+          ],
+          "next_gate": null,
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "post_transition_currentness": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "terminality": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "identity_consistency": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "rollback_executability": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": "DLV-RESTOCK-DOMAIN-FEEDBACK",
+          "blocking_uncertainty_id": null
+        },
+        {
+          "edge_id": "ED2",
+          "from_node": "N2-CAPTURE",
+          "to_node": "N3-RETRY",
+          "edge_kind": "CONTROL_FLOW",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "DESIGN_BLOCKING",
+          "producer_evidence_refs": [
+            "EV-07"
+          ],
+          "transport_evidence_refs": [],
+          "consumer_evidence_refs": [],
+          "enforcement_evidence_refs": [
+            "EV-07"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-14"
+          ],
+          "gap_evidence_refs": [
+            "EV-10",
+            "EV-14"
+          ],
+          "next_gate": null,
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-10"
+            ]
+          },
+          "post_transition_currentness": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "terminality": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "identity_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-14"
+            ]
+          },
+          "rollback_executability": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": null,
+          "blocking_uncertainty_id": "UNC-01-RETRY-PRODUCER"
+        },
+        {
+          "edge_id": "ED3",
+          "from_node": "N3-RETRY",
+          "to_node": "N4-QUEUE",
+          "edge_kind": "STATE_TRANSITION",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "DESIGN_BLOCKING",
+          "producer_evidence_refs": [],
+          "transport_evidence_refs": [],
+          "consumer_evidence_refs": [],
+          "enforcement_evidence_refs": [
+            "EV-07"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-14"
+          ],
+          "gap_evidence_refs": [
+            "EV-14",
+            "EV-07"
+          ],
+          "next_gate": null,
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "post_transition_currentness": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-14"
+            ]
+          },
+          "terminality": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "identity_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-14"
+            ]
+          },
+          "rollback_executability": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": null,
+          "blocking_uncertainty_id": "UNC-03-READMISSION-POLICY"
+        },
+        {
+          "edge_id": "ED4",
+          "from_node": "N2-CAPTURE",
+          "to_node": "N5-EKB",
+          "edge_kind": "DATA_CONTRACT",
+          "observation_status": "OBSERVED_OPEN",
+          "disposition": "IMPLEMENTABLE",
+          "producer_evidence_refs": [
+            "EV-01"
+          ],
+          "transport_evidence_refs": [],
+          "consumer_evidence_refs": [
+            "EV-01"
+          ],
+          "enforcement_evidence_refs": [
+            "EV-11"
+          ],
+          "effect_readback_evidence_refs": [
+            "EV-01"
+          ],
+          "gap_evidence_refs": [
+            "EV-10",
+            "EV-01"
+          ],
+          "next_gate": null,
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "post_transition_currentness": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "terminality": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "identity_consistency": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "rollback_executability": {
+            "applicability": "NOT_APPLICABLE",
+            "status": "NOT_APPLICABLE",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": "DLV-FETCH-FAILURE-EVENT",
+          "blocking_uncertainty_id": null
+        }
+      ]
+    },
+    "symptom": {
+      "statement": "web.run open(url) returns Cache miss for queued URLs during ACT-0058 capture; WEB-001 frecuencia 46; 32 queue rows FALLIDO with cache/WEB_FETCH errors (30 reevalua.com), 38 FAILED pipeline_runs, 0 captures or KB rows produced.",
+      "status": "OBSERVED",
+      "evidence_refs": [
+        "EV-01",
+        "EV-08"
+      ],
+      "missing_evidence": []
+    },
+    "immediate_cause": {
+      "statement": "The external fetch tool returned Cache miss / internal error for specific URLs, concentrated on reevalua.com; stage_captura then closed the run fail-closed (failure_category EXTERNO).",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-01",
+        "EV-08"
+      ],
+      "missing_evidence": []
+    },
+    "systemic_root_cause": {
+      "statement": "ACT-0058 has no wired, policy-backed retry and readmission lifecycle for external capture failures: failed_retry is optional, never receipted and internally contradictory; FALLIDO has no governed exit; restock keeps feeding the failing domain. The failure therefore recurs and accumulates instead of being retried or contained.",
+      "status": "HYPOTHESIS",
+      "evidence_refs": [
+        "EV-07",
+        "EV-10",
+        "EV-14",
+        "EV-06",
+        "EV-01"
+      ],
+      "missing_evidence": [
+        "Actual writer of FAILED/FALLIDO transitions (UNC-01)",
+        "Transient vs persistent nature of Cache miss (UNC-02)",
+        "Skill source at exact revision"
+      ]
+    },
+    "causal_chain": [
+      {
+        "statement": "restock_queue inserts reevalua.com URLs as PENDIENTE without consulting prior fetch failures for that domain (ORC-RESTOCK-01).",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-07",
+          "EV-08"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "stage_captura receives Cache miss and the run ends FAILED with failure_category EXTERNO and no capture/KB.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-08",
+          "EV-01"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "failed_retry, the declared retry control, has zero receipts and its SQL cannot produce the observed FAILED rows at retry_count 0-2.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-07",
+          "EV-10",
+          "EV-14"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "26 FALLIDO rows with intento_count below 3 remain stranded for over 30 days with no readmission path (restock uses ON CONFLICT DO NOTHING).",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-14",
+          "EV-07"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "New same-domain URLs discovered by later runs fail again, producing the recurrence pattern recorded in WEB-001.",
+        "status": "HYPOTHESIS",
+        "evidence_refs": [
+          "EV-01",
+          "EV-07"
+        ],
+        "missing_evidence": [
+          "Restock implementation source showing domain selection",
+          "Per-URL attempt timeline"
+        ]
+      }
+    ],
+    "first_bad_control": {
+      "statement": "failed_retry (CONTRACT_ACT0058_S11A_FAILED_RETRY_V1) should classify external capture failures and govern re-attempts, but it is optional, unwired and contradictory.",
+      "status": "HYPOTHESIS",
+      "evidence_refs": [
+        "EV-07",
+        "EV-10",
+        "EV-06"
+      ],
+      "missing_evidence": [
+        "Writer identity and skill source confirming no other retry control exists (UNC-01)"
+      ]
+    },
+    "escape_control": {
+      "statement": "The stage_captura failure-event control (WEB_FETCH_UNAVAILABLE in lf_eventos) did not surface the Aug-Sep failures as structured events; recurrence was detected only through EKB free-text appends.",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-07",
+        "EV-10",
+        "EV-01"
+      ],
+      "missing_evidence": []
+    },
+    "recurrence_evidence": [
+      {
+        "ref": "EV-01",
+        "fact": "WEB-001 frecuencia 46 between 2026-08-24 and 2026-09-01 across at least 8 executions",
+        "evidence_class": "OBSERVED_HISTORY",
+        "scope": "ACT-0058 capture"
+      },
+      {
+        "ref": "EV-08",
+        "fact": "32 FALLIDO cache/WEB_FETCH queue rows, 30 on reevalua.com",
+        "evidence_class": "OBSERVED_LIVE",
+        "scope": "lf_url_queue"
+      },
+      {
+        "ref": "EV-14",
+        "fact": "Failures span 7 distinct producers including 2026-07-02 and 2026-09-01 runs",
+        "evidence_class": "OBSERVED_LIVE",
+        "scope": "lf_url_queue x lf_pipeline_runs"
+      }
+    ],
+    "live_authority_packet": {
+      "status": "PARTIAL",
+      "observed_at": "2026-11-04T20:48:04Z",
+      "applicable_surfaces": [
+        "SUPABASE_EKB",
+        "SUPABASE_ASSET_INVENTORY",
+        "SUPABASE_OPERATION_DEFINITION",
+        "SUPABASE_POLICY",
+        "SUPABASE_RUNTIME_STATE",
+        "SUPABASE_EXECUTION_RECEIPTS",
+        "GITHUB_SKILL_SOURCE",
+        "EXTERNAL_FETCH_PROVIDER"
+      ],
+      "inspected_surfaces": [
+        "SUPABASE_EKB",
+        "SUPABASE_ASSET_INVENTORY",
+        "SUPABASE_OPERATION_DEFINITION",
+        "SUPABASE_POLICY",
+        "SUPABASE_RUNTIME_STATE",
+        "SUPABASE_EXECUTION_RECEIPTS"
+      ],
+      "evidence_refs": [
+        "EV-01",
+        "EV-02",
+        "EV-03",
+        "EV-04",
+        "EV-05",
+        "EV-06",
+        "EV-07",
+        "EV-08",
+        "EV-09",
+        "EV-10",
+        "EV-11",
+        "EV-12",
+        "EV-13",
+        "EV-14"
+      ],
+      "material_effects_observed": true,
+      "unavailable_sources": [
+        "GITHUB_SKILL_SOURCE",
+        "EXTERNAL_FETCH_PROVIDER"
+      ],
+      "unavailable_source_assessments": [
+        {
+          "source": "GITHUB_SKILL_SOURCE",
+          "impact": "DESIGN_BLOCKING",
+          "rationale": "skills/orquestador_pipeline_lf/ was outside the read scope of this run; it can reveal the real writer of FAILED/FALLIDO and any undeclared retry logic.",
+          "containment_ref": null
+        },
+        {
+          "source": "EXTERNAL_FETCH_PROVIDER",
+          "impact": "DESIGN_BLOCKING",
+          "rationale": "Semantics of web.run Cache miss are not observable from LF sources; they decide between readmission and containment.",
+          "containment_ref": null
+        }
+      ]
+    },
+    "execution_effect_reconciliation": [
+      {
+        "effect": "lf_pipeline_runs FAILED for cache-miss captures at retry_count 0-2",
+        "observed_ref": "EV-14",
+        "declared_producer": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+        "declared_producer_ref": "EV-07",
+        "observed_producer_refs": [
+          "EV-14:LF-KNOWLEDGE-20260827-001",
+          "EV-14:LF-POSTPROCESS-20260825-001",
+          "EV-14:LF-KNOWLEDGE-20260826-001"
+        ],
+        "reconciliation_status": "UNRESOLVED_PRODUCER",
+        "blocking": true,
+        "impact": "DESIGN_BLOCKING",
+        "containment_ref": null
+      },
+      {
+        "effect": "lf_url_queue FALLIDO rows with no linked pipeline_run (14 rows)",
+        "observed_ref": "EV-14",
+        "declared_producer": "stage_captura FAILED_UPDATE path",
+        "declared_producer_ref": "EV-07",
+        "observed_producer_refs": [],
+        "reconciliation_status": "UNRESOLVED_PRODUCER",
+        "blocking": true,
+        "impact": "DESIGN_BLOCKING",
+        "containment_ref": null
+      }
+    ],
+    "authority_contradictions": [
+      {
+        "classification": "DECLARED_VS_OBSERVED_CONTRADICTION",
+        "declared": "failed_retry sets FAILED only when retry_count+1 >= 3 or schema errors",
+        "observed": "FAILED rows with retry_count 0, 1 and 2 and no failed_retry receipt",
+        "blocking": true,
+        "evidence_ref": "EV-14"
+      },
+      {
+        "classification": "OTHER",
+        "declared": "failed_retry purpose: block if retry_count > 3; pass if retry_count <= 3",
+        "observed": "same contract SQL marks FAILED at retry_count+1 >= 3",
+        "blocking": true,
+        "evidence_ref": "EV-07"
+      },
+      {
+        "classification": "OTHER",
+        "declared": "queue intento_count and pipeline retry_count describe the same attempts",
+        "observed": "6 rows with intento_count 3 and retry_count 0; 3 rows intento 2 retry 0",
+        "blocking": true,
+        "evidence_ref": "EV-14"
+      }
+    ],
+    "repair_level": "UNDETERMINED",
+    "should_exist_assessment": {
+      "verdict": "SHOULD_EXIST",
+      "subject": "failed_retry step / retry control of ACT-0058",
+      "real_consumers": [
+        {
+          "consumer": "lf_pipeline_runs state for capture failures",
+          "evidence_ref": "EV-08"
+        },
+        {
+          "consumer": "lf_url_queue readmission of FALLIDO URLs",
+          "evidence_ref": "EV-14"
+        }
+      ],
+      "elimination_impact": "Without it external capture failures remain terminal by default and the queue accumulates stranded rows, as observed.",
+      "native_or_existing_alternative": "Reuse the existing step contract and MINI_JUDGE_ACT0058_RETRY rather than a new engine.",
+      "evidence_refs": [
+        "EV-07",
+        "EV-14",
+        "EV-08"
+      ],
+      "missing_evidence": []
+    },
+    "solution_depth": {
+      "mode": "BOUNDED",
+      "rationale": "The repair stays inside one operation (ORQUESTACION_PIPELINE_LF) and its two state tables, but requires state/recovery and policy decisions.",
+      "complexity_signals": [
+        "STATE_RECOVERY",
+        "POLICY_CONTRACT_CHANGE"
+      ]
+    },
+    "research_assurance": {
+      "research_complete": false,
+      "research_questions": [
+        "Who writes FAILED/FALLIDO for capture failures?",
+        "Is Cache miss transient or persistent per domain?",
+        "Which rule governs readmission and attempt budget?",
+        "Who owns ACT-0058?"
+      ],
+      "internal_evidence_refs": [
+        "EV-01",
+        "EV-02",
+        "EV-03",
+        "EV-04",
+        "EV-05",
+        "EV-06",
+        "EV-07",
+        "EV-08",
+        "EV-09",
+        "EV-10",
+        "EV-11",
+        "EV-12",
+        "EV-13",
+        "EV-14"
+      ],
+      "current_practice_research_required": false,
+      "external_research_rationale": "The blocking questions are internal facts (writer identity, policy, owner); external practice cannot settle them.",
+      "external_evidence_refs": [],
+      "patterns_compared": [
+        {
+          "pattern": "Bounded retry with delayed readmission and terminal closure",
+          "fit": "Fits if Cache miss is transient",
+          "tradeoff": "Wastes attempts if failure is persistent per domain",
+          "source_refs": [
+            "EV-07",
+            "EV-08"
+          ]
+        },
+        {
+          "pattern": "Domain quarantine with alternate governed fetch route",
+          "fit": "Fits if Cache miss is persistent per domain",
+          "tradeoff": "Loses recoverable URLs if failure is transient",
+          "source_refs": [
+            "EV-01",
+            "EV-10"
+          ]
+        }
+      ],
+      "first_solution_disposition": "REVISED",
+      "context_strategy": "JIT_HIGH_SIGNAL"
+    },
+    "alternatives": [
+      {
+        "id": "ALT-A",
+        "description": "LOCAL_PATCH: fix the failed_retry comparator and make the step required with receipts.",
+        "prevention": "Partial: retries counted consistently, no readmission of FALLIDO.",
+        "complexity": "Low",
+        "blast_radius": "One step contract",
+        "reuse": "High",
+        "fail_closed": "Yes for counter",
+        "idempotency": "Unchanged",
+        "recoverability": "Stranded rows remain",
+        "operational_cost": "Low",
+        "basis_refs": [
+          "EV-07",
+          "EV-10"
+        ]
+      },
+      {
+        "id": "ALT-B",
+        "description": "MOVE_CONTROL_UPSTREAM + ADD_RECOVERY: single governed writer for capture failures, retryable state with budget and delay, terminal closure, restock domain feedback, structured event.",
+        "prevention": "High if failures are transient",
+        "complexity": "Medium",
+        "blast_radius": "ORQUESTACION_PIPELINE_LF steps 50/105/110 and two tables",
+        "reuse": "Reuses existing step contracts and mini-judges",
+        "fail_closed": "Yes",
+        "idempotency": "Lease plus transactional update",
+        "recoverability": "High",
+        "operational_cost": "Medium",
+        "basis_refs": [
+          "EV-07",
+          "EV-14",
+          "EV-08"
+        ]
+      },
+      {
+        "id": "ALT-C",
+        "description": "CONTAIN: treat cache miss as terminal, quarantine the domain in restock and require an alternate governed fetch route.",
+        "prevention": "High if failures are persistent per domain",
+        "complexity": "Low-Medium",
+        "blast_radius": "restock and capture",
+        "reuse": "Medium",
+        "fail_closed": "Yes",
+        "idempotency": "Not affected",
+        "recoverability": "Low for transient failures",
+        "operational_cost": "Low",
+        "basis_refs": [
+          "EV-01",
+          "EV-10"
+        ]
+      }
+    ],
+    "preferred_alternative": "ALT-B",
+    "selected_alternative": null,
+    "rejected_alternatives": [
+      {
+        "id": "ALT-A",
+        "reason": "Does not address the stranded FALLIDO rows or the unresolved writer; a local patch to an unwired step changes no observed behaviour.",
+        "evidence_refs": [
+          "EV-10",
+          "EV-14"
+        ]
+      }
+    ],
+    "challenger_review": [
+      {
+        "challenge_id": "CH-01",
+        "challenge": "If Cache miss is persistent per domain, readmission (ALT-B) only burns attempts.",
+        "outcome": "BLOCKED",
+        "resolution": "Cannot be settled with current evidence; recorded as UNC-02.",
+        "evidence_refs": [
+          "EV-08",
+          "EV-01"
+        ]
+      },
+      {
+        "challenge_id": "CH-02",
+        "challenge": "Fixing failed_retry may be irrelevant if FAILED is written by another path.",
+        "outcome": "BLOCKED",
+        "resolution": "Writer identity unresolved; recorded as UNC-01.",
+        "evidence_refs": [
+          "EV-10",
+          "EV-14"
+        ]
+      }
+    ],
+    "omission_discovery": [
+      {
+        "dimension": "ARCHITECTURE",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "No single governed writer for capture-failure state; queue and pipeline counters diverge.",
+        "evidence_refs": [
+          "EV-14",
+          "EV-07"
+        ]
+      },
+      {
+        "dimension": "CONTROLS",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "failed_retry is optional (required=false) and never receipted; restock has no failure feedback.",
+        "evidence_refs": [
+          "EV-06",
+          "EV-10",
+          "EV-07"
+        ]
+      },
+      {
+        "dimension": "POLICIES_CONTRACTS",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "No retry/readmission policy bound to ORQUESTACION_PIPELINE_LF; retry contract comparator is contradictory.",
+        "evidence_refs": [
+          "EV-06",
+          "EV-11",
+          "EV-07"
+        ]
+      },
+      {
+        "dimension": "CONTEXT_TRANSPORT",
+        "disposition": "NOT_APPLICABLE",
+        "finding": "The failure class is a state/retry control gap; no model context payload is transported across the affected edges.",
+        "evidence_refs": [
+          "EV-07"
+        ]
+      },
+      {
+        "dimension": "WIRING",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "failed_retry step is not physically wired into observed executions; FAILED writes come from ad hoc producers.",
+        "evidence_refs": [
+          "EV-10",
+          "EV-14"
+        ]
+      },
+      {
+        "dimension": "COMPATIBILITY_TRANSITION",
+        "disposition": "REUSE_AS_IS",
+        "finding": "lf_url_queue and lf_pipeline_runs columns already carry intento_count, retry_count and error_detail; no schema transition is established yet.",
+        "evidence_refs": [
+          "EV-03"
+        ]
+      },
+      {
+        "dimension": "RECOVERY_TERMINALITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "FALLIDO has no governed exit; 26 rows with remaining budget are stranded.",
+        "evidence_refs": [
+          "EV-14",
+          "EV-08"
+        ]
+      },
+      {
+        "dimension": "OBSERVABILITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Declared WEB_FETCH_UNAVAILABLE events are absent for Aug-Sep failures; recurrence visible only as EKB free text.",
+        "evidence_refs": [
+          "EV-10",
+          "EV-01"
+        ]
+      },
+      {
+        "dimension": "SECURITY_AUTHORITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "No owner recorded for ACT-0058 in any governed source read.",
+        "evidence_refs": [
+          "EV-04",
+          "EV-12",
+          "EV-13"
+        ]
+      },
+      {
+        "dimension": "COST_PERFORMANCE",
+        "disposition": "NOT_APPLICABLE",
+        "finding": "Retry volume is small (32 failed URLs); no cost or performance signal observed.",
+        "evidence_refs": [
+          "EV-08"
+        ]
+      },
+      {
+        "dimension": "TESTING_ASSURANCE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "Existing mini-judges MINI_JUDGE_ACT0058_RETRY/CAPTURA/RESTOCK are reusable once the steps are wired.",
+        "evidence_refs": [
+          "EV-07"
+        ]
+      },
+      {
+        "dimension": "OPERABILITY_MAINTENANCE",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Stranded queue rows need recurring reconciliation and an accountable owner.",
+        "evidence_refs": [
+          "EV-14",
+          "EV-04"
+        ]
+      }
+    ],
+    "falsification_results": [
+      {
+        "case": "bypass",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: A runtime marks a cache-miss pipeline_run FAILED without passing through the retry contract.",
+        "expected_result": "Every FAILED transition for an external fetch error carries a failed_retry receipt; a FAILED write without it is rejected with MAX_RETRY_CONTRACT_BYPASSED.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for bypass through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "Every FAILED transition for an external fetch error carries a failed_retry receipt; a FAILED write without it is rejected with MAX_RETRY_CONTRACT_BYPASSED."
+          ],
+          "failure_signal": "Assertion for bypass not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "retry",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: A URL that hits Cache miss is readmitted after the governed delay up to the attempt budget.",
+        "expected_result": "intento_count and retry_count advance together; after the budget the URL becomes terminal with MAX_RETRY_EXCEEDED, never earlier.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for retry through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "intento_count and retry_count advance together; after the budget the URL becomes terminal with MAX_RETRY_EXCEEDED, never earlier."
+          ],
+          "failure_signal": "Assertion for retry not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "concurrency",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: Two orchestrator runs pick the same readmitted URL simultaneously.",
+        "expected_result": "Only one run leases the URL; the second gets a lease conflict and no double increment occurs.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for concurrency through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "Only one run leases the URL; the second gets a lease conflict and no double increment occurs."
+          ],
+          "failure_signal": "Assertion for concurrency not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "partial_failure",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: Capture fails after the pipeline_run row is created but before the queue row is updated.",
+        "expected_result": "Queue and pipeline_run are updated in one transaction; no FALLIDO queue row without a linked pipeline_run.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for partial_failure through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "Queue and pipeline_run are updated in one transaction; no FALLIDO queue row without a linked pipeline_run."
+          ],
+          "failure_signal": "Assertion for partial_failure not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "stale_state",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: FALLIDO rows older than the readmission window with remaining budget exist.",
+        "expected_result": "A sweep readmits or terminally closes them; zero rows remain FALLIDO with intento_count below the budget and no next_retry_at.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for stale_state through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "A sweep readmits or terminally closes them; zero rows remain FALLIDO with intento_count below the budget and no next_retry_at."
+          ],
+          "failure_signal": "Assertion for stale_state not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "interrupted_execution",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: The orchestrator stops mid-batch after marking a URL in progress.",
+        "expected_result": "Lease expiry returns the URL to the readmission state without consuming an attempt twice.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for interrupted_execution through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "Lease expiry returns the URL to the readmission state without consuming an attempt twice."
+          ],
+          "failure_signal": "Assertion for interrupted_execution not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "replay_or_duplicate",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: Restock re-inserts a URL already FALLIDO or attempts the same failed domain again.",
+        "expected_result": "ON CONFLICT path does not reset counters; domain in quarantine is skipped by restock with a logged reason.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for replay_or_duplicate through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "ON CONFLICT path does not reset counters; domain in quarantine is skipped by restock with a logged reason."
+          ],
+          "failure_signal": "Assertion for replay_or_duplicate not met, or any write occurs outside the governed writer"
+        }
+      },
+      {
+        "case": "undeclared_or_unversioned_caller",
+        "result": "PLANNED",
+        "evidence_ref": "EV-07",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Sandbox SQL test inside a transaction with ROLLBACK against a branch copy of lf_url_queue and lf_pipeline_runs: A chat/AUTOLEARN session writes lf_url_queue FALLIDO directly with an ad hoc execution id.",
+        "expected_result": "Direct writes outside the governed writer are rejected or flagged; producer id must resolve to a registered execution.",
+        "test_protocol": {
+          "setup": [
+            "Create a Supabase development branch; seed one reevalua.com URL row and its pipeline_run with a WEB_FETCH_CACHE_MISS error"
+          ],
+          "action": [
+            "Execute the scenario for undeclared_or_unversioned_caller through the governed writer under test, then ROLLBACK"
+          ],
+          "assertions": [
+            "Direct writes outside the governed writer are rejected or flagged; producer id must resolve to a registered execution."
+          ],
+          "failure_signal": "Assertion for undeclared_or_unversioned_caller not met, or any write occurs outside the governed writer"
+        }
+      }
+    ],
+    "origin_asset": {
+      "status": "RESOLVED",
+      "code": "ACT-0058",
+      "evidence_ref": "EV-04",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-04",
+      "subject": "ACT-0058",
+      "observed_revision": "2026-11-04T20:46:21Z"
+    },
+    "origin_operation": {
+      "status": "RESOLVED",
+      "code": "ORQUESTACION_PIPELINE_LF",
+      "evidence_ref": "EV-06",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-06",
+      "subject": "ORQUESTACION_PIPELINE_LF",
+      "observed_revision": "v0.1"
+    },
+    "owner": {
+      "status": "UNRESOLVED",
+      "code": null,
+      "evidence_ref": "EV-04",
+      "missing_evidence": [
+        "No owner recorded for ACT-0058 in any governed source read; ownership must be ratified, not inferred"
+      ],
+      "authority_kind": "DERIVED_PROPOSAL",
+      "evidence_id": "EV-04",
+      "subject": "ACT-0058",
+      "derivation": {
+        "criterion": "No owner candidate is derivable: DIRECT, DECLARED, RELATED and HISTORY sources return NULL or 0 rows, and analogy is not admissible for authority. The only proposal is the ratification step itself; no person or role is named.",
+        "confidence": 0.0,
+        "alternatives": [
+          "Ratify a named owner through the governed asset update",
+          "Keep ACT-0058 without owner (rejected: operability needs an accountable party)"
+        ],
+        "attempts": [
+          {
+            "class": "DIRECT",
+            "source": "v_lf_inventario_activo / lf_activos",
+            "result": "owner_name NULL",
+            "evidence_id": "EV-04"
+          },
+          {
+            "class": "RELATED",
+            "source": "capability/checklist/gate/fuente catalogs",
+            "result": "0 rows or NULL",
+            "evidence_id": "EV-12"
+          },
+          {
+            "class": "HISTORY",
+            "source": "lf_eventos",
+            "result": "0 rows",
+            "evidence_id": "EV-13"
+          }
+        ],
+        "ratification_ref": "DLV-OWNER-RATIFICATION-ACT0058",
+        "authority_research": {
+          "attempts": [
+            {
+              "class": "DIRECT",
+              "source": "v_lf_inventario_activo / lf_activos owner_name",
+              "result": "NULL",
+              "evidence_id": "EV-04"
+            },
+            {
+              "class": "RELATED",
+              "source": "lf_capability_registry, lf_produccion_checklist, lf_operation_gate_check_results, v_lf_fuente_operativa",
+              "result": "0 rows or NULL owner",
+              "evidence_id": "EV-12"
+            },
+            {
+              "class": "HISTORY",
+              "source": "lf_eventos ownership mentions",
+              "result": "0 rows",
+              "evidence_id": "EV-13"
+            }
+          ]
+        }
+      },
+      "search_record": [
+        {
+          "class": "DIRECT",
+          "source": "v_lf_inventario_activo / lf_activos owner_name",
+          "evidence_id": "EV-04",
+          "result": "NULL"
+        },
+        {
+          "class": "DECLARED",
+          "source": "policies bound to ORQUESTACION_PIPELINE_LF",
+          "evidence_id": "EV-06",
+          "result": "no owner term"
+        },
+        {
+          "class": "ANALOGY",
+          "source": "owner coverage across inventory (179/223)",
+          "evidence_id": "EV-12",
+          "result": "not admissible as authority"
+        },
+        {
+          "class": "RELATED",
+          "source": "lf_activo_relaciones; capability/checklist/gate/fuente catalogs",
+          "evidence_id": "EV-12",
+          "result": "0 rows or NULL"
+        },
+        {
+          "class": "HISTORY",
+          "source": "lf_eventos ownership mentions",
+          "evidence_id": "EV-13",
+          "result": "0 rows"
+        }
+      ],
+      "repair_step_ref": "DLV-OWNER-RATIFICATION-ACT0058"
+    },
+    "policy_resolution": [
+      {
+        "question": "Is there an authority that identifies a responsible party (owner) for ACT-0058 / ORQUESTACION_PIPELINE_LF?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "v_lf_inventario_activo",
+            "query": "codigo_activo='ACT-0058'",
+            "result": "owner_name NULL",
+            "evidence_id": "EV-04"
+          },
+          {
+            "level": "N2",
+            "source": "lf_activos",
+            "query": "codigo_activo='ACT-0058'",
+            "result": "owner_name NULL",
+            "evidence_id": "EV-04"
+          },
+          {
+            "level": "N3",
+            "source": "lf_activo_relaciones",
+            "query": "codigo_activo or relacionado_codigo = 'ACT-0058' (count)",
+            "result": "0 rows at 2026-11-04T20:46:28Z",
+            "evidence_id": "EV-05"
+          },
+          {
+            "level": "N3",
+            "source": "lf_capability_registry, lf_produccion_checklist, lf_operation_gate_check_results, v_lf_fuente_operativa",
+            "query": "rows mentioning ACT-0058/ORQUESTACION_PIPELINE_LF (count)",
+            "result": "0, 0, 0, 1 row with NULL owner at 2026-11-04T20:47:25Z",
+            "evidence_id": "EV-12"
+          },
+          {
+            "level": "N5",
+            "source": "lf_eventos",
+            "query": "ownership mentions for ACT-0058/ORQUESTACION_PIPELINE_LF (count)",
+            "result": "0 rows at 2026-11-04T20:48:04Z",
+            "evidence_id": "EV-13"
+          }
+        ]
+      },
+      {
+        "question": "Which rule governs retry of capture failures in ACT-0058?",
+        "decision": "FOUND_APPLICABLE",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "v_lf_operation_policy_snapshot",
+            "query": "operation/policy codes for pipeline, RETRY, WEB, FETCH",
+            "result": "4 policies bound to ORQUESTACION_PIPELINE_LF, none about retry",
+            "evidence_id": "EV-05"
+          },
+          {
+            "level": "N2",
+            "source": "lf_policy_versions (ACTIVE)",
+            "query": "payload scan retry/readmission/cache",
+            "result": "0 matches in bound policies; 0 ACTIVE policies globally for cache miss/readmission/WEB_FETCH/url_queue",
+            "evidence_id": "EV-11"
+          },
+          {
+            "level": "N3",
+            "source": "lf_operation_step_contracts",
+            "query": "ORQUESTACION_PIPELINE_LF / failed_retry",
+            "result": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1, status ACTIVO, v0.1, effect: max 3 attempts, MAX_RETRY_EXCEEDED; internally contradictory comparator; required=false; 0 receipts",
+            "evidence_id": "EV-07"
+          }
+        ]
+      },
+      {
+        "question": "Which rule governs readmission of FALLIDO URLs and the WEB-001 prevention?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "v_lf_operation_policy_snapshot / lf_prevention_rules",
+            "query": "WEB-001, cache miss, WEB_FETCH (count)",
+            "result": "0 prevention rules; no readmission policy bound",
+            "evidence_id": "EV-05"
+          },
+          {
+            "level": "N2",
+            "source": "lf_policy_versions (ACTIVE)",
+            "query": "payload ~* cache miss|readmi|WEB_FETCH|url_queue (count)",
+            "result": "0 rows at 2026-11-04T20:47:18Z",
+            "evidence_id": "EV-11"
+          },
+          {
+            "level": "N3",
+            "source": "lf_operation_step_contracts restock_queue",
+            "query": "ORC-RESTOCK-01 execution_sql",
+            "result": "ON CONFLICT (url) DO NOTHING: cannot readmit",
+            "evidence_id": "EV-07"
+          },
+          {
+            "level": "N5",
+            "source": "lf_error_knowledge WEB-001",
+            "query": "codigo='WEB-001'",
+            "result": "prevencion text only: 'permitir reintento posterior controlado'",
+            "evidence_id": "EV-01"
+          }
+        ]
+      }
+    ],
+    "invariant": {
+      "statement": "Every external capture failure for ACT-0058 is written by one governed writer with a receipt and ends either readmitted within a ratified budget or terminal with a reason; queue and pipeline counters agree.",
+      "validation_state": "PROPOSED",
+      "evidence_refs": [
+        "EV-07",
+        "EV-14"
+      ],
+      "missing_evidence": [
+        "Writer identity (UNC-01)",
+        "Readmission policy (UNC-03)"
+      ]
+    },
+    "hard_guard": {
+      "validation_state": "PROPOSED",
+      "control": "Reject FAILED/FALLIDO writes for capture failures that lack a failed_retry receipt",
+      "enforcement_point_ref": "Unresolved: DB writer function vs skill step (UNC-01)",
+      "fail_closed_condition": "FAILED or FALLIDO write without matching retry receipt",
+      "blocking_code": "MAX_RETRY_CONTRACT_BYPASSED",
+      "observable_result": "Write rejected and event logged",
+      "evidence_refs": [
+        "EV-07",
+        "EV-14"
+      ],
+      "missing_evidence": [
+        "Enforcement point depends on actual writer"
+      ]
+    },
+    "implementation_package": {
+      "architecture_decisions": [
+        {
+          "decision_id": "AD-01",
+          "question": "Where is the retry/readmission control enforced?",
+          "decision": "Provisional: one governed writer reused from the failed_retry step contract; final point pending UNC-01.",
+          "authority_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "rationale": "Reuse the existing contract instead of a new engine.",
+          "alternatives_considered": [
+            "ALT-A",
+            "ALT-C"
+          ],
+          "evidence_refs": [
+            "EV-07"
+          ]
+        }
+      ],
+      "control_matrix": [
+        {
+          "control_id": "CM-01",
+          "purpose": "Govern capture-failure retries",
+          "authority_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "applies_when": "stage_captura fails",
+          "enforcement_point_ref": "failed_retry (provisional)",
+          "input_contract": "pipeline_run_id, error_type, error_detail",
+          "blocking_code": "MAX_RETRY_EXCEEDED",
+          "observable_result": "receipt + consistent counters",
+          "verification_method": "AC-01"
+        }
+      ],
+      "policy_contract_changes": [
+        {
+          "authority_ref": "lf_policy_versions (new readmission policy, pending)",
+          "change": "Owner-ratified readmission policy bound to ORQUESTACION_PIPELINE_LF",
+          "owner_ref": "DLV-OWNER-RATIFICATION-ACT0058",
+          "compatibility_rule": "Existing FALLIDO rows are processed by a one-off sweep under the new policy",
+          "evidence_refs": [
+            "EV-05",
+            "EV-11"
+          ]
+        }
+      ],
+      "context_transport": {
+        "status": "NOT_APPLICABLE",
+        "rationale": "No model context payload crosses the affected edges.",
+        "compiler_ref": null,
+        "delivery_strategy": null,
+        "deterministic_inputs": [],
+        "jit_refs": [],
+        "excluded_payloads": [],
+        "token_budget": null,
+        "degradation_rule": null
+      },
+      "wiring": [
+        {
+          "from_ref": "stage_captura",
+          "to_ref": "failed_retry",
+          "contract_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "data_carried": [
+            "pipeline_run_id",
+            "error_type",
+            "error_detail"
+          ],
+          "precondition": "capture failure observed",
+          "fail_closed_behavior": "No FAILED/FALLIDO write without receipt"
+        }
+      ],
+      "deliverables": [
+        {
+          "artifact_ref": "DLV-OWNER-RATIFICATION-ACT0058",
+          "change_type": "MODIFY",
+          "exact_delta": "Ratify and record a named owner for ACT-0058 in lf_activos.owner_name through its governed asset-update operation; no owner is proposed by this profile.",
+          "dependencies": [
+            "governance owner decision"
+          ],
+          "acceptance_refs": [
+            "AC-05"
+          ]
+        },
+        {
+          "artifact_ref": "DLV-FAILED-RETRY-CONTRACT-V2",
+          "change_type": "MODIFY",
+          "exact_delta": "Provisional: make failed_retry the single governed writer for capture failures (one comparator for the attempt budget, error_type class EXTERNAL_TRANSIENT vs PERMANENT, updates lf_pipeline_runs and lf_url_queue in one transaction, emits a receipt).",
+          "dependencies": [
+            "UNC-01-RETRY-PRODUCER",
+            "UNC-03-READMISSION-POLICY"
+          ],
+          "acceptance_refs": [
+            "AC-01"
+          ]
+        },
+        {
+          "artifact_ref": "DLV-READMISSION-LIFECYCLE",
+          "change_type": "CREATE",
+          "exact_delta": "Provisional: readmission lifecycle for FALLIDO URLs (retryable state with next attempt time and budget, terminal closure with reason) governed by an owner-ratified policy version.",
+          "dependencies": [
+            "UNC-02-CACHE-MISS-TRANSIENCE",
+            "UNC-03-READMISSION-POLICY",
+            "DLV-OWNER-RATIFICATION-ACT0058"
+          ],
+          "acceptance_refs": [
+            "AC-02"
+          ]
+        },
+        {
+          "artifact_ref": "DLV-RESTOCK-DOMAIN-FEEDBACK",
+          "change_type": "MODIFY",
+          "exact_delta": "Provisional: restock_queue consults recent fetch-failure outcome per domain before inserting new URLs of that domain.",
+          "dependencies": [
+            "UNC-02-CACHE-MISS-TRANSIENCE"
+          ],
+          "acceptance_refs": [
+            "AC-03"
+          ]
+        },
+        {
+          "artifact_ref": "DLV-FETCH-FAILURE-EVENT",
+          "change_type": "MODIFY",
+          "exact_delta": "Emit the structured fetch-failure event already declared by stage_captura for every capture failure and link it to the pipeline_run.",
+          "dependencies": [],
+          "acceptance_refs": [
+            "AC-04"
+          ]
+        }
+      ],
+      "observability_plan": [
+        {
+          "signal": "fetch-failure events per FAILED capture",
+          "source_ref": "lf_eventos",
+          "expected_change": "1:1 with FAILED captures",
+          "alert_or_gate": "AC-04"
+        }
+      ],
+      "decision_closure": {
+        "handoff_ready": false,
+        "open_design_decisions": [
+          "Enforcement point (UNC-01)",
+          "Readmission vs containment operator (UNC-02)",
+          "Readmission policy content (UNC-03)"
+        ],
+        "implementation_preconditions": [
+          {
+            "name": "Owner ratification for ACT-0058",
+            "resolver_ref": "v_lf_inventario_activo.owner_name for ACT-0058",
+            "expected_shape": "non-null owner_name",
+            "decision_rule": "Implementation stage starts only when owner_name is non-null and recorded by the governed update",
+            "stage": "pre-implementation",
+            "design_effect": "NONE"
+          },
+          {
+            "name": "Ratified numeric values for attempt budget and readmission delay",
+            "resolver_ref": "lf_policy_versions ACTIVE readmission policy bound to ORQUESTACION_PIPELINE_LF",
+            "expected_shape": "integer attempt budget and interval value",
+            "decision_rule": "Use the values of the ACTIVE bound policy version; no default is invented",
+            "stage": "pre-implementation",
+            "design_effect": "NONE"
+          }
+        ],
+        "closure_statement": "Design is not closed: three design-blocking uncertainties remain; preconditions listed are value lookups only."
+      }
+    },
+    "implementation_delta": [
+      {
+        "target": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+        "action": "Provisional: unify comparator, classify external errors, write queue and pipeline in one transaction, emit receipt",
+        "rationale": "Declared control contradicts observed state and is unwired",
+        "evidence_refs": [
+          "EV-07",
+          "EV-10",
+          "EV-14"
+        ]
+      }
+    ],
+    "transition_plan": null,
+    "rollback_plan": null,
+    "acceptance_criteria": [
+      {
+        "criterion": "AC-01: every FAILED capture pipeline_run has a failed_retry receipt and consistent retry_count/intento_count",
+        "verification_method": "SELECT count(*) FROM lf_pipeline_runs p JOIN lf_url_queue q USING (pipeline_run_id) WHERE p.stage_status='FAILED' AND (p.retry_count<>q.intento_count OR NOT EXISTS (receipt)) on a sandbox branch after the repair",
+        "expected_result": "0 rows"
+      },
+      {
+        "criterion": "AC-02: no FALLIDO URL with remaining attempt budget lacks a scheduled readmission or terminal reason",
+        "verification_method": "Read-only aggregate on lf_url_queue grouped by estado and intento_count after the readmission sweep",
+        "expected_result": "0 stranded rows"
+      },
+      {
+        "criterion": "AC-03: restock does not insert URLs of a domain whose recent captures all failed with the external fetch class",
+        "verification_method": "Sandbox restock run with a seeded failing domain, ROLLBACK afterwards",
+        "expected_result": "0 inserts for the seeded domain and one logged skip reason"
+      },
+      {
+        "criterion": "AC-04: each capture failure produces exactly one structured fetch-failure event",
+        "verification_method": "Count lf_eventos fetch-failure events vs FAILED capture pipeline_runs in the same window",
+        "expected_result": "counts equal"
+      },
+      {
+        "criterion": "AC-05: ACT-0058 has a ratified owner recorded",
+        "verification_method": "SELECT owner_name FROM v_lf_inventario_activo WHERE codigo_activo='ACT-0058'",
+        "expected_result": "non-null value equal to the ratified owner"
+      }
+    ],
+    "historical_regressions": [
+      {
+        "case_id": "H-20260824",
+        "occurrence_ref": "WEB-001 execution f1076641-901e-4a7a-b638-5f3c64ea4cea",
+        "observed_failure": "7 Reevalua URLs WEB_FETCH_CACHE_MISS closed FALLIDO",
+        "evidence_refs": [
+          "EV-01"
+        ]
+      },
+      {
+        "case_id": "H-20260825-27",
+        "occurrence_ref": "LF-KNOWLEDGE-20260825/26/27-001 and LF-POSTPROCESS-20260825-001",
+        "observed_failure": "Cache miss / internal error recurrences; FAILED pipeline_runs with retry_count 0-2",
+        "evidence_refs": [
+          "EV-01",
+          "EV-14"
+        ]
+      },
+      {
+        "case_id": "H-20260901",
+        "occurrence_ref": "LF-ACT0058-20260901-1820/1826/1835/1842-AUTOLEARN",
+        "observed_failure": "19 further Reevalua URLs failed exact open with Cache miss, including freshly discovered URLs",
+        "evidence_refs": [
+          "EV-01",
+          "EV-08"
+        ]
+      }
+    ],
+    "planned_regressions": [
+      {
+        "case_id": "PR-01",
+        "scenario": "Replay the 6 Reevalua URLs that reached intento_count=3 through the repaired retry writer",
+        "verification_method": "Sandbox branch transaction with ROLLBACK",
+        "expected_result": "terminal with MAX_RETRY_EXCEEDED and a receipt per attempt",
+        "test_protocol": {
+          "setup": [
+            "Seed the 6 URLs as PENDIENTE on a branch"
+          ],
+          "action": [
+            "Simulate 3 cache-miss captures each"
+          ],
+          "assertions": [
+            "3 receipts per URL",
+            "final state terminal with reason"
+          ],
+          "failure_signal": "Missing receipt or premature terminal state"
+        }
+      },
+      {
+        "case_id": "PR-02",
+        "scenario": "Stranded FALLIDO rows with intento_count 1-2 are processed by the readmission sweep",
+        "verification_method": "Sandbox branch transaction with ROLLBACK",
+        "expected_result": "each row readmitted or terminally closed with reason",
+        "test_protocol": {
+          "setup": [
+            "Copy the 26 stranded rows to a branch"
+          ],
+          "action": [
+            "Run the readmission sweep"
+          ],
+          "assertions": [
+            "0 rows FALLIDO without next attempt or terminal reason"
+          ],
+          "failure_signal": "Any stranded row remains"
+        }
+      },
+      {
+        "case_id": "PR-03",
+        "scenario": "AUTOLEARN-style ad hoc session writes FALLIDO directly",
+        "verification_method": "Sandbox branch transaction with ROLLBACK",
+        "expected_result": "write rejected or flagged as undeclared producer",
+        "test_protocol": {
+          "setup": [
+            "Branch with governed writer installed"
+          ],
+          "action": [
+            "Direct UPDATE lf_url_queue SET estado='FALLIDO'"
+          ],
+          "assertions": [
+            "write rejected or event flags undeclared producer"
+          ],
+          "failure_signal": "Direct write accepted silently"
+        }
+      }
+    ],
+    "current_uncertainties": [
+      {
+        "uncertainty_id": "UNC-01-RETRY-PRODUCER",
+        "uncertainty": "The runtime that actually wrote FAILED pipeline_runs and FALLIDO queue rows for cache-miss URLs is not the declared failed_retry step: it never produced a receipt and its declared SQL cannot yield FAILED at retry_count 0-2, which is what is observed. Producers are ad hoc execution ids (LF-KNOWLEDGE-2026082x-001, LF-POSTPROCESS-20260825-001) and 14 queue rows have no linked pipeline_run.",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": [
+          "Source of SKILL_ORQUESTADOR_PIPELINE_LF at exact revision (skills/orquestador_pipeline_lf/ in cristhianlujan/claude-persona-lf-patch) showing how capture failures are written",
+          "Execution receipts or writer function identity for LF-KNOWLEDGE-20260827-001 / LF-POSTPROCESS-20260825-001 writes to lf_url_queue and lf_pipeline_runs"
+        ],
+        "design_consequence": "Determines the enforcement point: a DB-side single writer (function/trigger) versus a contract fix in the skill step; choosing wrongly leaves the ad hoc writer path open.",
+        "containment_ref": null,
+        "attempted_sources": [
+          {
+            "surface": "OPERATION_EXECUTION_RECEIPT",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'failed_retry receipts count' src, (select jsonb_build_object('n',count(*)) from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id='failed_retry') r union all select now(), 'lf_eventos WEB_FETCH/cache by tipo', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, count(*) n, min(created_at) first, max(created_at) last from public.lf_eventos where descripcion ~* '(cache miss|WEB_FETCH)' or payload::text ~* '(cache miss|WEB_FETCH)' group by 1,2 order by 3 desc limit 15) t) union all select now(), 'lf_eventos readmision/reintento', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, left(descripcion,220) d, created_at from public.lf_eventos where (descripcion ~* '(readmi|reintento|retry|re-queue|requeue|PENDIENTE)') and (descripcion ~* '(cache|WEB_FETCH|FALLIDO|url_queue)') order by created_at desc limit 8) t);",
+            "result": "ABSENT",
+            "observation": "failed_retry has 0 step receipts across 159 ORQUESTACION_PIPELINE_LF executions.",
+            "evidence_id": "EV-10"
+          },
+          {
+            "surface": "OPERATION_EXECUTION_RECEIPT",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_operation_execution_steps ORQ by step/status' src, (select jsonb_agg(t) from (select s.step_id, s.status, count(*) n, max(s.updated_at) last from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' group by 1,2 order by 1,2) t) r union all select now(), 'lf_operation_execution ORQ count', (select jsonb_build_object('n',count(*),'last',max(created_at),'statuses',jsonb_agg(distinct status)) from public.lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') union all select now(), 'lf_eventos columns', (select jsonb_agg(column_name order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='lf_eventos');",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Only 21 step receipts exist for the operation; none record the FAILED transition for cache-miss URLs.",
+            "evidence_id": "EV-09"
+          },
+          {
+            "surface": "OPERATION_DEFINITION",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, step_id, to_jsonb(c) - 'operation_code' r from public.lf_operation_step_contracts c where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue');",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Declared failed_retry SQL marks FAILED only at retry_count+1>=3 or schema errors; contradicts observed FAILED rows with retry_count 0-2.",
+            "evidence_id": "EV-07"
+          },
+          {
+            "surface": "RUNTIME_READBACK",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, jsonb_agg(t) r from (select q.intento_count, p.retry_count, p.stage_current, coalesce(p.updated_by_execution_id, p.execution_id, p.created_by,'NULL') producer, count(*) n, count(*) filter (where q.updated_at < now() - interval '30 days') stale_30d from public.lf_url_queue q left join public.lf_pipeline_runs p on p.pipeline_run_id=q.pipeline_run_id where q.estado='FALLIDO' and (q.error_detail ~* '(cache.?miss|WEB_FETCH)') group by 1,2,3,4 order by 5 desc) t;",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Producers are ad hoc execution ids; 14 FALLIDO rows have no linked pipeline_run; intento_count and retry_count diverge.",
+            "evidence_id": "EV-14"
+          }
+        ],
+        "cascade": {
+          "classes_tried": [
+            "DIRECT",
+            "DECLARED",
+            "RELATED",
+            "HISTORY"
+          ],
+          "classes_without_source": [
+            "ANALOGY"
+          ],
+          "note": "ANALOGY: no governed comparable resolved instance of a wired retry writer was found in the sources read; GitHub source not readable in this run."
+        }
+      },
+      {
+        "uncertainty_id": "UNC-02-CACHE-MISS-TRANSIENCE",
+        "uncertainty": "Whether Cache miss from web.run open(url) is transient per attempt (recoverable by delayed readmission) or persistent per URL/domain (requires domain quarantine or an alternate governed fetch route). Evidence is mixed: 6 URLs failed all 3 attempts, 2 cache-miss rows later reached PROCESADO, and one manual recovery used an alternate route.",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": [
+          "Per-URL attempt timeline (timestamps of each attempt and outcome) for the 32 FALLIDO rows",
+          "Provider-side semantics of web.run Cache miss for reevalua.com (external tool behaviour)"
+        ],
+        "design_consequence": "Selects the repair operator: ADD_RECOVERY (delayed readmission with budget) versus CONTAIN (domain quarantine plus alternate fetch route); also decides whether restock should keep feeding the same domain.",
+        "containment_ref": null,
+        "attempted_sources": [
+          {
+            "surface": "RUNTIME_READBACK",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_url_queue cache-miss' src, jsonb_agg(x) from (select estado, intento_count, count(*) n, min(updated_at) first_upd, max(updated_at) last_upd, count(*) filter (where url ilike '%reevalua%') reevalua from public.lf_url_queue where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' group by 1,2 order by 1,2) x union all select now(), 'lf_pipeline_runs cache-miss', jsonb_agg(y) from (select stage_current, stage_status, retry_count, failure_category, count(*) n, count(kb_id) kb, count(capture_run_id) cap, max(updated_at) last_upd from public.lf_pipeline_runs where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' or failure_reason ilike '%cache%' group by 1,2,3,4 order by 5 desc) y union all select now(), 'lf_url_queue by fuente/estado total', jsonb_agg(z) from (select fuente, estado, count(*) n from public.lf_url_queue group by 1,2 order by 3 desc limit 25) z;",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Aggregates show both repeated failures (intento 3) and 2 PROCESADO rows with cache-miss detail; no per-attempt timeline.",
+            "evidence_id": "EV-08"
+          },
+          {
+            "surface": "EKB",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() as observed_at, to_jsonb(e) as row from public.lf_error_knowledge e where e::text ilike '%WEB-001%';",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "EKB root cause is generic 'dependencia externa no disponible'; family R1_NO_SABE; recurrences concentrated on Reevalua.",
+            "evidence_id": "EV-01"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'failed_retry receipts count' src, (select jsonb_build_object('n',count(*)) from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id='failed_retry') r union all select now(), 'lf_eventos WEB_FETCH/cache by tipo', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, count(*) n, min(created_at) first, max(created_at) last from public.lf_eventos where descripcion ~* '(cache miss|WEB_FETCH)' or payload::text ~* '(cache miss|WEB_FETCH)' group by 1,2 order by 3 desc limit 15) t) union all select now(), 'lf_eventos readmision/reintento', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, left(descripcion,220) d, created_at from public.lf_eventos where (descripcion ~* '(readmi|reintento|retry|re-queue|requeue|PENDIENTE)') and (descripcion ~* '(cache|WEB_FETCH|FALLIDO|url_queue)') order by created_at desc limit 8) t);",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Only one recovery event (S53 via web_search + alternate page), not a governed retry.",
+            "evidence_id": "EV-10"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'owner-like columns' src, (select jsonb_agg(table_name||'.'||column_name) from information_schema.columns where table_schema='public' and column_name ~* '(owner|responsable|propietario|accountable|steward)') r union all select now(), 'lf_policy_versions ACTIVE with retry/readmission/cache', (select jsonb_build_object('n',count(*),'rows',coalesce(jsonb_agg(jsonb_build_object('p',policy_code,'v',policy_version)),'[]')) from public.lf_policy_versions where status ilike 'ACTIVE%' and policy_payload::text ~* '(cache.?miss|readmi|WEB_FETCH|url_queue)') union all select now(), 'lf_operation_contracts ORQ', (select jsonb_agg(to_jsonb(c)) from public.lf_operation_contracts c where c::text ilike '%ORQUESTACION_PIPELINE_LF%' limit 3);",
+            "result": "ABSENT",
+            "observation": "No ACTIVE policy version mentions cache miss, WEB_FETCH, url_queue or readmission.",
+            "evidence_id": "EV-11"
+          }
+        ],
+        "cascade": {
+          "classes_tried": [
+            "DIRECT",
+            "DECLARED",
+            "RELATED",
+            "HISTORY"
+          ],
+          "classes_without_source": [
+            "ANALOGY"
+          ],
+          "note": "ANALOGY: no governed source classifying comparable external fetch failures as transient or persistent was found."
+        }
+      },
+      {
+        "uncertainty_id": "UNC-03-READMISSION-POLICY",
+        "uncertainty": "No governing rule defines readmission of FALLIDO URLs (state, delay, attempt budget across runs, terminal closure). The only retry authority (CONTRACT_ACT0058_S11A) is internally inconsistent (block if retry_count > 3 vs SQL FAILED at retry_count+1 >= 3) and does not touch lf_url_queue; restock uses ON CONFLICT DO NOTHING so it cannot readmit.",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": [
+          "Owner-ratified readmission policy version (lf_policy_versions) bound to ORQUESTACION_PIPELINE_LF",
+          "Resolution of the retry-threshold comparator contradiction in CONTRACT_ACT0058_S11A_FAILED_RETRY_V1"
+        ],
+        "design_consequence": "Without a governing rule the terminal state, attempt budget semantics and stale-row disposition cannot be fixed; any chosen values would be invented.",
+        "containment_ref": null,
+        "attempted_sources": [
+          {
+            "surface": "OPERATION_DEFINITION",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, step_id, to_jsonb(c) - 'operation_code' r from public.lf_operation_step_contracts c where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue');",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "failed_retry contract exists but is contradictory and only updates lf_pipeline_runs; restock cannot readmit.",
+            "evidence_id": "EV-07"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_activo_relaciones' src, count(*) n, coalesce(jsonb_agg(jsonb_build_object('a',codigo_activo,'rel',relacion_tipo,'b',relacionado_codigo,'fuente',fuente)) filter (where true),'[]') rows from public.lf_activo_relaciones where codigo_activo='ACT-0058' or relacionado_codigo='ACT-0058' union all select now(), 'lf_prevention_rules(WEB-001)', count(*), coalesce(jsonb_agg(to_jsonb(p)),'[]') from public.lf_prevention_rules p where error_codigo='WEB-001' or regla ilike '%cache miss%' or regla ilike '%WEB_FETCH%' union all select now(), 'v_lf_operation_policy_snapshot(ACT-0058/pipeline)', count(*), coalesce(jsonb_agg(jsonb_build_object('op',operation_code,'policy',policy_code,'role',policy_role,'ver',policy_version)),'[]') from public.v_lf_operation_policy_snapshot where operation_code ilike '%ACT-0058%' or operation_code ilike '%PIPELINE%' or operation_code ilike '%CONOCIMIENTO%' or policy_code ilike '%RETRY%' or policy_code ilike '%WEB%' or policy_code ilike '%FETCH%' union all select now(), 'lf_operation_policy_bindings(all)', count(*), jsonb_agg(distinct operation_code) from public.lf_operation_policy_bindings;",
+            "result": "ABSENT",
+            "observation": "0 prevention rules for WEB-001; no RETRY/WEB/FETCH policy bound in v_lf_operation_policy_snapshot.",
+            "evidence_id": "EV-05"
+          },
+          {
+            "surface": "SUPABASE_TABLE_OR_VIEW",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_operation_registry' src, jsonb_agg(to_jsonb(r)) rows from public.lf_operation_registry r where operation_code in ('ORQUESTACION_PIPELINE_LF','ESCRITURA_BASE_CONOCIMIENTO_LF') or source_paths::text ilike '%orquestador_pipeline%' or notes ilike '%ACT-0058%' union all select now(), 'v_lf_operation_steps(ORQ)', jsonb_agg(to_jsonb(s)) from public.v_lf_operation_steps s where s::text ilike '%ORQUESTACION_PIPELINE_LF%' union all select now(), 'policy payload matches retry/readmision/owner', jsonb_agg(jsonb_build_object('policy',policy_code,'ver',policy_version,'status',status,'sha',policy_sha,'retry',policy_payload::text ~* '(retry|reintent)','readmis',policy_payload::text ~* '(readmi|re-admi|readmit)','owner',policy_payload::text ~* '(owner|propietari|responsable)','cache',policy_payload::text ~* 'cache')) from public.lf_policy_versions where policy_code in ('POL-LF-POLICY-CONSUMPTION','POL-LF-OPERATION-LIFECYCLE','POL-LF-SOURCE-RESOLUTION','POL-LF-STATE-MODEL') and status ilike 'ACTIVE%';",
+            "result": "ABSENT",
+            "observation": "The 4 ACTIVE policies bound to ORQUESTACION_PIPELINE_LF contain no retry/readmission/cache terms.",
+            "evidence_id": "EV-06"
+          },
+          {
+            "surface": "EKB",
+            "locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() as observed_at, to_jsonb(e) as row from public.lf_error_knowledge e where e::text ilike '%WEB-001%';",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "EKB prevention only says 'permitir reintento posterior controlado' without state, delay or budget.",
+            "evidence_id": "EV-01"
+          }
+        ],
+        "cascade": {
+          "classes_tried": [
+            "DIRECT",
+            "DECLARED",
+            "RELATED",
+            "HISTORY"
+          ],
+          "classes_without_source": [
+            "ANALOGY"
+          ],
+          "note": "ANALOGY: CONTRACT-ORQUESTACION-ESTRATEGIAS blocks BLIND_RETRY but is a different, candidate operation; not used as authority."
+        }
+      },
+      {
+        "uncertainty_id": "UNC-04-OWNER",
+        "uncertainty": "No responsible party for ACT-0058 / ORQUESTACION_PIPELINE_LF is recorded in any governed source read in this run (owner_name NULL; no relations, capability, checklist, gate or event ownership record).",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "evidence_needed": [
+          "Ratified owner assignment for ACT-0058 recorded in lf_activos.owner_name by its governed update operation"
+        ],
+        "design_consequence": "Does not change the repair mechanism, but implementation and ongoing maintenance of the readmission lifecycle cannot be assigned until ratified.",
+        "containment_ref": "$.implementation_package.decision_closure.implementation_preconditions[0]"
+      }
+    ],
+    "residual_risks": [],
+    "evidence_map": [
+      {
+        "claim_path": "$.symptom",
+        "evidence_refs": [
+          "EV-01",
+          "EV-08"
+        ]
+      },
+      {
+        "claim_path": "$.immediate_cause",
+        "evidence_refs": [
+          "EV-01",
+          "EV-08"
+        ]
+      },
+      {
+        "claim_path": "$.systemic_root_cause",
+        "evidence_refs": [
+          "EV-07",
+          "EV-10",
+          "EV-14",
+          "EV-06"
+        ]
+      },
+      {
+        "claim_path": "$.first_bad_control",
+        "evidence_refs": [
+          "EV-07",
+          "EV-10"
+        ]
+      },
+      {
+        "claim_path": "$.escape_control",
+        "evidence_refs": [
+          "EV-07",
+          "EV-10"
+        ]
+      },
+      {
+        "claim_path": "$.origin_asset",
+        "evidence_refs": [
+          "EV-04"
+        ]
+      },
+      {
+        "claim_path": "$.origin_operation",
+        "evidence_refs": [
+          "EV-06"
+        ]
+      },
+      {
+        "claim_path": "$.owner",
+        "evidence_refs": [
+          "EV-04",
+          "EV-12",
+          "EV-13"
+        ]
+      },
+      {
+        "claim_path": "$.policy_resolution",
+        "evidence_refs": [
+          "EV-05",
+          "EV-07",
+          "EV-11"
+        ]
+      },
+      {
+        "claim_path": "$.authority_contradictions",
+        "evidence_refs": [
+          "EV-07",
+          "EV-14"
+        ]
+      }
+    ],
+    "blocking_codes": [
+      "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
+      "EXECUTION_EFFECT_PRODUCER_UNRESOLVED",
+      "RETRY_CONTROL_DECLARED_VS_OBSERVED_CONTRADICTION",
+      "FETCH_FAILURE_TRANSIENCE_UNRESOLVED",
+      "READMISSION_POLICY_ABSENT"
+    ],
+    "next_gate": {
+      "gate": "EVIDENCE_ACQUISITION_UNC_01_02_03",
+      "entry_condition": "Read skills/orquestador_pipeline_lf/ at exact revision, per-URL attempt timeline, and any ratified readmission policy",
+      "exit_condition": "Writer identity, transience class and readmission rule established; rerun this profile on the same input"
+    },
+    "closure_proof": {
+      "contract_version": "SRCR_CLOSURE_PROOF_V2",
+      "materiality": [
+        {
+          "signal": "DECISION_CLOSURE",
+          "material": true,
+          "rationale": "DECISION_CLOSURE is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-DEC"
+          ]
+        },
+        {
+          "signal": "ARCHITECTURE",
+          "material": true,
+          "rationale": "ARCHITECTURE is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-DEC"
+          ]
+        },
+        {
+          "signal": "EVIDENCE_PROVENANCE",
+          "material": true,
+          "rationale": "EVIDENCE_PROVENANCE is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-PROV"
+          ]
+        },
+        {
+          "signal": "STATE_RECOVERY",
+          "material": true,
+          "rationale": "STATE_RECOVERY is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-STATE"
+          ]
+        },
+        {
+          "signal": "POLICY_CONTRACT_CHANGE",
+          "material": true,
+          "rationale": "POLICY_CONTRACT_CHANGE is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-POLICY"
+          ]
+        },
+        {
+          "signal": "CONTROLS",
+          "material": true,
+          "rationale": "CONTROLS is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-DEC"
+          ]
+        },
+        {
+          "signal": "POLICIES_CONTRACTS",
+          "material": true,
+          "rationale": "POLICIES_CONTRACTS is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-POLICY"
+          ]
+        },
+        {
+          "signal": "WIRING",
+          "material": true,
+          "rationale": "WIRING is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-WIRE-CUR",
+            "OBL-WIRE-PROD"
+          ]
+        },
+        {
+          "signal": "RECOVERY_TERMINALITY",
+          "material": true,
+          "rationale": "RECOVERY_TERMINALITY is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-STATE"
+          ]
+        },
+        {
+          "signal": "OBSERVABILITY",
+          "material": true,
+          "rationale": "OBSERVABILITY is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-OBS"
+          ]
+        },
+        {
+          "signal": "OPERABILITY_MAINTENANCE",
+          "material": true,
+          "rationale": "OPERABILITY_MAINTENANCE is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-OPS"
+          ]
+        },
+        {
+          "signal": "SECURITY_AUTHORITY",
+          "material": true,
+          "rationale": "SECURITY_AUTHORITY is material for the ACT-0058 retry/readmission gap.",
+          "obligation_ids": [
+            "OBL-AUTH-ASSET",
+            "OBL-AUTH-OWNER"
+          ]
+        }
+      ],
+      "proof_obligations": [
+        {
+          "obligation_id": "OBL-AUTH-ASSET",
+          "obligation_type": "AUTHORITY_EXISTENCE",
+          "derived_from": [
+            "SECURITY_AUTHORITY"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-04",
+            "EV-06"
+          ],
+          "decision_refs": [
+            "$.origin_asset",
+            "$.origin_operation"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "ACT-0058 and ORQUESTACION_PIPELINE_LF exist as current registered authority.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-AUTH-OWNER",
+          "obligation_type": "AUTHORITY_EXISTENCE",
+          "derived_from": [
+            "SECURITY_AUTHORITY"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-04",
+            "EV-12",
+            "EV-13"
+          ],
+          "decision_refs": [
+            "$.owner"
+          ],
+          "missing_requirements": [
+            "Ratified owner for ACT-0058"
+          ],
+          "closure_basis": null,
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-DEC",
+          "obligation_type": "DECISION_CLOSURE",
+          "derived_from": [
+            "DECISION_CLOSURE",
+            "ARCHITECTURE",
+            "CONTROLS"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-07"
+          ],
+          "decision_refs": [
+            "$.preferred_alternative"
+          ],
+          "missing_requirements": [
+            "Enforcement point (depends on producer)",
+            "Operator choice (depends on transience)"
+          ],
+          "closure_basis": null,
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "OBL-PROV",
+          "obligation_type": "EVIDENCE_PROVENANCE",
+          "derived_from": [
+            "EVIDENCE_PROVENANCE"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-01",
+            "EV-08",
+            "EV-14"
+          ],
+          "decision_refs": [
+            "$.evidence_map"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Every claim maps to manifest evidence read in this run.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-STATE",
+          "obligation_type": "STATE_RECOVERY_SEMANTICS",
+          "derived_from": [
+            "STATE_RECOVERY",
+            "RECOVERY_TERMINALITY"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-14",
+            "EV-07"
+          ],
+          "decision_refs": [
+            "$.closure_proof.behavioral_proofs"
+          ],
+          "missing_requirements": [
+            "Readmission policy and transience classification"
+          ],
+          "closure_basis": null,
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "OBL-POLICY",
+          "obligation_type": "POLICY_CONTRACT",
+          "derived_from": [
+            "POLICY_CONTRACT_CHANGE",
+            "POLICIES_CONTRACTS"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-06",
+            "EV-11",
+            "EV-05"
+          ],
+          "decision_refs": [
+            "$.policy_resolution"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Current bound policy set observed to contain no retry/readmission rule.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-WIRE-CUR",
+          "obligation_type": "WIRING_PHYSICALITY",
+          "derived_from": [
+            "WIRING"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-10"
+          ],
+          "decision_refs": [
+            "$.closure_proof.wiring_proofs"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "failed_retry observed not wired: zero receipts across all executions.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-WIRE-PROD",
+          "obligation_type": "WIRING_PHYSICALITY",
+          "derived_from": [
+            "WIRING"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-14"
+          ],
+          "decision_refs": [
+            "$.execution_effect_reconciliation"
+          ],
+          "missing_requirements": [
+            "Identity of the actual FAILED/FALLIDO writer"
+          ],
+          "closure_basis": null,
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-OBS",
+          "obligation_type": "OBSERVABILITY",
+          "derived_from": [
+            "OBSERVABILITY"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-10"
+          ],
+          "decision_refs": [
+            "$.escape_control"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Absence of structured fetch-failure events for Aug-Sep failures observed.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "OBL-OPS",
+          "obligation_type": "OTHER_MATERIAL",
+          "derived_from": [
+            "OPERABILITY_MAINTENANCE"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-14",
+            "EV-04"
+          ],
+          "decision_refs": [
+            "$.owner"
+          ],
+          "missing_requirements": [
+            "Owner for recurring reconciliation of stranded queue rows"
+          ],
+          "closure_basis": null,
+          "proof_phase": "CURRENT_STATE"
+        }
+      ],
+      "authority_bindings": [
+        {
+          "subject": "ACT-0058",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-04"
+          ]
+        },
+        {
+          "subject": "ORQUESTACION_PIPELINE_LF",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-06"
+          ]
+        },
+        {
+          "subject": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-07"
+          ]
+        },
+        {
+          "subject": "ACT-0058 owner",
+          "authority_kind": "UNKNOWN",
+          "used_as_existing_authority": false,
+          "evidence_ids": [
+            "EV-04",
+            "EV-12",
+            "EV-13"
+          ]
+        }
+      ],
+      "wiring_proofs": [
+        {
+          "edge_id": "WP-RETRY",
+          "producer_ref": "stage_captura",
+          "data_contract_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "consumer_ref": "failed_retry",
+          "enforcement_point_ref": "MINI_JUDGE_ACT0058_RETRY",
+          "failure_behavior": "Not invoked in any observed execution; FAILED written elsewhere",
+          "binding_kind": "NO_BINDING",
+          "binding_ref": "lf_operation_execution_steps failed_retry",
+          "evidence_ids": [
+            "EV-10"
+          ],
+          "obligation_ids": [
+            "OBL-WIRE-CUR"
+          ],
+          "binding_state": "OBSERVED_NOT_WIRED"
+        },
+        {
+          "edge_id": "WP-READMIT",
+          "producer_ref": "lf_url_queue FALLIDO",
+          "data_contract_ref": "ORC-RESTOCK-01",
+          "consumer_ref": "restock_queue",
+          "enforcement_point_ref": "ON CONFLICT (url) DO NOTHING",
+          "failure_behavior": "Existing FALLIDO URLs are never readmitted",
+          "binding_kind": "NO_BINDING",
+          "binding_ref": "ORC-RESTOCK-01 execution_sql",
+          "evidence_ids": [
+            "EV-07",
+            "EV-14"
+          ],
+          "obligation_ids": [
+            "OBL-WIRE-CUR"
+          ],
+          "binding_state": "OBSERVED_NOT_WIRED"
+        }
+      ],
+      "context_transport_proofs": [],
+      "behavioral_proofs": [
+        {
+          "behavior_id": "BP-QUEUE-AS-IS",
+          "materiality_signal": "STATE_RECOVERY",
+          "states_or_steps": [
+            "PENDIENTE (queued)",
+            "FALLIDO (failed)",
+            "PROCESADO (processed)"
+          ],
+          "entry_conditions": [
+            "URL inserted by restock as PENDIENTE"
+          ],
+          "terminal_conditions": [
+            "FALLIDO is de facto terminal: no governed exit observed"
+          ],
+          "illegal_transitions": [
+            "FAILED pipeline_run without retry receipt",
+            "FALLIDO queue row without linked pipeline_run"
+          ],
+          "recovery_paths": [
+            "Only ad hoc manual recovery observed (S53 via alternate route); none governed"
+          ],
+          "decision_refs": [
+            "$.current_uncertainties",
+            "$.preferred_alternative"
+          ],
+          "evidence_ids": [
+            "EV-14",
+            "EV-10",
+            "EV-07"
+          ]
+        }
+      ],
+      "derived_decision_closure": {
+        "required_obligation_ids": [
+          "OBL-AUTH-ASSET",
+          "OBL-AUTH-OWNER",
+          "OBL-DEC",
+          "OBL-PROV",
+          "OBL-STATE",
+          "OBL-POLICY",
+          "OBL-WIRE-CUR",
+          "OBL-WIRE-PROD",
+          "OBL-OBS",
+          "OBL-OPS"
+        ],
+        "closed_obligation_ids": [
+          "OBL-AUTH-ASSET",
+          "OBL-PROV",
+          "OBL-POLICY",
+          "OBL-WIRE-CUR",
+          "OBL-OBS"
+        ],
+        "open_obligation_ids": [
+          "OBL-AUTH-OWNER",
+          "OBL-DEC",
+          "OBL-STATE",
+          "OBL-WIRE-PROD",
+          "OBL-OPS"
+        ],
+        "handoff_ready": false,
+        "quality_state": "PRE_QUALITY",
+        "post_implementation_obligation_ids": []
+      }
+    }
+  },
+  "output_sha256": "9c40a0f5f085b026580f3c807ac72189630ace1ad314d7dcde7af9b668d59288",
+  "evidence_manifest": {
+    "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+    "bundle_id": "SRCR-WEB001-ACT0058-20261104",
+    "bundle_digest": "sha256:4f3f4f4b6f10ee2bcf4648d032bff37daea35f2cfc0d6a2cd1ef536f29cfa415",
+    "observed_at": "2026-11-04T20:48:04Z",
+    "producer": {
+      "kind": "SOURCE_FIRST_RESOLVER",
+      "resolver_ref": "mcp__Supabase_read_only__execute_sql@mhwmirqcgxxukpctffuv (assembled by isolated executor run; digests over normalized query + recorded observation in queries.json)"
+    },
+    "evidence": [
+      {
+        "evidence_id": "EV-01",
+        "subject": "WEB-001",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() as observed_at, to_jsonb(e) as row from public.lf_error_knowledge e where e::text ilike '%WEB-001%';",
+        "revision_or_observed_at": "2026-11-04T20:46:10Z",
+        "digest": "sha256:5372255356788c83f70056e93eb00248026f47c7a7a35cb86e853765af359910",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-02",
+        "subject": "public catalog tables",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select table_schema, table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%rule%' or table_name ilike '%regla%' or table_name ilike '%polic%' or table_name ilike '%owner%' or table_name ilike '%operation%' or table_name ilike '%activ%' or table_name ilike '%url_queue%' or table_name ilike '%pipeline%' or table_name ilike '%retry%' or table_name ilike '%catalog%' or table_name ilike '%respons%' or table_name ilike '%authority%' or table_name ilike '%act%') order by 2;",
+        "revision_or_observed_at": "2026-11-04T20:46:15Z",
+        "digest": "sha256:67d42ac3f8386309ec5704d4f30708ab6fdcb4c7151f6645c68ba89cf7b12eda",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-03",
+        "subject": "column layout",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select table_name, string_agg(column_name||':'||data_type, ', ' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('lf_activos','lf_url_queue','lf_pipeline_runs','v_lf_inventario_activo','v_lf_operation_policy_snapshot','lf_operation_registry','lf_policy_versions','lf_operation_policy_bindings','lf_activo_relaciones','lf_prevention_rules') group by table_name;",
+        "revision_or_observed_at": "2026-11-04T20:46:18Z",
+        "digest": "sha256:af54ed6b23961b72522c5973a47471482c9ea44e69e80ac16549c86612997963",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-04",
+        "subject": "ACT-0058",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'v_lf_inventario_activo' src, to_jsonb(v) r from public.v_lf_inventario_activo v where codigo_activo='ACT-0058' union all select now(), 'lf_activos', (to_jsonb(a) - 'raw_payload') || jsonb_build_object('raw_payload_keys',(select jsonb_agg(k) from jsonb_object_keys(coalesce(a.raw_payload,'{}'::jsonb)) k)) from public.lf_activos a where codigo_activo='ACT-0058';",
+        "revision_or_observed_at": "2026-11-04T20:46:21Z",
+        "digest": "sha256:99af6866561432da6f9b6b67341e4c78a364b9d5f1de9b1baf2f404ec3997b8e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-05",
+        "subject": "ACT-0058 relations, WEB-001 prevention rules, policy snapshot",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_activo_relaciones' src, count(*) n, coalesce(jsonb_agg(jsonb_build_object('a',codigo_activo,'rel',relacion_tipo,'b',relacionado_codigo,'fuente',fuente)) filter (where true),'[]') rows from public.lf_activo_relaciones where codigo_activo='ACT-0058' or relacionado_codigo='ACT-0058' union all select now(), 'lf_prevention_rules(WEB-001)', count(*), coalesce(jsonb_agg(to_jsonb(p)),'[]') from public.lf_prevention_rules p where error_codigo='WEB-001' or regla ilike '%cache miss%' or regla ilike '%WEB_FETCH%' union all select now(), 'v_lf_operation_policy_snapshot(ACT-0058/pipeline)', count(*), coalesce(jsonb_agg(jsonb_build_object('op',operation_code,'policy',policy_code,'role',policy_role,'ver',policy_version)),'[]') from public.v_lf_operation_policy_snapshot where operation_code ilike '%ACT-0058%' or operation_code ilike '%PIPELINE%' or operation_code ilike '%CONOCIMIENTO%' or policy_code ilike '%RETRY%' or policy_code ilike '%WEB%' or policy_code ilike '%FETCH%' union all select now(), 'lf_operation_policy_bindings(all)', count(*), jsonb_agg(distinct operation_code) from public.lf_operation_policy_bindings;",
+        "revision_or_observed_at": "2026-11-04T20:46:28Z",
+        "digest": "sha256:ec0f6b5ad80ebbcaa9e1c36100dce05f70c0ea10f12d56cb41a0db83b379afd5",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-06",
+        "subject": "ORQUESTACION_PIPELINE_LF",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_operation_registry' src, jsonb_agg(to_jsonb(r)) rows from public.lf_operation_registry r where operation_code in ('ORQUESTACION_PIPELINE_LF','ESCRITURA_BASE_CONOCIMIENTO_LF') or source_paths::text ilike '%orquestador_pipeline%' or notes ilike '%ACT-0058%' union all select now(), 'v_lf_operation_steps(ORQ)', jsonb_agg(to_jsonb(s)) from public.v_lf_operation_steps s where s::text ilike '%ORQUESTACION_PIPELINE_LF%' union all select now(), 'policy payload matches retry/readmision/owner', jsonb_agg(jsonb_build_object('policy',policy_code,'ver',policy_version,'status',status,'sha',policy_sha,'retry',policy_payload::text ~* '(retry|reintent)','readmis',policy_payload::text ~* '(readmi|re-admi|readmit)','owner',policy_payload::text ~* '(owner|propietari|responsable)','cache',policy_payload::text ~* 'cache')) from public.lf_policy_versions where policy_code in ('POL-LF-POLICY-CONSUMPTION','POL-LF-OPERATION-LIFECYCLE','POL-LF-SOURCE-RESOLUTION','POL-LF-STATE-MODEL') and status ilike 'ACTIVE%';",
+        "revision_or_observed_at": "2026-11-04T20:46:35Z",
+        "digest": "sha256:5e4b1de8c3270a5d88f5b4b1d56ea26ceb7105de525648cab19d98114b27359c",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-07",
+        "subject": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, step_id, to_jsonb(c) - 'operation_code' r from public.lf_operation_step_contracts c where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue');",
+        "revision_or_observed_at": "2026-11-04T20:46:38Z",
+        "digest": "sha256:8c89d845608aca56013fcfb11649b26112fb2cd060b522fb1314b74470d7038d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-08",
+        "subject": "lf_url_queue/lf_pipeline_runs cache-miss state",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_url_queue cache-miss' src, jsonb_agg(x) from (select estado, intento_count, count(*) n, min(updated_at) first_upd, max(updated_at) last_upd, count(*) filter (where url ilike '%reevalua%') reevalua from public.lf_url_queue where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' group by 1,2 order by 1,2) x union all select now(), 'lf_pipeline_runs cache-miss', jsonb_agg(y) from (select stage_current, stage_status, retry_count, failure_category, count(*) n, count(kb_id) kb, count(capture_run_id) cap, max(updated_at) last_upd from public.lf_pipeline_runs where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' or failure_reason ilike '%cache%' group by 1,2,3,4 order by 5 desc) y union all select now(), 'lf_url_queue by fuente/estado total', jsonb_agg(z) from (select fuente, estado, count(*) n from public.lf_url_queue group by 1,2 order by 3 desc limit 25) z;",
+        "revision_or_observed_at": "2026-11-04T20:46:47Z",
+        "digest": "sha256:6f9e39a758f5d88c8c22b95c2be575c3f64bd0a5354b2f3f794212071bf57fde",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-09",
+        "subject": "ORQUESTACION_PIPELINE_LF execution receipts",
+        "evidence_class": "GOVERNED_RECEIPT",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_operation_execution_steps ORQ by step/status' src, (select jsonb_agg(t) from (select s.step_id, s.status, count(*) n, max(s.updated_at) last from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' group by 1,2 order by 1,2) t) r union all select now(), 'lf_operation_execution ORQ count', (select jsonb_build_object('n',count(*),'last',max(created_at),'statuses',jsonb_agg(distinct status)) from public.lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') union all select now(), 'lf_eventos columns', (select jsonb_agg(column_name order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='lf_eventos');",
+        "revision_or_observed_at": "2026-11-04T20:46:57Z",
+        "digest": "sha256:61934217ee6409367b06c03ddde3f540f86e368d5ff60c5105ab66e42008d7f7",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-10",
+        "subject": "failed_retry receipts and fetch-failure events",
+        "evidence_class": "GOVERNED_RECEIPT",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'failed_retry receipts count' src, (select jsonb_build_object('n',count(*)) from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id='failed_retry') r union all select now(), 'lf_eventos WEB_FETCH/cache by tipo', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, count(*) n, min(created_at) first, max(created_at) last from public.lf_eventos where descripcion ~* '(cache miss|WEB_FETCH)' or payload::text ~* '(cache miss|WEB_FETCH)' group by 1,2 order by 3 desc limit 15) t) union all select now(), 'lf_eventos readmision/reintento', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, left(descripcion,220) d, created_at from public.lf_eventos where (descripcion ~* '(readmi|reintento|retry|re-queue|requeue|PENDIENTE)') and (descripcion ~* '(cache|WEB_FETCH|FALLIDO|url_queue)') order by created_at desc limit 8) t);",
+        "revision_or_observed_at": "2026-11-04T20:47:04Z",
+        "digest": "sha256:0fc204f1d29e3543fa3cfbd299f1ae6bf500827d2115fc67eaa7f214a6a954c5",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-11",
+        "subject": "owner columns and global retry/readmission policy",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'owner-like columns' src, (select jsonb_agg(table_name||'.'||column_name) from information_schema.columns where table_schema='public' and column_name ~* '(owner|responsable|propietario|accountable|steward)') r union all select now(), 'lf_policy_versions ACTIVE with retry/readmission/cache', (select jsonb_build_object('n',count(*),'rows',coalesce(jsonb_agg(jsonb_build_object('p',policy_code,'v',policy_version)),'[]')) from public.lf_policy_versions where status ilike 'ACTIVE%' and policy_payload::text ~* '(cache.?miss|readmi|WEB_FETCH|url_queue)') union all select now(), 'lf_operation_contracts ORQ', (select jsonb_agg(to_jsonb(c)) from public.lf_operation_contracts c where c::text ilike '%ORQUESTACION_PIPELINE_LF%' limit 3);",
+        "revision_or_observed_at": "2026-11-04T20:47:18Z",
+        "digest": "sha256:ebb7ff1e44394e052af0845feaaef20ae60fa650b73c12be5aeada0b54b92755",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-12",
+        "subject": "ACT-0058 owner catalogs",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, 'lf_capability_registry' src, (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner_scope)) from public.lf_capability_registry c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF|orquestador_pipeline)') r union all select now(), 'lf_produccion_checklist', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner)) from public.lf_produccion_checklist c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF|orquestador_pipeline)') union all select now(), 'lf_operation_gate_check_results', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner)) from public.lf_operation_gate_check_results c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF)') union all select now(), 'v_lf_fuente_operativa', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner_name)) from public.v_lf_fuente_operativa c where c::text ~* '(ACT-0058|orquestador_pipeline)') union all select now(), 'v_lf_inventario_activo owner_name non-null total', (select jsonb_build_object('n_total',count(*),'n_owner_nonnull',count(owner_name)) from public.v_lf_inventario_activo);",
+        "revision_or_observed_at": "2026-11-04T20:47:25Z",
+        "digest": "sha256:db0c7ad9dc4f93201e069d4ee3bdfbf20d67e199e2b64e127233080df4fb4c21",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-13",
+        "subject": "ACT-0058 ownership history",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, count(*) n, coalesce(jsonb_agg(jsonb_build_object('t',evento_tipo,'e',entidad_codigo,'d',left(descripcion,160),'at',created_at)) ,'[]') rows from public.lf_eventos where (entidad_codigo in ('ACT-0058','ORQUESTACION_PIPELINE_LF') or descripcion ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF)') and (descripcion ~* '(owner|propietari|responsable|accountab)' or payload::text ~* '\"(owner|owner_name|responsable)\"');",
+        "revision_or_observed_at": "2026-11-04T20:48:04Z",
+        "digest": "sha256:3b5f74a924b07fc23136591fab858340c828b18a7c129647861eb0ed062aa395",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-14",
+        "subject": "queue-pipeline producer reconciliation",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "supabase:mhwmirqcgxxukpctffuv:sql:select now() observed_at, jsonb_agg(t) r from (select q.intento_count, p.retry_count, p.stage_current, coalesce(p.updated_by_execution_id, p.execution_id, p.created_by,'NULL') producer, count(*) n, count(*) filter (where q.updated_at < now() - interval '30 days') stale_30d from public.lf_url_queue q left join public.lf_pipeline_runs p on p.pipeline_run_id=q.pipeline_run_id where q.estado='FALLIDO' and (q.error_detail ~* '(cache.?miss|WEB_FETCH)') group by 1,2,3,4 order by 5 desc) t;",
+        "revision_or_observed_at": "2026-11-04T20:47:34Z",
+        "digest": "sha256:30d5821fb253317ac82717fdc55e8b005faa330208246a81a7429972bdd29b36",
+        "state": "CURRENT"
+      }
+    ]
+  },
+  "queries": {
+    "EV-01": {
+      "subject": "WEB-001",
+      "q": "select now() as observed_at, to_jsonb(e) as row from public.lf_error_knowledge e where e::text ilike '%WEB-001%';",
+      "obs": "1 row: codigo=WEB-001 estado=activo frecuencia=46 severidad=MEDIO categoria=CAPTURA_WEB primera_vez=2026-08-24T13:14:33Z ultima_vez=2026-09-01T23:41:25Z causa_raiz='Dependencia externa de fetch/cache no disponible para URLs especificas en la ejecucion actual.' prevencion='No crear captura...Registrar FALLIDO con error_detail...permitir reintento posterior controlado.' root_cause_family=R1_NO_SABE detectability=LOUD_EARLY; evidencia lists recurrences 2026-08-24..2026-09-01 (WEB_FETCH_CACHE_MISS, WEB_FETCH_INTERNAL_ERROR, WEB_FETCH_CACHE_MISS_RETRY) mostly Reevalua, including 4 AUTOLEARN runs 2026-09-01 with fresh Reevalua URLs failing.",
+      "cls": "OBSERVED_HISTORY",
+      "at": "2026-11-04T20:46:10Z"
+    },
+    "EV-02": {
+      "subject": "public catalog tables",
+      "q": "select table_schema, table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%rule%' or table_name ilike '%regla%' or table_name ilike '%polic%' or table_name ilike '%owner%' or table_name ilike '%operation%' or table_name ilike '%activ%' or table_name ilike '%url_queue%' or table_name ilike '%pipeline%' or table_name ilike '%retry%' or table_name ilike '%catalog%' or table_name ilike '%respons%' or table_name ilike '%authority%' or table_name ilike '%act%') order by 2;",
+      "obs": "Relations include lf_activos, lf_activo_relaciones, lf_operation_registry, lf_operation_step_contracts, lf_operation_policy_bindings, lf_policy_versions, v_lf_operation_policy_snapshot, lf_prevention_rules (view), lf_url_queue, lf_pipeline_runs, v_lf_inventario_activo, lf_rule_promotion_v1.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:15Z"
+    },
+    "EV-03": {
+      "subject": "column layout",
+      "q": "select table_name, string_agg(column_name||':'||data_type, ', ' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('lf_activos','lf_url_queue','lf_pipeline_runs','v_lf_inventario_activo','v_lf_operation_policy_snapshot','lf_operation_registry','lf_policy_versions','lf_operation_policy_bindings','lf_activo_relaciones','lf_prevention_rules') group by table_name;",
+      "obs": "lf_activos/v_lf_inventario_activo expose owner_name; lf_url_queue has estado,intento_count,error_detail,pipeline_run_id; lf_pipeline_runs has retry_count,stage_status,failure_category,execution_id; lf_prevention_rules has error_codigo,regla,activa.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:18Z"
+    },
+    "EV-04": {
+      "subject": "ACT-0058",
+      "q": "select now() observed_at, 'v_lf_inventario_activo' src, to_jsonb(v) r from public.v_lf_inventario_activo v where codigo_activo='ACT-0058' union all select now(), 'lf_activos', (to_jsonb(a) - 'raw_payload') || jsonb_build_object('raw_payload_keys',(select jsonb_agg(k) from jsonb_object_keys(coalesce(a.raw_payload,'{}'::jsonb)) k)) from public.lf_activos a where codigo_activo='ACT-0058';",
+      "obs": "ACT-0058 SKILL_ORQUESTADOR_PIPELINE_LF tipo=SKILL runtime_estado=APROBADO_PRODUCCION_CONTROLADA impacto_automatico=PERMITIDO_CONTROLADO; owner_name=NULL in both v_lf_inventario_activo and lf_activos; source cristhianlujan/claude-persona-lf-patch skills/orquestador_pipeline_lf; metadata desbloqueo_operativo_20260619 applied_by=CHATGPT_SUPABASE_MCP.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:21Z"
+    },
+    "EV-05": {
+      "subject": "ACT-0058 relations, WEB-001 prevention rules, policy snapshot",
+      "q": "select now() observed_at, 'lf_activo_relaciones' src, count(*) n, coalesce(jsonb_agg(jsonb_build_object('a',codigo_activo,'rel',relacion_tipo,'b',relacionado_codigo,'fuente',fuente)) filter (where true),'[]') rows from public.lf_activo_relaciones where codigo_activo='ACT-0058' or relacionado_codigo='ACT-0058' union all select now(), 'lf_prevention_rules(WEB-001)', count(*), coalesce(jsonb_agg(to_jsonb(p)),'[]') from public.lf_prevention_rules p where error_codigo='WEB-001' or regla ilike '%cache miss%' or regla ilike '%WEB_FETCH%' union all select now(), 'v_lf_operation_policy_snapshot(ACT-0058/pipeline)', count(*), coalesce(jsonb_agg(jsonb_build_object('op',operation_code,'policy',policy_code,'role',policy_role,'ver',policy_version)),'[]') from public.v_lf_operation_policy_snapshot where operation_code ilike '%ACT-0058%' or operation_code ilike '%PIPELINE%' or operation_code ilike '%CONOCIMIENTO%' or policy_code ilike '%RETRY%' or policy_code ilike '%WEB%' or policy_code ilike '%FETCH%' union all select now(), 'lf_operation_policy_bindings(all)', count(*), jsonb_agg(distinct operation_code) from public.lf_operation_policy_bindings;",
+      "obs": "lf_activo_relaciones: 0 rows for ACT-0058. lf_prevention_rules for WEB-001/cache miss/WEB_FETCH: 0 rows. v_lf_operation_policy_snapshot: 8 rows; ORQUESTACION_PIPELINE_LF bound to POL-LF-POLICY-CONSUMPTION v1.3, POL-LF-OPERATION-LIFECYCLE v1.1, POL-LF-SOURCE-RESOLUTION v1.4, POL-LF-STATE-MODEL v2.0; no RETRY/WEB/FETCH policy code. lf_operation_policy_bindings: 69 rows over 25 operation codes; ORQUESTACION_PIPELINE_LF not in the distinct list returned (appears only via snapshot view).",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:28Z"
+    },
+    "EV-06": {
+      "subject": "ORQUESTACION_PIPELINE_LF",
+      "q": "select now() observed_at, 'lf_operation_registry' src, jsonb_agg(to_jsonb(r)) rows from public.lf_operation_registry r where operation_code in ('ORQUESTACION_PIPELINE_LF','ESCRITURA_BASE_CONOCIMIENTO_LF') or source_paths::text ilike '%orquestador_pipeline%' or notes ilike '%ACT-0058%' union all select now(), 'v_lf_operation_steps(ORQ)', jsonb_agg(to_jsonb(s)) from public.v_lf_operation_steps s where s::text ilike '%ORQUESTACION_PIPELINE_LF%' union all select now(), 'policy payload matches retry/readmision/owner', jsonb_agg(jsonb_build_object('policy',policy_code,'ver',policy_version,'status',status,'sha',policy_sha,'retry',policy_payload::text ~* '(retry|reintent)','readmis',policy_payload::text ~* '(readmi|re-admi|readmit)','owner',policy_payload::text ~* '(owner|propietari|responsable)','cache',policy_payload::text ~* 'cache')) from public.lf_policy_versions where policy_code in ('POL-LF-POLICY-CONSUMPTION','POL-LF-OPERATION-LIFECYCLE','POL-LF-SOURCE-RESOLUTION','POL-LF-STATE-MODEL') and status ilike 'ACTIVE%';",
+      "obs": "ORQUESTACION_PIPELINE_LF v0.1 status=APROBADO_PRODUCCION_CONTROLADA type=SCHEDULER_DRIVEN notes='ACT-0058 - Orquestador end-to-end ... Tabla de control: lf_pipeline_runs' source_model=SKILL_ORQUESTADOR_PIPELINE_LF. 14 steps; failed_retry step_order=110 required=false; restock_queue 105 required; stage_captura 50 required. 4 ACTIVE bound policies: retry=false readmis=false owner=false cache=false for all (SOURCE-RESOLUTION sha 5fab0c7f..., POLICY-CONSUMPTION a6bd42d3..., STATE-MODEL f0d039a7..., OPERATION-LIFECYCLE 2adb62f8...).",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:35Z"
+    },
+    "EV-07": {
+      "subject": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+      "q": "select now() observed_at, step_id, to_jsonb(c) - 'operation_code' r from public.lf_operation_step_contracts c where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue');",
+      "obs": "failed_retry CONTRACT_ACT0058_S11A_FAILED_RETRY_V1 ACTIVO: notes 'maximo 3 intentos', purpose 'Bloquear ejecucion si retry_count > 3', SQL sets stage_status FAILED WHEN retry_count+1 >= 3 or error_type in (SCHEMA_ERROR,FK_VIOLATION) ELSE PENDING; pass 'retry_count <= 3'; blocking_code MAX_RETRY_EXCEEDED; no error-class distinction for external fetch errors; does not touch lf_url_queue. stage_captura CONTRACT_ACT0058_S5A: notes require registering WEB_FETCH_UNAVAILABLE in lf_eventos and marking URL FALLIDO on web.run failure, next_if_blocked FAILED_UPDATE. restock_queue ORC-RESTOCK-01: INSERT ... 'PENDIENTE' ... ON CONFLICT (url) DO NOTHING, resolver GPT_RUNTIME_WITH_SUPABASE_CONTEXT, no domain fetchability feedback.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:38Z"
+    },
+    "EV-08": {
+      "subject": "lf_url_queue/lf_pipeline_runs cache-miss state",
+      "q": "select now() observed_at, 'lf_url_queue cache-miss' src, jsonb_agg(x) from (select estado, intento_count, count(*) n, min(updated_at) first_upd, max(updated_at) last_upd, count(*) filter (where url ilike '%reevalua%') reevalua from public.lf_url_queue where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' group by 1,2 order by 1,2) x union all select now(), 'lf_pipeline_runs cache-miss', jsonb_agg(y) from (select stage_current, stage_status, retry_count, failure_category, count(*) n, count(kb_id) kb, count(capture_run_id) cap, max(updated_at) last_upd from public.lf_pipeline_runs where error_detail ilike '%cache%miss%' or error_detail ilike '%WEB_FETCH%' or failure_reason ilike '%cache%' group by 1,2,3,4 order by 5 desc) y union all select now(), 'lf_url_queue by fuente/estado total', jsonb_agg(z) from (select fuente, estado, count(*) n from public.lf_url_queue group by 1,2 order by 3 desc limit 25) z;",
+      "obs": "queue rows with cache/WEB_FETCH error: FALLIDO intento=1 n=19 (17 reevalua), FALLIDO intento=2 n=7 (7), FALLIDO intento=3 n=6 (6), PROCESADO intento=1 n=2 (2 reevalua, 2026-06-20), SKIP n=2; last update 2026-09-01. pipeline_runs: 38 FAILED rows, all kb=0 cap=0, failure_category EXTERNO (37) ; retry_count distribution 0 (9), 1 (19), 2 (4), 3 (6). Queue totals: reevalua.com FALLIDO 34, finanty.com FALLIDO 5.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:46:47Z"
+    },
+    "EV-09": {
+      "subject": "ORQUESTACION_PIPELINE_LF execution receipts",
+      "q": "select now() observed_at, 'lf_operation_execution_steps ORQ by step/status' src, (select jsonb_agg(t) from (select s.step_id, s.status, count(*) n, max(s.updated_at) last from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' group by 1,2 order by 1,2) t) r union all select now(), 'lf_operation_execution ORQ count', (select jsonb_build_object('n',count(*),'last',max(created_at),'statuses',jsonb_agg(distinct status)) from public.lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') union all select now(), 'lf_eventos columns', (select jsonb_agg(column_name order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='lf_eventos');",
+      "obs": "159 executions of ORQUESTACION_PIPELINE_LF (last 2026-10-28; statuses incl COMPLETED_WITH_FAILURES, RETURN_TO_WORKER). Only 21 step receipts in total across all steps; no failed_retry receipt; stage_captura 1 CAPTURE_STORED + 1 RETURN_TO_WORKER.",
+      "cls": "GOVERNED_RECEIPT",
+      "at": "2026-11-04T20:46:57Z"
+    },
+    "EV-10": {
+      "subject": "failed_retry receipts and fetch-failure events",
+      "q": "select now() observed_at, 'failed_retry receipts count' src, (select jsonb_build_object('n',count(*)) from public.lf_operation_execution_steps s join public.lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id='failed_retry') r union all select now(), 'lf_eventos WEB_FETCH/cache by tipo', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, count(*) n, min(created_at) first, max(created_at) last from public.lf_eventos where descripcion ~* '(cache miss|WEB_FETCH)' or payload::text ~* '(cache miss|WEB_FETCH)' group by 1,2 order by 3 desc limit 15) t) union all select now(), 'lf_eventos readmision/reintento', (select jsonb_agg(t) from (select evento_tipo, entidad_codigo, left(descripcion,220) d, created_at from public.lf_eventos where (descripcion ~* '(readmi|reintento|retry|re-queue|requeue|PENDIENTE)') and (descripcion ~* '(cache|WEB_FETCH|FALLIDO|url_queue)') order by created_at desc limit 8) t);",
+      "obs": "failed_retry receipts: 0. lf_eventos matching cache miss/WEB_FETCH: 6 events, none of type WEB_FETCH_UNAVAILABLE; latest 2026-08-24 PIPELINE_REAL_COMPLETADO. Readmission-like events: one manual recovery (2026-06-22 FETCH_FALLIDO S52 then KB_WRITE 'reintento exitoso S53 ... Recuperado via web_search + blog?page=3'); queue expansion events inserting new reevalua URLs as PENDIENTE (June 2026). No governed readmission event.",
+      "cls": "GOVERNED_RECEIPT",
+      "at": "2026-11-04T20:47:04Z"
+    },
+    "EV-11": {
+      "subject": "owner columns and global retry/readmission policy",
+      "q": "select now() observed_at, 'owner-like columns' src, (select jsonb_agg(table_name||'.'||column_name) from information_schema.columns where table_schema='public' and column_name ~* '(owner|responsable|propietario|accountable|steward)') r union all select now(), 'lf_policy_versions ACTIVE with retry/readmission/cache', (select jsonb_build_object('n',count(*),'rows',coalesce(jsonb_agg(jsonb_build_object('p',policy_code,'v',policy_version)),'[]')) from public.lf_policy_versions where status ilike 'ACTIVE%' and policy_payload::text ~* '(cache.?miss|readmi|WEB_FETCH|url_queue)') union all select now(), 'lf_operation_contracts ORQ', (select jsonb_agg(to_jsonb(c)) from public.lf_operation_contracts c where c::text ilike '%ORQUESTACION_PIPELINE_LF%' limit 3);",
+      "obs": "15 owner-like columns (lf_activos.owner_name, lf_capability_registry.owner_scope, lf_produccion_checklist.owner, lf_operation_gate_check_results.owner, v_lf_fuente_operativa.owner_name, ...). ACTIVE lf_policy_versions mentioning cache miss/readmission/WEB_FETCH/url_queue: 0 rows. lf_operation_contracts: CONTRACT-PRE-EKB-GATE-LF-v0.1 (ACTIVE_ENFORCEMENT, ORQUESTACION_PIPELINE_LF, EKB write policy NEW_ERROR_OR_RECURRENCE_ONLY, contract_sha 'pending-git-pr'); CONTRACT-ORQUESTACION-ESTRATEGIAS-LF-v0.1-candidate lists BLIND_RETRY as blocked (different operation, CANDIDATO_READ_ONLY).",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:47:18Z"
+    },
+    "EV-12": {
+      "subject": "ACT-0058 owner catalogs",
+      "q": "select now() observed_at, 'lf_capability_registry' src, (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner_scope)) from public.lf_capability_registry c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF|orquestador_pipeline)') r union all select now(), 'lf_produccion_checklist', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner)) from public.lf_produccion_checklist c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF|orquestador_pipeline)') union all select now(), 'lf_operation_gate_check_results', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner)) from public.lf_operation_gate_check_results c where c::text ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF)') union all select now(), 'v_lf_fuente_operativa', (select jsonb_build_object('n',count(*),'owners',jsonb_agg(distinct owner_name)) from public.v_lf_fuente_operativa c where c::text ~* '(ACT-0058|orquestador_pipeline)') union all select now(), 'v_lf_inventario_activo owner_name non-null total', (select jsonb_build_object('n_total',count(*),'n_owner_nonnull',count(owner_name)) from public.v_lf_inventario_activo);",
+      "obs": "lf_capability_registry 0 rows; lf_produccion_checklist 0 rows; lf_operation_gate_check_results 0 rows; v_lf_fuente_operativa 1 row owner_name NULL; v_lf_inventario_activo 223 assets, 179 with non-null owner_name (analogy only, not authority).",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:47:25Z"
+    },
+    "EV-13": {
+      "subject": "ACT-0058 ownership history",
+      "q": "select now() observed_at, count(*) n, coalesce(jsonb_agg(jsonb_build_object('t',evento_tipo,'e',entidad_codigo,'d',left(descripcion,160),'at',created_at)) ,'[]') rows from public.lf_eventos where (entidad_codigo in ('ACT-0058','ORQUESTACION_PIPELINE_LF') or descripcion ~* '(ACT-0058|ORQUESTACION_PIPELINE_LF)') and (descripcion ~* '(owner|propietari|responsable|accountab)' or payload::text ~* '\"(owner|owner_name|responsable)\"');",
+      "obs": "0 rows.",
+      "cls": "OBSERVED_HISTORY",
+      "at": "2026-11-04T20:48:04Z"
+    },
+    "EV-14": {
+      "subject": "queue-pipeline producer reconciliation",
+      "q": "select now() observed_at, jsonb_agg(t) r from (select q.intento_count, p.retry_count, p.stage_current, coalesce(p.updated_by_execution_id, p.execution_id, p.created_by,'NULL') producer, count(*) n, count(*) filter (where q.updated_at < now() - interval '30 days') stale_30d from public.lf_url_queue q left join public.lf_pipeline_runs p on p.pipeline_run_id=q.pipeline_run_id where q.estado='FALLIDO' and (q.error_detail ~* '(cache.?miss|WEB_FETCH)') group by 1,2,3,4 order by 5 desc) t;",
+      "obs": "32 FALLIDO cache/WEB_FETCH queue rows, all stale >30 days: 14 intento=1 with no linked pipeline_run (producer NULL); 6 intento=3 with linked run retry_count=0 producer LF-KNOWLEDGE-20260827-001; 4 intento=2 retry=2 LF-POSTPROCESS-20260825-001; 3 intento=1 retry=1 LF-KNOWLEDGE-20260826-001; 3 intento=2 retry=0 LF-KNOWLEDGE-20260827-001; 1 intento=1 retry=1 49cc7bcd-...; 1 intento=1 retry=0 ACT0058-20260702220035. 26 rows have intento_count<3 and were never readmitted.",
+      "cls": "OBSERVED_LIVE",
+      "at": "2026-11-04T20:47:34Z"
+    }
+  }
+}
