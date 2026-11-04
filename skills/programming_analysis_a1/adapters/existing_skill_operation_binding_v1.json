@@ -28,7 +28,7 @@
     {
       "canonical_step": "init_execution",
       "owner": "EXISTING_OPERATION",
-      "requirement": "stable execution identity and authority receipt"
+      "requirement": "stable execution identity and authority receipt; generic core rejects init_execution, requires existing operation initialization"
     },
     {
       "canonical_step": "router",
@@ -82,7 +82,8 @@
     "NEW_STANDARD_CONSUMER_NOT_WIRED",
     "REAL_PRODUCER_AND_JUDGE_RECEIPTS_MISSING",
     "SKILL_EXECUTION_RECORDER_NOT_QUALIFIED",
-    "GOVERNED_EXECUTOR_PERMISSION_BOUNDARY_NOT_YET_WIRED"
+    "GOVERNED_EXECUTOR_PERMISSION_BOUNDARY_NOT_YET_WIRED",
+    "SERVER_SIDE_SEMANTIC_JUDGE_PASS_FAIL_RULES_UNQUALIFIED"
   ],
   "fail_closed_rules": [
     "do not run model directly from Router",
@@ -106,5 +107,6 @@
     "execution_channel": "AUTHORIZED_GITHUB_OIDC_EDGE_PATTERN_TO_BE_QUALIFIED_FOR_SKILL",
     "read_only_connector_is_writer": false,
     "governed_readback_required": true
-  }
+  },
+  "preflight_candidate": "adapters/governed_skill_step_preflight_v1.py"
 }
