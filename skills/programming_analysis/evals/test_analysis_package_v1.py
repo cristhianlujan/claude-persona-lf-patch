@@ -32,4 +32,15 @@ class AnalysisStagePackage(unittest.TestCase):
   self.assertEqual([s['source_contract'] for s in M['steps'][:9]],[s['source_contract'] for s in src['steps']])
  def test_a2_to_a15_are_not_fake_executors(self):
   self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][1:]))
+ def test_exactly_one_skill_file(self):
+  self.assertEqual([x.relative_to(P).as_posix() for x in P.rglob('SKILL.md')],['SKILL.md'])
+ def test_a1_step_envelope_identifies_parent(self):
+  schema=json.loads((P/'steps/a1/schemas/output.schema.json').read_text(encoding='utf-8'))
+  self.assertEqual(schema['properties']['skill_code']['const'],M['skill_code'])
+  self.assertEqual(schema['properties']['schema_version']['const'],'A1_INTERNAL_STEP_CANDIDATE_RESULT_V1')
+  self.assertEqual(schema['properties']['step_code']['const'],'A1')
+ def test_operation_steps_are_not_analysis_steps(self):
+  self.assertEqual(M['operation_code'],'EJECUCION_SKILL_LF')
+  self.assertEqual(M['internal_step_count'],15)
+  self.assertNotEqual(M['internal_step_count'],9)
 if __name__=='__main__':unittest.main()
