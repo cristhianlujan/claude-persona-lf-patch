@@ -185,11 +185,13 @@
       "phase": "VALIDATION",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_evaluation_historical_corpus_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     },
     {
       "step_id": "A11",
@@ -198,11 +200,13 @@
       "phase": "VALIDATION",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_adversarial_cases_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     },
     {
       "step_id": "A12",
@@ -211,11 +215,13 @@
       "phase": "VALIDATION",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a12_benchmark_contract_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     },
     {
       "step_id": "A13",
@@ -224,11 +230,13 @@
       "phase": "REMEDIATION",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a13_remediation_changelog_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     },
     {
       "step_id": "A14",
@@ -237,11 +245,13 @@
       "phase": "VALIDATION",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_a14_fresh_holdout_preflight_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     },
     {
       "step_id": "A15",
@@ -250,11 +260,13 @@
       "phase": "FREEZE",
       "source_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/analysis_v1_freeze_manifest_v1.json",
       "produces": null,
-      "requires": [],
+      "requires": null,
       "guard": "Qualification needs real independent receipts tied to exact source manifest; historical DONE does not count as new execution.",
       "implementation_state": "HISTORICAL_QUALIFICATION_REFERENCE_UNWIRED",
       "module_entrypoint": null,
-      "operationally_verified": false
+      "operationally_verified": false,
+      "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
+      "no_input_inference_allowed": true
     }
   ]
 }
