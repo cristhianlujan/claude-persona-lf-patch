@@ -70,7 +70,7 @@ def prepare_pg09_c5(*, scenario_observations):
     """Accept one observed PG09_C4 envelope per mandated adversarial case.
 
     Each scenario row: scenario_id, fixture_ref, fixture_sha256,
-    tool_execution_receipt_ref, observed_pg09_c4. A genuine runner should
+    tool_execution_receipt_ref, observed_pg09_c1, observed_pg09_c4. A genuine runner should
     later bind exact fixture + real recorded execution to authenticated
     tool receipts. This function does not do any of those things.
     """
@@ -80,7 +80,7 @@ def prepare_pg09_c5(*, scenario_observations):
     for row in scenario_observations:
         if not isinstance(row, dict) or set(row) != {
             "scenario_id", "fixture_ref", "fixture_sha256",
-            "tool_execution_receipt_ref", "observed_pg09_c4"
+            "tool_execution_receipt_ref", "observed_pg09_c1", "observed_pg09_c4"
         }:
             fail("PG09_C5_SCENARIO_SHAPE_INVALID")
         case = row["scenario_id"]
@@ -101,9 +101,15 @@ def prepare_pg09_c5(*, scenario_observations):
         if row["fixture_ref"] in fixture_refs:
             fail("PG09_C5_FIXTURE_REF_REUSED")
         fixture_refs.add(row["fixture_ref"])
+        c1 = row["observed_pg09_c1"]
+        c1_sha = check_source(c1, "PG09_C1_ITERATION_COST_GOVERNOR_CANDIDATE_V1")
+        if c1.get("pg09_c1_pass") is not False or c1.get("pg09_c1_admitted") is not False:
+            fail("PG09_C5_C1_PREMATURE_VERDICT")
         c4 = row["observed_pg09_c4"]
         c4_sha = check_source(c4, "PG09_C4_TYPED_ESCALATION_CANDIDATE_V1")
-        if (c4.get("pg09_c4_pass") is not False
+        if (c4.get("source_pg09_c1_sha256") != c1_sha or
+            c4.get("run_ref") != c1.get("run_ref") or
+            c4.get("pg09_c4_pass") is not False
             or c4.get("pg09_c4_admitted") is not False
             or c4.get("escalation_delivered") is not False
             or c4.get("owner_authorization_verified") is not False
@@ -125,10 +131,27 @@ def prepare_pg09_c5(*, scenario_observations):
         expected_signal_reported = (
             result["escalation_type"] == expected_type and expected_reason in reasons
         )
+        # A generic RETURN does not prove C1 emitted the 80% warning.
+        # Bind budget adversarial labels to the matching C1 signal.
+        if case == "BUDGET_80_WARNING":
+            expected_signal_reported = (expected_signal_reported and
+                c1.get("request_diagnostic") == "WARN_80_PERCENT" and
+                c1.get("eighty_percent_warning_reported") is True and
+                c1.get("requires_decision_reported") is False)
+        if case == "BUDGET_100_EXHAUSTED":
+            expected_signal_reported = (expected_signal_reported and
+                c1.get("request_diagnostic") == "REQUIRES_DECISION" and
+                c1.get("requires_decision_reported") is True and
+                c1.get("reported_request_known_cost") is not None)
+        if case == "BUDGET_USAGE_UNAVAILABLE":
+            expected_signal_reported = expected_signal_reported and c1.get("missing_usage_requires_decision") is True
+        if case == "WORKER_ATTEMPTS_EXHAUSTED":
+            expected_signal_reported = expected_signal_reported and c1.get("iteration_limit_reached_reported") is True
         outputs.append({
             "scenario_id": case,
             "fixture_ref_reported": row["fixture_ref"],
             "fixture_sha256_reported": row["fixture_sha256"],
+            "source_pg09_c1_sha256": c1_sha,
             "source_pg09_c4_sha256": c4_sha,
             "tool_execution_receipt_ref_reported": row["tool_execution_receipt_ref"],
             "expected_type": expected_type,
