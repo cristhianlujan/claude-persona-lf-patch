@@ -35,5 +35,8 @@
     "semantic_test_standins": "evals/test_semantic_boundary_v1.py"
   },
   "step_code": "A1",
-  "contract_scope": "INTERNAL_ANALYSIS_STEP_NOT_REGISTERABLE_SKILL"
+  "contract_scope": "INTERNAL_ANALYSIS_STEP_NOT_REGISTERABLE_SKILL",
+  "internal_step_entrypoint": "validators/run.py:run",
+  "external_skill_entrypoint": "skills/programming_analysis/SKILL.md",
+  "independent_skill_registration_allowed": false
 }
