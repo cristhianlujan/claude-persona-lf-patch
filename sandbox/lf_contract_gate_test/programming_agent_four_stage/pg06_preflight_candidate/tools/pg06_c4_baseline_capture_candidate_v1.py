@@ -91,7 +91,7 @@ def prepare_pg06_c4(*,pg05_exit,pg06_c1,pg06_c2,pg06_c3,baseline_observations):
             or isinstance(c["exit_code"],bool)):
             _fail("PG06_C4_COMMAND_BINDING_INVALID")
         if (c["result"]=="PASS" and (c["exit_code"]!=0 or c["violation_refs"]!=[])) or
-            (c["result"]=="FAIL" and c["exit_code"]==0)):
+            (c["result"]=="FAIL" and c["exit_code"]==0):
             _fail("PG06_C4_COMMAND_RESULT_CONTRADICTION")
         violations=c["violation_refs"]
         if (not isinstance(violations,list) or
