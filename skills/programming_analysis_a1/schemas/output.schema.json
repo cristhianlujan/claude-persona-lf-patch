@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_code",
+    "business",
+    "status",
+    "payload",
+    "declared_intent_kind",
+    "blocking_codes",
+    "next_capability",
+    "external_authority_verified",
+    "operationally_integrated",
+    "effects_executed"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "A1_SKILL_CANDIDATE_RESULT_V1"
+    },
+    "skill_code": {
+      "const": "PROGRAMMING_ANALYSIS_A1"
+    },
+    "business": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "VALID_OUTPUT",
+        "NEED_MORE_EVIDENCE",
+        "REQUIRES_DECISION",
+        "BLOCKED"
+      ]
+    },
+    "payload": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "declared_intent_kind": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "blocking_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_capability": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "external_authority_verified": {
+      "const": false
+    },
+    "operationally_integrated": {
+      "const": false
+    },
+    "effects_executed": {
+      "const": false
+    }
+  }
+}
