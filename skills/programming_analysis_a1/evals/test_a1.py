@@ -223,5 +223,14 @@ class SkillA1Tests(unittest.TestCase):
         self.assertFalse(r["external_authority_verified"])
 
 
+    def test_34_unattested_semantic_candidate_no_automatic_handoff(self):
+        x=valid();x["original_request"]="Evalúa el login B2B e implementa lo que falta"
+        x["input_mode"]="SEMANTIC_CANDIDATE"
+        r=RUN.run(x)
+        self.assertEqual(r["status"],"VALID_OUTPUT")
+        self.assertIsNone(r["next_capability"])
+        self.assertTrue(r["semantic_review_required"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
