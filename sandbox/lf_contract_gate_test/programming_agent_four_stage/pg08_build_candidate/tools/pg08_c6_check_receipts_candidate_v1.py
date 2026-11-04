@@ -110,13 +110,13 @@ def prepare_pg08_c6(*, pg08_c1, pg08_c2, pg08_c3, pg08_c4, pg08_c5):
         checks = []
         seen = set()
         for lane in ("c1", "c2", "c3", "c4", "c5"):
-            for item in indexed[lane][sid].get("checks_reported", []):
+            for item in indexed[lane][sid].get("commands_reported" if lane == "c1" else "checks_reported", []):
                 if not isinstance(item, dict):
                     fail("PG08_C6_CHECK_INVALID")
                 kind = item.get("kind", item.get("profile", "BUILD" if lane == "c1" else None))
                 if not nonempty(kind):
                     fail("PG08_C6_CHECK_KIND_MISSING")
-                key = lane + ":" + kind
+                key = lane + ":" + kind + ":" + str(item.get("command_id", item.get("command_id_reported", "")))
                 if key in seen:
                     fail("PG08_C6_DUPLICATE_CHECK")
                 seen.add(key)
@@ -178,8 +178,8 @@ def prepare_pg08_c6(*, pg08_c1, pg08_c2, pg08_c3, pg08_c4, pg08_c5):
                     "tool_execution_verified": False,
                     "feedback_only": True
                 })
-        if not checks:
-            fail("PG08_C6_CHECKS_MISSING")
+        if not checks or not any(x["checkpoint"] == "PG-08_C1" for x in checks):
+            fail("PG08_C6_BUILD_CHECKS_MISSING")
         assembled.append({
             "solution_id": sid,
             "executor_mode_reported": mode,
