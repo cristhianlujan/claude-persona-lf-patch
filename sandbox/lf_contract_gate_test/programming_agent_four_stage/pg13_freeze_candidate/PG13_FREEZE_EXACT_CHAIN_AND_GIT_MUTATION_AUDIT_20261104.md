@@ -65,3 +65,34 @@ python3 -m unittest discover -s tests -p 'test_pg10_pg11_bridge_and_waiver_time_
 El autor solo ejecutó la **simulación local real de Git temporal**, no la suite unitaria de cadena sobre el checkout Git del PR. **No se puede declarar 11/11 PASS hasta que Claude ejecute ambos archivos y revise el HEAD**.
 
 No se fusionó, no se escribió en Supabase, no se modificó Analysis, Worker productivo, `main` ni Testing. Detener antes de PG-14 hasta revisión independiente.
+
+
+## Corrección de C3 posterior a auditoría independiente (2026-11-04)
+
+Claude calificó el HEAD anterior `fb05cce445a8e2a3b2acc4fba071961a99b41234` con 12/12, pero comprobó que `receive.denyNonFastForwards=true` **NO** protege contra fast-forward normal ni contra eliminación. Por tanto aquel C3 NO era un freeze inmutable.
+
+Se actualizó `tools/pg13_disposable_git_mutation_test_v1.py` para:
+- Establecer primero el commit B en `refs/heads/frozen` y el tag **anotado** `refs/tags/frozen/<B-SHA>`.
+- Activar `receive.denyNonFastForwards=true` **y** `receive.denyDeletes=true`.
+- Instalar un **hook pre-receive** después del congelamiento; rechaza cualquier creación, actualización o eliminación en `refs/heads/frozen` y `refs/tags/frozen/*`, sin excepción por fast-forward.
+- Ejecutar realmente los intentos contra Git: `FORCE_PUSH` (commit divergente), `NORMAL_FAST_FORWARD` (commit descendiente), `DELETE` (rama congelada), `RECREATE_DIFFERENT_SHA` (crear un ref alterno bajo el namespace protegido) y, adicionalmente, `DELETE_ANNOTATED_TAG`.
+- Exigir en **todos**: exit code no cero, mensaje literal del hook `LF_FROZEN_REF_IMMUTABLE`, mismo SHA remoto de la rama y mismo OID del tag.
+- Probar que el ref alternativo no fue creado y que `PG13_C3_PRODUCTION_FREEZE_VERIFIED=FALSE`.
+
+**Nota de semántica:** no puede ejecutarse «borrar ref original y recrearlo» exitosamente porque el borrado ya está prohibido. La prueba de recreación verifica el intento de crear un nuevo ref protegido apuntando a un SHA distinto. Esto no sustituye un ensayo de ref update tras bypass de hook administrativo.
+
+**Procedimiento local ejecutado por el autor:** cinco casos `..._BLOCK=PASS` y `..._REFS_UNCHANGED=TRUE` sobre bare repo desechable. La ejecución local fue sobre la misma estrategia, pero **la versión GitHub exacta del HEAD nuevo debe ser calificada de nuevo por Claude**. El HEAD anterior no cubría los ataques adicionales.
+
+Comandos a ejecutar en el nuevo HEAD:
+
+```bash
+git rev-parse HEAD
+ROOT=sandbox/lf_contract_gate_test/programming_agent_four_stage
+python3 -m py_compile "$ROOT"/pg13_freeze_candidate/tools/*.py "$ROOT"/pg13_freeze_candidate/tests/*.py
+cd "$ROOT"/pg13_freeze_candidate
+python3 -m unittest discover -s tests -p 'test_pg13_freeze_chain_v1.py' -v
+python3 -m unittest discover -s tests -p 'test_pg13_disposable_git_enforcement_v1.py' -v
+python3 tools/pg13_disposable_git_mutation_test_v1.py
+```
+
+**No promover PG-13 C3 ni abrir PG-14 antes de esta recalificación.** Los permisos de GitHub, las reglas de la rama productiva y la resistencia a administradores con acceso a hooks son dependencias separadas no demostradas por el bare local.
