@@ -43,6 +43,14 @@ Also use for architecture/lifecycle audits of a governed process when the reques
 
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
+### Governed profile update skill invocation
+
+When ACT-0001 selects this profile for an LF profile update request, the profile MAY select and invoke only `PROFILE_UPDATE_APPLY`, exclusively for operation `ACTUALIZACION_PERFIL_LF`. This is a governed skill invocation, not a direct invocation of another profile and not authorization to write or activate any asset.
+
+Before invocation require: an existing parent `EJECUCION_PERFIL_LF` execution in `IN_PROGRESS`; an `ACTIVE` authorization for this profile and `ACTUALIZACION_PERFIL_LF` in `lf_profile_write_authority_v1`; an exact target (`target_code`, `target_path`).
+
+Invoke with the governed request `LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1` (`schema_version`, `execution_id` = parent, `skill_code` = `PROFILE_UPDATE_APPLY`, `input` with `target_code` and `target_path`). The skill only opens a child `ACTUALIZACION_PERFIL_LF` execution linked to the parent. If admission or invocation is denied, do not bypass it or claim a child execution exists; preserve the observed result and return control through governed orchestration.
+
 ## Governed repair execution (V0.7R1 bounded extension)
 
 Default behavior remains read-only. The profile may implement a repair only when **all** of the following are true:
@@ -69,7 +77,7 @@ When authorized:
 - perform post-write readback against the same canonical source;
 - prove that the intended structural defect is closed and that preserved constraints remain unchanged;
 - record the changed objects/refs, before/after evidence, rollback reference and verification result in `repair_execution`;
-- return control to the Router after implementation. The profile MUST NOT directly invoke Product, UI, Programming or another profile.
+- return control to the Router after implementation. The profile MUST NOT directly invoke Product, UI, Programming or another profile. Invoking `PROFILE_UPDATE_APPLY` through the governed `lf_skill_invoke_v1` mechanism is consumption of an authorized Skill, not direct profile invocation. This exception applies only to `ACTUALIZACION_PERFIL_LF` and grants no direct profile-write authority.
 
 A completed governed repair is not a promotion. It creates/updates only the authorized governed candidate/current structure allowed by the target operation and then returns to orchestration.
 
