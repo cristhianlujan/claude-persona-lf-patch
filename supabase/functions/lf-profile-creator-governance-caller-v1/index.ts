@@ -9,12 +9,9 @@ const CUSTOMER_REF = `refs/heads/${CUSTOMER_BRANCH}`;
 const WORKFLOW_NAME = "LF Customer Profile Creator Governance Caller";
 const WORKFLOW_PATH = ".github/workflows/lf-customer-profile-creator-governance-caller.yml";
 const CUSTOMER_WORKFLOW_REF = `${REPOSITORY}/${WORKFLOW_PATH}@${CUSTOMER_REF}`;
-const UPDATE_REF = "refs/heads/main";
-const UPDATE_WORKFLOW_REF = `${REPOSITORY}/${WORKFLOW_PATH}@${UPDATE_REF}`;
 const AUDIENCE = "lf-profile-creator-governance-caller-v1";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const CUSTOMER_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_CREATOR_CUSTOMER_V1";
-const UPDATE_CALLER_METHOD = "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1";
 const PROJECT_ID = "AGENTE_PROFILE_CREATOR";
 const OWNER_LANE = "CUSTOMER_PROFILES";
 const EXECUTION_ORIGIN = "AUTOMATION_PROFILE_CREATOR_DUAL_EXECUTOR";
@@ -23,9 +20,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ?? "";
 const JWKS = createRemoteJWKSet(new URL(`${ISSUER}/.well-known/jwks`));
 const UPDATE_OPERATION = "ACTUALIZACION_PERFIL_LF";
-const PREWRITE_STEP = "pre_write_execution_binding_gate";
-const UPDATE_BASE_REF = "main";
-const GITHUB_API = "https://api.github.com";
 
 const TARGETS: Record<string, string> = {
   "PERFIL-CUSTOMER-FINANCIAL-UX-DECISIONING": "customer_financial_ux_decisioning",
@@ -54,10 +48,9 @@ async function requireOidc(req: Request): Promise<{ payload: JWTPayload; method:
   let method = "";
   if (ref === CUSTOMER_REF && workflowRef === CUSTOMER_WORKFLOW_REF && new Set(["push", "workflow_dispatch"]).has(eventName)) {
     method = CUSTOMER_CALLER_METHOD;
-  } else if (ref === UPDATE_REF && workflowRef === UPDATE_WORKFLOW_REF && eventName === "workflow_dispatch") {
-    method = UPDATE_CALLER_METHOD;
   } else {
-    if (ref !== CUSTOMER_REF && ref !== UPDATE_REF) throw new Error("OIDC_REF_MISMATCH");
+    // Profile update (ACTUALIZACION_PERFIL_LF) is retired from this OIDC route: it only enters through a profile + skill.
+    if (ref !== CUSTOMER_REF) throw new Error("OIDC_REF_MISMATCH");
     throw new Error("OIDC_WORKFLOW_MISMATCH");
   }
   if (!payload.run_id || !payload.workflow_sha || !/^[0-9a-f]{40}$/.test(String(payload.workflow_sha))) throw new Error("OIDC_RUN_IDENTITY_INCOMPLETE");
@@ -78,87 +71,11 @@ async function callRuntime(body: Record<string, unknown>): Promise<Record<string
   return payload;
 }
 
-function safeRepoPath(value: unknown): string {
-  const path = typeof value === "string" ? value.trim().replace(/^\/+/, "") : "";
-  if (!path || path.length > 500 || path.includes("..") || path.includes("\\") || path.includes("\0") || path.includes(":")) throw new Error("PROFILE_UPDATE_TARGET_PATH_INVALID");
-  return path;
-}
-
-async function githubJson(path: string): Promise<Record<string, any>> {
-  const response = await fetch(`${GITHUB_API}${path}`, {
-    method: "GET",
-    headers: { accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "user-agent": "lf-profile-creator-currentness-resolver-v1" },
-    signal: AbortSignal.timeout(15000),
-  });
-  const text = await response.text();
-  let payload: Record<string, any>;
-  try { payload = text ? JSON.parse(text) : {}; } catch { payload = {}; }
-  if (!response.ok) throw new Error(`PROFILE_UPDATE_GITHUB_RESOLVER_${response.status}`);
-  return payload;
-}
-
-async function resolveTrustedCurrentRevision(targetPathValue: unknown): Promise<Record<string, unknown>> {
-  const targetPath = safeRepoPath(targetPathValue);
-  const commit = await githubJson(`/repos/${REPOSITORY}/commits/${UPDATE_BASE_REF}`);
-  const revisionSha = typeof commit.sha === "string" ? commit.sha : "";
-  if (!/^[0-9a-f]{40}$/.test(revisionSha)) throw new Error("PROFILE_UPDATE_CURRENT_REVISION_UNRESOLVED");
-  const encodedPath = targetPath.split("/").map(encodeURIComponent).join("/");
-  const content = await githubJson(`/repos/${REPOSITORY}/contents/${encodedPath}?ref=${revisionSha}`);
-  const blobSha = typeof content.sha === "string" ? content.sha : "";
-  if (!/^[0-9a-f]{40}$/.test(blobSha) || content.type !== "file") throw new Error("PROFILE_UPDATE_CURRENT_TARGET_BLOB_UNRESOLVED");
-  return { resolver: "GITHUB_PUBLIC_API_EXACT_REF_V1", repository: REPOSITORY, ref: UPDATE_BASE_REF, revision_sha: revisionSha, target_path: targetPath, target_blob_sha: blobSha, observed_at: new Date().toISOString(), declared_currentness_accepted: false };
-}
-
-function revisionSha(value: unknown): string {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
-  const sha = typeof (value as Record<string, unknown>).revision_sha === "string" ? String((value as Record<string, unknown>).revision_sha).trim() : "";
-  return /^[0-9a-f]{40}$/.test(sha) ? sha : "";
-}
-
-function baselineRevisionSha(snapshot: Record<string, any>): string {
-  const baseline = snapshot?.baseline_observation;
-  if (!baseline || typeof baseline !== "object" || Array.isArray(baseline)) throw new Error("PROFILE_UPDATE_BASELINE_OBSERVATION_REQUIRED");
-  const sha = typeof baseline.baseline_revision === "string" ? baseline.baseline_revision.trim() : "";
-  if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error("PROFILE_UPDATE_BASELINE_REVISION_INVALID");
-  return sha;
-}
-
-function requiredTrue(value: unknown, code: string): void {
-  if (value !== true) throw new Error(code);
-}
-
-async function enrichUpdatePrewriteEvidence(current: Record<string, any>, stepId: string, evidencePayload: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const snapshot = current?.snapshot ?? {};
-  if (snapshot.operation_code !== UPDATE_OPERATION || stepId !== PREWRITE_STEP) return evidencePayload;
-  const baselineSha = baselineRevisionSha(snapshot);
-  const targetPath = safeRepoPath(snapshot.target_path);
-  const trusted = await resolveTrustedCurrentRevision(targetPath);
-  const observedSha = String(trusted.revision_sha ?? "");
-  const boundSha = revisionSha(evidencePayload.bound_revision);
-  if (!boundSha) throw new Error("PROFILE_UPDATE_BOUND_REVISION_STRUCTURED_REQUIRED");
-  requiredTrue(evidencePayload.execution_bound_to_target_before_change, "PROFILE_UPDATE_EXECUTION_BINDING_REQUIRED");
-
-  const stale = baselineSha !== observedSha;
-  if (stale) {
-    requiredTrue(evidencePayload.reread_performed, "PROFILE_UPDATE_STALE_REREAD_REQUIRED");
-    requiredTrue(evidencePayload.rebind_performed, "PROFILE_UPDATE_STALE_REBIND_REQUIRED");
-    const reboundFrom = typeof evidencePayload.rebound_from_revision === "string" ? evidencePayload.rebound_from_revision.trim() : "";
-    if (reboundFrom !== baselineSha) throw new Error("PROFILE_UPDATE_REBOUND_FROM_REVISION_MISMATCH");
+function rejectUpdateOperation(current: Record<string, any>, caller: Record<string, unknown>): Response | null {
+  if (current?.snapshot?.operation_code === UPDATE_OPERATION) {
+    return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RETIRED_FROM_OIDC_ROUTE", detail: "ACTUALIZACION_PERFIL_LF enters only through a profile and its governed skill, not through this caller", caller }, 403);
   }
-  if (boundSha !== observedSha) throw new Error("PROFILE_UPDATE_BOUND_REVISION_CURRENT_MISMATCH");
-
-  return {
-    ...evidencePayload,
-    // The governed caller accepts the structured contract shape, but the existing
-    // runtime transport consumes the normalized SHA40 representation.
-    bound_revision: boundSha,
-    baseline_revision_observed: baselineSha,
-    current_resolved_revision: observedSha,
-    trusted_current_revision: trusted,
-    revision_continuity_state: stale ? "STALE_REBOUND_CURRENT" : "CURRENT_BOUND",
-    current_revision_resolved_by_caller: true,
-    declared_current_revision_ignored: true,
-  };
+  return null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -181,35 +98,12 @@ Deno.serve(async (req: Request) => {
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
     }
 
-    if (body.action === "profile_update_init_v1") {
-      if (caller.method !== UPDATE_CALLER_METHOD) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_CALLER_NOT_ALLOWED", caller }, 403);
-      const callerRequestId = typeof body.caller_request_id === "string" ? body.caller_request_id.trim().toLowerCase() : "";
-      const targetCode = typeof body.target_code === "string" ? body.target_code.trim().toUpperCase() : "";
-      const targetPath = typeof body.target_path === "string" ? body.target_path.trim() : "";
-      const researchBaselineMode = typeof body.research_baseline_mode === "string" && body.research_baseline_mode.trim() ? body.research_baseline_mode.trim() : "NOT_REQUIRED";
-      const researchBaselineContract = body.research_baseline_contract ?? null;
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(callerRequestId) || !/^PERFIL-[A-Z0-9][A-Z0-9-]{2,120}$/.test(targetCode) || !targetPath) {
-        return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_INIT_INPUT_INVALID", caller }, 400);
-      }
-      if (!new Set(["NOT_REQUIRED", "PRE_RESEARCH_ALWAYS"]).has(researchBaselineMode)) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_MODE_INVALID", caller }, 400);
-      if (researchBaselineMode === "PRE_RESEARCH_ALWAYS" && (!researchBaselineContract || typeof researchBaselineContract !== "object" || Array.isArray(researchBaselineContract))) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_REQUIRED", caller }, 400);
-      if (researchBaselineMode === "NOT_REQUIRED" && researchBaselineContract !== null) return json({ outcome: "BLOCKED", code: "PROFILE_UPDATE_RESEARCH_BASELINE_CONTRACT_FORBIDDEN", caller }, 400);
-      const result = await callRuntime({
-        action: "initialize_profile_update_v1",
-        caller_request_id: callerRequestId,
-        target_code: targetCode,
-        target_path: targetPath,
-        target_repo: REPOSITORY,
-        research_baseline_mode: researchBaselineMode,
-        research_baseline_contract: researchBaselineContract,
-        caller,
-      });
-      return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "INITIALIZED" ? 201 : 409);
-    }
     if (body.action === "profile_operation_next_step_v1") {
       const executionId = typeof body.execution_id === "string" ? body.execution_id.trim() : "";
       if (!executionId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_EXECUTION_ID_INVALID", caller }, 400);
       const result = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
+      const retired = rejectUpdateOperation(result, caller);
+      if (retired) return retired;
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, 200);
     }
 
@@ -220,10 +114,11 @@ Deno.serve(async (req: Request) => {
       const evidencePayload = body.evidence_payload && typeof body.evidence_payload === "object" && !Array.isArray(body.evidence_payload) ? body.evidence_payload as Record<string, unknown> : null;
       if (!executionId || !stepId || !evidenceRef || !evidencePayload) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_STEP_INPUT_INVALID", caller }, 400);
       const current = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
+      const retired = rejectUpdateOperation(current, caller);
+      if (retired) return retired;
       const expectedStepId = current?.snapshot?.next_step?.step_id ?? null;
       if (expectedStepId !== stepId) return json({ outcome: "BLOCKED", code: "PROFILE_OPERATION_STEP_NOT_CURRENT", expected_step_id: expectedStepId, requested_step_id: stepId, caller }, 409);
-      const governedEvidence = await enrichUpdatePrewriteEvidence(current, stepId, evidencePayload);
-      const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: stepId, evidence_ref: evidenceRef, evidence_payload: governedEvidence, caller });
+      const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: stepId, evidence_ref: evidenceRef, evidence_payload: evidencePayload, caller });
       return json({ outcome: result.outcome ?? "BLOCKED", caller, result }, result.outcome === "STEP_RECORDED" ? 200 : 409);
     }
 
@@ -235,10 +130,11 @@ Deno.serve(async (req: Request) => {
       const receipts: Record<string, unknown>[] = [];
       for (const step of validation.steps) {
         const current = await callRuntime({ action: "next_profile_operation_step_v1", execution_id: executionId, caller });
+        const retired = rejectUpdateOperation(current, caller);
+        if (retired) return retired;
         const expectedStepId = current?.snapshot?.next_step?.step_id ?? null;
         if (expectedStepId !== step.step_id) return json({ ...batchOutcome(receipts.length, validation.steps.length, step.step_id), code: "PROFILE_OPERATION_BATCH_STEP_NOT_CURRENT", expected_step_id: expectedStepId, caller, execution_id: executionId, receipts }, 409);
-        const governedEvidence = await enrichUpdatePrewriteEvidence(current, step.step_id, step.evidence_payload);
-        const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: step.step_id, evidence_ref: step.evidence_ref, evidence_payload: governedEvidence, caller });
+        const result = await callRuntime({ action: "record_profile_operation_step_v1", execution_id: executionId, step_id: step.step_id, evidence_ref: step.evidence_ref, evidence_payload: step.evidence_payload, caller });
         receipts.push({ step_id: step.step_id, outcome: result.outcome ?? "BLOCKED", operation_code: result.operation_code ?? current?.snapshot?.operation_code ?? null, result });
         if (result.outcome !== "STEP_RECORDED") return json({ ...batchOutcome(receipts.length - 1, validation.steps.length, step.step_id), caller, execution_id: executionId, receipts }, 409);
       }
