@@ -127,13 +127,15 @@ def pg04_area_lot(*,pg04_exit,pg05_c2,pg04_areas,solution_id,area,paths):
          "area":area,"paths":requested,
          "pg04_exit_sha256":e,"pg05_c2_sha256":c,
          "pg04_area_overlay_sha256":pg04_areas["area_overlay_sha256"],
+         "project_ref":pg04_areas["project_ref"],
+         "project_rules":copy.deepcopy(pg04_areas["project_rules"]),
          "production_authority":False}
     lot["lot_sha256"]=digest(lot)
     return lot
 
 def _validate_lot(lot):
     _exact_keys(lot,{"schema_version","solution_id","area","paths","pg04_exit_sha256",
-                     "pg05_c2_sha256","pg04_area_overlay_sha256","production_authority","lot_sha256"},"LOT_FIELDS_INVALID")
+                     "pg05_c2_sha256","pg04_area_overlay_sha256","project_ref","project_rules","production_authority","lot_sha256"},"LOT_FIELDS_INVALID")
     if lot["schema_version"]!="PG04_AREA_LOT_EXP_V1" or lot["production_authority"] is not False or lot["area"] not in _ALLOWED:
         block("LOT_AUTHORITY_OR_AREA_INVALID")
     _safe_scope(lot["paths"])
@@ -145,12 +147,14 @@ def assign_pg05(*,lot,project_ref,literal_request,model_draft,prepare,finalize):
     if not isinstance(project_ref,str) or not project_ref or not isinstance(literal_request,str) or not literal_request.strip():
         block("ASSIGN_INPUT_INVALID")
     if not isinstance(model_draft,dict): block("MODEL_DRAFT_INVALID")
+    if lot["project_ref"]!=project_ref: block("LOT_PROJECT_MISMATCH")
     request_wrap=prepare(literal_request,project_ref,lot["area"],lot["paths"])
     if not isinstance(request_wrap,dict) or request_wrap.get("status")!="READY":
         return {"status":"BLOCKED","blocking_code":request_wrap.get("blocking_code","PREPARE_NOT_READY") if isinstance(request_wrap,dict) else "PREPARE_NOT_READY","production_authority":False}
     request=request_wrap["request"]
     if (request.get("project_ref")!=project_ref or request.get("file_paths")!=lot["paths"] or
-        request.get("area")!=lot["area"] or request.get("downstream_execution_allowed") is not False):
+        request.get("area")!=lot["area"] or request.get("project_rules")!=lot["project_rules"] or
+        request.get("downstream_execution_allowed") is not False):
         block("PREPARE_SCOPE_BINDING_INVALID")
     final=finalize(request,model_draft)
     if not isinstance(final,dict) or final.get("status")!="VALID":
@@ -194,6 +198,8 @@ def pg06_currentness(*,assignment,lot,prepare,finalize):
         or assignment["source_pg05_c2_sha256"]!=lot["pg05_c2_sha256"]
         or assignment["solution_id"]!=lot["solution_id"]
         or assignment["area"]!=lot["area"]
+        or assignment["project_ref"]!=lot["project_ref"]
+        or assignment["request"].get("project_rules")!=lot["project_rules"]
         or assignment["write_scope"]!=lot["paths"]
         or assignment["request_sha256"]!=digest(assignment["request"])
         or assignment["result_sha256"]!=digest(assignment["result"])
@@ -238,6 +244,9 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec):
         block("PG07_WORKER_SPEC_INVALID")
     if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
         block("PG07_ORACLE_EXPOSURE")
+    if not isinstance(worker_spec.get("write_path_patterns"),list) or (
+        _safe_scope(worker_spec["write_path_patterns"])!=lot["paths"]):
+        block("PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     task={"schema_version":"PG07_PROFILE_TASK_OVERLAY_V1","status":"CANDIDATE_NOT_ADMITTED",
         "profile_code":assignment["profile_code"],
         "profile_assignment_sha256":assignment["assignment_sha256"],
