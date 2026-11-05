@@ -10,7 +10,7 @@ def descriptor(slug):
     if slug not in SLUGS:raise ValueError("PROFILE_UNKNOWN")
     skill=(ROOT/slug/"SKILL.md").read_text(encoding="utf-8")
     def exactly(marker):
-        items=re.findall(r"^\\- "+re.escape(marker)+r": (.+)$",skill,re.M)
+        items=re.findall(r"^- "+re.escape(marker)+r": (.+)$",skill,re.M)
         if len(items)!=1:raise ValueError("SKILL_DESCRIPTOR_FIELD_MISSING_OR_DUPLICATE:"+marker)
         return items[0].strip()
     purpose=exactly("PROFILE_SELECTION_DESCRIPTION")
