@@ -118,6 +118,8 @@ En cada intento: `source`, `locator` exacto, `source_revision` si aplica, `obser
 - **Semántica:** la evaluación independiente verifica si las evidencias sostienen el significado, actualidad, aplicabilidad y efectos de las decisiones.
 - **Cierre:** `EVOLUTION_DEMONSTRATED`, gates exigidos por snapshot, Merge Train, readback del nuevo `main` y pasos finales, con estado runtime intacto. Si la política vigente exige controles adicionales, aplicarlos.
 
+**Autoridad de esquema (B03/B04).** Sin binding, con varios esquemas y sin `runtime_output.schema.json`, el medidor bloqueaba con `BLOCKED_AUTHORITY_REQUIRED`, aunque el binding es justo lo que la actualización debe crear. Desde 2026-11-05, si el `SKILL.md` del perfil enumera **exactamente** todos los esquemas de `schemas/`, la autoridad se considera derivada de la fuente (`authority_derivation.status=DERIVED_FROM_SKILL`), no se bloquea y el candidato debe escribir `contracts/runtime_binding.json`. El esquema por defecto y el mapeo por modo no los prueba el código: los confirma el juez semántico (`authority_resolution_valid`). Si el SKILL no enumera los esquemas, sigue el bloqueo.
+
 ## 6. Transporte y comandos existentes
 
 - **Ruta canónica documentada:** `scripts/lf_profile_update_run.py`, desde checkout preparado, con `git` y `gh` disponibles. Desde un chat nativo sin checkout, el candidato se escribe directo en la rama (ver §0, regla 3); nunca como ZIP.
