@@ -352,7 +352,13 @@
       "must not use red debt alarm cues",
       "must not include bank logos, telecom logos or unapproved partner imagery",
       "must not show internal workers, PASS, scores, GitHub, Supabase, logs or sandbox metadata"
-    ]
+    ],
+    "spacing_typography": {
+      "font_family": "Inter",
+      "base_font_size": "16px",
+      "layout_gap": "24px",
+      "typography_source": "Synthetic UI example fixture"
+    }
   },
   "composer_payload": {
     "screen_definition": {
@@ -689,7 +695,13 @@
         "risk": "case_specific_leakage",
         "control": "no business case names in reusable example paths or IDs"
       }
-    ]
+    ],
+    "spacing_typography": {
+      "font_family": "Inter",
+      "base_font_size": "16px",
+      "layout_gap": "24px",
+      "typography_source": "Synthetic UI example fixture"
+    }
   },
   "score": {
     "layout_precision": 4,
