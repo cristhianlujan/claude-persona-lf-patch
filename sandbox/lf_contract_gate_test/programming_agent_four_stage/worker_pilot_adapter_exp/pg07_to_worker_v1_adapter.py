@@ -187,12 +187,36 @@ def objective_with_rules(pg07):
     if "oracle_envelope" in goal or "hidden_oracle" in goal or "holdout.oracle" in goal:
         fail("ORACLE_IN_OBJECTIVE")
     return goal
-def adapt(pg07,*,owner_commands=None,pg07_overlay=None):
+def validate_original_worker_paths(pg07,worker_checkout):
+    """Do not repair/normalize: import EXACT Worker 298307e canonical path routines."""
+    if worker_checkout is None:fail("WORKER_CHECKOUT_REQUIRED_FOR_PATH_VALIDATION")
+    source=worker_checkout.resolve(strict=True)
+    head=subprocess.run(["git","-C",str(source),"rev-parse","HEAD"],
+                        capture_output=True,text=True,check=True).stdout.strip()
+    if head!=WORKER_COMMIT:fail("WORKER_HEAD_NOT_PINNED")
+    sys.path.insert(0,str(source/"src"))
+    from programming_agent_runner.worker_spec import (
+        canonical_relative_path, _validate_pattern, TaskSpecError)
+    for field in ("context_path_patterns","write_path_patterns","protected_path_patterns"):
+        items=pg07.get(field)
+        if not isinstance(items,list) or not items:fail("ADAPTER_PATH_NOT_CANONICAL")
+        for value in items:
+            try:
+                # Both original contracts; _validate_pattern itself calls canonical.
+                if canonical_relative_path(value,field+"[]")!=value:
+                    fail("ADAPTER_PATH_NOT_CANONICAL")
+                if _validate_pattern(value,field+"[]")!=value:
+                    fail("ADAPTER_PATH_NOT_CANONICAL")
+            except TaskSpecError as exc:
+                raise AdapterBlocked("ADAPTER_PATH_NOT_CANONICAL") from exc
+
+def adapt(pg07,*,owner_commands=None,pg07_overlay=None,worker_checkout=None):
     """Output Worker V1 plus separate sealed envelope. Never grant dispatch."""
     if not isinstance(pg07,dict) or not PG07_REQUIRED.issubset(pg07):
         fail("PG07_TASK_INCOMPLETE")
     if pg07.get("schema_version")!=2:fail("PG07_SCHEMA_INVALID")
     check_limits(pg07)
+    validate_original_worker_paths(pg07,worker_checkout)
     reject_hidden_oracle_fields(pg07)
     reject_oracle_context(pg07.get("context_path_patterns"))
     if pg07_overlay is None or not isinstance(pg07_overlay,dict):
@@ -282,7 +306,7 @@ def materialize_external(*,repo_root:Path,outside_dir:Path,worker_checkout:Path,
         shutil.rmtree(output)
         raise
 
-def build_worker_command(*,repo_path:Path,output_dir:Path,model="claude-haiku-5-5",provider="anthropic"):
+def build_worker_command(*,repo_path:Path,output_dir:Path,worker_checkout:Path,model="claude-haiku-5-5",provider="anthropic"):
     if provider!="anthropic" or model not in ("claude-haiku-5-5","claude-sonnet-5-5"):
         fail("PILOT_PROVIDER_OR_MODEL_FORBIDDEN")
     q=output_dir.resolve()
@@ -291,6 +315,10 @@ def build_worker_command(*,repo_path:Path,output_dir:Path,model="claude-haiku-5-
     exact(task,TASK_FIELDS,"WORKER_V1_FIELDS_INVALID")
     if task.get("schema_version")!=1:fail("WORKER_V1_SCHEMA_INVALID")
     check_limits(task)
+    parse_worker_task,_,_,_,_=load_real_worker_contract(worker_checkout)
+    try:parse_worker_task(task)
+    except Exception as exc:
+        raise AdapterBlocked("WORKER_V1_CONTRACT_INVALID") from exc
     envelope_file=q/"extra.envelope.json"
     if not envelope_file.is_file():fail("EXTRA_ENVELOPE_MISSING")
     envelope=json.loads(envelope_file.read_text(encoding="utf-8"))
