@@ -84,9 +84,15 @@ def test_chain(dsn):
     print("PASS PG04 explicit area, exact PG05 C2 scope binding")
     failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",
                                  area="BACKEND",paths=["web/src/app/x.ts"]),
-             "LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
-    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,solution_id="SOL-001",
+             "PG04_AREA_LOT_DRIFT")
+    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",
                                  area="BACKEND",paths=[path,"web/src/app/x.ts"]),
+             "PG04_AREA_LOT_DRIFT")
+    out_scope="src/main/java/com/lf/Outside.java"
+    scope_overlay=declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
+                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[out_scope]}])
+    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=scope_overlay,
+                                  solution_id="SOL-001",area="BACKEND",paths=[out_scope]),
              "LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
     req=prepare("Corregir servicio Spring","lf_java","BACKEND",[path])["request"]
     general="PERFIL-PROG-BACKEND-EXP"
