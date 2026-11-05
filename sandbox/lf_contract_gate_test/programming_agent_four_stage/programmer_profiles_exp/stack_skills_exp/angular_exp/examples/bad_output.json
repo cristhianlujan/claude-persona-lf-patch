@@ -6,8 +6,7 @@
     "NG-01"
   ],
   "oracle_envelope": {
-    "hidden": "FORBIDDEN"
+    "secret": "FORBIDDEN"
   },
-  "production_authority": true,
   "expected": "BLOCK"
 }
