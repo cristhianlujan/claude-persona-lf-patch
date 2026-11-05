@@ -48,7 +48,7 @@ def build():
 def run():
     checkout=os.environ.get("WORKER_298307E_CHECKOUT","")
     if not checkout:raise SystemExit("WORKER_298307E_CHECKOUT_REQUIRED")
-    parse_task,load_quality,load_readback,load_oracle=load_real_worker_contract(Path(checkout))
+    parse_task,load_quality,load_readback,load_oracle,readback_source_paths=load_real_worker_contract(Path(checkout))
     pg07,overlay,commands=build()
     task,envelope=adapt(pg07,owner_commands=commands,pg07_overlay=overlay)
     check(set(task)==TASK_FIELDS and len(task)==14 and task["schema_version"]==1,
@@ -69,6 +69,18 @@ def run():
           and envelope["pg07_extra"]["functional_contract"]["role_and_stack"]["skill_set_sha256"],
           "External envelope unbound")
     print("PASS Worker original parse_worker_task() accepts exact V1 task + rule provenance")
+    injected=copy.deepcopy(pg07)
+    injected["functional_contract"]["oracle_envelope"]={"secret":"NO"}
+    bad_overlay=copy.deepcopy(overlay)
+    bad_overlay["worker_task_overlay"]["worker_spec_sha256"]=sha(injected)
+    blocked(lambda:adapt(injected,owner_commands=commands,pg07_overlay=bad_overlay),
+            "ORACLE_FIELD_IN_PG07_TASK")
+    context_leak=copy.deepcopy(pg07)
+    context_leak["context_path_patterns"]=["tests/holdout.oracle.json"]
+    leaked_overlay=copy.deepcopy(overlay)
+    leaked_overlay["worker_task_overlay"]["worker_spec_sha256"]=sha(context_leak)
+    blocked(lambda:adapt(context_leak,owner_commands=commands,pg07_overlay=leaked_overlay),
+            "ORACLE_OR_SECRET_IN_CONTEXT")
     modified={**task,"extra_elevated_authority":True}
     try:parse_task(modified)
     except ValueError:print("PASS Worker original rejects additional field")
