@@ -245,6 +245,13 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
         block("PG07_CURRENTNESS_MISSING")
     if assignment["write_scope"]!=lot["paths"] or assignment["production_authority"] is not False:
         block("PG07_SCOPE_OR_AUTHORITY_INVALID")
+    if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
+        block("PG07_WORKER_SPEC_INVALID")
+    if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
+        block("PG07_ORACLE_EXPOSURE")
+    if not isinstance(worker_spec.get("write_path_patterns"),list) or (
+        _safe_scope(worker_spec["write_path_patterns"])!=lot["paths"]):
+        block("PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     if not isinstance(pg07_c2,dict) or pg07_c2.get("schema_version")!="PG07_C2_WORKER_TASK_BATCH_CANDIDATE_V1":
         block("PG07_REAL_C2_VALIDATION_REQUIRED")
     frozen(pg07_c2)
@@ -255,13 +262,6 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
     rows=[x for x in pg07_c2.get("worker_payloads",[]) if x.get("solution_id")==lot["solution_id"]]
     if len(rows)!=1 or rows[0].get("worker_visible_task_spec")!=worker_spec or rows[0].get("worker_task_spec_sha256")!=digest(worker_spec):
         block("PG07_REAL_C2_TASK_DRIFT")
-    if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
-        block("PG07_WORKER_SPEC_INVALID")
-    if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
-        block("PG07_ORACLE_EXPOSURE")
-    if not isinstance(worker_spec.get("write_path_patterns"),list) or (
-        _safe_scope(worker_spec["write_path_patterns"])!=lot["paths"]):
-        block("PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     task={"schema_version":"PG07_PROFILE_TASK_OVERLAY_V1","status":"CANDIDATE_NOT_ADMITTED",
         "profile_code":assignment["profile_code"],
         "profile_assignment_sha256":assignment["assignment_sha256"],
