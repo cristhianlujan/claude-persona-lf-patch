@@ -233,7 +233,7 @@ def pg06_currentness(*,assignment,lot,prepare,finalize):
     out["currentness_sha256"]=digest(out)
     return out
 
-def pg07_worker_projection(*,assignment,lot,currentness,worker_spec):
+def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
     """Output is a CANDIDATE overlay, NOT fn_agent_task_worker_spec or an authenticated Worker receipt."""
     _validate_lot(lot)
     frozen(assignment,"assignment_sha256")
@@ -245,6 +245,16 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec):
         block("PG07_CURRENTNESS_MISSING")
     if assignment["write_scope"]!=lot["paths"] or assignment["production_authority"] is not False:
         block("PG07_SCOPE_OR_AUTHORITY_INVALID")
+    if not isinstance(pg07_c2,dict) or pg07_c2.get("schema_version")!="PG07_C2_WORKER_TASK_BATCH_CANDIDATE_V1":
+        block("PG07_REAL_C2_VALIDATION_REQUIRED")
+    frozen(pg07_c2)
+    if (pg07_c2.get("production_authority") is not False or
+        pg07_c2.get("dispatch_allowed") is not False or
+        pg07_c2.get("worker_invoked") is not False):
+        block("PG07_REAL_C2_AUTHORITY_INVALID")
+    rows=[x for x in pg07_c2.get("worker_payloads",[]) if x.get("solution_id")==lot["solution_id"]]
+    if len(rows)!=1 or rows[0].get("worker_visible_task_spec")!=worker_spec or rows[0].get("worker_task_spec_sha256")!=digest(worker_spec):
+        block("PG07_REAL_C2_TASK_DRIFT")
     if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
         block("PG07_WORKER_SPEC_INVALID")
     if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
@@ -256,7 +266,8 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec):
         "profile_code":assignment["profile_code"],
         "profile_assignment_sha256":assignment["assignment_sha256"],
         "write_scope":copy.deepcopy(lot["paths"]),
-        "worker_spec_sha256":digest(worker_spec),"production_authority":False,
+        "worker_spec_sha256":digest(worker_spec),
+        "pg07_c2_candidate_sha256":pg07_c2["candidate_sha256"],"production_authority":False,
         "dispatch_allowed":False}
     task["task_sha256"]=digest(task)
     receipt={"schema_version":"PG07_PROFILE_RECEIPT_LINK_CANDIDATE_V1",
