@@ -47,6 +47,9 @@ def _blocked(code: str) -> dict:
         "operationally_integrated": False, "effects_executed": False,
         "next_step": None,
     }
+    if not _valid(result, _json(BASE / "schemas/output.schema.json")):
+        return _blocked("A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT")
+    return result
 
 
 def _signals_valid(signals: Any, policy: dict) -> bool:
@@ -129,6 +132,8 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
     context = a1_result["payload"]
     if not _valid(context, _json(REQUEST_SCHEMA)):
         return _blocked("A1_CANONICAL_CONTEXT_INVALID")
+    if not _valid(signal_bundle, _json(BASE / "schemas/input.schema.json")):
+        return _blocked("A2_SIGNAL_ENVELOPE_INVALID")
     if not isinstance(signal_bundle, dict) or set(signal_bundle) != {
         "schema_version", "target_ref", "change_type", "target_granularity",
         "nested_parent_ref", "evidence_refs", "depth_signals",
@@ -189,7 +194,7 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
         or signals["required_specialist_count"] > 0
     )
     # References and signals are supplied, not authenticated by this module.
-    return {
+    result = {
         "schema_version": SCHEMA, "skill_code": SKILL, "step_code": "A2",
         "status": "NEED_MORE_EVIDENCE" if unresolved else "CANDIDATE_UNATTESTED",
         "blocking_codes": ["A2_TYPED_EVIDENCE_CURRENTNESS_OR_SPECIALIST_PENDING"] if unresolved else [],
