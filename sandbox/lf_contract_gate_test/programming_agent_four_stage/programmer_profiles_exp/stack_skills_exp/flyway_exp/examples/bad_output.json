@@ -1,9 +1,12 @@
 {
   "skill_code": "FLYWAY_EXP",
-  "area": "WRONG_AREA",
+  "skill_version": "1",
+  "area": "DATA",
+  "rule_ids": [
+    "FW-01"
+  ],
   "oracle_envelope": {
-    "secret": "NOT_ALLOWED"
+    "secret": "FORBIDDEN"
   },
-  "production_authority": true,
   "expected": "BLOCK"
 }
