@@ -83,6 +83,7 @@ def main():
     try:
         run_psql(dsn,file=ROOT/"original/schema/bootstrap.sql")
         run_psql(dsn,file=ROOT/"original/schema/tables.sql")
+        run_psql(dsn,file=ROOT/"original/schema/constraints.sql")
         for table in TABLES: run_psql(dsn,file=ROOT/"original/data"/(table+".sql"))
         for fn in FUNCTIONS: run_psql(dsn,file=ROOT/"original/functions"/fn)
         outputs={}
