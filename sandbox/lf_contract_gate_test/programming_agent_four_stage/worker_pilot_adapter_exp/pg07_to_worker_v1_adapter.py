@@ -41,7 +41,7 @@ class AdapterBlocked(ValueError):
 def fail(code):raise AdapterBlocked(code)
 def canonical(v):
     return json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=False,allow_nan=False).encode("utf-8")
-def sha(v):return hashlib.sha256(canonical(v)).hexdigest()
+def sha(v):\n    # Matches existing PG07 candidate digest (ensure_ascii=True), not file bytes.\n    return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=True,allow_nan=False).encode("utf-8")).hexdigest()
 def sha_bytes(v):return hashlib.sha256(v).hexdigest()
 def exact(x,fields,code):
     if not isinstance(x,dict) or set(x)!=set(fields):fail(code)
