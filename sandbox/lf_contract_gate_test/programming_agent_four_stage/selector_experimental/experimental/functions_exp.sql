@@ -148,7 +148,15 @@ BEGIN
    END IF;
   ELSE
    IF v_code IS NOT NULL OR jsonb_array_length(v_ambiguous)<2
-     OR jsonb_array_length(v_material)=0 THEN
+     OR jsonb_array_length(v_material)=0
+     OR (SELECT count(DISTINCT item #>> '{}') FROM jsonb_array_elements(v_ambiguous) z(item)) <> jsonb_array_length(v_ambiguous)
+     OR EXISTS (
+       SELECT 1 FROM jsonb_array_elements(v_ambiguous) z(item)
+       WHERE NOT EXISTS (
+         SELECT 1 FROM jsonb_array_elements(p_request->'candidate_profiles') c
+         WHERE c->>'profile_code'=z.item #>> '{}'
+       )
+     ) THEN
      v_errors:=v_errors||jsonb_build_array('EXP_AMBIGUOUS_INVALID');
    END IF;
   END IF;
