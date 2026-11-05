@@ -27,29 +27,39 @@ BEGIN
 END $$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_selector_semantic_prepare_v3_exp(
- p_literal_request text, p_area text, p_paths jsonb)
+ p_literal_request text, p_project_ref text, p_area text, p_paths jsonb)
 RETURNS jsonb LANGUAGE plpgsql STABLE SET search_path TO 'pg_catalog','public','extensions'
 AS $$
-DECLARE v_area text:=upper(coalesce(btrim(p_area),''));
- v_areas text[]:='{}'; v_path text; v_found text;
+DECLARE v_area text:=upper(btrim(coalesce(p_area,'')));
+ v_areas text[]:='{}'; v_path text; v_found text; v_matches integer;
  v_paths jsonb; v_catalog jsonb; v_profiles jsonb; v_count integer;
- v_sha text; v_request jsonb; v_classified text;
+ v_sha text; v_request jsonb; v_classified text; v_rules jsonb;
 BEGIN
  IF nullif(btrim(coalesce(p_literal_request,'')),'') IS NULL
-    OR jsonb_typeof(p_paths) IS DISTINCT FROM 'array'
-    OR jsonb_array_length(p_paths)=0 THEN
+  OR nullif(btrim(coalesce(p_project_ref,'')),'') IS NULL
+  OR jsonb_typeof(p_paths) IS DISTINCT FROM 'array'
+  OR jsonb_array_length(p_paths)=0 THEN
   RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_INPUT_INVALID');
  END IF;
+ SELECT coalesce(jsonb_agg(jsonb_build_object('area',area,'path_prefix',path_prefix)
+   ORDER BY area,path_prefix),'[]'::jsonb) INTO v_rules
+ FROM public.lf_project_area_pattern_exp WHERE project_ref=p_project_ref;
+ IF jsonb_array_length(v_rules)=0 THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROJECT_RULES_NOT_FOUND');
+ END IF;
  FOR v_path IN SELECT value #>> '{}' FROM jsonb_array_elements(p_paths) LOOP
-  IF v_path IS NULL OR btrim(v_path)='' OR v_path LIKE '/%' OR v_path LIKE '%..%'
-     OR v_path LIKE '%\\%' THEN
+  IF v_path IS NULL OR btrim(v_path)='' OR v_path LIKE '/%'
+    OR position('..' IN v_path)>0 OR position(chr(92) IN v_path)>0
+    OR jsonb_typeof(to_jsonb(v_path)) IS DISTINCT FROM 'string' THEN
     RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_PATH_INVALID');
   END IF;
-  v_found := CASE WHEN v_path LIKE 'src/main/java/%' THEN 'BACKEND'
-                  WHEN v_path LIKE 'web/src/%' THEN 'FRONTEND'
-                  WHEN v_path LIKE 'db/migration/%' THEN 'DATA' ELSE NULL END;
-  IF v_found IS NULL THEN
-   RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_PATH_UNCLASSIFIED');
+  SELECT count(DISTINCT area),min(area) INTO v_matches,v_found
+  FROM public.lf_project_area_pattern_exp
+  WHERE project_ref=p_project_ref AND left(v_path,length(path_prefix))=path_prefix;
+  IF v_matches=0 THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_PATH_UNCLASSIFIED');
+  ELSIF v_matches>1 THEN
+    RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_PATH_RULE_CONFLICT');
   END IF;
   IF NOT v_found=ANY(v_areas) THEN v_areas:=array_append(v_areas,v_found); END IF;
  END LOOP;
@@ -57,7 +67,7 @@ BEGIN
    RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_MULTI_AREA_BLOCKED','areas',to_jsonb(v_areas));
  END IF;
  v_classified:=v_areas[1];
- IF v_area NOT IN ('BACKEND','FRONTEND','DATA') OR v_classified<>v_area THEN
+ IF v_area<>v_classified OR v_area NOT IN ('BACKEND','FRONTEND','DATA') THEN
    RETURN jsonb_build_object('status','BLOCKED','blocking_code','LOTE_AREA_ROUTE_MISMATCH','classified_area',v_classified);
  END IF;
  SELECT coalesce(jsonb_agg(value ORDER BY value #>> '{}'),'[]'::jsonb) INTO v_paths
@@ -65,7 +75,8 @@ BEGIN
  v_catalog:=public.lf_profile_selector_catalog_v2_exp('PROGRAMACION');
  SELECT coalesce(jsonb_agg(p ORDER BY p->>'profile_code'),'[]'::jsonb) INTO v_profiles
  FROM jsonb_array_elements(v_catalog->'profiles') p
- WHERE p->>'profile_code' = 'PERFIL-PROG-'||v_area||'-EXP'
+ JOIN public.lf_profile_area_policy_exp pol ON pol.profile_code=p->>'profile_code'
+ WHERE pol.areas ? v_area
    AND p->>'descriptor_status'='CURRENT'
    AND coalesce((p->>'selection_eligible')::boolean,false)
    AND p->>'entry_policy'='DIRECT';
@@ -79,13 +90,14 @@ BEGIN
    'selector','PROFILE_SELECTOR_LF_EXP',
    'literal_request',p_literal_request,
    'request_sha256',encode(extensions.digest(convert_to(p_literal_request,'UTF8'),'sha256'),'hex'),
+   'project_ref',p_project_ref,'project_rules',v_rules,
    'channel','PROGRAMACION','area',v_area,'file_paths',v_paths,
    'paths_sha256',encode(extensions.digest(convert_to(v_paths::text,'UTF8'),'sha256'),'hex'),
    'catalog_sha256',v_sha,'catalog_profile_count',v_count,
    'candidate_profiles',v_profiles,'route_authority',false,
    'effect_authority',false,'downstream_execution_allowed',false);
  RETURN jsonb_build_object('status','READY','request',v_request,
-                           'deterministic_area',v_area,'experiment_only',true);
+   'deterministic_area',v_area,'experiment_only',true);
 END $$;
 
 CREATE OR REPLACE FUNCTION public.lf_profile_selector_semantic_validate_v2_exp(
@@ -101,7 +113,7 @@ BEGIN
   RETURN jsonb_build_object('status','BLOCKED','blocking_codes',jsonb_build_array('EXP_OBJECT_REQUIRED'));
  END IF;
  v_fresh:=public.lf_profile_selector_semantic_prepare_v3_exp(
-   p_request->>'literal_request',p_request->>'area',p_request->'file_paths');
+   p_request->>'literal_request',p_request->>'project_ref',p_request->>'area',p_request->'file_paths');
  IF v_fresh->>'status' IS DISTINCT FROM 'READY'
     OR v_fresh->'request' IS DISTINCT FROM p_request THEN
   v_errors:=v_errors||jsonb_build_array('EXP_REQUEST_STALE_OR_INVALID');
@@ -138,7 +150,8 @@ BEGIN
   IF v_decision='SELECTED' THEN
    SELECT p INTO v_candidate FROM jsonb_array_elements(p_request->'candidate_profiles') p
    WHERE p->>'profile_code'=v_code;
-   IF v_code IS NULL OR v_candidate IS NULL OR v_code <> 'PERFIL-PROG-'||(p_request->>'area')||'-EXP'
+   IF v_code IS NULL OR v_candidate IS NULL OR NOT EXISTS (SELECT 1 FROM public.lf_profile_area_policy_exp pol
+     WHERE pol.profile_code=v_code AND pol.areas ? (p_request->>'area'))
     OR jsonb_array_length(v_ambiguous)<>0 OR jsonb_array_length(v_material)<>0 THEN
     v_errors:=v_errors||jsonb_build_array('EXP_AREA_PROFILE_MISMATCH');
    END IF;
