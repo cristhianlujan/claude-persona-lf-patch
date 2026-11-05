@@ -136,6 +136,18 @@ def run():
     no_usage=copy.deepcopy(receipt)
     no_usage["attempts"][0]["usage"]={}
     blocked(lambda:price_receipt(no_usage),"USAGE_INPUT_OUTPUT_TOKENS_MISSING")
+    fake_receipt={"schema_version":1,"receipt_sha256":"b"*64,
+                 "model_provider":"fake","requested_model":"fake-code-model",
+                 "resolved_model":"fake-code-model-001",
+                 "attempts":[{"attempt":1,"usage":{"input_tokens":10,"output_tokens":10}}]}
+    fake_original=copy.deepcopy(fake_receipt)
+    fake_cost=price_receipt(fake_receipt)
+    check(fake_cost["total_input_tokens"]==10 and
+          fake_cost["total_output_tokens"]==10 and
+          fake_cost["total_estimated_usd"]=="0" and
+          fake_cost["real_api_usage"] is False and
+          fake_receipt==fake_original,"Fake model must be explicitly zero-cost without changing original receipt")
+    print("PASS fake Worker original-shaped receipt via pricing adapter at USD 0")
     print("PASS cost separately computed from actual-shaped usage for assumed prices")
     with tempfile.TemporaryDirectory() as d:
         outside=Path(d)/"outside"
