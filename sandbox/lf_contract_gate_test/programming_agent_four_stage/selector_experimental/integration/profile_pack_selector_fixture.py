@@ -39,14 +39,18 @@ def apply_sandbox_resync(dsn,run_psql,source_head):
     for slug,code in CONFIG.items():
         descriptor,source_sha=load_descriptor(slug)
         path="sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_profiles_exp/"+slug
-        metadata=json.dumps({"canonical_profile_key":slug,"profile_slug":slug,"repo_path":path})
-        # Only fictional rows loaded from experimental seed, in the disposable local DB.
+        # The ORIGINAL selector requires repo_path under profiles/. A sandbox pack cannot
+        # meet that rule honestly. Use a visibly VIRTUAL alias only for disposable tests.
+        virtual_path="profiles/"+slug
+        metadata=json.dumps({"canonical_profile_key":slug,"profile_slug":slug,
+                             "repo_path":virtual_path})
         run_psql(dsn,sql="UPDATE public.lf_activos SET metadata="+q(metadata)+"::jsonb,"
-                 " ruta_esperada="+q(path+"/SKILL.md")+" WHERE codigo_activo="+q(code))
-        source_ref="github://cristhianlujan/claude-persona-lf-patch/"+path+"/SKILL.md"
+                 " ruta_esperada="+q(virtual_path+"/SKILL.md")+" WHERE codigo_activo="+q(code))
+        source_ref=("sandbox-descriptor://"+path+"/SKILL.md?LOCAL_VIRTUAL_ALIAS=/"+
+                    virtual_path+"/SKILL.md")
         value=json.dumps(descriptor,ensure_ascii=False)
         run_psql(dsn,sql="SELECT public.lf_profile_selector_descriptor_sync_v1("+
             ",".join((q(code),q(value)+"::jsonb",q("GITHUB_SKILL"),
                       q(source_ref),q(source_head),q("sandbox-only-test")))+")::text")
-        print("PASS LOCAL_ONLY descriptor_sync from SKILL",code,"source_sha256",source_sha)
+        print("PASS LOCAL_ONLY VIRTUAL_ALIAS descriptor_sync from sandbox SKILL",code,"source_sha256",source_sha)
     return CONFIG
