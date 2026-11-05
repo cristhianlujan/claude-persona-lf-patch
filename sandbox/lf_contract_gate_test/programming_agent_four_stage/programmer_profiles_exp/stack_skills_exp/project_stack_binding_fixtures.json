@@ -1,0 +1,30 @@
+{
+  "schema_version": "LF_PROJECT_STACK_BINDING_FIXTURES_V1",
+  "rows": [
+    {
+      "project_ref": "lf_java",
+      "area": "BACKEND",
+      "skill_code": "SPRINGBOOT_EXP"
+    },
+    {
+      "project_ref": "lf_java",
+      "area": "FRONTEND",
+      "skill_code": "ANGULAR_EXP"
+    },
+    {
+      "project_ref": "lf_java",
+      "area": "DATA",
+      "skill_code": "FLYWAY_EXP"
+    },
+    {
+      "project_ref": "lf_python",
+      "area": "BACKEND",
+      "skill_code": "FASTAPI_EXP"
+    },
+    {
+      "project_ref": "bridge_fixture",
+      "area": "BACKEND",
+      "skill_code": "SPRINGBOOT_EXP"
+    }
+  ]
+}
