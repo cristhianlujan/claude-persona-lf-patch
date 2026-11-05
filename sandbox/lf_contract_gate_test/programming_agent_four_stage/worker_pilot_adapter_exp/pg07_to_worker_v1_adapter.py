@@ -240,9 +240,9 @@ def load_real_worker_contract(worker_checkout:Path):
     sys.path.insert(0,str(source/"src"))
     from programming_agent_runner.worker_spec import parse_worker_task
     from programming_agent_runner.programming_quality import load_quality_plan
-    from programming_agent_runner.programming_quality_hardening_v2 import load_readback_manifest
+    from programming_agent_runner.programming_quality_hardening_v2 import load_readback_manifest,readback_source_paths
     from programming_agent_runner.worker_oracle import load_hidden_oracle
-    return parse_worker_task,load_quality_plan,load_readback_manifest,load_hidden_oracle
+    return parse_worker_task,load_quality_plan,load_readback_manifest,load_hidden_oracle,readback_source_paths
 
 def materialize_external(*,repo_root:Path,outside_dir:Path,worker_checkout:Path,
                          task,envelope,owner_quality_plan,owner_readback_manifest,
@@ -257,7 +257,7 @@ def materialize_external(*,repo_root:Path,outside_dir:Path,worker_checkout:Path,
     for obj in (owner_quality_plan,owner_readback_manifest,owner_hidden_oracle):
         if not isinstance(obj,dict):fail("OWNER_MANIFEST_MISSING")
         if obj.get("task_id",task["task_id"])!=task["task_id"]:fail("MANIFEST_TASK_ID_MISMATCH")
-    parse_worker_task,load_quality,load_readback,load_oracle=load_real_worker_contract(worker_checkout)
+    parse_worker_task,load_quality,load_readback,load_oracle,readback_source_paths=load_real_worker_contract(worker_checkout)
     parse_worker_task(task)
     if not isinstance(envelope,dict) or envelope.get("task_sha256")!=sha(task):
         fail("EXTRA_ENVELOPE_NOT_BOUND")
@@ -273,6 +273,9 @@ def materialize_external(*,repo_root:Path,outside_dir:Path,worker_checkout:Path,
         if quality.task_id!=task["task_id"] or quality.base_head_sha!=task["base_head_sha"]:
             fail("QUALITY_PLAN_NOT_PINNED_TO_TASK")
         if readback.task_id!=task["task_id"]:fail("READBACK_NOT_PINNED_TO_TASK")
+        for source in readback_source_paths(readback):
+            if not source.is_absolute() or source.resolve()==repository or source.resolve().is_relative_to(repository):
+                fail("READBACK_SOURCE_INSIDE_REPOSITORY")
         if not oracle.commands:fail("ORACLE_COMMANDS_EMPTY")
         return {"directory":str(output),"sha256":digests}
     except BaseException:
