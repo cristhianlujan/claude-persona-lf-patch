@@ -1,7 +1,8 @@
-# Preflight
-- [ ] FRONTEND declared in selected profile and lot
-- [ ] PG05 C2 exact scope and snapshot pinned
-- [ ] Standard source revision and project L3 precedence resolved
-- [ ] Protected tests and visible acceptance commands supplied
-- [ ] No hidden oracle or authority
-- [ ] CANDIDATE_SANDBOX_ONLY; runtime disabled
+# Preflight de rol FRONTEND
+- [ ] Asignación VALID + SELECTED y área FRONTEND
+- [ ] Scope exacto PG-05 C2 sin rutas ajenas
+- [ ] project_stack_binding contiene skill para área y proyecto
+- [ ] Skill SHA-256 y perfil SHA-256 comprobados
+- [ ] PG-00 L1/L2 recuperado de fuente versionada, no inferido
+- [ ] Comandos visibles y pruebas protegidas declarados por el proyecto
+- [ ] Oráculo ausente, sin autoridad, runtime deshabilitado
