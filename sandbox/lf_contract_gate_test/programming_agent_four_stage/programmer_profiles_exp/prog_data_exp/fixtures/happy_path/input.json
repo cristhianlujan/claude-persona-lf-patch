@@ -2,6 +2,8 @@
   "area": "DATA",
   "profile_code": "PERFIL-PROG-DATA-EXP",
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "write_scope": [
     "db/migration/V1__create_loan.sql"
   ],
@@ -9,6 +11,12 @@
     "db/migration/V0__baseline.sql"
   ],
   "visible_acceptance_commands": [
-    "./mvnw flyway:validate"
+    {
+      "name": "visible-check",
+      "argv": [
+        "./mvnw",
+        "flyway:validate"
+      ]
+    }
   ]
 }

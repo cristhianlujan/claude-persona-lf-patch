@@ -2,6 +2,8 @@
   "area": "BACKEND",
   "profile_code": "PERFIL-PROG-BACKEND-EXP",
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "write_scope": [
     "src/main/java/com/lf/LoanService.java"
   ],
@@ -9,6 +11,12 @@
     "src/test/java/com/lf/LoanServiceTest.java"
   ],
   "visible_acceptance_commands": [
-    "./mvnw test"
+    {
+      "name": "visible-check",
+      "argv": [
+        "./mvnw",
+        "test"
+      ]
+    }
   ]
 }
