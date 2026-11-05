@@ -4,51 +4,52 @@
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "task_id": "sandbox-prog_frontend_exp",
   "objective": "Prepara especificaciones para componentes Angular, estados de interacción y accesibilidad sin alterar contratos funcionales",
-  "expected_change": "Cambios acotados al lote",
+  "expected_change": "Componente Angular con estados accesibles",
   "human_story": "Tarea de ensayo sin autoridad",
   "functional_contract": {
     "source_ref": "fixture://contract"
   },
   "scope": {
     "in_scope": [
-      "src/example/file.txt"
+      "web/src/app/loan/loan.component.ts"
     ],
     "out_of_scope": [],
     "must_not_change": [
-      "tests/holdout_test.py"
+      "web/src/app/loan/loan.component.spec.ts"
     ]
   },
   "cases": [],
   "dependency_resolution": {},
   "dependency_task_ids": [],
   "required_tests": [
-    "visible-owner-test"
+    "VISIBLE_OWNER_TEST"
   ],
   "required_evidence": [
     "fixture://evidence"
   ],
   "blocked_if": [
     "SCOPE_DRIFT",
-    "HIDDEN_ORACLE_EXPOSURE"
+    "HIDDEN_ORACLE_EXPOSURE",
+    "UNVERIFIED_STANDARDS_CATALOG"
   ],
   "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "context_path_patterns": [
-    "src/example/file.txt"
+    "web/src/app/loan/loan.component.ts"
   ],
   "write_path_patterns": [
-    "src/example/file.txt"
+    "web/src/app/loan/loan.component.ts"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "web/src/app/loan/loan.component.spec.ts"
   ],
   "files_expected": [
-    "src/example/file.txt"
+    "web/src/app/loan/loan.component.ts"
   ],
   "platform_refs": [],
   "interface_refs": [],
   "acceptance_commands": [
-    "python -m compileall src"
+    "npm test -- --watch=false"
   ],
   "max_attempts": 2,
   "max_patch_bytes": 8192,

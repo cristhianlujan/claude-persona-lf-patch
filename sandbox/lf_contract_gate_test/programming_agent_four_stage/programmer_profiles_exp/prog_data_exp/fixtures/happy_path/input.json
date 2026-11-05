@@ -3,12 +3,12 @@
   "profile_code": "PERFIL-PROG-DATA-EXP",
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "write_scope": [
-    "src/example/file.txt"
+    "db/migration/V1__create_loan.sql"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "db/migration/V0__baseline.sql"
   ],
   "visible_acceptance_commands": [
-    "python -m compileall src"
+    "./mvnw flyway:validate"
   ]
 }

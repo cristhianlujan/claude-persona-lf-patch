@@ -3,12 +3,12 @@
   "profile_code": "PERFIL-PROG-BACKEND-EXP",
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "write_scope": [
-    "src/example/file.txt"
+    "src/main/java/com/lf/LoanService.java"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "src/test/java/com/lf/LoanServiceTest.java"
   ],
   "visible_acceptance_commands": [
-    "python -m compileall src"
+    "./mvnw test"
   ]
 }

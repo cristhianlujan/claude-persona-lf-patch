@@ -4,18 +4,18 @@
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "task_id": "sandbox-prog_backend_exp",
   "objective": "Prepara especificaciones de trabajo para servicios Java/Spring, separación de capas y contratos de API REST",
-  "expected_change": "Cambios acotados al lote",
+  "expected_change": "Contrato REST y servicios Spring",
   "human_story": "Tarea de ensayo sin autoridad",
   "functional_contract": {
     "source_ref": "fixture://contract"
   },
   "scope": {
     "in_scope": [
-      "src/example/file.txt"
+      "src/main/java/com/lf/LoanService.java"
     ],
     "out_of_scope": [],
     "must_not_change": [
-      "tests/holdout_test.py"
+      "src/test/java/com/lf/LoanServiceTest.java"
     ]
   },
   "cases": [],
@@ -27,26 +27,27 @@
   ],
   "blocked_if": [
     "SCOPE_DRIFT",
-    "HIDDEN_ORACLE_EXPOSURE"
+    "HIDDEN_ORACLE_EXPOSURE",
+    "UNVERIFIED_STANDARDS_CATALOG"
   ],
   "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "context_path_patterns": [
-    "src/example/file.txt"
+    "src/main/java/com/lf/LoanService.java"
   ],
   "write_path_patterns": [
-    "src/example/file.txt"
+    "src/main/java/com/lf/LoanService.java"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "src/test/java/com/lf/LoanServiceTest.java"
   ],
   "files_expected": [
-    "src/example/file.txt"
+    "src/main/java/com/lf/LoanService.java"
   ],
   "platform_refs": [],
   "interface_refs": [],
   "acceptance_commands": [
-    "python -m compileall src"
+    "./mvnw test"
   ],
   "max_attempts": 2,
   "max_patch_bytes": 8192,

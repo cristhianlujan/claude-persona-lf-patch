@@ -3,12 +3,12 @@
   "profile_code": "PERFIL-PROG-FRONTEND-EXP",
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "write_scope": [
-    "src/example/file.txt"
+    "web/src/app/loan/loan.component.ts"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "web/src/app/loan/loan.component.spec.ts"
   ],
   "visible_acceptance_commands": [
-    "python -m compileall src"
+    "npm test -- --watch=false"
   ]
 }

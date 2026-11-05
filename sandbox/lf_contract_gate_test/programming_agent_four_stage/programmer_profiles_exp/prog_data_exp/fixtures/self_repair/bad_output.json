@@ -4,18 +4,18 @@
   "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "task_id": "sandbox-prog_data_exp",
   "objective": "Prepara especificaciones para migraciones Flyway, reversibilidad y conservación de datos existentes",
-  "expected_change": "Cambios acotados al lote",
+  "expected_change": "Migración Flyway reversible, sin pérdida de datos",
   "human_story": "Tarea de ensayo sin autoridad",
   "functional_contract": {
     "source_ref": "fixture://contract"
   },
   "scope": {
     "in_scope": [
-      "src/example/file.txt"
+      "db/migration/V1__create_loan.sql"
     ],
     "out_of_scope": [],
     "must_not_change": [
-      "tests/holdout_test.py"
+      "db/migration/V0__baseline.sql"
     ]
   },
   "cases": [],
@@ -27,26 +27,29 @@
   ],
   "blocked_if": [
     "SCOPE_DRIFT",
-    "HIDDEN_ORACLE_EXPOSURE"
+    "HIDDEN_ORACLE_EXPOSURE",
+    "UNVERIFIED_STANDARDS_CATALOG",
+    "DATA_LOSS",
+    "IRREVERSIBLE_MIGRATION"
   ],
   "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "context_path_patterns": [
-    "src/example/file.txt"
+    "db/migration/V1__create_loan.sql"
   ],
   "write_path_patterns": [
-    "src/example/file.txt"
+    "db/migration/V1__create_loan.sql"
   ],
   "protected_path_patterns": [
-    "tests/holdout_test.py"
+    "db/migration/V0__baseline.sql"
   ],
   "files_expected": [
-    "src/example/file.txt"
+    "db/migration/V1__create_loan.sql"
   ],
   "platform_refs": [],
   "interface_refs": [],
   "acceptance_commands": [
-    "python -m compileall src"
+    "./mvnw flyway:validate"
   ],
   "max_attempts": 2,
   "max_patch_bytes": 8192,
