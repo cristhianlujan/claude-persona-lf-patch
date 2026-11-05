@@ -1,0 +1,97 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-MISSINGINPUT001-BASE-20261105",
+  "case_id": "MISSING-INPUT-001",
+  "profile_slug": "product_director_lf",
+  "profile_tree_sha256": "1fdaff2abaabb01ab25eb8db342f462288ec9422b577484dfac99282ae7e01d0",
+  "attestation": "NONE",
+  "recorded_at": "2026-11-05T03:40:00Z",
+  "executor": {
+    "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+    "note": "Profile tree on main (base, tree 1fdaff2a): the schema and validator for this mode contradict each other."
+  },
+  "conditions": "Isolated model given only a copy of the profile tree and the literal input; no supplied context; one run; validator and mode schema executed on the unchanged output.",
+  "validator": {
+    "tool": "profiles/product_director_lf/validators/validate_product_director_output.py",
+    "valid": true,
+    "errors": [],
+    "mode_schema_tool": "jsonschema Draft 2020-12 against schemas/product_missing_input.schema.json of the same tree",
+    "mode_schema_valid": false,
+    "mode_schema_errors": [
+      "'missing_fields' is a required property",
+      "'why_required' is a required property",
+      "'risk_if_assumed' is a required property",
+      "'safe_next_gate' is a required property",
+      "Additional properties are not allowed ('deliverable_created', 'self_verdict' were unexpected)"
+    ]
+  },
+  "output": {
+    "worker": "product_director_lf",
+    "output_type": "PRODUCT_MISSING_INPUT_STATE",
+    "self_verdict": "NEEDS_INPUT",
+    "deliverable_created": {
+      "decision_required": "Elegir entre (A) simulador de ahorro de deuda para el usuario y (B) flujo de onboarding de la negociacion, con 2 desarrolladores y 6 semanas, en el marketplace de negociacion de deuda.",
+      "resolved_from_context": [
+        "Restriccion de capacidad: 2 desarrolladores, 6 semanas (dada literalmente en la consulta)",
+        "Dos alternativas candidatas: simulador de ahorro de deuda; flujo de onboarding de la negociacion (dadas literalmente)"
+      ],
+      "authority_status": "INSUFFICIENT_NO_AUTHORITATIVE_SOURCE",
+      "selected_decision": null,
+      "missing_fields": [
+        {
+          "field": "objetivo_de_negocio_y_metrica_de_exito",
+          "material": true,
+          "preferred_source_type": "AUTHORITATIVE: objetivo/OKR vigente del marketplace o decision del owner de producto"
+        },
+        {
+          "field": "estado_actual_del_embudo",
+          "material": true,
+          "preferred_source_type": "AUTHORITATIVE: metricas reales de conversion/abandono por etapa, o confirmacion de que no existen"
+        },
+        {
+          "field": "usuario_objetivo_y_estado_de_deuda",
+          "material": true,
+          "preferred_source_type": "CONSTRAINT: definicion del segmento y del estado de deuda al que aplica cada alternativa"
+        },
+        {
+          "field": "alcance_minimo_de_cada_alternativa",
+          "material": true,
+          "preferred_source_type": "CONSTRAINT: definicion de que incluye el simulador y que incluye el onboarding, y si pueden compartir componentes"
+        },
+        {
+          "field": "reglas_de_calculo_y_calificadores_del_simulador",
+          "material": true,
+          "preferred_source_type": "AUTHORITATIVE/Legal-Data: reglas aprobadas de calculo; el ahorro mostrado debe ser referencial, nunca promesa"
+        },
+        {
+          "field": "dependencias_tecnicas_y_estimacion",
+          "material": true,
+          "preferred_source_type": "Tech: estimacion de esfuerzo de cada alternativa frente a 2 devs x 6 semanas"
+        },
+        {
+          "field": "riesgo_si_se_elige_mal",
+          "material": false,
+          "preferred_source_type": "Orquestador/owner; no bloquea por si solo"
+        }
+      ],
+      "why_blocking": "La eleccion cambia el alcance primario y la ruta del producto, y la consulta no trae ninguna fuente AUTHORITATIVE ni CONSTRAINT (sin metricas, reglas ni objetivo). Cualquier orden A>B o B>A seria negocio inventado, y un ahorro mostrado sin reglas aprobadas podria leerse como promesa financiera.",
+      "why_required": [
+        "Sin objetivo y metrica no hay criterio para que una alternativa reduzca la incertidumbre mas que la otra",
+        "Sin estado del embudo no se sabe si el cuello de botella esta antes o despues de la negociacion",
+        "Sin reglas de calculo, el simulador no puede especificarse sin riesgo de sobrepromesa"
+      ],
+      "risk_if_assumed": [
+        "Priorizar un simulador cuyas cifras no tienen autoridad y se leen como garantia de ahorro",
+        "Construir onboarding para un embudo que no se ha medido",
+        "Gastar las 6 semanas en el eje equivocado sin posibilidad de verificar"
+      ],
+      "next_input_needed": "Del orquestador/owner de producto: (1) objetivo y metrica de exito vigentes, (2) metricas reales del embudo o confirmacion de que no existen, (3) estimacion tecnica de ambas alternativas, (4) reglas aprobadas de calculo del simulador. Con eso se emite PRODUCT_DIRECTION_SPEC. No es una recomendacion de ninguna alternativa.",
+      "safe_next_gate": {
+        "action": "RETURN_TO_ORCHESTRATOR",
+        "target": "Orchestrator",
+        "condition": "Reentrar a Product Director LF cuando existan fuentes con autoridad para los campos materiales"
+      }
+    }
+  },
+  "output_sha256": "7970b4c191b9f5a83a8c3acd7c37b23b237c9b7100083a27a6725623300d8f75"
+}
