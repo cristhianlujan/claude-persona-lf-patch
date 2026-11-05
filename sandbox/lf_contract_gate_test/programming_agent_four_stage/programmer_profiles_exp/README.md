@@ -57,3 +57,7 @@ Repetir `test_experimental.py`, `test_parity.py` en bases frescas y la regresió
 ## Fronteras
 
 No modificar `profiles/` ni `skills/` productivos, original/, test_parity.py, funciones `_exp_`, Supabase, Análisis, Testing ni main. El resync del descriptor original usa alias `profiles/` exclusivamente en la DB local por la restricción de elegibilidad del selector; la fuente verdadera y su SHA están en el descriptor. No implica registro productivo, legitimidad de source_ref ni instalación.
+
+## Corrección de rutas canónicas (auditoría Worker @298307e)
+
+Todos los perfiles expresan el directorio protegido completo como `tests/protected/**`, **nunca** `tests/protected/`. La barra final no es canónica según `canonical_relative_path` del Worker real. `pack_validation_common.py` valida los patrones y el caso `NON_CANONICAL_PATH` comprueba que `tests/protected/` se bloquea sin normalizarlo. Esta prueba es adicional a los seis casos existentes y no reemplaza al parser real del adaptador.
