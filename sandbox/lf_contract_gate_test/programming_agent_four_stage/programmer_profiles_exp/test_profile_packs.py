@@ -40,7 +40,7 @@ def run():
         check(not errors,slug+" "+repr(errors))
         print("PASS PROFILE_PACK",slug)
         ev=evaluate(pack)
-        check(len(ev)==6 and all(v for _,v in ev),slug+" "+repr(ev))
+        check(len(ev)==7 and all(v for _,v in ev),slug+" "+repr(ev))
         for k,v in ev:print("PASS ROLE_EVAL",slug,k)
         d=descriptor(slug)
         check(d["schema_version"]=="LF_PROFILE_SELECTION_DESCRIPTOR_V1","Descriptor schema")
