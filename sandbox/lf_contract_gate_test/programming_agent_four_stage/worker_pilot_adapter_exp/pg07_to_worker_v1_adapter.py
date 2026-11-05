@@ -266,6 +266,16 @@ def build_worker_command(*,repo_path:Path,output_dir:Path,model="claude-haiku-5-
     if provider!="anthropic" or model not in ("claude-haiku-5-5","claude-sonnet-5-5"):
         fail("PILOT_PROVIDER_OR_MODEL_FORBIDDEN")
     q=output_dir.resolve()
+    if not (q/"task.v1.json").is_file():fail("PILOT_TASK_MISSING")
+    task=json.loads((q/"task.v1.json").read_text(encoding="utf-8"))
+    exact(task,TASK_FIELDS,"WORKER_V1_FIELDS_INVALID")
+    if task.get("schema_version")!=1:fail("WORKER_V1_SCHEMA_INVALID")
+    check_limits(task)
+    envelope_file=q/"extra.envelope.json"
+    if not envelope_file.is_file():fail("EXTRA_ENVELOPE_MISSING")
+    envelope=json.loads(envelope_file.read_text(encoding="utf-8"))
+    if envelope.get("task_id")!=task["task_id"] or envelope.get("task_sha256")!=sha(task) or envelope.get("production_authority") is not False:
+        fail("EXTRA_ENVELOPE_DRIFT")
     for name in ("task.v1.json","quality-plan.json","readback-manifest.json","holdout.oracle.json"):
         if not (q/name).is_file():fail("PILOT_EXTERNAL_INPUT_MISSING:"+name)
     if q==repo_path.resolve() or q.is_relative_to(repo_path.resolve()):fail("PILOT_OUTPUT_INSIDE_REPO")
