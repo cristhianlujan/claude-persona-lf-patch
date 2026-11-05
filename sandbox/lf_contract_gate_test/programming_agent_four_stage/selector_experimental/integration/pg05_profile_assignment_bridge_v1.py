@@ -233,7 +233,7 @@ def pg06_currentness(*,assignment,lot,prepare,finalize):
     out["currentness_sha256"]=digest(out)
     return out
 
-def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
+def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2,role,skill,project_binding_row):
     """Output is a CANDIDATE overlay, NOT fn_agent_task_worker_spec or an authenticated Worker receipt."""
     _validate_lot(lot)
     frozen(assignment,"assignment_sha256")
@@ -245,6 +245,33 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
         block("PG07_CURRENTNESS_MISSING")
     if assignment["write_scope"]!=lot["paths"] or assignment["production_authority"] is not False:
         block("PG07_SCOPE_OR_AUTHORITY_INVALID")
+    if not isinstance(role,dict) or not isinstance(skill,dict) or not isinstance(project_binding_row,dict):
+        block("PG07_ROLE_STACK_BINDING_REQUIRED")
+    if (role.get("profile_code")!=assignment["profile_code"] or
+        role.get("area")!=assignment["area"] or
+        skill.get("area")!=assignment["area"] or
+        skill.get("project_ref")!=assignment["project_ref"]):
+        block("PG07_ROLE_OR_SKILL_AREA_MISMATCH")
+    if set(project_binding_row)!={"project_ref","area","skill_code","skill_sha256"} or (
+        project_binding_row["project_ref"]!=assignment["project_ref"] or
+        project_binding_row["area"]!=assignment["area"] or
+        project_binding_row["skill_code"]!=skill.get("skill_code") or
+        project_binding_row["skill_sha256"]!=skill.get("skill_sha256")):
+        block("PG07_STACK_BINDING_DRIFT")
+    if (hashlib.sha256(role.get("role_text","").encode("utf-8")).hexdigest()!=role.get("profile_sha256") or
+        hashlib.sha256(skill.get("skill_text","").encode("utf-8")).hexdigest()!=skill.get("skill_sha256")):
+        block("PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    visible=worker_spec.get("functional_contract",{}).get("role_and_stack") if isinstance(worker_spec,dict) else None
+    if (not isinstance(visible,dict) or
+        visible.get("profile_code")!=role["profile_code"] or
+        visible.get("profile_sha256")!=role["profile_sha256"] or
+        visible.get("profile_rules")!=role["role_text"] or
+        visible.get("skill_code")!=skill["skill_code"] or
+        visible.get("skill_sha256")!=skill["skill_sha256"] or
+        visible.get("skill_rules")!=skill["skill_text"] or
+        visible.get("project_ref")!=assignment["project_ref"] or
+        visible.get("area")!=assignment["area"]):
+        block("PG07_ROLE_STACK_NOT_IN_VISIBLE_TASK")
     if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
         block("PG07_WORKER_SPEC_INVALID")
     if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
@@ -267,12 +294,16 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2):
         "profile_assignment_sha256":assignment["assignment_sha256"],
         "write_scope":copy.deepcopy(lot["paths"]),
         "worker_spec_sha256":digest(worker_spec),
+        "profile_sha256":role["profile_sha256"],"skill_code":skill["skill_code"],
+        "skill_sha256":skill["skill_sha256"],
         "pg07_c2_candidate_sha256":pg07_c2["candidate_sha256"],"production_authority":False,
         "dispatch_allowed":False}
     task["task_sha256"]=digest(task)
     receipt={"schema_version":"PG07_PROFILE_RECEIPT_LINK_CANDIDATE_V1",
         "task_sha256":task["task_sha256"],"profile_assignment_sha256":assignment["assignment_sha256"],
-        "worker_receipt_verified":False,"production_authority":False}
+        "worker_receipt_verified":False,
+        "profile_sha256":role["profile_sha256"],"skill_sha256":skill["skill_sha256"],
+        "production_authority":False}
     receipt["receipt_chain_sha256"]=digest(receipt)
     return {"worker_task_overlay":task,"receipt_link_candidate":receipt,
             "worker_invoked":False,"production_authority":False}
