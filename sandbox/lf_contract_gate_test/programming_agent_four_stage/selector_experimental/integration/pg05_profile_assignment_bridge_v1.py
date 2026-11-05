@@ -147,6 +147,11 @@ def assign_pg05(*,lot,project_ref,literal_request,model_draft,prepare,finalize):
     if not isinstance(project_ref,str) or not project_ref or not isinstance(literal_request,str) or not literal_request.strip():
         block("ASSIGN_INPUT_INVALID")
     if not isinstance(model_draft,dict): block("MODEL_DRAFT_INVALID")
+    allowed_draft={"decision","selected_profile_code","ambiguous_profile_codes",
+                   "reason","evidence_refs","material_ambiguities"}
+    if set(model_draft) != allowed_draft:
+        return {"status":"BLOCKED","blocking_code":"MODEL_DRAFT_FIELD_FORBIDDEN",
+                "production_authority":False}
     if lot["project_ref"]!=project_ref: block("LOT_PROJECT_MISMATCH")
     request_wrap=prepare(literal_request,project_ref,lot["area"],lot["paths"])
     if not isinstance(request_wrap,dict) or request_wrap.get("status")!="READY":
