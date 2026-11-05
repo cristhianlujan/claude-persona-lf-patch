@@ -405,6 +405,8 @@ def validate_v03_closure(candidate: Any, evidence_manifest: Any) -> tuple[list[d
             continue
         if value.get("authority_kind") == "DERIVED_PROPOSAL":
             continue  # validated by the generic walk; never counted as existing authority
+        if value.get("status") == "UNRESOLVED" and value.get("authority_kind") == "UNKNOWN" and value.get("missing_evidence"):
+            continue  # honest unresolved slot: no authority is claimed; the generic walk still blocks closing on it
         if value.get("status") != "RESOLVED" or value.get("authority_kind") != EXISTING_AUTHORITY:
             errors.append(_err("SRCR_EXISTING_AUTHORITY_REQUIRED", path))
             continue
