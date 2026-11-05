@@ -49,8 +49,10 @@ def run():
     checkout=os.environ.get("WORKER_298307E_CHECKOUT","")
     if not checkout:raise SystemExit("WORKER_298307E_CHECKOUT_REQUIRED")
     parse_task,load_quality,load_readback,load_oracle,readback_source_paths=load_real_worker_contract(Path(checkout))
+    def checked_adapt(*args,**kwargs):
+        return adapt(*args,worker_checkout=Path(checkout),**kwargs)
     pg07,overlay,commands=build()
-    task,envelope=adapt(pg07,owner_commands=commands,pg07_overlay=overlay)
+    task,envelope=checked_adapt(pg07,owner_commands=commands,pg07_overlay=overlay)
     check(set(task)==TASK_FIELDS and len(task)==14 and task["schema_version"]==1,
           "Worker V1 exact 14-field mapping")
     parsed=parse_task(task)
@@ -73,41 +75,55 @@ def run():
     injected["functional_contract"]["oracle_envelope"]={"secret":"NO"}
     bad_overlay=copy.deepcopy(overlay)
     bad_overlay["worker_task_overlay"]["worker_spec_sha256"]=sha(injected)
-    blocked(lambda:adapt(injected,owner_commands=commands,pg07_overlay=bad_overlay),
+    blocked(lambda:checked_adapt(injected,owner_commands=commands,pg07_overlay=bad_overlay),
             "ORACLE_FIELD_IN_PG07_TASK")
     context_leak=copy.deepcopy(pg07)
     context_leak["context_path_patterns"]=["tests/holdout.oracle.json"]
     leaked_overlay=copy.deepcopy(overlay)
     leaked_overlay["worker_task_overlay"]["worker_spec_sha256"]=sha(context_leak)
-    blocked(lambda:adapt(context_leak,owner_commands=commands,pg07_overlay=leaked_overlay),
+    blocked(lambda:checked_adapt(context_leak,owner_commands=commands,pg07_overlay=leaked_overlay),
             "ORACLE_OR_SECRET_IN_CONTEXT")
+    for field in ("context_path_patterns","write_path_patterns","protected_path_patterns"):
+        bad=copy.deepcopy(pg07)
+        bad[field]=["tests/protected/"]
+        mapped=copy.deepcopy(overlay)
+        mapped["worker_task_overlay"]["worker_spec_sha256"]=sha(bad)
+        blocked(lambda b=bad,m=mapped:checked_adapt(b,owner_commands=commands,pg07_overlay=m),
+                "ADAPTER_PATH_NOT_CANONICAL")
+    bad_wildcard=copy.deepcopy(pg07)
+    bad_wildcard["context_path_patterns"]=["src/**foo/bar.py"]
+    mapped=copy.deepcopy(overlay)
+    mapped["worker_task_overlay"]["worker_spec_sha256"]=sha(bad_wildcard)
+    blocked(lambda:checked_adapt(bad_wildcard,owner_commands=commands,pg07_overlay=mapped),
+            "ADAPTER_PATH_NOT_CANONICAL")
+    print("PASS Worker original canonical path functions reject trailing slash and malformed **")
     modified={**task,"extra_elevated_authority":True}
     try:parse_task(modified)
     except ValueError:print("PASS Worker original rejects additional field")
     else:raise AssertionError("Original Worker accepted extra")
     changed=copy.deepcopy(pg07)
     changed["acceptance_commands"][0]="python -m pytest | tee /tmp/x"
-    blocked(lambda:adapt(changed,owner_commands=commands,
+    blocked(lambda:checked_adapt(changed,owner_commands=commands,
                           pg07_overlay={**overlay,"worker_task_overlay":{"worker_spec_sha256":sha(changed),
                           "write_scope":changed["write_path_patterns"]}}),"ACCEPTANCE_SHELL_OR_AMBIGUOUS")
     bad=copy.deepcopy(pg07);del bad["max_attempts"]
-    blocked(lambda:adapt(bad,owner_commands=commands,pg07_overlay=overlay),"PG07_TASK_INCOMPLETE")
+    blocked(lambda:checked_adapt(bad,owner_commands=commands,pg07_overlay=overlay),"PG07_TASK_INCOMPLETE")
     for k in ("max_attempts","max_context_bytes","max_patch_bytes","max_changed_files"):
         incomplete=copy.deepcopy(pg07);del incomplete[k]
-        blocked(lambda b=incomplete:adapt(b,owner_commands=commands,pg07_overlay=overlay),
+        blocked(lambda b=incomplete:checked_adapt(b,owner_commands=commands,pg07_overlay=overlay),
                 "PG07_TASK_INCOMPLETE")
         bad=copy.deepcopy(pg07);bad[k]={"max_attempts":2,"max_context_bytes":60001,
                            "max_patch_bytes":20001,"max_changed_files":4}[k]
         bad_overlay=copy.deepcopy(overlay)
         bad_overlay["worker_task_overlay"]["worker_spec_sha256"]=sha(bad)
-        blocked(lambda b=bad,o=bad_overlay:adapt(b,owner_commands=commands,pg07_overlay=o),
+        blocked(lambda b=bad,o=bad_overlay:checked_adapt(b,owner_commands=commands,pg07_overlay=o),
                 "PILOT_LIMIT_MISSING_OR_EXCEEDED:"+k)
     no_metadata=copy.deepcopy(pg07)
-    blocked(lambda:adapt(no_metadata,pg07_overlay=overlay),"ACCEPTANCE_COMMAND_METADATA_MISSING")
+    blocked(lambda:checked_adapt(no_metadata,pg07_overlay=overlay),"ACCEPTANCE_COMMAND_METADATA_MISSING")
     oversized=copy.deepcopy(pg07)
     oversized["objective"]="X"*20000
     over=copy.deepcopy(overlay);over["worker_task_overlay"]["worker_spec_sha256"]=sha(oversized)
-    blocked(lambda:adapt(oversized,owner_commands=commands,pg07_overlay=over),"OBJECTIVE_RULES_TOO_LARGE")
+    blocked(lambda:checked_adapt(oversized,owner_commands=commands,pg07_overlay=over),"OBJECTIVE_RULES_TOO_LARGE")
     receipt={"schema_version":1,"receipt_sha256":"a"*64,"model_provider":"anthropic",
              "requested_model":"claude-haiku-5-5","resolved_model":"claude-haiku-5-5",
              "attempts":[{"attempt":1,"usage":{"input_tokens":1000,"output_tokens":2000}}]}
@@ -136,7 +152,7 @@ def run():
         (q/"extra.envelope.json").write_text(json.dumps(envelope),encoding="utf-8")
         for name in ("quality-plan.json","readback-manifest.json","holdout.oracle.json"):
             (q/name).write_text("{}",encoding="utf-8")
-        argv=build_worker_command(repo_path=STAGES,output_dir=q)
+        argv=build_worker_command(repo_path=STAGES,output_dir=q,worker_checkout=Path(checkout))
         check(argv[argv.index("--max-output-tokens")+1]=="8000" and
               argv[argv.index("--provider")+1]=="anthropic" and
               argv[argv.index("--model")+1]=="claude-haiku-5-5" and
