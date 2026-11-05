@@ -16,6 +16,23 @@ El puente, que permanece candidato, ahora exige `role`, `skill` y la fila de bin
 
 **Estándares PG-00:** solo se hallaron las referencias a familias `STD-BE`, `STD-FE`, `STD-DB` en el archivo fuente `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. **Ese archivo no contiene el texto normativo completo de las tres familias.** Por eso `pg00_catalog_sources_exp.json` fija las referencias verificadas, `pg00_source_status` devuelve `PG00_STANDARD_TEXT_UNAVAILABLE` y no se afirma que haya normas L1/L2 resueltas. Las skills incluyen conocimiento de sus **fuentes oficiales**, separado de estándares LF. **No permitir una ejecución real hasta conseguir el catálogo normativo versionado con contenido y huellas.** No sustituirlo por suposiciones.
 
+## Ampliación — múltiples skills versionadas, prioridad y criterio experto
+
+La tabla local `project_stack_binding_exp` incorpora `skill_version` y `priority`, con clave de identidad `(project_ref,area,skill_code,skill_version)`. Una combinación proyecto/área puede tener varias filas. El orden es determinista: **prioridad 1 primero**, los demás números crecientes después; no se pierden las skills secundarias. Sin prioridad o con dos filas de igual prioridad, **BLOCK**. Una versión inexistente para un código vinculado produce `SKILL_VERSION_MISMATCH`. Cada fila se comprueba contra el hash del `SKILL.md` de esa versión.
+
+Caso `lf_java/BACKEND`: `SPRINGBOOT_EXP@3` prioridad 1 y `KAFKA_EXP@3` prioridad 2. Ambos contenidos pasan a `WorkerTaskSpec.functional_contract.role_and_stack.skills` con versión, orden, SHA y por lo menos **tres reglas expertas identificadas por ID, texto exacto y fuente oficial**. El primario se conserva para compatibilidad del puente anterior, pero no descarta Kafka. `skill_set_sha256` fija orden e identidades; PG-07 lo incorpora junto al SHA de rol y las skills en tarea y recibo **candidato**, sin autorizar ejecución.
+
+Reglas expertas versionadas en `stack_skills_exp/*/contracts/expert_rules.json`, sincronizadas con su `SKILL.md`:
+- **Spring Boot @3:** controller/service/repository, DTO vs entidad, Bean Validation, @ControllerAdvice/@ExceptionHandler, @Transactional, @WebMvcTest, @DataJpaTest y @SpringBootTest.
+- **Angular @1:** componentes, signals, semántica y accesibilidad, teclado/foco, pruebas de componentes.
+- **Flyway @1:** migraciones versionadas, validate/checksum, riesgos de pérdida, límites de Undo y rollback compatible.
+- **FastAPI @1:** dependencias, response_model, excepciones HTTP, TestClient/pytest, override/limpieza de dependencias.
+- **Kafka @3 (adicional):** particiones y orden, idempotencia, offsets/consumer groups, compatibilidad de mensajes y recuperación.
+
+Cada skill tiene ejemplo `good_output.json`, `bad_output.json` y evals. `validate_visible_skill_rules` rechaza una tarea con menos de tres reglas distintas o una regla con texto/fuente alterados. Los tests locales y el puente PG-07 real agregan negativos para prioridades, versiones y reglas.
+
+**Bloqueo normativo sin cambios:** el texto completo de STD-BE, STD-FE, STD-DB no está disponible en la fuente verificada; mantener `PG00_STANDARD_TEXT_UNAVAILABLE`. Las reglas técnicas oficiales de stack **no** sustituyen L1/L2 de LF.
+
 ## Comandos para Claude
 
 Desde la raíz del repositorio, en el checkout del HEAD auditado:
