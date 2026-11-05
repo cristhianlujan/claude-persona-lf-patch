@@ -13,9 +13,19 @@
 
 Los contratos originales contienen explícitamente `CANDIDATE_NOT_ADMITTED`, `production_authority=false` y `handoff_allowed=false`. Este puente conserva ese estado; no suple las aprobaciones, atestaciones ni revisiones que faltan para la cadena productiva. La política de rutas se toma de la copia experimental de PostgreSQL; ninguna consulta escribe en Supabase.
 
+## Corrección posterior a auditoría de Claude (#3667)
+
+En el HEAD previo `ecf2917`, Claude observó 19 PASS seguidos de un fallo: un borrador con `production_authority` no era rechazado antes de finalizar. Este HEAD aplica las siguientes correcciones:
+
+1. **Modelo estrictamente no confiable:** `assign_pg05` acepta exactamente `decision`, `selected_profile_code`, `ambiguous_profile_codes`, `reason`, `evidence_refs` y `material_ambiguities`. Cualquier clave adicional o ausencia → `BLOCKED / MODEL_DRAFT_FIELD_FORBIDDEN` antes de `finalize`. Cuatro tests inyectan `production_authority`, `route_authority`, `write_scope` y una clave desconocida, con un `finalize` centinela que falla si se invoca.
+2. **Productores verdaderos en el arnés:** la prueba importa `build_chain` de `pg05_target_binding_candidate/tests/test_pg05_chain_c1_c5_v1.py`, que llama a `assemble_pg04_exit_candidate` y a `prepare_pg05_c1`/`prepare_pg05_c2` (más la cadena existente). Ya no fabrica sobres PG04/C2 manuales. Los tokens/rutas L3 son **fixtures fuente de ese productor** (`src/SOL-*/...`); el proyecto descartable `bridge_fixture` declara reglas de ruta para esos paths. Un sobre C2 alterado sin actualizar digest se bloquea. **No se afirma autenticidad productiva**: las entradas aguas arriba de esos productores siguen siendo fixtures.
+3. **PG-07 real C1/C2:** la prueba ejecuta `prepare_pg07_c1` y `prepare_pg07_c2` desde `pg07_worker_candidate/tools/`. Un spec completo V2 debe ser aceptado por ambos productores; el oráculo oculto debe ser rechazado por C2. El overlay PG07 requiere digest válido de C2 y coincidencia exacta de `worker_visible_task_spec` y `worker_task_spec_sha256`. Para ejercitar C1 se usa un sobre PG06_C5 **sintético no atestado**, explícitamente marcado como fixture; esto no demuestra admisión PG06 ni validez de una tarea Worker productiva.
+
+**Estado:** correcciones implementadas, pendientes de nueva ejecución independiente. La evidencia previa de 19 PASS + fallo **no** se reinterpreta como PASS de este HEAD.
+
 ## Pruebas
 
-`test_pg04_pg07_selector_bridge_v1.py` carga el selector original y los datos experimentales en una base vacía `selector_exp_test_*`, usando el mismo `guard` del experimento. Requiere `SELECTOR_EXP_DISPOSABLE_DB=YES`, host de loopback y base sin objetos de usuario. Verifica regresión JSON original 6/6, PG-04 un área, mezcla, conflicto, PG-05 alcance exacto, 2 backend SELECTED, AMBIGUOUS/NO_MATCH humanos, frontend para Java bloqueado, autoridad re-hasheada bloqueada, PG-06 cambios de descriptores/áreas/rutas y asignación manipulada, PG-07 tarea y recibo encadenados, scope extra rechazado, cero residuos.
+`test_pg04_pg07_selector_bridge_v1.py` carga el selector original y los datos experimentales en una base vacía `selector_exp_test_*`, usando el mismo `guard` del experimento. Requiere `SELECTOR_EXP_DISPOSABLE_DB=YES`, host de loopback y base sin objetos de usuario. Verifica regresión JSON original 6/6, PG-04 un área, mezcla, conflicto, PG-05 alcance exacto, 2 backend SELECTED, AMBIGUOUS/NO_MATCH humanos, frontend para Java bloqueado, autoridad re-hasheada bloqueada, PG-06 cambios de descriptores/áreas/rutas y asignación manipulada, PG-07 aceptación por los productores reales C1/C2, rechazo de oráculo, tarea y recibo encadenados, scope extra rechazado, cero residuos.
 
 **No se declara PASS de estas pruebas:** corresponde a Claude ejecutar y guardar HEAD, comando y salida literal.
 
