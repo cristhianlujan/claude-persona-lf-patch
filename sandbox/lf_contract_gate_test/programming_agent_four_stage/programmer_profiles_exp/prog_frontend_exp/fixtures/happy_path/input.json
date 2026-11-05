@@ -6,7 +6,7 @@
     "src/lot/frontend.change"
   ],
   "protected_paths": [
-    "tests/protected/"
+    "tests/protected/**"
   ],
   "production_authority": false
 }
