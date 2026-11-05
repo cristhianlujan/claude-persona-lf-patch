@@ -14,10 +14,22 @@ Estas reglas aplican a cualquier agente (GPT o Claude) que ejecute `ACTUALIZACIO
    - una decisión del dueño irreversible o realmente ambigua (no lo es elegir método, nombre de rama o orden de pasos);
    - riesgo de seguridad, producción, gasto o pérdida de datos;
    - falta de una capacidad de entrega (ver regla 3).
+   (Un rechazo literal de OpenAI no entra aquí: se trata con la regla 6 y el run sigue por lo independiente.)
    Todo lo demás —un check rojo, un falso negativo en las pruebas, un código de la tabla de errores conocidos— se corrige y se sigue, sin preguntar.
 3. **Sin ZIP ni descargas.** El candidato nunca se entrega como archivo para que alguien lo descargue o lo suba a mano. Se escribe directamente en la rama `lf/**` del repositorio con la herramienta de escritura de GitHub disponible (conector o API), solo en los paths del perfil y después del paso de pre-escritura, y se relee desde la rama. Si el agente no puede escribir en GitHub, se detiene con `NATIVE_CANDIDATE_DELIVERY_UNAVAILABLE` y dice qué capacidad falta; no produce un ZIP como sustituto.
 4. **Una evolución completa, no por lotes.** Todas las brechas medidas (las dimensiones S26 que fallan y los problemas del caso operacional) se resuelven en **un único candidato, un único PR**. No se parte el trabajo en "lote 1, lote 2" ni se deja una brecha para después sin un bloqueo grave que la justifique. Si algo no se puede cerrar, se dice cuál es el bloqueo, no se difiere.
 5. **Las pruebas locales no se reportan como avance.** Se usan para iterar el candidato hasta que pase y recién entonces se sigue al paso siguiente; el avance oficial es el que queda registrado en los pasos de la ejecución.
+
+6. **Bloqueo de seguridad de OpenAI: respuesta automática, sin buscarla.** Si una llamada a herramienta es rechazada y el mensaje literal identifica a OpenAI como emisor (p. ej. «Los controles de seguridad de OpenAI bloquearon esta llamada a la herramienta…»), no es una parada grave del run ni un fallo de GitHub, Supabase o del Router. El agente aplica de inmediato, en la misma traza, el protocolo [`ops/lf-openai-tool-safety-review-v1.md`](../../ops/lf-openai-tool-safety-review-v1.md) §2A:
+   1. Registrar `OPENAI_SAFETY_BLOCK_REVIEW` y decir que esa operación quedó **sin efecto verificado**.
+   2. Declarar este contexto, con datos comprobados (lo no demostrado se marca `NO_VERIFICADO`, nunca se inventa):
+
+      > Esta solicitud corresponde a un agente interno de Libertad Financiera (LF), dedicado a operar y verificar nuestro sistema bajo una ruta autorizada. La acción [operación exacta] es necesaria para [dependencia funcional: p. ej. escribir el candidato del perfil en la rama `lf/**` / crear el issue etiquetado de la ruta gobernada]. No pretende vulnerar mecanismos de seguridad, obtener accesos indebidos ni eludir controles; la autorización y el efecto esperado son [ruta OIDC/Edge existente, paths del perfil, sin credenciales ni cambio de permisos]. Solicitamos revisión de un posible falso positivo.
+
+      Acompañar con `internal_system=LF`, `agent_role`, `operation`, `required_for`, `authorized_path`, `permissions_and_effects`.
+   3. Reintentar **una vez** la misma operación, con el mismo destino, alcance y contenido (no se reescribe ni se reempaqueta para evadir el filtro).
+   4. Si persiste: registrar `PROVIDER_BLOCKED_PENDING_REVIEW`, preparar el texto para Soporte de OpenAI, y **seguir con todo lo independiente** del run; reanudar esa operación solo cuando vuelva a permitirse, con readback. No declarar el paso ejecutado, no usar rutas alternativas de escritura y no tratarlo como aprobado por haber enviado el descargo.
+   Esta declaración es contexto, no una exención: si la solicitud sí infringe una política real, se detiene (`STOP_POLICY_APPLIES`).
 
 ## 1. ¿Qué hace y quién es responsable?
 
