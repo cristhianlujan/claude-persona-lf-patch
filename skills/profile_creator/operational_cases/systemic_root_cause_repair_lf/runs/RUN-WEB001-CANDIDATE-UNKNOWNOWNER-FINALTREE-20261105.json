@@ -1,0 +1,2958 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-WEB001-CANDIDATE-UNKNOWNOWNER-FINALTREE-20261105",
+  "case_id": "WEB-001",
+  "profile_slug": "systemic_root_cause_repair_lf",
+  "profile_tree_sha256": "2217c37150ed742f57a18fc8a57ff15e1f4134c6d1d1df6fa0501f15613ba05a",
+  "attestation": "NONE",
+  "recorded_at": "2026-11-05T01:20:00Z",
+  "executor": {
+    "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+    "note": "Isolated model given only a copy of the candidate profile tree (SKILL.md, schema, contracts, validators) and input_literal; read-only SQL against LF_SUPABASE_SANDBOX; 74 recorded queries; one run. attestation NONE: not a provider-attested run."
+  },
+  "conditions": "Same case WEB-001 (ACT-0058 Cache miss) and same input literal as RUN-WEB001-CANDIDATE-POLICYRES-20261104. DISCLOSURE: the model run used the candidate tree with the schema and SKILL change but BEFORE the closure_proof.py owner-slot fix (it reported SRCR_EXISTING_AUTHORITY_REQUIRED on its UNRESOLVED/UNKNOWN owner and did not work around it); the unchanged output was then re-validated deterministically with the final tree (validator.valid=true). Evidence manifest built by the executor, not by an independent resolver. REBIND: same model output as RUN-WEB001-CANDIDATE-UNKNOWNOWNER-20261104, re-bound to the final committed candidate tree (commit 00767e9) which is the tree the evolution proof compares; no new model call.",
+  "input_literal": "Investiga el incidente WEB-001 del proceso ACT-0058. Identifica la causa sistémica del fallo Cache miss, verifica los controles de reintento y readmisión, busca las reglas aplicables y determina si existe autoridad suficiente para identificar un responsable. No inventes propietario, política, ejecución ni reparación. Conserva las evidencias, fuentes, incertidumbres y criterios de aceptación.",
+  "input_sha256": "619305c88da1ead498b8fb40d3ae57e664c71eb02b6f9f98edccd90f17282feb",
+  "validator": {
+    "tool": "profile validators/runtime_validate.py (validate(payload, evidence_manifest)) on the final candidate tree, re-run over the unchanged output",
+    "valid": true,
+    "errors": []
+  },
+  "output": {
+    "status": "NEEDS_MORE_EVIDENCE",
+    "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6",
+    "symptom": {
+      "statement": "El incidente WEB-001 del proceso ACT-0058: web.run open(url) devolvio 'Cache miss' y la URL quedo en FALLIDO sin KB. EKB registra frecuencia 46 (2026-08-24 a 2026-09-01); hoy hay 39 URLs FALLIDO en la cola, 27 por Cache miss, 14 etiquetadas WEB-001.",
+      "status": "OBSERVED",
+      "evidence_refs": [
+        "EV-Q04",
+        "EV-Q06",
+        "EV-Q07",
+        "EV-Q08",
+        "EV-Q22"
+      ],
+      "missing_evidence": []
+    },
+    "immediate_cause": {
+      "statement": "La captura obtuvo 'Cache miss' del fetch externo y la etapa de captura cerro la URL en modo fail-closed: corrida FAILED, cola FALLIDO con error_detail, intento_count incrementado y ninguna KB creada (0 KB para las 39 URLs FALLIDO y 0 KB desde corridas fallidas).",
+      "status": "ESTABLISHED",
+      "evidence_refs": [
+        "EV-Q04",
+        "EV-Q22",
+        "EV-Q33",
+        "EV-Q40",
+        "EV-Q41",
+        "EV-Q54"
+      ],
+      "missing_evidence": []
+    },
+    "systemic_root_cause": {
+      "statement": "Hipotesis de causa sistemica: el control de reintento declarado (paso opcional failed_retry) solo cuenta reintentos de lf_pipeline_runs.retry_count, no se vincula a la cola, su juez no esta enlazado y no deja recibos; y nada en la BD readmite ni retira una URL FALLIDO (fn_restock_url_queue usa ON CONFLICT DO NOTHING). FALLIDO queda como estado sin salida y el 'intervencion manual' posterior al tope 3 no tiene responsable ni mecanismo.",
+      "status": "HYPOTHESIS",
+      "evidence_refs": [
+        "EV-Q21",
+        "EV-Q23",
+        "EV-Q19",
+        "EV-Q54",
+        "EV-Q62",
+        "EV-Q65",
+        "EV-Q66",
+        "EV-Q41",
+        "EV-Q61"
+      ],
+      "missing_evidence": [
+        "Codigo del ejecutor que decide reintentar o no (no observado): sin el no se puede probar que el ejecutor omite el contrato ni donde deberia aplicarse el control"
+      ]
+    },
+    "causal_chain": [
+      {
+        "statement": "Una URL de la cola entra a captura y web.run devuelve 'Cache miss' (el fallo no es de dominio completo: reevalua.com tiene 122 URLs PROCESADO y 25 fallos).",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-Q07",
+          "EV-Q40",
+          "EV-Q74"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "La etapa de captura marca la URL FALLIDO, registra error_detail e incrementa intento_count, sin crear KB; el contrato de stage_captura declara marcar FALLIDO y continuar.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-Q06",
+          "EV-Q22",
+          "EV-Q32",
+          "EV-Q54"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "El tope de 3 intentos esta declarado solo en el paso opcional failed_retry sobre lf_pipeline_runs.retry_count; ese paso no tiene recibos, su juez no esta enlazado y su SQL (FAILED cuando retry_count+1 >= 3) contradice su propia condicion (retry_count <= 3).",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-Q54",
+          "EV-Q62",
+          "EV-Q65",
+          "EV-Q66"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "Las 6 URLs con intento_count=3 tienen corridas creadas ya con retry_count=3 por LF_APRENDIZAJE_AUTONOMO (ejecucion COMPLETED con 0 pasos registrados), es decir contador sin libro de intentos; la corrida original de 2026-08-27 nunca se actualizo.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-Q40",
+          "EV-Q61",
+          "EV-Q72",
+          "EV-Q73"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "Ninguna funcion, trigger o job de pg_cron readmite URLs FALLIDO (restock inserta con ON CONFLICT DO NOTHING); las 39 FALLIDO tienen mas de 30 dias sin cambio (la mas antigua 2026-07-03) y no hay escrituras de cola ni corridas desde 2026-09-01.",
+        "status": "OBSERVED",
+        "evidence_refs": [
+          "EV-Q19",
+          "EV-Q21",
+          "EV-Q23",
+          "EV-Q41",
+          "EV-Q42",
+          "EV-Q45"
+        ],
+        "missing_evidence": []
+      },
+      {
+        "statement": "La combinacion de un reintento opcional sin evidencia y una cola sin readmision explica por que un Cache miss transitorio se vuelve permanente en la cola, aunque el 2026-08-24 un reproceso recupero 7 URLs.",
+        "status": "HYPOTHESIS",
+        "evidence_refs": [
+          "EV-Q32",
+          "EV-Q41",
+          "EV-Q54",
+          "EV-Q62"
+        ],
+        "missing_evidence": [
+          "Codigo del ejecutor/skill (repo cristhianlujan/claude-persona-lf-patch, skills/orquestador_pipeline_lf/) y del runtime programado externo: no fueron accesibles en esta corrida aislada"
+        ]
+      }
+    ],
+    "first_bad_control": {
+      "statement": "Primer control defectuoso probable: el paso failed_retry (CONTRACT_ACT0058_S11A_FAILED_RETRY_V1) es opcional (required=false), actua solo sobre lf_pipeline_runs, su minijuez MINI_JUDGE_ACT0058_RETRY no existe en lf_operation_judges y no hay ningun recibo del paso en 159 ejecuciones.",
+      "status": "HYPOTHESIS",
+      "evidence_refs": [
+        "EV-Q54",
+        "EV-Q62",
+        "EV-Q65",
+        "EV-Q66"
+      ],
+      "missing_evidence": [
+        "Codigo del ejecutor/skill (repo cristhianlujan/claude-persona-lf-patch, skills/orquestador_pipeline_lf/) y del runtime programado externo: no fueron accesibles en esta corrida aislada"
+      ]
+    },
+    "escape_control": {
+      "statement": "Control de escape probable: ausencia de readmision o retiro terminal para URLs FALLIDO; la cola no tiene columna de proximo reintento, ninguna funcion o trigger mueve FALLIDO a PENDIENTE y ninguna politica activa define el destino tras el tope.",
+      "status": "HYPOTHESIS",
+      "evidence_refs": [
+        "EV-Q02",
+        "EV-Q19",
+        "EV-Q21",
+        "EV-Q23",
+        "EV-Q17",
+        "EV-Q49",
+        "EV-Q51"
+      ],
+      "missing_evidence": [
+        "Codigo del ejecutor/skill (repo cristhianlujan/claude-persona-lf-patch, skills/orquestador_pipeline_lf/) y del runtime programado externo: no fueron accesibles en esta corrida aislada"
+      ]
+    },
+    "recurrence_evidence": [
+      {
+        "ref": "EV-Q04",
+        "fact": "EKB WEB-001 CAPTURA_WEB activo, frecuencia 46, primera vez 2026-08-24 y ultima 2026-09-01.",
+        "evidence_class": "OBSERVED_HISTORY",
+        "scope": "historial EKB del pipeline de conocimiento"
+      },
+      {
+        "ref": "EV-Q08",
+        "fact": "Eventos 8594, 8595, 8608, 8610, 8628 y 9527 muestran fallos Cache miss repetidos entre 2026-08-24 y 2026-08-27.",
+        "evidence_class": "OBSERVED_HISTORY",
+        "scope": "eventos ACT-0058"
+      },
+      {
+        "ref": "EV-Q41",
+        "fact": "39 URLs FALLIDO siguen sin KB y sin cambio hace mas de 30 dias.",
+        "evidence_class": "OBSERVED_LIVE",
+        "scope": "estado actual de lf_url_queue"
+      }
+    ],
+    "live_authority_packet": {
+      "status": "PARTIAL",
+      "observed_at": "2026-11-05T00:37:10Z",
+      "applicable_surfaces": [
+        "SUPABASE_TABLES",
+        "SQL_FUNCTIONS",
+        "OPERATION_DEFINITION",
+        "OPERATION_EXECUTION_RECEIPTS",
+        "REPOSITORY_SKILL_SOURCE",
+        "SCHEDULER_RUNTIME"
+      ],
+      "inspected_surfaces": [
+        "SUPABASE_TABLES",
+        "SQL_FUNCTIONS",
+        "OPERATION_DEFINITION",
+        "OPERATION_EXECUTION_RECEIPTS"
+      ],
+      "evidence_refs": [
+        "EV-Q06",
+        "EV-Q19",
+        "EV-Q21",
+        "EV-Q23",
+        "EV-Q50",
+        "EV-Q54",
+        "EV-Q62",
+        "EV-Q66"
+      ],
+      "material_effects_observed": true,
+      "unavailable_sources": [
+        "REPOSITORY_SKILL_SOURCE",
+        "SCHEDULER_RUNTIME",
+        "WEB_RUN_TELEMETRY"
+      ],
+      "unavailable_source_assessments": [
+        {
+          "source": "REPOSITORY_SKILL_SOURCE",
+          "impact": "DESIGN_BLOCKING",
+          "rationale": "El codigo del skill orquestador (GitHub) decide si se invoca failed_retry y como se readmite una URL; sin verlo no se puede fijar el punto de cumplimiento.",
+          "containment_ref": "$.current_uncertainties[0]"
+        },
+        {
+          "source": "SCHEDULER_RUNTIME",
+          "impact": "DESIGN_BLOCKING",
+          "rationale": "El disparo del pipeline no esta en pg_cron (0 jobs relacionados); el programador externo no fue observado.",
+          "containment_ref": "$.current_uncertainties[0]"
+        },
+        {
+          "source": "WEB_RUN_TELEMETRY",
+          "impact": "NON_BLOCKING_HISTORICAL",
+          "rationale": "La causa del Cache miss del fetch externo es historica y queda contenida por un reintento acotado con retiro terminal.",
+          "containment_ref": "$.current_uncertainties[1]"
+        }
+      ]
+    },
+    "execution_effect_reconciliation": [
+      {
+        "effect": "retry_count=3 fijado al crear 6 corridas fallidas",
+        "observed_ref": "EV-Q72",
+        "declared_producer": "paso failed_retry de ORQUESTACION_PIPELINE_LF",
+        "declared_producer_ref": "EV-Q54",
+        "observed_producer_refs": [
+          "EV-Q72",
+          "EV-Q73"
+        ],
+        "reconciliation_status": "UNRESOLVED_PRODUCER",
+        "blocking": true,
+        "impact": "DESIGN_BLOCKING",
+        "containment_ref": "$.current_uncertainties[0]"
+      }
+    ],
+    "authority_contradictions": [
+      {
+        "classification": "DECLARED_VS_OBSERVED_CONTRADICTION",
+        "declared": "El contrato failed_retry declara incrementar retry_count y bloquear sobre 3 con juez MINI_JUDGE_ACT0058_RETRY.",
+        "observed": "0 recibos del paso en 159 ejecuciones y juez sin enlazar (active_judge_bindings=0, no existe en lf_operation_judges).",
+        "blocking": true,
+        "evidence_ref": "EV-Q62"
+      },
+      {
+        "classification": "OTHER",
+        "declared": "El contrato failed_retry dice pass_condition retry_count <= 3.",
+        "observed": "Su execution_sql marca FAILED cuando retry_count+1 >= 3, o sea al tercer intento.",
+        "blocking": true,
+        "evidence_ref": "EV-Q54"
+      },
+      {
+        "classification": "DECLARED_VS_OBSERVED_CONTRADICTION",
+        "declared": "EKB WEB-001 prescribe 'permitir reintento posterior controlado'.",
+        "observed": "No existe paso, funcion ni job que readmita FALLIDO a PENDIENTE y hay 39 FALLIDO sin cambio hace mas de 30 dias.",
+        "blocking": true,
+        "evidence_ref": "EV-Q41"
+      }
+    ],
+    "repair_level": "UNDETERMINED",
+    "should_exist_assessment": {
+      "verdict": "SHOULD_EXIST",
+      "subject": "control de reintento y retiro de URLs FALLIDO",
+      "real_consumers": [
+        {
+          "consumer": "stage_captura de ORQUESTACION_PIPELINE_LF",
+          "evidence_ref": "EV-Q54"
+        },
+        {
+          "consumer": "EKB WEB-001 (prevencion)",
+          "evidence_ref": "EV-Q04"
+        }
+      ],
+      "elimination_impact": "Sin control, un Cache miss transitorio deja la URL FALLIDO para siempre (39 hoy).",
+      "native_or_existing_alternative": "Reutilizar failed_retry y lf_url_queue existentes en lugar de un motor nuevo.",
+      "evidence_refs": [
+        "EV-Q04",
+        "EV-Q41",
+        "EV-Q54"
+      ],
+      "missing_evidence": []
+    },
+    "alternatives": [
+      {
+        "id": "A",
+        "description": "Mantener tal cual y solo cerrar a mano las 39 URLs.",
+        "prevention": "Baja: el patron reaparece en la proxima corrida.",
+        "complexity": "Baja.",
+        "blast_radius": "Baja.",
+        "reuse": "Total.",
+        "fail_closed": "Ya es fail-closed en captura.",
+        "idempotency": "No agrega garantia.",
+        "recoverability": "Manual.",
+        "operational_cost": "Bajo.",
+        "basis_refs": [
+          "EV-Q41",
+          "EV-Q54"
+        ]
+      },
+      {
+        "id": "B",
+        "description": "Reintento acotado y readmision/retiro terminal de FALLIDO dentro de la operacion, cola y politicas existentes, con juez enlazado y responsable ratificado (propuesta provisional, no probada).",
+        "prevention": "Media a alta si se prueba el punto de cumplimiento.",
+        "complexity": "Media.",
+        "blast_radius": "Media: toca cola y contrato.",
+        "reuse": "Alta: reutiliza failed_retry y lf_url_queue.",
+        "fail_closed": "Alta si el tope y el retiro son terminales.",
+        "idempotency": "A definir (UNIQUE(url) ya evita duplicados).",
+        "recoverability": "Alta si se conserva el historial de intentos.",
+        "operational_cost": "Medio.",
+        "basis_refs": [
+          "EV-Q21",
+          "EV-Q23",
+          "EV-Q54",
+          "EV-Q66"
+        ]
+      },
+      {
+        "id": "C",
+        "description": "Motor de reintentos nuevo y separado.",
+        "prevention": "Alta en teoria.",
+        "complexity": "Alta.",
+        "blast_radius": "Alta.",
+        "reuse": "Baja: duplica failed_retry.",
+        "fail_closed": "Alta.",
+        "idempotency": "A definir.",
+        "recoverability": "Media.",
+        "operational_cost": "Alto.",
+        "basis_refs": [
+          "EV-Q54",
+          "EV-Q50"
+        ]
+      }
+    ],
+    "preferred_alternative": "B",
+    "selected_alternative": null,
+    "rejected_alternatives": [
+      {
+        "id": "A",
+        "reason": "No previene la recurrencia: los FALLIDO seguirian sin salida y el patron WEB-001 tiene frecuencia 46.",
+        "evidence_refs": [
+          "EV-Q04",
+          "EV-Q41"
+        ]
+      },
+      {
+        "id": "C",
+        "reason": "Duplicaria el contrato failed_retry existente y ampliaria el alcance sin evidencia de que el contrato actual no sirva.",
+        "evidence_refs": [
+          "EV-Q54",
+          "EV-Q66"
+        ]
+      }
+    ],
+    "falsification_results": [
+      {
+        "case": "bypass",
+        "result": "PLANNED",
+        "evidence_ref": "design://bypass",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario bypass antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario bypass sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture bypass contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario bypass."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario bypass."
+          ],
+          "failure_signal": "BYPASS_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "retry",
+        "result": "PLANNED",
+        "evidence_ref": "design://retry",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario retry antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario retry sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture retry contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario retry."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario retry."
+          ],
+          "failure_signal": "RETRY_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "concurrency",
+        "result": "PLANNED",
+        "evidence_ref": "design://concurrency",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario concurrency antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario concurrency sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture concurrency contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario concurrency."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario concurrency."
+          ],
+          "failure_signal": "CONCURRENCY_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "partial_failure",
+        "result": "PLANNED",
+        "evidence_ref": "design://partial_failure",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario partial_failure antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario partial_failure sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture partial_failure contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario partial_failure."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario partial_failure."
+          ],
+          "failure_signal": "PARTIAL_FAILURE_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "stale_state",
+        "result": "PLANNED",
+        "evidence_ref": "design://stale_state",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario stale_state antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario stale_state sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture stale_state contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario stale_state."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario stale_state."
+          ],
+          "failure_signal": "STALE_STATE_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "interrupted_execution",
+        "result": "PLANNED",
+        "evidence_ref": "design://interrupted_execution",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario interrupted_execution antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario interrupted_execution sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture interrupted_execution contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario interrupted_execution."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario interrupted_execution."
+          ],
+          "failure_signal": "INTERRUPTED_EXECUTION_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "replay_or_duplicate",
+        "result": "PLANNED",
+        "evidence_ref": "design://replay_or_duplicate",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario replay_or_duplicate antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario replay_or_duplicate sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture replay_or_duplicate contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario replay_or_duplicate."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario replay_or_duplicate."
+          ],
+          "failure_signal": "REPLAY_OR_DUPLICATE_FALSIFICATION_FAILED"
+        }
+      },
+      {
+        "case": "undeclared_or_unversioned_caller",
+        "result": "PLANNED",
+        "evidence_ref": "design://undeclared_or_unversioned_caller",
+        "evidence_class": "DESIGN_ONLY",
+        "verification_method": "Ejecutar la reparacion candidata exacta contra el escenario undeclared_or_unversioned_caller antes del cierre de implementacion.",
+        "expected_result": "La reparacion bloquea o maneja con seguridad el escenario undeclared_or_unversioned_caller sin efecto duplicado ni no autorizado.",
+        "test_protocol": {
+          "setup": [
+            "Preparar el fixture undeclared_or_unversioned_caller contra el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la reparacion candidata exacta contra el escenario undeclared_or_unversioned_caller."
+          ],
+          "assertions": [
+            "Sin efecto duplicado ni no autorizado en el escenario undeclared_or_unversioned_caller."
+          ],
+          "failure_signal": "UNDECLARED_OR_UNVERSIONED_CALLER_FALSIFICATION_FAILED"
+        }
+      }
+    ],
+    "origin_asset": {
+      "status": "RESOLVED",
+      "code": "ACT-0058",
+      "evidence_ref": "EV-Q27",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-Q27",
+      "subject": "ACT-0058",
+      "observed_revision": "2026-11-05T00:37:10Z"
+    },
+    "origin_operation": {
+      "status": "RESOLVED",
+      "code": "ORQUESTACION_PIPELINE_LF",
+      "evidence_ref": "EV-Q50",
+      "missing_evidence": [],
+      "authority_kind": "EXISTING_AUTHORITY",
+      "evidence_id": "EV-Q50",
+      "subject": "ORQUESTACION_PIPELINE_LF",
+      "observed_revision": "2026-11-05T00:37:10Z"
+    },
+    "owner": {
+      "status": "UNRESOLVED",
+      "code": null,
+      "evidence_ref": null,
+      "evidence_id": null,
+      "authority_kind": "UNKNOWN",
+      "missing_evidence": [
+        "Responsable (owner) registrado de ACT-0058 / ORQUESTACION_PIPELINE_LF / lf_url_queue / politica de reintento: no existe en lf_activos (owner_name NULL), registry, politicas, capacidades, catalogo de skills ni eventos"
+      ],
+      "search_record": [
+        {
+          "class": "DIRECT",
+          "source": "lf_activos ACT-0058 (owner_name), lf_operation_registry, lf_operation_step_contracts, columnas owner/responsable de todo public",
+          "result": "owner_name NULL; ninguna tabla de la operacion tiene columna de owner",
+          "evidence_id": "EV-Q27"
+        },
+        {
+          "class": "DECLARED",
+          "source": "politicas N1 snapshot y N2 lf_policy_versions, contratos de operacion y paso, inventario de activos, acciones del Router",
+          "result": "ninguna regla ni contrato nombra un responsable",
+          "evidence_id": "EV-Q51"
+        },
+        {
+          "class": "ANALOGY",
+          "source": "owner de las 14 skills hermanas (ACT-0054 a 0058)",
+          "result": "0054-0057 tambien sin owner; otras skills con 'Cristhian' o 'LF_GOVERNANCE'; analogia inconsistente, no se usa",
+          "evidence_id": "EV-Q36"
+        },
+        {
+          "class": "RELATED",
+          "source": "activos de cola/pipeline/tablas, capacidades, reglas de producto y promocion, catalogo de skills",
+          "result": "lf_url_queue y lf_pipeline_runs no estan registradas como activos; 0 coincidencias con owner",
+          "evidence_id": "EV-Q37"
+        },
+        {
+          "class": "HISTORY",
+          "source": "lf_eventos de ACT-0058/operacion con palabras de responsable y EKB",
+          "result": "6 coincidencias por palabra, ninguna nombra responsable; created_by identifica un productor tecnico, no un responsable",
+          "evidence_id": "EV-Q70"
+        }
+      ],
+      "repair_step_ref": "governed-owner-assignment-for-ACT-0058-and-lf_url_queue-retry-policy"
+    },
+    "invariant": {
+      "statement": "Toda URL en FALLIDO debe tener un destino terminal o de readmision determinista y acotado, con tope de intentos y registro por intento, sin crear KB si la captura falla.",
+      "validation_state": "PROPOSED",
+      "evidence_refs": [
+        "EV-Q04",
+        "EV-Q54",
+        "EV-Q41"
+      ],
+      "missing_evidence": [
+        "Aprobacion de un responsable y punto de cumplimiento observado"
+      ]
+    },
+    "hard_guard": {
+      "validation_state": "PROPOSED",
+      "control": "Tope y retiro terminal de reintentos de captura con recibo por intento.",
+      "enforcement_point_ref": null,
+      "fail_closed_condition": "Bloquear nueva captura de una URL con intento_count igual al tope hasta decision de un responsable.",
+      "blocking_code": "MAX_RETRY_EXCEEDED",
+      "observable_result": "URL retirada o en espera de decision, con recibo del paso failed_retry.",
+      "evidence_refs": [
+        "EV-Q54",
+        "EV-Q62"
+      ],
+      "missing_evidence": [
+        "Punto de cumplimiento (codigo del ejecutor) no observado"
+      ]
+    },
+    "acceptance_criteria": [
+      {
+        "criterion": "Ninguna URL FALLIDO supera el tope de 3 intentos ni queda sin destino terminal o de readmision.",
+        "verification_method": "Consulta de lf_url_queue por estado e intento_count (patron de Q06/Q32/Q41).",
+        "expected_result": "0 filas FALLIDO sin destino definido y 0 con intento_count mayor que 3."
+      },
+      {
+        "criterion": "Cada reintento deja un recibo del paso failed_retry en la ejecucion.",
+        "verification_method": "Consulta de lf_operation_execution_steps para failed_retry (patron de Q62).",
+        "expected_result": "Un recibo por intento, ligado al execution_id de la corrida."
+      },
+      {
+        "criterion": "El juez del paso de reintento esta enlazado.",
+        "verification_method": "Consulta de v_lf_operation_step_contract_judge_coverage (patron de Q66).",
+        "expected_result": "active_judge_bindings mayor que 0 para failed_retry."
+      },
+      {
+        "criterion": "Un responsable ratificado existe como autoridad registrada.",
+        "verification_method": "Consulta de lf_activos / registro de la operacion (patron de Q27).",
+        "expected_result": "Un owner no nulo con evidencia de asignacion gobernada."
+      }
+    ],
+    "historical_regressions": [
+      {
+        "case_id": "HIST-WEB-001",
+        "occurrence_ref": "EV-Q08",
+        "observed_failure": "Cache miss repetido en corridas del 2026-08-24 al 2026-08-27, con URLs que siguen fallidas tras reproceso.",
+        "evidence_refs": [
+          "EV-Q04",
+          "EV-Q08"
+        ]
+      }
+    ],
+    "planned_regressions": [
+      {
+        "case_id": "REG-CACHE-MISS",
+        "scenario": "web.run devuelve Cache miss en una URL nueva.",
+        "verification_method": "Ejecutar la captura con fetch simulado fallido.",
+        "expected_result": "URL FALLIDO, intento registrado, sin KB.",
+        "test_protocol": {
+          "setup": [
+            "Fixture de URL con fetch fallido en el punto de cumplimiento candidato."
+          ],
+          "action": [
+            "Ejecutar la captura."
+          ],
+          "assertions": [
+            "Corrida FAILED, URL FALLIDO e intento registrado, 0 KB."
+          ],
+          "failure_signal": "REG-CACHE-MISS_FAILED"
+        }
+      },
+      {
+        "case_id": "REG-MAX-RETRY",
+        "scenario": "Una URL llega al tope de 3 intentos.",
+        "verification_method": "Repetir el fetch fallido tres veces.",
+        "expected_result": "Bloqueo MAX_RETRY_EXCEEDED y destino terminal definido.",
+        "test_protocol": {
+          "setup": [
+            "URL con intento_count=2."
+          ],
+          "action": [
+            "Ejecutar un intento fallido adicional."
+          ],
+          "assertions": [
+            "Bloqueo con MAX_RETRY_EXCEEDED y sin cuarto intento."
+          ],
+          "failure_signal": "REG-MAX-RETRY_FAILED"
+        }
+      },
+      {
+        "case_id": "REG-IDEMPOTENT-RESTOCK",
+        "scenario": "Se reinserta una URL existente.",
+        "verification_method": "Ejecutar restock dos veces con la misma URL.",
+        "expected_result": "Sin fila duplicada ni reinicio indebido de intentos.",
+        "test_protocol": {
+          "setup": [
+            "URL FALLIDO existente."
+          ],
+          "action": [
+            "Ejecutar restock dos veces."
+          ],
+          "assertions": [
+            "Una sola fila y el contador de intentos conservado."
+          ],
+          "failure_signal": "REG-IDEMPOTENT-RESTOCK_FAILED"
+        }
+      }
+    ],
+    "current_uncertainties": [
+      {
+        "uncertainty_id": "U-WIRING",
+        "uncertainty": "No se observo el ejecutor ni el punto de cumplimiento que decide reintentar, readmitir o retirar una URL FALLIDO",
+        "impact": "DESIGN_BLOCKING",
+        "evidence_needed": [
+          "Codigo del skill orquestador (GitHub) y del programador externo",
+          "Recibos del paso failed_retry si existieran"
+        ],
+        "design_consequence": "Puede cambiar donde se coloca el control (contrato, funcion SQL o skill) y quien lo invoca.",
+        "containment_ref": null,
+        "cascade": {
+          "classes_tried": [
+            "DECLARED",
+            "ANALOGY",
+            "RELATED",
+            "HISTORY"
+          ],
+          "classes_without_source": [
+            "DIRECT"
+          ]
+        },
+        "attempted_sources": [
+          {
+            "surface": "OPERATION_EXECUTION_RECEIPT",
+            "locator": "select s.step_id, s.status as step_status, count(*) n, min(s.observed_at)::date mn, max(s.observed_at)::date mx from lf_operation_execution_steps s join lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id in ('failed_retry','restock_queue','stage_captura','audit_trail','completed') group by 1,2 order by 1,2",
+            "result": "ABSENT",
+            "observation": "0 recibos del paso failed_retry en las 159 ejecuciones de ORQUESTACION_PIPELINE_LF.",
+            "evidence_id": "EV-Q62"
+          },
+          {
+            "surface": "EDGE_FUNCTION",
+            "locator": "mcp__Supabase_read_only__list_edge_functions()",
+            "result": "ABSENT",
+            "observation": "Ningun slug de edge function alude a cola, captura, reintento ni orquestador de conocimiento; el codigo no se leyo.",
+            "evidence_id": "EV-Q38"
+          },
+          {
+            "surface": "SUPABASE_FUNCTION",
+            "locator": "select p.proname, left(regexp_replace(pg_get_functiondef(p.oid),'\\s+',' ','g'),300) def from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and (pg_get_functiondef(p.oid) ilike '%lf_url_queue%' or pg_get_functiondef(p.oid) ilike '%intento_count%')",
+            "result": "FOUND_INSUFFICIENT",
+            "observation": "Solo fn_restock_url_queue y el trigger de timestamp tocan la cola; ninguno modifica intento_count ni readmite FALLIDO.",
+            "evidence_id": "EV-Q21"
+          },
+          {
+            "surface": "GITHUB_SOURCE",
+            "locator": "select operation_code,version,status,source_model,source_repo,left(source_paths::text,200) sp,left(notes,200) notes,operation_family,operation_domain,operation_type,applies_to_asset_type,lifecycle_state_code from lf_operation_registry where operation_code='ORQUESTACION_PIPELINE_LF'",
+            "result": "UNREACHABLE",
+            "observation": "El repo del skill figura como fuente en el registry pero no era accesible en esta corrida aislada; solo se registra la consulta del registry.",
+            "evidence_id": "EV-Q50"
+          }
+        ]
+      },
+      {
+        "uncertainty_id": "U-FETCH",
+        "uncertainty": "Causa real del Cache miss del fetch externo (telemetria de web.run)",
+        "impact": "NON_BLOCKING_HISTORICAL",
+        "evidence_needed": [
+          "Telemetria de web.run por URL"
+        ],
+        "design_consequence": "No cambia el diseno: se contiene con un reintento acotado y retiro terminal.",
+        "containment_ref": "$.hard_guard"
+      },
+      {
+        "uncertainty_id": "U-OWNER",
+        "uncertainty": "No hay responsable registrado para ACT-0058, lf_url_queue ni la politica de reintento",
+        "impact": "IMPLEMENTATION_PRECONDITION",
+        "evidence_needed": [
+          "Asignacion gobernada de owner por la autoridad de LF"
+        ],
+        "design_consequence": "No cambia el mecanismo propuesto, pero ninguna reparacion puede ratificarse sin un responsable.",
+        "containment_ref": "$.owner.repair_step_ref"
+      }
+    ],
+    "residual_risks": [],
+    "evidence_map": [
+      {
+        "claim_path": "$.symptom",
+        "evidence_refs": [
+          "EV-Q04",
+          "EV-Q07",
+          "EV-Q08",
+          "EV-Q22"
+        ]
+      },
+      {
+        "claim_path": "$.immediate_cause",
+        "evidence_refs": [
+          "EV-Q22",
+          "EV-Q40",
+          "EV-Q54"
+        ]
+      },
+      {
+        "claim_path": "$.systemic_root_cause",
+        "evidence_refs": [
+          "EV-Q21",
+          "EV-Q23",
+          "EV-Q54",
+          "EV-Q62",
+          "EV-Q66"
+        ]
+      },
+      {
+        "claim_path": "$.first_bad_control",
+        "evidence_refs": [
+          "EV-Q54",
+          "EV-Q65",
+          "EV-Q66"
+        ]
+      },
+      {
+        "claim_path": "$.escape_control",
+        "evidence_refs": [
+          "EV-Q21",
+          "EV-Q23",
+          "EV-Q19"
+        ]
+      },
+      {
+        "claim_path": "$.origin_asset",
+        "evidence_refs": [
+          "EV-Q27"
+        ]
+      },
+      {
+        "claim_path": "$.origin_operation",
+        "evidence_refs": [
+          "EV-Q50"
+        ]
+      },
+      {
+        "claim_path": "$.owner",
+        "evidence_refs": [
+          "EV-Q27",
+          "EV-Q34",
+          "EV-Q36",
+          "EV-Q37",
+          "EV-Q70"
+        ]
+      }
+    ],
+    "blocking_codes": [
+      "EXECUTOR_ENFORCEMENT_PATH_UNOBSERVED",
+      "LIVE_AUTHORITY_EVIDENCE_INCOMPLETE",
+      "OWNER_AUTHORITY_UNRESOLVED",
+      "EXECUTION_EFFECT_PRODUCER_UNRESOLVED"
+    ],
+    "next_gate": {
+      "gate": "EVIDENCE_COMPLETION",
+      "entry_condition": "Acceso de lectura al codigo del skill orquestador y al programador externo, y un responsable asignado por la autoridad de LF.",
+      "exit_condition": "Punto de cumplimiento observado y owner registrado; entonces se puede cerrar el diseno y pasar a implementacion."
+    },
+    "implementation_delta": [],
+    "transition_plan": null,
+    "rollback_plan": null,
+    "solution_depth": {
+      "mode": "BOUNDED",
+      "rationale": "El problema abarca un contrato, una cola y un contador, sin investigar practica externa porque no hay una decision de arquitectura nueva.",
+      "complexity_signals": [
+        "POLICY_CONTRACT_CHANGE",
+        "STATE_RECOVERY"
+      ]
+    },
+    "research_assurance": {
+      "research_complete": true,
+      "research_questions": [
+        "Existe una regla aplicable de reintento y readmision?",
+        "Existe autoridad para nombrar un responsable?"
+      ],
+      "internal_evidence_refs": [
+        "EV-Q17",
+        "EV-Q46",
+        "EV-Q49",
+        "EV-Q51",
+        "EV-Q54"
+      ],
+      "current_practice_research_required": false,
+      "external_research_rationale": "La reparacion reutiliza contratos internos existentes; no hay decision cuyo resultado dependa de practica externa vigente.",
+      "external_evidence_refs": [],
+      "patterns_compared": [
+        {
+          "pattern": "Contador por corrida (estado actual)",
+          "fit": "Cubre solo lf_pipeline_runs.",
+          "tradeoff": "Simple pero sin readmision ni libro de intentos.",
+          "source_refs": [
+            "EV-Q54",
+            "EV-Q61"
+          ]
+        },
+        {
+          "pattern": "Reintento acotado con retiro terminal en la cola",
+          "fit": "Cubre el estado FALLIDO sin salida.",
+          "tradeoff": "Requiere punto de cumplimiento y responsable.",
+          "source_refs": [
+            "EV-Q23",
+            "EV-Q41"
+          ]
+        }
+      ],
+      "first_solution_disposition": "RETAINED_AFTER_CHALLENGE",
+      "context_strategy": "LOCAL_ONLY"
+    },
+    "challenger_review": [
+      {
+        "challenge_id": "CH-1",
+        "challenge": "Podria el fallo ser un problema del dominio externo y no del control de reintento?",
+        "outcome": "SURVIVED",
+        "resolution": "No: el mismo dominio tiene 122 URLs PROCESADO y 7 URLs se recuperaron en reproceso, por lo que el fallo es por URL.",
+        "evidence_refs": [
+          "EV-Q74",
+          "EV-Q32"
+        ]
+      },
+      {
+        "challenge_id": "CH-2",
+        "challenge": "Hay evidencia suficiente para declarar la causa sistemica como establecida?",
+        "outcome": "BLOCKED",
+        "resolution": "No: falta el codigo del ejecutor, por eso la causa sistemica queda como hipotesis.",
+        "evidence_refs": [
+          "EV-Q38",
+          "EV-Q62"
+        ]
+      }
+    ],
+    "omission_discovery": [
+      {
+        "dimension": "ARCHITECTURE",
+        "disposition": "REUSE_AS_IS",
+        "finding": "La operacion ORQUESTACION_PIPELINE_LF, lf_url_queue y lf_pipeline_runs existen y bastan como base; no se justifica una arquitectura nueva.",
+        "evidence_refs": [
+          "EV-Q50",
+          "EV-Q20"
+        ]
+      },
+      {
+        "dimension": "CONTROLS",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "El control de reintento es opcional, sin juez enlazado y sin recibos; hace falta un control exigible con tope terminal.",
+        "evidence_refs": [
+          "EV-Q54",
+          "EV-Q62",
+          "EV-Q66"
+        ]
+      },
+      {
+        "dimension": "POLICIES_CONTRACTS",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Ninguna politica activa define reintento, readmision ni destino tras el tope; el contrato failed_retry tiene una inconsistencia interna (<=3 contra >=3).",
+        "evidence_refs": [
+          "EV-Q46",
+          "EV-Q49",
+          "EV-Q51",
+          "EV-Q54"
+        ]
+      },
+      {
+        "dimension": "CONTEXT_TRANSPORT",
+        "disposition": "NOT_APPLICABLE",
+        "finding": "El problema no involucra transporte de contexto a un modelo; es estado de cola y contrato.",
+        "evidence_refs": [
+          "EV-Q54",
+          "EV-Q23"
+        ]
+      },
+      {
+        "dimension": "WIRING",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "El contrato failed_retry no esta enlazado a lf_url_queue.intento_count ni a la readmision: ninguna funcion, trigger o job lo conecta.",
+        "evidence_refs": [
+          "EV-Q19",
+          "EV-Q21",
+          "EV-Q23",
+          "EV-Q45"
+        ]
+      },
+      {
+        "dimension": "COMPATIBILITY_TRANSITION",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Hay 39 FALLIDO y 6 con intento_count=3 que requieren una regla de transicion sin reprocesar historia ni duplicar filas (UNIQUE(url)).",
+        "evidence_refs": [
+          "EV-Q20",
+          "EV-Q32",
+          "EV-Q41"
+        ]
+      },
+      {
+        "dimension": "RECOVERY_TERMINALITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "FALLIDO no tiene destino de readmision o retiro; 'intervencion manual' tras el tope no tiene responsable ni mecanismo.",
+        "evidence_refs": [
+          "EV-Q41",
+          "EV-Q54"
+        ]
+      },
+      {
+        "dimension": "OBSERVABILITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "No hay recibos de failed_retry, el vocabulario de fallo difiere entre corridas (23 con stage_status FAILED y stage_current distinto) y 4 de 159 ejecuciones registran pasos.",
+        "evidence_refs": [
+          "EV-Q33",
+          "EV-Q62",
+          "EV-Q68"
+        ]
+      },
+      {
+        "dimension": "SECURITY_AUTHORITY",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "No hay responsable registrado para el activo, la operacion ni la cola; la ratificacion de cualquier cambio exige uno.",
+        "evidence_refs": [
+          "EV-Q27",
+          "EV-Q34",
+          "EV-Q36"
+        ]
+      },
+      {
+        "dimension": "COST_PERFORMANCE",
+        "disposition": "NOT_APPLICABLE",
+        "finding": "El volumen es pequeno (39 FALLIDO, 176 corridas); no hay evidencia de costo o rendimiento como restriccion.",
+        "evidence_refs": [
+          "EV-Q06",
+          "EV-Q14"
+        ]
+      },
+      {
+        "dimension": "TESTING_ASSURANCE",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Hace falta probar tope, idempotencia de restock y Cache miss; hoy no hay pruebas observadas del paso.",
+        "evidence_refs": [
+          "EV-Q62",
+          "EV-Q66"
+        ]
+      },
+      {
+        "dimension": "OPERABILITY_MAINTENANCE",
+        "disposition": "REQUIRED_CHANGE",
+        "finding": "Una ejecucion autolearn sigue IN_PROGRESS desde 2026-09-01 y el pipeline no escribe desde esa fecha; falta mantenimiento operativo definido.",
+        "evidence_refs": [
+          "EV-Q42",
+          "EV-Q73"
+        ]
+      }
+    ],
+    "implementation_package": null,
+    "closure_proof": {
+      "contract_version": "SRCR_CLOSURE_PROOF_V2",
+      "materiality": [
+        {
+          "signal": "DECISION_CLOSURE",
+          "material": true,
+          "rationale": "Readiness must be derived from closed obligations.",
+          "obligation_ids": [
+            "PO-DECISION"
+          ]
+        },
+        {
+          "signal": "EVIDENCE_PROVENANCE",
+          "material": true,
+          "rationale": "Existing authority claims require bound evidence.",
+          "obligation_ids": [
+            "PO-EVIDENCE"
+          ]
+        },
+        {
+          "signal": "POLICY_CONTRACT_CHANGE",
+          "material": true,
+          "rationale": "La reparacion cambia un contrato de paso y falta politica de readmision.",
+          "obligation_ids": [
+            "PO-POLICY"
+          ]
+        },
+        {
+          "signal": "STATE_RECOVERY",
+          "material": true,
+          "rationale": "La cola FALLIDO necesita estados de readmision o retiro.",
+          "obligation_ids": [
+            "PO-STATE"
+          ]
+        },
+        {
+          "signal": "CONTROLS",
+          "material": true,
+          "rationale": "El control de reintento debe ser exigible.",
+          "obligation_ids": [
+            "PO-DECISION"
+          ]
+        },
+        {
+          "signal": "POLICIES_CONTRACTS",
+          "material": true,
+          "rationale": "Faltan politica y contrato consistentes.",
+          "obligation_ids": [
+            "PO-POLICY"
+          ]
+        },
+        {
+          "signal": "WIRING",
+          "material": true,
+          "rationale": "El contrato no esta enlazado a la cola.",
+          "obligation_ids": [
+            "PO-WIRING"
+          ]
+        },
+        {
+          "signal": "COMPATIBILITY_TRANSITION",
+          "material": true,
+          "rationale": "Hay filas FALLIDO existentes por transicionar.",
+          "obligation_ids": [
+            "PO-COMPAT"
+          ]
+        },
+        {
+          "signal": "RECOVERY_TERMINALITY",
+          "material": true,
+          "rationale": "FALLIDO no tiene destino terminal.",
+          "obligation_ids": [
+            "PO-STATE"
+          ]
+        },
+        {
+          "signal": "OBSERVABILITY",
+          "material": true,
+          "rationale": "Faltan recibos por intento.",
+          "obligation_ids": [
+            "PO-OBS"
+          ]
+        },
+        {
+          "signal": "SECURITY_AUTHORITY",
+          "material": true,
+          "rationale": "Falta responsable registrado.",
+          "obligation_ids": [
+            "PO-AUTH"
+          ]
+        },
+        {
+          "signal": "TESTING_ASSURANCE",
+          "material": true,
+          "rationale": "Faltan pruebas del control.",
+          "obligation_ids": [
+            "PO-TEST"
+          ]
+        },
+        {
+          "signal": "OPERABILITY_MAINTENANCE",
+          "material": true,
+          "rationale": "Falta mantenimiento operativo definido.",
+          "obligation_ids": [
+            "PO-OPER"
+          ]
+        }
+      ],
+      "proof_obligations": [
+        {
+          "obligation_id": "PO-AUTH",
+          "obligation_type": "AUTHORITY_EXISTENCE",
+          "derived_from": [
+            "BASELINE_EXISTING_AUTHORITY",
+            "SECURITY_AUTHORITY"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q27",
+            "EV-Q50",
+            "EV-Q36"
+          ],
+          "decision_refs": [
+            "$.origin_asset",
+            "$.origin_operation",
+            "$.owner"
+          ],
+          "missing_requirements": [
+            "Responsable registrado de la operacion y la cola"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "PO-DECISION",
+          "obligation_type": "DECISION_CLOSURE",
+          "derived_from": [
+            "DECISION_CLOSURE",
+            "CONTROLS"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q54",
+            "EV-Q62"
+          ],
+          "decision_refs": [
+            "$.preferred_alternative"
+          ],
+          "missing_requirements": [
+            "Decision de diseno sin seleccionar alternativa: depende de U-WIRING"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-EVIDENCE",
+          "obligation_type": "EVIDENCE_PROVENANCE",
+          "derived_from": [
+            "EVIDENCE_PROVENANCE"
+          ],
+          "status": "CLOSED",
+          "evidence_ids": [
+            "EV-Q04",
+            "EV-Q54"
+          ],
+          "decision_refs": [
+            "$.evidence_map"
+          ],
+          "missing_requirements": [],
+          "closure_basis": "Cada afirmacion material remite a una consulta registrada en el manifiesto de evidencia.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "PO-POLICY",
+          "obligation_type": "POLICY_CONTRACT",
+          "derived_from": [
+            "POLICY_CONTRACT_CHANGE",
+            "POLICIES_CONTRACTS"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q46",
+            "EV-Q49",
+            "EV-Q51",
+            "EV-Q54"
+          ],
+          "decision_refs": [
+            "$.alternatives"
+          ],
+          "missing_requirements": [
+            "Politica de readmision/retiro y correccion de la inconsistencia del contrato"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-STATE",
+          "obligation_type": "STATE_RECOVERY_SEMANTICS",
+          "derived_from": [
+            "STATE_RECOVERY",
+            "RECOVERY_TERMINALITY"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q20",
+            "EV-Q32",
+            "EV-Q41"
+          ],
+          "decision_refs": [
+            "$.alternatives"
+          ],
+          "missing_requirements": [
+            "Estados y transiciones de readmision/retiro aprobados"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-WIRING",
+          "obligation_type": "WIRING_PHYSICALITY",
+          "derived_from": [
+            "WIRING"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q21",
+            "EV-Q23"
+          ],
+          "decision_refs": [
+            "$.material_process_graph"
+          ],
+          "missing_requirements": [
+            "Punto de cumplimiento del ejecutor no observado"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "CURRENT_STATE"
+        },
+        {
+          "obligation_id": "PO-COMPAT",
+          "obligation_type": "COMPATIBILITY",
+          "derived_from": [
+            "COMPATIBILITY_TRANSITION"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q20",
+            "EV-Q41"
+          ],
+          "decision_refs": [
+            "$.alternatives"
+          ],
+          "missing_requirements": [
+            "Regla de transicion para las 39 URLs FALLIDO existentes"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-OBS",
+          "obligation_type": "OBSERVABILITY",
+          "derived_from": [
+            "OBSERVABILITY"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q62",
+            "EV-Q68"
+          ],
+          "decision_refs": [
+            "$.acceptance_criteria"
+          ],
+          "missing_requirements": [
+            "Recibos por intento y vocabulario de fallo unificado"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-TEST",
+          "obligation_type": "TEST_ASSURANCE",
+          "derived_from": [
+            "TESTING_ASSURANCE"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q62",
+            "EV-Q66"
+          ],
+          "decision_refs": [
+            "$.planned_regressions"
+          ],
+          "missing_requirements": [
+            "Pruebas ejecutadas del tope, restock idempotente y Cache miss"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        },
+        {
+          "obligation_id": "PO-OPER",
+          "obligation_type": "OTHER_MATERIAL",
+          "derived_from": [
+            "OPERABILITY_MAINTENANCE"
+          ],
+          "status": "OPEN",
+          "evidence_ids": [
+            "EV-Q42",
+            "EV-Q73"
+          ],
+          "decision_refs": [
+            "$.next_gate"
+          ],
+          "missing_requirements": [
+            "Mantenimiento de ejecuciones IN_PROGRESS y cadencia del pipeline"
+          ],
+          "closure_basis": "Pendiente de evidencia y de un responsable; no se cierra en esta corrida.",
+          "proof_phase": "REPAIR_DESIGN"
+        }
+      ],
+      "authority_bindings": [
+        {
+          "subject": "ACT-0058",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-Q27"
+          ]
+        },
+        {
+          "subject": "ORQUESTACION_PIPELINE_LF",
+          "authority_kind": "EXISTING_AUTHORITY",
+          "used_as_existing_authority": true,
+          "evidence_ids": [
+            "EV-Q50"
+          ]
+        },
+        {
+          "subject": "owner de ACT-0058",
+          "authority_kind": "UNKNOWN",
+          "used_as_existing_authority": false,
+          "evidence_ids": []
+        }
+      ],
+      "wiring_proofs": [
+        {
+          "edge_id": "EDGE-RETRY-QUEUE",
+          "producer_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+          "data_contract_ref": "lf_pipeline_runs.retry_count / lf_url_queue.intento_count",
+          "consumer_ref": "lf_url_queue (estado FALLIDO)",
+          "enforcement_point_ref": "ejecutor del skill orquestador (no observado)",
+          "failure_behavior": "Sin enlace, una URL fallida no se reintenta ni se retira y queda en FALLIDO.",
+          "binding_kind": "NO_BINDING",
+          "binding_ref": "ninguno-observado",
+          "evidence_ids": [
+            "EV-Q21",
+            "EV-Q23"
+          ],
+          "obligation_ids": [
+            "PO-WIRING"
+          ],
+          "binding_state": "OBSERVED_NOT_WIRED"
+        }
+      ],
+      "context_transport_proofs": [],
+      "behavioral_proofs": [
+        {
+          "behavior_id": "BEH-URL-QUEUE-STATE",
+          "materiality_signal": "STATE_RECOVERY",
+          "states_or_steps": [
+            "URL en cola sin capturar (PENDIENTE)",
+            "URL con KB creada (PROCESADO)",
+            "URL con captura fallida (FALLIDO)",
+            "URL retirada (DESCARTADO)"
+          ],
+          "entry_conditions": [
+            "La URL entra a la cola en espera de captura mediante restock"
+          ],
+          "terminal_conditions": [
+            "PROCESADO",
+            "DESCARTADO",
+            "SKIP"
+          ],
+          "illegal_transitions": [
+            "Reingreso de una URL fallida a la cola por restock (ON CONFLICT DO NOTHING lo impide hoy)",
+            "intento_count mayor que 3"
+          ],
+          "recovery_paths": [
+            "Reproceso observado el 2026-08-24 recupero 7 URLs; no hay camino definido hoy"
+          ],
+          "decision_refs": [
+            "$.alternatives"
+          ],
+          "evidence_ids": [
+            "EV-Q20",
+            "EV-Q32",
+            "EV-Q23"
+          ]
+        }
+      ],
+      "derived_decision_closure": {
+        "required_obligation_ids": [
+          "PO-AUTH",
+          "PO-DECISION",
+          "PO-EVIDENCE",
+          "PO-POLICY",
+          "PO-STATE",
+          "PO-WIRING",
+          "PO-COMPAT",
+          "PO-OBS",
+          "PO-TEST",
+          "PO-OPER"
+        ],
+        "closed_obligation_ids": [
+          "PO-EVIDENCE"
+        ],
+        "open_obligation_ids": [
+          "PO-AUTH",
+          "PO-DECISION",
+          "PO-POLICY",
+          "PO-STATE",
+          "PO-WIRING",
+          "PO-COMPAT",
+          "PO-OBS",
+          "PO-TEST",
+          "PO-OPER"
+        ],
+        "handoff_ready": false,
+        "quality_state": "QUALITY_PENDING",
+        "post_implementation_obligation_ids": []
+      }
+    },
+    "repair_disposition": {
+      "decision": "UNDETERMINED",
+      "rationale": "Hay 39 URLs FALLIDO sin salida, pero no hay corridas ni escrituras desde 2026-09-01, asi que no se puede afirmar un fallo activo sin ver el ejecutor.",
+      "evidence_refs": [
+        "EV-Q41",
+        "EV-Q42"
+      ],
+      "currentness_refs": [
+        "EV-Q42",
+        "EV-Q44"
+      ],
+      "active_failure_present": null,
+      "material_repair_justified": null,
+      "verification": {
+        "executable": true,
+        "method": "Repetir las consultas de estado de la cola y de ultima escritura (patron de Q41 y Q42) y comprobar si hay corridas posteriores a 2026-09-01.",
+        "expected_result": "Si hay nuevas corridas con Cache miss o los FALLIDO siguen sin cambio, se confirma el fallo activo; si no, queda como estado heredado.",
+        "evidence_refs": [
+          "EV-Q41",
+          "EV-Q42"
+        ]
+      }
+    },
+    "quantitative_decisions": [
+      {
+        "decision_id": "QD-MAX-RETRY",
+        "parameter": "maximo de intentos de reintento por corrida",
+        "proposed_value": 3,
+        "materiality": "MATERIAL",
+        "affects": [
+          "lf_pipeline_runs.retry_count"
+        ],
+        "grounding_type": "EXISTING_AUTHORITY",
+        "grounding_ref": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1",
+        "evidence_refs": [
+          "EV-Q54"
+        ],
+        "incident_specific_only": false,
+        "closure_state": "GROUNDED",
+        "precondition_ref": null
+      }
+    ],
+    "material_process_graph": {
+      "applies": true,
+      "rationale": "El ciclo de vida de la URL en la cola y el reintento es material para la reparacion.",
+      "nodes": [
+        {
+          "node_id": "N-CAPTURA",
+          "phase": "CAPTURA",
+          "authority_refs": [
+            "EV-Q54"
+          ],
+          "inputs": [
+            "URL PENDIENTE"
+          ],
+          "outputs": [
+            "URL FALLIDO o captura"
+          ],
+          "state_transition": "PENDIENTE -> FALLIDO",
+          "producer_refs": [
+            "EV-Q54"
+          ],
+          "consumer_refs": [
+            "EV-Q22"
+          ],
+          "wiring_refs": [
+            "EDGE-RETRY-QUEUE"
+          ],
+          "control_refs": [
+            "EV-Q54"
+          ],
+          "failure_recovery": "Falla cerrada: FALLIDO con error_detail y sin KB; recuperacion no definida.",
+          "disposition": "REUSE_AS_IS",
+          "evidence_refs": [
+            "EV-Q22",
+            "EV-Q54"
+          ],
+          "acceptance_refs": [
+            "REG-CACHE-MISS"
+          ]
+        },
+        {
+          "node_id": "N-REINTENTO",
+          "phase": "REINTENTO",
+          "authority_refs": [
+            "EV-Q54"
+          ],
+          "inputs": [
+            "URL FALLIDO"
+          ],
+          "outputs": [
+            "intento registrado o retiro"
+          ],
+          "state_transition": "FALLIDO -> PENDIENTE o retirada",
+          "producer_refs": [
+            "EV-Q54"
+          ],
+          "consumer_refs": [
+            "EV-Q23"
+          ],
+          "wiring_refs": [
+            "EDGE-RETRY-QUEUE"
+          ],
+          "control_refs": [
+            "EV-Q66"
+          ],
+          "failure_recovery": "Sin punto de cumplimiento observado; bloquea el diseno hasta ver el ejecutor.",
+          "disposition": "DESIGN_BLOCKING",
+          "evidence_refs": [
+            "EV-Q62",
+            "EV-Q66"
+          ],
+          "acceptance_refs": [
+            "REG-MAX-RETRY"
+          ],
+          "blocking_uncertainty_id": "U-WIRING"
+        }
+      ],
+      "edges": [
+        {
+          "edge_id": "EDGE-RETRY-QUEUE",
+          "from_node": "N-CAPTURA",
+          "to_node": "N-REINTENTO",
+          "edge_kind": "CONTROL_FLOW",
+          "observation_status": "UNRESOLVED",
+          "disposition": "DESIGN_BLOCKING",
+          "producer_evidence_refs": [
+            "EV-Q22",
+            "EV-Q54"
+          ],
+          "transport_evidence_refs": [],
+          "consumer_evidence_refs": [],
+          "enforcement_evidence_refs": [],
+          "effect_readback_evidence_refs": [
+            "EV-Q41"
+          ],
+          "gap_evidence_refs": [
+            "EV-Q21",
+            "EV-Q23",
+            "EV-Q62"
+          ],
+          "next_gate": "EVIDENCE_COMPLETION",
+          "next_gate_consumer_evidence_refs": [],
+          "canonical_route_consistency": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "post_transition_currentness": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "terminality": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-Q41"
+            ]
+          },
+          "identity_consistency": {
+            "applicability": "REQUIRED",
+            "status": "OBSERVED_FAIL",
+            "evidence_refs": [
+              "EV-Q39"
+            ]
+          },
+          "rollback_executability": {
+            "applicability": "REQUIRED",
+            "status": "UNRESOLVED",
+            "evidence_refs": []
+          },
+          "proposed_change_ref": null,
+          "blocking_uncertainty_id": "U-WIRING"
+        }
+      ]
+    },
+    "case_mode": "INCIDENT_REPAIR",
+    "policy_resolution": [
+      {
+        "question": "Existe una regla aplicable de tope de reintentos para capturas fallidas de ACT-0058?",
+        "decision": "FOUND_APPLICABLE",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "v_lf_operation_policy_snapshot ORQUESTACION_PIPELINE_LF",
+            "query": "politicas de la operacion con retry/reintento",
+            "result": "4 politicas requeridas; ninguna define reintento",
+            "evidence_id": "EV-Q51"
+          },
+          {
+            "level": "N2",
+            "source": "lf_operation_step_contracts failed_retry",
+            "query": "contrato del paso failed_retry",
+            "result": "CONTRACT_ACT0058_S11A_FAILED_RETRY_V1 ACTIVO: maximo 3 intentos sobre lf_pipeline_runs.retry_count; paso opcional",
+            "evidence_id": "EV-Q54"
+          }
+        ]
+      },
+      {
+        "question": "Existe una regla de readmision o retiro de URLs FALLIDO en la cola?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "v_lf_operation_policy_snapshot",
+            "query": "politicas con retry/reintent/readmi/intento",
+            "result": "1 fila (POL-STRATEGY-CREATION-001, politica de estrategias, no aplica)",
+            "evidence_id": "EV-Q46"
+          },
+          {
+            "level": "N2",
+            "source": "lf_policy_versions",
+            "query": "conteo de politicas con FALLIDO/intento_count/lf_url_queue",
+            "result": "0 de 25 politicas",
+            "evidence_id": "EV-Q17"
+          },
+          {
+            "level": "N3",
+            "source": "lf_router_action_registry, lf_product_rules, lf_rule_promotion_v1",
+            "query": "reintento/FALLIDO/url_queue/WEB-001/ACT-0058",
+            "result": "0 coincidencias",
+            "evidence_id": "EV-Q31"
+          },
+          {
+            "level": "N5",
+            "source": "EKB WEB-001",
+            "query": "prevencion de WEB-001",
+            "result": "Declara 'permitir reintento posterior controlado' sin regla operativa; es historia, no autoridad",
+            "evidence_id": "EV-Q04"
+          }
+        ]
+      },
+      {
+        "question": "Hay autoridad suficiente para identificar un responsable?",
+        "decision": "NO_APPLICABLE_RULE_FOUND",
+        "lookups": [
+          {
+            "level": "N1",
+            "source": "lf_activos / v_lf_inventario_activo ACT-0058",
+            "query": "owner_name del activo",
+            "result": "owner_name NULL",
+            "evidence_id": "EV-Q27"
+          },
+          {
+            "level": "N2",
+            "source": "tablas con columnas owner/responsable en public",
+            "query": "columnas owner en todo public",
+            "result": "lf_url_queue, lf_pipeline_runs y lf_operation_registry no tienen columna de owner",
+            "evidence_id": "EV-Q24"
+          },
+          {
+            "level": "N3",
+            "source": "capacidades, catalogo de skills, reglas de producto, acciones del Router",
+            "query": "0058/url_queue",
+            "result": "0 coincidencias",
+            "evidence_id": "EV-Q31"
+          },
+          {
+            "level": "N5",
+            "source": "lf_eventos",
+            "query": "ACT-0058/operacion con palabras de responsable",
+            "result": "6 coincidencias por palabra sin responsable",
+            "evidence_id": "EV-Q70"
+          }
+        ]
+      }
+    ]
+  },
+  "output_sha256": "8488b4b66cf061c6b1e1aa641a87ac9922ee1cf436e53c864eb4d9b61df006a2",
+  "evidence_manifest": {
+    "manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+    "bundle_id": "BUNDLE-WEB001-ACT0058-20261105",
+    "bundle_digest": "sha256:611e8a5fa5af5fd47e0adb2898e7c7bd9c8fe7001ef0cd5a9ffd29c605cae499",
+    "observed_at": "2026-11-05T00:37:10Z",
+    "producer": {
+      "kind": "SOURCE_FIRST_RESOLVER",
+      "resolver_ref": "supabase-ro://mhwmirqcgxxukpctffuv/srcr-isolated-run"
+    },
+    "evidence": [
+      {
+        "evidence_id": "EV-Q01",
+        "subject": "catalogo de tablas/vistas candidatas (incidente, operacion, politica, ekb, retry)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() as at, table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%web_001%' or table_name ilike '%incident%' or table_name ilike '%operation%' or table_name ilike '%policy%' or table_name ilike '%ekb%' or table_name ilike '%retry%' or table_name ilike '%readmi%' or table_name ilike '%error_knowledge%') order by 2 limit 80",
+        "revision_or_observed_at": "2026-11-05T00:28:17Z",
+        "digest": "sha256:6e6e45634c340aae7081dcf336153246d84ff71389b6eb58f39bfeaeffe81eeb",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q02",
+        "subject": "columnas de las tablas clave (EKB, eventos, cola, registry, execution, politicas)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select table_name, string_agg(column_name, ',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('lf_error_knowledge','lf_eventos','lf_url_queue','lf_operation_registry','lf_operation_execution','lf_policy_versions','lf_operation_policy_bindings','v_lf_operation_policy_snapshot','lf_operation_effect_guard') group by 1",
+        "revision_or_observed_at": "2026-11-05T00:28:19Z",
+        "digest": "sha256:aa455bdf11bdeadb2ef4d745d69b3d1fea4244adc4532a98c801e2a11b69b132",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q03",
+        "subject": "existencia del codigo WEB-001 en la vista EKB",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, count(*) n from lf_error_knowledge where to_jsonb(lf_error_knowledge)::text ilike '%WEB-001%'",
+        "revision_or_observed_at": "2026-11-05T00:28:21Z",
+        "digest": "sha256:3709e60d5da20fa195837c6ae7a703d8cd02f02b5e6627c6572b6785c83b217e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q04",
+        "subject": "fila EKB WEB-001 completa (causa, prevencion, validacion, evidencia, frecuencia)",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,frecuencia,estado,evidencia,source_ref,root_cause_family from lf_error_knowledge where to_jsonb(lf_error_knowledge)::text ilike '%WEB-001%'",
+        "revision_or_observed_at": "2026-11-05T00:28:23Z",
+        "digest": "sha256:6c2235174bb328cce37378466a6afabd390271d1f8b35cba5d21e371bdb5a156",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q05",
+        "subject": "cuantas filas de eventos/cola/ejecuciones mencionan WEB-001",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select 'lf_eventos' t, count(*) n from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB-001%' union all select 'lf_url_queue', count(*) from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' union all select 'lf_operation_execution', count(*) from lf_operation_execution where to_jsonb(lf_operation_execution)::text ilike '%WEB-001%'",
+        "revision_or_observed_at": "2026-11-05T00:28:26Z",
+        "digest": "sha256:e5de9c91f945db9295e1a520205d00a605404441a8b1aa0bdefc5f1590a5ac8b",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q06",
+        "subject": "distribucion de la cola por estado e intentos",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select estado, count(*) n, min(intento_count) mn, max(intento_count) mx, count(*) filter (where error_detail ilike '%cache%') cache_n from lf_url_queue group by 1 order by 2 desc",
+        "revision_or_observed_at": "2026-11-05T00:28:30Z",
+        "digest": "sha256:db55d2b43fe524f8fe23ead8c80dc5ae9f64b613197e7e7324025c81a1df0e8d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q07",
+        "subject": "las 14 filas de cola etiquetadas WEB-001",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select queue_id,left(url,70) url,estado,intento_count,pipeline_run_id,left(error_detail,120) ed,skip_reason,created_at,updated_at from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' order by updated_at",
+        "revision_or_observed_at": "2026-11-05T00:28:33Z",
+        "digest": "sha256:cbb433c8f8b5cf92fdf615b0faaa1a4fb73515cf73ccf9deddad61a05a2d292c",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q08",
+        "subject": "eventos que mencionan WEB-001",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select id,evento_tipo,entidad_tipo,entidad_codigo,left(descripcion,200) d,severidad,created_at,left(payload::text,300) p from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB-001%' order by created_at",
+        "revision_or_observed_at": "2026-11-05T00:28:37Z",
+        "digest": "sha256:95981e3db3063ce93ce65b64636a63d328ebcff59efa24b5de8323a45a5d6461",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q09",
+        "subject": "N1 snapshot de politicas filtrado por ACT-0058 / WEB-001 / FALLIDO / cache",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select operation_code,policy_role,required,distribution_modes,policy_code,policy_name,tipo_activo,subtipo_activo,policy_version,left(policy_sha,12) sha,left(policy_payload::text,400) payload,effective_at,source_ref from v_lf_operation_policy_snapshot where operation_code ilike '%0058%' or policy_payload::text ilike '%ACT-0058%' or policy_payload::text ilike '%WEB-001%' or policy_payload::text ilike '%FALLIDO%' or policy_payload::text ilike '%cache%'",
+        "revision_or_observed_at": "2026-11-05T00:28:41Z",
+        "digest": "sha256:f5dbe331896a28070c468cfbb79856e58c3c1ecf6c26e0ca72b37f51aa7bf30e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q10",
+        "subject": "N1/N2 conteos agregados con clave ACT-0058 (snapshot, bindings, politicas, registry)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from v_lf_operation_policy_snapshot) snap_rows, (select count(*) from v_lf_operation_policy_snapshot where operation_code ilike '%0058%') snap_0058, (select count(*) from lf_operation_policy_bindings where operation_code ilike '%0058%') bind_0058, (select count(*) from lf_policy_versions where policy_payload::text ilike '%ACT-0058%') pol_0058, (select count(*) from lf_policy_versions where policy_payload::text ilike '%WEB-001%') pol_web001, (select count(*) from lf_operation_registry where operation_code ilike '%0058%') reg_0058",
+        "revision_or_observed_at": "2026-11-05T00:28:44Z",
+        "digest": "sha256:f8136279d35fba1aad394916fe67d22f017a4384b5c019bba8f35b453b665bfd",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q11",
+        "subject": "tablas de router/pipeline/accion/catalogo/owner/regla/skill/knowledge",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%router%' or table_name ilike '%pipeline%' or table_name ilike '%action%' or table_name ilike '%act\\_%' or table_name ilike '%catalog%' or table_name ilike '%owner%' or table_name ilike '%regla%' or table_name ilike '%rule%' or table_name ilike '%skill%' or table_name ilike '%knowledge%') order by 1",
+        "revision_or_observed_at": "2026-11-05T00:28:47Z",
+        "digest": "sha256:506d4b0c65e8cbefbcb367e36f489c14c111e96691d0098738f3ada91b969897",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q12",
+        "subject": "N3 registro de acciones del Router filtrado por 0058",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select * from lf_router_action_registry where to_jsonb(lf_router_action_registry)::text ilike '%0058%'",
+        "revision_or_observed_at": "2026-11-05T00:28:49Z",
+        "digest": "sha256:9401a449c206d44e7114193a85cae4615f4858a82fa7e8d274e56a1354cf4a03",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q13",
+        "subject": "definicion de la vista lf_prevention_rules",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select view_definition from information_schema.views where table_schema='public' and table_name='lf_prevention_rules'",
+        "revision_or_observed_at": "2026-11-05T00:28:50Z",
+        "digest": "sha256:70df4dd24ab16b6186b86ac3917142c06df9a73c7c6d717d68c4f69de12d4104",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q14",
+        "subject": "columnas y total de lf_pipeline_runs",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_pipeline_runs) total from information_schema.columns where table_schema='public' and table_name='lf_pipeline_runs'",
+        "revision_or_observed_at": "2026-11-05T00:28:51Z",
+        "digest": "sha256:a8a9eaac46a83b343b6098b02a86277aa1bcdaea9eec17c9e95a7ae1dfe9635c",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q15",
+        "subject": "tamano y prefijos del registro de acciones del Router",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at,(select count(*) from lf_router_action_registry) n, (select string_agg(column_name,',' order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='lf_router_action_registry') cols, (select string_agg(distinct left(action_code,8),',') from lf_router_action_registry) pref",
+        "revision_or_observed_at": "2026-11-05T00:28:52Z",
+        "digest": "sha256:d6f161873fb3be7c74ce4957fdb36c1ae2f783399d6c03249f184d807e6c46a2",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q16",
+        "subject": "N3 acciones del Router KNOWLEDGE/pipeline",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select asset_type,action_code,operation_code,status,write_allowed,left(notes,160) notes from lf_router_action_registry where to_jsonb(lf_router_action_registry)::text ilike '%KNOWLEDG%' or to_jsonb(lf_router_action_registry)::text ilike '%pipeline%'",
+        "revision_or_observed_at": "2026-11-05T00:28:55Z",
+        "digest": "sha256:0794bc74af17f86d7afef992e4c2d27bdeb69b8dae12be2fe98a93cfdad081f3",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q17",
+        "subject": "N2 politicas canonicas: cuantas tratan retry/fallido/intento/cola/pipeline",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select count(*) n, count(*) filter (where policy_payload::text ilike '%reintento%' or policy_payload::text ilike '%retry%') retry_n, count(*) filter (where policy_payload::text ilike '%FALLIDO%') fallido_n, count(*) filter (where policy_payload::text ilike '%intento_count%') intento_n, count(*) filter (where policy_payload::text ilike '%lf_url_queue%') queue_n, count(*) filter (where policy_payload::text ilike '%pipeline%') pipe_n from lf_policy_versions",
+        "revision_or_observed_at": "2026-11-05T00:28:58Z",
+        "digest": "sha256:be270127d8a948d331d108077ec4a22b808454872a66f55d8f0a5097588e71d0",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q18",
+        "subject": "N2 las dos politicas que mencionan retry",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select policy_code,policy_version,status,left(policy_payload::text,200) p from lf_policy_versions where policy_payload::text ilike '%reintento%' or policy_payload::text ilike '%retry%'",
+        "revision_or_observed_at": "2026-11-05T00:29:00Z",
+        "digest": "sha256:5c94539d3c2cdd2610156a1068a8e4fb9fefee34423f69add747d07681a0fad3",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q19",
+        "subject": "triggers de lf_url_queue y lf_pipeline_runs",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select tgname, tgenabled, pg_get_triggerdef(t.oid) def from pg_trigger t where tgrelid in ('public.lf_url_queue'::regclass,'public.lf_pipeline_runs'::regclass) and not tgisinternal",
+        "revision_or_observed_at": "2026-11-05T00:29:02Z",
+        "digest": "sha256:bf29c993d62778aaab473e7a7c433cc87af486329405bd9ed08a00d2bb31204d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q20",
+        "subject": "constraints de lf_url_queue y lf_pipeline_runs",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select conrelid::regclass t, conname, pg_get_constraintdef(oid) def from pg_constraint where conrelid in ('public.lf_url_queue'::regclass,'public.lf_pipeline_runs'::regclass) and contype in ('c','u','f','p')",
+        "revision_or_observed_at": "2026-11-05T00:29:03Z",
+        "digest": "sha256:abbcf9523ac4f418a0f62880fb71d685257ccc1290691ce6e254995805cc8c26",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q21",
+        "subject": "funciones de public que tocan lf_url_queue o intento_count",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select p.proname, left(regexp_replace(pg_get_functiondef(p.oid),'\\s+',' ','g'),300) def from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and (pg_get_functiondef(p.oid) ilike '%lf_url_queue%' or pg_get_functiondef(p.oid) ilike '%intento_count%')",
+        "revision_or_observed_at": "2026-11-05T00:29:05Z",
+        "digest": "sha256:8bdce6fa2a0e143c8a1aa899124c4ac62bbe9b4873c292061b74b11353ec4072",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q22",
+        "subject": "corridas FAILED por etapa/categoria, con cache miss, KB y captura",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select stage_current,stage_status,failure_category,count(*) n,max(retry_count) max_retry, count(*) filter (where error_detail ilike '%cache%') cache_n, count(*) filter (where kb_id is not null) with_kb, count(*) filter (where capture_run_id is not null) with_capture from lf_pipeline_runs where stage_status='FAILED' or stage_current='FAILED' group by 1,2,3",
+        "revision_or_observed_at": "2026-11-05T00:29:07Z",
+        "digest": "sha256:0b852f499c94e6ecdd8286ca4e7b0a39d2066e8f7877d61473ab7ed45c9deb6c",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q23",
+        "subject": "definicion de fn_restock_url_queue",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select pg_get_functiondef(p.oid) def from pg_proc p where p.proname='fn_restock_url_queue' and p.pronamespace='public'::regnamespace",
+        "revision_or_observed_at": "2026-11-05T00:29:08Z",
+        "digest": "sha256:42d93c9c04f3c6947b76972bff05da91f7d7e23d5a5dc69453fcf67138ad7932",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q24",
+        "subject": "columnas con nombre de responsable/owner en todo public",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select table_name, column_name from information_schema.columns where table_schema='public' and (column_name ilike '%owner%' or column_name ilike '%responsable%' or column_name ilike '%accountable%' or column_name ilike '%steward%') order by 1,2",
+        "revision_or_observed_at": "2026-11-05T00:29:09Z",
+        "digest": "sha256:e714e00309e1610942e907e725840c5dbd87092392181a1611f288fbed7e3212",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q25",
+        "subject": "columnas de v_lf_inventario_activo y lf_activos",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('v_lf_inventario_activo','lf_activos') group by table_name",
+        "revision_or_observed_at": "2026-11-05T00:29:11Z",
+        "digest": "sha256:c2267f5532a2f72f23299ff27d26585c0f4e67fcd3dcbc65c7087fb68c134c34",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q26",
+        "subject": "N1/N2 inventario de activos: ACT-0058, lf_url_queue, WEB-001, capacidades",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from v_lf_inventario_activo) inv_total, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%ACT-0058%') inv_0058, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%lf_url_queue%') inv_queue, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%WEB-001%') inv_web001, (select count(*) from lf_activos where to_jsonb(lf_activos)::text ilike '%ACT-0058%') act_0058, (select count(*) from lf_activos where to_jsonb(lf_activos)::text ilike '%lf_url_queue%') act_queue, (select count(*) from lf_capability_registry where to_jsonb(lf_capability_registry)::text ilike '%0058%' or to_jsonb(lf_capability_registry)::text ilike '%url_queue%') cap",
+        "revision_or_observed_at": "2026-11-05T00:29:15Z",
+        "digest": "sha256:8e5ea01955a4ed333e34890cc0d6895313d7fc8f4366c3cb692fcc824ddde445",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q27",
+        "subject": "ACT-0058",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,nivel_control,runtime_estado,impacto_automatico,version,owner_name,ultima_revision,updated_at,left(metadata::text,300) md from lf_activos where to_jsonb(lf_activos)::text ilike '%ACT-0058%'",
+        "revision_or_observed_at": "2026-11-05T00:29:18Z",
+        "digest": "sha256:4058fc45a3f207fdd1159e44d664b92aff97d3f1f4b6175c97ee749a27de3114",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q28",
+        "subject": "metadata y raw_payload completos de ACT-0058",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select metadata::text md, raw_payload::text rp from lf_activos where codigo_activo='ACT-0058'",
+        "revision_or_observed_at": "2026-11-05T00:29:20Z",
+        "digest": "sha256:6374e80a061186448d8b246f51bff83d032bd7524c1a67735cf35970f744e258",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q29",
+        "subject": "columnas y tamano de lf_skill_catalog_v1",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_skill_catalog_v1) n from information_schema.columns where table_schema='public' and table_name='lf_skill_catalog_v1'",
+        "revision_or_observed_at": "2026-11-05T00:29:22Z",
+        "digest": "sha256:99b8e3e5debdd194f48b4a429d4fc11c3cc009a06ea38d876c5537092d818bc7",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q30",
+        "subject": "EKB activos con prevencion/causa de reintento (para N5 historia)",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select codigo,categoria,titulo,left(prevencion,300) prev,estado,frecuencia,left(source_ref,80) sr from lf_error_knowledge where (prevencion ilike '%reintent%' or causa_raiz ilike '%reintent%' or descripcion ilike '%reintent%' or titulo ilike '%fetch%' or codigo in ('PIPE-001')) and estado='activo' order by frecuencia desc limit 12",
+        "revision_or_observed_at": "2026-11-05T00:29:24Z",
+        "digest": "sha256:ebd7a9c81c45137245dac48eb5eb426e0373174aed19f244296c94fe2d70edc4",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q31",
+        "subject": "N3 reglas de producto, promocion de reglas y catalogo de skills con reintento/FALLIDO/cola/WEB-001/0058",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at,(select count(*) from lf_product_rules where to_jsonb(lf_product_rules)::text ilike '%reintent%' or to_jsonb(lf_product_rules)::text ilike '%FALLIDO%' or to_jsonb(lf_product_rules)::text ilike '%url_queue%') pr_hits,(select count(*) from lf_product_rules) pr_total,(select count(*) from lf_rule_promotion_v1 where to_jsonb(lf_rule_promotion_v1)::text ilike '%reintent%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%url_queue%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%WEB-001%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%ACT-0058%') rp_hits,(select count(*) from lf_rule_promotion_v1) rp_total,(select count(*) from lf_skill_catalog_v1 where to_jsonb(lf_skill_catalog_v1)::text ilike '%0058%') sk_hits",
+        "revision_or_observed_at": "2026-11-05T00:29:25Z",
+        "digest": "sha256:ca3a4c81792b7ce9dbdf788a00bf6409d6f8ccf8df988732730c44a178a070e7",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q32",
+        "subject": "cola con intentos>0 por estado e intento_count",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select estado, intento_count, count(*) n, count(*) filter (where error_detail ilike '%cache%') cache_n, min(updated_at)::date mn, max(updated_at)::date mx from lf_url_queue where intento_count>0 group by 1,2 order by 1,2",
+        "revision_or_observed_at": "2026-11-05T00:29:28Z",
+        "digest": "sha256:9dc49ae1bacea94cb6a7b4928998d6fadcff016250b252000683a23ea8063d27",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q33",
+        "subject": "FALLIDO sin KB / sin corrida / en tope; reintentos exitosos; desajuste de vocabulario",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from lf_url_queue q where estado='FALLIDO' and not exists (select 1 from lf_knowledge_base k where k.kb_id in (select kb_id from lf_pipeline_runs r where r.pipeline_run_id=q.pipeline_run_id and r.kb_id is not null))) fallido_sin_kb, (select count(*) from lf_url_queue where estado='FALLIDO' and pipeline_run_id is null) fallido_sin_run, (select count(*) from lf_url_queue where estado='FALLIDO' and intento_count>=3) fallido_tope3, (select count(*) from lf_pipeline_runs where retry_count>0 and stage_current='COMPLETED') run_retry_ok, (select count(*) from lf_pipeline_runs where stage_status='FAILED' and stage_current<>'FAILED' ) run_status_mismatch",
+        "revision_or_observed_at": "2026-11-05T00:29:31Z",
+        "digest": "sha256:841d2b3e8a592c2ebdd283e14c2ada4535aee28d2482c3afbdbc26377400e887",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q34",
+        "subject": "cobertura de owner_name por tipo de activo",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, tipo_activo, count(*) n, count(owner_name) with_owner, count(distinct owner_name) distinct_owner from lf_activos group by tipo_activo order by n desc",
+        "revision_or_observed_at": "2026-11-05T00:30:05Z",
+        "digest": "sha256:9eaa48fc902d8f2d8332d3421fd49014f726d7a0f83355da189d8ed8eea69940",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q35",
+        "subject": "activos de pipeline/captura/homologacion/cola/knowledge/web/fetch",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select codigo_activo,nombre_canonico,tipo_activo,owner_name,estado_operativo from lf_activos where nombre_canonico ilike any (array['%PIPELINE%','%CAPTURA%','%HOMOLOG%','%URL_QUEUE%','%KNOWLEDGE%','%WEB%','%FETCH%']) order by codigo_activo limit 40",
+        "revision_or_observed_at": "2026-11-05T00:30:08Z",
+        "digest": "sha256:931848b18c57926614d769ed4c73843dcec7317b8b7added9329ab39a99082ae",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q36",
+        "subject": "ANALOGIA: owner de todas las skills (hermanas ACT-0054..0058)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select codigo_activo, owner_name, runtime_estado from lf_activos where tipo_activo='SKILL' order by codigo_activo",
+        "revision_or_observed_at": "2026-11-05T00:30:40Z",
+        "digest": "sha256:841c493ad8b5647937dd8b2d837ee757c1f4cf449d01ba190b6208b53f4b05c8",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q37",
+        "subject": "RELACIONADO: tablas/activos de cola con owner",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select codigo_activo, nombre_canonico, tipo_activo, owner_name from lf_activos where tipo_activo in ('DB_TABLE','TABLE') or nombre_canonico ilike '%QUEUE%' or nombre_canonico ilike '%LF_PIPELINE%' order by 1",
+        "revision_or_observed_at": "2026-11-05T00:30:50Z",
+        "digest": "sha256:77d4c2ec3c7cdbbdd7af38b68c7da2232bdce66bd7fc351187e0a15baf27a41e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q38",
+        "subject": "edge functions desplegadas (solo slugs/metadatos)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "mcp__Supabase_read_only__list_edge_functions()",
+        "revision_or_observed_at": "2026-11-05T00:31:00Z",
+        "digest": "sha256:d966dc05fc67404a4a838588b2e0965bffa26f68b2832ae032f144d6b8867e9d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q39",
+        "subject": "cola WEB-001 cruzada con corridas por URL",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select q.queue_id, q.estado, q.intento_count, q.pipeline_run_id, (select count(*) from lf_pipeline_runs r where r.source_url=q.url) runs_by_url, (select max(r.retry_count) from lf_pipeline_runs r where r.source_url=q.url) max_run_retry from lf_url_queue q where to_jsonb(q)::text ilike '%WEB-001%' order by q.updated_at",
+        "revision_or_observed_at": "2026-11-05T00:31:30Z",
+        "digest": "sha256:961db5436c7fa352178c2ea13a658c2a7008178b74b8f62a24610197898c5e1d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q40",
+        "subject": "corridas de las 6 URLs con intento_count=3",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select left(r.source_url,60) url, r.pipeline_run_id, r.stage_current, r.stage_status, r.retry_count, r.failure_category, r.created_at, r.updated_at, left(r.error_detail,90) ed from lf_pipeline_runs r where r.source_url in (select url from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' and intento_count=3) order by r.source_url, r.created_at",
+        "revision_or_observed_at": "2026-11-05T00:32:00Z",
+        "digest": "sha256:ce06fed8a82d7dba4a6e790bb1d8a714686026684cd1f859e90cd8505385cf2a",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q41",
+        "subject": "FALLIDO envejecidos, topes, KB para FALLIDO",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from lf_url_queue where intento_count>3) over3, (select count(*) from lf_url_queue where estado='FALLIDO' and updated_at < now()-interval '30 days') fallido_older_30d, (select min(updated_at) from lf_url_queue where estado='FALLIDO') oldest_fallido, (select count(*) from lf_knowledge_base k join lf_url_queue q on k.source_url=q.url where q.estado='FALLIDO') kb_for_fallido",
+        "revision_or_observed_at": "2026-11-05T00:32:49Z",
+        "digest": "sha256:c1fbd3866268919bc2430e0307060e456f215bd7e6eef318c7f38dcab0296c4a",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q42",
+        "subject": "fechas de EKB WEB-001 y ultima actividad del pipeline",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select primera_vez from lf_error_knowledge where codigo='WEB-001') primera_vez, (select ultima_vez from lf_error_knowledge where codigo='WEB-001') ultima_vez, (select updated_at from lf_error_knowledge where codigo='WEB-001') ekb_updated, (select max(updated_at) from lf_url_queue) max_queue_upd, (select max(created_at) from lf_pipeline_runs) max_run_created, (select max(created_at) from lf_eventos where entidad_codigo ilike '%ACT-0058%' or entidad_codigo ilike 'LF-KNOWLEDGE-%' or entidad_codigo ilike 'LF-ACT0058-%') max_event_act0058, (select count(*) from lf_url_queue where estado='PENDIENTE') pend",
+        "revision_or_observed_at": "2026-11-05T00:32:58Z",
+        "digest": "sha256:45e13213a4e598ee334d03056ff19a04d3c60b42341eabd7a642f553cdf5bdeb",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q43",
+        "subject": "pg_cron instalado",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from pg_extension where extname='pg_cron') has_cron, (select count(*) from pg_namespace where nspname='cron') cron_schema",
+        "revision_or_observed_at": "2026-11-05T00:33:06Z",
+        "digest": "sha256:6d05d938cd9746617e4ce03a4b66b167c6855c80f4e28b9342232ee6e9d78bfd",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q44",
+        "subject": "corridas del pipeline por mes",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select date_trunc('month', created_at)::date m, count(*) runs, count(*) filter (where stage_status='FAILED') failed, count(*) filter (where stage_current='COMPLETED') completed from lf_pipeline_runs group by 1 order by 1",
+        "revision_or_observed_at": "2026-11-05T00:33:08Z",
+        "digest": "sha256:0609654da8714aa1a03a1a9ce27aa134d3e9c87ce738652bd33f1f91e1964bcd",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q45",
+        "subject": "scheduler en BD: cron.job",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, count(*) n, count(*) filter (where active) active_n, count(*) filter (where command ilike '%url_queue%' or command ilike '%act-0058%' or command ilike '%pipeline%' or jobname ilike '%knowledge%' or jobname ilike '%pipeline%') relevant from cron.job",
+        "revision_or_observed_at": "2026-11-05T00:33:09Z",
+        "digest": "sha256:4fb510c3099fc11ac3ff80c9601ea46b886aba967fcc01275abb15f8a2e1fd5c",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q46",
+        "subject": "N1 snapshot: politicas con retry/reintento/readmision/intento y operaciones con clave pipeline",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, count(*) snap_rows, count(*) filter (where policy_payload::text ~* '(retry|reintent|readmi|intento)') snap_retry_rows, string_agg(distinct policy_code, ',') filter (where policy_payload::text ~* '(retry|reintent|readmi|intento)') snap_retry_policies, count(*) filter (where operation_code ~* '(0058|knowledge|pipeline|url|captur)') snap_op_match from v_lf_operation_policy_snapshot",
+        "revision_or_observed_at": "2026-11-05T00:33:15Z",
+        "digest": "sha256:f955509788c73556e9a0bb53103e6f730c5e002653c7c893c9cd3e39f0e679ec",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q47",
+        "subject": "N2 fragmento de retry en las dos politicas",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select policy_code, policy_version, status, (regexp_match(policy_payload::text, '.{120}(retry|reintent).{160}', 'i'))[1] frag from lf_policy_versions where policy_payload::text ~* '(retry|reintent)'",
+        "revision_or_observed_at": "2026-11-05T00:33:18Z",
+        "digest": "sha256:cead91793660d849aac248a44007078556e682fdb95472cd500da97f4d66894d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q48",
+        "subject": "N1 operaciones con politicas que coinciden con pipeline/knowledge/url/captura",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select distinct operation_code, policy_code from v_lf_operation_policy_snapshot where operation_code ~* '(0058|knowledge|pipeline|url|captur)'",
+        "revision_or_observed_at": "2026-11-05T00:33:20Z",
+        "digest": "sha256:6f6c74e340f4616d022ea7d5bdf7a24962f61c248ca43e06b7ce35a8c04d78dc",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q49",
+        "subject": "N2 reglas con retry/reintento dentro del arreglo rules de politicas",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select policy_code, (select string_agg(r, ' | ') from jsonb_array_elements_text(policy_payload->'rules') r where r ~* '(retry|reintent)') retry_rules from lf_policy_versions where policy_payload::text ~* '(retry|reintent)'",
+        "revision_or_observed_at": "2026-11-05T00:33:22Z",
+        "digest": "sha256:f3713867d32573134da46341730020590e15b79363d2b92e2f0bf51ebcd266f9",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q50",
+        "subject": "ORQUESTACION_PIPELINE_LF",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select operation_code,version,status,source_model,source_repo,left(source_paths::text,200) sp,left(notes,200) notes,operation_family,operation_domain,operation_type,applies_to_asset_type,lifecycle_state_code from lf_operation_registry where operation_code='ORQUESTACION_PIPELINE_LF'",
+        "revision_or_observed_at": "2026-11-05T00:33:25Z",
+        "digest": "sha256:f6462881d8988d049a36f9cc85b6e8a293e9250f7e5fa6b0c2810128008e980a",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q51",
+        "subject": "N1 politicas de ORQUESTACION_PIPELINE_LF",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select operation_code,policy_role,required,distribution_modes,policy_code,policy_name,tipo_activo,subtipo_activo,policy_version,left(policy_sha,12) sha,effective_at,source_ref,length(policy_payload::text) len from v_lf_operation_policy_snapshot where operation_code='ORQUESTACION_PIPELINE_LF'",
+        "revision_or_observed_at": "2026-11-05T00:33:27Z",
+        "digest": "sha256:1f11adab4135b76e0640875cfec973572000a5f45877b743998683b193c14542",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q52",
+        "subject": "N1 pasos de ORQUESTACION_PIPELINE_LF",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select * from v_lf_operation_steps where operation_code='ORQUESTACION_PIPELINE_LF' order by 1,2 limit 60",
+        "revision_or_observed_at": "2026-11-05T00:33:29Z",
+        "digest": "sha256:4e3c97afd23597d9a3dcc70d482b1fb8683e48029a64e57c1a97854638886a3e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q53",
+        "subject": "columnas de lf_operation_step_contracts",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name='lf_operation_step_contracts'",
+        "revision_or_observed_at": "2026-11-05T00:33:32Z",
+        "digest": "sha256:ac54aba4a4a836bb2cb0bb86f737e5a1e6ddd2d08590d2ead0cdd869bf728fae",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q54",
+        "subject": "N2 contratos de paso failed_retry, restock_queue y stage_captura",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select * from lf_operation_step_contracts where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue')",
+        "revision_or_observed_at": "2026-11-05T00:33:34Z",
+        "digest": "sha256:fca6c49e438454c8bc7d29848deeacb2dbfca864046a668dac8cf28b8f630ad1",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q55",
+        "subject": "N1 payload de POL-LF-STATE-MODEL y POL-LF-OPERATION-LIFECYCLE",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select policy_code, policy_payload::text p from v_lf_operation_policy_snapshot where operation_code='ORQUESTACION_PIPELINE_LF' and policy_code in ('POL-LF-STATE-MODEL','POL-LF-OPERATION-LIFECYCLE')",
+        "revision_or_observed_at": "2026-11-05T00:33:36Z",
+        "digest": "sha256:b5be19fb33d91c8e245648b4b34d146c35f0697b309d117885842b6fd3e121a7",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q56",
+        "subject": "contrato de enforcement de la operacion",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_operation_contracts where operation_code='ORQUESTACION_PIPELINE_LF') n_contract from information_schema.columns where table_schema='public' and table_name='lf_operation_contracts'",
+        "revision_or_observed_at": "2026-11-05T00:33:38Z",
+        "digest": "sha256:e474b1a7929ce9480f8277406609de2e3c19f70e707503fc7aee50ce5ad67a04",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q57",
+        "subject": "eventos WEB_FETCH_* y ejecuciones de ORQUESTACION_PIPELINE_LF",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select now() at, (select count(*) from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB_FETCH_UNAVAILABLE%') ev_unavail, (select count(*) from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB_FETCH_CACHE_MISS%') ev_cachemiss, (select count(*) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') execs, (select count(*) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF' and status='COMPLETED') execs_completed, (select min(started_at) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') first_exec, (select max(started_at) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') last_exec",
+        "revision_or_observed_at": "2026-11-05T00:33:43Z",
+        "digest": "sha256:d09c1d57679859af23755c18eb6ef8fda6776b7ba35125aea54d222c3ef7b604",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q58",
+        "subject": "ejecuciones de la operacion por mes y estado",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select date_trunc('month',started_at)::date m, status, count(*) n from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF' group by 1,2 order by 1,2",
+        "revision_or_observed_at": "2026-11-05T00:33:46Z",
+        "digest": "sha256:e4f63bfab154e8d7fb0ec327a7163a810a8ec29cda4c338c6d402e1e758e46be",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q59",
+        "subject": "columnas de lf_operation_execution_steps",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name='lf_operation_execution_steps'",
+        "revision_or_observed_at": "2026-11-05T00:33:48Z",
+        "digest": "sha256:910f6e700696ef423dde45728c6f6cde5b77648775a813dc28d38194ed33a620",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q60",
+        "subject": "recibos por paso (primer intento, con error de columna ambigua)",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select step_id, status, count(*) n, min(observed_at)::date mn, max(observed_at)::date mx from lf_operation_execution_steps s join lf_operation_execution e using (execution_id) where e.operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','restock_queue','stage_captura','audit_trail','completed') group by 1,2 order by 1,2",
+        "revision_or_observed_at": "2026-11-05T00:33:50Z",
+        "digest": "sha256:7956a1f8a952baf8681d5348f51b34cd2d52d7acc9f3b24903538db831121a2f",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q61",
+        "subject": "corridas con retry_count>0: tope, actualizaciones posteriores a la creacion",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, (select count(*) from lf_pipeline_runs where retry_count>0) runs_retry_gt0, (select count(*) from lf_pipeline_runs where retry_count>3) runs_retry_gt3, (select max(retry_count) from lf_pipeline_runs) max_retry, (select count(*) from lf_pipeline_runs where retry_count>0 and updated_at>created_at) runs_updated_after_create_with_retry, (select count(*) from lf_pipeline_runs where retry_count=3 and stage_status='FAILED') runs_retry3_failed",
+        "revision_or_observed_at": "2026-11-05T00:33:59Z",
+        "digest": "sha256:aa1b5624daa0d1844894a071ee366741e496664374730638b3cb65f3f0349d15",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q62",
+        "subject": "recibos por paso de ORQUESTACION_PIPELINE_LF (failed_retry, restock_queue, stage_captura, audit_trail, completed)",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select s.step_id, s.status as step_status, count(*) n, min(s.observed_at)::date mn, max(s.observed_at)::date mx from lf_operation_execution_steps s join lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id in ('failed_retry','restock_queue','stage_captura','audit_trail','completed') group by 1,2 order by 1,2",
+        "revision_or_observed_at": "2026-11-05T00:34:02Z",
+        "digest": "sha256:0008597215c822658c9ff7e0caf90b7df55541e545a5c619ea7b3a55335e90a9",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q63",
+        "subject": "ejecuciones que mencionan WEB-001 y sus pasos registrados",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select execution_id, operation_code, target_type, target_code, status, started_at, completed_at, left(manifest::text,200) mf, (select count(*) from lf_operation_execution_steps s where s.execution_id=e.execution_id) n_steps from lf_operation_execution e where to_jsonb(e)::text ilike '%WEB-001%' order by started_at",
+        "revision_or_observed_at": "2026-11-05T00:34:06Z",
+        "digest": "sha256:c2a44f8ec8e1ffa799f109c2d43522675ed440cce55745d7485d7120d31c078e",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q64",
+        "subject": "activos que mencionan la operacion o el juez de reintento",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select codigo_activo,nombre_canonico,tipo_activo,owner_name from lf_activos where to_jsonb(lf_activos)::text ilike '%ORQUESTACION_PIPELINE_LF%' or to_jsonb(lf_activos)::text ilike '%MINI_JUDGE_ACT0058%'",
+        "revision_or_observed_at": "2026-11-05T00:34:10Z",
+        "digest": "sha256:13d419fe6f18b623f202e5ac45a5c09993d3e1bc8242a05feb807710d9c13312",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q65",
+        "subject": "columnas de lf_operation_judges y juez de reintento registrado",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_operation_judges where to_jsonb(lf_operation_judges)::text ilike '%ACT0058_RETRY%') n_retry_judge from information_schema.columns where table_schema='public' and table_name='lf_operation_judges'",
+        "revision_or_observed_at": "2026-11-05T00:34:13Z",
+        "digest": "sha256:c6c3fbb44befea26fe794115986f7f38855110433e4ec4c9810f67b6fd1528b2",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q66",
+        "subject": "cobertura de jueces de los pasos failed_retry, stage_captura y restock_queue",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select * from v_lf_operation_step_contract_judge_coverage where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue')",
+        "revision_or_observed_at": "2026-11-05T00:34:16Z",
+        "digest": "sha256:10fea6d0a3395ba9fd37286eab6dce52495eb759894756cf7ddbe0e7a35bb7de",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q67",
+        "subject": "jueces registrados para la operacion",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select now() at, count(*) judges, string_agg(judge_code, ',') codes from lf_operation_judges where operation_code='ORQUESTACION_PIPELINE_LF'",
+        "revision_or_observed_at": "2026-11-05T00:34:21Z",
+        "digest": "sha256:7d07ee1dd12e699ba51cf1ea64838ada137b5c70ba901bae8025d85a9d029f39",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q68",
+        "subject": "ANALOGIA: ejecuciones con pasos registrados por operacion",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select e.operation_code, count(*) execs, count(*) filter (where exists (select 1 from lf_operation_execution_steps s where s.execution_id=e.execution_id)) with_steps from lf_operation_execution e group by 1 order by execs desc limit 12",
+        "revision_or_observed_at": "2026-11-05T00:34:30Z",
+        "digest": "sha256:ff96b7148c166a148afe1b7d096ccf9d9c8c46875541110be06d1c2f159be20a",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q69",
+        "subject": "HISTORIA: eventos de ACT-0058/operacion con palabras de responsable",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select now() at, count(*) n_events_owner_act0058 from lf_eventos where (to_jsonb(lf_eventos)::text ilike '%ACT-0058%' or to_jsonb(lf_eventos)::text ilike '%ORQUESTACION_PIPELINE_LF%') and (to_jsonb(lf_eventos)::text ~* '(owner|responsable|propietario|asign)')",
+        "revision_or_observed_at": "2026-11-05T00:34:55Z",
+        "digest": "sha256:d924641586a33711175eb69e24ae70f48668a44a3d19884e17ac99222de66c3d",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q70",
+        "subject": "HISTORIA: esos 6 eventos",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select id, evento_tipo, entidad_codigo, created_at::date d, left(descripcion,160) descr, (regexp_match(to_jsonb(lf_eventos)::text, '.{0,100}(owner|responsable|propietario|asign).{0,100}','i'))[0] ctx from lf_eventos where (to_jsonb(lf_eventos)::text ilike '%ACT-0058%' or to_jsonb(lf_eventos)::text ilike '%ORQUESTACION_PIPELINE_LF%') and (to_jsonb(lf_eventos)::text ~* '(owner|responsable|propietario|asign)') order by id",
+        "revision_or_observed_at": "2026-11-05T00:35:20Z",
+        "digest": "sha256:c2331e8e8fa51b43e7e2170a66b7b5ba4c16259403ec80904209b558c59712d6",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q71",
+        "subject": "productores de lf_pipeline_runs (created_by)",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select now() at, created_by, count(*) n, count(*) filter (where retry_count>0) retry_gt0, min(created_at)::date mn, max(created_at)::date mx, count(execution_id) with_exec_id from lf_pipeline_runs group by created_by order by n desc",
+        "revision_or_observed_at": "2026-11-05T00:36:06Z",
+        "digest": "sha256:4fd0ef661408bbdc328d81009bfb395c968c80e91ddba0bfc405a818665dee62",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q72",
+        "subject": "las 6 corridas con retry_count=3 FAILED: productor y ejecucion",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select r.pipeline_run_id, r.created_by, r.execution_id, r.retry_count, r.created_at from lf_pipeline_runs r where r.retry_count=3 and r.stage_status='FAILED' order by r.created_at",
+        "revision_or_observed_at": "2026-11-05T00:36:20Z",
+        "digest": "sha256:13a2af9916549c3b92ad7964da0b4300f47c90d312cbba6acc4218b08926e002",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q73",
+        "subject": "ejecuciones LF-ACT0058-20260901-*",
+        "evidence_class": "OBSERVED_HISTORY",
+        "source_locator": "select e.execution_id, e.operation_code, e.target_type, e.target_code, e.status, e.started_at, e.completed_at, left(e.manifest::text,400) mf, (select count(*) from lf_operation_execution_steps s where s.execution_id=e.execution_id) n_steps from lf_operation_execution e where e.execution_id like 'LF-ACT0058-20260901-%' order by started_at",
+        "revision_or_observed_at": "2026-11-05T00:36:40Z",
+        "digest": "sha256:ceced03c64ffcb83374034b3ba4f3f73bea85e98a89c2d28669086ab0e26452a",
+        "state": "CURRENT"
+      },
+      {
+        "evidence_id": "EV-Q74",
+        "subject": "cola por dominio: exitos y fallos por cache miss",
+        "evidence_class": "OBSERVED_LIVE",
+        "source_locator": "select split_part(replace(replace(url,'https://',''),'http://',''),'/',1) dom, count(*) total, count(*) filter (where estado='PROCESADO') ok, count(*) filter (where estado='FALLIDO') fallido, count(*) filter (where estado='FALLIDO' and error_detail ilike '%cache%') cache_miss, min(created_at)::date mn, max(updated_at)::date mx from lf_url_queue group by 1 order by fallido desc, total desc limit 12",
+        "revision_or_observed_at": "2026-11-05T00:37:10Z",
+        "digest": "sha256:183612e36e24d641e8e5fa5f4d58b3acb244b079c1bbc92bb776c84195d3556e",
+        "state": "CURRENT"
+      }
+    ]
+  },
+  "queries": {
+    "Q01": {
+      "subject": "catalogo de tablas/vistas candidatas (incidente, operacion, politica, ekb, retry)",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() as at, table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%web_001%' or table_name ilike '%incident%' or table_name ilike '%operation%' or table_name ilike '%policy%' or table_name ilike '%ekb%' or table_name ilike '%retry%' or table_name ilike '%readmi%' or table_name ilike '%error_knowledge%') order by 2 limit 80",
+      "at": "2026-11-05T00:28:17Z",
+      "obs": "25 tablas/vistas: lf_error_knowledge (vista), lf_operation_* (registry, execution, execution_steps, step_contracts, judges, policy_bindings, etc.), lf_policy_versions, v_lf_operation_policy_snapshot y otras. No existe tabla propia de incidentes ni de retry/readmision."
+    },
+    "Q02": {
+      "subject": "columnas de las tablas clave (EKB, eventos, cola, registry, execution, politicas)",
+      "cls": "OBSERVED_LIVE",
+      "q": "select table_name, string_agg(column_name, ',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('lf_error_knowledge','lf_eventos','lf_url_queue','lf_operation_registry','lf_operation_execution','lf_policy_versions','lf_operation_policy_bindings','v_lf_operation_policy_snapshot','lf_operation_effect_guard') group by 1",
+      "at": "2026-11-05T00:28:19Z",
+      "obs": "lf_url_queue tiene columnas: queue_id,url,fuente,keyword_target,estado,intento_count,pipeline_run_id,error_detail,created_by,processed_at,created_at,updated_at,url_tipo,skip_reason,updated_by_execution_id. No hay columna de proximo reintento/backoff/retire_at ni de responsable. lf_operation_registry no tiene columna de owner. [hora aprox.]"
+    },
+    "Q03": {
+      "subject": "existencia del codigo WEB-001 en la vista EKB",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, count(*) n from lf_error_knowledge where to_jsonb(lf_error_knowledge)::text ilike '%WEB-001%'",
+      "at": "2026-11-05T00:28:21Z",
+      "obs": "n=1 fila EKB que menciona WEB-001."
+    },
+    "Q04": {
+      "subject": "fila EKB WEB-001 completa (causa, prevencion, validacion, evidencia, frecuencia)",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select codigo,categoria,titulo,descripcion,causa_raiz,patron,prevencion,validacion,severidad,frecuencia,estado,evidencia,source_ref,root_cause_family from lf_error_knowledge where to_jsonb(lf_error_knowledge)::text ilike '%WEB-001%'",
+      "at": "2026-11-05T00:28:23Z",
+      "obs": "WEB-001 CAPTURA_WEB 'web.run open(url) puede devolver Cache miss', estado activo, severidad MEDIO, frecuencia 46, root_cause_family R1_NO_SABE. causa_raiz declarada: dependencia externa de fetch/cache no disponible para URLs especificas. prevencion: no crear captura/homologacion/decision/KB si el fetch falla; registrar FALLIDO con error_detail y 'permitir reintento posterior controlado'. validacion: cada URL fallida con lf_pipeline_runs FAILED, lf_url_queue FALLIDO, intento_count incrementado y ninguna KB creada. evidencia: 7 URLs el 2026-08-24 (execution f1076641-901e-4a7a-b638-5f3c64ea4cea) y entradas hasta 2026-09-01 (LF-ACT0058-20260901-1820/1826/1835/1842-AUTOLEARN). source_ref execution://f1076641-.... [hora aprox.]"
+    },
+    "Q05": {
+      "subject": "cuantas filas de eventos/cola/ejecuciones mencionan WEB-001",
+      "cls": "OBSERVED_LIVE",
+      "q": "select 'lf_eventos' t, count(*) n from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB-001%' union all select 'lf_url_queue', count(*) from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' union all select 'lf_operation_execution', count(*) from lf_operation_execution where to_jsonb(lf_operation_execution)::text ilike '%WEB-001%'",
+      "at": "2026-11-05T00:28:26Z",
+      "obs": "lf_eventos=8, lf_url_queue=14, lf_operation_execution=6. [hora aprox.]"
+    },
+    "Q06": {
+      "subject": "distribucion de la cola por estado e intentos",
+      "cls": "OBSERVED_LIVE",
+      "q": "select estado, count(*) n, min(intento_count) mn, max(intento_count) mx, count(*) filter (where error_detail ilike '%cache%') cache_n from lf_url_queue group by 1 order by 2 desc",
+      "at": "2026-11-05T00:28:30Z",
+      "obs": "PROCESADO 177 (intento 0-2); SKIP 105; FALLIDO 39 (intento 1-3, 27 con 'cache' en error_detail); PENDIENTE 1; DESCARTADO 1. [hora aprox.]"
+    },
+    "Q07": {
+      "subject": "las 14 filas de cola etiquetadas WEB-001",
+      "cls": "OBSERVED_LIVE",
+      "q": "select queue_id,left(url,70) url,estado,intento_count,pipeline_run_id,left(error_detail,120) ed,skip_reason,created_at,updated_at from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' order by updated_at",
+      "at": "2026-11-05T00:28:33Z",
+      "obs": "14 URLs de reevalua.com, todas FALLIDO: 6 con intento_count=3 y pipeline_run_id (updated 2026-09-01 23:23-23:24), 8 con intento_count=1 y pipeline_run_id NULL (updated 2026-09-01 23:27-23:35). error_detail 'WEB_FETCH_CACHE_MISS_20260901; ... EKB WEB-001; no fabricated capture/KB'. [hora aprox.]"
+    },
+    "Q08": {
+      "subject": "eventos que mencionan WEB-001",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select id,evento_tipo,entidad_tipo,entidad_codigo,left(descripcion,200) d,severidad,created_at,left(payload::text,300) p from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB-001%' order by created_at",
+      "at": "2026-11-05T00:28:37Z",
+      "obs": "8 eventos. Relevantes: 8594 (2026-08-24, ACT-0058: 11 URLs, 4 KB, 7 fallos externos WEB_FETCH_CACHE_MISS), 8595 (2026-08-24: 7 fallos reprocesados, 5 cerraron con KB no promovida y 2 a HITL sin KB), 8608 (08-25: 15 URLs, 4 fallidas), 8610 (08-25: 4 URLs reintentadas siguen fallidas), 8628 (08-26: 17 URLs, 3 fallidas), 9527 (08-27: 12 URLs, 9 fallidas). Los otros 2 eventos (57, 148) no son del pipeline. [hora aprox.]"
+    },
+    "Q09": {
+      "subject": "N1 snapshot de politicas filtrado por ACT-0058 / WEB-001 / FALLIDO / cache",
+      "cls": "OBSERVED_LIVE",
+      "q": "select operation_code,policy_role,required,distribution_modes,policy_code,policy_name,tipo_activo,subtipo_activo,policy_version,left(policy_sha,12) sha,left(policy_payload::text,400) payload,effective_at,source_ref from v_lf_operation_policy_snapshot where operation_code ilike '%0058%' or policy_payload::text ilike '%ACT-0058%' or policy_payload::text ilike '%WEB-001%' or policy_payload::text ilike '%FALLIDO%' or policy_payload::text ilike '%cache%'",
+      "at": "2026-11-05T00:28:41Z",
+      "obs": "0 filas. (Nota posterior: ese filtro uso operation_code ilike '%0058%', que no es la clave del operation; ver Q46-Q51.) [hora aprox.]"
+    },
+    "Q10": {
+      "subject": "N1/N2 conteos agregados con clave ACT-0058 (snapshot, bindings, politicas, registry)",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from v_lf_operation_policy_snapshot) snap_rows, (select count(*) from v_lf_operation_policy_snapshot where operation_code ilike '%0058%') snap_0058, (select count(*) from lf_operation_policy_bindings where operation_code ilike '%0058%') bind_0058, (select count(*) from lf_policy_versions where policy_payload::text ilike '%ACT-0058%') pol_0058, (select count(*) from lf_policy_versions where policy_payload::text ilike '%WEB-001%') pol_web001, (select count(*) from lf_operation_registry where operation_code ilike '%0058%') reg_0058",
+      "at": "2026-11-05T00:28:44Z",
+      "obs": "snap_rows=162; snap_0058=0; bind_0058=0; pol_0058=0; pol_web001=0; reg_0058=0 (con la clave '0058'; la operacion real se llama ORQUESTACION_PIPELINE_LF, hallada despues)."
+    },
+    "Q11": {
+      "subject": "tablas de router/pipeline/accion/catalogo/owner/regla/skill/knowledge",
+      "cls": "OBSERVED_LIVE",
+      "q": "select table_name, table_type from information_schema.tables where table_schema='public' and (table_name ilike '%router%' or table_name ilike '%pipeline%' or table_name ilike '%action%' or table_name ilike '%act\\_%' or table_name ilike '%catalog%' or table_name ilike '%owner%' or table_name ilike '%regla%' or table_name ilike '%rule%' or table_name ilike '%skill%' or table_name ilike '%knowledge%') order by 1",
+      "at": "2026-11-05T00:28:47Z",
+      "obs": "40 objetos; incluyen lf_pipeline_runs, lf_router_action_registry, lf_skill_catalog_v1, lf_product_rules, lf_rule_promotion_v1, lf_prevention_rules (vista), lf_knowledge_base. [hora aprox.]"
+    },
+    "Q12": {
+      "subject": "N3 registro de acciones del Router filtrado por 0058",
+      "cls": "OBSERVED_LIVE",
+      "q": "select * from lf_router_action_registry where to_jsonb(lf_router_action_registry)::text ilike '%0058%'",
+      "at": "2026-11-05T00:28:49Z",
+      "obs": "0 filas. [hora aprox.]"
+    },
+    "Q13": {
+      "subject": "definicion de la vista lf_prevention_rules",
+      "cls": "OBSERVED_LIVE",
+      "q": "select view_definition from information_schema.views where table_schema='public' and table_name='lf_prevention_rules'",
+      "at": "2026-11-05T00:28:50Z",
+      "obs": "view_definition=null (sin acceso a la definicion desde este rol). No se uso. [hora aprox.]"
+    },
+    "Q14": {
+      "subject": "columnas y total de lf_pipeline_runs",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_pipeline_runs) total from information_schema.columns where table_schema='public' and table_name='lf_pipeline_runs'",
+      "at": "2026-11-05T00:28:51Z",
+      "obs": "176 corridas. Columnas incluyen stage_current, stage_status, retry_count, failure_category, execution_id, created_by, kb_id, capture_run_id. [hora aprox.]"
+    },
+    "Q15": {
+      "subject": "tamano y prefijos del registro de acciones del Router",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at,(select count(*) from lf_router_action_registry) n, (select string_agg(column_name,',' order by ordinal_position) from information_schema.columns where table_schema='public' and table_name='lf_router_action_registry') cols, (select string_agg(distinct left(action_code,8),',') from lf_router_action_registry) pref",
+      "at": "2026-11-05T00:28:52Z",
+      "obs": "42 acciones; sin columna de responsable."
+    },
+    "Q16": {
+      "subject": "N3 acciones del Router KNOWLEDGE/pipeline",
+      "cls": "OBSERVED_LIVE",
+      "q": "select asset_type,action_code,operation_code,status,write_allowed,left(notes,160) notes from lf_router_action_registry where to_jsonb(lf_router_action_registry)::text ilike '%KNOWLEDG%' or to_jsonb(lf_router_action_registry)::text ilike '%pipeline%'",
+      "at": "2026-11-05T00:28:55Z",
+      "obs": "1 fila: KNOWLEDGE_LEARNING_BRIDGE -> LEARNING_BRIDGE_KB_CARD_LF (write_allowed=false). No hay accion del Router para ORQUESTACION_PIPELINE_LF / reintento. [hora aprox.]"
+    },
+    "Q17": {
+      "subject": "N2 politicas canonicas: cuantas tratan retry/fallido/intento/cola/pipeline",
+      "cls": "OBSERVED_LIVE",
+      "q": "select count(*) n, count(*) filter (where policy_payload::text ilike '%reintento%' or policy_payload::text ilike '%retry%') retry_n, count(*) filter (where policy_payload::text ilike '%FALLIDO%') fallido_n, count(*) filter (where policy_payload::text ilike '%intento_count%') intento_n, count(*) filter (where policy_payload::text ilike '%lf_url_queue%') queue_n, count(*) filter (where policy_payload::text ilike '%pipeline%') pipe_n from lf_policy_versions",
+      "at": "2026-11-05T00:28:58Z",
+      "obs": "25 versiones de politica; retry_n=2; fallido_n=0; intento_n=0; queue_n=0; pipe_n=0. [hora aprox.]"
+    },
+    "Q18": {
+      "subject": "N2 las dos politicas que mencionan retry",
+      "cls": "OBSERVED_LIVE",
+      "q": "select policy_code,policy_version,status,left(policy_payload::text,200) p from lf_policy_versions where policy_payload::text ilike '%reintento%' or policy_payload::text ilike '%retry%'",
+      "at": "2026-11-05T00:29:00Z",
+      "obs": "POL-LF-OPERATION-LIFECYCLE v1.1-candidate (CANDIDATE) y POL-STRATEGY-CREATION-001 v0.1-candidate (ACTIVE). Verificado despues (Q49) que ninguna tiene regla de retry/reintento en su arreglo rules; solo coincidencia de palabra en otro campo. No aplican. [hora aprox.]"
+    },
+    "Q19": {
+      "subject": "triggers de lf_url_queue y lf_pipeline_runs",
+      "cls": "OBSERVED_LIVE",
+      "q": "select tgname, tgenabled, pg_get_triggerdef(t.oid) def from pg_trigger t where tgrelid in ('public.lf_url_queue'::regclass,'public.lf_pipeline_runs'::regclass) and not tgisinternal",
+      "at": "2026-11-05T00:29:02Z",
+      "obs": "1 trigger: trg_lf_url_queue_timestamp (BEFORE UPDATE, solo fija updated_at). Ningun trigger de reintento, tope o readmision. [hora aprox.]"
+    },
+    "Q20": {
+      "subject": "constraints de lf_url_queue y lf_pipeline_runs",
+      "cls": "OBSERVED_LIVE",
+      "q": "select conrelid::regclass t, conname, pg_get_constraintdef(oid) def from pg_constraint where conrelid in ('public.lf_url_queue'::regclass,'public.lf_pipeline_runs'::regclass) and contype in ('c','u','f','p')",
+      "at": "2026-11-05T00:29:03Z",
+      "obs": "lf_url_queue: CHECK estado IN (PENDIENTE,PROCESADO,FALLIDO,DESCARTADO,SKIP); UNIQUE(url); FK pipeline_run_id. lf_pipeline_runs: CHECK stage_current IN (CAPTURA,HOMOLOGACION,ANALISIS,KB_WRITE,COMPLETED,FAILED,HITL), CHECK stage_status IN (PENDING,RUNNING,COMPLETED,FAILED,HITL), CHECK failure_category IN (DATOS,PIPELINE,HUMANO,EXTERNO). No hay CHECK sobre intento_count ni retry_count. [hora aprox.]"
+    },
+    "Q21": {
+      "subject": "funciones de public que tocan lf_url_queue o intento_count",
+      "cls": "OBSERVED_LIVE",
+      "q": "select p.proname, left(regexp_replace(pg_get_functiondef(p.oid),'\\s+',' ','g'),300) def from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and (pg_get_functiondef(p.oid) ilike '%lf_url_queue%' or pg_get_functiondef(p.oid) ilike '%intento_count%')",
+      "at": "2026-11-05T00:29:05Z",
+      "obs": "Solo 2 funciones: fn_update_lf_url_queue_timestamp (fija updated_at) y fn_restock_url_queue (inserta URLs). Ninguna funcion modifica intento_count ni mueve FALLIDO->PENDIENTE. [hora aprox.]"
+    },
+    "Q22": {
+      "subject": "corridas FAILED por etapa/categoria, con cache miss, KB y captura",
+      "cls": "OBSERVED_LIVE",
+      "q": "select stage_current,stage_status,failure_category,count(*) n,max(retry_count) max_retry, count(*) filter (where error_detail ilike '%cache%') cache_n, count(*) filter (where kb_id is not null) with_kb, count(*) filter (where capture_run_id is not null) with_capture from lf_pipeline_runs where stage_status='FAILED' or stage_current='FAILED' group by 1,2,3",
+      "at": "2026-11-05T00:29:07Z",
+      "obs": "FAILED/FAILED/EXTERNO 21 (16 cache miss, max_retry 2); CAPTURA/FAILED/EXTERNO 21 (20 cache miss, max_retry 3); FAILED/FAILED/sin categoria 1; FAILED/FAILED/DATOS 8; ANALISIS/FAILED/PIPELINE 2. Total 53 corridas fallidas; with_kb=0 en todas (ninguna KB creada desde una corrida fallida). Dos vocabularios para el mismo fallo: stage_current='FAILED' (21) vs 'CAPTURA' (21). [hora aprox.]"
+    },
+    "Q23": {
+      "subject": "definicion de fn_restock_url_queue",
+      "cls": "OBSERVED_LIVE",
+      "q": "select pg_get_functiondef(p.oid) def from pg_proc p where p.proname='fn_restock_url_queue' and p.pronamespace='public'::regnamespace",
+      "at": "2026-11-05T00:29:08Z",
+      "obs": "INSERT INTO lf_url_queue ... VALUES (..., 'PENDIENTE', ...) ON CONFLICT (url) DO NOTHING. Una URL ya existente (p. ej. FALLIDO) no se reinserta ni cambia de estado. [hora aprox.]"
+    },
+    "Q24": {
+      "subject": "columnas con nombre de responsable/owner en todo public",
+      "cls": "OBSERVED_LIVE",
+      "q": "select table_name, column_name from information_schema.columns where table_schema='public' and (column_name ilike '%owner%' or column_name ilike '%responsable%' or column_name ilike '%accountable%' or column_name ilike '%steward%') order by 1,2",
+      "at": "2026-11-05T00:29:09Z",
+      "obs": "15 columnas, entre ellas lf_activos.owner_name, v_lf_inventario_activo.owner_name, lf_capability_registry.owner_scope, lf_operation_gate_check_results.owner. lf_url_queue, lf_pipeline_runs y lf_operation_registry no tienen columna de owner. [hora aprox.]"
+    },
+    "Q25": {
+      "subject": "columnas de v_lf_inventario_activo y lf_activos",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name in ('v_lf_inventario_activo','lf_activos') group by table_name",
+      "at": "2026-11-05T00:29:11Z",
+      "obs": "Ambas exponen owner_name y runtime_estado/estado_operativo. [hora aprox.]"
+    },
+    "Q26": {
+      "subject": "N1/N2 inventario de activos: ACT-0058, lf_url_queue, WEB-001, capacidades",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from v_lf_inventario_activo) inv_total, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%ACT-0058%') inv_0058, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%lf_url_queue%') inv_queue, (select count(*) from v_lf_inventario_activo where to_jsonb(v_lf_inventario_activo)::text ilike '%WEB-001%') inv_web001, (select count(*) from lf_activos where to_jsonb(lf_activos)::text ilike '%ACT-0058%') act_0058, (select count(*) from lf_activos where to_jsonb(lf_activos)::text ilike '%lf_url_queue%') act_queue, (select count(*) from lf_capability_registry where to_jsonb(lf_capability_registry)::text ilike '%0058%' or to_jsonb(lf_capability_registry)::text ilike '%url_queue%') cap",
+      "at": "2026-11-05T00:29:15Z",
+      "obs": "inv_total=223; inv_0058=1; inv_queue=0; inv_web001=0; act_0058=1; act_queue=0; cap=0. lf_url_queue no esta registrada como activo."
+    },
+    "Q27": {
+      "subject": "activo ACT-0058 en lf_activos",
+      "cls": "OBSERVED_LIVE",
+      "q": "select codigo_activo,nombre_canonico,tipo_activo,subtipo_activo,estado_documental,estado_operativo,nivel_control,runtime_estado,impacto_automatico,version,owner_name,ultima_revision,updated_at,left(metadata::text,300) md from lf_activos where to_jsonb(lf_activos)::text ilike '%ACT-0058%'",
+      "at": "2026-11-05T00:29:18Z",
+      "obs": "ACT-0058 = SKILL_ORQUESTADOR_PIPELINE_LF, SKILL, estado_operativo APROBADO, runtime_estado APROBADO_PRODUCCION_CONTROLADA, impacto_automatico PERMITIDO_CONTROLADO, owner_name=NULL, version=NULL, ultima_revision=NULL, updated_at 2026-06-19. metadata: desbloqueo_operativo_20260619 aplicado por CHATGPT_SUPABASE_MCP a pedido de USER_DIRECT_COMMAND_DESBLOQUEA (un cambio de estado, no una asignacion de responsable). [hora aprox.]"
+    },
+    "Q28": {
+      "subject": "metadata y raw_payload completos de ACT-0058",
+      "cls": "OBSERVED_LIVE",
+      "q": "select metadata::text md, raw_payload::text rp from lf_activos where codigo_activo='ACT-0058'",
+      "at": "2026-11-05T00:29:20Z",
+      "obs": "metadata solo contiene desbloqueo_operativo_20260619 (scope pipeline_minimo_act0058; previous runtime APROBADO_PRODUCCION_CONTROLADA_READ_ONLY; previous impacto BLOQUEADO). raw_payload={}. Sin owner. [hora aprox.]"
+    },
+    "Q29": {
+      "subject": "columnas y tamano de lf_skill_catalog_v1",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_skill_catalog_v1) n from information_schema.columns where table_schema='public' and table_name='lf_skill_catalog_v1'",
+      "at": "2026-11-05T00:29:22Z",
+      "obs": "6 skills en el catalogo (skill_code, required_operation, handler_fn, ...); sin owner. [hora aprox.]"
+    },
+    "Q30": {
+      "subject": "EKB activos con prevencion/causa de reintento (para N5 historia)",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select codigo,categoria,titulo,left(prevencion,300) prev,estado,frecuencia,left(source_ref,80) sr from lf_error_knowledge where (prevencion ilike '%reintent%' or causa_raiz ilike '%reintent%' or descripcion ilike '%reintent%' or titulo ilike '%fetch%' or codigo in ('PIPE-001')) and estado='activo' order by frecuencia desc limit 12",
+      "at": "2026-11-05T00:29:24Z",
+      "obs": "WEB-001 (frecuencia 46) es la unica entrada de EKB sobre reintento de fetch en el pipeline. PIPE-001 (frecuencia 7) trata constraints/FK, no reintentos. Las demas son de CI/GitHub y no aplican. [hora aprox.]"
+    },
+    "Q31": {
+      "subject": "N3 reglas de producto, promocion de reglas y catalogo de skills con reintento/FALLIDO/cola/WEB-001/0058",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at,(select count(*) from lf_product_rules where to_jsonb(lf_product_rules)::text ilike '%reintent%' or to_jsonb(lf_product_rules)::text ilike '%FALLIDO%' or to_jsonb(lf_product_rules)::text ilike '%url_queue%') pr_hits,(select count(*) from lf_product_rules) pr_total,(select count(*) from lf_rule_promotion_v1 where to_jsonb(lf_rule_promotion_v1)::text ilike '%reintent%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%url_queue%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%WEB-001%' or to_jsonb(lf_rule_promotion_v1)::text ilike '%ACT-0058%') rp_hits,(select count(*) from lf_rule_promotion_v1) rp_total,(select count(*) from lf_skill_catalog_v1 where to_jsonb(lf_skill_catalog_v1)::text ilike '%0058%') sk_hits",
+      "at": "2026-11-05T00:29:25Z",
+      "obs": "pr_hits=0 de 19; rp_hits=0 de 0 (tabla vacia); sk_hits=0."
+    },
+    "Q32": {
+      "subject": "cola con intentos>0 por estado e intento_count",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select estado, intento_count, count(*) n, count(*) filter (where error_detail ilike '%cache%') cache_n, min(updated_at)::date mn, max(updated_at)::date mx from lf_url_queue where intento_count>0 group by 1,2 order by 1,2",
+      "at": "2026-11-05T00:29:28Z",
+      "obs": "FALLIDO: intento 1 -> 26 (17 cache miss), intento 2 -> 7 (4), intento 3 -> 6 (6, todas 2026-09-01); PROCESADO: intento 1 -> 45, intento 2 -> 7 (todas 2026-08-24: recuperadas tras reintento); SKIP intento 1 -> 4; DESCARTADO 1. Ninguna fila con intento_count>3. [hora aprox.]"
+    },
+    "Q33": {
+      "subject": "FALLIDO sin KB / sin corrida / en tope; reintentos exitosos; desajuste de vocabulario",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from lf_url_queue q where estado='FALLIDO' and not exists (select 1 from lf_knowledge_base k where k.kb_id in (select kb_id from lf_pipeline_runs r where r.pipeline_run_id=q.pipeline_run_id and r.kb_id is not null))) fallido_sin_kb, (select count(*) from lf_url_queue where estado='FALLIDO' and pipeline_run_id is null) fallido_sin_run, (select count(*) from lf_url_queue where estado='FALLIDO' and intento_count>=3) fallido_tope3, (select count(*) from lf_pipeline_runs where retry_count>0 and stage_current='COMPLETED') run_retry_ok, (select count(*) from lf_pipeline_runs where stage_status='FAILED' and stage_current<>'FAILED' ) run_status_mismatch",
+      "at": "2026-11-05T00:29:31Z",
+      "obs": "fallido_sin_kb=39; fallido_sin_run=19 (sin pipeline_run_id en la cola); fallido_tope3=6; run_retry_ok=5 (corridas con retry_count>0 que terminaron COMPLETED); run_status_mismatch=23 (stage_status=FAILED con stage_current distinto de FAILED)."
+    },
+    "Q34": {
+      "subject": "cobertura de owner_name por tipo de activo",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, tipo_activo, count(*) n, count(owner_name) with_owner, count(distinct owner_name) distinct_owner from lf_activos group by tipo_activo order by n desc",
+      "at": "2026-11-05T00:30:05Z",
+      "obs": "SKILL: 14 activos, 9 con owner_name, 2 owners distintos. CAPABILITY 115 (84 con owner). Otros tipos con owner en todos."
+    },
+    "Q35": {
+      "subject": "activos de pipeline/captura/homologacion/cola/knowledge/web/fetch",
+      "cls": "OBSERVED_LIVE",
+      "q": "select codigo_activo,nombre_canonico,tipo_activo,owner_name,estado_operativo from lf_activos where nombre_canonico ilike any (array['%PIPELINE%','%CAPTURA%','%HOMOLOG%','%URL_QUEUE%','%KNOWLEDGE%','%WEB%','%FETCH%']) order by codigo_activo limit 40",
+      "at": "2026-11-05T00:30:08Z",
+      "obs": "3 filas: ACT-0053 SKILL_HOMOLOGACION_FUENTES_DIGITALES_LF (owner 'Cristhian'), ACT-0058 (owner NULL), ACT-BISC-SOURCE-001 (handoff, owner 'Cristhian Lujan'). [hora aprox.]"
+    },
+    "Q36": {
+      "subject": "ANALOGIA: owner de todas las skills (hermanas ACT-0054..0058)",
+      "cls": "OBSERVED_LIVE",
+      "q": "select codigo_activo, owner_name, runtime_estado from lf_activos where tipo_activo='SKILL' order by codigo_activo",
+      "at": "2026-11-05T00:30:40Z",
+      "obs": "14 skills. owner 'Cristhian': ACT-0036,0043,0045,0046,0047,0052,0053 (7). owner NULL: ACT-0054,0055,0056,0057,0058 (5, justo las hermanas del pipeline). owner 'LF_GOVERNANCE': SKILL-CREATING-INTEGRAL-USER-STORIES, SKILL-GENERACION-PDF-PROFESIONAL-LF. Las hermanas mas cercanas (0054-0057) no tienen owner: la analogia no permite derivar uno (0 de 4 recuperables). No se uso como autoridad. [hora aprox.]"
+    },
+    "Q37": {
+      "subject": "RELACIONADO: tablas/activos de cola con owner",
+      "cls": "OBSERVED_LIVE",
+      "q": "select codigo_activo, nombre_canonico, tipo_activo, owner_name from lf_activos where tipo_activo in ('DB_TABLE','TABLE') or nombre_canonico ilike '%QUEUE%' or nombre_canonico ilike '%LF_PIPELINE%' order by 1",
+      "at": "2026-11-05T00:30:50Z",
+      "obs": "10 filas (tablas de diseno B2B/design tokens, metadata comments, proyectos demo y un capability de queue worker de GitHub Actions con owner LF_GOVERNANCE). Ninguna corresponde a lf_url_queue ni lf_pipeline_runs. [hora aprox.]"
+    },
+    "Q38": {
+      "subject": "edge functions desplegadas (solo slugs/metadatos)",
+      "cls": "OBSERVED_LIVE",
+      "q": "mcp__Supabase_read_only__list_edge_functions()",
+      "at": "2026-11-05T00:31:00Z",
+      "obs": "Lista de edge functions ACTIVE (audit-skill-protocols, run-*-perfil-lf, lf-p0-*, lf-github-*, input-governance-*, programming-agent-*, story-agent-*, etc.). Ningun slug alude a cola de URLs, captura, reintento ni al orquestador de conocimiento. Solo se leyeron slugs; no se leyo el codigo de ninguna funcion. [hora aprox.]"
+    },
+    "Q39": {
+      "subject": "cola WEB-001 cruzada con corridas por URL",
+      "cls": "OBSERVED_LIVE",
+      "q": "select q.queue_id, q.estado, q.intento_count, q.pipeline_run_id, (select count(*) from lf_pipeline_runs r where r.source_url=q.url) runs_by_url, (select max(r.retry_count) from lf_pipeline_runs r where r.source_url=q.url) max_run_retry from lf_url_queue q where to_jsonb(q)::text ilike '%WEB-001%' order by q.updated_at",
+      "at": "2026-11-05T00:31:30Z",
+      "obs": "6 URLs con intento_count=3: 2 corridas por URL, max retry_count=3. 8 URLs con intento_count=1 y pipeline_run_id NULL en la cola: tienen 1 corrida por URL (retry_count 1). Es decir: el enlace cola->corrida (pipeline_run_id) falta en 8 de 14, aunque la corrida existe. [hora aprox.]"
+    },
+    "Q40": {
+      "subject": "corridas de las 6 URLs con intento_count=3",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select left(r.source_url,60) url, r.pipeline_run_id, r.stage_current, r.stage_status, r.retry_count, r.failure_category, r.created_at, r.updated_at, left(r.error_detail,90) ed from lf_pipeline_runs r where r.source_url in (select url from lf_url_queue where to_jsonb(lf_url_queue)::text ilike '%WEB-001%' and intento_count=3) order by r.source_url, r.created_at",
+      "at": "2026-11-05T00:32:00Z",
+      "obs": "Por cada una de las 6 URLs hay 2 corridas: (a) 2026-08-27 13:08-13:11, FAILED/FAILED, retry_count=0, error 'web fetch Cache miss', updated_at = created_at (nunca actualizada); (b) 2026-09-01 23:23-23:24, CAPTURA/FAILED, retry_count=3, error 'WEB_FETCH_CACHE_MISS ...', creada ya con retry_count=3 (updated_at = created_at). No existe ninguna corrida con retry_count 1 o 2 para esas URLs. [hora aprox.]"
+    },
+    "Q41": {
+      "subject": "FALLIDO envejecidos, topes, KB para FALLIDO",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from lf_url_queue where intento_count>3) over3, (select count(*) from lf_url_queue where estado='FALLIDO' and updated_at < now()-interval '30 days') fallido_older_30d, (select min(updated_at) from lf_url_queue where estado='FALLIDO') oldest_fallido, (select count(*) from lf_knowledge_base k join lf_url_queue q on k.source_url=q.url where q.estado='FALLIDO') kb_for_fallido",
+      "at": "2026-11-05T00:32:49Z",
+      "obs": "over3=0; fallido_older_30d=39 (los 39 FALLIDO tienen su ultimo cambio hace mas de 30 dias); oldest_fallido=2026-07-03 03:04:36Z; kb_for_fallido=0."
+    },
+    "Q42": {
+      "subject": "fechas de EKB WEB-001 y ultima actividad del pipeline",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select primera_vez from lf_error_knowledge where codigo='WEB-001') primera_vez, (select ultima_vez from lf_error_knowledge where codigo='WEB-001') ultima_vez, (select updated_at from lf_error_knowledge where codigo='WEB-001') ekb_updated, (select max(updated_at) from lf_url_queue) max_queue_upd, (select max(created_at) from lf_pipeline_runs) max_run_created, (select max(created_at) from lf_eventos where entidad_codigo ilike '%ACT-0058%' or entidad_codigo ilike 'LF-KNOWLEDGE-%' or entidad_codigo ilike 'LF-ACT0058-%') max_event_act0058, (select count(*) from lf_url_queue where estado='PENDIENTE') pend",
+      "at": "2026-11-05T00:32:58Z",
+      "obs": "WEB-001: primera_vez 2026-08-24 13:14:33Z, ultima_vez 2026-09-01 23:41:25Z. Ultima escritura en cola y en lf_pipeline_runs: 2026-09-01 23:45:04Z. Ultimo evento ACT-0058: 2026-09-01 23:04:36Z. PENDIENTE=1. Reloj de la BD: 2026-11-05 00:32Z (65 dias sin escrituras de cola/corridas)."
+    },
+    "Q43": {
+      "subject": "pg_cron instalado",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from pg_extension where extname='pg_cron') has_cron, (select count(*) from pg_namespace where nspname='cron') cron_schema",
+      "at": "2026-11-05T00:33:06Z",
+      "obs": "pg_cron presente (has_cron=1, schema cron=1)."
+    },
+    "Q44": {
+      "subject": "corridas del pipeline por mes",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select date_trunc('month', created_at)::date m, count(*) runs, count(*) filter (where stage_status='FAILED') failed, count(*) filter (where stage_current='COMPLETED') completed from lf_pipeline_runs group by 1 order by 1",
+      "at": "2026-11-05T00:33:08Z",
+      "obs": "2026-06: 72 corridas (11 fallidas, 57 completadas); 2026-07: 12 (2, 7); 2026-08: 66 (18, 46); 2026-09: 26 (22 fallidas, 0 completadas). Sin corridas en octubre ni noviembre. [hora aprox.]"
+    },
+    "Q45": {
+      "subject": "scheduler en BD: cron.job",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, count(*) n, count(*) filter (where active) active_n, count(*) filter (where command ilike '%url_queue%' or command ilike '%act-0058%' or command ilike '%pipeline%' or jobname ilike '%knowledge%' or jobname ilike '%pipeline%') relevant from cron.job",
+      "at": "2026-11-05T00:33:09Z",
+      "obs": "10 jobs, 8 activos, 0 relacionados con cola/pipeline/ACT-0058. El disparo del pipeline no esta en pg_cron."
+    },
+    "Q46": {
+      "subject": "N1 snapshot: politicas con retry/reintento/readmision/intento y operaciones con clave pipeline",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, count(*) snap_rows, count(*) filter (where policy_payload::text ~* '(retry|reintent|readmi|intento)') snap_retry_rows, string_agg(distinct policy_code, ',') filter (where policy_payload::text ~* '(retry|reintent|readmi|intento)') snap_retry_policies, count(*) filter (where operation_code ~* '(0058|knowledge|pipeline|url|captur)') snap_op_match from v_lf_operation_policy_snapshot",
+      "at": "2026-11-05T00:33:15Z",
+      "obs": "snap_rows=162; snap_retry_rows=1 (POL-STRATEGY-CREATION-001, politica de estrategias, no aplica); snap_op_match=4 (operacion ORQUESTACION_PIPELINE_LF)."
+    },
+    "Q47": {
+      "subject": "N2 fragmento de retry en las dos politicas",
+      "cls": "OBSERVED_LIVE",
+      "q": "select policy_code, policy_version, status, (regexp_match(policy_payload::text, '.{120}(retry|reintent).{160}', 'i'))[1] frag from lf_policy_versions where policy_payload::text ~* '(retry|reintent)'",
+      "at": "2026-11-05T00:33:18Z",
+      "obs": "El regex no devolvio contexto util (frag='retry'/'RETRY'). Sustituida por Q49. [hora aprox.]"
+    },
+    "Q48": {
+      "subject": "N1 operaciones con politicas que coinciden con pipeline/knowledge/url/captura",
+      "cls": "OBSERVED_LIVE",
+      "q": "select distinct operation_code, policy_code from v_lf_operation_policy_snapshot where operation_code ~* '(0058|knowledge|pipeline|url|captur)'",
+      "at": "2026-11-05T00:33:20Z",
+      "obs": "ORQUESTACION_PIPELINE_LF con 4 politicas: POL-LF-OPERATION-LIFECYCLE, POL-LF-POLICY-CONSUMPTION, POL-LF-SOURCE-RESOLUTION, POL-LF-STATE-MODEL. [hora aprox.]"
+    },
+    "Q49": {
+      "subject": "N2 reglas con retry/reintento dentro del arreglo rules de politicas",
+      "cls": "OBSERVED_LIVE",
+      "q": "select policy_code, (select string_agg(r, ' | ') from jsonb_array_elements_text(policy_payload->'rules') r where r ~* '(retry|reintent)') retry_rules from lf_policy_versions where policy_payload::text ~* '(retry|reintent)'",
+      "at": "2026-11-05T00:33:22Z",
+      "obs": "retry_rules=null para POL-LF-OPERATION-LIFECYCLE y POL-STRATEGY-CREATION-001: ninguna tiene una regla de reintento en su arreglo rules. [hora aprox.]"
+    },
+    "Q50": {
+      "subject": "operacion ORQUESTACION_PIPELINE_LF en el registry",
+      "cls": "OBSERVED_LIVE",
+      "q": "select operation_code,version,status,source_model,source_repo,left(source_paths::text,200) sp,left(notes,200) notes,operation_family,operation_domain,operation_type,applies_to_asset_type,lifecycle_state_code from lf_operation_registry where operation_code='ORQUESTACION_PIPELINE_LF'",
+      "at": "2026-11-05T00:33:25Z",
+      "obs": "ORQUESTACION_PIPELINE_LF v0.1, status APROBADO_PRODUCCION_CONTROLADA, source_model SKILL_ORQUESTADOR_PIPELINE_LF, source_repo cristhianlujan/claude-persona-lf-patch, source_paths [skills/orquestador_pipeline_lf/], family ORCHESTRATION, domain PIPELINE_CONTROL, type SCHEDULER_DRIVEN, lifecycle OP_OPERATIONAL. notes: 'ACT-0058 - Orquestador end-to-end ... CAPTURA->HOMOLOGACION->ANALISIS->KB_WRITE. Tabla de control: lf_pipeline_runs'. [hora aprox.]"
+    },
+    "Q51": {
+      "subject": "N1 politicas de ORQUESTACION_PIPELINE_LF",
+      "cls": "OBSERVED_LIVE",
+      "q": "select operation_code,policy_role,required,distribution_modes,policy_code,policy_name,tipo_activo,subtipo_activo,policy_version,left(policy_sha,12) sha,effective_at,source_ref,length(policy_payload::text) len from v_lf_operation_policy_snapshot where operation_code='ORQUESTACION_PIPELINE_LF'",
+      "at": "2026-11-05T00:33:27Z",
+      "obs": "4 politicas requeridas (GOVERNANCE_LIFECYCLE v1.1-operational-closure, POLICY_CONSUMPTION v1.3-assurance-cutover, SOURCE_RESOLUTION v1.4, STATE_MODEL v2.0-canonical-lifecycle), todas TRANSVERSAL_LF_GOVERNANCE. Ninguna es politica de reintento/readmision de URLs. [hora aprox.]"
+    },
+    "Q52": {
+      "subject": "N1 pasos de ORQUESTACION_PIPELINE_LF",
+      "cls": "OBSERVED_LIVE",
+      "q": "select * from v_lf_operation_steps where operation_code='ORQUESTACION_PIPELINE_LF' order by 1,2 limit 60",
+      "at": "2026-11-05T00:33:29Z",
+      "obs": "15 pasos activos: init_execution(5), router(10), init_run(20), scope_filter(30), keyword_match(40), stage_captura(50), stage_homolog(60), stage_analisis(70), hitl_check(80), stage_kb_write(90), completed(100), restock_queue(105), failed_retry(110, required=false), audit_trail(120). Todos con evidence_required='true'. [hora aprox.]"
+    },
+    "Q53": {
+      "subject": "columnas de lf_operation_step_contracts",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name='lf_operation_step_contracts'",
+      "at": "2026-11-05T00:33:32Z",
+      "obs": "Incluye input_required, pass_condition, block_condition, blocking_code, mini_judge_code, execution_sql, created_by_execution_id. Sin columna de owner. [hora aprox.]"
+    },
+    "Q54": {
+      "subject": "N2 contratos de paso failed_retry, restock_queue y stage_captura",
+      "cls": "OBSERVED_LIVE",
+      "q": "select * from lf_operation_step_contracts where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue')",
+      "at": "2026-11-05T00:33:34Z",
+      "obs": "failed_retry: contrato CONTRACT_ACT0058_S11A_FAILED_RETRY_V1, status ACTIVO, purpose 'Incrementar retry_count en pipeline_run fallido. Bloquear ejecucion si retry_count > 3'; pass 'retry_count <= 3'; block 'retry_count > 3; pipeline bloqueado definitivamente' (MAX_RETRY_EXCEEDED); notes 'maximo 3 intentos. Superado ese umbral, requiere intervencion manual'; mini_judge MINI_JUDGE_ACT0058_RETRY; execution_sql: UPDATE lf_pipeline_runs SET retry_count=retry_count+1 ... stage_status = FAILED cuando retry_count+1 >= 3 (o error SCHEMA_ERROR/FK_VIOLATION), si no PENDING; created_by_execution_id='UNKNOWN'. Opera sobre lf_pipeline_runs; no menciona lf_url_queue ni intento_count. restock_queue: INSERT en lf_url_queue ... ON CONFLICT (url) DO NOTHING. stage_captura: si web.run falla -> registrar WEB_FETCH_UNAVAILABLE en lf_eventos, marcar URL FALLIDO y continuar. [hora aprox.]"
+    },
+    "Q55": {
+      "subject": "N1 payload de POL-LF-STATE-MODEL y POL-LF-OPERATION-LIFECYCLE",
+      "cls": "OBSERVED_LIVE",
+      "q": "select policy_code, policy_payload::text p from v_lf_operation_policy_snapshot where operation_code='ORQUESTACION_PIPELINE_LF' and policy_code in ('POL-LF-STATE-MODEL','POL-LF-OPERATION-LIFECYCLE')",
+      "at": "2026-11-05T00:33:36Z",
+      "obs": "STATE-MODEL: estados de ciclo de vida de estrategias/operaciones (OP_CANDIDATE/OP_OPERATIONAL/OP_RETIRED); no define estados de cola de URLs. OPERATION-LIFECYCLE: reglas generales (fail-closed, readback antes de cerrar). Ninguna menciona reintento, FALLIDO ni responsable. [hora aprox.]"
+    },
+    "Q56": {
+      "subject": "contrato de enforcement de la operacion",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_operation_contracts where operation_code='ORQUESTACION_PIPELINE_LF') n_contract from information_schema.columns where table_schema='public' and table_name='lf_operation_contracts'",
+      "at": "2026-11-05T00:33:38Z",
+      "obs": "Existe 1 contrato de operacion (columnas: contract_path, required_before_write, allowed, blocked, required_after_write); sin owner. [hora aprox.]"
+    },
+    "Q57": {
+      "subject": "eventos WEB_FETCH_* y ejecuciones de ORQUESTACION_PIPELINE_LF",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select now() at, (select count(*) from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB_FETCH_UNAVAILABLE%') ev_unavail, (select count(*) from lf_eventos where to_jsonb(lf_eventos)::text ilike '%WEB_FETCH_CACHE_MISS%') ev_cachemiss, (select count(*) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') execs, (select count(*) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF' and status='COMPLETED') execs_completed, (select min(started_at) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') first_exec, (select max(started_at) from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF') last_exec",
+      "at": "2026-11-05T00:33:43Z",
+      "obs": "ev_unavail=4; ev_cachemiss=1; execs=159; execs_completed=46; first_exec 2026-06-18; last_exec 2026-10-28 12:43Z (esas ejecuciones de octubre no tocan cola ni corridas del pipeline de conocimiento)."
+    },
+    "Q58": {
+      "subject": "ejecuciones de la operacion por mes y estado",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select date_trunc('month',started_at)::date m, status, count(*) n from lf_operation_execution where operation_code='ORQUESTACION_PIPELINE_LF' group by 1,2 order by 1,2",
+      "at": "2026-11-05T00:33:46Z",
+      "obs": "Agosto: 1 COMPLETED y 5 COMPLETED_WITH_FAILURES; septiembre: 5 COMPLETED y 1 IN_PROGRESS; octubre: 22 COMPLETED, 93 IN_PROGRESS, 1 RUNNING, 1 CANCELLED (no se interpretaron las de octubre; no hay escrituras de cola/corridas despues del 2026-09-01). [hora aprox.]"
+    },
+    "Q59": {
+      "subject": "columnas de lf_operation_execution_steps",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols from information_schema.columns where table_schema='public' and table_name='lf_operation_execution_steps'",
+      "at": "2026-11-05T00:33:48Z",
+      "obs": "execution_id, step_order, step_id, status, evidence_ref, evidence_payload, observed_at, notes. [hora aprox.]"
+    },
+    "Q60": {
+      "subject": "recibos por paso (primer intento, con error de columna ambigua)",
+      "cls": "OBSERVED_LIVE",
+      "q": "select step_id, status, count(*) n, min(observed_at)::date mn, max(observed_at)::date mx from lf_operation_execution_steps s join lf_operation_execution e using (execution_id) where e.operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','restock_queue','stage_captura','audit_trail','completed') group by 1,2 order by 1,2",
+      "at": "2026-11-05T00:33:50Z",
+      "obs": "ERROR 42702: column reference status is ambiguous. Sin resultado; reejecutada como Q62. [hora aprox.]"
+    },
+    "Q61": {
+      "subject": "corridas con retry_count>0: tope, actualizaciones posteriores a la creacion",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, (select count(*) from lf_pipeline_runs where retry_count>0) runs_retry_gt0, (select count(*) from lf_pipeline_runs where retry_count>3) runs_retry_gt3, (select max(retry_count) from lf_pipeline_runs) max_retry, (select count(*) from lf_pipeline_runs where retry_count>0 and updated_at>created_at) runs_updated_after_create_with_retry, (select count(*) from lf_pipeline_runs where retry_count=3 and stage_status='FAILED') runs_retry3_failed",
+      "at": "2026-11-05T00:33:59Z",
+      "obs": "runs_retry_gt0=37; runs_retry_gt3=0; max_retry=3; runs con retry_count>0 y updated_at>created_at=19 (las otras 18 nacieron con retry_count ya fijado y nunca se actualizaron); runs_retry3_failed=6. Nunca se supero el tope de 3."
+    },
+    "Q62": {
+      "subject": "recibos por paso de ORQUESTACION_PIPELINE_LF (failed_retry, restock_queue, stage_captura, audit_trail, completed)",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select s.step_id, s.status as step_status, count(*) n, min(s.observed_at)::date mn, max(s.observed_at)::date mx from lf_operation_execution_steps s join lf_operation_execution e on e.execution_id=s.execution_id where e.operation_code='ORQUESTACION_PIPELINE_LF' and s.step_id in ('failed_retry','restock_queue','stage_captura','audit_trail','completed') group by 1,2 order by 1,2",
+      "at": "2026-11-05T00:34:02Z",
+      "obs": "Solo existen recibos de audit_trail (2), completed (1), restock_queue (1), stage_captura (2: CAPTURE_STORED y RETURN_TO_WORKER), todos del 2026-06-19. failed_retry: 0 recibos en las 159 ejecuciones de la operacion. [hora aprox.]"
+    },
+    "Q63": {
+      "subject": "ejecuciones que mencionan WEB-001 y sus pasos registrados",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select execution_id, operation_code, target_type, target_code, status, started_at, completed_at, left(manifest::text,200) mf, (select count(*) from lf_operation_execution_steps s where s.execution_id=e.execution_id) n_steps from lf_operation_execution e where to_jsonb(e)::text ilike '%WEB-001%' order by started_at",
+      "at": "2026-11-05T00:34:06Z",
+      "obs": "5 ejecuciones del pipeline: f1076641-... (2026-08-24, COMPLETED_WITH_FAILURES, 11 URLs, 7 fallidas), e83eb5aa-... (08-24 postproceso: 7 corregidas, 5 con KB y 2 HITL), LF-KNOWLEDGE-20260825-001 (15 URLs, 4 fallidas), -20260826-001 (17 URLs, 3 fallidas), -20260827-001 (12 URLs, 9 fallidas): las 5 con n_steps=0. La sexta fila es una ejecucion ACTUALIZACION_PERFIL_LF sobre el propio perfil bajo prueba: se excluye como contexto de prueba, no como hecho del sistema auditado. [hora aprox.]"
+    },
+    "Q64": {
+      "subject": "activos que mencionan la operacion o el juez de reintento",
+      "cls": "OBSERVED_LIVE",
+      "q": "select codigo_activo,nombre_canonico,tipo_activo,owner_name from lf_activos where to_jsonb(lf_activos)::text ilike '%ORQUESTACION_PIPELINE_LF%' or to_jsonb(lf_activos)::text ilike '%MINI_JUDGE_ACT0058%'",
+      "at": "2026-11-05T00:34:10Z",
+      "obs": "0 filas: la operacion y sus jueces no estan inventariados como activos con owner. [hora aprox.]"
+    },
+    "Q65": {
+      "subject": "columnas de lf_operation_judges y juez de reintento registrado",
+      "cls": "OBSERVED_LIVE",
+      "q": "select string_agg(column_name,',' order by ordinal_position) cols, (select count(*) from lf_operation_judges where to_jsonb(lf_operation_judges)::text ilike '%ACT0058_RETRY%') n_retry_judge from information_schema.columns where table_schema='public' and table_name='lf_operation_judges'",
+      "at": "2026-11-05T00:34:13Z",
+      "obs": "n_retry_judge=0: MINI_JUDGE_ACT0058_RETRY (declarado en el contrato failed_retry) no existe en lf_operation_judges. [hora aprox.]"
+    },
+    "Q66": {
+      "subject": "cobertura de jueces de los pasos failed_retry, stage_captura y restock_queue",
+      "cls": "OBSERVED_LIVE",
+      "q": "select * from v_lf_operation_step_contract_judge_coverage where operation_code='ORQUESTACION_PIPELINE_LF' and step_id in ('failed_retry','stage_captura','restock_queue')",
+      "at": "2026-11-05T00:34:16Z",
+      "obs": "Los tres pasos tienen active_judge_bindings=0 y judges=[]: failed_retry (MINI_JUDGE_ACT0058_RETRY, required=false), stage_captura (MINI_JUDGE_ACT0058_CAPTURA), restock_queue (MINI_JUDGE_ACT0058_RESTOCK) declarados pero sin juez enlazado. [hora aprox.]"
+    },
+    "Q67": {
+      "subject": "jueces registrados para la operacion",
+      "cls": "OBSERVED_LIVE",
+      "q": "select now() at, count(*) judges, string_agg(judge_code, ',') codes from lf_operation_judges where operation_code='ORQUESTACION_PIPELINE_LF'",
+      "at": "2026-11-05T00:34:21Z",
+      "obs": "4 jueces: MINI_JUDGE_ACT0058_AUDIT, _HITL, _KEYWORD, _ROUTER. No hay juez para captura, restock ni reintento."
+    },
+    "Q68": {
+      "subject": "ANALOGIA: ejecuciones con pasos registrados por operacion",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select e.operation_code, count(*) execs, count(*) filter (where exists (select 1 from lf_operation_execution_steps s where s.execution_id=e.execution_id)) with_steps from lf_operation_execution e group by 1 order by execs desc limit 12",
+      "at": "2026-11-05T00:34:30Z",
+      "obs": "ACTUALIZACION_DB_LF 760 de 821 con pasos; ACTUALIZACION_PERFIL_LF 88 de 96; EJECUCION_PERFIL_LF 47 de 48; ORQUESTACION_PIPELINE_LF solo 4 de 159. El registrador de pasos funciona en otras operaciones; en esta casi no se usa. [hora aprox.]"
+    },
+    "Q69": {
+      "subject": "HISTORIA: eventos de ACT-0058/operacion con palabras de responsable",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select now() at, count(*) n_events_owner_act0058 from lf_eventos where (to_jsonb(lf_eventos)::text ilike '%ACT-0058%' or to_jsonb(lf_eventos)::text ilike '%ORQUESTACION_PIPELINE_LF%') and (to_jsonb(lf_eventos)::text ~* '(owner|responsable|propietario|asign)')",
+      "at": "2026-11-05T00:34:55Z",
+      "obs": "6 eventos coinciden por palabra."
+    },
+    "Q70": {
+      "subject": "HISTORIA: esos 6 eventos",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select id, evento_tipo, entidad_codigo, created_at::date d, left(descripcion,160) descr, (regexp_match(to_jsonb(lf_eventos)::text, '.{0,100}(owner|responsable|propietario|asign).{0,100}','i'))[0] ctx from lf_eventos where (to_jsonb(lf_eventos)::text ilike '%ACT-0058%' or to_jsonb(lf_eventos)::text ilike '%ORQUESTACION_PIPELINE_LF%') and (to_jsonb(lf_eventos)::text ~* '(owner|responsable|propietario|asign)') order by id",
+      "at": "2026-11-05T00:35:20Z",
+      "obs": "Los 6 (ids 8614, 8622, 9893, 11490, 11547, 14789) son remediaciones/RCA/handoffs de gobierno sin relacion con un responsable de ACT-0058 ni de su politica de reintento. Ninguno nombra a un responsable. [hora aprox.]"
+    },
+    "Q71": {
+      "subject": "productores de lf_pipeline_runs (created_by)",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select now() at, created_by, count(*) n, count(*) filter (where retry_count>0) retry_gt0, min(created_at)::date mn, max(created_at)::date mx, count(execution_id) with_exec_id from lf_pipeline_runs group by created_by order by n desc",
+      "at": "2026-11-05T00:36:06Z",
+      "obs": "15 valores distintos de created_by (SKILL_ORQUESTADOR_PIPELINE_LF 79, ORQUESTACION_PIPELINE_LF 25 del 2026-09-01, AGENT_GOV 16, ACT-0058_ORQUESTADOR 12, etc., mas LF_APRENDIZAJE_AUTONOMO 1 del 2026-09-01). created_by identifica un productor tecnico, no un responsable."
+    },
+    "Q72": {
+      "subject": "las 6 corridas con retry_count=3 FAILED: productor y ejecucion",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select r.pipeline_run_id, r.created_by, r.execution_id, r.retry_count, r.created_at from lf_pipeline_runs r where r.retry_count=3 and r.stage_status='FAILED' order by r.created_at",
+      "at": "2026-11-05T00:36:20Z",
+      "obs": "6 corridas creadas entre 2026-09-01 23:23:16Z y 23:24:51Z, created_by=ORQUESTACION_PIPELINE_LF, todas con execution_id LF-ACT0058-20260901-1820-AUTOLEARN y retry_count=3 desde su creacion. [hora aprox.]"
+    },
+    "Q73": {
+      "subject": "ejecuciones LF-ACT0058-20260901-*",
+      "cls": "OBSERVED_HISTORY",
+      "q": "select e.execution_id, e.operation_code, e.target_type, e.target_code, e.status, e.started_at, e.completed_at, left(e.manifest::text,400) mf, (select count(*) from lf_operation_execution_steps s where s.execution_id=e.execution_id) n_steps from lf_operation_execution e where e.execution_id like 'LF-ACT0058-20260901-%' order by started_at",
+      "at": "2026-11-05T00:36:40Z",
+      "obs": "5 ejecuciones autolearn el 2026-09-01 (producer LF_APRENDIZAJE_AUTONOMO, operacion ORQUESTACION_PIPELINE_LF): 1820 (6 fallidas), 1826 (5 fallidas), 1835 (5), 1842 (5), todas COMPLETED con kb_created=0 y n_steps=0; 1848 sigue IN_PROGRESS desde 2026-09-01 23:43:50Z sin completed_at. [hora aprox.]"
+    },
+    "Q74": {
+      "subject": "cola por dominio: exitos y fallos por cache miss",
+      "cls": "OBSERVED_LIVE",
+      "q": "select split_part(replace(replace(url,'https://',''),'http://',''),'/',1) dom, count(*) total, count(*) filter (where estado='PROCESADO') ok, count(*) filter (where estado='FALLIDO') fallido, count(*) filter (where estado='FALLIDO' and error_detail ilike '%cache%') cache_miss, min(created_at)::date mn, max(updated_at)::date mx from lf_url_queue group by 1 order by fallido desc, total desc limit 12",
+      "at": "2026-11-05T00:37:10Z",
+      "obs": "reevalua.com: 236 URLs, 122 PROCESADO, 34 FALLIDO (25 cache miss); finanty.com 22/17/4/1; www.finanty.com 5/4/1/1. Los 27 cache miss se reparten 25+1+1. El mismo dominio tiene 122 exitos: el fallo no es de dominio completo. [hora aprox.]"
+    }
+  }
+}
