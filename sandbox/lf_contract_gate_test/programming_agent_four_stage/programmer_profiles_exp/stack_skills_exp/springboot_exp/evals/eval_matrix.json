@@ -1,0 +1,25 @@
+{
+  "eval_id": "SPRINGBOOT_EXP_STACK_SKILL_EXP",
+  "cases": [
+    {
+      "id": "MATCH_AREA",
+      "expected": "PASS"
+    },
+    {
+      "id": "SKILL_SHA_DRIFT",
+      "expected": "BLOCK"
+    },
+    {
+      "id": "WRONG_AREA",
+      "expected": "BLOCK"
+    },
+    {
+      "id": "MISSING_PG00_TEXT",
+      "expected": "BLOCK"
+    },
+    {
+      "id": "HIDDEN_ORACLE",
+      "expected": "BLOCK"
+    }
+  ]
+}
