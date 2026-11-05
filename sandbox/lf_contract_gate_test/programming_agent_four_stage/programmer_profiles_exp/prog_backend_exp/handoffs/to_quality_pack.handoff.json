@@ -1,0 +1,14 @@
+{
+  "schema_version": "LF_QUALITY_HANDOFF_CANDIDATE_V1",
+  "profile_pack_id": "PROG_BACKEND_EXP",
+  "status": "CANDIDATE_SANDBOX_ONLY",
+  "target": "INDEPENDENT_QUALITY_PACK",
+  "artifact_ref": "sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_profiles_exp/prog_backend_exp/manifest.json",
+  "validator_ref": "sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_profiles_exp/prog_backend_exp/validators/validate_pack.py",
+  "evidence_refs": [
+    "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
+  ],
+  "producer_depth_executed": false,
+  "semantic_quality_review": "NOT_EXECUTED",
+  "promotion_allowed": false
+}

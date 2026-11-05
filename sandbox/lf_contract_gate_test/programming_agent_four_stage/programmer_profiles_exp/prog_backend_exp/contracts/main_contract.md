@@ -1,0 +1,2 @@
+# Contract — Backend Java/Spring
+No se implementa código. El único artefacto normal es el spec visible V2 del Worker definido en `schemas/output.schema.json`. El lote debe declarar `BACKEND`, `profile_code=PERFIL-PROG-BACKEND-EXP`, huella de asignación y fuente de rutas admitida por PG-05. Las rutas de escritura son las del lote **exactamente**; protectores y comandos de aceptación no pueden vaciarse; no se filtra el oráculo. Salida sin autoridad de producción o despacho; desviación → BLOCK_PIPELINE.

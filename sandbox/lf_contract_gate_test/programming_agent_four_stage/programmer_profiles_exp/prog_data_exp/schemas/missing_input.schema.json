@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "self_verdict",
+    "pipeline_action",
+    "blocking_codes"
+  ],
+  "properties": {
+    "self_verdict": {
+      "const": "NEEDS_INPUT"
+    },
+    "pipeline_action": {
+      "const": "RETURN_TO_ORCHESTRATOR"
+    },
+    "blocking_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

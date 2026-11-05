@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "profile_code": "PERFIL-PROG-FRONTEND-EXP",
+  "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "task_id": "sandbox-prog_frontend_exp",
+  "objective": "Prepara especificaciones para componentes Angular, estados de interacción y accesibilidad sin alterar contratos funcionales",
+  "expected_change": "Cambios acotados al lote",
+  "human_story": "Tarea de ensayo sin autoridad",
+  "functional_contract": {
+    "source_ref": "fixture://contract"
+  },
+  "scope": {
+    "in_scope": [
+      "src/example/file.txt"
+    ],
+    "out_of_scope": [],
+    "must_not_change": [
+      "tests/holdout_test.py"
+    ]
+  },
+  "cases": [],
+  "dependency_resolution": {},
+  "dependency_task_ids": [],
+  "required_tests": [
+    "visible-owner-test"
+  ],
+  "required_evidence": [
+    "fixture://evidence"
+  ],
+  "blocked_if": [
+    "SCOPE_DRIFT",
+    "HIDDEN_ORACLE_EXPOSURE"
+  ],
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "context_path_patterns": [
+    "src/example/file.txt"
+  ],
+  "write_path_patterns": [
+    "src/example/file.txt"
+  ],
+  "protected_path_patterns": [
+    "tests/holdout_test.py"
+  ],
+  "files_expected": [
+    "src/example/file.txt"
+  ],
+  "platform_refs": [],
+  "interface_refs": [],
+  "acceptance_commands": [
+    "python -m compileall src"
+  ],
+  "max_attempts": 2,
+  "max_patch_bytes": 8192,
+  "max_changed_files": 1,
+  "max_context_bytes": 16384,
+  "allow_deletions": false
+}

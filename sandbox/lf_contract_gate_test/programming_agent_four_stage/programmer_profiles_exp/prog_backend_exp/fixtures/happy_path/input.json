@@ -1,0 +1,14 @@
+{
+  "area": "BACKEND",
+  "profile_code": "PERFIL-PROG-BACKEND-EXP",
+  "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "write_scope": [
+    "src/example/file.txt"
+  ],
+  "protected_path_patterns": [
+    "tests/holdout_test.py"
+  ],
+  "visible_acceptance_commands": [
+    "python -m compileall src"
+  ]
+}
