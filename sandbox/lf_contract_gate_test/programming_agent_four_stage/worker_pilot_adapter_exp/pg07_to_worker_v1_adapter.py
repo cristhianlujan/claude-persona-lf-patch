@@ -32,7 +32,7 @@ OBJ_MAX_BYTES=18000
 _SHA40=re.compile(r"^[a-f0-9]{40}$")
 _SHA64=re.compile(r"^[a-f0-9]{64}$")
 _NAME=re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
-FORBIDDEN_ARG_CHARS=set("|;&<>\\\n\\r`$*?{}[]()")
+FORBIDDEN_ARG_CHARS=set('|;&<>`$*?{}[]()') | {chr(10),chr(13),chr(92)}
 class AdapterBlocked(ValueError):
     pass
 def fail(code):raise AdapterBlocked(code)
@@ -101,7 +101,7 @@ def bind_declared_commands(raw,owner_metadata):
         out.append({k:meta[k] for k in ("name","argv","timeout_seconds","max_output_bytes")})
     return commands_from_declared(out)
 def _safe_paths(x):
-    if not isinstance(x,list) or not x or len(set(x))!=len(x) or not all(isinstance(p,str) for p in x):
+    if not isinstance(x,list) or not x or not all(isinstance(p,str) for p in x) or len(set(x))!=len(x):
         fail("SCOPE_INVALID")
     for p in x:
         if (p.startswith("/") or "\\" in p or ".." in p.split("/") or
