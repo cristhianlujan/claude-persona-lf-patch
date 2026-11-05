@@ -113,6 +113,21 @@ def _safe_paths(x):
             ".git" in p.split("/") or not p.strip()):
             fail("SCOPE_INVALID")
     return x
+def reject_hidden_oracle_fields(value):
+    forbidden={"oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256",
+               "hidden_oracle_manifest","verifier_only_oracle","holdout_manifest"}
+    if isinstance(value,dict):
+        if any(key in forbidden for key in value):fail("ORACLE_FIELD_IN_PG07_TASK")
+        for item in value.values():reject_hidden_oracle_fields(item)
+    elif isinstance(value,list):
+        for item in value:reject_hidden_oracle_fields(item)
+def reject_oracle_context(paths):
+    if not isinstance(paths,list) or not paths:fail("CONTEXT_SCOPE_MISSING")
+    for path in paths:
+        if not isinstance(path,str):fail("CONTEXT_SCOPE_INVALID")
+        lower=path.lower().split("/")
+        if any(any(token in segment for token in ("oracle","holdout","secret","credential",".env")) for segment in lower):
+            fail("ORACLE_OR_SECRET_IN_CONTEXT")
 def _role_stack(pg07):
     fc=pg07["functional_contract"]
     if not isinstance(fc,dict) or not isinstance(fc.get("role_and_stack"),dict):
@@ -178,6 +193,8 @@ def adapt(pg07,*,owner_commands=None,pg07_overlay=None):
         fail("PG07_TASK_INCOMPLETE")
     if pg07.get("schema_version")!=2:fail("PG07_SCHEMA_INVALID")
     check_limits(pg07)
+    reject_hidden_oracle_fields(pg07)
+    reject_oracle_context(pg07.get("context_path_patterns"))
     if pg07_overlay is None or not isinstance(pg07_overlay,dict):
         fail("PG07_SOURCE_OVERLAY_REQUIRED")
     if (pg07_overlay.get("production_authority") is not False or
