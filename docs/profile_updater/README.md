@@ -86,6 +86,7 @@ En cada intento: `source`, `locator` exacto, `source_revision` si aplica, `obser
 
 - **Grupo 1:** dimensiones S26 sobre el paquete, preservando la identidad y restricciones.
 - **Grupo 2:** checks tipados del caso operacional, sobre **RAW real** de original y evolucionado; cada salida debe estar ligada a su `profile_tree_sha256` y `output_sha256`. El comparador actual lee los casos y las corridas del **trusted root / main**, no de la rama candidata.
+- **Consistencia validador-schema (Grupo 2):** si una corrida del árbol candidato registra `validator.valid` y `validator.mode_schema_valid` y no coinciden, el comparador responde `BLOCKED` con `CANDIDATE_VALIDATOR_SCHEMA_CONTRADICTION`. El árbol base puede tener la contradicción (es lo que se corrige); no se penaliza. Solo se juzgan corridas que registran ambos booleanos.
 - **Regla:** mejora medible en al menos un control y **cero controles/dimensiones regresados**. `UNMEASURED` no equivale a PASS; 15/15 estructural por sí solo no demuestra evolución.
 - **Semántica:** la evaluación independiente verifica si las evidencias sostienen el significado, actualidad, aplicabilidad y efectos de las decisiones.
 - **Cierre:** `EVOLUTION_DEMONSTRATED`, gates exigidos por snapshot, Merge Train, readback del nuevo `main` y pasos finales, con estado runtime intacto. Si la política vigente exige controles adicionales, aplicarlos.

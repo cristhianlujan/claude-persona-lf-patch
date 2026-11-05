@@ -116,6 +116,35 @@ class Integration(unittest.TestCase):
 CEILING_SLUG = "systemic_root_cause_repair_lf"  # structurally complete (15/15) profile
 
 
+class ValidatorSchemaConsistency(unittest.TestCase):
+    def run_of(self, tree, valid, schema_valid, rid="R"):
+        v = {"valid": valid}
+        if schema_valid is not None:
+            v["mode_schema_valid"] = schema_valid
+        return {"run_id": rid, "profile_tree_sha256": tree, "validator": v}
+
+    def test_contradiction_on_the_exact_tree_is_reported(self):
+        runs = [self.run_of("T", True, False, "A"), self.run_of("T", False, True, "B"), self.run_of("T", True, True, "C")]
+        self.assertEqual(opc.validator_schema_contradictions(runs, "T"), ["A", "B"])
+
+    def test_agreement_missing_field_and_other_tree_are_not_reported(self):
+        runs = [self.run_of("T", True, True), self.run_of("T", False, False), self.run_of("T", True, None),
+                self.run_of("OTHER", True, False)]
+        self.assertEqual(opc.validator_schema_contradictions(runs, "T"), [])
+
+    def test_non_boolean_values_are_not_judged(self):
+        self.assertEqual(opc.validator_schema_contradictions([self.run_of("T", "yes", False)], "T"), [])
+
+    def test_committed_product_runs_base_contradicts_candidate_does_not(self):
+        cases, _ = opc.load_cases(ROOT / opc.OPERATIONAL_REL, "product_director_lf")
+        runs, _ = opc.load_runs(ROOT / opc.OPERATIONAL_REL, "product_director_lf", cases)
+        pre = [r for r in runs if r["case_id"] == "MISSING-INPUT-001"]
+        self.assertTrue(pre)
+        for r in pre:
+            if r["validator"].get("mode_schema_valid") is False:
+                self.assertEqual(opc.validator_schema_contradictions([r], r["profile_tree_sha256"]), [r["run_id"]])
+
+
 class Measure(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
