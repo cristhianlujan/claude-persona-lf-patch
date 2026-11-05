@@ -24,7 +24,10 @@ def skill_material(code):
     if not path.is_relative_to(ROOT.resolve()):block("SKILL_PATH_TRAVERSAL")
     data=path.read_bytes()
     text=data.decode("utf-8")
-    if not text.startswith("# ") or "CANDIDATE_SANDBOX_ONLY" not in text:block("SKILL_SOURCE_INVALID")
+    if (not text.startswith("# ") or "CANDIDATE_SANDBOX_ONLY" not in text or
+        "**Área declarada:** "+entry["area"] not in text or
+        "**Código:** "+entry["skill_code"] not in text):
+        block("SKILL_SOURCE_INVALID")
     return {"skill_code":code,"area":entry["area"],"skill_sha256":sha_bytes(data),
             "skill_text":text,"source_path":entry["path"],"standard_family":entry["standard_family"]}
 def role_material(profile_code):
