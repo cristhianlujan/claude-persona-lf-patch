@@ -126,6 +126,22 @@
         "op": "min_len",
         "value": 2
       }
+    },
+    {
+      "id": "OP15_UNRESOLVED_OWNER_NOT_LABELED_DERIVED",
+      "op": "if_then",
+      "if": {
+        "pointer": "/output/owner/status",
+        "op": "eq",
+        "value": "UNRESOLVED"
+      },
+      "then": {
+        "pointer": "/output/owner/authority_kind",
+        "op": "in",
+        "value": [
+          "UNKNOWN"
+        ]
+      }
     }
   ],
   "semantic_pending": [
