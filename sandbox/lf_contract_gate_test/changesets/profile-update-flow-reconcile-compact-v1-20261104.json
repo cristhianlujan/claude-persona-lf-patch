@@ -1,0 +1,12 @@
+{
+  "solution_ref": "profile-update-flow-reconcile-compact-v1-20261104",
+  "paths": {
+    ".github/workflows/lf-profile-evolution-proof.yml": "WORKFLOW",
+    "scripts/lf_profile_update_run.py": "RUNTIME_TESTING",
+    "skills/profile_creator/operational_cases/systemic_root_cause_repair_lf/WEB-001.case.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_target_destination_matrix.py": "RUNTIME_TESTING",
+    "supabase/functions/run-creacion-perfil-lf/verified_reconcile_evidence.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/run-creacion-perfil-lf/verified_reconcile_evidence.test.mjs": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/changesets/profile-update-flow-reconcile-compact-v1-20261104.json": "CHANGESET_MANIFEST"
+  }
+}
