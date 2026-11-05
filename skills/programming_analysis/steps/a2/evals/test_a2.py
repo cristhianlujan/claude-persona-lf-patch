@@ -124,9 +124,18 @@ class AnalysisA2Candidate(unittest.TestCase):
                          ["A2_NESTED_PARENT_REQUIRED"])
 
     def test_13_parent_allowed(self):
+        inp = a1input()
+        inp["target_hints"].append("B2B-AUTH-PARENT")
+        self.a1 = RUN_A1.run(inp)
         self.signals["target_granularity"] = "CONTROL"
-        self.signals["nested_parent_ref"] = "B2B-AUTH-001"
+        self.signals["nested_parent_ref"] = "B2B-AUTH-PARENT"
         self.assertEqual(RUN.run(self.a1, self.signals)["status"], "CANDIDATE_UNATTESTED")
+
+    def test_13b_self_parent_blocked(self):
+        self.signals["target_granularity"] = "CONTROL"
+        self.signals["nested_parent_ref"] = self.signals["target_ref"]
+        self.assertEqual(RUN.run(self.a1, self.signals)["blocking_codes"],
+                         ["A2_NESTED_PARENT_NOT_IN_A1"])
 
     def test_14_all_signals_must_be_typed(self):
         del self.signals["depth_signals"]["authority_state"]
