@@ -1,0 +1,2 @@
+# Main contract — prog_frontend_exp
+Profile accepts only an admitted *candidate* lot envelope of area FRONTEND with PG05 C2 exact resources. Returns a visible Worker v0.8 task specification; schema version 2. Protected test paths are never part of write patterns. No new rules: require exact PG00 standard references in `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql` and project L3 overrides. No model execution, patch authoring, runtime authority, oracle, or external side effects.
