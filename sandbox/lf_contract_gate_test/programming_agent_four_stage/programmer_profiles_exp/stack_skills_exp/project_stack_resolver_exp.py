@@ -108,6 +108,25 @@ def read_sql_binding(dsn,run_psql,project_ref,area):
         sql="SELECT coalesce(jsonb_agg(to_jsonb(b) ORDER BY b.priority NULLS LAST,b.skill_code),'[]'::jsonb)::text FROM public.project_stack_binding_exp b WHERE project_ref="+literal(project)+" AND area="+literal(ar)
         return json.loads(run_psql(dsn,sql=sql))
     return select_binding(project_ref,area,read)
+def validate_visible_skill_rules(worker_spec,skill):
+    """Deterministic minimum-three source-bound rule gate for each project skill."""
+    visible=worker_spec.get("functional_contract",{}).get("role_and_stack",{})
+    shown=visible.get("skills",[])
+    src=skill.get("skills",[])
+    if len(shown)!=len(src):block("WORKER_SKILLS_INCOMPLETE")
+    for a,b in zip(src,shown):
+        rules=b.get("expert_rules",[])
+        if not isinstance(rules,list) or len(rules)<3 or len({r.get("rule_id") for r in rules})<3:
+            block("WORKER_SKILL_RULES_TOO_FEW")
+        if any(not any(r==r0 for r0 in a["expert_rules"]) for r in rules):
+            block("WORKER_SKILL_RULE_SOURCE_MISMATCH")
+        if (b.get("skill_code")!=a["skill_code"] or
+            b.get("skill_version")!=a["skill_version"] or
+            b.get("priority")!=a["priority"] or
+            b.get("skill_sha256")!=a["skill_sha256"]):
+            block("WORKER_SKILL_IDENTITY_MISMATCH")
+    return True
+
 def compose_visible_worker_spec(spec,assignment,role,skill):
     if (assignment.get("profile_code")!=role["profile_code"] or
         assignment.get("area")!=role["area"] or
@@ -142,4 +161,5 @@ def compose_visible_worker_spec(spec,assignment,role,skill):
         "skill_code":skill["skill_code"],"skill_version":skill["skill_version"],
         "skill_sha256":skill["skill_sha256"],"skill_rules":skill["skill_text"],
         "skills":skill_rows,"expert_rule_count":len(rules)}
+    validate_visible_skill_rules(result,skill)
     return result
