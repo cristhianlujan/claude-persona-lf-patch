@@ -1,0 +1,9 @@
+{
+  "solution_ref": "LF-IG-L1-PREDECISION-CROSSCHECK-20261105",
+  "paths": {
+    "supabase/migrations/20261105221000_lf_ig_live_predecision_crosscheck_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/db_write_transport/test_lf_ig_live_predecision_crosscheck.py": "TRAIN_WRITE_TRANSPORT",
+    "sandbox/lf_contract_gate_test/db_write_transport/lf_ig_live_predecision_crosscheck_preflight.sql": "TRAIN_WRITE_TRANSPORT",
+    "sandbox/lf_contract_gate_test/changesets/LF-IG-L1-PREDECISION-CROSSCHECK-20261105.json": "CHANGESET_MANIFEST"
+  }
+}
