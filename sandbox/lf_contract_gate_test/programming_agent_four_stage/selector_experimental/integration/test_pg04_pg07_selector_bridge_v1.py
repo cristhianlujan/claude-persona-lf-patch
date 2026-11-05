@@ -14,7 +14,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 from test_experimental import guard, call, run_psql, sql_json, lit, reference
 from test_parity import TABLES,FUNCTIONS
 from pg05_profile_assignment_bridge_v1 import (
-  BridgeBlocked,digest,pg04_area_lot,assign_pg05,pg06_currentness,pg07_worker_projection)
+  BridgeBlocked,digest,declare_pg04_areas,pg04_area_lot,assign_pg05,pg06_currentness,pg07_worker_projection)
 
 def check(x,label):
     if not x:raise AssertionError(label)
@@ -66,9 +66,23 @@ def test_chain(dsn):
     prepare,finalize=sql_bridge(dsn)
     exit,c2=fixture()
     path="src/main/java/com/lf/Loan.java"
-    lot=pg04_area_lot(pg04_exit=exit,pg05_c2=c2,solution_id="SOL-001",area="BACKEND",paths=[path])
+    project_rules=call(dsn,"coalesce((SELECT jsonb_agg(jsonb_build_object('area',area,'path_prefix',path_prefix) ORDER BY area,path_prefix) FROM public.lf_project_area_pattern_exp WHERE project_ref='lf_java'),'[]'::jsonb)")
+    pg04_areas=declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
+                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[path]}])
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
+                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND",
+                                       "paths":[path,"web/src/app/loan.ts"]}]),"LOTE_MULTI_AREA")
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
+                    lot_declarations=[{"solution_id":"SOL-001","area":"FRONTEND","paths":[path]}]),
+             "LOTE_AREA_MISMATCH")
+    conflicted=project_rules+[{"area":"FRONTEND","path_prefix":"src/main/java/"}]
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=conflicted,
+                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[path]}]),
+             "LOTE_ROUTE_CONFLICT")
+    print("PASS PG04 declared areas, mixed lot and route conflict controls")
+    lot=pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",area="BACKEND",paths=[path])
     print("PASS PG04 explicit area, exact PG05 C2 scope binding")
-    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,solution_id="SOL-001",
+    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",
                                  area="BACKEND",paths=["web/src/app/x.ts"]),
              "LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
     failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,solution_id="SOL-001",
