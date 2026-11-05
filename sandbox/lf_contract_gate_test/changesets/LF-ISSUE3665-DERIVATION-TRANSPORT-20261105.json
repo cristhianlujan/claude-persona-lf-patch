@@ -1,0 +1,9 @@
+{
+  "solution_ref": "LF-ISSUE3665-DERIVATION-TRANSPORT-20261105",
+  "paths": {
+    "supabase/migrations/20261105184500_lf_profile_derivation_transport_issue3665_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/db_write_transport/test_lf_profile_derivation_transport_issue3665.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/db_write_transport/lf_profile_derivation_transport_issue3665_preflight.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/LF-ISSUE3665-DERIVATION-TRANSPORT-20261105.json": "CHANGESET_MANIFEST"
+  }
+}
