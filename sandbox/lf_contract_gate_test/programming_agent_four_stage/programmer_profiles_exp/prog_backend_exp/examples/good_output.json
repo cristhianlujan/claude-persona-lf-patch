@@ -41,7 +41,7 @@
     "src/lot/backend.change"
   ],
   "protected_path_patterns": [
-    "tests/protected/"
+    "tests/protected/**"
   ],
   "files_expected": [
     "src/lot/backend.change"
