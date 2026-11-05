@@ -1,16 +1,11 @@
 {
   "skill_code": "FLYWAY_EXP",
+  "skill_version": "1",
   "area": "DATA",
-  "source_refs": [
-    "https://documentation.red-gate.com/flyway/flyway-concepts/migrations",
-    "https://documentation.red-gate.com/flyway/flyway-concepts/migrations/undo-migrations"
-  ],
-  "pg00_standard_family": "STD-DB",
-  "pg00_standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
-  "expert_checks": [
-    "Exigir número/versionado y orden de migraciones según la configuración Flyway del proyecto.",
-    "Evaluar reversibilidad, compatibilidad expand/contract, respaldo y conservación de datos con evidencias; bloquear cambios destructivos sin decisión.",
-    "No asumir que Undo existe ni que restaura datos; los scripts de undo tienen límites y algunas capacidades dependen de edición."
+  "rule_ids": [
+    "FW-01",
+    "FW-02",
+    "FW-03"
   ],
   "production_authority": false
 }
