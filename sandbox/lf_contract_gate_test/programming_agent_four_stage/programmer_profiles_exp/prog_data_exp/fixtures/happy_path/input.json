@@ -3,10 +3,10 @@
   "profile_code": "PERFIL-PROG-DATA-EXP",
   "area": "DATA",
   "write_scope": [
-    "db/migration/V001__loan.sql"
+    "src/lot/data.change"
   ],
   "protected_paths": [
-    "tests/data/"
+    "tests/protected/"
   ],
   "production_authority": false
 }
