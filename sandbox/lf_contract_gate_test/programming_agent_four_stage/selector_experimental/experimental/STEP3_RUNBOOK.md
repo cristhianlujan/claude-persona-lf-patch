@@ -1,21 +1,24 @@
-# Paso 3 — Selector experimental por área (candidato, NO productivo)
+# Paso 3 — revisión de diseño, selector experimental por datos
 
-Se añadieron **solo archivos nuevos** en `experimental/` y `tests/test_experimental.py`.
-Las siete funciones originales, `original/` y `tests/test_parity.py` permanecen intactos.
+**No desplegar en producción.** Archivos nuevos y modificados solo en `experimental/` y `tests/test_experimental.py`. `original/` y `tests/test_parity.py` no cambiaron.
 
-## Contratos experimentales
+## Corrección 1: no preseleccionar por nombre
 
-- `seed_profiles_exp.sql`: PERFIL-PROG-BACKEND-EXP, PERFIL-PROG-FRONTEND-EXP y PERFIL-PROG-DATA-EXP; descriptores de prueba, política DIRECT y canal PROGRAMACION. La existencia del perfil NO confiere permisos de escritura.
-- `lf_profile_selector_catalog_v2_exp(text DEFAULT NULL)`: consulta el catálogo original y evalúa cada descriptor de forma individual por canal. Devuelve `blocked_profiles`, `profiles` y `selectable_profile_count`; no usa la barrera global de descriptores para bloquear canales ajenos.
-- `lf_profile_selector_semantic_prepare_v3_exp(text, text, jsonb)`: solicitud literal, área BACKEND|FRONTEND|DATA y array de rutas. Reglas: `src/main/java/**` → BACKEND, `web/src/**` → FRONTEND, `db/migration/**` → DATA. Mezcla → `LOTE_MULTI_AREA_BLOCKED`; área sin perfil CURRENT seleccionable → `NO_PROFILE_FOR_AREA`; rutas no clasificadas o incompatibles bloqueadas. Devuelve un `request` experimental solo si está READY.
-- `lf_profile_selector_semantic_validate_v2_exp(jsonb,jsonb)`: vuelve a preparar el request para detectar alteraciones/catálogo viejo y verifica binding, SHA del recibo, evidencia, prohibición de autoridad y que el perfil seleccionado corresponde al área determinada.
-- `lf_profile_selector_semantic_finalize_v2_exp(jsonb,jsonb)`: helper para construir un resultado con hash de recibo siguiendo el patrón de la función original, y verificarlo usando `validate_v2_exp`.
+`lf_profile_area_policy_exp` contiene `profile_code` y `areas jsonb`, declarados explícitamente. El selector filtra TODOS los perfiles seleccionables cuyo descriptor está CURRENT, canal PROGRAMACION, entrada DIRECT y área declarada coincide. No se deriva el área del nombre del perfil ni se elige un perfil antes del juicio semántico. `validate_v2_exp` repite `prepare_v3_exp`, exige que el perfil elegido sea candidato y esté autorizado por la declaración de área; no adjudica autoridad de ejecución.
 
-**Limitación intencional:** para un lote válido solo el perfil experimental de su área queda como candidato. Este gate es anterior a una eventual decisión semántica de IA; no crea worker, Skills productivas ni autoridad de ejecución.
+Se agregaron `PERFIL-PROG-BACKEND-SPRING-EXP` (segundo BACKEND) y `PERFIL-PROG-BACKEND-NAME-FRONTEND-EXP` (nombre engañoso, **área declarada FRONTEND**). El runner prueba dos SELECTED válidos y AMBIGUOUS sobre ambos backend, y que el nombre engañoso no ingresa a Java.
 
-## Ejecución por Claude
+## Corrección 2: reglas de ruta por proyecto
 
-Usar una **base vacía y descartable** distinta de la utilizada para `test_parity.py`. Requiere PostgreSQL y `psql`.
+`lf_project_area_pattern_exp(project_ref,area,path_prefix)` es la única fuente de reglas. `prepare_v3_exp(literal_request,project_ref,area,paths)` resuelve todas las rutas en esa tabla; rechaza patrones sin coincidencia, rutas con mezcla de áreas y áreas discordantes. Pone `project_ref`, `project_rules` y las rutas en el request. `validate_v2_exp` vuelve a preparar el request y bloquea cambios posteriores a políticas, catálogo o rutas.
+
+Fixtures de dos proyectos:
+- `lf_java`: `src/main/java/` BACKEND, `web/src/` FRONTEND, `db/migration/` DATA.
+- `lf_python`: `api/app/` BACKEND, `ui/src/` FRONTEND, `alembic/versions/` DATA.
+
+## Comandos para Claude (desde raíz del repositorio)
+
+Usar un PostgreSQL descartable **local**, con base vacía y distinta de la de paridad anterior. Psql debe estar en PATH.
 
 ```bash
 export SELECTOR_EXP_DISPOSABLE_DB=YES
@@ -23,13 +26,11 @@ export SELECTOR_EXP_TEST_DSN='postgresql://postgres:LOCAL_PASSWORD@127.0.0.1:543
 python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/selector_experimental/tests/test_experimental.py
 ```
 
-El script verifica opt-in, base local vacía y prefijo de nombre; carga los artefactos originales, prueba las seis referencias originales, añade los perfiles y funciones experimentales, ejecuta rutas positivas y adversariales, repite los **siete** escenarios de validación original sobre PROGRAMACION, comprueba aislamiento de descriptores obsoletos, elimina los perfiles ficticios, vuelve a comprobar 6/6 referencias y finaliza con limpieza de esquemas.
-
-Prueba de paridad original, **sin cambiar** `test_parity.py` (requiere otra base fresca después de la limpieza):
+Después, con otra base recién creada y vacía, verificar regresión independiente:
 
 ```bash
 export SELECTOR_EXP_TEST_DSN='postgresql://postgres:LOCAL_PASSWORD@127.0.0.1:5432/selector_exp_test_parity'
 python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/selector_experimental/tests/test_parity.py
 ```
 
-**Estado actual:** código disponible en GitHub para auditoría y prueba; no se declara PASS de Paso 3 o 4 hasta que Claude lo ejecute en PostgreSQL y presente HEAD, comando y salida literal. No ejecutar estos SQL en Supabase.
+Registrar HEAD, comandos, salida literal y verificación de cero residuos. **No hay PASS independiente de esta revisión hasta la ejecución por Claude.** No fusionar ni enviar a Cristhian como solución aprobada antes de auditar el dictamen.
