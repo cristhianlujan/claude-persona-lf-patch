@@ -1,8 +1,12 @@
 {
   "skill_code": "ANGULAR_EXP",
-  "area": "WRONG_AREA",
+  "skill_version": "1",
+  "area": "FRONTEND",
+  "rule_ids": [
+    "NG-01"
+  ],
   "oracle_envelope": {
-    "secret": "NOT_ALLOWED"
+    "hidden": "FORBIDDEN"
   },
   "production_authority": true,
   "expected": "BLOCK"
