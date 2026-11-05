@@ -6,6 +6,7 @@ HERE=Path(__file__).resolve().parent
 PROFILE=HERE.parents[1]
 sys.path.insert(0,str(PROFILE/'validators'))
 from validate_product_director_output import validate
+from prepare_output_for_submission import prepare as origin_preflight
 from jsonschema import Draft202012Validator
 
 SCHEMA=json.loads((PROFILE/'schemas/product_direction_spec.schema.json').read_text())
@@ -83,6 +84,30 @@ def run():
 
     qualifier=copy.deepcopy(g); qualifier['deliverable_created']['handoff_to_next']['qualifiers_to_preserve']=['referencial']
     cases.append(('handoff_drops_required_qualifier', not validate(qualifier)['valid'] and 'HANDOFF_QUALIFIER_LOSS' in validate(qualifier)['blocking_codes'], 'REJECT'))
+
+    # Incident regression: RAW is repaired before governed submission, not by relaxing the validator.
+    original_qualifier = copy.deepcopy(qualifier)
+    fixed = origin_preflight(qualifier)
+    fixed_output = fixed['profile_output']
+    cases.append(('origin_repairs_exact_missing_qualifier_once',
+                  fixed['status'] == 'SELF_REPAIRED_HANDOFF_QUALIFIERS'
+                  and fixed['added_qualifiers'] == ['sujeta a validación']
+                  and fixed_output['deliverable_created']['handoff_to_next']['qualifiers_to_preserve'] == ['referencial', 'sujeta a validación']
+                  and validate(fixed_output)['valid'] and schema_ok(fixed_output), 'REPAIRED_PASS'))
+    cases.append(('origin_preserves_unmodified_raw_and_decision',
+                  qualifier == original_qualifier
+                  and fixed_output['deliverable_created']['product_decision'] == qualifier['deliverable_created']['product_decision']
+                  and fixed_output['deliverable_created']['decision_lineage'] == qualifier['deliverable_created']['decision_lineage'], 'NO_SOURCE_MUTATION'))
+    clean_preflight = origin_preflight(g)
+    cases.append(('origin_passthrough_valid_raw', clean_preflight['status'] == 'UNCHANGED_VALID'
+                  and clean_preflight['profile_output'] == g and clean_preflight['added_qualifiers'] == [], 'PASS'))
+    unsafe = copy.deepcopy(qualifier)
+    unsafe['deliverable_created']['material_claims'][0]['authority_ref'] = 'none://not-authorized'
+    unsafe_preflight = origin_preflight(unsafe)
+    cases.append(('origin_never_repairs_other_material_errors', unsafe_preflight['status'] == 'BLOCKED'
+                  and unsafe_preflight['profile_output'] is None
+                  and 'CLAIM_AUTHORITY_MISSING' in unsafe_preflight['original_blocking_codes'], 'BLOCKED'))
+    cases.append(('origin_malformed_input_fails_closed', origin_preflight(None)['status'] == 'BLOCKED', 'BLOCKED'))
 
     holdout=copy.deepcopy(g); holdout['traceability']['case']='holdout_fresh'; holdout['deliverable_created']['product_decision']['selected_decision']='Permitir actualizar solo una carga ya existente, no toda la cartera'; holdout['deliverable_created']['decision_lineage']['selected_decision']=holdout['deliverable_created']['product_decision']['selected_decision']; holdout['deliverable_created']['product_decision']['source_refs'][0]={'source_ref':'product://portfolio-safety/holdout','authority':'CONSTRAINT','supports':'La cartera total mezcla cargas con métodos distintos y aumenta riesgo','current':True}; holdout['deliverable_created']['material_claims'][0]={'claim':'La actualización se limita a una carga existente','authority_ref':'product://portfolio-safety/holdout','status':'SUPPORTED'}; holdout['deliverable_created']['decision_lineage']['evidence_refs']=['product://portfolio-safety/holdout']; holdout['deliverable_created']['evidence_used']=['product://portfolio-safety/holdout']
     cases.append(('holdout_fresh', validate(holdout)['valid'] and schema_ok(holdout), 'PASS'))
