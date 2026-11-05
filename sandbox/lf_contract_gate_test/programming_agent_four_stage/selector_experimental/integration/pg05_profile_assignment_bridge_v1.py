@@ -158,8 +158,8 @@ def assign_pg05(*,lot,project_ref,literal_request,model_draft,prepare,finalize):
         block("PREPARE_SCOPE_BINDING_INVALID")
     final=finalize(request,model_draft)
     if not isinstance(final,dict) or final.get("status")!="VALID":
-        return {"status":"REQUIRES_HUMAN_DECISION" if model_draft.get("decision") in ("AMBIGUOUS","NO_MATCH") and final.get("status")=="VALID" else "BLOCKED",
-                "blocking_code":"SELECTION_NOT_VALID","production_authority":False}
+        return {"status":"BLOCKED","blocking_code":"SELECTION_NOT_VALID",
+                "production_authority":False}
     result=final["result"]
     decision=result.get("decision")
     if decision in ("AMBIGUOUS","NO_MATCH"):
