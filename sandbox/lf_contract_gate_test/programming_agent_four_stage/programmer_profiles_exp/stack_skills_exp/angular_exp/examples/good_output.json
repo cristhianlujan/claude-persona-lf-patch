@@ -1,0 +1,16 @@
+{
+  "skill_code": "ANGULAR_EXP",
+  "area": "FRONTEND",
+  "source_refs": [
+    "https://angular.dev/guide/components",
+    "https://angular.dev/best-practices/a11y"
+  ],
+  "pg00_standard_family": "STD-FE",
+  "pg00_standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+  "expert_checks": [
+    "Declarar entradas/salidas de componentes, estado y navegación, sin asumir patrones que el proyecto no use.",
+    "Exigir criterios comprobables de teclado, foco, nombres accesibles y pruebas en el contexto del proyecto.",
+    "No inventar resultado de pruebas visuales, de accesibilidad ni de compilación."
+  ],
+  "production_authority": false
+}
