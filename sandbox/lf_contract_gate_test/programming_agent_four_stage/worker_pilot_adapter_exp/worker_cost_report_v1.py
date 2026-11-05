@@ -41,12 +41,12 @@ def price_receipt(worker_receipt,pricing=None):
         cost=(Decimal(i)*ip+Decimal(o)*op)/Decimal(1000000)
         total_in+=i;total_out+=o;total+=cost
         records.append({"attempt":index,"input_tokens":i,"output_tokens":o,
-                        "estimated_usd":str(cost)})
+                        "estimated_usd":str(cost.normalize())})
     result={"schema_version":"LF_WORKER_COST_V1","price_table_version":table["version"],
             "price_table_sha256":sha_bytes(canonical(table)),"model":model,
             "currency":"USD","receipt_sha256":worker_receipt.get("receipt_sha256"),
             "attempts":records,"total_input_tokens":total_in,
-            "total_output_tokens":total_out,"total_estimated_usd":str(total),
+            "total_output_tokens":total_out,"total_estimated_usd":str(total.normalize()),
             "estimation_not_invoice":True}
     return result
 def write_cost_outside(worker_receipt_path,output_path):
