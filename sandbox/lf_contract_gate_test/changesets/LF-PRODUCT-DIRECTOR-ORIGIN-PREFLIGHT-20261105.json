@@ -1,0 +1,9 @@
+{
+  "solution_ref": "LF-PRODUCT-DIRECTOR-ORIGIN-PREFLIGHT-20261105",
+  "paths": {
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/LF-PRODUCT-DIRECTOR-ORIGIN-PREFLIGHT-20261105.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_product_director_origin_preflight_v1.py": "RUNTIME_TESTING"
+  }
+}
