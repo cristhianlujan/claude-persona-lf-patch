@@ -26,6 +26,8 @@ python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_pr
 
 Cada pack ejecuta su `validators/validate_pack.py` (positivo estructural, rutas, limites) y `evals/run_cases.py` con los seis casos: positivo, fuera de lote, pruebas vacías, oráculo, otra área y autoridad inyectada. Son 18 evaluaciones.
 
+**Limitación de compatibilidad de source binding:** la función original `lf_profile_execution_source_eligibility_v1` considera elegibles únicamente entradas cuyo `metadata.repo_path` tiene la forma `profiles/<slug>`. Este ensayo no crea esas carpetas. Para reproducir la ruta de resync en PostgreSQL descartable, el adaptador declara un **alias virtual** `profiles/<slug>` dentro de los registros ficticios y deja en `source_ref` la ruta verdadera de `SKILL.md` en sandbox con el sufijo `LOCAL_VIRTUAL_ALIAS`. Esto prueba semántica de descriptor y compatibilidad del selector, **no prueba la procedencia real de un perfil en `profiles/` ni autoriza su registro**.
+
 El puente #3667, modificado **solo en el nuevo PR apilado**, tras cargar los fixtures `_exp_` usa `integration/profile_pack_selector_fixture.py` para leer las secciones Purpose de los tres SKILL.md y pasarlas a **la función ORIGINAL `lf_profile_selector_descriptor_sync_v1` en PostgreSQL local desechable exclusivamente**. No escribe en Supabase. Reemplaza los tres descriptores simulados por descriptores derivados del pack; otros perfiles experimentales (Spring y nombre engañoso) siguen siendo fixtures de las pruebas de clasificación. El selected backend produce un JSON de este pack que debe ser validado tanto por el validador propio como por los productores reales PG-07 C1/C2.
 
 En una base vacía distinta, prefijo `selector_exp_test_*`, bajo loopback:
