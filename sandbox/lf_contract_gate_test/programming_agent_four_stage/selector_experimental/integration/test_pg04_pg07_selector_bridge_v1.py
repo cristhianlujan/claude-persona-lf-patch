@@ -72,6 +72,8 @@ def test_chain(dsn):
     for solution in c2["solution_scopes"]:
         run_psql(dsn,sql="INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ("+
                  lit(project)+",'BACKEND',"+lit("src/"+solution["solution_id"]+"/")+")")
+    run_psql(dsn,sql="INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ("+
+             lit(project)+",'FRONTEND','web/src/')")
     project_rules=call(dsn,"coalesce((SELECT jsonb_agg(jsonb_build_object('area',area,'path_prefix',path_prefix) ORDER BY area,path_prefix) FROM public.lf_project_area_pattern_exp WHERE project_ref="+lit(project)+"),'[]'::jsonb)")
     declarations=[]
     for sol in c2["solution_scopes"]:
@@ -81,7 +83,7 @@ def test_chain(dsn):
     mixed=copy.deepcopy(declarations)
     mixed[-1]["paths"].append("web/src/app/x.ts")
     failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=project_rules,
-                                       lot_declarations=mixed),"LOTE_PATH_UNCLASSIFIED")
+                                       lot_declarations=mixed),"LOTE_MULTI_AREA")
     conflict=project_rules+[{"area":"FRONTEND","path_prefix":"src/"+sid+"/"}]
     failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=conflict,
                                        lot_declarations=declarations),"LOTE_ROUTE_CONFLICT")
@@ -133,11 +135,16 @@ def test_chain(dsn):
        "PERFIL-PROG-FRONTEND-EXP"))
     check(wrong["status"]=="BLOCKED","Wrong area selected")
     print("PASS wrong-area selected BLOCKED")
-    elevated=draft_for_code(req,spring)
-    elevated["production_authority"]=True
-    check(assign_pg05(**args,model_draft=elevated)["status"]=="BLOCKED",
-          "Rehashed authority injection accepted")
-    print("PASS authority injection BLOCKED despite regenerated receipt hash")
+    for field,value in (("production_authority",True),("route_authority",True),
+                        ("write_scope",[path]),("completely_unknown",{"x":42})):
+        elevated=draft_for_code(req,spring)
+        elevated[field]=value
+        def should_never_finalize(_request,_draft):
+            raise AssertionError("Forbidden model draft reached finalize")
+        blocked=assign_pg05(**{**args,"finalize":should_never_finalize},model_draft=elevated)
+        check(blocked=={"status":"BLOCKED","blocking_code":"MODEL_DRAFT_FIELD_FORBIDDEN",
+                        "production_authority":False},"Forbidden draft field not blocked: "+field)
+        print("PASS model draft whitelist rejected",field)
     current=pg06_currentness(assignment=assignment,lot=lot,prepare=prepare,finalize=finalize)
     check(current["status"]=="CURRENT","PG06 currentness failed")
     print("PASS PG06 reprepare and sealed result revalidation")
@@ -152,8 +159,8 @@ def test_chain(dsn):
     for sql,undo,reason in [
        ("UPDATE public.lf_profile_area_policy_exp SET areas='[\"FRONTEND\"]'::jsonb WHERE profile_code="+lit(spring),
         "UPDATE public.lf_profile_area_policy_exp SET areas='[\"BACKEND\"]'::jsonb WHERE profile_code="+lit(spring),"area"),
-       ("INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ('lf_java','BACKEND','server/src/')",
-        "DELETE FROM public.lf_project_area_pattern_exp WHERE project_ref='lf_java' AND path_prefix='server/src/'","routes"),
+       ("INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ("+lit(project)+",'BACKEND','server/src/')",
+        "DELETE FROM public.lf_project_area_pattern_exp WHERE project_ref="+lit(project)+" AND path_prefix='server/src/'","routes"),
        ("UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='STALE_SOURCE_CHANGED' WHERE profile_code="+lit(spring),
         "UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='CURRENT' WHERE profile_code="+lit(spring),"descriptor")]:
         run_psql(dsn,sql=sql)
