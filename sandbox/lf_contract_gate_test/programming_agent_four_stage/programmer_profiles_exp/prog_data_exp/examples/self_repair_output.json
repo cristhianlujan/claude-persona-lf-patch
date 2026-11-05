@@ -42,7 +42,7 @@
       "src/lot/data.change"
     ],
     "protected_path_patterns": [
-      "tests/protected/"
+      "tests/protected/**"
     ],
     "files_expected": [
       "src/lot/data.change"
