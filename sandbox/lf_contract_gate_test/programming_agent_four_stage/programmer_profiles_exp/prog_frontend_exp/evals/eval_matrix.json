@@ -1,6 +1,6 @@
 {
   "eval_id": "EVAL_FRONTEND_PACK_WORKER_V08",
-  "minimum_pass_rate": "6/6",
+  "minimum_pass_rate": "7/7",
   "cases": [
     {
       "id": "HAPPY_PATH",
@@ -72,6 +72,18 @@
       "expected": "BLOCK_PIPELINE",
       "assertions": [
         "Any production_authority or route_authority field invalidates the visible spec."
+      ]
+    },
+    {
+      "id": "NON_CANONICAL_PATH",
+      "case_id": "NON_CANONICAL_PATH",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "TRAILING_SLASH_PROTECTED_PATH",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "tests/protected/ is not canonical. Must return a typed blocking finding, never auto-normalize to tests/protected/**."
       ]
     }
   ]
