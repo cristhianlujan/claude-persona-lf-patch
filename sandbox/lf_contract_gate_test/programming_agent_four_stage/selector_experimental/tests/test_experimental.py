@@ -220,7 +220,7 @@ def main():
 
         # Roll back fictional records using only the disposable database.
         code_list=",".join(lit(c) for c in CODES)
-        for table in ("lf_profile_selector_policy_v1","lf_profile_selection_registry_v1"):
+        for table in ("lf_profile_area_policy_exp","lf_profile_selector_policy_v1","lf_profile_selection_registry_v1"):
             run_psql(dsn,sql="DELETE FROM public."+table+" WHERE profile_code IN ("+code_list+")")
         run_psql(dsn,sql="DELETE FROM public.lf_activos WHERE codigo_activo IN ("+code_list+")")
         reference(dsn)
