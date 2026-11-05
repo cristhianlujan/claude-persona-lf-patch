@@ -1,14 +1,32 @@
 {
-  "handoff_id": "TO_QUALITY_PACK_DATA",
+  "handoff_id": "QUALITY_PACK_DATA",
   "target": "profiles/quality_pack",
+  "to": "profiles/quality_pack",
+  "requires_artifact": true,
+  "artifact_identity_required": true,
   "required_payload": [
-    "source_authority",
+    "upstream_output",
     "schema_reference",
     "contract_reference",
     "acceptance_criteria",
     "blocking_criteria",
     "evidence_map"
   ],
-  "next_gate": "INDEPENDENT_SEMANTIC_REVIEW",
-  "production_authority": false
+  "required_receiver_context": [
+    "deliverable_artifact_ref",
+    "main_contract_ref",
+    "output_schema_ref",
+    "evidence_map",
+    "score_rubric_ref",
+    "blocking_codes",
+    "remaining_risks"
+  ],
+  "failure_routing": {
+    "artifact_missing": "RETURN_TO_PRODUCER",
+    "evidence_incomplete": "RETURN_TO_ORCHESTRATOR",
+    "authority_conflict": "BLOCK_PIPELINE"
+  },
+  "next_gate": "SEMANTIC_QUALITY_REVIEW",
+  "production_authority": false,
+  "semantic_quality_review": "NOT_EXECUTED"
 }
