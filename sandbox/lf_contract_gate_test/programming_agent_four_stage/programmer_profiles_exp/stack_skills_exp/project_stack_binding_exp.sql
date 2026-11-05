@@ -1,11 +1,14 @@
--- LOCAL POSTGRESQL ONLY. Execute solely after selector_exp_test_* localhost guard.
--- The binding chooses the skill by (project_ref,area), NOT by profile name or AI output.
+-- LOCAL DISPOSABLE SELECTOR EXP ONLY. Never apply on Supabase.
+-- Each project/area may bind multiple skill_code@skill_version.
+-- Priorities are explicit positive integers: 1 is highest.
+-- NULL is allowed in the fixture so the resolver can demonstrate fail-closed blocking.
 CREATE TABLE public.project_stack_binding_exp (
  project_ref text NOT NULL,
  area text NOT NULL CHECK (area IN ('BACKEND','FRONTEND','DATA')),
  skill_code text NOT NULL,
+ skill_version text NOT NULL,
  skill_sha256 text NOT NULL CHECK (skill_sha256 ~ '^[0-9a-f]{64}$'),
- PRIMARY KEY (project_ref,area)
+ priority integer NULL CHECK(priority > 0),
+ PRIMARY KEY(project_ref,area,skill_code,skill_version)
 );
--- Seed rows are added by seed_local_project_stack_bindings() from exact SKILL.md content
--- and then read back from this TABLE by the PG-07 bridge (not by a mapping in the role).
+-- Runtime resolver independently checks non-NULL and unique priority for every area.
