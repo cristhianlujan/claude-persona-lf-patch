@@ -1,19 +1,15 @@
 {
   "schema_version": 2,
   "task_id": "FIXTURE-DATA",
-  "objective": "Candidate Worker task: Migraciones Flyway reversibles y sin pérdida de datos",
+  "objective": "Invalid out-of-lot role DATA",
   "expected_change": "Source-scoped change only",
   "human_story": "Sandbox task specification",
   "functional_contract": {
-    "specialty": "DATA",
-    "standard_refs": [
-      "STD-DB"
-    ],
-    "standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
+    "role_area": "DATA"
   },
   "scope": {
     "in_scope": [
-      "db/migration/V001__loan.sql"
+      "outside/not-approved.change"
     ],
     "out_of_scope": [],
     "must_not_change": []
@@ -39,7 +35,7 @@
     "db/migration/V001__loan.sql"
   ],
   "write_path_patterns": [
-    "outside/illegal.py"
+    "outside/not-approved.change"
   ],
   "protected_path_patterns": [
     "tests/data/"
