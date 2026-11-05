@@ -11,6 +11,9 @@ import json
 import os
 import re
 import shlex
+import subprocess
+import sys
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -209,11 +212,25 @@ def _write_private(path:Path,document):
     except BaseException:
         path.unlink(missing_ok=True);raise
     return sha_bytes(data)
-def materialize_external(*,repo_root:Path,outside_dir:Path,task,envelope,
-                         owner_quality_plan,owner_readback_manifest,owner_hidden_oracle,
-                         validate_quality,validate_readback,validate_oracle):
-    """Fail closed: do not fabricate QA classifications, oracle tests or readback sources.
-    The owner MUST supply real valid manifests; adapter exports private exact copies."""
+def load_real_worker_contract(worker_checkout:Path):
+    """Imports ORIGINAL Worker implementation only if checkout matches exact HEAD."""
+    source=worker_checkout.resolve(strict=True)
+    result=subprocess.run(["git","-C",str(source),"rev-parse","HEAD"],
+                          capture_output=True,text=True,check=True)
+    if result.stdout.strip()!=WORKER_COMMIT:fail("WORKER_HEAD_NOT_PINNED")
+    sys.path.insert(0,str(source/"src"))
+    from programming_agent_runner.worker_spec import parse_worker_task
+    from programming_agent_runner.programming_quality import load_quality_plan
+    from programming_agent_runner.programming_quality_hardening_v2 import load_readback_manifest
+    from programming_agent_runner.worker_oracle import load_hidden_oracle
+    return parse_worker_task,load_quality_plan,load_readback_manifest,load_hidden_oracle
+
+def materialize_external(*,repo_root:Path,outside_dir:Path,worker_checkout:Path,
+                         task,envelope,owner_quality_plan,owner_readback_manifest,
+                         owner_hidden_oracle):
+    """Only owner-supplied manifests; validate each with ORIGINAL pinned loaders.
+    No fabricated hidden checks, risk classifications or readback sources.
+    """
     repository=repo_root.resolve(strict=True)
     output=outside_dir.resolve()
     if output==repository or output.is_relative_to(repository):fail("EXTERNAL_FILES_INSIDE_REPO")
@@ -221,16 +238,28 @@ def materialize_external(*,repo_root:Path,outside_dir:Path,task,envelope,
     for obj in (owner_quality_plan,owner_readback_manifest,owner_hidden_oracle):
         if not isinstance(obj,dict):fail("OWNER_MANIFEST_MISSING")
         if obj.get("task_id",task["task_id"])!=task["task_id"]:fail("MANIFEST_TASK_ID_MISMATCH")
-    # Validators here are original Worker functions pinned to 298307e.
-    validate_quality(owner_quality_plan)
-    validate_readback(owner_readback_manifest)
-    validate_oracle(owner_hidden_oracle)
+    parse_worker_task,load_quality,load_readback,load_oracle=load_real_worker_contract(worker_checkout)
+    parse_worker_task(task)
+    if not isinstance(envelope,dict) or envelope.get("task_sha256")!=sha(task):
+        fail("EXTRA_ENVELOPE_NOT_BOUND")
     output.mkdir(mode=0o700,parents=False)
     names=[("task.v1.json",task),("extra.envelope.json",envelope),
            ("quality-plan.json",owner_quality_plan),("readback-manifest.json",owner_readback_manifest),
            ("holdout.oracle.json",owner_hidden_oracle)]
-    digests={name:_write_private(output/name,obj) for name,obj in names}
-    return {"directory":str(output),"sha256":digests}
+    try:
+        digests={name:_write_private(output/name,obj) for name,obj in names}
+        quality=load_quality(output/"quality-plan.json",digests["quality-plan.json"])
+        readback=load_readback(output/"readback-manifest.json",digests["readback-manifest.json"])
+        oracle=load_oracle(output/"holdout.oracle.json",digests["holdout.oracle.json"])
+        if quality.task_id!=task["task_id"] or quality.base_head_sha!=task["base_head_sha"]:
+            fail("QUALITY_PLAN_NOT_PINNED_TO_TASK")
+        if readback.task_id!=task["task_id"]:fail("READBACK_NOT_PINNED_TO_TASK")
+        if not oracle.commands:fail("ORACLE_COMMANDS_EMPTY")
+        return {"directory":str(output),"sha256":digests}
+    except BaseException:
+        shutil.rmtree(output)
+        raise
+
 def build_worker_command(*,repo_path:Path,output_dir:Path,model="claude-haiku-5-5",provider="anthropic"):
     if provider!="anthropic" or model not in ("claude-haiku-5-5","claude-sonnet-5-5"):
         fail("PILOT_PROVIDER_OR_MODEL_FORBIDDEN")
