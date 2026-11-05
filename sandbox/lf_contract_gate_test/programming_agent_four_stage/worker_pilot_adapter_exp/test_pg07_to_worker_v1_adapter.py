@@ -128,6 +128,21 @@ def run():
                owner_quality_plan=None,owner_readback_manifest=None,
                owner_hidden_oracle=None),"OWNER_MANIFEST_MISSING")
         check(not outside.exists(),"Created manifest despite missing owner provenance")
+    with tempfile.TemporaryDirectory() as d:
+        # Dummy content ONLY checks CLI argv construction; no false manifest
+        # acceptance claim, and absolutely no invocation of that argv.
+        q=Path(d)
+        (q/"task.v1.json").write_text(json.dumps(task),encoding="utf-8")
+        (q/"extra.envelope.json").write_text(json.dumps(envelope),encoding="utf-8")
+        for name in ("quality-plan.json","readback-manifest.json","holdout.oracle.json"):
+            (q/name).write_text("{}",encoding="utf-8")
+        argv=build_worker_command(repo_path=STAGES,output_dir=q)
+        check(argv[argv.index("--max-output-tokens")+1]=="8000" and
+              argv[argv.index("--provider")+1]=="anthropic" and
+              argv[argv.index("--model")+1]=="claude-haiku-5-5" and
+              all("API_KEY" not in a and "secret" not in a.lower() for a in argv),
+              "Unsafe or unbounded CLI arguments")
+        print("PASS generated CLI args bound to Haiku and 8000 output tokens (NOT RUN)")
     print("PASS no fabricated quality/oracle/readback manifest")
     print("PASS PG07_TO_WORKER_V1_ADAPTER_NO_MODEL_NO_SECRET")
 if __name__=="__main__":
