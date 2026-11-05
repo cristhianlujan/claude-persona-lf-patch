@@ -1,0 +1,12 @@
+{
+  "task_id": "FIXTURE-BACKEND",
+  "profile_code": "PERFIL-PROG-BACKEND-EXP",
+  "area": "FRONTEND",
+  "write_scope": [
+    "src/main/java/com/lf/LoanService.java"
+  ],
+  "protected_paths": [
+    "tests/backend/"
+  ],
+  "production_authority": false
+}
