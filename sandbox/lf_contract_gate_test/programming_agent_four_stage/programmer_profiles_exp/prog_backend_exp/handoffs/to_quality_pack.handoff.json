@@ -1,0 +1,14 @@
+{
+  "handoff_id": "TO_QUALITY_PACK_BACKEND",
+  "target": "profiles/quality_pack",
+  "required_payload": [
+    "source_authority",
+    "schema_reference",
+    "contract_reference",
+    "acceptance_criteria",
+    "blocking_criteria",
+    "evidence_map"
+  ],
+  "next_gate": "INDEPENDENT_SEMANTIC_REVIEW",
+  "production_authority": false
+}
