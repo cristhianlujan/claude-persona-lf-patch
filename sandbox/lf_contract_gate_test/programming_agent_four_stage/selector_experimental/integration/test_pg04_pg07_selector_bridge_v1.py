@@ -109,6 +109,15 @@ def real_pg07_validation(chain,c2,selected_solution):
         if sid==selected_solution: chosen=spec
     c2_pg07=prepare_pg07_c2(pg07_c1=c1,worker_spec_projections=projections,
                            verifier_oracle_bindings=oracles)
+    tampered_projection=copy.deepcopy(projections)
+    tampered_projection[0]["worker_spec"]["oracle_envelope"]={"secret":"must_not_reach_worker"}
+    try:
+        prepare_pg07_c2(pg07_c1=c1,worker_spec_projections=tampered_projection,
+                        verifier_oracle_bindings=oracles)
+    except TaskProjectionBlocked:
+        print("PASS real PG07 C2 rejects hidden-oracle disclosure")
+    else:
+        raise AssertionError("Real PG07 C2 accepted hidden oracle")
     check(c1["dispatch_allowed"] is False and c2_pg07["dispatch_allowed"] is False,
           "PG07 producer granted dispatch")
     check(any(x["worker_visible_task_spec"]==chosen for x in c2_pg07["worker_payloads"]),
