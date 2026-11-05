@@ -6,6 +6,7 @@ import copy
 import json
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -16,6 +17,12 @@ from test_parity import TABLES,FUNCTIONS
 STAGES=ROOT.parent
 sys.path.insert(0,str(STAGES/"pg05_target_binding_candidate"/"tests"))
 from test_pg05_chain_c1_c5_v1 import build_chain
+PROFILE_PACKS=STAGES/"programmer_profiles_exp"
+sys.path.insert(0,str(PROFILE_PACKS))
+from selector_descriptor_from_skill import apply_local_resync, candidates
+from stack_skills_exp.project_stack_resolver_exp import (seed_local_binding_table,read_sql_binding,role_material,
+    compose_visible_worker_spec,StackBlocked,select_binding)
+
 sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pg07_c1_worker_dispatch_plan_v1 import prepare_pg07_c1,PG07WorkerPlanBlocked
 from pg07_c2_task_batch_projection_v1 import prepare_pg07_c2,TaskProjectionBlocked
@@ -53,7 +60,7 @@ def real_producers():
     check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
     return chain
 
-def real_pg07_validation(chain,c2,selected_solution):
+def real_pg07_validation(chain,c2,selected_solution,return_c1=False,spec_transform=None):
     """Exercise actual PG07 C1 and C2 producers on the PG05 chain, not a local reimplementation.
     PG06 C5 receipt and visible Worker specs are explicit synthetic, UNATTESTED input fixtures.
     """
@@ -102,6 +109,8 @@ def real_pg07_validation(chain,c2,selected_solution):
               "acceptance_commands":["python3 -m compileall ."],
               "max_attempts":2,"max_patch_bytes":10000,"max_changed_files":5,
               "max_context_bytes":20000,"allow_deletions":False}
+        if sid==selected_solution and spec_transform is not None:
+            spec=spec_transform(spec)
         projections.append({"solution_id":sid,"function_result_ref":"fixture://function/"+sid,
                             "worker_spec":spec,"source_snapshot_sha256":snapshots[sid]})
         oracles.append({"solution_id":sid,"verifier_only_ref":"fixture://oracle/"+sid,
@@ -123,7 +132,7 @@ def real_pg07_validation(chain,c2,selected_solution):
     check(any(x["worker_visible_task_spec"]==chosen for x in c2_pg07["worker_payloads"]),
           "Real PG07 C2 did not accept chosen Worker task")
     print("PASS real PG07 C1 and C2 producers accept visible Worker specification")
-    return chosen,c2_pg07
+    return (chosen,c2_pg07,c1) if return_c1 else (chosen,c2_pg07)
 
 def draft_for_code(request,code):
     p=next(p for p in request["candidate_profiles"] if p["profile_code"]==code)
@@ -182,15 +191,15 @@ def test_chain(dsn):
     spring="PERFIL-PROG-BACKEND-SPRING-EXP"
     args={"lot":lot,"project_ref":project,"literal_request":"Corregir servicio Spring",
           "prepare":prepare,"finalize":finalize}
-    assignment=assign_pg05(**args,model_draft=draft_for_code(req,spring))
-    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==spring
+    assignment=assign_pg05(**args,model_draft=draft_for_code(req,general))
+    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==general
           and assignment["production_authority"] is False,"Assignment not selected")
     check(assignment["catalog_sha256"]==req["catalog_sha256"],"Catalog digest drift")
     check(assignment["request_sha256"]==digest(req) and
           assignment["result_sha256"]==digest(assignment["result"]),"Unbound hashes")
     print("PASS PG05 SELECTED, three bound digests, no production authority")
-    alternative=assign_pg05(**args,model_draft=draft_for_code(req,general))
-    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==general,
+    alternative=assign_pg05(**args,model_draft=draft_for_code(req,spring))
+    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==spring,
           "Alternative valid BACKEND must remain selectable")
     print("PASS PG05 second valid backend selected by fixed AI draft")
     amb={"decision":"AMBIGUOUS","selected_profile_code":None,
@@ -223,7 +232,7 @@ def test_chain(dsn):
     current=pg06_currentness(assignment=assignment,lot=lot,prepare=prepare,finalize=finalize)
     check(current["status"]=="CURRENT","PG06 currentness failed")
     print("PASS PG06 reprepare and sealed result revalidation")
-    tampered=copy.deepcopy(assignment);tampered["profile_code"]=general
+    tampered=copy.deepcopy(assignment);tampered["profile_code"]=spring
     failcode(lambda:pg06_currentness(assignment=tampered,lot=lot,prepare=prepare,finalize=finalize),
              "SOURCE_DIGEST_INVALID")
     tampered=copy.deepcopy(assignment);tampered["production_authority"]=True
@@ -244,23 +253,120 @@ def test_chain(dsn):
                      "PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
         finally:run_psql(dsn,sql=undo)
         print("PASS PG06 changed",reason,"blocked")
-    spec,pg07_c2=real_pg07_validation(chain,c2,sid)
+    # Project/area are SQL data, not profile keywords or AI-generated skill selections.
+    java_skill=read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+    python_skill=read_sql_binding(dsn,run_psql,"lf_python","BACKEND")
+    check(java_skill["skill_code"]=="SPRINGBOOT_EXP" and python_skill["skill_code"]=="FASTAPI_EXP",
+          "Same BACKEND role must resolve different project skill")
+    check(role_material(general)["profile_code"]==general,
+          "Shared role changed between projects")
+    print("PASS same generic BACKEND role uses Spring / FastAPI from project bindings")
+    try:
+        read_sql_binding(dsn,run_psql,"lf_python","FRONTEND")
+    except StackBlocked as ex:
+        check(str(ex)=="SKILL_NOT_BOUND",str(ex))
+        print("PASS SKILL_NOT_BOUND for unbound project area")
+    else: raise AssertionError("Unbound skill accepted")
+    check([x["skill_code"]+"@"+x["skill_version"] for x in java_skill["skills"]]==
+          ["SPRINGBOOT_EXP@3","KAFKA_EXP@3"],"SQL priority failed to order multi-skill BACKEND")
+    print("PASS SQL multi-skill priority Spring Boot@3 then Kafka@3")
+    original_java_sha=java_skill["skill_sha256"]
+    # Mutate only primary row: multi-area now contains two skills.
+    primary_filter=" WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='SPRINGBOOT_EXP' AND skill_version='3'"
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit("0"*64)+primary_filter)
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_SHA256_MISMATCH",str(ex))
+            print("PASS tampered stack skill SHA blocked")
+        else:raise AssertionError("Tampered skill accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit(original_java_sha)+primary_filter)
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_version='2'"+primary_filter)
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_VERSION_MISMATCH",str(ex))
+            print("PASS linked skill version changed BLOCK")
+        else:raise AssertionError("Wrong version accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_version='3' WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='SPRINGBOOT_EXP' AND skill_version='2'")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=NULL WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_PRIORITY_REQUIRED",str(ex))
+            print("PASS missing SQL priority BLOCK")
+        else:raise AssertionError("Missing priority accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=2 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=1 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_PRIORITY_CONFLICT",str(ex))
+            print("PASS conflicting SQL priorities BLOCK")
+        else:raise AssertionError("Duplicate priorities accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=2 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    front=read_sql_binding(dsn,run_psql,"lf_java","FRONTEND")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code="+lit(front["skill_code"])+
+                     ",skill_version="+lit(front["skill_version"])+
+                     ",skill_sha256="+lit(front["skill_sha256"])+primary_filter)
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_AREA_MISMATCH",str(ex))
+            print("PASS cross-area skill blocked")
+        else:raise AssertionError("Wrong-area skill accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code='SPRINGBOOT_EXP',skill_version='3',skill_sha256="+
+                         lit(original_java_sha)+" WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='ANGULAR_EXP'")
+    role=role_material(assignment["profile_code"])
+    skill=read_sql_binding(dsn,run_psql,assignment["project_ref"],assignment["area"])
+    spec,pg07_c2=real_pg07_validation(chain,c2,sid,
+        spec_transform=lambda raw:compose_visible_worker_spec(raw,assignment,role,skill))
+    check(spec["functional_contract"]["role_and_stack"]["skill_code"]==skill["skill_code"],
+          "Bound stack not inserted in Worker visible task")
+
     out=pg07_worker_projection(assignment=assignment,lot=lot,
-                               currentness=current,worker_spec=spec,pg07_c2=pg07_c2)
+                               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+                               role=role,skill=skill,project_binding_row=skill["binding_row"])
     task=out["worker_task_overlay"];receipt=out["receipt_link_candidate"]
-    check(task["profile_code"]==spring and task["write_scope"]==[path] and
+    check(task["profile_code"]==general and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["profile_assignment_sha256"]==assignment["assignment_sha256"] and
+          task["profile_sha256"]==role["profile_sha256"] and
+          task["skill_sha256"]==skill["skill_sha256"] and
+          task["skill_set_sha256"]==skill["skill_set_sha256"] and
+          len(task["skill_versions"])==len(skill["skills"]) and
+          receipt["profile_sha256"]==role["profile_sha256"] and
+          receipt["skill_sha256"]==skill["skill_sha256"] and
           receipt["worker_receipt_verified"] is False and
           out["worker_invoked"] is False and out["production_authority"] is False,
           "PG07 chain not intact")
     print("PASS PG07 scoped worker task and candidate receipt digest chain")
+    modified_role=copy.deepcopy(role)
+    modified_role["role_text"]+="\\nUNAUTHORIZED CHANGE"
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
-               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2),
+               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+               role=modified_role,skill=skill,project_binding_row=skill["binding_row"]),
+             "PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    modified_skill=copy.deepcopy(skill)
+    modified_skill["skill_text"]+="\\nINJECTED STACK RULE"
+    failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
+               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+               role=role,skill=modified_skill,project_binding_row=skill["binding_row"]),
+             "PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    print("PASS PG07 unmodified role and skill SHA invariants")
+    failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
+               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2,
+               role=role,skill=skill,project_binding_row=skill["binding_row"]),
              "PG07_ORACLE_EXPOSURE")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
                currentness=current,worker_spec={**spec,
-               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]},pg07_c2=pg07_c2),
+               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]},pg07_c2=pg07_c2,
+               role=role,skill=skill,project_binding_row=skill["binding_row"]),
              "PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     print("PASS PG07 Worker-visible write scope cannot expand outside PG05 C2")
 
@@ -282,6 +388,14 @@ def main():
         reference(dsn)
         for f in ("seed_profiles_exp.sql","area_policy_exp.sql","functions_exp.sql"):
             run_psql(dsn,file=ROOT/"experimental"/f)
+        checkout=subprocess.run(["git","rev-parse","HEAD"],capture_output=True,text=True,check=True).stdout.strip()
+        head=os.environ.get("PROFILE_CANDIDATE_HEAD_SHA",checkout)
+        check(head==checkout,"Exact candidate HEAD differs from checkout")
+        bound=apply_local_resync(dsn,head,run_psql,sql_json)
+        check(len(bound)==3,"Three SKILL-backed descriptors required")
+        print("PASS original descriptor_sync_v1 generated 3 candidate descriptors from SKILL.md")
+        run_psql(dsn,file=STAGES/"programmer_profiles_exp/stack_skills_exp/project_stack_binding_exp.sql")
+        seed_local_binding_table(dsn,run_psql)
         test_chain(dsn)
     finally:
         run_psql(dsn,sql="DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; DROP SCHEMA IF EXISTS extensions CASCADE")

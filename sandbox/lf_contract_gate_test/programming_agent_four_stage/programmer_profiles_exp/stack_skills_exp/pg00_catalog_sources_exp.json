@@ -1,0 +1,23 @@
+{
+  "schema_version": "LF_PG00_STANDARD_SOURCE_POINTERS_EXP_V1",
+  "source_ref": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+  "source_kind": "PG00_GOVERNANCE_REGISTER_NOT_NORMATIVE_STD_TEXT",
+  "families": [
+    {
+      "code": "STD-BE",
+      "reference_kind": "ADR-PROG-STD-013",
+      "normative_text_available": false
+    },
+    {
+      "code": "STD-FE",
+      "reference_kind": "PG-02_C1_REFERENCE",
+      "normative_text_available": false
+    },
+    {
+      "code": "STD-DB",
+      "reference_kind": "PG-00_C5_REFERENCE",
+      "normative_text_available": false
+    }
+  ],
+  "fail_closed_code": "PG00_STANDARD_TEXT_UNAVAILABLE"
+}
