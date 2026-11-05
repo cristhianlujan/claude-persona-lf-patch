@@ -13,6 +13,10 @@ sys.path.insert(0,str(ROOT/"tests"))
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from test_experimental import guard, call, run_psql, sql_json, lit, reference
 from test_parity import TABLES,FUNCTIONS
+STAGES=ROOT.parent
+sys.path.insert(0,str(STAGES/"pg05_target_binding_candidate"/"tests"))
+from test_pg05_chain_c1_c5_v1 import build_chain
+
 from pg05_profile_assignment_bridge_v1 import (
   BridgeBlocked,digest,declare_pg04_areas,pg04_area_lot,assign_pg05,pg06_currentness,pg07_worker_projection)
 
@@ -27,11 +31,6 @@ def failcode(fn,code):
         return
     raise AssertionError("Expected rejection: "+code)
 
-def frozen(record):
-    o=copy.deepcopy(record)
-    o["candidate_sha256"]=digest(o)
-    return o
-
 def sql_bridge(dsn):
     def prepare(request,project,area,paths):
         return call(dsn,"public.lf_profile_selector_semantic_prepare_v3_exp("+
@@ -41,17 +40,15 @@ def sql_bridge(dsn):
                     sql_json(request)+","+sql_json(draft)+")")
     return prepare,finalize
 
-def fixture(path="src/main/java/com/lf/Loan.java",solution="SOL-001"):
-    exit=frozen({"schema_version":"PG04_TO_PG05_EXIT_CANDIDATE_V1",
-                 "status":"CANDIDATE_NOT_ADMITTED","production_authority":False,
-                 "handoff_allowed":False,"solutions":[{"solution_id":solution,
-                 "write_scope_candidates":["write-token-backend"]}]})
-    c2=frozen({"schema_version":"PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1",
-              "status":"CANDIDATE_NOT_ADMITTED","production_authority":False,
-              "write_scope_authorized":False,"source_pg04_exit_sha256":exit["candidate_sha256"],
-              "solution_scopes":[{"solution_id":solution,"write_authorized":False,
-                                 "write_resource_keys":[{"kind":"REPO_PATH","identity":path}]}]})
-    return exit,c2
+def real_producers():
+    """Call existing PG04 assembly and the actual PG05 C1/C2 through the repository chain.
+    No handcrafted PG04 or C2 digests: the upstream source producers construct them.
+    """
+    chain=build_chain()
+    exit_obj,c2=chain["pg04_exit"],chain["c2"]
+    check(exit_obj["schema_version"]=="PG04_TO_PG05_EXIT_CANDIDATE_V1","PG04 producer missing")
+    check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
+    return chain
 
 def draft_for_code(request,code):
     p=next(p for p in request["candidate_profiles"] if p["profile_code"]==code)
@@ -64,40 +61,49 @@ def draft_for_code(request,code):
 
 def test_chain(dsn):
     prepare,finalize=sql_bridge(dsn)
-    exit,c2=fixture()
-    path="src/main/java/com/lf/Loan.java"
-    project_rules=call(dsn,"coalesce((SELECT jsonb_agg(jsonb_build_object('area',area,'path_prefix',path_prefix) ORDER BY area,path_prefix) FROM public.lf_project_area_pattern_exp WHERE project_ref='lf_java'),'[]'::jsonb)")
-    pg04_areas=declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
-                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[path]}])
-    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
-                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND",
-                                       "paths":[path,"web/src/app/loan.ts"]}]),"LOTE_MULTI_AREA")
-    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
-                    lot_declarations=[{"solution_id":"SOL-001","area":"FRONTEND","paths":[path]}]),
-             "LOTE_AREA_MISMATCH")
-    conflicted=project_rules+[{"area":"FRONTEND","path_prefix":"src/main/java/"}]
-    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=conflicted,
-                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[path]}]),
-             "LOTE_ROUTE_CONFLICT")
-    print("PASS PG04 declared areas, mixed lot and route conflict controls")
-    lot=pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",area="BACKEND",paths=[path])
-    print("PASS PG04 explicit area, exact PG05 C2 scope binding")
-    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",
-                                 area="BACKEND",paths=["web/src/app/x.ts"]),
-             "PG04_AREA_LOT_DRIFT")
-    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id="SOL-001",
-                                 area="BACKEND",paths=[path,"web/src/app/x.ts"]),
-             "PG04_AREA_LOT_DRIFT")
-    out_scope="src/main/java/com/lf/Outside.java"
-    scope_overlay=declare_pg04_areas(pg04_exit=exit,project_ref="lf_java",project_rules=project_rules,
-                    lot_declarations=[{"solution_id":"SOL-001","area":"BACKEND","paths":[out_scope]}])
-    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=scope_overlay,
-                                  solution_id="SOL-001",area="BACKEND",paths=[out_scope]),
-             "LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
-    req=prepare("Corregir servicio Spring","lf_java","BACKEND",[path])["request"]
+    chain=real_producers()
+    exit,c2=chain["pg04_exit"],chain["c2"]
+    sid="SOL-002"
+    scopes={row["solution_id"]:row for row in c2["solution_scopes"]}
+    path=scopes[sid]["write_resource_keys"][0]["identity"]
+    project="bridge_fixture"
+    print("PASS actual PG04 and PG05 C2 producers, source digests")
+    # The real C2 fixture uses src/SOL-*/... paths; these rules are isolated to this disposable project.
+    for solution in c2["solution_scopes"]:
+        run_psql(dsn,sql="INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ("+
+                 lit(project)+",'BACKEND',"+lit("src/"+solution["solution_id"]+"/")+")")
+    project_rules=call(dsn,"coalesce((SELECT jsonb_agg(jsonb_build_object('area',area,'path_prefix',path_prefix) ORDER BY area,path_prefix) FROM public.lf_project_area_pattern_exp WHERE project_ref="+lit(project)+"),'[]'::jsonb)")
+    declarations=[]
+    for sol in c2["solution_scopes"]:
+        declarations.append({"solution_id":sol["solution_id"],"area":"BACKEND",
+            "paths":[x["identity"] for x in sol["write_resource_keys"]]})
+    pg04_areas=declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=project_rules,lot_declarations=declarations)
+    mixed=copy.deepcopy(declarations)
+    mixed[-1]["paths"].append("web/src/app/x.ts")
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=project_rules,
+                                       lot_declarations=mixed),"LOTE_PATH_UNCLASSIFIED")
+    conflict=project_rules+[{"area":"FRONTEND","path_prefix":"src/"+sid+"/"}]
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=conflict,
+                                       lot_declarations=declarations),"LOTE_ROUTE_CONFLICT")
+    wrong=copy.deepcopy(declarations);wrong[-1]["area"]="FRONTEND"
+    failcode(lambda:declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=project_rules,
+                                       lot_declarations=wrong),"LOTE_AREA_MISMATCH")
+    print("PASS PG04 real solutions with explicit project areas and route conflict blocks")
+    lot=pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=pg04_areas,solution_id=sid,area="BACKEND",paths=[path])
+    print("PASS PG04 real exit + PG05 real C2 exact write scope")
+    forged=copy.deepcopy(c2);forged["solution_scopes"][0]["write_resource_keys"][0]["identity"]="forged/other.py"
+    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=forged,pg04_areas=pg04_areas,
+                                  solution_id=sid,area="BACKEND",paths=[path]),"SOURCE_DIGEST_INVALID")
+    out_scope="src/"+sid+"/not-resolved.py"
+    amended=copy.deepcopy(declarations)
+    amended[-1]["paths"]=[out_scope]
+    alt=declare_pg04_areas(pg04_exit=exit,project_ref=project,project_rules=project_rules,lot_declarations=amended)
+    failcode(lambda:pg04_area_lot(pg04_exit=exit,pg05_c2=c2,pg04_areas=alt,
+                                 solution_id=sid,area="BACKEND",paths=[out_scope]),"LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
+    req=prepare("Corregir servicio Spring",project,"BACKEND",[path])["request"]
     general="PERFIL-PROG-BACKEND-EXP"
     spring="PERFIL-PROG-BACKEND-SPRING-EXP"
-    args={"lot":lot,"project_ref":"lf_java","literal_request":"Corregir servicio Spring",
+    args={"lot":lot,"project_ref":project,"literal_request":"Corregir servicio Spring",
           "prepare":prepare,"finalize":finalize}
     assignment=assign_pg05(**args,model_draft=draft_for_code(req,spring))
     check(assignment["status"]=="SELECTED" and assignment["profile_code"]==spring
@@ -173,12 +179,12 @@ def test_chain(dsn):
              "PG07_ORACLE_EXPOSURE")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
                currentness=current,worker_spec={"schema_version":2,
-               "write_path_patterns":[path,"src/main/java/com/lf/Unexpected.java"]}),
+               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]}),
              "PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     print("PASS PG07 Worker-visible write scope cannot expand outside PG05 C2")
 
     # PG04-mixed projects are also blocked by the actual SQL classifier.
-    mixed=prepare("Split or block","lf_java","BACKEND",
+    mixed=prepare("Split or block",project,"BACKEND",
                   [path,"web/src/app/loan.ts"])
     check(mixed.get("blocking_code")=="LOTE_MULTI_AREA_BLOCKED","Mixed-area PG04 lot accepted")
     print("PASS PG04 mixed area LOTE_MULTI_AREA_BLOCKED")
