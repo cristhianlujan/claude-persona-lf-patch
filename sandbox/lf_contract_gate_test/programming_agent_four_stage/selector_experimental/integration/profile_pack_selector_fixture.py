@@ -49,8 +49,18 @@ def apply_sandbox_resync(dsn,run_psql,source_head):
         source_ref=("sandbox-descriptor://"+path+"/SKILL.md?LOCAL_VIRTUAL_ALIAS=/"+
                     virtual_path+"/SKILL.md")
         value=json.dumps(descriptor,ensure_ascii=False)
-        run_psql(dsn,sql="SELECT public.lf_profile_selector_descriptor_sync_v1("+
+        outcome=json.loads(run_psql(dsn,sql="SELECT public.lf_profile_selector_descriptor_sync_v1("+
             ",".join((q(code),q(value)+"::jsonb",q("GITHUB_SKILL"),
-                      q(source_ref),q(source_head),q("sandbox-only-test")))+")::text")
-        print("PASS LOCAL_ONLY VIRTUAL_ALIAS descriptor_sync from sandbox SKILL",code,"source_sha256",source_sha)
+                      q(source_ref),q(source_head),q("sandbox-only-test")))+")::text"))
+        if outcome.get("outcome")!="SYNCED" or outcome.get("profile_code")!=code:
+            raise AssertionError("LOCAL_DESCRIPTOR_SYNC_NOT_ACKNOWLEDGED:"+code)
+        readback=json.loads(run_psql(dsn,sql=
+            "SELECT jsonb_build_object('descriptor',r.descriptor,'source_ref',r.source_ref,"
+            "'source_revision',r.source_revision,'eligible',"
+            "(public.lf_profile_execution_source_eligibility_v1(r.profile_code)->>'eligible')::boolean)::text "
+            "FROM public.lf_profile_selection_registry_v1 r WHERE r.profile_code="+q(code)))
+        if (readback["descriptor"]!=descriptor or readback["source_revision"]!=source_head or
+            readback["source_ref"]!=source_ref or readback["eligible"] is not True):
+            raise AssertionError("LOCAL_DESCRIPTOR_RESYNC_READBACK_DRIFT:"+code)
+        print("PASS LOCAL_ONLY VIRTUAL_ALIAS original resync and readback",code,"source_sha256",source_sha)
     return CONFIG
