@@ -232,7 +232,7 @@ def test_chain(dsn):
     current=pg06_currentness(assignment=assignment,lot=lot,prepare=prepare,finalize=finalize)
     check(current["status"]=="CURRENT","PG06 currentness failed")
     print("PASS PG06 reprepare and sealed result revalidation")
-    tampered=copy.deepcopy(assignment);tampered["profile_code"]=general
+    tampered=copy.deepcopy(assignment);tampered["profile_code"]=spring
     failcode(lambda:pg06_currentness(assignment=tampered,lot=lot,prepare=prepare,finalize=finalize),
              "SOURCE_DIGEST_INVALID")
     tampered=copy.deepcopy(assignment);tampered["production_authority"]=True
@@ -253,6 +253,45 @@ def test_chain(dsn):
                      "PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
         finally:run_psql(dsn,sql=undo)
         print("PASS PG06 changed",reason,"blocked")
+    # Project/area are SQL data, not profile keywords or AI-generated skill selections.
+    java_skill=read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+    python_skill=read_sql_binding(dsn,run_psql,"lf_python","BACKEND")
+    check(java_skill["skill_code"]=="SPRINGBOOT_EXP" and python_skill["skill_code"]=="FASTAPI_EXP",
+          "Same BACKEND role must resolve different project skill")
+    check(role_material(general)["profile_code"]==general,
+          "Shared role changed between projects")
+    print("PASS same generic BACKEND role uses Spring / FastAPI from project bindings")
+    try:
+        read_sql_binding(dsn,run_psql,"lf_python","FRONTEND")
+    except StackBlocked as ex:
+        check(str(ex)=="SKILL_NOT_BOUND",str(ex))
+        print("PASS SKILL_NOT_BOUND for unbound project area")
+    else: raise AssertionError("Unbound skill accepted")
+    original_java_sha=java_skill["skill_sha256"]
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit("0"*64)+
+                     " WHERE project_ref='lf_java' AND area='BACKEND'")
+    try:
+        try: read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_SHA256_MISMATCH",str(ex))
+            print("PASS tampered stack skill SHA blocked")
+        else: raise AssertionError("Tampered skill accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit(original_java_sha)+
+                          " WHERE project_ref='lf_java' AND area='BACKEND'")
+    front=read_sql_binding(dsn,run_psql,"lf_java","FRONTEND")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code="+lit(front["skill_code"])+
+                     ",skill_sha256="+lit(front["skill_sha256"])+
+                     " WHERE project_ref='lf_java' AND area='BACKEND'")
+    try:
+        try: read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_AREA_MISMATCH",str(ex))
+            print("PASS cross-area skill blocked")
+        else: raise AssertionError("Wrong-area skill accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code='SPRINGBOOT_EXP',skill_sha256="+
+                         lit(original_java_sha)+" WHERE project_ref='lf_java' AND area='BACKEND'")
     role=role_material(assignment["profile_code"])
     skill=read_sql_binding(dsn,run_psql,assignment["project_ref"],assignment["area"])
     spec,pg07_c2=real_pg07_validation(chain,c2,sid,
@@ -267,6 +306,10 @@ def test_chain(dsn):
     check(task["profile_code"]==general and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["profile_assignment_sha256"]==assignment["assignment_sha256"] and
+          task["profile_sha256"]==role["profile_sha256"] and
+          task["skill_sha256"]==skill["skill_sha256"] and
+          receipt["profile_sha256"]==role["profile_sha256"] and
+          receipt["skill_sha256"]==skill["skill_sha256"] and
           receipt["worker_receipt_verified"] is False and
           out["worker_invoked"] is False and out["production_authority"] is False,
           "PG07 chain not intact")
