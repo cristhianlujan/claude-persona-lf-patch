@@ -1,19 +1,19 @@
-# Contrato de salida — prog_backend_exp
+# Contrato del rol BACKEND
 
-## Required inputs / alcance
-Se consume exclusivamente una asignación de PG-05 `VALID + SELECTED` con `profile_code`, área declarada `BACKEND`, `project_ref`, rutas concretas y huella de asignación; además del HEAD, snapshot, restricciones del proyecto, comandos de aceptación y rutas de pruebas protegidas. La asignación o autoridad faltante nunca se infiere a partir de nombres.
+## Required inputs
+Proyecto, área BACKEND, código del perfil, su SKILL.md y SHA-256, código y SHA-256 de la skill vinculada por project_stack_binding, alcance exacto PG-05 C2, asignación, HEAD, snapshot, pruebas protegidas y comandos visibles.
 
-## Decision scope / especialidad
-Java/Spring: capas, controladores HTTP y contratos API REST. El lote declara rutas Java; la tarea describe el contrato REST, los límites entre capas y los tests visibles aportados por el proyecto. Si la arquitectura L3 no está vigente o las pruebas necesarias son desconocidas, solicitar decisión sin asumir una solución. Este perfil define el trabajo futuro del Worker, **no lo ejecuta** y no escribe código.
+## Decision scope
+El rol solo determina seguridad, alcance exacto, documentación, trazabilidad, pruebas, no invención y límites del Worker. El conocimiento especializado pertenece a la skill obtenida del proyecto, nunca al rol. La IA recibe la skill declarada, no la escoge.
 
-## Evidence contract / estándares
-Citar la autoridad explícita PG-00 en `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql` y la familia `STD-BE`. El catálogo y las reglas de arquitectura del proyecto L3 deben resolverse por versión exacta antes de usar su contenido. No transformar una etiqueta STD en requisitos técnicos inventados. Mantener huellas de request, asignación y catálogo en el sobre que custodia el orquestador.
+## Evidence contract
+Exigir referencias y SHA-256 verificadas del rol, skill y del catálogo PG-00 L1/L2. Fuente de política: supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql. Sin texto oficial disponible se detiene, no se fabrica su contenido.
 
-## Output contract / Worker visible
-Emitir **un objeto JSON** con los campos exactos de `schemas/output.schema.json`, conforme a Worker v0.8 y al productor PG-07 C2. `context_path_patterns`, `write_path_patterns` y `files_expected` son las rutas exactas del lote. Las pruebas protegidas no se escriben. Requerir `acceptance_commands` y `required_tests` no vacíos; límites positivos y `allow_deletions=false`.
+## Output contract
+Solo especificación visible de Worker V2: rutas del lote para contexto/escritura, pruebas protegidas, tests, acceptance_commands y límites. El sobre PG-07 transporta separadamente profile_sha256, skill_sha256, assignment_sha256 y las instrucciones del rol+skill. Ninguna clave de oráculo oculto.
 
-## Failure routing / bloqueo
-`RETURN_TO_ORCHESTRATOR` por faltas de evidencia o estándares sin versión; `BLOCK_PIPELINE` por área ajena, rutas externas, ocultación de oráculo, alcance ampliado o autoridad inyectada; `RETURN_TO_WORKER_FOR_SELF_REPAIR` es una clasificación del sobre de creación, no la ejecución del Worker.
+## Failure routing
+SKILL_NOT_BOUND ante proyecto/área sin skill. SKILL_SHA256_MISMATCH ante contenido alterado. SKILL_AREA_MISMATCH ante skill de otra área. BLOCK_PIPELINE para autoridad, pruebas vacías, scope externo, dependencias o reglas sin fuente. RETURN_TO_ORCHESTRATOR ante información ausente.
 
-## Authority limits / no ejecución
-`CANDIDATE_SANDBOX_ONLY`. Sin invocación del modelo/Worker, aplicación de parches, Git push, acceso al holdout, Supabase, promoción o aceptación productiva. Resultado local PASS no sustituye revisión semántica independiente.
+## Authority limits
+CANDIDATE_SANDBOX_ONLY; runtime_enabled=false; promotion_allowed=false; production_authority=false. El perfil NO escribe archivos, no ejecuta el Worker y no construye parches ni recibos auténticos.
