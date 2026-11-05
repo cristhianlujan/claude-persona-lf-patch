@@ -1,0 +1,54 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "product_director_lf",
+  "case_id": "MISSING-INPUT-001",
+  "description": "Consulta cotidiana de priorizacion sin ninguna fuente AUTHORITATIVE/CONSTRAINT: el perfil debe devolver PRODUCT_MISSING_INPUT_STATE (no inventar decision) y la salida debe cumplir a la vez el validador y el schema del modo. Entrada literal: Tenemos 2 desarrolladores y 6 semanas. ¿Qué priorizamos primero en el marketplace de negociación de deuda: el simulador de ahorro de deuda para el usuario o el flujo de onboarding de la negociación? Dame la decisión. (Contexto disponible: ninguno; sin reglas aprobadas, métricas ni fuentes.)",
+  "checks": [
+    {
+      "id": "MI01_OUTPUT_IS_MISSING_INPUT_STATE",
+      "pointer": "/output/output_type",
+      "op": "eq",
+      "value": "PRODUCT_MISSING_INPUT_STATE"
+    },
+    {
+      "id": "MI02_SELF_VERDICT_NEEDS_INPUT",
+      "pointer": "/output/self_verdict",
+      "op": "eq",
+      "value": "NEEDS_INPUT"
+    },
+    {
+      "id": "MI03_PROFILE_VALIDATOR_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "MI04_OUTPUT_VALID_AGAINST_MODE_SCHEMA",
+      "pointer": "/validator/mode_schema_valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "MI05_MISSING_FIELDS_LISTED",
+      "pointer": "/output/deliverable_created/missing_fields",
+      "op": "min_len",
+      "value": 3
+    },
+    {
+      "id": "MI06_WHY_BLOCKING_STATED",
+      "pointer": "/output/deliverable_created/why_blocking",
+      "op": "nonempty"
+    },
+    {
+      "id": "MI07_NEXT_INPUT_STATED",
+      "pointer": "/output/deliverable_created/next_input_needed",
+      "op": "nonempty"
+    }
+  ],
+  "semantic_pending": [
+    "MISSING-INPUT-001:P1 no recomienda ninguna alternativa ni inventa metrica",
+    "MISSING-INPUT-001:P2 los campos faltantes marcados materiales lo son de verdad",
+    "MISSING-INPUT-001:P3 el siguiente paso pide fuentes con autoridad, no opinion"
+  ],
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+}

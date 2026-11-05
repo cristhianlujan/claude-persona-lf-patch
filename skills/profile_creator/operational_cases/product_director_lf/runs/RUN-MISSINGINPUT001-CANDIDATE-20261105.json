@@ -1,0 +1,62 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-MISSINGINPUT001-CANDIDATE-20261105",
+  "case_id": "MISSING-INPUT-001",
+  "profile_slug": "product_director_lf",
+  "profile_tree_sha256": "d6efb02ff2c240fd06827488ec56e861830a9d86212cc4d3abd779756247cbc0",
+  "attestation": "NONE",
+  "recorded_at": "2026-11-05T03:40:00Z",
+  "executor": {
+    "mode": "CLAUDE_NATIVE_ISOLATED_SUBAGENT",
+    "note": "Candidate tree d6efb02f: schema aligned with validator and validator now checks the mode schema."
+  },
+  "conditions": "Isolated model given only a copy of the profile tree and the literal input; no supplied context; one run; validator and mode schema executed on the unchanged output.",
+  "validator": {
+    "tool": "profiles/product_director_lf/validators/validate_product_director_output.py",
+    "valid": true,
+    "errors": [],
+    "mode_schema_tool": "jsonschema Draft 2020-12 against schemas/product_missing_input.schema.json of the same tree",
+    "mode_schema_valid": true,
+    "mode_schema_errors": []
+  },
+  "output": {
+    "worker": "product_director_lf",
+    "output_type": "PRODUCT_MISSING_INPUT_STATE",
+    "self_verdict": "NEEDS_INPUT",
+    "deliverable_created": {
+      "missing_fields": [
+        "value_metric_or_success_proxy: metrica que el marketplace de negociacion de deuda busca mover en las 6 semanas (p. ej. activacion, solicitudes de negociacion iniciadas, conversion a acuerdo)",
+        "current_state_and_problem: estado actual del producto y del funnel (existe ya algun onboarding o simulador; donde se pierde el usuario)",
+        "target_user_state: usuario objetivo y su estado de deuda para el que se decide",
+        "current_upstream_sources: fuente vigente con identidad y autoridad que respalde la prioridad (regla aprobada, dato de funnel, decision de negocio)",
+        "constraints_and_forbidden_scope: restricciones y calificadores que deben sobrevivir (p. ej. el ahorro del simulador es referencial/condicional, no garantia; limites legales o de elegibilidad)",
+        "risk_if_wrong_and_acceptance_target: riesgo de elegir mal y destino/criterio de aceptacion esperado",
+        "dependency_and_capacity_facts: si el simulador depende del onboarding (o viceversa) y si 2 desarrolladores x 6 semanas alcanzan para cada opcion (estimacion de Tech, no supuesta)"
+      ],
+      "why_blocking": "La unica fuente disponible es la consulta literal, que aporta solo un constraint de capacidad (2 desarrolladores, 6 semanas) y dos candidatos. No hay objetivo medible, estado actual, usuario objetivo, metrica ni fuente autoritativa. Elegir entre simulador y onboarding cambia el alcance primario y la ruta del producto (decision material) y cualquier eleccion seria negocio inventado; ademas el simulador implica una cifra de ahorro cuyo calificador (referencial/condicional) no esta definido y no puede afirmarse. Un PRODUCT_DIRECTION_SPEC exigiria al menos una fuente AUTHORITATIVE/CONSTRAINT y claims respaldados, que no existen.",
+      "next_input_needed": "El orquestador debe aportar (a) el objetivo y la metrica de exito del periodo de 6 semanas, (b) datos o reglas vigentes del funnel actual (donde cae el usuario hoy) con su fuente, (c) las restricciones legales/de comunicacion que apliquen a mostrar ahorro de deuda y (d) una estimacion de Tech de esfuerzo y dependencias de ambas opciones. Con eso se emite PRODUCT_DIRECTION_SPEC con decision, alternativa rechazada y criterios de aceptacion observables.",
+      "why_required": [
+        "La metrica de exito define cual opcion reduce la incertidumbre real; sin ella la priorizacion es opinion.",
+        "El estado actual del funnel determina si el cuello de botella es la entrada (onboarding) o la motivacion/comprension (simulador).",
+        "El simulador produce una cifra de ahorro: sin calificadores aprobados no se puede especificar sin riesgo de promesa financiera.",
+        "La viabilidad en 2 dev x 6 semanas requiere estimacion de Tech; no es dato de producto."
+      ],
+      "risk_if_assumed": [
+        "Priorizar el simulador sin respaldo puede mostrar ahorros que se lean como garantia (violacion de calificadores referencial/condicional).",
+        "Priorizar onboarding sin datos puede optimizar un paso que no es el cuello de botella y retrasar la propuesta de valor.",
+        "Comprometer 6 semanas de capacidad total sobre una eleccion no sustentada."
+      ],
+      "safe_next_gate": {
+        "action": "RETURN_TO_ORCHESTRATOR",
+        "preferred_source_types": [
+          "decision de negocio vigente",
+          "datos de funnel",
+          "estimacion de Tech",
+          "revision Legal sobre comunicacion de ahorro"
+        ],
+        "decision_issued": false
+      }
+    }
+  },
+  "output_sha256": "1a0c3017bb4ec8a69804a05a58b6a5339807af6ecb3d172c2f713bf38019e9f6"
+}
