@@ -62,7 +62,9 @@ def run():
           "SOURCE https://" in task["objective"],"Missing rules/sha/source in objective")
     check("oracle_envelope" not in task["objective"] and
           "hidden_oracle" not in task["objective"] and
-          "holdout.oracle" not in task["objective"],"Hidden oracle reached objective")
+          "holdout.oracle" not in task["objective"] and
+          all("oracle" not in p.lower() and "holdout" not in p.lower()
+              for p in task["context_path_patterns"]),"Hidden oracle reached objective/context")
     check(envelope["task_id"]==task["task_id"] and envelope["task_sha256"]==sha(task)
           and envelope["pg07_extra"]["functional_contract"]["role_and_stack"]["skill_set_sha256"],
           "External envelope unbound")
@@ -79,6 +81,9 @@ def run():
     bad=copy.deepcopy(pg07);del bad["max_attempts"]
     blocked(lambda:adapt(bad,owner_commands=commands,pg07_overlay=overlay),"PG07_TASK_INCOMPLETE")
     for k in ("max_attempts","max_context_bytes","max_patch_bytes","max_changed_files"):
+        incomplete=copy.deepcopy(pg07);del incomplete[k]
+        blocked(lambda b=incomplete:adapt(b,owner_commands=commands,pg07_overlay=overlay),
+                "PG07_TASK_INCOMPLETE")
         bad=copy.deepcopy(pg07);bad[k]={"max_attempts":2,"max_context_bytes":60001,
                            "max_patch_bytes":20001,"max_changed_files":4}[k]
         bad_overlay=copy.deepcopy(overlay)
@@ -100,6 +105,9 @@ def run():
           "Cost: external USD estimate inaccurate")
     check("total_estimated_usd" not in receipt and "total_input_tokens" not in receipt,
           "Sealed receipt modified by cost")
+    no_usage=copy.deepcopy(receipt)
+    no_usage["attempts"][0]["usage"]={}
+    blocked(lambda:price_receipt(no_usage),"USAGE_INPUT_OUTPUT_TOKENS_MISSING")
     print("PASS cost separately computed from actual-shaped usage for assumed prices")
     with tempfile.TemporaryDirectory() as d:
         outside=Path(d)/"outside"
