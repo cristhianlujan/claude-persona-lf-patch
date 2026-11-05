@@ -6,6 +6,7 @@ import copy
 import json
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -286,7 +287,9 @@ def main():
         reference(dsn)
         for f in ("seed_profiles_exp.sql","area_policy_exp.sql","functions_exp.sql"):
             run_psql(dsn,file=ROOT/"experimental"/f)
-        head=os.environ.get("PROFILE_CANDIDATE_HEAD_SHA","")
+        checkout=subprocess.run(["git","rev-parse","HEAD"],capture_output=True,text=True,check=True).stdout.strip()
+        head=os.environ.get("PROFILE_CANDIDATE_HEAD_SHA",checkout)
+        check(head==checkout,"Exact candidate HEAD differs from checkout")
         bound=apply_local_resync(dsn,head,run_psql,sql_json)
         check(len(bound)==3,"Three SKILL-backed descriptors required")
         print("PASS original descriptor_sync_v1 generated 3 candidate descriptors from SKILL.md")
