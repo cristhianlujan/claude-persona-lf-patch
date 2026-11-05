@@ -32,6 +32,9 @@ def check_output(spec,task,binding):
         errors.append("PROTECTED_TEST_PATHS_INVALID")
     if any(not isinstance(p,str) or not p.strip() for p in spec.get("protected_path_patterns",[])):
         errors.append("PROTECTED_TEST_PATHS_INVALID")
+    for protected in spec.get("protected_path_patterns",[]):
+        if isinstance(protected,str) and any(w==protected or w.startswith(protected) or protected.startswith(w+"/") for w in allowed):
+            errors.append("PROTECTED_TEST_WRITE_OVERLAP")
     if spec.get("required_tests")==[] or not isinstance(spec.get("required_tests"),list):
         errors.append("REQUIRED_TESTS_EMPTY")
     if not isinstance(spec.get("acceptance_commands"),list) or not spec["acceptance_commands"] or not all(isinstance(x,str) and x.strip() for x in spec["acceptance_commands"]):
@@ -70,7 +73,7 @@ def evaluate(root):
     cases.append(("HAPPY_PATH",not check_output(spec,task,binding)))
     altered=copy.deepcopy(spec);altered["write_path_patterns"]=["outside/escape.java"]
     cases.append(("OUTSIDE_LOT",bool(check_output(altered,task,binding))))
-    altered=copy.deepcopy(spec);altered["acceptance_commands"]=[]
+    altered=copy.deepcopy(spec);altered["acceptance_commands"]=[];altered["required_tests"]=[]
     cases.append(("EMPTY_TESTS",bool(check_output(altered,task,binding))))
     altered=copy.deepcopy(spec);altered["oracle_envelope"]={"secret":"never in builder"}
     cases.append(("HIDDEN_ORACLE",bool(check_output(altered,task,binding))))
