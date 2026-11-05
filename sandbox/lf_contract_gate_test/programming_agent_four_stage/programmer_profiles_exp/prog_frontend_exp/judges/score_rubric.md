@@ -1,10 +1,10 @@
-# Score rubric — FRONTEND
+# Rúbrica rol FRONTEND
 
-## PASS para revisión determinista
-PASS local solo cuando el código/área y la fuente están vinculados, las rutas son exactas, los tests y acceptance_commands están presentes, el spec visible satisface la estructura V2 de PG-07 C2 y no se incluye el oráculo oculto. Evidencia: huella del artefacto, revisión del SKILL y salida literal del validador.
+## PASS estructural
+Rol de área correcta, skill asociada por proyecto con huella verificable, scope exacto, aceptación visible y no autoridad.
 
 ## FAIL / bloqueo
-FAIL y BLOCK_PIPELINE ante otra área, rutas fuera del lote, descriptor o HEAD desactualizado, tests vacíos, intento de escribir pruebas protegidas o cualquier campo de autoridad. No se promedia: un solo fallo crítico invalida el candidato.
+Skill ausente, alterada o de otra área; evidencia de catálogo no verificable; escritura ampliada; tests vacíos; clave del oráculo o elevación de permisos. Ningún puntaje compensa un fallo.
 
-## Revisión semántica pendiente
-Una salida estructural PASS no demuestra calidad del Angular: componentes, estados, navegación y accesibilidad, ni validez de estándares cuya versión no se ha leído. Retornar a evidencia o revisión humana; nunca conceder dispatch, escritura, promoción ni aceptación del Worker.
+## Revisión semántica
+Una estructura válida no significa calidad técnica ni cumplimiento de un estándar sin texto completo. La skill aporta criterio técnico; la autoridad continúa separada del Worker y del rol.
