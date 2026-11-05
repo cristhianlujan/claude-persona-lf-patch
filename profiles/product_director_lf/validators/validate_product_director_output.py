@@ -15,8 +15,8 @@ except ImportError:
     validate_shape = None
 
 
-def _schema_contract_errors(payload):
-    path = Path(__file__).resolve().parents[1] / 'schemas' / 'product_direction_spec.schema.json'
+def _schema_contract_errors(payload, schema_file='product_direction_spec.schema.json'):
+    path = Path(__file__).resolve().parents[1] / 'schemas' / schema_file
     if validate_shape is None or not path.is_file():
         return [('SCHEMA_PREFLIGHT_UNAVAILABLE', '$', 'current canonical schema preflight missing')]
     try:
@@ -57,6 +57,7 @@ def validate(payload):
     if ot == 'PRODUCT_MISSING_INPUT_STATE':
         d=payload.get('deliverable_created')
         if payload.get('self_verdict') != 'NEEDS_INPUT': err(e,'MISSING_STATE_VERDICT','self_verdict','must be NEEDS_INPUT')
+        for code, path, msg in _schema_contract_errors(payload, 'product_missing_input.schema.json'): err(e, code, path, msg)
         if not isinstance(d,dict): err(e,'MISSING_STATE_BODY','deliverable_created','body required')
         else:
             if not isinstance(d.get('missing_fields'),list) or not d.get('missing_fields'): err(e,'MISSING_FIELDS','deliverable_created.missing_fields','missing fields required')

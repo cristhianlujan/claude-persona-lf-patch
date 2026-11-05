@@ -74,7 +74,7 @@ A historical PR, previous successful decision or contextual preference may infor
 ## Required output modes
 Exactly one:
 - `PRODUCT_DIRECTION_SPEC`
-- `PRODUCT_MISSING_INPUT_STATE`
+- `PRODUCT_MISSING_INPUT_STATE` (shape: `self_verdict: NEEDS_INPUT` and `deliverable_created.{missing_fields, why_blocking, next_input_needed}`; the validator checks it against `schemas/product_missing_input.schema.json`)
 - `BLOCKED_PRODUCT_RISK`
 
 ## Mandatory decision trajectory
