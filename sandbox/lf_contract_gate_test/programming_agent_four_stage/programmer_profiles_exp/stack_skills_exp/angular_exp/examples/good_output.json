@@ -1,16 +1,25 @@
 {
   "skill_code": "ANGULAR_EXP",
+  "skill_version": "1",
   "area": "FRONTEND",
-  "source_refs": [
-    "https://angular.dev/guide/components",
-    "https://angular.dev/best-practices/a11y"
+  "rule_ids": [
+    "NG-01",
+    "NG-02",
+    "NG-03"
   ],
-  "pg00_standard_family": "STD-FE",
-  "pg00_standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
-  "expert_checks": [
-    "Declarar entradas/salidas de componentes, estado y navegación, sin asumir patrones que el proyecto no use.",
-    "Exigir criterios comprobables de teclado, foco, nombres accesibles y pruebas en el contexto del proyecto.",
-    "No inventar resultado de pruebas visuales, de accesibilidad ni de compilación."
+  "acceptance_evidence": [
+    {
+      "rule_id": "NG-01",
+      "source_url": "https://angular.dev/guide/components"
+    },
+    {
+      "rule_id": "NG-02",
+      "source_url": "https://angular.dev/guide/signals"
+    },
+    {
+      "rule_id": "NG-03",
+      "source_url": "https://angular.dev/best-practices/a11y"
+    }
   ],
   "production_authority": false
 }
