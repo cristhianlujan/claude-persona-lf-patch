@@ -1,0 +1,16 @@
+{
+  "skill_code": "SPRINGBOOT_EXP",
+  "area": "BACKEND",
+  "source_refs": [
+    "https://docs.spring.io/spring-boot/reference/testing/index.html",
+    "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html"
+  ],
+  "pg00_standard_family": "STD-BE",
+  "pg00_standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+  "expert_checks": [
+    "Definir el contrato HTTP y el comportamiento de controladores y servicios según arquitectura vigente del proyecto.",
+    "Exigir pruebas visibles de endpoints y manejo de errores con herramientas disponibles en el proyecto; no afirmar pruebas ejecutadas.",
+    "Resolver configuración, transacciones, validación y seguridad mediante contexto exacto del repo, no mediante supuestos."
+  ],
+  "production_authority": false
+}
