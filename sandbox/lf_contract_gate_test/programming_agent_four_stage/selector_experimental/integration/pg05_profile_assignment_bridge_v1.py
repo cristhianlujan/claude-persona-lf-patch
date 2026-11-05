@@ -1,0 +1,192 @@
+"""PG04->PG05 C2->profile assignment->PG06->PG07 candidate-only integration.
+No production dispatch, no model invocation, no Worker receipt authentication.
+The PostgreSQL adapter MUST target a local disposable selector_exp_test_* database.
+"""
+import copy
+import hashlib
+import json
+import re
+
+_SHA=re.compile(r"^[0-9a-f]{64}$")
+_PATH=re.compile(r"^[a-zA-Z0-9_./-]+$")
+_ALLOWED={"BACKEND","FRONTEND","DATA"}
+
+class BridgeBlocked(ValueError):
+    pass
+
+def block(code):
+    raise BridgeBlocked(code)
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value,ensure_ascii=True,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+
+def frozen(value, field="candidate_sha256"):
+    if not isinstance(value,dict) or not isinstance(value.get(field),str) or not _SHA.fullmatch(value[field]):
+        block("SOURCE_DIGEST_MISSING")
+    if digest({k:v for k,v in value.items() if k!=field})!=value[field]:
+        block("SOURCE_DIGEST_INVALID")
+    return value[field]
+
+def safe_path(p):
+    return (isinstance(p,str) and bool(p) and len(p)<=400 and _PATH.fullmatch(p)
+            and not p.startswith("/") and not p.endswith("/")
+            and all(part not in ("",".","..") for part in p.split("/")))
+
+def _exact_keys(obj,keys,reason):
+    if not isinstance(obj,dict) or set(obj)!=set(keys): block(reason)
+
+def _safe_scope(paths):
+    if not isinstance(paths,list) or not paths or len(paths)!=len(set(paths)) or not all(safe_path(p) for p in paths):
+        block("WRITE_SCOPE_INVALID")
+    return sorted(paths)
+
+def pg04_area_lot(*,pg04_exit,pg05_c2,solution_id,area,paths):
+    """Overlay area on a PG04 solution after C2 exact scope resolution; no alteration to PG04 itself."""
+    e=frozen(pg04_exit); c=frozen(pg05_c2)
+    if (pg04_exit.get("schema_version")!="PG04_TO_PG05_EXIT_CANDIDATE_V1" or
+        pg04_exit.get("status")!="CANDIDATE_NOT_ADMITTED" or
+        pg04_exit.get("production_authority") is not False or
+        pg04_exit.get("handoff_allowed") is not False or
+        pg05_c2.get("schema_version")!="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1" or
+        pg05_c2.get("status")!="CANDIDATE_NOT_ADMITTED" or
+        pg05_c2.get("source_pg04_exit_sha256")!=e or
+        pg05_c2.get("production_authority") is not False or
+        pg05_c2.get("write_scope_authorized") is not False):
+        block("PG04_PG05_C2_CHAIN_INVALID")
+    if area not in _ALLOWED or not isinstance(solution_id,str) or not solution_id: block("LOT_AREA_OR_ID_INVALID")
+    es=[s for s in pg04_exit.get("solutions",[]) if s.get("solution_id")==solution_id]
+    cs=[s for s in pg05_c2.get("solution_scopes",[]) if s.get("solution_id")==solution_id]
+    if len(es)!=1 or len(cs)!=1: block("LOT_SOLUTION_SOURCE_NOT_UNIQUE")
+    if cs[0].get("write_authorized") is not False: block("SCOPE_AUTHORITY_FORBIDDEN")
+    # C2's exact REPO_PATH resources are the sole admissible write scope here.
+    resources=cs[0].get("write_resource_keys")
+    if not isinstance(resources,list) or not resources: block("WRITE_SCOPE_RESOURCES_MISSING")
+    if any(not isinstance(x,dict) or set(x)!={"kind","identity"} or x["kind"]!="REPO_PATH" for x in resources):
+        block("NON_REPO_RESOURCE_UNSUPPORTED")
+    resolved=_safe_scope([x["identity"] for x in resources])
+    requested=_safe_scope(paths)
+    if requested!=resolved: block("LOT_OUTSIDE_PG05_RESOLVED_SCOPE")
+    lot={"schema_version":"PG04_AREA_LOT_EXP_V1","solution_id":solution_id,
+         "area":area,"paths":requested,
+         "pg04_exit_sha256":e,"pg05_c2_sha256":c,
+         "production_authority":False}
+    lot["lot_sha256"]=digest(lot)
+    return lot
+
+def _validate_lot(lot):
+    _exact_keys(lot,{"schema_version","solution_id","area","paths","pg04_exit_sha256",
+                     "pg05_c2_sha256","production_authority","lot_sha256"},"LOT_FIELDS_INVALID")
+    if lot["schema_version"]!="PG04_AREA_LOT_EXP_V1" or lot["production_authority"] is not False or lot["area"] not in _ALLOWED:
+        block("LOT_AUTHORITY_OR_AREA_INVALID")
+    _safe_scope(lot["paths"])
+    frozen(lot,"lot_sha256")
+
+def assign_pg05(*,lot,project_ref,literal_request,model_draft,prepare,finalize):
+    """SQL functions are caller-provided read-only local adapters, NOT a real model dispatcher."""
+    _validate_lot(lot)
+    if not isinstance(project_ref,str) or not project_ref or not isinstance(literal_request,str) or not literal_request.strip():
+        block("ASSIGN_INPUT_INVALID")
+    if not isinstance(model_draft,dict): block("MODEL_DRAFT_INVALID")
+    request_wrap=prepare(literal_request,project_ref,lot["area"],lot["paths"])
+    if not isinstance(request_wrap,dict) or request_wrap.get("status")!="READY":
+        return {"status":"BLOCKED","blocking_code":request_wrap.get("blocking_code","PREPARE_NOT_READY") if isinstance(request_wrap,dict) else "PREPARE_NOT_READY","production_authority":False}
+    request=request_wrap["request"]
+    if (request.get("project_ref")!=project_ref or request.get("file_paths")!=lot["paths"] or
+        request.get("area")!=lot["area"] or request.get("downstream_execution_allowed") is not False):
+        block("PREPARE_SCOPE_BINDING_INVALID")
+    final=finalize(request,model_draft)
+    if not isinstance(final,dict) or final.get("status")!="VALID":
+        return {"status":"REQUIRES_HUMAN_DECISION" if model_draft.get("decision") in ("AMBIGUOUS","NO_MATCH") and final.get("status")=="VALID" else "BLOCKED",
+                "blocking_code":"SELECTION_NOT_VALID","production_authority":False}
+    result=final["result"]
+    decision=result.get("decision")
+    if decision in ("AMBIGUOUS","NO_MATCH"):
+        return {"status":"REQUIRES_HUMAN_DECISION","decision":decision,
+                "production_authority":False}
+    if decision!="SELECTED": block("SELECTION_DECISION_INVALID")
+    selected=result.get("selected_profile_code")
+    if not isinstance(selected,str) or selected not in [p.get("profile_code") for p in request.get("candidate_profiles",[])]:
+        block("SELECTED_OUTSIDE_CATALOG")
+    # An explicit schema prohibits authority insertion even if a forged digest was recomputed.
+    assignment={"schema_version":"PG05_PROFILE_ASSIGNMENT_BRIDGE_V1","status":"SELECTED",
+      "solution_id":lot["solution_id"],"lot_sha256":lot["lot_sha256"],
+      "source_pg05_c2_sha256":lot["pg05_c2_sha256"],
+      "project_ref":project_ref,"area":lot["area"],"write_scope":copy.deepcopy(lot["paths"]),
+      "profile_code":selected,"request":copy.deepcopy(request),"result":copy.deepcopy(result),
+      "request_sha256":digest(request),"result_sha256":digest(result),
+      "catalog_sha256":request["catalog_sha256"],
+      "production_authority":False}
+    assignment["assignment_sha256"]=digest(assignment)
+    return assignment
+
+def pg06_currentness(*,assignment,lot,prepare,finalize):
+    _validate_lot(lot)
+    keys={"schema_version","status","solution_id","lot_sha256","source_pg05_c2_sha256",
+          "project_ref","area","write_scope","profile_code","request","result",
+          "request_sha256","result_sha256","catalog_sha256",
+          "production_authority","assignment_sha256"}
+    _exact_keys(assignment,keys,"ASSIGNMENT_FIELDS_INVALID")
+    frozen(assignment,"assignment_sha256")
+    if (assignment["schema_version"]!="PG05_PROFILE_ASSIGNMENT_BRIDGE_V1" or
+        assignment["status"]!="SELECTED" or assignment["production_authority"] is not False
+        or assignment["lot_sha256"]!=lot["lot_sha256"]
+        or assignment["source_pg05_c2_sha256"]!=lot["pg05_c2_sha256"]
+        or assignment["solution_id"]!=lot["solution_id"]
+        or assignment["area"]!=lot["area"]
+        or assignment["write_scope"]!=lot["paths"]
+        or assignment["request_sha256"]!=digest(assignment["request"])
+        or assignment["result_sha256"]!=digest(assignment["result"])
+        or assignment["catalog_sha256"]!=assignment["request"].get("catalog_sha256")):
+        block("ASSIGNMENT_SCOPE_OR_AUTHORITY_INVALID")
+    current=prepare(assignment["request"]["literal_request"],assignment["project_ref"],
+                    assignment["area"],assignment["write_scope"])
+    if current.get("status")!="READY" or current.get("request")!=assignment["request"]:
+        block("PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
+    # Recheck actual sealed result against current descriptor, policy and route rules.
+    selected=assignment["profile_code"]
+    result=assignment["result"]
+    if (result.get("decision")!="SELECTED" or result.get("selected_profile_code")!=selected or
+        selected not in [p.get("profile_code") for p in current["request"]["candidate_profiles"]]):
+        block("PG06_SELECTED_PROFILE_DRIFT")
+    # Revalidate original draft material; do not replay the already-hashed result as a draft.
+    draft={k:copy.deepcopy(result.get(k)) for k in
+           ("decision","selected_profile_code","ambiguous_profile_codes",
+            "reason","evidence_refs","material_ambiguities")}
+    renewed=finalize(current["request"],draft)
+    if renewed.get("status")!="VALID" or renewed.get("result")!=result:
+        block("PG06_RECEIPT_OR_RESULT_STALE")
+    out={"schema_version":"PG06_PROFILE_CURRENTNESS_V1","status":"CURRENT",
+         "assignment_sha256":assignment["assignment_sha256"],
+         "lot_sha256":lot["lot_sha256"],"production_authority":False}
+    out["currentness_sha256"]=digest(out)
+    return out
+
+def pg07_worker_projection(*,assignment,lot,currentness,worker_spec):
+    """Output is a CANDIDATE overlay, NOT fn_agent_task_worker_spec or an authenticated Worker receipt."""
+    _validate_lot(lot)
+    frozen(assignment,"assignment_sha256")
+    frozen(currentness,"currentness_sha256")
+    if (currentness.get("schema_version")!="PG06_PROFILE_CURRENTNESS_V1" or
+        currentness.get("status")!="CURRENT" or currentness.get("production_authority") is not False
+        or currentness.get("assignment_sha256")!=assignment["assignment_sha256"]
+        or currentness.get("lot_sha256")!=lot["lot_sha256"]):
+        block("PG07_CURRENTNESS_MISSING")
+    if assignment["write_scope"]!=lot["paths"] or assignment["production_authority"] is not False:
+        block("PG07_SCOPE_OR_AUTHORITY_INVALID")
+    if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
+        block("PG07_WORKER_SPEC_INVALID")
+    if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
+        block("PG07_ORACLE_EXPOSURE")
+    task={"schema_version":"PG07_PROFILE_TASK_OVERLAY_V1","status":"CANDIDATE_NOT_ADMITTED",
+        "profile_code":assignment["profile_code"],
+        "profile_assignment_sha256":assignment["assignment_sha256"],
+        "write_scope":copy.deepcopy(lot["paths"]),
+        "worker_spec_sha256":digest(worker_spec),"production_authority":False,
+        "dispatch_allowed":False}
+    task["task_sha256"]=digest(task)
+    receipt={"schema_version":"PG07_PROFILE_RECEIPT_LINK_CANDIDATE_V1",
+        "task_sha256":task["task_sha256"],"profile_assignment_sha256":assignment["assignment_sha256"],
+        "worker_receipt_verified":False,"production_authority":False}
+    receipt["receipt_chain_sha256"]=digest(receipt)
+    return {"worker_task_overlay":task,"receipt_link_candidate":receipt,
+            "worker_invoked":False,"production_authority":False}
