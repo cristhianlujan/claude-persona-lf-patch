@@ -2,7 +2,7 @@
 The profile creates a Worker TASK SPEC, never code. No network, git writes or runtime activation.
 """
 import json,re,sys,copy
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 STANDARD_SOURCE="supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
 FILES=["SKILL.md","README.md","adapters/document_patch_adapter.md","adapters/github_pack_adapter.md","checklists/preflight_checklist.md","checklists/priority_checklist.md","contracts/main_contract.md","contracts/missing_input_policy.md","evals/eval_matrix.json","examples/bad_output.json","examples/good_output.json","examples/self_repair_output.json","fixtures/happy_path/input.json","fixtures/missing_inputs/input.json","fixtures/self_repair/bad_output.json","fixtures/unsafe_or_blocked/input.json","handoffs/to_quality_pack.handoff.json","judges/mini_judge.md","judges/score_rubric.md","manifest.json","schemas/missing_input.schema.json","schemas/output.schema.json","validators/validate_pack.py","contracts/runtime_binding.json"]
 REQUIRED=["schema_version","task_id","objective","expected_change","human_story","functional_contract","scope","cases","dependency_resolution","dependency_task_ids","required_tests","required_evidence","blocked_if","base_head_sha","source_snapshot_sha256","context_path_patterns","write_path_patterns","protected_path_patterns","files_expected","platform_refs","interface_refs","acceptance_commands","max_attempts","max_patch_bytes","max_changed_files","max_context_bytes","allow_deletions"]
@@ -14,11 +14,34 @@ def walk_forbidden(obj):
     return False
 def valid_path(p):
     return isinstance(p,str) and bool(PATH.fullmatch(p)) and len(p)<=400 and not p.startswith("/") and not p.endswith("/") and all(x not in ("",".","..") for x in p.split("/"))
+def valid_pattern(value):
+    """Local sandbox pack guard. Final authority is the REAL Worker validator in adapter."""
+    if not isinstance(value,str) or not value or len(value.encode("utf-8"))>1024:
+        return False
+    if "\\x00" in value or "\\\\" in value or value.startswith("/") or any(ord(ch)<32 for ch in value):
+        return False
+    parts=PurePosixPath(value).parts
+    if not parts or any(x in ("",".","..",".git") for x in parts):
+        return False
+    if PurePosixPath(value).as_posix()!=value:
+        return False
+    for part in value.split("/"):
+        if "**" in part and part!="**":return False
+        if any(x in part for x in "[]{}"):return False
+    return True
 def check_output(spec,task,binding):
     errors=[]
     if not isinstance(spec,dict) or set(spec)!=set(REQUIRED):return ["WORKER_SPEC_FIELDS_INVALID"]
     if walk_forbidden(spec):errors.append("ORACLE_OR_AUTHORITY_EXPOSURE")
     if not isinstance(task,dict):return errors+["LOT_INPUT_INVALID"]
+    for field in ("context_path_patterns","write_path_patterns","protected_path_patterns"):
+        paths=spec.get(field)
+        if not isinstance(paths,list) or not paths or not all(valid_pattern(x) for x in paths):
+            errors.append("WORKER_PATH_NOT_CANONICAL:"+field)
+    for key in ("write_scope","protected_paths"):
+        items=task.get(key)
+        if not isinstance(items,list) or not items or not all(valid_pattern(x) for x in items):
+            errors.append("LOT_PATH_NOT_CANONICAL:"+key)
     if task.get("area")!=binding["area"]:errors.append("AREA_MISMATCH")
     if task.get("profile_code")!=binding["profile_code"]:errors.append("PROFILE_CODE_MISMATCH")
     if task.get("production_authority") is not False:errors.append("LOT_AUTHORITY_INVALID")
@@ -81,6 +104,9 @@ def evaluate(root):
     cases.append(("WRONG_AREA",bool(check_output(spec,altered,binding))))
     altered=copy.deepcopy(spec);altered["production_authority"]=True
     cases.append(("AUTHORITY_INJECTED",bool(check_output(altered,task,binding))))
+    altered=copy.deepcopy(spec);altered["protected_path_patterns"]=["tests/protected/"]
+    findings=check_output(altered,task,binding)
+    cases.append(("NON_CANONICAL_PATH", "WORKER_PATH_NOT_CANONICAL:protected_path_patterns" in findings))
     return cases
 def main(root,evals=False):
     problems=check_pack(root)
