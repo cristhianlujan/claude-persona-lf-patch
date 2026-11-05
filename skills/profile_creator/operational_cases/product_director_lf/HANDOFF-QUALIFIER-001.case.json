@@ -1,0 +1,42 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_CASE_V1",
+  "profile_slug": "product_director_lf",
+  "case_id": "HANDOFF-QUALIFIER-001",
+  "description": "RAW real de la ejecucion EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010 (Issue #3562, Login B2B): handoff_to_next.qualifiers_to_preserve omite un qualifier de product_decision.semantic_qualifiers. El flujo debe terminar en una salida que el validador oficial acepte sin cambiar decisiones, autoridad ni fuentes.",
+  "checks": [
+    {
+      "id": "HQ01_OUTPUT_IS_DIRECTION_SPEC",
+      "pointer": "/output/output_type",
+      "op": "eq",
+      "value": "PRODUCT_DIRECTION_SPEC"
+    },
+    {
+      "id": "HQ02_PROFILE_VALIDATOR_VALID",
+      "pointer": "/validator/valid",
+      "op": "eq",
+      "value": true
+    },
+    {
+      "id": "HQ03_NO_HANDOFF_QUALIFIER_LOSS",
+      "pointer": "/validator/handoff_qualifier_loss",
+      "op": "eq",
+      "value": false
+    },
+    {
+      "id": "HQ04_QUALIFIERS_REACH_HANDOFF",
+      "pointer": "/output/deliverable_created/handoff_to_next/qualifiers_to_preserve",
+      "op": "min_len",
+      "value": 1
+    },
+    {
+      "id": "HQ05_DECISION_UNCHANGED_NONEMPTY",
+      "pointer": "/output/deliverable_created/product_decision/selected_decision",
+      "op": "nonempty"
+    }
+  ],
+  "semantic_pending": [
+    "HANDOFF-QUALIFIER-001:P1 la decision y las fuentes no cambian respecto al RAW original",
+    "HANDOFF-QUALIFIER-001:P2 el qualifier agregado existe literalmente en product_decision.semantic_qualifiers"
+  ],
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+}
