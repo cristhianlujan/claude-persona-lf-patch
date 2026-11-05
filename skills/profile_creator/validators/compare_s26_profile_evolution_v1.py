@@ -90,7 +90,10 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path,
     operational = opc.evaluate(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, base_dir, candidate_dir)
     result["operational"] = operational
     basis = (["STRUCTURAL_S26"] if improved else []) + (["OPERATIONAL_COVERAGE"] if operational["improved_checks"] else [])
-    if regressed or operational["regressed_checks"]:
+    if operational.get("candidate_validator_schema_contradictions"):
+        result["blocking_codes"].append("CANDIDATE_VALIDATOR_SCHEMA_CONTRADICTION")
+        result["verdict"] = "BLOCKED"
+    elif regressed or operational["regressed_checks"]:
         result["verdict"] = "REGRESSION"
     elif basis:
         result["verdict"] = "EVOLUTION_DEMONSTRATED"

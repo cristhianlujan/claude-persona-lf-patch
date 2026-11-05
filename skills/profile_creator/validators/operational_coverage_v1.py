@@ -182,6 +182,25 @@ def compare(base: dict[str, Any], cand: dict[str, Any]) -> dict[str, Any]:
             "candidate_passed": cand_pass, "improved_checks": improved, "regressed_checks": regressed}
 
 
+def validator_schema_contradictions(runs: list[dict], tree_sha: str) -> list[str]:
+    """Run ids bound to this exact tree whose recorded validator verdict and mode-schema verdict disagree.
+
+    Only runs that record both booleans (`valid` and `mode_schema_valid`) are judged. A profile whose
+    canonical validator accepts an output that its own bound schema rejects (or the reverse) has two
+    contradictory contracts; the update must not leave that in the candidate. The base tree may carry
+    such a contradiction: that is the defect being fixed, so it is never penalised here.
+    """
+    bad = []
+    for r in runs:
+        v = r.get("validator")
+        if r.get("profile_tree_sha256") != tree_sha or not isinstance(v, dict):
+            continue
+        if isinstance(v.get("valid"), bool) and isinstance(v.get("mode_schema_valid"), bool) \
+                and v["valid"] != v["mode_schema_valid"]:
+            bad.append(str(r.get("run_id", "?")))
+    return sorted(bad)
+
+
 def evaluate(operational_root: Path, slug: str, base_dir: Path, candidate_dir: Path) -> dict[str, Any]:
     cases, problems = load_cases(operational_root, slug)
     if not cases:
@@ -191,6 +210,7 @@ def evaluate(operational_root: Path, slug: str, base_dir: Path, candidate_dir: P
     result = compare(measure(cases, runs, base_sha), measure(cases, runs, cand_sha))
     result.update({"status": "MEASURED" if result["checks_total"] else "UNMEASURED", "problems": problems + rejected,
                    "base_tree_sha256": base_sha, "candidate_tree_sha256": cand_sha,
+                   "candidate_validator_schema_contradictions": validator_schema_contradictions(runs, cand_sha),
                    "semantic_pending": sorted({p for c in cases.values() for p in c.get("semantic_pending", [])})})
     # Complementary side-by-side report, automatically carried by the EXISTING Group2 proof.
     # Never changes compare() verdict, measured checks, or the independent semantic gate.
