@@ -1,9 +1,12 @@
 {
   "skill_code": "FASTAPI_EXP",
-  "area": "WRONG_AREA",
+  "skill_version": "1",
+  "area": "BACKEND",
+  "rule_ids": [
+    "FA-01"
+  ],
   "oracle_envelope": {
-    "secret": "NOT_ALLOWED"
+    "secret": "FORBIDDEN"
   },
-  "production_authority": true,
   "expected": "BLOCK"
 }
