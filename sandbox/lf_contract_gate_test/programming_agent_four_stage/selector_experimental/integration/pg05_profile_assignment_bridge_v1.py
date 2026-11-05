@@ -261,6 +261,13 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2,role
     if (hashlib.sha256(role.get("role_text","").encode("utf-8")).hexdigest()!=role.get("profile_sha256") or
         hashlib.sha256(skill.get("skill_text","").encode("utf-8")).hexdigest()!=skill.get("skill_sha256")):
         block("PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
+        block("PG07_WORKER_SPEC_INVALID")
+    if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
+        block("PG07_ORACLE_EXPOSURE")
+    if not isinstance(worker_spec.get("write_path_patterns"),list) or (
+        _safe_scope(worker_spec["write_path_patterns"])!=lot["paths"]):
+        block("PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     visible=worker_spec.get("functional_contract",{}).get("role_and_stack") if isinstance(worker_spec,dict) else None
     if (not isinstance(visible,dict) or
         visible.get("profile_code")!=role["profile_code"] or
@@ -272,13 +279,6 @@ def pg07_worker_projection(*,assignment,lot,currentness,worker_spec,pg07_c2,role
         visible.get("project_ref")!=assignment["project_ref"] or
         visible.get("area")!=assignment["area"]):
         block("PG07_ROLE_STACK_NOT_IN_VISIBLE_TASK")
-    if not isinstance(worker_spec,dict) or worker_spec.get("schema_version")!=2:
-        block("PG07_WORKER_SPEC_INVALID")
-    if any(x in worker_spec for x in ("oracle_envelope","hidden_oracle_ref","hidden_oracle_sha256")):
-        block("PG07_ORACLE_EXPOSURE")
-    if not isinstance(worker_spec.get("write_path_patterns"),list) or (
-        _safe_scope(worker_spec["write_path_patterns"])!=lot["paths"]):
-        block("PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     if not isinstance(pg07_c2,dict) or pg07_c2.get("schema_version")!="PG07_C2_WORKER_TASK_BATCH_CANDIDATE_V1":
         block("PG07_REAL_C2_VALIDATION_REQUIRED")
     frozen(pg07_c2)
