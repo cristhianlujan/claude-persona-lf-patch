@@ -16,6 +16,10 @@ from test_parity import TABLES,FUNCTIONS
 STAGES=ROOT.parent
 sys.path.insert(0,str(STAGES/"pg05_target_binding_candidate"/"tests"))
 from test_pg05_chain_c1_c5_v1 import build_chain
+PROFILE_PACKS=STAGES/"programmer_profiles_exp"
+sys.path.insert(0,str(PROFILE_PACKS))
+from selector_descriptor_from_skill import apply_local_resync, candidates
+
 sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pg07_c1_worker_dispatch_plan_v1 import prepare_pg07_c1,PG07WorkerPlanBlocked
 from pg07_c2_task_batch_projection_v1 import prepare_pg07_c2,TaskProjectionBlocked
@@ -53,7 +57,7 @@ def real_producers():
     check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
     return chain
 
-def real_pg07_validation(chain,c2,selected_solution):
+def real_pg07_validation(chain,c2,selected_solution,return_c1=False):
     """Exercise actual PG07 C1 and C2 producers on the PG05 chain, not a local reimplementation.
     PG06 C5 receipt and visible Worker specs are explicit synthetic, UNATTESTED input fixtures.
     """
@@ -123,7 +127,7 @@ def real_pg07_validation(chain,c2,selected_solution):
     check(any(x["worker_visible_task_spec"]==chosen for x in c2_pg07["worker_payloads"]),
           "Real PG07 C2 did not accept chosen Worker task")
     print("PASS real PG07 C1 and C2 producers accept visible Worker specification")
-    return chosen,c2_pg07
+    return (chosen,c2_pg07,c1) if return_c1 else (chosen,c2_pg07)
 
 def draft_for_code(request,code):
     p=next(p for p in request["candidate_profiles"] if p["profile_code"]==code)
@@ -282,6 +286,10 @@ def main():
         reference(dsn)
         for f in ("seed_profiles_exp.sql","area_policy_exp.sql","functions_exp.sql"):
             run_psql(dsn,file=ROOT/"experimental"/f)
+        head=os.environ.get("PROFILE_CANDIDATE_HEAD_SHA","")
+        bound=apply_local_resync(dsn,head,run_psql,sql_json)
+        check(len(bound)==3,"Three SKILL-backed descriptors required")
+        print("PASS original descriptor_sync_v1 generated 3 candidate descriptors from SKILL.md")
         test_chain(dsn)
     finally:
         run_psql(dsn,sql="DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; DROP SCHEMA IF EXISTS extensions CASCADE")
