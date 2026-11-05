@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""No DB writes. Three pack gates + six adversarial cases each + actual PG07 C2 validator."""
-import json,sys,copy
+"""Sandbox pack gates, four project stack skills, and actual PG07-C2 worker spec acceptance.
+No Supabase, no DB writes, no model invocation or Worker execution.
+"""
+import copy,json,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent
 STAGES=ROOT.parent
@@ -9,45 +11,83 @@ sys.path.insert(0,str(STAGES/"selector_experimental"/"integration"))
 sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pack_validation_common import check_pack,evaluate
 from selector_descriptor_from_skill import SLUGS,descriptor
+from stack_skills_exp.project_stack_resolver_exp import (
+    load_json,skill_material,role_material,select_binding,compose_visible_worker_spec,StackBlocked)
 from test_pg04_pg07_selector_bridge_v1 import real_producers,real_pg07_validation
-from pg07_c2_task_batch_projection_v1 import prepare_pg07_c2
 
-def check(ok,why):
-    if not ok:raise AssertionError(why)
+def check(v,reason):
+    if not v:raise AssertionError(reason)
+def fixture_binding(project,area):
+    rows=[]
+    for r in load_json("project_stack_binding_fixtures.json")["rows"]:
+        if r["project_ref"]==project and r["area"]==area:
+            rows.append({**r,"skill_sha256":skill_material(r["skill_code"])["skill_sha256"]})
+    return select_binding(project,area,lambda _p,_a:rows)
+def expect_error(fn,code):
+    try:fn()
+    except StackBlocked as exc:
+        check(str(exc)==code,repr((str(exc),code)))
+        print("PASS BLOCK",code)
+        return
+    raise AssertionError("Expected "+code)
 def run():
     chain=real_producers()
-    c2=chain["c2"];sid=sorted(x["solution_id"] for x in c2["solution_scopes"])[-1]
-    baseline,output,c1=real_pg07_validation(chain,c2,sid,return_c1=True)
+    c2=chain["c2"]
+    sid=sorted(x["solution_id"] for x in c2["solution_scopes"])[-1]
     for slug in SLUGS:
         pack=ROOT/slug
-        blockers=check_pack(pack)
-        check(not blockers,slug+" PACK_FAIL "+repr(blockers))
-        print("PASS PACK",slug)
+        errors=check_pack(pack)
+        check(not errors,slug+" "+repr(errors))
+        print("PASS PROFILE_PACK",slug)
         ev=evaluate(pack)
-        check(len(ev)==6 and all(ok for _,ok in ev),slug+" EVAL_FAIL "+repr(ev))
-        for name,ok in ev:print("PASS EVAL",slug,name)
+        check(len(ev)==6 and all(v for _,v in ev),slug+" "+repr(ev))
+        for k,v in ev:print("PASS ROLE_EVAL",slug,k)
         d=descriptor(slug)
-        check(d["schema_version"]=="LF_PROFILE_SELECTION_DESCRIPTOR_V1" and
-              len(d["selection_evidence"])==1,"Descriptor not derived from source")
-        print("PASS DESCRIPTOR_FROM_SKILL",slug)
-        spec=json.loads((pack/"examples/good_output.json").read_text(encoding="utf-8"))
-        projections=[{"solution_id":x["solution_id"],
-                      "function_result_ref":x["worker_task_spec_source_ref"],
-                      "worker_spec":copy.deepcopy(spec if x["solution_id"]==sid else x["worker_visible_task_spec"]),
-                      "source_snapshot_sha256":x["worker_visible_task_spec"]["source_snapshot_sha256"]}
-                     for x in output["worker_payloads"]]
-        oracles=[{"solution_id":x["solution_id"],"verifier_only_ref":x["verifier_only_ref"],
-                  "oracle_subject_sha256":x["oracle_subject_sha256"],"access_policy":x["access_policy"]}
-                 for x in output["verifier_only_oracle_envelopes"]]
-        qualified=prepare_pg07_c2(pg07_c1=c1,worker_spec_projections=projections,
-                                  verifier_oracle_bindings=oracles)
-        accepted=[x for x in qualified["worker_payloads"] if x["solution_id"]==sid]
-        check(len(accepted)==1 and accepted[0]["worker_visible_task_spec"]==spec
-              and qualified["production_authority"] is False
-              and qualified["dispatch_allowed"] is False,
-              "Real PG07 C2 rejected pack visible spec")
-        print("PASS REAL_PG07_C2",slug)
-    print("PASS PROGRAMMER_PROFILE_PACKS_CANDIDATE_SANDBOX_ONLY")
+        check(d["schema_version"]=="LF_PROFILE_SELECTION_DESCRIPTOR_V1","Descriptor schema")
+        print("PASS SKILL_SOURCE_DESCRIPTOR",slug)
+        sample=json.loads((pack/"examples/good_output.json").read_text())
+        task=json.loads((pack/"fixtures/happy_path/input.json").read_text())
+        profile=task["profile_code"]
+        role=role_material(profile)
+        projects=["lf_java","lf_python"] if role["area"]=="BACKEND" else ["lf_java"]
+        for project in projects:
+            skill=fixture_binding(project,role["area"])
+            assignment={"profile_code":profile,"area":role["area"],"project_ref":project}
+            def transform(raw):
+                spec=copy.deepcopy(sample)
+                for k in ("task_id","base_head_sha","source_snapshot_sha256","context_path_patterns","write_path_patterns","files_expected"):
+                    spec[k]=copy.deepcopy(raw[k])
+                spec["scope"]["in_scope"]=copy.deepcopy(raw["write_path_patterns"])
+                return compose_visible_worker_spec(spec,assignment,role,skill)
+            visible,real_c2,c1=real_pg07_validation(chain,c2,sid,return_c1=True,spec_transform=transform)
+            rules=visible["functional_contract"]["role_and_stack"]
+            check(rules["profile_sha256"]==role["profile_sha256"] and
+                  rules["skill_sha256"]==skill["skill_sha256"] and
+                  rules["skill_code"]==skill["skill_code"] and
+                  rules["project_ref"]==project,"C2 missing source identity")
+            check(real_c2["dispatch_allowed"] is False and
+                  real_c2["production_authority"] is False,"C2 premature authority")
+            print("PASS REAL_PG07_C2_ROLE_STACK",slug,project,skill["skill_code"])
+    backend=role_material("PERFIL-PROG-BACKEND-EXP")
+    java=fixture_binding("lf_java","BACKEND")
+    py=fixture_binding("lf_python","BACKEND")
+    check(java["skill_code"]=="SPRINGBOOT_EXP" and py["skill_code"]=="FASTAPI_EXP","Project-bound backend skill drift")
+    check(backend["profile_code"]=="PERFIL-PROG-BACKEND-EXP","Same role not reused")
+    print("PASS SAME_BACKEND_ROLE_TWO_PROJECT_STACKS")
+    expect_error(lambda:fixture_binding("lf_python","FRONTEND"),"SKILL_NOT_BOUND")
+    badrow={**java["binding_row"],"skill_sha256":"0"*64}
+    expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:[badrow]),"SKILL_SHA256_MISMATCH")
+    fe=fixture_binding("lf_java","FRONTEND")
+    badarea={**java["binding_row"],"skill_code":fe["skill_code"],"skill_sha256":fe["skill_sha256"]}
+    expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:[badarea]),"SKILL_AREA_MISMATCH")
+    for entry in load_json("skill_catalog_exp.json")["skills"]:
+        m=skill_material(entry["skill_code"])
+        check(len(m["skill_sha256"])==64,"Missing stack SHA")
+        check(m["area"]==entry["area"],"Stack area drift")
+        check(m["skill_text"].count("https://")>=1,"Stack source missing")
+        check(m["pg00_standard_family"] if "pg00_standard_family" in m else m["standard_family"]==entry["standard_family"],"Standard reference missing")
+        print("PASS STACK_SKILL_SOURCE",entry["skill_code"])
+    print("PASS ROLE_STACK_SANDBOX_CANDIDATES; PG00 normative text unresolved -> NO PRODUCTION")
 if __name__=="__main__":
     try:run()
     except Exception as exc:
