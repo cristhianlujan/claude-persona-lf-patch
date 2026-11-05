@@ -1,24 +1,22 @@
 {
-  "eval_id": "FASTAPI_EXP_STACK_SKILL_EXP",
+  "schema_version": "LF_STACK_EVAL_EXP_V2",
+  "skill_code": "FASTAPI_EXP",
+  "version": "1",
   "cases": [
     {
-      "id": "MATCH_AREA",
+      "id": "WORKER_MIN_3_RULES",
       "expected": "PASS"
     },
     {
-      "id": "SKILL_SHA_DRIFT",
+      "id": "ONLY_TWO_RULES",
       "expected": "BLOCK"
     },
     {
-      "id": "WRONG_AREA",
+      "id": "WRONG_VERSION",
       "expected": "BLOCK"
     },
     {
-      "id": "MISSING_PG00_TEXT",
-      "expected": "BLOCK"
-    },
-    {
-      "id": "HIDDEN_ORACLE",
+      "id": "RULE_SOURCE_TAMPERED",
       "expected": "BLOCK"
     }
   ]
