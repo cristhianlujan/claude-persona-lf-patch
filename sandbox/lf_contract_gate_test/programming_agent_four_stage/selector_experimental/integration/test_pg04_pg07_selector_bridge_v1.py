@@ -20,6 +20,8 @@ from test_pg05_chain_c1_c5_v1 import build_chain
 PROFILE_PACKS=STAGES/"programmer_profiles_exp"
 sys.path.insert(0,str(PROFILE_PACKS))
 from selector_descriptor_from_skill import apply_local_resync, candidates
+from stack_skills_exp.project_stack_resolver_exp import (seed_local_binding_table,read_sql_binding,role_material,
+    compose_visible_worker_spec,StackBlocked,select_binding)
 
 sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pg07_c1_worker_dispatch_plan_v1 import prepare_pg07_c1,PG07WorkerPlanBlocked
@@ -58,7 +60,7 @@ def real_producers():
     check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
     return chain
 
-def real_pg07_validation(chain,c2,selected_solution,return_c1=False):
+def real_pg07_validation(chain,c2,selected_solution,return_c1=False,spec_transform=None):
     """Exercise actual PG07 C1 and C2 producers on the PG05 chain, not a local reimplementation.
     PG06 C5 receipt and visible Worker specs are explicit synthetic, UNATTESTED input fixtures.
     """
@@ -107,6 +109,8 @@ def real_pg07_validation(chain,c2,selected_solution,return_c1=False):
               "acceptance_commands":["python3 -m compileall ."],
               "max_attempts":2,"max_patch_bytes":10000,"max_changed_files":5,
               "max_context_bytes":20000,"allow_deletions":False}
+        if sid==selected_solution and spec_transform is not None:
+            spec=spec_transform(spec)
         projections.append({"solution_id":sid,"function_result_ref":"fixture://function/"+sid,
                             "worker_spec":spec,"source_snapshot_sha256":snapshots[sid]})
         oracles.append({"solution_id":sid,"verifier_only_ref":"fixture://oracle/"+sid,
@@ -249,9 +253,16 @@ def test_chain(dsn):
                      "PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
         finally:run_psql(dsn,sql=undo)
         print("PASS PG06 changed",reason,"blocked")
-    spec,pg07_c2=real_pg07_validation(chain,c2,sid)
+    role=role_material(assignment["profile_code"])
+    skill=read_sql_binding(dsn,run_psql,assignment["project_ref"],assignment["area"])
+    spec,pg07_c2=real_pg07_validation(chain,c2,sid,
+        spec_transform=lambda raw:compose_visible_worker_spec(raw,assignment,role,skill))
+    check(spec["functional_contract"]["role_and_stack"]["skill_code"]==skill["skill_code"],
+          "Bound stack not inserted in Worker visible task")
+
     out=pg07_worker_projection(assignment=assignment,lot=lot,
-                               currentness=current,worker_spec=spec,pg07_c2=pg07_c2)
+                               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+                               role=role,skill=skill,project_binding_row=skill["binding_row"])
     task=out["worker_task_overlay"];receipt=out["receipt_link_candidate"]
     check(task["profile_code"]==general and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
@@ -261,11 +272,13 @@ def test_chain(dsn):
           "PG07 chain not intact")
     print("PASS PG07 scoped worker task and candidate receipt digest chain")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
-               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2),
+               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2,
+               role=role,skill=skill,project_binding_row=skill["binding_row"]),
              "PG07_ORACLE_EXPOSURE")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
                currentness=current,worker_spec={**spec,
-               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]},pg07_c2=pg07_c2),
+               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]},pg07_c2=pg07_c2,
+               role=role,skill=skill,project_binding_row=skill["binding_row"]),
              "PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     print("PASS PG07 Worker-visible write scope cannot expand outside PG05 C2")
 
@@ -293,6 +306,8 @@ def main():
         bound=apply_local_resync(dsn,head,run_psql,sql_json)
         check(len(bound)==3,"Three SKILL-backed descriptors required")
         print("PASS original descriptor_sync_v1 generated 3 candidate descriptors from SKILL.md")
+        run_psql(dsn,file=STAGES/"programmer_profiles_exp/stack_skills_exp/project_stack_binding_exp.sql")
+        seed_local_binding_table(dsn,run_psql)
         test_chain(dsn)
     finally:
         run_psql(dsn,sql="DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; DROP SCHEMA IF EXISTS extensions CASCADE")
