@@ -1,21 +1,18 @@
-# FastAPI — rutas, dependencias y pruebas — skill técnica de ENSAYO
+# FastAPI — stack skill de ENSAYO
+**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** BACKEND. **Código:** FASTAPI_EXP. **Versión:** 1.
 
-**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** BACKEND. **Código:** FASTAPI_EXP.
+## Vinculación
+La skill se obtiene exclusivamente de project_stack_binding_exp por proyecto, área y versión con prioridad explícita; la IA no la escoge.
 
-## Rol y frontera
-Esta skill contiene **conocimiento técnico** del stack. No decide el perfil, ni se asigna a sí misma: la selecciona exclusivamente la tabla `project_stack_binding_exp` por `project_ref + area`. No ejecuta código, tests, despliegues ni migraciones.
+## Reglas expertas verificables
+- **FA-01:** Definir rutas con APIRouter y dependencias mediante Depends según layout vigente del proyecto. **Fuente oficial:** https://fastapi.tiangolo.com/tutorial/dependencies/
+- **FA-02:** Exigir validación de input y response_model de salida para preservar contratos HTTP y filtrar respuestas según el esquema. **Fuente oficial:** https://fastapi.tiangolo.com/tutorial/response-model/
+- **FA-03:** Definir y probar HTTPException y manejo de errores sin divulgar información interna. **Fuente oficial:** https://fastapi.tiangolo.com/tutorial/handling-errors/
+- **FA-04:** Probar rutas con TestClient y pytest cuando estén disponibles, incluyendo solicitudes válidas e inválidas. **Fuente oficial:** https://fastapi.tiangolo.com/tutorial/testing/
+- **FA-05:** En pruebas reemplazar dependencias con app.dependency_overrides y limpiar overrides al terminar. **Fuente oficial:** https://fastapi.tiangolo.com/advanced/testing-dependencies-overrides/
 
-## Criterio experto respaldado
-1. Definir contratos de rutas y validaciones de entrada/salida conforme al proyecto; no asumir una estructura de carpetas universal.
-2. Resolver dependencias y comportamiento HTTP con fuentes del repo; solicitar ejemplos y criterios de error.
-3. Exigir pruebas de endpoints con TestClient/pytest cuando el proyecto lo admita; no simular su ejecución.
+## L1/L2 y L3
+Familia `STD-BE` referenciada en `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`, que NO contiene el texto normativo completo. `PG00_STANDARD_TEXT_UNAVAILABLE` hasta recuperar el catálogo canónico versionado con huella. Guías del stack no sustituyen normas internas LF.
 
-## Fuentes externas oficiales
-- https://fastapi.tiangolo.com/tutorial/dependencies/
-- https://fastapi.tiangolo.com/tutorial/testing/
-
-## Gobernanza LF L1/L2 y L3
-Familia del catálogo PG-00: `STD-BE`. Fuente PG-00 verificada como **registro de referencias y decisiones**, no como el texto normativo completo: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. El proceso de materialización carga el texto **literal y versionado** de `STD-BE` cuando la fuente canónica exista. Si no se encuentra el texto con huella comprobable, devolver `PG00_STANDARD_TEXT_UNAVAILABLE`: no completar desde conocimiento general ni usar estas reglas como sustituto de L1/L2. Las reglas L3 propias del proyecto tienen precedencia según la gobernanza de PG-00.
-
-## Contrato y seguridad
-Exigir task scope, revisión exacta y pruebas visibles; rechazar skill alterada, área distinta, oracle oculto, permisos inyectados y comandos no respaldados. Salida: instrucciones visibles para la especificación del Worker; sin autoridad ni patch.
+## Salida y límites
+Pasar al Worker visible un mínimo de tres reglas verificadas de esta skill, con ID y fuente; no incluir oráculo ni autoridad. `production_authority=false`; `runtime_enabled=false`; `promotion_allowed=false`.
