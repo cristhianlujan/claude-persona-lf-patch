@@ -314,6 +314,19 @@ def test_chain(dsn):
           out["worker_invoked"] is False and out["production_authority"] is False,
           "PG07 chain not intact")
     print("PASS PG07 scoped worker task and candidate receipt digest chain")
+    modified_role=copy.deepcopy(role)
+    modified_role["role_text"]+="\\nUNAUTHORIZED CHANGE"
+    failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
+               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+               role=modified_role,skill=skill,project_binding_row=skill["binding_row"]),
+             "PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    modified_skill=copy.deepcopy(skill)
+    modified_skill["skill_text"]+="\\nINJECTED STACK RULE"
+    failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
+               currentness=current,worker_spec=spec,pg07_c2=pg07_c2,
+               role=role,skill=modified_skill,project_binding_row=skill["binding_row"]),
+             "PG07_ROLE_OR_SKILL_SHA256_MISMATCH")
+    print("PASS PG07 unmodified role and skill SHA invariants")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
                currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2,
                role=role,skill=skill,project_binding_row=skill["binding_row"]),
