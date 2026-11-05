@@ -1,0 +1,505 @@
+{
+  "schema_version": "PROFILE_OPERATIONAL_RUN_V1",
+  "run_id": "RUN-HANDOFFQUALIFIER001-CANDIDATE-20261105",
+  "case_id": "HANDOFF-QUALIFIER-001",
+  "profile_slug": "product_director_lf",
+  "profile_tree_sha256": "e6921ad2d8138be51f26642a2fa253d27c767a082facdf64035bb547e0833c07",
+  "attestation": "NONE",
+  "recorded_at": "2026-11-05T05:20:00Z",
+  "executor": {
+    "mode": "DETERMINISTIC_PREFLIGHT_OF_REAL_RAW",
+    "note": "El mismo RAW de Issue #3562 pasado por prepare_output_for_submission.py del arbol candidato (PR #3611); no hay llamada a modelo."
+  },
+  "conditions": "Mide que el flujo ya no se bloquea por un solo HANDOFF_QUALIFIER_LOSS; NO mide que el modelo copie mejor los qualifiers. Reparacion: solo agrega textos exactos ya presentes en semantic_qualifiers.",
+  "validator": {
+    "tool": "profiles/product_director_lf/validators/validate_product_director_output.py",
+    "valid": true,
+    "blocking_codes": [],
+    "handoff_qualifier_loss": false,
+    "preflight_status": "SELF_REPAIRED_HANDOFF_QUALIFIERS",
+    "added_qualifiers": [
+      "La pantalla B2B-AUTH-005 TOTP es legacy reemplazado; no es una vía vigente de verificación."
+    ]
+  },
+  "output": {
+    "worker": "product_director_lf",
+    "output_type": "PRODUCT_DIRECTION_SPEC",
+    "deliverable_created": {
+      "product_decision": {
+        "decision_id": "B2B-AUTH-001-LOGIN-GOV-20261104-436333",
+        "selected_decision": "Conservar el contrato vivo de B2B-AUTH-001: 283 reglas efectivas (250 VIGENTE, 33 CANDIDATO), de las cuales 71 son vínculos directos (38 vigentes y 33 candidatos). No duplicar ni promover por inferencia. Priorizar: P1-a política diferenciada de intentos FALLIDOS de contraseña para resolver AUTH-047, no equipararla a RATE-B2B-LOGIN (solicitudes); P1-b resolver implementación IdP/OIDC, MFA por correo, recuperación no-admin, SSO y transiciones seguras, sin sesión operativa antes del segundo control y sin reactivar B2B-AUTH-005 TOTP legado; P1-c implementar y verificar las 13 relaciones ya registradas de políticas de sesión, timeout, seguridad y rate-limit, reutilizando valores centrales; P1-d reconciliar las 20 familias IG NOT_READY (12 decisiones de fuente/autoridad y 8 dependencias) sin crear reglas falsas; P2-e completar contraste y tokens THEME-002. Handoff de cambios mínimos y QA a operaciones gobernadas independientes: la presente ejecución de Product Director es READ_ONLY / NO_WRITE / NO_PROMOTION, sin tocar ACT-0001 ni activar producción.",
+        "rationale": "Se contrastó el contrato vivo (283/250/33), las 71 reglas directas (38/33), 13 asociaciones de política, 3 estados AUTH_FLOW y las 20 familias IG del RUN actual. El problema material es autoridad ausente para intentos fallidos, proveedor/QA de identidad y trazabilidad de implementación; no falta recrear el Login.",
+        "source_refs": [
+          {
+            "source_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
+            "authority": "AUTHORITATIVE",
+            "supports": "Contrato efectivo actual: 283 reglas, 250 VIGENTE/33 CANDIDATO; 71 asociaciones directas verificadas aparte.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://public.lf_profile_ig_open_work_v1/EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010",
+            "authority": "CONSTRAINT",
+            "supports": "20 familias IG P1 NOT_READY y blockers por family_code del run actual.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-047",
+            "authority": "AUTHORITATIVE",
+            "supports": "AUTH-047 CANDIDATO pendiente de la política canónica de intentos fallidos.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.politicas_rate_limit/RATE-B2B-LOGIN",
+            "authority": "AUTHORITATIVE",
+            "supports": "RATE-B2B-LOGIN vigente de solicitudes, no de fallos de contraseña; 5 por 900 s, scope IP_USER.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.politicas_sesion/SESSION-B2B-DEFAULT",
+            "authority": "AUTHORITATIVE",
+            "supports": "SESSION-B2B-DEFAULT vigente: idle 900, warning 120, absolute 28800, token 900, max sessions 3; requiere QA.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.politicas_timeout/TIMEOUT-B2B-AUTH-LOGIN",
+            "authority": "AUTHORITATIVE",
+            "supports": "TIMEOUT-B2B-AUTH-LOGIN vigente con 15 segundos, retry 0; implementación QA y medición pendiente.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.reglas/B2B-RULE-THEME-002",
+            "authority": "AUTHORITATIVE",
+            "supports": "THEME-002 CANDIDATO pide aprobación de tres tokens, contraste y QA.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.estados_catalogo/AUTH_FLOW",
+            "authority": "AUTHORITATIVE",
+            "supports": "AUTH_FLOW tiene 3 estados CANDIDATO; no se confunden con API outcomes.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.pantallas_politicas/B2B-AUTH-001",
+            "authority": "AUTHORITATIVE",
+            "supports": "13 vinculaciones de políticas a Login B2B actualmente candidatas.",
+            "current": true
+          },
+          {
+            "source_ref": "supabase://lf_ops.pantallas/B2B-AUTH-005",
+            "authority": "AUTHORITATIVE",
+            "supports": "B2B-AUTH-005 retirada de operación, TOTP legado; identidad no-admin usa LF_EMAIL_OTP según el catálogo.",
+            "current": true
+          }
+        ],
+        "rejected_alternatives": [
+          "Rehacer las 283 reglas o crear una por familia NOT_READY: duplicación sin evidencia.",
+          "Equiparar RATE-B2B-LOGIN a fallos de contraseña y promover AUTH-047: contrato de seguridad incorrecto.",
+          "Promover MFA o sesión a producción por estar documentados: falta implementación e identidad validada."
+        ],
+        "tradeoffs": [
+          "Mantener bloqueos QA hasta obtener pruebas reales en vez de aprobación nominal.",
+          "Reconciliar fuentes primero reduce cambios innecesarios y preserva autoridad."
+        ],
+        "preserved_constraints": [
+          "ACT-0001 únicamente deriva; `service_role` reside en Edge.",
+          "No números inventados; tomar umbrales sólo de políticas canónicas.",
+          "No login completo ni permisos tenant antes de MFA/validación servidor.",
+          "Diagnóstico READ_ONLY/no_write/no_promotion.",
+          "B2B-AUTH-005 está REEMPLAZADO/inactivo: no reintroducir TOTP legado ni relajar MFA por contraseña sola."
+        ],
+        "semantic_qualifiers": [
+          "283 son reglas efectivas heredadas y directas, no 283 reglas directas.",
+          "71 reglas directamente asociadas a B2B-AUTH-001; 250 VIGENTE y 33 CANDIDATO son del agregado efectivo.",
+          "20 bloqueos de implementación IG no significan 20 reglas nuevas.",
+          "RATE-B2B-LOGIN limita solicitudes y no define una política de intentos FALLIDOS de contraseña.",
+          "AUTH-047 y THEME-002 continúan CANDIDATO con dependencia sin resolver.",
+          "Políticas SESSION-B2B-DEFAULT, TIMEOUT-B2B-AUTH-LOGIN y RATE-B2B-LOGIN existen, pero su vigencia no acredita implementación o QA.",
+          "Sin permisos de escritura, sin promoción y sin autorización de producción en EJECUCION_PERFIL_LF.",
+          "La pantalla B2B-AUTH-005 TOTP es legacy reemplazado; no es una vía vigente de verificación."
+        ]
+      },
+      "included_scope": [
+        "Lectura canónica de B2B-AUTH-001 y sus 71 reglas directas/283 efectivas.",
+        "Análisis de 13 relaciones de políticas, 3 estados AUTH_FLOW, y 20 bloqueos IG.",
+        "Priorización y aceptación verificable; handoff a cambios gobernados."
+      ],
+      "excluded_scope": [
+        "Escrituras o promociones directas en lf_ops.",
+        "Cambiar ACT-0001, Input Governance, secretos o identidades.",
+        "Crear thresholds, provisionar IdP o declarar implementación/QA/producción READY."
+      ],
+      "priority": {
+        "level": "P1",
+        "reason": "Política ausente de intentos fallidos, proveedor de identidad sin binding y 20 familias de implementación bloqueadas."
+      },
+      "acceptance_criteria": [
+        {
+          "criterion_id": "AC-NO-DUP",
+          "condition": "Baseline existente",
+          "observable_check": "La comparación con contrato vivo impide crear regla equivalente por pantalla, predicado y efecto; 283/250/33 y 71 directas deben coincidir con readback."
+        },
+        {
+          "criterion_id": "AC-PASSWORD-FAILED",
+          "condition": "Intentos fallidos y AUTH-047",
+          "observable_check": "La regla solo podrá cambiar estado cuando una política canónica específica de fallos de contraseña exista y sea enlazada; prueba negativa rechaza usar RATE-B2B-LOGIN como sustituto o inventar umbrales."
+        },
+        {
+          "criterion_id": "AC-SESSION-POLICY",
+          "condition": "Sesiones",
+          "observable_check": "Login vincula SESSION-B2B-DEFAULT; QA comprueba los límites y transiciones con la política vigente, impidiendo sesión antes de completar MFA."
+        },
+        {
+          "criterion_id": "AC-TIMEOUT-RATE",
+          "condition": "Timeout y requests",
+          "observable_check": "Login referencia TIMEOUT-B2B-AUTH-LOGIN y RATE-B2B-LOGIN sin duplicar cifras en reglas; fail-closed y no retry automático probado, parámetros medidos y aprobados."
+        },
+        {
+          "criterion_id": "AC-MFA-IDENTITY",
+          "condition": "MFA, proveedor, recuperación",
+          "observable_check": "MFA_REQUIRED no crea sesión completa; recovery no bypass; SAML/SSO y email OTP se prueban con proveedor y credenciales antes de habilitar producción."
+        },
+        {
+          "criterion_id": "AC-IG-20",
+          "condition": "20 familias IG",
+          "observable_check": "Cada family_code del readback actual aparece exactamente una vez con disposición y dependencia trazable; ningún NOT_READY cambia a READY solo por definición en Supabase."
+        },
+        {
+          "criterion_id": "AC-STATES",
+          "condition": "Estados, errores, transiciones",
+          "observable_check": "Los tres estados AUTH_FLOW y transiciones se validan de modo separado de outcomes API INVALID_CREDENTIALS/RATE_LIMITED/SERVICE_UNAVAILABLE."
+        },
+        {
+          "criterion_id": "AC-UI-DARK",
+          "condition": "Contraste y dark mode",
+          "observable_check": "THEME-002 continúa candidata hasta aprobar dark_mode_surface, dark_mode_card, dark_mode_text y evidenciar contraste/foco/modal/tablas."
+        },
+        {
+          "criterion_id": "AC-NO-EFFECT",
+          "condition": "Autoridad y permisos",
+          "observable_check": "Esta ejecución tiene cero modificaciones/promociones; cambio oficial solo por operación registrada, autorización específica y readback contra antes/después."
+        },
+        {
+          "criterion_id": "AC-NO-LEGACY-TOTP",
+          "condition": "MFA/OTP en rutas B2B actuales",
+          "observable_check": "Navegación operativa nunca apunta a B2B-AUTH-005; prueba negativa rechaza TOTP legado o acceso con contraseña sola y verifica LF_EMAIL_OTP solo en perfiles permitidos."
+        }
+      ],
+      "dependencies": [
+        {
+          "family_code": "PASSWORD_ATTEMPTS",
+          "next_action": "Definir política canónica de intentos FALLIDOS y recién vincular AUTH-047 sin inventar cifras."
+        },
+        {
+          "family_code": "MFA_OTP_SSO",
+          "next_action": "Resolver el IdP/SSO en el spike M1/ADR-003, el factor LF_EMAIL_OTP vigente para perfiles elegibles, recuperación segura no-admin, evidencias de proveedor y pruebas negativas; NO restaurar TOTP legado."
+        },
+        {
+          "family_code": "SESSION_TIMEOUT_RATE",
+          "next_action": "Implementar/validar 13 bindings y aplicar políticas centrales con métricas de staging."
+        },
+        {
+          "family_code": "THEME_LIGHT_DARK_SYSTEM",
+          "next_action": "Aprobación de tres tokens y QA de contraste."
+        },
+        {
+          "family_code": "INPUT_GOVERNANCE",
+          "next_action": "Reconciliar 20 family_code del mismo run, 12 decisiones y 8 dependencias."
+        }
+      ],
+      "risks": [
+        "Confundir rate limit de solicitudes con intentos fallidos de contraseña.",
+        "Elevar CANDIDATO a READY sin fuente, QA o proveedor.",
+        "Crear sesión o permitir cambio de tenant antes de MFA y aislamiento.",
+        "Duplicar reglas por cada bloqueo IG.",
+        "Reactivar B2B-AUTH-005 retirado o confundir una verificación de recuperación con MFA operativo."
+      ],
+      "profiles_to_activate": [
+        "Arquitectura/seguridad para política de contraseña e identidad.",
+        "UI/Design System para tokens y estados.",
+        "QA para pruebas de MFA, sesión, recuperación, abuso.",
+        "ACTUALIZACION_REGLA_LF solo para deltas candidatos gobernados."
+      ],
+      "blockers": [
+        "AUTH-047 no tiene PASSWORD_ATTEMPT_POLICY canónica.",
+        "La identidad y proveedores MFA/OTP/SSO no están probados ni aprovisionados.",
+        "THEME-002 aún pide tokens y QA.",
+        "20 familias IG NOT_READY para implementación.",
+        "El binding ejecutable de identidad está pendiente de spike M1/ADR-003 y pruebas del proveedor; fuente actual no autoriza endpoint físico ni producción."
+      ],
+      "next_step": {
+        "target": "Orchestrator",
+        "action": "Orquestar lotes de reglas gobernadas: (1) intentos FALLIDOS y AUTH-047; (2) IdP/MFA/OTP, recovery y estados; (3) asociaciones de políticas/QA; (4) familias IG y dark-mode. Probar negativos, registrar readback y no promover automáticamente."
+      },
+      "final_verdict": "RULE_REMEDIATION_REQUIRED_WITHOUT_AUTO_PROMOTION",
+      "evidence_used": [
+        {
+          "fact": "Contrato efectivo 283 (250 vigentes,33 candidatos), 71 directas",
+          "source_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules"
+        },
+        {
+          "fact": "20 IG NOT_READY del nuevo run",
+          "source_ref": "supabase://public.lf_profile_ig_open_work_v1/EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010"
+        },
+        {
+          "fact": "AUTH-047 pendiente política intentos",
+          "source_ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-047"
+        },
+        {
+          "fact": "13 relaciones de políticas y 3 estados de AUTH_FLOW",
+          "source_ref": "supabase://lf_ops.pantallas_politicas/B2B-AUTH-001"
+        },
+        {
+          "fact": "B2B-AUTH-005 REEMPLAZADO; ruta de TOTP legado inactiva",
+          "source_ref": "supabase://lf_ops.pantallas/B2B-AUTH-005"
+        }
+      ],
+      "open_assumptions": [],
+      "success_metric_or_proxy": {
+        "metric": "cobertura_reconciliacion_sin_duplicados",
+        "target": "20/20 familias trazadas; 0 reglas duplicadas; 0 promociones automáticas"
+      },
+      "handoff_to_next": {
+        "target": "Orchestrator",
+        "input_contract": "Usar referencias actuales para cambios mínimos por operación gobernada, sin repetir la selección ACT-0001. Resolver 12 familias de autoridad y 8 dependencias, conservando 20 NOT_READY hasta implementación y QA. No habilitar identidad, sesión o TOTP retirado sin prueba.",
+        "qualifiers_to_preserve": [
+          "283 son reglas efectivas heredadas y directas, no 283 reglas directas.",
+          "71 reglas directamente asociadas a B2B-AUTH-001; 250 VIGENTE y 33 CANDIDATO son del agregado efectivo.",
+          "20 bloqueos de implementación IG no significan 20 reglas nuevas.",
+          "RATE-B2B-LOGIN limita solicitudes y no define una política de intentos FALLIDOS de contraseña.",
+          "AUTH-047 y THEME-002 continúan CANDIDATO con dependencia sin resolver.",
+          "Políticas SESSION-B2B-DEFAULT, TIMEOUT-B2B-AUTH-LOGIN y RATE-B2B-LOGIN existen, pero su vigencia no acredita implementación o QA.",
+          "Sin permisos de escritura, sin promoción y sin autorización de producción en EJECUCION_PERFIL_LF.",
+          "B2B-AUTH-005 es TOTP legado REEMPLAZADO/inactivo; no forma parte de la ruta operativa.",
+          "La pantalla B2B-AUTH-005 TOTP es legacy reemplazado; no es una vía vigente de verificación."
+        ]
+      },
+      "authority_status": "SUPPORTED",
+      "material_claims": [
+        {
+          "claim": "283 reglas efectivas; 250 vigentes,33 candidatas",
+          "authority_ref": "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "Existen 20 bloqueos de implementación IG",
+          "authority_ref": "supabase://public.lf_profile_ig_open_work_v1/EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "AUTH-047 necesita política de intentos fallidos",
+          "authority_ref": "supabase://lf_ops.reglas/B2B-RULE-AUTH-047",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "RATE-B2B-LOGIN aplica a requests y no define intentos fallidos",
+          "authority_ref": "supabase://lf_ops.politicas_rate_limit/RATE-B2B-LOGIN",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "13 relaciones y políticas centrales existentes",
+          "authority_ref": "supabase://lf_ops.pantallas_politicas/B2B-AUTH-001",
+          "status": "SUPPORTED"
+        },
+        {
+          "claim": "B2B-AUTH-005 está REEMPLAZADO/inactivo",
+          "authority_ref": "supabase://lf_ops.pantallas/B2B-AUTH-005",
+          "status": "SUPPORTED"
+        }
+      ],
+      "decision_lineage": {
+        "objective": "Mejorar/completar definiciones Login B2B sin duplicar reglas ni asumir autoridad de despliegue",
+        "selected_decision": "Conservar el contrato vivo de B2B-AUTH-001: 283 reglas efectivas (250 VIGENTE, 33 CANDIDATO), de las cuales 71 son vínculos directos (38 vigentes y 33 candidatos). No duplicar ni promover por inferencia. Priorizar: P1-a política diferenciada de intentos FALLIDOS de contraseña para resolver AUTH-047, no equipararla a RATE-B2B-LOGIN (solicitudes); P1-b resolver implementación IdP/OIDC, MFA por correo, recuperación no-admin, SSO y transiciones seguras, sin sesión operativa antes del segundo control y sin reactivar B2B-AUTH-005 TOTP legado; P1-c implementar y verificar las 13 relaciones ya registradas de políticas de sesión, timeout, seguridad y rate-limit, reutilizando valores centrales; P1-d reconciliar las 20 familias IG NOT_READY (12 decisiones de fuente/autoridad y 8 dependencias) sin crear reglas falsas; P2-e completar contraste y tokens THEME-002. Handoff de cambios mínimos y QA a operaciones gobernadas independientes: la presente ejecución de Product Director es READ_ONLY / NO_WRITE / NO_PROMOTION, sin tocar ACT-0001 ni activar producción.",
+        "evidence_refs": [
+          "supabase://lf_ops.fn_screen_contract_v1/B2B_APP_SHELL/B2B_AUTENTICACION/B2B-AUTH-001#rules",
+          "supabase://public.lf_profile_ig_open_work_v1/EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010",
+          "supabase://lf_ops.reglas/B2B-RULE-AUTH-047",
+          "supabase://lf_ops.politicas_rate_limit/RATE-B2B-LOGIN",
+          "supabase://lf_ops.pantallas_politicas/B2B-AUTH-001",
+          "supabase://lf_ops.politicas_sesion/SESSION-B2B-DEFAULT",
+          "supabase://lf_ops.politicas_timeout/TIMEOUT-B2B-AUTH-LOGIN",
+          "supabase://lf_ops.reglas/B2B-RULE-THEME-002",
+          "supabase://lf_ops.estados_catalogo/AUTH_FLOW",
+          "supabase://lf_ops.pantallas/B2B-AUTH-005"
+        ],
+        "preserved_constraints": [
+          "Router ACT-0001 sólo entrega contexto, sin invocar el perfil.",
+          "Conservar las políticas centrales y los 20 bloqueos IG hasta pruebas reales.",
+          "Sin escritura ni promoción desde la ejecución del perfil."
+        ],
+        "acceptance_refs": [
+          "AC-NO-DUP",
+          "AC-PASSWORD-FAILED",
+          "AC-SESSION-POLICY",
+          "AC-TIMEOUT-RATE",
+          "AC-MFA-IDENTITY",
+          "AC-IG-20",
+          "AC-STATES",
+          "AC-UI-DARK",
+          "AC-NO-EFFECT",
+          "AC-NO-LEGACY-TOTP"
+        ],
+        "handoff_effect": "El Orchestrator recibe prioridades de cambio, 20 family_code y criterios negativos de QA sin confundir definición con implementación."
+      }
+    },
+    "score": {
+      "product_decision_clarity": 5,
+      "scope_control_mvp_separation": 5,
+      "acceptance_criteria_quality": 5,
+      "cross_profile_handoff_quality": 4,
+      "evidence_risk_governance_traceability": 5,
+      "total": 24,
+      "evidence_by_criterion": {
+        "product_decision_clarity": [
+          "product_decision.selected_decision elige política de intentos fallidos distinta de solicitudes; criterios AC-PASSWORD-FAILED y AC-NO-LEGACY-TOTP tienen fuente canónica."
+        ],
+        "scope_control_mvp_separation": [
+          "included_scope/excluded_scope separa diagnóstico de ACTUALIZACION_REGLA_LF y de producción."
+        ],
+        "acceptance_criteria_quality": [
+          "AC-PASSWORD-FAILED y AC-IG-20 son contrafactuales falsables con fuentes y conteos."
+        ],
+        "cross_profile_handoff_quality": [
+          "handoff_to_next conserva todos los semantic_qualifiers, vincula acciones a Orchestrator."
+        ],
+        "evidence_risk_governance_traceability": [
+          "283 efectivas/71 directas comprobadas en contrato vigente, 13 políticas, 20 familias IG del RUN actual y B2B-AUTH-005 REEMPLAZADO."
+        ]
+      }
+    },
+    "handoff_to_next": {
+      "target": "Orchestrator",
+      "mode": "READ_ONLY_PRODUCT_REMEDIATION"
+    },
+    "self_verdict": "PASS",
+    "traceability": {
+      "execution_id": "EXEC-PROFILE-GATE2-43633381F2A1B84882FB9010",
+      "ig_run_id": 949,
+      "profile_source_ref": "github://cristhianlujan/claude-persona-lf-patch@cf9afaa64680031ddff31cc4c621b1dda5702df8/profiles/product_director_lf/SKILL.md",
+      "ig_open_work_resolution": [
+        {
+          "family_code": "ACTIONS",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY ACTION_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "ANALYTICS",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY ANALYTICS_RUNTIME_PROVIDER_NOT_READY (IMPLEMENTATION_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "API_DATA_CONTRACT",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY API_EXECUTABLE_IDENTITY_BINDING_PENDING (IMPLEMENTATION_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "AUDIT",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY AUDIT_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "DESIGN_SYSTEM",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY DESIGN_BINDING_INCOMPLETE (IMPLEMENTATION_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "FORCED_COLORS_CONTRAST",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY FORCED_COLORS_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "IDEMPOTENCY_CONCURRENCY",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL (INCOMPLETE_EVIDENCE); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "LOADING_EMPTY_ERROR_STATES",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY LOADING_EMPTY_ERROR_STATES_SOURCE_INCOMPLETE (MISSING_SOURCE); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "MFA_OTP_SSO",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY MFA_PROVIDER_IMPLEMENTATION_PENDING (IMPLEMENTATION_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "OBSERVABILITY",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY OBSERVABILITY_RUNTIME_PROVIDER_NOT_READY (IMPLEMENTATION_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "PRIVACY_PII",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL (INCOMPLETE_EVIDENCE); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "RATE_LIMIT",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY RATE_LIMIT_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "REDUCED_MOTION",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY REDUCED_MOTION_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "ROUTING_NAVIGATION",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY ROUTE_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "SECURITY",
+          "status": "DEPENDENCIA",
+          "reason": "IG NOT_READY SECURITY_BASELINE_IMPLEMENTATION_PENDING (DELIVERY_DEPENDENCY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Resolver implementación, proveedor o evidencia faltante y verificar QA sin alterar regla canónica por defecto."
+        },
+        {
+          "family_code": "SESSION",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY SESSION_POLICY_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "THEME_LIGHT_DARK_SYSTEM",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY BOOTSTRAP_CANONICAL_EVIDENCE_PARTIAL (INCOMPLETE_EVIDENCE); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "TIMEOUT_RETRY",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY TIMEOUT_POLICY_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "TRANSITIONS",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY TRANSITION_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        },
+        {
+          "family_code": "VALIDATIONS",
+          "status": "DECISIÓN_REQUERIDA",
+          "reason": "IG NOT_READY VALIDATION_SOURCE_CANDIDATE_NOT_IMPLEMENTATION_READY (CANDIDATE_AUTHORITY); no equivale a regla faltante ni a readiness real.",
+          "next_action": "Contrastar con contrato canónico, definir solo delta material con autoridad y tramitar cambio por operación gobernada; mantener NOT_READY hasta QA."
+        }
+      ],
+      "context_receipt_ref": "supabase://public.lf_eventos/21754#context_receipt",
+      "request_sha256": "576b053dc0ba08d9218e56a4259a0d6112ba759fbdcab026a91addf91605343e"
+    }
+  },
+  "output_sha256": "449585ed4d85f1a3dd36746a207a669f3096f80ad2c1da03089cd9c516268564"
+}
