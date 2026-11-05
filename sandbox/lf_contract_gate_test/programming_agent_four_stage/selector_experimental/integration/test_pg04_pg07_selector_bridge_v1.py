@@ -171,6 +171,12 @@ def test_chain(dsn):
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
                currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}}),
              "PG07_ORACLE_EXPOSURE")
+    failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
+               currentness=current,worker_spec={"schema_version":2,
+               "write_path_patterns":[path,"src/main/java/com/lf/Unexpected.java"]}),
+             "PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
+    print("PASS PG07 Worker-visible write scope cannot expand outside PG05 C2")
+
     # PG04-mixed projects are also blocked by the actual SQL classifier.
     mixed=prepare("Split or block","lf_java","BACKEND",
                   [path,"web/src/app/loan.ts"])
