@@ -1,21 +1,20 @@
-# Spring Boot — API HTTP y pruebas — skill técnica de ENSAYO
+# Spring Boot — stack skill de ENSAYO
+**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** BACKEND. **Código:** SPRINGBOOT_EXP. **Versión:** 3.
 
-**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** BACKEND. **Código:** SPRINGBOOT_EXP.
+## Contrato de conocimiento
+La skill no se selecciona por IA, nombre de perfil ni texto de la solicitud. El vínculo versionado del proyecto determina `SPRINGBOOT_EXP@3`, su prioridad y SHA-256. Nunca ejecuta código ni crea permisos.
 
-## Rol y frontera
-Esta skill contiene **conocimiento técnico** del stack. No decide el perfil, ni se asigna a sí misma: la selecciona exclusivamente la tabla `project_stack_binding_exp` por `project_ref + area`. No ejecuta código, tests, despliegues ni migraciones.
+## Reglas expertas verificables
+- **SB3-01:** Separar controller para HTTP, service para casos de uso y repository para persistencia cuando esa arquitectura aplique al proyecto; probar el límite entre capas. **Fuente oficial:** https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html
+- **SB3-02:** Definir contratos HTTP mediante DTO de request/response; no exponer automáticamente una entidad persistente como contrato externo sin revisar el diseño. **Fuente oficial:** https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/responsebody.html
+- **SB3-03:** Aplicar Bean Validation a entradas cuando corresponda y verificar casos inválidos y respuesta de error. **Fuente oficial:** https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-validation.html
+- **SB3-04:** Centralizar el mapeo de errores HTTP con @ControllerAdvice y @ExceptionHandler, y verificar códigos y formato acordados. **Fuente oficial:** https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-advice.html
+- **SB3-05:** Ubicar límites transaccionales con @Transactional en la operación de servicio que requiera atomicidad; comprobar rollback y propagación con pruebas. **Fuente oficial:** https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html
+- **SB3-06:** Escoger pruebas de corte con @WebMvcTest para la capa MVC y @DataJpaTest para repositorios JPA, cuando existan esas dependencias. **Fuente oficial:** https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html
+- **SB3-07:** Usar @SpringBootTest para integración de contexto cuando el escenario lo requiera; no sustituir todas las pruebas aisladas ni afirmar ejecución. **Fuente oficial:** https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html
 
-## Criterio experto respaldado
-1. Definir el contrato HTTP y el comportamiento de controladores y servicios según arquitectura vigente del proyecto.
-2. Exigir pruebas visibles de endpoints y manejo de errores con herramientas disponibles en el proyecto; no afirmar pruebas ejecutadas.
-3. Resolver configuración, transacciones, validación y seguridad mediante contexto exacto del repo, no mediante supuestos.
+## Autoridad L1/L2 LF y precedencia
+Familia PG-00: `STD-BE`. Registro verificado: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. Ese registro NO contiene texto normativo L1/L2 completo. La carga de estándares debe recuperar la versión y huella de la fuente canónica antes de habilitar su uso; mientras tanto: `PG00_STANDARD_TEXT_UNAVAILABLE`. Las guías oficiales de stack no sustituyen los estándares LF ni las decisiones L3.
 
-## Fuentes externas oficiales
-- https://docs.spring.io/spring-boot/reference/testing/index.html
-- https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller.html
-
-## Gobernanza LF L1/L2 y L3
-Familia del catálogo PG-00: `STD-BE`. Fuente PG-00 verificada como **registro de referencias y decisiones**, no como el texto normativo completo: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. El proceso de materialización carga el texto **literal y versionado** de `STD-BE` cuando la fuente canónica exista. Si no se encuentra el texto con huella comprobable, devolver `PG00_STANDARD_TEXT_UNAVAILABLE`: no completar desde conocimiento general ni usar estas reglas como sustituto de L1/L2. Las reglas L3 propias del proyecto tienen precedencia según la gobernanza de PG-00.
-
-## Contrato y seguridad
-Exigir task scope, revisión exacta y pruebas visibles; rechazar skill alterada, área distinta, oracle oculto, permisos inyectados y comandos no respaldados. Salida: instrucciones visibles para la especificación del Worker; sin autoridad ni patch.
+## Resultado y frontera de autoridad
+Anexar reglas expertas **por ID y fuente**, al menos tres, a la especificación visible Worker v0.8; no copiar oráculos ocultos. La tarea sigue restringida al alcance PG-05 C2, pruebas protegidas, límites y comandos visibles. `production_authority=false`, `runtime_enabled=false`, `promotion_allowed=false`.
