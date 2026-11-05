@@ -1,18 +1,18 @@
 # Angular — stack skill de ENSAYO
 **Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** FRONTEND. **Código:** ANGULAR_EXP. **Versión:** 1.
 
-## Contrato de conocimiento
-La skill no se selecciona por IA, nombre de perfil ni texto de la solicitud. El vínculo versionado del proyecto determina `ANGULAR_EXP@1`, su prioridad y SHA-256. Nunca ejecuta código ni crea permisos.
+## Vinculación
+La skill se obtiene exclusivamente de project_stack_binding_exp por proyecto, área y versión con prioridad explícita. No la elige la IA.
 
 ## Reglas expertas verificables
-- **NG-01:** Definir la interfaz de componente con inputs/outputs y estado observable; verificar interacción con pruebas de componentes. **Fuente oficial:** https://angular.dev/guide/components
-- **NG-02:** Al usar signals, distinguir estado derivado con computed y cambios de estado con mecanismos explícitos, según versión del proyecto. **Fuente oficial:** https://angular.dev/guide/signals
-- **NG-03:** Evitar lógica de negocio no requerida en la plantilla; estructurar accesibilidad y semántica de controles interactivos. **Fuente oficial:** https://angular.dev/best-practices/a11y
-- **NG-04:** Asegurar navegación de teclado, foco visible y nombres accesibles en los controles que corresponda, y exigir evidencia observable. **Fuente oficial:** https://angular.dev/best-practices/a11y
-- **NG-05:** Definir pruebas de comportamiento y renderizado con herramientas Angular disponibles, sin inventar resultados de compilación ni de accesibilidad. **Fuente oficial:** https://angular.dev/guide/testing
+- **NG-01:** Definir interfaces de componentes con entradas/salidas explícitas; probar interacción de eventos según diseño del proyecto. **Fuente oficial:** https://angular.dev/guide/components
+- **NG-02:** Usar signals y computed para expresar estado derivado cuando corresponda a la versión Angular del proyecto. **Fuente oficial:** https://angular.dev/guide/signals
+- **NG-03:** Usar HTML semántico y nombres accesibles para controles interactivos; no basar interacción solo en click de un elemento no interactivo. **Fuente oficial:** https://angular.dev/best-practices/a11y
+- **NG-04:** Verificar navegación por teclado y gestión de foco en el flujo afectado y exigir evidencia observable. **Fuente oficial:** https://angular.dev/best-practices/a11y
+- **NG-05:** Incluir pruebas de componentes, plantilla y comportamiento con herramientas presentes en el proyecto; nunca afirmar PASS no ejecutado. **Fuente oficial:** https://angular.dev/guide/testing
 
-## Autoridad L1/L2 LF y precedencia
-Familia PG-00: `STD-FE`. Registro verificado: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. Ese registro NO contiene texto normativo L1/L2 completo. La carga de estándares debe recuperar la versión y huella de la fuente canónica antes de habilitar su uso; mientras tanto: `PG00_STANDARD_TEXT_UNAVAILABLE`. Las guías oficiales de stack no sustituyen los estándares LF ni las decisiones L3.
+## L1/L2 y L3
+Familia `STD-FE` referenciada en `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`, que NO contiene el texto normativo completo. `PG00_STANDARD_TEXT_UNAVAILABLE` hasta recuperar fuente canónica versionada con huella. Las reglas de stack no sustituyen la política LF.
 
-## Resultado y frontera de autoridad
-Anexar reglas expertas **por ID y fuente**, al menos tres, a la especificación visible Worker v0.8; no copiar oráculos ocultos. La tarea sigue restringida al alcance PG-05 C2, pruebas protegidas, límites y comandos visibles. `production_authority=false`, `runtime_enabled=false`, `promotion_allowed=false`.
+## Salida
+Emitir a Worker visible las reglas de la skill identificadas por ID y fuente (mínimo tres), sin autoridad ni oráculo. `production_authority=false`; `runtime_enabled=false`; `promotion_allowed=false`.
