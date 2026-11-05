@@ -1,19 +1,18 @@
 {
   "schema_version": 2,
   "task_id": "FIXTURE-BACKEND",
-  "objective": "Candidate Worker task: Java/Spring, capas y API REST",
-  "expected_change": "Source-scoped change only",
+  "objective": "Especificar tarea de rol BACKEND para el Worker, condicionada a skill de proyecto",
+  "expected_change": "Solo cambios en las rutas exactas del lote",
   "human_story": "Sandbox task specification",
   "functional_contract": {
-    "specialty": "BACKEND",
-    "standard_refs": [
-      "STD-BE"
-    ],
-    "standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
+    "role_area": "BACKEND",
+    "requires_project_stack_skill": true,
+    "selection_policy": "PROJECT_STACK_BINDING_ONLY",
+    "knowledge_comes_from": "SKILL_LINKED_BY_PROJECT_AREA"
   },
   "scope": {
     "in_scope": [
-      "src/main/java/com/lf/LoanService.java"
+      "src/lot/backend.change"
     ],
     "out_of_scope": [],
     "must_not_change": []
@@ -22,7 +21,7 @@
   "dependency_resolution": {},
   "dependency_task_ids": [],
   "required_tests": [
-    "./mvnw test"
+    "PROJECT_PROVIDED_VISIBLE_TEST"
   ],
   "required_evidence": [
     "VISIBLE_CHECK_RECEIPT"
@@ -36,21 +35,21 @@
   "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "context_path_patterns": [
-    "src/main/java/com/lf/LoanService.java"
+    "src/lot/backend.change"
   ],
   "write_path_patterns": [
-    "src/main/java/com/lf/LoanService.java"
+    "src/lot/backend.change"
   ],
   "protected_path_patterns": [
-    "tests/backend/"
+    "tests/protected/"
   ],
   "files_expected": [
-    "src/main/java/com/lf/LoanService.java"
+    "src/lot/backend.change"
   ],
   "platform_refs": [],
   "interface_refs": [],
   "acceptance_commands": [
-    "./mvnw test"
+    "project-visible-check --fixture-only"
   ],
   "max_attempts": 2,
   "max_patch_bytes": 12000,
