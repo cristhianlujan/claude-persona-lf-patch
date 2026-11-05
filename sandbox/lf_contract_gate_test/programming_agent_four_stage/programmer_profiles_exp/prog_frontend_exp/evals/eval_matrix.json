@@ -1,0 +1,30 @@
+{
+  "eval_id": "prog_frontend_exp_EVAL_V1",
+  "minimum_pass_rate": "6/6",
+  "cases": [
+    {
+      "case_id": "HAPPY_PATH",
+      "expected": "VALID_OUTPUT"
+    },
+    {
+      "case_id": "OUTSIDE_LOT",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "EMPTY_TESTS",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "HIDDEN_ORACLE",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "WRONG_AREA",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "AUTHORITY_INJECTED",
+      "expected": "BLOCK_PIPELINE"
+    }
+  ]
+}
