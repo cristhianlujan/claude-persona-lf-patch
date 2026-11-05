@@ -2,14 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Product Missing Input State",
   "type": "object",
-  "required": ["worker", "output_type", "missing_fields", "why_required", "risk_if_assumed", "safe_next_gate"],
+  "required": ["worker", "output_type", "self_verdict", "deliverable_created"],
   "properties": {
     "worker": {"const": "product_director_lf"},
     "output_type": {"const": "PRODUCT_MISSING_INPUT_STATE"},
-    "missing_fields": {"type": "array"},
-    "why_required": {"type": "array"},
-    "risk_if_assumed": {"type": "array"},
-    "safe_next_gate": {"type": "object"}
-  },
-  "additionalProperties": false
+    "self_verdict": {"const": "NEEDS_INPUT"},
+    "deliverable_created": {
+      "type": "object",
+      "required": ["missing_fields", "why_blocking", "next_input_needed"],
+      "properties": {
+        "missing_fields": {"type": "array", "minItems": 1},
+        "why_blocking": {"type": "string", "minLength": 1},
+        "next_input_needed": {"type": "string", "minLength": 1},
+        "why_required": {"type": "array"},
+        "risk_if_assumed": {"type": "array"},
+        "safe_next_gate": {"type": "object"}
+      }
+    }
+  }
 }
