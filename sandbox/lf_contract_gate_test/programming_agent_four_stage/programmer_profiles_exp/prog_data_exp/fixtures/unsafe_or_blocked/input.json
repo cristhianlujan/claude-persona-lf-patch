@@ -1,0 +1,12 @@
+{
+  "task_id": "FIXTURE-DATA",
+  "profile_code": "PERFIL-PROG-DATA-EXP",
+  "area": "FRONTEND",
+  "write_scope": [
+    "db/migration/V001__loan.sql"
+  ],
+  "protected_paths": [
+    "tests/data/"
+  ],
+  "production_authority": false
+}
