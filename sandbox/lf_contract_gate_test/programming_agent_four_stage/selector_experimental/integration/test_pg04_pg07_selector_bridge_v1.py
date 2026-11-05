@@ -16,6 +16,9 @@ from test_parity import TABLES,FUNCTIONS
 STAGES=ROOT.parent
 sys.path.insert(0,str(STAGES/"pg05_target_binding_candidate"/"tests"))
 from test_pg05_chain_c1_c5_v1 import build_chain
+sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
+from pg07_c1_worker_dispatch_plan_v1 import prepare_pg07_c1,PG07WorkerPlanBlocked
+from pg07_c2_task_batch_projection_v1 import prepare_pg07_c2,TaskProjectionBlocked
 
 from pg05_profile_assignment_bridge_v1 import (
   BridgeBlocked,digest,declare_pg04_areas,pg04_area_lot,assign_pg05,pg06_currentness,pg07_worker_projection)
@@ -49,6 +52,69 @@ def real_producers():
     check(exit_obj["schema_version"]=="PG04_TO_PG05_EXIT_CANDIDATE_V1","PG04 producer missing")
     check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
     return chain
+
+def real_pg07_validation(chain,c2,selected_solution):
+    """Exercise actual PG07 C1 and C2 producers on the PG05 chain, not a local reimplementation.
+    PG06 C5 receipt and visible Worker specs are explicit synthetic, UNATTESTED input fixtures.
+    """
+    handoff=chain["handoff"]
+    solution_ids=sorted(s["solution_id"] for s in handoff["solutions"])
+    subject={"upstream_digests":{"pg05_exit":handoff["candidate_sha256"]},
+             "solution_ids":solution_ids}
+    pg06={"schema_version":"PG06_C5_INDEPENDENT_REVIEW_REQUEST_CANDIDATE_V1",
+          "status":"CANDIDATE_NOT_ADMITTED","subject":subject,"subject_sha256":digest(subject),
+          "pg06_admitted":False,"pg07_dispatch_allowed":False,"worker_invoked":False,
+          "review_execution_allowed":False,"ledger_subject_receipt_verified":False,
+          "subject_receipt_id":None,"production_authority":False,"handoff_allowed":False}
+    pg06["request_sha256"]=digest(pg06)
+    run={"run_ref":"fixture://pg07-run","provider":"TEST_ONLY","model_id":"fixture-model",
+         "model_profile_ref":"fixture://model","pricing_ref":"fixture://no-price",
+         "pricing_currency":"USD","input_price_per_million":"0",
+         "output_price_per_million":"0","cached_input_price_per_million":"0",
+         "lane_executor_ref":"fixture://no-dispatch","worker_contract_ref":"fixture://spec-v2",
+         "worker_version":"0.8"}
+    base=handoff["target_binding"]["base_head_sha"]
+    snapshots={sid:"b"*64 for sid in solution_ids}
+    bindings=[{"solution_id":sid,"agent_task_id":i+1,
+               "task_binding_ref":"fixture://task/"+sid,"base_head_sha":base,
+               "source_snapshot_sha256":snapshots[sid],
+               "worker_spec_ref":"fixture://worker-spec/"+sid,
+               "task_execution_authority_ref":"fixture://NO_AUTHORITY"}
+              for i,sid in enumerate(solution_ids)]
+    c1=prepare_pg07_c1(pg05_exit=handoff,pg06_c5=pg06,
+                       run_binding=run,worker_task_bindings=bindings)
+    projections=[]
+    oracles=[]
+    chosen=None
+    for sid in solution_ids:
+        paths=[x["identity"] for x in next(v for v in c2["solution_scopes"]
+                                        if v["solution_id"]==sid)["write_resource_keys"]]
+        spec={"schema_version":2,"task_id":"fixture-"+sid,
+              "objective":"Implement guarded candidate","expected_change":"Scoped change",
+              "human_story":"Synthetic PG07 validation","functional_contract":{},
+              "scope":{"in_scope":paths,"out_of_scope":[],"must_not_change":[]},
+              "cases":[],"dependency_resolution":{},"dependency_task_ids":[],
+              "required_tests":[],"required_evidence":[],"blocked_if":[],
+              "base_head_sha":base,"source_snapshot_sha256":snapshots[sid],
+              "context_path_patterns":paths,"write_path_patterns":paths,
+              "protected_path_patterns":[],"files_expected":paths,
+              "platform_refs":[],"interface_refs":[],
+              "acceptance_commands":["python3 -m compileall ."],
+              "max_attempts":2,"max_patch_bytes":10000,"max_changed_files":5,
+              "max_context_bytes":20000,"allow_deletions":False}
+        projections.append({"solution_id":sid,"function_result_ref":"fixture://function/"+sid,
+                            "worker_spec":spec,"source_snapshot_sha256":snapshots[sid]})
+        oracles.append({"solution_id":sid,"verifier_only_ref":"fixture://oracle/"+sid,
+                        "oracle_subject_sha256":"c"*64,"access_policy":"VERIFIER_ONLY"})
+        if sid==selected_solution: chosen=spec
+    c2_pg07=prepare_pg07_c2(pg07_c1=c1,worker_spec_projections=projections,
+                           verifier_oracle_bindings=oracles)
+    check(c1["dispatch_allowed"] is False and c2_pg07["dispatch_allowed"] is False,
+          "PG07 producer granted dispatch")
+    check(any(x["worker_visible_task_spec"]==chosen for x in c2_pg07["worker_payloads"]),
+          "Real PG07 C2 did not accept chosen Worker task")
+    print("PASS real PG07 C1 and C2 producers accept visible Worker specification")
+    return chosen,c2_pg07
 
 def draft_for_code(request,code):
     p=next(p for p in request["candidate_profiles"] if p["profile_code"]==code)
@@ -169,10 +235,9 @@ def test_chain(dsn):
                      "PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
         finally:run_psql(dsn,sql=undo)
         print("PASS PG06 changed",reason,"blocked")
-    spec={"schema_version":2,"task_id":"trial-only","objective":"Modify Loan.java",
-          "write_path_patterns":[path],"protected_path_patterns":[]}
+    spec,pg07_c2=real_pg07_validation(chain,c2,sid)
     out=pg07_worker_projection(assignment=assignment,lot=lot,
-                               currentness=current,worker_spec=spec)
+                               currentness=current,worker_spec=spec,pg07_c2=pg07_c2)
     task=out["worker_task_overlay"];receipt=out["receipt_link_candidate"]
     check(task["profile_code"]==spring and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
@@ -182,11 +247,11 @@ def test_chain(dsn):
           "PG07 chain not intact")
     print("PASS PG07 scoped worker task and candidate receipt digest chain")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
-               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}}),
+               currentness=current,worker_spec={"schema_version":2,"oracle_envelope":{}},pg07_c2=pg07_c2),
              "PG07_ORACLE_EXPOSURE")
     failcode(lambda:pg07_worker_projection(assignment=assignment,lot=lot,
-               currentness=current,worker_spec={"schema_version":2,
-               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]}),
+               currentness=current,worker_spec={**spec,
+               "write_path_patterns":[path,"src/"+sid+"/Unexpected.java"]},pg07_c2=pg07_c2),
              "PG07_WORKER_SPEC_SCOPE_EXCEEDS_ASSIGNMENT")
     print("PASS PG07 Worker-visible write scope cannot expand outside PG05 C2")
 
