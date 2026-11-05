@@ -3,10 +3,10 @@
   "profile_code": "PERFIL-PROG-BACKEND-EXP",
   "area": "BACKEND",
   "write_scope": [
-    "src/main/java/com/lf/LoanService.java"
+    "src/lot/backend.change"
   ],
   "protected_paths": [
-    "tests/backend/"
+    "tests/protected/"
   ],
   "production_authority": false
 }
