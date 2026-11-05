@@ -1,2 +1,2 @@
-# Priority
-1. Authority and fail-closed state; 2. exact scope and area; 3. hidden-oracle isolation; 4. standards source; 5. visible tests; 6. output schema and resource caps. No automatic promotion.
+# Prioridades rol FRONTEND
+1. Autoridad y fuente; 2. skill vinculada y SHA correcto; 3. área/alcance; 4. pruebas visibles; 5. límites y aislamiento; 6. revisión independiente. Un fallo bloquea sin reparar automáticamente.
