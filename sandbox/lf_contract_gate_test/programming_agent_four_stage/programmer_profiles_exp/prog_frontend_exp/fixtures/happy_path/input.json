@@ -3,10 +3,10 @@
   "profile_code": "PERFIL-PROG-FRONTEND-EXP",
   "area": "FRONTEND",
   "write_scope": [
-    "web/src/app/loan.component.ts"
+    "src/lot/frontend.change"
   ],
   "protected_paths": [
-    "tests/frontend/"
+    "tests/protected/"
   ],
   "production_authority": false
 }
