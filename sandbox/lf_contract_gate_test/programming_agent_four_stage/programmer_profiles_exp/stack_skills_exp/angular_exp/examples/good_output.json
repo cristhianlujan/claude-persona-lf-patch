@@ -7,19 +7,5 @@
     "NG-02",
     "NG-03"
   ],
-  "acceptance_evidence": [
-    {
-      "rule_id": "NG-01",
-      "source_url": "https://angular.dev/guide/components"
-    },
-    {
-      "rule_id": "NG-02",
-      "source_url": "https://angular.dev/guide/signals"
-    },
-    {
-      "rule_id": "NG-03",
-      "source_url": "https://angular.dev/best-practices/a11y"
-    }
-  ],
   "production_authority": false
 }
