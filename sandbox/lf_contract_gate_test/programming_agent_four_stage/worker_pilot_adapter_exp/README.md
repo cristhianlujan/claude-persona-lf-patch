@@ -64,3 +64,9 @@ Prueba con `parse_worker_task()` **real**, campos extra rechazados, reglas/hashe
 El Worker `298307e` rechaza `tests/protected/`: no es equivalente de manera automática a `tests/protected/**`. Por ello `adapt(..., worker_checkout=...)` invoca **las funciones reales** `canonical_relative_path` y `_validate_pattern` importadas del checkout fijado al HEAD exacto, sobre **todos** los valores de `context_path_patterns`, `write_path_patterns` y `protected_path_patterns`. Cualquier rechazo produce `ADAPTER_PATH_NOT_CANONICAL` sin normalizar el dato. El generador de argv también vuelve a llamar al parser real del Worker. `test_pg07_to_worker_v1_adapter.py` comprueba la barra final en las tres listas y un patrón `**` mal formado.
 
 La base #3672 también corrige los tres roles y sus casos a `tests/protected/**` y añade `NON_CANONICAL_PATH` como séptimo eval. El checkout auditado debe contener ambas correcciones. Ningún estado PASS se afirma hasta la nueva ejecución independiente de Claude.
+
+## Integración de ensayo sin costo (modelo falso original)
+
+El costo externo `worker_cost_report_v1.price_receipt` ahora admite exclusivamente `model_provider=fake`, `requested_model=fake-code-model` y `resolved_model=fake-code-model-001`, como aparecen en el `FakeModel` de `programming-agent/tests/test_worker.py`. Usa los contadores reales del recibo sellado (`attempts[].usage`) y la tarifa interna **FAKE_MODEL_NO_BILLING_V1 = USD 0**; prohíbe sobreescribir su tabla de precio por un argumento externo. `real_api_usage=false`; esto **no** equivale a precio real ni a llamada a Anthropic. La ruta Anthropic conserva intactos sus precios declarados y el bloqueo por falta de contadores. La prueba `test_pg07_to_worker_v1_adapter.py` incorpora el caso fake 10/10 tokens → USD 0, sin editar el recibo.
+
+Consumidor: PR draft en `paulozterra/lf-programming-sandbox` para el ensayo gratuito; se requiere checkout de este HEAD exacto. No se creó workflow en este repositorio.
