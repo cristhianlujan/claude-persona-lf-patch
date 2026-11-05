@@ -21,7 +21,7 @@ def fixture_binding(project,area):
     rows=[]
     for r in load_json("project_stack_binding_fixtures.json")["rows"]:
         if r["project_ref"]==project and r["area"]==area:
-            rows.append({**r,"skill_sha256":skill_material(r["skill_code"])["skill_sha256"]})
+            rows.append({**r,"skill_sha256":skill_material(r["skill_code"],r["skill_version"])["skill_sha256"]})
     return select_binding(project,area,lambda _p,_a:rows)
 def expect_error(fn,code):
     try:fn()
@@ -64,7 +64,10 @@ def run():
             check(rules["profile_sha256"]==role["profile_sha256"] and
                   rules["skill_sha256"]==skill["skill_sha256"] and
                   rules["skill_code"]==skill["skill_code"] and
-                  rules["project_ref"]==project,"C2 missing source identity")
+                  rules["project_ref"]==project and
+                  rules["skill_set_sha256"]==skill["skill_set_sha256"] and
+                  len(rules["skills"])==len(skill["skills"]) and
+                  all(len(x["expert_rules"])>=3 for x in rules["skills"]),"C2 missing source identity/rules")
             check(real_c2["dispatch_allowed"] is False and
                   real_c2["production_authority"] is False,"C2 premature authority")
             print("PASS REAL_PG07_C2_ROLE_STACK",slug,project,skill["skill_code"])
@@ -73,18 +76,30 @@ def run():
     py=fixture_binding("lf_python","BACKEND")
     check(java["skill_code"]=="SPRINGBOOT_EXP" and py["skill_code"]=="FASTAPI_EXP","Project-bound backend skill drift")
     check(backend["profile_code"]=="PERFIL-PROG-BACKEND-EXP","Same role not reused")
+    check([x["skill_code"]+"@"+x["skill_version"] for x in java["skills"]]==["SPRINGBOOT_EXP@3","KAFKA_EXP@3"],"Priority did not order Spring/Kafka")
+    print("PASS MULTI_STACK_PRIORITY SpringBoot@3 > Kafka@3")
     print("PASS SAME_BACKEND_ROLE_TWO_PROJECT_STACKS")
     expect_error(lambda:fixture_binding("lf_python","FRONTEND"),"SKILL_NOT_BOUND")
     badrow={**java["binding_row"],"skill_sha256":"0"*64}
     expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:[badrow]),"SKILL_SHA256_MISMATCH")
+    no_priority=[{**x["binding_row"]} for x in java["skills"]]
+    no_priority[1]["priority"]=None
+    expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:no_priority),"SKILL_PRIORITY_REQUIRED")
+    duplicate_priority=[{**x["binding_row"]} for x in java["skills"]]
+    duplicate_priority[1]["priority"]=duplicate_priority[0]["priority"]
+    expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:duplicate_priority),"SKILL_PRIORITY_CONFLICT")
+    wrong_version={**java["binding_row"],"skill_version":"2"}
+    expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:[wrong_version]),"SKILL_VERSION_MISMATCH")
+    print("PASS VERSIONED MULTI-SKILL PRIORITY NEGATIVES")
     fe=fixture_binding("lf_java","FRONTEND")
-    badarea={**java["binding_row"],"skill_code":fe["skill_code"],"skill_sha256":fe["skill_sha256"]}
+    badarea={**java["binding_row"],"skill_code":fe["skill_code"],"skill_version":fe["skill_version"],"skill_sha256":fe["skill_sha256"]}
     expect_error(lambda:select_binding("lf_java","BACKEND",lambda p,a:[badarea]),"SKILL_AREA_MISMATCH")
     for entry in load_json("skill_catalog_exp.json")["skills"]:
-        m=skill_material(entry["skill_code"])
+        m=skill_material(entry["skill_code"],entry["version"])
         check(len(m["skill_sha256"])==64,"Missing stack SHA")
         check(m["area"]==entry["area"],"Stack area drift")
-        check(m["skill_text"].count("https://")>=1,"Stack source missing")
+        check(m["skill_text"].count("https://")>=3,"Stack source missing")
+        check(len(m["expert_rules"])>=3,"Less than three expert rules")
         check(m["pg00_standard_family"] if "pg00_standard_family" in m else m["standard_family"]==entry["standard_family"],"Standard reference missing")
         print("PASS STACK_SKILL_SOURCE",entry["skill_code"])
     print("PASS ROLE_STACK_SANDBOX_CANDIDATES; PG00 normative text unresolved -> NO PRODUCTION")
