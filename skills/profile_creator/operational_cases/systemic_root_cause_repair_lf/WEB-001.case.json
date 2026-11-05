@@ -138,5 +138,48 @@
     "WEB-001:P10 declara lo no probado (sitio vs herramienta)",
     "WEB-001:P11 auditoria independiente de aplicabilidad de regla, vigencia y efecto en fuente canonica"
   ],
-  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT"
+  "role": "DEVELOPMENT_CASE_NOT_HOLDOUT",
+  "comparison_dimensions": [
+    {
+      "problem_id": "DISCOVERY_OF_APPLICABLE_RULE_OWNER",
+      "question": "¿La version evolucionada investiga mejor las reglas aplicables y evita inferir un owner sin autoridad?",
+      "output_pointers": [
+        "/output/owner/status",
+        "/output/owner/code",
+        "/output/owner/authority_kind",
+        "/output/policy_resolution/0/decision",
+        "/output/policy_resolution/0/lookups/0/level",
+        "/output/policy_resolution/0/lookups/0/source",
+        "/output/policy_resolution/0/lookups/1/level",
+        "/output/policy_resolution/0/lookups/1/source",
+        "/output/current_uncertainties/0/uncertainty"
+      ],
+      "control_ids": [
+        "OP10_RULE_METHOD_RECORDED",
+        "OP11_RULE_LOOKUPS_N1_N2",
+        "OP12_RULE_N1_FIRST",
+        "OP13_RULE_N2_SECOND",
+        "OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH"
+      ]
+    },
+    {
+      "problem_id": "CONTROLLED_RETRY_AND_READMISSION",
+      "question": "¿La version evolucionada diagnostica mejor el control de reintentos, el consumidor de reingreso y la seguridad del cierre?",
+      "output_pointers": [
+        "/output/systemic_root_cause/status",
+        "/output/systemic_root_cause/statement",
+        "/output/first_bad_control/statement",
+        "/output/escape_control/statement",
+        "/output/hard_guard/fail_closed_condition",
+        "/output/next_gate/gate",
+        "/output/blocking_codes"
+      ],
+      "control_ids": [
+        "OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER",
+        "OP07_PLANNED_REGRESSIONS",
+        "OP08_ACCEPTANCE_CRITERIA",
+        "OP09_HARD_GUARD_FAIL_CLOSED"
+      ]
+    }
+  ]
 }

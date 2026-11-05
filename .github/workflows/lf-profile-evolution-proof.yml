@@ -102,12 +102,34 @@ jobs:
             python3 "$TOOL" "$SLUG" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/base/profiles/$SLUG" "$RUNNER_TEMP/candidate/profiles/$SLUG" > "$RUNNER_TEMP/proof.json" || rc=$?
           fi
           python3 - "$RUNNER_TEMP/proof.json" "$MODE" "$SLUG" "$BASE_SHA" "$CANDIDATE_SHA" <<'PY'
-          import json, sys
+          import json, os, sys
           path, mode, slug, base, cand = sys.argv[1:]
           proof = json.load(open(path, encoding="utf-8"))
-          envelope = {"schema": "LF_PROFILE_EVOLUTION_PROOF_ANNOTATION_V1", "mode": mode, "profile_slug": slug,
-                      "base_sha": base, "candidate_sha": cand, "proof": proof}
-          print("::notice title=LF_PROFILE_EVOLUTION_PROOF::" + json.dumps(envelope, sort_keys=True, separators=(",", ":")))
+          def encode(p):
+              env = {"schema": "LF_PROFILE_EVOLUTION_PROOF_ANNOTATION_V1", "mode": mode, "profile_slug": slug,
+                     "base_sha": base, "candidate_sha": cand, "proof": p}
+              return json.dumps(env, sort_keys=True, separators=(",", ":"))
+          line = encode(proof)
+          # GitHub truncates a notice annotation at 4096 characters, which would make the envelope unparseable
+          # for the server verifier. The optional side-by-side report is a read-only, non-authoritative projection:
+          # when it does not fit, only that block is replaced by a stub; the full proof goes to the job summary.
+          if len(line) > 3900:
+              ops = proof.get("operational")
+              if isinstance(ops, dict) and "functional_problem_comparison" in ops:
+                  full = json.dumps(ops["functional_problem_comparison"], sort_keys=True, separators=(",", ":"))
+                  ops["functional_problem_comparison"] = {
+                      "schema": "LF_PROFILE_PROBLEM_SIDE_BY_SIDE_REPORT_V1", "omitted_from_annotation": True,
+                      "full_report_sha256": __import__("hashlib").sha256(full.encode()).hexdigest(),
+                      "full_report_location": "job summary"}
+                  summary = os.environ.get("GITHUB_STEP_SUMMARY")
+                  if summary:
+                      with open(summary, "a", encoding="utf-8") as fh:
+                          fh.write("### Side-by-side problem report (full)\n\n```json\n" + full + "\n```\n")
+                  line = encode(proof)
+          if len(line) > 4000:
+              print("BLOCK_PROOF_ANNOTATION_TOO_LARGE")
+              raise SystemExit(2)
+          print("::notice title=LF_PROFILE_EVOLUTION_PROOF::" + line)
           ok = proof.get("decision") != "BLOCKED" if mode == "measure" else proof.get("verdict") == "EVOLUTION_DEMONSTRATED"
           raise SystemExit(0 if ok and not proof.get("blocking_codes") else 1)
           PY

@@ -48,19 +48,19 @@ class ProfileTargetDestinationTest(unittest.TestCase):
         profile = ROOT / "profiles" / self.REPAIR
         declared = [
             ("OP01", "Runtime method capsule", 10, 27),
-            ("OP02", "Working method", 3, 92),
+            ("OP02", "Working method", 3, 100),
             ("OP03", "Runtime method capsule", 9, 26),
-            ("OP04", "Output trajectory", 33, 243),
-            ("OP05", "Gap-resolution cascade", 5, 109),
-            ("OP06", "Output trajectory", 21, 216),
-            ("OP07", "Output trajectory", 31, 241),
-            ("OP08", "Output trajectory", 27, 233),
-            ("OP09", "Output trajectory", 24, 222),
-            ("OP10", "Gap-resolution cascade", 3, 107),
-            ("OP11", "Gap-resolution cascade", 2, 106),
-            ("OP12", "Gap-resolution cascade", 3, 107),
-            ("OP13", "Gap-resolution cascade", 3, 107),
-            ("OP14", "Gap-resolution cascade", 5, 109),
+            ("OP04", "Output trajectory", 33, 262),
+            ("OP05", "Gap-resolution cascade", 5, 117),
+            ("OP06", "Output trajectory", 21, 235),
+            ("OP07", "Output trajectory", 31, 260),
+            ("OP08", "Output trajectory", 27, 252),
+            ("OP09", "Output trajectory", 24, 241),
+            ("OP10", "Gap-resolution cascade", 3, 115),
+            ("OP11", "Gap-resolution cascade", 2, 114),
+            ("OP12", "Gap-resolution cascade", 3, 115),
+            ("OP13", "Gap-resolution cascade", 3, 115),
+            ("OP14", "Gap-resolution cascade", 5, 117),
         ]
         lines = (profile / "SKILL.md").read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(declared), 14)

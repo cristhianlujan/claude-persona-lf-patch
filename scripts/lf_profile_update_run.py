@@ -158,9 +158,9 @@ def build_post_steps(execution_id, slug, base, commit, compare_run, op, matrix_r
     ]
 
 
-def build_close_steps(slug, merge, commit, compare_run, manifest_sha, entry_sha, pack_id, runtime, matrix_receipt=None):
+def build_close_steps(slug, merge, commit, compare_run, manifest_sha, entry_sha, pack_id, runtime, matrix_receipt=None, pr_number=None):
     return [
-        {"step_id": "post_merge_reconcile", "evidence_ref": f"git:{merge}", "evidence_payload": {"merge_sha": merge, "manifest_sha": manifest_sha, "entrypoint_sha": entry_sha, "profile_pack_id": pack_id, "runtime_state_before": runtime, "runtime_state_after": runtime, "automatic_impact_preserved": True, "operational_state_preserved": True, "reconciliation_disposition": f"MERGED_VIA_MERGE_TRAIN_PROFILE_DIR_IDENTICAL_TO_CANDIDATE_{commit[:8]}", "next_gate": "independent semantic evaluation and governed runtime transition (not executed)", "mini_judge_code": JUDGE, **OK}},
+        {"step_id": "post_merge_reconcile", "evidence_ref": f"git:{merge}", "evidence_payload": {"merge_sha": merge, "pr_number": pr_number, "manifest_sha": manifest_sha, "entrypoint_sha": entry_sha, "profile_pack_id": pack_id, "runtime_state_before": runtime, "runtime_state_after": runtime, "automatic_impact_preserved": True, "operational_state_preserved": True, "reconciliation_disposition": f"MERGED_VIA_MERGE_TRAIN_PROFILE_DIR_IDENTICAL_TO_CANDIDATE_{commit[:8]}", "next_gate": "independent semantic evaluation and governed runtime transition (not executed)", "mini_judge_code": JUDGE, **OK}},
         {"step_id": "close", "evidence_ref": f"git:{merge}", "evidence_payload": {"open_blockers": [], "no_auto_promotion": True, "runtime_unchanged": True, "all_required_steps_clean": True, "mini_judge_code": JUDGE, **OK}},
         {"step_id": "report_output", "evidence_ref": f"actions:{compare_run}", "evidence_payload": {"result": f"UPDATED_{slug}", "exact_head": commit, "evidence_refs": [f"actions:{compare_run}"], "open_blockers": [],
             **({"control_matrix_report": matrix_receipt} if matrix_receipt else {}),
@@ -602,7 +602,7 @@ def main(argv=None):
                 raise Stop("POST_MERGE_PROFILE_DIR_DIFFERS_FROM_CANDIDATE")
             manifest = json.loads(run(["git", "show", f"{merge}:profiles/{slug}/manifest.json"]))
             tree = {f["path"]: f["blob_sha"] for f in tree_files(merge, slug)}
-            cs = build_close_steps(slug, merge, commit, st["compare_run"], tree.get(f"profiles/{slug}/manifest.json"), tree.get(f"profiles/{slug}/SKILL.md"), manifest.get("profile_pack_id"), manifest.get("runtime", "NO_HABILITADO"), st.get("matrix_receipt"))
+            cs = build_close_steps(slug, merge, commit, st["compare_run"], tree.get(f"profiles/{slug}/manifest.json"), tree.get(f"profiles/{slug}/SKILL.md"), manifest.get("profile_pack_id"), manifest.get("runtime", "NO_HABILITADO"), st.get("matrix_receipt"), st.get("pr"))
             submit(gh, f"Record update steps {slug} (post-merge, close, report) {execution_id[-8:]}", steps_batch(execution_id, cs), log)
             st["closed"] = True
             save()
