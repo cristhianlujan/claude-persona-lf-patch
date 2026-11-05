@@ -1,0 +1,37 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "artifact_type": "PROFILE_PACK_CANDIDATE",
+  "profile_pack_id": "PROG_BACKEND_EXP",
+  "profile_slug": "prog_backend_exp",
+  "operation": "CREACION_PERFIL_LF",
+  "document_status": "CANDIDATE_SANDBOX_ONLY",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "exposes_user_facing_output": false,
+  "source_authority": [
+    "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+    "skills/profile_creator/SKILL.md",
+    "profiles/_template/SKILL.md",
+    "cristhianlujan/programming-agent/docs/WORKER.md"
+  ],
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "contracts/main_contract.md",
+    "schemas/output.schema.json",
+    "judges/mini_judge.md",
+    "evals/eval_matrix.json",
+    "manifest.json"
+  ],
+  "evidence_map": [
+    {
+      "source_ref": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+      "claim": "PG-00 versioned STD catalog and skills consumption"
+    },
+    {
+      "source_ref": "cristhianlujan/programming-agent/docs/WORKER.md",
+      "claim": "Worker visible task and hidden-oracle isolation"
+    }
+  ]
+}

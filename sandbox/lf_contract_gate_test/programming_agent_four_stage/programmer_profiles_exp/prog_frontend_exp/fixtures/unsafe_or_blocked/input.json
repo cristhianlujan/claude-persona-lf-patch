@@ -1,0 +1,8 @@
+{
+  "area": "OTHER_AREA",
+  "profile_code": "PERFIL-PROG-FRONTEND-EXP",
+  "write_scope": [
+    "src/outside/file.txt"
+  ],
+  "production_authority": true
+}

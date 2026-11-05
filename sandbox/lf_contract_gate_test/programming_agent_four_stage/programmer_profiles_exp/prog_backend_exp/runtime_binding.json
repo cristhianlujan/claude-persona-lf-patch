@@ -1,0 +1,17 @@
+{
+  "schema_version": "LF_PROGRAMMER_SANDBOX_RUNTIME_BINDING_V1",
+  "profile_code": "PERFIL-PROG-BACKEND-EXP",
+  "profile_slug": "prog_backend_exp",
+  "area": "BACKEND",
+  "runtime_enabled": false,
+  "promotion_allowed": false,
+  "production_authority": false,
+  "worker_invocation_allowed": false,
+  "worker_contract_ref": "cristhianlujan/programming-agent/docs/WORKER.md",
+  "output_schema_ref": "schemas/output.schema.json",
+  "validator_ref": "validators/validate_pack.py",
+  "standards_source_ref": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+  "standards_catalog_resolved": false,
+  "requires_pg07_c2": true,
+  "hidden_oracle_visible": false
+}

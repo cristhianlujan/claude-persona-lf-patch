@@ -1,0 +1,148 @@
+{
+  "schema_version": 2,
+  "task_id": "LF-DATA-EXP.v1",
+  "objective": "Prepare a bounded visible Worker task for Reversible Flyway migration without data loss",
+  "expected_change": "The implementation is limited to db/migration/V1__create_loan.sql and respects governed acceptance.",
+  "human_story": {
+    "story_code": "HU-DATA-EXP",
+    "title": "Implement Reversible Flyway migration without data loss",
+    "persona": "Project owner",
+    "need": "A bounded implementation tied to a declared scope",
+    "benefit": "A testable patch without scope expansion",
+    "dependencies": [],
+    "technical_notes": {
+      "area": "DATA",
+      "specialty": "Reversible Flyway migration without data loss"
+    }
+  },
+  "functional_contract": {
+    "acceptance_criteria": [
+      {
+        "code": "AC-001",
+        "given": "A pinned repository and scope",
+        "when": "Worker executes visible checks",
+        "then": "Only the declared change may be delivered"
+      }
+    ],
+    "invariants": [
+      {
+        "code": "INV-001",
+        "statement": "All changed files remain inside the resolved write scope."
+      }
+    ],
+    "negative_controls": [
+      {
+        "code": "NEG-001",
+        "prohibited": "Modifying protected tests or leaking the hidden oracle."
+      }
+    ],
+    "source_rule_codes": [
+      "STD-DB"
+    ]
+  },
+  "scope": {
+    "in_scope": [
+      "Only db/migration/V1__create_loan.sql"
+    ],
+    "out_of_scope": [
+      "No unrelated module changes"
+    ],
+    "must_not_change": [
+      "Protected test: db/migration/V0__baseline.sql"
+    ]
+  },
+  "cases": {
+    "positive": [
+      {
+        "code": "POS-001",
+        "statement": "The requested change is limited to the declared file.",
+        "source_refs": [
+          "AC-001",
+          "STD-DB"
+        ]
+      }
+    ],
+    "edge": [
+      {
+        "code": "EDGE-001",
+        "statement": "An attempted edit to another file must be blocked.",
+        "source_refs": [
+          "INV-001"
+        ]
+      }
+    ],
+    "regression": [
+      {
+        "code": "REG-001",
+        "statement": "Protected tests and hidden oracle remain unchanged and unseen.",
+        "source_refs": [
+          "NEG-001"
+        ]
+      }
+    ]
+  },
+  "dependency_resolution": [],
+  "dependency_task_ids": [],
+  "required_tests": [],
+  "required_evidence": [
+    {
+      "evidence_type": "EXACT_HEAD_VISIBLE_TEST_RECEIPT",
+      "source_ref": "fixture://visible-check-not-executed",
+      "covers_refs": [
+        "AC-001",
+        "INV-001",
+        "NEG-001"
+      ]
+    }
+  ],
+  "blocked_if": [
+    {
+      "code": "UNVERIFIED_STANDARDS_CATALOG",
+      "condition": "The current PG-00 C6 version and concrete STD rules are not attested for the task."
+    },
+    {
+      "code": "SCOPE_DRIFT",
+      "condition": "Any planned write falls outside PG-05 C2 exact write scope."
+    },
+    {
+      "code": "HIDDEN_ORACLE_EXPOSURE",
+      "condition": "Any hidden oracle information reaches the Worker-visible task."
+    },
+    {
+      "code": "DATA_LOSS",
+      "condition": "The migration can delete or irreversibly alter existing data."
+    }
+  ],
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "context_path_patterns": [
+    "db/migration/V1__create_loan.sql"
+  ],
+  "write_path_patterns": [
+    "db/migration/V1__create_loan.sql"
+  ],
+  "protected_path_patterns": [
+    "db/migration/V0__baseline.sql"
+  ],
+  "files_expected": [
+    "db/migration/V1__create_loan.sql"
+  ],
+  "platform_refs": [
+    "FLYWAY"
+  ],
+  "interface_refs": [],
+  "acceptance_commands": [
+    {
+      "name": "visible-check",
+      "argv": [
+        "./mvnw",
+        "flyway:validate"
+      ]
+    }
+  ],
+  "max_attempts": 2,
+  "max_patch_bytes": 8192,
+  "max_changed_files": 1,
+  "max_context_bytes": 16384,
+  "allow_deletions": false
+}

@@ -1,0 +1,24 @@
+{
+  "area": "FRONTEND",
+  "profile_code": "PERFIL-PROG-FRONTEND-EXP",
+  "profile_assignment_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "write_scope": [
+    "web/src/app/loan/loan.component.ts"
+  ],
+  "protected_path_patterns": [
+    "web/src/app/loan/loan.component.spec.ts"
+  ],
+  "visible_acceptance_commands": [
+    {
+      "name": "visible-check",
+      "argv": [
+        "npm",
+        "test",
+        "--",
+        "--watch=false"
+      ]
+    }
+  ]
+}

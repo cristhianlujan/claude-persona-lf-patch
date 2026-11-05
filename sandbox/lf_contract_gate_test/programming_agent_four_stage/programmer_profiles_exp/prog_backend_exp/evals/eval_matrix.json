@@ -1,0 +1,30 @@
+{
+  "eval_id": "PROG_BACKEND_EXP_EVAL_001",
+  "minimum_pass_rate": "6/6",
+  "cases": [
+    {
+      "case_id": "VALID_VISIBLE_SPEC",
+      "expected": "VALID_OUTPUT"
+    },
+    {
+      "case_id": "OUTSIDE_LOT",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "EMPTY_TESTS",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "HIDDEN_ORACLE",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "WRONG_AREA",
+      "expected": "BLOCK_PIPELINE"
+    },
+    {
+      "case_id": "INJECTED_AUTHORITY",
+      "expected": "BLOCK_PIPELINE"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ Leaves original/ and tests/test_parity.py untouched. The runner uses original SQ
 import copy
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -20,6 +21,7 @@ sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pg07_c1_worker_dispatch_plan_v1 import prepare_pg07_c1,PG07WorkerPlanBlocked
 from pg07_c2_task_batch_projection_v1 import prepare_pg07_c2,TaskProjectionBlocked
 
+from profile_pack_selector_fixture import apply_sandbox_resync,PACKS
 from pg05_profile_assignment_bridge_v1 import (
   BridgeBlocked,digest,declare_pg04_areas,pg04_area_lot,assign_pg05,pg06_currentness,pg07_worker_projection)
 
@@ -53,7 +55,7 @@ def real_producers():
     check(c2["schema_version"]=="PG05_C2_WRITE_SCOPE_RESOLUTION_CANDIDATE_V1","C2 producer missing")
     return chain
 
-def real_pg07_validation(chain,c2,selected_solution):
+def real_pg07_validation(chain,c2,selected_solution,assignment):
     """Exercise actual PG07 C1 and C2 producers on the PG05 chain, not a local reimplementation.
     PG06 C5 receipt and visible Worker specs are explicit synthetic, UNATTESTED input fixtures.
     """
@@ -102,6 +104,33 @@ def real_pg07_validation(chain,c2,selected_solution):
               "acceptance_commands":["python3 -m compileall ."],
               "max_attempts":2,"max_patch_bytes":10000,"max_changed_files":5,
               "max_context_bytes":20000,"allow_deletions":False}
+        if sid==selected_solution:
+            # A real sandbox profile pack produces this schema-backed visible spec.
+            pack=PACKS/"prog_backend_exp"
+            sys.path.insert(0,str(pack/"validators"))
+            from validate_pack import validate as validate_programmer_pack
+            spec=json.loads((pack/"examples/good_output.json").read_text())
+            spec.update(task_id="LF-PROFILE-"+sid+".v1",base_head_sha=base,
+                        source_snapshot_sha256=snapshots[sid],
+                        scope={"in_scope":["Only resolved path "+", ".join(paths)],
+                               "out_of_scope":["No unrelated files"],
+                               "must_not_change":["Never modify protected tests"]},
+                        context_path_patterns=paths,write_path_patterns=paths,
+                        protected_path_patterns=["tests/visible_test.py"],files_expected=paths,
+                        acceptance_commands=[{"name":"visible-check",
+                                              "argv":["python3","-m","compileall","."]}])
+            binding=json.loads((pack/"runtime_binding.json").read_text())
+            schema=json.loads((pack/"schemas/output.schema.json").read_text())
+            input_packet={"area":"BACKEND","profile_code":assignment["profile_code"],
+                          "profile_assignment_sha256":assignment["assignment_sha256"],
+                          "base_head_sha":base,
+                          "source_snapshot_sha256":snapshots[sid],
+                          "write_scope":paths,"protected_path_patterns":["tests/visible_test.py"],
+                          "visible_acceptance_commands":[{"name":"visible-check",
+                                                           "argv":["python3","-m","compileall","."]}]}
+            errors=validate_programmer_pack(spec,binding,input_packet,schema)
+            check(not errors,"Sandbox profile pack rejected Worker task: "+str(errors))
+            print("PASS profile pack output schema, local validator and PG05 assignment binding")
         projections.append({"solution_id":sid,"function_result_ref":"fixture://function/"+sid,
                             "worker_spec":spec,"source_snapshot_sha256":snapshots[sid]})
         oracles.append({"solution_id":sid,"verifier_only_ref":"fixture://oracle/"+sid,
@@ -182,15 +211,15 @@ def test_chain(dsn):
     spring="PERFIL-PROG-BACKEND-SPRING-EXP"
     args={"lot":lot,"project_ref":project,"literal_request":"Corregir servicio Spring",
           "prepare":prepare,"finalize":finalize}
-    assignment=assign_pg05(**args,model_draft=draft_for_code(req,spring))
-    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==spring
+    assignment=assign_pg05(**args,model_draft=draft_for_code(req,general))
+    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==general
           and assignment["production_authority"] is False,"Assignment not selected")
     check(assignment["catalog_sha256"]==req["catalog_sha256"],"Catalog digest drift")
     check(assignment["request_sha256"]==digest(req) and
           assignment["result_sha256"]==digest(assignment["result"]),"Unbound hashes")
     print("PASS PG05 SELECTED, three bound digests, no production authority")
-    alternative=assign_pg05(**args,model_draft=draft_for_code(req,general))
-    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==general,
+    alternative=assign_pg05(**args,model_draft=draft_for_code(req,spring))
+    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==spring,
           "Alternative valid BACKEND must remain selectable")
     print("PASS PG05 second valid backend selected by fixed AI draft")
     amb={"decision":"AMBIGUOUS","selected_profile_code":None,
@@ -223,7 +252,7 @@ def test_chain(dsn):
     current=pg06_currentness(assignment=assignment,lot=lot,prepare=prepare,finalize=finalize)
     check(current["status"]=="CURRENT","PG06 currentness failed")
     print("PASS PG06 reprepare and sealed result revalidation")
-    tampered=copy.deepcopy(assignment);tampered["profile_code"]=general
+    tampered=copy.deepcopy(assignment);tampered["profile_code"]=spring
     failcode(lambda:pg06_currentness(assignment=tampered,lot=lot,prepare=prepare,finalize=finalize),
              "SOURCE_DIGEST_INVALID")
     tampered=copy.deepcopy(assignment);tampered["production_authority"]=True
@@ -232,23 +261,23 @@ def test_chain(dsn):
              "ASSIGNMENT_SCOPE_OR_AUTHORITY_INVALID")
     # Simulate stale areas/route/descriptor, restore in the disposable DB.
     for sql,undo,reason in [
-       ("UPDATE public.lf_profile_area_policy_exp SET areas='[\"FRONTEND\"]'::jsonb WHERE profile_code="+lit(spring),
-        "UPDATE public.lf_profile_area_policy_exp SET areas='[\"BACKEND\"]'::jsonb WHERE profile_code="+lit(spring),"area"),
+       ("UPDATE public.lf_profile_area_policy_exp SET areas='[\"FRONTEND\"]'::jsonb WHERE profile_code="+lit(general),
+        "UPDATE public.lf_profile_area_policy_exp SET areas='[\"BACKEND\"]'::jsonb WHERE profile_code="+lit(general),"area"),
        ("INSERT INTO public.lf_project_area_pattern_exp(project_ref,area,path_prefix) VALUES ("+lit(project)+",'BACKEND','server/src/')",
         "DELETE FROM public.lf_project_area_pattern_exp WHERE project_ref="+lit(project)+" AND path_prefix='server/src/'","routes"),
-       ("UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='STALE_SOURCE_CHANGED' WHERE profile_code="+lit(spring),
-        "UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='CURRENT' WHERE profile_code="+lit(spring),"descriptor")]:
+       ("UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='STALE_SOURCE_CHANGED' WHERE profile_code="+lit(general),
+        "UPDATE public.lf_profile_selection_registry_v1 SET descriptor_status='CURRENT' WHERE profile_code="+lit(general),"descriptor")]:
         run_psql(dsn,sql=sql)
         try:
             failcode(lambda:pg06_currentness(assignment=assignment,lot=lot,prepare=prepare,finalize=finalize),
                      "PG06_SELECTOR_POLICY_OR_CATALOG_STALE")
         finally:run_psql(dsn,sql=undo)
         print("PASS PG06 changed",reason,"blocked")
-    spec,pg07_c2=real_pg07_validation(chain,c2,sid)
+    spec,pg07_c2=real_pg07_validation(chain,c2,sid,assignment)
     out=pg07_worker_projection(assignment=assignment,lot=lot,
                                currentness=current,worker_spec=spec,pg07_c2=pg07_c2)
     task=out["worker_task_overlay"];receipt=out["receipt_link_candidate"]
-    check(task["profile_code"]==spring and task["write_scope"]==[path] and
+    check(task["profile_code"]==general and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["worker_receipt_verified"] is False and
@@ -282,6 +311,10 @@ def main():
         reference(dsn)
         for f in ("seed_profiles_exp.sql","area_policy_exp.sql","functions_exp.sql"):
             run_psql(dsn,file=ROOT/"experimental"/f)
+        # Original local resync is called with descriptors derived from the SKILL files.
+        # No change to Supabase or the production profile registry.
+        source_head=subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+        apply_sandbox_resync(dsn,run_psql,source_head)
         test_chain(dsn)
     finally:
         run_psql(dsn,sql="DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; DROP SCHEMA IF EXISTS extensions CASCADE")
