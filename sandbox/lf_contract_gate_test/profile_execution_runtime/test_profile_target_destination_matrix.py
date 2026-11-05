@@ -576,8 +576,8 @@ class RealRecordedWeb001ReadbackTest(unittest.TestCase):
         m1 = coverage.measure({"WEB-001": cases["WEB-001"]}, runs, evolved["profile_tree_sha256"])
         outcome = matrix.build_control_matrix({"WEB-001": cases["WEB-001"]},
                    m0, m1, {}, ROOT/"profiles/systemic_root_cause_repair_lf")
-        self.assertEqual(outcome["summary"]["total"], 14)
-        self.assertEqual(outcome["summary"]["destinos_pendientes"], 14)
+        self.assertEqual(outcome["summary"]["total"], 15)
+        self.assertEqual(outcome["summary"]["destinos_pendientes"], 15)
         self.assertTrue(all("NONE" in row["original_attestation"]
                             for row in outcome["rows"]))
         self.assertTrue(all(row["destination_status"] == "DESTINO_PENDIENTE"
