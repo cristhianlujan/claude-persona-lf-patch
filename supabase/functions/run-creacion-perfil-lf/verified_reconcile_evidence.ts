@@ -14,7 +14,7 @@ const ROOT = /^profiles\/[a-z0-9][a-z0-9_-]{1,100}$/;
 
 export type GitHubReader = (path: string) => Promise<any>;
 export type Reconcile =
-  | { ok: true; args: { merge_sha: string; entrypoint_sha: string; manifest_sha: string; profile_pack_id: string; pr_number: number } }
+  | { ok: true; args: { merge_sha: string; entrypoint_sha: string; manifest_sha: string | null; profile_pack_id: string; pr_number: number } }
   | { ok: false; code: string };
 
 type Input = { repository: string; targetRootPath: string; evidence: Record<string, unknown>; gh: GitHubReader };
@@ -40,17 +40,33 @@ export async function verifyPostMergeReconcile(input: Input): Promise<Reconcile>
   if (!compare || !["identical", "ahead"].includes(String(compare.status))) return { ok: false, code: "RECONCILE_MERGE_NOT_ON_MAIN" };
 
   const entry = await safe(() => gh(`/contents/${targetRootPath}/SKILL.md?ref=${mergeSha}`));
-  const manifestFile = await safe(() => gh(`/contents/${targetRootPath}/manifest.json?ref=${mergeSha}`));
   const entrypointSha = String(entry?.sha ?? "");
-  const manifestSha = String(manifestFile?.sha ?? "");
-  if (!SHA40.test(entrypointSha) || !SHA40.test(manifestSha)) return { ok: false, code: "RECONCILE_PROFILE_BLOBS_MISSING" };
+  if (!SHA40.test(entrypointSha)) return { ok: false, code: "RECONCILE_PROFILE_BLOBS_MISSING" };
 
-  let manifest: any;
-  try {
-    if (manifestFile.encoding !== "base64") throw new Error("encoding");
-    manifest = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(String(manifestFile.content).replace(/\s/g, "")), (c) => c.charCodeAt(0))));
-  } catch { return { ok: false, code: "RECONCILE_MANIFEST_UNPARSEABLE" }; }
-  const pack = typeof manifest?.profile_pack_id === "string" ? manifest.profile_pack_id.trim() : "";
+  const manifestFile = await safe(() => gh(`/contents/${targetRootPath}/manifest.json?ref=${mergeSha}`));
+  let manifestSha: string | null = null;
+  let pack = "";
+  if (manifestFile) {
+    manifestSha = String(manifestFile.sha ?? "");
+    if (!SHA40.test(manifestSha)) return { ok: false, code: "RECONCILE_PROFILE_BLOBS_MISSING" };
+    let manifest: any;
+    try {
+      if (manifestFile.encoding !== "base64") throw new Error("encoding");
+      manifest = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(String(manifestFile.content).replace(/\s/g, "")), (c) => c.charCodeAt(0))));
+    } catch { return { ok: false, code: "RECONCILE_MANIFEST_UNPARSEABLE" }; }
+    pack = typeof manifest?.profile_pack_id === "string" ? manifest.profile_pack_id.trim() : "";
+  } else {
+    // A pack without manifest.json is accepted only when the profile directory itself is readable and
+    // really has no manifest.json (a failed read must never be mistaken for an absent manifest); the
+    // pack id is then the one the entrypoint declares.
+    const listing = await safe(() => gh(`/contents/${targetRootPath}?ref=${mergeSha}`));
+    if (!Array.isArray(listing) || listing.some((f: any) => f?.name === "manifest.json")) return { ok: false, code: "RECONCILE_PROFILE_BLOBS_MISSING" };
+    try {
+      if (entry.encoding !== "base64") throw new Error("encoding");
+      const skill = new TextDecoder().decode(Uint8Array.from(atob(String(entry.content).replace(/\s/g, "")), (c) => c.charCodeAt(0)));
+      pack = skill.match(/^Profile Pack ID:\s*([A-Za-z0-9_.-]+)\s*$/m)?.[1] ?? "";
+    } catch { return { ok: false, code: "RECONCILE_PROFILE_PACK_ID_MISSING" }; }
+  }
   if (!pack) return { ok: false, code: "RECONCILE_PROFILE_PACK_ID_MISSING" };
 
   return { ok: true, args: { merge_sha: mergeSha, entrypoint_sha: entrypointSha, manifest_sha: manifestSha, profile_pack_id: pack, pr_number: prNumber } };

@@ -13,13 +13,14 @@ function reader(over = {}) {
   const s = {
     pr: {merged: true, base: {ref: 'main', repo: {full_name: R}}, merge_commit_sha: MERGE},
     compare: {status: 'ahead'}, entry: {sha: ENTRY},
-    manifest: {sha: MAN, encoding: 'base64', content: manifestB64()}, ...over,
+    manifest: {sha: MAN, encoding: 'base64', content: manifestB64()}, listing: [{name: 'SKILL.md'}, {name: 'manifest.json'}], ...over,
   };
   return async (path) => {
     const pick = (v) => { if (v === null) throw new Error('GITHUB_404'); return v; };
     if (path.startsWith('/pulls/')) return pick(s.pr);
     if (path.startsWith('/compare/')) return pick(s.compare);
     if (path.includes('/SKILL.md?ref=')) return pick(s.entry);
+    if (/^\/contents\/[^?]*\?ref=/.test(path) && !path.includes('.')) return pick(s.listing);
     if (path.includes('/manifest.json?ref=')) return pick(s.manifest);
     throw new Error('UNEXPECTED_' + path);
   };
@@ -50,7 +51,7 @@ const cases = [
   ['merge not on main', undefined, {compare: {status: 'diverged'}}, 'RECONCILE_MERGE_NOT_ON_MAIN'],
   ['compare fails', undefined, {compare: null}, 'RECONCILE_MERGE_NOT_ON_MAIN'],
   ['entry missing', undefined, {entry: null}, 'RECONCILE_PROFILE_BLOBS_MISSING'],
-  ['manifest missing', undefined, {manifest: null}, 'RECONCILE_PROFILE_BLOBS_MISSING'],
+  ['manifest missing but listed', undefined, {manifest: null}, 'RECONCILE_PROFILE_BLOBS_MISSING'],
   ['manifest not json', undefined, {manifest: {sha: MAN, encoding: 'base64', content: Buffer.from('nope').toString('base64')}}, 'RECONCILE_MANIFEST_UNPARSEABLE'],
   ['manifest no pack', undefined, {manifest: {sha: MAN, encoding: 'base64', content: Buffer.from('{}').toString('base64')}}, 'RECONCILE_PROFILE_PACK_ID_MISSING'],
 ];
@@ -60,6 +61,25 @@ for (const [name, evidence, over, code] of cases) {
     assert.deepEqual(r, {ok: false, code});
   });
 }
+
+const skillB64 = (pack) => Buffer.from(`# X\n\nStatus: CANDIDATE\nProfile Pack ID: ${pack}\n\nMore\n`).toString('base64');
+const noManifest = (over = {}) => reader({manifest: null, listing: [{name: 'SKILL.md'}, {name: 'contracts'}], entry: {sha: ENTRY, encoding: 'base64', content: skillB64('PACK_NM')}, ...over});
+
+test('pack without manifest.json: manifest_sha null and pack id from the entrypoint', async () => {
+  const r = await run(noManifest());
+  assert.deepEqual(r, {ok: true, args: {merge_sha: MERGE, entrypoint_sha: ENTRY, manifest_sha: null, profile_pack_id: 'PACK_NM', pr_number: 7}});
+});
+test('manifest read failing while the listing still shows manifest.json is blocked (never treated as absent)', async () => {
+  const r = await run(noManifest({listing: [{name: 'SKILL.md'}, {name: 'manifest.json'}]}));
+  assert.deepEqual(r, {ok: false, code: 'RECONCILE_PROFILE_BLOBS_MISSING'});
+});
+test('manifest missing and listing unreadable is blocked', async () => {
+  assert.deepEqual(await run(noManifest({listing: null})), {ok: false, code: 'RECONCILE_PROFILE_BLOBS_MISSING'});
+});
+test('no manifest and no Profile Pack ID line in the entrypoint is blocked', async () => {
+  const r = await run(noManifest({entry: {sha: ENTRY, encoding: 'base64', content: Buffer.from('# X\nno pack here\n').toString('base64')}}));
+  assert.deepEqual(r, {ok: false, code: 'RECONCILE_PROFILE_PACK_ID_MISSING'});
+});
 
 test('blocks: invalid target root', async () => {
   assert.deepEqual(await run(reader(), undefined, '../etc'), {ok: false, code: 'RECONCILE_TARGET_ROOT_INVALID'});
