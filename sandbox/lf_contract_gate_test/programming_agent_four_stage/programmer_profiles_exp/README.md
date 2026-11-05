@@ -6,7 +6,7 @@ Estado: **CANDIDATE_SANDBOX_ONLY**, sin creación de activos en Supabase ni arch
 
 Cada pack (`prog_backend_exp`, `prog_frontend_exp`, `prog_data_exp`) replica los **23 archivos** de `profiles/_template` (mismas subcarpetas y rutas), con dos archivos adicionales: `runtime_binding.json` y `evals/run_cases.py`. Las convenciones de `skills/profile_creator/SKILL.md` y la profundidad de `profiles/ui_architect` inspiran el gate JSON, contratos, validators, jueces y evals.
 
-El pack produce **solamente una especificación visible Worker v0.8**, nunca código, patch ni recibo de ejecución. En `schemas/output.schema.json` se exige el shape V2 consumible por `pg07_worker_candidate/tools/pg07_c2_task_batch_projection_v1.py` y la coincidencia exacta de `write_path_patterns` con el lote, protección de tests, aceptación visible y límites. Se excluye todo oráculo oculto.
+El pack produce **solamente una especificación visible estricta WorkerTaskSpecV2 (27 claves exactas)**, nunca código, patch ni recibo de ejecución. En `schemas/output.schema.json` se exige el shape V2 consumible por `pg07_worker_candidate/tools/pg07_c2_task_batch_projection_v1.py` y la coincidencia exacta de `write_path_patterns` con el lote, protección de tests, aceptación visible y límites. Se excluye todo oráculo oculto.
 
 Fuentes verificables:
 - `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`: origen del plan PG-00, C3 catálogo versionado, C6 skills por stack.
@@ -43,3 +43,5 @@ Después repetir `tests/test_experimental.py` y `tests/test_parity.py` en **base
 ## Límites de esta evidencia
 
 Un pack válido es **un candidato de especificación**, no un agente que programa, no un Worker invocado y no un perfil activo. El ejemplo `profile_assignment_sha256` es sintético y se reemplaza por el digest de asignación del ensayo. La admisión PG-07, reglas C6 actuales, revisión semántica y promoción son decisiones posteriores, no resultados de este PR. Registrar HEAD, comando, PASS/FAIL literal y cero residuos antes de cualquier propuesta adicional.
+
+**Shape estricto verificado contra fuente:** `cristhianlujan/programming-agent/src/programming_agent_runner/worker_task_spec.py` (`_REQUIRED_KEYS` y `_parse`). Este módulo rechaza campos extra; por ello `profile_code` y `profile_assignment_sha256` son metadatos del overlay de PG-07, **no** campos de `schemas/output.schema.json`.
