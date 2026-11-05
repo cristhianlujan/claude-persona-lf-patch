@@ -267,31 +267,61 @@ def test_chain(dsn):
         check(str(ex)=="SKILL_NOT_BOUND",str(ex))
         print("PASS SKILL_NOT_BOUND for unbound project area")
     else: raise AssertionError("Unbound skill accepted")
+    check([x["skill_code"]+"@"+x["skill_version"] for x in java_skill["skills"]]==
+          ["SPRINGBOOT_EXP@3","KAFKA_EXP@3"],"SQL priority failed to order multi-skill BACKEND")
+    print("PASS SQL multi-skill priority Spring Boot@3 then Kafka@3")
     original_java_sha=java_skill["skill_sha256"]
-    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit("0"*64)+
-                     " WHERE project_ref='lf_java' AND area='BACKEND'")
+    # Mutate only primary row: multi-area now contains two skills.
+    primary_filter=" WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='SPRINGBOOT_EXP' AND skill_version='3'"
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit("0"*64)+primary_filter)
     try:
-        try: read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
         except StackBlocked as ex:
             check(str(ex)=="SKILL_SHA256_MISMATCH",str(ex))
             print("PASS tampered stack skill SHA blocked")
-        else: raise AssertionError("Tampered skill accepted")
+        else:raise AssertionError("Tampered skill accepted")
     finally:
-        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit(original_java_sha)+
-                          " WHERE project_ref='lf_java' AND area='BACKEND'")
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_sha256="+lit(original_java_sha)+primary_filter)
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_version='2'"+primary_filter)
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_VERSION_MISMATCH",str(ex))
+            print("PASS linked skill version changed BLOCK")
+        else:raise AssertionError("Wrong version accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_version='3' WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='SPRINGBOOT_EXP' AND skill_version='2'")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=NULL WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_PRIORITY_REQUIRED",str(ex))
+            print("PASS missing SQL priority BLOCK")
+        else:raise AssertionError("Missing priority accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=2 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=1 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
+    try:
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        except StackBlocked as ex:
+            check(str(ex)=="SKILL_PRIORITY_CONFLICT",str(ex))
+            print("PASS conflicting SQL priorities BLOCK")
+        else:raise AssertionError("Duplicate priorities accepted")
+    finally:
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET priority=2 WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='KAFKA_EXP'")
     front=read_sql_binding(dsn,run_psql,"lf_java","FRONTEND")
     run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code="+lit(front["skill_code"])+
-                     ",skill_sha256="+lit(front["skill_sha256"])+
-                     " WHERE project_ref='lf_java' AND area='BACKEND'")
+                     ",skill_version="+lit(front["skill_version"])+
+                     ",skill_sha256="+lit(front["skill_sha256"])+primary_filter)
     try:
-        try: read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
+        try:read_sql_binding(dsn,run_psql,"lf_java","BACKEND")
         except StackBlocked as ex:
             check(str(ex)=="SKILL_AREA_MISMATCH",str(ex))
             print("PASS cross-area skill blocked")
-        else: raise AssertionError("Wrong-area skill accepted")
+        else:raise AssertionError("Wrong-area skill accepted")
     finally:
-        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code='SPRINGBOOT_EXP',skill_sha256="+
-                         lit(original_java_sha)+" WHERE project_ref='lf_java' AND area='BACKEND'")
+        run_psql(dsn,sql="UPDATE public.project_stack_binding_exp SET skill_code='SPRINGBOOT_EXP',skill_version='3',skill_sha256="+
+                         lit(original_java_sha)+" WHERE project_ref='lf_java' AND area='BACKEND' AND skill_code='ANGULAR_EXP'")
     role=role_material(assignment["profile_code"])
     skill=read_sql_binding(dsn,run_psql,assignment["project_ref"],assignment["area"])
     spec,pg07_c2=real_pg07_validation(chain,c2,sid,
@@ -308,6 +338,8 @@ def test_chain(dsn):
           receipt["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           task["profile_sha256"]==role["profile_sha256"] and
           task["skill_sha256"]==skill["skill_sha256"] and
+          task["skill_set_sha256"]==skill["skill_set_sha256"] and
+          len(task["skill_versions"])==len(skill["skills"]) and
           receipt["profile_sha256"]==role["profile_sha256"] and
           receipt["skill_sha256"]==skill["skill_sha256"] and
           receipt["worker_receipt_verified"] is False and
