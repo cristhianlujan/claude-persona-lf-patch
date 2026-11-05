@@ -2,7 +2,22 @@
 
 **Estado del documento:** guía de operación y diagnóstico, no autorización de producción.
 **Fuente de autoridad:** Supabase vivo (operación, pasos, política `POL-PROFILE-UPDATE-PASS`, ejecución y juez). Este README describe el funcionamiento comprobado del código GitHub y de las consultas; **si discrepa con la política activa, prevalece el snapshot Supabase de la ejecución**.
-**Actualizado:** 2026-10-30. No contiene valores de perfiles/owners hardcodeados como regla general.
+**Actualizado:** 2026-11-05 (§0 reglas de conducción). No contiene valores de perfiles/owners hardcodeados como regla general.
+
+## 0. Reglas de conducción (leer primero; valen para todo el run, no hay que repetirlas)
+
+Estas reglas aplican a cualquier agente (GPT o Claude) que ejecute `ACTUALIZACION_PERFIL_LF`. El dueño no debe recordarlas paso a paso.
+
+1. **Un solo run continuo.** Desde la solicitud hasta el cierre en `main`, los pasos están encadenados: cada paso termina y arranca el siguiente sin esperar un "continúa". No se emiten informes de avance por lote, no se pide permiso por pasos ya cubiertos por la solicitud, no se cierra el turno con "siguiente lote definido". El único informe es el final (cierre con readback) o el de una parada grave.
+2. **Solo se frena por una causa grave**, y se reporta con el código exacto:
+   - un bloqueo gobernado que no tiene recuperación en la ruta existente (autoridad ausente, política vencida, gate que falla cerrado sin salida documentada);
+   - una decisión del dueño irreversible o realmente ambigua (no lo es elegir método, nombre de rama o orden de pasos);
+   - riesgo de seguridad, producción, gasto o pérdida de datos;
+   - falta de una capacidad de entrega (ver regla 3).
+   Todo lo demás —un check rojo, un falso negativo en las pruebas, un código de la tabla de errores conocidos— se corrige y se sigue, sin preguntar.
+3. **Sin ZIP ni descargas.** El candidato nunca se entrega como archivo para que alguien lo descargue o lo suba a mano. Se escribe directamente en la rama `lf/**` del repositorio con la herramienta de escritura de GitHub disponible (conector o API), solo en los paths del perfil y después del paso de pre-escritura, y se relee desde la rama. Si el agente no puede escribir en GitHub, se detiene con `NATIVE_CANDIDATE_DELIVERY_UNAVAILABLE` y dice qué capacidad falta; no produce un ZIP como sustituto.
+4. **Una evolución completa, no por lotes.** Todas las brechas medidas (las dimensiones S26 que fallan y los problemas del caso operacional) se resuelven en **un único candidato, un único PR**. No se parte el trabajo en "lote 1, lote 2" ni se deja una brecha para después sin un bloqueo grave que la justifique. Si algo no se puede cerrar, se dice cuál es el bloqueo, no se difiere.
+5. **Las pruebas locales no se reportan como avance.** Se usan para iterar el candidato hasta que pase y recién entonces se sigue al paso siguiente; el avance oficial es el que queda registrado en los pasos de la ejecución.
 
 ## 1. ¿Qué hace y quién es responsable?
 
@@ -93,7 +108,7 @@ En cada intento: `source`, `locator` exacto, `source_revision` si aplica, `obser
 
 ## 6. Transporte y comandos existentes
 
-- **Ruta canónica documentada:** `scripts/lf_profile_update_run.py`, desde checkout preparado, con `git` y `gh` disponibles.
+- **Ruta canónica documentada:** `scripts/lf_profile_update_run.py`, desde checkout preparado, con `git` y `gh` disponibles. Desde un chat nativo sin checkout, el candidato se escribe directo en la rama (ver §0, regla 3); nunca como ZIP.
 - **Ejemplo (un perfil, nunca copiar sin sustituir los parámetros):**
 
 ```bash
