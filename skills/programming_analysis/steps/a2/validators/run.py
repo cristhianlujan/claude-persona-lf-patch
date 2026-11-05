@@ -149,6 +149,8 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
         return _blocked("A2_NESTED_PARENT_INVALID")
     if granularity in {"CONTROL", "SECTION"} and parent is None:
         return _blocked("A2_NESTED_PARENT_REQUIRED")
+    if parent is not None and (parent == target or parent not in context["target_hints"]):
+        return _blocked("A2_NESTED_PARENT_NOT_IN_A1")
     if (not isinstance(evidence, list) or not evidence
             or any(not isinstance(ref, str) or len(ref.strip()) < 3 for ref in evidence)
             or len(set(evidence)) != len(evidence)):
