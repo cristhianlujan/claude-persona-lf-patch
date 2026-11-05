@@ -7,27 +7,27 @@
   "rules": [
     {
       "rule_id": "NG-01",
-      "text": "Definir la interfaz de componente con inputs/outputs y estado observable; verificar interacción con pruebas de componentes.",
+      "text": "Definir interfaces de componentes con entradas/salidas explícitas; probar interacción de eventos según diseño del proyecto.",
       "source_url": "https://angular.dev/guide/components"
     },
     {
       "rule_id": "NG-02",
-      "text": "Al usar signals, distinguir estado derivado con computed y cambios de estado con mecanismos explícitos, según versión del proyecto.",
+      "text": "Usar signals y computed para expresar estado derivado cuando corresponda a la versión Angular del proyecto.",
       "source_url": "https://angular.dev/guide/signals"
     },
     {
       "rule_id": "NG-03",
-      "text": "Evitar lógica de negocio no requerida en la plantilla; estructurar accesibilidad y semántica de controles interactivos.",
+      "text": "Usar HTML semántico y nombres accesibles para controles interactivos; no basar interacción solo en click de un elemento no interactivo.",
       "source_url": "https://angular.dev/best-practices/a11y"
     },
     {
       "rule_id": "NG-04",
-      "text": "Asegurar navegación de teclado, foco visible y nombres accesibles en los controles que corresponda, y exigir evidencia observable.",
+      "text": "Verificar navegación por teclado y gestión de foco en el flujo afectado y exigir evidencia observable.",
       "source_url": "https://angular.dev/best-practices/a11y"
     },
     {
       "rule_id": "NG-05",
-      "text": "Definir pruebas de comportamiento y renderizado con herramientas Angular disponibles, sin inventar resultados de compilación ni de accesibilidad.",
+      "text": "Incluir pruebas de componentes, plantilla y comportamiento con herramientas presentes en el proyecto; nunca afirmar PASS no ejecutado.",
       "source_url": "https://angular.dev/guide/testing"
     }
   ]
