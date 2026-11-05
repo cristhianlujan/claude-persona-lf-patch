@@ -1,0 +1,16 @@
+{
+  "skill_code": "FASTAPI_EXP",
+  "area": "BACKEND",
+  "source_refs": [
+    "https://fastapi.tiangolo.com/tutorial/dependencies/",
+    "https://fastapi.tiangolo.com/tutorial/testing/"
+  ],
+  "pg00_standard_family": "STD-BE",
+  "pg00_standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+  "expert_checks": [
+    "Definir contratos de rutas y validaciones de entrada/salida conforme al proyecto; no asumir una estructura de carpetas universal.",
+    "Resolver dependencias y comportamiento HTTP con fuentes del repo; solicitar ejemplos y criterios de error.",
+    "Exigir pruebas de endpoints con TestClient/pytest cuando el proyecto lo admita; no simular su ejecución."
+  ],
+  "production_authority": false
+}
