@@ -186,15 +186,15 @@ def test_chain(dsn):
     spring="PERFIL-PROG-BACKEND-SPRING-EXP"
     args={"lot":lot,"project_ref":project,"literal_request":"Corregir servicio Spring",
           "prepare":prepare,"finalize":finalize}
-    assignment=assign_pg05(**args,model_draft=draft_for_code(req,spring))
-    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==spring
+    assignment=assign_pg05(**args,model_draft=draft_for_code(req,general))
+    check(assignment["status"]=="SELECTED" and assignment["profile_code"]==general
           and assignment["production_authority"] is False,"Assignment not selected")
     check(assignment["catalog_sha256"]==req["catalog_sha256"],"Catalog digest drift")
     check(assignment["request_sha256"]==digest(req) and
           assignment["result_sha256"]==digest(assignment["result"]),"Unbound hashes")
     print("PASS PG05 SELECTED, three bound digests, no production authority")
-    alternative=assign_pg05(**args,model_draft=draft_for_code(req,general))
-    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==general,
+    alternative=assign_pg05(**args,model_draft=draft_for_code(req,spring))
+    check(alternative["status"]=="SELECTED" and alternative["profile_code"]==spring,
           "Alternative valid BACKEND must remain selectable")
     print("PASS PG05 second valid backend selected by fixed AI draft")
     amb={"decision":"AMBIGUOUS","selected_profile_code":None,
@@ -252,7 +252,7 @@ def test_chain(dsn):
     out=pg07_worker_projection(assignment=assignment,lot=lot,
                                currentness=current,worker_spec=spec,pg07_c2=pg07_c2)
     task=out["worker_task_overlay"];receipt=out["receipt_link_candidate"]
-    check(task["profile_code"]==spring and task["write_scope"]==[path] and
+    check(task["profile_code"]==general and task["write_scope"]==[path] and
           task["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["profile_assignment_sha256"]==assignment["assignment_sha256"] and
           receipt["worker_receipt_verified"] is False and
