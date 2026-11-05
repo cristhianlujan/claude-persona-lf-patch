@@ -1,48 +1,42 @@
-# Tres perfiles programadores de ensayo — SIN activación
+# ROLES + STACK SKILLS — sandbox de Programación LF
 
-**Estado de cada paquete:** `CANDIDATE_SANDBOX_ONLY`; `runtime_enabled=false`; `promotion_allowed=false`. No crea perfiles en `profiles/`, no toca Supabase y no ejecuta Worker, modelo, parches, commits ni PRs.
+**PR experimental #3672**, encima del PR #3667. Todos los artefactos se mantienen en `sandbox/`. **Estado: CANDIDATE_SANDBOX_ONLY / no producción**; runtime desactivado, promoción prohibida y sin autoridad de escritura.
 
-## Origen y límites
+## Separación obligatoria
 
-Se conserva la lista de **23 archivos** exigidos por `profiles/_template/validators/validate_pack.py`, más `contracts/runtime_binding.json` por perfil. La arquitectura del pack toma `skills/profile_creator/SKILL.md` y `profiles/ui_architect` como referentes de profundidad y de un gate temprano. La salida canónica **no** es código ni el resultado del Profile Creator: es la **especificación visible V2** que consume `cristhianlujan/programming-agent/docs/WORKER.md` y que debe pasar el productor real `pg07_worker_candidate/tools/pg07_c2_task_batch_projection_v1.py`.
+**ROLES:** `prog_backend_exp`, `prog_frontend_exp`, `prog_data_exp`. Cada uno conserva los 23 archivos de `profiles/_template` más `contracts/runtime_binding.json`. Los SKILL.md y contratos de los roles no incorporan Spring, Angular, Flyway, FastAPI ni otra tecnología. Solo vigilan área, alcance exacto PG-05 C2, pruebas visibles, ausencia de invención, falta de información y autoridad. Los ejemplos de rutas son genéricos.
 
-| Pack | Área | Enfoque | Referencia al catálogo PG-00 |
-|---|---|---|---|
-| `prog_backend_exp` | BACKEND | Java/Spring, capas y API REST | `STD-BE` |
-| `prog_frontend_exp` | FRONTEND | Angular, componentes, estados, accesibilidad | `STD-FE` |
-| `prog_data_exp` | DATA | Flyway, migraciones reversibles y sin pérdida de datos | `STD-DB` |
+**CONOCIMIENTO:** `stack_skills_exp/{springboot_exp,angular_exp,flyway_exp,fastapi_exp}/` (cada skill incluye SKILL.md, contracts/, examples/ y evals/). El conocimiento técnico está en esas skills, que citan documentación oficial. No puede seleccionarlas el modelo por palabras clave.
 
-**Fuente de gobernanza PG-00:** `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql` y catálogo versionado que gobierna PG-00. Estas referencias son familias, **no sustituyen la lectura de cada estándar vigente**; sin texto/versión actual y política L3 no se autoriza al Worker a escribir. No se inventan obligaciones específicas de STD-BE/FE/DB.
+**VÍNCULO DEL PROYECTO:** `stack_skills_exp/project_stack_binding_exp.sql` crea una tabla **solo local** `public.project_stack_binding_exp(project_ref,area,skill_code,skill_sha256)`. Los datos de `project_stack_binding_fixtures.json` especifican `lf_java/BACKEND→SPRINGBOOT_EXP`, `lf_java/FRONTEND→ANGULAR_EXP`, `lf_java/DATA→FLYWAY_EXP`, `lf_python/BACKEND→FASTAPI_EXP`, además del proyecto de prueba `bridge_fixture/BACKEND→SPRINGBOOT_EXP`. No hay vínculo `lf_python/FRONTEND`. `seed_local_binding_table` calcula el SHA-256 **exacto del SKILL.md** y almacena la fila en la base desechable. `read_sql_binding` consulta **la tabla**, rechaza filas ausentes, skill de otra área y discrepancia entre hash almacenado y archivo.
 
-## Contrato Worker
+## PG-07 — tarea visible para Worker v0.8
 
-`schemas/output.schema.json` exige la especificación visible de Worker v0.8: `context_path_patterns`, `write_path_patterns` y `files_expected` iguales a las rutas exactas del lote; `protected_path_patterns` para pruebas protegidas; `required_tests` y `acceptance_commands` no vacíos; HEAD y snapshot; recursos máximos positivos; `allow_deletions=false`. Ni la especificación ni el modelo reciben `hidden_oracle_ref`, `hidden_oracle_sha256`, `oracle_envelope` o autoridad. Las rutas de prueba protegidas quedan fuera del write scope.
+El puente, que permanece candidato, ahora exige `role`, `skill` y la fila de binding. El campo `worker_spec.functional_contract.role_and_stack` incluye el texto e identidad del **rol genérico**, el texto e identidad de la **skill del proyecto**, y sus SHA-256. Se envía ese mismo WorkerTaskSpec al productor PG-07 C2 real, que verifica el formato visible sin abrir el oráculo. La proyección de tarea y el recibo **candidato**, NO auténtico, encadenan `profile_sha256` y `skill_sha256` con el SHA de asignación. No hay despacho ni parche.
 
-## Descriptor source-first
-
-`selector_descriptor_from_skill.py` extrae `PROFILE_SELECTION_DESCRIPTION`, `PROFILE_SELECTION_EVIDENCE_KIND`, `PROFILE_SELECTION_EVIDENCE_SECTION` y `DECLARED_AREA` del SKILL.md real de cada pack. En PostgreSQL **exclusivamente local y desechable** llama a la función original `lf_profile_selector_descriptor_sync_v1` con `source_kind=GITHUB_SKILL` y revisión HEAD exacta. **Restricción original comprobada:** `lf_profile_execution_source_eligibility_v1` exige `repo_path ~ '^profiles/...'` y `ruta_esperada` coherente; no puede admitir físicamente un SKILL ubicado en sandbox. Para no tocar `profiles/`, el ensayo conserva los paths canónicos **ficticios** de los registros de prueba y utiliza un `source_ref` `https://example.invalid/profiles/<slug>/SKILL.md#local-fixture=<sha>` solamente para satisfacer el contrato de resync en PostgreSQL desechable. El descriptor adjunta `sandbox_source_path` y el SHA-256 real de su SKILL. **La fuente virtual NO autentica la existencia de un perfil GitHub real ni habilita runtime.** El paso a un perfil real necesitaría una operación gobernada separada que no forma parte de este PR. Esto reemplaza en el ensayo los descriptores de `PERFIL-PROG-BACKEND-EXP`, `PERFIL-PROG-FRONTEND-EXP` y `PERFIL-PROG-DATA-EXP`. El perfil BACKEND-SPRING y el de nombre engañoso permanecen únicamente como contrapruebas heredadas para que los negativos del puente #3667 no pierdan cobertura.
+**Estándares PG-00:** solo se hallaron las referencias a familias `STD-BE`, `STD-FE`, `STD-DB` en el archivo fuente `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. **Ese archivo no contiene el texto normativo completo de las tres familias.** Por eso `pg00_catalog_sources_exp.json` fija las referencias verificadas, `pg00_source_status` devuelve `PG00_STANDARD_TEXT_UNAVAILABLE` y no se afirma que haya normas L1/L2 resueltas. Las skills incluyen conocimiento de sus **fuentes oficiales**, separado de estándares LF. **No permitir una ejecución real hasta conseguir el catálogo normativo versionado con contenido y huellas.** No sustituirlo por suposiciones.
 
 ## Comandos para Claude
 
-Desde el checkout exacto de este PR:
+Desde la raíz del repositorio, en el checkout del HEAD auditado:
 
 ```bash
 python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_profiles_exp/test_profile_packs.py
 ```
 
-El comando anterior ejecuta los tres validadores, **6 evaluaciones por perfil** (positivo, fuera de lote, pruebas vacías, exposición del oráculo, otra área, autoridad inyectada) y alimenta la **especificación visible de cada pack** al productor real PG-07 C2; no necesita PostgreSQL.
+Este test usa productor real PG-07 C1/C2 con entradas candidatas; evalúa cada pack, fuente de la skill, Backend con dos proyectos y tres negativos de binding. No ejecuta Worker.
 
-Regresión del puente #3667 con resync original del descriptor, en una base local fresca y vacía:
+Para paridad del puente y consultas SQL de binding, con PostgreSQL **localhost** desechable y base **recién creada, vacía**:
 
 ```bash
 export SELECTOR_EXP_DISPOSABLE_DB=YES
-export SELECTOR_EXP_TEST_DSN='postgresql://postgres:LOCAL_PASSWORD@127.0.0.1:5432/selector_exp_test_profile_bridge'
+export SELECTOR_EXP_TEST_DSN='postgresql://postgres:LOCAL_PASSWORD@127.0.0.1:5432/selector_exp_test_role_stack'
 export PROFILE_CANDIDATE_HEAD_SHA="$(git rev-parse HEAD)"
 python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/selector_experimental/integration/test_pg04_pg07_selector_bridge_v1.py
 ```
 
-Repetir `test_experimental.py`, `test_parity.py` y regresión existente PG-04…PG-14 en **bases nuevas** donde aplique. Registrar HEAD exacto, comando, salida literal, cero residuos y cualquier bloqueo. No usar DSN de Supabase.
+Repetir `test_experimental.py`, `test_parity.py` en bases frescas y la regresión PG-04…PG-14. Cero residuos al finalizar. Claude aportará salida literal, comando, HEAD y bloqueantes. **No declarar PASS de este HEAD antes de la ejecución independiente.**
 
-## Límites de calificación
+## Fronteras
 
-El validado local estructural no es `DEPTH_READY_FOR_SEMANTIC_REVIEW` ni aprobación independiente. El validador general de Profile Creator fue construido para el **sobre de creación de perfiles** (`status`, `evidence_map`), mientras este `schemas/output.schema.json` es deliberadamente un **WorkerTaskSpec V2**; no sustituir uno por otro ni alegar que pasó el gate de Creator sin un artefacto de creación específico. El sandbox mantiene todo el tiempo `production_authority=false`, Worker no invocado, y promoción bloqueada.
+No modificar `profiles/` ni `skills/` productivos, original/, test_parity.py, funciones `_exp_`, Supabase, Análisis, Testing ni main. El resync del descriptor original usa alias `profiles/` exclusivamente en la DB local por la restricción de elegibilidad del selector; la fuente verdadera y su SHA están en el descriptor. No implica registro productivo, legitimidad de source_ref ni instalación.
