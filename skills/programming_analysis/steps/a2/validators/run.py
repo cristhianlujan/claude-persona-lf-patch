@@ -82,7 +82,7 @@ def _literal(value: Any) -> str:
 
 def _match(predicate: str, signals: dict) -> bool:
     """Interpret only the simple DSL in A2's existing canonical JSON policy."""
-    expr = re.fullmatch(r"([a-z_]+)=([A-Z_]+|true|false)", predicate)
+    expr = re.fullmatch(r"([a-z_]+)=([A-Z_]+|true|false|[0-9]+)", predicate)
     if expr:
         key, value = expr.groups()
         if key not in signals:
