@@ -58,3 +58,9 @@ python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/worker_pilot_
 Prueba con `parse_worker_task()` **real**, campos extra rechazados, reglas/hashes, shell/pipe bloqueado, topes, falta de manifiestos y cálculo externo de costo con usage **simulado exclusivamente para test de aritmética**. No declara tokens gastados reales.
 
 **Pendientes de autoridad:** Claudio/Claude debe ejecutar y calificar este HEAD; luego el propietario debe proporcionar los tres manifiestos genuinos y demostrar acceso a usage por intento del recibo CLI endurecido. Solo entonces reconsiderar workflow manual, presupuesto, separación de secrets y PR draft PASS-only. `PG00_STANDARD_TEXT_UNAVAILABLE` sigue siendo bloqueo normativo de LF.
+
+## Corrección de paths canónicos (auditoría Claude)
+
+El Worker `298307e` rechaza `tests/protected/`: no es equivalente de manera automática a `tests/protected/**`. Por ello `adapt(..., worker_checkout=...)` invoca **las funciones reales** `canonical_relative_path` y `_validate_pattern` importadas del checkout fijado al HEAD exacto, sobre **todos** los valores de `context_path_patterns`, `write_path_patterns` y `protected_path_patterns`. Cualquier rechazo produce `ADAPTER_PATH_NOT_CANONICAL` sin normalizar el dato. El generador de argv también vuelve a llamar al parser real del Worker. `test_pg07_to_worker_v1_adapter.py` comprueba la barra final en las tres listas y un patrón `**` mal formado.
+
+La base #3672 también corrige los tres roles y sus casos a `tests/protected/**` y añade `NON_CANONICAL_PATH` como séptimo eval. El checkout auditado debe contener ambas correcciones. Ningún estado PASS se afirma hasta la nueva ejecución independiente de Claude.
