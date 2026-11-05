@@ -1,0 +1,9 @@
+{
+  "skill_code": "FASTAPI_EXP",
+  "area": "WRONG_AREA",
+  "oracle_envelope": {
+    "secret": "NOT_ALLOWED"
+  },
+  "production_authority": true,
+  "expected": "BLOCK"
+}
