@@ -40,7 +40,52 @@ def _safe_scope(paths):
         block("WRITE_SCOPE_INVALID")
     return sorted(paths)
 
-def pg04_area_lot(*,pg04_exit,pg05_c2,solution_id,area,paths):
+def declare_pg04_areas(*,pg04_exit,project_ref,lot_declarations,project_rules):
+    """Source-bound PG04 candidate overlay; every solution declares exactly one area."""
+    exit_sha=frozen(pg04_exit)
+    if (pg04_exit.get("schema_version")!="PG04_TO_PG05_EXIT_CANDIDATE_V1" or
+        pg04_exit.get("status")!="CANDIDATE_NOT_ADMITTED" or
+        pg04_exit.get("production_authority") is not False or
+        pg04_exit.get("handoff_allowed") is not False):
+        block("PG04_AREA_SOURCE_INVALID")
+    if not isinstance(project_ref,str) or not project_ref or not isinstance(project_rules,list):
+        block("PG04_PROJECT_RULES_INVALID")
+    ids=[x.get("solution_id") for x in pg04_exit.get("solutions",[])]
+    if not ids or len(set(ids))!=len(ids) or not isinstance(lot_declarations,list) or len(lot_declarations)!=len(ids):
+        block("PG04_AREA_COVERAGE_INVALID")
+    seen=set()
+    result=[]
+    for dec in lot_declarations:
+        _exact_keys(dec,{"solution_id","area","paths"},"PG04_AREA_FIELDS_INVALID")
+        sid=dec["solution_id"]
+        if sid not in ids or sid in seen or dec["area"] not in _ALLOWED:
+            block("PG04_AREA_SOLUTION_INVALID")
+        seen.add(sid)
+        paths=_safe_scope(dec["paths"])
+        areas=set()
+        for path in paths:
+            matched=set()
+            for rule in project_rules:
+                if (not isinstance(rule,dict) or set(rule)!={"area","path_prefix"} or
+                    rule["area"] not in _ALLOWED or not isinstance(rule["path_prefix"],str)):
+                    block("PG04_RULE_SHAPE_INVALID")
+                if path.startswith(rule["path_prefix"]):
+                    matched.add(rule["area"])
+            if not matched: block("LOTE_PATH_UNCLASSIFIED")
+            if len(matched)>1: block("LOTE_ROUTE_CONFLICT")
+            areas|=matched
+        if len(areas)>1: block("LOTE_MULTI_AREA")
+        if dec["area"]!=next(iter(areas)): block("LOTE_AREA_MISMATCH")
+        result.append({"solution_id":sid,"area":dec["area"],"paths":paths})
+    out={"schema_version":"PG04_AREA_DECLARATION_OVERLAY_V1",
+         "source_pg04_exit_sha256":exit_sha,"project_ref":project_ref,
+         "project_rules":copy.deepcopy(sorted(project_rules,key=lambda x:(x["area"],x["path_prefix"]))),
+         "lots":sorted(result,key=lambda x:x["solution_id"]),
+         "production_authority":False}
+    out["area_overlay_sha256"]=digest(out)
+    return out
+
+def pg04_area_lot(*,pg04_exit,pg05_c2,pg04_areas,solution_id,area,paths):
     """Overlay area on a PG04 solution after C2 exact scope resolution; no alteration to PG04 itself."""
     e=frozen(pg04_exit); c=frozen(pg05_c2)
     if (pg04_exit.get("schema_version")!="PG04_TO_PG05_EXIT_CANDIDATE_V1" or
@@ -54,6 +99,18 @@ def pg04_area_lot(*,pg04_exit,pg05_c2,solution_id,area,paths):
         pg05_c2.get("write_scope_authorized") is not False):
         block("PG04_PG05_C2_CHAIN_INVALID")
     if area not in _ALLOWED or not isinstance(solution_id,str) or not solution_id: block("LOT_AREA_OR_ID_INVALID")
+    _exact_keys(pg04_areas,{"schema_version","source_pg04_exit_sha256","project_ref",
+                           "project_rules","lots","production_authority","area_overlay_sha256"},
+                "PG04_AREA_OVERLAY_FIELDS_INVALID")
+    frozen(pg04_areas,"area_overlay_sha256")
+    if (pg04_areas["schema_version"]!="PG04_AREA_DECLARATION_OVERLAY_V1" or
+        pg04_areas["production_authority"] is not False or
+        pg04_areas["source_pg04_exit_sha256"]!=e):
+        block("PG04_AREA_OVERLAY_INVALID")
+    declarations=[x for x in pg04_areas["lots"] if x.get("solution_id")==solution_id]
+    if len(declarations)!=1 or declarations[0].get("area")!=area or declarations[0].get("paths")!=_safe_scope(paths):
+        block("PG04_AREA_LOT_DRIFT")
+
     es=[s for s in pg04_exit.get("solutions",[]) if s.get("solution_id")==solution_id]
     cs=[s for s in pg05_c2.get("solution_scopes",[]) if s.get("solution_id")==solution_id]
     if len(es)!=1 or len(cs)!=1: block("LOT_SOLUTION_SOURCE_NOT_UNIQUE")
@@ -69,13 +126,14 @@ def pg04_area_lot(*,pg04_exit,pg05_c2,solution_id,area,paths):
     lot={"schema_version":"PG04_AREA_LOT_EXP_V1","solution_id":solution_id,
          "area":area,"paths":requested,
          "pg04_exit_sha256":e,"pg05_c2_sha256":c,
+         "pg04_area_overlay_sha256":pg04_areas["area_overlay_sha256"],
          "production_authority":False}
     lot["lot_sha256"]=digest(lot)
     return lot
 
 def _validate_lot(lot):
     _exact_keys(lot,{"schema_version","solution_id","area","paths","pg04_exit_sha256",
-                     "pg05_c2_sha256","production_authority","lot_sha256"},"LOT_FIELDS_INVALID")
+                     "pg05_c2_sha256","pg04_area_overlay_sha256","production_authority","lot_sha256"},"LOT_FIELDS_INVALID")
     if lot["schema_version"]!="PG04_AREA_LOT_EXP_V1" or lot["production_authority"] is not False or lot["area"] not in _ALLOWED:
         block("LOT_AUTHORITY_OR_AREA_INVALID")
     _safe_scope(lot["paths"])
@@ -112,6 +170,7 @@ def assign_pg05(*,lot,project_ref,literal_request,model_draft,prepare,finalize):
       "solution_id":lot["solution_id"],"lot_sha256":lot["lot_sha256"],
       "source_pg05_c2_sha256":lot["pg05_c2_sha256"],
       "project_ref":project_ref,"area":lot["area"],"write_scope":copy.deepcopy(lot["paths"]),
+      "source_pg04_area_overlay_sha256":lot["pg04_area_overlay_sha256"],
       "profile_code":selected,"request":copy.deepcopy(request),"result":copy.deepcopy(result),
       "request_sha256":digest(request),"result_sha256":digest(result),
       "catalog_sha256":request["catalog_sha256"],
@@ -123,6 +182,7 @@ def pg06_currentness(*,assignment,lot,prepare,finalize):
     _validate_lot(lot)
     keys={"schema_version","status","solution_id","lot_sha256","source_pg05_c2_sha256",
           "project_ref","area","write_scope","profile_code","request","result",
+          "source_pg04_area_overlay_sha256",
           "request_sha256","result_sha256","catalog_sha256",
           "production_authority","assignment_sha256"}
     _exact_keys(assignment,keys,"ASSIGNMENT_FIELDS_INVALID")
@@ -130,6 +190,7 @@ def pg06_currentness(*,assignment,lot,prepare,finalize):
     if (assignment["schema_version"]!="PG05_PROFILE_ASSIGNMENT_BRIDGE_V1" or
         assignment["status"]!="SELECTED" or assignment["production_authority"] is not False
         or assignment["lot_sha256"]!=lot["lot_sha256"]
+        or assignment["source_pg04_area_overlay_sha256"]!=lot["pg04_area_overlay_sha256"]
         or assignment["source_pg05_c2_sha256"]!=lot["pg05_c2_sha256"]
         or assignment["solution_id"]!=lot["solution_id"]
         or assignment["area"]!=lot["area"]
