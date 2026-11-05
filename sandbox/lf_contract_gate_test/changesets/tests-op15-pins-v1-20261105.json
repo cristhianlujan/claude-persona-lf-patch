@@ -1,0 +1,8 @@
+{
+  "solution_ref": "tests-op15-pins-v1-20261105",
+  "paths": {
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_problem_comparison.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_target_destination_matrix.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/tests-op15-pins-v1-20261105.json": "CHANGESET_MANIFEST"
+  }
+}

@@ -51,8 +51,8 @@ class ProblemComparisonTest(unittest.TestCase):
         return report(cs, [old or self.base, new or self.evolved], "a"*64, "b"*64)
 
     def test_14_original_controls_intact(self):
-        self.assertEqual(len(self.c["checks"]), 14)
-        self.assertEqual(len({c["id"] for c in self.c["checks"]}), 14)
+        self.assertEqual(len(self.c["checks"]), 15)
+        self.assertEqual(len({c["id"] for c in self.c["checks"]}), 15)
 
     def test_two_questions_and_all_fields_side_by_side(self):
         r = self.report()
@@ -131,7 +131,7 @@ class ProblemComparisonTest(unittest.TestCase):
             self.assertEqual(len(matrix['rows']), 2)
             self.assertEqual(matrix['rows'][0]['original']['runs'][0]['raw_file_ref'],
                              slug + '/runs/old.json')
-            self.assertEqual(len(matrix['conditional_controls_all']['WEB-001']), 4)
+            self.assertEqual(len(matrix['conditional_controls_all']['WEB-001']), 5)
             self.assertEqual(len(matrix['rows'][0]['original']['runs'][0]['raw_file_sha256']), 64)
             self.assertEqual(matrix['rows'][0]['evolved']['runs'][0]['raw_file_ref'],
                              slug + '/runs/new.json')
@@ -190,7 +190,8 @@ class ProblemComparisonTest(unittest.TestCase):
                          {'OP03_NO_UNRESOLVED_NODE_IN_CLOSING_ANSWER',
                           'OP05_DERIVED_OWNER_HAS_RATIFICATION',
                           'OP06_ALTERNATIVE_SELECTED',
-                          'OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH'})
+                          'OP14_DERIVED_OWNER_DECLARED_RULE_SEARCH',
+                          'OP15_UNRESOLVED_OWNER_NOT_LABELED_DERIVED'})
         for c in full:
             self.assertEqual(c['original_applicability']['total_runs'], 1)
             self.assertEqual(c['evolved_applicability']['total_runs'], 1)
@@ -210,7 +211,7 @@ class ProblemComparisonTest(unittest.TestCase):
         self.assertEqual(x['rows'][0]['original']['omitted_run_count'], 4)
         self.assertEqual(len(x['rows'][0]['original']['runs']), 2)
         self.assertTrue(any('RUNS_TRUNCATED' in q for q in x['issues']))
-        self.assertEqual(len(x['conditional_controls_all']['WEB-001']), 4)
+        self.assertEqual(len(x['conditional_controls_all']['WEB-001']), 5)
 
     def test_projection_problem_and_field_limits_are_explicit(self):
         c = dict(self.c)
