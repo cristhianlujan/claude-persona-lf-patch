@@ -183,6 +183,19 @@ class AnalysisA2Candidate(unittest.TestCase):
             self.assertTrue(policy[name])
         self.assertTrue(RUN._signals_valid(low()["depth_signals"], policy))
 
+    def test_22a_json_schemas_reconcile_typed_candidate(self):
+        from jsonschema import Draft202012Validator
+        signal_schema = json.loads((A2 / "schemas/input.schema.json").read_text(encoding="utf-8"))
+        output_schema = json.loads((A2 / "schemas/output.schema.json").read_text(encoding="utf-8"))
+        self.assertTrue(Draft202012Validator(signal_schema).is_valid(low()))
+        self.assertTrue(Draft202012Validator(output_schema).is_valid(RUN.run(self.a1, low())))
+        self.assertTrue(Draft202012Validator(output_schema).is_valid(RUN.run(None, low())))
+
+    def test_22b_count_zero_is_a_canonical_l1_predicate(self):
+        out = RUN.run(self.a1, low())
+        self.assertEqual(out["classification"]["depth_level"], "L1")
+        self.assertIn("unresolved_material_signal_count=0", out["classification"]["depth_reason_predicates"])
+
     def test_22_required_specialist_no_fake_selection(self):
         self.signals["depth_signals"]["required_specialist_count"] = 1
         res = RUN.run(self.a1, self.signals)
