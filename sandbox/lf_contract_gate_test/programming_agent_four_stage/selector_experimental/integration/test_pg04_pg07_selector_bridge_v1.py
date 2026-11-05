@@ -110,20 +110,24 @@ def real_pg07_validation(chain,c2,selected_solution,assignment):
             sys.path.insert(0,str(pack/"validators"))
             from validate_pack import validate as validate_programmer_pack
             spec=json.loads((pack/"examples/good_output.json").read_text())
-            spec.update(profile_assignment_sha256=assignment["assignment_sha256"],
-                        task_id="profile-pack-"+sid,base_head_sha=base,
+            spec.update(task_id="LF-PROFILE-"+sid+".v1",base_head_sha=base,
                         source_snapshot_sha256=snapshots[sid],
-                        scope={"in_scope":paths,"out_of_scope":[],
-                               "must_not_change":["tests/visible_test.py"]},
+                        scope={"in_scope":["Only resolved path "+", ".join(paths)],
+                               "out_of_scope":["No unrelated files"],
+                               "must_not_change":["Never modify protected tests"]},
                         context_path_patterns=paths,write_path_patterns=paths,
                         protected_path_patterns=["tests/visible_test.py"],files_expected=paths,
-                        acceptance_commands=["python3 -m compileall ."])
+                        acceptance_commands=[{"name":"visible-check",
+                                              "argv":["python3","-m","compileall","."]}])
             binding=json.loads((pack/"runtime_binding.json").read_text())
             schema=json.loads((pack/"schemas/output.schema.json").read_text())
             input_packet={"area":"BACKEND","profile_code":assignment["profile_code"],
                           "profile_assignment_sha256":assignment["assignment_sha256"],
+                          "base_head_sha":base,
+                          "source_snapshot_sha256":snapshots[sid],
                           "write_scope":paths,"protected_path_patterns":["tests/visible_test.py"],
-                          "visible_acceptance_commands":["python3 -m compileall ."]}
+                          "visible_acceptance_commands":[{"name":"visible-check",
+                                                           "argv":["python3","-m","compileall","."]}]}
             errors=validate_programmer_pack(spec,binding,input_packet,schema)
             check(not errors,"Sandbox profile pack rejected Worker task: "+str(errors))
             print("PASS profile pack output schema, local validator and PG05 assignment binding")
