@@ -1,21 +1,18 @@
-# Flyway — migraciones controladas — skill técnica de ENSAYO
+# Flyway — stack skill de ENSAYO
+**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** DATA. **Código:** FLYWAY_EXP. **Versión:** 1.
 
-**Estado:** CANDIDATE_SANDBOX_ONLY. **Área declarada:** DATA. **Código:** FLYWAY_EXP.
+## Vinculación
+La skill se obtiene exclusivamente de project_stack_binding_exp por proyecto, área y versión con prioridad explícita. No la elige la IA.
 
-## Rol y frontera
-Esta skill contiene **conocimiento técnico** del stack. No decide el perfil, ni se asigna a sí misma: la selecciona exclusivamente la tabla `project_stack_binding_exp` por `project_ref + area`. No ejecuta código, tests, despliegues ni migraciones.
+## Reglas expertas verificables
+- **FW-01:** Respetar convenciones efectivas de nombre, orden y versionado de migraciones versionadas y repetibles. **Fuente oficial:** https://documentation.red-gate.com/flyway/flyway-concepts/migrations
+- **FW-02:** Ejecutar flyway validate para contrastar checksum, versión, tipo y descripción de scripts aplicados, registrando fallas. **Fuente oficial:** https://documentation.red-gate.com/flyway/reference/commands/validate
+- **FW-03:** Exigir evaluación de pérdida de datos antes de DROP/DELETE/TRUNCATE y evidencia de backup y recuperación. **Fuente oficial:** https://documentation.red-gate.com/flyway/flyway-concepts/migrations/undo-migrations
+- **FW-04:** No asumir que undo existe ni recupera información eliminada; verificar edición, soporte del motor y límites. **Fuente oficial:** https://documentation.red-gate.com/flyway/flyway-concepts/migrations/undo-migrations
+- **FW-05:** Para cambios incompatibles planear etapas de compatibilidad entre versión de esquema y aplicación y validar restauración. **Fuente oficial:** https://documentation.red-gate.com/fd/implementing-a-roll-back-strategy-138347142.html
 
-## Criterio experto respaldado
-1. Exigir número/versionado y orden de migraciones según la configuración Flyway del proyecto.
-2. Evaluar reversibilidad, compatibilidad expand/contract, respaldo y conservación de datos con evidencias; bloquear cambios destructivos sin decisión.
-3. No asumir que Undo existe ni que restaura datos; los scripts de undo tienen límites y algunas capacidades dependen de edición.
+## L1/L2 y L3
+Familia `STD-DB` referenciada en `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`, que NO contiene el texto normativo completo. `PG00_STANDARD_TEXT_UNAVAILABLE` hasta recuperar fuente canónica versionada con huella. Las reglas de stack no sustituyen la política LF.
 
-## Fuentes externas oficiales
-- https://documentation.red-gate.com/flyway/flyway-concepts/migrations
-- https://documentation.red-gate.com/flyway/flyway-concepts/migrations/undo-migrations
-
-## Gobernanza LF L1/L2 y L3
-Familia del catálogo PG-00: `STD-DB`. Fuente PG-00 verificada como **registro de referencias y decisiones**, no como el texto normativo completo: `supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql`. El proceso de materialización carga el texto **literal y versionado** de `STD-DB` cuando la fuente canónica exista. Si no se encuentra el texto con huella comprobable, devolver `PG00_STANDARD_TEXT_UNAVAILABLE`: no completar desde conocimiento general ni usar estas reglas como sustituto de L1/L2. Las reglas L3 propias del proyecto tienen precedencia según la gobernanza de PG-00.
-
-## Contrato y seguridad
-Exigir task scope, revisión exacta y pruebas visibles; rechazar skill alterada, área distinta, oracle oculto, permisos inyectados y comandos no respaldados. Salida: instrucciones visibles para la especificación del Worker; sin autoridad ni patch.
+## Salida
+Emitir a Worker visible las reglas de la skill identificadas por ID y fuente (mínimo tres), sin autoridad ni oráculo. `production_authority=false`; `runtime_enabled=false`; `promotion_allowed=false`.
