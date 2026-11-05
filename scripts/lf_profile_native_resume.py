@@ -196,6 +196,62 @@ def sha256_file(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def prepare_product_director_raw(target_path, profile_output):
+    """Bounded pre-submit origin repair, never a new runtime stage or write route."""
+    if target_path != "profiles/product_director_lf/SKILL.md":
+        return profile_output
+    root = Path.cwd().resolve()
+    helper = root / "profiles/product_director_lf/validators/prepare_output_for_submission.py"
+    if not helper.is_file():
+        raise ValueError("PROFILE_ORIGIN_PREFLIGHT_UNAVAILABLE")
+    original = json.dumps(
+        profile_output, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    proc = subprocess.run(
+        [sys.executable, str(helper)],
+        input=original, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        cwd=root, timeout=30, check=False,
+    )
+    try:
+        preflight = json.loads(proc.stdout)
+    except ValueError:
+        raise ValueError("PROFILE_ORIGIN_PREFLIGHT_UNREADABLE")
+    if (proc.returncode != 0 or not isinstance(preflight, dict)
+            or preflight.get("status") not in {"UNCHANGED_VALID", "SELF_REPAIRED_HANDOFF_QUALIFIERS"}
+            or not isinstance(preflight.get("profile_output"), dict)):
+        codes = preflight.get("original_blocking_codes", []) if isinstance(preflight, dict) else []
+        raise ValueError("PROFILE_ORIGIN_PREFLIGHT_NOT_PASS:" + ",".join(map(str, codes)))
+    prepared = preflight["profile_output"]
+    if preflight["status"] == "SELF_REPAIRED_HANDOFF_QUALIFIERS":
+        corrected = json.dumps(
+            prepared, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        (root / "profile-native-output-original.json").write_bytes(original)
+        repair_receipt = {
+            "schema_version": "LF_PRODUCT_DIRECTOR_ORIGIN_REPAIR_V1",
+            "status": "LOSSLESS_EXACT_QUALIFIER_APPEND",
+            "original_output_sha256": hashlib.sha256(original).hexdigest(),
+            "candidate_output_sha256": hashlib.sha256(corrected).hexdigest(),
+            "added_qualifiers": preflight["added_qualifiers"],
+            "original_blocking_codes": preflight["original_blocking_codes"],
+            "source": "ISSUE_SUBMITTED_RAW",
+            "model_invoked_by_repair": False,
+            "semantic_claims_rewritten": False,
+        }
+        (root / "profile-native-origin-repair.json").write_text(
+            json.dumps(repair_receipt, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        print(json.dumps({
+            "phase": "PROFILE_ORIGIN_SELF_REPAIR",
+            "status": repair_receipt["status"],
+            "original_output_sha256": repair_receipt["original_output_sha256"],
+            "candidate_output_sha256": repair_receipt["candidate_output_sha256"],
+            "added_qualifier_count": len(repair_receipt["added_qualifiers"]),
+        }))
+    return prepared
+
+
 def run_bound_validator(target_path, profile_code, profile_output):
     """Run only the validator declared by the exact profile runtime binding."""
     source_path = PurePosixPath(target_path)
@@ -626,6 +682,7 @@ def main():
                 "execute_profile", "NATIVE_PROFILE_RAW_OUTPUT",
             )
         try:
+            profile_output = prepare_product_director_raw(target_path, profile_output)
             validation, raw_ref, validator_ref = run_bound_validator(
                 target_path, source.get("profile_code"), profile_output
             )
