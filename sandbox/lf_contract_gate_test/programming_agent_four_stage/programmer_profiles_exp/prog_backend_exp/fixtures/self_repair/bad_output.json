@@ -1,19 +1,15 @@
 {
   "schema_version": 2,
   "task_id": "FIXTURE-BACKEND",
-  "objective": "Candidate Worker task: Java/Spring, capas y API REST",
+  "objective": "Invalid out-of-lot role BACKEND",
   "expected_change": "Source-scoped change only",
   "human_story": "Sandbox task specification",
   "functional_contract": {
-    "specialty": "BACKEND",
-    "standard_refs": [
-      "STD-BE"
-    ],
-    "standard_source": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
+    "role_area": "BACKEND"
   },
   "scope": {
     "in_scope": [
-      "src/main/java/com/lf/LoanService.java"
+      "outside/not-approved.change"
     ],
     "out_of_scope": [],
     "must_not_change": []
@@ -39,7 +35,7 @@
     "src/main/java/com/lf/LoanService.java"
   ],
   "write_path_patterns": [
-    "outside/illegal.py"
+    "outside/not-approved.change"
   ],
   "protected_path_patterns": [
     "tests/backend/"
