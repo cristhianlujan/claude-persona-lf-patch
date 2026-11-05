@@ -1,2 +1,9 @@
-# Mini judge
-Deterministic checks: matching profile and area, exact bounded paths, nonempty tests, no oracle/authority, bounded Worker limits, manifest disabled. Semantic checks require independent review; local PASS is NOT approval.
+# Mini judge — BACKEND
+
+1. **Source gate:** ¿el código del perfil y el área coinciden con la selección y con el `SKILL.md` fijado a una revisión? Falta de fuente → BLOCK.
+2. **Scope gate:** ¿cada ruta visible pertenece al lote resuelto por PG-05 C2 y los tests protegidos quedan fuera de escritura? Cualquier ruta extra → BLOCK.
+3. **Domain gate:** El lote declara rutas Java; la tarea describe el contrato REST, los límites entre capas y los tests visibles aportados por el proyecto. Si la arquitectura L3 no está vigente o las pruebas necesarias son desconocidas, solicitar decisión sin asumir una solución. Si faltan criterios del proyecto → RETURN_TO_ORCHESTRATOR.
+4. **Oracle/authority gate:** no debe haber claves ocultas ni autoridad nueva, incluso re-hasheada. Hallazgo → BLOCK.
+5. **Output gate:** ¿el JSON cumple Worker V2, los comandos y tests son visibles, los límites positivos y el runtime sigue desactivado? Solo una comprobación determinista habilita revisión posterior.
+
+El resultado es evidencia local de estructura, no calificación semántica ni permiso para ejecutar el Worker.
