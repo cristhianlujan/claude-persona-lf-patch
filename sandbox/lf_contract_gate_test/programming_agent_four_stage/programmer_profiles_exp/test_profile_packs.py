@@ -12,7 +12,7 @@ sys.path.insert(0,str(STAGES/"pg07_worker_candidate"/"tools"))
 from pack_validation_common import check_pack,evaluate
 from selector_descriptor_from_skill import SLUGS,descriptor
 from stack_skills_exp.project_stack_resolver_exp import (
-    load_json,skill_material,role_material,select_binding,compose_visible_worker_spec,StackBlocked)
+    load_json,skill_material,role_material,select_binding,compose_visible_worker_spec,validate_visible_skill_rules,StackBlocked)
 from test_pg04_pg07_selector_bridge_v1 import real_producers,real_pg07_validation
 
 def check(v,reason):
@@ -68,6 +68,15 @@ def run():
                   rules["skill_set_sha256"]==skill["skill_set_sha256"] and
                   len(rules["skills"])==len(skill["skills"]) and
                   all(len(x["expert_rules"])>=3 for x in rules["skills"]),"C2 missing source identity/rules")
+            check(validate_visible_skill_rules(visible,skill),"Worker expert rule gate failed")
+            tampered_two=copy.deepcopy(visible)
+            tampered_two["functional_contract"]["role_and_stack"]["skills"][0]["expert_rules"] = (
+                tampered_two["functional_contract"]["role_and_stack"]["skills"][0]["expert_rules"][:2])
+            expect_error(lambda:validate_visible_skill_rules(tampered_two,skill),"WORKER_SKILL_RULES_TOO_FEW")
+            tampered_rule=copy.deepcopy(visible)
+            tampered_rule["functional_contract"]["role_and_stack"]["skills"][0]["expert_rules"][0]["source_url"]="https://example.invalid/fake"
+            expect_error(lambda:validate_visible_skill_rules(tampered_rule,skill),"WORKER_SKILL_RULE_SOURCE_MISMATCH")
+            print("PASS Worker >=3 official sourced rules for every priority-bound skill",project)
             check(real_c2["dispatch_allowed"] is False and
                   real_c2["production_authority"] is False,"C2 premature authority")
             print("PASS REAL_PG07_C2_ROLE_STACK",slug,project,skill["skill_code"])
