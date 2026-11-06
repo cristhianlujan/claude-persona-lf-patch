@@ -25,6 +25,7 @@ DECLARE
  v_count integer;
  v_family text;
  v_activation_sha text;
+ v_caller_source_only boolean:=false;
 BEGIN
  IF TG_OP<>'INSERT' THEN RETURN NEW; END IF;
  IF NEW.scope IS NULL OR
@@ -33,11 +34,19 @@ BEGIN
    RETURN NEW;
  END IF;
 
- -- A caller cannot impersonate a contract-level selection.
+ -- Valid explicit SOURCE_INTEGRITY_ONLY inputs remain compatible.
+ -- A caller can never request selected semantics or present a fake receipt.
  IF NEW.scope ? 'validator_semantic_mode' OR
     NEW.scope ? 'validator_semantic_comparison_families' OR
     NEW.scope ? 'semantic_activation_receipt_id' THEN
-   RAISE EXCEPTION 'IG_SEMANTIC_SCOPE_CALLER_OVERRIDE_DENIED';
+   v_caller_source_only:=(
+     NEW.scope->>'validator_semantic_mode'='SOURCE_INTEGRITY_ONLY'
+     AND NEW.scope->'validator_semantic_comparison_families'='[]'::jsonb
+     AND NEW.scope->>'semantic_promotion_authorized'='false'
+     AND NOT (NEW.scope ? 'semantic_activation_receipt_id'));
+   IF NOT coalesce(v_caller_source_only,false) THEN
+      RAISE EXCEPTION 'IG_SEMANTIC_SCOPE_CALLER_OVERRIDE_DENIED';
+   END IF;
  END IF;
 
  SELECT count(*) INTO v_count
@@ -55,6 +64,7 @@ BEGIN
  -- Absent/disabled activation preserves legacy behavior, with no model call.
  IF v_activation IS NULL OR v_activation='null'::jsonb OR
     v_activation->>'activation_state'='DISABLED' THEN
+   IF v_caller_source_only THEN RETURN NEW; END IF;
    NEW.scope:=NEW.scope||jsonb_build_object(
       'validator_semantic_mode','SOURCE_INTEGRITY_ONLY',
       'validator_semantic_comparison_families','[]'::jsonb,
@@ -87,6 +97,7 @@ BEGIN
        v_activation#>'{target_scope,screen_codes}') e(code)
    WHERE e.code=v_screen_code
  ) THEN
+   IF v_caller_source_only THEN RETURN NEW; END IF;
    NEW.scope:=NEW.scope||jsonb_build_object(
       'validator_semantic_mode','SOURCE_INTEGRITY_ONLY',
       'validator_semantic_comparison_families','[]'::jsonb,
@@ -94,6 +105,10 @@ BEGIN
    RETURN NEW;
  END IF;
 
+ -- An in-scope comparison is not optional by caller.
+ IF v_caller_source_only THEN
+   RAISE EXCEPTION 'IG_SEMANTIC_REQUIRED_COMPARISON_CANNOT_BE_SKIPPED';
+ END IF;
  -- Only the existing Curator Edge identity may be selected.
  IF NEW.curator_identity NOT LIKE
     'INPUT_CURATOR:EDGE:input-governance-curator-v1:%' THEN
