@@ -170,6 +170,21 @@ class RealEvidenceBundleIntegrationTests(unittest.TestCase):
             with self.assertRaisesRegex(a.RealEvidenceBlocked, "PG12_GIT_COMMIT"):
                 a.load_real_bundle(p, a.digest(raw))
 
+    def test_real_subtree_oid_altered_blocks(self):
+        with patch.object(a, "SUBTREE", "f" * 40):
+            with self.assertRaisesRegex(a.RealEvidenceBlocked, "PG12_SUBTREE_OID_BLOCK"):
+                a.rebuild_subtree(self.original["files"])
+
+    def test_real_package_rehash_cannot_bypass_pinned_sha(self):
+        value = copy.deepcopy(self.original)
+        value["git"]["tree"] = "f" * 40
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "new_bundle.json"
+            raw = (json.dumps(value, sort_keys=True) + "\n").encode()
+            path.write_bytes(raw)
+            with self.assertRaisesRegex(a.RealEvidenceBlocked, "SHA_CHANGED"):
+                a.load_real_bundle(path, FIXTURE_SHA256)
+
     def test_real_cost_boundary_and_author_review(self):
         self.assertEqual(a.cost_verdict("0.28"), "WARN")
         self.assertEqual(a.cost_verdict("0.35"), "REQUIRES_DECISION")
