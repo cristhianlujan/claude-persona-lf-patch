@@ -2,6 +2,15 @@
 
 **Estado:** `LOCAL_DETERMINISTIC_CANDIDATE_UNQUALIFIED`. Paso **interno** de la skill `PROGRAMMING_ANALYSIS_LF`. No existe una segunda skill A2.
 
+## Hito H1 — Productor Golden 12/59 (candidato source-only)
+
+- Catálogo exacto: `catalog/A2_GOLDEN_CATALOGO_DIMENSIONAL_v0_2.json` (12 dimensiones, 59 elementos, 26 activaciones).
+- `adapters/golden_dimensions_v1.py::build_golden` prepara dos ejes de evaluación y evidencia declarada; `adapters/golden_handoff_v03.py::prepare_golden_v03` emite el **formato Golden propuesto v0.3**, validado con `schemas/A2_GOLDEN_CONTRATO_SALIDA_PROPUESTA_v0_3.schema.json`.
+- La clasificación `ANALYSIS_CHANGE_CLASSIFICATION_V1` de `validators/run.py` sigue **sin modificación**, y A3 conserva sus dos inputs canónicos. Golden es un anexo de investigación y no puede sustituir ese contrato.
+- Pruebas locales `test_golden_dimensions_v1.py` + `test_golden_handoff_v03.py`: 41/41 PASS sobre fuente idéntica al commit. Incluye 26 casos positivos por activación; no prueba actuales recibos ni juez.
+- **No integrado operacionalmente**: `a3_allowed=false`, `D12-E05=PENDING_EVIDENCE`. Toda condición no probada queda `UNRESOLVED_TRIGGER`, nunca N/A. H2/H3/H4 y admisión gobernada siguen pendientes.
+- Evidencia y seis hashes exactos: `handoffs/H1_GOLDEN_PRODUCER_SOURCE_CANDIDATE_20261106.md`.
+
 ## Entrada
 - `a1_result` válido y tipado, `status=VALID_OUTPUT`, `REQUEST_CONTEXT_V1`, `interpretation_state=PRESTRUCTURED_UNATTESTED`.
 - `signal_bundle` recibido del consumidor: referencia exacta a un target aportado en A1, tipo/granularidad explícitos, refs de evidencia y señales tipadas, **sin afirmar que ya están autenticadas**.
