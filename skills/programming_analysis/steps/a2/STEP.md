@@ -37,6 +37,14 @@ Pruebas locales sintéticas: `python -m unittest discover -s skills/programming_
 - El informe y consulta SELECT de referencia están en `handoffs/RUN_BUSINESS_BINDING_CANDIDATE_20261106.md`. Las 30 pruebas locales se limitan a consistencia, bloqueo y puente con otras unidades simuladas; no acreditan RPC, juez o admisión.
 - **Brecha de arquitectura confirmada:** `lf_skill_invoke_v1` solo crea `child_execution_id` para `effect=WRITE_GOVERNED`. Esta skill es candidata `READ_ONLY`; no cambiar su efecto ni usar funciones paralelas para producir artificialmente un RUN hijo. La resolución de la apertura real de `EJECUCION_SKILL_LF` permanece P0 pre-admisión.
 
+## Patrón verificado de EJECUCION_PERFIL_LF (reutilización, no activado)
+
+- Referencia: `handoffs/PARIDAD_EJECUCION_PERFIL_A_EJECUCION_SKILL_20261106.md`.
+- `lf_profile_execution_begin_from_handoff_v1` valida la autoridad; `lf_profile_execution_begin_v1` reserva mediante `fn_lf_operation_reserve_execution_v1` y registra `init_execution`/0. El mismo patrón debe adaptar `EJECUCION_SKILL_LF` sin nueva operación.
+- `lf_record_profile_execution_step_v1` es un wrapper mínimo que obtiene trust desde `lf_profile_execution_trust_validation_v2` y delega a `lf_record_operation_step_core_v1`. Para skill, usar el **núcleo común** con validación propia de negocio, identidad, fuente, juez y 9 pasos; no reusar trust del perfil por nombre ni `lf_record_creacion_skill_step_v1`.
+- La acción `profile_native_skill_invoke_v1` del caller Edge ya tiene transporte OIDC. Una integración nativa posterior debe preservar su ruta SQL vigente para otras skills y no declarar `SKILL_INVOKED/COMPLETED` como sinónimo de RUN 0–80 completado.
+- Permanece P0: no existen authority activa perfil→`EJECUCION_SKILL_LF` ni entrada `PROGRAMMING_ANALYSIS_LF` READY en catálogo; no editar grants/contratos oficiales o ejecutar hasta cerrar admisión. Pruebas PP01–PP15 son criterios, no resultados demostrados.
+
 ## Apertura read-only del RUN de skill (brecha nativa, preadmisión)
 
 - La entrada `SKILL_EXECUTION` del Router resuelve a `EJECUCION_SKILL_LF`, operación existente 0–80. `fn_lf_operation_reserve_execution_v1` es el **reservador genérico vigente**, pero no valida por sí mismo el Router/caller/negocio: sólo un host con identidad admitida y control previo puede llamarlo y registrar/readback del paso 0. No invocarlo desde A1, A2 ni un consumidor con permisos propios.
