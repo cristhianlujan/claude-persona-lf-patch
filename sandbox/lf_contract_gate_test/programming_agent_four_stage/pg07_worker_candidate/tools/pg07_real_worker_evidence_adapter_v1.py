@@ -316,3 +316,102 @@ def independent_review_label(author: str, reviewer: str = "reviewer:claude-opus-
     require(reviewer != author and bool(reviewer), "SELF_REVIEW")
     return {"author_reported": author, "reviewer_reported": reviewer,
             "review_authenticated": False, "production_authority": False}
+
+
+def pg07_c6_source_for_real_bundle(bundle: dict) -> dict:
+    """Build the exact shape PG08_C1 consumes, from *checked* real C evidence.
+
+    Not a PG07 producer output, execution attestation or a source of authority.
+    This adapter-projected envelope is deliberately labeled and hashed.
+    """
+    check_authority(bundle)
+    check_patch(bundle)
+    check_execution(bundle)
+    v, _, _ = check_worker(bundle)
+    require(bundle["git"]["commit"] == COMMIT and
+            bundle["git"]["base_commit"] == BASE, "PG07_REAL_GIT_BINDING_BLOCK")
+    changed = sorted({h["path"] for h in bundle["patch"]["hunks"]})
+    require(changed == sorted([
+        "apps/time-service/src/main/java/lf/sandbox/time/reminder/" + n
+        for n in ("ReminderRepository.java", "InMemoryReminderRepository.java",
+                  "ReminderController.java")]), "PG07_REAL_CHANGED_SCOPE_BLOCK")
+    worker_sha = bundle["worker"]["files"]["verified-worker-receipt.json"]["sha256"]
+    cost_sha = bundle["worker"]["files"]["cost.json"]["sha256"]
+    context_sha = bundle["worker"]["files"]["derived-context.json"]["sha256"]
+    source = {
+        "schema_version": "PG07_C6_BATCH_EVIDENCE_MANIFEST_CANDIDATE_V1",
+        "status": "CANDIDATE_NOT_ADMITTED",
+        "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
+        "source_adapter_ref": "pg07_real_worker_evidence_adapter_v1",
+        "upstream_source_digests": {},
+        "target_repo": "paulozterra/lf-programming-sandbox",
+        "base_head_sha": BASE,
+        "run_ref": "sandbox:worker-run:42284754122",
+        "batches": [{
+            "solution_id": "EX5C",
+            "batch_id": "EX5C",
+            "candidate_head_sha_reported": COMMIT,
+            "diff_sha256_reported": PATCH_SHA,
+            "changed_paths_reported": changed,
+            "worker_receipt_ref_reported": "sandbox:run:42284754122:verified",
+            "worker_receipt_sha256_reported": worker_sha,
+            "provider_usage_receipt_refs_reported": [cost_sha],
+            "context_pack_ref": "sha256:" + context_sha,
+            "blocking_diagnostics": ["REAL_SANDBOX_UNAUTHENTICATED",
+                                     "PG06_C4_REAL_BASELINE_NOT_PROVIDED"],
+            "diff_readback_verified": False,
+            "worker_receipt_verified": False,
+            "usage_receipts_verified": False,
+            "pg12_evidence_admitted": False
+        }],
+        "blocking_diagnostics": [{
+            "solution_id": "EX5C",
+            "reason": "PG06_C4_REAL_BASELINE_NOT_PROVIDED"
+        }],
+        "worker_batch_evidence_input_sha256": digest(
+            bundle["worker"]["files"]["verified-worker-receipt.json"]["sha256"].encode()),
+        "receipt_guard_authority_executed": False,
+        "receipt_sealed": False, "receipt_digest_authenticated": False,
+        "worker_invoked": False, "pg12_admitted": False,
+        "dispatch_allowed": False, "write_allowed": False,
+        "production_authority": False, "handoff_allowed": False
+    }
+    canonical = json.dumps(source, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    source["candidate_sha256"] = digest(canonical)
+    return source
+
+
+def run_real_pg08_c1(bundle: dict) -> dict:
+    """CALL the existing PG08_C1 producer, without altering its source."""
+    import importlib.util
+    path = (Path(__file__).resolve().parents[2] /
+            "pg08_build_candidate/tools/pg08_c1_build_compilation_candidate_v1.py")
+    require(path.is_file(), "PG08_C1_REAL_PRODUCER_MISSING")
+    spec = importlib.util.spec_from_file_location("pg08_c1_real_ex5c", path)
+    require(spec is not None and spec.loader is not None, "PG08_C1_IMPORT_BLOCK")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    upstream = pg07_c6_source_for_real_bundle(bundle)
+    observations = pg08_c1_observations(bundle)
+    result = module.prepare_pg08_c1(pg07_c6=upstream,
+                                    build_observations=observations)
+    require(result["source_pg07_c6_sha256"] == upstream["candidate_sha256"] and
+            result["solutions"][0]["diff_sha256_reported"] == PATCH_SHA and
+            result["solutions"][0]["reported_build_outcome"] ==
+                "REPORTED_PASS_UNVERIFIED" and
+            result["production_authority"] is False,
+            "PG08_C1_REAL_PRODUCER_OUTPUT_BLOCK")
+    return {"pg07_c6": upstream, "pg08_c1": result,
+            "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
+            "pg08_c2_admission_block": "PG06_C4_REAL_BASELINE_NOT_PROVIDED"}
+
+
+def require_pg08_c2_real_source(bundle: dict) -> None:
+    """Fail rather than silently substitute a PG06 synthetic fixture.
+
+    The C bundle has no PG06 C4 baseline, nor separate formatter/linter receipts.
+    Do not imply C2-C8 or PG09-PG14 completed until these inputs exist.
+    """
+    require("pg06_c4_real_baseline" in bundle and
+            "real_format_lint_observations" in bundle,
+            "PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK")
