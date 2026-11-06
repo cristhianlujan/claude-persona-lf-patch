@@ -34,6 +34,14 @@ def _hex(value: Any, matcher=HEX64) -> bool:
 def reconcile(parent: Any, invocation: Any, child: Any,
               actor_parent_execution_id: Any) -> dict:
     """Compare *supplied* readback rows; never promote them to authority."""
+    # lf_skill_invoke_v1 completes READ_ONLY / PROPOSE_ONLY invocations without
+    # creating a governed EJECUCION_SKILL_LF child. An invocation receipt alone
+    # must NEVER be promoted to a 9-step RUN or a native-judge PASS.
+    if (isinstance(parent, dict) and isinstance(invocation, dict)
+            and child is None and invocation.get("skill_code") == SKILL
+            and invocation.get("status") == "COMPLETED"
+            and invocation.get("child_execution_id") in (None, "")):
+        return _blocked("RUN_GOVERNED_CHILD_ABSENT_READ_ONLY_INVOKER")
     if not all(isinstance(x, dict) for x in (parent, invocation, child)):
         return _blocked("RUN_READBACK_ROWS_REQUIRED")
     pid = parent.get("execution_id")
