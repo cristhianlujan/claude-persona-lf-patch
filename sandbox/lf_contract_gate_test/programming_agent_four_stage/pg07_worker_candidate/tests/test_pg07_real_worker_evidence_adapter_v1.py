@@ -61,6 +61,89 @@ def sample_patch():
             "bytes": len(full), "hunks": rows}
 
 
+FIXTURE_SHA256 = "436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b"
+FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures/lf-evidence-bundle-v1.json"
+
+
+class RealEvidenceBundleIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.assertTrue(FIXTURE_PATH.is_file())
+        self.original = a.load_real_bundle(FIXTURE_PATH, FIXTURE_SHA256)
+
+    def test_real_bundle_all_bytes_recomputed_and_non_authoritative(self):
+        self.assertEqual(self.original["git"]["commit"], a.COMMIT)
+        self.assertEqual(a.rebuild_subtree(self.original["files"]), a.SUBTREE)
+        self.assertEqual(len(a.check_patch(self.original)), 6)
+        self.assertEqual(a.check_execution(self.original)["maven"]["exit_code"], 0)
+        self.assertEqual(a.pg08_c1_observations(self.original)[0]["diff_sha256"], a.PATCH_SHA)
+        self.assertEqual(a.pg09_usage(self.original)[0]["calls"][0]["reported_cost"], "0.070022")
+        self.assertFalse(self.original["production_authority"])
+        self.assertFalse(self.original["tool_execution_verified"])
+        self.assertFalse(self.original["receipt_authenticated"])
+        self.assertFalse(self.original["worker_invoked"])
+
+    def test_changed_byte_of_pinned_fixture_blocked(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "bundle.json"
+            raw = bytearray(FIXTURE_PATH.read_bytes())
+            raw[len(raw) // 2] ^= 1
+            p.write_bytes(raw)
+            with self.assertRaisesRegex(a.RealEvidenceBlocked, "SHA_CHANGED"):
+                a.load_real_bundle(p, FIXTURE_SHA256)
+
+    def test_rehashed_authority_injection_still_blocked(self):
+        value = copy.deepcopy(self.original)
+        value["production_authority"] = True
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "AUTHORITY_INJECTION"):
+            a.check_authority(value)
+
+    def test_real_execution_stdout_and_stderr_tamper_block(self):
+        for channel in ("stdout", "stderr"):
+            for kind in ("hash_only", "body_only"):
+                x = copy.deepcopy(self.original)
+                stream = x["execution"]["maven"][channel]
+                if kind == "hash_only":
+                    stream["sha256"] = "0" * 64
+                else:
+                    stream["base64"] = base64.b64encode(b"ALTERED").decode("ascii")
+                with self.subTest(channel=channel, kind=kind), self.assertRaisesRegex(
+                    a.RealEvidenceBlocked, "PG08_"
+                ):
+                    a.check_execution(x)
+
+    def test_real_patch_and_hunk_tamper_block(self):
+        x = copy.deepcopy(self.original)
+        x["patch"]["hunks"][0]["requirements"] = []
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "HUNK_REQUIREMENT"):
+            a.check_patch(x)
+        x = copy.deepcopy(self.original)
+        x["patch"]["hunks"][0]["content_base64"] = base64.b64encode(b"modified").decode()
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "HUNK_SHA"):
+            a.check_patch(x)
+
+    def test_real_git_blob_and_commit_mutations_block(self):
+        x = copy.deepcopy(self.original)
+        x["files"][0]["content_base64"] = base64.b64encode(b"tampered").decode()
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "PG12_BLOB_OID"):
+            a.rebuild_subtree(x["files"])
+        x = copy.deepcopy(self.original)
+        x["git"]["raw_commit_base64"] = base64.b64encode(b"tampered").decode()
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "altered.json"
+            raw = (json.dumps(x) + "\n").encode()
+            p.write_bytes(raw)
+            with self.assertRaisesRegex(a.RealEvidenceBlocked, "PG12_GIT_COMMIT"):
+                a.load_real_bundle(p, a.digest(raw))
+
+    def test_real_cost_boundary_and_author_review(self):
+        self.assertEqual(a.cost_verdict("0.28"), "WARN")
+        self.assertEqual(a.cost_verdict("0.35"), "REQUIRES_DECISION")
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "OVER_CAP"):
+            a.cost_verdict("0.350001")
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "SELF_REVIEW"):
+            a.independent_review_label("worker:claude-sonnet-5-5", "worker:claude-sonnet-5-5")
+
+
 class RealEvidenceNegativeTests(unittest.TestCase):
     def test_missing_fixture_or_sha_blocks(self):
         with tempfile.TemporaryDirectory() as d:
