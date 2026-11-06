@@ -5,6 +5,7 @@
     "sandbox/lf_skills_governance_caller_candidate_v1/handler.mjs": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/handler.test.mjs": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/index.ts": "RUNTIME_TESTING",
+    "sandbox/lf_skills_governance_caller_candidate_v1/JUDGE_INVARIANTS_MATRIX_CANDIDATE_V1.json": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/OIDC_WORKFLOW_CANDIDATE.yml.txt": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/QUALIFICATION_REPORT_V1.md": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/README.md": "RUNTIME_TESTING",
