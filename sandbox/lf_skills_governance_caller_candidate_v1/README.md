@@ -12,6 +12,13 @@
 - Read-only business skills still require an **authorized audit writer** to persist the RUN/steps. No general model write rights.
 - `business` in `input.business` is only DECLARED; authorized SQL must compare with the parent profile RUN and Router receipt. All privileged caller claims (including nested) are rejected.
 
+## Native RPC and OIDC qualification (candidate only)
+
+- `RPC_CONTRACT_QUALIFICATION_V1.json` — the four proposed RPC interfaces and their server-side authority, transaction, replay, judge and readback invariants. **None of these RPCs is deployed**.
+- `QUALIFICATION_REPORT_V1.md` — read-only Supabase source comparison and requirement→risk→invariant→evidence→positive/negative-test matrix. **The current generic skill judge has empty pass/fail arrays and is P0-unqualified for operational use.**
+- `OIDC_WORKFLOW_CANDIDATE.yml.txt` — disabled reference template (`if: false`), not a runnable GitHub workflow.
+- One PR remains dedicated to generic caller infrastructure. `PROGRAMMING_ANALYSIS_LF` and its A2→A3 gate remain in PR #3624, not in this Edge transport PR.
+
 ## Contents
 - `handler.mjs`: framework-free candidate implementation for BEGIN, STEP, STATUS.
 - `index.ts`: proposed Deno/Jose deployment entrypoint (**not deployed**).
