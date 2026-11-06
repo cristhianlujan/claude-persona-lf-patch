@@ -4,6 +4,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const enc = new TextEncoder();
 const MAX_REMEDIATION_CYCLES = 3;
+// A2: ticket de perfil (uuid) que el caller oficial consumio; viaja en TODAS las llamadas a IG.
+const TICKET_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function sameSecret(a: string, b: string): Promise<boolean> {
   const [ha, hb] = await Promise.all([
@@ -74,19 +76,21 @@ Deno.serve(async (req: Request) => {
     const pantallaId = Number(body?.pantalla_id);
     const consumer = typeof body?.consumer === "string" ? body.consumer : "STORY_CREATOR";
     if (!Number.isInteger(pantallaId) || pantallaId < 1) return Response.json({ error: "PANTALLA_ID_INVALID" }, { status: 400 });
+    const ticket = typeof body?.ticket === "string" ? body.ticket.trim() : "";
+    if (!TICKET_RE.test(ticket)) return Response.json({ error: "IG_PROFILE_TICKET_REQUIRED" }, { status: 403 });
 
     const trace: unknown[] = [];
     let lastState: any = null;
 
     for (let cycle = 1; cycle <= MAX_REMEDIATION_CYCLES; cycle++) {
-      let state = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer });
+      let state = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer, p_ticket: ticket });
       lastState = state;
       trace.push({ step: "DISPATCH", cycle, status: state?.status, run_id: resolvedRunId(state) });
 
       if (["READY", "HUMAN_DECISION_REQUIRED", "BLOCKED"].includes(state?.status)) {
         const runId = resolvedRunId(state);
         if (runId) {
-          const autofix = await rpc("fn_input_governance_safe_autofix_v1", { p_run_id: runId });
+          const autofix = await rpc("fn_input_governance_safe_autofix_v1", { p_run_id: runId, p_ticket: ticket });
           trace.push({ step: "SAFE_AUTOFIX", cycle, run_id: runId, applied_count: autofix?.applied_count ?? 0, skipped_count: autofix?.skipped_count ?? 0, successor_required: autofix?.successor_required ?? false });
           if (autofix?.successor_required === true) continue;
         }
@@ -94,7 +98,7 @@ Deno.serve(async (req: Request) => {
       }
 
       if (state?.status === "CURATOR_RUNTIME_REQUIRED") {
-        const curator = await callRuntime("input-governance-curator-v1", { pantalla_id: pantallaId, consumer });
+        const curator = await callRuntime("input-governance-curator-v1", { pantalla_id: pantallaId, consumer, ticket });
         trace.push({ step: "CURATOR", cycle, status: curator?.result?.status, run_id: curator?.result?.run_id ?? null, identity: curator?.identity ?? null });
 
         if (curator?.result?.status === "BOOTSTRAP_SEMANTIC_PROFILE_REQUIRED" ||
@@ -102,7 +106,7 @@ Deno.serve(async (req: Request) => {
           return Response.json({ runtime: "input-governance-agent-v1", remediation_contract: "INPUT_GOV_SAFE_AUTOFIX_V1", trace, result: curator.result });
         }
         if (curator?.result?.status === "NOOP_CURRENT") {
-          state = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer });
+          state = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer, p_ticket: ticket });
           trace.push({ step: "DISPATCH_AFTER_CURATOR_NOOP", cycle, status: state?.status, run_id: resolvedRunId(state) });
           lastState = state;
         } else if (curator?.result?.status === "VALIDATOR_RUNTIME_REQUIRED") {
@@ -115,7 +119,7 @@ Deno.serve(async (req: Request) => {
       if (state?.status === "VALIDATOR_RUNTIME_REQUIRED") {
         const runId = resolvedRunId(state);
         if (!runId) throw new Error("VALIDATOR_RUN_ID_UNRESOLVED");
-        const validator = await callRuntime("input-governance-validator-v1", { run_id: runId });
+        const validator = await callRuntime("input-governance-validator-v1", { run_id: runId, ticket });
         trace.push({ step: "VALIDATOR", cycle, status: validator?.result?.status, run_id: runId, identity: validator?.identity ?? null });
         if (validator?.result?.status === "VALIDATOR_RESUME_REQUIRED") {
           // 202 is an explicit incomplete outcome, never READY or validated.
@@ -137,12 +141,12 @@ Deno.serve(async (req: Request) => {
           return Response.json({ runtime: "input-governance-agent-v1", remediation_contract: "INPUT_GOV_SAFE_AUTOFIX_V1", trace, result: validator?.result ?? { status: "VALIDATOR_UNRESOLVED" } }, { status: 409 });
         }
 
-        const autofix = await rpc("fn_input_governance_safe_autofix_v1", { p_run_id: runId });
+        const autofix = await rpc("fn_input_governance_safe_autofix_v1", { p_run_id: runId, p_ticket: ticket });
         trace.push({ step: "SAFE_AUTOFIX", cycle, run_id: runId, applied_count: autofix?.applied_count ?? 0, skipped_count: autofix?.skipped_count ?? 0, successor_required: autofix?.successor_required ?? false });
         if (autofix?.successor_required === true) continue;
       }
 
-      const finalState = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer });
+      const finalState = await rpc("fn_input_governance_execute", { p_pantalla_id: pantallaId, p_consumer: consumer, p_ticket: ticket });
       trace.push({ step: "DISPATCH_FINAL", cycle, status: finalState?.status, run_id: resolvedRunId(finalState) });
       lastState = finalState;
       if (["READY", "HUMAN_DECISION_REQUIRED", "BLOCKED"].includes(finalState?.status)) {
