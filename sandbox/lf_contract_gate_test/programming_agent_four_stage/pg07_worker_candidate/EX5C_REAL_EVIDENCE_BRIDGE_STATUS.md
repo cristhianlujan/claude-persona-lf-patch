@@ -168,3 +168,29 @@ for this draft. No PG12/PG14 `*_READBACK_PASS` has been observed.
   PG08 C2-C8 and original PG09 C2-C4, PG10..PG14, then independent local
   PostgreSQL readbacks in `pg12_test_*` and `pg14_test_*`. Those do NOT
   currently have evidence-based PASS.
+
+
+## 2026-11-06 — Producer-chain wiring prepared after owner decision
+
+`run_real_pg09_c1_to_c4(bundle)` now imports the **unchanged original**
+PG09 C1, C2, C3 and C4 producer functions, passes the exact Worker
+`cost.json` SHA-bound token and cost observations, and declares no further
+iterations. The original C1 must retain `REQUIRES_DECISION` for 1/1 attempts;
+C4 must emit `BUDGET_DECISION`, type `RETURN`, with all retry and authority
+flags false. The owner-decision bridge requires the SHA-pinned dated
+decision. Negative tests ensure PG10 BLOCK without it.
+
+The separately added `pg08_ex5c_v2_format_lint_adapter_v1.py` validates the
+future v2 bundle's own externally pinned SHA, both commit bindings,
+independent source blob bytes and Git OIDs, raw command stdout/stderr
+digests, tool version and nested authority flags. It projects actual
+`PG06_C4` baseline observations and `PG08_C2` candidate format/lint
+observations in the exact producer input shapes. **It does not invoke either
+producer unless v2 exists**. Existing PG06 preflight C1-C3 lineage must be
+real-source-bound; synthetic PG06 fixtures are forbidden.
+
+Sandbox v2 implementation: PR #44, head SHA to be verified at merge.
+**Until that PR is merged and a manual v2 workflow is run, no v2 SHA exists,
+no PG08 C2 real result is verified, no connected PG10-PG14 real chain or
+PG12/PG14 PostgreSQL readbacks have been obtained.** PASE success is only
+CI routing and is not the requested pytest regression.
