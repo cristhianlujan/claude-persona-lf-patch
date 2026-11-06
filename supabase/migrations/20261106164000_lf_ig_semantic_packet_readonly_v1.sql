@@ -25,6 +25,7 @@ DECLARE
     v_expected_sha text;
     v_attested boolean;
     v_count int;
+    v_packet jsonb;
 BEGIN
     IF p_run_id IS NULL OR p_run_id<1 OR p_receipt_id IS NULL OR p_receipt_id<1
        OR nullif(btrim(coalesce(p_validator_identity,'')),'') IS NULL THEN
@@ -36,7 +37,7 @@ BEGIN
        OR v_run.invalidated_at IS NOT NULL THEN
         RAISE EXCEPTION 'IG_SEMANTIC_PACKET_RUN_NOT_OPEN:%:%',p_run_id,v_run.status;
     END IF;
-    IF v_run.scope->>'validator_semantic_mode' <> 'SELECTED_SEMANTIC_COMPARISON'
+    IF v_run.scope->>'validator_semantic_mode' IS DISTINCT FROM 'SELECTED_SEMANTIC_COMPARISON'
        OR v_run.scope->>'semantic_promotion_authorized' IS DISTINCT FROM 'false'
        OR nullif(v_run.source_snapshot_sha256,'') IS NULL THEN
         RAISE EXCEPTION 'IG_SEMANTIC_PACKET_MODE_OR_SNAPSHOT_NOT_AUTHORIZED:%',p_run_id;
@@ -171,7 +172,7 @@ BEGIN
        RAISE EXCEPTION 'IG_SEMANTIC_PACKET_DUPLICATE_SOURCE:%',p_run_id;
     END IF;
 
-    RETURN jsonb_build_object(
+    v_packet:=jsonb_build_object(
         'schema_version','IG_SEMANTIC_MODEL_PACKET_V1',
         'status',CASE WHEN jsonb_array_length(v_missing_pins)=0
                       THEN 'READY_FOR_MODEL_CANDIDATE'
@@ -190,6 +191,8 @@ BEGIN
         'semantic_independence_credited',false,
         'semantic_pass_authorized',false,
         'official_write_authorized',false,'production_authorized',false);
+    RETURN v_packet||jsonb_build_object('db_packet_sha256',
+          programacion.fn_v09_sha256_jsonb(v_packet));
 END;
 $packet$;
 
