@@ -80,9 +80,9 @@ def prepare_candidate(a1_result: Any, a2_result: Any, expected_business: Any) ->
     target = classification.get("target_ref")
     if not isinstance(target, str) or target not in context["target_hints"]:
         return _blocked("A3_TARGET_NOT_BOUND_TO_A1")
-    refs = set(context["source_refs"])
-    if not refs or any(not isinstance(ref, str) or not ref for ref in refs):
+    if not context["source_refs"] or any(not isinstance(ref, str) or not ref for ref in context["source_refs"]):
         return _blocked("A3_SOURCE_REFS_MISSING")
+    refs = set(context["source_refs"])
     facts = context["provided_facts"]
     if any(not isinstance(f, dict) for f in facts):
         return _blocked("A3_FACTS_INVALID")
