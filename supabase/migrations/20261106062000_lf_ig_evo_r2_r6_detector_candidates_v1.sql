@@ -139,6 +139,8 @@ WITH effective AS (
  -- Link graph: explicit rule -> referenced policies -> screen-policy bindings.
  -- CANDIDATO is a declared source, not operational/production evidence.
  SELECT r.id rule_id,r.codigo rule_code,r.estado rule_status,r.binding_source,
+   r.valor_config->>'rate_limit_policy_id' rate_ref,
+   r.valor_config->>'abuse_security_policy_id' sec_ref,
    rp.rate_limit_policy_id rate_id,rp.policy_code rate_code,rp.status rate_status,
    rp.resource_code,rp.scope_key,rp.max_requests,rp.window_seconds,rp.burst_limit,
    rp.parameter_provenance,rp.source_decision_id rate_decision,
@@ -168,11 +170,16 @@ WITH effective AS (
 ), auth_abuse_cases AS (
  SELECT jsonb_build_object(
    'finding_root_key',concat('IG_EVO_AUTH_ABUSE_',ctx.rule_id,'_',coalesce(ctx.sec_id::text,'UNRESOLVED')),
-   'finding_kind','CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS',
+   'finding_kind',case when ctx.rate_id IS NULL OR ctx.sec_id IS NULL
+     then 'GOVERNED_POLICY_REFERENCE_UNRESOLVED'
+     else 'CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS' end,
+   'reference_resolution',case when ctx.rate_id IS NULL OR ctx.sec_id IS NULL
+     then 'BLOCKED_SOURCE_REFERENCE' else 'POLICY_ROWS_RESOLVED' end,
    'risk_confirmed',false,'semantic_verdict','NOT_TESTED',
    'implementation_evidence','NOT_PROVEN',
    'source_rule',jsonb_build_object('table','lf_ops.reglas','id',ctx.rule_id,
      'code',ctx.rule_code,'status',ctx.rule_status,
+     'declared_rate_policy_id',ctx.rate_ref,'declared_abuse_security_policy_id',ctx.sec_ref,
      'binding_source',ctx.binding_source,'sha256',ctx.rule_sha),
    'rate_policy',jsonb_build_object('table','lf_ops.politicas_rate_limit',
      'id',ctx.rate_id,'code',ctx.rate_code,'status',ctx.rate_status,
@@ -267,7 +274,7 @@ WITH effective AS (
    'acceptance','Positive/negative multi-scenario evidence, governed source authority and post-change readback'
  ) result
  FROM auth_abuse_context ctx
- WHERE ctx.resource_code LIKE 'AUTH_%'
+ WHERE ctx.resource_code LIKE 'AUTH_%' OR ctx.rate_id IS NULL OR ctx.sec_id IS NULL
 ), r6 AS (
  SELECT result FROM auth_abuse_cases
  UNION ALL
