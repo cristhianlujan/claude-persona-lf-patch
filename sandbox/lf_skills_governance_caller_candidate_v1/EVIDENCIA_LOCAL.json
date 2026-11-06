@@ -1,0 +1,48 @@
+{
+  "schema": "LF_SKILLS_EDGE_CANDIDATE_EVIDENCE_V1",
+  "date": "2026-11-06",
+  "scope": "source-only infrastructure isolated from programming analysis PR #3624",
+  "type": "LOCAL_SYNTHETIC_NOT_NATIVE",
+  "readback": {
+    "repo": "cristhianlujan/claude-persona-lf-patch",
+    "branch": "agent/skills-governance-edge-candidate-20261106",
+    "files": {
+      "handler": {
+        "path": "sandbox/lf_skills_governance_caller_candidate_v1/handler.mjs",
+        "git_blob_sha": "f0581c176bcc5c04e5535d0e95c5ede1b190fc8c",
+        "sha256": "7fd261d554016981fe2af946c990386247377a7dfde7c2f8131afd7ea73a4c5b"
+      },
+      "tests": {
+        "path": "sandbox/lf_skills_governance_caller_candidate_v1/handler.test.mjs",
+        "git_blob_sha": "59e2c34add1e034ce21214a8a5838ee2dcd37baa",
+        "sha256": "0e087d1c77a47d2df5813ab5ddc7d568a2a52a670ecb54c1ce9e4e600a664add"
+      },
+      "entry": {
+        "path": "sandbox/lf_skills_governance_caller_candidate_v1/index.ts",
+        "git_blob_sha": "1f2289ff1f3948126dd130ce5f1c5b96c964ae04",
+        "sha256": "1fbf2b7299941e2adacda52157dc8715683a42f6aa883d68bdf8646759b9157b"
+      }
+    }
+  },
+  "test_command": "node --test handler.test.mjs",
+  "node_version": "v22.16.0",
+  "tests_passed": 40,
+  "tests_failed": 0,
+  "applied_to_main": false,
+  "deployed_to_supabase": false,
+  "oidc_workflow_installed": false,
+  "native_rpc_installed": false,
+  "independent_native_judge_tested": false,
+  "admission_verified": false,
+  "blockers": [
+    "governed workflow OIDC",
+    "native skill RPC admission/source preflight",
+    "RUN begin and step0 transactional readback",
+    "native trust and judge receipts",
+    "skill catalogue READY and authority grants through canonical governance"
+  ],
+  "notes": [
+    "GitHub file SHA is the SHA1 blob digest; sha256 is local file SHA256",
+    "Not a production/integration verification; PASE pending separate PR check"
+  ]
+}
