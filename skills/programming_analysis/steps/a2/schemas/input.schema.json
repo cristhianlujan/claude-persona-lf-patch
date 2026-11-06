@@ -5,6 +5,7 @@
   "additionalProperties": false,
   "required": [
     "schema_version",
+    "business",
     "target_ref",
     "change_type",
     "target_granularity",
@@ -15,6 +16,12 @@
   "properties": {
     "schema_version": {
       "const": "ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1"
+    },
+    "business": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 32,
+      "description": "Business identity declared in A1, exact-match required; never inferred from target"
     },
     "target_ref": {
       "type": "string",
