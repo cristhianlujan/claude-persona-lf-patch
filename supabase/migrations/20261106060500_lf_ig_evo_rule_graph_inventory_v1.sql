@@ -239,6 +239,7 @@ BEGIN
     'unresolved_or_unattested_count',v_not_resolved,
     'graph_limit_hit',v_limit_hit,
     'graph_reference_status',CASE WHEN v_limit_hit THEN 'TRUNCATED'
+      WHEN v_ref_total=0 THEN 'NO_EXPLICIT_REFS_SEMANTIC_REVIEW_REQUIRED'
       WHEN v_not_resolved>0 THEN 'INCOMPLETE_UNRESOLVED_REFERENCES'
       ELSE 'EXPLICIT_REFERENCES_ACCOUNTED_FOR' END,
     'narrative_clause_inventory',(
@@ -292,6 +293,7 @@ BEGIN
   IF v->>'root_rule_code'<>'B2B-RULE-AUTH-021'
    OR (v->>'root_explicit_reference_count')::integer<>3
    OR (v->>'root_bound_policy_reference_count')::integer<>3
+   OR jsonb_array_length(v->'narrative_clause_inventory')<8
    OR NOT EXISTS (
       SELECT 1 FROM jsonb_array_elements(v->'edges') e
       WHERE e->>'reference_key'='anti_bot_security_policy_id'
