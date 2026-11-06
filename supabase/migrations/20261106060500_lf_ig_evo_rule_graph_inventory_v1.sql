@@ -48,7 +48,7 @@ BEGIN
       OR p_max_hops IS NULL OR p_max_hops NOT BETWEEN 1 AND 5 THEN
     RAISE EXCEPTION 'IG_EVO_GRAPH_BAD_INPUT';
   END IF;
-  SELECT r.*,e.binding_source INTO v_root,v_binding_source
+  SELECT r,e.binding_source INTO v_root,v_binding_source
   FROM lf_ops.reglas r
   JOIN programacion.fn_input_effective_rule_links_v1(p_pantalla_id,'INPUT_GOVERNANCE') e
      ON e.regla_id=r.id AND e.pantalla_id=p_pantalla_id
@@ -190,8 +190,9 @@ BEGIN
           THEN 'SOURCE_FOUND_BINDING_NOT_ATTESTED'
           WHEN v_kind='RULE' THEN 'RULE_SOURCE_FOUND_SCOPE_NOT_ATTESTED'
           ELSE 'EXPLICIT_SOURCE_AND_BINDING_FOUND' END;
-        IF v_resolution<>'EXPLICIT_SOURCE_AND_BINDING_FOUND'
-           AND v_kind='POLICY' THEN v_not_resolved:=v_not_resolved+1; END IF;
+        IF v_resolution<>'EXPLICIT_SOURCE_AND_BINDING_FOUND' THEN
+          v_not_resolved:=v_not_resolved+1;
+        END IF;
         IF v_hops=0 AND v_resolution='EXPLICIT_SOURCE_AND_BINDING_FOUND' THEN
           v_root_resolved:=v_root_resolved+1;
         END IF;
