@@ -18,16 +18,26 @@ WITH effective AS (
  JOIN lf_ops.reglas r ON r.id=e.regla_id
  WHERE e.pantalla_id=p_pantalla_id AND r.estado IN ('VIGENTE','CANDIDATO')
 ), r2 AS (
+ -- Narrow falsifier: temporary IP mitigation and hard single-signal lockout
+ -- are not contradictory. Compare only an identical explicit control key with
+ -- truly opposite ALLOW/DENY values. Semantics still require native Validator.
  SELECT jsonb_build_object('rule_code',r.codigo,'policy_code',p.policy_code,
        'rule_state',r.estado,'binding_state',b.status,'policy_state',p.status,
-       'action',r.valor_config->>'accion','policy_ip_hard_limit',p.policy_config->>'ip_hard_limit',
-       'semantic_verdict','NOT_TESTED','scope','SAME_SCREEN_OBSERVED')
+       'control_key',kv.key,'rule_value',kv.value,
+       'policy_value',p.policy_config->>kv.key,
+       'semantic_verdict','NOT_TESTED','scope','SAME_SCREEN_SHARED_EXACT_CONTROL_KEY')
    result
  FROM effective r
+ CROSS JOIN LATERAL jsonb_each_text(
+   CASE WHEN jsonb_typeof(r.valor_config)='object' THEN r.valor_config ELSE '{}'::jsonb END) kv
  JOIN lf_ops.pantallas_politicas b ON b.pantalla_id=p_pantalla_id
  JOIN lf_ops.politicas_seguridad p ON p.security_policy_id=b.security_policy_id
- WHERE r.valor_config->>'accion' ~* '(bloquear_ip|bloqueo_ip)'
-   AND p.policy_config->>'ip_hard_limit'='DENY'
+ WHERE p.policy_config ? kv.key
+   AND (
+      (upper(kv.value)='ALLOW' AND upper(p.policy_config->>kv.key)='DENY')
+      OR
+      (upper(kv.value)='DENY' AND upper(p.policy_config->>kv.key)='ALLOW')
+   )
 ), rule_refs AS (
  SELECT e.codigo source_code,e.estado source_state,kv.key reference_key,
    kv.value referenced_value
