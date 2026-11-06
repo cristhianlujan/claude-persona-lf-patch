@@ -39,6 +39,7 @@ export interface SemanticPacket {
   screen_code: string; validator_semantic_mode: "SELECTED_SEMANTIC_COMPARISON";
   source_integrity_verified: true;
   source_snapshot_sha256: string;
+  db_packet_sha256: string;
   curator_identity: string; validator_identity: string;
   sources: SemanticSource[];
   [key: string]: unknown;
@@ -71,13 +72,15 @@ export function assertTrustedPacket(p: unknown): asserts p is SemanticPacket {
       !Number.isSafeInteger(q.handoff_receipt_id) || Number(q.handoff_receipt_id) < 1 ||
       typeof q.screen_code !== "string" || !q.screen_code ||
       typeof q.source_snapshot_sha256 !== "string" || !shaRe.test(q.source_snapshot_sha256) ||
+      typeof q.db_packet_sha256 !== "string" || !shaRe.test(q.db_packet_sha256) ||
       typeof q.curator_identity !== "string" || !q.curator_identity ||
       typeof q.validator_identity !== "string" || !q.validator_identity ||
       q.curator_identity === q.validator_identity ||
       !Array.isArray(q.sources) || q.sources.length < 1 || q.sources.length > 47 ||
       q.sources.some((s: SemanticSource) => !s || typeof s.ref !== "string" || !s.ref ||
         typeof s.code !== "string" || !s.code || typeof s.family !== "string" || !s.family ||
-        typeof s.record_status !== "string" || !s.record_status))
+        typeof s.record_status !== "string" || !s.record_status ||
+        s.source_frozen_by_curator !== true))
     throw new Error("IG_SEMANTIC_PACKET_NOT_ATTESTED");
   const refs = (q.sources as SemanticSource[]).map(s => s.ref);
   const codes = (q.sources as SemanticSource[]).map(s => s.code);
@@ -168,6 +171,7 @@ export async function callSemanticModelCandidate(packet: unknown, deps: Dependen
     prompt_version:PROMPT_VERSION,prompt_sha256:promptHash,
     input_packet_sha256:inputHash,raw_response_sha256:await sha256(rawText),
     source_snapshot_sha256:packet.source_snapshot_sha256,
+    db_packet_sha256:packet.db_packet_sha256,
     model_call_count:1,decision,
     semantic_judge_executed:true,
     semantic_independence_credited:false,
