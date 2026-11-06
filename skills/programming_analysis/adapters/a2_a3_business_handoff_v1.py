@@ -49,12 +49,18 @@ def _declared_spec(facts: list[dict], allowed: set[str], refs: set[str]) -> dict
     matches = [f for f in facts if f.get("fact_code") in allowed]
     if not matches:
         return {"state": "UNKNOWN", "value": None, "source_ref": None}
-    if len(matches) != 1:
-        raise ValueError("IDENTITY_FACT_CONFLICT_OR_DUPLICATE")
-    fact = matches[0]
-    if not isinstance(fact.get("value"), str) or not fact["value"].strip() or fact.get("source_ref") not in refs:
-        raise ValueError("SPECIFICATION_SOURCE_INVALID")
-    return {"state": "DECLARED_UNATTESTED", "value": fact["value"], "source_ref": fact["source_ref"]}
+    by_code = {}
+    for fact in matches:
+        code = fact.get("fact_code")
+        if not isinstance(fact.get("value"), str) or not fact["value"].strip() or fact.get("source_ref") not in refs:
+            raise ValueError("SPECIFICATION_SOURCE_INVALID")
+        if code in by_code and by_code[code] != (fact["value"], fact["source_ref"]):
+            raise ValueError("IDENTITY_FACT_CONFLICT_OR_DUPLICATE")
+        by_code[code] = (fact["value"], fact["source_ref"])
+    # NAME is the display summary. The paired CODE and all refs survive in declared_facts.
+    preferred = next((x for x in ("PRODUCT_NAME", "MODULE_NAME", "PRODUCT", "MODULE", "PRODUCT_CODE", "MODULE_CODE") if x in by_code), None)
+    value, ref = by_code[preferred]
+    return {"state": "DECLARED_UNATTESTED", "value": value, "source_ref": ref}
 
 
 def prepare_candidate(a1_result: Any, a2_result: Any, expected_business: Any) -> dict:
