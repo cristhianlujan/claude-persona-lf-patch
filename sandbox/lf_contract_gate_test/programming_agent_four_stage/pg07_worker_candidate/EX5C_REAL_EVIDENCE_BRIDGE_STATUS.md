@@ -43,3 +43,67 @@ The package and fixture are now present; **producer-chain replay and separate PG
 Stacked draft PR #3685 has base `lf/pg14-testing-handoff-final-20261104`
 (PR #3550 at HEAD `d675a7248ac686049623c7f2c0906504bdfb6f34`),
 not `main`. The published fixture SHA is pending independent bundle execution.
+
+
+## 2026-11-06 — Actual imported-producer attempt and hard blockers
+
+The single test `tests/test_ex5c_real_evidence_chain_v1.py` now calls the
+**unmodified** PG08 C1 producer through
+`run_real_pg08_c1()`, passing derived command SHA-256s from the pinned
+real ex5c JSON. Its projected PG07 C6 input is explicitly an *adapter source
+envelope*, not a real LF PG07 execution. PG08 C1 is expected to report
+`REPORTED_PASS_UNVERIFIED`, never admitted PASS.
+
+**Hard stop PG08 C2**: the real bundle contains Maven/stdout/stderr and smoke,
+but no **authentic PG06 C4 lint baseline** or separately executed Java
+format/lint receipts. The old PG06 C4 fixture is synthetic. Importing that
+fixture would violate the mandate that each datum be derived from ex5c.
+The guard `require_pg08_c2_real_source()` therefore BLOCKs with
+`PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK`.
+PG08 C2-C8 and PG10-PG14 remain blocked as a connected real chain.
+
+An independent `run_real_pg09_c1()` now calls the existing PG09 C1 producer
+with source-only, adapter-projected PG07C1/C5 declarations and the **real**
+cost receipt. Its actual one used attempt of one permitted attempt means the
+original governor outputs `REQUIRES_DECISION` even though USD 0.070022 is
+within the USD 0.35 ceiling. Do not rewrite this as a budget-only PASS. This
+is an original-producer semantics/acceptance mismatch pending governance
+decision; **do not change the producer**.
+
+The isolated `pg13_ex5c_reconstructed_freeze_attack_v1.py` calls the
+existing PG13 immutable-ref helper and reconstructs the real 18-blob
+`apps/time-service` subtree before freezing a **local disposable commit**.
+Five forced mutations (force push, normal fast forward, deletion, attempted
+recreation, annotated-tag deletion) are expected to BLOCK with unchanged
+refs. This is **not** the original entire-root `e76b213` commit and is not
+a substitute for a connected PG12 C4 -> PG13 C3 output.
+
+## Exact validation commands (none of these results may be inferred from PASE)
+
+Run in a checkout of the **exact PR HEAD**, with pytest available:
+
+```bash
+python -m pytest -q \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg07_worker_candidate/tests/test_pg07_real_worker_evidence_adapter_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg07_worker_candidate/tests/test_ex5c_real_evidence_chain_v1.py
+
+python -m pytest -q \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg08_build_candidate/tests/test_pg08_full_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg09_iteration_candidate/tests/test_pg09_iteration_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg10_conflict_candidate/tests/test_pg10_decision_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg11_integrity_candidate/tests/test_pg11_integrity_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg12_identity_candidate/tests/test_pg12_identity_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg13_freeze_candidate/tests/test_pg13_freeze_chain_v1.py \
+  sandbox/lf_contract_gate_test/programming_agent_four_stage/pg14_testing_handoff_candidate/tests/test_pg14_final_chain_v1.py
+```
+
+PostgreSQL readbacks MUST be run with an explicitly isolated local instance,
+`PG12_DISPOSABLE_DB=YES PG12_TEST_DSN=pg12_test_*` and
+`PG14_DISPOSABLE_DB=YES PG14_TEST_DSN=pg14_test_*`, respectively.
+The existing readback scripts still construct **synthetic fixtures** rather
+than the EX5C real chain, and a PASS from them MUST NOT be described as
+real EX5C integration. Neither real-chain readback has been run.
+
+PASE SUCCESS is governance/CI routing, **not pytest success**. Existing
+PG08..PG14 producers were not edited. This PR stays **draft**, with all
+authority indicators `False`.
