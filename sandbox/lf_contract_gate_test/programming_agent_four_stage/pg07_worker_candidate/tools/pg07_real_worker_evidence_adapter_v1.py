@@ -415,3 +415,75 @@ def require_pg08_c2_real_source(bundle: dict) -> None:
     require("pg06_c4_real_baseline" in bundle and
             "real_format_lint_observations" in bundle,
             "PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK")
+
+
+def pg07_budget_sources_for_real_bundle(bundle: dict) -> tuple[dict, dict]:
+    """Adapter-projected PG07C1/C5 envelopes; never claim true PG07 execution."""
+    check_authority(bundle)
+    _, _, cost = check_worker(bundle)
+    base = {
+        "schema_version": "PG07_C1_WORKER_DISPATCH_PLAN_CANDIDATE_V1",
+        "status": "CANDIDATE_NOT_ADMITTED",
+        "run_binding": {
+            "run_ref": "sandbox:run:42284754122",
+            "pricing_currency": "USD",
+            "model_id": "claude-sonnet-5-5",
+            "provider": "anthropic"
+        },
+        "worker_invoked": False,
+        "dispatch_allowed": False,
+        "production_authority": False,
+        "handoff_allowed": False
+    }
+    guard = {
+        "schema_version": "PG07_C5_ITERATION_GUARD_CANDIDATE_V1",
+        "status": "CANDIDATE_NOT_ADMITTED",
+        "solutions": [{"solution_id": "EX5C"}],
+        "iteration_applied": False,
+        "production_authority": False,
+        "handoff_allowed": False
+    }
+    for source in (base, guard):
+        payload = json.dumps(source, sort_keys=True, separators=(",", ":"),
+                             ensure_ascii=True).encode()
+        source["candidate_sha256"] = digest(payload)
+    return base, guard
+
+
+def run_real_pg09_c1(bundle: dict) -> dict:
+    """Call original PG09_C1, preserving real one-attempt Worker limit.
+
+    The original producer treats one used attempt out of one allowed as an
+    exhausted iteration limit, and therefore emits REQUIRES_DECISION even if
+    reported cost 0.070022 < 0.35. Never override that outcome.
+    """
+    import importlib.util
+    path = Path(__file__).resolve().parents[2] / (
+        "pg09_iteration_candidate/tools/pg09_c1_iteration_cost_governor_candidate_v1.py")
+    require(path.is_file(), "PG09_C1_REAL_PRODUCER_MISSING")
+    spec = importlib.util.spec_from_file_location("pg09_c1_real_ex5c", path)
+    require(spec is not None and spec.loader is not None, "PG09_C1_IMPORT_BLOCK")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    c1, c5 = pg07_budget_sources_for_real_bundle(bundle)
+    policy = {
+        "policy_ref": "sandbox:run:42284754122:cost-ceiling",
+        "currency": "USD",
+        "request_budget": "0.35",
+        "batch_budget": "0.35",
+        "max_attempts_per_solution": 1,
+        "existing_worker_limit_ref": "sandbox:run:42284754122:max_attempts=1"
+    }
+    observation = pg09_usage(bundle)
+    result = module.prepare_pg09_c1(
+        pg07_c1=c1, pg07_c5=c5,
+        budget_policy=policy, usage_observations=observation)
+    require(result.get("reported_request_known_cost") == "0.070022" and
+            result.get("request_diagnostic") == "REQUIRES_DECISION" and
+            result.get("iteration_limit_reached_reported") is True and
+            result.get("production_authority") is False,
+            "PG09_C1_REAL_LIMIT_OR_COST_PROJECTION_BLOCK")
+    return {"pg07_c1": c1, "pg07_c5": c5, "pg09_c1": result,
+            "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
+            "contract_mismatch":
+                "PG09_C1_ATTEMPTS_EXHAUSTED_REQUIRES_DECISION_FOR_1_OF_1"}
