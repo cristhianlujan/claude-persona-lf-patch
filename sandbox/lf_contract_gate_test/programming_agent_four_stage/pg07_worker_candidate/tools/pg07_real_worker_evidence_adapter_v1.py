@@ -518,6 +518,9 @@ def run_real_pg09_c1_to_c4(bundle: dict) -> dict:
     c3 = get("pg09_c3_quality_bypass_guard_candidate_v1", "prepare_pg09_c3")(
         pg07_c5=guard, pg09_c2=c2,
         quality_change_observations=[{"solution_id": "EX5C", "iterations": []}])
+    local_tools = str(Path(__file__).resolve().parent)
+    if local_tools not in sys.path:
+        sys.path.insert(0, local_tools)
     from pg09_pg10_ex5c_owner_decision_bridge_v1 import (
         load_registered_owner_decision, bridge_pg09_c4_owner_decision_to_pg10)
     decision = load_registered_owner_decision()
