@@ -103,6 +103,20 @@ Deno.serve(async (req: Request) => {
     // candidate mode fails closed until a source-attested RPC exists.
     // NEVER treat the model output as a judge PASS or send it to an official writer.
     if (Deno.env.get("IG_SEMANTIC_MODEL_MODE") === "CANDIDATE_ONLY") {
+      const semanticScope = await rpc("fn_input_governance_validator_semantic_scope_info_v1", {
+        p_run_id: runId,
+        p_ticket: ticket,
+      });
+      if (semanticScope?.run_id !== runId ||
+          semanticScope?.semantic_promotion_authorized !== false ||
+          !["SOURCE_INTEGRITY_ONLY", "SELECTED_SEMANTIC_COMPARISON"].includes(
+            semanticScope?.validator_semantic_mode
+          )) {
+        return Response.json({
+          error: "IG_SEMANTIC_SCOPE_NOT_AUTHORIZED", run_id: runId,
+        }, { status: 409 });
+      }
+      if (semanticScope.validator_semantic_mode === "SELECTED_SEMANTIC_COMPARISON") {
       const semanticPacket = await rpc("fn_input_governance_semantic_packet_v1", {
         p_run_id: runId,
         p_validator_identity: identity,
@@ -159,6 +173,7 @@ Deno.serve(async (req: Request) => {
       }
       if (semanticPacket?.validator_semantic_mode !== "SOURCE_INTEGRITY_ONLY") {
         return Response.json({error:"IG_SEMANTIC_RUN_MODE_INVALID",run_id:runId},{status:409});
+      }
       }
     }
 
