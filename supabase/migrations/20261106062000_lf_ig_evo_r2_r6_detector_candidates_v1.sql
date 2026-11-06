@@ -197,7 +197,7 @@ WITH effective AS (
      'SHARED_NETWORK_QA','WINDOW_AND_BURST_QA','FAIL_CLOSED_RUNTIME'),
    'risk_scenarios',(
      SELECT COALESCE(jsonb_agg(jsonb_build_object(
-       'scenario_code',x.code,'hypothesis',x.hypothesis,
+       'scenario_code',x.code,'operation_scope',x.operation_scope,'hypothesis',x.hypothesis,
        'test_objective',x.test_objective,'expected_control',x.expected_control,
        'status','NOT_TESTED','positive_and_negative_tests_required',true)
        ORDER BY x.code),'[]'::jsonb)
@@ -205,37 +205,56 @@ WITH effective AS (
        ('MULTI_ORIGIN_SINGLE_SUBJECT',
         'A single pair counter may reset when the origin changes',
         'Same subject across distinct origin networks',
-        'Subject-level protection remains effective across origins'),
+        'Subject-level protection remains effective across origins','ALL'),
        ('SINGLE_ORIGIN_MULTI_SUBJECT',
         'A pair counter may allow cumulative attempts across subjects',
         'Different subjects using one origin',
-        'Distributed abuse protection and origin policy are evaluated'),
+        'Distributed abuse protection and origin policy are evaluated','ALL'),
        ('LEGITIMATE_SHARED_NETWORK',
         'One IP may represent several legitimate subjects',
         'Multiple legitimate subjects behind shared NAT',
-        'No hard single-IP lockout; false-positive mitigation demonstrated'),
+        'No hard single-IP lockout; false-positive mitigation demonstrated','ALL'),
        ('SUCCESS_FAILURE_AND_RETRY',
         'The source does not define which authentication outcomes count',
         'Success, failure, rejected anti-bot, transport retries',
-        'Event inclusion, exclusion and reset semantics are verified'),
+        'Event inclusion, exclusion and reset semantics are verified','LOGIN'),
        ('CONCURRENT_REQUESTS',
         'Counter atomicity and concurrent requests are unverified',
         'Parallel attempts for one subject and origin',
-        'Server-side atomic enforcement demonstrated'),
+        'Server-side atomic enforcement demonstrated','ALL'),
        ('WINDOW_BOUNDARY',
         'Window boundaries and burst handling are unverified',
         'Requests around window and burst limits',
-        'Central max/window/burst values enforced as intended'),
+        'Central max/window/burst values enforced as intended','ALL'),
        ('CONTROL_DEGRADATION',
         'External anti-bot or identity services may be unavailable',
         'Unavailable anti-bot or identity-provider dependency',
-        'Fail closed without granting a session'),
+        'Fail closed without granting a session','ALL'),
        ('MULTISIGNAL_DISTRIBUTED_ABUSE',
         'Declared multi-signal control may not be active server-side',
         'Distributed suspicious requests with independent risk signals',
-        'Adaptive protection and relevant logging are demonstrated')
-     ) x(code,hypothesis,test_objective,expected_control)
+        'Adaptive protection and relevant logging are demonstrated','ALL'),
+       ('OTP_SEND_REPLAY_AND_ABUSE',
+        'A send counter may not protect all repeated issuance paths',
+        'Repeated OTP delivery events to the same subject',
+        'Per-operation issuance and anti-abuse throttling are proven','OTP'),
+       ('OTP_CROSS_OPERATION_SEPARATION',
+        'Password recovery and new-device OTP might share counters',
+        'Distinct OTP operations on the same subject and origin',
+        'Counters and outcomes remain independent by functional operation','OTP'),
+       ('OTP_DELIVERY_AND_ENFORCEMENT',
+        'Delivery acceptance does not prove a secure issued challenge',
+        'Delivery failure, delayed response and duplicate provider event',
+        'State transitions follow policy and do not expose identity','OTP'),
+       ('OTP_SEND_ENUMERATION',
+        'Response differences may reveal whether the subject exists',
+        'Existing and nonexistent subject delivery attempts',
+        'Responses do not disclose identity or account state','OTP')
+     ) x(code,hypothesis,test_objective,expected_control,operation_scope)
      WHERE ctx.resource_code LIKE 'AUTH_%'
+       AND (x.operation_scope='ALL'
+            OR (x.operation_scope='LOGIN' AND ctx.resource_code='AUTH_LOGIN')
+            OR (x.operation_scope='OTP' AND ctx.resource_code LIKE '%OTP%'))
    ),
    'standard_context',jsonb_build_array(
      jsonb_build_object('authority','OWASP','kind','NONBINDING_GUIDANCE',
