@@ -368,6 +368,10 @@ DECLARE
   v_clause_gaps jsonb;
   v_edge_gaps jsonb;
   v_pending_clauses integer;
+  v_intent jsonb;
+  v_intent_count integer := 0;
+  v_invalid_intent_count integer := 0;
+  v_intent_bound boolean := false;
   v_pending_edges integer;
   v_clause_total integer;
   v_edge_total integer;
@@ -428,6 +432,30 @@ BEGIN
   SELECT count(*) INTO v_pending_edges
   FROM jsonb_array_elements(p_manifest->'edge_assessments') a
   WHERE a->>'status' IN('PENDING_SEMANTIC_CLASSIFICATION','UNRESOLVED');
+  v_intent:=p_manifest->'intent_analysis';
+  v_intent_bound:=jsonb_typeof(v_intent)='object'
+    AND v_intent->>'schema_version'='IG_EVO_INTENT_ANALYSIS_V1_CANDIDATE'
+    AND v_intent->>'context_sha256'
+      IS NOT DISTINCT FROM programacion.fn_v09_sha256_jsonb(p_graph->'intent_context')
+    AND jsonb_typeof(v_intent->'candidate_signals')='array';
+  IF v_intent_bound THEN
+    v_intent_count:=jsonb_array_length(v_intent->'candidate_signals');
+    SELECT count(*) INTO v_invalid_intent_count
+    FROM jsonb_array_elements(v_intent->'candidate_signals') x
+    WHERE jsonb_typeof(x)<>'object'
+      OR nullif(x->>'signal_id','') IS NULL
+      OR nullif(x->>'expected_behavior','') IS NULL
+      OR nullif(x->>'reasoning','') IS NULL
+      OR x->>'evidence_type' NOT IN (
+        'EXPLICIT_RULE_STATEMENT','SCREEN_CONTEXT_DERIVATION',
+        'GOVERNED_POLICY_REFERENCE','DOMAIN_RISK_HYPOTHESIS',
+        'EXTERNAL_GUIDANCE_CONDITIONAL')
+      OR jsonb_typeof(x->'source_locations')<>'array'
+      OR jsonb_array_length(x->'source_locations')=0
+      OR x->>'resolution' NOT IN (
+        'MATCHED_TO_GRAPH','UNMATCHED_RESEARCH_REQUIRED',
+        'NOT_APPLICABLE_WITH_AUTHORITY');
+  END IF;
   v_clause_total:=jsonb_array_length(coalesce(p_graph->'narrative_clause_inventory','[]'::jsonb));
   v_edge_total:=jsonb_array_length(coalesce(p_graph->'edges','[]'::jsonb));
   RETURN jsonb_build_object(
@@ -437,11 +465,17 @@ BEGIN
     'missing_clause_count',jsonb_array_length(v_clause_gaps),
     'missing_edge_count',jsonb_array_length(v_edge_gaps),
     'pending_clause_count',v_pending_clauses,'pending_edge_count',v_pending_edges,
+    'intent_context_sha256',programacion.fn_v09_sha256_jsonb(p_graph->'intent_context'),
+    'intent_manifest_bound',v_intent_bound,
+    'candidate_signal_count',v_intent_count,
+    'invalid_intent_signal_count',v_invalid_intent_count,
     'missing_clauses',v_clause_gaps,'missing_edges',v_edge_gaps,
     'status',CASE WHEN jsonb_array_length(v_clause_gaps)>0
                         OR jsonb_array_length(v_edge_gaps)>0
                     THEN 'INCOMPLETE_SOURCE_ACCOUNTING'
-                  ELSE 'SOURCE_ACCOUNTED_SEMANTIC_JUDGE_REQUIRED' END,
+                  WHEN NOT v_intent_bound OR v_intent_count=0
+                    OR v_invalid_intent_count>0 THEN 'INTENT_ANALYSIS_REQUIRED'
+                  ELSE 'SOURCE_AND_INTENT_ACCOUNTED_SEMANTIC_JUDGE_REQUIRED' END,
     'graph_references_status',p_graph->>'graph_reference_status',
     'semantic_verdict','NOT_TESTED',
     'semantic_pass_authorized',false,
@@ -470,6 +504,26 @@ BEGIN
     OR v_neg->>'status'<>'INCOMPLETE_SOURCE_ACCOUNTING'
     OR v_neg->>'semantic_pass_authorized'<>'false' THEN
     RAISE EXCEPTION 'IG_EVO_GRAPH_INCOMPLETE_COVERAGE_WAS_ACCEPTED:%',v_neg;
+  END IF;
+  -- A manifest that accounts for every clause/edge but has NO grounded
+  -- intention understanding is still not admissible.
+  v_neg:=programacion.fn_ig_evo_graph_evidence_coverage_gate_v1(
+    v,jsonb_build_object(
+      'graph_sha256',programacion.fn_v09_sha256_jsonb(v),
+      'clause_assessments',(
+        SELECT coalesce(jsonb_agg(jsonb_build_object(
+          'source_field',c->>'source_field','clause_index',c->>'clause_index',
+          'status','PENDING_SEMANTIC_CLASSIFICATION')),'[]'::jsonb)
+        FROM jsonb_array_elements(v->'narrative_clause_inventory') c),
+      'edge_assessments',(
+        SELECT coalesce(jsonb_agg(jsonb_build_object(
+          'source_entity',e->>'source_entity',
+          'reference_path',e->>'reference_path','reference_key',e->>'reference_key',
+          'status','PENDING_SEMANTIC_CLASSIFICATION')),'[]'::jsonb)
+        FROM jsonb_array_elements(v->'edges') e)));
+  IF v_neg->>'status'<>'INTENT_ANALYSIS_REQUIRED'
+    OR v_neg->>'semantic_pass_authorized'<>'false' THEN
+      RAISE EXCEPTION 'IG_EVO_GRAPH_SOURCE_ONLY_FALSE_SEMANTIC_COMPLETENESS:%',v_neg;
   END IF;
   IF v->>'root_rule_code'<>'B2B-RULE-AUTH-021'
    OR (v->>'root_explicit_reference_count')::integer<>3
