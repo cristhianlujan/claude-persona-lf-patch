@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {callSemanticModelCandidate} from "./semantic_model.ts";
+import {classifySemanticReadback} from "./semantic_continuation.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -148,27 +149,20 @@ Deno.serve(async (req: Request) => {
           p_ticket: ticket,
           p_candidate_sha256: null,
         });
-        if (receipts?.run_id !== runId ||
-            !["SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED",
-              "INDEPENDENT_SEMANTIC_VERDICT_REQUIRED",
-              "SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE"].includes(receipts?.status) ||
-            receipts?.promotion_authorized !== false ||
-            receipts?.production_authorized !== false) {
-          return Response.json({
-            error: "IG_SEMANTIC_RECEIPT_READBACK_INVALID", run_id: runId,
-          }, { status: 409 });
-        }
+        const semanticGate = classifySemanticReadback(receipts, runId);
         return Response.json({
           runtime: "input-governance-validator-v1",
-          status: receipts.status,
+          status: semanticGate.status,
           run_id: runId,
           validator_identity: identity,
           handoff_receipt_id: handoffReceiptId,
           semantic_receipt_readback: receipts,
+          semantic_gate: semanticGate,
           continuation: {
             run_id: runId,
             strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
-            next_action: "WAIT_FOR_INDEPENDENT_SEMANTIC_RECEIPT",
+            next_action: semanticGate.next_action,
+            retry_policy: semanticGate.retry_policy,
           },
           semantic_independence_credited: false,
           official_write_authorized: false,
@@ -229,16 +223,7 @@ Deno.serve(async (req: Request) => {
           p_ticket: ticket,
           p_candidate_sha256: checked.candidate_sha256,
         });
-        if (receipts?.run_id !== runId ||
-            !["SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED",
-              "INDEPENDENT_SEMANTIC_VERDICT_REQUIRED",
-              "SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE"].includes(receipts?.status) ||
-            receipts?.promotion_authorized !== false ||
-            receipts?.production_authorized !== false) {
-          return Response.json({
-            error: "IG_SEMANTIC_RECEIPT_READBACK_INVALID", run_id: runId,
-          }, { status: 409 });
-        }
+        const semanticGate = classifySemanticReadback(receipts, runId, checked.candidate_sha256);
         return Response.json({
           runtime:"input-governance-validator-v1",
           status:"SEMANTIC_MODEL_CANDIDATE_UNATTESTED",
@@ -247,6 +232,7 @@ Deno.serve(async (req: Request) => {
           candidate,
           native_precheck: checked,
           semantic_receipt_readback: receipts,
+          semantic_gate: semanticGate,
           validator_phase: {
             status: phase.status,
             run_status: phase.run_status,
@@ -255,12 +241,13 @@ Deno.serve(async (req: Request) => {
           continuation: {
             run_id: runId,
             strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
-            next_action: "WAIT_FOR_INDEPENDENT_SEMANTIC_RECEIPT",
+            next_action: semanticGate.next_action,
+            retry_policy: semanticGate.retry_policy,
           },
           promotion_authorized:false,
           production_authorized:false,
           official_write_authorized:false,
-          next_step:"INDEPENDENT_SEMANTIC_RECEIPT_NOT_YET_IMPLEMENTED",
+          next_step:semanticGate.next_action,
         },{status:202});
       }
       if (semanticPacket?.validator_semantic_mode !== "SOURCE_INTEGRITY_ONLY") {
