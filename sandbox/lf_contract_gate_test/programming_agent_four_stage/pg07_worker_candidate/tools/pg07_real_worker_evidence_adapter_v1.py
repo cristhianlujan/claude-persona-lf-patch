@@ -487,3 +487,57 @@ def run_real_pg09_c1(bundle: dict) -> dict:
             "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
             "contract_mismatch":
                 "PG09_C1_ATTEMPTS_EXHAUSTED_REQUIRES_DECISION_FOR_1_OF_1"}
+
+
+def run_real_pg09_c1_to_c4(bundle: dict) -> dict:
+    """Call unchanged PG09 C1,C2,C3,C4 using real cost, zero real iterations.
+
+    PG07 C1/C5 envelopes are adapter projections; no runtime authority.
+    C4 must retain the typed BUDGET_DECISION reason and return (not retry).
+    """
+    import importlib.util
+    from pathlib import Path
+    import sys
+    tool_dir = Path(__file__).resolve().parents[2] / "pg09_iteration_candidate/tools"
+
+    def get(name: str, fn: str):
+        path = tool_dir / (name + ".py")
+        require(path.is_file(), "PG09_PRODUCER_MISSING_BLOCK")
+        spec = importlib.util.spec_from_file_location(name + "_EX5C", path)
+        require(spec is not None and spec.loader is not None, "PG09_IMPORT_BLOCK")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return getattr(mod, fn)
+
+    source = run_real_pg09_c1(bundle)
+    c1 = source["pg09_c1"]
+    guard = source["pg07_c5"]
+    c2 = get("pg09_c2_convergence_guard_candidate_v1", "prepare_pg09_c2")(
+        pg07_c5=guard, pg09_c1=c1,
+        iteration_observations=[{"solution_id": "EX5C", "iterations": []}])
+    c3 = get("pg09_c3_quality_bypass_guard_candidate_v1", "prepare_pg09_c3")(
+        pg07_c5=guard, pg09_c2=c2,
+        quality_change_observations=[{"solution_id": "EX5C", "iterations": []}])
+    from pg09_pg10_ex5c_owner_decision_bridge_v1 import (
+        load_registered_owner_decision, bridge_pg09_c4_owner_decision_to_pg10)
+    decision = load_registered_owner_decision()
+    receipt_sha = bundle["worker"]["files"]["cost.json"]["sha256"]
+    c4 = get("pg09_c4_typed_escalation_candidate_v1", "prepare_pg09_c4")(
+        pg09_c1=c1, pg09_c2=c2, pg09_c3=c3,
+        escalation_context=[{
+            "solution_id": "EX5C",
+            "run_ref": "sandbox:run:42284754122",
+            "owner_decision_ref": decision["decision_ref"],
+            "diagnostic_evidence_refs": ["sha256:" + receipt_sha]
+        }])
+    bridge = bridge_pg09_c4_owner_decision_to_pg10(pg09_c4=c4)
+    require(c4["solutions"][0]["reason_codes"] == ["BUDGET_DECISION"] and
+            c4["solutions"][0]["escalation_type"] == "RETURN" and
+            c4["retry_authorized"] is False and
+            c4["production_authority"] is False and
+            bridge["production_authority"] is False,
+            "PG09_C4_OWNER_DECISION_RETRY_BLOCK")
+    return {"pg09_c1": c1, "pg09_c2": c2, "pg09_c3": c3,
+            "pg09_c4": c4, "pg10_owner_decision_reference": bridge,
+            "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
+            "production_authority": False, "retry_authorized": False}
