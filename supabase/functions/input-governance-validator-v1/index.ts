@@ -99,8 +99,8 @@ Deno.serve(async (req: Request) => {
     }
 
     // IG-EVO L6: gated model candidate inside the existing Validator Edge.
-    // Disabled by default. No DB semantic packet provider is deployed yet;
-    // candidate mode fails closed until a source-attested RPC exists.
+    // Disabled by default. Candidate depends on deployed ticket-bound
+    // scope, packet and phase RPCs; missing dependencies fail closed.
     // NEVER treat the model output as a judge PASS or send it to an official writer.
     if (Deno.env.get("IG_SEMANTIC_MODEL_MODE") === "CANDIDATE_ONLY") {
       const semanticScope = await rpc("fn_input_governance_validator_semantic_scope_info_v1", {
@@ -117,6 +117,47 @@ Deno.serve(async (req: Request) => {
         }, { status: 409 });
       }
       if (semanticScope.validator_semantic_mode === "SELECTED_SEMANTIC_COMPARISON") {
+      // Same existing Validator performs CURATING -> VALIDATING and writes
+      // the run-wide manifest, but no family verdicts, before semantic review.
+      const phase = await rpc(VALIDATOR_ENTRYPOINT, {
+        p_run_id: runId,
+        p_validator_identity: identity,
+        p_receipt_id: handoffReceiptId,
+        p_ticket: ticket,
+      });
+      if (phase?.status !== "SEMANTIC_EVALUATION_REQUIRED" ||
+          phase?.run_id !== runId ||
+          phase?.validator_identity !== identity ||
+          phase?.run_status !== "VALIDATING" ||
+          !/^[a-f0-9]{64}$/i.test(String(phase?.source_snapshot_sha256 ?? "")) ||
+          phase?.promotion_authorized !== false ||
+          phase?.production_authorized !== false) {
+        return Response.json({
+          error: "IG_SEMANTIC_VALIDATOR_PHASE_NOT_ATTESTED",
+          run_id: runId,
+          actual_status: phase?.status ?? null,
+        }, { status: 409 });
+      }
+      // A repeated invocation preserves identity and waits for an official
+      // independent verdict. It never calls the model again automatically.
+      if (resumed) {
+        return Response.json({
+          runtime: "input-governance-validator-v1",
+          status: "SEMANTIC_VERDICT_RECEIPT_REQUIRED",
+          run_id: runId,
+          validator_identity: identity,
+          handoff_receipt_id: handoffReceiptId,
+          continuation: {
+            run_id: runId,
+            strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
+            next_action: "WAIT_FOR_INDEPENDENT_SEMANTIC_RECEIPT",
+          },
+          semantic_independence_credited: false,
+          official_write_authorized: false,
+          promotion_authorized: false,
+          production_authorized: false,
+        }, { status: 202 });
+      }
       const semanticPacket = await rpc("fn_input_governance_semantic_packet_v1", {
         p_run_id: runId,
         p_validator_identity: identity,
@@ -165,6 +206,16 @@ Deno.serve(async (req: Request) => {
           handoff_receipt_id:handoffReceiptId,
           candidate,
           native_precheck: checked,
+          validator_phase: {
+            status: phase.status,
+            run_status: phase.run_status,
+            source_snapshot_sha256: phase.source_snapshot_sha256,
+          },
+          continuation: {
+            run_id: runId,
+            strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
+            next_action: "WAIT_FOR_INDEPENDENT_SEMANTIC_RECEIPT",
+          },
           promotion_authorized:false,
           production_authorized:false,
           official_write_authorized:false,
