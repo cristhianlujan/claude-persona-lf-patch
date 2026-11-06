@@ -74,10 +74,8 @@ class AnalysisA2Candidate(unittest.TestCase):
         self.assertIsNone(result["next_step"])
 
     def test_business_declared_fact_conflict(self):
-        inp = a1input()
-        inp["provided_facts"].append({"fact_code": "TARGET_BUSINESS", "value": "SALY",
-                                       "source_ref": "user://analysis-a1-case-001"})
-        self.a1 = RUN_A1.run(inp)
+        self.a1["payload"]["provided_facts"].append({"fact_code": "TARGET_BUSINESS", "value": "SALY",
+                                                       "source_ref": "user://analysis-a1-case-001"})
         result = RUN.run(self.a1, self.signals)
         self.assertEqual(result["blocking_codes"], ["A2_BUSINESS_FACT_CONFLICT"])
 
