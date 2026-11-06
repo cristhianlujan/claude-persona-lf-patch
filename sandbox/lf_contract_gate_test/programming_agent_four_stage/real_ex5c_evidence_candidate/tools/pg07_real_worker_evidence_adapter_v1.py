@@ -286,6 +286,47 @@ def load_bundle(path: Path, expected_sha256: str) -> dict:
         fail("BLOCK_WORKER_RECEIPT_LINK")
     if derived.get("sha256") != "9cc719ef41a3b9e70d21b94780e0b17a6887fb57b4683eeaaf3157c2a1cb676d":
         fail("BLOCK_CONTEXT_SHA")
+    # The derivation receipt hashes the canonical record excluding its own SHA.
+    context_unhashed = {k: v for k, v in derived.items() if k != "sha256"}
+    context_bytes = (json.dumps(context_unhashed, sort_keys=True, ensure_ascii=False,
+                                separators=(",", ":")) + "\\n").encode("utf-8")
+    if sha256(context_bytes) != derived.get("sha256"):
+        fail("BLOCK_CONTEXT_INTERNAL_SHA")
+    cost_object = json.loads(decoded["cost.json"])
+    pricing_row = worker.get("pricing")
+    if not isinstance(pricing_row, dict):
+        fail("BLOCK_PRICING_MISSING")
+    pricing_raw = check_raw(
+        {"content_base64": pricing_row.get("content_base64"),
+         "content_sha256": pricing_row.get("sha256"),
+         "content_bytes": pricing_row.get("bytes")}, "content", "PRICING")
+    if sha256(pricing_raw) != cost_object.get("price_table_sha256"):
+        fail("BLOCK_PRICING_LINK")
+    pricing = json.loads(pricing_raw)
+    if (pricing.get("version") != cost_object.get("price_table_version") or
+        pricing.get("currency") != "USD" or
+        pricing.get("price_unit") != "per_1_000_000_tokens" or
+        cost_object.get("real_api_usage") is not True or
+        cost_object.get("model") != worker.get("model_resolved") or
+        cost_object.get("receipt_sha256") != visible.get("receipt_sha256") or
+        verified.get("visible_receipt_sha256") != visible.get("receipt_sha256") or
+        verified.get("source_snapshot_sha256") != visible.get("source_snapshot_sha256")):
+        fail("BLOCK_COST_OR_RECEIPT_LINK")
+    price = pricing["models"][worker["model_resolved"]]
+    try:
+        inputs = cost_object["total_input_tokens"]
+        outputs = cost_object["total_output_tokens"]
+        if (type(inputs) is not int or type(outputs) is not int or
+            inputs < 0 or outputs < 0 or
+            inputs != sum(a["input_tokens"] for a in cost_object["attempts"]) or
+            outputs != sum(a["output_tokens"] for a in cost_object["attempts"])):
+            fail("BLOCK_COST_USAGE_COUNTER")
+        measured = (Decimal(inputs) * Decimal(price["input_usd_per_million"]) +
+                    Decimal(outputs) * Decimal(price["output_usd_per_million"])) / Decimal(1000000)
+        if measured != Decimal(cost_object["total_estimated_usd"]):
+            fail("BLOCK_COST_RECALCULATION")
+    except (KeyError, TypeError, ValueError, InvalidOperation):
+        fail("BLOCK_COST_RECALCULATION")
     execution = b.get("execution")
     if not isinstance(execution, dict):
         fail("BLOCK_EXECUTION")
