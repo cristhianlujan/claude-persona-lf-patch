@@ -62,7 +62,12 @@ WITH policy_source AS (
   SELECT p.*,k.key parameter_name,k.value parameter_value,
     COALESCE(jsonb_typeof(p.parameter_provenance),'NULL') provenance_type,
     CASE WHEN jsonb_typeof(p.parameter_provenance)='object'
-      THEN p.parameter_provenance ? k.key ELSE false END has_parameter_provenance
+      THEN p.parameter_provenance ? k.key ELSE false END has_parameter_provenance,
+    CASE WHEN jsonb_typeof(p.parameter_provenance)='object'
+       AND p.parameter_provenance ? k.key
+      THEN programacion.fn_input_parameter_provenance_valid_v1(
+        jsonb_build_object(k.key,p.parameter_provenance->k.key))
+      ELSE false END provenance_entry_valid
   FROM policy_source p
   CROSS JOIN LATERAL jsonb_each(CASE WHEN jsonb_typeof(p.attrs)='object' THEN p.attrs ELSE '{}'::jsonb END) k
   WHERE jsonb_typeof(k.value)='number'
@@ -70,9 +75,13 @@ WITH policy_source AS (
 ), missing AS (
   SELECT pantalla_id,binding_status,family,policy_id,policy_code,policy_status,
     source_decision_id,policy_row_sha256,policy_binding_sha256,
-    jsonb_agg(jsonb_build_object('parameter',parameter_name,'observed_value',parameter_value)
-      ORDER BY parameter_name) FILTER (WHERE NOT has_parameter_provenance) missing_parameters,
-    COUNT(*) FILTER (WHERE NOT has_parameter_provenance) missing_count
+    jsonb_agg(jsonb_build_object(
+      'parameter',parameter_name,'observed_value',parameter_value,
+      'provenance_issue',CASE WHEN has_parameter_provenance THEN 'INVALID' ELSE 'MISSING' END,
+      'expected_provenance_validator','programacion.fn_input_parameter_provenance_valid_v1'
+    ) ORDER BY parameter_name) FILTER (WHERE NOT provenance_entry_valid) missing_parameters,
+    COUNT(*) FILTER (WHERE NOT has_parameter_provenance) missing_count,
+    COUNT(*) FILTER (WHERE has_parameter_provenance AND NOT provenance_entry_valid) invalid_count
   FROM numeric_fields
   GROUP BY pantalla_id,binding_status,family,policy_id,policy_code,policy_status,
     source_decision_id,policy_row_sha256,policy_binding_sha256
@@ -85,14 +94,37 @@ WITH policy_source AS (
     'policy_row_sha256',policy_row_sha256,
     'policy_binding_sha256',policy_binding_sha256,
     'missing_parameter_count',missing_count,
+    'invalid_parameter_count',invalid_count,
+    'parameters_requiring_evidence',missing_count+invalid_count,
     'missing_parameters',missing_parameters,
+    'stable_finding_key',concat('IG_EVO_R1_',family,'_',policy_id),
+    'source_locator',jsonb_build_object(
+      'schema','lf_ops',
+      'table',case family when 'RATE_LIMIT' then 'politicas_rate_limit'
+        when 'TIMEOUT' then 'politicas_timeout'
+        when 'SESSION' then 'politicas_sesion'
+        when 'SECURITY' then 'politicas_seguridad' end,
+      'primary_key',case family when 'RATE_LIMIT' then 'rate_limit_policy_id'
+        when 'TIMEOUT' then 'timeout_policy_id'
+        when 'SESSION' then 'session_policy_id'
+        when 'SECURITY' then 'security_policy_id' end,
+      'primary_key_value',policy_id,
+      'repair_field','parameter_provenance',
+      'binding_table','lf_ops.pantallas_politicas',
+      'scope_pantalla_id',pantalla_id),
+    'repair_action','VERIFY_EXACT_SOURCE_DECISION_THEN_ADD_VALID_PROVENANCE_WITHOUT_CHANGING_NUMERIC_VALUE',
+    'required_evidence_contract','INPUT_PARAMETER_PROVENANCE_V1',
+    'verification_function','programacion.fn_input_parameter_provenance_valid_v1',
+    'automatic_change_authorized',false,
+    'source_decision_validation','NOT_VERIFIED_FROM_DECISION_REGISTRY',
     'numeric_policy_values_incorrect','NOT_PROVEN',
     'binding_live_authorized',binding_status='VIGENTE',
     'semantic_quality_evaluated',false,
-    'provenance_status','MISSING_PER_PARAMETER',
+    'provenance_status',case when invalid_count>0 then 'MISSING_OR_INVALID_PER_PARAMETER'
+      else 'MISSING_PER_PARAMETER' end,
     'coverage_note','TOP_LEVEL_POLICY_NUMERIC_PARAMETERS_ONLY'
   ) finding
-  FROM missing WHERE missing_count>0
+  FROM missing WHERE missing_count+invalid_count>0
 )
 SELECT jsonb_build_object(
  'schema_version','IG_EVO_R1_PARAMETER_PROVENANCE_V1',
@@ -362,6 +394,17 @@ BEGIN
  OR v_case->>'numeric_policy_values_incorrect'<>'NOT_PROVEN'
  OR v_case->>'binding_live_authorized'<>'false' THEN
    RAISE EXCEPTION 'IG_EVO_R1_B2B_EXPECTED_CASE_DRIFT:%',v_case;
+ END IF;
+ IF programacion.fn_input_parameter_provenance_valid_v1(
+      jsonb_build_object('max_requests',null)) THEN
+   RAISE EXCEPTION 'IG_EVO_R1_NULL_PROVENANCE_WRONGLY_ACCEPTED';
+ END IF;
+ IF NOT programacion.fn_input_parameter_provenance_valid_v1(
+      jsonb_build_object('max_requests',jsonb_build_object(
+        'origin_type','LF_PROVISIONAL_DEFAULT',
+        'value_status','LF_PROVISIONAL',
+        'replacement_policy','MUST_BE_RATIFIED_OR_OVERRIDDEN'))) THEN
+   RAISE EXCEPTION 'IG_EVO_R1_VALID_PROVISIONAL_PROVENANCE_REJECTED';
  END IF;
  v_zero:=programacion.fn_ig_evo_r1_parameter_provenance_v1(1);
  IF coalesce((v_zero->>'finding_count')::integer,-1)<>0
