@@ -1,13 +1,15 @@
 """Source-only integration tests for the A2→A3 transport envelope."""
-import unittest,copy,json,sys
+import unittest,copy,importlib.util
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).resolve().parent))
-from a2_a3_intake_preview_v1 import prepare_preview
-ROOT=Path('/mnt/data')
+from test_golden_handoff_v03 import make, run
+A2_BASE=Path(__file__).resolve().parents[1]
+spec=importlib.util.spec_from_file_location('a2_a3_intake_preview',A2_BASE/'adapters/a2_a3_intake_preview_v1.py')
+module=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+prepare_preview=module.prepare_preview
 def fixture():
-  return [json.loads((ROOT/name).read_text()) for name in (
-    'A2_ejemplo_entrada_A1.json','A2_ejemplo_clasificacion_canonica.json',
-    'A2_ejemplo_entrada_senales.json','A2_ejemplo_handoff_A3_v03.json')]
+  a,b,s=make()
+  return a,b,s,run(a,b,s)
 class IntakePreview(unittest.TestCase):
  def reject(self, mutate, code):
   x=fixture();mutate(*x);r=prepare_preview(*x)
