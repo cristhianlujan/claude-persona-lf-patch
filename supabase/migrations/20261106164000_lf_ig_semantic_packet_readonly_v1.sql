@@ -1,5 +1,5 @@
 -- LF Input Governance L7: candidate model packet for the EXISTING Validator.
--- Non-promotable, read-only. New RUN + source pins required; never use historical RUN 949.
+-- Non-promotable, read-only. New RUN + source pins required; no historical RUN reuse.
 -- EKB preflight: GOV-010, GOV-032, GOV-LF-RECEIPT-001,
 -- IG-EKB-READ-WITHOUT-SEMANTIC-PREFLIGHT-001, IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001.
 -- Scope: RATE_LIMIT and SESSION pilot; other families explicitly fail closed.
@@ -217,29 +217,15 @@ REVOKE ALL ON FUNCTION public.fn_input_governance_semantic_packet_v1(bigint,text
 GRANT EXECUTE ON FUNCTION public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)
     TO service_role;
 
--- Negative controls, no fixture/no writes. Current RUN 949 cannot become semantic evidence.
-DO $preflight$
-DECLARE v_error text;
+-- Per-RUN adversarials reside outside DDL; avoid historical identifiers in migrations.
+DO $privileges$
 BEGIN
-   IF NOT has_function_privilege('service_role',
-      'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
-   OR has_function_privilege('anon',
-      'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
-   OR has_function_privilege('authenticated',
-      'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
-   OR has_function_privilege('service_role',
-      'programacion.fn_input_governance_semantic_packet_core_v1(bigint,text,bigint)'::regprocedure,'EXECUTE')
-   THEN RAISE EXCEPTION 'IG_SEMANTIC_PACKET_PRIVILEGE_GUARD_FAILED'; END IF;
-   BEGIN
-     PERFORM programacion.fn_input_governance_semantic_packet_core_v1(
-       949,'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:negative',1);
-     RAISE EXCEPTION 'IG_SEMANTIC_OLD_RUN_WRONGLY_ADMITTED';
-   EXCEPTION WHEN OTHERS THEN
-     GET STACKED DIAGNOSTICS v_error=MESSAGE_TEXT;
-     IF v_error NOT LIKE 'IG_SEMANTIC_PACKET_RUN_NOT_OPEN:%' THEN
-       RAISE EXCEPTION 'IG_SEMANTIC_NEGATIVE_WRONG_ERROR:%',v_error;
-     END IF;
-   END;
-END;
-$preflight$;
+ IF NOT has_function_privilege('service_role',
+   'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
+ OR has_function_privilege('anon',
+   'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
+ OR has_function_privilege('authenticated',
+   'public.fn_input_governance_semantic_packet_v1(bigint,text,bigint,uuid)'::regprocedure,'EXECUTE')
+ THEN RAISE EXCEPTION 'IG_SEMANTIC_PACKET_PRIVILEGE_GUARD_FAILED'; END IF;
+END $privileges$;
 COMMIT;
