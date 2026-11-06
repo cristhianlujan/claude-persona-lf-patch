@@ -241,6 +241,19 @@ BEGIN
     'graph_reference_status',CASE WHEN v_limit_hit THEN 'TRUNCATED'
       WHEN v_not_resolved>0 THEN 'INCOMPLETE_UNRESOLVED_REFERENCES'
       ELSE 'EXPLICIT_REFERENCES_ACCOUNTED_FOR' END,
+    'narrative_clause_inventory',(
+      SELECT coalesce(jsonb_agg(jsonb_build_object(
+         'source_field',src.k,'clause_index',seg.ord,
+         'verbatim_clause',btrim(seg.val),
+         'signal_count','UNKNOWN','semantic_resolution','PENDING_CLASSIFICATION'
+       ) ORDER BY src.k,seg.ord),'[]'::jsonb)
+      FROM jsonb_each_text(jsonb_build_object(
+          'titulo',v_root.titulo,'descripcion',v_root.descripcion,
+          'razon',v_root.razon,'pendiente_detalle',v_root.pendiente_detalle)) src(k,val)
+      CROSS JOIN LATERAL regexp_split_to_table(coalesce(src.val,''),
+           '[,;.]'::text) WITH ORDINALITY seg(val,ord)
+      WHERE length(btrim(seg.val))>0),
+    'clause_inventory_is_not_semantic_obligation_count',true,
     'semantic_text_signals_status','NOT_TESTED',
     'semantic_match_status','NOT_TESTED',
     'semantic_source_manifest',jsonb_build_object(
