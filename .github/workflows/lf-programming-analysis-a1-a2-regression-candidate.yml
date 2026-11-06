@@ -7,12 +7,6 @@ on:
       - 'skills/programming_analysis/**'
       - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/**'
       - '.github/workflows/lf-programming-analysis-a1-a2-regression-candidate.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'skills/programming_analysis/**'
-      - '.github/workflows/lf-programming-analysis-a1-a2-regression-candidate.yml'
   workflow_dispatch:
 
 permissions:
