@@ -1,8 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {callSemanticModelCandidate} from "./semantic_model.ts";
+import {classifySemanticReadback} from "./semantic_continuation.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const enc = new TextEncoder();
+const TICKET_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 // M8.8: stay below the observed 150s Edge envelope; do not change DB statement timeouts.
 const VALIDATOR_INVOCATION_BUDGET_MS = 110_000;
 const MIN_NEXT_RPC_ALLOWANCE_MS = 35_000;
@@ -57,6 +60,8 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const runId = Number(body?.run_id);
     if (!Number.isInteger(runId) || runId < 1) return Response.json({ error: "RUN_ID_INVALID" }, { status: 400 });
+    const ticket = typeof body?.ticket === "string" ? body.ticket.trim() : "";
+    if (!TICKET_RE.test(ticket)) return Response.json({ error: "IG_PROFILE_TICKET_REQUIRED" }, { status: 403 });
 
     const rawHandoffReceiptId = body?.handoff_receipt_id;
     let requestedHandoffReceiptId: number | null = null;
@@ -71,13 +76,14 @@ Deno.serve(async (req: Request) => {
     const handoffReceipt = await rpc(HANDOFF_ASSERT_ENTRYPOINT, {
       p_run_id: runId,
       p_receipt_id: requestedHandoffReceiptId,
+      p_ticket: ticket,
     });
     const handoffReceiptId = Number(handoffReceipt?.receipt_id);
     if (!Number.isInteger(handoffReceiptId) || handoffReceiptId < 1 || handoffReceipt?.status !== "VERIFIED") {
       return Response.json({ error: "HANDOFF_RECEIPT_NOT_VERIFIED", run_id: runId }, { status: 409 });
     }
 
-    const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId });
+    const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId, p_ticket: ticket });
     let identity: string;
     let resumed = false;
     let scopeStrategy: ScopeStrategy;
@@ -91,6 +97,163 @@ Deno.serve(async (req: Request) => {
     } else {
       identity = `INPUT_VALIDATOR:EDGE:input-governance-validator-v1:${crypto.randomUUID()}`;
       scopeStrategy = "REBIND_WITHIN_ENTRYPOINT";
+    }
+
+    // IG-EVO L6: gated model candidate inside the existing Validator Edge.
+    // Disabled by default. Candidate depends on deployed ticket-bound
+    // scope, packet and phase RPCs; missing dependencies fail closed.
+    // NEVER treat the model output as a judge PASS or send it to an official writer.
+    if (Deno.env.get("IG_SEMANTIC_MODEL_MODE") === "CANDIDATE_ONLY") {
+      const semanticScope = await rpc("fn_input_governance_validator_semantic_scope_info_v1", {
+        p_run_id: runId,
+        p_ticket: ticket,
+      });
+      if (semanticScope?.run_id !== runId ||
+          semanticScope?.semantic_promotion_authorized !== false ||
+          !["SOURCE_INTEGRITY_ONLY", "SELECTED_SEMANTIC_COMPARISON"].includes(
+            semanticScope?.validator_semantic_mode
+          )) {
+        return Response.json({
+          error: "IG_SEMANTIC_SCOPE_NOT_AUTHORIZED", run_id: runId,
+        }, { status: 409 });
+      }
+      if (semanticScope.validator_semantic_mode === "SELECTED_SEMANTIC_COMPARISON") {
+      // Same existing Validator performs CURATING -> VALIDATING and writes
+      // the run-wide manifest, but no family verdicts, before semantic review.
+      const phase = await rpc(VALIDATOR_ENTRYPOINT, {
+        p_run_id: runId,
+        p_validator_identity: identity,
+        p_receipt_id: handoffReceiptId,
+        p_ticket: ticket,
+      });
+      if (phase?.status !== "SEMANTIC_EVALUATION_REQUIRED" ||
+          phase?.run_id !== runId ||
+          phase?.validator_identity !== identity ||
+          phase?.run_status !== "VALIDATING" ||
+          !/^[a-f0-9]{64}$/i.test(String(phase?.source_snapshot_sha256 ?? "")) ||
+          phase?.promotion_authorized !== false ||
+          phase?.production_authorized !== false) {
+        return Response.json({
+          error: "IG_SEMANTIC_VALIDATOR_PHASE_NOT_ATTESTED",
+          run_id: runId,
+          actual_status: phase?.status ?? null,
+        }, { status: 409 });
+      }
+      // A repeated invocation keeps the SAME validator identity and reads
+      // external provenance; it never invokes the model again automatically.
+      if (resumed) {
+        const receipts = await rpc("fn_input_governance_semantic_external_receipt_readback_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_handoff_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate_sha256: null,
+        });
+        const semanticGate = classifySemanticReadback(receipts, runId);
+        return Response.json({
+          runtime: "input-governance-validator-v1",
+          status: semanticGate.status,
+          run_id: runId,
+          validator_identity: identity,
+          handoff_receipt_id: handoffReceiptId,
+          semantic_receipt_readback: receipts,
+          semantic_gate: semanticGate,
+          continuation: {
+            run_id: runId,
+            strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
+            next_action: semanticGate.next_action,
+            retry_policy: semanticGate.retry_policy,
+          },
+          semantic_independence_credited: false,
+          official_write_authorized: false,
+          promotion_authorized: false,
+          production_authorized: false,
+        }, { status: 202 });
+      }
+      const semanticPacket = await rpc("fn_input_governance_semantic_packet_v1", {
+        p_run_id: runId,
+        p_validator_identity: identity,
+        p_receipt_id: handoffReceiptId,
+        p_ticket: ticket,
+      });
+      if (semanticPacket?.run_id !== runId ||
+          semanticPacket?.handoff_receipt_id !== handoffReceiptId ||
+          semanticPacket?.validator_identity !== identity) {
+        return Response.json({error:"IG_SEMANTIC_PACKET_IDENTITY_MISMATCH",run_id:runId},{status:409});
+      }
+      if (semanticPacket?.validator_semantic_mode === "SELECTED_SEMANTIC_COMPARISON") {
+        if (semanticPacket?.status !== "READY_FOR_MODEL_CANDIDATE" ||
+            semanticPacket?.source_integrity_verified !== true) {
+          return Response.json({
+            error: "IG_SEMANTIC_SOURCE_SNAPSHOT_PIN_REQUIRED",
+            run_id: runId,
+            missing_source_pins: semanticPacket?.missing_source_pins ?? [],
+            promotion_authorized: false,
+            production_authorized: false,
+          }, { status: 409 });
+        }
+        const candidate = await callSemanticModelCandidate(semanticPacket, {
+          apiKey: Deno.env.get("OPENAI_API_KEY") ?? "",
+          model: Deno.env.get("IG_SEMANTIC_MODEL_ID") ?? "",
+        });
+        const checked = await rpc("fn_input_governance_semantic_candidate_precheck_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate: candidate,
+        });
+        if (checked?.status !== "CANDIDATE_PRECHECKED_NOT_OFFICIAL" ||
+            checked?.run_id !== runId ||
+            checked?.db_packet_sha256 !== semanticPacket?.db_packet_sha256 ||
+            checked?.official_write_authorized !== false) {
+          return Response.json({
+            error: "IG_SEMANTIC_NATIVE_PRECHECK_NOT_ATTESTED", run_id: runId,
+          }, { status: 409 });
+        }
+        if (!/^[a-f0-9]{64}$/i.test(String(checked?.candidate_sha256 ?? ""))) {
+          return Response.json({
+            error: "IG_SEMANTIC_CANDIDATE_SHA_MISSING", run_id: runId,
+          }, { status: 409 });
+        }
+        const receipts = await rpc("fn_input_governance_semantic_external_receipt_readback_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_handoff_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate_sha256: checked.candidate_sha256,
+        });
+        const semanticGate = classifySemanticReadback(receipts, runId, checked.candidate_sha256);
+        return Response.json({
+          runtime:"input-governance-validator-v1",
+          status:"SEMANTIC_MODEL_CANDIDATE_UNATTESTED",
+          run_id:runId,
+          handoff_receipt_id:handoffReceiptId,
+          candidate,
+          native_precheck: checked,
+          semantic_receipt_readback: receipts,
+          semantic_gate: semanticGate,
+          validator_phase: {
+            status: phase.status,
+            run_status: phase.run_status,
+            source_snapshot_sha256: phase.source_snapshot_sha256,
+          },
+          continuation: {
+            run_id: runId,
+            strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
+            next_action: semanticGate.next_action,
+            retry_policy: semanticGate.retry_policy,
+          },
+          promotion_authorized:false,
+          production_authorized:false,
+          official_write_authorized:false,
+          next_step:semanticGate.next_action,
+        },{status:202});
+      }
+      if (semanticPacket?.validator_semantic_mode !== "SOURCE_INTEGRITY_ONLY") {
+        return Response.json({error:"IG_SEMANTIC_RUN_MODE_INVALID",run_id:runId},{status:409});
+      }
+      }
     }
 
     const trace: unknown[] = [];
@@ -138,6 +301,7 @@ Deno.serve(async (req: Request) => {
         p_run_id: runId,
         p_validator_identity: identity,
         p_receipt_id: handoffReceiptId,
+        p_ticket: ticket,
       });
       lastRpcDurationMs = performance.now() - chunkStartedAt;
       trace.push({
