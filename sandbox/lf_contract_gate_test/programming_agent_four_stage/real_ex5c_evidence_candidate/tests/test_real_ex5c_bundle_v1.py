@@ -19,7 +19,7 @@ BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE / "tools"))
 
 from pg07_real_worker_evidence_adapter_v1 import (
-    EvidenceBlocked, cost_decision, load_bundle, sha256
+    EvidenceBlocked, cost_decision, load_bundle, sha256, independent_review_binding
 )
 
 BUNDLE = BASE / "fixtures" / "lf-evidence-bundle-v1.json"
@@ -147,3 +147,14 @@ def test_replaced_bundle_different_sha_blocks_even_if_rehashed(tmp_path):
     d["evidence_kind"] = "OTHER"
     with pytest.raises(EvidenceBlocked, match="BLOCK_BUNDLE_SHA"):
         run_candidate(tmp_path, d, repin=False)
+
+
+def test_reviewer_cannot_equal_worker_author():
+    with pytest.raises(EvidenceBlocked, match="SELF_REVIEW"):
+        independent_review_binding("worker:claude-sonnet-5-5", "worker:claude-sonnet-5-5")
+
+
+def test_independent_reviewer_label_is_not_attestation():
+    row = independent_review_binding("worker:claude-sonnet-5-5", "reviewer:claude-opus-verifier")
+    assert row["review_attested"] is False
+    assert row["production_authority"] is False
