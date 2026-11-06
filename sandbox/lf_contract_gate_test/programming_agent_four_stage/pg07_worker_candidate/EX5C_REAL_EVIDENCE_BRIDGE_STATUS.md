@@ -194,3 +194,42 @@ Sandbox v2 implementation: PR #44, head SHA to be verified at merge.
 no PG08 C2 real result is verified, no connected PG10-PG14 real chain or
 PG12/PG14 PostgreSQL readbacks have been obtained.** PASE success is only
 CI routing and is not the requested pytest regression.
+
+
+## Real v2 evidence update — workflow #42304928081
+
+- Sandbox v2 generated branch `lf/ex5c-evidence-v2-42304928081`;
+  governed evidence PR **#45** (Paulo merges).
+- The exact v2 JSON has been independently hashed as **UTF-8 bytes** and
+  copied to `fixtures/lf-evidence-bundle-v2.json`.
+  **v2 SHA-256**
+  `0988de2e39f5139596d05c3cbfcbe8c8998c753cdb009414e5b38da65172217b`.
+  v1 remains `436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b`.
+- Pinned google-java-format 1.30.0 JAR SHA:
+  `f2239a8a234a240a54fdff7809d4b3e66702c21f590c77a0b6cf7b20c829e95a`.
+- Base 28de535: format dry-run **exit 1**, 24 per-file/line
+  findings; javac -Xlint:all **exit 0**, 0 findings.
+- Candidate e76b213: format dry-run **exit 1**, 29
+  findings; javac -Xlint:all **exit 0**, 0 findings.
+- The formatter observations contain **new candidate violations in
+  all three edited reminder Java files**. PG08 C2 must preserve
+  `REPORTED_NEW_BLOCKERS` and `pg08_c2_pass=False`.
+  It is *not* correct to use Maven success to override the format gate.
+- `pg08_ex5c_v2_format_lint_adapter_v1.py` now imports the **unchanged**
+  PG06 C4 and PG08 C2 producers, with inputs derived from the exact V2
+  snapshots and V1 Git/Worker evidence. PG05 and PG06 C1-C3 source envelopes
+  are **adapter projections** with authority False; their producer executions
+  are **not** authenticated or attested. Thus no full LF provenance PASS.
+- `test_ex5c_real_evidence_chain_v1.py` and
+  `test_pg08_ex5c_v2_format_lint_adapter_v1.py` were amended to demand
+  `REPORTED_NEW_BLOCKERS` from original PG08 C2, plus fixture and stream
+  tampering BLOCK. This implementation has **not yet been verified by a
+  real execution of pytest at the exact LF PR head**; a PASE SUCCESS does
+  not substitute for this test.
+- **End-to-end PG08→PG14 ACCEPT is blocked** at the newly observed format
+  delta. PG12/PG14 disposable PostgreSQL readbacks and the full PG13
+  freeze-chain are still outstanding. No `*_READBACK_PASS` is claimed.
+  Do not modify historical C patch or producers to force a PASS; submit
+  a governed resolution or accept a blocked feedback outcome.
+
+No model API calls, no hidden-exam access, no productive authority.
