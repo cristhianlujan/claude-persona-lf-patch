@@ -1,0 +1,55 @@
+"""One real EX5C chain test, strictly fail-closed at first missing evidence.
+
+Uses actual PG08_C1 producer and the existing PG13 Git mutation helper.
+Does not convert synthetic PG06/PG08..14 fixtures into real results.
+
+Full chain PG08 C2 -> PG14 is intentionally BLOCKED until the exact fixed
+bundle contains REAL PG06_C4 baseline + independent format/lint observations.
+"""
+from __future__ import annotations
+
+import json
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "pg07_worker_candidate/tools"))
+sys.path.insert(0, str(ROOT / "pg13_freeze_candidate/tools"))
+import pg07_real_worker_evidence_adapter_v1 as adapter
+from pg13_ex5c_reconstructed_freeze_attack_v1 import local_freeze_and_attacks
+
+FIXTURE = ROOT / "pg07_worker_candidate/fixtures/lf-evidence-bundle-v1.json"
+FIXED = "436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b"
+
+
+class EX5CRealChainTests(unittest.TestCase):
+    def test_real_chain_producers_and_stop_on_missing_evidence(self):
+        real = adapter.load_real_bundle(FIXTURE, FIXED)
+        upstream = adapter.run_real_pg08_c1(real)
+        self.assertEqual(upstream["pg08_c1"]["solutions"][0]["reported_build_outcome"],
+                         "REPORTED_PASS_UNVERIFIED")
+        self.assertEqual(upstream["pg08_c1"]["source_pg07_c6_sha256"],
+                         upstream["pg07_c6"]["candidate_sha256"])
+        self.assertFalse(upstream["pg08_c1"]["production_authority"])
+
+        # Independent real-byte Git subtree attack suite. We do NOT treat
+        # this isolated result as a PG13 C1-C3 chain output or Testing admission.
+        mutation = local_freeze_and_attacks()
+        self.assertEqual(mutation["subtree_oid"], adapter.SUBTREE)
+        self.assertEqual(mutation["blocked_mutation_count"], 5)
+        self.assertFalse(mutation["production_authority"])
+
+        # No synthetic stage outputs are allowed to fill this missing C2 input.
+        with self.assertRaisesRegex(adapter.RealEvidenceBlocked,
+                                    "PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK"):
+            adapter.require_pg08_c2_real_source(real)
+        print("EX5C_PG08_C1_REAL_PRODUCER_SOURCE_ONLY_PASS")
+        print("EX5C_PG08_C2_REAL_EVIDENCE_REQUIRED_BLOCK")
+        print("EX5C_PG13_REAL_SUBTREE_MUTATIONS_BLOCKED=5")
+        print("EX5C_PG14_REAL_CHAIN_ADMISSION=BLOCKED")
+        print("EX5C_PRODUCTION_AUTHORITY=FALSE")
+
+
+if __name__ == "__main__":
+    unittest.main()
