@@ -285,11 +285,122 @@ END;
 $graph$;
 REVOKE ALL ON FUNCTION programacion.fn_ig_evo_rule_graph_inventory_v1(integer,integer,integer) FROM PUBLIC;
 
+-- This is NOT a semantic judge. It proves inventory accounting only,
+-- before an existing governed semantic evaluator may inspect content.
+CREATE OR REPLACE FUNCTION programacion.fn_ig_evo_graph_evidence_coverage_gate_v1(
+  p_graph jsonb,p_manifest jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET search_path TO 'pg_catalog','programacion'
+AS $coverage$
+DECLARE
+  v_expected_sha text;
+  v_clause_gaps jsonb;
+  v_edge_gaps jsonb;
+  v_pending_clauses integer;
+  v_pending_edges integer;
+  v_clause_total integer;
+  v_edge_total integer;
+BEGIN
+  IF p_graph IS NULL OR p_graph->>'schema_version'<>'IG_EVO_REFERENCE_GRAPH_V1_CANDIDATE' THEN
+    RAISE EXCEPTION 'IG_EVO_GRAPH_EVIDENCE_UNKNOWN_GRAPH_CONTRACT';
+  END IF;
+  v_expected_sha:=programacion.fn_v09_sha256_jsonb(p_graph);
+  IF p_manifest IS NULL OR jsonb_typeof(p_manifest)<>'object'
+     OR p_manifest->>'graph_sha256' IS DISTINCT FROM v_expected_sha THEN
+    RETURN jsonb_build_object(
+      'status','GRAPH_HASH_MISMATCH_OR_MANIFEST_ABSENT',
+      'semantic_verdict','NOT_TESTED',
+      'semantic_pass_authorized',false,
+      'source_graph_sha256',v_expected_sha,
+      'missing_evidence','MANIFEST_GRAPH_BINDING');
+  END IF;
+  IF jsonb_typeof(p_manifest->'clause_assessments') IS DISTINCT FROM 'array'
+     OR jsonb_typeof(p_manifest->'edge_assessments') IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'IG_EVO_GRAPH_EVIDENCE_MISSING_ACCOUNTING_ARRAYS';
+  END IF;
+  SELECT coalesce(jsonb_agg(c),'[]'::jsonb) INTO v_clause_gaps
+  FROM jsonb_array_elements(coalesce(p_graph->'narrative_clause_inventory','[]'::jsonb)) c
+  WHERE NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(p_manifest->'clause_assessments') a
+    WHERE a->>'source_field'=c->>'source_field'
+       AND a->>'clause_index'=c->>'clause_index'
+       AND a->>'status' IN(
+         'PENDING_SEMANTIC_CLASSIFICATION','EXTRACTED',
+         'NOT_APPLICABLE_WITH_AUTHORITY')
+       AND (
+         a->>'status'='PENDING_SEMANTIC_CLASSIFICATION'
+         OR (
+           a->>'status'='EXTRACTED' AND jsonb_typeof(a->'signal_ids')='array'
+           AND jsonb_array_length(a->'signal_ids')>0
+         )
+         OR (
+           a->>'status'='NOT_APPLICABLE_WITH_AUTHORITY'
+           AND nullif(a->>'authority_ref','') IS NOT NULL
+         )
+       )
+  );
+  SELECT coalesce(jsonb_agg(e),'[]'::jsonb) INTO v_edge_gaps
+  FROM jsonb_array_elements(coalesce(p_graph->'edges','[]'::jsonb)) e
+  WHERE NOT EXISTS (
+    SELECT 1 FROM jsonb_array_elements(p_manifest->'edge_assessments') a
+    WHERE a->>'source_entity'=e->>'source_entity'
+      AND a->>'reference_path'=e->>'reference_path'
+      AND a->>'reference_key'=e->>'reference_key'
+      AND a->>'status' IN(
+        'PENDING_SEMANTIC_CLASSIFICATION','RESOLVED_EXPLICIT',
+        'RESOLVED_SEMANTIC_WITH_EVIDENCE','UNRESOLVED',
+        'NOT_APPLICABLE_WITH_AUTHORITY')
+  );
+  SELECT count(*) INTO v_pending_clauses
+  FROM jsonb_array_elements(p_manifest->'clause_assessments') a
+  WHERE a->>'status'='PENDING_SEMANTIC_CLASSIFICATION';
+  SELECT count(*) INTO v_pending_edges
+  FROM jsonb_array_elements(p_manifest->'edge_assessments') a
+  WHERE a->>'status' IN('PENDING_SEMANTIC_CLASSIFICATION','UNRESOLVED');
+  v_clause_total:=jsonb_array_length(coalesce(p_graph->'narrative_clause_inventory','[]'::jsonb));
+  v_edge_total:=jsonb_array_length(coalesce(p_graph->'edges','[]'::jsonb));
+  RETURN jsonb_build_object(
+    'schema_version','IG_EVO_GRAPH_EVIDENCE_COVERAGE_V1_CANDIDATE',
+    'source_graph_sha256',v_expected_sha,
+    'clause_count',v_clause_total,'edge_count',v_edge_total,
+    'missing_clause_count',jsonb_array_length(v_clause_gaps),
+    'missing_edge_count',jsonb_array_length(v_edge_gaps),
+    'pending_clause_count',v_pending_clauses,'pending_edge_count',v_pending_edges,
+    'missing_clauses',v_clause_gaps,'missing_edges',v_edge_gaps,
+    'status',CASE WHEN jsonb_array_length(v_clause_gaps)>0
+                        OR jsonb_array_length(v_edge_gaps)>0
+                    THEN 'INCOMPLETE_SOURCE_ACCOUNTING'
+                  ELSE 'SOURCE_ACCOUNTED_SEMANTIC_JUDGE_REQUIRED' END,
+    'graph_references_status',p_graph->>'graph_reference_status',
+    'semantic_verdict','NOT_TESTED',
+    'semantic_pass_authorized',false,
+    'repair_ready',false,
+    'required_next_step','NATIVE_VALIDATOR_SEMANTIC_OBLIGATIONS_AND_DEFEATERS');
+END;
+$coverage$;
+REVOKE ALL ON FUNCTION programacion.fn_ig_evo_graph_evidence_coverage_gate_v1(jsonb,jsonb) FROM PUBLIC;
+
 -- Fail-closed checks run only by the governed migration executor.
 DO $verify$
 DECLARE v jsonb;v_neg jsonb;
 BEGIN
   v:=programacion.fn_ig_evo_rule_graph_inventory_v1(51,440,3);
+  v_neg:=programacion.fn_ig_evo_graph_evidence_coverage_gate_v1(v,'{}'::jsonb);
+  IF v_neg->>'status'<>'GRAPH_HASH_MISMATCH_OR_MANIFEST_ABSENT'
+    OR v_neg->>'semantic_pass_authorized'<>'false' THEN
+    RAISE EXCEPTION 'IG_EVO_GRAPH_SEMANTIC_GATE_ACCEPTED_UNBOUND_MANIFEST';
+  END IF;
+  v_neg:=programacion.fn_ig_evo_graph_evidence_coverage_gate_v1(
+     v,jsonb_build_object(
+       'graph_sha256',programacion.fn_v09_sha256_jsonb(v),
+       'clause_assessments','[]'::jsonb,'edge_assessments','[]'::jsonb));
+  IF (v_neg->>'missing_clause_count')::integer<8
+    OR (v_neg->>'missing_edge_count')::integer<3
+    OR v_neg->>'status'<>'INCOMPLETE_SOURCE_ACCOUNTING'
+    OR v_neg->>'semantic_pass_authorized'<>'false' THEN
+    RAISE EXCEPTION 'IG_EVO_GRAPH_INCOMPLETE_COVERAGE_WAS_ACCEPTED:%',v_neg;
+  END IF;
   IF v->>'root_rule_code'<>'B2B-RULE-AUTH-021'
    OR (v->>'root_explicit_reference_count')::integer<>3
    OR (v->>'root_bound_policy_reference_count')::integer<>3
