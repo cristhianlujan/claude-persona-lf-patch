@@ -43,6 +43,7 @@ def _blocked(code: str) -> dict:
     result = {
         "schema_version": SCHEMA, "skill_code": SKILL, "step_code": "A2",
         "status": "BLOCKED", "blocking_codes": [code], "classification": None,
+        "business": None,
         "source_attested": False, "independent_judge_verified": False,
         "operationally_integrated": False, "effects_executed": False,
         "next_step": None,
@@ -130,17 +131,28 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
             or a1_result["next_capability"] != "A2"
             or a1_result["original_request_sha256"] is not None):
         return _blocked("A1_SEMANTIC_OR_STATUS_GATE_UNRESOLVED")
+    business = a1_result.get("business")
+    if not isinstance(business, str) or not (2 <= len(business) <= 32) or business != business.strip():
+        return _blocked("A1_BUSINESS_SCOPE_INVALID")
     context = a1_result["payload"]
     if not _valid(context, _json(REQUEST_SCHEMA)):
         return _blocked("A1_CANONICAL_CONTEXT_INVALID")
+    if not isinstance(signal_bundle, dict) or not isinstance(signal_bundle.get("business"), str) or not signal_bundle["business"].strip():
+        return _blocked("A2_BUSINESS_REQUIRED")
     if not _valid(signal_bundle, _json(BASE / "schemas/input.schema.json")):
         return _blocked("A2_SIGNAL_ENVELOPE_INVALID")
     if not isinstance(signal_bundle, dict) or set(signal_bundle) != {
-        "schema_version", "target_ref", "change_type", "target_granularity",
+        "schema_version", "business", "target_ref", "change_type", "target_granularity",
         "nested_parent_ref", "evidence_refs", "depth_signals",
     } or signal_bundle["schema_version"] != SIGNAL_SCHEMA:
         return _blocked("A2_SIGNAL_ENVELOPE_INVALID")
 
+    if signal_bundle["business"] != business:
+        return _blocked("A2_BUSINESS_SCOPE_MISMATCH")
+    for fact in context["provided_facts"]:
+        if fact["fact_code"] in {"BUSINESS", "BUSINESS_CODE", "TARGET_BUSINESS"}:
+            if fact["value"] != business or fact["source_ref"] not in context["source_refs"]:
+                return _blocked("A2_BUSINESS_FACT_CONFLICT")
     target = signal_bundle["target_ref"]
     change_type = signal_bundle["change_type"]
     granularity = signal_bundle["target_granularity"]
@@ -197,6 +209,7 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
     # References and signals are supplied, not authenticated by this module.
     result = {
         "schema_version": SCHEMA, "skill_code": SKILL, "step_code": "A2",
+        "business": business,
         "status": "NEED_MORE_EVIDENCE" if unresolved else "CANDIDATE_UNATTESTED",
         "blocking_codes": ["A2_TYPED_EVIDENCE_CURRENTNESS_OR_SPECIALIST_PENDING"] if unresolved else [],
         "classification": {
