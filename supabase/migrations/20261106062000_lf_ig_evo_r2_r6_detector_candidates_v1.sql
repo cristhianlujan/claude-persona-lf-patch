@@ -143,6 +143,44 @@ WITH effective AS (
  FROM sec_assessment a CROSS JOIN LATERAL jsonb_array_elements(a.threat_coverage) t
  WHERE t->>'status'='COMPLETE' AND t->'evidence_refs'='["SCREEN_RULE_SET"]'::jsonb
  UNION ALL
+ -- An applicable PARTIAL or MISSING claim remains actionable even after
+ -- the generic evidence issue is fixed in a newer RUN.
+ SELECT jsonb_build_object('threat_code',t->>'threat_code',
+   'observed_status',t->>'status','applicability',t->>'applicability',
+   'applicability_authority',t->>'applicability_authority',
+   'current_evidence_refs',t->'evidence_refs',
+   'declared_rationale',t->>'rationale',
+   'finding_kind','APPLICABLE_SECURITY_COVERAGE_INCOMPLETE',
+   'repair_focus','LOCATE_CANONICAL_MITIGATION_AND_VERIFY_IMPLEMENTATION',
+   'semantic_verdict','NOT_TESTED') result
+ FROM sec_assessment a CROSS JOIN LATERAL jsonb_array_elements(a.threat_coverage) t
+ WHERE t->>'applicability'='APPLICABLE' AND t->>'status' IN ('PARTIAL','MISSING')
+ AND NOT (t->>'threat_code'='OTP_REPLAY_SINGLE_USE' AND EXISTS(
+   SELECT 1 FROM effective e WHERE e.binding_source<>'DERIVED_GLOBAL'
+     AND e.valor_config->>'one_time_use'='REQUIRED'
+     AND e.valor_config->>'replay_after_success'='DENY'))
+ UNION ALL
+ -- A candidate rule can support definition coverage, but not proof of
+ -- implementation or security enforcement. Keep the dimension separate.
+ SELECT jsonb_build_object('threat_code',t->>'threat_code',
+   'observed_status',t->>'status','evidence_rule',r.codigo,
+   'evidence_rule_id',r.id,'rule_status',r.estado,
+   'implementation_status',r.valor_config->>'implementation_status',
+   'production_authorized',r.valor_config->>'production_authorized',
+   'binding_source',r.binding_source,
+   'finding_kind','DECLARED_CONTROL_WITHOUT_IMPLEMENTATION_PROOF',
+   'repair_focus','VERIFY_SERVER_ENFORCEMENT_AND_QA_BEFORE_PRODUCTION_CLAIM',
+   'semantic_verdict','NOT_TESTED') result
+ FROM sec_assessment a CROSS JOIN LATERAL jsonb_array_elements(a.threat_coverage) t
+ CROSS JOIN LATERAL jsonb_array_elements_text(
+   CASE WHEN jsonb_typeof(t->'evidence_refs')='array'
+   THEN t->'evidence_refs' ELSE '[]'::jsonb END) ref(code)
+ JOIN effective r ON r.codigo=ref.code AND r.binding_source<>'DERIVED_GLOBAL'
+ WHERE t->>'status'='COMPLETE' AND (
+     r.estado='CANDIDATO'
+     OR r.valor_config->>'implementation_status' IN (
+       'PENDING_IMPLEMENTATION_QA','NOT_IMPLEMENTED','UNVERIFIED'))
+ UNION ALL
  SELECT jsonb_build_object('threat_code',t->>'threat_code',
    'observed_status',t->>'status','evidence_rule',r.codigo,
    'rule_status',r.estado,'finding_kind','DECLARED_CONTROL_MISCLASSIFIED_AS_MISSING',
