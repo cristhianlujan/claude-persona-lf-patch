@@ -273,3 +273,22 @@ N+1 SHA, authorize new model attempts, or claim downstream Testing ACCEPT.
 actual one-commit format PR, a successful v3 run and exact fixture SHA.**
 PG12 and PG14 disposable PostgreSQL readbacks are **not** executed for this
 new N+1, and no `*_READBACK_PASS` is claimed. This PR remains **draft**.
+
+## N+1 original producer import gate (pre-fixture)
+
+`pg08_ex5c_v3_candidate_bridge_v1.py` is prepared to consume **only**
+the later SHA-fixed v3, project candidate N+1 with base N
+`e76b213cb2f367f787e0eba3bf8ff74136edd883`, and call the
+**unchanged original** PG06 C4, PG08 C1 and PG08 C2 producers.
+
+It uses baseline N `google-java-format --aosp` observations with line-level
+violation references and new N+1 `--aosp` + `javac -Xlint:all -g:none`
+receipts; no 2-space v2 lint results are substituted. The PG07 C6
+and PG05/PG06 C1-C3 envelopes remain explicitly adapter-projected
+and untrusted, all authority flags False.
+
+**Pending:** owner merge sandbox #46, manual format-only workflow,
+format-only PR human merge, manual v3 workflow, exact SHA-pin fixture,
+actual pytest execution against new HEAD, original PG08 C3-C8, PG09 N+1
+decision lineage, PG10, PG11, PG12 `pg12_test_*`, PG13 and PG14
+`pg14_test_*` readback. No end-to-end PASS.
