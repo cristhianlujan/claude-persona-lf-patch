@@ -289,7 +289,7 @@ def load_bundle(path: Path, expected_sha256: str) -> dict:
     # The derivation receipt hashes the canonical record excluding its own SHA.
     context_unhashed = {k: v for k, v in derived.items() if k != "sha256"}
     context_bytes = (json.dumps(context_unhashed, sort_keys=True, ensure_ascii=False,
-                                separators=(",", ":")) + "\\n").encode("utf-8")
+                                separators=(",", ":")) + "\n").encode("utf-8")
     if sha256(context_bytes) != derived.get("sha256"):
         fail("BLOCK_CONTEXT_INTERNAL_SHA")
     cost_object = json.loads(decoded["cost.json"])
