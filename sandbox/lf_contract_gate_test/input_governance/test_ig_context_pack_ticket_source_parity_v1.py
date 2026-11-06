@@ -58,6 +58,8 @@ def _audit_ticket_contract(sources, caller):
     assert "queue_required: false" in caller
     assert "PROFILE_RUNTIME_TICKET_INVALID" in caller
     assert "ROUTER_PROFILE_DIRECT_OR_INTERMEDIATE_CALL_RETIRED" in caller
+    runtime_only = caller.split("const ticket = await consumeProfileRuntimeTicket", 1)[1].split("const directStatus", 1)[0]
+    assert "ticket: runtimeTicket" in runtime_only, "caller: consumed profile ticket not forwarded to Agent"
 
 class TicketSourceParityTests(unittest.TestCase):
     def setUp(self):
@@ -66,6 +68,16 @@ class TicketSourceParityTests(unittest.TestCase):
 
     def test_expected_production_ticket_contract(self):
         _audit_ticket_contract(self.sources, self.caller)
+
+    def test_negative_caller_drops_consumed_ticket(self):
+        altered_caller = self.caller.replace(
+            'consumer: CONTEXT_PACK_CONSUMER, ticket: runtimeTicket',
+            'consumer: CONTEXT_PACK_CONSUMER',
+            1,
+        )
+        self.assertNotEqual(altered_caller, self.caller)
+        with self.assertRaises(AssertionError):
+            _audit_ticket_contract(self.sources, altered_caller)
 
     def test_negative_removed_agent_validation(self):
         altered = dict(self.sources)
