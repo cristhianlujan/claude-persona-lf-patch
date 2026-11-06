@@ -138,3 +138,33 @@ These local checks are **not** a pytest execution of the LF import-chain
 source files on PR #3685 and do **not** qualify the LF PG08..PG14 regression
 or PostgreSQL readbacks. PASE checks are CI-routing only and do not run pytest
 for this draft. No PG12/PG14 `*_READBACK_PASS` has been observed.
+
+
+## Owner-directed remediation — additive v2 and dated decision (2026-11-06)
+
+- **PG08 baseline:** sandbox PR #44 extends the SAME manual evidence-bundle
+  workflow with `evidence_version=v2` (no model), pinning
+  `google-java-format 1.30.0`, official all-deps SHA-256
+  `f2239a8a234a240a54fdff7809d4b3e66702c21f590c77a0b6cf7b20c829e95a`.
+  Both Git `28de535...` and `e76b213...` are checked out independently;
+  formatter dry-run, `javac --release 21 -Xlint:all`, raw stdout/stderr,
+  digests, codes and per-file/line diagnostics will be recorded. This is a
+  **separate, currently pending v2 fixture**, not a modification of v1.
+  No PG06 C4 baseline or PG08 C2 actual output can be claimed until that
+  manual run executes and the v2 fixture SHA is pinned.
+- **PG09/PG10:** the user explicitly recorded on 2026-11-06 the decision
+  `aceptar PASS del intento 1; sin nueva iteración` for run 42284754122.
+  `fixtures/ex5c_owner_attempt_decision_v1.json` records the decision
+  reference `LF-OWNER-EX5C-ATTEMPT-1-20261106`, date and all false authority.
+  `pg09_pg10_ex5c_owner_decision_bridge_v1.py` verifies its exact
+  SHA-256 `19b920bd8b3ae0b643a4d1d4b8967132d8007bdb853780ca295a0d6c7dbe45eb`
+  before translating a **real original PG09 C4** escalation containing
+  `BUDGET_DECISION` into a *non-authenticated reported* PG10 decision
+  reference. Without the registered record it BLOCKs
+  `PG10_OWNER_DECISION_RECORD_MISSING_BLOCK`. The bridge does **not**
+  bypass PG09 C2/C3/C4 or original PG10 C1-C5, and does **not** authorize
+  another iteration or replay.
+- Pending: run v2, add SHA-pinned standalone fixture, import PG06 C4 +
+  PG08 C2-C8 and original PG09 C2-C4, PG10..PG14, then independent local
+  PostgreSQL readbacks in `pg12_test_*` and `pg14_test_*`. Those do NOT
+  currently have evidence-based PASS.
