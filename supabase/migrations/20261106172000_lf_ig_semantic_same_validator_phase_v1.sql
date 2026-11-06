@@ -1,7 +1,6 @@
--- LF IG L15: preserve the EXISTING Validator and its official entrypoint.
--- One internal run only; no second Router, job, or semantic PASS.
--- No semantic receipt currently exists; selected families remain PENDING.
--- EKB: GOV-010, GOV-032, GOV-LF-RECEIPT-001, IG-M811-NEGATIVE-TEST-FAIL-NOT-PASS-001.
+-- LF IG L15: same Validator phase without another RUN, Router or judge.
+-- Selected families remain PENDING until independent semantic validation.
+-- EKB: GOV-010, GOV-032, GOV-LF-RECEIPT-001, IG-M811.
 BEGIN;
 DO $preflight$
 BEGIN
@@ -59,156 +58,10 @@ begin
   select count(*) into v_pending_before from programacion.input_family_assessments where run_id=p_run_id and validator_outcome='PENDING';
 
   v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
-  -- This is a phase of the SAME Validator and RUN. The CURATING -> VALIDATING
-  -- transition immediately above has already materialized the run source manifest.
-  -- Stop BEFORE family writes: the model candidate cannot create a semantic PASS.
+  -- Selected semantics pause inside the SAME run after manifest pinning.
+  -- No model candidate is authorized to write family PASS or production state.
   IF coalesce(cardinality(v_semantic_required_families),0)>0 THEN
-    IF v_source_sha IS NULL OR v_source_sha !~ '^[a-f0-9]{64}
-    select * from programacion.input_family_assessments
-    where run_id=p_run_id and validator_outcome='PENDING'
-    order by family_code
-    limit 10
-  loop
-    v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
-    v_phase_started:=clock_timestamp();
-    v_assertions:=case
-      when v_parent is not null
-       and not exists (
-         select 1
-         from programacion.input_family_assessments pa
-         cross join lateral jsonb_array_elements(
-           programacion.fn_input_validator_evidence_rehydrate_v1(pa.validator_evidence)->'assertions'
-         ) x(value)
-         where pa.run_id=v_parent
-           and pa.family_code=a.family_code
-           and x.value#>>'{source_ref,kind}'='CONTRACT'
-       )
-      then programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code)
-      else programacion.fn_input_governance_bootstrap_assertions_v1(p_run_id,a.family_code)
-    end;
-    v_assertions_ms:=v_assertions_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
-    if jsonb_array_length(v_assertions)=0 then raise exception 'INPUT_REMEDIATION_VALIDATOR_ASSERTIONS_EMPTY:%',a.family_code; end if;
-
-    v_phase_started:=clock_timestamp();
-    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'semantic_conclusion_independence','UNPROVEN','validation_phase','SOURCE_INTEGRITY','semantic_comparison_requested',v_comparison_requested,'semantic_independence_credited',false,'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','assertions',v_assertions);
-    v_assertion_set_sha256:=programacion.fn_v09_sha256_jsonb(v_assertions);
-    insert into programacion.input_validator_assertion_sets_v1(assertion_set_sha256,assertions)
-    values(v_assertion_set_sha256,v_assertions)
-    on conflict (assertion_set_sha256) do nothing;
-    select s.assertions into v_assertion_set
-    from programacion.input_validator_assertion_sets_v1 s
-    where s.assertion_set_sha256=v_assertion_set_sha256;
-    if not found
-       or v_assertion_set is distinct from v_assertions
-       or programacion.fn_v09_sha256_jsonb(v_assertion_set) is distinct from v_assertion_set_sha256 then
-      raise exception 'R5D_ASSERTION_SET_READBACK_MISMATCH:%',a.family_code;
-    end if;
-    v_physical_evidence:=(v_logical_evidence-'assertions')
-      || jsonb_build_object('assertion_set_sha256',v_assertion_set_sha256);
-    if programacion.fn_input_validator_evidence_rehydrate_v1(v_physical_evidence)
-         is distinct from v_logical_evidence then
-      raise exception 'R5D_LOGICAL_EVIDENCE_REHYDRATION_MISMATCH:%',a.family_code;
-    end if;
-    v_outcome:='BLOCKED';
-    v_findings:='[]'::jsonb;
-    for v_assertion in select value from jsonb_array_elements(v_assertions) loop
-      v_eval:=programacion.fn_input_evaluate_assertion(p_run_id,a.family_code,v_assertion);
-      if coalesce((v_eval->>'passed')::boolean,false) is not true then
-        v_findings:=v_findings||jsonb_build_array(jsonb_build_object(
-          'finding_type','ASSERTION_FAILURE',
-          'finding_code','VALIDATOR_ASSERTION_FAILED',
-          'family_code',a.family_code,
-          'assertion_class',v_eval->>'assertion_class',
-          'source_ref',v_eval->'source_ref',
-          'path',v_eval->'path',
-          'operator',v_eval->>'operator',
-          'expected',v_eval->'expected',
-          'actual',v_eval->'actual'
-        ));
-      end if;
-    end loop;
-    if jsonb_array_length(v_findings)>0 then
-      v_outcome:='FAIL';
-    ELSE
-      IF v_comparison_requested THEN
-        v_outcome:='BLOCKED';
-        v_findings:=jsonb_build_array(jsonb_build_object(
-          'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
-          'family_code',a.family_code,'source_integrity_passed',true
-        ));
-      ELSE
-        v_outcome:='PASS';
-        v_findings:='[]'::jsonb;
-      END IF;
-    END IF;
-    update programacion.input_family_assessments
-       set validator_outcome=v_outcome,
-           validator_findings=v_findings,
-           validator_evidence=v_physical_evidence,
-           validator_identity=p_validator_identity,
-           validator_assessed_at=now()
-     where id=a.id;
-    v_db_write_ms:=v_db_write_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
-    v_families_processed:=v_families_processed+1;
-  end loop;
-
-  select count(*) filter (where validator_outcome='PASS'),
-         count(*) filter (where validator_outcome='FAIL'),
-         count(*) filter (where validator_outcome='BLOCKED'),
-         count(*) filter (where validator_outcome='PENDING')
-    into v_pass,v_fail,v_blocked,v_pending
-  from programacion.input_family_assessments
-  where run_id=p_run_id;
-
-  if v_pass<v_family_count then
-    if v_pending=0 then
-      v_result:=jsonb_build_object(
-        'status',case when v_blocked>0 then 'VALIDATION_BLOCKED' else 'VALIDATION_FAILED' end,
-        'run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,
-        'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,
-        'pending_count',v_pending,'validator_identity',p_validator_identity,
-        'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX',
-        'promotion_authorized',false,'production_authorized',false
-      );
-    else
-      v_result:=jsonb_build_object(
-        'status','VALIDATOR_CONTINUE_REQUIRED',
-        'run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,
-        'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,
-        'pending_count',v_pending,'validator_identity',p_validator_identity,
-        'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX',
-        'promotion_authorized',false,'production_authorized',false
-      );
-    end if;
-  elsif v_pending_before>0 then
-    v_result:=jsonb_build_object('status','VALIDATOR_CONTINUE_REQUIRED','run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,'validator_pass_count',v_pass,'pending_count',v_pending,'validator_identity',p_validator_identity,'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','next_phase','PROPOSAL_VALIDATION','promotion_authorized',false,'production_authorized',false);
-  else
-    v_phase_started:=clock_timestamp();
-    v_prop:=programacion.fn_input_governance_validate_gap_proposals_v1(p_run_id,p_validator_identity);
-    v_gap_ms:=round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
-    v_phase_started:=clock_timestamp();
-    update programacion.input_readiness_runs set status='COMPLETED',validator_completed_at=clock_timestamp() where id=p_run_id;
-    v_db_write_ms:=v_db_write_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
-    v_payload:=jsonb_build_object('status','COMPLETED','run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,'validator_identity',p_validator_identity,'required_role','DISPATCHER_FINALIZE','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','proposal_validation',v_prop,'promotion_authorized',false,'production_authorized',false);
-    v_result:=v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
-  end if;
-
-  v_completed:=clock_timestamp();
-  select coalesce(max(chunk_no),0)+1,max(completed_at) into v_chunk_no,v_prev_completed
-  from programacion.input_validator_chunk_timings where run_id=p_run_id and validator_identity=p_validator_identity;
-  if v_prev_completed is not null then v_wait_ms:=greatest(0,round(extract(epoch from(v_started-v_prev_completed))*1000)::bigint); end if;
-  insert into programacion.input_validator_chunk_timings(
-    run_id,validator_identity,chunk_no,route,started_at,completed_at,duration_ms,result_status,
-    validator_pass_count,family_count,pending_count,classification_ms,assertions_ms,ekb_ms,gap_proposals_ms,db_write_ms,wait_resume_ms,families_processed
-  ) values(
-    p_run_id,p_validator_identity,v_chunk_no,'VALIDATE_V2',v_started,v_completed,
-    round(extract(epoch from(v_completed-v_started))*1000)::bigint,v_result->>'status',v_pass,v_family_count,v_pending,
-    v_classification_ms,v_assertions_ms,v_ekb_ms,v_gap_ms,v_db_write_ms,v_wait_ms,v_families_processed
-  );
-  return v_result;
-end;
-$function$
- THEN
+    IF v_source_sha IS NULL OR v_source_sha !~ '^[a-f0-9]{64}$' THEN
       RAISE EXCEPTION 'IG_SEMANTIC_SOURCE_MANIFEST_NOT_READY:%',p_run_id;
     END IF;
     RETURN jsonb_build_object(
