@@ -446,13 +446,13 @@ BEGIN
       OR nullif(x->>'signal_id','') IS NULL
       OR nullif(x->>'expected_behavior','') IS NULL
       OR nullif(x->>'reasoning','') IS NULL
-      OR x->>'evidence_type' NOT IN (
+      OR coalesce(x->>'evidence_type','') NOT IN (
         'EXPLICIT_RULE_STATEMENT','SCREEN_CONTEXT_DERIVATION',
         'GOVERNED_POLICY_REFERENCE','DOMAIN_RISK_HYPOTHESIS',
         'EXTERNAL_GUIDANCE_CONDITIONAL')
       OR jsonb_typeof(x->'source_locations')<>'array'
-      OR jsonb_array_length(x->'source_locations')=0
-      OR x->>'resolution' NOT IN (
+      OR (CASE WHEN jsonb_typeof(x->'source_locations')='array' THEN jsonb_array_length(x->'source_locations') ELSE 0 END)=0
+      OR coalesce(x->>'resolution','') NOT IN (
         'MATCHED_TO_GRAPH','UNMATCHED_RESEARCH_REQUIRED',
         'NOT_APPLICABLE_WITH_AUTHORITY');
   END IF;
