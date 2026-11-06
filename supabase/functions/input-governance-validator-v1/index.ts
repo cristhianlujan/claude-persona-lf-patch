@@ -115,20 +115,46 @@ Deno.serve(async (req: Request) => {
         return Response.json({error:"IG_SEMANTIC_PACKET_IDENTITY_MISMATCH",run_id:runId},{status:409});
       }
       if (semanticPacket?.validator_semantic_mode === "SELECTED_SEMANTIC_COMPARISON") {
+        if (semanticPacket?.status !== "READY_FOR_MODEL_CANDIDATE" ||
+            semanticPacket?.source_integrity_verified !== true) {
+          return Response.json({
+            error: "IG_SEMANTIC_SOURCE_SNAPSHOT_PIN_REQUIRED",
+            run_id: runId,
+            missing_source_pins: semanticPacket?.missing_source_pins ?? [],
+            promotion_authorized: false,
+            production_authorized: false,
+          }, { status: 409 });
+        }
         const candidate = await callSemanticModelCandidate(semanticPacket, {
           apiKey: Deno.env.get("OPENAI_API_KEY") ?? "",
           model: Deno.env.get("IG_SEMANTIC_MODEL_ID") ?? "",
         });
+        const checked = await rpc("fn_input_governance_semantic_candidate_precheck_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate: candidate,
+        });
+        if (checked?.status !== "CANDIDATE_PRECHECKED_NOT_OFFICIAL" ||
+            checked?.run_id !== runId ||
+            checked?.db_packet_sha256 !== semanticPacket?.db_packet_sha256 ||
+            checked?.official_write_authorized !== false) {
+          return Response.json({
+            error: "IG_SEMANTIC_NATIVE_PRECHECK_NOT_ATTESTED", run_id: runId,
+          }, { status: 409 });
+        }
         return Response.json({
           runtime:"input-governance-validator-v1",
           status:"SEMANTIC_MODEL_CANDIDATE_UNATTESTED",
           run_id:runId,
           handoff_receipt_id:handoffReceiptId,
           candidate,
+          native_precheck: checked,
           promotion_authorized:false,
           production_authorized:false,
           official_write_authorized:false,
-          next_step:"SEMANTIC_DB_ATTESTATION_NOT_IMPLEMENTED",
+          next_step:"INDEPENDENT_SEMANTIC_RECEIPT_NOT_YET_IMPLEMENTED",
         },{status:202});
       }
       if (semanticPacket?.validator_semantic_mode !== "SOURCE_INTEGRITY_ONLY") {
