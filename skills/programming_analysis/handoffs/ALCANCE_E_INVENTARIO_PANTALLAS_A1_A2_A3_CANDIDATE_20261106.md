@@ -1,6 +1,12 @@
 # Agente de Programación — Implementación de pantallas sobre inventario existente
 **Versión:** CANDIDATE_V1 · 2026-11-06 · **Estado:** diseño operativo candidato, NO contrato canónico ni runtime calificado.
 
+## Aclaración de objetivo final y comparación obligatoria (2026-11-06)
+
+El entregable del análisis completo (A9) es un paquete **Spec-Driven** para Programación, construido desde definiciones/reglas **almacenadas y reconciliadas**, no desde un checklist ni desde la petición sin registrar. Comparar dos deltas por componente: **definiciones actuales vs. definición anterior/alcance aprobado** y **definiciones vigentes vs. código existente**. No cambiar una regla que no tiene delta; si esa regla aún no está implementada, emitir solamente el trabajo de programación pendiente. `NO_OP` exige ambos deltas en cero con evidencias CURRENT. Documentación incompleta exige alertas, decisión del dueño y subalcance seguro independiente; aprobación humana no suprime gates obligatorios de seguridad/autoridad. Los contratos canónicos A1–A9 se preservan.
+
+Fuentes candidatas: `SPEC_DRIVEN_DELTA_DOCUMENTACION_GATE_CANDIDATE_20261106.md` y su matriz de 16 casos `SPEC_DRIVEN_DELTA_DECISION_MATRIX_CANDIDATE_20261106.json`. Los resultados de pruebas son de referencia, sin run gobernado real ni autorización de A3/A9.
+
 ## Objetivo y decisión de alcance
 
 Implementar una pantalla es producir la funcionalidad comprendida en el alcance aceptado por el usuario, reutilizando toda definición, regla, diseño, decisión, API, estado e implementación existente que sea aplicable, vigente y compatible. No equivale a dibujar la UI, no obliga a empezar de cero y no implica despliegue.
