@@ -195,7 +195,9 @@ def cost_decision(raw: bytes, ceiling: Decimal = MAX_USD) -> dict:
         fail("BLOCK_COST_FORMAT")
     if not value.is_finite() or value < 0 or ceiling != MAX_USD:
         fail("BLOCK_COST_POLICY")
-    if value >= ceiling:
+    if value > ceiling:
+        fail("BLOCK_COST_EXCEEDED")
+    if value == ceiling:
         return {"verdict": "REQUIRES_DECISION", "reported_cost_usd": str(value),
                 "authenticated": False}
     if value >= WARN_USD:
@@ -270,7 +272,10 @@ def load_bundle(path: Path, expected_sha256: str) -> dict:
         value = receipts[name]
         if not isinstance(value, dict):
             fail("BLOCK_RECEIPT_SHAPE")
-        decoded[name] = check_raw(value, "content", name)
+        payload = {"content_base64": value.get("content_base64"),
+                   "content_sha256": value.get("sha256"),
+                   "content_bytes": value.get("bytes")}
+        decoded[name] = check_raw(payload, "content", name)
     verified = json.loads(decoded["verified-worker-receipt.json"])
     visible = json.loads(decoded["visible-worker-receipt.json"])
     derived = json.loads(decoded["derived-context.json"])
