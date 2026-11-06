@@ -111,6 +111,8 @@ BEGIN
   END LOOP;
   RETURN jsonb_build_object(
     'status','CANDIDATE_PRECHECKED_NOT_OFFICIAL',
+    -- Binding used by an independently issued audit verdict; not a PASS.
+    'candidate_sha256',programacion.fn_v09_sha256_jsonb(p_candidate),
     'run_id',p_run_id,
     'handoff_receipt_id',p_receipt_id,
     'validated_model_candidate_binding',true,
