@@ -16,12 +16,12 @@
 
 | Hito | Trabajo exacto | Evidencia de aceptación | Estado |
 |---|---|---|---|
-| H1 — Completar A2 Golden | Implementar extensión tipada de 12/59 elementos, 2 ejes y 26 triggers sobre clasificador L1/L2/L3; sin N/A por UNKNOWN; emitir preguntas dirigidas A3. No duplicar reglas del catálogo. | 59/59 elementos, 12/12 dimensiones, 26 triggers y pruebas positivas/negativas con referencia exacta al catálogo; no ampliar el contrato canónico por atajo. | PENDING |
+| H1 — Completar A2 Golden | Implementar extensión tipada de 12/59 elementos, 2 ejes y 26 triggers sobre clasificador L1/L2/L3; sin N/A por UNKNOWN; emitir preguntas dirigidas A3. No duplicar reglas del catálogo. | 59/59 elementos, 12/12 dimensiones, 26 triggers y pruebas positivas/negativas con referencia exacta al catálogo; no ampliar el contrato canónico por atajo. | SOURCE_CANDIDATE_IMPLEMENTED; operacional PENDING |
 | H2 — Entrada y fuente | Vincular A1 real, señales/evidencias de A2 y negocio exacto, con productor/snapshot y currentness acreditados por host; distinguir DECLARED vs VERIFIED. | READBACK del origen y 9 señales; rechazo de LF↔SALY, source drift y target no atestado. No inferir CURRENT de un texto. | PENDING (dependencia A1) |
 | H3 — Juez A2 y reparación | Invocar juez semántico **existente** con independencia y recibo de output SHA, retroalimentación por elemento; original+2 correcciones máximo; no A3 en FAIL. | 1 PASS y reintentos reales con hashes/lineage; tres FAIL bloquean A3; pruebas adversariales sin juez autodeclarado. No confundir juez del RUN paso 70 con gate interno antes de A3. | PENDING |
 | H4 — RUN nativo y E2E | Abrir `EJECUCION_SKILL_LF` desde perfil autorizado en el caller gobernado; paso 0, recorder común, readback e idempotencia, A2 PASS→A3 exactamente una vez. | Parent+child RUN, step 0, autoridad, fuente y juez verificados en Supabase, y E2E con caso real controlado; solo entonces permitir transición. | PENDING |
 
-**Avance:** clasificación L1/L2/L3 está implementada como candidato y ha tenido regresiones locales, pero **0/4 hitos Golden están cerrados con evidencia operacional**. No usar un porcentaje positivo como READY.
+**Avance:** productor dimensional 12/59, 26 triggers y salida propuesta v0.3 implementados como código candidato con 41 pruebas locales PASS; H1 operacional aún PENDING. Clasificación L1/L2/L3 está implementada como candidato y ha tenido regresiones locales, pero **0/4 hitos Golden están cerrados con evidencia operacional**. No usar un porcentaje positivo como READY.
 
 ## Ejecución en lotes cortos
 
