@@ -135,7 +135,123 @@ WITH effective AS (
  SELECT a.threat_coverage
  FROM programacion.input_family_assessments a
  WHERE a.run_id=p_run_id AND a.family_code='SECURITY'
+), auth_abuse_context AS (
+ -- Link graph: explicit rule -> referenced policies -> screen-policy bindings.
+ -- CANDIDATO is a declared source, not operational/production evidence.
+ SELECT r.id rule_id,r.codigo rule_code,r.estado rule_status,r.binding_source,
+   rp.rate_limit_policy_id rate_id,rp.policy_code rate_code,rp.status rate_status,
+   rp.resource_code,rp.scope_key,rp.max_requests,rp.window_seconds,rp.burst_limit,
+   rp.parameter_provenance,rp.source_decision_id rate_decision,
+   sp.security_policy_id sec_id,sp.policy_code sec_code,sp.status sec_status,
+   sp.policy_config security_controls,
+   br.pantalla_politica_id rate_binding_id,br.status rate_binding_status,
+   bs.pantalla_politica_id sec_binding_id,bs.status sec_binding_status,
+   programacion.fn_v09_sha256_jsonb(to_jsonb(r.valor_config)) rule_sha,
+   programacion.fn_v09_sha256_jsonb(to_jsonb(rp)) rate_sha,
+   programacion.fn_v09_sha256_jsonb(to_jsonb(sp)) sec_sha
+ FROM effective r
+ LEFT JOIN lf_ops.politicas_rate_limit rp
+  ON rp.rate_limit_policy_id=CASE
+    WHEN r.valor_config->>'rate_limit_policy_id' ~ '^[0-9]+$'
+    THEN (r.valor_config->>'rate_limit_policy_id')::bigint END
+ LEFT JOIN lf_ops.politicas_seguridad sp
+  ON sp.security_policy_id=CASE
+    WHEN r.valor_config->>'abuse_security_policy_id' ~ '^[0-9]+$'
+    THEN (r.valor_config->>'abuse_security_policy_id')::bigint END
+ LEFT JOIN lf_ops.pantallas_politicas br ON br.pantalla_id=p_pantalla_id
+    AND br.rate_limit_policy_id=rp.rate_limit_policy_id
+ LEFT JOIN lf_ops.pantallas_politicas bs ON bs.pantalla_id=p_pantalla_id
+    AND bs.security_policy_id=sp.security_policy_id
+ WHERE r.binding_source<>'DERIVED_GLOBAL'
+   AND (r.valor_config ? 'rate_limit_policy_id')
+   AND (r.valor_config ? 'abuse_security_policy_id')
+), auth_abuse_cases AS (
+ SELECT jsonb_build_object(
+   'finding_root_key',concat('IG_EVO_AUTH_ABUSE_',ctx.rule_id,'_',coalesce(ctx.sec_id::text,'UNRESOLVED')),
+   'finding_kind','CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS',
+   'risk_confirmed',false,'semantic_verdict','NOT_TESTED',
+   'implementation_evidence','NOT_PROVEN',
+   'source_rule',jsonb_build_object('table','lf_ops.reglas','id',ctx.rule_id,
+     'code',ctx.rule_code,'status',ctx.rule_status,
+     'binding_source',ctx.binding_source,'sha256',ctx.rule_sha),
+   'rate_policy',jsonb_build_object('table','lf_ops.politicas_rate_limit',
+     'id',ctx.rate_id,'code',ctx.rate_code,'status',ctx.rate_status,
+     'resource_code',ctx.resource_code,'scope_key',ctx.scope_key,
+     'max_requests',ctx.max_requests,'window_seconds',ctx.window_seconds,
+     'burst_limit',ctx.burst_limit,'parameter_provenance',ctx.parameter_provenance,
+     'source_decision_id',ctx.rate_decision,'binding_id',ctx.rate_binding_id,
+     'binding_status',ctx.rate_binding_status,'sha256',ctx.rate_sha),
+   'security_policy',jsonb_build_object('table','lf_ops.politicas_seguridad',
+     'id',ctx.sec_id,'code',ctx.sec_code,'status',ctx.sec_status,
+     'binding_id',ctx.sec_binding_id,'binding_status',ctx.sec_binding_status,
+     'sha256',ctx.sec_sha),
+   'existing_controls',jsonb_build_object(
+     'distributed_attack_detection',ctx.security_controls->>'distributed_attack_detection',
+     'shared_ip_false_positive_mitigation',ctx.security_controls->>'shared_ip_false_positive_mitigation',
+     'ip_hard_limit',ctx.security_controls->>'ip_hard_limit',
+     'single_signal_hard_lockout',ctx.security_controls->>'single_signal_hard_lockout',
+     'signal_families',ctx.security_controls->'signal_families'),
+   'unverified',jsonb_build_array(
+     'COUNTER_COMPOSITION','SUBJECT_AND_ORIGIN_INDEPENDENT_ENFORCEMENT',
+     'COUNTED_EVENT_CLASSES','DISTRIBUTED_RISK_ENFORCEMENT',
+     'SHARED_NETWORK_QA','WINDOW_AND_BURST_QA','FAIL_CLOSED_RUNTIME'),
+   'risk_scenarios',(
+     SELECT COALESCE(jsonb_agg(jsonb_build_object(
+       'scenario_code',x.code,'hypothesis',x.hypothesis,
+       'test_objective',x.test_objective,'expected_control',x.expected_control,
+       'status','NOT_TESTED','positive_and_negative_tests_required',true)
+       ORDER BY x.code),'[]'::jsonb)
+     FROM (VALUES
+       ('MULTI_ORIGIN_SINGLE_SUBJECT',
+        'A single pair counter may reset when the origin changes',
+        'Same subject across distinct origin networks',
+        'Subject-level protection remains effective across origins'),
+       ('SINGLE_ORIGIN_MULTI_SUBJECT',
+        'A pair counter may allow cumulative attempts across subjects',
+        'Different subjects using one origin',
+        'Distributed abuse protection and origin policy are evaluated'),
+       ('LEGITIMATE_SHARED_NETWORK',
+        'One IP may represent several legitimate subjects',
+        'Multiple legitimate subjects behind shared NAT',
+        'No hard single-IP lockout; false-positive mitigation demonstrated'),
+       ('SUCCESS_FAILURE_AND_RETRY',
+        'The source does not define which authentication outcomes count',
+        'Success, failure, rejected anti-bot, transport retries',
+        'Event inclusion, exclusion and reset semantics are verified'),
+       ('CONCURRENT_REQUESTS',
+        'Counter atomicity and concurrent requests are unverified',
+        'Parallel attempts for one subject and origin',
+        'Server-side atomic enforcement demonstrated'),
+       ('WINDOW_BOUNDARY',
+        'Window boundaries and burst handling are unverified',
+        'Requests around window and burst limits',
+        'Central max/window/burst values enforced as intended'),
+       ('CONTROL_DEGRADATION',
+        'External anti-bot or identity services may be unavailable',
+        'Unavailable anti-bot or identity-provider dependency',
+        'Fail closed without granting a session'),
+       ('MULTISIGNAL_DISTRIBUTED_ABUSE',
+        'Declared multi-signal control may not be active server-side',
+        'Distributed suspicious requests with independent risk signals',
+        'Adaptive protection and relevant logging are demonstrated')
+     ) x(code,hypothesis,test_objective,expected_control)
+     WHERE ctx.resource_code LIKE 'AUTH_%'
+   ),
+   'standard_context',jsonb_build_array(
+     jsonb_build_object('authority','OWASP','kind','NONBINDING_GUIDANCE',
+       'reference','Bot Management and Anti-Automation Cheat Sheet',
+       'url','https://cheatsheetseries.owasp.org/cheatsheets/Bot_Management_and_Anti-Automation_Cheat_Sheet.html'),
+     jsonb_build_object('authority','NIST','kind','CONDITIONAL_REQUIREMENTS',
+       'reference','SP 800-63B-4, rate limiting for applicable authenticators',
+       'url','https://pages.nist.gov/800-63-4/sp800-63b.html')),
+   'remediation_gate','VERIFY_EXISTING_POLICY_BINDINGS_AND_RUNTIME_BEFORE_ADJUSTING_ANY_LIMIT',
+   'acceptance','Positive/negative multi-scenario evidence, governed source authority and post-change readback'
+ ) result
+ FROM auth_abuse_context ctx
+ WHERE ctx.resource_code LIKE 'AUTH_%'
 ), r6 AS (
+ SELECT result FROM auth_abuse_cases
+ UNION ALL
  SELECT jsonb_build_object('threat_code',t->>'threat_code',
    'observed_status',t->>'status','evidence_refs',t->'evidence_refs',
    'finding_kind','GENERIC_EVIDENCE_NOT_SEMANTIC_PROOF',
