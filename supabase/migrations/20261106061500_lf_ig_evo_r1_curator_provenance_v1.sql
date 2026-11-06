@@ -1,7 +1,7 @@
--- IG-EVO R1: parameter provenance read-only detector and native Curator proposal materialization.
+-- IG-EVO R1: parameter provenance read-only detector and native Curator non-blocking diagnostics.
 -- No Router change; no new tables, judges, profile grants, business policy mutations, or auto promotion.
 -- EKB: GOV-010, GOV-032, GOV-LF-RECEIPT-001, SEC-011, IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001.
--- WARNING: source refs are SCREEN_CANONICAL_GRAPH pending dedicated direct policy ref validator.
+-- Shadow only: no input_gap_proposals insertion, no new T_REMED work, no source-only semantic PASS.
 BEGIN;
 DO $pin$
 DECLARE v_md5 text;
@@ -131,11 +131,7 @@ declare
   v_create int:=0;
   v_inherit int:=0;
   v_close_candidates int:=0;
-  v_r1_assessment record;
   v_r1_scan jsonb;
-  v_r1_finding jsonb;
-  v_r1_gap text;
-  v_r1_inserted integer;
 begin
   select c.especificacion->'gap_policy_contract',
          c.especificacion->>'gap_policy_decision'
@@ -292,79 +288,15 @@ begin
   end loop;
 
 
-  -- IG-EVO R1: factual policy-source gap only. Never infer policy value wrong;
-  -- never authorize a candidate binding or treat source readback as semantic PASS.
-  select * into v_r1_assessment
-  from programacion.input_family_assessments a
-  where a.run_id=p_run_id and a.family_code='SOURCE_AUTHORITY_PROVENANCE';
-  if not found then
-    raise exception 'IG_EVO_R1_SOURCE_AUTHORITY_FAMILY_MISSING:%',p_run_id;
-  end if;
+  -- IG-EVO R1 shadow: publish factual evidence without creating proposals.
+  -- A new proposal would be counted by T_REMED as a remediation even though
+  -- the semantic-quality gate is NOT_TESTED. Do not modify run outcome.
   v_r1_scan:=programacion.fn_ig_evo_r1_parameter_provenance_v1(v_run.pantalla_id);
-  if v_r1_scan->>'schema_version'<>'IG_EVO_R1_PARAMETER_PROVENANCE_V1' or
-     (v_r1_scan->>'pantalla_id')::integer is distinct from v_run.pantalla_id then
+  if v_r1_scan->>'schema_version'<>'IG_EVO_R1_PARAMETER_PROVENANCE_V1'
+     or (v_r1_scan->>'pantalla_id')::integer is distinct from v_run.pantalla_id
+     or v_r1_scan->>'canonical_write_authorized'<>'false' then
     raise exception 'IG_EVO_R1_SCAN_CONTRACT_INVALID:%',p_run_id;
   end if;
-  for v_r1_finding in select value from jsonb_array_elements(v_r1_scan->'findings')
-  loop
-    v_r1_gap:=concat('IG_EVO_R1_',v_r1_finding->>'policy_family','_',
-      v_r1_finding->>'policy_id','_PARAMETER_PROVENANCE');
-    insert into programacion.input_gap_proposals(
-      run_id,assessment_id,family_code,gap_code,proposal_kind,proposed_payload,canonical_target,
-      source_refs,evidence_refs,confidence,stage_impact,contradictions_checked,status,
-      curator_identity,curator_execution_id
-    ) values (
-      p_run_id,v_r1_assessment.id,'SOURCE_AUTHORITY_PROVENANCE',v_r1_gap,'SOURCE_INCOMPLETE',
-      jsonb_build_object(
-        'gap_classification','GOVERNANCE_EVIDENCE_GAP',
-        'agent_action','RESOLVE_PENDING_SOURCE_OR_EVIDENCE_INTERNALLY',
-        'gap_policy_ref',v_policy_ref,
-        'gap_policy_schema',v_policy->>'schema_version',
-        'gap_policy_action','CREATE',
-        'synthesis_mode','HOLD_FOR_EVIDENCE',
-        'policy_result','RECOMENDADA',
-        'targeted_evidence_before_escalation','TARGETED_EVIDENCE_ACQUISITION',
-        'canonical_change_admission','SAFE_CHANGE_ADMISSION',
-        'no_effective_change_result',v_policy->>'no_effective_change_result',
-        'positive_owner_escalation_authority',false,
-        'pending_marker_is_not_owner_authority',true,
-        'no_invention',true,
-        'proposal_is_canonical_source',false,
-        'automatic_canonicalization','DENY',
-        'analysis_revision','IG_EVO_R1_PARAMETER_PROVENANCE_V1',
-        'remediation_policy_revision','INPUT_GAP_POLICY_V1',
-        'detector_code','R1',
-        'detector_finding',v_r1_finding,
-        'source_readback_limit','POLICY_ROW_SHA_CAPTURED_NOT_NATIVE_REF_VERIFIED',
-        'semantic_quality_evaluated',false,
-        'semantic_pass_authorized',false,
-        'policy_values_wrong','NOT_PROVEN'
-      ),
-      jsonb_build_object('pantalla_id',v_run.pantalla_id,'family_code','SOURCE_AUTHORITY_PROVENANCE'),
-      jsonb_build_array(jsonb_build_object('kind','SCREEN_CANONICAL_GRAPH','pantalla_id',v_run.pantalla_id)),
-      '[]'::jsonb,
-      null,
-      jsonb_build_object(
-        'story',v_r1_assessment.story_ready_status,
-        'implementation',v_r1_assessment.implementation_ready_status,
-        'qa',v_r1_assessment.qa_ready_status,
-        'production',v_r1_assessment.production_ready_status
-      ),
-      jsonb_build_array('SOURCE_POLICY_DIRECT_SELECT','PARAMETER_PROVENANCE_NOT_EQUAL_SOURCE_DECISION',
-        'POLICY_BINDING_STATUS_PRESERVED','NO_AUTOMATIC_CANONICALIZATION'),
-      'PROPOSED',
-      v_run.curator_identity,
-      coalesce(v_r1_assessment.curator_evidence->>'execution_id','UNKNOWN')
-    ) on conflict (run_id,family_code,gap_code) do nothing;
-    get diagnostics v_r1_inserted = row_count;
-    if v_r1_inserted=1 then
-      v_count:=v_count+1;
-      v_auto:=v_auto+1;
-      v_create:=v_create+1;
-    else
-      v_inherit:=v_inherit+1;
-    end if;
-  end loop;
 
   select count(*)
     into v_close_candidates
@@ -402,7 +334,11 @@ begin
     'no_effective_change_result',v_policy->>'no_effective_change_result',
     'owner_escalation_policy','POSITIVE_OWNER_AUTHORITY_ONLY',
     'proposal_is_canonical_source',false,
-    'automatic_canonicalization','DENY'
+    'automatic_canonicalization','DENY',
+    'ig_evo_r1_diagnostics',v_r1_scan,
+    'ig_evo_execution_mode','SHADOW_NON_BLOCKING',
+    'ig_evo_semantic_quality','NOT_TESTED',
+    'ig_evo_proposals_created',0
   );
 end;
 $function$;
@@ -435,8 +371,8 @@ BEGIN
  SELECT pg_get_functiondef('programacion.fn_input_governance_materialize_gap_proposals_v1(bigint)'::regprocedure)
  INTO v_source;
  IF position('fn_ig_evo_r1_parameter_provenance_v1' in v_source)=0
-    OR position('semantic_pass_authorized' in v_source)=0
-    OR position('POLICY_ROW_SHA_CAPTURED_NOT_NATIVE_REF_VERIFIED' in v_source)=0 THEN
+    OR position('ig_evo_r1_diagnostics' in v_source)=0
+    OR position('SHADOW_NON_BLOCKING' in v_source)=0 THEN
     RAISE EXCEPTION 'IG_EVO_R1_CURATOR_NOT_NATIVE_INTEGRATED';
  END IF;
  IF has_function_privilege('public','programacion.fn_ig_evo_r1_parameter_provenance_v1(integer)'::regprocedure,'EXECUTE') THEN
