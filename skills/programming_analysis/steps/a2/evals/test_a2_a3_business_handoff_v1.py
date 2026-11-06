@@ -76,6 +76,18 @@ class BusinessHandoff(unittest.TestCase):
             {"fact_code":"MODULE_CODE","value":"Otra","source_ref":"user://origin"}]
         self.assertEqual(prepare_candidate(a1,a2,"LF")["blocking_codes"],["IDENTITY_FACT_CONFLICT_OR_DUPLICATE"])
 
+    def test_malformed_source_reference_fail_closed(self):
+        a1,a2=inputs();a1["payload"]["source_refs"]=[{"unhashable":"injection"}]
+        self.assertEqual(prepare_candidate(a1,a2,"LF")["blocking_codes"],["A3_SOURCE_REFS_MISSING"])
+
+    def test_schema_rejects_claimed_a3_activation(self):
+        from jsonschema import Draft202012Validator
+        import json
+        a1,a2=inputs();r=prepare_candidate(a1,a2,"LF")
+        r["a3_allowed"]=True
+        schema=json.loads((ROOT/"adapters/a2_a3_business_handoff_v1.schema.json").read_text(encoding="utf-8"))
+        self.assertFalse(Draft202012Validator(schema).is_valid(r))
+
     def test_inputs_immutable_and_no_forged_pass(self):
         a1,a2=inputs();aa,bb=copy.deepcopy(a1),copy.deepcopy(a2)
         a2["independent_judge_verified"]=True
