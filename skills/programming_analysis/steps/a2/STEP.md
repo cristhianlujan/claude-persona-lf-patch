@@ -24,6 +24,10 @@
 - **No integrado operacionalmente**: `a3_allowed=false`, `D12-E05=PENDING_EVIDENCE`. Toda condición no probada queda `UNRESOLVED_TRIGGER`, nunca N/A. H2/H3/H4 y admisión gobernada siguen pendientes.
 - Evidencia y seis hashes exactos: `handoffs/H1_GOLDEN_PRODUCER_SOURCE_CANDIDATE_20261106.md`.
 
+## Regla Spec-Driven y delta nulo (propuesta documental 2026-11-06)
+
+A2 prepara el **plan de comparación** de fuentes almacenadas y evidencias para A3. No presupone que implementar exige cambiar reglas ni que no tener reglas nuevas equivale a no tener trabajo de código. Exige: negocio/alcance autorizado, identidad y versión de las definiciones, mejoras históricas, inventario completo de familias materiales y divergencia por componente entre AS-IS y requisito. No clasifica NO-OP por sí solo: A3 debe acreditar definiciones CURRENT y código; A4–A9 deciden impacto y construyen Spec-Driven o cierre sin cambios. Ante documentación material ausente: alerta y decisión de alcance, sin declarar READY por consentimiento que pretenda omitir seguridad/autoridad. Fuentes de diseño: `handoffs/SPEC_DRIVEN_DELTA_DOCUMENTACION_GATE_CANDIDATE_20261106.md` y `handoffs/SPEC_DRIVEN_DELTA_DECISION_MATRIX_CANDIDATE_20261106.json` (relativas al paquete skill, no a este subdirectorio).
+
 ## Entrada
 - `a1_result` válido y tipado, `status=VALID_OUTPUT`, `REQUEST_CONTEXT_V1`, `interpretation_state=PRESTRUCTURED_UNATTESTED`.
 - `signal_bundle` recibido del consumidor: referencia exacta a un target aportado en A1, tipo/granularidad explícitos, refs de evidencia y señales tipadas, **sin afirmar que ya están autenticadas**.
