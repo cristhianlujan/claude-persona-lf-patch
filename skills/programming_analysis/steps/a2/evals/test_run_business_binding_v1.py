@@ -91,6 +91,20 @@ class SourceOnlyBinding(unittest.TestCase):
     def test_21_child_link_cross_run(self):self.check(lambda p,i,c:c['manifest']['profile_handoff'].update(skill_run_id='OTHER'),'RUN_SKILL_CHILD_HANDOFF_MISMATCH')
     def test_22_no_child_run(self):
         p,i,c=bundle();self.assertEqual(reconcile(p,i,None,p['execution_id'])['status'],'BLOCKED')
+    def test_read_only_sql_invocation_does_not_count_as_governed_run(self):
+        p,i,c=bundle()
+        i["child_execution_id"] = None
+        r=reconcile(p,i,None,p["execution_id"])
+        self.assertEqual(r["blocking_codes"],["RUN_GOVERNED_CHILD_ABSENT_READ_ONLY_INVOKER"])
+        self.assertFalse(r["readback_authenticated"])
+        self.assertFalse(r["a3_allowed"])
+
+    def test_unrelated_legacy_skill_run_is_not_admissible(self):
+        p,i,c=bundle()
+        c["target_code"] = "ACT-0057"
+        r=reconcile(p,i,c,p["execution_id"])
+        self.assertEqual(r["blocking_codes"],["RUN_SKILL_CHILD_IDENTITY_MISMATCH"])
+
     def test_23_immutable_inputs(self):
         p,i,c=bundle(); originals=copy.deepcopy((p,i,c));reconcile(p,i,c,p['execution_id']);self.assertEqual((p,i,c),originals)
     def test_24_host_scoping_cannot_be_self_attested(self):
