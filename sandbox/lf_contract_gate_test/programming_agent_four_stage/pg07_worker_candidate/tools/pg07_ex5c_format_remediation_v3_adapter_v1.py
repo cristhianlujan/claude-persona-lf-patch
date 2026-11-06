@@ -179,6 +179,12 @@ def load_v3(path: Path, sha256_fixed: str) -> dict:
         path.startswith("apps/time-service/src/main/java/") and path.endswith(".java")
         for path in b["changed_java_paths"]), "V3_CHANGED_FILES_SCOPE_BLOCK")
     class_objects(b["class_equivalence"])
+    for key in ("baseline_compile_receipt", "candidate_compile_receipt"):
+        compilation = b["class_equivalence"][key]
+        check_execution(compilation, name=key.upper(), expected_code=0)
+        require("-g:none" in compilation["argv"] and
+                "--release" in compilation["argv"] and
+                "21" in compilation["argv"], "V3_CLASS_COMPILE_ARGV_BLOCK")
     exe = b["execution"]
     check_execution(exe["baseline_format_check"], name="N_AOSP_FORMAT")
     check_execution(exe["candidate_format_check"], name="N1_AOSP_FORMAT",
