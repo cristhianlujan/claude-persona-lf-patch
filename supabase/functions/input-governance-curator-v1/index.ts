@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const enc = new TextEncoder();
+const TICKET_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function sameSecret(a: string, b: string): Promise<boolean> {
   const [ha, hb] = await Promise.all([
@@ -52,6 +53,8 @@ Deno.serve(async (req: Request) => {
     const pantallaId = Number(body?.pantalla_id);
     const consumer = typeof body?.consumer === "string" ? body.consumer : "STORY_CREATOR";
     if (!Number.isInteger(pantallaId) || pantallaId < 1) return Response.json({ error: "PANTALLA_ID_INVALID" }, { status: 400 });
+    const ticket = typeof body?.ticket === "string" ? body.ticket.trim() : "";
+    if (!TICKET_RE.test(ticket)) return Response.json({ error: "IG_PROFILE_TICKET_REQUIRED" }, { status: 403 });
 
     const identity = `INPUT_CURATOR:EDGE:input-governance-curator-v1:${crypto.randomUUID()}`;
     const curatorRpcStarted = performance.now();
@@ -59,6 +62,7 @@ Deno.serve(async (req: Request) => {
       p_pantalla_id: pantallaId,
       p_consumer: consumer,
       p_curator_identity: identity,
+      p_ticket: ticket,
     }) as Record<string, unknown>;
 
     const curatorRpcElapsedMs = Math.max(0, Math.round(performance.now()-curatorRpcStarted));
@@ -71,6 +75,7 @@ Deno.serve(async (req: Request) => {
       handoffReceipt = await rpc("fn_input_governance_curator_handoff_receipt_v1", {
         p_run_id: runId,
         p_expected_curator_identity: identity,
+        p_ticket: ticket,
       });
       handoffRpcElapsedMs = Math.max(0, Math.round(performance.now()-handoffStarted));
     }
