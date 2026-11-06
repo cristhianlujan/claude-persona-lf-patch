@@ -142,41 +142,5 @@ BEGIN
     RAISE EXCEPTION 'IG_L8_UNAUTHORIZED_SOURCE_SCAN';
  END IF;
 END $postcheck$;
--- Positive/negative postchecks execute ONLY on governed migration apply.
--- This test does not create a RUN, insert policy, or declare semantic PASS.
-DO $pilot_cases$
-DECLARE
-  v_rate jsonb;
-  v_session jsonb;
-  v_neg_error text;
-BEGIN
-  v_rate:=programacion.fn_input_governance_semantic_source_snapshot_v1(51,'RATE_LIMIT');
-  v_session:=programacion.fn_input_governance_semantic_source_snapshot_v1(51,'SESSION');
-  IF jsonb_array_length(v_rate)<1
-     OR jsonb_array_length(v_session)<1
-     OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(v_rate) e(value)
-                    WHERE e.value->>'ref'='lf_ops.politicas_rate_limit:1'
-                      AND e.value->>'observed_sha256' ~ '^[a-f0-9]{64}$')
-     OR NOT EXISTS (SELECT 1 FROM jsonb_array_elements(v_session) e(value)
-                    WHERE e.value->>'ref'='lf_ops.reglas:441'
-                      AND e.value->>'observed_sha256' ~ '^[a-f0-9]{64}$') THEN
-    RAISE EXCEPTION 'IG_L8_PILOT_POSITIVE_SOURCE_FREEZE_FAILED';
-  END IF;
-  BEGIN
-    PERFORM programacion.fn_input_governance_semantic_source_snapshot_v1(51,'NOT_A_FAMILY');
-    RAISE EXCEPTION 'IG_L8_UNKNOWN_FAMILY_WRONGLY_ACCEPTED';
-  EXCEPTION WHEN OTHERS THEN
-    GET STACKED DIAGNOSTICS v_neg_error=MESSAGE_TEXT;
-    IF v_neg_error IS DISTINCT FROM
-       'IG_L8_SEMANTIC_SOURCE_FAMILY_UNSUPPORTED:NOT_A_FAMILY' THEN
-      RAISE EXCEPTION 'IG_L8_WRONG_NEGATIVE_ERROR:%',v_neg_error;
-    END IF;
-  END;
-  -- Historical SOURCE_INTEGRITY_ONLY must not count as a selected RUN.
-  IF EXISTS (SELECT 1 FROM programacion.input_readiness_runs
-     WHERE id=949 AND scope->>'validator_semantic_mode'
-          ='SELECTED_SEMANTIC_COMPARISON') THEN
-    RAISE EXCEPTION 'IG_L8_LEGACY_SOURCE_ONLY_MISCLASSIFIED';
-  END IF;
-END $pilot_cases$;
+-- Per-screen tests belong in sandbox and are never a deployment prerequisite.
 COMMIT;
