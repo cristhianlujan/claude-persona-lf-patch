@@ -107,3 +107,34 @@ real EX5C integration. Neither real-chain readback has been run.
 PASE SUCCESS is governance/CI routing, **not pytest success**. Existing
 PG08..PG14 producers were not edited. This PR stays **draft**, with all
 authority indicators `False`.
+
+
+## Independent local byte-level smoke of bundle (not the LF producer regression)
+
+On 2026-11-06, an isolated local pytest run against the exact artifact ZIP
+`ex5c-real-sandbox-evidence-bundle-v1` (artifact #13542421550), SHA-256
+`436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b`,
+validated: (a) the pinned JSON and all authority flags false; (b) the exact
+worker diff, six hunk SHA-256 values and REM-C1..REM-C7 coverage;
+(c) Maven output and stdout/stderr bytes, five HTTP response hashes and all
+public receipt byte hashes; (d) reconstruction of the 18 file Git tree and
+rejection of five freeze-ref attacks in a throwaway bare repo.
+
+```text
+pytest -q test_ex5c_local_evidence.py
+....                                                                     [100%]
+4 passed in 0.88s
+
+PG13_EX5C_FORCE_PUSH_BLOCK_PASS
+PG13_EX5C_FAST_FORWARD_BLOCK_PASS
+PG13_EX5C_DELETE_BLOCK_PASS
+PG13_EX5C_RECREATE_BLOCK_PASS
+PG13_EX5C_DELETE_TAG_BLOCK_PASS
+PG13_EX5C_REBUILT_SUBTREE_SHA=4ba97b68310e913795d7ae1ac35d5912e2fe6551
+PG13_EX5C_ORIGINAL_COMMIT_RECONSTRUCTED=FALSE
+```
+
+These local checks are **not** a pytest execution of the LF import-chain
+source files on PR #3685 and do **not** qualify the LF PG08..PG14 regression
+or PostgreSQL readbacks. PASE checks are CI-routing only and do not run pytest
+for this draft. No PG12/PG14 `*_READBACK_PASS` has been observed.
