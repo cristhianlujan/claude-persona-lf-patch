@@ -2,6 +2,19 @@
 
 **Estado:** `LOCAL_DETERMINISTIC_CANDIDATE_UNQUALIFIED`. Paso **interno** de la skill `PROGRAMMING_ANALYSIS_LF`. No existe una segunda skill A2.
 
+## Ajuste de intención humana (candidato source-only, 2026-11-06)
+
+**Motivo:** un listado de 59 controles no explica por sí solo qué quiso decir el usuario ni permite decidir correctamente qué hay que investigar. No equivale a un documento preparado para implementar.
+
+- Entrada: A1 (problema y resultado literal, negocio, target, restricciones y ambigüedades) + clasificación A2 + Golden v0.3 ya validado estructuralmente.
+- `adapters/intent_brief_v1.py::build_brief` genera un documento humano preliminar, sin inventar la solución: intención declarada, resultado pedido, restricciones, dudas, preguntas candidatas al usuario y tareas separadas de investigación de A3.
+- El adaptador `adapters/a2_a3_intake_preview_v1.py::prepare_preview` añade `human_intent_brief` como **anexo no canónico**, vinculado por digest al A1, la clasificación y el Golden. Los **dos inputs canónicos** de A3 permanecen iguales.
+- Los 59 elementos Golden son checklist de control interno; los 33 obligatorios pendientes no desaparecen por el hecho de que las 26 preguntas de condicionales existan.
+- `ambiguities=[]` significa que A1 no registró ambigüedad, **no** que el usuario haya sido entendido de manera inequívoca. No debe afirmarse que un objetivo genérico es suficientemente específico sin juicio semántico independiente.
+- Las preguntas al dueño tienen estado `SUGGESTED_NOT_SENT_NEEDS_SEMANTIC_REVIEW`. El productor local NO las envía, NO acredita fuente CURRENT, NO realiza juicio semántico, NO habilita RUN/A3 y NO propone programación.
+- `test_intent_brief_v1.py` contiene 20 pruebas nuevas, además de regresión completa del candidato. No usar PASS de fixture como calificación de operaciones reales.
+- Para completar la corrección: incorporar productor semántico autorizado y juez independiente; distinguir pregunta material que necesita dueño de búsqueda que A3 puede resolver por fuentes; comprobar éxito observable antes de entregar análisis implementable.
+
 ## Hito H1 — Productor Golden 12/59 (candidato source-only)
 
 - Catálogo exacto: `catalog/A2_GOLDEN_CATALOGO_DIMENSIONAL_v0_2.json` (12 dimensiones, 59 elementos, 26 activaciones).
