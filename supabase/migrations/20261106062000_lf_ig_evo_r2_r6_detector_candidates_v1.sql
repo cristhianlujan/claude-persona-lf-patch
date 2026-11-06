@@ -29,10 +29,9 @@ BEGIN
       WHERE run_id=p_run_id AND family_code='SECURITY')<>1 THEN
     RAISE EXCEPTION 'IG_EVO_R6_SECURITY_FAMILY_MISSING:%',p_run_id;
   END IF;
-  SELECT id,source_snapshot_sha256 INTO v_prev
+  SELECT id,source_snapshot_sha256,invalidated_at INTO v_prev
   FROM programacion.input_readiness_runs
   WHERE pantalla_id=p_pantalla_id AND id<p_run_id AND status='COMPLETED'
-     AND invalidated_at IS NULL
   ORDER BY id DESC LIMIT 1;
 WITH effective AS (
  SELECT r.id,r.codigo,r.estado,r.titulo,r.categoria,r.valor_config,r.es_transversal,r.pendiente_decision,e.binding_source
@@ -54,7 +53,8 @@ WITH effective AS (
    CASE WHEN jsonb_typeof(r.valor_config)='object' THEN r.valor_config ELSE '{}'::jsonb END) kv
  JOIN lf_ops.pantallas_politicas b ON b.pantalla_id=p_pantalla_id
  JOIN lf_ops.politicas_seguridad p ON p.security_policy_id=b.security_policy_id
- WHERE p.policy_config ? kv.key
+ WHERE r.binding_source<>'DERIVED_GLOBAL'
+   AND p.policy_config ? kv.key
    AND (
       (upper(kv.value)='ALLOW' AND upper(p.policy_config->>kv.key)='DENY')
       OR
@@ -67,7 +67,7 @@ WITH effective AS (
  CROSS JOIN LATERAL jsonb_each(
    CASE WHEN jsonb_typeof(e.valor_config)='object' THEN e.valor_config ELSE '{}'::jsonb END
  ) kv
- WHERE e.estado='VIGENTE'
+ WHERE e.estado='VIGENTE' AND e.binding_source<>'DERIVED_GLOBAL'
 ), r3 AS (
  SELECT jsonb_build_object('source_code',s.source_code,'source_state',s.source_state,
    'reference_key',s.reference_key,'target_code',t.codigo,'target_status',t.estado,
@@ -108,7 +108,9 @@ WITH effective AS (
    'repair_focus','COMPARE_BEHAVIOR_NOT_TITLE_BEFORE_MERGE',
    'semantic_verdict','NOT_TESTED') result
  FROM effective a JOIN effective b ON a.id<b.id
- WHERE a.titulo IS NOT NULL AND b.titulo IS NOT NULL
+ WHERE a.binding_source<>'DERIVED_GLOBAL'
+   AND b.binding_source<>'DERIVED_GLOBAL'
+   AND a.titulo IS NOT NULL AND b.titulo IS NOT NULL
    AND lower(btrim(a.titulo))=lower(btrim(b.titulo))
    AND a.valor_config IS DISTINCT FROM b.valor_config
 ), r5 AS (
@@ -147,7 +149,8 @@ WITH effective AS (
    'implementation_status','NOT_PROVEN','semantic_verdict','NOT_TESTED')
  FROM sec_assessment a
  CROSS JOIN LATERAL jsonb_array_elements(a.threat_coverage) t
- JOIN effective r ON r.valor_config->>'one_time_use'='REQUIRED'
+ JOIN effective r ON r.binding_source<>'DERIVED_GLOBAL'
+   AND r.valor_config->>'one_time_use'='REQUIRED'
    AND r.valor_config->>'replay_after_success'='DENY'
  WHERE t->>'threat_code'='OTP_REPLAY_SINGLE_USE' AND t->>'status'='MISSING'
 ), raw_findings AS (
@@ -184,6 +187,7 @@ SELECT jsonb_build_object(
  'pantalla_id',p_pantalla_id,'run_id',p_run_id,
  'run_source_snapshot_sha256',v_run.source_snapshot_sha256,
  'previous_run_id',v_prev.id,
+ 'previous_run_is_historical',v_prev.invalidated_at IS NOT NULL,
  'previous_source_snapshot_sha256',v_prev.source_snapshot_sha256,
  'source_snapshot_comparison',case when v_prev.id is null then 'NO_BASELINE'
      when v_prev.source_snapshot_sha256 IS DISTINCT FROM v_run.source_snapshot_sha256
