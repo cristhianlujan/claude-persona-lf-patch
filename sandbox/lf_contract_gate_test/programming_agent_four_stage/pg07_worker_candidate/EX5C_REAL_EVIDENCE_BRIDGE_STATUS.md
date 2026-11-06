@@ -233,3 +233,43 @@ CI routing and is not the requested pytest regression.
   a governed resolution or accept a blocked feedback outcome.
 
 No model API calls, no hidden-exam access, no productive authority.
+
+
+## Owner-authorized N+1 FORMAT_REMEDIATION path (2026-11-06)
+
+**Decision:** cosmetics only, pin google-java-format 1.30.0 `--aosp`
+(four-space format, matching sandbox source style). This is a **new N+1
+format-only cycle**, not a retrospective rewrite of original Worker N or the
+SHA-pinned immutable v1/v2 manifests.
+
+Sandbox preparation **PR #46**:
+- Governs `REMINDERS_SPEC.md` AOSP addendum, preserving frozen N
+  REM-C1..REM-C7 SHA in the Worker selector without redefining N.
+- Adds manual, no-model `ex5c-format-remediation.yml`. After owner merge,
+  this compares all original N versus AOSP N+1 Java `.class` outputs using
+  `javac --release 21 -g:none` and **requires byte-identical class sets and
+  SHA values before publishing an isolated Java-only commit**.
+- Adds an independent PR gate which re-derives the exact AOSP file bytes
+  from the historical original N commit and rejects unrelated file changes.
+  The actual one-commit format-only PR does **not** yet exist because #46
+  must be merged first.
+- Adds separate `evidence_version=v3` mode to the evidence-bundle workflow,
+  runnable **only after** the format-only repair PR has been merged.
+  v3 binds its freshly resolved candidate commit to N `e76b213...`,
+  records raw Git objects, Maven/smoke receipts, original and formatted
+  Java class full bytes, AOSP findings and reason `FORMAT_REMEDIATION`.
+  It includes SHA references to unchanged v1/v2, never overwrites them.
+- Owner must also merge sandbox **PR #45** containing the v2 JSON before v3
+  can pass its historical-bundle pin check.
+
+LF draft #3685 gains
+`pg07_ex5c_format_remediation_v3_adapter_v1.py` and adversarial offline
+tests. The adapter BLOCKs when the explicit v3 fixture SHA or file is
+missing, and when any raw commit, blob, subtree, class byte, smoke body,
+stdout/stderr or authority flag mismatches. It does not invent a future
+N+1 SHA, authorize new model attempts, or claim downstream Testing ACCEPT.
+
+**Real PG08..PG14 connected progression is BLOCKED pending owner merges,
+actual one-commit format PR, a successful v3 run and exact fixture SHA.**
+PG12 and PG14 disposable PostgreSQL readbacks are **not** executed for this
+new N+1, and no `*_READBACK_PASS` is claimed. This PR remains **draft**.
