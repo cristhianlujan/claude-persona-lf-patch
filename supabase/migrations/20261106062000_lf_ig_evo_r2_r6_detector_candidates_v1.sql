@@ -408,4 +408,49 @@ BEGIN
     END IF;
   END;
 END $scope_tests$;
+-- Controlled positive and negative evidence checks. No historical RUN mutated.
+DO $cross_policy_tests$
+DECLARE
+ v_doc jsonb; v_chain jsonb; v_recovery jsonb; v_negative jsonb;
+BEGIN
+ v_doc:=programacion.fn_ig_evo_r2_r6_diagnostics_v1(51,949);
+ SELECT c INTO v_chain
+ FROM jsonb_array_elements(v_doc->'findings') f
+ CROSS JOIN LATERAL jsonb_array_elements(f->'cases') c
+ WHERE c->>'finding_kind'='CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS'
+   AND c->'source_rule'->>'code'='B2B-RULE-AUTH-021'
+ LIMIT 1;
+ IF v_chain IS NULL
+ OR v_chain->'security_policy'->>'code'<>'SEC-B2B-AUTH-ABUSE-PROTECTION'
+ OR v_chain->'security_policy'->>'status'<>'CANDIDATO'
+ OR v_chain->'security_policy'->>'binding_status'<>'CANDIDATO'
+ OR v_chain->'rate_policy'->>'code'<>'RATE-B2B-LOGIN'
+ OR v_chain->'rate_policy'->>'scope_key'<>'IP_USER'
+ OR v_chain->'existing_controls'->>'distributed_attack_detection'<>'REQUIRED'
+ OR v_chain->'existing_controls'->>'shared_ip_false_positive_mitigation'<>'REQUIRED'
+ OR v_chain->>'risk_confirmed'<>'false'
+ OR v_chain->>'semantic_verdict'<>'NOT_TESTED'
+ OR jsonb_array_length(v_chain->'risk_scenarios')<>8 THEN
+   RAISE EXCEPTION 'IG_EVO_R6_CROSS_POLICY_POSITIVE_NOT_PROVEN:%',v_chain;
+ END IF;
+ v_recovery:=programacion.fn_ig_evo_r2_r6_diagnostics_v1(56,836);
+ SELECT c INTO v_chain
+ FROM jsonb_array_elements(v_recovery->'findings') f
+ CROSS JOIN LATERAL jsonb_array_elements(f->'cases') c
+ WHERE c->>'finding_kind'='CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS'
+   AND c->'rate_policy'->>'resource_code' LIKE '%OTP%'
+ LIMIT 1;
+ IF v_chain IS NULL OR jsonb_array_length(v_chain->'risk_scenarios')<>11 OR
+   EXISTS(SELECT 1 FROM jsonb_array_elements(v_chain->'risk_scenarios') x
+      WHERE x->>'operation_scope'='LOGIN') THEN
+   RAISE EXCEPTION 'IG_EVO_R6_OTP_SCENARIO_SCOPE_INVALID:%',v_chain;
+ END IF;
+ v_negative:=programacion.fn_ig_evo_r2_r6_diagnostics_v1(1,931);
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(v_negative->'findings') f
+   CROSS JOIN LATERAL jsonb_array_elements(f->'cases') c
+   WHERE c->>'finding_kind'='CROSS_POLICY_CONTROL_AND_ADVERSARIAL_SCENARIOS') THEN
+   RAISE EXCEPTION 'IG_EVO_R6_UNRELATED_SCREEN_FALSE_POSITIVE';
+ END IF;
+END $cross_policy_tests$;
+
 COMMIT;
