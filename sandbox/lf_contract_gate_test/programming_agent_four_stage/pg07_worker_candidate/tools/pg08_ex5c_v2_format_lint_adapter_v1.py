@@ -226,3 +226,90 @@ def to_pg08_c2_candidate(v2: dict, *, solution_id="EX5C") -> list[dict]:
         "base_head_sha": BASE,
         "checks": checks
     }]
+
+
+V2_FIXTURE_SHA256 = "0988de2e39f5139596d05c3cbfcbe8c8998c753cdb009414e5b38da65172217b"
+V2_FIXTURE_PATH = (Path(__file__).resolve().parents[1] /
+                   "fixtures/lf-evidence-bundle-v2.json")
+
+
+def source_envelope(schema: str, **fields) -> dict:
+    """Projection only: not an actual PG05/PG06 C1-C3 producer or authenticated source."""
+    obj = {"schema_version": schema, "status": "CANDIDATE_NOT_ADMITTED",
+           "production_authority": False, "handoff_allowed": False, **fields}
+    obj["candidate_sha256"] = sha(canonical(obj))
+    return obj
+
+
+def run_real_pg06_c4_pg08_c2(*, v1: dict, v2: dict) -> dict:
+    """Import ORIGINAL PG06 C4 and PG08 C2; do not modify producers.
+
+    PG05 and PG06 C1-C3 are projected source-only envelopes, not independently
+    executed producer results. All measurable format/compile bytes originate
+    from the SHA-pinned V2 and the build/source identity from the pinned V1.
+    Thus this is an evidence replay, NOT a complete LF production lineage.
+    """
+    import importlib.util
+    import sys
+    stage_root = Path(__file__).resolve().parents[2]
+    tools_dir = Path(__file__).resolve().parent
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    from pg07_real_worker_evidence_adapter_v1 import run_real_pg08_c1
+
+    def load_producer(folder: str, name: str, symbol: str):
+        src = stage_root / folder / "tools" / (name + ".py")
+        if not src.is_file():
+            block("V2_REAL_PRODUCER_MISSING_BLOCK")
+        spec = importlib.util.spec_from_file_location("ex5c_" + name, src)
+        if spec is None or spec.loader is None:
+            block("V2_REAL_PRODUCER_IMPORT_BLOCK")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return getattr(mod, symbol)
+
+    # Require the exact frozen V1/V2 historical Git source pair and no authority.
+    if (v1["git"]["commit"] != HEAD or v1["git"]["base_commit"] != BASE or
+        v2["candidate_commit"] != HEAD or v2["base_commit"] != BASE or
+        v2["v1_bundle_sha256"] != V1_SHA):
+        block("V2_EX5C_CROSS_BUNDLE_BINDING_BLOCK")
+    result_c1 = run_real_pg08_c1(v1)["pg08_c1"]
+    pg05 = source_envelope("PG05_TO_PG06_EXIT_CANDIDATE_V1",
+        target_binding={"repo_full_name": REPO, "base_head_sha": BASE},
+        solutions=[{"solution_id": "EX5C"}],
+        source_ref="sha256:" + V1_SHA)
+    pg06_1 = source_envelope("PG06_C1_CURRENTNESS_REUSE_CANDIDATE_V1",
+        source_pg05_exit_sha256=pg05["candidate_sha256"],
+        execution_allowed=False)
+    pg06_2 = source_envelope("PG06_C2_TOOLCHAIN_PREFLIGHT_CANDIDATE_V1",
+        source_pg05_exit_sha256=pg05["candidate_sha256"],
+        source_pg06_c1_sha256=pg06_1["candidate_sha256"],
+        pg06_ready=False)
+    pg06_3 = source_envelope("PG06_C3_REVERSIBILITY_PLAN_CANDIDATE_V1",
+        source_pg05_exit_sha256=pg05["candidate_sha256"],
+        source_pg06_c1_sha256=pg06_1["candidate_sha256"],
+        source_pg06_c2_sha256=pg06_2["candidate_sha256"],
+        write_allowed=False, pg06_admitted=False)
+    c4 = load_producer("pg06_preflight_candidate",
+        "pg06_c4_baseline_capture_candidate_v1", "prepare_pg06_c4")(
+            pg05_exit=pg05, pg06_c1=pg06_1, pg06_c2=pg06_2, pg06_c3=pg06_3,
+            baseline_observations=to_pg06_c4_baseline(v2))
+    c2 = load_producer("pg08_build_candidate",
+        "pg08_c2_format_lint_delta_candidate_v1", "prepare_pg08_c2")(
+            pg06_c4=c4, pg08_c1=result_c1,
+            lint_observations=to_pg08_c2_candidate(v2))
+    if (c4.get("production_authority") is not False or
+        c2.get("production_authority") is not False or
+        c2.get("source_pg06_c4_sha256") != c4["candidate_sha256"] or
+        c2.get("source_pg08_c1_sha256") != result_c1["candidate_sha256"]):
+        block("V2_ORIGINAL_PRODUCER_AUTHORITY_OR_LINEAGE_BLOCK")
+    if c2["solutions"][0]["reported_diagnostic"] != "REPORTED_NEW_BLOCKERS":
+        block("V2_REAL_FORMAT_NEW_BLOCKERS_DIAGNOSTIC_DRIFT")
+    return {
+        "pg05_pg06_c1_c3_provenance": "ADAPTER_PROJECTED_SOURCE_ONLY_UNAUTHENTICATED",
+        "pg06_c4": c4, "pg08_c1": result_c1, "pg08_c2": c2,
+        "v1_sha256": V1_SHA, "v2_sha256": V2_FIXTURE_SHA256,
+        "evidence_kind": "REAL_SANDBOX_UNAUTHENTICATED",
+        "production_authority": False,
+        "next_gate": "PG08_C2_REPORTED_NEW_BLOCKERS_REQUIRES_GOVERNED_REVIEW"
+    }
