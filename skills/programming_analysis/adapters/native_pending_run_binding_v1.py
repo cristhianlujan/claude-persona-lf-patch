@@ -12,6 +12,8 @@ from typing import Any
 
 SKILL = 'PROGRAMMING_ANALYSIS_LF'
 OP = 'EJECUCION_SKILL_LF'
+REPO = 'cristhianlujan/claude-persona-lf-patch'
+PATH = 'skills/programming_analysis/SKILL.md'
 SCHEMA = 'A2_GOLDEN_PENDING_RUN_BUSINESS_CANDIDATE_V1'
 H64 = re.compile(r'^[a-f0-9]{64}$')
 H40 = re.compile(r'^[a-f0-9]{40}$')
@@ -69,16 +71,25 @@ def verify_pending(parent: Any, invocation: Any, child: Any, step0: Any, actor_p
         child.get('created_by_execution_id')!=pid or child.get('request_sha256')!=request or
         not _is_dict(cm)):
         return block('PENDING_CHILD_RUN_MISMATCH')
+    if (child.get('target_repo')!=REPO or child.get('target_path')!=PATH or
+        parent.get('target_repo')!=REPO):
+        return block('PENDING_REPOSITORY_OR_TARGET_MISMATCH')
+    if cm.get('skill_input_sha256')!=invocation.get('input_sha256'):
+        return block('PENDING_INPUT_DIGEST_MISMATCH')
     ph = cm.get('profile_handoff')
     if not _is_dict(ph) or ph.get('source_execution_id')!=pid or ph.get('skill_run_id')!=srid or ph.get('business')!=business or cm.get('business')!=business:
         return block('PENDING_CHILD_CROSS_BUSINESS')
     source = cm.get('skill_source')
-    if not _is_dict(source) or source.get('path')!='skills/programming_analysis/SKILL.md' or not H40.fullmatch(str(source.get('commit_sha',''))) or not H40.fullmatch(str(source.get('blob_sha',''))):
+    if not _is_dict(source) or source.get('path')!=PATH or source.get('repository')!=REPO or not H40.fullmatch(str(source.get('commit_sha',''))) or not H40.fullmatch(str(source.get('blob_sha',''))):
         return block('PENDING_CURRENT_SOURCE_NOT_BOUND')
+    if (step0.get('evidence_ref')!='supabase://public.lf_operation_execution/'+cid):
+        return block('PENDING_INIT_STEP_EVIDENCE_REF_INVALID')
     if (step0.get('execution_id')!=cid or step0.get('step_id')!='init_execution' or step0.get('step_order')!=0 or
         step0.get('status')!='STEP_PASS_WITH_EVIDENCE' or not _is_dict(step0.get('evidence_payload')) or
         step0['evidence_payload'].get('execution_id_created') is not True or
-        step0['evidence_payload'].get('mini_judge_code')!='JUDGE-EJECUCION-SKILL-LF-v0.1'):
+        step0['evidence_payload'].get('mini_judge_code')!='JUDGE-EJECUCION-SKILL-LF-v0.1' or
+        step0['evidence_payload'].get('mini_judge_result')!='STEP_PASS_WITH_EVIDENCE' or
+        step0['evidence_payload'].get('step_result')!='STEP_PASS_WITH_EVIDENCE'):
         return block('PENDING_INIT_STEP_NOT_CLEAN')
     return {'schema_version':SCHEMA,'status':'CANDIDATE_PENDING_RUN_CONSISTENT',
             'blocking_codes':[],'business':business,'execution_id':cid,'skill_run_id':srid,
