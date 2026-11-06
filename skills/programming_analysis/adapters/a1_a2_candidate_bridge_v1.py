@@ -19,17 +19,18 @@ def prepare_candidate(a1_input, a2_signals, expected_business=None,
                       run_readback=None, actor_parent_execution_id=None):
     a1 = _load("steps/a1/validators/run.py", "analysis_a1_step").run(a1_input)
     a2 = _load("steps/a2/validators/run.py", "analysis_a2_step").run(a1, a2_signals)
-    # Caller-supplied expected_business is only a veto, never an authority source.
-    # The supplied DB-shaped rows are structurally reconciled but NOT authenticated.
+    # No caller field authenticates readback. Pending READ_ONLY native flow
+    # does not have final COMPLETED invocation or evidence_ref before judge.
+    # Child RUN and immutable step 0 are mandatory; fail closed otherwise.
     rows = run_readback if isinstance(run_readback, dict) else {}
     run_binding = _load(
-        "adapters/run_business_binding_v1.py", "analysis_run_business_binding"
-    ).reconcile(
+        "adapters/native_pending_run_binding_v1.py", "analysis_pending_run_business_binding"
+    ).verify_pending(
         rows.get("parent_run"), rows.get("skill_invocation"),
-        rows.get("child_run"), actor_parent_execution_id,
+        rows.get("child_run"), rows.get("step0"), actor_parent_execution_id,
     )
     resolved_business = run_binding.get("business") if (
-        run_binding["source_consistent"]
+        run_binding.get("status") == "CANDIDATE_PENDING_RUN_CONSISTENT"
         and (expected_business is None or expected_business == run_binding["business"])
     ) else None
     handoff = _load("adapters/a2_a3_business_handoff_v1.py", "analysis_a2_a3_scope_guard").prepare_candidate(
