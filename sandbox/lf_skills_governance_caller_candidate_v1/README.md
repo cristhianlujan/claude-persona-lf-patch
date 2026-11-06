@@ -17,6 +17,8 @@
 - `RPC_CONTRACT_QUALIFICATION_V1.json` — the four proposed RPC interfaces and their server-side authority, transaction, replay, judge and readback invariants. **None of these RPCs is deployed**.
 - `QUALIFICATION_REPORT_V1.md` — read-only Supabase source comparison and requirement→risk→invariant→evidence→positive/negative-test matrix. **The current generic skill judge has empty pass/fail arrays and is P0-unqualified for operational use.**
 - `OIDC_WORKFLOW_CANDIDATE.yml.txt` — disabled reference template (`if: false`), not a runnable GitHub workflow.
+- `TRUST_WRAPPER_QUALIFICATION_V1.md` — source-verified pattern for the skill-specific trust wrapper over the shared recorder; **NOT INSTALLED**. Includes current vacuous-judge P0 and independent coverage matrix.
+- `skill_judge_qualification_candidate_v1.mjs` + `.test.mjs` — pure, unauthenticated judge-coverage checks, **36/36 local PASS** on byte-identical source; cannot authorize a RUN, judge or A3.
 - One PR remains dedicated to generic caller infrastructure. `PROGRAMMING_ANALYSIS_LF` and its A2→A3 gate remain in PR #3624, not in this Edge transport PR.
 
 ## Contents
