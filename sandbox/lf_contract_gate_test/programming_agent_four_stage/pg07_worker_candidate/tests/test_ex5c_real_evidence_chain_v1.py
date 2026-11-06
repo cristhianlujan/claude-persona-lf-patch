@@ -3,8 +3,9 @@
 Uses actual PG08_C1 producer and the existing PG13 Git mutation helper.
 Does not convert synthetic PG06/PG08..14 fixtures into real results.
 
-Full chain PG08 C2 -> PG14 is intentionally BLOCKED until the exact fixed
-bundle contains REAL PG06_C4 baseline + independent format/lint observations.
+The real V2 baseline and candidate are available, but PG08 C2 reports new
+blocking format findings. The original producers must preserve that outcome;
+PG14 ACCEPT is not authorized.
 """
 from __future__ import annotations
 
@@ -18,6 +19,9 @@ sys.path.insert(0, str(ROOT / "pg07_worker_candidate/tools"))
 sys.path.insert(0, str(ROOT / "pg13_freeze_candidate/tools"))
 import pg07_real_worker_evidence_adapter_v1 as adapter
 from pg13_ex5c_reconstructed_freeze_attack_v1 import local_freeze_and_attacks
+from pg08_ex5c_v2_format_lint_adapter_v1 import (
+    load_v2, V2_FIXTURE_PATH, V2_FIXTURE_SHA256, run_real_pg06_c4_pg08_c2
+)
 
 FIXTURE = ROOT / "pg07_worker_candidate/fixtures/lf-evidence-bundle-v1.json"
 FIXED = "436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b"
@@ -51,12 +55,18 @@ class EX5CRealChainTests(unittest.TestCase):
         self.assertEqual(mutation["blocked_mutation_count"], 5)
         self.assertFalse(mutation["production_authority"])
 
-        # No synthetic stage outputs are allowed to fill this missing C2 input.
-        with self.assertRaisesRegex(adapter.RealEvidenceBlocked,
-                                    "PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK"):
-            adapter.require_pg08_c2_real_source(real)
+        # V2 is real and SHA-pinned. Original PG06 C4 and PG08 C2 MUST
+        # classify new format findings as blockers, not silently promote PASS.
+        v2 = load_v2(V2_FIXTURE_PATH, V2_FIXTURE_SHA256)
+        lint = run_real_pg06_c4_pg08_c2(v1=real, v2=v2)
+        self.assertEqual(lint["pg08_c2"]["solutions"][0]["reported_diagnostic"],
+                         "REPORTED_NEW_BLOCKERS")
+        self.assertGreater(len(lint["pg08_c2"]["solutions"][0]["reported_new_blockers"]), 0)
+        self.assertFalse(lint["pg08_c2"]["pg08_c2_pass"])
+        self.assertFalse(lint["pg08_c2"]["production_authority"])
         print("EX5C_PG08_C1_REAL_PRODUCER_SOURCE_ONLY_PASS")
-        print("EX5C_PG08_C2_REAL_EVIDENCE_REQUIRED_BLOCK")
+        print("EX5C_PG06_C4_REAL_BASELINE_REPORTED_FAILURE")
+        print("EX5C_PG08_C2_REAL_NEW_FORMAT_BLOCKERS=BLOCK")
         print("EX5C_PG09_C1_C4_REAL_COST_PRODUCERS_REQUIRES_DECISION_RETURN")
         print("EX5C_PG10_OWNER_DECISION_REFERENCE_SHA_PINNED")
         print("EX5C_PG13_REAL_SUBTREE_MUTATIONS_BLOCKED=5")
