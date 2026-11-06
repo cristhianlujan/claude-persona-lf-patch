@@ -53,7 +53,8 @@ def sample_patch():
             rows.append({"path": path + name, "header": h.strip(),
                          "sha256": a.digest(raw), "bytes": len(raw),
                          "content_base64": base64.b64encode(raw).decode(),
-                         "requirements": ["REM-C" + str(len(rows) + 1)]})
+                         "requirements": ["REM-C" + str(len(rows) + 1)] +
+                         (["REM-C7"] if len(rows) == 5 else [])})
     full = "".join(fragments).encode()
     return {"text_base64": base64.b64encode(full).decode(),
             "sha256": a.digest(full), "worker_patch_sha256": a.digest(full),
@@ -134,6 +135,10 @@ class RealEvidenceNegativeTests(unittest.TestCase):
                 for i in range(18)]
         with self.assertRaisesRegex(a.RealEvidenceBlocked, "BLOB_OID"):
             a.rebuild_subtree(rows)
+
+    def test_author_cannot_self_review(self):
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "SELF_REVIEW"):
+            a.independent_review_label("worker:claude-sonnet-5-5", "worker:claude-sonnet-5-5")
 
     def test_untrusted_commit_altered_oid(self):
         original = b"tree " + a.TREE.encode() + b"\n\nmsg\n"
