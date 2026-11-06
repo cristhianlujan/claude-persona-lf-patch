@@ -73,15 +73,15 @@ BEGIN
  END IF;
 
  -- An activation missing a receipt or a bounded subject is never authoritative.
- IF v_activation->>'schema_version'<>'IG_SEMANTIC_ACTIVATION_V1'
-    OR v_activation->>'activation_state'<>'ACTIVE_GOVERNED_CANDIDATE'
+ IF v_activation->>'schema_version' IS DISTINCT FROM 'IG_SEMANTIC_ACTIVATION_V1'
+    OR v_activation->>'activation_state' IS DISTINCT FROM 'ACTIVE_GOVERNED_CANDIDATE'
     OR v_activation->>'production_authorized' IS DISTINCT FROM 'false'
     OR v_activation->>'semantic_promotion_authorized' IS DISTINCT FROM 'false'
     OR nullif(v_activation->>'decision_id','') IS NULL
     OR nullif(v_activation->>'provenance_receipt_id','') IS NULL
-    OR jsonb_typeof(v_activation#>'{target_scope,screen_codes}')<>'array'
+    OR jsonb_typeof(v_activation#>'{target_scope,screen_codes}') IS DISTINCT FROM 'array'
     OR jsonb_array_length(v_activation#>'{target_scope,screen_codes}')=0
-    OR jsonb_typeof(v_activation->'selected_families')<>'array'
+    OR jsonb_typeof(v_activation->'selected_families') IS DISTINCT FROM 'array'
     OR jsonb_array_length(v_activation->'selected_families')=0
     OR jsonb_array_length(v_activation->'selected_families')>2 THEN
    RAISE EXCEPTION 'IG_SEMANTIC_ACTIVATION_AUTHORITY_INCOMPLETE';
