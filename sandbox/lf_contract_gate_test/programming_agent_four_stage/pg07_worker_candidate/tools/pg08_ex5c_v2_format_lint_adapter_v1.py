@@ -83,6 +83,8 @@ def load_v2(path: Path, fixed_sha256: str) -> dict:
         [x.get("commit") for x in snapshots] != [BASE, HEAD]):
         block("V2_SNAPSHOT_CHAIN_BLOCK")
     for item in snapshots:
+        if item.get("authority_authenticated") is not False or item.get("candidate_source") != "EXACT_GIT_CHECKOUT":
+            block("V2_NESTED_AUTHORITY_INJECTION_BLOCK")
         fmt, lint = item["formatter"], item["javac"]
         if fmt["version"] != "1.30.0" or fmt["jar_sha256"] != GJF_SHA:
             block("V2_FORMATTER_TOOL_PIN_BLOCK")
