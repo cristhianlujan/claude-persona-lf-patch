@@ -40,13 +40,17 @@ BEGIN
    RAISE EXCEPTION 'IG_SEMANTIC_SCOPE_CALLER_OVERRIDE_DENIED';
  END IF;
 
- SELECT count(*),max(c.especificacion->'validator_semantic_activation_v1')
- INTO v_count,v_activation
+ SELECT count(*) INTO v_count
  FROM programacion.contratos c
  WHERE c.version_id=NEW.version_id
    AND c.contrato_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
    AND c.estado='defined' AND c.fail_closed;
  IF v_count<>1 THEN RAISE EXCEPTION 'IG_SEMANTIC_EXECUTION_CONTRACT_AMBIGUOUS'; END IF;
+ SELECT c.especificacion->'validator_semantic_activation_v1'
+ INTO v_activation FROM programacion.contratos c
+ WHERE c.version_id=NEW.version_id
+   AND c.contrato_codigo='INPUT_GOVERNANCE_EXECUTION_CONTRACT'
+   AND c.estado='defined' AND c.fail_closed;
 
  -- Absent/disabled activation preserves legacy behavior, with no model call.
  IF v_activation IS NULL OR v_activation='null'::jsonb OR
