@@ -1,5 +1,5 @@
 -- LF Input Governance L7: candidate model packet for the EXISTING Validator.
--- Non-promotable, read-only. New RUN + source pins required; no historical RUN reuse.
+-- Non-promotable, read-only. Uses existing Curator source pins and same IG run; no RUN reuse.
 -- EKB preflight: GOV-010, GOV-032, GOV-LF-RECEIPT-001,
 -- IG-EKB-READ-WITHOUT-SEMANTIC-PREFLIGHT-001, IG-TRANSVERSAL-RULE-SCOPE-AUTHORITY-GAP-001.
 -- Scope: RATE_LIMIT and SESSION pilot; other families explicitly fail closed.
@@ -38,8 +38,7 @@ BEGIN
         RAISE EXCEPTION 'IG_SEMANTIC_PACKET_RUN_NOT_OPEN:%:%',p_run_id,v_run.status;
     END IF;
     IF v_run.scope->>'validator_semantic_mode' IS DISTINCT FROM 'SELECTED_SEMANTIC_COMPARISON'
-       OR v_run.scope->>'semantic_promotion_authorized' IS DISTINCT FROM 'false'
-       OR nullif(v_run.source_snapshot_sha256,'') IS NULL THEN
+       OR v_run.scope->>'semantic_promotion_authorized' IS DISTINCT FROM 'false' THEN
         RAISE EXCEPTION 'IG_SEMANTIC_PACKET_MODE_OR_SNAPSHOT_NOT_AUTHORIZED:%',p_run_id;
     END IF;
     IF v_run.validator_identity IS NOT NULL
@@ -172,6 +171,8 @@ BEGIN
        RAISE EXCEPTION 'IG_SEMANTIC_PACKET_DUPLICATE_SOURCE:%',p_run_id;
     END IF;
 
+    -- This digest summarizes Curator-pinned source evidence already captured at reading.
+    -- It is not the later RUN-wide source_manifest digest created by Validator.
     v_packet:=jsonb_build_object(
         'schema_version','IG_SEMANTIC_MODEL_PACKET_V1',
         'status',CASE WHEN jsonb_array_length(v_missing_pins)=0
@@ -181,7 +182,7 @@ BEGIN
         'screen_code',(SELECT codigo FROM lf_ops.pantallas WHERE id=v_run.pantalla_id),
         'validator_semantic_mode','SELECTED_SEMANTIC_COMPARISON',
         'source_integrity_verified',jsonb_array_length(v_missing_pins)=0,
-        'source_snapshot_sha256',v_run.source_snapshot_sha256,
+        'curator_source_pins_sha256',programacion.fn_v09_sha256_jsonb(v_sources),
         'curator_identity',v_run.curator_identity,
         'validator_identity',p_validator_identity,
         'selected_families',to_jsonb(v_families),
