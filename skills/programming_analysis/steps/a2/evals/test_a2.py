@@ -30,6 +30,7 @@ def a1input():
 def low():
     return {
         "schema_version": "ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1",
+        "business": "LF",
         "target_ref": "B2B-AUTH-001",
         "change_type": "REVIEW",
         "target_granularity": "SCREEN",
@@ -53,6 +54,37 @@ class AnalysisA2Candidate(unittest.TestCase):
     def setUp(self):
         self.a1 = RUN_A1.run(a1input())
         self.signals = low()
+
+    def test_business_carried_from_a1(self):
+        result = RUN.run(self.a1, self.signals)
+        self.assertEqual(result["business"], "LF")
+        self.assertEqual(result["classification"]["schema_version"], "ANALYSIS_CHANGE_CLASSIFICATION_V1")
+        self.assertNotIn("business", result["classification"])
+
+    def test_business_missing_from_a2_blocked(self):
+        del self.signals["business"]
+        result = RUN.run(self.a1, self.signals)
+        self.assertEqual(result["blocking_codes"], ["A2_BUSINESS_REQUIRED"])
+        self.assertIsNone(result["business"])
+
+    def test_business_cross_project_blocked(self):
+        self.signals["business"] = "SALY"
+        result = RUN.run(self.a1, self.signals)
+        self.assertEqual(result["blocking_codes"], ["A2_BUSINESS_SCOPE_MISMATCH"])
+        self.assertIsNone(result["next_step"])
+
+    def test_business_declared_fact_conflict(self):
+        inp = a1input()
+        inp["provided_facts"].append({"fact_code": "TARGET_BUSINESS", "value": "SALY",
+                                       "source_ref": "user://analysis-a1-case-001"})
+        self.a1 = RUN_A1.run(inp)
+        result = RUN.run(self.a1, self.signals)
+        self.assertEqual(result["blocking_codes"], ["A2_BUSINESS_FACT_CONFLICT"])
+
+    def test_business_without_scope_from_a1_blocked(self):
+        self.a1["business"] = None
+        result = RUN.run(self.a1, self.signals)
+        self.assertEqual(result["blocking_codes"], ["A1_BUSINESS_SCOPE_INVALID"])
 
     def test_01_l1_typed_source_only(self):
         result = RUN.run(self.a1, self.signals)
