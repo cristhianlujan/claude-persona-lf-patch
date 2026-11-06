@@ -3,6 +3,7 @@ import copy
 import importlib.util
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 STAGE = Path(__file__).resolve().parents[3]
@@ -202,6 +203,38 @@ class AnalysisA2Candidate(unittest.TestCase):
         self.assertEqual(res["status"], "NEED_MORE_EVIDENCE")
         self.assertEqual(res["classification"]["specialist_resolution"], "PENDING")
         self.assertNotIn("specialist_code", res["classification"])
+
+
+
+    def test_23_invalid_generated_output_is_blocked(self):
+        # Simulate an internal classification bug: the output schema must reject it.
+        with patch.object(RUN, "_depth", return_value=("L1", [])):
+            res = RUN.run(self.a1, self.signals)
+        self.assertEqual(res["status"], "BLOCKED")
+        self.assertEqual(res["blocking_codes"], ["A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT"])
+        self.assertIsNone(res["next_step"])
+        self.assertFalse(res["source_attested"])
+
+    def test_24_unknown_depth_fails_output_schema(self):
+        with patch.object(RUN, "_depth", return_value=("L4", ["unexpected-depth"])):
+            res = RUN.run(self.a1, self.signals)
+        self.assertEqual(res["status"], "BLOCKED")
+        self.assertEqual(res["blocking_codes"], ["A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT"])
+
+    def test_25_malformed_blocked_envelope_raises(self):
+        # Do not return a malformed BLOCKED envelope if the schema drifts.
+        original = RUN._valid
+
+        def reject_blocked_output(value, schema):
+            if (isinstance(value, dict)
+                    and value.get("schema_version") == RUN.SCHEMA
+                    and value.get("status") == "BLOCKED"):
+                return False
+            return original(value, schema)
+
+        with patch.object(RUN, "_valid", side_effect=reject_blocked_output):
+            with self.assertRaisesRegex(ValueError, "A2_BLOCKED_OUTPUT_SCHEMA_DRIFT"):
+                RUN.run(None, self.signals)
 
 
 if __name__ == "__main__":
