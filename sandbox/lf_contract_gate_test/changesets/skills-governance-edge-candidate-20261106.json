@@ -8,6 +8,9 @@
     "sandbox/lf_skills_governance_caller_candidate_v1/OIDC_WORKFLOW_CANDIDATE.yml.txt": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/QUALIFICATION_REPORT_V1.md": "RUNTIME_TESTING",
     "sandbox/lf_skills_governance_caller_candidate_v1/README.md": "RUNTIME_TESTING",
-    "sandbox/lf_skills_governance_caller_candidate_v1/RPC_CONTRACT_QUALIFICATION_V1.json": "RUNTIME_TESTING"
+    "sandbox/lf_skills_governance_caller_candidate_v1/RPC_CONTRACT_QUALIFICATION_V1.json": "RUNTIME_TESTING",
+    "sandbox/lf_skills_governance_caller_candidate_v1/skill_judge_qualification_candidate_v1.mjs": "RUNTIME_TESTING",
+    "sandbox/lf_skills_governance_caller_candidate_v1/skill_judge_qualification_candidate_v1.test.mjs": "RUNTIME_TESTING",
+    "sandbox/lf_skills_governance_caller_candidate_v1/TRUST_WRAPPER_QUALIFICATION_V1.md": "RUNTIME_TESTING"
   }
 }
