@@ -243,6 +243,26 @@ BEGIN
       ELSE 'EXPLICIT_REFERENCES_ACCOUNTED_FOR' END,
     'semantic_text_signals_status','NOT_TESTED',
     'semantic_match_status','NOT_TESTED',
+    'semantic_source_manifest',jsonb_build_object(
+       'root_text_fields',jsonb_build_array('titulo','descripcion','razon','pendiente_detalle'),
+       'policy_text_fields',jsonb_build_array('policy_code','policy_config'),
+       'signal_decomposition','REQUIRES_SEMANTIC_EVALUATION',
+       'edge_to_text_reconciliation','REQUIRES_SEMANTIC_EVALUATION',
+       'not_found_is_not_not_applicable',true,
+       'family_selection','RESOLVE_FROM_INPUT_FAMILY_POLICY_REGISTRY_NOT_FROM_FIXED_DETECTOR_NAMES'),
+    'screen_policy_candidates',(
+      SELECT coalesce(jsonb_agg(jsonb_build_object(
+        'pantalla_politica_id',b.pantalla_politica_id,
+        'policy_kind',b.policy_kind,'reference_role',b.reference_role,
+        'binding_status',b.status,
+        'policy_target_identifiers',jsonb_strip_nulls(jsonb_build_object(
+          'rate_limit_policy_id',b.rate_limit_policy_id,
+          'security_policy_id',b.security_policy_id,
+          'timeout_policy_id',b.timeout_policy_id,
+          'session_policy_id',b.session_policy_id))
+      ) ORDER BY b.pantalla_politica_id),'[]'::jsonb)
+      FROM lf_ops.pantallas_politicas b
+      WHERE b.pantalla_id=p_pantalla_id),
     'semantic_completeness_authorized',false,
     'required_next_step','EXTRACT_OBLIGATIONS_FROM_SOURCE_TEXT_AND_COMPARE_WITH_ALL_GRAPH_EDGES_IN_NATIVE_SEMANTIC_EVALUATION',
     'canonical_write_authorized',false,
