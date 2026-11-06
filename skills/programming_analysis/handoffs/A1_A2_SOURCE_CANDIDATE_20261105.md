@@ -12,7 +12,7 @@
 - `steps/a2/validators/run.py` recibe el sobre validado de A1 más señales tipadas externas y produce únicamente `ANALYSIS_CHANGE_CLASSIFICATION_V1` como candidato no atestado.
 - `adapters/a1_a2_candidate_bridge_v1.py` verifica continuidad local sin ejecutar el perfil, modelo, juez o A3.
 - Entrada/salida tipadas: `steps/a2/schemas/input.schema.json` y `output.schema.json`.
-- `steps/a2/evals/test_a2.py`: 25 pruebas sintéticas **definidas, todavía NO ejecutadas con intérprete Python sobre este HEAD**.
+- `steps/a2/evals/test_a2.py`: 28 pruebas sintéticas **definidas, todavía NO ejecutadas con intérprete Python sobre el HEAD vigente** (25 preexistentes + 3 negativos de esquema de salida).
 - Control de reglas analizadas desde Git: 23/23 expresiones reconocidas; escenarios de L1, L2, L3, riesgo alto, especialista pendiente y evidencia desconocida comprobados con una evaluación estática independiente en JavaScript. **No sustituye tests Python.**
 
 ## Controles de riesgo
@@ -32,3 +32,12 @@
 
 ## Próximo cursor
 Resolver admisión tipada de ACT-0001/ACTUALIZACION_SKILL_LF para el activo registrado, abrir ejecución antes del write definitivo, reproducir el patch gobernado y correr tests reales. Luego ejecutar juez independiente, comparar BEFORE/AFTER y actualizar hash de activo por la autoridad de DB antes de habilitar consumidor.
+
+## Lote correctivo P1 — 2026-11-05 (fuente candidata, sin calificación)
+- Hallazgo: validación de esquema de salida situada después de `return` y por tanto inalcanzable en `steps/a2/validators/run.py`.
+- Corrección candidata: antes de exponer clasificación L1/L2/L3, validar todo el `result` contra `output.schema.json`; ante resultado inválido, devolver `BLOCKED/A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT`. El propio sobre `BLOCKED` se valida y, si no satisface el esquema, se produce error terminal `A2_BLOCKED_OUTPUT_SCHEMA_DRIFT` (fail closed).
+- Evidencia de fuente: runner blob `243e1e6ccdd494caa5a60407e07c4f5c10a39a60`; test blob `7f43f21d9f6017903802a307cf30a1a49efbaad2`.
+- Nuevas pruebas: emisión con predicados vacíos, nivel fuera del enum (`L4`) y sobre `BLOCKED` malformado (debe elevar error). Conteo definido **28 tests**; no afirmar que están ejecutados o PASS.
+- CI: PASE exitoso al HEAD correctivo previo `4ee0876a433c245a57e420acb750846c55c52505`, run `42150656025`. Este control NO acredita ejecución Python ni consumidor real.
+- Cambios acotados a fuente de candidata, tests y este handoff. PR #3624 permanece `DRAFT`; **no** merge, no alta de otro activo, no escritura Supabase, no activation, no bypass de ACTUALIZACION_SKILL_LF.
+- Pendientes de cierre P1: ejecutar tests Python exact-HEAD, comprobar errores negativos y regresiones A1/A2, juez independiente y admisión/recibos de actualización gobernada.
