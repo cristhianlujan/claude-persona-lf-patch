@@ -15,17 +15,24 @@ verify_pending = module.verify_pending
 def sample():
     parent, invocation, child = bundle()
     parent['target_type'] = 'PERFIL'
+    parent['target_repo'] = 'cristhianlujan/claude-persona-lf-patch'
     parent['manifest']['router_profile_handoff']['router_authorization_receipt']['effect_authority'] = False
     invocation['status'] = 'IN_PROGRESS'
     child['target_type'] = 'SKILL'
+    child['target_repo'] = parent['target_repo']
+    child['target_path'] = 'skills/programming_analysis/SKILL.md'
+    child['manifest']['skill_input_sha256'] = invocation['input_sha256']
     child['manifest']['business'] = 'LF'
     child['manifest']['profile_handoff']['business'] = 'LF'
-    child['manifest']['skill_source'] = {'path':'skills/programming_analysis/SKILL.md',
+    child['manifest']['skill_source'] = {'repository':parent['target_repo'],'path':'skills/programming_analysis/SKILL.md',
                                          'commit_sha':'c'*40,'blob_sha':'d'*40}
     step0 = {'execution_id':child['execution_id'],'step_id':'init_execution','step_order':0,
              'status':'STEP_PASS_WITH_EVIDENCE',
+             'evidence_ref':'supabase://public.lf_operation_execution/'+child['execution_id'],
              'evidence_payload':{'execution_id_created':True,
-                                 'mini_judge_code':'JUDGE-EJECUCION-SKILL-LF-v0.1'}}
+                                 'mini_judge_code':'JUDGE-EJECUCION-SKILL-LF-v0.1',
+                                 'mini_judge_result':'STEP_PASS_WITH_EVIDENCE',
+                                 'step_result':'STEP_PASS_WITH_EVIDENCE'}}
     return parent, invocation, child, step0
 
 class PendingBridge(unittest.TestCase):
@@ -65,3 +72,26 @@ class PendingBridge(unittest.TestCase):
         p,i,c,s=sample()
         self.assertEqual(verify_pending(p,i,c,s,'OTHER')['blocking_codes'],
                          ['PENDING_PARENT_ACTOR_MISMATCH'])
+
+class StrongBinding(unittest.TestCase):
+    def reject(self, change, code):
+        p,i,c,s=sample()
+        change(p,i,c,s)
+        result=verify_pending(p,i,c,s,p['execution_id'])
+        self.assertEqual(result['blocking_codes'],[code])
+        self.assertFalse(result['a3_allowed'])
+
+    def test_wrong_repository(self):
+        self.reject(lambda p,i,c,s:c.update(target_repo='other/other'),'PENDING_REPOSITORY_OR_TARGET_MISMATCH')
+    def test_target_path_changed(self):
+        self.reject(lambda p,i,c,s:c.update(target_path='skills/other/SKILL.md'),'PENDING_REPOSITORY_OR_TARGET_MISMATCH')
+    def test_source_repository_changed(self):
+        self.reject(lambda p,i,c,s:c['manifest']['skill_source'].update(repository='other/other'),'PENDING_CURRENT_SOURCE_NOT_BOUND')
+    def test_input_changed(self):
+        self.reject(lambda p,i,c,s:c['manifest'].update(skill_input_sha256='f'*64),'PENDING_INPUT_DIGEST_MISMATCH')
+    def test_step0_bad_ref(self):
+        self.reject(lambda p,i,c,s:s.update(evidence_ref='supabase://wrong'),'PENDING_INIT_STEP_EVIDENCE_REF_INVALID')
+    def test_step0_false_judge_result(self):
+        self.reject(lambda p,i,c,s:s['evidence_payload'].update(mini_judge_result='FAIL'),'PENDING_INIT_STEP_NOT_CLEAN')
+    def test_step0_missing_step_result(self):
+        self.reject(lambda p,i,c,s:s['evidence_payload'].pop('step_result'),'PENDING_INIT_STEP_NOT_CLEAN')
