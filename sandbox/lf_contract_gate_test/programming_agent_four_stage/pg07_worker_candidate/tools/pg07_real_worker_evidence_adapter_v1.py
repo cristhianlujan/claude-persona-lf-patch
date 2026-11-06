@@ -438,8 +438,8 @@ def pg07_budget_sources_for_real_bundle(bundle: dict) -> tuple[dict, dict]:
     guard = {
         "schema_version": "PG07_C5_ITERATION_GUARD_CANDIDATE_V1",
         "status": "CANDIDATE_NOT_ADMITTED",
-        "solutions": [{"solution_id": "EX5C"}],
-        "iteration_applied": False,
+        "solutions": [{"solution_id": "EX5C", "iterations": []}],
+        "iteration_applied": False, "pg10_routing_executed": False,
         "production_authority": False,
         "handoff_allowed": False
     }
