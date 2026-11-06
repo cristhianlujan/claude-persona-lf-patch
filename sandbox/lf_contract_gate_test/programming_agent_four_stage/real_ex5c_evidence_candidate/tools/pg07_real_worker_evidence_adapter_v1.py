@@ -399,3 +399,24 @@ def worker_reference(b: dict) -> dict:
         "worker_invoked": False, "production_authority": False,
         "tool_execution_verified": False, "receipt_authenticated": False,
     }
+
+
+def independent_review_binding(author: str, reviewer: str) -> dict:
+    """Identity *declarations* only, not proof of an actual independent review."""
+    if not isinstance(author, str) or not isinstance(reviewer, str):
+        fail("BLOCK_REVIEW_IDENTITY")
+    if author == reviewer:
+        fail("SELF_REVIEW")
+    if author != "worker:claude-sonnet-5-5" or reviewer != "reviewer:claude-opus-verifier":
+        fail("BLOCK_REVIEW_IDENTITY")
+    return {"author_reported": author, "reviewer_reported": reviewer,
+            "review_attested": False, "production_authority": False}
+
+
+def pg09_cost_reference(b: dict) -> dict:
+    """Reported billing reference for existing PG-09 cost governor."""
+    data = b["_derived"]["cost_decision"]
+    return {"source_run": RUN_ID, "model": "claude-sonnet-5-5",
+            "max_cost_usd": str(MAX_USD), "reported_cost_usd": data["reported_cost_usd"],
+            "verdict": data["verdict"], "receipt_authenticated": False,
+            "usage_authenticated": False, "production_authority": False}
