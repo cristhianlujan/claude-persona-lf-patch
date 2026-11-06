@@ -140,6 +140,22 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
     if not isinstance(signal_bundle, dict) or not isinstance(signal_bundle.get("business"), str) or not signal_bundle["business"].strip():
         return _blocked("A2_BUSINESS_REQUIRED")
     if not _valid(signal_bundle, _json(BASE / "schemas/input.schema.json")):
+        # Preserve actionable diagnostics for nested A2 inputs. The full
+        # envelope remains fail-closed; neither case is a source attestation.
+        if isinstance(signal_bundle, dict):
+            refs = signal_bundle.get("evidence_refs")
+            if isinstance(refs, list) and (
+                not refs or any(not isinstance(x, str) or len(x.strip()) < 3 for x in refs)
+                or len(set(x for x in refs if isinstance(x, str))) != len(refs)
+            ):
+                return _blocked("A2_EVIDENCE_REFS_REQUIRED")
+            supplied_signals = signal_bundle.get("depth_signals")
+            if isinstance(supplied_signals, dict):
+                depth_spec = _json(CONTRACT_PATH).get("classification", {}).get("depth_policy")
+                if (isinstance(depth_spec, dict)
+                        and isinstance(depth_spec.get("signals"), dict)
+                        and not _signals_valid(supplied_signals, depth_spec)):
+                    return _blocked("A2_DEPTH_SIGNALS_NOT_TYPED")
         return _blocked("A2_SIGNAL_ENVELOPE_INVALID")
     if not isinstance(signal_bundle, dict) or set(signal_bundle) != {
         "schema_version", "business", "target_ref", "change_type", "target_granularity",
