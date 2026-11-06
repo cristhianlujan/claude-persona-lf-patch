@@ -38,7 +38,7 @@ export interface SemanticPacket {
   run_id: number; handoff_receipt_id: number;
   screen_code: string; validator_semantic_mode: "SELECTED_SEMANTIC_COMPARISON";
   source_integrity_verified: true;
-  source_snapshot_sha256: string;
+  curator_source_pins_sha256: string;
   db_packet_sha256: string;
   curator_identity: string; validator_identity: string;
   sources: SemanticSource[];
@@ -71,7 +71,7 @@ export function assertTrustedPacket(p: unknown): asserts p is SemanticPacket {
       !Number.isSafeInteger(q.run_id) || Number(q.run_id) < 1 ||
       !Number.isSafeInteger(q.handoff_receipt_id) || Number(q.handoff_receipt_id) < 1 ||
       typeof q.screen_code !== "string" || !q.screen_code ||
-      typeof q.source_snapshot_sha256 !== "string" || !shaRe.test(q.source_snapshot_sha256) ||
+      typeof q.curator_source_pins_sha256 !== "string" || !shaRe.test(q.curator_source_pins_sha256) ||
       typeof q.db_packet_sha256 !== "string" || !shaRe.test(q.db_packet_sha256) ||
       typeof q.curator_identity !== "string" || !q.curator_identity ||
       typeof q.validator_identity !== "string" || !q.validator_identity ||
@@ -170,7 +170,7 @@ export async function callSemanticModelCandidate(packet: unknown, deps: Dependen
     provider:"OPENAI", model_id:deps.model, provider_response_id:rawPayload.id,
     prompt_version:PROMPT_VERSION,prompt_sha256:promptHash,
     input_packet_sha256:inputHash,raw_response_sha256:await sha256(rawText),
-    source_snapshot_sha256:packet.source_snapshot_sha256,
+    curator_source_pins_sha256:packet.curator_source_pins_sha256,
     db_packet_sha256:packet.db_packet_sha256,
     model_call_count:1,decision,
     semantic_judge_executed:true,
