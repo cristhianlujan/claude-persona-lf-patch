@@ -7,6 +7,8 @@ from __future__ import annotations
 from copy import deepcopy
 import hashlib
 import json
+import importlib.util
+from pathlib import Path
 from typing import Any
 
 SCHEMA = 'PROGRAMMING_ANALYSIS_A2_TO_A3_PREVIEW_V1'
@@ -125,6 +127,17 @@ def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) ->
         return blocked('A2_A3_RESEARCH_REQUEST_NOT_EVIDENCED')
     if any(t.get('expected_evidence')!='CANONICAL_TARGET_AUTHORITY_AND_IMPLEMENTATION_STATE' for t in tneeds if isinstance(t,dict)):
         return blocked('A2_A3_TARGET_AUTHORITY_QUERY_MISSING')
+    # Human-first A2 interpretation; isolated from canonical A2/A3 contracts.
+    # It never sends questions to the owner or opens an A3 RUN.
+    brief_path = Path(__file__).resolve().with_name('intent_brief_v1.py')
+    brief_spec = importlib.util.spec_from_file_location('a2_human_intent_brief_candidate',brief_path)
+    if brief_spec is None or brief_spec.loader is None:
+        return blocked('A2_A3_INTENT_BRIEF_SOURCE_MISSING')
+    brief_module = importlib.util.module_from_spec(brief_spec)
+    brief_spec.loader.exec_module(brief_module)
+    human_brief = brief_module.build_brief(a1_result,a2_result,signal_bundle,golden)
+    if human_brief.get('status') != 'HUMAN_BRIEF_CANDIDATE_UNATTESTED':
+        return blocked('A2_A3_INTENT_BRIEF_UNQUALIFIED')
     # EXACT A3 input contracts. No runtime credential is carried in the preview.
     candidate={'REQUEST_CONTEXT_V1':deepcopy(context),
                'ANALYSIS_CHANGE_CLASSIFICATION_V1':deepcopy(c)}
@@ -132,7 +145,8 @@ def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) ->
      'blocking_codes':['A2_A3_A1_SOURCE_JUDGE_AND_NATIVE_RUN_PENDING'],
      'business':business,'a3_input_preview':candidate,
      'a3_resolution_plan_preview':deepcopy(plan),
-     'preview_digest_sha256':digest({'a3_input':candidate,'research_plan':plan}),
+     'human_intent_brief':deepcopy(human_brief),
+     'preview_digest_sha256':digest({'a3_input':candidate,'research_plan':plan,'human_intent_brief':human_brief}),
      'source_binding':deepcopy(bind),'source_authenticated':False,
      'judge_verified':False,'run_verified':False,'dispatch_attempted':False,
      'a3_allowed':False,'next_step':None,'no_write_performed':True}
