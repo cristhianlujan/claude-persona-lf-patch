@@ -46,7 +46,7 @@ BEGIN
      OR (p_candidate->>'run_id')::bigint IS DISTINCT FROM p_run_id
      OR (p_candidate->>'handoff_receipt_id')::bigint IS DISTINCT FROM p_receipt_id
      OR p_candidate->>'validator_identity' IS DISTINCT FROM p_validator_identity
-     OR p_candidate->>'source_snapshot_sha256' IS DISTINCT FROM v_packet->>'source_snapshot_sha256'
+     OR p_candidate->>'curator_source_pins_sha256' IS DISTINCT FROM v_packet->>'curator_source_pins_sha256'
      OR p_candidate->>'db_packet_sha256' IS DISTINCT FROM v_packet->>'db_packet_sha256'
      OR p_candidate->>'semantic_pass_authorized' IS DISTINCT FROM 'false'
      OR p_candidate->>'official_write_authorized' IS DISTINCT FROM 'false'
@@ -115,7 +115,7 @@ BEGIN
     'handoff_receipt_id',p_receipt_id,
     'validated_model_candidate_binding',true,
     'validated_source_count',v_source_count,
-    'source_snapshot_sha256',v_packet->>'source_snapshot_sha256',
+    'curator_source_pins_sha256',v_packet->>'curator_source_pins_sha256',
     'db_packet_sha256',v_packet->>'db_packet_sha256',
     'semantic_judge_independence_accredited',false,
     'semantic_pass_authorized',false,
