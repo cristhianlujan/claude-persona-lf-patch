@@ -42,3 +42,7 @@ HEAD d675a7248ac686049623c7f2c0906504bdfb6f34.
 Once the real bundle is generated and pinned, add the exact fixture and invoke
 existing PG-08..14 producer chains with replay and adversarial tests. Do not
 mark any stage REAL PASS before its inputs are fully recomputed.
+
+Stacked draft PR #3685 has base `lf/pg14-testing-handoff-final-20261104`
+(PR #3550 at HEAD `d675a7248ac686049623c7f2c0906504bdfb6f34`),
+not `main`. The published fixture SHA is pending independent bundle execution.
