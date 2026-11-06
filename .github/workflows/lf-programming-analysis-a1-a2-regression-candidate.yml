@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Python 3.12
         uses: actions/setup-python@v5.6.0
         with:
@@ -53,6 +53,6 @@ jobs:
       - name: Record exact tested tree
         if: always()
         run: |
-          printf 'candidate_ref=%s\nhead_sha=%s\n' "${{ github.ref }}" "${{ github.sha }}"
+          printf 'candidate_ref=%s\nsource_head_sha=%s\n' "${{ github.ref }}" "${{ github.event.pull_request.head.sha || github.sha }}"
           git rev-parse HEAD
           git status --porcelain
