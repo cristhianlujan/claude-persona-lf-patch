@@ -40,15 +40,16 @@ def _valid(value: Any, schema: dict) -> bool:
 
 
 def _blocked(code: str) -> dict:
-    return {
+    result = {
         "schema_version": SCHEMA, "skill_code": SKILL, "step_code": "A2",
         "status": "BLOCKED", "blocking_codes": [code], "classification": None,
         "source_attested": False, "independent_judge_verified": False,
         "operationally_integrated": False, "effects_executed": False,
         "next_step": None,
     }
+    # A malformed fail-closed envelope is a hard error, not an admissible result.
     if not _valid(result, _json(BASE / "schemas/output.schema.json")):
-        return _blocked("A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT")
+        raise ValueError("A2_BLOCKED_OUTPUT_SCHEMA_DRIFT")
     return result
 
 
@@ -214,3 +215,7 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
         "operationally_integrated": False, "effects_executed": False,
         "next_step": None,
     }
+    # Validate every non-blocked response before exposing the candidate result.
+    if not _valid(result, _json(BASE / "schemas/output.schema.json")):
+        return _blocked("A2_CANDIDATE_OUTPUT_SCHEMA_DRIFT")
+    return result
