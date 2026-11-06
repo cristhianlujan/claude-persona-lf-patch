@@ -281,7 +281,8 @@ def pg08_c1_observations(bundle: dict, *, solution_id: str = "EX5C") -> list[dic
             "command_id": "ex5c-maven-verify",
             "command_ref": "evidence:ex5c:maven",
             "tool_name": "mvn", "tool_version": "JDK21-Maven",
-            "config_sha256": digest(b"apps/time-service/pom.xml"),
+            "config_sha256": digest(decode(next(x["content_base64"] for x in bundle["files"]
+                if x["path"] == "apps/time-service/pom.xml"))),
             "execution_receipt_ref": "REAL_SANDBOX_UNAUTHENTICATED:ex5c",
             "stdout_sha256": m["stdout"]["sha256"],
             "stderr_sha256": m["stderr"]["sha256"],
@@ -307,3 +308,11 @@ def pg09_usage(bundle: dict, *, solution_id: str = "EX5C") -> list[dict]:
             "output_tokens": c["total_output_tokens"], "cached_input_tokens": 0
         }]
     }]
+
+
+def independent_review_label(author: str, reviewer: str = "reviewer:claude-opus-verifier") -> dict:
+    """Independence of identities is checked; a real review is NOT authenticated."""
+    require(author == "worker:claude-sonnet-5-5", "PG11_AUTHOR_MODEL_MISMATCH")
+    require(reviewer != author and bool(reviewer), "SELF_REVIEW")
+    return {"author_reported": author, "reviewer_reported": reviewer,
+            "review_authenticated": False, "production_authority": False}
