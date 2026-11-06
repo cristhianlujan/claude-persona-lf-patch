@@ -82,6 +82,32 @@ class RealEvidenceBundleIntegrationTests(unittest.TestCase):
         self.assertFalse(self.original["receipt_authenticated"])
         self.assertFalse(self.original["worker_invoked"])
 
+    def test_real_pg08_c1_producer_receives_recomputed_stdout_stderr(self):
+        """The first actual PG08 producer, NOT a synthetic C1 stand-in."""
+        output = a.run_real_pg08_c1(self.original)
+        c1 = output["pg08_c1"]
+        self.assertEqual(c1["source_pg07_c6_sha256"],
+                         output["pg07_c6"]["candidate_sha256"])
+        self.assertEqual(c1["solutions"][0]["diff_sha256_reported"], a.PATCH_SHA)
+        self.assertEqual(c1["solutions"][0]["reported_build_outcome"],
+                         "REPORTED_PASS_UNVERIFIED")
+        self.assertFalse(c1["production_authority"])
+        self.assertEqual(output["evidence_kind"], "REAL_SANDBOX_UNAUTHENTICATED")
+
+    def test_real_chain_blocks_at_missing_pg08_c2_lint_baseline(self):
+        """C1 succeeds from real bytes, but C2 must NOT use the PG06 synthetic fixture."""
+        c1 = a.run_real_pg08_c1(self.original)
+        self.assertIn("pg08_c1", c1)
+        with self.assertRaisesRegex(a.RealEvidenceBlocked,
+                                    "PG08_C2_REAL_BASELINE_AND_LINT_EVIDENCE_MISSING_BLOCK"):
+            a.require_pg08_c2_real_source(self.original)
+
+    def test_real_pg08_c1_rejects_unverified_maven_exit(self):
+        bad = copy.deepcopy(self.original)
+        bad["execution"]["maven"]["exit_code"] = 11
+        with self.assertRaisesRegex(a.RealEvidenceBlocked, "PG08_EXIT_CODE_RESULT_BLOCK"):
+            a.run_real_pg08_c1(bad)
+
     def test_changed_byte_of_pinned_fixture_blocked(self):
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "bundle.json"
