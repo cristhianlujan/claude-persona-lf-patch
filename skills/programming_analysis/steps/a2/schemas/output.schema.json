@@ -6,6 +6,7 @@
   "required": [
     "schema_version",
     "skill_code",
+    "business",
     "step_code",
     "status",
     "blocking_codes",
@@ -25,6 +26,15 @@
     },
     "step_code": {
       "const": "A2"
+    },
+    "business": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 2,
+      "maxLength": 32,
+      "description": "Exact business from A1; null only for BLOCKED"
     },
     "status": {
       "enum": [
@@ -135,5 +145,44 @@
     "next_step": {
       "type": "null"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "CANDIDATE_UNATTESTED",
+              "NEED_MORE_EVIDENCE"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "business": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 32
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "BLOCKED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "business": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
 }
