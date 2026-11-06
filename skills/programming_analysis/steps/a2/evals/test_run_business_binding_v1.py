@@ -101,4 +101,75 @@ class SourceOnlyBinding(unittest.TestCase):
     def test_25_missing_child_profile_handoff(self):
         self.check(lambda p,i,c:c['manifest'].pop('profile_handoff'),'RUN_SKILL_CHILD_HANDOFF_MISMATCH')
 
+
+class BridgeWiringCandidate(unittest.TestCase):
+    """Bridge wiring checks with A1/A2 and A3 mocked; no native authority."""
+    def invoke(self, run_readback=None, expected_business=None, a1business='LF'):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location(
+            'a1_a2_bridge', ROOT / 'adapters/a1_a2_candidate_bridge_v1.py')
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        a1 = {'business':a1business,'schema_version':'A1_INTERNAL_STEP_CANDIDATE_RESULT_V1',
+              'status':'VALID_OUTPUT','skill_code':'PROGRAMMING_ANALYSIS_LF',
+              'payload':{'schema_version':'REQUEST_CONTEXT_V1', 'target_hints':['T-001'],
+                         'source_refs':['user://test'], 'provided_facts':[],
+                         'objective':{'problem_statement':'Test','desired_outcome':'Test'},
+                         'constraints':[]}}
+        a2 = {'business':a1business,'schema_version':'A2_INTERNAL_STEP_CANDIDATE_RESULT_V1',
+              'status':'CANDIDATE_UNATTESTED','skill_code':'PROGRAMMING_ANALYSIS_LF',
+              'classification':{'schema_version':'ANALYSIS_CHANGE_CLASSIFICATION_V1','target_ref':'T-001'}}
+        def loader(path, name):
+            if path == 'steps/a1/validators/run.py':
+                return SimpleNamespace(run=lambda _: a1)
+            if path == 'steps/a2/validators/run.py':
+                return SimpleNamespace(run=lambda _a,_s: a2)
+            if path == 'adapters/run_business_binding_v1.py':
+                return mod
+            if path == 'adapters/a2_a3_business_handoff_v1.py':
+                return SimpleNamespace(prepare_candidate=lambda _a,_b,expected:
+                    {'status':'BLOCKED' if not expected or expected != a1business else 'CANDIDATE',
+                     'business':expected, 'a3_allowed':False})
+            raise AssertionError('UNEXPECTED_STEP_INJECTION')
+        with patch.object(bridge, '_load', side_effect=loader):
+            result = bridge.prepare_candidate({}, {}, expected_business=expected_business,
+                                              run_readback=run_readback,
+                                              actor_parent_execution_id='PROFILE-SIM-01')
+        return result
+
+    def test_26_caller_business_alone_not_authority(self):
+        result = self.invoke(expected_business='LF')
+        self.assertEqual(result['run_business_binding_candidate']['status'],'BLOCKED')
+        self.assertEqual(result['a3_handoff_candidate']['status'],'BLOCKED')
+
+    def test_27_consistent_run_binding_yields_only_a3_candidate(self):
+        parent, invocation, child = bundle()
+        result = self.invoke({'parent_run':parent,'skill_invocation':invocation,'child_run':child})
+        self.assertEqual(result['run_business_binding_candidate']['status'],'CANDIDATE_CONSISTENT')
+        self.assertEqual(result['a3_handoff_candidate']['business'],'LF')
+        self.assertFalse(result['runtime_qualified'])
+        self.assertIsNone(result['next_step'])
+        self.assertFalse(result['a3_handoff_candidate']['a3_allowed'])
+
+    def test_28_caller_business_veto_does_not_override_run(self):
+        parent, invocation, child = bundle()
+        result = self.invoke({'parent_run':parent,'skill_invocation':invocation,'child_run':child},
+                             expected_business='SALY')
+        self.assertEqual(result['run_business_binding_candidate']['business'],'LF')
+        self.assertEqual(result['a3_handoff_candidate']['status'],'BLOCKED')
+
+    def test_29_a1_business_conflict_still_blocks_handoff(self):
+        parent, invocation, child = bundle()
+        result = self.invoke({'parent_run':parent,'skill_invocation':invocation,'child_run':child},
+                             a1business='SALY')
+        # Real A2->A3 guard rejects the conflict. The mock reflects its public contract.
+        self.assertEqual(result['a3_handoff_candidate']['status'],'BLOCKED')
+        self.assertFalse(result['a3_handoff_candidate']['a3_allowed'])
+
+    def test_30_malformed_run_readback_fails_closed(self):
+        result = self.invoke(run_readback={'parent_run':'not-a-row'},expected_business='LF')
+        self.assertEqual(result['run_business_binding_candidate']['status'],'BLOCKED')
+        self.assertIsNone(result['a3_handoff_candidate']['business'])
+
 if __name__=='__main__':unittest.main()
