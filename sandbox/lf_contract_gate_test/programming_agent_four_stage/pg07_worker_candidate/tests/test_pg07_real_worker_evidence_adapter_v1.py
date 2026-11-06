@@ -137,6 +137,15 @@ class RealEvidenceBundleIntegrationTests(unittest.TestCase):
                 ):
                     a.check_execution(x)
 
+    def test_real_pg09_c1_source_only_cost_and_attempt_limit(self):
+        projection = a.run_real_pg09_c1(self.original)
+        c1 = projection["pg09_c1"]
+        self.assertEqual(c1["reported_request_known_cost"], "0.070022")
+        # Existing PG09 producer preserves exhaustion of the real 1-of-1 limit.
+        self.assertEqual(c1["request_diagnostic"], "REQUIRES_DECISION")
+        self.assertTrue(c1["iteration_limit_reached_reported"])
+        self.assertFalse(c1["production_authority"])
+
     def test_real_patch_and_hunk_tamper_block(self):
         x = copy.deepcopy(self.original)
         x["patch"]["hunks"][0]["requirements"] = []
