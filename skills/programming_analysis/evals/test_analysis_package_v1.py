@@ -20,7 +20,7 @@ class AnalysisStagePackage(unittest.TestCase):
   for s in M['steps']:
    with self.subTest(step=s['step_id']):self.assertTrue((REPO/s['source_contract']).is_file(),s['source_contract'])
  def test_non_operational(self):
-  self.assertEqual(M['status'],'CANDIDATE_SOURCE_ONLY_NOT_REGISTERED')
+  self.assertEqual(M['status'],'REGISTERED_CANDIDATE_RUNTIME_DISABLED')
   self.assertTrue(all(not s['operationally_verified'] for s in M['steps']))
   self.assertFalse(M['real_model_receipts'])
   self.assertFalse(M['independent_judge_receipts'])
@@ -30,8 +30,17 @@ class AnalysisStagePackage(unittest.TestCase):
  def test_procedure_parity(self):
   src=json.loads((REPO/M['procedure_source']).read_text(encoding='utf-8'))
   self.assertEqual([s['source_contract'] for s in M['steps'][:9]],[s['source_contract'] for s in src['steps']])
- def test_a2_to_a15_are_not_fake_executors(self):
-  self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][1:]))
+ def test_a3_to_a15_are_not_fake_executors(self):
+  self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][2:]))
+ def test_a2_internal_candidate_not_operational(self):
+  self.assertEqual(M['steps'][1]['module_entrypoint'],'steps/a2/validators/run.py:run')
+  self.assertEqual(M['steps'][1]['implementation_state'],'LOCAL_TYPED_POLICY_PROJECTION_CANDIDATE_UNQUALIFIED')
+  self.assertFalse(M['steps'][1]['operationally_verified'])
+  self.assertFalse(M['steps'][1]['source_attested'])
+  self.assertFalse(M['steps'][1]['next_step_allowed'])
+ def test_asset_registered_but_runtime_disabled(self):
+  self.assertEqual(M['asset_registration']['asset_id'],414)
+  self.assertFalse(M['asset_registration']['runtime_binding_enabled'])
  def test_A10_A15_requirements_not_falsely_empty(self):
   for s in M['steps'][9:]:
    with self.subTest(step=s['step_id']):
