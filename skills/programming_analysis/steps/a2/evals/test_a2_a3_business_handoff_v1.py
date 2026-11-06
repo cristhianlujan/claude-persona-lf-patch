@@ -73,7 +73,7 @@ class BusinessHandoff(unittest.TestCase):
     def test_duplicate_module_blocks(self):
         a1,a2=inputs();a1["payload"]["provided_facts"]=[
             {"fact_code":"MODULE_NAME","value":"Login","source_ref":"user://origin"},
-            {"fact_code":"MODULE_CODE","value":"Otra","source_ref":"user://origin"}]
+            {"fact_code":"MODULE_NAME","value":"Otra","source_ref":"user://origin"}]
         self.assertEqual(prepare_candidate(a1,a2,"LF")["blocking_codes"],["IDENTITY_FACT_CONFLICT_OR_DUPLICATE"])
 
     def test_malformed_source_reference_fail_closed(self):
@@ -87,6 +87,14 @@ class BusinessHandoff(unittest.TestCase):
         r["a3_allowed"]=True
         schema=json.loads((ROOT/"adapters/a2_a3_business_handoff_v1.schema.json").read_text(encoding="utf-8"))
         self.assertFalse(Draft202012Validator(schema).is_valid(r))
+
+    def test_name_and_code_both_legitimate(self):
+        a1,a2=inputs();a1["payload"]["provided_facts"]=[
+            {"fact_code":"MODULE_NAME","value":"Login","source_ref":"user://origin"},
+            {"fact_code":"MODULE_CODE","value":"AUTH-001","source_ref":"user://origin"}]
+        r=prepare_candidate(a1,a2,"LF")
+        self.assertEqual(r["research_brief"]["module"]["value"],"Login")
+        self.assertEqual(len(r["research_brief"]["declared_facts"]),2)
 
     def test_inputs_immutable_and_no_forged_pass(self):
         a1,a2=inputs();aa,bb=copy.deepcopy(a1),copy.deepcopy(a2)
