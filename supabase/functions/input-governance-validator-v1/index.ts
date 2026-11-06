@@ -138,15 +138,33 @@ Deno.serve(async (req: Request) => {
           actual_status: phase?.status ?? null,
         }, { status: 409 });
       }
-      // A repeated invocation preserves identity and waits for an official
-      // independent verdict. It never calls the model again automatically.
+      // A repeated invocation keeps the SAME validator identity and reads
+      // external provenance; it never invokes the model again automatically.
       if (resumed) {
+        const receipts = await rpc("fn_input_governance_semantic_external_receipt_readback_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_handoff_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate_sha256: null,
+        });
+        if (receipts?.run_id !== runId ||
+            !["SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED",
+              "INDEPENDENT_SEMANTIC_VERDICT_REQUIRED",
+              "SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE"].includes(receipts?.status) ||
+            receipts?.promotion_authorized !== false ||
+            receipts?.production_authorized !== false) {
+          return Response.json({
+            error: "IG_SEMANTIC_RECEIPT_READBACK_INVALID", run_id: runId,
+          }, { status: 409 });
+        }
         return Response.json({
           runtime: "input-governance-validator-v1",
-          status: "SEMANTIC_VERDICT_RECEIPT_REQUIRED",
+          status: receipts.status,
           run_id: runId,
           validator_identity: identity,
           handoff_receipt_id: handoffReceiptId,
+          semantic_receipt_readback: receipts,
           continuation: {
             run_id: runId,
             strategy: "REASSERT_HANDOFF_AND_RESUME_CONTEXT",
@@ -199,6 +217,28 @@ Deno.serve(async (req: Request) => {
             error: "IG_SEMANTIC_NATIVE_PRECHECK_NOT_ATTESTED", run_id: runId,
           }, { status: 409 });
         }
+        if (!/^[a-f0-9]{64}$/i.test(String(checked?.candidate_sha256 ?? ""))) {
+          return Response.json({
+            error: "IG_SEMANTIC_CANDIDATE_SHA_MISSING", run_id: runId,
+          }, { status: 409 });
+        }
+        const receipts = await rpc("fn_input_governance_semantic_external_receipt_readback_v1", {
+          p_run_id: runId,
+          p_validator_identity: identity,
+          p_handoff_receipt_id: handoffReceiptId,
+          p_ticket: ticket,
+          p_candidate_sha256: checked.candidate_sha256,
+        });
+        if (receipts?.run_id !== runId ||
+            !["SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED",
+              "INDEPENDENT_SEMANTIC_VERDICT_REQUIRED",
+              "SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE"].includes(receipts?.status) ||
+            receipts?.promotion_authorized !== false ||
+            receipts?.production_authorized !== false) {
+          return Response.json({
+            error: "IG_SEMANTIC_RECEIPT_READBACK_INVALID", run_id: runId,
+          }, { status: 409 });
+        }
         return Response.json({
           runtime:"input-governance-validator-v1",
           status:"SEMANTIC_MODEL_CANDIDATE_UNATTESTED",
@@ -206,6 +246,7 @@ Deno.serve(async (req: Request) => {
           handoff_receipt_id:handoffReceiptId,
           candidate,
           native_precheck: checked,
+          semantic_receipt_readback: receipts,
           validator_phase: {
             status: phase.status,
             run_status: phase.run_status,
