@@ -3,6 +3,14 @@ import copy
 import hashlib
 import unittest
 
+from pathlib import Path
+import sys
+test_location = Path(__file__).resolve()
+package_adapters = test_location.parents[3] / "adapters" if len(test_location.parents) > 3 else test_location.parent
+for candidate_root in (package_adapters, test_location.parent):
+    if (candidate_root / "native_readonly_run_plan_v1.py").is_file():
+        sys.path.insert(0, str(candidate_root))
+        break
 from native_readonly_run_plan_v1 import plan, verify_readback, SKILL, OP, REPO, PATH
 
 H1, H2 = "a" * 64, "b" * 64
