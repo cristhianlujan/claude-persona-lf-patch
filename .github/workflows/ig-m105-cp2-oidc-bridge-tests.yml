@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - "supabase/functions/lf-profiles-governance-caller-v1/**"
+      - "supabase/functions/input-governance-agent-v1/index.ts"
+      - "supabase/functions/input-governance-curator-v1/index.ts"
+      - "supabase/functions/input-governance-validator-v1/index.ts"
+      - "sandbox/lf_contract_gate_test/input_governance/test_ig_context_pack_ticket_source_parity_v1.py"
       - ".github/workflows/lf-input-governance-recurate.yml"
       - ".github/workflows/lf-input-governance-recurate-dispatch.yml"
       - ".github/workflows/ig-m105-cp2-oidc-bridge-tests.yml"
@@ -25,3 +29,7 @@ jobs:
         run: |
           deno test --filter '^CP2:' supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
           deno test supabase/functions/lf-profiles-governance-caller-v1/cp2_edge_bridge_test.ts
+      - name: Verify IG profile-ticket handoff and fail-closed negative cases
+        run: |
+          deno test --filter 'profile runtime ticket|legacy OIDC CONTEXT_PACK' supabase/functions/lf-profiles-governance-caller-v1/caller_test.ts
+          python3 sandbox/lf_contract_gate_test/input_governance/test_ig_context_pack_ticket_source_parity_v1.py
