@@ -270,8 +270,8 @@ def run_real_pg06_c4_pg08_c2(*, v1: dict, v2: dict) -> dict:
 
     # Fail closed even for direct programmatic calls that bypass load_v2().
     # Both upstream bundles use canonical, sorted, ensure_ascii JSON + LF.
-    if (sha(canonical(v1) + b"\\n") != V1_SHA or
-        sha(canonical(v2) + b"\\n") != V2_FIXTURE_SHA256):
+    if (sha(canonical(v1) + b"\n") != V1_SHA or
+        sha(canonical(v2) + b"\n") != V2_FIXTURE_SHA256):
         block("V2_DIRECT_PRODUCER_INPUT_REHASH_OR_BYTES_BLOCK")
     # Require the exact frozen V1/V2 historical Git source pair and no authority.
     if (v1["git"]["commit"] != HEAD or v1["git"]["base_commit"] != BASE or
