@@ -44,6 +44,14 @@ Pruebas locales sintéticas: `python -m unittest discover -s skills/programming_
 - **P0 pendiente:** enlazar el caller/invocador gobernado actual con la reserva nativa, identidad read-only, paso 0 y readback transaccional, sin alterar el efecto `READ_ONLY`, crear Router alterno ni cambiar ACL. `lf_pre_ekb_child_dispatch_v1` sólo sirve a ACT-0057: no utilizar para A2. No ejecutar A3 ni admitir mientras falte este enlace.
 - Documento y pruebas: `handoffs/NATIVE_READONLY_SKILL_RUN_OPEN_CANDIDATE_20261106.md` y `steps/a2/evals/test_run_business_binding_v1.py` (32 pruebas sintéticas; NO prueban que el host haya reservado, juzgado o escrito recibos).
 
+## Lote 15: planificación de reserva/readback de RUN (sin ejecución)
+
+- El código candidato `adapters/native_readonly_run_plan_v1.py` evalúa condiciones declaradas antes de reservar `EJECUCION_SKILL_LF`, deriva IDs y clave de idempotencia estables (padre + skill + hash de input), y verifica el readback **supuesto** del reservador, RUN hijo y `init_execution` (paso 0). Es una propuesta local, NO ejecuta RPC.
+- El reservador canónico `fn_lf_operation_reserve_execution_v1` valida idem/target/request pero **no** compara manifiesto en replay. El plan exige negocio, fuente Main, actor y `skill_run_id` exactos; acepta solo `operation_policy_snapshots` como metadata de gobernanza adicional. Drift ⇒ bloqueo.
+- `steps/a2/evals/test_native_readonly_run_plan_v1.py`: 39 pruebas sintéticas; el plan mantiene siempre `host_attested=false`, `reservation_executed=false`, `step0_recorded=false`, `readback_authenticated=false`, `a3_allowed=false`, incluso con fixture PASS.
+- Documento de enlace mínimo: `handoffs/NATIVE_READONLY_INVOCATION_PRE_ADMISSION_CANDIDATE_20261106.md`. Requiere cambiar fuente oficial invocador/Edge mediante su gobierno **antes** de admisión: evitar handler SQL prematuro / estado COMPLETED en READ_ONLY nativo y nunca reportar `SKILL_INVOKED` si la RPC respondió BLOCKED.
+- P0 sin resolver: autorización de perfil a `EJECUCION_SKILL_LF` (actualmente 0 filas), catálogo READY (0 para esta skill), aprobación de caller OIDC y fuente Main; registro real del paso 0 y juez nativo. No promover ni ejecutar A3.
+
 ## Ciclo Golden interno A2 → juez existente → A3 (candidato, NO activado)
 - Durante `execute_skill` de la operación `EJECUCION_SKILL_LF`, A1 entrega su resultado a A2; A2 debe cumplir su trabajo de clasificación, activación dinámica de las 12 dimensiones/59 elementos y plan dirigido a A3. Una brecha de evidencia legítimamente encargada a A3 no convierte A2 en incompleta.
 - Primero control determinístico. Después, **únicamente el juez semántico existente mediante la ruta nativa autorizada** revisa calidad, profundidad, contradicciones y cobertura material del candidato A2. No crear otro juez, invocador, motor, Router ni dispatcher.
