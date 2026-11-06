@@ -116,6 +116,25 @@ WITH policy_source AS (
     'required_evidence_contract','INPUT_PARAMETER_PROVENANCE_V1',
     'verification_function','programacion.fn_input_parameter_provenance_valid_v1',
     'automatic_change_authorized',false,
+    'rate_accounting',case when family='RATE_LIMIT' then
+      (SELECT jsonb_build_object(
+        'resource_code',p.resource_code,'scope_key',p.scope_key,
+        'max_requests',p.max_requests,'window_seconds',p.window_seconds,
+        'burst_limit',p.burst_limit,'error_code',p.error_code,
+        'events_counted','NOT_DEFINED_BY_POLICY',
+        'successful_request_counting','NOT_DEFINED_BY_POLICY',
+        'failed_request_counting','NOT_DEFINED_BY_POLICY',
+        'antibot_reject_counting','NOT_DEFINED_BY_POLICY',
+        'transport_retry_counting','NOT_DEFINED_BY_POLICY',
+        'counter_key_construction','NOT_VERIFIED',
+        'independent_identity_and_network_counters','NOT_VERIFIED',
+        'counter_reset_and_atomicity','NOT_VERIFIED',
+        'physical_endpoint','NOT_VERIFIED',
+        'security_assurance_required',true,
+        'repair_focus','VERIFY_EVENT_ACCOUNTING_AND_COUNTER_DIMENSIONS_IN_GOVERNED_POLICY'
+      ) FROM lf_ops.politicas_rate_limit p
+        WHERE p.rate_limit_policy_id=policy_id::bigint)
+      else null end,
     'source_decision_validation','NOT_VERIFIED_FROM_DECISION_REGISTRY',
     'numeric_policy_values_incorrect','NOT_PROVEN',
     'binding_live_authorized',binding_status='VIGENTE',
@@ -391,6 +410,11 @@ BEGIN
  OR v_case->>'binding_status'<>'CANDIDATO'
  OR v_case->>'source_decision_id'<>'DEC-B2B-HANDOFF-SCREEN-PACKAGE-001'
  OR coalesce((v_case->>'missing_parameter_count')::integer,0)<>3
+ OR v_case->'rate_accounting'->>'resource_code'<>'AUTH_LOGIN'
+ OR v_case->'rate_accounting'->>'scope_key'<>'IP_USER'
+ OR v_case->'rate_accounting'->>'max_requests'<>'5'
+ OR v_case->'rate_accounting'->>'window_seconds'<>'900'
+ OR v_case->'rate_accounting'->>'events_counted'<>'NOT_DEFINED_BY_POLICY'
  OR v_case->>'numeric_policy_values_incorrect'<>'NOT_PROVEN'
  OR v_case->>'binding_live_authorized'<>'false' THEN
    RAISE EXCEPTION 'IG_EVO_R1_B2B_EXPECTED_CASE_DRIFT:%',v_case;
