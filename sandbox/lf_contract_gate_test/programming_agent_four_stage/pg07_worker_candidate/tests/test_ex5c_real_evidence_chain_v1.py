@@ -35,10 +35,14 @@ class EX5CRealChainTests(unittest.TestCase):
 
         # Separate original PG09 C1 producer consumes the true public cost
         # and respects the actual one-of-one Worker attempt ceiling.
-        cost = adapter.run_real_pg09_c1(real)
+        cost = adapter.run_real_pg09_c1_to_c4(real)
         self.assertEqual(cost["pg09_c1"]["reported_request_known_cost"], "0.070022")
         self.assertEqual(cost["pg09_c1"]["request_diagnostic"], "REQUIRES_DECISION")
-        self.assertFalse(cost["pg09_c1"]["production_authority"])
+        self.assertEqual(cost["pg09_c4"]["solutions"][0]["reason_codes"], ["BUDGET_DECISION"])
+        self.assertEqual(cost["pg09_c4"]["solutions"][0]["escalation_type"], "RETURN")
+        self.assertFalse(cost["pg09_c4"]["retry_authorized"])
+        self.assertFalse(cost["pg09_c4"]["production_authority"])
+        self.assertEqual(cost["pg10_owner_decision_reference"]["decision_date"], "2026-11-06")
 
         # Independent real-byte Git subtree attack suite. We do NOT treat
         # this isolated result as a PG13 C1-C3 chain output or Testing admission.
@@ -53,7 +57,8 @@ class EX5CRealChainTests(unittest.TestCase):
             adapter.require_pg08_c2_real_source(real)
         print("EX5C_PG08_C1_REAL_PRODUCER_SOURCE_ONLY_PASS")
         print("EX5C_PG08_C2_REAL_EVIDENCE_REQUIRED_BLOCK")
-        print("EX5C_PG09_C1_REAL_COST_PRODUCER_REQUIRES_DECISION")
+        print("EX5C_PG09_C1_C4_REAL_COST_PRODUCERS_REQUIRES_DECISION_RETURN")
+        print("EX5C_PG10_OWNER_DECISION_REFERENCE_SHA_PINNED")
         print("EX5C_PG13_REAL_SUBTREE_MUTATIONS_BLOCKED=5")
         print("EX5C_PG14_REAL_CHAIN_ADMISSION=BLOCKED")
         print("EX5C_PRODUCTION_AUTHORITY=FALSE")
