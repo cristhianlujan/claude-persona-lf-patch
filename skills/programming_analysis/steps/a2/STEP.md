@@ -37,6 +37,13 @@ Pruebas locales sintéticas: `python -m unittest discover -s skills/programming_
 - El informe y consulta SELECT de referencia están en `handoffs/RUN_BUSINESS_BINDING_CANDIDATE_20261106.md`. Las 30 pruebas locales se limitan a consistencia, bloqueo y puente con otras unidades simuladas; no acreditan RPC, juez o admisión.
 - **Brecha de arquitectura confirmada:** `lf_skill_invoke_v1` solo crea `child_execution_id` para `effect=WRITE_GOVERNED`. Esta skill es candidata `READ_ONLY`; no cambiar su efecto ni usar funciones paralelas para producir artificialmente un RUN hijo. La resolución de la apertura real de `EJECUCION_SKILL_LF` permanece P0 pre-admisión.
 
+## Apertura read-only del RUN de skill (brecha nativa, preadmisión)
+
+- La entrada `SKILL_EXECUTION` del Router resuelve a `EJECUCION_SKILL_LF`, operación existente 0–80. `fn_lf_operation_reserve_execution_v1` es el **reservador genérico vigente**, pero no valida por sí mismo el Router/caller/negocio: sólo un host con identidad admitida y control previo puede llamarlo y registrar/readback del paso 0. No invocarlo desde A1, A2 ni un consumidor con permisos propios.
+- `lf_skill_invoke_v1` para `READ_ONLY` termina una invocación SQL sin `child_execution_id`; eso no es un RUN gobernado. El guard `adapters/run_business_binding_v1.py` devuelve `RUN_GOVERNED_CHILD_ABSENT_READ_ONLY_INVOKER` en ese caso. Ningún `skill_run_id` SQL reemplaza `execution_id` de `EJECUCION_SKILL_LF`.
+- **P0 pendiente:** enlazar el caller/invocador gobernado actual con la reserva nativa, identidad read-only, paso 0 y readback transaccional, sin alterar el efecto `READ_ONLY`, crear Router alterno ni cambiar ACL. `lf_pre_ekb_child_dispatch_v1` sólo sirve a ACT-0057: no utilizar para A2. No ejecutar A3 ni admitir mientras falte este enlace.
+- Documento y pruebas: `handoffs/NATIVE_READONLY_SKILL_RUN_OPEN_CANDIDATE_20261106.md` y `steps/a2/evals/test_run_business_binding_v1.py` (32 pruebas sintéticas; NO prueban que el host haya reservado, juzgado o escrito recibos).
+
 ## Ciclo Golden interno A2 → juez existente → A3 (candidato, NO activado)
 - Durante `execute_skill` de la operación `EJECUCION_SKILL_LF`, A1 entrega su resultado a A2; A2 debe cumplir su trabajo de clasificación, activación dinámica de las 12 dimensiones/59 elementos y plan dirigido a A3. Una brecha de evidencia legítimamente encargada a A3 no convierte A2 en incompleta.
 - Primero control determinístico. Después, **únicamente el juez semántico existente mediante la ruta nativa autorizada** revisa calidad, profundidad, contradicciones y cobertura material del candidato A2. No crear otro juez, invocador, motor, Router ni dispatcher.
