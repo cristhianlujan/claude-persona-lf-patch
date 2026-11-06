@@ -12,6 +12,8 @@ SET search_path TO 'pg_catalog','programacion','lf_ops'
 AS $graph$
 DECLARE
   v_root lf_ops.reglas%ROWTYPE;
+  v_screen lf_ops.pantallas%ROWTYPE;
+  v_module lf_ops.modulos%ROWTYPE;
   v_binding_source text;
   v_queue jsonb := '[]'::jsonb;
   v_nodes jsonb := '[]'::jsonb;
@@ -58,6 +60,9 @@ BEGIN
   IF NOT FOUND THEN
     RAISE EXCEPTION 'IG_EVO_GRAPH_RULE_SCOPE_NOT_ATTESTED:%:%',p_pantalla_id,p_regla_id;
   END IF;
+  SELECT p.* INTO v_screen FROM lf_ops.pantallas p WHERE p.id=p_pantalla_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'IG_EVO_INTENT_SCREEN_CONTEXT_MISSING:%',p_pantalla_id; END IF;
+  SELECT m.* INTO v_module FROM lf_ops.modulos m WHERE m.module_code=v_screen.module_code LIMIT 1;
   v_queue:=jsonb_build_array(jsonb_build_object(
     'entity_key','RULE:'||p_regla_id::text,'entity_kind','RULE',
     'entity_id',p_regla_id,'depth',0,
@@ -233,6 +238,70 @@ BEGIN
     'root_rule_code',v_root.codigo,'root_rule_status',v_root.estado,
     'root_binding_source',v_binding_source,
     'graph_scope','GOVERNED_EXPLICIT_RULE_WITH_TRANSITIVE_POLICY_REFERENCES',
+    -- Source context is supplied BEFORE any interpretation. This is not
+    -- a decision, it is the evidence envelope for the native semantic stage.
+    'intent_context',jsonb_build_object(
+      'scope_source','lf_ops.pantallas+lf_ops.modulos+lf_ops.reglas',
+      'business_identification','REQUIRES_SEMANTIC_OR_GOVERNED_BUSINESS_AUTHORITY',
+      'screen',jsonb_build_object(
+        'id',v_screen.id,'code',v_screen.codigo,'name',v_screen.nombre,
+        'description',v_screen.descripcion,'objective',v_screen.objective,
+        'flow',v_screen.flujo,'step',v_screen.paso,
+        'module_code',v_screen.module_code,'screen_status',v_screen.estado,
+        'source_decision_id',v_screen.source_decision_id,
+        'allowed_profiles',v_screen.allowed_profiles,
+        'dependencies',v_screen.dependencies,
+        'source_row_sha256',programacion.fn_v09_sha256_jsonb(to_jsonb(v_screen))),
+      'module',CASE WHEN v_module.module_code IS NULL
+          THEN jsonb_build_object('state','NOT_FOUND')
+          ELSE jsonb_build_object(
+            'code',v_module.module_code,'name',v_module.name,
+            'description',v_module.description,
+            'app_shell_code',v_module.app_shell_code,
+            'status',v_module.status,
+            'source_decision_id',v_module.source_decision_id,
+            'source_row_sha256',programacion.fn_v09_sha256_jsonb(to_jsonb(v_module))) END,
+      'rule',jsonb_build_object(
+        'id',v_root.id,'code',v_root.codigo,'title',v_root.titulo,
+        'description',v_root.descripcion,'reason',v_root.razon,
+        'pending_detail',v_root.pendiente_detalle,
+        'status',v_root.estado,'binding_source',v_binding_source,
+        'source_row_sha256',programacion.fn_v09_sha256_jsonb(to_jsonb(v_root))),
+      'context_completeness',CASE
+        WHEN v_module.module_code IS NULL
+          OR nullif(btrim(coalesce(v_screen.objective,'')),'') IS NULL
+          OR nullif(btrim(coalesce(v_screen.descripcion,'')),'') IS NULL
+          THEN 'PARTIAL_RESEARCH_REQUIRED'
+        ELSE 'CONTEXT_SOURCES_AVAILABLE' END),
+    'intent_interpretation_request',jsonb_build_object(
+      'schema_version','IG_EVO_INTENT_INTERPRETATION_REQUEST_V1_CANDIDATE',
+      'decision_stage','NATIVE_CURATOR_SEMANTIC_BEFORE_FAMILY_EVALUATION',
+      'semantic_interpretation_performed',false,
+      'task_objectives',jsonb_build_array(
+        'INFER_BUSINESS_PURPOSE_FROM_SCREEN_MODULE_FLOW_AND_RULE',
+        'DISTINGUISH_EXPLICIT_REQUIREMENTS_FROM_CONTEXTUAL_EXPECTATIONS',
+        'DISCOVER_UNWRITTEN_DOMAIN_RISK_HYPOTHESES',
+        'ASSESS_USER_AND_BUSINESS_HARM_IF_RULE_IS_INCOMPLETE',
+        'IDENTIFY_MULTIPLE_SIGNALS_PER_TEXT_CLAUSE',
+        'RECONCILE_SIGNALS_WITH_GRAPH_EDGES_WITHOUT_FORCED_MATCH',
+        'IDENTIFY_MISSING_POLICY_METADATA_AND_AUTHORITY',
+        'CHOOSE_APPLICABLE_FAMILIES_FROM_CURRENT_GOVERNED_REGISTRY',
+        'DERIVE_POSITIVE_NEGATIVE_AND_ADVERSARIAL_SCENARIOS'),
+      'required_signal_fields',jsonb_build_array(
+        'signal_id','intent_role','expected_behavior','source_locations',
+        'reasoning','evidence_type','confidence','authority_status',
+        'candidate_family_codes','graph_edge_refs','unresolved_reason'),
+      'evidence_types',jsonb_build_array(
+        'EXPLICIT_RULE_STATEMENT','SCREEN_CONTEXT_DERIVATION',
+        'GOVERNED_POLICY_REFERENCE','DOMAIN_RISK_HYPOTHESIS',
+        'EXTERNAL_GUIDANCE_CONDITIONAL'),
+      'family_registry_binding','INPUT_FAMILY_POLICY_REGISTRY:RESOLVE_FROM_RUN_VERSION',
+      'external_guarantee','NONE_UNTIL_NATIVE_VALIDATOR',
+      'allow_unmatched_signals',true,'allow_multiple_signals_per_clause',true,
+      'may_infer_but_must_not_invent_authority',true,
+      'semantic_judge_to_reuse','NATIVE_VALIDATOR_AND_ASSURANCE_EVALUATOR',
+      'no_new_execution_route',true,'no_automatic_writes',true),
+
     'explicit_reference_count',v_ref_total,
     'root_explicit_reference_count',v_root_refs,
     'root_bound_policy_reference_count',v_root_resolved,
@@ -256,6 +325,7 @@ BEGIN
       WHERE length(btrim(seg.val))>0),
     'clause_inventory_is_not_semantic_obligation_count',true,
     'semantic_text_signals_status','NOT_TESTED',
+    'contextual_intent_status','NOT_TESTED',
     'semantic_match_status','NOT_TESTED',
     'semantic_source_manifest',jsonb_build_object(
        'root_text_fields',jsonb_build_array('titulo','descripcion','razon','pendiente_detalle'),
@@ -404,6 +474,12 @@ BEGIN
   IF v->>'root_rule_code'<>'B2B-RULE-AUTH-021'
    OR (v->>'root_explicit_reference_count')::integer<>3
    OR (v->>'root_bound_policy_reference_count')::integer<>3
+   OR v#>>'{intent_context,screen,objective}'<>'Autenticar a un usuario B2B y habilitar el acceso según su perfil, empresa y políticas de seguridad.'
+   OR v#>>'{intent_context,screen,flow}'<>'BACKOFFICE_B2B'
+   OR v#>>'{intent_context,module,app_shell_code}'<>'B2B_APP_SHELL'
+   OR v#>>'{intent_interpretation_request,semantic_interpretation_performed}'<>'false'
+   OR v#>>'{intent_interpretation_request,allow_unmatched_signals}'<>'true'
+   OR v->>'contextual_intent_status'<>'NOT_TESTED'
    OR jsonb_array_length(v->'narrative_clause_inventory')<8
    OR NOT EXISTS (
       SELECT 1 FROM jsonb_array_elements(v->'edges') e
