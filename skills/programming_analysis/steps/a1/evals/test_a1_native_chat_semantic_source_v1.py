@@ -267,6 +267,44 @@ class A1GenericNativeTransport(unittest.TestCase):
         self.assertIsNone(route["operation_boundary"]["runtime_operation_code"])
 
 
+    def test_24_unexpected_handoff_field_even_resigned_is_rejected(self):
+        handoff = frozen()
+        handoff["updater_operation_ref"] = "ACTUALIZACION_PERFIL_LF"
+        handoff["handoff_sha256"] = NATIVE._json_sha({
+            k: v for k, v in handoff.items() if k != "handoff_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_HANDOFF_FIELDS_INVALID"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+    def test_25_unexpected_capture_field_even_resigned_is_rejected(self):
+        handoff = frozen()
+        capture = NATIVE.capture_candidate(
+            handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+            current_surface="CHATGPT_CURRENT_CONVERSATION"
+        )
+        capture["effect_authority"] = True
+        capture["capture_sha256"] = NATIVE._json_sha({
+            k: v for k, v in capture.items() if k != "capture_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_CAPTURE_FIELDS_INVALID"):
+            NATIVE.producer_from_capture(handoff, capture)
+
+    def test_26_forged_handoff_authority_even_resigned_is_rejected(self):
+        handoff = frozen()
+        handoff["runtime_qualified"] = True
+        handoff["handoff_sha256"] = NATIVE._json_sha({
+            k: v for k, v in handoff.items() if k != "handoff_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_HANDOFF_FALSE_AUTHORITY"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
