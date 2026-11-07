@@ -1,5 +1,6 @@
 """Deterministic output self-consistency, NOT independent semantic attestation."""
 from hashlib import sha256
+import json
 
 
 def check(source, output):
@@ -18,6 +19,12 @@ def check(source, output):
         faults.append("ORIGINAL_REQUEST_PROVENANCE_MISMATCH")
     reviewed = output.get("interpretation_state") == "SEMANTIC_REVIEWED_CANDIDATE"
     if reviewed:
+        intent = output.get("intent_analysis")
+        candidate_digest = (sha256(json.dumps(
+            intent, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")).hexdigest() if isinstance(intent, dict) else None)
+        if candidate_digest != output.get("semantic_candidate_sha256"):
+            faults.append("SEMANTIC_CANDIDATE_DIGEST_MISMATCH")
         if not (expected_digest and isinstance(output.get("intent_analysis"), dict)
                 and isinstance(output.get("semantic_candidate_sha256"), str)
                 and len(output["semantic_candidate_sha256"]) == 64
