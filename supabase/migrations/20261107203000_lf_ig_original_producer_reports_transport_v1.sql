@@ -586,7 +586,9 @@ BEGIN
  OR strpos(v_prop,'ig_evo_graph_internal_truncated_rule_ids')=0
  OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
  OR strpos(v_executor,'''ig_consolidated_original_reports'',v_ig_originals')=0
- OR strpos(v_assembly,'validator_evidence_logical_rehydrated')=0
+ OR strpos(v_assembly,'validator_assertion_sets_originals_by_sha256')=0
+ OR strpos(v_assembly,'IG_CONSOLIDATION_ASSERTION_REFERENCE_SHA_MISMATCH')=0
+ OR strpos(v_assembly,'''validator_assertion_payload_truncated'',false')=0
  OR strpos(v_assembly,'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH')=0
  OR strpos(v_assembly,'''semantic_promotion_authorized'',false')=0
  OR md5(v_profile)<>'ab091d641cc1d3d923d20c0db96d9bc5'
