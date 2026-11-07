@@ -814,3 +814,59 @@ Deno.test("CP2: native profile resume: fail closed before prepare for invalid au
   assertEquals(output.response.status, 400);
   assertEquals(h.calls.length, 1);
 });
+
+
+// Ticket boundary regression exercises the real Caller createHandler with a strict
+// mocked Agent. The CP2 runner intentionally selects only CP2-prefixed tests.
+// These are source/Edge-handler tests, not live DB receipt or deployment evidence.
+Deno.test("CP2: runtime ticket correctly transported from Caller to Agent", async () => {
+  const h = harness({ agentRequiresTicket: true });
+  const { response, payload } = await invokeRuntime(h, {
+    action: "input_readiness_context_pack_runtime_v1",
+    execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id: 51,
+  });
+  assertEquals(response.status, 200);
+  assertEquals(payload.outcome, "TERMINAL");
+  assertEquals(payload.caller.method, "EJECUCION_PERFIL_LF_RUNTIME_TICKET_V1");
+  assertEquals(payload.caller.router_reentry, false);
+  const consumes = h.calls.filter((c) => c.url.endsWith("/rest/v1/rpc/lf_profile_input_governance_runtime_ticket_consume_v1"));
+  assertEquals(consumes.length, 1);
+  assertEquals(consumes[0].body?.p_pantalla_id, 51);
+  assertEquals(consumes[0].body?.p_consumer, "CONTEXT_PACK");
+  const agentCalls = h.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1"));
+  assertEquals(agentCalls.length, 1);
+  assertEquals(agentCalls[0].body, {
+    pantalla_id: 51,
+    consumer: "CONTEXT_PACK",
+    ticket: "11111111-2222-4333-8444-555555555555",
+  });
+  assertEquals(h.calls.filter((c) => c.url.includes("fn_input_governance_queue_")).length, 0);
+});
+
+Deno.test("CP2: malformed and unauthorized profile tickets block before Agent", async () => {
+  const req = {
+    action: "input_readiness_context_pack_runtime_v1",
+    execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
+    pantalla_id: 51,
+  };
+  const malformed = harness({ agentRequiresTicket: true });
+  const bad = await invokeRuntime(malformed, req, "invalid-ticket");
+  assertEquals(bad.response.status, 401);
+  assertEquals(bad.payload.code, "PROFILE_RUNTIME_TICKET_INVALID");
+  assertEquals(malformed.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1")).length, 0);
+
+  const expired = harness({ runtimeTicketAuthorized: false, agentRequiresTicket: true });
+  const denied = await invokeRuntime(expired, req);
+  assertEquals(denied.response.status, 403);
+  assertEquals(denied.payload.code, "PROFILE_IG_RUNTIME_TICKET_INVALID_OR_EXPIRED");
+  assertEquals(expired.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1")).length, 0);
+});
+
+Deno.test("CP2: legacy OIDC CONTEXT_PACK stays blocked by Agent ticket requirement", async () => {
+  const h = harness({ agentRequiresTicket: true });
+  const { response, payload } = await invoke(h, contextPackBody(51));
+  assertEquals(response.status, 409);
+  assertEquals(payload.outcome, "BLOCKED");
+  assert(String(payload.code).includes("IG_PROFILE_TICKET_REQUIRED"));
+});
