@@ -21,6 +21,11 @@ A1 = load(STEP / "validators/run.py", "a1_candidate_runner")
 SEM = load(STEP / "semantic_intake_candidate_v1.py", "a1_candidate_semantic")
 BRIDGE = load(SKILL / "adapters/a1_a2_candidate_bridge_v1.py", "a1_a2_candidate_bridge")
 A2 = load(SKILL / "steps/a2/validators/run.py", "a2_candidate_runner")
+D4CONSUMER = load(
+    SKILL / "adapters/a1_d4_inventory_consumer_candidate_v1.py",
+    "a1_d4_inventory_consumer_candidate",
+)
+
 
 LOGIN = "Implementa por primera vez el login B2B o también llamado inicio de sesión"
 IMPLICIT = "Necesito una vista para que las empresas entren al portal"
@@ -159,6 +164,42 @@ def unknown_signals():
         "material_contradiction": False, "known_cross_scope_impact": "UNKNOWN",
         "unresolved_material_signal_count": 1, "required_specialist_count": 0,
     }
+
+
+def canonical_d4_metadata_response():
+    return {
+        "schema_version": "LF_SOURCE_INVESTIGATION_PREPARATION_V1",
+        "next_action": "SEARCH_OTHER_CANDIDATES_OR_GOVERN_BINDING",
+        "planner_stop_is_local_only": True,
+        "discovery": {"discovery_state": "CANDIDATES_FOUND"},
+        "binding_checks": [],
+        "binding_checks_count": 0,
+        "d3": {
+            "next_action": "SEARCH_OTHER_CANDIDATES_OR_GOVERN_BINDING",
+            "final_business_answer_allowed": False,
+        },
+        "business_data_read_authorized": False,
+        "rows_accessed": False,
+        "runtime_dispatched": False,
+        "final_business_answer_allowed": False,
+        "effects_executed": False,
+        "global_discovery_exhausted": False,
+    }
+
+
+class GovernedD4FixtureCursor:
+    def __init__(self, response=None, error=None):
+        self.response = canonical_d4_metadata_response() if response is None else response
+        self.error = error
+        self.calls = []
+
+    def execute(self, sql, args):
+        self.calls.append((sql, args))
+        if self.error is not None:
+            raise self.error
+
+    def fetchone(self):
+        return (self.response,)
 
 
 class SemanticA1Candidate(unittest.TestCase):
@@ -395,6 +436,121 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertEqual(bad["status"], "BLOCKED")
         self.assertEqual(bad["blocking_codes"], ["A2_SEMANTIC_INTENT_DRIFT"])
 
+
+    def test_existing_d4_consumes_02_with_metadata_only_no_a2(self):
+        from_existing_a1 = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        cursor = GovernedD4FixtureCursor()
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(
+            from_existing_a1, cursor
+        )
+        self.assertEqual(out["status"], "METADATA_PREPARED_AMBIGUITIES_OPEN")
+        self.assertFalse(out["a2_allowed"])
+        self.assertFalse(out["source_attested"])
+        self.assertFalse(out["runtime_integrated"])
+        self.assertIsNone(out["a2_result"])
+        self.assertTrue(out["no_run_created"])
+        self.assertEqual(
+            out["open_ambiguities"][0]["code"], "PORTAL_ENTRY_MODE_UNRESOLVED"
+        )
+        self.assertEqual(
+            cursor.calls, [(
+                "SELECT private.fn_lf_source_investigation_prepare_v1(%s, %s) AS preparation",
+                (IMPLICIT, 12),
+            )]
+        )
+
+    def test_existing_d4_consumes_04_preserving_negation(self):
+        from_existing_a1 = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        cursor = GovernedD4FixtureCursor()
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(
+            from_existing_a1, cursor
+        )
+        self.assertEqual(out["status"], "METADATA_PREPARED_AMBIGUITIES_OPEN")
+        self.assertEqual(out["operation_kind"], "REUSE")
+        self.assertEqual(out["constraints"], ["No crees otra pantalla"])
+        self.assertEqual(
+            out["open_ambiguities"][0]["code"], "FUNCTIONAL_CAPABILITY_UNSPECIFIED"
+        )
+        self.assertFalse(out["a2_allowed"])
+        self.assertEqual(cursor.calls[0][1], (NEGATED, 12))
+
+    def test_existing_d4_rejects_tampered_input_sha_before_cursor(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        handoff = copy.deepcopy(handoff)
+        handoff["inventory_research_handoff"]["request_sha256"] = "0" * 64
+        cursor = GovernedD4FixtureCursor()
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_RAW_REQUEST_HASH_DRIFT")
+        self.assertEqual(cursor.calls, [])
+
+    def test_existing_d4_rejects_constraint_drift_before_cursor(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        handoff = copy.deepcopy(handoff)
+        handoff["inventory_research_handoff"]["constraints"] = []
+        cursor = GovernedD4FixtureCursor()
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_RESEARCH_CONTEXT_DRIFT")
+        self.assertEqual(cursor.calls, [])
+
+    def test_existing_d4_rejects_a2_bypass(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        handoff = copy.deepcopy(handoff)
+        handoff["a2_result"] = {"status": "FORGED_PASS"}
+        cursor = GovernedD4FixtureCursor()
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_A2_GATE_NOT_HALTED")
+        self.assertEqual(cursor.calls, [])
+
+    def test_existing_d4_rejects_unauthorized_effect_claim(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        forged = canonical_d4_metadata_response()
+        forged["business_data_read_authorized"] = True
+        cursor = GovernedD4FixtureCursor(forged)
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_CANONICAL_PREPARATION_FAILED")
+        self.assertFalse(out["a2_allowed"])
+
+    def test_existing_d4_rejects_canonical_currentness_block(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        blocked = canonical_d4_metadata_response()
+        blocked["next_action"] = "BLOCK_INVENTORY_LOOKUP_CURRENTNESS_UNSTABLE"
+        blocked["d3"] = None
+        cursor = GovernedD4FixtureCursor(blocked)
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_CANONICAL_PREPARATION_BLOCKED")
+        self.assertFalse(out["a2_allowed"])
+
+    def test_existing_d4_rejects_connection_error_without_leak(self):
+        handoff = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        cursor = GovernedD4FixtureCursor(error=RuntimeError("secret connection token"))
+        out = D4CONSUMER.prepare_a1_research_with_governed_cursor(handoff, cursor)
+        self.assertEqual(out["blocking_code"], "A1_D4_CANONICAL_PREPARATION_FAILED")
+        self.assertNotIn("secret", str(out))
+        self.assertFalse(out["a2_allowed"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
