@@ -45,21 +45,41 @@ G1 sigue teniendo límites internos de exploración por raíz (128 nodos / 512 r
 
 El estado `ORIGINALS_CAPTURED` exige JSON R1, R2–R6 **y G1 como array**. El simple registro del envelope del Curator no prueba que se hayan emitido todos los productores. Los indicadores de fuente y emisión **no** representan calidad semántica ni implementación validada.
 
+## Etapa 7 — Consolidación de Input Governance (candidata, antes del Perfil)
+
+La función oficial `programacion.fn_input_governance_execute` continúa seleccionando el RUN, ejecutando los EKB/freshness gates y calculando **una única vez** su `stage_gate` y decisión de readiness. La migración candidata agrega únicamente un ensamblador de **lectura** `programacion.fn_input_governance_original_consolidate_v1(run_id,stage_gate)`; no es una llamada a Curator, Validator, R1–R6 o G1. La ejecución existente adjunta `ig_consolidated_original_reports` **al final de su respuesta**, sin alterar `status`, `predecision_crosscheck`, `promotion_authorized=false` ni `production_authorized=false`.
+
+| Material original | Procedencia | Transporte propuesto |
+|---|---|---|
+| Curator / R1 / R2–R6 / G1 | Archivo inmutable `input_governance_producer_raw_v1` del mismo RUN | `curator_originals.original_curator_output` íntegro + SHA + estado de emisión de cada productor |
+| Validator por familia | Fila almacenada `input_family_assessments` | `validator_original_rows[].original_assessment_row` sin cambiar estados/finding/hash |
+| Aserciones del Validator | `input_validator_assertion_sets_v1` por `assertion_set_sha256` | `validator_evidence_logical_rehydrated`, recuperado con el helper ya existente y verificado frente al **`validator_sha256` original** |
+| Estado del RUN y fuente | `input_readiness_runs` | `run_id`, pantalla, `source_snapshot_sha256`, `universe_snapshot_sha256` |
+| Readiness | `stage_gate` oficial ya calculado | `full_qa_stage_closed` y `full_production_stage_closed`, más estados de cada fila original |
+| Semántica | `scope.validator_semantic_mode`, política del RUN | Campo literal `SOURCE_INTEGRITY_ONLY` cuando corresponda; **`independent_semantic_judgement_here=NOT_TESTED`**, `semantic_promotion_authorized=false` |
+
+**Controles de bloqueo:** fuente vigente, stage-gate de ese RUN, cardinalidad exacta de familias, `validator_outcome=PASS` como resultado **original**, existencia del archivo de aserciones, `curator_sha256`/snapshot coincidentes, SHA-256 del recibo Validator reconstruido exactamente con la fórmula del guard oficial. Si falla algo de la evidencia del Validator, el ensamblado lanza error y **no inventa el informe**. Si el informe del Curator es legado/no emitido, el resultado lo declara `VALIDATOR_EVIDENCE_PRESENT_CURATOR_ORIGINAL_INCOMPLETE` y `ig_original_reports_complete=false`; **no lo reconstruye ni lo confunde con un informe completo**.
+
+**Alcance comprobado en READBACK histórico RUN 949 (no prueba del candidato):** 47 familias con `PASS` de integridad; 47 conjuntos de aserciones almacenados (23 SHA distintos, 47 aserciones `SOURCE_INTEGRITY`), 24 QA BLOCKED y 25 de producción todavía abiertas. La existencia del registro no demuestra un transporte de bytes ni consumo del modelo.
+
+**Gates pendientes:** compilación PostgreSQL del SQL candidato, positivos/negativos, SHA exacto al rehidratar, volumen/latencia y privacidad del JSON completo, autorización interna SQL, `source_snapshot` posterior a Curator, G1 con 71 raíces, recibo de transporte al modelo. **No calificar de E2E/PASS ninguna de estas comprobaciones**.
+
 ## Transporte por el camino existente
 
 ```text
-Curator original (incluye R1, R2–R6 y G1 ya calculados)
-  └─ almacén inmutable, mismo run_id, hash del envelope
-     └─ lectura autorizada por programacion.fn_input_governance_producer_raw_read_v1
-        └─ fn_lf_profile_input_governance_resolve_v1
-           └─ input_governance.ig_original_producer_reports
-              └─ input_validate → lf_profile_native_bridge_prepare_v1
-                 └─ perfil recibe el contenido completo, no una proyección
+Curator original (incluye R1, R2–R6 y G1 emitidos)
+  └─ archivo inmutable por RUN / SHA
+Validator: filas originales + archivo de assertions por SHA
+  └─ rehidratación del Validator sin volver a ejecutarlo
+     └─ fn_input_governance_original_consolidate_v1(run_id,stage_gate)
+        └─ fn_input_governance_execute (respuesta oficial; decisión intacta)
+           └─ ig_consolidated_original_reports (contrato propuesto)
+              └─ Perfil: ÚLTIMA ETAPA, integración/E2E todavía NO probados
 ```
 
 La función lectora es interna (`SECURITY DEFINER`, sin `EXECUTE` para PUBLIC, anon, authenticated ni service_role). El perfil obtiene el contenido solo por la función oficial ya restringida y por su handoff autorizado.
 
-El mensaje al Perfil contiene **dos cosas complementarias**: el `context_manifest` para navegación y `ig_original_producer_reports.original_curator_output` íntegro para su análisis. La segunda no es simplemente `retrieval_handles`, `hashes`, `summary` ni `ig_evo_graph_index` abreviado.
+**Integración al Perfil aún pendiente:** el código candidato anterior ya añadía `ig_original_producer_reports` por separado en `fn_lf_profile_input_governance_resolve_v1`. Al cerrar la etapa 8 hay que **reconciliarlo con `ig_consolidated_original_reports`**, para evitar duplicar payload y probar efectivamente la lectura del modelo. El reporte final no debe reducirse a `retrieval_handles`, `hashes`, `summary` ni G1 abreviado. **No se acredita todavía que el Perfil lo haya recibido o utilizado.**
 
 ## Estados del readback
 
