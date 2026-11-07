@@ -54,6 +54,8 @@ class OriginalProducerTransportContract(unittest.TestCase):
     def test_legacy_and_stale_do_not_fabricate_reports(self):
         self.assertIn("NOT_CAPTURED_LEGACY_RUN", self.sql)
         self.assertIn("RUN_STALE", self.sql)
+        self.assertIn("RUN_NOT_CURRENT", self.sql)
+        self.assertIn("fn_input_readiness_run_is_current(p_run_id)", self.sql)
         self.assertIn("PARTIAL_ORIGINALS_NOT_EMITTED", self.sql)
         self.assertIn("IG_ORIGINAL_REPORT_INTEGRITY_DRIFT", self.sql)
         self.assertIn("'research_reexecuted',false", self.sql)
@@ -88,7 +90,7 @@ class OriginalProducerTransportContract(unittest.TestCase):
     def test_document_does_not_claim_completed_runtime(self):
         self.assertIn("implementación candidata / NO-GO", self.doc)
         self.assertIn("no re-ejecutar", self.doc)
-        self.assertIn("11", self.doc) if False else None  # No hardcode historical handle count.
+        self.assertNotIn("11 handles obligatorios", self.doc)
         self.assertIn("model_has_read_report=false", self.doc)
 
 if __name__ == "__main__":
