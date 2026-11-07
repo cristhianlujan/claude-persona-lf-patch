@@ -1,16 +1,32 @@
 """Source-only integration tests for the A2→A3 transport envelope."""
 import unittest,copy,importlib.util
 from pathlib import Path
-from test_golden_handoff_v03 import make, run
+from test_golden_handoff_v03 import run
+from test_a2 import a1input, low, RUN_A1, RUN as RUN_A2
 A2_BASE=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('a2_a3_intake_preview',A2_BASE/'adapters/a2_a3_intake_preview_v1.py')
 module=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 prepare_preview=module.prepare_preview
 def fixture():
-  a,b,s=make()
+  # Use real A1/A2 validators, not the historic A1_SOURCE_CANDIDATE_V1 fixture.
+  a=RUN_A1.run(a1input())
+  s=low()
+  b=RUN_A2.run(a,s)
   return a,b,s,run(a,b,s)
 class IntakePreview(unittest.TestCase):
+ def test_real_a1_a2_validator_chain(self):
+  a,b,s,g=fixture()
+  self.assertEqual(a['schema_version'],'A1_INTERNAL_STEP_CANDIDATE_RESULT_V1')
+  self.assertEqual(a['status'],'VALID_OUTPUT')
+  self.assertEqual(b['schema_version'],'A2_INTERNAL_STEP_CANDIDATE_RESULT_V1')
+  self.assertEqual(b['status'],'CANDIDATE_UNATTESTED')
+  self.assertEqual(g['canonical_classification'],b['classification'])
+  self.assertEqual(prepare_preview(a,b,s,g)['status'],'PREVIEW_PREPARED_NOT_DISPATCHABLE')
+ def test_obsolete_a1_schema_refused(self):
+  a,b,s,g=fixture()
+  a['schema_version']='A1_SOURCE_CANDIDATE_V1'
+  self.assertEqual(prepare_preview(a,b,s,g)['blocking_codes'],['A2_A3_A1_NOT_ELIGIBLE'])
  def reject(self, mutate, code):
   x=fixture();mutate(*x);r=prepare_preview(*x)
   self.assertEqual(r['status'],'BLOCKED',r);self.assertEqual(r['blocking_codes'],[code]);self.assertFalse(r['a3_allowed'])
