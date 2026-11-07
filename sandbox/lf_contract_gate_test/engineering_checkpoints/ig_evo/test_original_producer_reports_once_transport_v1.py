@@ -41,43 +41,51 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("fn_input_governance_materialize_gap_proposals_v1(bigint)", self.sql)
         self.assertNotIn("programacion.fn_ig_evo_rule_graph_inventory_v1(", self.sql)
 
-    def test_graph_root_cap_is_removed_without_substitute(self):
-        # The old statements are only source snippets to replace, never final SQL.
-        self.assertIn("$old$      order by rule_id limit 8$old$", self.sql)
-        self.assertIn("$new$      order by rule_id$new$", self.sql)
-        self.assertIn(
-            "$old$    or jsonb_array_length(v_ig_evo_graph_index)>8$old$",
-            self.sql,
-        )
-        self.assertIn(
-            "$new$    or jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total$new$",
-            self.sql,
-        )
-        self.assertIn("IG_GRAPH_LIMIT_8_RESIDUAL", self.sql)
-        self.assertIn("ALL_R6_DISCOVERED_ROOTS_CAPTURED_NOT_SEMANTIC_PASS", self.sql)
+    def test_g1_full_scope_comes_from_canonical_effective_rule_selector(self):
+        sql = self.sql
+        count = sql.split("$new_count$")[1]
+        roots = sql.split("$new_roots$")[1]
+        self.assertIn("count(distinct e.regla_id)", count)
+        self.assertIn("select distinct e.regla_id AS rule_id", roots)
+        for selected in (count, roots):
+            self.assertIn(
+                "fn_input_effective_rule_links_v1(v_run.pantalla_id,'INPUT_GOVERNANCE')",
+                selected,
+            )
+            self.assertIn("e.binding_source<>'DERIVED_GLOBAL'", selected)
+            self.assertIn("rr.estado in ('VIGENTE','CANDIDATO')", selected)
+        self.assertNotIn("v_r2_r6_scan", roots)
+        self.assertNotIn("limit 8", roots.lower())
+        self.assertNotIn("LIMIT 71", roots.upper())
 
-    def test_all_roots_are_accounted_for_without_a_fixed_cardinality(self):
-        # Inspect SQL contract only. Runtime coverage/benchmark remains NOT_TESTED.
-        reader = self.sql.split(
-            "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
-        )[1].split("$raw_get$;")[0]
-        self.assertIn(
-            "'graph_discovered_root_count',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0)",
-            reader,
-        )
-        self.assertIn(
-            "'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))",
-            reader,
-        )
-        self.assertIn(
-            "'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))",
-            reader,
-        )
-        self.assertNotIn(")>8", reader)
+    def test_any_number_of_roots_requires_exact_accounting(self):
         self.assertIn(
             "jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total",
             self.sql,
         )
+        self.assertIn("ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES", self.sql)
+        self.assertIn(
+            "ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS", self.sql
+        )
+        self.assertIn("ig_evo_graph_total_effective_rules", self.sql)
+        reader = self.sql.split(
+            "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
+        )[1].split("$raw_get$;")[0]
+        self.assertIn("'graph_eligible_rule_count'", reader)
+        self.assertIn("'graph_captured_root_count'", reader)
+        self.assertIn("'graph_truncated'", reader)
+        self.assertNotIn(")>8", reader)
+
+    def test_internal_graph_truncation_is_not_misreported_complete(self):
+        self.assertIn("'graph_limit_hit'='true'", self.sql)
+        self.assertIn("ig_evo_graph_internal_truncation_count", self.sql)
+        self.assertIn("ig_evo_graph_internal_truncated_rule_ids", self.sql)
+        self.assertIn(
+            "ALL_EFFECTIVE_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION",
+            self.sql,
+        )
+        self.assertIn("'graph_internal_truncation_count'", self.sql)
+        self.assertIn("IG_G1_ROOT_SCOPE_RESIDUAL", self.sql)
 
     def test_getter_is_pure_storage_read_without_r_scans(self):
         getter = self.sql.split(
