@@ -41,7 +41,7 @@ El A1 devuelve REQUEST_CONTEXT_V1 como payload y el anexo externo INTENT_ANALYSI
 - Endurecer resistencia a productor/revisor falsificado, contradicciones de lenguaje y evidencia inventada.
 - Mantener PR DRAFT sin merge ni declaración READY.
 
-## Lote A1-II — Adaptador del modelo existente y prueba Python (2026-11-07)
+## Lote A1-II — Histórico: Llama descartado (2026-11-07)
 
 - Se añadió `steps/a1/adapters/llama_semantic_callbacks_candidate_v1.py`: callbacks productor/revisor sobre `LlamaHTTPClient.chat` EXISTENTE, configurado por el consumidor. No se creó motor ni cliente nuevo, ni se llama al modelo durante importación. Dos objetos cliente diferentes son obligatorios, pero NO garantizan independencia operacional.
 - Se añadió `steps/a1/evals/test_a1_llama_semantic_callbacks_candidate_v1.py`: 6 pruebas de contrato/transporte con FakeClient (no inferencia real). Sumadas a 12 pruebas nuevas de interpretación sintética y a 35 preexistentes = 53 tests A1.
@@ -50,3 +50,14 @@ El A1 devuelve REQUEST_CONTEXT_V1 como payload y el anexo externo INTENT_ANALYSI
 - PASE final post-reversión: run `42345765111`, `completed/success`. Los 7 archivos principales de A1/A2/costura mantuvieron mismos SHA de blob que en el commit con Python PASS.
 - Se consultó EKB `PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001` y `PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001`: pruebas deterministas no equivalen a modelo real/juez independiente y no autorizan READY.
 - **Pendiente:** proveedor Llama accesible y configurado para ejecutar `LlamaHTTPClient.chat` realmente, revisión verdaderamente independiente con evidencia identificable, holdouts de negación/paráfrasis/múltiples acciones y aceptación de resultados. No abrir RUN hija, no Router, no update Supabase; mantener PR DRAFT.
+
+
+## Lote A1-III — Corrección de arquitectura: GPT/Claude Native genérico (2026-11-07)
+
+- **Corrección solicitada por el propietario:** Llama/REMOTE_API no forma parte del flujo de A1. Se retiraron de esta rama los dos archivos añadidos por error: adaptador Llama y sus seis pruebas específicas.
+- La arquitectura existente ya contempla pares válidos `GPT_NATIVE/OPENAI_CHATGPT_NATIVE` y `CLAUDE_NATIVE/ANTHROPIC_CLAUDE_NATIVE`, con autoría dentro de la conversación Native. Fuentes de referencia: `skills/profile_creator/validators/profile_updater_same_chat_v02.py`, `supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts` y `supabase/migrations/20261029140000_lf_profile_native_executor_claude_parity_v1.sql`.
+- Nuevo adaptador local **source-only**, `steps/a1/adapters/native_chat_semantic_source_v1.py`. Congela entrada + hashes de protocolo/esquema, verifica pareja modo/proveedor/superficie y captura JSON semántico de la conversación; no llama a un LLM, no abre RUN, no modifica Router ni Supabase.
+- `steps/a1/evals/test_a1_native_chat_semantic_source_v1.py`: **12 pruebas definidas, NO ejecutadas Python exact-HEAD**: paridad GPT/Claude Native, hash/captura, rechazos de mezclas de proveedor, cambio de texto, falsas atestaciones.
+- `steps/a1/semantic_model_protocol_candidate_v1.md`: especifica el protocolo de autoría Native y verificación semántica independiente.
+- Las **53/53 A1** y **33/33 A2** pruebas anteriores fueron comprobadas contra la fuente previa que incluía un mock de Llama. Esa evidencia se mantiene como antecedente histórico, pero **NO** se reutiliza como un 53/53 PASS sobre la implementación Native actual. Se deben ejecutar los tests actuales antes de calificar el lote.
+- **Siguiente control:** prueba de flujo A1 con salida GPT/Claude Native genuina y revisión separada; capturas sintéticas/firmas del mismo chat no acreditan independencia. No integrar el RUN de la skill.
