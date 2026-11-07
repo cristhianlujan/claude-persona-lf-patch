@@ -24,7 +24,7 @@ G1 sigue teniendo límites internos de exploración por raíz (128 nodos / 512 r
 
 ## Captura una sola vez por RUN
 
-- En la respuesta final `v_full_original_response` del mismo Curator, persistir `programacion.input_governance_producer_raw_v1.original_curator_output` y su SHA-256 calculado sobre **los mismos bytes semánticos JSONB** (sin normalizar a sinopsis).
+- En la respuesta final `v_full_original_response` del mismo Curator, persistir `programacion.input_governance_producer_raw_v1.original_curator_output` y su SHA-256 calculado sobre **el mismo valor original JSONB** (sin normalizar a sinopsis). `producer_original_sha256` incorpora SHA-256 independientes de CURATOR, R1, R2–R6 y G1 extraídos del JSON almacenado, sin ejecutar una nueva investigación. Para el productor ausente conserva `null` y su `producer_emission` explica la causa.
 - `run_id` es PK; no sobrescribir el RAW anterior ni mezclar RUN. Registrar pantalla, identidad del Curator y `source_snapshot_sha256`.
 - Solo se inserta para `BOOTSTRAP`, `REBIND`, `SOURCE_STALE_RECURATE` y `FULL_RECURATE`. `NOOP` **reutiliza** el informe previamente guardado; no lo recalcula.
 - Para `REBIND`, no inferir por el nombre que los detectores se emitieron: el escritor `fn_input_governance_curator_rebind_v1` puede delegar a recuración si cambia el contrato. Verificar `proposal_materialization.ig_evo_r1_diagnostics`, `ig_evo_r2_r6_diagnostics` y `ig_evo_graph_index` **en el RAW realmente devuelto**. Si ninguno se emitió, `ORIGINALS_NOT_EMITTED_FOR_REBIND`, con `producer_emission` por componente.
