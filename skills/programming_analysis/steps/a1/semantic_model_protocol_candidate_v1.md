@@ -3,6 +3,31 @@
 Purpose: model-provider-neutral semantic reasoning protocol for A1. It does not create a model call, verify provider identity, or authorize downstream actions. No literal keyword dictionary.
 
 
+
+### Mandatory A1 route identity (no Profile Updater crossover)
+
+Every A1 Native authoring handoff MUST bind the versioned source contract
+`skills/programming_analysis/steps/a1/contracts/a1_native_semantic_route_v1.json`:
+- contract_code: `A1_NATIVE_SEMANTIC_ROUTE_V1`
+- route_code: `PROGRAMMING_ANALYSIS_LF/A1/SEMANTIC_NATIVE_AUTHORING`
+- owner_skill_code: `PROGRAMMING_ANALYSIS_LF`
+- owner_step_code: `A1`
+- runtime_operation_code: null (source-only authoring)
+- A1 output: `A1_INTERNAL_STEP_CANDIDATE_RESULT_V1` with canonical payload `REQUEST_CONTEXT_V1` and separate semantic candidate annex.
+- A2 internal handoff: `A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1`, NOT an autonomous A2 run.
+
+The Profile Updater's `ACTUALIZACION_PERFIL_LF`,
+`LF_PE10_V02_SAME_CHAT_NATIVE_HANDOFF_V1`,
+`LF_PE10_V02_SAME_CHAT_RAW_CAPTURE_V1`, and its profile-plan bindings
+are **precedents, NOT callable routes for A1**. Reject any re-signed
+handoff/capture carrying these fields or wrong owner/route identifiers.
+A matched executor mode (GPT_NATIVE/CLAUDE_NATIVE) is NOT sufficient
+to identify an A1 request. The contract binding must match as well.
+
+No fallback to Profile Updater, Llama, REMOTE_API, `EJECUCION_PERFIL_LF`,
+or `EJECUCION_SKILL_LF`. This boundary remains fixed while A1's
+semantic reasoning and the A1→A2 data schema can evolve independently.
+
 ## Native executor transport — canonical mode selection
 
 The semantic author executes through the **existing native conversation**, with
