@@ -316,6 +316,20 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertTrue(transport["no_run_created"])
         self.assertIsNone(transport["a2_result"])
 
+    def test_material_ambiguity_cannot_be_bypassed_with_a2_signals(self):
+        transport = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+            depth_signals=unknown_signals(),
+            evidence_refs=["fixture://unverified-source"],
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        self.assertEqual(transport["inventory_research_handoff"]["operation_kind"], "REUSE")
+        self.assertFalse(transport["inventory_research_handoff"]["allow_a2"])
+        self.assertIsNone(transport["a2_signal_bundle"])
+        self.assertIsNone(transport["a2_result"])
+        self.assertTrue(transport["no_run_created"])
+
     def test_invalid_semantic_input_cannot_issue_inventory_handoff(self):
         transport = BRIDGE.prepare_semantic_transport(
             NEGATED, business="LF", semantic_producer=producer,
