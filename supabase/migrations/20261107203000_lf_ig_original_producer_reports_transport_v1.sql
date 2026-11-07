@@ -123,9 +123,13 @@ BEGIN
   $new$      'root_rule_id',g.rule_id,
       'raw_graph',g.doc,
       'graph_sha256'$new$);
- IF v_new=v_def OR strpos(v_new,'''raw_graph'',g.doc')=0 OR right(btrim(v_new),1)<> ';' THEN
+ IF v_new=v_def OR strpos(v_new,'''raw_graph'',g.doc')=0 THEN
    RAISE EXCEPTION 'IG_ORIGINAL_REPORT_GRAPH_CAPTURE_PATCH_INVALID';
  END IF;
+ -- pg_get_functiondef omits the terminator on this deployed server.
+ -- Preserve the body byte-identically apart from our one bounded patch.
+ v_new:=rtrim(v_new)||';';
+ IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_GRAPH_SQL_TERMINATOR_MISSING'; END IF;
  EXECUTE v_new;
 
  SELECT pg_get_functiondef(
@@ -168,8 +172,9 @@ exception when others then
 exception when others then
   perform set_config('lf.input_curator_family_timings_v1','',true);$new$);
  IF v_new=v_source OR strpos(v_new,'INSERT INTO programacion.input_governance_producer_raw_v1')=0
- OR right(btrim(v_new),1)<> ';'
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_CURATOR_CAPTURE_PATCH_INVALID'; END IF;
+ v_new:=rtrim(v_new)||';';
+ IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_CURATOR_SQL_TERMINATOR_MISSING'; END IF;
  EXECUTE v_new;
 
  SELECT pg_get_functiondef(
@@ -205,8 +210,9 @@ exception when others then
  IF v_new=v_source OR
     (length(v_source)-length(replace(v_source,'''governance_result'',v_result,','')))
        /length('''governance_result'',v_result,') <> 3
- OR right(btrim(v_new),1)<> ';'
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_PATCH_INVALID'; END IF;
+ v_new:=rtrim(v_new)||';';
+ IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_SQL_TERMINATOR_MISSING'; END IF;
  EXECUTE v_new;
 END;
 $patch$;
