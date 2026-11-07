@@ -27,8 +27,8 @@ DECLARE
     v_action text;
 BEGIN
     IF p_input IS NULL OR pg_catalog.jsonb_typeof(p_input) <> 'object'
-       OR p_input->>'schema_version' <> 'A1_INVENTORY_RESEARCH_HANDOFF_CANDIDATE_V1'
-       OR p_input->>'business' <> 'LF'
+       OR p_input->>'schema_version' IS DISTINCT FROM 'A1_INVENTORY_RESEARCH_HANDOFF_CANDIDATE_V1'
+       OR p_input->>'business' IS DISTINCT FROM 'LF'
        OR p_input->>'allow_a2' IS DISTINCT FROM 'false'
        OR p_input->>'inventory_source_verified' IS DISTINCT FROM 'false'
     THEN
@@ -40,7 +40,8 @@ BEGIN
         RAISE EXCEPTION 'A1_D4_RESEARCH_INPUT_INVALID';
     END IF;
 
-    IF v_raw IS NULL OR length(pg_catalog.btrim(v_raw)) NOT BETWEEN 3 AND 1000
+    IF pg_catalog.jsonb_typeof(p_input->'original_request') IS DISTINCT FROM 'string'
+       OR v_raw IS NULL OR length(pg_catalog.btrim(v_raw)) NOT BETWEEN 3 AND 1000
 
        OR nullif(pg_catalog.btrim(p_input->>'operation_kind'), '') IS NULL
        OR nullif(pg_catalog.btrim(p_input->>'artifact_kind'), '') IS NULL
@@ -50,6 +51,24 @@ BEGIN
        OR pg_catalog.jsonb_typeof(p_input->'source_refs') IS DISTINCT FROM 'array'
        OR pg_catalog.jsonb_typeof(p_input->'dimensions_to_investigate') IS DISTINCT FROM 'array'
     THEN
+        RAISE EXCEPTION 'A1_D4_RESEARCH_INPUT_INVALID';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM pg_catalog.jsonb_array_elements(p_input->'constraints') AS c(item)
+        WHERE pg_catalog.jsonb_typeof(c.item) <> 'string'
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM pg_catalog.jsonb_array_elements(p_input->'target_hints') AS t(item)
+        WHERE pg_catalog.jsonb_typeof(t.item) <> 'string'
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM pg_catalog.jsonb_array_elements(p_input->'source_refs') AS r(item)
+        WHERE pg_catalog.jsonb_typeof(r.item) <> 'string'
+    ) THEN
         RAISE EXCEPTION 'A1_D4_RESEARCH_INPUT_INVALID';
     END IF;
 
@@ -68,7 +87,9 @@ BEGIN
        OR EXISTS (
            SELECT 1
            FROM pg_catalog.jsonb_array_elements(v_ambiguities) AS a(item)
-           WHERE a.item->>'resolution_state' <> 'OPEN'
+           WHERE pg_catalog.jsonb_typeof(a.item) IS DISTINCT FROM 'object'
+              OR a.item->>'resolution_state' IS DISTINCT FROM 'OPEN'
+              OR a.item->>'materiality' IS NULL
               OR a.item->>'materiality' NOT IN ('MATERIAL','UNKNOWN')
               OR nullif(pg_catalog.btrim(a.item->>'code'), '') IS NULL
        )
@@ -82,7 +103,7 @@ BEGIN
     v_preparation := private.fn_lf_source_investigation_prepare_v1(v_raw, 12);
     v_action := v_preparation->>'next_action';
 
-    IF v_preparation->>'schema_version' <> 'LF_SOURCE_INVESTIGATION_PREPARATION_V1'
+    IF v_preparation->>'schema_version' IS DISTINCT FROM 'LF_SOURCE_INVESTIGATION_PREPARATION_V1'
        OR v_preparation->>'business_data_read_authorized' IS DISTINCT FROM 'false'
        OR v_preparation->>'rows_accessed' IS DISTINCT FROM 'false'
        OR v_preparation->>'runtime_dispatched' IS DISTINCT FROM 'false'
