@@ -125,12 +125,27 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
     """Return a candidate classification, never an A3 admission."""
     if not isinstance(a1_result, dict) or not _valid(a1_result, _json(A1_SCHEMA)):
         return _blocked("A1_OUTPUT_CONTRACT_INVALID")
+    raw_semantic = a1_result.get("interpretation_state") == "SEMANTIC_REVIEWED_CANDIDATE"
+    legacy_structured = (
+        a1_result.get("interpretation_state") == "PRESTRUCTURED_UNATTESTED"
+        and a1_result.get("original_request_sha256") is None
+    )
     if (a1_result["status"] != "VALID_OUTPUT"
-            or a1_result["interpretation_state"] != "PRESTRUCTURED_UNATTESTED"
             or a1_result["semantic_review_required"]
             or a1_result["next_capability"] != "A2"
-            or a1_result["original_request_sha256"] is not None):
+            or not (legacy_structured or raw_semantic)):
         return _blocked("A1_SEMANTIC_OR_STATUS_GATE_UNRESOLVED")
+    if raw_semantic:
+        intent = a1_result.get("intent_analysis")
+        if (not isinstance(intent, dict)
+                or not isinstance(a1_result.get("original_request_sha256"), str)
+                or not isinstance(a1_result.get("semantic_candidate_sha256"), str)
+                or hashlib.sha256(json.dumps(
+                    intent, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")).hexdigest() != a1_result["semantic_candidate_sha256"]
+                or not isinstance(a1_result.get("semantic_reviewer_ref"), str)
+                or a1_result.get("semantic_review_identity_verified") is not False):
+            return _blocked("A1_SEMANTIC_CANDIDATE_BINDING_INVALID")
     business = a1_result.get("business")
     if not isinstance(business, str) or not (2 <= len(business) <= 32) or business != business.strip():
         return _blocked("A1_BUSINESS_SCOPE_INVALID")
@@ -165,6 +180,11 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
 
     if signal_bundle["business"] != business:
         return _blocked("A2_BUSINESS_SCOPE_MISMATCH")
+    if raw_semantic:
+        intent = a1_result["intent_analysis"]
+        if (signal_bundle["change_type"] != intent["operation"]["kind"]
+                or signal_bundle["target_granularity"] != intent["target"]["artifact_kind"]):
+            return _blocked("A2_SEMANTIC_INTENT_DRIFT")
     for fact in context["provided_facts"]:
         if fact["fact_code"] in {"BUSINESS", "BUSINESS_CODE", "TARGET_BUSINESS"}:
             if fact["value"] != business or fact["source_ref"] not in context["source_refs"]:
