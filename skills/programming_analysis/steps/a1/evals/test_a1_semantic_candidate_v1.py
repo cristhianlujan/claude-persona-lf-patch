@@ -25,6 +25,7 @@ A2 = load(SKILL / "steps/a2/validators/run.py", "a2_candidate_runner")
 LOGIN = "Implementa por primera vez el login B2B o también llamado inicio de sesión"
 IMPLICIT = "Necesito una vista para que las empresas entren al portal"
 NEGATED = "No crees otra pantalla; usa la existente"
+GRID = "Necesito un listado de operaciones con filtros"
 
 
 def span(raw, needle, dimension):
@@ -44,6 +45,9 @@ def semantic_candidate(raw):
         artifact, capability, domain, mentions = "vista", "empresas entren al portal", "empresas", [
             "vista para que las empresas entren al portal"
         ]
+    elif raw == GRID:
+        op, assumption, assumed_phrase = "Necesito", "UNSPECIFIED", None
+        artifact, capability, domain, mentions = "listado de operaciones", "listado de operaciones", None, ["listado de operaciones"]
     else:
         op, assumption, assumed_phrase = "crees", "CLAIMED_EXISTING", "existente"
         artifact, capability, domain, mentions = "pantalla", "pantalla", None, ["pantalla"]
@@ -63,17 +67,17 @@ def semantic_candidate(raw):
         },
         "target": {
             "artifact_kind": "SCREEN",
-            "functional_archetype": "AUTH_FLOW",
-            "canonical_capability": "IDENTITY_AND_ACCESS",
+            "functional_archetype": "DATA_GRID_VIEW" if raw == GRID else "AUTH_FLOW",
+            "canonical_capability": "DATA_EXPLORATION" if raw == GRID else "IDENTITY_AND_ACCESS",
             "actor_scope": "B2B" if domain else "UNSPECIFIED",
             "raw_mentions": mentions
         },
-        "desired_outcome": "Permitir el acceso de empresas al portal",
-        "analysis_hints": ["SECURITY_REVIEW", "SESSION_REVIEW", "ROUTING_REVIEW"],
-        "dimensions_to_investigate": [
-            "AUTH_MECHANISM", "SESSION_POLICY", "POST_LOGIN_ROUTING",
-            "ACCOUNT_RECOVERY", "ERROR_HANDLING"
-        ],
+        "desired_outcome": "Mostrar operaciones con filtros" if raw == GRID else "Permitir el acceso de empresas al portal",
+        "analysis_hints": (["DATA_ACCESS_REVIEW", "PAGINATION_REVIEW"] if raw == GRID
+                           else ["SECURITY_REVIEW", "SESSION_REVIEW", "ROUTING_REVIEW"]),
+        "dimensions_to_investigate": (["FILTER_CRITERIA", "PAGINATION_STRATEGY"] if raw == GRID
+                                     else ["AUTH_MECHANISM", "SESSION_POLICY", "POST_LOGIN_ROUTING",
+                                           "ACCOUNT_RECOVERY", "ERROR_HANDLING"]),
         "evidence_spans": spans,
         "explicit_constraints": [],
         "material_ambiguities": []
@@ -136,6 +140,13 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertEqual(out["intent_analysis"]["target"]["canonical_capability"], "IDENTITY_AND_ACCESS")
         self.assertEqual(out["intent_analysis"]["operation"]["kind"], "IMPLEMENT")
         self.assertEqual(out["intent_analysis"]["operation"]["user_assumed_state"], "UNSPECIFIED")
+
+    def test_open_catalog_not_hardcoded_to_auth_login(self):
+        out = A1.run(GRID, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
+        self.assertEqual(out["status"], "VALID_OUTPUT")
+        self.assertEqual(out["intent_analysis"]["target"]["functional_archetype"], "DATA_GRID_VIEW")
+        self.assertEqual(out["intent_analysis"]["target"]["canonical_capability"], "DATA_EXPLORATION")
+        self.assertNotIn("AUTH_MECHANISM", out["intent_analysis"]["dimensions_to_investigate"])
 
     def test_negation_needs_semantic_review_not_keyword_pass(self):
         out = A1.run(NEGATED, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
