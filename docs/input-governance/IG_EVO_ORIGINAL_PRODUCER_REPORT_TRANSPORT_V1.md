@@ -11,10 +11,14 @@ Los productores reales encontrados en código vigente son:
 | Curator | `programacion.fn_input_governance_curator_materialize_v1` | Envelope JSON completo retornado (status, estrategia, recibo, `proposal_materialization`, rendimiento y contexto) |
 | R1 | `fn_ig_evo_r1_parameter_provenance_v1` | `proposal_materialization.ig_evo_r1_diagnostics` |
 | R2–R6 | `fn_ig_evo_r2_r6_diagnostics_v1` | `proposal_materialization.ig_evo_r2_r6_diagnostics`; los tipos R2/R3/R4/R5/R6 se conservan **como los emite el detector agrupado**, sin fabricar llamadas individuales |
-| G1 | `fn_ig_evo_rule_graph_inventory_v1` | `proposal_materialization.ig_evo_graph_index[].raw_graph`: salida entera de **cada grafo efectivamente calculado** y copiado del mismo valor `g.doc`, no un segundo escaneo |
+| G1 | `fn_ig_evo_rule_graph_inventory_v1` | `proposal_materialization.ig_evo_graph_index[].raw_graph`: salida entera por **cada regla efectiva elegible de la pantalla**, del mismo `g.doc` que produce G1, sin re-ejecutar para transporte |
 | Validator | `input_family_assessments.validator_*` y recibo Curator→Validator existente | No se modifica su proceso; se conserva evidencia y dictamen por el mecanismo ya vigente. Aún no se certificó un RAW de Validator de extremo a extremo |
 
-**Importante:** se elimina el límite arbitrario de 8 raíces. El índice calcula **todas las raíces distintas descubiertas por R6** (sin `LIMIT` fijo), y conserva cada `g.doc` original en el mismo cómputo. Se valida que `graph_captured_root_count = graph_discovered_root_count`; una diferencia bloquea y no se oculta. **Esto cubre todas las raíces R6 identificadas, no necesariamente todas las reglas de la pantalla.** No se re-investigan raíces ya calculadas. Si el volumen/latencia resulta problemático, deberá medirse y justificarse una estrategia de transporte por lotes, sin imponer un nuevo máximo silencioso.
+**Cobertura G1 corregida:** la selección de raíces es independiente de R6. El inventario parte de **todas las reglas efectivas elegibles de la pantalla** usando la fuente canónica `programacion.fn_input_effective_rule_links_v1(pantalla_id,'INPUT_GOVERNANCE')`, sin `DERIVED_GLOBAL`, y las reglas en estado `VIGENTE` o `CANDIDATO`. El mismo contrato de elegibilidad ya se aplica dentro de `fn_ig_evo_rule_graph_inventory_v1`. Se eliminan `LIMIT 8` y cualquier tope fijo de raíces: **`graph_captured_root_count = graph_eligible_rule_count`** es obligatorio. Cada `raw_graph` es el mismo `g.doc` calculado una vez, no un nuevo escaneo para transportar.
+  
+**Ejemplo de readback:** pantalla `B2B-AUTH-001` (id 51): 283 vínculos globales/effectivos registrados; **71 reglas con vínculo elegible explícito** en la consulta canónica (2026-11-07). El número es una observación, no un valor fijo de implementación. G1 sigue teniendo límites internos de exploración por raíz (128 nodos / 512 referencias) y una profundidad máxima de 5; `graph_limit_hit=true` implica contenido incompleto y requiere remediación, sin declarar una evaluación semántica satisfactoria.
+
+**Límites operativos:** no reemplazar ocho por otro máximo numérico sin métricas. Medir tiempo, memoria, privacidad y tamaño de JSON con RUN nuevo y sus 71 reglas; si se requiere partición por transporte, no descartar ninguna raíz ni recalcular las ya generadas.
 
 ## Captura una sola vez por RUN
 
@@ -65,9 +69,10 @@ El mensaje al Perfil contiene **dos cosas complementarias**: el `context_manifes
 - Identidad SHA: RAW capturado y RAW transportado *exactamente iguales*.
 - Modo `NOOP`: sin nuevo Curator ni R1–R6.
 - R2–R6 no emitidos: retorno explícito sin reejecución.
-- G1 con más de ocho raíces descubiertas: capturar **todas**; comprobar identidad de hashes y conteo exacto, sin truncar por cardinalidad.
-- G1 con alcance parcial de R6 frente al universo total de reglas: reportar su alcance real, sin simular cobertura del universo.
-- Medir memoria, tiempos y tamaño del JSON en escenarios de 8, 9 y 20+ raíces; si surge un problema, documentar causa técnica y diseñar paginación íntegra, nunca descartar raíces.
+- G1 con más de ocho reglas efectivas elegibles: capturar **todas**, verificar que el conteo de grafos coincide con la selección canónica y conservar su SHA original, sin máximo fijo.
+- G1 ya no depende de R6 para escoger raíces. R1–R6 mantienen sus diagnósticos originales; **todavía falta** verificar qué consumidores pueden aprovechar directamente G1 sin repetir trabajo.
+- Medir memoria, tiempos y tamaño del JSON en 8, 9, 20 y 71 reglas efectivas elegibles; si existe problema real, justificar paginación íntegra, sin descartar raíces.
+- Detectar `raw_graph.graph_limit_hit=true` por regla y reportar los grafos internos truncados. No confundir 'todas las raíces' con 'todas las referencias exploradas'.
 - Perfil: inspeccionar `input_validate`, `NATIVE_MODEL_INPUT_READY` y payload realmente recibido, sin pérdida de JSON ni caracteres/arrays.
 - Integridad de ACL (SEC-011), fuente vigente (GOV-010), calidad semántica separada (GOV-032) y regresiones de EKB.
 
