@@ -536,6 +536,49 @@ exception when others then
 END;
 $patch$;
 
+-- Assemble into the EXISTING IG execution output; do not touch Profile.
+DO $ig_consolidation_patch$
+DECLARE v_def text;v_new text;v_before text;
+BEGIN
+ SELECT pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure) INTO v_def;
+ IF md5(v_def)<>'68a6a5466ed40a06d673eb1cffc24ec2' THEN
+  RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_SOURCE_DRIFT:%',md5(v_def);
+ END IF;
+ v_new:=replace(v_def,
+   $old$  v_stage jsonb; v_prop jsonb;$old$,
+   $new$  v_stage jsonb; v_ig_originals jsonb; v_prop jsonb;$new$);
+ IF v_new=v_def THEN RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_DECLARATION_MISSING'; END IF;
+ v_before:=v_new;
+ v_new:=replace(v_new,
+   $old$  v_worker:=programacion.fn_input_governance_worker_spec_known_current_v1(p_pantalla_id,p_consumer,v_run);
+  v_payload:=jsonb_build_object($old$,
+   $new$  v_worker:=programacion.fn_input_governance_worker_spec_known_current_v1(p_pantalla_id,p_consumer,v_run);
+  v_ig_originals:=programacion.fn_input_governance_original_consolidate_v1(v_run,v_stage);
+  IF v_ig_originals->>'run_id' IS DISTINCT FROM v_run::text
+     OR v_ig_originals->>'status' IS NULL
+     OR v_ig_originals->>'status' NOT IN (
+       'ORIGINAL_EMISSIONS_AND_VALIDATOR_EVIDENCE_PRESENT',
+       'VALIDATOR_EVIDENCE_PRESENT_CURATOR_ORIGINAL_INCOMPLETE')
+  THEN RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_RESULT_UNVERIFIED:%',v_run; END IF;
+  v_payload:=jsonb_build_object($new$);
+ IF v_new=v_before THEN RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_CALL_MISSING'; END IF;
+ v_before:=v_new;
+ v_new:=replace(v_new,
+   $old$    'context_manifest',v_manifest,'worker_spec',v_worker,$old$,
+   $new$    'context_manifest',v_manifest,'worker_spec',v_worker,
+    'ig_consolidated_original_reports',v_ig_originals,
+    'ig_original_reports_complete',
+      v_ig_originals->>'status'='ORIGINAL_EMISSIONS_AND_VALIDATOR_EVIDENCE_PRESENT',$new$);
+ IF v_new=v_before
+    OR strpos(v_new,'''ig_consolidated_original_reports'',v_ig_originals')=0
+ THEN RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_OUTPUT_MISSING'; END IF;
+ v_new:=rtrim(v_new)||';';
+ IF right(btrim(v_new),1)<>';' THEN
+   RAISE EXCEPTION 'IG_CONSOLIDATION_EXECUTE_SQL_TERMINATOR_MISSING'; END IF;
+ EXECUTE v_new;
+END;
+$ig_consolidation_patch$;
+
 DO $post$
 DECLARE v_cur text; v_prop text; v_profile text;
 BEGIN
