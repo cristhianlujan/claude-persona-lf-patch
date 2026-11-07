@@ -121,6 +121,16 @@ BEGIN
       'G1',CASE WHEN v_g1_emitted THEN 'EMITTED_IN_THIS_RUN'
          WHEN v_curator_strategy='REBIND' THEN 'NOT_EMITTED_FOR_REBIND'
          ELSE 'NOT_EMITTED_IN_THIS_RUN' END),
+   -- Per-producer digests are computed from the ORIGINAL JSON nested
+   -- in the captured envelope. No detector, graph, or Curator is called.
+   'producer_original_sha256',jsonb_build_object(
+      'CURATOR',v_report.original_curator_output_sha256,
+      'R1',CASE WHEN v_r1_emitted THEN programacion.fn_v09_sha256_jsonb(
+         v_pm->'ig_evo_r1_diagnostics') ELSE NULL END,
+      'R2_R6',CASE WHEN v_r2_r6_emitted THEN programacion.fn_v09_sha256_jsonb(
+         v_pm->'ig_evo_r2_r6_diagnostics') ELSE NULL END,
+      'G1',CASE WHEN v_g1_emitted THEN programacion.fn_v09_sha256_jsonb(
+         v_graph) ELSE NULL END),
    'source_lineage',jsonb_build_object(
       'parent_run_id',v_run.supersedes_run_id,
       'parent_raw_archive_present',v_parent_raw_stored,
