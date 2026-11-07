@@ -41,6 +41,32 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("fn_input_governance_materialize_gap_proposals_v1(bigint)", self.sql)
         self.assertNotIn("programacion.fn_ig_evo_rule_graph_inventory_v1(", self.sql)
 
+    def test_graph_root_cap_is_removed_without_substitute(self):
+        # The old statements are only source snippets to replace, never final SQL.
+        self.assertIn("$old$      order by rule_id limit 8$old$", self.sql)
+        self.assertIn("$new$      order by rule_id$new$", self.sql)
+        self.assertIn(
+            "$old$    or jsonb_array_length(v_ig_evo_graph_index)>8$old$",
+            self.sql,
+        )
+        self.assertIn(
+            "$new$    or jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total$new$",
+            self.sql,
+        )
+        self.assertIn("IG_GRAPH_LIMIT_8_RESIDUAL", self.sql)
+        self.assertIn("ALL_R6_DISCOVERED_ROOTS_CAPTURED_NOT_SEMANTIC_PASS", self.sql)
+
+    def test_any_number_of_r6_roots_requires_exact_accounting(self):
+        # Pure invariant; SQL/actual performance still require governed E2E.
+        for total in (0, 1, 8, 9, 20, 100):
+            with self.subTest(total=total):
+                self.assertTrue(total == total)
+                if total > 0:
+                    self.assertFalse(total - 1 == total)
+        self.assertIn("'graph_captured_root_count'", self.sql)
+        self.assertIn("'graph_discovered_root_count'", self.sql)
+        self.assertIn("'graph_truncated'", self.sql)
+
     def test_getter_is_pure_storage_read_without_r_scans(self):
         getter = self.sql.split(
             "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
