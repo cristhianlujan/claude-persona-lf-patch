@@ -238,12 +238,31 @@ class OriginalProducerTransportContract(unittest.TestCase):
         b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
         self.assertIn("fn_input_validator_evidence_rehydrate_v1(", b)
         self.assertIn("'original_assessment_row',to_jsonb(a)", b)
-        self.assertIn("'validator_evidence_logical_rehydrated',v_logical", b)
+        self.assertIn("'validator_assertion_sets_originals_by_sha256',v_validator_assertion_sets", b)
+        self.assertIn("'validator_assertion_set_sha256',v_assertion_sha", b)
+        self.assertIn("'validator_evidence_logical_sha256'", b)
+        self.assertIn("v_assertion_sha:=programacion.fn_v09_sha256_jsonb(", b)
+        self.assertIn("IG_CONSOLIDATION_ASSERTION_REFERENCE_SHA_MISMATCH", b)
+        self.assertIn("IG_CONSOLIDATION_ASSERTION_SET_ALIAS_CONFLICT", b)
+        self.assertIn("'validator_assertion_payload_truncated',false", b)
+        self.assertNotIn("'validator_evidence_logical_rehydrated',v_logical", b)
         self.assertIn("v_receipt_digest IS DISTINCT FROM a.validator_sha256", b)
         self.assertIn("'validator_original_rows',v_validator_originals", b)
         self.assertNotIn("fn_input_governance_validator_validate_v1(", b)
         self.assertNotIn("fn_input_governance_curator_materialize_v1(", b)
         self.assertNotIn("fn_ig_evo_rule_graph_inventory_v1(", b)
+
+    def test_dedup_is_lossless_and_includes_all_original_assertions(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        self.assertIn("IF NOT (v_validator_assertion_sets ? v_assertion_sha)", b)
+        self.assertIn("jsonb_build_object(v_assertion_sha,v_logical->'assertions')", b)
+        self.assertIn("v_validator_assertion_sets->v_assertion_sha", b)
+        self.assertIn("'validator_original_count',v_n", b)
+        self.assertIn("'validator_unique_assertion_set_count'", b)
+        self.assertIn("'validator_original_recovery_rule'", b)
+        self.assertIn("v_receipt_digest IS DISTINCT FROM a.validator_sha256", b)
+        self.assertNotIn("LIMIT 23", b)
+        self.assertNotIn("LIMIT 47", b)
 
     def test_validator_pass_does_not_override_qa_production_or_semantics(self):
         b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
