@@ -79,7 +79,11 @@ Validator: filas originales + archivo de assertions por SHA
 
 La función lectora es interna (`SECURITY DEFINER`, sin `EXECUTE` para PUBLIC, anon, authenticated ni service_role). El perfil obtiene el contenido solo por la función oficial ya restringida y por su handoff autorizado.
 
-**Integración al Perfil aún pendiente:** el código candidato anterior ya añadía `ig_original_producer_reports` por separado en `fn_lf_profile_input_governance_resolve_v1`. Al cerrar la etapa 8 hay que **reconciliarlo con `ig_consolidated_original_reports`**, para evitar duplicar payload y probar efectivamente la lectura del modelo. El reporte final no debe reducirse a `retrieval_handles`, `hashes`, `summary` ni G1 abreviado. **No se acredita todavía que el Perfil lo haya recibido o utilizado.**
+**Etapa 8 — Perfil (reconciliación de contrato preparada, E2E pendiente):** se eliminó del candidato la copia paralela `ig_original_producer_reports` que se había previsto en `fn_lf_profile_input_governance_resolve_v1`. La función **LIVE existente permanece intacta**: conserva el campo `governance_result` en las tres ramas `READY`, `HUMAN_DECISION_REQUIRED` y `BLOCKED`. Ahora ese **único** `governance_result` contiene `ig_consolidated_original_reports` emitido por `fn_input_governance_execute`, sin segunda consulta RAW ni duplicación del documento íntegro. Los estados `INPUT_GOVERNANCE_REQUIRED` y `NOT_REQUIRED` no inventan RUN, archivo ni recepción.
+
+**Ruta de transporte (código LIVE, no recibo de modelo):** `fn_lf_profile_input_governance_resolve_v1` → `lf_profile_execution_input_validate_v1` almacena `input_governance` en `evidence_payload` → `lf_profile_native_bridge_prepare_v1` devuelve `input_governance` en `NATIVE_MODEL_INPUT_READY` → `profile_continuation.ts` retorna el objeto del bridge sin proyección de `input_governance`. Esa secuencia acredita **compatibilidad estructural**, no una entrega exitosa de los datos candidatos, ni lectura/análisis del modelo.
+
+**Gates antes de cierre:** capturar hash del paquete en el recibo de cada etapa sin reserialización destructiva, confirmar arrays/cantidad de familias y grafos, tamaños máximos/latencias reales, privacidad/PII y la recepción efectiva de `ig_consolidated_original_reports` por el modelo con evidencia específica de RUN. El informe no debe convertirse en un resumen, un `retrieval_handle` o un simple hash. Mantener `model_has_read_report=false` hasta que exista recibo verificable.
 
 ## Estados del readback
 
