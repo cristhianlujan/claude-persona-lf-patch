@@ -19,10 +19,11 @@ class OriginalProducerTransportContract(unittest.TestCase):
             "9a04278f4a4b7345da88a5ae1d7875e4",
             "071fdce8c6ac9851e8106afd511fd3fb",
             "ab091d641cc1d3d923d20c0db96d9bc5",
+            "68a6a5466ed40a06d673eb1cffc24ec2",
         ):
             with self.subTest(sha=sha):
                 self.assertIn(sha, self.sql)
-        self.assertEqual(self.sql.count("SOURCE_DRIFT"), 3)
+        self.assertEqual(self.sql.count("SOURCE_DRIFT"), 4)
 
     def test_one_capture_per_run_with_no_overwrite(self):
         self.assertIn("run_id bigint PRIMARY KEY", self.sql)
@@ -222,6 +223,45 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("'ig_evo_graph_total_roots'", self.sql)
         self.assertIn("'graph_root_scope'", self.sql)
         self.assertIn("PARTIAL_ORIGINALS_NOT_EMITTED", self.sql)
+
+    def test_consolidation_uses_existing_ig_executor_result(self):
+        self.assertIn("IG_CONSOLIDATION_EXECUTE_SOURCE_DRIFT", self.sql)
+        self.assertIn("v_ig_originals:=programacion.fn_input_governance_original_consolidate_v1(v_run,v_stage)", self.sql)
+        self.assertIn("'ig_consolidated_original_reports',v_ig_originals", self.sql)
+        self.assertIn("'ig_original_reports_complete'", self.sql)
+        self.assertIn("IG_CONSOLIDATION_STAGE_GATE_NOT_BOUND", self.sql)
+
+    def test_consolidated_validator_original_sha_and_no_rerun(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        self.assertIn("fn_input_validator_evidence_rehydrate_v1(", b)
+        self.assertIn("'original_assessment_row',to_jsonb(a)", b)
+        self.assertIn("'validator_evidence_logical_rehydrated',v_logical", b)
+        self.assertIn("v_receipt_digest IS DISTINCT FROM a.validator_sha256", b)
+        self.assertIn("'validator_original_rows',v_validator_originals", b)
+        self.assertNotIn("fn_input_governance_validator_validate_v1(", b)
+        self.assertNotIn("fn_input_governance_curator_materialize_v1(", b)
+        self.assertNotIn("fn_ig_evo_rule_graph_inventory_v1(", b)
+
+    def test_validator_pass_does_not_override_qa_production_or_semantics(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        for t in ("'stage_gate',p_stage_gate",
+                  "'full_qa_stage_closed',p_stage_gate->'full_qa_stage_closed'",
+                  "'full_production_stage_closed',p_stage_gate->'full_production_stage_closed'",
+                  "v_run.scope->>'validator_semantic_mode'",
+                  "'independent_semantic_judgement_here','NOT_TESTED'",
+                  "'semantic_promotion_authorized',false",
+                  "'model_has_read_report',false"):
+            self.assertIn(t,b)
+        self.assertNotIn("'semantic_promotion_authorized',true",b)
+
+    def test_consolidation_acl_and_incomplete_archive_fail_safely(self):
+        self.assertIn("REVOKE ALL ON FUNCTION\n programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)",self.sql)
+        self.assertIn("has_function_privilege('service_role','programacion.fn_input_governance_original_consolidate_v1",self.sql)
+        self.assertIn("IG_CONSOLIDATION_VALIDATOR_ORIGINAL_MISSING_OR_STALE",self.sql)
+        self.assertIn("IG_CONSOLIDATION_FAMILY_CARDINALITY_MISMATCH",self.sql)
+        self.assertIn("VALIDATOR_EVIDENCE_PRESENT_CURATOR_ORIGINAL_INCOMPLETE",self.sql)
+        self.assertIn("IG_CONSOLIDATION_EXECUTE_SQL_TERMINATOR_MISSING",self.sql)
+        self.assertNotIn("GRANT EXECUTE",self.sql)
 
     def test_document_does_not_claim_completed_runtime(self):
         self.assertIn("implementación candidata / NO-GO", self.doc)
