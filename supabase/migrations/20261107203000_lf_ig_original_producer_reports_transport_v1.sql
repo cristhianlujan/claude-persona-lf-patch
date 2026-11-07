@@ -92,7 +92,10 @@ BEGIN
      'G1','$.proposal_materialization.ig_evo_graph_index[*].raw_graph'),
    'graph_root_count',v_pm->'ig_evo_graph_total_roots',
    'graph_root_scope',v_pm->'ig_evo_graph_index_status',
-   'graph_truncated',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0)>8,
+   'graph_discovered_root_count',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
+   'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb)),
+   'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
+      < coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
    'raw_reused',true,'research_reexecuted',false,
    'model_has_read_report',false,
    'semantic_quality_evaluated',false,
@@ -126,8 +129,34 @@ BEGIN
  IF v_new=v_def OR strpos(v_new,'''raw_graph'',g.doc')=0 THEN
    RAISE EXCEPTION 'IG_ORIGINAL_REPORT_GRAPH_CAPTURE_PATCH_INVALID';
  END IF;
+ -- Remove the eight-root sample restriction; process all discovered R6 roots.
+ v_source:=v_new;
+ v_new:=replace(v_new,
+   $old$      order by rule_id limit 8$old$,
+   $new$      order by rule_id$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_NOT_REMOVED'; END IF;
+
+ -- No fixed upper count; the number captured must exactly equal total roots.
+ v_source:=v_new;
+ v_new:=replace(v_new,
+   $old$    or jsonb_array_length(v_ig_evo_graph_index)>8$old$,
+   $new$    or jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_GATE_NOT_REMOVED'; END IF;
+
+ -- Scope remains R6-discovered roots, not the entire screen rule universe.
+ v_source:=v_new;
+ v_new:=replace(v_new,
+   $old$'ig_evo_graph_index_status',case when v_ig_evo_graph_total>8 then 'TRUNCATED_SEMANTIC_REVIEW_REQUIRED' else 'PARTIAL_INDEX_NOT_SEMANTIC_PASS' end,$old$,
+   $new$'ig_evo_graph_index_status','ALL_R6_DISCOVERED_ROOTS_CAPTURED_NOT_SEMANTIC_PASS',$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_STATUS_NOT_REMOVED'; END IF;
+ IF strpos(v_new,'order by rule_id limit 8')>0
+  OR strpos(v_new,'jsonb_array_length(v_ig_evo_graph_index)>8')>0
+  OR strpos(v_new,'TRUNCATED_SEMANTIC_REVIEW_REQUIRED')>0
+  OR strpos(v_new,'jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total')=0
+ THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_RESIDUAL'; END IF;
+
  -- pg_get_functiondef omits the terminator on this deployed server.
- -- Preserve the body byte-identically apart from our one bounded patch.
+ -- Preserve the body byte-identically apart from our bounded patches.
  v_new:=rtrim(v_new)||';';
  IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_GRAPH_SQL_TERMINATOR_MISSING'; END IF;
  EXECUTE v_new;
