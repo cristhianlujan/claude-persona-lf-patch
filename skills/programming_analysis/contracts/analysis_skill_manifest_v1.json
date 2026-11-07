@@ -5,7 +5,7 @@
   "package_scope": "WHOLE_ANALYSIS_STAGE",
   "former_standalone_a1_code": "PROGRAMMING_ANALYSIS_A1",
   "standalone_a1_registration_allowed": false,
-  "status": "CANDIDATE_SOURCE_ONLY_NOT_REGISTERED",
+  "status": "REGISTERED_CANDIDATE_RUNTIME_DISABLED",
   "profile_consumer": "PROGRAMMING_AGENT_GOVERNED_PROFILE",
   "operation_code": "EJECUCION_SKILL_LF",
   "external_invocations": 1,
@@ -18,7 +18,7 @@
     "ANALYSIS_IMPLEMENTATION_PACKAGE_V1",
     "PROGRAMMING_CONTEXT_SNAPSHOT_V1"
   ],
-  "current_readiness": "BLOCKED_A2_A15_UNWIRED",
+  "current_readiness": "BLOCKED_A1_SEMANTIC_A2_SOURCE_ATTESTATION_A3_A15_UNWIRED",
   "real_model_receipts": false,
   "independent_judge_receipts": false,
   "no_router_to_skill_direct": true,
@@ -52,9 +52,11 @@
         "REQUEST_CONTEXT_V1"
       ],
       "guard": "Material unknown -> at least L2 and NEED_MORE_EVIDENCE; L3 high-risk dominates; no weights or case hardcoding.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_TYPED_POLICY_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a2/validators/run.py:run",
+      "operationally_verified": false,
+      "source_attested": false,
+      "next_step_allowed": false
     },
     {
       "step_id": "A3",
@@ -268,5 +270,18 @@
       "input_required_state": "NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE",
       "no_input_inference_allowed": true
     }
+  ],
+  "asset_registration": {
+    "code": "PROGRAMMING_ANALYSIS_LF",
+    "asset_id": 414,
+    "documented_from": "public.lf_activos",
+    "documentary_status": "CANDIDATO",
+    "operational_status": "READ_ONLY",
+    "runtime_binding_enabled": false,
+    "registration_execution": "EXEC-DB-TRAIN-PR3589-20261105010000-R41963330970",
+    "note": "Observed as of the registration readback; verify source/authority currentness again before activation."
+  },
+  "internal_candidate_bridges": [
+    "adapters/a1_a2_candidate_bridge_v1.py"
   ]
 }
