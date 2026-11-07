@@ -78,5 +78,43 @@
     "skills/profile_creator/validators/profile_updater_same_chat_v02.py",
     "skills/profile_creator/validators/profile_updater_native_material_bridge_v02.py",
     "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts"
-  ]
+  ],
+  "envelope_contract": {
+    "handoff_required_fields": [
+      "api_invocation",
+      "business",
+      "conversation_scope",
+      "current_surface",
+      "executor_mode",
+      "executor_provider",
+      "owner_skill_code",
+      "owner_step_code",
+      "raw_request",
+      "reviewer_independence_verified",
+      "route_code",
+      "route_contract_code",
+      "runtime_qualified",
+      "schema_version",
+      "session_creation",
+      "source_authority_verified"
+    ],
+    "capture_required_fields": [
+      "capture_state",
+      "current_surface",
+      "executor_mode",
+      "executor_provider",
+      "intent_analysis",
+      "next_authority",
+      "no_run_created",
+      "owner_skill_code",
+      "owner_step_code",
+      "reviewer_independence_verified",
+      "route_code",
+      "route_contract_code",
+      "runtime_provider_attested",
+      "schema_version"
+    ],
+    "unknown_fields": "REJECT_EVEN_IF_SHA_RESIGNED",
+    "source_owned_mode_and_surface": "CALLER_AUTHENTICATION_NOT_PROVEN_BY_JSON"
+  }
 }
