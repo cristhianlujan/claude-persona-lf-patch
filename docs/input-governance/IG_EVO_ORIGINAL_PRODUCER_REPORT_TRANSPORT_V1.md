@@ -14,7 +14,7 @@ Los productores reales encontrados en código vigente son:
 | G1 | `fn_ig_evo_rule_graph_inventory_v1` | `proposal_materialization.ig_evo_graph_index[].raw_graph`: salida entera de **cada grafo efectivamente calculado** y copiado del mismo valor `g.doc`, no un segundo escaneo |
 | Validator | `input_family_assessments.validator_*` y recibo Curator→Validator existente | No se modifica su proceso; se conserva evidencia y dictamen por el mecanismo ya vigente. Aún no se certificó un RAW de Validator de extremo a extremo |
 
-**Importante:** el `ig_evo_graph_index` solo calcula hasta ocho raíces de los hallazgos R6. Este lote conserva completos los ocho grafos **efectivamente emitidos**; un `graph_total_roots > 8` sigue siendo brecha explícita, nunca se informa como cobertura completa. No se re-investigan las raíces que ya se calcularon.
+**Importante:** se elimina el límite arbitrario de 8 raíces. El índice calcula **todas las raíces distintas descubiertas por R6** (sin `LIMIT` fijo), y conserva cada `g.doc` original en el mismo cómputo. Se valida que `graph_captured_root_count = graph_discovered_root_count`; una diferencia bloquea y no se oculta. **Esto cubre todas las raíces R6 identificadas, no necesariamente todas las reglas de la pantalla.** No se re-investigan raíces ya calculadas. Si el volumen/latencia resulta problemático, deberá medirse y justificarse una estrategia de transporte por lotes, sin imponer un nuevo máximo silencioso.
 
 ## Captura una sola vez por RUN
 
@@ -65,7 +65,9 @@ El mensaje al Perfil contiene **dos cosas complementarias**: el `context_manifes
 - Identidad SHA: RAW capturado y RAW transportado *exactamente iguales*.
 - Modo `NOOP`: sin nuevo Curator ni R1–R6.
 - R2–R6 no emitidos: retorno explícito sin reejecución.
-- G1 > 8 raíces: `graph_truncated=true`, nada de falsa cobertura.
+- G1 con más de ocho raíces descubiertas: capturar **todas**; comprobar identidad de hashes y conteo exacto, sin truncar por cardinalidad.
+- G1 con alcance parcial de R6 frente al universo total de reglas: reportar su alcance real, sin simular cobertura del universo.
+- Medir memoria, tiempos y tamaño del JSON en escenarios de 8, 9 y 20+ raíces; si surge un problema, documentar causa técnica y diseñar paginación íntegra, nunca descartar raíces.
 - Perfil: inspeccionar `input_validate`, `NATIVE_MODEL_INPUT_READY` y payload realmente recibido, sin pérdida de JSON ni caracteres/arrays.
 - Integridad de ACL (SEC-011), fuente vigente (GOV-010), calidad semántica separada (GOV-032) y regresiones de EKB.
 
