@@ -276,6 +276,56 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertIn("MATERIAL_INTENT_UNRESOLVED", out["blocking_codes"])
         self.assertIsNone(out["next_capability"])
 
+    def test_inventory_handoff_portal_entry_preserves_open_ambiguity(self):
+        transport = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        request = transport["inventory_research_handoff"]
+        self.assertEqual(request["schema_version"], "A1_INVENTORY_RESEARCH_HANDOFF_CANDIDATE_V1")
+        self.assertEqual(request["business"], "LF")
+        self.assertEqual(request["operation_kind"], "IMPLEMENT")
+        self.assertEqual(request["functional_capability_proposal"], "ENTERPRISE_PORTAL_ACCESS")
+        self.assertEqual(request["original_request"], IMPLICIT)
+        self.assertEqual(request["request_sha256"], sha256(IMPLICIT.encode()).hexdigest())
+        self.assertEqual(request["open_ambiguities"][0]["code"], "PORTAL_ENTRY_MODE_UNRESOLVED")
+        self.assertEqual(request["open_ambiguities"][0]["resolution_state"], "OPEN")
+        self.assertFalse(request["allow_a2"])
+        self.assertFalse(request["inventory_source_verified"])
+        self.assertFalse(request["inventory_lookup_executed"])
+        self.assertIsNone(transport["a2_result"])
+        self.assertIsNone(transport["a2_signal_bundle"])
+        self.assertTrue(transport["no_run_created"])
+
+    def test_inventory_handoff_reuse_preserves_negation_and_unknown(self):
+        transport = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        request = transport["inventory_research_handoff"]
+        self.assertEqual(request["operation_kind"], "REUSE")
+        self.assertEqual(request["functional_capability_proposal"], "UNKNOWN")
+        self.assertEqual(request["constraints"], ["No crees otra pantalla"])
+        self.assertEqual(request["target_hints"], ["pantalla"])
+        self.assertEqual(request["open_ambiguities"][0]["code"], "FUNCTIONAL_CAPABILITY_UNSPECIFIED")
+        self.assertIn("EXISTING_SCREEN_LOOKUP", request["dimensions_to_investigate"])
+        self.assertFalse(request["allow_a2"])
+        self.assertFalse(request["inventory_source_verified"])
+        self.assertTrue(transport["no_run_created"])
+        self.assertIsNone(transport["a2_result"])
+
+    def test_invalid_semantic_input_cannot_issue_inventory_handoff(self):
+        transport = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=producer,
+            semantic_reviewer=reviewer,
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        self.assertEqual(transport["a1_result"]["status"], "REQUIRES_SEMANTIC_REVIEW")
+        self.assertIsNone(transport["inventory_research_handoff"])
+        self.assertIsNone(transport["a2_result"])
+
     def test_ungrounded_evidence_refused_before_reviewer(self):
         def bad(raw):
             c = semantic_candidate(raw)
