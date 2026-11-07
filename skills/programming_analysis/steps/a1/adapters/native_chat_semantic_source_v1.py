@@ -101,6 +101,11 @@ def _route_contract() -> dict:
              and artifacts.get("a1_output_schema") == "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1"
              and artifacts.get("a2_depth_signals") == "EVIDENCE_DERIVED_NINE_DEPTH_SIGNALS_REQUIRED",
              "NATIVE_A1_ARTIFACT_CONTRACT_DRIFT")
+    envelope = route.get("envelope_contract") or {}
+    _require(envelope.get("handoff_required_fields") == sorted(HANDOFF_KEYS)
+             and envelope.get("capture_required_fields") == sorted(CAPTURE_KEYS)
+             and envelope.get("unknown_fields") == "REJECT_EVEN_IF_SHA_RESIGNED",
+             "NATIVE_A1_ENVELOPE_CONTRACT_DRIFT")
     return route
 
 
