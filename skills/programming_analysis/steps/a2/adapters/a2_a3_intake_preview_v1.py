@@ -35,7 +35,7 @@ def blocked(code: str) -> dict:
 def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) -> dict:
     if not all(isinstance(x,dict) for x in (a1_result,a2_result,signal_bundle,golden)):
         return blocked('A2_A3_TYPED_INPUT_REQUIRED')
-    if (a1_result.get('schema_version')!='A1_SOURCE_CANDIDATE_V1'
+    if (a1_result.get('schema_version')!='A1_INTERNAL_STEP_CANDIDATE_RESULT_V1'
        or a1_result.get('status')!='VALID_OUTPUT'
        or a1_result.get('semantic_review_required') is not False
        or a1_result.get('interpretation_state')!='PRESTRUCTURED_UNATTESTED'
