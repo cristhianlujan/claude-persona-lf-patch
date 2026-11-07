@@ -48,3 +48,61 @@ def prepare_candidate(a1_input, a2_signals, expected_business=None,
         "next_step": None,
         "no_write_performed": True,
     }
+
+
+
+def prepare_semantic_transport(raw_request, *, business, semantic_producer,
+                               semantic_reviewer, depth_signals=None,
+                               evidence_refs=None):
+    """A1 -> A2 source-only handoff, no RUN/Router/external side effects.
+
+    Semantic hints are NOT the nine evidence-derived depth signals. A1 cannot
+    assert CURRENT authority, reversibility or materiality from a user phrase.
+    """
+    a1 = _load("steps/a1/validators/run.py", "analysis_a1_semantic_step").run(
+        raw_request, business=business, semantic_producer=semantic_producer,
+        semantic_reviewer=semantic_reviewer,
+    )
+    if a1["status"] != "VALID_OUTPUT":
+        return {
+            "schema_version": "A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1",
+            "status": "HALTED_AT_A1", "a1_result": a1,
+            "a2_signal_bundle": None, "a2_result": None,
+            "no_run_created": True,
+        }
+    intent = a1["intent_analysis"]
+    hint = {
+        "change_type": intent["operation"]["kind"],
+        "target_granularity": intent["target"]["artifact_kind"],
+        "target_ref": a1["payload"]["target_hints"][0],
+        "business": a1["business"],
+        "analysis_hints": intent["analysis_hints"],
+        "dimensions_to_investigate": intent["dimensions_to_investigate"],
+    }
+    if not isinstance(depth_signals, dict) or not isinstance(evidence_refs, list) or not evidence_refs:
+        return {
+            "schema_version": "A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1",
+            "status": "A1_READY_A2_EVIDENCE_REQUIRED",
+            "a1_result": a1, "a2_intent_hint": hint,
+            "a2_signal_bundle": None, "a2_result": None,
+            "missing": ["EVIDENCE_DERIVED_NINE_DEPTH_SIGNALS", "A2_EVIDENCE_REFS"],
+            "no_run_created": True,
+        }
+    bundle = {
+        "schema_version": "ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1",
+        "business": a1["business"],
+        "target_ref": hint["target_ref"],
+        "change_type": hint["change_type"],
+        "target_granularity": hint["target_granularity"],
+        "nested_parent_ref": None,
+        "evidence_refs": evidence_refs,
+        "depth_signals": depth_signals,
+    }
+    a2 = _load("steps/a2/validators/run.py", "analysis_a2_semantic_step").run(a1, bundle)
+    return {
+        "schema_version": "A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1",
+        "status": "A2_CANDIDATE_RETURNED" if a2["status"] != "BLOCKED" else "BLOCKED_AT_A2",
+        "a1_result": a1, "a2_intent_hint": hint,
+        "a2_signal_bundle": bundle, "a2_result": a2,
+        "no_run_created": True,
+    }
