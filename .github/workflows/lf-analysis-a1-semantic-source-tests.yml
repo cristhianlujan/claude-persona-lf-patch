@@ -10,13 +10,6 @@ on:
       - 'skills/programming_analysis/steps/a2/validators/run.py'
       - 'skills/programming_analysis/adapters/a1_a2_candidate_bridge_v1.py'
       - '.github/workflows/lf-analysis-a1-semantic-source-tests.yml'
-  pull_request:
-    paths:
-      - 'skills/programming_analysis/steps/a1/**'
-      - 'skills/programming_analysis/steps/a2/validators/run.py'
-      - 'skills/programming_analysis/adapters/a1_a2_candidate_bridge_v1.py'
-      - '.github/workflows/lf-analysis-a1-semantic-source-tests.yml'
-
 permissions:
   contents: read
 
