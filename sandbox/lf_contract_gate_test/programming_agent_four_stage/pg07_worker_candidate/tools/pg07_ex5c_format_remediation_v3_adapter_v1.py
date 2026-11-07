@@ -17,6 +17,9 @@ N = "e76b213cb2f367f787e0eba3bf8ff74136edd883"
 V1_SHA = "436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b"
 V2_SHA = "0988de2e39f5139596d05c3cbfcbe8c8998c753cdb009414e5b38da65172217b"
 FORMATTER_SHA = "f2239a8a234a240a54fdff7809d4b3e66702c21f590c77a0b6cf7b20c829e95a"
+V3_SHA = "417b504380e4ebe9f4345b2b33c21d6a8f0d0a05b1e51ef2a86de3822bc09ec0"
+V3_FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/lf-evidence-bundle-v3.json"
+EXPECTED_COMMIT = "bc74940727f1bb51a076f52a4b20fb5ed00647c8"
 AUTH_KEYS = {"production_authority", "receipt_authenticated",
              "tool_execution_verified", "worker_invoked", "testing_real_invoked",
              "handoff_allowed", "write_allowed", "dispatch_allowed"}
@@ -156,6 +159,8 @@ def load_v3(path: Path, sha256_fixed: str) -> dict:
             "V3_N_N1_LINEAGE_OR_FORMATTER_BLOCK")
     flags_false(b)
     g = b["git"]
+    require(g.get("commit") == EXPECTED_COMMIT,
+            "V3_UNEXPECTED_FINAL_N1_COMMIT_BLOCK")
     actual_commit = decode(g["raw_commit_base64"])
     require(oid("commit", actual_commit) == g["commit"] and
             sha(actual_commit) == g["raw_commit_sha256"] and
