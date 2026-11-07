@@ -139,5 +139,110 @@ class A1GenericNativeTransport(unittest.TestCase):
         self.assertTrue(captured["no_run_created"])
 
 
+    def test_13_route_contract_explicitly_owned_by_a1_not_updater(self):
+        handoff = frozen()
+        self.assertEqual(handoff["route_contract_code"], "A1_NATIVE_SEMANTIC_ROUTE_V1")
+        self.assertEqual(handoff["route_code"],
+                         "PROGRAMMING_ANALYSIS_LF/A1/SEMANTIC_NATIVE_AUTHORING")
+        self.assertEqual(handoff["owner_skill_code"], "PROGRAMMING_ANALYSIS_LF")
+        self.assertEqual(handoff["owner_step_code"], "A1")
+        self.assertNotIn("operation_code", handoff)
+        self.assertNotIn("profile_slug", handoff)
+
+    def test_14_updater_handoff_schema_cannot_be_captured_by_a1(self):
+        handoff = frozen()
+        handoff["schema_version"] = "LF_PE10_V02_SAME_CHAT_NATIVE_HANDOFF_V1"
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_HANDOFF_INVALID"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+    def test_15_forged_updater_owner_even_resigned_is_rejected(self):
+        handoff = frozen()
+        handoff["owner_skill_code"] = "PROFILE_UPDATER"
+        handoff["handoff_sha256"] = NATIVE._json_sha({
+            k: v for k, v in handoff.items() if k != "handoff_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_WRONG_SKILL_OR_ROUTE"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+    def test_16_updater_operation_injection_even_resigned_is_rejected(self):
+        handoff = frozen()
+        handoff["operation_code"] = "ACTUALIZACION_PERFIL_LF"
+        handoff["handoff_sha256"] = NATIVE._json_sha({
+            k: v for k, v in handoff.items() if k != "handoff_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_UPDATER_OR_RUNTIME_FIELDS_FORBIDDEN"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+    def test_17_route_contract_sha_changed_even_resigned_is_rejected(self):
+        handoff = frozen()
+        handoff["route_contract_sha256"] = "0" * 64
+        handoff["handoff_sha256"] = NATIVE._json_sha({
+            k: v for k, v in handoff.items() if k != "handoff_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_ROUTE_CONTRACT_SOURCE_DRIFT"):
+            NATIVE.capture_candidate(
+                handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+                current_surface="CHATGPT_CURRENT_CONVERSATION"
+            )
+
+    def test_18_updater_capture_route_even_resigned_is_rejected(self):
+        handoff = frozen()
+        capture = NATIVE.capture_candidate(
+            handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+            current_surface="CHATGPT_CURRENT_CONVERSATION"
+        )
+        capture["route_code"] = "PROFILE_UPDATER/SEMANTIC_NATIVE_AUTHORING"
+        capture["capture_sha256"] = NATIVE._json_sha({
+            k: v for k, v in capture.items() if k != "capture_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_CAPTURE_WRONG_SKILL_OR_ROUTE"):
+            NATIVE.producer_from_capture(handoff, capture)
+
+    def test_19_updater_capture_field_injection_even_resigned_is_rejected(self):
+        handoff = frozen()
+        capture = NATIVE.capture_candidate(
+            handoff=handoff, proposed_intent=semantic_candidate(LOGIN),
+            current_surface="CHATGPT_CURRENT_CONVERSATION"
+        )
+        capture["profile_slug"] = "systemic_root_cause_repair_lf"
+        capture["capture_sha256"] = NATIVE._json_sha({
+            k: v for k, v in capture.items() if k != "capture_sha256"
+        })
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_CAPTURE_UPDATER_FIELDS_FORBIDDEN"):
+            NATIVE.producer_from_capture(handoff, capture)
+
+    def test_20_cross_native_capture_replay_rejected(self):
+        gpt = frozen()
+        claude = frozen("CLAUDE_NATIVE", "ANTHROPIC_CLAUDE_NATIVE",
+                        "CLAUDE_CURRENT_CONVERSATION")
+        capture = NATIVE.capture_candidate(
+            handoff=gpt, proposed_intent=semantic_candidate(LOGIN),
+            current_surface="CHATGPT_CURRENT_CONVERSATION"
+        )
+        with self.assertRaisesRegex(ValueError, "NATIVE_A1_CAPTURE_BINDING_INVALID"):
+            NATIVE.producer_from_capture(claude, capture)
+
+    def test_21_route_contract_declares_explicit_non_updater_boundary(self):
+        import json
+        route = json.loads(NATIVE.ROUTE.read_text(encoding="utf-8"))
+        self.assertEqual(route["contract_owner"]["skill_code"], "PROGRAMMING_ANALYSIS_LF")
+        self.assertEqual(route["contract_owner"]["step_code"], "A1")
+        self.assertIsNone(route["operation_boundary"]["runtime_operation_code"])
+        self.assertFalse(route["operation_boundary"]["updater_operation_allowed"])
+        self.assertFalse(route["operation_boundary"]["skill_child_run_allowed"])
+        self.assertEqual(route["explicit_rejected_couplings"]["updater_operation"],
+                         "ACTUALIZACION_PERFIL_LF")
+
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
