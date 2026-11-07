@@ -2,6 +2,27 @@
 
 Purpose: model-provider-neutral semantic reasoning protocol for A1. It does not create a model call, verify provider identity, or authorize downstream actions. No literal keyword dictionary.
 
+
+## Native executor transport — canonical mode selection
+
+The semantic author executes through the **existing native conversation**, with
+executor_mode chosen by its calling context: GPT_NATIVE / OPENAI_CHATGPT_NATIVE /
+CHATGPT_CURRENT_CONVERSATION or CLAUDE_NATIVE / ANTHROPIC_CLAUDE_NATIVE /
+CLAUDE_CURRENT_CONVERSATION. These are modes of the same LF generic Native
+pattern, **not new model engines**. Never create or call LlamaHTTPClient or any
+REMOTE_API alternative for this A1 implementation.
+
+The source-only A1 transport adapter freezes prompt bytes, protocol/schema
+hashes and mode/provider pairs; the native conversation authors raw candidate
+content and a separate reviewer must review it. The adapter itself does NOT
+invoke either GPT or Claude, authenticate author identity, prove independent
+review, open an execution, or authorize the next governed stage.
+
+Cross-provider captures are rejected. A source-bound candidate is
+SOURCE_BOUND_NATIVE_CHAT_RAW_UNATTESTED, even if its content later passes
+local deterministic validation. A callback supplied in tests is never
+evidence of a real native execution.
+
 ## Semantic producer
 Input: original user sentence (unaltered), authenticated business context from caller, schema intent_analysis_candidate_v1.schema.json, and optionally approved prior-scope references.
 Output: ONLY JSON satisfying that schema. Do not hardcode catalog entries to login, auth, UI, or example phrases.
