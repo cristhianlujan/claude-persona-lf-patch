@@ -11,6 +11,8 @@ CREATE TABLE programacion.input_governance_producer_raw_v1 (
   pantalla_id integer NOT NULL,
   curator_identity text NOT NULL,
   source_snapshot_sha256 text,
+  -- Frozen at Curator capture, before the Validator may pin the source digest.
+  universe_snapshot_sha256 text,
   original_curator_output jsonb NOT NULL,
   original_curator_output_sha256 text NOT NULL
     CHECK (original_curator_output_sha256 ~ '^[a-f0-9]{64}$'),
@@ -71,7 +73,11 @@ BEGIN
  END IF;
  IF v_report.pantalla_id IS DISTINCT FROM v_run.pantalla_id
     OR v_report.curator_identity IS DISTINCT FROM v_run.curator_identity
-    OR v_report.source_snapshot_sha256 IS DISTINCT FROM v_run.source_snapshot_sha256
+    -- Do not flag a legitimate post-Curator source snapshot seal as drift:
+    -- source_snapshot_sha256 is commonly NULL in CURATING.
+    OR (v_report.source_snapshot_sha256 IS NOT NULL
+        AND v_report.source_snapshot_sha256 IS DISTINCT FROM v_run.source_snapshot_sha256)
+    OR v_report.universe_snapshot_sha256 IS DISTINCT FROM v_run.universe_snapshot_sha256
     OR v_report.original_curator_output->>'run_id' IS DISTINCT FROM p_run_id::text
     OR v_report.original_curator_output_sha256 IS DISTINCT FROM
        programacion.fn_v09_sha256_jsonb(v_report.original_curator_output)
@@ -121,9 +127,9 @@ BEGIN
       'parent_source_snapshot_sha256',v_parent_source_sha256,
       'snapshot_equivalence',CASE
         WHEN v_run.supersedes_run_id IS NULL THEN 'NO_PARENT'
-        WHEN v_report.source_snapshot_sha256 IS NULL OR v_parent_source_sha256 IS NULL
+        WHEN v_run.source_snapshot_sha256 IS NULL OR v_parent_source_sha256 IS NULL
           THEN 'SOURCE_SNAPSHOT_NOT_ATTESTED'
-        WHEN v_report.source_snapshot_sha256=v_parent_source_sha256
+        WHEN v_run.source_snapshot_sha256=v_parent_source_sha256
           THEN 'SAME_SOURCE_SNAPSHOT_NOT_RUN_EQUIVALENCE'
         ELSE 'SOURCE_SNAPSHOT_CHANGED' END,
       'historical_parent_research_reexecution_required',false,
@@ -133,7 +139,15 @@ BEGIN
    'screen_id',v_run.pantalla_id,
    'curator_identity',v_report.curator_identity,
    'raw_report_sha256',v_report.original_curator_output_sha256,
-   'source_snapshot_sha256',v_report.source_snapshot_sha256,
+   'source_snapshot_sha256',v_run.source_snapshot_sha256,
+   'source_snapshot_sha256_at_capture',v_report.source_snapshot_sha256,
+   'universe_snapshot_sha256_at_capture',v_report.universe_snapshot_sha256,
+   'source_snapshot_seal_timing',CASE
+      WHEN v_report.source_snapshot_sha256 IS NULL
+        AND v_run.source_snapshot_sha256 IS NOT NULL
+        THEN 'PINNED_AFTER_CURATOR_CAPTURE'
+      WHEN v_run.source_snapshot_sha256 IS NULL THEN 'NOT_YET_PINNED'
+      ELSE 'PINNED_AT_CURATOR_CAPTURE' END,
    'original_curator_output',v_report.original_curator_output,
    'report_locations',jsonb_build_object(
      'CURATOR','$',
@@ -319,9 +333,10 @@ exception when others then
   IF v_strategy IN ('BOOTSTRAP','REBIND','SOURCE_STALE_RECURATE','FULL_RECURATE') THEN
     INSERT INTO programacion.input_governance_producer_raw_v1(
         run_id,pantalla_id,curator_identity,source_snapshot_sha256,
+        universe_snapshot_sha256,
         original_curator_output,original_curator_output_sha256)
     SELECT v_core_run_id,p_pantalla_id,p_curator_identity,
-      r.source_snapshot_sha256,v_full_original_response,
+      r.source_snapshot_sha256,r.universe_snapshot_sha256,v_full_original_response,
       programacion.fn_v09_sha256_jsonb(v_full_original_response)
     FROM programacion.input_readiness_runs r
     WHERE r.id=v_core_run_id AND r.pantalla_id=p_pantalla_id
