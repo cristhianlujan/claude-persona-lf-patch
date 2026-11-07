@@ -58,7 +58,7 @@ def semantic_candidate(raw):
         spans.append(span(raw, domain, "ACTOR_SCOPE"))
     if assumed_phrase:
         spans.append(span(raw, assumed_phrase, "ASSUMPTION"))
-    return {
+    proposal = {
         "schema_version": "A1_INTENT_ANALYSIS_CANDIDATE_V1",
         "operation": {
             "kind": "IMPLEMENT",
@@ -82,6 +82,19 @@ def semantic_candidate(raw):
         "explicit_constraints": [],
         "material_ambiguities": []
     }
+    if raw == IMPLICIT:
+        proposal["target"]["functional_archetype"] = "PORTAL_ENTRY_VIEW"
+        proposal["target"]["canonical_capability"] = "ENTERPRISE_PORTAL_ACCESS"
+        proposal["dimensions_to_investigate"] = [
+            "PORTAL_ENTRY_MODE", "AUTHENTICATION_IF_APPLICABLE",
+            "EXISTING_PORTAL_ENTRY",
+        ]
+        proposal["material_ambiguities"] = [{
+            "code": "PORTAL_ENTRY_MODE_UNRESOLVED",
+            "statement": "La solicitud no diferencia autenticación de navegación al portal.",
+            "materiality": "MATERIAL",
+        }]
+    return proposal
 
 
 def producer(raw):
@@ -93,6 +106,48 @@ def reviewer(raw, candidate):
     return {"verdict": "FAIL" if raw == NEGATED else "PASS",
             "candidate_sha256": SEM._hash(candidate), "reviewer_ref": "fixture://reviewer",
             "issues": ["NEGATION_NOT_PRESERVED"] if raw == NEGATED else []}
+
+
+def reuse_candidate(raw):
+    assert raw == NEGATED
+    return {
+        "schema_version": "A1_INTENT_ANALYSIS_CANDIDATE_V1",
+        "operation": {
+            "kind": "REUSE", "user_assumed_state": "CLAIMED_EXISTING",
+            "repo_verification_state": "PENDING_INVENTORY",
+        },
+        "target": {
+            "artifact_kind": "SCREEN",
+            "functional_archetype": "EXISTING_SCREEN",
+            "canonical_capability": "UNKNOWN",
+            "actor_scope": "UNSPECIFIED",
+            "raw_mentions": ["pantalla"],
+        },
+        "desired_outcome": "Reutilizar la pantalla existente sin crear otra",
+        "analysis_hints": ["EXISTING_ARTIFACT_INVENTORY"],
+        "dimensions_to_investigate": [
+            "EXISTING_SCREEN_LOOKUP", "FUNCTIONAL_CAPABILITY_RESOLUTION",
+        ],
+        "evidence_spans": [
+            span(raw, "usa la existente", "OPERATION"),
+            span(raw, "pantalla", "ARTIFACT"),
+            span(raw, "existente", "ASSUMPTION"),
+            span(raw, "No crees otra pantalla", "NEGATION"),
+        ],
+        "explicit_constraints": [{"text": "No crees otra pantalla"}],
+        "material_ambiguities": [{
+            "code": "FUNCTIONAL_CAPABILITY_UNSPECIFIED",
+            "statement": "La capacidad funcional de la pantalla existente no se especifica.",
+            "materiality": "MATERIAL",
+        }],
+    }
+
+
+def accepting_fixture_reviewer(raw, candidate):
+    return {
+        "verdict": "PASS", "candidate_sha256": SEM._hash(candidate),
+        "reviewer_ref": "fixture://reviewer", "issues": [],
+    }
 
 
 def unknown_signals():
@@ -148,13 +203,20 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertFalse(out["semantic_review_identity_verified"])
         self.assertFalse(out["external_authority_verified"])
 
-    def test_implicit_business_entry_same_capability(self):
+    def test_implicit_portal_entry_requires_mechanism_decision(self):
         out = A1.run(IMPLICIT, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
-        self.assertEqual(out["status"], "VALID_OUTPUT")
-        self.assertEqual(out["intent_analysis"]["target"]["functional_archetype"], "AUTH_FLOW")
-        self.assertEqual(out["intent_analysis"]["target"]["canonical_capability"], "IDENTITY_AND_ACCESS")
+        self.assertEqual(out["status"], "REQUIRES_DECISION")
+        self.assertIsNone(out["next_capability"])
+        self.assertEqual(out["intent_analysis"]["target"]["functional_archetype"], "PORTAL_ENTRY_VIEW")
+        self.assertEqual(out["intent_analysis"]["target"]["canonical_capability"], "ENTERPRISE_PORTAL_ACCESS")
         self.assertEqual(out["intent_analysis"]["operation"]["kind"], "IMPLEMENT")
         self.assertEqual(out["intent_analysis"]["operation"]["user_assumed_state"], "UNSPECIFIED")
+        self.assertEqual(out["payload"]["ambiguities"][0]["resolution_state"], "OPEN")
+        transport = BRIDGE.prepare_semantic_transport(
+            IMPLICIT, business="LF", semantic_producer=producer, semantic_reviewer=reviewer
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        self.assertIsNone(transport["a2_result"])
 
     def test_open_catalog_not_hardcoded_to_auth_login(self):
         out = A1.run(GRID, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
@@ -166,6 +228,52 @@ class SemanticA1Candidate(unittest.TestCase):
     def test_negation_needs_semantic_review_not_keyword_pass(self):
         out = A1.run(NEGATED, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
         self.assertEqual(out["status"], "REQUIRES_SEMANTIC_REVIEW")
+        self.assertIsNone(out["next_capability"])
+
+    def test_existing_screen_reuse_preserves_negation_and_blocks_a2(self):
+        out = A1.run(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        self.assertEqual(out["status"], "REQUIRES_DECISION", out)
+        self.assertEqual(out["intent_analysis"]["operation"]["kind"], "REUSE")
+        self.assertEqual(out["declared_intent_kind"], "UNKNOWN")
+        self.assertEqual(out["payload"]["constraints"], ["No crees otra pantalla"])
+        self.assertIsNone(out["next_capability"])
+        transport = BRIDGE.prepare_semantic_transport(
+            NEGATED, business="LF", semantic_producer=reuse_candidate,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        self.assertEqual(transport["status"], "HALTED_AT_A1")
+        self.assertIsNone(transport["a2_result"])
+
+    def test_reuse_missing_negation_span_fails_semantic_grounding(self):
+        def bad(raw):
+            proposal = reuse_candidate(raw)
+            proposal["evidence_spans"] = [
+                item for item in proposal["evidence_spans"]
+                if item["dimension"] != "NEGATION"
+            ]
+            return proposal
+        out = A1.run(
+            NEGATED, business="LF", semantic_producer=bad,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        self.assertEqual(out["status"], "REQUIRES_SEMANTIC_REVIEW")
+        self.assertIn("EXPLICIT_CONSTRAINT_EVIDENCE_MISSING", out["blocking_codes"])
+        self.assertIsNone(out["next_capability"])
+
+    def test_reuse_unknown_capability_without_ambiguity_fails(self):
+        def bad(raw):
+            proposal = reuse_candidate(raw)
+            proposal["material_ambiguities"] = []
+            return proposal
+        out = A1.run(
+            NEGATED, business="LF", semantic_producer=bad,
+            semantic_reviewer=accepting_fixture_reviewer,
+        )
+        self.assertEqual(out["status"], "REQUIRES_SEMANTIC_REVIEW")
+        self.assertIn("MATERIAL_INTENT_UNRESOLVED", out["blocking_codes"])
         self.assertIsNone(out["next_capability"])
 
     def test_ungrounded_evidence_refused_before_reviewer(self):
