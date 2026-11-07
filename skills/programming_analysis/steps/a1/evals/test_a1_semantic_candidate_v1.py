@@ -45,7 +45,7 @@ def semantic_candidate(raw):
             "vista para que las empresas entren al portal"
         ]
     else:
-        op, assumption, assumed_phrase = "crees", "CLAIMED_EXISTING", None
+        op, assumption, assumed_phrase = "crees", "CLAIMED_EXISTING", "existente"
         artifact, capability, domain, mentions = "pantalla", "pantalla", None, ["pantalla"]
     spans = [span(raw, op, "OPERATION"),
              span(raw, artifact, "ARTIFACT"),
@@ -157,7 +157,7 @@ class SemanticA1Candidate(unittest.TestCase):
             c["evidence_spans"] = [s for s in c["evidence_spans"] if s["dimension"] != "ASSUMPTION"]
             return c
         out = A1.run(LOGIN, business="LF", semantic_producer=bad, semantic_reviewer=reviewer)
-        self.assertIn("GREENFIELD_CLAIM_UNGROUNDED", out["blocking_codes"])
+        self.assertIn("USER_ASSUMED_STATE_UNGROUNDED", out["blocking_codes"])
 
     def test_no_intent_authority_injected_into_canonical_payload(self):
         out = A1.run(LOGIN, business="LF", semantic_producer=producer, semantic_reviewer=reviewer)
