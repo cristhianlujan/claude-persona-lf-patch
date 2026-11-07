@@ -555,6 +555,8 @@ BEGIN
    $old$    'context_manifest',v_manifest,'worker_spec',v_worker,$old$,
    $new$    'context_manifest',v_manifest,'worker_spec',v_worker,
     'ig_consolidated_original_reports',v_ig_originals,
+    'ig_consolidated_original_reports_sha256',programacion.fn_v09_sha256_jsonb(v_ig_originals),
+    'ig_consolidated_original_reports_characters',length(v_ig_originals::text),
     'ig_original_reports_complete',
       v_ig_originals->>'status'='ORIGINAL_EMISSIONS_AND_VALIDATOR_EVIDENCE_PRESENT',$new$);
  IF v_new=v_before
