@@ -17,7 +17,7 @@ Estado: SOURCE_CANDIDATE / NOT_QUALIFIED / no merged. Alcance: desarrollo intern
 4. steps/a1/judges/semantic_guard.py y steps/a1/schemas/output.schema.json: consistencia del anexo y sha; no altera contrato canónico.
 5. steps/a2/validators/run.py: verifica continuidad de operación y tipo de artefacto; no cambia señalización canónica.
 6. adapters/a1_a2_candidate_bridge_v1.py:prepare_semantic_transport: transporte interno, sin RUN, requiere evidencia tipada para proyectar A2.
-7. steps/a1/evals/test_a1_semantic_candidate_v1.py: 11 pruebas sintéticas definidas; NO ejecutadas todavía en Python, NO modelo real.
+7. steps/a1/evals/test_a1_semantic_candidate_v1.py: 12 pruebas sintéticas definidas; NO ejecutadas todavía en Python, NO modelo real.
 
 ## Protocolo de productor y revisor
 El productor semántico debe inferir por significado, considerando negación, intención, restricciones y contexto. No debe depender de la primera coincidencia de palabras. Debe entregar fragments exactos con offset y dimensiones de sustento, y no puede atribuir estado de repositorio ni crear IDs de pantalla.
