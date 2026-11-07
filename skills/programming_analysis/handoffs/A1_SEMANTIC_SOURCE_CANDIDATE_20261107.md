@@ -61,3 +61,13 @@ El A1 devuelve REQUEST_CONTEXT_V1 como payload y el anexo externo INTENT_ANALYSI
 - `steps/a1/semantic_model_protocol_candidate_v1.md`: especifica el protocolo de autoría Native y verificación semántica independiente.
 - Las **53/53 A1** y **33/33 A2** pruebas anteriores fueron comprobadas contra la fuente previa que incluía un mock de Llama. Esa evidencia se mantiene como antecedente histórico, pero **NO** se reutiliza como un 53/53 PASS sobre la implementación Native actual. Se deben ejecutar los tests actuales antes de calificar el lote.
 - **Siguiente control:** prueba de flujo A1 con salida GPT/Claude Native genuina y revisión separada; capturas sintéticas/firmas del mismo chat no acreditan independencia. No integrar el RUN de la skill.
+
+## Lote A1-IV — Contrato de ruta Native propio (2026-11-07)
+
+- Contrato source-only versionado: `skills/programming_analysis/steps/a1/contracts/a1_native_semantic_route_v1.json`, código `A1_NATIVE_SEMANTIC_ROUTE_V1`.
+- Routing A1 exclusivo: `PROGRAMMING_ANALYSIS_LF/A1/SEMANTIC_NATIVE_AUTHORING`, owner `PROGRAMMING_ANALYSIS_LF`, etapa `A1`; no operación de runtime ni `run_id`.
+- Pares permitidos: `GPT_NATIVE/OPENAI_CHATGPT_NATIVE/CHATGPT_CURRENT_CONVERSATION` y `CLAUDE_NATIVE/ANTHROPIC_CLAUDE_NATIVE/CLAUDE_CURRENT_CONVERSATION`. No REMOTE_API, Llama ni nuevo motor.
+- `steps/a1/adapters/native_chat_semantic_source_v1.py`: handoff y capture exigen contrato A1, su SHA-256 exacto, owner y route; el consumidor repite controles y rechaza campos reservados del Profile Updater y otras operaciones, incluso con hashes de sobre re-generados.
+- El Updater (`profile_updater_same_chat_v02.py`, material bridge y operación `ACTUALIZACION_PERFIL_LF`) es precedente genérico de diseño, **NO ruta de A1** y no se invoca desde la skill. El runtime Updater quedó sin modificaciones.
+- `steps/a1/evals/test_a1_native_chat_semantic_source_v1.py`: de 12 a 21 pruebas propuestas, incluyendo negativas contra handoff/capture del Updater, `owner` falso, `operation_code` inyectado, ruta falsa, cambio de contrato y replay cruzado GPT/Claude. **No declarar Python PASS hasta ejecución exact HEAD.**
+- A1 sigue SOURCE_CANDIDATE, no significa proveedor autenticado ni revisor independiente validado. A2 consume semántica sin convertirse en una operación Updater o RUN.
