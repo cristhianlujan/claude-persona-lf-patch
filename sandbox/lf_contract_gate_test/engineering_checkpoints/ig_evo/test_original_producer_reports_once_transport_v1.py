@@ -119,6 +119,62 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("IG_ORIGINAL_REPORT_INTEGRITY_DRIFT", self.sql)
         self.assertIn("'research_reexecuted',false", self.sql)
 
+    def test_curator_emission_is_proven_by_all_original_payloads(self):
+        self.assertIn("v_r1_emitted:=coalesce", self.sql)
+        self.assertIn("v_r2_r6_emitted:=coalesce", self.sql)
+        self.assertIn("v_g1_emitted:=coalesce", self.sql)
+        self.assertIn(
+            "AND v_r1_emitted AND v_r2_r6_emitted AND v_g1_emitted",
+            self.sql,
+        )
+        self.assertIn("'producer_emission',jsonb_build_object(", self.sql)
+        self.assertIn("CAPTURED_AS_EMITTED", self.sql)
+        self.assertIn("EMITTED_IN_THIS_RUN", self.sql)
+
+    def test_rebind_actual_output_not_inferred_from_strategy_label(self):
+        self.assertIn(
+            "v_curator_strategy:=v_report.original_curator_output#>>"
+            "'{performance_observation,strategy}'",
+            self.sql,
+        )
+        self.assertIn("ORIGINALS_NOT_EMITTED_FOR_REBIND", self.sql)
+        self.assertIn("NOT_EMITTED_FOR_REBIND", self.sql)
+        self.assertIn("'automatic_parent_raw_as_current_run_authorized',false", self.sql)
+        self.assertIn("'historical_raw_as_current_evidence_authorized',false", self.sql)
+        self.assertIn("SAME_SOURCE_SNAPSHOT_NOT_RUN_EQUIVALENCE", self.sql)
+        self.assertIn("SOURCE_SNAPSHOT_CHANGED", self.sql)
+        self.assertIn("source_lineage", self.sql)
+
+    def test_delayed_source_snapshot_pin_is_not_false_integrity_drift(self):
+        self.assertIn("universe_snapshot_sha256 text", self.sql)
+        self.assertIn("r.source_snapshot_sha256,r.universe_snapshot_sha256", self.sql)
+        self.assertIn(
+            "v_report.universe_snapshot_sha256 IS DISTINCT FROM "
+            "v_run.universe_snapshot_sha256",
+            self.sql,
+        )
+        self.assertIn(
+            "v_report.source_snapshot_sha256 IS NOT NULL",
+            self.sql,
+        )
+        self.assertIn("source_snapshot_sha256_at_capture", self.sql)
+        self.assertIn("PINNED_AFTER_CURATOR_CAPTURE", self.sql)
+        self.assertIn("SOURCE_SNAPSHOT_NOT_ATTESTED", self.sql)
+        self.assertIn("IG_ORIGINAL_REPORT_INTEGRITY_DRIFT", self.sql)
+
+    def test_noop_and_block_do_not_create_a_new_original(self):
+        self.assertIn(
+            "IF v_strategy IN ('BOOTSTRAP','REBIND','SOURCE_STALE_RECURATE',"
+            "'FULL_RECURATE') THEN",
+            self.sql,
+        )
+        self.assertNotIn(
+            "IF v_strategy IN ('NOOP','BLOCK') THEN\n    INSERT",
+            self.sql,
+        )
+        self.assertIn("NOT_CAPTURED_LEGACY_RUN", self.sql)
+        self.assertIn("research_reexecuted',false", self.sql)
+
     def test_transport_is_existing_profile_input_not_a_new_dispatcher(self):
         self.assertIn("'ig_original_producer_reports',v_original_reports", self.sql)
         self.assertIn("fn_lf_profile_input_governance_resolve_v1", self.sql)
