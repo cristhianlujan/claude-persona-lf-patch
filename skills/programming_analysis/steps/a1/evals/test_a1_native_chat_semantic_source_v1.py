@@ -243,6 +243,30 @@ class A1GenericNativeTransport(unittest.TestCase):
                          "ACTUALIZACION_PERFIL_LF")
 
 
+    def test_22_native_adapter_does_not_import_updater_or_llama(self):
+        import ast
+        source = (BASE / "adapters/native_chat_semantic_source_v1.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        imported = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(x.name for x in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported.add(node.module)
+        self.assertFalse(any("profile_updater" in mod or "llama" in mod
+                             for mod in imported), imported)
+        self.assertNotIn("ACTUALIZACION_PERFIL_LF", source)
+
+    def test_23_contract_forbids_profile_and_router_calls(self):
+        import json
+        route = json.loads(NATIVE.ROUTE.read_text(encoding="utf-8"))
+        for key in ("updater_operation_allowed", "profile_operation_allowed",
+                    "skill_child_run_allowed", "supabase_write_allowed",
+                    "router_dispatch_allowed"):
+            self.assertIs(route["operation_boundary"][key], False)
+        self.assertIsNone(route["operation_boundary"]["runtime_operation_code"])
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
