@@ -46,6 +46,14 @@ BEGIN
       'raw_reused',false,'research_reexecuted',false,
       'semantic_pass_authorized',false);
  END IF;
+ -- Currentness requires the official check; COMPLETED by itself is not enough.
+ -- Checking lineage/currentness is not re-running any R* or Curator analysis.
+ IF v_run.status='COMPLETED'
+    AND NOT programacion.fn_input_readiness_run_is_current(p_run_id) THEN
+   RETURN jsonb_build_object('status','RUN_NOT_CURRENT','run_id',p_run_id,
+      'raw_reused',false,'research_reexecuted',false,
+      'semantic_pass_authorized',false);
+ END IF;
  SELECT * INTO v_report FROM programacion.input_governance_producer_raw_v1
  WHERE run_id=p_run_id;
  IF NOT FOUND THEN
