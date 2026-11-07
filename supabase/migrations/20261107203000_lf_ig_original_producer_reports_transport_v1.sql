@@ -310,14 +310,18 @@ exception when others then
   END IF;$new$);
  IF v_new=v_source THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_LOOKUP_NOT_FOUND'; END IF;
  v_source:=v_new;
- v_new:=replace(v_new,
-  $old$      'governance_result',v_result,$old$,
-  $new$      'governance_result',v_result,
-      'ig_original_producer_reports',v_original_reports,$new$);
- -- READY, HUMAN_DECISION_REQUIRED and BLOCKED each return the exact envelope.
- IF v_new=v_source OR
-    (length(v_source)-length(replace(v_source,'''governance_result'',v_result,','')))
+ -- READY/HUMAN_DECISION_REQUIRED/BLOCKED indent differently; match the field
+ -- rather than leading whitespace. Gate both original and inserted counts.
+ IF (length(v_source)-length(replace(v_source,'''governance_result'',v_result,','')))
        /length('''governance_result'',v_result,') <> 3
+ THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_BRANCH_COUNT_INVALID'; END IF;
+ v_new:=replace(v_new,
+  $old$'governance_result',v_result,$old$,
+  $new$'governance_result',v_result,
+      'ig_original_producer_reports',v_original_reports,$new$);
+ IF v_new=v_source OR
+    (length(v_new)-length(replace(v_new,'''ig_original_producer_reports'',v_original_reports,','')))
+       /length('''ig_original_producer_reports'',v_original_reports,') <> 3
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_PATCH_INVALID'; END IF;
  v_new:=rtrim(v_new)||';';
  IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_SQL_TERMINATOR_MISSING'; END IF;
@@ -341,7 +345,9 @@ BEGIN
  OR strpos(v_prop,'ALL_G1_ATTESTED_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION')=0
  OR strpos(v_prop,'ig_evo_graph_internal_truncated_rule_ids')=0
  OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
- OR strpos(v_profile,'''ig_original_producer_reports'',v_original_reports')=0
+ OR (length(v_profile)-length(replace(v_profile,
+     '''ig_original_producer_reports'',v_original_reports,','')))
+     /length('''ig_original_producer_reports'',v_original_reports,') <> 3
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_NATIVE_TRANSPORT_NOT_INSTALLED'; END IF;
  IF has_function_privilege('anon','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
  OR has_function_privilege('authenticated','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
