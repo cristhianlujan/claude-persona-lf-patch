@@ -91,7 +91,9 @@ BEGIN
      'R2_R6','$.proposal_materialization.ig_evo_r2_r6_diagnostics',
      'G1','$.proposal_materialization.ig_evo_graph_index[*].raw_graph'),
    'graph_root_count',v_pm->'ig_evo_graph_total_roots',
-   'graph_root_scope',v_pm->'ig_evo_graph_index_status',
+   'graph_root_scope',v_pm->'ig_evo_graph_index_scope',
+   'graph_coverage_status',v_pm->'ig_evo_graph_index_status',
+   'graph_eligible_rule_count',coalesce((v_pm->>'ig_evo_graph_total_effective_rules')::integer,0),
    'graph_discovered_root_count',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
    'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb)),
    'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
@@ -129,31 +131,69 @@ BEGIN
  IF v_new=v_def OR strpos(v_new,'''raw_graph'',g.doc')=0 THEN
    RAISE EXCEPTION 'IG_ORIGINAL_REPORT_GRAPH_CAPTURE_PATCH_INVALID';
  END IF;
- -- Remove the eight-root sample restriction; process all discovered R6 roots.
+ -- G1 selection is now independent of R6. Reuse generated raw JSON as-is.
  v_source:=v_new;
- v_new:=replace(v_new,
-   $old$      order by rule_id limit 8$old$,
-   $new$      order by rule_id$new$);
- IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_NOT_REMOVED'; END IF;
+ v_new:=replace(v_new,$old_count$  select count(*) into v_ig_evo_graph_total
+  from (
+    select distinct (c->'source_rule'->>'id')::integer rule_id
+    from jsonb_array_elements(coalesce(v_r2_r6_scan->'findings','[]'::jsonb)) f
+    cross join lateral jsonb_array_elements(coalesce(f->'cases','[]'::jsonb)) c
+    where f->>'detector'='R6'
+      and c->'source_rule'->>'id' ~ '^[0-9]{1,9}$'
+  ) roots;$old_count$,$new_count$  select count(distinct e.regla_id) into v_ig_evo_graph_total
+  from programacion.fn_input_effective_rule_links_v1(v_run.pantalla_id,'INPUT_GOVERNANCE') e
+  join lf_ops.reglas rr on rr.id=e.regla_id
+  where e.pantalla_id=v_run.pantalla_id
+    and e.binding_source<>'DERIVED_GLOBAL'
+    and rr.estado in ('VIGENTE','CANDIDATO');$new_count$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_COUNT_SOURCE_MISSING'; END IF;
+ v_source:=v_new;
+ v_new:=replace(v_new,$old_roots$      select distinct (c->'source_rule'->>'id')::integer rule_id
+      from jsonb_array_elements(coalesce(v_r2_r6_scan->'findings','[]'::jsonb)) f
+      cross join lateral jsonb_array_elements(coalesce(f->'cases','[]'::jsonb)) c
+      where f->>'detector'='R6'
+        and c->'source_rule'->>'id' ~ '^[0-9]{1,9}$'
+      order by rule_id limit 8$old_roots$,$new_roots$      select distinct e.regla_id AS rule_id
+      from programacion.fn_input_effective_rule_links_v1(v_run.pantalla_id,'INPUT_GOVERNANCE') e
+      join lf_ops.reglas rr on rr.id=e.regla_id
+      where e.pantalla_id=v_run.pantalla_id
+        and e.binding_source<>'DERIVED_GLOBAL'
+        and rr.estado in ('VIGENTE','CANDIDATO')
+      order by rule_id$new_roots$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_ROOT_SOURCE_MISSING'; END IF;
 
- -- No fixed upper count; the number captured must exactly equal total roots.
+ -- No fixed upper count; captured graphs must equal eligible screen rules.
  v_source:=v_new;
  v_new:=replace(v_new,
    $old$    or jsonb_array_length(v_ig_evo_graph_index)>8$old$,
    $new$    or jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total$new$);
  IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_GATE_NOT_REMOVED'; END IF;
 
- -- Scope remains R6-discovered roots, not the entire screen rule universe.
+ -- G1 covers all canonically effective rules, independent from R6 findings.
  v_source:=v_new;
  v_new:=replace(v_new,
    $old$'ig_evo_graph_index_status',case when v_ig_evo_graph_total>8 then 'TRUNCATED_SEMANTIC_REVIEW_REQUIRED' else 'PARTIAL_INDEX_NOT_SEMANTIC_PASS' end,$old$,
-   $new$'ig_evo_graph_index_status','ALL_R6_DISCOVERED_ROOTS_CAPTURED_NOT_SEMANTIC_PASS',$new$);
- IF v_new=v_source THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_STATUS_NOT_REMOVED'; END IF;
+   $new$'ig_evo_graph_index_status','ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS',$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_STATUS_REBIND_MISSING'; END IF;
+ v_source:=v_new;
+ v_new:=replace(v_new,$old$'ig_evo_graph_index_scope','R6_DISCOVERED_CASE_ROOTS_ONLY',$old$,
+                     $new$'ig_evo_graph_index_scope','ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES',$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_SCOPE_REBIND_MISSING'; END IF;
+ v_source:=v_new;
+ v_new:=replace(v_new,$old$'ig_evo_graph_total_roots',v_ig_evo_graph_total,$old$,
+                     $new$'ig_evo_graph_total_roots',v_ig_evo_graph_total,
+                       'ig_evo_graph_total_effective_rules',v_ig_evo_graph_total,
+                       'ig_evo_graph_captured_rule_count',jsonb_array_length(v_ig_evo_graph_index),$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_METRICS_REBIND_MISSING'; END IF;
  IF strpos(v_new,'order by rule_id limit 8')>0
   OR strpos(v_new,'jsonb_array_length(v_ig_evo_graph_index)>8')>0
   OR strpos(v_new,'TRUNCATED_SEMANTIC_REVIEW_REQUIRED')>0
+  OR strpos(v_new,'R6_DISCOVERED_CASE_ROOTS_ONLY')>0
+  OR strpos(v_new,'select distinct (c->''source_rule''->>''id'')::integer')>0
   OR strpos(v_new,'jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total')=0
- THEN RAISE EXCEPTION 'IG_GRAPH_LIMIT_8_RESIDUAL'; END IF;
+  OR strpos(v_new,'ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES')=0
+  OR strpos(v_new,'ig_evo_graph_total_effective_rules')=0
+ THEN RAISE EXCEPTION 'IG_G1_ROOT_SCOPE_RESIDUAL'; END IF;
 
  -- pg_get_functiondef omits the terminator on this deployed server.
  -- Preserve the body byte-identically apart from our bounded patches.
@@ -254,6 +294,10 @@ BEGIN
  SELECT pg_get_functiondef('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure) INTO v_profile;
  IF strpos(v_cur,'INSERT INTO programacion.input_governance_producer_raw_v1')=0
  OR strpos(v_prop,'''raw_graph'',g.doc')=0
+ OR strpos(v_prop,'ig_evo_graph_total_effective_rules')=0
+ OR strpos(v_prop,'ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES')=0
+ OR strpos(v_prop,'ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS')=0
+ OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
  OR strpos(v_profile,'''ig_original_producer_reports'',v_original_reports')=0
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_NATIVE_TRANSPORT_NOT_INSTALLED'; END IF;
  IF has_function_privilege('anon','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
