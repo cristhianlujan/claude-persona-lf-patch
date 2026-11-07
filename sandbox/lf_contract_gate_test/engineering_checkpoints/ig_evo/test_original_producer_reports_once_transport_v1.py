@@ -63,11 +63,11 @@ class OriginalProducerTransportContract(unittest.TestCase):
             "jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total",
             self.sql,
         )
-        self.assertIn("ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES", self.sql)
+        self.assertIn("ALL_G1_ATTESTED_SCREEN_RULES", self.sql)
         self.assertIn(
-            "ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS", self.sql
+            "ALL_G1_ATTESTED_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS", self.sql
         )
-        self.assertIn("ig_evo_graph_total_effective_rules", self.sql)
+        self.assertIn("ig_evo_graph_total_attested_rules", self.sql)
         reader = self.sql.split(
             "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
         )[1].split("$raw_get$;")[0]
@@ -76,12 +76,25 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("'graph_truncated'", reader)
         self.assertNotIn(")>8", reader)
 
+    def test_unattested_derived_global_links_are_reported_not_assumed(self):
+        self.assertIn("ig_evo_graph_unattested_global_count", self.sql)
+        self.assertIn("ig_evo_graph_total_linked_rules", self.sql)
+        self.assertIn(
+            "UNATTESTED_SCREEN_APPLICABILITY_NOT_G1_ROOT_ELIGIBLE",
+            self.sql,
+        )
+        self.assertIn("'graph_derived_global_unattested_count'", self.sql)
+        self.assertIn("'graph_derived_global_retrieval_ref'", self.sql)
+        self.assertIn("e.binding_source='DERIVED_GLOBAL'", self.sql)
+        self.assertIn("212", self.doc)  # observed example, not SQL cardinality
+        self.assertNotIn("=212", self.sql)
+
     def test_internal_graph_truncation_is_not_misreported_complete(self):
         self.assertIn("'graph_limit_hit'='true'", self.sql)
         self.assertIn("ig_evo_graph_internal_truncation_count", self.sql)
         self.assertIn("ig_evo_graph_internal_truncated_rule_ids", self.sql)
         self.assertIn(
-            "ALL_EFFECTIVE_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION",
+            "ALL_G1_ATTESTED_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION",
             self.sql,
         )
         self.assertIn("'graph_internal_truncation_count'", self.sql)
