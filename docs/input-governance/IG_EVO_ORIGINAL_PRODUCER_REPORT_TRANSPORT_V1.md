@@ -27,8 +27,23 @@ G1 sigue teniendo límites internos de exploración por raíz (128 nodos / 512 r
 - En la respuesta final `v_full_original_response` del mismo Curator, persistir `programacion.input_governance_producer_raw_v1.original_curator_output` y su SHA-256 calculado sobre **los mismos bytes semánticos JSONB** (sin normalizar a sinopsis).
 - `run_id` es PK; no sobrescribir el RAW anterior ni mezclar RUN. Registrar pantalla, identidad del Curator y `source_snapshot_sha256`.
 - Solo se inserta para `BOOTSTRAP`, `REBIND`, `SOURCE_STALE_RECURATE` y `FULL_RECURATE`. `NOOP` **reutiliza** el informe previamente guardado; no lo recalcula.
-- Para `REBIND`, cuando las funciones R1–R6 no fueron invocadas, devolver `PARTIAL_ORIGINALS_NOT_EMITTED`, jamás inventar sus resultados ni interpretar N/A sin autoridad.
+- Para `REBIND`, no inferir por el nombre que los detectores se emitieron: el escritor `fn_input_governance_curator_rebind_v1` puede delegar a recuración si cambia el contrato. Verificar `proposal_materialization.ig_evo_r1_diagnostics`, `ig_evo_r2_r6_diagnostics` y `ig_evo_graph_index` **en el RAW realmente devuelto**. Si ninguno se emitió, `ORIGINALS_NOT_EMITTED_FOR_REBIND`, con `producer_emission` por componente.
+- Diferenciar el RAW actual del RUN y el RAW de su predecesor. `source_lineage` registra `parent_run_id`, disponibilidad de archivo anterior y estado de equivalencia de snapshot. **Incluso con snapshot idéntico, R2–R6 puede incluir run_id y comparación histórica propios; no copiar automáticamente evidencia del RUN anterior como si fuera del nuevo.** Reutilización histórica no acreditada permanece bloqueada, sin reejecutar investigación.
+- El snapshot de fuentes puede sellarse después del Curator, durante el avance al Validator. Capturar `universe_snapshot_sha256` del RUN y el hash del envelope; validar siempre identidad/screen/Curator/universo, y si el hash de fuentes era nulo al capturar pero se completa después, reportar `PINNED_AFTER_CURATOR_CAPTURE` en vez de interpretar un falso drift. Si ya estaba presente y cambia, **bloquear**.
 - Los RUN anteriores a esta migración devuelven `NOT_CAPTURED_LEGACY_RUN`; **no ejecutar de nuevo R1 ni Curator para rellenarlos**.
+
+## Comportamiento verificado de estrategias (antes del Validator)
+
+| Estrategia | RUN | Investigación R1–R6/G1 | Informe actual | Criterio de trazabilidad |
+|---|---|---|---|---|
+| `BOOTSTRAP` | Nuevo | Sí, mediante el materializador | `ORIGINALS_CAPTURED` si emitió los tres grupos | Snapshot/universo y SHA del RAW |
+| `FULL_RECURATE` | Nuevo | Sí | `ORIGINALS_CAPTURED` si emitió los tres grupos | Diferenciar RUN nuevo de antecedentes |
+| `SOURCE_STALE_RECURATE` | Nuevo | Sí | `ORIGINALS_CAPTURED` si emitió los tres grupos | Cambios de fuente con evidencia |
+| `REBIND` | Nuevo | Normalmente no; puede delegar a recuración | `ORIGINALS_NOT_EMITTED_FOR_REBIND` si no produjo R*, o `ORIGINALS_CAPTURED` si los emitió | No copiar RAW de padre por inferencia |
+| `NOOP` | Mismo RUN | No | Archivo original del mismo RUN, si existe; sino `NOT_CAPTURED_LEGACY_RUN` | No ejecutar detectores para completar |
+| `BLOCK` | Ninguno nuevo | No | No se crea recibo RAW | Preservar bloqueo y razón |
+
+El estado `ORIGINALS_CAPTURED` exige JSON R1, R2–R6 **y G1 como array**. El simple registro del envelope del Curator no prueba que se hayan emitido todos los productores. Los indicadores de fuente y emisión **no** representan calidad semántica ni implementación validada.
 
 ## Transporte por el camino existente
 
