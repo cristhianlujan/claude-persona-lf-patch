@@ -35,7 +35,11 @@ def _grounding_errors(raw_text: str, candidate: dict) -> list[str]:
     errors = []
     spans = candidate["evidence_spans"]
     present = {s["dimension"] for s in spans}
-    for required in ("OPERATION", "ARTIFACT", "CAPABILITY"):
+    unknown_capability = candidate["target"]["canonical_capability"] == "UNKNOWN"
+    required_spans = ("OPERATION", "ARTIFACT") if unknown_capability else (
+        "OPERATION", "ARTIFACT", "CAPABILITY"
+    )
+    for required in required_spans:
         if required not in present:
             errors.append("MISSING_EVIDENCE_" + required)
     for s in spans:
@@ -45,11 +49,21 @@ def _grounding_errors(raw_text: str, candidate: dict) -> list[str]:
     for item in candidate["explicit_constraints"]:
         if item["text"] not in raw_text:
             errors.append("EXPLICIT_CONSTRAINT_UNGROUNDED")
+        elif not any(
+            span["dimension"] in ("CONSTRAINT", "NEGATION")
+            and item["text"] in span["quote"] for span in spans
+        ):
+            errors.append("EXPLICIT_CONSTRAINT_EVIDENCE_MISSING")
     for mention in candidate["target"]["raw_mentions"]:
         if mention not in raw_text:
             errors.append("RAW_MENTION_UNGROUNDED")
     op = candidate["operation"]
-    if op["kind"] == "UNKNOWN" or candidate["target"]["canonical_capability"] == "UNKNOWN":
+    if op["kind"] == "UNKNOWN" or (
+        unknown_capability and not any(
+            issue["materiality"] in ("MATERIAL", "UNKNOWN")
+            for issue in candidate["material_ambiguities"]
+        )
+    ):
         errors.append("MATERIAL_INTENT_UNRESOLVED")
     if op["user_assumed_state"] != "UNSPECIFIED":
         if not any(s["dimension"] == "ASSUMPTION" for s in spans):
