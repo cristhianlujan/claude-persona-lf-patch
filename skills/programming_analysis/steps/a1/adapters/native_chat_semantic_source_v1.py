@@ -139,6 +139,20 @@ def producer_from_capture(handoff: dict, capture: dict):
              and capture.get("executor_mode") == handoff.get("executor_mode")
              and capture.get("executor_provider") == handoff.get("executor_provider"),
              "NATIVE_A1_CAPTURE_BINDING_INVALID")
+    expected = MODE_BINDINGS.get(handoff.get("executor_mode"))
+    _require(expected is not None
+             and handoff.get("executor_provider") == expected[0]
+             and handoff.get("current_surface") == expected[1]
+             and capture.get("current_surface") == expected[1],
+             "NATIVE_A1_MODE_BINDING_INVALID")
+    _require(_json_sha({k: v for k, v in handoff.items()
+                        if k != "handoff_sha256"}) == handoff.get("handoff_sha256"),
+             "NATIVE_A1_HANDOFF_TAMPERED")
+    _require(handoff.get("semantic_contract_sha256") ==
+             _text_sha(CONTRACT.read_text(encoding="utf-8"))
+             and handoff.get("semantic_protocol_sha256") ==
+             _text_sha(PROTOCOL.read_text(encoding="utf-8")),
+             "NATIVE_A1_SOURCE_PROTOCOL_DRIFT")
     _require(_json_sha({k: v for k, v in capture.items()
                         if k != "capture_sha256"}) == capture.get("capture_sha256")
              and _json_sha(capture.get("intent_analysis")) == capture.get("intent_sha256"),
