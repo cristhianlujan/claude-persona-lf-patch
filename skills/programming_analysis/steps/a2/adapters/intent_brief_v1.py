@@ -72,20 +72,27 @@ def build_brief(a1: dict, a2: dict, signals: dict, golden: dict) -> dict:
     required_ids=[e['element_id'] for e in items if e.get('applicability')=='REQUIRED']
     if len(required_ids)!=33 or len(set(required_ids))!=33:
         return invalid('INTENT_REQUIRED_ELEMENT_COVERAGE_MISMATCH')
-    owner=[{'id':'OWNER-RESULT-01', 'question':
-        f'¿Qué situación concreta motivó la solicitud sobre {target} y qué resultado observable considerarías satisfactorio?',
-        'reason':'Confirmar intención, problema real y criterio de éxito; A2 no puede inferirlos del texto.',
-        'status':'SUGGESTED_NOT_SENT_NEEDS_SEMANTIC_REVIEW'}]
+    # A1 already provides a literal problem and desired outcome. Do not make
+    # asking the owner a universal prerequisite; assess semantic sufficiency
+    # and compare existing definitions before escalating an open ambiguity.
+    owner=[]
+    intent_quality_checks=[{
+        'id':'CHECK_OBSERVABLE_OUTCOME',
+        'question':'¿La intención y el resultado declarados permiten definir un criterio observable de éxito?',
+        'routing':'SEMANTIC_REVIEW_THEN_EXISTING_DEFINITIONS',
+        'status':'PENDING_SEMANTIC_REVIEW_NOT_OWNER_QUESTION'
+    }]
     for x in open_ambiguities:
         if x['materiality'] in ('MATERIAL','UNKNOWN'):
             owner.append({'id':'OWNER-'+x['code'],
                 'question':'¿Cómo debe resolverse esta interpretación pendiente: '+x['issue']+'?',
-                'reason':'Ambigüedad declarada en A1 sin resolución acreditada.',
+                'reason':'Ambigüedad declarada en A1: verificar definiciones y fuentes antes de pedir decisión al propietario.',
+                'routing':'A3_RESEARCH_FIRST_THEN_OWNER_IF_MATERIAL_UNRESOLVED',
                 'status':'SUGGESTED_NOT_SENT_NEEDS_SEMANTIC_REVIEW'})
     research=[
       {'id':'A3-TARGET','request':f'Verificar identidad exacta, autoridad y estado actual del objetivo {target}.',
        'source':'CANONICAL_TARGET_AND_IMPLEMENTATION_CURRENTNESS'},
-      {'id':'A3-ASIS','request':'Describir el funcionamiento actual y lo que ya existe, sin inferir una solución nueva.',
+      {'id':'A3-ASIS','request':'Describir las definiciones y el funcionamiento actuales, cambios previos y delta real frente al objetivo, sin inferir una solución nueva.',
        'source':'CURRENT_IMPLEMENTATION_AND_DELTA'},
       {'id':'A3-POLICY','request':'Localizar políticas, reglas, límites y controles pertinentes; registrar fuente, versión y vigencia.',
        'source':'CURRENT_CANONICAL_AUTHORITY'},
@@ -106,10 +113,11 @@ def build_brief(a1: dict, a2: dict, signals: dict, golden: dict) -> dict:
       f'y del objetivo señalado {target}, cuya identidad y vigencia aún deben comprobarse.\n\n'
       f'Restricciones recibidas: {constraint_text} Ambigüedades: {ambiguity_text} '
       f'La profundidad {classification.get("depth_level","sin clasificar")} fue calculada con señales declaradas, no verificadas.\n\n'
-      f'A2 conserva esa intención sin suponer qué solución construir. Antes de convertirla en requisitos '
-      f'para implementación, hay que confirmar con el solicitante qué problema concreto desea resolver '
-      f'y cómo reconocerá el resultado correcto. Las aclaraciones propuestas requieren revisión '
-      f'semántica y no se han enviado.\n\n'
+      f'A2 conserva esa intención sin suponer qué solución construir. Debe comprobarse primero '
+      f'la suficiencia semántica del problema y del criterio observable de éxito ya declarados, '
+      f'comparándolos con definiciones y fuentes existentes. Preguntar al solicitante solo si '
+      f'persiste una decisión material no resoluble por esas fuentes. '
+      f'No se han enviado preguntas.\n\n'
       f'A3 deberá comprobar la situación actual, las autoridades, las reglas y los consumidores del objetivo. '
       f'No debe decidir por el usuario el propósito del cambio ni interpretar las señales declaradas '
       f'como evidencia de vigencia. El inventario Golden de 59 elementos es soporte de calidad, '
@@ -127,7 +135,8 @@ def build_brief(a1: dict, a2: dict, signals: dict, golden: dict) -> dict:
       'constraints_status':'DECLARED_UNVERIFIED' if constraints_supplied else 'NOT_PROVIDED_UNVERIFIED',
       'recorded_open_ambiguities':open_ambiguities,
       'ambiguities_absent_not_proven':not bool(ambiguities),
-      'user_questions_candidates':owner, 'a3_investigation_tasks':research,
+      'user_questions_candidates':owner, 'intent_quality_checks':intent_quality_checks,
+      'a3_investigation_tasks':research,
       'assumptions_to_verify':assumptions,
       'required_evidence_gaps':required_ids,
       'required_evidence_gaps_status':'33_MANDATORY_ITEMS_NEED_A3_EVIDENCE',
