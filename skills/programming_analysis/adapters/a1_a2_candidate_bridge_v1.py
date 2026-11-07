@@ -51,6 +51,45 @@ def prepare_candidate(a1_input, a2_signals, expected_business=None,
 
 
 
+def _research_handoff(a1_result):
+    """Describe unresolved inventory work; NEVER invoke inventory or authorize A2.
+
+    The calling governed consumer must resolve ambiguities with source-bound
+    inventory/policy receipts. A raw user:// ref is not inventory evidence.
+    """
+    if a1_result.get("status") != "REQUIRES_DECISION":
+        return None
+    payload = a1_result.get("payload")
+    intent = a1_result.get("intent_analysis")
+    if not isinstance(payload, dict) or not isinstance(intent, dict):
+        return None
+    pending = [
+        item for item in payload["ambiguities"]
+        if item["resolution_state"] == "OPEN"
+        and item["materiality"] in ("MATERIAL", "UNKNOWN")
+    ]
+    if not pending:
+        return None
+    return {
+        "schema_version": "A1_INVENTORY_RESEARCH_HANDOFF_CANDIDATE_V1",
+        "business": a1_result["business"],
+        "request_sha256": a1_result["original_request_sha256"],
+        "original_request": payload["objective"]["problem_statement"],
+        "target_hints": list(payload["target_hints"]),
+        "operation_kind": intent["operation"]["kind"],
+        "artifact_kind": intent["target"]["artifact_kind"],
+        "functional_capability_proposal": intent["target"]["canonical_capability"],
+        "constraints": list(payload["constraints"]),
+        "open_ambiguities": pending,
+        "dimensions_to_investigate": list(intent["dimensions_to_investigate"]),
+        "source_refs": list(payload["source_refs"]),
+        "inventory_source_verified": False,
+        "inventory_lookup_executed": False,
+        "allow_a2": False,
+        "next_required_action": "RESOLVE_FROM_AUTHORIZED_INVENTORY_AND_POLICY_SOURCES",
+    }
+
+
 def prepare_semantic_transport(raw_request, *, business, semantic_producer,
                                semantic_reviewer, depth_signals=None,
                                evidence_refs=None):
@@ -67,6 +106,7 @@ def prepare_semantic_transport(raw_request, *, business, semantic_producer,
         return {
             "schema_version": "A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1",
             "status": "HALTED_AT_A1", "a1_result": a1,
+            "inventory_research_handoff": _research_handoff(a1),
             "a2_signal_bundle": None, "a2_result": None,
             "no_run_created": True,
         }
