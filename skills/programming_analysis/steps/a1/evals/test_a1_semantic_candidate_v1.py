@@ -113,6 +113,21 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertEqual(out["blocking_codes"], ["SEMANTIC_PRODUCER_UNAVAILABLE"])
         self.assertIsNone(out["next_capability"])
 
+    def test_raw_envelope_business_drift_fails_closed(self):
+        out = A1.run({"raw_prompt": LOGIN, "business": "SALY"},
+                     business="LF", semantic_producer=producer,
+                     semantic_reviewer=reviewer)
+        self.assertEqual(out["status"], "BLOCKED")
+        self.assertEqual(out["blocking_codes"], ["RAW_ENVELOPE_BUSINESS_CONFLICT"])
+        self.assertIsNone(out["next_capability"])
+
+    def test_raw_envelope_same_business_is_allowed(self):
+        out = A1.run({"raw_prompt": LOGIN, "business": "LF"},
+                     business="LF", semantic_producer=producer,
+                     semantic_reviewer=reviewer)
+        self.assertEqual(out["status"], "VALID_OUTPUT")
+        self.assertEqual(out["business"], "LF")
+
     def test_raw_text_requires_business_context_not_keyword(self):
         out = A1.run(LOGIN, semantic_producer=producer, semantic_reviewer=reviewer)
         self.assertEqual(out["blocking_codes"], ["BUSINESS_SCOPE_NOT_PROVIDED_OR_NOT_LF"])
