@@ -492,47 +492,10 @@ exception when others then
  IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_CURATOR_SQL_TERMINATOR_MISSING'; END IF;
  EXECUTE v_new;
 
- SELECT pg_get_functiondef(
- 'programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure
- ) INTO v_def;
- IF md5(v_def)<>'ab091d641cc1d3d923d20c0db96d9bc5' THEN
-   RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_SOURCE_DRIFT:%',md5(v_def);
- END IF;
- v_new:=replace(v_def,
-  $old$  v_worker jsonb;$old$,
-  $new$  v_worker jsonb;
-  v_original_reports jsonb;$new$);
- IF v_new=v_def THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_DECLARATION_NOT_FOUND'; END IF;
- v_source:=v_new;
- v_new:=replace(v_new,
-  $old$  v_result:=programacion.fn_input_governance_execute(v_pantalla_id,p_consumer);$old$,
-  $new$  v_result:=programacion.fn_input_governance_execute(v_pantalla_id,p_consumer);
-  IF (v_result->>'run_id') ~ '^[0-9]{1,20}$' THEN
-    v_original_reports:=programacion.fn_input_governance_producer_raw_read_v1(
-      (v_result->>'run_id')::bigint);
-  ELSE
-    v_original_reports:=jsonb_build_object(
-      'status','RUN_NOT_IDENTIFIED','raw_reused',false,'research_reexecuted',false,
-      'semantic_pass_authorized',false);
-  END IF;$new$);
- IF v_new=v_source THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_LOOKUP_NOT_FOUND'; END IF;
- v_source:=v_new;
- -- READY/HUMAN_DECISION_REQUIRED/BLOCKED indent differently; match the field
- -- rather than leading whitespace. Gate both original and inserted counts.
- IF (length(v_source)-length(replace(v_source,'''governance_result'',v_result,','')))
-       /length('''governance_result'',v_result,') <> 3
- THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_BRANCH_COUNT_INVALID'; END IF;
- v_new:=replace(v_new,
-  $old$'governance_result',v_result,$old$,
-  $new$'governance_result',v_result,
-      'ig_original_producer_reports',v_original_reports,$new$);
- IF v_new=v_source OR
-    (length(v_new)-length(replace(v_new,'''ig_original_producer_reports'',v_original_reports,','')))
-       /length('''ig_original_producer_reports'',v_original_reports,') <> 3
- THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_PATCH_INVALID'; END IF;
- v_new:=rtrim(v_new)||';';
- IF right(btrim(v_new),1)<> ';' THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_PROFILE_SQL_TERMINATOR_MISSING'; END IF;
- EXECUTE v_new;
+ -- The original Profile resolver already carries the canonical IG output in
+ -- three outcomes: READY/HUMAN_DECISION_REQUIRED/BLOCKED. No second copy
+ -- or new profile hook is needed. Stage 7 attaches the full report inside IG.
+
 END;
 $patch$;
 
@@ -601,9 +564,11 @@ BEGIN
  OR strpos(v_assembly,'validator_evidence_logical_rehydrated')=0
  OR strpos(v_assembly,'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH')=0
  OR strpos(v_assembly,'''semantic_promotion_authorized'',false')=0
+ OR md5(v_profile)<>'ab091d641cc1d3d923d20c0db96d9bc5'
  OR (length(v_profile)-length(replace(v_profile,
-     '''ig_original_producer_reports'',v_original_reports,','')))
-     /length('''ig_original_producer_reports'',v_original_reports,') <> 3
+     '''governance_result'',v_result,','')))
+     /length('''governance_result'',v_result,') <> 3
+ OR strpos(v_profile,'''ig_original_producer_reports''')>0
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_NATIVE_TRANSPORT_NOT_INSTALLED'; END IF;
  IF has_function_privilege('anon','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
  OR has_function_privilege('authenticated','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
