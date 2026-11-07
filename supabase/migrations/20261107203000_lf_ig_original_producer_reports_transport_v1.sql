@@ -580,11 +580,13 @@ END;
 $ig_consolidation_patch$;
 
 DO $post$
-DECLARE v_cur text; v_prop text; v_profile text;
+DECLARE v_cur text; v_prop text; v_profile text; v_executor text; v_assembly text;
 BEGIN
  SELECT pg_get_functiondef('programacion.fn_input_governance_curator_materialize_v1(integer,text,text,boolean)'::regprocedure) INTO v_cur;
  SELECT pg_get_functiondef('programacion.fn_input_governance_materialize_gap_proposals_v1(bigint)'::regprocedure) INTO v_prop;
  SELECT pg_get_functiondef('programacion.fn_lf_profile_input_governance_resolve_v1(text,text,jsonb,text)'::regprocedure) INTO v_profile;
+ SELECT pg_get_functiondef('programacion.fn_input_governance_execute(integer,text)'::regprocedure) INTO v_executor;
+ SELECT pg_get_functiondef('programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)'::regprocedure) INTO v_assembly;
  IF strpos(v_cur,'INSERT INTO programacion.input_governance_producer_raw_v1')=0
  OR strpos(v_prop,'''raw_graph'',g.doc')=0
  OR strpos(v_prop,'ig_evo_graph_total_attested_rules')=0
@@ -595,6 +597,10 @@ BEGIN
  OR strpos(v_prop,'ALL_G1_ATTESTED_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION')=0
  OR strpos(v_prop,'ig_evo_graph_internal_truncated_rule_ids')=0
  OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
+ OR strpos(v_executor,'''ig_consolidated_original_reports'',v_ig_originals')=0
+ OR strpos(v_assembly,'validator_evidence_logical_rehydrated')=0
+ OR strpos(v_assembly,'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH')=0
+ OR strpos(v_assembly,'''semantic_promotion_authorized'',false')=0
  OR (length(v_profile)-length(replace(v_profile,
      '''ig_original_producer_reports'',v_original_reports,','')))
      /length('''ig_original_producer_reports'',v_original_reports,') <> 3
@@ -602,6 +608,9 @@ BEGIN
  IF has_function_privilege('anon','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
  OR has_function_privilege('authenticated','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
  OR has_function_privilege('service_role','programacion.fn_input_governance_producer_raw_read_v1(bigint)'::regprocedure,'EXECUTE')
+ OR has_function_privilege('anon','programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)'::regprocedure,'EXECUTE')
+ OR has_function_privilege('authenticated','programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)'::regprocedure,'EXECUTE')
+ OR has_function_privilege('service_role','programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)'::regprocedure,'EXECUTE')
  OR has_table_privilege('anon','programacion.input_governance_producer_raw_v1','SELECT')
  OR has_table_privilege('authenticated','programacion.input_governance_producer_raw_v1','SELECT')
  OR has_table_privilege('service_role','programacion.input_governance_producer_raw_v1','SELECT')
