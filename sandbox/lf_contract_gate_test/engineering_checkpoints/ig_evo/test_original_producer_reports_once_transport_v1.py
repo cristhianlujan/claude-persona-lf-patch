@@ -23,7 +23,7 @@ class OriginalProducerTransportContract(unittest.TestCase):
         ):
             with self.subTest(sha=sha):
                 self.assertIn(sha, self.sql)
-        self.assertEqual(self.sql.count("SOURCE_DRIFT"), 4)
+        self.assertEqual(self.sql.count("SOURCE_DRIFT"), 3)
 
     def test_one_capture_per_run_with_no_overwrite(self):
         self.assertIn("run_id bigint PRIMARY KEY", self.sql)
@@ -190,19 +190,22 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("NOT_CAPTURED_LEGACY_RUN", self.sql)
         self.assertIn("research_reexecuted',false", self.sql)
 
-    def test_transport_is_existing_profile_input_not_a_new_dispatcher(self):
-        self.assertIn("'ig_original_producer_reports',v_original_reports", self.sql)
-        self.assertIn("fn_lf_profile_input_governance_resolve_v1", self.sql)
-        self.assertIn("fn_input_governance_execute(v_pantalla_id,p_consumer)", self.sql)
-        self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_router", self.sql)
-        self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_prepare_v1", self.sql)
+    def test_profile_receives_one_canonical_governance_payload(self):
+        self.assertIn("fn_lf_profile_input_governance_resolve_v1",self.sql)
+        self.assertIn("md5(v_profile)<>'ab091d641cc1d3d923d20c0db96d9bc5'",self.sql)
+        self.assertIn("/length('''governance_result'',v_result,') <> 3",self.sql)
+        self.assertIn("strpos(v_profile,'''ig_original_producer_reports''')>0",self.sql)
+        self.assertIn("'ig_consolidated_original_reports',v_ig_originals",self.sql)
+        self.assertNotIn("'ig_original_producer_reports',v_original_reports",self.sql)
+        self.assertNotIn("IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_SOURCE_DRIFT",self.sql)
+        self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_router",self.sql)
 
-    def test_profile_raw_is_inserted_in_all_three_outcomes(self):
-        self.assertIn("$old$'governance_result',v_result,$old$", self.sql)
-        self.assertIn("IG_ORIGINAL_REPORT_PROFILE_BRANCH_COUNT_INVALID", self.sql)
-        self.assertNotIn("$old$      'governance_result',v_result,$old$", self.sql)
-        self.assertIn("IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_PATCH_INVALID", self.sql)
-        self.assertIn("/length('''ig_original_producer_reports'',v_original_reports,') <> 3", self.sql)
+    def test_no_new_profile_dispatcher_or_bridge(self):
+        self.assertIn("fn_input_governance_execute(integer,text)",self.sql)
+        self.assertIn("IG_CONSOLIDATION_EXECUTE_SOURCE_DRIFT",self.sql)
+        self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1",self.sql)
+        self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_prepare_v1",self.sql)
+        self.assertNotIn("CREATE OR REPLACE FUNCTION programacion.fn_lf_profile_adapter_input_governance_resolve_v1",self.sql)
 
     def test_no_semantic_pass_or_auth_escalation(self):
         self.assertIn("'semantic_pass_authorized',false", self.sql)
