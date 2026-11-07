@@ -1,10 +1,14 @@
 -- SOURCE-ONLY CANDIDATE. NOT a migration. NOT applied to Supabase.
--- Existing governed route: public.lf_skill_invoke_v1 -> catalog READ_ONLY handler
--- -> pre-existing private.fn_lf_source_investigation_prepare_v1 (D1/D2/planner/D3).
--- Requires separate authorized approval, release and runtime readback before activation.
+-- Proposed INTERNAL preparation helper for a future fully governed
+-- PROGRAMMING_ANALYSIS_LF executor. NOT a registered skill handler.
+-- Uses pre-existing private.fn_lf_source_investigation_prepare_v1
+-- (D1/D2/planner/D3); does not replace the whole A1-A15 skill.
+-- Requires whole-skill dispatcher, authorized binding, review and readback
+-- before a real call; this source-only file is not wired.
 -- DO NOT call directly from Router, A1, a GPT session, or a profile worker running llama.
 -- Existing skill asset PROGRAMMING_ANALYSIS_LF is CANDIDATE_READ_ONLY.
--- Existing operation EJECUCION_SKILL_LF is OP_CANDIDATE. Keep catalog DISABLED.
+-- Existing operation EJECUCION_SKILL_LF is OP_CANDIDATE.
+-- DO NOT register PROGRAMMING_ANALYSIS_LF with this partial D4 helper.
 -- No additional GRANT to supabase_read_only_user, anon or authenticated.
 --
 -- Proposed source must be governed/migrated only AFTER exact-source review.
@@ -32,12 +36,16 @@ BEGIN
     END IF;
 
     v_raw := p_input->>'original_request';
+    IF pg_catalog.jsonb_typeof(p_input->'target_hints') IS DISTINCT FROM 'array' THEN
+        RAISE EXCEPTION 'A1_D4_RESEARCH_INPUT_INVALID';
+    END IF;
+
     IF v_raw IS NULL OR length(pg_catalog.btrim(v_raw)) NOT BETWEEN 3 AND 1000
-       OR v_raw <> pg_catalog.btrim(v_raw)
+
        OR nullif(pg_catalog.btrim(p_input->>'operation_kind'), '') IS NULL
        OR nullif(pg_catalog.btrim(p_input->>'artifact_kind'), '') IS NULL
        OR pg_catalog.jsonb_typeof(p_input->'constraints') IS DISTINCT FROM 'array'
-       OR pg_catalog.jsonb_typeof(p_input->'target_hints') IS DISTINCT FROM 'array'
+
        OR pg_catalog.jsonb_array_length(p_input->'target_hints') < 1
        OR pg_catalog.jsonb_typeof(p_input->'source_refs') IS DISTINCT FROM 'array'
        OR pg_catalog.jsonb_typeof(p_input->'dimensions_to_investigate') IS DISTINCT FROM 'array'
@@ -53,8 +61,10 @@ BEGIN
     END IF;
 
     v_ambiguities := p_input->'open_ambiguities';
-    IF pg_catalog.jsonb_typeof(v_ambiguities) IS DISTINCT FROM 'array'
-       OR pg_catalog.jsonb_array_length(v_ambiguities) < 1
+    IF pg_catalog.jsonb_typeof(v_ambiguities) IS DISTINCT FROM 'array' THEN
+        RAISE EXCEPTION 'A1_D4_MATERIAL_AMBIGUITY_REQUIRED';
+    END IF;
+    IF pg_catalog.jsonb_array_length(v_ambiguities) < 1
        OR EXISTS (
            SELECT 1
            FROM pg_catalog.jsonb_array_elements(v_ambiguities) AS a(item)
@@ -66,9 +76,9 @@ BEGIN
         RAISE EXCEPTION 'A1_D4_MATERIAL_AMBIGUITY_REQUIRED';
     END IF;
 
-    -- Invoked only from the existing governed skill invoker with an authorized
-    -- parent/profile; the procedure itself does not grant authority or read rows.
-    -- SECURITY INVOKER preserves the effective role/ACL of that operation.
+    -- Future whole-skill governed consumer must supply the trusted cursor.
+    -- This helper does not establish a parent/profile receipt on its own.
+    -- SECURITY INVOKER preserves the effective role/ACL of the caller.
     v_preparation := private.fn_lf_source_investigation_prepare_v1(v_raw, 12);
     v_action := v_preparation->>'next_action';
 
@@ -111,22 +121,8 @@ $$;
 REVOKE ALL ON FUNCTION public.lf_skill_h_programming_analysis_inventory_prepare_v1(jsonb)
     FROM PUBLIC, anon, authenticated, supabase_read_only_user, service_role;
 
--- Catalog bind is deliberately DISABLED. It cannot run until the existing
--- EJECUCION_SKILL_LF operation and profile authority are independently released.
-INSERT INTO public.lf_skill_catalog_v1
- (skill_code, description, required_operation, handler_fn, effect, input_required, status)
-VALUES (
- 'PROGRAMMING_ANALYSIS_LF',
- 'A1 existing canonical D4 source preparation only; metadata read-only, A2 prohibited',
- 'EJECUCION_SKILL_LF',
- 'lf_skill_h_programming_analysis_inventory_prepare_v1',
- 'READ_ONLY',
- ARRAY['schema_version','business','original_request','request_sha256',
-       'open_ambiguities','constraints','target_hints'],
- 'DISABLED'
-)
-ON CONFLICT (skill_code) DO NOTHING;
-
--- A conflict is not silently approved: deployment process must verify
--- the registered row is DISABLED, READ_ONLY, and bound to the exact handler.
--- No profile write authority, grant, release, ticket, worker or RUN is created.
+-- This is a candidate INTERNAL helper only.
+-- Do NOT INSERT PROGRAMMING_ANALYSIS_LF into lf_skill_catalog_v1 here:
+-- its whole A1-A15 executor is not yet released and D4 alone is not the skill.
+-- No catalog registration, profile authority, grant, release, ticket,
+-- worker deployment, SQL invocation or RUN is created by this source.
