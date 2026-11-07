@@ -131,6 +131,20 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("CAPTURED_AS_EMITTED", self.sql)
         self.assertIn("EMITTED_IN_THIS_RUN", self.sql)
 
+    def test_each_producer_hash_is_derived_from_stored_original(self):
+        self.assertIn("'producer_original_sha256',jsonb_build_object(", self.sql)
+        for original in (
+            "v_report.original_curator_output_sha256",
+            "v_pm->'ig_evo_r1_diagnostics'",
+            "v_pm->'ig_evo_r2_r6_diagnostics'",
+            "v_graph",
+        ):
+            with self.subTest(original=original):
+                self.assertIn(original, self.sql)
+        self.assertIn("CASE WHEN v_r1_emitted THEN programacion.fn_v09_sha256_jsonb(", self.sql)
+        self.assertIn("CASE WHEN v_r2_r6_emitted THEN programacion.fn_v09_sha256_jsonb(", self.sql)
+        self.assertIn("CASE WHEN v_g1_emitted THEN programacion.fn_v09_sha256_jsonb(", self.sql)
+
     def test_rebind_actual_output_not_inferred_from_strategy_label(self):
         self.assertIn(
             "v_curator_strategy:=v_report.original_curator_output#>>"
