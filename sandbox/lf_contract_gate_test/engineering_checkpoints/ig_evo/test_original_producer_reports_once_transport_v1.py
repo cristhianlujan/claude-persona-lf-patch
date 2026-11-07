@@ -126,6 +126,13 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_router", self.sql)
         self.assertNotIn("CREATE OR REPLACE FUNCTION public.lf_profile_native_bridge_prepare_v1", self.sql)
 
+    def test_profile_raw_is_inserted_in_all_three_outcomes(self):
+        self.assertIn("$old$'governance_result',v_result,$old$", self.sql)
+        self.assertIn("IG_ORIGINAL_REPORT_PROFILE_BRANCH_COUNT_INVALID", self.sql)
+        self.assertNotIn("$old$      'governance_result',v_result,$old$", self.sql)
+        self.assertIn("IG_ORIGINAL_REPORT_PROFILE_TRANSPORT_PATCH_INVALID", self.sql)
+        self.assertIn("/length('''ig_original_producer_reports'',v_original_reports,') <> 3", self.sql)
+
     def test_no_semantic_pass_or_auth_escalation(self):
         self.assertIn("'semantic_pass_authorized',false", self.sql)
         self.assertIn("'production_authorized',false", self.sql)
