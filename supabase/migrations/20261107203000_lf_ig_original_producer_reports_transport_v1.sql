@@ -190,6 +190,136 @@ $raw_get$;
 REVOKE ALL ON FUNCTION programacion.fn_input_governance_producer_raw_read_v1(bigint)
   FROM PUBLIC,anon,authenticated,service_role;
 
+-- A read-only final IG report assembly, not another Curator, Validator or
+-- execution path. Called only once the existing IG execute has established a
+-- COMPLETED / current RUN and computed its official stage gate.
+CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1(
+ p_run_id bigint,p_stage_gate jsonb)
+RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path TO 'pg_catalog','programacion'
+AS $ig_original_consolidate$
+DECLARE
+ v_run programacion.input_readiness_runs%ROWTYPE;
+ v_curator_raw jsonb;
+ v_validator_originals jsonb := '[]'::jsonb;
+ v_logical jsonb;
+ v_receipt_digest text;
+ v_n integer := 0;
+ a record;
+BEGIN
+ IF p_run_id IS NULL OR p_run_id<1 THEN
+   RAISE EXCEPTION 'IG_CONSOLIDATION_RUN_REQUIRED';
+ END IF;
+ SELECT * INTO v_run FROM programacion.input_readiness_runs WHERE id=p_run_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'IG_CONSOLIDATION_RUN_NOT_FOUND:%',p_run_id; END IF;
+ IF v_run.status IS DISTINCT FROM 'COMPLETED'
+    OR v_run.invalidated_at IS NOT NULL
+    OR NOT programacion.fn_input_readiness_run_is_current(p_run_id)
+ THEN
+   RETURN jsonb_build_object('status','RUN_NOT_CURRENT','run_id',p_run_id,
+     'reports_transported',false,'semantic_pass_authorized',false,
+     'production_authorized',false);
+ END IF;
+ IF jsonb_typeof(p_stage_gate) IS DISTINCT FROM 'object'
+    OR p_stage_gate->>'run_id' IS DISTINCT FROM p_run_id::text
+    OR p_stage_gate->>'run_current' IS DISTINCT FROM 'true'
+ THEN
+   RAISE EXCEPTION 'IG_CONSOLIDATION_STAGE_GATE_NOT_BOUND:%',p_run_id;
+ END IF;
+
+ -- Stored Curator original already includes R1/R2-R6/G1 exactly as emitted.
+ -- A legacy missing archive is *reported*, never regenerated from R sources.
+ v_curator_raw:=programacion.fn_input_governance_producer_raw_read_v1(p_run_id);
+ IF v_curator_raw->>'status' IN ('RUN_STALE','RUN_NOT_CURRENT')
+ THEN RAISE EXCEPTION 'IG_CONSOLIDATION_CURATOR_READBACK_STALE:%',p_run_id; END IF;
+ IF v_curator_raw IS NULL OR v_curator_raw->>'status' IS NULL
+ THEN RAISE EXCEPTION 'IG_CONSOLIDATION_CURATOR_READBACK_UNRESOLVED:%',p_run_id; END IF;
+
+ -- Every validator assessment is read from its own original stored row.
+ -- Rehydration ONLY looks up an already stored assertion set by SHA;
+ -- there is no validator rerun or reconstructed source investigation.
+ FOR a IN
+   SELECT * FROM programacion.input_family_assessments
+    WHERE run_id=p_run_id ORDER BY family_code
+ LOOP
+   v_n:=v_n+1;
+   IF a.validator_outcome IS DISTINCT FROM 'PASS' OR a.validator_identity IS NULL
+     THEN RAISE EXCEPTION 'IG_CONSOLIDATION_VALIDATOR_NOT_TERMINAL:%:%',
+       p_run_id,a.family_code;
+   END IF;
+   v_logical:=programacion.fn_input_validator_evidence_rehydrate_v1(
+     a.validator_evidence);
+   IF jsonb_typeof(v_logical->'assertions') IS DISTINCT FROM 'array'
+       OR jsonb_array_length(v_logical->'assertions')=0
+       OR v_logical->>'curator_sha256' IS DISTINCT FROM a.curator_sha256
+       OR v_logical->>'source_snapshot_sha256'
+          IS DISTINCT FROM v_run.source_snapshot_sha256
+   THEN RAISE EXCEPTION 'IG_CONSOLIDATION_VALIDATOR_ORIGINAL_MISSING_OR_STALE:%:%',
+        p_run_id,a.family_code;
+   END IF;
+   -- Match the exact logical receipt digest built by the installed
+   -- fn_guard_input_family_assessment_update BEFORE storage compaction.
+   v_receipt_digest:=programacion.fn_v09_sha256_jsonb(jsonb_build_object(
+      'curator_sha256',a.curator_sha256,
+      'semantic_depth_sha256',a.semantic_depth_sha256,
+      'source_snapshot_sha256',v_run.source_snapshot_sha256,
+      'validator_outcome',a.validator_outcome,
+      'validator_findings',a.validator_findings,
+      'validator_evidence',v_logical,
+      'validator_identity',a.validator_identity,
+      'validator_assessed_at',a.validator_assessed_at));
+   IF v_receipt_digest IS DISTINCT FROM a.validator_sha256
+   THEN RAISE EXCEPTION 'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH:%:%',
+        p_run_id,a.family_code;
+   END IF;
+   v_validator_originals:=v_validator_originals || jsonb_build_array(
+     jsonb_build_object(
+       'family_code',a.family_code,
+       'original_assessment_row',to_jsonb(a),
+       'validator_evidence_logical_rehydrated',v_logical,
+       'validator_evidence_logical_sha256',
+          programacion.fn_v09_sha256_jsonb(v_logical),
+       'validator_receipt_sha256_verified',v_receipt_digest,
+       'validator_original_storage','PERSISTED_AS_IS_PLUS_SHA_CHECKED_REHYDRATION'));
+ END LOOP;
+ IF v_n IS DISTINCT FROM v_run.family_count
+    OR (p_stage_gate#>>'{summary,validator_pass}')::integer IS DISTINCT FROM v_n
+ THEN RAISE EXCEPTION 'IG_CONSOLIDATION_FAMILY_CARDINALITY_MISMATCH:% expected=% actual=%',
+       p_run_id,v_run.family_count,v_n;
+ END IF;
+ RETURN jsonb_build_object(
+    'schema_version','IG_CONSOLIDATED_ORIGINAL_REPORTS_V1',
+    'status',CASE WHEN v_curator_raw->>'status'='ORIGINALS_CAPTURED'
+        THEN 'ORIGINAL_EMISSIONS_AND_VALIDATOR_EVIDENCE_PRESENT'
+        ELSE 'VALIDATOR_EVIDENCE_PRESENT_CURATOR_ORIGINAL_INCOMPLETE' END,
+    'run_id',p_run_id,
+    'screen_id',v_run.pantalla_id,
+    'run_status',v_run.status,
+    'source_snapshot_sha256',v_run.source_snapshot_sha256,
+    'universe_snapshot_sha256',v_run.universe_snapshot_sha256,
+    'curator_originals',v_curator_raw,
+    'curator_original_coverage_status',v_curator_raw->>'status',
+    'validator_original_rows',v_validator_originals,
+    'validator_original_count',v_n,
+    'validator_original_rehydration','SHA_VERIFIED_FROM_STORED_ASSERTION_SET',
+    'validator_semantic_mode',v_run.scope->>'validator_semantic_mode',
+    'validator_semantic_comparison_families',
+       coalesce(v_run.scope->'validator_semantic_comparison_families','[]'::jsonb),
+    'semantic_promotion_authorized',false,
+    'semantic_quality_evaluated_here',false,
+    'independent_semantic_judgement_here','NOT_TESTED',
+    'stage_gate',p_stage_gate,
+    'full_qa_stage_closed',p_stage_gate->'full_qa_stage_closed',
+    'full_production_stage_closed',p_stage_gate->'full_production_stage_closed',
+    'raw_reused',true,'research_reexecuted',false,
+    'model_has_read_report',false,
+    'production_authorized',false);
+END;
+$ig_original_consolidate$;
+REVOKE ALL ON FUNCTION
+ programacion.fn_input_governance_original_consolidate_v1(bigint,jsonb)
+ FROM PUBLIC,anon,authenticated,service_role;
+
 -- Modify only currently deployed sources with exact SHA pin, not an alternate
 -- Curator/Inspector implementation. Every count and sentinel is fail-closed.
 DO $patch$
