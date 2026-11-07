@@ -42,6 +42,9 @@ def _grounding_errors(raw_text: str, candidate: dict) -> list[str]:
         quote, start, end = s["quote"], s["start"], s["end"]
         if raw_text[start:end] != quote:
             errors.append("EVIDENCE_SPAN_MISMATCH")
+    for item in candidate["explicit_constraints"]:
+        if item["text"] not in raw_text:
+            errors.append("EXPLICIT_CONSTRAINT_UNGROUNDED")
     for mention in candidate["target"]["raw_mentions"]:
         if mention not in raw_text:
             errors.append("RAW_MENTION_UNGROUNDED")
@@ -121,7 +124,7 @@ def to_structured_input(raw_text: str, business: str, reviewed: dict) -> dict:
         "request_identity": {"request_ref": ref, "request_kind": "USER_REQUEST"},
         "objective": {"problem_statement": raw_text,
                       "desired_outcome": candidate["desired_outcome"]},
-        "target_hints": mentioned,
+        "target_hints": mentioned[:1],
         "source_refs": [ref],
         "provided_facts": [],
         "constraints": [x["text"] for x in candidate["explicit_constraints"]],
