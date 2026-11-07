@@ -559,7 +559,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config,
           deps,
           config.inputGovernanceSlug,
-          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER },
+          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER, ticket: runtimeTicket },
           config.recurationTimeoutMs,
         );
 
