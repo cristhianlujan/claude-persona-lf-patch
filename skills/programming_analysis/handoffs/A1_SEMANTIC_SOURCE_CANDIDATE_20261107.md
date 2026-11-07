@@ -40,3 +40,13 @@ El A1 devuelve REQUEST_CONTEXT_V1 como payload y el anexo externo INTENT_ANALYSI
 - Ejecutar tests Python y casos holdout exact-HEAD. Tests sintéticos no demuestran semántica real.
 - Endurecer resistencia a productor/revisor falsificado, contradicciones de lenguaje y evidencia inventada.
 - Mantener PR DRAFT sin merge ni declaración READY.
+
+## Lote A1-II — Adaptador del modelo existente y prueba Python (2026-11-07)
+
+- Se añadió `steps/a1/adapters/llama_semantic_callbacks_candidate_v1.py`: callbacks productor/revisor sobre `LlamaHTTPClient.chat` EXISTENTE, configurado por el consumidor. No se creó motor ni cliente nuevo, ni se llama al modelo durante importación. Dos objetos cliente diferentes son obligatorios, pero NO garantizan independencia operacional.
+- Se añadió `steps/a1/evals/test_a1_llama_semantic_callbacks_candidate_v1.py`: 6 pruebas de contrato/transporte con FakeClient (no inferencia real). Sumadas a 12 pruebas nuevas de interpretación sintética y a 35 preexistentes = 53 tests A1.
+- Corrida real Python GitHub Actions, workflow temporal `LF Analysis A1 Semantic Source Tests`, commit `f2d888bede482e816ce1480f8186de98fec2f2cf`, run `42345625162`, job `128322611332`: A1 **53/53 PASS**, A2 **33/33 PASS**. El workflow usó Python 3.12 y jsonschema 4.23.0; ambas suites source-only. No modelo real, no autoridad de fuente ni A3.
+- La primera forma del workflow nuevo incluía `pull_request` y falló PASE `FAIL_UNAUTHORIZED_GITHUB_PATH` / entrada PR extra. Se corrigió retirando ese trigger, pero el path `.github/workflows/` seguía prohibido. Se revirtió **el workflow temporal que introdujo este lote** (commit `a5d5b1aa459451f5778c0904aa08f303dcf74bfa`) sin tocar controles centrales ni permitir bypass.
+- PASE final post-reversión: run `42345765111`, `completed/success`. Los 7 archivos principales de A1/A2/costura mantuvieron mismos SHA de blob que en el commit con Python PASS.
+- Se consultó EKB `PROGRAMMING-ANALYSIS-A14-EVIDENCE-TIER-FALSE-READY-001` y `PROGRAMMING-ANALYSIS-STAGE-SOURCE-ATTESTATION-GAP-001`: pruebas deterministas no equivalen a modelo real/juez independiente y no autorizan READY.
+- **Pendiente:** proveedor Llama accesible y configurado para ejecutar `LlamaHTTPClient.chat` realmente, revisión verdaderamente independiente con evidencia identificable, holdouts de negación/paráfrasis/múltiples acciones y aceptación de resultados. No abrir RUN hija, no Router, no update Supabase; mantener PR DRAFT.
