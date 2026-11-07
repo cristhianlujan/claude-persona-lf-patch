@@ -202,7 +202,9 @@ DECLARE
  v_run programacion.input_readiness_runs%ROWTYPE;
  v_curator_raw jsonb;
  v_validator_originals jsonb := '[]'::jsonb;
+ v_validator_assertion_sets jsonb := '{}'::jsonb;
  v_logical jsonb;
+ v_assertion_sha text;
  v_receipt_digest text;
  v_n integer := 0;
  a record;
@@ -272,11 +274,28 @@ BEGIN
    THEN RAISE EXCEPTION 'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH:%:%',
         p_run_id,a.family_code;
    END IF;
+   -- Lossless de-duplication: include the EXACT original assertions just once
+   -- for each SHA. Every family retains its original row and receipt.
+   -- No summary, truncation or recreated assertion is permitted.
+   v_assertion_sha:=programacion.fn_v09_sha256_jsonb(v_logical->'assertions');
+   IF a.validator_evidence ? 'assertion_set_sha256'
+      AND a.validator_evidence->>'assertion_set_sha256'
+           IS DISTINCT FROM v_assertion_sha
+   THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_REFERENCE_SHA_MISMATCH:%:%',
+       p_run_id,a.family_code; END IF;
+   IF NOT (v_validator_assertion_sets ? v_assertion_sha) THEN
+     v_validator_assertion_sets:=v_validator_assertion_sets ||
+       jsonb_build_object(v_assertion_sha,v_logical->'assertions');
+   ELSIF v_validator_assertion_sets->v_assertion_sha
+             IS DISTINCT FROM v_logical->'assertions'
+   THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_SET_ALIAS_CONFLICT:%:%',
+       p_run_id,a.family_code;
+   END IF;
    v_validator_originals:=v_validator_originals || jsonb_build_array(
      jsonb_build_object(
        'family_code',a.family_code,
        'original_assessment_row',to_jsonb(a),
-       'validator_evidence_logical_rehydrated',v_logical,
+       'validator_assertion_set_sha256',v_assertion_sha,
        'validator_evidence_logical_sha256',
           programacion.fn_v09_sha256_jsonb(v_logical),
        'validator_receipt_sha256_verified',v_receipt_digest,
@@ -301,7 +320,13 @@ BEGIN
     'curator_original_coverage_status',v_curator_raw->>'status',
     'validator_original_rows',v_validator_originals,
     'validator_original_count',v_n,
-    'validator_original_rehydration','SHA_VERIFIED_FROM_STORED_ASSERTION_SET',
+    'validator_assertion_sets_originals_by_sha256',v_validator_assertion_sets,
+    'validator_unique_assertion_set_count',
+      (select count(*) from jsonb_object_keys(v_validator_assertion_sets) k),
+    'validator_original_rehydration','LOSSLESS_SHA_REFERENCE_TO_FULL_ORIGINAL_ASSERTIONS',
+    'validator_original_recovery_rule',
+      'for each original_assessment_row: compact validator_evidence replaces assertion_set_sha256 with assertions from validator_assertion_sets_originals_by_sha256; inline assertions are unchanged',
+    'validator_assertion_payload_truncated',false,
     'validator_semantic_mode',v_run.scope->>'validator_semantic_mode',
     'validator_semantic_comparison_families',
        coalesce(v_run.scope->'validator_semantic_comparison_families','[]'::jsonb),
