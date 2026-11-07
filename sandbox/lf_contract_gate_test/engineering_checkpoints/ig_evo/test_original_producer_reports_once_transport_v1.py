@@ -231,6 +231,8 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("IG_CONSOLIDATION_EXECUTE_SOURCE_DRIFT", self.sql)
         self.assertIn("v_ig_originals:=programacion.fn_input_governance_original_consolidate_v1(v_run,v_stage)", self.sql)
         self.assertIn("'ig_consolidated_original_reports',v_ig_originals", self.sql)
+        self.assertIn("'ig_consolidated_original_reports_sha256',programacion.fn_v09_sha256_jsonb(v_ig_originals)",self.sql)
+        self.assertIn("'ig_consolidated_original_reports_characters',length(v_ig_originals::text)",self.sql)
         self.assertIn("'ig_original_reports_complete'", self.sql)
         self.assertIn("IG_CONSOLIDATION_STAGE_GATE_NOT_BOUND", self.sql)
 
