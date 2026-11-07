@@ -96,6 +96,8 @@ BEGIN
    'graph_eligible_rule_count',coalesce((v_pm->>'ig_evo_graph_total_effective_rules')::integer,0),
    'graph_discovered_root_count',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
    'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb)),
+   'graph_internal_truncation_count',coalesce((v_pm->>'ig_evo_graph_internal_truncation_count')::integer,0),
+   'graph_internal_truncated_rule_ids',coalesce(v_pm->'ig_evo_graph_internal_truncated_rule_ids','[]'::jsonb),
    'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
       < coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
    'raw_reused',true,'research_reexecuted',false,
@@ -185,6 +187,26 @@ BEGIN
                        'ig_evo_graph_total_effective_rules',v_ig_evo_graph_total,
                        'ig_evo_graph_captured_rule_count',jsonb_array_length(v_ig_evo_graph_index),$new$);
  IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_METRICS_REBIND_MISSING'; END IF;
+
+ -- A root graph can itself be truncated by its *internal* exploration budget.
+ -- Preserve the original graph and mark that loss explicitly, using already
+ -- materialized JSON, not a second graph invocation.
+ v_source:=v_new;
+ v_new:=replace(v_new,
+   $old$'ig_evo_graph_captured_rule_count',jsonb_array_length(v_ig_evo_graph_index),$old$,
+   $new$'ig_evo_graph_captured_rule_count',jsonb_array_length(v_ig_evo_graph_index),
+    'ig_evo_graph_internal_truncation_count',(select count(*) from jsonb_array_elements(v_ig_evo_graph_index) q(value) where q.value->'raw_graph'->>'graph_limit_hit'='true'),
+    'ig_evo_graph_internal_truncated_rule_ids',(select coalesce(jsonb_agg((q.value->>'root_rule_id')::integer order by (q.value->>'root_rule_id')::integer),'[]'::jsonb) from jsonb_array_elements(v_ig_evo_graph_index) q(value) where q.value->'raw_graph'->>'graph_limit_hit'='true'),$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_INTERNAL_TRUNCATION_METADATA_MISSING'; END IF;
+ v_source:=v_new;
+ v_new:=replace(v_new,
+   $old$'ig_evo_graph_index_status','ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS',$old$,
+   $new$'ig_evo_graph_index_status',case
+        when exists(select 1 from jsonb_array_elements(v_ig_evo_graph_index) g(value)
+          where g.value->'raw_graph'->>'graph_limit_hit'='true')
+          then 'ALL_EFFECTIVE_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION'
+        else 'ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS' end,$new$);
+ IF v_new=v_source THEN RAISE EXCEPTION 'IG_G1_TRUNCATION_STATUS_MISSING'; END IF;
  IF strpos(v_new,'order by rule_id limit 8')>0
   OR strpos(v_new,'jsonb_array_length(v_ig_evo_graph_index)>8')>0
   OR strpos(v_new,'TRUNCATED_SEMANTIC_REVIEW_REQUIRED')>0
@@ -297,6 +319,8 @@ BEGIN
  OR strpos(v_prop,'ig_evo_graph_total_effective_rules')=0
  OR strpos(v_prop,'ALL_CANONICALLY_EFFECTIVE_SCREEN_RULES')=0
  OR strpos(v_prop,'ALL_EFFECTIVE_SCREEN_RULES_CAPTURED_NOT_SEMANTIC_PASS')=0
+ OR strpos(v_prop,'ALL_EFFECTIVE_RULE_ROOTS_CAPTURED_WITH_INTERNAL_TRUNCATION')=0
+ OR strpos(v_prop,'ig_evo_graph_internal_truncated_rule_ids')=0
  OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
  OR strpos(v_profile,'''ig_original_producer_reports'',v_original_reports')=0
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_NATIVE_TRANSPORT_NOT_INSTALLED'; END IF;
