@@ -292,3 +292,41 @@ format-only PR human merge, manual v3 workflow, exact SHA-pin fixture,
 actual pytest execution against new HEAD, original PG08 C3-C8, PG09 N+1
 decision lineage, PG10, PG11, PG12 `pg12_test_*`, PG13 and PG14
 `pg14_test_*` readback. No end-to-end PASS.
+
+
+## 2026-11-06 — SHA-fixed actual N+1 v3 from sandbox run #42333657311
+
+- Sandbox repair PR #47 merged into main commit
+  `bc74940727f1bb51a076f52a4b20fb5ed00647c8`.
+- Manual v3 evidence [run #42333657311](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42333657311)
+  completed **SUCCESS** (1 attempt). Evidence artifact
+  `ex5c-real-sandbox-format-remediation-v3`, artifact ID `13558129856`.
+  Generated evidence PR [#48](https://github.com/paulozterra/lf-programming-sandbox/pull/48),
+  pending Paulo merge.
+- Exact `lf-evidence-bundle-v3.json`: **225,780 UTF-8 bytes**;
+  independently recalculated SHA-256
+  `417b504380e4ebe9f4345b2b33c21d6a8f0d0a05b1e51ef2a86de3822bc09ec0`.
+  Confirmed identical to generated sidecar and copied to
+  `fixtures/lf-evidence-bundle-v3.json`. v1/v2 unchanged.
+- Original N `e76b213...`: google-java-format v1.30.0 `--aosp` exit 1,
+  **18 baseline findings**. Candidate N+1: same formatter exit **0**,
+  **0 candidate findings**. Both `-Xlint:all` compilers had **0
+  findings**. All **9** no-debug compiled class outputs are byte-equivalent.
+  Maven verify passed and HTTP smoke returned 200/201/200/204/404.
+- `pg07_ex5c_format_remediation_v3_adapter_v1.py` now pins exact v3 SHA
+  and Git merge-commit identity, validating all raw Git blob/tree/commit,
+  complete `.class` contents, compiler observations, Maven and smoke bodies.
+- `test_pg07_ex5c_format_remediation_v3_adapter_v1.py` contains fixture-based
+  tests of byte-level integrity and **calls the unmodified PG06 C4 and PG08
+  C1/C2 original producers**. Expected C2 diagnostic:
+  `REPORTED_NO_NEW_BLOCKERS_UNVERIFIED`, *not* admitted PASS. Negative
+  tests reject wrong bundle SHA and changes to class bytes, even with
+  a replacement SHA supplied.
+- The exact LF PR pytest run on this new HEAD is **NOT YET OBSERVED**.
+  PASE routing SUCCESS (when available) does **NOT** qualify these
+  Python tests. Later original PG08 C3-C8, PG09 N+1 and PG10-PG14
+  readback/attestation chain remain unproven; PG12/PG14
+  `*_READBACK_PASS` lines are NOT available for this N+1.
+
+**Safety:** status `REAL_SANDBOX_UNAUTHENTICATED`, authority flags false,
+no new model calls, no production writes. LF PR #3685 remains draft.
