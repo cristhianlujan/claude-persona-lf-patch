@@ -1,0 +1,399 @@
+{
+  "schema_version": "IG_EVO_INTENT_ANALYSIS_V1_CANDIDATE",
+  "artifact_role": "MODEL_DERIVED_SEMANTIC_FIXTURE_NOT_RUNTIME_RECEIPT",
+  "execution_mode": "CURRENT_CONTEXT_MODEL_REVIEW_NOT_INDEPENDENT",
+  "context_sha256": null,
+  "context_binding_status": "NOT_ATTESTED_ROLE_CANNOT_INVOKE_GRAPH_RPC_42501",
+  "source_scope": {
+    "pantalla_id": 51,
+    "screen_code": "B2B-AUTH-001",
+    "rule_id": 440,
+    "rule_code": "B2B-RULE-AUTH-021",
+    "rule_status": "CANDIDATO",
+    "graph_function": "programacion.fn_ig_evo_rule_graph_inventory_v1(integer,integer,integer)",
+    "source_authority": "READ_ONLY_DB_ROW_READBACK_2026-11-07",
+    "linked_policies": [
+      {
+        "role": "rate_limit_policy_id",
+        "id": 1,
+        "code": "RATE-B2B-LOGIN",
+        "source_status": "VIGENTE",
+        "screen_binding_status": "CANDIDATO",
+        "declared_values": {
+          "max_requests": 5,
+          "window_seconds": 900,
+          "burst_limit": 5,
+          "scope_key": "IP_USER"
+        },
+        "runtime_enforcement_verified": false
+      },
+      {
+        "role": "anti_bot_security_policy_id",
+        "id": 17,
+        "code": "SEC-B2B-LOGIN-ANTIBOT",
+        "source_status": "VIGENTE",
+        "screen_binding_status": "CANDIDATO",
+        "declared_values": {
+          "server_side_verification": true,
+          "frontend_only": "DENY",
+          "qa_required_before_active": true
+        },
+        "runtime_enforcement_verified": false
+      },
+      {
+        "role": "abuse_security_policy_id",
+        "id": 22,
+        "code": "SEC-B2B-AUTH-ABUSE-PROTECTION",
+        "source_status": "CANDIDATO",
+        "screen_binding_status": "CANDIDATO",
+        "declared_values": {
+          "distributed_attack_detection": "REQUIRED",
+          "single_signal_hard_lockout": "DENY",
+          "shared_ip_false_positive_mitigation": "REQUIRED"
+        },
+        "runtime_enforcement_verified": false
+      }
+    ]
+  },
+  "candidate_signals": [
+    {
+      "signal_id": "S01",
+      "intent_role": "PRE_AUTH_CONTROL_CHAIN",
+      "expected_behavior": "Each Login attempt must undergo rate-limit, anti-bot and abuse checks BEFORE an authentication response may grant access.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:descripcion",
+          "verbatim_anchor": "Cada intento de Login debe pasar por los controles centrales de rate limit, anti-bot y protección contra abuso antes de que una respuesta de autenticación pueda conceder acceso."
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:descripcion; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY",
+        "RATE_LIMIT"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S02",
+      "intent_role": "MULTI_SIGNAL_CONTEXT",
+      "expected_behavior": "When applicable, evaluate available authorized network, resolved-account, request-pattern, bot-risk and permitted technical-context signals; 'puede combinar' is not an all-five-signals MUST.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:descripcion",
+          "verbatim_anchor": "La evaluación puede combinar señales de red/IP, cuenta resuelta cuando exista, patrón de solicitudes, riesgo de automatización y contexto técnico permitido."
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:descripcion; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S03",
+      "intent_role": "NO_SINGLE_COUNTER_DEPENDENCY",
+      "expected_behavior": "A single counter must not be the sole defense; check independently sufficient abuse controls for changing-origin and distributed attempts.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:descripcion",
+          "verbatim_anchor": "No se debe depender de un único contador"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:descripcion; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY",
+        "RATE_LIMIT"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S04",
+      "intent_role": "NO_ATTACKER_TRIGGERED_PERMANENT_LOCKOUT",
+      "expected_behavior": "A single attacker-triggerable signal must not permanently lock an account; protect legitimate customers on shared networks.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:descripcion",
+          "verbatim_anchor": "ni bloquear definitivamente una cuenta solo por una señal que un atacante pueda provocar."
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:descripcion; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S05",
+      "intent_role": "CENTRAL_POLICY_NUMBERS",
+      "expected_behavior": "Rule 440 must not invent numeric thresholds; consume the centrally governed rate-limit policy for the functional operation.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:descripcion",
+          "verbatim_anchor": "Los límites numéricos se obtienen exclusivamente de las políticas centrales y no se almacenan en esta regla."
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:descripcion; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "RATE_LIMIT"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S06",
+      "intent_role": "SERVER_SIDE_BOT_VERIFICATION",
+      "expected_behavior": "Anti-bot token verification is server-side, not frontend-only; the declared config requires QA before activation, but implementation is not proven.",
+      "evidence_type": "GOVERNED_POLICY_REFERENCE",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.politicas_seguridad:17:policy_config:server_side_verification",
+          "verbatim_anchor": "true"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.politicas_seguridad:17:policy_config:server_side_verification; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "VIGENTE_POLICY_DECLARATION_NOT_RUNTIME_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [
+        "anti_bot_security_policy_id"
+      ],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S07",
+      "intent_role": "DISTRIBUTED_ATTACK_DETECTION",
+      "expected_behavior": "Distributed attack detection is required by candidate abuse policy 22; do not assert deployment or coverage of all distributed attack variants.",
+      "evidence_type": "GOVERNED_POLICY_REFERENCE",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.politicas_seguridad:22:policy_config:distributed_attack_detection",
+          "verbatim_anchor": "REQUIRED"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.politicas_seguridad:22:policy_config:distributed_attack_detection; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_POLICY_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [
+        "abuse_security_policy_id"
+      ],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S08",
+      "intent_role": "SHARED_IP_FALSE_POSITIVE_MITIGATION",
+      "expected_behavior": "Mitigate false positives for legitimate users behind shared NAT; an IP-only hard lockout is denied by candidate policy 22.",
+      "evidence_type": "GOVERNED_POLICY_REFERENCE",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.politicas_seguridad:22:policy_config:shared_ip_false_positive_mitigation",
+          "verbatim_anchor": "REQUIRED"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.politicas_seguridad:22:policy_config:shared_ip_false_positive_mitigation; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_POLICY_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [
+        "abuse_security_policy_id"
+      ],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S09",
+      "intent_role": "NO_CREDENTIAL_VALIDITY_DISCLOSURE",
+      "expected_behavior": "Abuse-control responses must not reveal whether credentials/account exist; this is declared in policy 22, not runtime-proven.",
+      "evidence_type": "GOVERNED_POLICY_REFERENCE",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.politicas_seguridad:22:policy_config:credential_validity_disclosure_during_abuse_control",
+          "verbatim_anchor": "DENY"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.politicas_seguridad:22:policy_config:credential_validity_disclosure_during_abuse_control; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_POLICY_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [
+        "abuse_security_policy_id"
+      ],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    },
+    {
+      "signal_id": "S10",
+      "intent_role": "PROVIDER_CALIBRATION_PENDING",
+      "expected_behavior": "Provider calibration and operational thresholds remain pending; no completion or security PASS is justified.",
+      "evidence_type": "EXPLICIT_RULE_STATEMENT",
+      "source_locations": [
+        {
+          "source_ref": "lf_ops.reglas:440:pendiente_detalle",
+          "verbatim_anchor": "PENDING_PROVIDER_CALIBRATION"
+        }
+      ],
+      "reasoning": "Grounded in lf_ops.reglas:440:pendiente_detalle; source declaration does not establish observed runtime behavior.",
+      "confidence": "SOURCE_GROUNDED_CANDIDATE",
+      "authority_status": "CANDIDATE_RULE_NOT_OPERATIONAL_PROOF",
+      "candidate_family_codes": [
+        "SECURITY"
+      ],
+      "family_registry_resolution": "NOT_TESTED_REQUIRES_CURRENT_RUN_REGISTRY",
+      "graph_edge_refs": [],
+      "resolution": "UNMATCHED_RESEARCH_REQUIRED",
+      "unresolved_reason": "EXACT_GRAPH_MANIFEST_AND_INDEPENDENT_VALIDATOR_NOT_EXECUTED"
+    }
+  ],
+  "test_scenarios": [
+    {
+      "scenario_id": "T01",
+      "kind": "POSITIVE",
+      "scenario": "LEGITIMATE_LOGIN_SHARED_NAT",
+      "expected_behavior": "Legitimate users sharing one IP must not be locked out solely by that IP; use account/pattern context.",
+      "related_signal_ids": [
+        "S04",
+        "S08"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T02",
+      "kind": "NEGATIVE",
+      "scenario": "ONE_ACCOUNT_MULTIPLE_IPS",
+      "expected_behavior": "Repeated failed attempts for one subject from different IPs must not trivially bypass protection.",
+      "related_signal_ids": [
+        "S03",
+        "S07"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T03",
+      "kind": "NEGATIVE",
+      "scenario": "ONE_IP_MULTIPLE_SUBJECTS",
+      "expected_behavior": "Distinct targets behind one origin must trigger relevant abuse controls without permanent IP-only denial.",
+      "related_signal_ids": [
+        "S02",
+        "S04"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T04",
+      "kind": "ADVERSARIAL",
+      "scenario": "SKIP_ANTI_BOT_ON_ALT_PATH",
+      "expected_behavior": "An alternative Login path or replayed client token must not grant access without server-side anti-bot validation.",
+      "related_signal_ids": [
+        "S01",
+        "S06"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T05",
+      "kind": "ADVERSARIAL",
+      "scenario": "CONCURRENT_LIMIT_BOUNDARY",
+      "expected_behavior": "Parallel attempts across the configured rate window must not bypass atomic counter enforcement.",
+      "related_signal_ids": [
+        "S03",
+        "S05"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T06",
+      "kind": "ADVERSARIAL",
+      "scenario": "RESPONSE_ENUMERATION",
+      "expected_behavior": "Observed error, timing and rate-control outcomes must not reveal existence of the account.",
+      "related_signal_ids": [
+        "S09"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    },
+    {
+      "scenario_id": "T07",
+      "kind": "NEGATIVE",
+      "scenario": "PROVIDER_DEGRADATION",
+      "expected_behavior": "If required anti-bot enforcement cannot be verified, access must not be granted by an unprotected fallback.",
+      "related_signal_ids": [
+        "S01",
+        "S06"
+      ],
+      "execution_status": "NOT_TESTED",
+      "runtime_evidence_refs": [],
+      "semantic_judge_verdict": "NOT_TESTED"
+    }
+  ],
+  "source_integrity_verified": "ROW_READBACK_ONLY",
+  "semantic_quality_evaluated": false,
+  "semantic_quality_verdict": "NOT_TESTED",
+  "semantic_pass_authorized": false,
+  "runtime_enforcement_verified": false,
+  "qa_verified": false,
+  "promotion_authorized": false,
+  "production_authorized": false,
+  "pending": [
+    "OBTAIN_EXACT_INTENT_CONTEXT_SHA256_VIA_GOVERNED_CURATOR",
+    "RESOLVE_FAMILIES_AGAINST_RUN_REGISTRY",
+    "NATIVE_CURATOR_SEMANTIC_EXECUTION",
+    "INDEPENDENT_NATIVE_VALIDATOR_REVIEW",
+    "RUNTIME_SECURITY_POSITIVE_NEGATIVE_ADVERSARIAL_TESTS",
+    "CONSUMER_ENFORCEMENT_AT_EFFECT_BOUNDARY"
+  ],
+  "not_an_implementation_claim": true
+}
