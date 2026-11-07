@@ -1,0 +1,41 @@
+name: LF Analysis A1 Semantic Source Tests
+
+# Candidate-only deterministic Python tests; NOT independent model or runtime evidence.
+on:
+  push:
+    branches:
+      - agent/programming-analysis-a1-a2-candidate-20261105
+    paths:
+      - 'skills/programming_analysis/steps/a1/**'
+      - 'skills/programming_analysis/steps/a2/validators/run.py'
+      - 'skills/programming_analysis/adapters/a1_a2_candidate_bridge_v1.py'
+      - '.github/workflows/lf-analysis-a1-semantic-source-tests.yml'
+  pull_request:
+    paths:
+      - 'skills/programming_analysis/steps/a1/**'
+      - 'skills/programming_analysis/steps/a2/validators/run.py'
+      - 'skills/programming_analysis/adapters/a1_a2_candidate_bridge_v1.py'
+      - '.github/workflows/lf-analysis-a1-semantic-source-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-a1-source-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate HEAD
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deterministic schema validation
+        run: python -m pip install 'jsonschema==4.23.0'
+      - name: Check A1 source and callback regressions
+        run: python -m unittest discover -s skills/programming_analysis/steps/a1/evals -p 'test_a1*.py' -v
+      - name: Check existing A2 classifier backwards compatibility
+        run: python -m unittest discover -s skills/programming_analysis/steps/a2/evals -p 'test_a2.py' -v
