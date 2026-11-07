@@ -56,16 +56,28 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("IG_GRAPH_LIMIT_8_RESIDUAL", self.sql)
         self.assertIn("ALL_R6_DISCOVERED_ROOTS_CAPTURED_NOT_SEMANTIC_PASS", self.sql)
 
-    def test_any_number_of_r6_roots_requires_exact_accounting(self):
-        # Pure invariant; SQL/actual performance still require governed E2E.
-        for total in (0, 1, 8, 9, 20, 100):
-            with self.subTest(total=total):
-                self.assertTrue(total == total)
-                if total > 0:
-                    self.assertFalse(total - 1 == total)
-        self.assertIn("'graph_captured_root_count'", self.sql)
-        self.assertIn("'graph_discovered_root_count'", self.sql)
-        self.assertIn("'graph_truncated'", self.sql)
+    def test_all_roots_are_accounted_for_without_a_fixed_cardinality(self):
+        # Inspect SQL contract only. Runtime coverage/benchmark remains NOT_TESTED.
+        reader = self.sql.split(
+            "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
+        )[1].split("$raw_get$;")[0]
+        self.assertIn(
+            "'graph_discovered_root_count',coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0)",
+            reader,
+        )
+        self.assertIn(
+            "'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))",
+            reader,
+        )
+        self.assertIn(
+            "'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))",
+            reader,
+        )
+        self.assertNotIn(")>8", reader)
+        self.assertIn(
+            "jsonb_array_length(v_ig_evo_graph_index)<>v_ig_evo_graph_total",
+            self.sql,
+        )
 
     def test_getter_is_pure_storage_read_without_r_scans(self):
         getter = self.sql.split(
