@@ -51,9 +51,9 @@ def _grounding_errors(raw_text: str, candidate: dict) -> list[str]:
     op = candidate["operation"]
     if op["kind"] == "UNKNOWN" or candidate["target"]["canonical_capability"] == "UNKNOWN":
         errors.append("MATERIAL_INTENT_UNRESOLVED")
-    if op["user_assumed_state"] == "CLAIMED_GREENFIELD":
+    if op["user_assumed_state"] != "UNSPECIFIED":
         if not any(s["dimension"] == "ASSUMPTION" for s in spans):
-            errors.append("GREENFIELD_CLAIM_UNGROUNDED")
+            errors.append("USER_ASSUMED_STATE_UNGROUNDED")
     if candidate["target"]["actor_scope"] != "UNSPECIFIED" and not any(
         s["dimension"] == "ACTOR_SCOPE" for s in spans
     ):
