@@ -26,26 +26,27 @@ class IntentBriefTests(unittest.TestCase):
         self.assertIn('El solicitante pidió',v['human_readable_document'])
         self.assertIn('Revisar ingreso B2B LF',v['human_readable_document'])
         self.assertIn('Definir requisitos',v['human_readable_document'])
-        self.assertIn('qué problema concreto',v['human_readable_document'])
+        self.assertIn('criterio observable de éxito',v['human_readable_document'])
         self.assertEqual(v['golden_controls']['elements'],59)
         self.assertTrue(v['intent_review_required'])
     def test_02_ambiguities_empty_not_assumed_resolved(self):
         r=prepare_preview(*fixture())['human_intent_brief']
         self.assertTrue(r['ambiguities_absent_not_proven'])
-        self.assertTrue(r['user_questions_candidates'])
+        self.assertEqual(r['user_questions_candidates'],[])
+        self.assertEqual(r['intent_quality_checks'][0]['status'],'PENDING_SEMANTIC_REVIEW_NOT_OWNER_QUESTION')
         self.assertFalse(r['owner_questions_sent'])
     def test_03_open_material_owner_question(self):
         a,b,s,g=fixture()
         a['payload']['ambiguities']=[{'code':'SCOPE','statement':'No sabemos si también incluye recuperación de acceso','materiality':'MATERIAL','resolution_state':'OPEN'}]
         v=mod.build_brief(a,b,s,g)
-        self.assertEqual(len(v['user_questions_candidates']),2)
-        self.assertIn('recuperación de acceso',v['user_questions_candidates'][1]['question'])
+        self.assertEqual(len(v['user_questions_candidates']),1)
+        self.assertIn('recuperación de acceso',v['user_questions_candidates'][0]['question'])
         self.assertEqual(v['recorded_open_ambiguities'][0]['status'],'DECLARED_OPEN_NOT_VERIFIED')
     def test_04_resolved_ambiguity_not_reopened_as_owner_question(self):
         a,b,s,g=fixture()
         a['payload']['ambiguities']=[{'code':'X','statement':'Ya resuelto desde fuente','materiality':'MATERIAL','resolution_state':'RESOLVED_FROM_SOURCE'}]
         v=mod.build_brief(a,b,s,g)
-        self.assertEqual(len(v['user_questions_candidates']),1)
+        self.assertEqual(len(v['user_questions_candidates']),0)
         self.assertEqual(v['recorded_open_ambiguities'],[])
         self.assertFalse(v['ambiguities_absent_not_proven'])
     def test_05_missing_constraints_are_not_none_exist(self):
@@ -65,8 +66,44 @@ class IntentBriefTests(unittest.TestCase):
     def test_08_a3_questions_are_separate_from_owner_questions(self):
         v=prepare_preview(*fixture())['human_intent_brief']
         self.assertEqual(len(v['a3_investigation_tasks']),4)
-        self.assertEqual(len(v['user_questions_candidates']),1)
+        self.assertEqual(len(v['user_questions_candidates']),0)
         self.assertTrue(all(q['status']=='SUGGESTED_NOT_SENT_NEEDS_SEMANTIC_REVIEW' for q in v['user_questions_candidates']))
+    def test_08b_ambiguity_escalation_is_research_first(self):
+        a,b,s,g=fixture()
+        a['payload']['ambiguities']=[{
+            'code':'PORTAL_ENTRY_MODE_UNRESOLVED',
+            'statement':'No sabemos si es navegación o autenticación',
+            'materiality':'MATERIAL','resolution_state':'OPEN'
+        }]
+        result=mod.build_brief(a,b,s,g)
+        self.assertEqual(len(result['user_questions_candidates']),1)
+        self.assertEqual(result['user_questions_candidates'][0]['routing'],
+            'A3_RESEARCH_FIRST_THEN_OWNER_IF_MATERIAL_UNRESOLVED')
+        self.assertFalse(result['owner_questions_sent'])
+        self.assertFalse(result['a3_allowed'])
+        self.assertIn('definiciones',result['a3_investigation_tasks'][1]['request'])
+
+    def test_08c_negative_constraint_remains_verbatim_without_owner_question(self):
+        a,b,s,g=fixture()
+        a['payload']['constraints']=['No crees otra pantalla; usa la existente']
+        result=mod.build_brief(a,b,s,g)
+        self.assertEqual(result['scope_constraints_declared'],a['payload']['constraints'])
+        self.assertEqual(result['user_questions_candidates'],[])
+        self.assertIn('No crees otra pantalla',result['human_readable_document'])
+        self.assertTrue(result['intent_review_required'])
+
+    def test_08d_owner_question_does_not_reopen_resolved_material(self):
+        a,b,s,g=fixture()
+        a['payload']['ambiguities']=[{
+            'code':'ALREADY_RESOLVED',
+            'statement':'Resuelta mediante definición vigente',
+            'materiality':'MATERIAL','resolution_state':'RESOLVED_FROM_SOURCE'
+        }]
+        result=mod.build_brief(a,b,s,g)
+        self.assertEqual(result['user_questions_candidates'],[])
+        self.assertEqual(result['recorded_open_ambiguities'],[])
+        self.assertFalse(result['a3_allowed'])
+
     def test_09_required_33_are_not_lost(self):
         v=prepare_preview(*fixture())['human_intent_brief']
         self.assertEqual(len(v['required_evidence_gaps']),33)
