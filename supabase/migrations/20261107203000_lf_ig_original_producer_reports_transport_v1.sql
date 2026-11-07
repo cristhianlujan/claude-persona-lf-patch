@@ -35,6 +35,12 @@ DECLARE
  v_pm jsonb;
  v_graph jsonb;
  v_emitted boolean;
+ v_curator_strategy text;
+ v_parent_source_sha256 text;
+ v_parent_raw_stored boolean := false;
+ v_r1_emitted boolean := false;
+ v_r2_r6_emitted boolean := false;
+ v_g1_emitted boolean := false;
 BEGIN
  IF p_run_id IS NULL OR p_run_id<1 THEN
    RAISE EXCEPTION 'IG_ORIGINAL_REPORT_RUN_REQUIRED';
@@ -72,13 +78,57 @@ BEGIN
  THEN RAISE EXCEPTION 'IG_ORIGINAL_REPORT_INTEGRITY_DRIFT:%',p_run_id; END IF;
  v_pm:=v_report.original_curator_output->'proposal_materialization';
  v_graph:=v_pm->'ig_evo_graph_index';
- v_emitted:=jsonb_typeof(v_pm)='object'
-   AND jsonb_typeof(v_pm->'ig_evo_r1_diagnostics')='object'
-   AND jsonb_typeof(v_pm->'ig_evo_r2_r6_diagnostics')='object';
+ v_curator_strategy:=v_report.original_curator_output#>>'{performance_observation,strategy}';
+ v_r1_emitted:=coalesce(jsonb_typeof(v_pm->'ig_evo_r1_diagnostics')='object',false);
+ v_r2_r6_emitted:=coalesce(jsonb_typeof(v_pm->'ig_evo_r2_r6_diagnostics')='object',false);
+ v_g1_emitted:=coalesce(jsonb_typeof(v_graph)='array',false);
+ -- REBIND can invoke FULL_RECURATE internally when the contract changed;
+ -- determine what was emitted from the source payload, not a name alone.
+ v_emitted:=coalesce(jsonb_typeof(v_pm)='object',false)
+   AND v_r1_emitted AND v_r2_r6_emitted AND v_g1_emitted;
+ IF v_run.supersedes_run_id IS NOT NULL THEN
+   SELECT parent.source_snapshot_sha256 INTO v_parent_source_sha256
+     FROM programacion.input_readiness_runs parent
+    WHERE parent.id=v_run.supersedes_run_id AND parent.pantalla_id=v_run.pantalla_id;
+   SELECT EXISTS(
+      SELECT 1 FROM programacion.input_governance_producer_raw_v1 older
+       WHERE older.run_id=v_run.supersedes_run_id
+         AND older.pantalla_id=v_run.pantalla_id
+   ) INTO v_parent_raw_stored;
+ END IF;
  RETURN jsonb_build_object(
    'schema_version','IG_ORIGINAL_PRODUCER_REPORT_TRANSPORT_V1',
    'status',CASE WHEN v_emitted THEN 'ORIGINALS_CAPTURED'
-                 ELSE 'PARTIAL_ORIGINALS_NOT_EMITTED' END,
+                  WHEN v_curator_strategy='REBIND'
+                    AND NOT v_r1_emitted AND NOT v_r2_r6_emitted AND NOT v_g1_emitted
+                    THEN 'ORIGINALS_NOT_EMITTED_FOR_REBIND'
+                  ELSE 'PARTIAL_ORIGINALS_NOT_EMITTED' END,
+   'curator_strategy',v_curator_strategy,
+   'producer_emission',jsonb_build_object(
+      'CURATOR','CAPTURED_AS_EMITTED',
+      'R1',CASE WHEN v_r1_emitted THEN 'EMITTED_IN_THIS_RUN'
+         WHEN v_curator_strategy='REBIND' THEN 'NOT_EMITTED_FOR_REBIND'
+         ELSE 'NOT_EMITTED_IN_THIS_RUN' END,
+      'R2_R6',CASE WHEN v_r2_r6_emitted THEN 'EMITTED_IN_THIS_RUN'
+         WHEN v_curator_strategy='REBIND' THEN 'NOT_EMITTED_FOR_REBIND'
+         ELSE 'NOT_EMITTED_IN_THIS_RUN' END,
+      'G1',CASE WHEN v_g1_emitted THEN 'EMITTED_IN_THIS_RUN'
+         WHEN v_curator_strategy='REBIND' THEN 'NOT_EMITTED_FOR_REBIND'
+         ELSE 'NOT_EMITTED_IN_THIS_RUN' END),
+   'source_lineage',jsonb_build_object(
+      'parent_run_id',v_run.supersedes_run_id,
+      'parent_raw_archive_present',v_parent_raw_stored,
+      'parent_source_snapshot_sha256',v_parent_source_sha256,
+      'snapshot_equivalence',CASE
+        WHEN v_run.supersedes_run_id IS NULL THEN 'NO_PARENT'
+        WHEN v_report.source_snapshot_sha256 IS NULL OR v_parent_source_sha256 IS NULL
+          THEN 'SOURCE_SNAPSHOT_NOT_ATTESTED'
+        WHEN v_report.source_snapshot_sha256=v_parent_source_sha256
+          THEN 'SAME_SOURCE_SNAPSHOT_NOT_RUN_EQUIVALENCE'
+        ELSE 'SOURCE_SNAPSHOT_CHANGED' END,
+      'historical_parent_research_reexecution_required',false,
+      'automatic_parent_raw_as_current_run_authorized',false),
+   'all_producers_emitted_in_this_run',v_emitted,
    'run_id',p_run_id,
    'screen_id',v_run.pantalla_id,
    'curator_identity',v_report.curator_identity,
@@ -105,6 +155,8 @@ BEGIN
    'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
       < coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
    'raw_reused',true,'research_reexecuted',false,
+   'reuse_scope','EXACT_SAME_RUN_ORIGINAL_ARCHIVE_ONLY',
+   'historical_raw_as_current_evidence_authorized',false,
    'model_has_read_report',false,
    'semantic_quality_evaluated',false,
    'semantic_pass_authorized',false,
