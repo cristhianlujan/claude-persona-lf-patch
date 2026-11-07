@@ -50,15 +50,27 @@ BEGIN
       OR p_max_hops IS NULL OR p_max_hops NOT BETWEEN 1 AND 5 THEN
     RAISE EXCEPTION 'IG_EVO_GRAPH_BAD_INPUT';
   END IF;
-  SELECT r,e.binding_source INTO v_root,v_binding_source
+  -- PostgreSQL PL/pgSQL cannot assign a ROWTYPE record and a scalar
+  -- simultaneously in a multiple-item SELECT INTO target list (SQLSTATE 42601).
+  SELECT r.* INTO v_root
   FROM lf_ops.reglas r
   JOIN programacion.fn_input_effective_rule_links_v1(p_pantalla_id,'INPUT_GOVERNANCE') e
-     ON e.regla_id=r.id AND e.pantalla_id=p_pantalla_id
+    ON e.regla_id=r.id AND e.pantalla_id=p_pantalla_id
   WHERE r.id=p_regla_id AND e.binding_source<>'DERIVED_GLOBAL'
-    AND r.estado IN('VIGENTE','CANDIDATO')
+    AND r.estado IN ('VIGENTE','CANDIDATO')
+  ORDER BY e.binding_source
   LIMIT 1;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'IG_EVO_GRAPH_RULE_SCOPE_NOT_ATTESTED:%:%',p_pantalla_id,p_regla_id;
+  END IF;
+  SELECT e.binding_source INTO v_binding_source
+  FROM programacion.fn_input_effective_rule_links_v1(p_pantalla_id,'INPUT_GOVERNANCE') e
+  WHERE e.regla_id=p_regla_id AND e.pantalla_id=p_pantalla_id
+    AND e.binding_source<>'DERIVED_GLOBAL'
+  ORDER BY e.binding_source
+  LIMIT 1;
+  IF v_binding_source IS NULL THEN
+    RAISE EXCEPTION 'IG_EVO_GRAPH_BINDING_SOURCE_UNRESOLVED:%:%',p_pantalla_id,p_regla_id;
   END IF;
   SELECT p.* INTO v_screen FROM lf_ops.pantallas p WHERE p.id=p_pantalla_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'IG_EVO_INTENT_SCREEN_CONTEXT_MISSING:%',p_pantalla_id; END IF;
