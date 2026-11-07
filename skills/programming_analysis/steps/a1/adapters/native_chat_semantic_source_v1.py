@@ -35,6 +35,23 @@ MODE_BINDINGS = {
 }
 HANDOFF_SCHEMA = "A1_NATIVE_CHAT_SEMANTIC_HANDOFF_CANDIDATE_V1"
 CAPTURE_SCHEMA = "A1_NATIVE_CHAT_SEMANTIC_CAPTURE_CANDIDATE_V1"
+HANDOFF_KEYS = frozenset({
+    "schema_version", "route_contract_code", "route_code", "owner_skill_code",
+    "owner_step_code", "route_contract_sha256", "business", "executor_mode",
+    "executor_provider", "current_surface", "conversation_scope",
+    "session_creation", "api_invocation", "raw_request", "input_sha256",
+    "semantic_contract_sha256", "semantic_protocol_sha256",
+    "reviewer_independence_verified", "source_authority_verified",
+    "runtime_qualified", "handoff_sha256",
+})
+CAPTURE_KEYS = frozenset({
+    "schema_version", "route_contract_code", "route_code", "owner_skill_code",
+    "owner_step_code", "route_contract_sha256", "handoff_sha256",
+    "input_sha256", "executor_mode", "executor_provider", "current_surface",
+    "intent_analysis", "intent_sha256", "capture_state",
+    "runtime_provider_attested", "reviewer_independence_verified",
+    "next_authority", "no_run_created", "capture_sha256",
+})
 
 
 def _text_sha(text: str) -> str:
@@ -104,6 +121,15 @@ def _require_a1_route(handoff: dict) -> None:
         "evolution_mode", "selected_method_ids", "run_id", "execution_id",
         "runtime_target", "queue_request_id")),
              "NATIVE_A1_UPDATER_OR_RUNTIME_FIELDS_FORBIDDEN")
+    _require(set(handoff) == HANDOFF_KEYS, "NATIVE_A1_HANDOFF_FIELDS_INVALID")
+    _require(handoff.get("business") == "LF"
+             and handoff.get("conversation_scope") == "EXISTING_CONVERSATION_ONLY"
+             and handoff.get("session_creation") is False
+             and handoff.get("api_invocation") is False
+             and handoff.get("reviewer_independence_verified") is False
+             and handoff.get("source_authority_verified") is False
+             and handoff.get("runtime_qualified") is False,
+             "NATIVE_A1_HANDOFF_FALSE_AUTHORITY")
 
 
 def _require_a1_capture(handoff: dict, capture: dict) -> None:
@@ -120,6 +146,13 @@ def _require_a1_capture(handoff: dict, capture: dict) -> None:
         "evolution_mode", "selected_method_ids", "run_id", "execution_id",
         "runtime_target", "queue_request_id")),
              "NATIVE_A1_CAPTURE_UPDATER_FIELDS_FORBIDDEN")
+    _require(set(capture) == CAPTURE_KEYS, "NATIVE_A1_CAPTURE_FIELDS_INVALID")
+    _require(capture.get("capture_state") == "SOURCE_BOUND_NATIVE_CHAT_RAW_UNATTESTED"
+             and capture.get("next_authority") == "INDEPENDENT_SEMANTIC_REVIEW_REQUIRED"
+             and capture.get("runtime_provider_attested") is False
+             and capture.get("reviewer_independence_verified") is False
+             and capture.get("no_run_created") is True,
+             "NATIVE_A1_CAPTURE_FALSE_AUTHORITY")
 
 
 def freeze_handoff(*, raw_request: str, business: str, executor_mode: str,
