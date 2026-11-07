@@ -82,6 +82,8 @@ def run(data: Any, *, business: str | None = None,
     is_raw_envelope = isinstance(data, dict) and "raw_prompt" in data
     if isinstance(data, str) or is_raw_envelope:
         raw = data if isinstance(data, str) else data.get("raw_prompt")
+        if is_raw_envelope and business is not None and "business" in data and data["business"] != business:
+            return _run_semantic(raw, None, None, None, business_conflict=True)
         declared_business = business if business is not None else (
             data.get("business") if is_raw_envelope else None
         )
@@ -190,7 +192,8 @@ def run(data: Any, *, business: str | None = None,
     return base
 
 
-def _run_semantic(raw_text: Any, business: Any, producer: Any, reviewer: Any) -> dict:
+def _run_semantic(raw_text: Any, business: Any, producer: Any, reviewer: Any,
+                  *, business_conflict: bool = False) -> dict:
     """Provider-neutral callback seam; canonical REQUEST_CONTEXT_V1 unchanged."""
     base = {
         "schema_version": "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1",
@@ -211,6 +214,9 @@ def _run_semantic(raw_text: Any, business: Any, producer: Any, reviewer: Any) ->
         "operationally_integrated": False,
         "effects_executed": False,
     }
+    if business_conflict:
+        base["blocking_codes"] = ["RAW_ENVELOPE_BUSINESS_CONFLICT"]
+        return base
     if business != "LF":
         base["blocking_codes"] = ["BUSINESS_SCOPE_NOT_PROVIDED_OR_NOT_LF"]
         return base
