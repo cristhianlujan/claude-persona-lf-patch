@@ -63,11 +63,13 @@ El mensaje al Perfil contiene **dos cosas complementarias**: el `context_manifes
 
 ## Estados del readback
 
-- `ORIGINALS_CAPTURED`: R1 + R2–R6 originales presentes en el envelope; no es PASS semántico.
-- `PARTIAL_ORIGINALS_NOT_EMITTED`: el Curator produjo un envelope, pero no emitió los dos grupos de R*.
+- `ORIGINALS_CAPTURED`: R1, R2–R6 y G1 originales presentes en el envelope; no es PASS semántico.
+- `ORIGINALS_NOT_EMITTED_FOR_REBIND`: Curator creó RUN con evidencia propia, pero no generó diagnósticos nuevos. No implica pérdida de evidencia ni autoriza copiar los del RUN anterior.
+- `PARTIAL_ORIGINALS_NOT_EMITTED`: Curator emitió solo parte del paquete de R1/R2–R6/G1; registrar el componente ausente con `producer_emission`.
 - `NOT_CAPTURED_LEGACY_RUN`: hubo ejecución histórica sin copia persistida; no re-ejecutar.
-- `RUN_STALE`: el RUN perdió vigencia; no usar el RAW.
-- `IG_ORIGINAL_REPORT_INTEGRITY_DRIFT`: hash, pantalla, Curator o snapshot difiere; bloquear.
+- `RUN_STALE` / `RUN_NOT_CURRENT`: el RUN perdió vigencia o carece de atestación de currentness; no usar el RAW.
+- `PINNED_AFTER_CURATOR_CAPTURE`: el hash de fuentes se fijó luego de registrar el envelope, pero se verifica identidad estable de RUN/universo y hash original.
+- `IG_ORIGINAL_REPORT_INTEGRITY_DRIFT`: alteración de hash, pantalla, Curator, universo o snapshot previamente sellado; bloquear.
 
 `raw_reused=true`, `research_reexecuted=false`, `model_has_read_report=false` son indicadores distintos: transportarlo no prueba que el modelo lo leyó. **No cerrar el reporte final del Perfil con afirmaciones de revisión completa hasta comprobar el consumo del RAW y su recepción.**
 
