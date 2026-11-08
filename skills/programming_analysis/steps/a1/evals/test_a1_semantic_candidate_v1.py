@@ -335,6 +335,13 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertFalse(request["allow_a2"])
         self.assertFalse(request["inventory_source_verified"])
         self.assertFalse(request["inventory_lookup_executed"])
+        plan = transport["a2_research_preview"]
+        self.assertEqual(plan["status"], "RESEARCH_PLAN_ONLY")
+        self.assertEqual(plan["research_plan"]["operation_hint"], "IMPLEMENT")
+        self.assertEqual(plan["research_plan"]["unresolved_ambiguities"][0]["code"],
+                         "PORTAL_ENTRY_MODE_UNRESOLVED")
+        self.assertFalse(plan["a3_dispatch_allowed"])
+        self.assertIsNone(plan["a2_classification"])
         self.assertIsNone(transport["a2_result"])
         self.assertIsNone(transport["a2_signal_bundle"])
         self.assertTrue(transport["no_run_created"])
@@ -354,6 +361,12 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertIn("EXISTING_SCREEN_LOOKUP", request["dimensions_to_investigate"])
         self.assertFalse(request["allow_a2"])
         self.assertFalse(request["inventory_source_verified"])
+        plan = transport["a2_research_preview"]
+        self.assertEqual(plan["status"], "RESEARCH_PLAN_ONLY")
+        self.assertEqual(plan["research_plan"]["operation_hint"], "REUSE")
+        self.assertEqual(plan["research_plan"]["constraints"], ["No crees otra pantalla"])
+        self.assertEqual(plan["research_plan"]["functional_capability_hint"], "UNKNOWN")
+        self.assertFalse(plan["a3_dispatch_allowed"])
         self.assertTrue(transport["no_run_created"])
         self.assertIsNone(transport["a2_result"])
 
@@ -379,6 +392,7 @@ class SemanticA1Candidate(unittest.TestCase):
         self.assertEqual(transport["status"], "HALTED_AT_A1")
         self.assertEqual(transport["a1_result"]["status"], "REQUIRES_SEMANTIC_REVIEW")
         self.assertIsNone(transport["inventory_research_handoff"])
+        self.assertIsNone(transport["a2_research_preview"])
         self.assertIsNone(transport["a2_result"])
 
     def test_ungrounded_evidence_refused_before_reviewer(self):
