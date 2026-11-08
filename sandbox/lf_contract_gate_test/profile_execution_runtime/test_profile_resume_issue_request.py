@@ -37,11 +37,124 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             mod = runpy.run_path(str(SCRIPT), run_name="native_resume_test")
             self.get_request = mod["governed_request"]
             self.validator_continuation = mod["is_direct_validator_continuation"]
+            self.blocked_ig_receipt = mod["record_blocked_ig_receipt"]
 
     def check(self):
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
         with patch.dict(os.environ, self.env, clear=True):
             return self.get_request()
+
+    def _blocked_ig_edge_reply(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        return execution_id, profile_code, {
+            "outcome": "BLOCKED",
+            "phase": "BLOCKED",
+            "code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+            "execution_id": execution_id,
+            "profile_code": profile_code,
+            "result": {
+                "execution_id": execution_id,
+                "status": "BLOCKED",
+                "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+                "input_validate": {
+                    "status": "BLOCKED",
+                    "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+                    "input_governance": {
+                        "applicable": True,
+                        "status": "BLOCKED",
+                        "decision": "BLOCKED",
+                        "continuation_allowed": False,
+                        "profile_code": profile_code,
+                        "pantalla_id": 51,
+                        "consumer": "CONTEXT_PACK",
+                        "governance_result": {
+                            "status": "BLOCKED",
+                            "consumer": "CONTEXT_PACK",
+                            "pantalla_id": 51,
+                            "run_id": 949,
+                            "output_sha256": "a" * 64,
+                            "raw_sensitive_data": {
+                                "service_role_key": "SECRET_NEVER_ARTIFACT",
+                                "original_producer_json": "PRIVATE_RAW_NEVER_ARTIFACT",
+                            },
+                        },
+                    },
+                },
+            },
+        }
+
+    def test_blocked_ig_records_only_bound_hash_receipt_and_remains_nonpass(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+        output = Path(self.tmp.name) / "profile-native-continuation.json"
+        self.assertTrue(output.is_file())
+        raw = output.read_text(encoding="utf-8")
+        artifact = json.loads(raw)
+        self.assertEqual(artifact["schema_version"], "LF_PROFILE_NATIVE_IG_BLOCKED_EVIDENCE_V1")
+        self.assertEqual(artifact["execution_id"], execution_id)
+        self.assertEqual(artifact["profile_code"], profile_code)
+        self.assertEqual(artifact["status"], "BLOCKED_NOT_COMPLETE")
+        self.assertEqual(artifact["governance_run_id"], 949)
+        self.assertEqual(artifact["governance_declared_output_sha256"], "a" * 64)
+        self.assertRegex(artifact["edge_response_canonical_sha256"], r"^[0-9a-f]{64}$")
+        self.assertRegex(artifact["governance_result_canonical_sha256"], r"^[0-9a-f]{64}$")
+        self.assertFalse(artifact["last_run_completed"])
+        self.assertFalse(artifact["continuation_allowed"])
+        self.assertFalse(artifact["pass_claimed"])
+        self.assertFalse(artifact["raw_payload_persisted"])
+        self.assertNotIn("SECRET_NEVER_ARTIFACT", raw)
+        self.assertNotIn("PRIVATE_RAW_NEVER_ARTIFACT", raw)
+        self.assertNotIn('"governance_result":', raw)
+
+    def test_blocked_ig_canonical_receipt_digest_detects_body_changes(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+            original = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+            response["result"]["input_validate"]["input_governance"]["governance_result"]["run_id"] = 950
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+            updated = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertNotEqual(original["governance_result_canonical_sha256"],
+                            updated["governance_result_canonical_sha256"])
+        self.assertNotEqual(original["edge_response_canonical_sha256"],
+                            updated["edge_response_canonical_sha256"])
+
+    def test_blocked_ig_fails_closed_on_unrelated_or_untrusted_responses(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        invalid = []
+        invalid.append((200, response))
+        for mutate in [
+            lambda x: x.update(execution_id="EXEC-PROFILE-GATE2-" + "B" * 24),
+            lambda x: x["result"].update(execution_id="EXEC-PROFILE-GATE2-" + "B" * 24),
+            lambda x: x.update(profile_code="PERFIL-OTHER"),
+            lambda x: x.update(code="UNRELATED_409"),
+            lambda x: x["result"].update(status="READY"),
+            lambda x: x["result"]["input_validate"].update(status="READY"),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                continuation_allowed=True),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                consumer="STORY_CREATOR"),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                pantalla_id=52),
+            lambda x: x["result"]["input_validate"]["input_governance"][
+                "governance_result"].update(status="READY"),
+            lambda x: x["result"]["input_validate"]["input_governance"][
+                "governance_result"].update(output_sha256="INVALID"),
+            lambda x: x["result"]["input_validate"]["input_governance"].pop(
+                "governance_result"),
+        ]:
+            copy = json.loads(json.dumps(response))
+            mutate(copy)
+            invalid.append((409, copy))
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            for code, bad in invalid:
+                with self.subTest(code=code, invalid=bad):
+                    self.assertFalse(self.blocked_ig_receipt(
+                        code, bad, execution_id, profile_code))
+                    self.assertFalse((Path(self.tmp.name) /
+                                      "profile-native-continuation.json").exists())
 
     def test_valid_issue_payload(self):
         self.assertEqual(self.check(), ("EXEC-PROFILE-GATE2-EXAMPLE", "", None, None))
