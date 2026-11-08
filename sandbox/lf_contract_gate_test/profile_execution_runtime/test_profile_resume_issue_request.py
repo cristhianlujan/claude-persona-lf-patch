@@ -108,6 +108,52 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
         self.assertNotIn("PRIVATE_RAW_NEVER_ARTIFACT", raw)
         self.assertNotIn('"governance_result":', raw)
 
+    def test_main_409_from_governed_edge_writes_evidence_and_never_continues(self):
+        execution_id, profile_code, blocked = self._blocked_ig_edge_reply()
+        source_file = Path(self.tmp.name) / "profiles" / "product_director_lf" / "SKILL.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("# Profile source fixture\n", encoding="utf-8")
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        # The test executes the same main() branch as GitHub Actions but never
+        # requests a real OIDC token or calls Supabase.
+        with patch.dict(os.environ, {**self.env, "GITHUB_SHA": "a" * 40},
+                        clear=True), patch("pathlib.Path.cwd",
+                                           return_value=Path(self.tmp.name)):
+            module = runpy.run_path(str(SCRIPT), run_name="ig_blocked_bridge_test")
+            calls = []
+            def fake_call(url, body, headers):
+                calls.append(body["action"])
+                if body["action"] == "profile_native_source_bind_v1":
+                    return 200, {
+                        "outcome": "SOURCE_BINDING_REQUIRED",
+                        "execution_id": execution_id,
+                        "source_revision_required": "a" * 40,
+                        "target_repo": "test-owner/test-repo",
+                        "target_path": "profiles/product_director_lf/SKILL.md",
+                        "profile_code": profile_code,
+                    }
+                return 409, blocked
+            # Issue request references the same execution, not a new BEGIN.
+            self.event["issue"]["body"] = json.dumps({
+                "schema_version": SCHEMA,
+                "execution_id": execution_id,
+            })
+            self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+            main = module["main"]
+            with patch.dict(main.__globals__,
+                            {"oidc": lambda: "test-token", "call_json": fake_call}):
+                self.assertEqual(main(), 1)
+        self.assertEqual(calls, [
+            "profile_native_source_bind_v1", "profile_native_continue_v1",
+        ])
+        receipt_path = Path(self.tmp.name) / "profile-native-continuation.json"
+        self.assertTrue(receipt_path.is_file())
+        receipt = json.loads(receipt_path.read_text())
+        self.assertEqual(receipt["execution_id"], execution_id)
+        self.assertEqual(receipt["status"], "BLOCKED_NOT_COMPLETE")
+        self.assertFalse(receipt["pass_claimed"])
+        self.assertNotIn("SECRET_NEVER_ARTIFACT", receipt_path.read_text())
+
     def test_blocked_ig_canonical_receipt_digest_detects_body_changes(self):
         execution_id, profile_code, response = self._blocked_ig_edge_reply()
         with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
