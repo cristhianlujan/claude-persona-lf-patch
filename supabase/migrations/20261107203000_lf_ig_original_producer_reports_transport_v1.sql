@@ -176,8 +176,11 @@ BEGIN
    'graph_captured_root_count',jsonb_array_length(coalesce(v_graph,'[]'::jsonb)),
    'graph_internal_truncation_count',coalesce((v_pm->>'ig_evo_graph_internal_truncation_count')::integer,0),
    'graph_internal_truncated_rule_ids',coalesce(v_pm->'ig_evo_graph_internal_truncated_rule_ids','[]'::jsonb),
-   'graph_truncated',jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
-      < coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0),
+   -- A complete list of roots can still contain a truncated graph walk.
+   'graph_truncated',
+      jsonb_array_length(coalesce(v_graph,'[]'::jsonb))
+        < coalesce((v_pm->>'ig_evo_graph_total_roots')::integer,0)
+      OR coalesce((v_pm->>'ig_evo_graph_internal_truncation_count')::integer,0)>0,
    'raw_reused',true,'research_reexecuted',false,
    'reuse_scope','EXACT_SAME_RUN_ORIGINAL_ARCHIVE_ONLY',
    'historical_raw_as_current_evidence_authorized',false,
