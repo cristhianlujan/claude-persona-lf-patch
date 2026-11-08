@@ -177,6 +177,100 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     return 1
 
 
+
+def record_blocked_ig_receipt(http_status, response, execution_id, profile_code):
+    """Record only a bound, digested IG BLOCKED response; never promote it to PASS.
+
+    This runs inside the existing OIDC GitHub Actions caller. Full IG response
+    and context may contain sensitive material; preserve hashes, not raw data.
+    """
+    if (http_status != 409 or not isinstance(response, dict)
+        or response.get("outcome") != "BLOCKED"
+        or response.get("phase") != "BLOCKED"
+        or response.get("code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"
+        or response.get("execution_id") != execution_id
+        or response.get("profile_code") != profile_code
+        or not isinstance(execution_id, str)
+        or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+        or not isinstance(profile_code, str) or not profile_code):
+        return False
+    bridge = response.get("result")
+    if (not isinstance(bridge, dict)
+        or bridge.get("execution_id") != execution_id
+        or bridge.get("status") != "BLOCKED"
+        or bridge.get("blocking_code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"):
+        return False
+    validate = bridge.get("input_validate")
+    if (not isinstance(validate, dict)
+        or validate.get("status") != "BLOCKED"
+        or validate.get("blocking_code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"):
+        return False
+    ig = validate.get("input_governance")
+    if (not isinstance(ig, dict)
+        or ig.get("applicable") is not True
+        or ig.get("status") != "BLOCKED"
+        or ig.get("decision") != "BLOCKED"
+        or ig.get("continuation_allowed") is not False
+        or ig.get("profile_code") != profile_code
+        or ig.get("consumer") != "CONTEXT_PACK"
+        or not isinstance(ig.get("pantalla_id"), int)
+        or isinstance(ig.get("pantalla_id"), bool)
+        or ig["pantalla_id"] <= 0):
+        return False
+    governance = ig.get("governance_result")
+    if (not isinstance(governance, dict)
+        or governance.get("status") != "BLOCKED"
+        or governance.get("consumer") != "CONTEXT_PACK"
+        or governance.get("pantalla_id") != ig["pantalla_id"]
+        or not isinstance(governance.get("output_sha256"), str)
+        or not re.fullmatch(r"[0-9a-f]{64}", governance["output_sha256"])):
+        return False
+
+    # Hash canonicalized parsed JSON, never claim it hashes original wire bytes.
+    def digest(value):
+        canonical = json.dumps(value, ensure_ascii=False, sort_keys=True,
+                               separators=(",", ":"), allow_nan=False)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    receipt = {
+        "schema_version": "LF_PROFILE_NATIVE_IG_BLOCKED_EVIDENCE_V1",
+        "execution_id": execution_id,
+        "profile_code": profile_code,
+        "phase": "INPUT_GOVERNANCE_BLOCKED",
+        "status": "BLOCKED_NOT_COMPLETE",
+        "source_http_status": 409,
+        "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+        "consumer": "CONTEXT_PACK",
+        "pantalla_id": ig["pantalla_id"],
+        "governance_run_id": governance.get("run_id") if type(governance.get("run_id")) is int else None,
+        "governance_declared_output_sha256": governance["output_sha256"],
+        "governance_result_canonical_sha256": digest(governance),
+        "edge_response_canonical_sha256": digest(response),
+        "hash_scope": "PARSED_JSON_CANONICAL_NOT_WIRE_BYTES",
+        "evidence_quality": "RECEIVED_WITHOUT_SEMANTIC_APPROVAL",
+        "next_step": "input_validate",
+        "last_run_completed": False,
+        "continuation_allowed": False,
+        "pass_claimed": False,
+        "router_reentry_required": False,
+        "raw_payload_persisted": False,
+        "reused_transport": "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+    }
+    # The existing workflow uploads this already-declared artifact path.
+    (Path.cwd() / "profile-native-continuation.json").write_text(
+        json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({
+        "phase": "INPUT_GOVERNANCE_BLOCKED",
+        "execution_id": execution_id,
+        "status": "BLOCKED_NOT_COMPLETE",
+        "receipt": "profile-native-continuation.json",
+        "pass_claimed": False,
+    }, sort_keys=True))
+    return True
+
+
 def is_direct_validator_continuation(status, response):
     """Only the exact governed 202 response may request a fresh one-time ticket."""
     return (
@@ -535,7 +629,16 @@ def main():
 
     code, result = call_json(EDGE_URL, payload, headers)
     if code != 200:
-        print(json.dumps({"phase": "PREPARE", "status": code, "code": result.get("code")}))
+        # The server returned a full fail-closed IG payload. Keep a bounded,
+        # non-sensitive, hash-bound receipt in the existing Actions artifact.
+        # Never retry, authorize downstream, or print its raw governance data.
+        if record_blocked_ig_receipt(code, result, execution_id, source.get("profile_code")):
+            return 1
+        print(json.dumps({"phase": "PREPARE", "status": code,
+                          "code": "BLOCKED_IG_RESPONSE_UNVERIFIED"
+                          if code == 409 and isinstance(result, dict)
+                          and result.get("code") == "BLOCK_PROFILE_INPUT_GOVERNANCE"
+                          else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
     # Input Governance is a runtime concern, not a profile/Router bypass.
