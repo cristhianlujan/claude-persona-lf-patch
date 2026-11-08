@@ -99,6 +99,18 @@ class OriginalProducerTransportContract(unittest.TestCase):
             self.sql,
         )
         self.assertIn("'graph_internal_truncation_count'", self.sql)
+        getter = self.sql.split(
+            "CREATE OR REPLACE FUNCTION programacion.fn_input_governance_producer_raw_read_v1"
+        )[1].split("$raw_get$;")[0]
+        self.assertIn("'graph_truncated',", getter)
+        self.assertIn(
+            "OR coalesce((v_pm->>'ig_evo_graph_internal_truncation_count')::integer,0)>0",
+            getter,
+        )
+        self.assertIn(
+            "jsonb_array_length(coalesce(v_graph,'[]'::jsonb))",
+            getter,
+        )
         self.assertIn("IG_G1_ROOT_SCOPE_RESIDUAL", self.sql)
 
     def test_getter_is_pure_storage_read_without_r_scans(self):
