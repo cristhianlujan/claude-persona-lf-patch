@@ -182,6 +182,66 @@ class PendingResearchTests(unittest.TestCase):
         self.assertEqual(impl.prepare(x)['blocking_codes'],
                          ['A2_RESEARCH_AMBIGUITY_INVALID'])
 
+    def test_02_work_order_specific_to_portal_ambiguity(self):
+        order=impl.prepare(make('02'))['research_plan']['actionable_research_order']
+        self.assertEqual(order['status'], 'SOURCE_RESEARCH_INSTRUCTIONS_ONLY')
+        self.assertEqual(order['requested_operation'], 'IMPLEMENT')
+        questions=[x['question'] for x in order['tasks']]
+        self.assertTrue(any('autenticación' in q for q in questions))
+        self.assertTrue(any('PORTAL_ENTRY_MODE' in q for q in questions))
+        self.assertFalse(order['a3_dispatch_allowed'])
+        self.assertFalse(order['implementation_allowed'])
+        self.assertFalse(order['source_refs_are_current_verified'])
+
+    def test_04_work_order_requires_reuse_and_no_new_screen(self):
+        order=impl.prepare(make('04'))['research_plan']['actionable_research_order']
+        self.assertEqual(order['requested_operation'], 'REUSE')
+        contra=[x for x in order['tasks'] if x['id'].startswith('A3-CONSTRAINT-')]
+        self.assertEqual(len(contra), 1)
+        self.assertEqual(contra[0]['literal_constraint'], 'No crees otra pantalla')
+        self.assertIn('infrinja', contra[0]['verify'][1])
+        self.assertEqual(order['decision_if_no_delta'],
+                         'NO_CHANGE_CANDIDATE: no modificar; verificar por evidencia antes de cerrar')
+
+    def test_work_orders_differ_by_user_intent_not_generic_boilerplate(self):
+        a=impl.prepare(make('02'))['research_plan']['actionable_research_order']
+        b=impl.prepare(make('04'))['research_plan']['actionable_research_order']
+        self.assertNotEqual(a['tasks'],b['tasks'])
+        self.assertNotEqual(a['target_hint_unverified'], b['target_hint_unverified'])
+        self.assertNotEqual(a['requested_operation'], b['requested_operation'])
+        self.assertNotEqual(
+            [t.get('ambiguity_code') for t in a['tasks'] if 'ambiguity_code' in t],
+            [t.get('ambiguity_code') for t in b['tasks'] if 'ambiguity_code' in t]
+        )
+
+    def test_work_order_requires_verifiable_source_and_delta(self):
+        order=impl.prepare(make('04'))['research_plan']['actionable_research_order']
+        self.assertEqual(order['source_resolution_order'],list(impl.RESOLUTION_ORDER))
+        ids=[t['id'] for t in order['tasks']]
+        self.assertEqual(ids[:4], [
+            'A3-01-IDENTITY','A3-02-BASELINE','A3-03-DELTA','A3-04-IMPACT'
+        ])
+        self.assertTrue(any('versión/hash' in x for x in order['tasks'][0]['evidence_required']))
+        self.assertTrue(any('explicit_delta' in x for x in order['tasks'][2]['evidence_required']))
+        self.assertEqual(len(order['acceptance_after_research']),5)
+
+    def test_no_change_is_a_candidate_not_approved_change(self):
+        r=impl.prepare(make('02'))
+        order=r['research_plan']['actionable_research_order']
+        self.assertIn('NO_CHANGE_CANDIDATE',order['decision_if_no_delta'])
+        self.assertEqual(r['status'],'RESEARCH_PLAN_ONLY')
+        self.assertIsNone(r['a2_classification'])
+        self.assertIsNone(r['a3_canonical_inputs'])
+        self.assertFalse(r['a3_dispatch_allowed'])
+
+    def test_no_user_refs_promoted_to_verified_currentness(self):
+        order=impl.prepare(make('04'))['research_plan']['actionable_research_order']
+        self.assertFalse(order['source_refs_are_current_verified'])
+        self.assertEqual(order['decision_if_evidence_missing'],
+                         'NEED_MORE_EVIDENCE; no clasificar como READY')
+        self.assertFalse(order['implementation_allowed'])
+        self.assertTrue(all(t['evidence_required'] for t in order['tasks']))
+
     def test_cannot_escalate_owner_question_automatically(self):
         r=impl.prepare(make('04'))
         self.assertEqual(r['research_plan']['source_research_tasks'][0]['owner_decision'],
