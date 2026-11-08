@@ -35,6 +35,138 @@ def _blocked(code: str) -> dict:
     }
 
 
+def _actionable_research_order(raw: str, outcome: str, operation: str,
+                               artifact: str, capability: str, hints: list,
+                               constraints: list, pending: list, dimensions: list) -> dict:
+    """Generate source-bound A3 work instructions; never infer actual system state."""
+    exact = hints[0]
+    common = [
+        "Referencia exacta de fuente y objeto consultado",
+        "Versión/hash y evidencia de vigencia (CURRENTNESS)",
+        "Fragmento o resultado verificable, sin suponer que existe",
+        "Contradicciones, ausencias y ámbito de búsqueda utilizado",
+    ]
+    tasks = [
+        {
+            "id": "A3-01-IDENTITY",
+            "question": f"¿Cuál es la identidad canónica vigente de «{exact}» y existe ya su implementación?",
+            "verify": [
+                "Distinguir autoridad EXISTING/NEW/UNKNOWN de implementación EXISTING/NEW/UNKNOWN",
+                "Localizar identificador y referencia exactos, no inferirlos de la frase del usuario",
+                "Anotar candidatos de reutilización antes de proponer un artefacto nuevo",
+            ],
+            "evidence_required": common + [
+                "exact_target_ref, authority_state, implementation_state",
+                "authority_refs[] e implementation_refs[] o evidencia negativa de búsqueda",
+            ],
+            "if_unresolved": "TARGET_UNKNOWN: conservar candidatos y búsqueda pendiente; no declarar inexistencia",
+        },
+        {
+            "id": "A3-02-BASELINE",
+            "question": f"¿Qué reglas, definiciones, comportamiento y cambios previamente aprobados rigen «{exact}»?",
+            "verify": [
+                "Recuperar especificaciones, políticas, diseño y comportamiento implementado si existen",
+                "Identificar qué está decidido, qué funciona y qué está pendiente",
+                "Separar documentación vigente, histórica, contradictoria y no encontrada",
+            ],
+            "evidence_required": common + [
+                "Definiciones y reglas con authority_refs[], currentness_refs[]",
+                "as_is_baseline, as_is_consumers[], as_is_dependencies[]",
+            ],
+            "if_unresolved": "BASELINE_UNVERIFIED: no convertir la hipótesis del usuario en estado actual",
+        },
+        {
+            "id": "A3-03-DELTA",
+            "question": f"¿Qué diferencia verificable existe entre «{outcome}» y la definición/implementación actual de «{exact}»?",
+            "verify": [
+                f"Comparar la operación solicitada {operation!r} con el estado real del artefacto {artifact!r}",
+                f"Comprobar si la capacidad declarada {capability!r} ya está cubierta o es desconocida",
+                "Separar AS-IS, TO-BE declarado, modificaciones necesarias y decisiones pendientes",
+                "Si no hay delta documentado, informar NO_CHANGE_CANDIDATE; no generar modificación",
+            ],
+            "evidence_required": common + [
+                "explicit_delta o NO_CHANGE_CANDIDATE respaldado por comparación de fuentes",
+                "restrictions_impact[] y unresolved_material_gaps[]",
+            ],
+            "if_unresolved": "DELTA_UNVERIFIED: no construir requisitos ni solución nuevos",
+        },
+        {
+            "id": "A3-04-IMPACT",
+            "question": f"¿Qué consumidores, dependencias, reglas y riesgos serían afectados al actuar sobre «{exact}»?",
+            "verify": [
+                "Inspeccionar consumidores y dependencias materiales con referencias comprobables",
+                "Identificar contradicciones entre autoridades, efectos colaterales y controles afectados",
+                "Conservar toda prohibición explícita como criterio bloqueante del delta",
+            ],
+            "evidence_required": common + [
+                "dependency_refs[], consumer_refs[], material_risk_refs[] o brechas tipadas",
+            ],
+            "if_unresolved": "IMPACT_UNKNOWN: no afirmar bajo riesgo ni autorizar implementación",
+        },
+    ]
+    for i, phrase in enumerate(constraints, 1):
+        tasks.append({
+            "id": f"A3-CONSTRAINT-{i:02d}",
+            "literal_constraint": phrase,
+            "question": f"¿La alternativa que respeta «{phrase}» puede satisfacer «{outcome}» con el artefacto existente?",
+            "verify": [
+                "Comparar cada alternativa propuesta contra la prohibición literal, sin reinterpretarla",
+                "Rechazar cualquier alternativa que infrinja la restricción, aunque otro control parezca PASS",
+            ],
+            "evidence_required": common + ["constraint_compliance=PASS|FAIL|UNVERIFIED con motivo y referencia"],
+            "if_unresolved": "CONSTRAINT_UNVERIFIED: no levantar prohibición ni proponer bypass",
+        })
+    for i, ambiguity in enumerate(pending, 1):
+        tasks.append({
+            "id": f"A3-AMBIGUITY-{i:02d}",
+            "ambiguity_code": ambiguity["code"],
+            "question": ambiguity["statement"],
+            "verify": [
+                "Buscar definición y comportamiento ya existentes que determinen la interpretación correcta",
+                "Comparar alternativas compatibles con las restricciones declaradas",
+                "No elegir por intuición una capacidad que la solicitud no especifica",
+            ],
+            "evidence_required": common + ["ambiguity_resolution=RESOLVED_FROM_SOURCE|STILL_OPEN con referencias"],
+            "if_unresolved": "Pedir decisión al propietario solo cuando la investigación no pueda resolver una ambigüedad material",
+        })
+    for i, dimension in enumerate(dimensions, 1):
+        tasks.append({
+            "id": f"A3-DIMENSION-{i:02d}",
+            "dimension": dimension,
+            "question": f"¿Qué documentación o implementación vigente resuelve la dimensión «{dimension}» para «{exact}»?",
+            "verify": [
+                "Consultar exclusivamente las autoridades y el inventario pertinentes al target",
+                "Conservar UNKNOWN si la dimensión no tiene sustento documental",
+            ],
+            "evidence_required": common + ["dimension_resolution=RESOLVED|UNKNOWN y fuente o gap"],
+            "if_unresolved": "DIMENSION_UNKNOWN: no inferir un requisito ni una nueva capacidad",
+        })
+    return {
+        "status": "SOURCE_RESEARCH_INSTRUCTIONS_ONLY",
+        "request_literal": raw,
+        "target_hint_unverified": exact,
+        "requested_operation": operation,
+        "artifact_hint": artifact,
+        "functional_capability_hint": capability,
+        "source_resolution_order": list(RESOLUTION_ORDER),
+        "source_search_limit": "Buscar target exacto, luego autoridades y consumidores relacionados; ampliar solo ante brecha material",
+        "source_refs_are_current_verified": False,
+        "tasks": tasks,
+        "acceptance_after_research": [
+            "Cada hallazgo presenta fuente, versión/hash, vigencia y resultado verificable",
+            "Todas las restricciones literales están preservadas y contrastadas",
+            "Cada ambigüedad queda RESOLVED_FROM_SOURCE o STILL_OPEN con motivo",
+            "El delta AS-IS versus objetivo es explícito o NO_CHANGE_CANDIDATE comprobado",
+            "Ningún UNKNOWN se convierte en CURRENT, READY o evidencia de ausencia",
+        ],
+        "decision_if_no_delta": "NO_CHANGE_CANDIDATE: no modificar; verificar por evidencia antes de cerrar",
+        "decision_if_evidence_missing": "NEED_MORE_EVIDENCE; no clasificar como READY",
+        "decision_if_owner_only": "REQUIRES_DECISION únicamente tras agotar fuentes pertinentes",
+        "a3_dispatch_allowed": False,
+        "implementation_allowed": False,
+    }
+
+
 def prepare(a1_result: Any) -> dict:
     """Conserve reviewed-candidate content only; never promote an open A1.
 
@@ -173,6 +305,12 @@ def prepare(a1_result: Any) -> dict:
             "unresolved_ambiguities": deepcopy(pending),
             "dimensions_to_investigate": deepcopy(dims),
             "source_research_tasks": tasks,
+            "actionable_research_order": _actionable_research_order(
+                raw, context["objective"].get("desired_outcome"),
+                operation.get("kind"), target.get("artifact_kind"),
+                target.get("canonical_capability"), hints,
+                constraints, pending, dims,
+            ),
             "classification_state": "DEFERRED_UNTIL_MATERIAL_AMBIGUITIES_RESOLVED",
         },
         "a2_classification": None, "a3_canonical_inputs": None,
