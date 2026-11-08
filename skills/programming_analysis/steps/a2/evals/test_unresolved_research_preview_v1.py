@@ -31,6 +31,8 @@ def make(case='02'):
                  ('ASSUMPTION', 'existente'), ('NEGATION', 'No crees otra pantalla')]
     intent = {
         'operation': {'kind': op},
+        'desired_outcome': 'Reutilizar existente' if case=='04' else 'Acceso portal',
+        'explicit_constraints': [{'text': x} for x in constraint],
         'target': {'artifact_kind': target, 'canonical_capability': cap,
                    'raw_mentions': [mention]},
         'evidence_spans': [{'dimension': kind, 'quote': quote,
@@ -134,6 +136,51 @@ class PendingResearchTests(unittest.TestCase):
     def test_missing_source_refs_refused(self):
         x=make('04'); x['payload']['source_refs'] = []
         self.assertEqual(impl.prepare(x)['blocking_codes'], ['A2_RESEARCH_SOURCE_OR_CONSTRAINT_DRIFT'])
+
+    def test_material_negation_cannot_disappear_from_payload(self):
+        x=make('04')
+        x['payload']['constraints'] = []
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_EXPLICIT_CONSTRAINT_DRIFT'])
+
+    def test_extra_payload_constraint_cannot_be_injected(self):
+        x=make('04')
+        x['payload']['constraints'] = ['No crees otra pantalla', 'usa la existente']
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_EXPLICIT_CONSTRAINT_DRIFT'])
+
+    def test_desired_outcome_cannot_change_without_intent_hash(self):
+        x=make('02')
+        x['payload']['objective']['desired_outcome'] = 'Crear credenciales B2B'
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_DESIRED_OUTCOME_DRIFT'])
+
+    def test_missing_semantic_outcome_is_not_assumed(self):
+        x=make('02')
+        del x['intent_analysis']['desired_outcome']
+        x['semantic_candidate_sha256'] = impl._hash(x['intent_analysis'])
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_DESIRED_OUTCOME_DRIFT'])
+
+    def test_untyped_raw_mentions_fail_closed(self):
+        x=make('04')
+        x['intent_analysis']['target']['raw_mentions']=None
+        x['semantic_candidate_sha256']=impl._hash(x['intent_analysis'])
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_SOURCE_OR_CONSTRAINT_DRIFT'])
+
+    def test_extra_target_hint_not_in_A1_intent_rejected(self):
+        x=make('02')
+        x['payload']['target_hints'].append('INVENTED_SCREEN')
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_SOURCE_OR_CONSTRAINT_DRIFT'])
+
+    def test_malformed_declared_ambiguity_fail_closed_no_exception(self):
+        x=make('02')
+        x['intent_analysis']['material_ambiguities'][0]['code']=['NOT_A_CODE']
+        x['semantic_candidate_sha256']=impl._hash(x['intent_analysis'])
+        self.assertEqual(impl.prepare(x)['blocking_codes'],
+                         ['A2_RESEARCH_AMBIGUITY_INVALID'])
 
     def test_cannot_escalate_owner_question_automatically(self):
         r=impl.prepare(make('04'))
