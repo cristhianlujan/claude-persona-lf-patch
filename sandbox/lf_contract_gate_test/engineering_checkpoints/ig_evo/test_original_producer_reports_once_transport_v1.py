@@ -240,7 +240,8 @@ class OriginalProducerTransportContract(unittest.TestCase):
         b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
         self.assertIn("fn_input_validator_evidence_rehydrate_v1(", b)
         self.assertIn("'original_assessment_row',to_jsonb(a)", b)
-        self.assertIn("'validator_assertion_sets_originals_by_sha256',v_validator_assertion_sets", b)
+        self.assertIn("'validator_assertion_sets_factored_by_original_sha256',v_validator_assertion_sets", b)
+        self.assertIn("'validator_actual_values_original_by_sha256',v_validator_actual_values", b)
         self.assertIn("'validator_assertion_set_sha256',v_assertion_sha", b)
         self.assertIn("'validator_evidence_logical_sha256'", b)
         self.assertIn("v_assertion_sha:=programacion.fn_v09_sha256_jsonb(", b)
@@ -257,7 +258,10 @@ class OriginalProducerTransportContract(unittest.TestCase):
     def test_dedup_is_lossless_and_includes_all_original_assertions(self):
         b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
         self.assertIn("IF NOT (v_validator_assertion_sets ? v_assertion_sha)", b)
-        self.assertIn("jsonb_build_object(v_assertion_sha,v_logical->'assertions')", b)
+        self.assertIn("jsonb_build_object(v_assertion_sha,v_factored_assertions)", b)
+        self.assertIn("'validator_actual_values_original_by_sha256',v_validator_actual_values", b)
+        self.assertIn("'validator_unique_actual_value_count'", b)
+        self.assertIn("programacion.fn_v09_sha256_jsonb(v_reconstructed_assertions)", b)
         self.assertIn("v_validator_assertion_sets->v_assertion_sha", b)
         self.assertIn("'validator_original_count',v_n", b)
         self.assertIn("'validator_unique_assertion_set_count'", b)
@@ -265,6 +269,40 @@ class OriginalProducerTransportContract(unittest.TestCase):
         self.assertIn("v_receipt_digest IS DISTINCT FROM a.validator_sha256", b)
         self.assertNotIn("LIMIT 23", b)
         self.assertNotIn("LIMIT 47", b)
+
+    def test_all_assertion_items_factored_not_only_first(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        self.assertIn("FOR v_assertion IN", b)
+        self.assertIn("jsonb_array_elements(v_logical->'assertions')", b)
+        self.assertIn("v_factored_assertions:=v_factored_assertions ||", b)
+        self.assertIn("jsonb_build_array(v_assertion_compact)", b)
+        self.assertIn("v_reconstructed_assertions:=v_reconstructed_assertions ||", b)
+        self.assertIn("jsonb_build_array(v_assertion_recovered)", b)
+        self.assertNotIn("v_logical->'assertions'->0", b)
+
+    def test_nested_value_references_are_sha_verified_and_roundtrip_exactly(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        self.assertIn("v_actual_sha:=programacion.fn_v09_sha256_jsonb(v_assertion->'actual')", b)
+        self.assertIn("v_validator_actual_values->v_actual_sha", b)
+        self.assertIn("jsonb_build_object('actual_ref_sha256',v_actual_sha)", b)
+        self.assertIn("jsonb_build_object('actual',v_validator_actual_values->v_actual_sha)", b)
+        self.assertIn("IG_CONSOLIDATION_ACTUAL_VALUE_SHA_COLLISION", b)
+        self.assertIn("IG_CONSOLIDATION_ACTUAL_ROUNDTRIP_MISMATCH", b)
+        self.assertIn("IG_CONSOLIDATION_ASSERTION_SET_ROUNDTRIP_MISMATCH", b)
+        self.assertIn("IG_CONSOLIDATION_ASSERTION_SHAPE_UNSUPPORTED", b)
+        self.assertIn("v_reconstructed_assertions IS DISTINCT FROM v_logical->'assertions'", b)
+
+    def test_factored_transport_keeps_original_receipt_and_no_semantic_promotion(self):
+        b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
+        self.assertIn("v_receipt_digest IS DISTINCT FROM a.validator_sha256", b)
+        self.assertIn("v_assertion_sha:=programacion.fn_v09_sha256_jsonb(v_logical->'assertions')", b)
+        self.assertIn("'original_assessment_row',to_jsonb(a)", b)
+        self.assertIn("'validator_assertion_set_sha256',v_assertion_sha", b)
+        self.assertIn("'validator_assertion_payload_truncated',false", b)
+        self.assertIn("'independent_semantic_judgement_here','NOT_TESTED'", b)
+        self.assertIn("'semantic_promotion_authorized',false", b)
+        self.assertNotIn("fn_input_governance_validator_validate_v1(", b)
+        self.assertNotIn("fn_input_governance_curator_materialize_v1(", b)
 
     def test_validator_pass_does_not_override_qa_production_or_semantics(self):
         b=self.sql.split("CREATE OR REPLACE FUNCTION programacion.fn_input_governance_original_consolidate_v1")[1].split("$ig_original_consolidate$;")[0]
