@@ -37,6 +37,8 @@ Curator materializador existente → selector canónico de raíces G1
 - **`UNATTESTED_SCREEN_APPLICABILITY_NOT_G1_ROOT_ELIGIBLE`** (candidato): quedan vínculos `DERIVED_GLOBAL` que necesitan autoridad de pantalla, sin afirmación de que G1 los procesó.
 - **`NOT_TESTED`** para correspondencia semántica entre cláusulas textuales, políticas y relaciones.
 
+**Corrección de consistencia del transporte (#3694):** `graph_truncated` en el lector RAW debe ser `true` cuando faltan raíces **o** cuando `ig_evo_graph_internal_truncation_count > 0`, aunque se hayan capturado todas las raíces. El conteo y los IDs de raíces truncadas se conservan. Verificación de código y test de contrato añadidos; ejecución real SQL sigue `NOT_TESTED`.
+
 **Decisión:** el código candidato G1 tiene cobertura de todas las raíces atestadas y no recorta a ocho. **No se cierra G1 funcionalmente** sin probar ejecución del candidato en entorno gobernado, exactitud de hashes, volumetría y casos de truncamiento. Sin repetir cálculos históricos.
 
 **Siguiente lote en orden:** Validator → consolidación de Input Governance → Perfil al final. Evaluar independencia, recibos y estados por familia; jamás aceptar `PASS` como sinónimo de QA o runtime.  
