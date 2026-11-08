@@ -35,7 +35,7 @@
 | Caso | Resultado funcional requerido |
 |---|---|
 | CORE_02: vista para entrar al portal | Entrada genérica, no forzar AUTH; ambigüedad entre navegación y autenticación; profundidad conservadora; sin A3 automático |
-| CORE_04: no crear otra pantalla | `REUSE` preservado; negación completa; identidad pendiente; sin CREATE, MODIFIY ni autorización |
+| CORE_04: no crear otra pantalla | `REUSE` preservado; negación completa; identidad pendiente; sin CREATE, MODIFY ni autorización |
 | Contraejemplo: riesgo HIGH acreditado | Nunca degradar L3 por resolver otros UNKNOWN |
 | Contraejemplo: fuente NO CURRENT | No declarar inventario resuelto ni READY |
 | Solicitud sin ambigüedad y fuentes suficientes | Conservar camino de clasificación A2 existente |
