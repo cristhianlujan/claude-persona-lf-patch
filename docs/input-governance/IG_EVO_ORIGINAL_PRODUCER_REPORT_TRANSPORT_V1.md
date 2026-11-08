@@ -139,3 +139,37 @@ La función lectora es interna (`SECURITY DEFINER`, sin `EXECUTE` para PUBLIC, a
 - Integridad de ACL (SEC-011), fuente vigente (GOV-010), calidad semántica separada (GOV-032) y regresiones de EKB.
 
 **Compatibilidad:** PR #3693 cambia el paquete semántico por familia; este PR preserva informes existentes, sin crear un componente que compita con Curator/Validator.
+
+## Lote 9 — Volumetría integral y transporte: readback parcial 2026-11-07
+
+**Objetivo:** medir las porciones del informe original realmente preservadas antes de certificar el transporte al Perfil. **Modo:** SELECT exclusivo sobre RUN histórico 949 (pantalla B2B-AUTH-001, id 51) y lectura de funciones LIVE + Edge; no se invocó Curator, R1–R6, G1, Validator o transportes de ejecución, ni se escribió producción.
+
+| Parte | Evidencia comprobada | Caracteres JSON | Naturaleza |
+|---|---|---:|---|
+| 47 `input_family_assessments` originales como filas JSON | 47/47 almacenadas | 313.322 | Tamaño de filas sin envoltura |
+| 47 filas bajo `original_assessment_row` más referencia al conjunto | 47/47 | 321.136 | **Simulación SELECT** del formato candidato |
+| 23 conjuntos de aserciones factorizados por SHA original | 23/23 | 13.058 | **Simulación SELECT** |
+| 19 valores `actual` originales únicos por SHA | 19/19 | 282.870 | **Simulación SELECT** |
+| **Bloque Validator simulado (filas + ambos mapas + nombres de campos)** | 47 filas, 23 conjuntos, 19 valores, sin conflictos de alias | **617.199** | **Simulación SELECT, no ejecución del consolidador** |
+| Datos de control del RUN | Registro RUN 949 = 22.293; `scope` = 15.421; `source_manifest` = 5.679 | **No sumables sin riesgo de doble conteo** | Fuentes almacenadas, no el JSON final |
+| 25 propuestas históricas | 64.729 entre las filas originales | **No sumables** | Posible solape con Curator |
+| **RAW completo Curator / R1–R6 / G1** | `programacion.input_governance_producer_raw_v1` **NO existe LIVE**; por tanto G1 71 grafos no está archivado como RAW nuevo | **DESCONOCIDO** | No inventar tamaño ni rehacer un RUN histórico |
+
+La simulación de 617.199 caracteres omite campos pequeños del envoltorio final (`validator_receipt_sha256_verified`, metadatos, flags, etc.), el `stage_gate` y **todo el RAW de Curator/G1**. Por ello no es una medición total ni una garantía de cabida en el modelo. Las aserciones 47/47 y recibos originales 47/47 fueron contrastados con SHA canónico en el lote anterior; la deduplicación anidada reconstruyó 23/23 sets exactos, con escenarios negativos de referencias y contenido modificados.
+
+### Capacidad del camino existente — inspección estática
+
+| Control | Resultado |
+|---|---|
+| `fn_input_governance_execute` agrega `ig_consolidated_original_reports` en la migración candidata | **Preparado, no instalado** |
+| `fn_lf_profile_input_governance_resolve_v1` recibe `governance_result` sin segunda copia | **Ruta estructural verificada** |
+| `lf_profile_execution_input_validate_v1` conserva `input_governance` en su `evidence_payload` | **Verificado en fuente LIVE** |
+| `lf_profile_native_bridge_prepare_v1` emite `input_governance` en `NATIVE_MODEL_INPUT_READY` | **Verificado en fuente LIVE** |
+| `profile_continuation.ts` retorna el `result` del bridge | **Verificado en fuente GitHub** |
+| `MAX_SKILL_INPUT_BYTES=65536` | **Solo entradas de skills**, no afirmar que limita este resultado |
+| `lf_operation_execution_steps.input_validate` histórico | 23 muestras desde 2026-10-01, máximo 343.113 caracteres | Referencia empírica, **no** prueba del paquete nuevo |
+| Permisos | `fn_input_governance_execute` es `SECURITY DEFINER` de `postgres`, con EXECUTE para `service_role`; rehidratador interno restringido | No se ejecutó desde el rol solo lectura |
+
+**Interpretación:** el componente Validator candidato, incluso optimizado, es ~1,8 veces el máximo histórico observado de `input_validate`; falta Curator/G1 y otros campos. No se observó en las funciones inspeccionadas una proyección/truncamiento específico del resultado IG, **pero no existe recibo del paquete nuevo ni una prueba de los límites reales del runtime/modelo**. No extrapolar el 343.113 como límite de capacidad.
+
+**Criterio de NO-GO conservado:** no habilitar merge o despliegue hasta compilación PostgreSQL gobernada; prueba real con RUN nuevo, SHA/longitud comparados a través de `fn_input_governance_execute → input_validate → NATIVE_MODEL_INPUT_READY`; auditoría de PII/secretos, medición de 71 grafos G1 y contexto efectivo; y recibo de consumo del Perfil. Si faltan RAW históricos, devolver `NOT_CAPTURED_LEGACY_RUN` sin reconstruirlos artificialmente. GOV-010 / GOV-032 / SEC-011 / IG-M107-A3 siguen aplicando.
