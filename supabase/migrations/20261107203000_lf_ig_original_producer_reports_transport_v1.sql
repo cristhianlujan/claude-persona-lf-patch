@@ -203,8 +203,15 @@ DECLARE
  v_curator_raw jsonb;
  v_validator_originals jsonb := '[]'::jsonb;
  v_validator_assertion_sets jsonb := '{}'::jsonb;
+ v_validator_actual_values jsonb := '{}'::jsonb;
  v_logical jsonb;
  v_assertion_sha text;
+ v_actual_sha text;
+ v_assertion jsonb;
+ v_assertion_compact jsonb;
+ v_assertion_recovered jsonb;
+ v_factored_assertions jsonb;
+ v_reconstructed_assertions jsonb;
  v_receipt_digest text;
  v_n integer := 0;
  a record;
@@ -274,23 +281,62 @@ BEGIN
    THEN RAISE EXCEPTION 'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH:%:%',
         p_run_id,a.family_code;
    END IF;
-   -- Lossless de-duplication: include the EXACT original assertions just once
-   -- for each SHA. Every family retains its original row and receipt.
-   -- No summary, truncation or recreated assertion is permitted.
+   -- First prove the digest of the complete original assertion set.
+   -- Factor only AFTER the original Validator receipt was SHA verified.
    v_assertion_sha:=programacion.fn_v09_sha256_jsonb(v_logical->'assertions');
    IF a.validator_evidence ? 'assertion_set_sha256'
       AND a.validator_evidence->>'assertion_set_sha256'
            IS DISTINCT FROM v_assertion_sha
    THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_REFERENCE_SHA_MISMATCH:%:%',
        p_run_id,a.family_code; END IF;
+   v_factored_assertions:='[]'::jsonb;
+   v_reconstructed_assertions:='[]'::jsonb;
+   -- Handle every assertion, not just [0], and preserve source array order.
+   FOR v_assertion IN
+      SELECT item.value FROM jsonb_array_elements(v_logical->'assertions') AS item(value)
+   LOOP
+     IF jsonb_typeof(v_assertion) IS DISTINCT FROM 'object'
+        OR v_assertion ? 'actual_ref_sha256'
+     THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_SHAPE_UNSUPPORTED:%:%',
+         p_run_id,a.family_code; END IF;
+     v_assertion_compact:=v_assertion;
+     v_assertion_recovered:=v_assertion;
+     IF v_assertion ? 'actual' THEN
+       v_actual_sha:=programacion.fn_v09_sha256_jsonb(v_assertion->'actual');
+       IF NOT (v_validator_actual_values ? v_actual_sha) THEN
+         v_validator_actual_values:=v_validator_actual_values ||
+           jsonb_build_object(v_actual_sha,v_assertion->'actual');
+       ELSIF v_validator_actual_values->v_actual_sha
+             IS DISTINCT FROM v_assertion->'actual'
+       THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ACTUAL_VALUE_SHA_COLLISION:%:%',
+           p_run_id,a.family_code; END IF;
+       v_assertion_compact:=(v_assertion-'actual') ||
+          jsonb_build_object('actual_ref_sha256',v_actual_sha);
+       v_assertion_recovered:=(v_assertion_compact-'actual_ref_sha256') ||
+          jsonb_build_object('actual',v_validator_actual_values->v_actual_sha);
+     END IF;
+     IF v_assertion_recovered IS DISTINCT FROM v_assertion
+     THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ACTUAL_ROUNDTRIP_MISMATCH:%:%',
+         p_run_id,a.family_code; END IF;
+     v_factored_assertions:=v_factored_assertions ||
+       jsonb_build_array(v_assertion_compact);
+     v_reconstructed_assertions:=v_reconstructed_assertions ||
+       jsonb_build_array(v_assertion_recovered);
+   END LOOP;
+   IF v_reconstructed_assertions IS DISTINCT FROM v_logical->'assertions'
+      OR programacion.fn_v09_sha256_jsonb(v_reconstructed_assertions)
+           IS DISTINCT FROM v_assertion_sha
+   THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_SET_ROUNDTRIP_MISMATCH:%:%',
+      p_run_id,a.family_code; END IF;
+   -- One assertion set per ORIGINAL set SHA; observed values are stored
+   -- once per ORIGINAL value SHA, even when distinct tests share an array.
    IF NOT (v_validator_assertion_sets ? v_assertion_sha) THEN
      v_validator_assertion_sets:=v_validator_assertion_sets ||
-       jsonb_build_object(v_assertion_sha,v_logical->'assertions');
+       jsonb_build_object(v_assertion_sha,v_factored_assertions);
    ELSIF v_validator_assertion_sets->v_assertion_sha
-             IS DISTINCT FROM v_logical->'assertions'
+             IS DISTINCT FROM v_factored_assertions
    THEN RAISE EXCEPTION 'IG_CONSOLIDATION_ASSERTION_SET_ALIAS_CONFLICT:%:%',
-       p_run_id,a.family_code;
-   END IF;
+       p_run_id,a.family_code; END IF;
    v_validator_originals:=v_validator_originals || jsonb_build_array(
      jsonb_build_object(
        'family_code',a.family_code,
@@ -320,12 +366,15 @@ BEGIN
     'curator_original_coverage_status',v_curator_raw->>'status',
     'validator_original_rows',v_validator_originals,
     'validator_original_count',v_n,
-    'validator_assertion_sets_originals_by_sha256',v_validator_assertion_sets,
+    'validator_assertion_sets_factored_by_original_sha256',v_validator_assertion_sets,
+    'validator_actual_values_original_by_sha256',v_validator_actual_values,
     'validator_unique_assertion_set_count',
       (select count(*) from jsonb_object_keys(v_validator_assertion_sets) k),
-    'validator_original_rehydration','LOSSLESS_SHA_REFERENCE_TO_FULL_ORIGINAL_ASSERTIONS',
+    'validator_unique_actual_value_count',
+      (select count(*) from jsonb_object_keys(v_validator_actual_values) k),
+    'validator_original_rehydration','LOSSLESS_NESTED_SHA_REFERENCE_WITH_FULL_ROUNDTRIP_CHECK',
     'validator_original_recovery_rule',
-      'for each original_assessment_row: compact validator_evidence replaces assertion_set_sha256 with assertions from validator_assertion_sets_originals_by_sha256; inline assertions are unchanged',
+      'recover assertions by original set SHA: for each factored assertion with actual_ref_sha256, replace that ref with actual from validator_actual_values_original_by_sha256; preserve order and verify original assertion set SHA; then replace compact validator_evidence.assertion_set_sha256 with recovered assertions; original_assessment_row is immutable',
     'validator_assertion_payload_truncated',false,
     'validator_semantic_mode',v_run.scope->>'validator_semantic_mode',
     'validator_semantic_comparison_families',
@@ -588,7 +637,10 @@ BEGIN
  OR strpos(v_prop,'ig_evo_graph_internal_truncated_rule_ids')=0
  OR strpos(v_prop,'fn_input_effective_rule_links_v1(v_run.pantalla_id')=0
  OR strpos(v_executor,'''ig_consolidated_original_reports'',v_ig_originals')=0
- OR strpos(v_assembly,'validator_assertion_sets_originals_by_sha256')=0
+ OR strpos(v_assembly,'validator_assertion_sets_factored_by_original_sha256')=0
+ OR strpos(v_assembly,'validator_actual_values_original_by_sha256')=0
+ OR strpos(v_assembly,'IG_CONSOLIDATION_ACTUAL_ROUNDTRIP_MISMATCH')=0
+ OR strpos(v_assembly,'IG_CONSOLIDATION_ASSERTION_SET_ROUNDTRIP_MISMATCH')=0
  OR strpos(v_assembly,'IG_CONSOLIDATION_ASSERTION_REFERENCE_SHA_MISMATCH')=0
  OR strpos(v_assembly,'''validator_assertion_payload_truncated'',false')=0
  OR strpos(v_assembly,'IG_CONSOLIDATION_VALIDATOR_RECEIPT_SHA_MISMATCH')=0
