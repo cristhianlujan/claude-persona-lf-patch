@@ -84,7 +84,8 @@ jobs:
         with:
           name: lf-ig-original-reports-python-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_ig_candidate_evidence
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
 
   ig-isolated-postgres-readiness:
@@ -135,5 +136,6 @@ jobs:
         with:
           name: lf-ig-original-reports-pg-readiness-${{ github.run_id }}-${{ github.run_attempt }}
           path: .lf_ig_pg_evidence
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
