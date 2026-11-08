@@ -90,6 +90,16 @@ def _research_handoff(a1_result):
     }
 
 
+def _a2_pending_research_preview(a1_result):
+    """A2 planning only. Does not invoke A2 depth policy or dispatch A3."""
+    if a1_result.get("status") != "REQUIRES_DECISION":
+        return None
+    return _load(
+        "steps/a2/adapters/unresolved_research_preview_v1.py",
+        "a2_unresolved_research_preview",
+    ).prepare(a1_result)
+
+
 def prepare_semantic_transport(raw_request, *, business, semantic_producer,
                                semantic_reviewer, depth_signals=None,
                                evidence_refs=None):
@@ -107,6 +117,7 @@ def prepare_semantic_transport(raw_request, *, business, semantic_producer,
             "schema_version": "A1_A2_SEMANTIC_TRANSPORT_CANDIDATE_V1",
             "status": "HALTED_AT_A1", "a1_result": a1,
             "inventory_research_handoff": _research_handoff(a1),
+            "a2_research_preview": _a2_pending_research_preview(a1),
             "a2_signal_bundle": None, "a2_result": None,
             "no_run_created": True,
         }
