@@ -18,6 +18,15 @@
       "consumer": "STORY_CREATOR",
       "expected_verdict": "NO_BLOCKING_FINDINGS",
       "expected_finding_codes": []
+    },
+    {
+      "case_id": "IG_PR3694_ORIGINAL_REPORTS_B2B_AUTH_ROLLBACK_001",
+      "candidate_ref": "HEAD",
+      "candidate_path": "supabase/migrations/20261107203000_lf_ig_original_producer_reports_transport_v1.sql",
+      "screen_id": 51,
+      "consumer": "STORY_CREATOR",
+      "expected_verdict": "NO_BLOCKING_FINDINGS",
+      "expected_finding_codes": []
     }
   ]
 }
