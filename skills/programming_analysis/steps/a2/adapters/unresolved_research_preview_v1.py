@@ -74,6 +74,12 @@ def prepare(a1_result: Any) -> dict:
             or a1_result.get("original_request_sha256") != digest
             or a1_result.get("semantic_candidate_sha256") != _hash(intent)):
         return _blocked("A2_RESEARCH_A1_DIGEST_MISMATCH")
+    # The canonical A1 payload derives this outcome from its reviewed intent.
+    # A digest over intent alone does not protect against payload tampering.
+    outcome = context["objective"].get("desired_outcome")
+    if (not isinstance(outcome, str) or not outcome.strip()
+            or outcome != intent.get("desired_outcome")):
+        return _blocked("A2_RESEARCH_DESIRED_OUTCOME_DRIFT")
     target, operation = intent.get("target"), intent.get("operation")
     if not isinstance(target, dict) or not isinstance(operation, dict):
         return _blocked("A2_RESEARCH_INTENT_UNTYPED")
@@ -81,14 +87,26 @@ def prepare(a1_result: Any) -> dict:
         context.get("source_refs"), context.get("target_hints"),
         context.get("constraints"),
     )
+    mentions = target.get("raw_mentions")
     if (not isinstance(refs, list) or not refs
             or not all(isinstance(r, str) and r.strip() for r in refs)
             or not isinstance(hints, list) or not hints
             or not all(isinstance(h, str) and h.strip() for h in hints)
-            or target.get("raw_mentions", [])[:1] != hints[:1]
+            or not isinstance(mentions, list) or not mentions
+            or not all(isinstance(m, str) and m.strip() for m in mentions)
+            or mentions[:1] != hints
             or not isinstance(constraints, list)
             or not all(isinstance(c, str) and c.strip() and c in raw for c in constraints)):
         return _blocked("A2_RESEARCH_SOURCE_OR_CONSTRAINT_DRIFT")
+    # Prevent a consumer from deleting a negation while keeping intent hash
+    # and the original text unchanged. All A1 constraints must travel intact.
+    declared_constraints = intent.get("explicit_constraints")
+    if (not isinstance(declared_constraints, list)
+            or any(not isinstance(c, dict)
+                   or not isinstance(c.get("text"), str)
+                   or not c["text"].strip() for c in declared_constraints)
+            or constraints != [c["text"] for c in declared_constraints]):
+        return _blocked("A2_RESEARCH_EXPLICIT_CONSTRAINT_DRIFT")
     spans = intent.get("evidence_spans")
     if (not isinstance(spans, list) or not spans or any(
         not isinstance(s, dict) or type(s.get("start")) is not int
@@ -108,11 +126,21 @@ def prepare(a1_result: Any) -> dict:
     declared = intent.get("material_ambiguities")
     if not isinstance(ambiguities, list) or not isinstance(declared, list):
         return _blocked("A2_RESEARCH_AMBIGUITY_INVALID")
-    pending = [a for a in ambiguities if isinstance(a, dict)
-               and a.get("resolution_state") == "OPEN"
+    if any(not isinstance(a, dict)
+           or not isinstance(a.get("code"), str) or not a["code"].strip()
+           or not isinstance(a.get("statement"), str) or not a["statement"].strip()
+           or a.get("materiality") not in ("MATERIAL", "UNKNOWN")
+           for a in declared):
+        return _blocked("A2_RESEARCH_AMBIGUITY_INVALID")
+    if any(not isinstance(a, dict)
+           or not isinstance(a.get("code"), str) or not a["code"].strip()
+           or not isinstance(a.get("statement"), str) or not a["statement"].strip()
+           for a in ambiguities):
+        return _blocked("A2_RESEARCH_AMBIGUITY_INVALID")
+    pending = [a for a in ambiguities if a.get("resolution_state") == "OPEN"
                and a.get("materiality") in ("MATERIAL", "UNKNOWN")]
-    declared_map = {(a.get("code"), a.get("statement"), a.get("materiality"))
-                    for a in declared if isinstance(a, dict)}
+    declared_map = {(a["code"], a["statement"], a["materiality"])
+                    for a in declared}
     if (not pending or len(pending) != len(declared)
             or len({a.get("code") for a in pending}) != len(pending)
             or any((a.get("code"), a.get("statement"), a.get("materiality"))
