@@ -123,6 +123,36 @@ class DevelopmentScope(unittest.TestCase):
         self.assertFalse(dep["eligible_for_implementation"])
         self.assertFalse(dep["untyped_id_observation"]["relation_attested"])
 
+    def test_full_material_contract_preserves_statuses_without_promoting(self):
+        src=sources()
+        src["contract_sections"]={
+            "fields":[{"field_code":"LOGIN_EMAIL","status":"CANDIDATO","required":True}],
+            "errors":[{"error_code":"BAD_CREDENTIALS","status":"CANDIDATO"}],
+            "visual":{"colors":[{"token_name":"green_action","status":"VIGENTE"}],
+                      "variants":[{"variant_code":"MOBILE","status":"CANDIDATO_VISUAL"}]},
+            "context":{"module_code":"B2B_AUTENTICACION"},
+            "metadata":{"screen_code":SCREEN},
+            "profiles":[],"analytics":[],"evidence":[],
+        }
+        frozen=copy.deepcopy(src)
+        out=a3.run(inputs(),src)
+        self.assertEqual(src,frozen)
+        material=out["material_contract_readback"]
+        self.assertEqual(material["counts"]["sections"],8)
+        self.assertEqual(material["counts"]["status_items"],4)
+        self.assertEqual(material["counts"]["vigente_source_candidates"],1)
+        self.assertEqual(material["counts"]["pending_or_other_status"],3)
+        self.assertEqual(out["counts"]["material_sections_total"],8)
+        self.assertTrue(all(not item["implementation_approved"]
+                            for item in material["status_items"]))
+        self.assertFalse(out["a4_allowed"])
+
+    def test_incomplete_material_is_blocked_not_assumed(self):
+        src=sources();src["contract_sections"]={"fields":[]}
+        out=a3.run(inputs(),src)
+        self.assertEqual(out["status"],"BLOCKED")
+        self.assertIn("A3_MATERIAL_CONTRACT_SECTIONS_INCOMPLETE",out["blocking_codes"])
+
     def test_exact_source_and_business_fail_closed(self):
         inputs_copy=inputs(); wrong=sources(); wrong["business"]="SALY"
         self.assertEqual(a3.run(inputs_copy,wrong)["status"],"BLOCKED")
