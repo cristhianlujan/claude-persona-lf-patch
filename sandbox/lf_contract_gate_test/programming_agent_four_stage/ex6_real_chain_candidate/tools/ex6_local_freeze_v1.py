@@ -27,8 +27,8 @@ def exact_patch_blobs():
     out={}
     for part in parts:
         header=part.splitlines()[0].split()
-        path=header[1].removeprefix("a/")
-        if path not in expected or header[2]!="b/"+path:
+        path=header[2].removeprefix("a/")
+        if path not in expected or header[3]!="b/"+path:
             raise AssertionError("EX6_LOCAL_FREEZE_UNAUTHORIZED_HUNK")
         hunk_index=next((i for i,l in enumerate(part.splitlines(keepends=True))
                          if l.startswith("@@ ")),None)
