@@ -197,3 +197,75 @@ def make_pg13_v2(pg12=None,truth=None):
         policy_ref="ex6://pg13/local-immutable-refs")
     return {"pg12":pg12,"c1":c1,"c2":c2,"c3":c3,
             "bridge":bridge,"production_authority":False}
+
+
+def make_pg14_v2(pg13=None,local_freeze=None,truth=None):
+    """Original PG14 v2 source-only Testing fixture; real Analysis NOT READY."""
+    from pg14_c1_testing_execution_contract_candidate_v2 import prepare_pg14_c1
+    from pg14_c2_testing_payload_candidate_v2 import prepare_pg14_c2
+    from pg14_c2_completeness_guard_v2 import validate_pg14_c2_completeness
+    from pg14_c3_testing_admission_readback_request_candidate_v2 import prepare_pg14_c3
+    from pg14_pg13_freeze_bridge_v2 import bridge_pg13_to_pg14
+    from pg14_local_testing_receiver_v2 import simulate_testing_receiver
+    from ex6_local_freeze_v1 import local_freeze_and_attacks
+    truth=truth or source_truth()
+    pg13=pg13 or make_pg13_v2(truth=truth)
+    if local_freeze is None:
+        local_freeze=local_freeze_and_attacks()
+    if local_freeze["source_commit"]!=N or local_freeze["blocked_mutation_count"]!=5:
+        raise AssertionError("EX6_PG14_LOCAL_GIT_FREEZE_NOT_VERIFIED")
+    contract_path=Path(__file__).resolve().parents[2]/"wave1_boundary_contracts"/"testing_admission_contract_v1.json"
+    contract=json.loads(contract_path.read_text())
+    analysis={
+        "package_ref":"ex6://analysis/fixture-unattested/not-ready",
+        "package_sha256":h({"status":"NOT_READY","spec":SPEC_REF,"commit":N}),
+        "source_currentness_ref":SPEC_REF,
+        "ready_verified":False,
+    }
+    identity=pg13["pg12"]["c1"]
+    c1=prepare_pg14_c1(
+        pg13_c3=pg13["c3"],admission_contract=contract,
+        analysis_package_ref=analysis["package_ref"],
+        analysis_package_sha256=analysis["package_sha256"],
+        source_currentness_ref=analysis["source_currentness_ref"],
+        frozen_candidate_ref="ex6://pg13/local-git-freeze/"+N,
+        frozen_candidate_sha256=identity["candidate_sha256"])
+    # Original V2 Git bridge mandates literal Git ref syntax. All new source
+    # refs remain ex6://; this is the *actual local* refs/tags/frozen namespace.
+    bridge=bridge_pg13_to_pg14(
+        pg12_c1=identity,pg13_bridge=pg13["bridge"],
+        pg13_c1=pg13["c1"],pg13_c2=pg13["c2"],pg13_c3=pg13["c3"],
+        pg14_c1=c1,freeze_tag_ref="refs/tags/frozen/"+N,
+        freeze_tag_oid=local_freeze["local_tag_oid"],
+        analysis_package_observation=analysis)
+    obligations=[{
+        "obligation_ref":req,
+        "spec_ref":SPEC_REF+"#"+req,
+        "test_case_ref":RECEIPT+"#candidate/commands/visible_ex6" if req=="REM-D4"
+                        else RUN_REF+"#visible-tests/ex6",
+        "expected_oracle_ref":"ex6://holdout/sha256/"+truth["holdout_sha256"]+"/PASS",
+    } for req in truth["requirements"]]
+    c2=prepare_pg14_c2(
+        pg14_c1=c1,catalog_version_ref=SPEC_REF,
+        spec_test_obligations=obligations,
+        blind_test_contract_ref="fn_submit_blind_test_contract",
+        pending_copy_texts=[],required_obligation_ref="REM-D1",
+        copy_applicability_ref="ex6://not-applicable/no-UI-copy-time-service")
+    completeness=validate_pg14_c2_completeness(c2)
+    c3=prepare_pg14_c3(
+        pg14_c2=c2,
+        testing_admission_endpoint_ref="ex6://testing/local-only-unattested",
+        readback_contract_ref="ex6://pg14/testing-readback-v2-disposable",
+        request_key_ref="ex6://pg14/local-request/"+N)
+    verdict=simulate_testing_receiver(
+        pg14_bridge=bridge,pg14_c1=c1,pg14_c2=c2,pg14_c3=c3,
+        request_payload=c3["admission_request"])
+    tampered=json.loads(json.dumps(c3["admission_request"]))
+    tampered["frozen_candidate_sha256_reported"]="f"*64
+    blocked=simulate_testing_receiver(
+        pg14_bridge=bridge,pg14_c1=c1,pg14_c2=c2,pg14_c3=c3,
+        request_payload=tampered)
+    return {"pg13":pg13,"c1":c1,"c2":c2,"c3":c3,
+            "bridge":bridge,"completeness":completeness,
+            "verdict":verdict,"tampered_verdict":blocked,
+            "local_freeze":local_freeze,"production_authority":False}
