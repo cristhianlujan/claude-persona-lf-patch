@@ -507,12 +507,30 @@ def validate_independent_semantic_review(review):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_CONTEXT_REFS_REQUIRED")
     if not review.get("counterfactual_result"):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_COUNTERFACTUAL_REQUIRED")
+    if mode == "CURRENT_CONTEXT_REVIEW":
+        normalize_current_context_counterfactual(review)
     for key in ("candidate_sha256", "scope_packet_sha256"):
         if not isinstance(review.get(key), str) or not re.fullmatch(r"[0-9a-f]{64}", review[key]):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_HASH_INVALID:" + key)
 
 
+def normalize_current_context_counterfactual(review):
+    """Match the deployed V2 trust contract while preserving real counterfactual evidence."""
+    if review.get("review_mode") != "CURRENT_CONTEXT_REVIEW":
+        return review
+    counterfactual = review.get("counterfactual_result")
+    if isinstance(counterfactual, dict):
+        examples = counterfactual.get("counterfactuals")
+        if counterfactual.get("status") != "PASS" or not isinstance(examples, list) or not examples:
+            raise ValueError("PROFILE_CURRENT_CONTEXT_COUNTERFACTUAL_NOT_PASS")
+        return {**review, "counterfactual_result": "PASS", "counterfactual_details": counterfactual}
+    if counterfactual != "PASS":
+        raise ValueError("PROFILE_CURRENT_CONTEXT_COUNTERFACTUAL_NOT_PASS")
+    return review
+
+
 def build_semantic_receipt(review):
+    review = normalize_current_context_counterfactual(review)
     current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
     verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
                else "PASS_INDEPENDENT_SEMANTIC")
