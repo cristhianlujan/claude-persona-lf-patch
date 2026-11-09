@@ -31,8 +31,14 @@ class OriginalBundleIndexTests(unittest.TestCase):
                          {"ReminderStats.java","ReminderStatsService.java",
                           "ReminderStatsController.java"})
 
-    def test_derived_index_must_not_be_claimed_as_raw_zip(self):
-        with self.assertRaises((EX6EvidenceBlocked,FileNotFoundError)):
+    def test_exact_original_zip_integrity_and_all_command_hashes(self):
+        real=original_zip_integrity()
+        self.assertEqual([v["label"] for v in real["snapshots"]],["baseline","candidate"])
+        self.assertEqual(real["snapshots"][1]["commands"]["format_aosp"]["exit_code"],1)
+        self.assertEqual(real["snapshots"][1]["commands"]["visible_ex6"]["exit_code"],0)
+
+    def test_wrong_or_missing_original_zip_rejected(self):
+        with self.assertRaises(FileNotFoundError):
             original_zip_integrity(ROOT/"evidence"/"missing-original.zip")
 
     def test_no_foreign_hunk_or_production_authority(self):
