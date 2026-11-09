@@ -1,6 +1,6 @@
 # H4 · EX6 → LF PG-04–PG-14 — una pasada, con límites de fuente
 
-**Estado:** CANDIDATO SOURCE-ONLY; **H4 de extremo a extremo NO ADMITIDO**. **PR #3740 en draft**, sin `ready-to-merge`. Corte de diagnóstico: 09/11/2026.
+**Estado:** CANDIDATO SOURCE-ONLY; **H4 de extremo a extremo NO ADMITIDO**. **PR #3740 en draft**, sin `ready-to-merge`. Corte de diagnóstico: 09/11/2026, evidencia adicional run #42707967927.
 
 Se ejecutó un diagnóstico unificado contra **productores originales v1** (y el único contrato nuevo PG-09 C1 v2) con entradas EX6 verificadas. Se continuó con pruebas **independientes** en etapas posteriores aun cuando la cadena estricta estaba bloqueada; los PASS de esas pruebas no se confunden con una cadena real admitida. Los productores v1 y `vendor/` no se tocaron.
 
@@ -17,9 +17,9 @@ Se ejecutó un diagnóstico unificado contra **productores originales v1** (y el
 | `javac --release 21 -Xlint:all` | exit `0` | exit `0` |
 | `python3 apps/time-service/visible-tests/ex6/run_visible.py` | N/A | exit `0`, `EX6_VISIBLE_OK` |
 
-El stdout AOSP del candidato menciona exactamente `ReminderStats.java`, `ReminderStatsService.java` y `ReminderStatsController.java`; ningún otro Java. **No convertir `exit_code=1` en PASS**. `javac -Xlint:all` pasó sin bytes en stdout ni stderr; el linter de PG12 ahora tiene material verificable, pero el digest de configuración y el enlazado al recibo original deben verificarse por el productor, no se infieren de este resumen.
+El stdout AOSP del candidato menciona exactamente `ReminderStats.java`, `ReminderStatsService.java` y `ReminderStatsController.java`; ningún otro Java. **No convertir `exit_code=1` en PASS**. `javac -Xlint:all` pasó sin bytes en stdout ni stderr; PG-12 C2 recibe un digest de configuración **derivado de la versión, el SHA del JAR y los flags AOSP realmente registrados**; conserva `CANDIDATE_NOT_ADMITTED` sin alegar readback autenticado.
 
-**Procedencia y límite:** `evidence/ex6_run_42707967927_receipt_index.json` es un índice derivado sin inventar el estado de los comandos. `tools/ex6_build_lint_index_v1.py` bloquea cambios de huellas, salidas contradictorias y escaladas de autoridad; dispone de un lector que valida el ZIP original byte por byte **cuando esté localmente disponible**. El índice **NO reemplaza** al ZIP binario original y no debe ser considerado un recibo autenticado. La copia binaria original **todavía no forma parte del árbol del PR**; por eso esta revisión **no declara nuevos PASS de PG-06 C4/PG-08/PG-12/PG-13/PG-14**.
+**Procedencia y límite:** `evidence/ex6_run_42707967927_receipt_index.json` es un índice derivado sin inventar el estado de los comandos. `tools/ex6_build_lint_index_v1.py` bloquea cambios de huellas, salidas contradictorias y escaladas de autoridad; **valida el ZIP original byte por byte desde el propio árbol de este PR**, con Git blob SHA `33ddd1fa34beb2e6da05992f34e2199dec7481ca`, ZIP SHA-256 `2e8950a77ee9707df3cc7ab77e52e592a96f317fb4cc0736b3c28e8044671769`, JSON SHA-256 `5008714c29f55c2813792d6da98002393febdc5adbe5070ae194970742ff9fbd` y cotejo de **todos** los sha256 stdout/stderr registrados. El índice no reemplaza el ZIP ni confiere autoridad. Los productores originales C4/C1/C2 documentan candidatos estructurales, no una admisión productiva.
 
 **REM-D4:** en el Lote D es obligación de proceso. Quedan referenciados el `visible-tests/ex6/run_visible.py` con resultado `EX6_VISIBLE_OK` y el recibo AOSP real. El primero pasa; el segundo reporta diferencias de formato, de modo que el requisito no está totalmente satisfecho para el snapshot `912c4ad`. Cualquier reparación debe conservar este recibo inmutable y crear una nueva evidencia N+1, nunca reescribirlo.
 
@@ -67,25 +67,25 @@ Cada uno es **`FIXTURE_UNATTESTED`**. Las pruebas comparan PG01 y A7/C4 con el o
 
 La reversibilidad propia de EX6 sí es inferible de sus hunks: revertir es **eliminar exclusivamente los tres Java agregados**. Se documenta como `SOURCE_DERIVED_NOT_EXECUTED`, sin ejecutar rollback ni alterar el fixture A7.
 
-## Resultado de UNA pasada, productores originales v1
+## Resultado de UNA pasada, productores originales v1 con ZIP EX6 íntegro
 
-Corrida de diagnóstico [#42701124328](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42701124328), con `ex6_one_pass_v1.run_all()`. Donde una dependencia no existe, se ejecutó solamente el **productor aislado** que admite entradas de EX6, o se anotó la ausencia; nunca se afirmó continuidad real. **PASS_SOURCE_ONLY / PASS_FIXTURE_UNATTESTED** significa *candidato no admitido*, no autoridad.
+[Corrida de diagnóstico #42711181404](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42711181404), ejecutada sobre el HEAD de pruebas `5733d2a5c8aec5cd2b25e6ea9fb5a85854ce4aa4`: **29/29 pruebas EX6**, **15/15 PG-06**, **14/14 PG-08**, **12/12 PG-12**, todas PASS. Se empleó `ex6_one_pass_v1.run_all()` en una sola ejecución. Los PASS son **candidatos fuente**, con flags de autoridad False, no admiten ejecución productiva. Las etapas posteriores sin readback son pruebas originales aisladas, no una cadena autónoma completa.
 
-| Etapa | Antes de v2 | Después de v2 | Código/alcance exacto |
+| Etapa | Resultado v1 después del bundle | v2 | Diagnóstico exacto |
 |---|---|---|---|
-| PG-04 | PASS_SOURCE_ONLY | sin cambios | Partición/DoD/exit original, candidato |
-| PG-05 | PASS_SOURCE_ONLY | sin cambios | C1–C5 y exit, candidato |
-| PG-06 | PASS_FIXTURE_UNATTESTED | sin cambios | C1 fixture PG01, C2 `MATCH_REPORTED_UNVERIFIED`, C3 fixture A7, C4 **real** `PG06_C4_OBSERVATION_SCHEMA_INVALID`, C4 fixture y C5 estructural |
-| PG-07 | PASS_FIXTURE_UNATTESTED | sin cambios | C1–C6 original; task/patch/holdout/recibos EX6, contexto y normas no acreditados |
-| PG-08 | **BLOCK** | sin v2 PG08 | `PG08_C1_BUILD_COMMANDS_MISSING`: faltan stdout/stderr/config SHA por comando, **no** rechazo del modo GPT_NATIVE |
-| PG-09 | PASS_FIXTURE_UNATTESTED con **`REQUIRES_DECISION`** en C1 v1 | C1 v2 **`REPORTED_WITHIN_BUDGET_UNVERIFIED`** | `GPT_NATIVE`, `api_calls=0`, propuesta SHA coincidente, API incremental conocido 0 y suscripción `NOT_EVALUATED`; C2–C4 v1 como candidatos |
-| PG-10 | PASS_FIXTURE_UNATTESTED | sin cambios | C1–C5 originales; sin conflicto EX6 acreditado, escenarios fixture, ninguna decisión externa |
-| PG-11 | PASS_FIXTURE_UNATTESTED | sin cambios | C1–C5 originales; declarativo, reviewer no autenticado. **Límite**: C4 v1 admite una referencia por archivo; el vínculo secundario REM-D4 no está admitido por C4 v1, aunque sí está preservado en el hunk original |
-| PG-12 | C1 candidato; **C2 BLOCK** | sin cambios | C1 con commit `912c4ad`, Git tree `72e5f54` y 3 OIDs de blob; C2 `PG12_C2_LINTER_DIGEST_INVALID`; identidad/autoría no autenticadas, checkout contiene cambios de gobernanza adicionales |
-| PG-13 | **BLOCK (aislado)** | sin cambios | `C1_UPSTREAM_SCHEMA`: no hay C4 persistido de PG12; no se creó tag ni freeze |
-| PG-14 | **BLOCK (aislado)** | sin cambios | `C1_UPSTREAM_SCHEMA`: no hay C3 de freeze de PG13; no se invocó Testing |
+| PG-04 | **PASS_SOURCE_ONLY** | No requerido | Partición/DoD/exit original, tres hunks EX6 |
+| PG-05 | **PASS_SOURCE_ONLY** | No requerido | C1–C5 / exit original, scopes de tres Java |
+| PG-06 | **PASS_FIXTURE_UNATTESTED** | No requerido | PG01 y A7 oficiales no acreditados; **C4 real `PASS_SOURCE_ONLY`**, BUILD y LINT base exit 0, sin usar fixture de baseline como evidencia |
+| PG-07 | **PASS_FIXTURE_UNATTESTED** | No requerido | C1–C6, task/patch/holdout EX6; perfil/contexto aún declarativos |
+| PG-08 | **PASS_FIXTURE_UNATTESTED** (C1+C2 v1) | **No creado** | C1 BUILD `REPORTED_PASS_UNVERIFIED`; C2 observa **AOSP exit 1 / FORMAT FAIL**, javac LINT exit 0. El modo GPT_NATIVE es aceptado por v1 |
+| PG-09 | **PASS_FIXTURE_UNATTESTED**, C1 v1 `REQUIRES_DECISION` | **C1 v2 `REPORTED_WITHIN_BUDGET_UNVERIFIED`** | API calls = 0, propuesta SHA ligada y suscripción `NOT_EVALUATED` |
+| PG-10 | **PASS_FIXTURE_UNATTESTED** | No requerido | Contratos originales C1–C5, escenarios oficiales no acreditados |
+| PG-11 | **PASS_FIXTURE_UNATTESTED** | No requerido | C1–C5 estructurales; **REM-D4 es de proceso**: `visible-tests/ex6` exit 0 y `format_aosp` exit 1, `process_requirement_satisfied=False`. No confundir esto con un cuarto hunk |
+| PG-12 | **PASS_SOURCE_ONLY** (C1+C2 v1) | No requerido | Identidad Git de tres blobs; C2 digesto de configuración de linter AOSP real, `CANDIDATE_NOT_ADMITTED`. C3/C4/persistencia aún no ejecutados |
+| PG-13 | **BLOCK, productor C1 aislado** | No requerido | `C1_UPSTREAM_SCHEMA`: falta PG-12 C4 persistido/readback, no tag |
+| PG-14 | **BLOCK, productor C1 aislado** | No requerido | `C1_UPSTREAM_SCHEMA`: falta PG-13 C3 freeze, no Testing productivo |
 
-**Importante:** La cadena estricta no cruzó realmente PG-08 ni PG-12; los diagnósticos PG-09…PG-14 posteriores son **pruebas independientes de contratos**, no recibos de una ejecución íntegra PG04→PG14.
+**Distinción necesaria:** La hipótesis de que todos los bloqueos anteriores compartían una sola causa se ha probado solo parcialmente. El bundle real resuelve las faltas de comando en **PG-06 C4, PG-08 C1 y PG-12 C2**, pero revela un **fallo de formato AOSP real** y **no sustituye** las evidencias de persistencia PG-12 C4 y congelación PG-13 C3 que siguen exigiendo PG-13/14. No se inventan esos readbacks ni se emite decisión SUPER_ADMIN.
 
 ### PG-09 C1 v2, solo donde hubo defecto observado
 
@@ -95,13 +95,13 @@ Negativos probados: llamadas API no cero, propuesta faltante, propuesta incorrec
 
 ## Pruebas, gobernanza y seguridad
 
-- [#42701124328](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42701124328): **24/24** pruebas EX6 (origen, SHA, fixtures, anticontaminación, cadena, PG09 v2 negativos y WORKER_API v1), y suites sintéticas originales **PG06–PG14 todas PASS**: 15, 15, 14, 14, 15, 14, 12, 11 y 13 casos respectivamente. Todas ejecutadas en procesos separados sin modificar productores.
+- [#42711181404](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42711181404): **29/29** pruebas EX6 con readback del ZIP original y **15/15 PG-06**, **14/14 PG-08**, **12/12 PG-12** sintéticas originales; todo SUCCESS. [Corrida anterior #42701124328](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42701124328) conserva las demás suites PG06–PG14 (sin productores v1 modificados). Todas ejecutadas en procesos separados sin modificar productores.
 - Las suites PG04 y PG05 conservaron sus resultados previos (29/29 y 13/13); no se modificaron.
 - Valores/refs en salidas de entradas EX6 no contienen `ex5c` ni `lote-c`; exclusivamente los fixtures permitidos están marcados con origen oficial. Todos los flags de autoridad siguen `False`.
 - Los tres ZIP se conservan byte por byte. Sin acceso al examen oculto; sin Supabase writes, sin migraciones, sin SUPER_ADMIN, sin cambios en `vendor/` ni productores v1.
 - La corrida auxiliares se conserva como evidencia histórica; su workflow temporal se **elimina del PR antes de revisión**. No crear ni activar `ready-to-merge` sin dictamen de Claude. El PR no está listo para fusionar como H4 completo.
 
-## Inventario exacto previsto del PR (19 archivos, tras retirar workflow temporal)
+## Inventario de archivos (incluye evidencia EX6 original, sin workflow temporal)
 
 Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/ex6_real_chain_candidate/`.
 
@@ -111,6 +111,8 @@ Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/
 - `evidence/ex6_task_registration.json`
 - `evidence/ex6_native_java21_log_excerpt.txt`
 - `evidence/ex6_baseline_ci_log_excerpt.txt`
+- `evidence/ex6-build-lint-aosp-two-snapshots-v1.zip` — **ZIP original byte por byte**, Git blob `33ddd1fa34beb2e6da05992f34e2199dec7481ca`
+- `evidence/ex6_run_42707967927_receipt_index.json` — índice derivado, no sustituye el ZIP
 - `evidence/native-attempt-proof.zip`
 - `evidence/native-visible-feedback-and-cost.zip`
 - `evidence/native-verified-patch.zip`
@@ -118,11 +120,14 @@ Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/
 - `tools/ex6_real_world_v1.py`
 - `tools/ex6_real_chain_v1.py`
 - `tools/ex6_pg06_evidence_v1.py`
+- `tools/ex6_build_lint_index_v1.py`
+- `tools/ex6_build_lint_inputs_v1.py`
 - `tools/ex6_pg07_v1.py`
 - `tools/ex6_one_pass_v1.py`
 - `tests/test_ex6_evidence_v1.py`
 - `tests/test_ex6_chain_v1.py`
+- `tests/test_ex6_bundle_index_v1.py`
 - `tests/test_ex6_pg09_native_v2.py`
 - Fuera del directorio candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/pg09_iteration_candidate/tools/pg09_c1_iteration_cost_governor_candidate_v2.py`.
 
-**Pendientes reales antes de una admisión total:** (i) recibos completos para compilación/formato/lint del candidato y baseline C4; (ii) vinculación PG11 de REM-D4 en contrato N:M compatible; (iii) identidad/autoría y salida PG12 plenamente verificadas; (iv) congelación y recepción/testing reales PG13/PG14. No se sustituyen con fixtures para declarar PASS productivo.
+**Pendientes reales antes de una admisión total:** (i) reparar exclusivamente el formato de los tres Java en un ciclo gobernado N+1 con nueva evidencia sin reescribir N; (ii) demostrar el REM-D4 de proceso con visible PASS y AOSP PASS (hoy AOSP FAIL); (iii) identidad/autoría y persistencia PG12 plenamente verificadas; (iv) congelación y recepción/testing reales PG13/PG14. No se sustituyen con fixtures para declarar PASS productivo.
