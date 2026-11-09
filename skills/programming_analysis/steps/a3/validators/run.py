@@ -216,6 +216,19 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
     if policy_resolution.get("status") == "BLOCKED":
         return blocked(policy_resolution["blocking_code"])
     policy_states = policy_resolution["policy_link_resolution"]
+    policy_deferred = set(policy_resolution["rule_codes_policy_dependency_pending"])
+    all_approved_rules = approved + inherited_approved
+    scoped_policy_clear, scoped_policy_deferred, annotated_evidence = [], [], []
+    for source_row in all_approved_rules:
+        row = deepcopy(source_row)
+        if row["rule_code"] in policy_deferred:
+            row["policy_dependency_disposition"] = "DEFER_UNAPPROVED_OR_UNRESOLVED_POLICY"
+            scoped_policy_deferred.append(row)
+        else:
+            row["policy_dependency_disposition"] = "NO_KNOWN_POLICY_DEPENDENCY_BLOCKER"
+            scoped_policy_clear.append(row)
+        row["runtime_implementation_approved"] = False
+        annotated_evidence.append(row)
     gaps = [
         "SOURCE_READBACK_CURRENTNESS_AND_AUTHORITY_NOT_ATTESTED",
         "GITHUB_CURRENT_IMPLEMENTATION_AND_AS_IS_MISSING",
@@ -275,8 +288,10 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         },
         "target_granularity": cls["target_granularity"],
         "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN",
-        "evidence_items": approved + inherited_approved,
+        "evidence_items": annotated_evidence,
         "excluded_rule_items": excluded + inherited_excluded,
+        "policy_scope_clear_rule_candidates": scoped_policy_clear,
+        "policy_deferred_rule_items": scoped_policy_deferred,
         "inheritance_readback": {
             "source_ref": effective_ref,
             "source_function": effective["source_function"],
@@ -302,6 +317,8 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "policy_objects_excluded": policy_resolution["counts"]["policy_objects_excluded"],
             "rule_policy_dependency_occurrences": policy_resolution["counts"]["referenced_policy_occurrences"],
             "rules_with_unapproved_or_unresolved_policy": policy_resolution["counts"]["rules_with_unapproved_or_unresolved_policy"],
+            "policy_clear_source_candidates": len(scoped_policy_clear),
+            "policy_deferred_source_candidates": len(scoped_policy_deferred),
             "consolidated_rule_status_counts": deepcopy(consolidated),
         },
         "source_refs": [ref, effective_ref]
