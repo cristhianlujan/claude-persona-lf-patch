@@ -18,5 +18,9 @@ jobs:
           python-version: "3.12"
       - run: |
           python3 -m unittest discover -s sandbox/lf_contract_gate_test/programming_agent_four_stage/ex6_real_chain_candidate/tests -p "test_ex6*.py" -v
+      - name: Re-run unchanged PG04 and PG05 synthetic suites
+        run: |
+          python3 -m unittest discover -s sandbox/lf_contract_gate_test/programming_agent_four_stage/pg04_semantic_partition_candidate/tests -p "test_pg04_semantic_partition_candidate_v1.py" -v
+          python3 -m unittest discover -s sandbox/lf_contract_gate_test/programming_agent_four_stage/pg05_target_binding_candidate/tests -p "test_pg05_chain_c1_c5_v1.py" -v
       - run: |
           python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/ex6_real_chain_candidate/tools/ex6_real_chain_v1.py
