@@ -1,8 +1,5 @@
 {
   "solution_ref": "lf-profile-step70-counterfactual-retry-20261109",
-  "source_run": "EXEC-PROFILE-GATE2-E71C512B4D970E4821476E83",
-  "problem_code": "PROFILE_EXECUTION_SERVER_VALIDATION_V2_FAILED",
-  "scope": "Only step70 counterfactual receipt and retry; Router and Input Governance unchanged",
   "paths": {
     "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
     "supabase/migrations/20261109043500_lf_profile_step70_counterfactual_retry_v1.sql": "MIGRATION",
