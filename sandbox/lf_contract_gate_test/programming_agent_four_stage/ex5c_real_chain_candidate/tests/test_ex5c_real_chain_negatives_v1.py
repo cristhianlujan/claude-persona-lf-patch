@@ -47,7 +47,7 @@ class EX5CRealChainNegatives(unittest.TestCase):
     def setUpClass(cls):
         # Capture a distinct, already-existing C5 fixture before installation.
         # It is never passed off as evidence from real EX5C PG11 C4.
-        cls.original_pg11_fixture = t11.fixture
+        cls.original_pg11_fixture = staticmethod(t11.fixture)
         w.install()
         cls.addClassCleanup(w.uninstall)
 
@@ -210,7 +210,13 @@ class EX5CRealChainNegatives(unittest.TestCase):
             expected_base_sha=w.BASE, expected_head_sha=w.N1,
             declared_diff=declared_diff, authorized_scope=authorized_scope,
             residue_observations=[], dependency_observations=[],
-            compatibility_observations=[],
+            compatibility_observations=[{
+                "surface": "MODULE_CONTRACT",
+                "contract_ref": w.SPEC + "#lote-c",
+                "baseline_ref": "github://" + w.REPO + "/tree/" + w.BASE + "/apps/time-service",
+                "evidence_ref": w.RUN_V3 + "#maven_verify",
+                "compatible_reported": True,
+            }],
         )
         self.assertEqual(
             out["findings"]["out_of_scope_paths_reported"], [unlisted]
