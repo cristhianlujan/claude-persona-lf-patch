@@ -23,9 +23,9 @@ BLOBS = {
     "ex6_task_registration.json": "15fd94d238215dbbc21a3bdc3cc719028c8513e7",
     "ex6_proposal_envelope.json": "85761b8722f553fe25cf70d937105a4c35ce871e",
 }
-SPEC_REF = "github://paulozterra/lf-programming-sandbox/blob/" + _reader.BASE_SHA + "/apps/time-service/REMINDERS_SPEC.md#lote-d"
-TASK_REF = "github://paulozterra/lf-programming-sandbox/blob/912c4ad9ea71f48edbd1ac58089441f9ed2c3449/pilot/worker_v08/native_tasks/ex6.json"
-PROPOSAL_REF = "github://paulozterra/lf-programming-sandbox/blob/" + _reader.PROPOSAL_COMMIT_SHA + "/pilot/native_proposals/ex6.json"
+SPEC_REF = "ex6://source/spec/" + _reader.BASE_SHA + "#lote-d"
+TASK_REF = "ex6://source/task/912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
+PROPOSAL_REF = "ex6://source/proposal/" + _reader.PROPOSAL_COMMIT_SHA
 RUN_REF = "ex6://run/42674262914"
 EXPECTED_HOLDOUT = "c2b583ebcc14e8e73e1b66eff38d86dd3814b75e5f5e1857de65deee5c8b1a57"
 REQUIREMENTS = ("REM-D1", "REM-D2", "REM-D3", "REM-D4")
@@ -104,7 +104,7 @@ def real_hunks(patch: bytes) -> list[dict]:
             "git_blob_oid": git_blob_sha(new_bytes),
             "header_ref": RUN_REF + "#verified-patch/" + str(index + 1),
             "source_ref": SPEC_REF,
-            "requirements": list(REQUIREMENTS),
+            "requirements": {\n                "ReminderStats.java": ["REM-D1"],\n                "ReminderStatsService.java": ["REM-D2"],\n                "ReminderStatsController.java": ["REM-D3", "REM-D4"],\n            }[Path(path).name],
             "batch_ref": "ex6://batch/EX6-SOL-001",
             "scope_ref": "ex6://scope/" + path,
         })
