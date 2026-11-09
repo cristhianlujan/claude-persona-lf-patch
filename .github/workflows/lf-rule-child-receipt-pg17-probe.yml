@@ -1,0 +1,43 @@
+name: LF Rule Child Receipt PG17 Isolated Probe
+
+# Temporary PR-only test, removed before canonical integration.
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*lf_profile_rule_child_verified_return_v1.sql'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_rule_child_verified_receipt_pg17.py'
+      - 'sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_receipt_pg17_handler_source_v1.sql'
+      - '.github/workflows/lf-rule-child-receipt-pg17-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  rule-receipt-pg17:
+    name: rule-child-verified-receipt-pg17
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    services:
+      pg:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: isolated-only-receipt-test
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - name: Checkout exact candidate without secrets
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Execute real invoker and validate child receipt, replay and negative drift
+        shell: bash
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        run: |
+          set -euo pipefail
+          test -n "${PG_CONTAINER}"
+          python3 -m py_compile sandbox/lf_contract_gate_test/db_write_transport/test_lf_rule_child_verified_receipt_pg17.py
+          python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_rule_child_verified_receipt_pg17.py
