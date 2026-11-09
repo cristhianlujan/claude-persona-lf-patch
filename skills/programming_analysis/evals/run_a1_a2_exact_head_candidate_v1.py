@@ -1,4 +1,4 @@
-"""Run the four narrow A1/A2 candidate suites against one exact, clean Git HEAD.
+"""Run the five narrow A1/A2 candidate suites against one exact, clean Git HEAD.
 
 Source-only harness. Requires an externally isolated, unprivileged runner.
 Neither this script nor a PASS certifies producer/judge independence, CURRENT
@@ -18,6 +18,8 @@ import sys
 SUITES = (
     ("A1_REGISTERED_SKILL", "skills/programming_analysis/steps/a1/evals",
      "test_governed_step_homology_v1.py", 20),
+    ("A1_JUDGE_POLICY_GAP", "skills/programming_analysis/steps/a1/evals",
+     "test_judge_policy_gap_readback_v1.py", 14),
     ("A2_LF_SCOPE", "skills/programming_analysis/steps/a2/evals",
      "test_business_semantic_scope_l1_l2_20261108.py", 21),
     ("A2_GOLDEN_SEMANTIC", "skills/programming_analysis/steps/a2/evals",
