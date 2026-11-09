@@ -200,6 +200,22 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "source_ref": p["source_ref"], "policy_kind": p.get("policy_kind"),
             "status": p["status"], "is_approved_binding": p["status"] == "VIGENTE",
         })
+    policy_reader_path = Path(__file__).resolve().parents[1] / "adapters/policy_readback_v1.py"
+    policy_spec = importlib.util.spec_from_file_location("a3_policy_readback", policy_reader_path)
+    if policy_spec is None or policy_spec.loader is None:
+        return blocked("A3_POLICY_READER_MODULE_UNAVAILABLE")
+    policy_module = importlib.util.module_from_spec(policy_spec)
+    try:
+        policy_spec.loader.exec_module(policy_module)
+        policy_resolution = policy_module.project(
+            effective, policies, resolved_sources.get("policy_resolution_readback"),
+            target_ref=canonical_target, screen_ref=ref,
+        )
+    except (OSError, ValueError, TypeError, AttributeError, KeyError):
+        return blocked("A3_POLICY_READER_FAILED")
+    if policy_resolution.get("status") == "BLOCKED":
+        return blocked(policy_resolution["blocking_code"])
+    policy_states = policy_resolution["policy_link_resolution"]
     gaps = [
         "SOURCE_READBACK_CURRENTNESS_AND_AUTHORITY_NOT_ATTESTED",
         "GITHUB_CURRENT_IMPLEMENTATION_AND_AS_IS_MISSING",
@@ -209,8 +225,10 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
     alerts = []
     if resolved_sources["screen_status"] != "VIGENTE":
         alerts.append("SCREEN_DEFINITION_NOT_VIGENTE")
-    if any(not p["is_approved_binding"] for p in policy_states):
+    if any(not p["approved_for_binding"] for p in policy_states):
         alerts.append("SCREEN_POLICY_ASSOCIATIONS_EXCLUDED_PENDING_APPROVAL")
+    if policy_resolution["rule_codes_policy_dependency_pending"]:
+        alerts.append("POLICY_DEPENDENT_RULES_WITH_UNAPPROVED_BINDING_OR_POLICY_EXCLUDED")
     if excluded:
         alerts.append("PENDING_RULES_EXCLUDED_AS_USER_REQUESTED")
     if inherited_approved:
@@ -268,6 +286,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "similarity_recommendations_are_not_effective_rules": True,
         },
         "policy_link_items": policy_states,
+        "policy_resolution": policy_resolution,
         "counts": {
             "direct_rules_total": len(rows),
             "direct_rules_vigente_no_pending": len(approved),
@@ -277,11 +296,17 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "effective_rules_excluded": len(excluded) + len(inherited_excluded),
             "inherited_derived_global_vigente": len(inherited_approved),
             "policy_links_total": len(policies),
-            "policy_links_not_vigente": sum(not p["is_approved_binding"] for p in policy_states),
+            "policy_links_not_vigente": sum(not p["approved_for_binding"] for p in policy_states),
+            "policy_objects_resolved": policy_resolution["counts"]["policy_objects"],
+            "policy_objects_vigente": policy_resolution["counts"]["policy_objects_vigente"],
+            "policy_objects_excluded": policy_resolution["counts"]["policy_objects_excluded"],
+            "rule_policy_dependency_occurrences": policy_resolution["counts"]["referenced_policy_occurrences"],
+            "rules_with_unapproved_or_unresolved_policy": policy_resolution["counts"]["rules_with_unapproved_or_unresolved_policy"],
             "consolidated_rule_status_counts": deepcopy(consolidated),
         },
         "source_refs": [ref, effective_ref]
                        + [x["source_ref"] for x in approved + inherited_approved]
+                       + [x["source_ref"] for x in policy_resolution["approved_policy_objects"]]
                        + (as_is["source_refs"] if as_is else []),
         "currentness_refs": [],
         "authority_binding_refs": [],
