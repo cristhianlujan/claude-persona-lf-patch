@@ -205,6 +205,6 @@ def rem_d4_process():
         "aosp_exit_code":v["format_aosp"]["exit_code"],
         "aosp_stdout_sha256":v["format_aosp"]["stdout"]["sha256"],
         "process_requirement_satisfied":v["visible_ex6"]["exit_code"]==0 and v["format_aosp"]["exit_code"]==0,
-        "reason":"VISIBLE_AND_AOSP_PASS" if v["visible_ex6"]["exit_code"]==0 and v["format_aosp"]["exit_code"]==0 else "FORMAT_OR_VISIBLE_FAILED",
+        "reason":"VISIBLE_AND_AOSP_PASS" if v["visible_ex6"]["exit_code"]==0 and v["format_aosp"]["exit_code"]==0 else "FORMAT_AOSP_EXIT_1" if v["format_aosp"]["exit_code"]==1 else "FORMAT_OR_VISIBLE_FAILED",
         "production_authority":False,
     }
