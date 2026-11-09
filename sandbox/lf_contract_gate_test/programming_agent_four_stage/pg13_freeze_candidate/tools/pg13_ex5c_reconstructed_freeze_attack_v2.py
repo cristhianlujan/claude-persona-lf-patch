@@ -25,7 +25,7 @@ from pg13_disposable_git_mutation_test_v1 import (
 )
 
 FIXTURE = V3_FIXTURE
-FIXED_SHA = "436bc771ccd04b5eeb407102f7c55a3338bacf43f8f292773f293aa615a8da3b"
+FIXED_SHA = V3_SHA
 
 
 def local_freeze_and_attacks() -> dict:
