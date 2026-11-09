@@ -123,8 +123,8 @@ def stage08(pg07, pg06, truth):
     c2=prepare_pg08_c2(pg06_c4=pg06["c4"],pg08_c1=c1,
                        lint_observations=pg08_format_lint(source))
     return {"c1":c1,"c2":c2,
-            "format_aosp_exit_code":1,
-            "build_source":"ex6://sandbox/actions/runs/42707967927",
+            "format_aosp_exit_code":__import__("ex6_build_lint_inputs_v1").observed()["snapshots"][1]["commands"]["format_aosp"]["exit_code"],
+            "build_source":__import__("ex6_build_lint_inputs_v1").active_ref(),
             "production_authority":False}
 
 
@@ -249,7 +249,7 @@ def stage11(truth):
     return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5,
             "diff":diff,"scope":scope,"traces":traces,
             "rem_d4_process":process,
-            "v1_trace_limitation":"EX6_REM_D4_PROCESS_RECEIPTS_AOSP_EXIT_1"}
+            "v1_trace_limitation":"EX6_REM_D4_PROCESS_"+process["reason"]}
 
 
 def stage12(pg11, truth):
@@ -359,7 +359,7 @@ def run_all():
         if pg07:
             evidence["pg07_c6_diagnostic"]=pg07["c6"]["status"]
             row, pg08=attempt("PG-08",lambda:stage08(pg07,z,truth),
-                       origin="EX6_REAL_BUILD_AND_AOSP_RECEIPTS_42707967927",
+                       origin="EX6_REAL_BUILD_AND_AOSP_RECEIPTS_VERIFIED",
                        fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY"))
             table.append(row)
             if pg08:
