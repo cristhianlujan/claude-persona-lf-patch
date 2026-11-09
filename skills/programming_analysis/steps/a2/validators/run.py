@@ -149,6 +149,10 @@ def run(a1_result: Any, signal_bundle: Any) -> dict:
     business = a1_result.get("business")
     if not isinstance(business, str) or not (2 <= len(business) <= 32) or business != business.strip():
         return _blocked("A1_BUSINESS_SCOPE_INVALID")
+    # This is the LF-specific skill. A forged valid-shaped A1 payload cannot
+    # turn A2 into a SALY classifier, even when its signal bundle agrees.
+    if business != "LF":
+        return _blocked("A2_BUSINESS_NOT_ENABLED_FOR_SKILL")
     context = a1_result["payload"]
     if not _valid(context, _json(REQUEST_SCHEMA)):
         return _blocked("A1_CANONICAL_CONTEXT_INVALID")
