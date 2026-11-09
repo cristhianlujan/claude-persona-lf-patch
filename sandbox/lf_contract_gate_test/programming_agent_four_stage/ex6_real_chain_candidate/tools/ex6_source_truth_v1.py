@@ -74,7 +74,7 @@ def real_hunks(patch: bytes) -> list[dict]:
         fragment = text[match.start(): headers[index + 1].start() if index + 1 < len(headers) else len(text)]
         path = match.group(1)
         if (path != match.group(2) or path not in _reader.EXACT_PATHS
-            or "new file mode 100644\n" not in fragment[:170]
+            or "new file mode 100644\n" not in fragment.split("@@", 1)[0]
             or "--- /dev/null\n" not in fragment
             or "+++ b/" + path + "\n" not in fragment):
             block("EX6_REAL_HUNK_SCOPE_INVALID")
