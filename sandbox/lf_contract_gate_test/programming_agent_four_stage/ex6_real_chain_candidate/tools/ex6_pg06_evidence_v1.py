@@ -135,7 +135,7 @@ def c4_partial_baseline(pg05_exit):
         _block("EX6_PG06_C4_TARGET_DRIFT")
     ref = "ex6://sandbox/actions/runs/" + str(BASELINE_RUN)
     return {
-        "schema_version": "PG06_UNCHANGED_TARGET_BASELINE_OBSERVATION_CANDIDATE_V1",
+        "schema_version": "EX6_PG06_BASELINE_PARTIAL_V1",
         "target_repo": target["repo_full_name"],
         "base_head_sha": BASE_SHA,
         "observation_ref": ref + "#time-service-identical-tree/" + TIME_SERVICE_TREE_SHA,
