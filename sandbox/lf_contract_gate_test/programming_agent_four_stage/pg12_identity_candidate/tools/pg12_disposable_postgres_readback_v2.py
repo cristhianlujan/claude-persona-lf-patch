@@ -24,7 +24,7 @@ def persist_readback(c4):
     if dsn.startswith(("postgresql://", "postgres://")):
         if urlparse(dsn).hostname not in ("localhost", "127.0.0.1", None):
             fail("PG12_V2_REMOTE_DATABASE_FORBIDDEN")
-    identity = psql(dsn, "SELECT current_database() || '|' || coalesce(inet_server_addr()::text,'LOCAL_SOCKET');")
+    identity = psql(dsn, "SELECT current_database() || '|' || coalesce(host(inet_server_addr()),'LOCAL_SOCKET');")
     parts = identity.split("|")
     if len(parts) != 2 or not parts[0].startswith("pg12_test_") or parts[1] not in (
             "LOCAL_SOCKET", "127.0.0.1", "::1"):
