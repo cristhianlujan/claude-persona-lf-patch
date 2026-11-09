@@ -229,7 +229,8 @@ class EX5CRealN2V2(unittest.TestCase):
         self.assertFalse(pg14["verdict"]["testing_real_invoked"])
         self.assertFalse(pg14["blocked"]["testing_real_invoked"])
         self.assertIs(pg14["c3"]["handoff_allowed"], False)
-        print("EX5C_V2_PG14_LOCAL_ACCEPT_AND_ONE_BYTE_BLOCK_PASS")
+        self.assertNotIn("fixture://", json.dumps(pg14["c3"], sort_keys=True))
+        print("EX5C_V2_PG14_LOCAL_ACCEPT_AND_TAMPERED_DIGEST_BLOCK_PASS")
 
     def test_pg14_v2_disposable_postgres_accept_block_readbacks(self):
         if not os.getenv("PG14_TEST_DSN"):
