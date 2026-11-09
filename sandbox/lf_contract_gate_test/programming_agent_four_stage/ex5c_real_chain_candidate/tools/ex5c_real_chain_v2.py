@@ -254,7 +254,7 @@ def make_pg12_v2(pg11=None):
         "checkpoint_code": f"PG-{stage:02d}_C{number}",
         "candidate_identity_sha256": c1["candidate_sha256"],
         "check_contract_ref": "github://cristhianlujan/claude-persona-lf-patch/tree/" +
-                              pg11["bridge"]["candidate_sha256"] + "/programming-agent",
+                              "8bbba93398f873bdf5079fc9db907de2a2504afa/sandbox/lf_contract_gate_test/programming_agent_four_stage",
         "result_ref": None, "result_digest_sha256": None,
         "runner_ref": w.RUN_V3,
         "observed_outcome": "NOT_RUN", "execution_receipt_ref": None,
@@ -265,8 +265,7 @@ def make_pg12_v2(pg11=None):
     )
     c4 = prepare_pg12_c4(
         pg12_c3=c3,
-        storage_contract_ref="github://cristhianlujan/claude-persona-lf-patch/tree/" +
-                             w.N1 + "/pg12_test_ex5c",
+        storage_contract_ref="ex5c://pg12/isolated-local-readback-v2",
         authorized_writer_ref="ex5c://disposable-postgres-only",
         readback_contract_ref="ex5c://pg12/readback-contract-v2",
         record_key_ref="ex5c://pg12/N1-" + w.N1,
@@ -351,7 +350,7 @@ def make_pg14_v2(pg13=None, local_freeze=None):
         "obligation_ref": "REM-C1",
         "spec_ref": w.SPEC + "@" + w.N1 + "#REM-C1",
         "test_case_ref": w.RUN_V3 + "#maven_verify",
-        "expected_oracle_ref": w.SPEC + "#REM-C1-acceptance",
+        "expected_oracle_ref": "ex5c://unverified/blind-oracle-not-available",
     }]
     c2 = prepare_pg14_c2(
         pg14_c1=c1, catalog_version_ref=w.SPEC + "@" + w.N1,
