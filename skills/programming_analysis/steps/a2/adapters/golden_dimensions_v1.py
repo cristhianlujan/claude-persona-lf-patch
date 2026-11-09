@@ -10,6 +10,7 @@ from collections import Counter
 from copy import deepcopy
 import hashlib
 import json
+import importlib.util
 from pathlib import Path
 from typing import Any
 
@@ -159,8 +160,25 @@ def build_golden(a1_result: Any, a2_result: Any, signal_bundle: Any, *, catalog_
         return _blocked("GOLDEN_CATALOG_SOURCE_UNAVAILABLE_OR_DRIFTED")
     if not all(isinstance(x, dict) for x in (a1_result, a2_result, signal_bundle)):
         return _blocked("GOLDEN_INPUT_ENVELOPES_MISSING")
-    if a1_result.get("status")!="VALID_OUTPUT" or a1_result.get("interpretation_state")!="PRESTRUCTURED_UNATTESTED" or a1_result.get("semantic_review_required") is not False:
+    a1_mode = a1_result.get("interpretation_state")
+    if (a1_result.get("status") != "VALID_OUTPUT"
+            or a1_mode not in ("PRESTRUCTURED_UNATTESTED", "SEMANTIC_REVIEWED_CANDIDATE")
+            or a1_result.get("semantic_review_required") is not False):
         return _blocked("GOLDEN_A1_SEMANTIC_GATE_NOT_RESOLVED")
+    if a1_mode == "SEMANTIC_REVIEWED_CANDIDATE":
+        # The semantic path remains untrusted: validate integrity, not judge authority.
+        guard_path = Path(__file__).with_name("a2_semantic_input_integrity_v1.py")
+        spec = importlib.util.spec_from_file_location("a2_semantic_binding_guard", guard_path)
+        if spec is None or spec.loader is None:
+            return _blocked("GOLDEN_A1_SEMANTIC_GUARD_UNAVAILABLE")
+        guard = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(guard)
+            check = guard.check(a1_result, a2_result, signal_bundle)
+        except (OSError, ValueError, TypeError, AttributeError):
+            return _blocked("GOLDEN_A1_SEMANTIC_GUARD_UNAVAILABLE")
+        if check.get("status") != "CHECKED_SOURCE_ONLY":
+            return _blocked("GOLDEN_A1_SEMANTIC_BINDING_INVALID")
     context = a1_result.get("payload")
     classification = a2_result.get("classification")
     s = signal_bundle.get("depth_signals")
