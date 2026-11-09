@@ -1,6 +1,6 @@
 # H4 — EX6 real source evidence, candidate (NOT ADMITTED)
 
-**Status:** PARTIAL. Original EX6 evidence preserved and locally readable; **the real PG-04→PG-14 producer chain has not yet been executed for EX6**. No stage may be marked PASS from mere file hashes. This candidate stays in draft; it is not eligible for `ready-to-merge` until an independently reviewed H4 completion.
+**Status:** PARTIAL. Original EX6 evidence preserved; real PG04/PG05 original producers PASS_SOURCE_ONLY, PG06 blocks with an exact reason and PG07–PG14 are not invoked. No stage may be marked PASS from mere file hashes. This candidate stays in draft; it is not eligible for `ready-to-merge` until an independently reviewed H4 completion.
 
 ## Original source
 - Sandbox run: https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914 (worker-native, SUCCESS, attempt 1)
@@ -29,23 +29,29 @@ The original patch creates only:
 2. `apps/time-service/src/main/java/lf/sandbox/time/reminder/ReminderStatsController.java`
 3. `apps/time-service/src/main/java/lf/sandbox/time/reminder/ReminderStatsService.java`
 
-## PG-04→PG-14 stage-by-stage **actual** execution status
+## PG-04→PG-14: original producers, real EX6, v1 first
 
-| Stage | Before v2 | After v2 | Exact result / blocker |
+Executed on immutable candidate HEAD `1f73f343edf1ca230d1a9f722880efc7b86fe1c9` in [GitHub Actions run 42694144179](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694144179). All ten EX6 integrity, scope, anti-contamination and isolation tests passed. The chain builder calls **original PG-04, PG-05 and PG-06 C1 v1 producer functions**; later producers were not invoked after the earliest concrete block.
+
+| Stage | Before v2 | After v2 | Exact code / source |
 |---|---|---|---|
-| PG-04 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-05 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-06 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-07 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-08 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-09 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-10 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-11 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-12 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-13 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
-| PG-14 | NOT_RUN | NOT_RUN | EX6_REAL_STAGE_PRODUCER_NOT_YET_INVOKED |
+| PG-04 | PASS_SOURCE_ONLY | NOT_APPLICABLE | Original partition/dossier/DoD/review and exit producers; no production authority |
+| PG-05 | PASS_SOURCE_ONLY | NOT_APPLICABLE | Original C1–C5 and PG05→PG06 exit; no production authority |
+| PG-06 | BLOCK | NOT_APPLICABLE | `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
+| PG-07 | UPSTREAM_BLOCKED | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
+| PG-08 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-09 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-10 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-11 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-12 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-13 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-14 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
 
-The matrix is intentionally unambiguous: **NOT_RUN is not PASS**. No new v2 contract was implemented. The original `PG09_C1` v1 source unconditionally marks `executor_mode != WORKER_API` as `cost_unknown=True`, but this source inspection is **not** a real EX6-chain rejection or admission. `GPT_NATIVE` was already present in the `PG08_C1`/`PG08_C8` mode catalog per mandate.
+**Why not bypass PG06:** its first original contract requires independently attested PG01 currentness authority, decision digest and related binding. None is in the allowed EX6 ZIPs, Lote D specification or task spec. Passing a fabricated fixture would contaminate the claimed real chain. `EX6SourceBlocked` is separate from the actual original PG06 rejection.
+
+**No v2 built or invoked:** the expected `PG09_C1` cost projection mismatch cannot yet be demonstrated from the EX6 original-producer chain; `PG08_C1/C8` already allow GPT_NATIVE and have not rejected DETERMINISTIC_TOOL on EX6. Versions v1 and their producers are unchanged.
+
+Additional baseline synthetic regression, executed locally on the unchanged producer tree (not a CI attestation): PG04 29/29, PG05 13/13, PG06 15/15. `install()`/`uninstall()` was also exercised by the 10/10 CI test suite.
 
 ## Validated public evidence, not the chain
 - ZIP/member SHA-256, Git blob OIDs, canonical feedback SHA, task and proposal binding, `api_calls=0`, `real_api_usage=false`, `total_usd=0` scoped to `incremental_api`, subscription `NOT_EVALUATED`.
@@ -54,9 +60,9 @@ The matrix is intentionally unambiguous: **NOT_RUN is not PASS**. No new v2 cont
 - New tests mutate one ZIP byte and assert fail-closed. Tests do not assert the downstream chain.
 
 ## Remaining required work before H4 approval
-1. Construct EX6-specific `install()/uninstall()` caller builders to the **original PG04–PG14 producers**, replacing the EX5C-specific two-batch Git/Maven/format fixtures only with genuinely source-backed EX6 observations. Never substitute EX5C synthetic data.
-2. Run each producer on the real EX6 evidence and capture exact PASS/blocked reason with immutable report for before-v2.
-3. Only on observed rejection, introduce strictly additive v2 producer file(s). Expected conditional work: PG09 C1 native zero-API scoped decision; PG08 C1/C8 DETERMINISTIC_TOOL addition *only if exercised*. Keep v1 original unchanged.
+1. Obtain independently verifiable PG01 currentness binding for the immutable EX6 task base; do not infer or forge it from native Worker receipts.
+2. Resume the original PG06 producer chain with genuine baseline/toolchain/reversibility material; repeat downstream original PG07–PG14 only if each predecessor is actually source-backed.
+3. Only on an actual producer rejection, introduce narrowly scoped independent v2 files (PG09 C1 native zero API if observed; PG08 C1/C8 DETERMINISTIC_TOOL only if exercised). Keep all v1 original code unchanged.
 4. Negatives: native nonzero API, missing/mismatched proposal SHA, unknown mode, and byte-for-byte WORKER_API v1 equivalence.
 5. Repeat producer chain and CI tests, document per-stage after-v2 results. Keep PG12/14 PostgreSQL readbacks disposable (never production).
 6. Require Claude review, then a PASE/Train manifest before any `ready-to-merge`.
