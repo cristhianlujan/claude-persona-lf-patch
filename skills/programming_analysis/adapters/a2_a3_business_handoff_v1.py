@@ -72,6 +72,10 @@ def prepare_candidate(a1_result: Any, a2_result: Any, expected_business: Any) ->
     business = a1_result.get("business")
     if not _exact_business(business) or not _exact_business(expected_business):
         return _blocked("BUSINESS_SCOPE_UNRESOLVED")
+    # Guard direct calls as well: business equality is not admission for SALY
+    # under the LF-only skill, even for synthetically shaped A1/A2 payloads.
+    if business != "LF":
+        return _blocked("BUSINESS_NOT_ENABLED_FOR_LF_SKILL")
     if a2_result.get("business") != business or expected_business != business:
         return _blocked("CROSS_BUSINESS_HANDOFF_FORBIDDEN")
     if a1_result.get("skill_code") != "PROGRAMMING_ANALYSIS_LF" or a2_result.get("skill_code") != "PROGRAMMING_ANALYSIS_LF":
