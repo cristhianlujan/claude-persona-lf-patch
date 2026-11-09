@@ -510,3 +510,58 @@ Deno.test("skill invoke: unresolved main, directory target, bad path or missing 
   }
   gh.fail=false;gh.dir=false;
 });
+
+Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trusted main and blob",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/validators/compare_s26_profile_evolution_v1.py"};
+  const n=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
+  const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
+    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}}});
+  eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
+});
+
+Deno.test("skill invoke: only SKILL_UPDATE_APPLY can resolve skills paths",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/validators/compare_s26_profile_evolution_v1.py"};
+  for(const code of ["PROFILE_UPDATE_APPLY","RULE_UPDATE_APPLY","SKILL_UPDATE_APPLY_WRONG"]) {
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:code,input},config,n.fetchFn,sha,callerId);
+    eq(out.status,400);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+
+Deno.test("skill invoke: skill update fails closed on directories and traversal",async()=>{
+  const bad=["skills/profile_creator","skills/../profile_creator/SKILL.md",
+    "skills/profile_creator//SKILL.md","skills/profile_creator/../SKILL.md",
+    "profiles/systemic_root_cause_repair_lf/SKILL.md","src/profile_creator/validators/x.py",
+    "/skills/profile_creator/SKILL.md"];
+  for(const target_path of bad){
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{target_code:"ACT-0045",target_path}
+    },config,n.fetchFn,sha,callerId);
+    eq(out.status,400);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+
+Deno.test("skill invoke: skill update still discards caller forgery and rejects missing OIDC",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/SKILL.md"};
+  const forged={main_sha:"f".repeat(40),target_blob_sha:"e".repeat(40),caller:{method:"FORGED"}};
+  const n=skillNetwork();
+  await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{...input,_trusted:forged}
+  },config,n.fetchFn,sha,callerId);
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq((call?.body?.p_input as Record<string,unknown>)._trusted,
+    {main_sha:mainSha,target_blob_sha:blobSha,caller:callerId});
+  const missing=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input
+  },config,missing.fetchFn,sha,undefined);
+  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+});
