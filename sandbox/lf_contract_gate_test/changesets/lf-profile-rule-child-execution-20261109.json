@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-profile-rule-child-execution-20261109",
+  "paths": {
+    "supabase/migrations/20261109113000_lf_profile_rule_update_child_execution_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_pg17_original_source_fixture_v1.sql": "TRAIN_WRITE_TRANSPORT",
+    "sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_pg17_seed_v1.sql": "TRAIN_WRITE_TRANSPORT",
+    "sandbox/lf_contract_gate_test/db_write_transport/test_lf_rule_child_pg17_isolated.py": "TRAIN_WRITE_TRANSPORT",
+    ".github/workflows/lf-rule-child-pg17-isolated.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-rule-child-execution-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
