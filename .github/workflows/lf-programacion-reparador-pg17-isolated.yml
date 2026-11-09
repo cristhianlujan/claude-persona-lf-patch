@@ -1,0 +1,41 @@
+name: LF PROGRAMACION Reparador isolated PG17 proof
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*lf_programacion_interim_repair_selection_v1.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/*programacion_interim*'
+      - '.github/workflows/lf-programacion-reparador-pg17-isolated.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-selector-migration:
+    name: PG17 selector actual migration and negatives — no Supabase credentials
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Start isolated PostgreSQL 17.6
+        run: |
+          docker run -d --name lf-programacion-pg17 \
+            -e POSTGRES_PASSWORD=pg17-fixture-only \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            postgres:17.6
+          for n in $(seq 1 45); do
+            if docker exec lf-programacion-pg17 pg_isready -U postgres >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      - name: Prove actual original source + guarded migration in isolated PG17
+        env:
+          PG_CONTAINER: lf-programacion-pg17
+        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/test_programacion_interim_repair_pg17.py
+      - name: Run focused source guards
+        run: python3 -m unittest discover -s sandbox/lf_contract_gate_test/profile_execution_runtime -p test_programacion_interim_repair_selector_source.py -v
