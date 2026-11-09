@@ -205,7 +205,7 @@ async function resolveExistingPostModelStep(
       status: phase,
       last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
       next_step: nextStep,
-      clean_step_count: steps.size,
+      clean_step_count: prepareResult.clean_step_count,
       execution_id: e.execution_id,
     },
   });
