@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -591,4 +591,139 @@ Deno.test("skill invoke: current README owner mismatch or absence stops before S
     eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
   }
   gh.ownerValid=true; gh.ownerMissing=false;
+});
+
+
+// Existing native profile OIDC route: child step records only in the canonical
+// ACTUALIZACION_SKILL_LF ledger; no new router or backend.
+const skillChildId="EXEC-SKILL-49797550002EE84C";
+const childPath="skills/profile_creator/validators/compare_s26_profile_evolution_v1.py";
+function stepNetwork(options:{
+  childOverride?:Record<string,unknown>;
+  blockStep?:string;
+  brokenReadback?:boolean;
+}={}){
+  const n=skillNetwork();
+  const calls=n.calls;
+  const recorded:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit)=>{
+    const url=String(input);
+    const body=typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null;
+    if(url.includes("/lf_operation_execution?")&&url.includes(skillChildId)){
+      calls.push({url,body});
+      const child={execution_id:skillChildId,status:"IN_PROGRESS",
+        operation_code:"ACTUALIZACION_SKILL_LF",target_type:"SKILL",
+        target_code:"ACT-0045",target_repo:repo,target_path:childPath,
+        created_by_execution_id:id,manifest:{profile_handoff:{source_execution_id:id},
+          router_governed_caller_code:"CALLER-GHA-NATIVE-SKILL-UPDATE-V1"},
+        ...options.childOverride};
+      return new Response(JSON.stringify([child]),{status:200});
+    }
+    if(url.endsWith("/lf_skill_update_child_step_v1")){
+      calls.push({url,body});
+      if(options.blockStep===body?.p_step)
+        return new Response(JSON.stringify({outcome:"BLOCKED",
+          code:"SKILL_UPDATE_PREWRITE_BINDING_NOT_PROVEN"}),{status:200});
+      recorded.push(String(body?.p_step));
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+        step_id:body?.p_step,status:"STEP_PASS_WITH_EVIDENCE"}),{status:200});
+    }
+    if(url.includes("/lf_operation_execution_steps?")){
+      calls.push({url,body});
+      const rows=options.brokenReadback?[]:recorded.map(step_id=>(
+        {step_id,status:"STEP_PASS_WITH_EVIDENCE"}));
+      return new Response(JSON.stringify(rows),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  return {fetchFn,calls,recorded};
+}
+const stepNames=[
+ "router","skill_resolve","baseline_read","change_scope","regression_plan",
+ "pre_write_execution_binding_gate",
+];
+const stepItems=stepNames.map((step_id,i)=>({
+ step_id,evidence_ref:"git:verified-step-"+i,
+ evidence_payload:{blocking_codes:[],source:"authenticated-owner"},
+}));
+
+Deno.test("skill step: registered as existing native OIDC continuation action",()=>{
+ eq((PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(
+   PROFILE_SKILL_STEP_BATCH_ACTION),true);
+});
+
+Deno.test("skill step: 6-step ordered batch records via exactly one canonical RPC per step",async()=>{
+ const n=stepNetwork();
+ const response=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems,
+ },config,n.fetchFn,sha,callerId);
+ const b=await response.json();
+ eq(response.status,200);eq(b.outcome,"SKILL_CHILD_STEP_BATCH_RECORDED");
+ eq(b.steps_recorded,6);eq(b.no_file_write,true);eq(b.child_completed,false);
+ eq(n.recorded,stepNames);
+ const records=n.calls.filter(c=>c.url.endsWith("/lf_skill_update_child_step_v1"));
+ eq(records.length,6);
+ eq(records[0].body?.p_parent,id);
+ eq(records[0].body?.p_child,skillChildId);
+ eq(records[0].body?.p_server_context,{
+   main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof,
+ });
+ eq(n.calls.filter(c=>c.url.endsWith("/lf_skill_invoke_v1")).length,0);
+ eq(n.calls.filter(c=>c.url.includes("/lf_operation_execution_steps?")).length,1);
+});
+
+Deno.test("skill step: wrong child identity, fake parent, bad order or forbidden step stop before writes",async()=>{
+ const cases=[
+  {child_execution_id:"EXEC-ATTACKER",steps:stepItems},
+  {child_execution_id:skillChildId,steps:[stepItems[2],stepItems[0]]},
+  {child_execution_id:skillChildId,steps:[...stepItems,stepItems[5]]},
+  {child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:x",evidence_payload:{}}]},
+  {child_execution_id:skillChildId,
+   steps:[{step_id:"router",evidence_ref:"git:x",
+    evidence_payload:{blocking_codes:[],server_assertions:["forged"]}}]},
+ ];
+ for(const item of cases){
+   const n=stepNetwork();
+   const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+     execution_id:id,...item,
+   },config,n.fetchFn,sha,callerId);
+   eq(r.status,400);
+   eq(n.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+ }
+ const wrong=stepNetwork({childOverride:{created_by_execution_id:"EXEC-ATTACKER"}});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,wrong.fetchFn,sha,callerId);
+ eq(r.status,403);
+ eq(wrong.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+});
+
+Deno.test("skill step: only exact OIDC identity can write ledger",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,n.fetchFn,sha,undefined);
+ eq(r.status,403);
+ eq(n.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+});
+
+Deno.test("skill step: a rejected canonical step aborts batch without false success",async()=>{
+ const n=stepNetwork({blockStep:"skill_resolve"});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,3),
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.outcome,"BLOCKED");
+ eq(b.failed_step,"skill_resolve");eq(b.steps_recorded,1);
+ eq(n.recorded,["router"]);
+});
+
+Deno.test("skill step: missing canonical readback is not a completed batch",async()=>{
+ const n=stepNetwork({brokenReadback:true});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.code,"SKILL_CHILD_STEP_READBACK_NOT_CLEAN");
 });
