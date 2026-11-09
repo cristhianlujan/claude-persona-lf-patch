@@ -105,6 +105,103 @@ def stage06(upstream):
             "a7":a7,"a7_plans":plans,"baseline_partial":partial,
             "fixture_facts":facts}
 
+def stage07(pg06, pg05, truth):
+    from ex6_pg07_v1 import make_pg07
+    return make_pg07(pg06=pg06, pg05=pg05, truth=truth)
+
+
+def stage08(pg07, truth):
+    """Try original PG08 C1 with actual EX6 run, fail closed on absent stdout."""
+    from pg08_c1_build_compilation_candidate_v1 import prepare_pg08_c1
+    source=pg07["c6"]
+    rows=[]
+    for row in source["batches"]:
+        rows.append({
+            "solution_id":row["solution_id"],"executor_mode":"GPT_NATIVE",
+            "executor_result_ref":RUN_REF,
+            "candidate_head_sha":row["candidate_head_sha_reported"],
+            "diff_sha256":row["diff_sha256_reported"],
+            "target_repo":source["target_repo"],
+            "base_head_sha":source["base_head_sha"],
+            # Real acceptance PASS has no stdout/stderr/command hashes.
+            # Do NOT substitute the SHA of feedback.json for stdout SHA.
+            "commands":[],
+        })
+    return prepare_pg08_c1(pg07_c6=source, build_observations=rows)
+
+
+def stage09(pg07, truth):
+    """Original C1-C4: native no-API receipt, unmodified budget test fixture."""
+    from test_pg09_iteration_chain_v1 import policy
+    from pg09_c1_iteration_cost_governor_candidate_v1 import prepare_pg09_c1
+    from pg09_c2_convergence_guard_candidate_v1 import prepare_pg09_c2
+    from pg09_c3_quality_bypass_guard_candidate_v1 import prepare_pg09_c3
+    from pg09_c4_typed_escalation_candidate_v1 import prepare_pg09_c4
+    sids=[x["solution_id"] for x in pg07["c5"]["solutions"]]
+    if len(sids)!=1:
+        raise ValueError("EX6_PG09_ONE_SOLUTION_EXPECTED")
+    observations=[{
+        "solution_id":sid, "executor_mode":"GPT_NATIVE",
+        "batch_id":"ex6://batch/EX6-SOL-001",
+        "attempts_used":truth["attempt_proof"]["attempt"],
+        "attempt_limit_source_ref":TASK_REF+"#max_attempts",
+        "calls":[],  # Zero calls from *real* cost.json
+    } for sid in sids]
+    if truth["cost"]["api_calls"]!=0:
+        raise ValueError("EX6_PG09_API_CALL_NONZERO")
+    budget=policy()  # imported official fixture, unchanged, unauthenticated
+    c1=prepare_pg09_c1(pg07_c1=pg07["c1"],pg07_c5=pg07["c5"],
+                        budget_policy=budget,usage_observations=observations)
+    snapshots=[{"solution_id":sid,"iterations":[]} for sid in sids]
+    c2=prepare_pg09_c2(pg07_c5=pg07["c5"],pg09_c1=c1,
+                        iteration_observations=snapshots)
+    c3=prepare_pg09_c3(pg07_c5=pg07["c5"],pg09_c2=c2,
+                        quality_change_observations=snapshots)
+    context=[{"solution_id":sid,"run_ref":RUN_REF,
+              "owner_decision_ref":"ex6://unattested/owner-cost-policy",
+              "diagnostic_evidence_refs":[RUN_REF+"#cost.json",
+                  "ex6://source/proposal/"+truth["proposal_sha256"]]}
+              for sid in sids]
+    c4=prepare_pg09_c4(pg09_c1=c1,pg09_c2=c2,pg09_c3=c3,
+                        escalation_context=context)
+    return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,
+            "usage":observations,"budget_fixture":budget}
+
+
+def stage10(pg09, pg07, truth):
+    """No EX6 conflict asserted: exercise original v1 with empty observations."""
+    from pg10_c1_conflict_detection_candidate_v1 import prepare_pg10_c1
+    from pg10_c2_precedence_candidate_v1 import prepare_pg10_c2
+    from pg10_c3_resolution_routing_candidate_v1 import prepare_pg10_c3
+    from pg10_c4_human_decision_packet_candidate_v1 import prepare_pg10_c4
+    from pg10_c5_adversarial_scenario_candidate_v1 import prepare_pg10_c5
+    ids=[x["solution_id"] for x in pg09["c4"]["solutions"]]
+    conflicts=[{"solution_id":sid,"conflicts":[]} for sid in ids]
+    c1=prepare_pg10_c1(pg07_c5=pg07["c5"],pg09_c4=pg09["c4"],
+                        conflict_observations=conflicts)
+    from test_pg10_decision_chain_v1 import precedence, routes, packets
+    c2=prepare_pg10_c2(pg10_c1=c1,precedence_observations=precedence(c1))
+    c3=prepare_pg10_c3(pg10_c2=c2,routing_observations=routes(c2))
+    c4=prepare_pg10_c4(pg10_c3=c3,decision_observations=packets(c3))
+    # Original test scenarios are authority-free structural fixtures.
+    c5=prepare_pg10_c5(pg10_c1=c1,pg10_c2=c2,pg10_c3=c3,
+                       pg10_c4=c4,scenario_observations=[])
+    return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5}
+
+
+def stage11(truth):
+    """Original C1 with the exact three EX6 added-file hunks and scopes."""
+    from pg11_c1_diff_hygiene_candidate_v1 import prepare_pg11_c1
+    diff, scope, traces=authorize_from_real_hunks(truth)
+    c1=prepare_pg11_c1(
+         expected_base_sha=truth["base_head_sha"],
+         expected_head_sha="13ef9c319fb62f7e08f6f030d447c60ee7bfa7f5",
+         declared_diff=diff,authorized_scope=scope,
+         residue_observations=[],dependency_observations=[],
+         compatibility_observations=[])
+    return {"c1":c1,"diff":diff,"scope":scope,"traces":traces}
+
+
 def run_all():
     install()
     table=[]
@@ -135,12 +232,48 @@ def run_all():
             evidence["pg06_c3_diagnostic"]=z["c3"]["status"]
             evidence["pg06_c4_fixture_diagnostic"]=z["c4"]["status"]
             evidence["pg06_c5_diagnostic"]=z["c5"]["status"]
-        # Independent downstream probes are attempted even when upstream
-        # has an authentic gap; each row must specify exact fixture provenance.
-        for stage in STAGES[3:]:
+        # Probe downstream original producers independently, even if their
+        # source-only shapes are blocked by a real verification gap.
+        pg07 = None
+        pg09 = None
+        row, pg07=attempt("PG-07",lambda:stage07(z,y,truth),
+                    origin="EX6_REAL_TASK_AND_WORKER_RECEIPTS",
+                    fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY",
+                              "PG07_CONTEXT_PROFILE_UNATTESTED"))
+        table.append(row)
+        if pg07:
+            evidence["pg07_c6_diagnostic"]=pg07["c6"]["status"]
+            row, pg08=attempt("PG-08",lambda:stage08(pg07,truth),
+                       origin="EX6_REAL_BUILD_FEEDBACK_MISSING_COMMAND_HASHES",
+                       fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY"))
+            table.append(row)
+            row, pg09=attempt("PG-09",lambda:stage09(pg07,truth),
+                       origin="EX6_NATIVE_API_CALLS_ZERO_ORIGINAL_V1",
+                       fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY",
+                                 "PG09_BUDGET_POLICY_UNATTESTED"))
+            table.append(row)
+            if pg09:
+                evidence["pg09_c1_request_diagnostic"]=pg09["c1"]["request_diagnostic"]
+                evidence["pg09_c1_cost_unknown"]=pg09["c1"]["missing_usage_requires_decision"]
+                evidence["pg09_c1_known_cost"]=pg09["c1"]["reported_request_known_cost"]
+                row, pg10=attempt("PG-10",lambda:stage10(pg09,pg07,truth),
+                     origin="EX6_NO_ASSERTED_CONFLICT_OR_DECISION",
+                     fixtures=("PG09_BUDGET_POLICY_UNATTESTED",))
+                table.append(row)
+            else:
+                table.append(entry("PG-10","NOT_RUN",
+                    "EX6_UPSTREAM_PG09_NOT_AVAILABLE","SOURCE_CHAIN",producer_invoked=False))
+        else:
+            for stage in ("PG-08","PG-09","PG-10"):
+                table.append(entry(stage,"NOT_RUN",
+                     "EX6_UPSTREAM_PG07_NOT_AVAILABLE","SOURCE_CHAIN",producer_invoked=False))
+        row, pg11=attempt("PG-11",lambda:stage11(truth),
+                origin="EX6_REAL_ADDED_FILE_HUNKS_ONLY")
+        table.append(row)
+        for stage in ("PG-12","PG-13","PG-14"):
             table.append(entry(stage,"NOT_RUN",
-                 "EX6_ORIGINAL_PRODUCER_INPUT_NOT_YET_BOUND",
-                 "EX6_ONLY_NO_FABRICATED_RECEIPTS",producer_invoked=False))
+                 "EX6_ORIGINAL_STAGE_IDENTITY_OR_FREEZE_READBACK_UNATTESTED",
+                 "NO_FABRICATED_SOURCE",producer_invoked=False))
         return {"stages":table,"evidence":evidence,
                 "fixture_allowlist":FIXTURES,
                 "patch_sha256":truth["patch_sha256"],
