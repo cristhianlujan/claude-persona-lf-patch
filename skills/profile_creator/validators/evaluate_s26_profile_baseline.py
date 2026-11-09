@@ -50,6 +50,36 @@ def _declares_callable(path: Path, callable_name: object) -> bool:
     return any(isinstance(node, ast.FunctionDef) and node.name == callable_name for node in tree.body)
 
 
+_SKILL_SCHEMA_REF_RE = re.compile(r"schemas/([A-Za-z0-9_.-]+\.schema\.json)")
+
+
+def schema_authority_derivation(profile_dir: Path) -> dict[str, Any] | None:
+    """Return a derivation record when the profile's own SKILL.md enumerates exactly its schema files.
+
+    Deterministic and conservative: no binding, several schemas and no runtime_output.schema.json normally
+    block (the binding is the thing a write would create). When the SKILL.md of the profile references every
+    schema file under schemas/ and nothing else, the schema set is declared by the source itself, so the
+    binding may be authored in the candidate. Which schema is the default and the mode mapping are NOT
+    proven here; the semantic judge must still confirm them (`authority_resolution_valid`).
+    """
+    schema_dir = profile_dir / "schemas"
+    skill = profile_dir / "SKILL.md"
+    if not schema_dir.is_dir() or not skill.is_file():
+        return None
+    files = sorted(f.name for f in schema_dir.glob("*.schema.json"))
+    if len(files) < 2:
+        return None
+    try:
+        refs = sorted(set(_SKILL_SCHEMA_REF_RE.findall(skill.read_text(encoding="utf-8"))))
+    except (OSError, UnicodeDecodeError):
+        return None
+    if refs != files:
+        return None
+    return {"status": "DERIVED_FROM_SKILL", "schemas": files, "source": "SKILL.md",
+            "requires_semantic_confirmation": True}
+
+
+
 def evaluate(repo_root: Path, profile_slug: str, seed: str | None = None, dynamic: bool = True) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     baseline = _load_json(repo_root / BASELINE_REL)
@@ -171,9 +201,13 @@ def evaluate(repo_root: Path, profile_slug: str, seed: str | None = None, dynami
     schema_count = len(schema_files)
     explicit_runtime = (profile_dir / "schemas/runtime_output.schema.json").is_file()
     schema_authority_required = (not valid_binding) and schema_count > 1 and not explicit_runtime
+    authority_derivation = schema_authority_derivation(profile_dir) if schema_authority_required else None
+    if authority_derivation is not None:
+        schema_authority_required = False
     schema_code = (
         "PASS" if schema_pass else
         "RUNTIME_SCHEMA_EXPLICIT_BINDING_REQUIRED" if schema_authority_required else
+        "RUNTIME_SCHEMA_BINDING_DERIVED_FROM_SKILL" if authority_derivation is not None else
         "RUNTIME_SCHEMA_DESCRIPTOR_MISSING_EXPLICIT_RUNTIME_OUTPUT_AVAILABLE" if explicit_runtime else
         "RUNTIME_SCHEMA_NOT_BOUND"
     )
@@ -322,6 +356,7 @@ def evaluate(repo_root: Path, profile_slug: str, seed: str | None = None, dynami
         "profile_slug": profile_slug, "decision": decision, "score": score, "required": len(baseline["dimensions"]),
         "compatibility_pct": round(score * 100 / len(baseline["dimensions"]), 1), "dimensions": dimensions,
         "repair_actions": repairs, "blocking_codes": sorted(set(blockers)),
+        **({"authority_derivation": authority_derivation} if authority_derivation is not None else {}),
         "post_update_rule": f"RERUN_AND_REQUIRE_{len(baseline['dimensions'])}_OF_{len(baseline['dimensions'])}_BEFORE_PROFILE_UPDATE_CLOSURE",
         "automatic_impact_authorized": False, "runtime_activation_authorized": False,
         "target_code_execution_performed": executed,

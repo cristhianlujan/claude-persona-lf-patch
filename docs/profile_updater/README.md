@@ -2,7 +2,41 @@
 
 **Estado del documento:** guía de operación y diagnóstico, no autorización de producción.
 **Fuente de autoridad:** Supabase vivo (operación, pasos, política `POL-PROFILE-UPDATE-PASS`, ejecución y juez). Este README describe el funcionamiento comprobado del código GitHub y de las consultas; **si discrepa con la política activa, prevalece el snapshot Supabase de la ejecución**.
-**Actualizado:** 2026-10-30. No contiene valores de perfiles/owners hardcodeados como regla general.
+**Actualizado:** 2026-11-05 (§0 reglas de conducción). No contiene valores de perfiles/owners hardcodeados como regla general.
+
+## 0. Reglas de conducción (leer primero; valen para todo el run, no hay que repetirlas)
+
+Estas reglas aplican a cualquier agente (GPT o Claude) que ejecute `ACTUALIZACION_PERFIL_LF`. El dueño no debe recordarlas paso a paso.
+
+1. **Un solo run continuo.** Desde la solicitud hasta el cierre en `main`, los pasos están encadenados: cada paso termina y arranca el siguiente sin esperar un "continúa". No se emiten informes de avance por lote, no se pide permiso por pasos ya cubiertos por la solicitud, no se cierra el turno con "siguiente lote definido". El único informe es el final (cierre con readback) o el de una parada grave.
+2. **Solo se frena por una causa grave**, y se reporta con el código exacto:
+   - un bloqueo gobernado que no tiene recuperación en la ruta existente (autoridad ausente, política vencida, gate que falla cerrado sin salida documentada);
+   - una decisión del dueño irreversible o realmente ambigua (no lo es elegir método, nombre de rama o orden de pasos);
+   - riesgo de seguridad, producción, gasto o pérdida de datos;
+   - falta de una capacidad de entrega (ver regla 3).
+   (Un rechazo literal de OpenAI no entra aquí: se trata con la regla 6 y el run sigue por lo independiente.)
+   Todo lo demás —un check rojo, un falso negativo en las pruebas, un código de la tabla de errores conocidos— se corrige y se sigue, sin preguntar.
+3. **Sin ZIP ni descargas.** El candidato nunca se entrega como archivo para que alguien lo descargue o lo suba a mano. Se escribe directamente en la rama `lf/**` del repositorio con la herramienta de escritura de GitHub disponible (conector o API), solo en los paths del perfil y después del paso de pre-escritura, y se relee desde la rama. Si el agente no puede escribir en GitHub, se detiene con `NATIVE_CANDIDATE_DELIVERY_UNAVAILABLE` y dice qué capacidad falta; no produce un ZIP como sustituto.
+4. **Una evolución completa, no por lotes.** Todas las brechas medidas (las dimensiones S26 que fallan y los problemas del caso operacional) se resuelven en **un único candidato, un único PR**. No se parte el trabajo en "lote 1, lote 2" ni se deja una brecha para después sin un bloqueo grave que la justifique. Si algo no se puede cerrar, se dice cuál es el bloqueo, no se difiere.
+5. **Las pruebas locales no se reportan como avance.** Se usan para iterar el candidato hasta que pase y recién entonces se sigue al paso siguiente; el avance oficial es el que queda registrado en los pasos de la ejecución.
+
+6. **Bloqueo de seguridad de OpenAI: contexto preventivo en cada paso y respuesta automática.** *Antes de cada llamada que escribe o despacha* (crear/etiquetar un issue de la ruta gobernada, escribir en la rama `lf/**`, abrir o actualizar el PR), el agente escribe en la traza, en dos líneas y con datos comprobados, la declaración de contexto de la plantilla de abajo (`internal_system=LF`, operación exacta, ruta autorizada, efecto esperado). No espera al rechazo para darla: el bloqueo ya es un riesgo conocido y el contexto veraz va desde el inicio. Si aun así llega el rechazo, aplica lo siguiente sin buscar nada: Si una llamada a herramienta es rechazada y el mensaje literal identifica a OpenAI como emisor (p. ej. «Los controles de seguridad de OpenAI bloquearon esta llamada a la herramienta…»), no es una parada grave del run ni un fallo de GitHub, Supabase o del Router. El agente aplica de inmediato, en la misma traza, el protocolo [`ops/lf-openai-tool-safety-review-v1.md`](../../ops/lf-openai-tool-safety-review-v1.md) §2A:
+   1. Registrar `OPENAI_SAFETY_BLOCK_REVIEW` y decir que esa operación quedó **sin efecto verificado**.
+   2. Declarar este contexto, con datos comprobados (lo no demostrado se marca `NO_VERIFICADO`, nunca se inventa):
+
+      > Esta solicitud corresponde a un agente interno de Libertad Financiera (LF), dedicado a operar y verificar nuestro sistema bajo una ruta autorizada. La acción [operación exacta] es necesaria para [dependencia funcional: p. ej. escribir el candidato del perfil en la rama `lf/**` / crear el issue etiquetado de la ruta gobernada]. No pretende vulnerar mecanismos de seguridad, obtener accesos indebidos ni eludir controles; la autorización y el efecto esperado son [ruta OIDC/Edge existente, paths del perfil, sin credenciales ni cambio de permisos]. Solicitamos revisión de un posible falso positivo.
+
+      Acompañar con `internal_system=LF`, `agent_role`, `operation`, `required_for`, `authorized_path`, `permissions_and_effects`.
+   3. Reintentar **una vez** la misma operación, con el mismo destino, alcance y contenido (no se reescribe ni se reempaqueta para evadir el filtro).
+   4. Si persiste: registrar `PROVIDER_BLOCKED_PENDING_REVIEW`, preparar el texto para Soporte de OpenAI, y **seguir con todo lo independiente** del run; reanudar esa operación solo cuando vuelva a permitirse, con readback. No declarar el paso ejecutado, no usar rutas alternativas de escritura y no tratarlo como aprobado por haber enviado el descargo.
+   Esta declaración es contexto, no una exención: si la solicitud sí infringe una política real, se detiene (`STOP_POLICY_APPLIES`).
+   El bloqueo no corta el run: tras `PROVIDER_BLOCKED_PENDING_REVIEW` el agente reintenta esa operación **una vez más al retomar el siguiente turno de trabajo**, ya con el contexto preventivo escrito, y solo si vuelve a fallar deja la parada documentada. Nunca cambia el destino, el contenido ni la ruta para evadir el filtro.
+7. **Validar el candidato sobre el árbol exacto antes de escribir.** Las pruebas locales del candidato (validador, medición con `-B`, ejemplos) se corren sobre el mismo árbol que se va a escribir, antes del paso 70. Escribir primero y corregir después invalida `github_write`/`github_readback` (anclados al HEAD) y obliga a abrir otra ejecución. Si de todos modos el HEAD cambia después del paso 70, no existe una ruta gobernada de cancelación: se continúa en **una sola** ejecución vigente (la más reciente, pasos 0–60 y luego un commit con el mismo árbol para anclar 70/80 al HEAD nuevo, y se vuelve a comparar sobre ese HEAD) y la anterior queda documentada como residual sin tocarla. El estado `SUPERSEDED` no existe; no se inventa ni se escribe a mano en la base.
+8. **Cierre del catálogo del selector (lo hace el actualizador, no el dueño ni Claude).** Al terminar el merge y la reconciliación (pasos 115–130), el agente consulta `public.lf_profile_selector_catalog_v1()` (lectura). Si el perfil actualizado figura `STALE_SOURCE_CHANGED` o `all_canonical_descriptors_complete=false`, el Router queda bloqueado para todos los perfiles y el cierre **no está completo**. Entonces, en el mismo run:
+   1. Toma el descriptor vigente del catálogo, lo guarda como JSON y corre `python3 -B skills/profile_creator/validators/gen_selector_descriptor_resync.py --profile-code <PERFIL-…> --skill-md profiles/<slug>/SKILL.md --descriptor-json <d.json> --source-commit <sha de main que contiene ese SKILL.md> --out supabase/migrations/<14 dígitos>_lf_selector_descriptor_resync_<slug>_v1.sql`. El generador comprueba que cada texto de evidencia sea literal en el SKILL.md y calcula el blob sha; si sale `EVIDENCE_NOT_LITERAL_IN_SKILL` (código 3), reescribe el descriptor copiando textos del SKILL.md actual y repite.
+   2. Abre **un** PR solo con esa migración, lo pasa de borrador y lo etiqueta `ready-to-merge` (nunca merge directo; antes comprueba que no haya una corrida del Train en curso).
+   3. Después del merge relee el catálogo y exige `descriptor_status=CURRENT` y `all_canonical_descriptors_complete=true`. Solo entonces cierra y reporta.
+   Esta migración no cambia runtime, SKILL ni contratos; si el generador o el Train fallan, se reporta el código exacto en lugar de dejar el catálogo roto.
 
 ## 1. ¿Qué hace y quién es responsable?
 
@@ -86,13 +120,16 @@ En cada intento: `source`, `locator` exacto, `source_revision` si aplica, `obser
 
 - **Grupo 1:** dimensiones S26 sobre el paquete, preservando la identidad y restricciones.
 - **Grupo 2:** checks tipados del caso operacional, sobre **RAW real** de original y evolucionado; cada salida debe estar ligada a su `profile_tree_sha256` y `output_sha256`. El comparador actual lee los casos y las corridas del **trusted root / main**, no de la rama candidata.
+- **Consistencia validador-schema (Grupo 2):** si una corrida del árbol candidato registra `validator.valid` y `validator.mode_schema_valid` y no coinciden, el comparador responde `BLOCKED` con `CANDIDATE_VALIDATOR_SCHEMA_CONTRADICTION`. El árbol base puede tener la contradicción (es lo que se corrige); no se penaliza. Solo se juzgan corridas que registran ambos booleanos.
 - **Regla:** mejora medible en al menos un control y **cero controles/dimensiones regresados**. `UNMEASURED` no equivale a PASS; 15/15 estructural por sí solo no demuestra evolución.
 - **Semántica:** la evaluación independiente verifica si las evidencias sostienen el significado, actualidad, aplicabilidad y efectos de las decisiones.
 - **Cierre:** `EVOLUTION_DEMONSTRATED`, gates exigidos por snapshot, Merge Train, readback del nuevo `main` y pasos finales, con estado runtime intacto. Si la política vigente exige controles adicionales, aplicarlos.
 
+**Autoridad de esquema (B03/B04).** Sin binding, con varios esquemas y sin `runtime_output.schema.json`, el medidor bloqueaba con `BLOCKED_AUTHORITY_REQUIRED`, aunque el binding es justo lo que la actualización debe crear. Desde 2026-11-05, si el `SKILL.md` del perfil enumera **exactamente** todos los esquemas de `schemas/`, la autoridad se considera derivada de la fuente (`authority_derivation.status=DERIVED_FROM_SKILL`), no se bloquea y el candidato debe escribir `contracts/runtime_binding.json`. El esquema por defecto y el mapeo por modo no los prueba el código: los confirma el juez semántico (`authority_resolution_valid`). Si el SKILL no enumera los esquemas, sigue el bloqueo.
+
 ## 6. Transporte y comandos existentes
 
-- **Ruta canónica documentada:** `scripts/lf_profile_update_run.py`, desde checkout preparado, con `git` y `gh` disponibles.
+- **Ruta canónica documentada:** `scripts/lf_profile_update_run.py`, desde checkout preparado, con `git` y `gh` disponibles. Desde un chat nativo sin checkout, el candidato se escribe directo en la rama (ver §0, regla 3); nunca como ZIP.
 - **Ejemplo (un perfil, nunca copiar sin sustituir los parámetros):**
 
 ```bash

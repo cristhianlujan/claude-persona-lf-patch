@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const enc = new TextEncoder();
+const TICKET_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 // M8.8: stay below the observed 150s Edge envelope; do not change DB statement timeouts.
 const VALIDATOR_INVOCATION_BUDGET_MS = 110_000;
 const MIN_NEXT_RPC_ALLOWANCE_MS = 35_000;
@@ -57,6 +58,8 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const runId = Number(body?.run_id);
     if (!Number.isInteger(runId) || runId < 1) return Response.json({ error: "RUN_ID_INVALID" }, { status: 400 });
+    const ticket = typeof body?.ticket === "string" ? body.ticket.trim() : "";
+    if (!TICKET_RE.test(ticket)) return Response.json({ error: "IG_PROFILE_TICKET_REQUIRED" }, { status: 403 });
 
     const rawHandoffReceiptId = body?.handoff_receipt_id;
     let requestedHandoffReceiptId: number | null = null;
@@ -71,13 +74,14 @@ Deno.serve(async (req: Request) => {
     const handoffReceipt = await rpc(HANDOFF_ASSERT_ENTRYPOINT, {
       p_run_id: runId,
       p_receipt_id: requestedHandoffReceiptId,
+      p_ticket: ticket,
     });
     const handoffReceiptId = Number(handoffReceipt?.receipt_id);
     if (!Number.isInteger(handoffReceiptId) || handoffReceiptId < 1 || handoffReceipt?.status !== "VERIFIED") {
       return Response.json({ error: "HANDOFF_RECEIPT_NOT_VERIFIED", run_id: runId }, { status: 409 });
     }
 
-    const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId });
+    const resume = await rpc("fn_input_governance_validator_resume_context_v1", { p_run_id: runId, p_ticket: ticket });
     let identity: string;
     let resumed = false;
     let scopeStrategy: ScopeStrategy;
@@ -138,6 +142,7 @@ Deno.serve(async (req: Request) => {
         p_run_id: runId,
         p_validator_identity: identity,
         p_receipt_id: handoffReceiptId,
+        p_ticket: ticket,
       });
       lastRpcDurationMs = performance.now() - chunkStartedAt;
       trace.push({

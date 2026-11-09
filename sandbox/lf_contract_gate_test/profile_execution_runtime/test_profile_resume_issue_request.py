@@ -37,11 +37,170 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             mod = runpy.run_path(str(SCRIPT), run_name="native_resume_test")
             self.get_request = mod["governed_request"]
             self.validator_continuation = mod["is_direct_validator_continuation"]
+            self.blocked_ig_receipt = mod["record_blocked_ig_receipt"]
 
     def check(self):
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
         with patch.dict(os.environ, self.env, clear=True):
             return self.get_request()
+
+    def _blocked_ig_edge_reply(self):
+        execution_id = "EXEC-PROFILE-GATE2-" + "A" * 24
+        profile_code = "PERFIL-PRODUCT-DIRECTOR-LF"
+        return execution_id, profile_code, {
+            "outcome": "BLOCKED",
+            "phase": "BLOCKED",
+            "code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+            "execution_id": execution_id,
+            "profile_code": profile_code,
+            "result": {
+                "execution_id": execution_id,
+                "status": "BLOCKED",
+                "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+                "input_validate": {
+                    "status": "BLOCKED",
+                    "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+                    "input_governance": {
+                        "applicable": True,
+                        "status": "BLOCKED",
+                        "decision": "BLOCKED",
+                        "continuation_allowed": False,
+                        "profile_code": profile_code,
+                        "pantalla_id": 51,
+                        "consumer": "CONTEXT_PACK",
+                        "governance_result": {
+                            "status": "BLOCKED",
+                            "consumer": "CONTEXT_PACK",
+                            "pantalla_id": 51,
+                            "run_id": 949,
+                            "output_sha256": "a" * 64,
+                            "raw_sensitive_data": {
+                                "service_role_key": "SECRET_NEVER_ARTIFACT",
+                                "original_producer_json": "PRIVATE_RAW_NEVER_ARTIFACT",
+                            },
+                        },
+                    },
+                },
+            },
+        }
+
+    def test_blocked_ig_records_only_bound_hash_receipt_and_remains_nonpass(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+        output = Path(self.tmp.name) / "profile-native-continuation.json"
+        self.assertTrue(output.is_file())
+        raw = output.read_text(encoding="utf-8")
+        artifact = json.loads(raw)
+        self.assertEqual(artifact["schema_version"], "LF_PROFILE_NATIVE_IG_BLOCKED_EVIDENCE_V1")
+        self.assertEqual(artifact["execution_id"], execution_id)
+        self.assertEqual(artifact["profile_code"], profile_code)
+        self.assertEqual(artifact["status"], "BLOCKED_NOT_COMPLETE")
+        self.assertEqual(artifact["governance_run_id"], 949)
+        self.assertEqual(artifact["governance_declared_output_sha256"], "a" * 64)
+        self.assertRegex(artifact["edge_response_canonical_sha256"], r"^[0-9a-f]{64}$")
+        self.assertRegex(artifact["governance_result_canonical_sha256"], r"^[0-9a-f]{64}$")
+        self.assertFalse(artifact["last_run_completed"])
+        self.assertFalse(artifact["continuation_allowed"])
+        self.assertFalse(artifact["pass_claimed"])
+        self.assertFalse(artifact["raw_payload_persisted"])
+        self.assertNotIn("SECRET_NEVER_ARTIFACT", raw)
+        self.assertNotIn("PRIVATE_RAW_NEVER_ARTIFACT", raw)
+        self.assertNotIn('"governance_result":', raw)
+
+    def test_main_409_from_governed_edge_writes_evidence_and_never_continues(self):
+        execution_id, profile_code, blocked = self._blocked_ig_edge_reply()
+        source_file = Path(self.tmp.name) / "profiles" / "product_director_lf" / "SKILL.md"
+        source_file.parent.mkdir(parents=True)
+        source_file.write_text("# Profile source fixture\n", encoding="utf-8")
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        # The test executes the same main() branch as GitHub Actions but never
+        # requests a real OIDC token or calls Supabase.
+        with patch.dict(os.environ, {**self.env, "GITHUB_SHA": "a" * 40},
+                        clear=True), patch("pathlib.Path.cwd",
+                                           return_value=Path(self.tmp.name)):
+            module = runpy.run_path(str(SCRIPT), run_name="ig_blocked_bridge_test")
+            calls = []
+            def fake_call(url, body, headers):
+                calls.append(body["action"])
+                if body["action"] == "profile_native_source_bind_v1":
+                    return 200, {
+                        "outcome": "SOURCE_BINDING_REQUIRED",
+                        "execution_id": execution_id,
+                        "source_revision_required": "a" * 40,
+                        "target_repo": "test-owner/test-repo",
+                        "target_path": "profiles/product_director_lf/SKILL.md",
+                        "profile_code": profile_code,
+                    }
+                return 409, blocked
+            # Issue request references the same execution, not a new BEGIN.
+            self.event["issue"]["body"] = json.dumps({
+                "schema_version": SCHEMA,
+                "execution_id": execution_id,
+            })
+            self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+            main = module["main"]
+            with patch.dict(main.__globals__,
+                            {"oidc": lambda: "test-token", "call_json": fake_call}):
+                self.assertEqual(main(), 1)
+        self.assertEqual(calls, [
+            "profile_native_source_bind_v1", "profile_native_continue_v1",
+        ])
+        receipt_path = Path(self.tmp.name) / "profile-native-continuation.json"
+        self.assertTrue(receipt_path.is_file())
+        receipt = json.loads(receipt_path.read_text())
+        self.assertEqual(receipt["execution_id"], execution_id)
+        self.assertEqual(receipt["status"], "BLOCKED_NOT_COMPLETE")
+        self.assertFalse(receipt["pass_claimed"])
+        self.assertNotIn("SECRET_NEVER_ARTIFACT", receipt_path.read_text())
+
+    def test_blocked_ig_canonical_receipt_digest_detects_body_changes(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+            original = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+            response["result"]["input_validate"]["input_governance"]["governance_result"]["run_id"] = 950
+            self.assertTrue(self.blocked_ig_receipt(409, response, execution_id, profile_code))
+            updated = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertNotEqual(original["governance_result_canonical_sha256"],
+                            updated["governance_result_canonical_sha256"])
+        self.assertNotEqual(original["edge_response_canonical_sha256"],
+                            updated["edge_response_canonical_sha256"])
+
+    def test_blocked_ig_fails_closed_on_unrelated_or_untrusted_responses(self):
+        execution_id, profile_code, response = self._blocked_ig_edge_reply()
+        invalid = []
+        invalid.append((200, response))
+        for mutate in [
+            lambda x: x.update(execution_id="EXEC-PROFILE-GATE2-" + "B" * 24),
+            lambda x: x["result"].update(execution_id="EXEC-PROFILE-GATE2-" + "B" * 24),
+            lambda x: x.update(profile_code="PERFIL-OTHER"),
+            lambda x: x.update(code="UNRELATED_409"),
+            lambda x: x["result"].update(status="READY"),
+            lambda x: x["result"]["input_validate"].update(status="READY"),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                continuation_allowed=True),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                consumer="STORY_CREATOR"),
+            lambda x: x["result"]["input_validate"]["input_governance"].update(
+                pantalla_id=52),
+            lambda x: x["result"]["input_validate"]["input_governance"][
+                "governance_result"].update(status="READY"),
+            lambda x: x["result"]["input_validate"]["input_governance"][
+                "governance_result"].update(output_sha256="INVALID"),
+            lambda x: x["result"]["input_validate"]["input_governance"].pop(
+                "governance_result"),
+        ]:
+            copy = json.loads(json.dumps(response))
+            mutate(copy)
+            invalid.append((409, copy))
+        with patch("pathlib.Path.cwd", return_value=Path(self.tmp.name)):
+            for code, bad in invalid:
+                with self.subTest(code=code, invalid=bad):
+                    self.assertFalse(self.blocked_ig_receipt(
+                        code, bad, execution_id, profile_code))
+                    self.assertFalse((Path(self.tmp.name) /
+                                      "profile-native-continuation.json").exists())
 
     def test_valid_issue_payload(self):
         self.assertEqual(self.check(), ("EXEC-PROFILE-GATE2-EXAMPLE", "", None, None))
@@ -125,6 +284,51 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             self.event["issue"]["body"] = json.dumps(bad)
             with self.assertRaises(ValueError):
                 self.check()
+
+    def _skill_body(self, **over):
+        body = {"schema_version": "LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1",
+                "execution_id": "EXEC-PROFILE-GATE2-" + "A" * 24, "skill_code": "PROFILE_UPDATE_APPLY",
+                "input": {"target_code": "PERFIL-X-LF", "target_path": "profiles/x/SKILL.md"}}
+        body.update(over)
+        return body
+
+    def test_skill_invoke_request_is_parsed_with_bounded_fields(self):
+        self.event["issue"]["body"] = json.dumps(self._skill_body())
+        got = self.check()
+        self.assertEqual(got["kind"], "SKILL_INVOKE")
+        self.assertEqual(got["skill_code"], "PROFILE_UPDATE_APPLY")
+        self.assertEqual(got["input"]["target_code"], "PERFIL-X-LF")
+
+    def test_skill_invoke_request_rejects_extra_fields_and_bad_values(self):
+        for body in (self._skill_body(parent_execution_id="EXEC-ATTACKER"), self._skill_body(skill_code="profile_update_apply"),
+                     self._skill_body(skill_code="X; DROP"), self._skill_body(execution_id="EXEC-ATTACKER-0000"),
+                     self._skill_body(input="text"), self._skill_body(input=[1]), self._skill_body(input={"x": "a" * 60000})):
+            self.event["issue"]["body"] = json.dumps(body)
+            with self.assertRaises(ValueError):
+                self.check()
+        missing = self._skill_body(); del missing["skill_code"]
+        self.event["issue"]["body"] = json.dumps(missing)
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_skill_invoke_calls_only_the_skill_action_and_fails_closed(self):
+        self.event["issue"]["body"] = json.dumps(self._skill_body())
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        for code, reply, expected_rc in (
+            (200, {"outcome": "SKILL_INVOKED", "result": {"status": "CHILD_OPENED"}}, 0),
+            (409, {"outcome": "BLOCKED", "code": "PROFILE_SKILL_INVOKE_REJECTED", "detail": "falta autoridad"}, 1),
+            (200, {"outcome": "BLOCKED"}, 1),
+        ):
+            with patch.dict(os.environ, {**self.env, "GITHUB_SHA": "a" * 40}, clear=True):
+                main = runpy.run_path(str(SCRIPT), run_name="native_skill_test")["main"]
+                calls = []
+                def fake_call(url, body, headers):
+                    calls.append(body)
+                    return code, reply
+                with patch.dict(main.__globals__, {"oidc": lambda: "t", "call_json": fake_call}):
+                    self.assertEqual(main(), expected_rc)
+            self.assertEqual([c["action"] for c in calls], ["profile_native_skill_invoke_v1"])
+            self.assertEqual(calls[0]["execution_id"], "EXEC-PROFILE-GATE2-" + "A" * 24)
 
     def test_exact_platform_footer_allowed_other_trailing_data_rejected(self):
         payload = json.dumps({"schema_version": SCHEMA, "execution_id": "EXEC-PROFILE-GATE2-EXAMPLE"})
@@ -280,6 +484,105 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             self.assertFalse(self.validator_continuation(202, {**valid, field: wrong}))
         self.assertFalse(self.validator_continuation(202, {}))
 
+
+
+    def _skill_plan_issue(self, calls):
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1",
+            "execution_id": "EXEC-PROFILE-GATE2-" + "A" * 24,
+            "calls": calls,
+        })
+        return self.check()
+
+    def test_skill_plan_accepts_dynamic_targets_only_for_non_effecting_skills(self):
+        request = self._skill_plan_issue([
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ])
+        self.assertEqual(request["kind"], "SKILL_PLAN")
+        self.assertEqual(len(request["calls"]), 2)
+        self.assertTrue(request["execution_id"].startswith("EXEC-PROFILE-GATE2-"))
+
+    def test_skill_plan_rejects_write_and_duplicate_or_unbounded_calls(self):
+        valid = [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "HOME-001"}}]
+        for calls in (
+            [{"skill_code": "RULE_UPDATE_APPLY", "input": {"regla_codigo": "X"}}],
+            valid * 2,
+            [],
+            valid * 9,
+            [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "X"}, "authority": "FAKE"}],
+            [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": "not_an_object"}],
+        ):
+            with self.subTest(calls=calls), self.assertRaises(ValueError):
+                self._skill_plan_issue(calls)
+
+    def test_skill_plan_calls_existing_edge_sequentially_and_never_closes_parent(self):
+        calls = [
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ]
+        self._skill_plan_issue(calls)
+        with patch.dict(os.environ, self.env, clear=True), patch(
+            "pathlib.Path.cwd", return_value=Path(self.tmp.name)
+        ):
+            m = runpy.run_path(str(SCRIPT), run_name="skill_plan_runtime_test")
+            observed = []
+            def fake_edge(url, body, headers):
+                observed.append(body)
+                self.assertEqual(body["action"], "profile_native_skill_invoke_v1")
+                self.assertEqual(body["execution_id"], "EXEC-PROFILE-GATE2-" + "A" * 24)
+                self.assertNotIn("service_role", json.dumps(body).lower())
+                i = len(observed)
+                return 200, {"outcome": "SKILL_INVOKED", "result": {
+                    "status": "COMPLETED", "skill_run_id": "RUN-" + str(i),
+                    "evidence_ref": "SKILLRUN:RUN-" + str(i) + ":digest",
+                    "next_action": "CONTINUE_PROFILE",
+                }}
+            with patch.dict(m["main"].__globals__, {
+                "oidc": lambda: "test-token", "call_json": fake_edge,
+            }):
+                self.assertEqual(m["main"](), 1)
+        self.assertEqual([c["skill_code"] for c in observed],
+                         ["SCREEN_RULES_SNAPSHOT", "RULE_UPDATE_PROPOSE"])
+        receipt = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertEqual(receipt["status"], "SKILL_PLAN_EVIDENCE_READY")
+        self.assertEqual(len(receipt["calls"]), 2)
+        self.assertEqual(receipt["next_step"], "execute_profile")
+        self.assertFalse(receipt["profile_execution_complete"])
+        self.assertFalse(receipt["business_write_performed"])
+        self.assertTrue(receipt["same_parent_execution"])
+
+    def test_skill_plan_denial_and_unexpected_child_fail_closed(self):
+        call_items = [
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ]
+        for denied in (True, False):
+            with self.subTest(denied=denied):
+                self._skill_plan_issue(call_items)
+                with patch.dict(os.environ, self.env, clear=True), patch(
+                    "pathlib.Path.cwd", return_value=Path(self.tmp.name)
+                ):
+                    m = runpy.run_path(str(SCRIPT), run_name="skill_plan_blocked_test")
+                    observed = []
+                    def fake_edge(url, body, headers):
+                        observed.append(body)
+                        if denied:
+                            return 403, {"outcome": "BLOCKED", "code": "DENIED"}
+                        return 200, {"outcome": "SKILL_INVOKED", "result": {
+                            "status": "COMPLETED", "skill_run_id": "RUN-1",
+                            "evidence_ref": "SKILLRUN:RUN-1:digest",
+                            "child_execution_id": "EXEC-SKILL-UNEXPECTED",
+                        }}
+                    with patch.dict(m["main"].__globals__, {
+                        "oidc": lambda: "test-token", "call_json": fake_edge,
+                    }):
+                        self.assertEqual(m["main"](), 1)
+                self.assertEqual(len(observed), 1)
+                receipt = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+                self.assertEqual(receipt["status"], "BLOCKED")
+                self.assertEqual(receipt["next_step"], "skill_plan_repair")
+                self.assertFalse(receipt["profile_execution_complete"])
 
 
 if __name__ == "__main__":

@@ -114,6 +114,7 @@
       "origin_asset": "HYBRID",
       "origin_operation": "HYBRID",
       "owner": "HYBRID",
+      "policy_resolution": "HYBRID",
       "invariant": "HYBRID",
       "hard_guard": "HYBRID",
       "acceptance_criteria": "HYBRID",

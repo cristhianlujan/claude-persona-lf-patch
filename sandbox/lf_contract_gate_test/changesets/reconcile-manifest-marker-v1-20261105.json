@@ -1,0 +1,7 @@
+{
+  "solution_ref": "reconcile-manifest-marker-v1-20261105",
+  "paths": {
+    "supabase/functions/run-creacion-perfil-lf/index.ts": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/changesets/reconcile-manifest-marker-v1-20261105.json": "CHANGESET_MANIFEST"
+  }
+}

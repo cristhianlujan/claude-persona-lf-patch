@@ -1,0 +1,113 @@
+{
+  "schema": "LF_PROFILE_RUNTIME_BINDING_V1",
+  "profile_slug": "ui_architect",
+  "profile_code": "PERFIL-UI-ARCHITECT",
+  "runtime_schema": {
+    "default": "schemas/ui_production_spec.schema.json",
+    "output_modes": {
+      "FOCUSED_DECISION": "schemas/ui_focused_decision.schema.json",
+      "MISSING_INPUT": "schemas/ui_missing_input.schema.json"
+    }
+  },
+  "canonical_validator": {
+    "path": "validators/runtime_validate.py",
+    "callable": "validate",
+    "transport": "JSON_FILE_ARGUMENT"
+  },
+  "semantic_utility": {
+    "path": "validators/runtime_semantic_utility.py",
+    "callable": "evaluate"
+  },
+  "governance": {
+    "source_first_required": true,
+    "schema_invention_allowed": false,
+    "fail_closed": true,
+    "exact_head_evidence_required": true,
+    "post_update_baseline_required": true,
+    "runtime_enabled": false,
+    "promotion_allowed": false
+  },
+  "model_context": {
+    "full_source_to_model": false,
+    "source_projection": {
+      "mode": "MARKDOWN_SECTIONS",
+      "include_sections": [
+        "Purpose",
+        "RUNTIME CRITICAL GATE — EXECUTE FIRST",
+        "V6 Composer structural boundary — REQUIRED FOR NEW PRODUCTION RUNS"
+      ],
+      "max_chars": 8000
+    },
+    "required_source_refs": [
+      "profiles/ui_architect/SKILL.md"
+    ]
+  },
+  "execution_partition": {
+    "schema": "LF_PROFILE_EXECUTION_PARTITION_V1",
+    "field_classes": {
+      "worker": "HYBRID",
+      "output_type": "HYBRID",
+      "deliverable_created": "HYBRID",
+      "score": "HYBRID",
+      "handoff_to_next": "HYBRID",
+      "self_verdict": "HYBRID"
+    },
+    "deterministic_materialization": {},
+    "generation_limits": {}
+  },
+  "execution_budget": {
+    "resource_class": "HEAVY_SEMANTIC",
+    "max_prompt_tokens": 12000,
+    "max_output_tokens": 16000,
+    "min_available_memory_mb": 2048,
+    "max_swap_used_pct": 50
+  },
+  "adversarial_suite": {
+    "schema": "LF_PROFILE_ADVERSARIAL_SUITE_V1",
+    "base_example": "examples/runtime_valid_v6.json",
+    "min_cases": 40,
+    "min_catch_rate": 0.95,
+    "blank_fields": [
+      "deliverable_created.component_tree[].component_id",
+      "deliverable_created.component_tree[].role",
+      "deliverable_created.component_tree[].content.brand_label",
+      "deliverable_created.component_tree[].content.label",
+      "deliverable_created.density_rules[]"
+    ],
+    "case_duplicate_ids": [],
+    "unknown_root_key": true,
+    "injections": [
+      {
+        "match": "exact",
+        "fields": [
+          "deliverable_created.component_tree[].component_id",
+          "deliverable_created.component_tree[].role",
+          "deliverable_created.component_tree[].content.brand_label",
+          "deliverable_created.component_tree[].content.label"
+        ],
+        "phrases": [
+          "unknown",
+          "pending",
+          "lorem ipsum",
+          "placeholder",
+          "no disponible",
+          "undefined"
+        ]
+      }
+    ],
+    "valid_controls": [
+      {
+        "name": "valid_nonrender_governance_source",
+        "set": {
+          "governance_envelope.context.scope": "Synthetic test context with bound UI source references"
+        }
+      },
+      {
+        "name": "valid_nonrender_governance_reference",
+        "set": {
+          "governance_envelope.context.scope": "Governed inspection reference preserved outside Composer projection"
+        }
+      }
+    ]
+  }
+}

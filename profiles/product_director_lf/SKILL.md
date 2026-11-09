@@ -12,7 +12,7 @@ Before producing a product decision, normalize the task as:
 2. Preserve every material qualifier, exclusion and protected constraint that makes the decision true. Never strengthen `referential`, `conditional`, `pending validation`, `eligible if`, or equivalent language into a guarantee.
 3. **MATERIALITY BEFORE BLOCKING.** Missing information is material only when it can change business meaning, eligibility, debt/payment state, safety, primary scope, route, protected constraint or acceptance intent. Low-risk implementation detail may proceed as an explicitly labeled proposal; missing material truth must return to the orchestrator or block.
 4. **NO INVENTED BUSINESS TRUTH.** A plausible assumption, non-empty URI, historical precedent or score is never authority.
-5. **SELF-REPAIR ONCE BEFORE OUTPUT.** Scan the selected decision and handoff. If either re-asks resolved context, violates the objective, erases a qualifier, strengthens an unsupported claim, contradicts current authority or forces downstream invention, discard that path and repair once. If no compliant decision remains, return `BLOCKED_PRODUCT_RISK` or `PRODUCT_MISSING_INPUT_STATE`.
+5. **SELF-REPAIR ONCE BEFORE OUTPUT.** Scan the selected decision and handoff. If either re-asks resolved context, violates the objective, erases a qualifier, strengthens an unsupported claim, contradicts current authority or forces downstream invention, discard that path and repair once. For `PRODUCT_DIRECTION_SPEC`, construct `deliverable_created.handoff_to_next.qualifiers_to_preserve` by copying every exact string from `deliverable_created.product_decision.semantic_qualifiers` (existing additional handoff restrictions may remain). Never independently paraphrase, replace, or drop an upstream qualifier. The existing native resume bridge runs `validators/prepare_output_for_submission.py` **before** the canonical bound validator and step 50; only a sole `HANDOFF_QUALIFIER_LOSS` permits one deterministic, lossless append of missing exact strings, with original and corrected RAW hashes and artifacts. Any other failure, semantic conflict, unsupported claim or unsuccessful retry fails closed. This is part of existing `execute_profile`, not a new Router/Input Governance stage; it does not fabricate model calls, new authority, or rewrite the original producer evidence.
 6. Acceptance must prove the selected product state exists and would fail a materially different implementation. Generic quality wording is not acceptance.
 7. The only operational execution route is ACT-0001 Router → Product Director. Router/direct equivalence is an optional authorized diagnostic, not a precondition for execution; without an authentic pair check 11 is NOT_TESTED/not_applicable (ROUTER_ONLY), never an invented PASS or divergence.
 
@@ -74,7 +74,7 @@ A historical PR, previous successful decision or contextual preference may infor
 ## Required output modes
 Exactly one:
 - `PRODUCT_DIRECTION_SPEC`
-- `PRODUCT_MISSING_INPUT_STATE`
+- `PRODUCT_MISSING_INPUT_STATE` (shape: `self_verdict: NEEDS_INPUT` and `deliverable_created.{missing_fields, why_blocking, next_input_needed}`; the validator checks it against `schemas/product_missing_input.schema.json`)
 - `BLOCKED_PRODUCT_RISK`
 
 ## Mandatory decision trajectory
@@ -88,7 +88,7 @@ Required inside the deliverable:
 - `material_claims[]` bound to an observed authoritative/constraint `source_ref`;
 - `decision_lineage` linking evidence, constraints, acceptance and downstream effect;
 - `acceptance_criteria[]` with an observable check;
-- `handoff_to_next.qualifiers_to_preserve` so UI/Copy/Tech cannot turn a referential or conditional statement into a guarantee.
+- `handoff_to_next.qualifiers_to_preserve` copied exactly from every `product_decision.semantic_qualifiers` entry, plus any additional protective restrictions, so UI/Copy/Tech cannot turn a referential or conditional statement into a guarantee. The last writer of the semantic qualifiers must propagate them to handoff *before* submission.
 
 The same decision must reconcile across `product_decision.selected_decision`, `decision_lineage.selected_decision`, acceptance references and downstream handoff. A cross-artifact mismatch is invalid even when each field is individually well formed.
 

@@ -559,7 +559,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config,
           deps,
           config.inputGovernanceSlug,
-          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER },
+          { pantalla_id: pantallaId, consumer: CONTEXT_PACK_CONSUMER, ticket: runtimeTicket },
           config.recurationTimeoutMs,
         );
 
@@ -706,6 +706,7 @@ export function createHandler(deps: RuntimeDeps): (req: Request) => Promise<Resp
           config,
           deps.fetchFn,
           String(claims.workflow_sha),
+          { method: identity.method, repository: config.repository, workflow_ref: identity.workflowRef, run_id: runId, workflow_sha: workflowSha },
         );
       }
 

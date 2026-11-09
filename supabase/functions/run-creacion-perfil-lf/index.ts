@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { resolveProfileRequiredSteps } from "./required_profile_steps.ts";
 import { verifyGithubReadback, verifyGithubWrite } from "./verified_write_evidence.ts";
 import { verifyEvolutionProofRun } from "./verified_proof_evidence.ts";
+import { RECONCILE_RESOLVER, verifyPostMergeReconcile } from "./verified_reconcile_evidence.ts";
 
 const ENDPOINT_VERSION = "v22-profile-update-server-trust-context";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")?.trim() ?? "";
@@ -431,6 +432,18 @@ Deno.serve(async (req: Request) => {
               evidence = { ...given, ...proof.evidence, validator_result: "PASS", evolution_proof_verified: true };
             }
           }
+        }
+        // Governed-route executions: the catalog reconciliation is never asserted by the caller. The merged PR and its merge
+        // commit are verified against GitHub, the catalog is reconciled here with the Edge-held credential, and the
+        // reconciliation result (including the correct next gate) overwrites any caller-supplied values.
+        if (stepId === "post_merge_reconcile" && typeof ex.manifest?.router_semantic_receipt_sha256 === "string") {
+          const blockedReconcile = (code: string) => json({ outcome: "BLOCKED", endpoint_version: ENDPOINT_VERSION, code, operation_code: ex.operation_code, step_id: stepId, write_executed: false }, 409);
+          const verifiedMerge = await verifyPostMergeReconcile({ repository: REPOSITORY, targetRootPath: String(ex.manifest?.target_root_path ?? ""), evidence: evidence ?? {}, gh: (path: string) => githubJson(`https://api.github.com/repos/${REPOSITORY}${path}`, "GITHUB_VERIFY") });
+          if (!verifiedMerge.ok) return blockedReconcile(verifiedMerge.code);
+          const m = verifiedMerge.args;
+          const reconciled = await rpc("lf_profile_update_post_merge_reconcile_v1", { p_execution_id: id, p_merge_sha: m.merge_sha, p_entrypoint_sha: m.entrypoint_sha, p_manifest_sha: m.manifest_sha, p_profile_pack_id: m.profile_pack_id, p_pr_number: m.pr_number, p_actor_execution_id: id });
+          if (reconciled?.outcome !== "RECONCILED") return blockedReconcile("RECONCILE_NOT_APPLIED");
+          evidence = { ...(evidence ?? {}), ...m, manifest_sha: m.manifest_sha ?? "ABSENT_IN_PROFILE_PACK", reconciliation_disposition: reconciled.reconciliation_disposition, runtime_state_before: reconciled.runtime_state_before, runtime_state_after: reconciled.runtime_state_after, operational_state_preserved: reconciled.operational_state_preserved, automatic_impact_preserved: reconciled.automatic_impact_preserved, next_gate: reconciled.next_gate, catalog_reconciled: true, reconciliation_source: RECONCILE_RESOLVER };
         }
         const result = await rpc("lf_record_profile_operation_step_v1", { p_execution_id: id, p_step_id: stepId, p_evidence_ref: evidenceRef, p_evidence_payload: evidence, p_actor_execution_id: id });
         const afterEx = await execution(id), after = afterEx ? await operationSnapshot(afterEx) : null;

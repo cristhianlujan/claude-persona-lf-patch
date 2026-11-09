@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -394,10 +394,27 @@ Deno.test("continuation: post-model 10/11 goes to report, never reruns semantic 
   eq(body.result.next_step,"report_output");
   eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
 });
-Deno.test("continuation: false 9/11, blocked judge and unexpected step fail closed",async()=>{
+Deno.test("continuation: blocked or returned step70 retries SAME RUN without bypassing predecessors",async()=>{
+  for(const retryStatus of ["BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]){
+    const n=postModelNetwork([...cleanRows(),{step_id:"semantic_judge",status:retryStatus}],9);
+    const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+      execution_id:id,source_revision:sha,source_digest:digest,
+    },config,n.fetchFn,sha);
+    const body=await out.json();
+    eq(out.status,200);eq(body.outcome,"CONTINUATION_REQUIRED");
+    eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+    eq(body.execution_id,id);eq(body.result.next_step,"semantic_judge");
+    eq(body.result.clean_step_count,9);
+    eq(n.urls.filter(u=>u.includes("/lf_operation_execution_steps?")).length,1);
+    eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+  }
+});
+Deno.test("continuation: false clean count or unexpected step fails closed",async()=>{
   const cases=[
     {rows:cleanRows().map(x=>x.step_id==="output_validate"?{...x,status:"BLOCKED_STEP_NOT_CLEAN"}:x),count:9},
-    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:9},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:10},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"UNKNOWN"}],count:9},
+    {rows:cleanRows(true),count:9},
     {rows:[...cleanRows().slice(0,8),{step_id:"unexpected",status:"STEP_PASS_WITH_EVIDENCE"}],count:9},
     {rows:cleanRows(),count:8},
   ];
@@ -410,4 +427,86 @@ Deno.test("continuation: false 9/11, blocked judge and unexpected step fail clos
     eq(out.status,409);eq(body.outcome,"BLOCKED");
     eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
   }
+});
+
+// --- skill invocation from a read-only profile through its own governed route ---
+const mainSha="c".repeat(40),blobSha="d".repeat(40);
+const gh:{fail:boolean;dir:boolean}={fail:false,dir:false};
+const callerId={method:"GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1",repository:repo,workflow_ref:oidc.workflow_ref,run_id:"100",workflow_sha:sha};
+function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;body:unknown}={status:200,body:{status:"CHILD_OPENED",child_execution_id:"EXEC-SKILL-0123456789ABCDEF"}}){
+  const n=network(overrides);
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit)=>{
+    const url=String(input);
+    if(url.startsWith("https://api.github.com/")){
+      n.calls.push({url,body:null});
+      if(gh.fail)return new Response("{}",{status:404});
+      if(url.includes("/git/ref/heads/main"))return new Response(JSON.stringify({object:{sha:mainSha}}),{status:200});
+      if(url.includes("/contents/"))return new Response(JSON.stringify(gh.dir?[{name:"a"}]:{sha:blobSha,type:"file"}),{status:200});
+    }
+    if(url.endsWith("/lf_skill_invoke_v1")){
+      n.calls.push({url,body:typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null});
+      return new Response(JSON.stringify(invoke.body),{status:invoke.status});
+    }
+    return n.fetchFn(input,init);
+  };
+  return {fetchFn,calls:n.calls};
+}
+const skillInput={target_code:"PERFIL-X-LF",target_path:"profiles/x/SKILL.md"};
+Deno.test("skill invoke: action is in the native-continuation scope",()=>{
+  eq((PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(PROFILE_SKILL_INVOKE_ACTION),true);
+});
+Deno.test("skill invoke: parent is the authenticated execution, never caller-supplied",async()=>{
+  const n=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,parent_execution_id:"EXEC-ATTACKER-0000000000",p_execution_id:"EXEC-ATTACKER-0000000000",
+    skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");eq(b.result.child_execution_id,"EXEC-SKILL-0123456789ABCDEF");
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq(call?.body,{p_skill:"PROFILE_UPDATE_APPLY",p_execution_id:id,p_input:{...skillInput,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId}}});
+});
+Deno.test("skill invoke: invalid skill code or input never reaches the invoker",async()=>{
+  for(const bad of [{skill_code:"profile_update_apply",input:skillInput},{skill_code:"X; DROP",input:skillInput},
+    {skill_code:"PROFILE_UPDATE_APPLY",input:"text"},{skill_code:"PROFILE_UPDATE_APPLY",input:[1]},{skill_code:"PROFILE_UPDATE_APPLY"},{input:skillInput}]){
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,...bad},config,n.fetchFn,sha,callerId);
+    eq(out.status,400);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+Deno.test("skill invoke: execution that is not a governed read-only profile run is refused before the invoker",async()=>{
+  for(const o of [{status:"COMPLETED"},{operation_code:"ACTUALIZACION_PERFIL_LF"},
+    {manifest:{executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",read_only:false,no_write:false,no_promotion:true,governed_repair_write:true}}]){
+    const n=skillNetwork(o);
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+    eq(out.status,403);eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+Deno.test("skill invoke: invoker block reason is passed on, truncated, and is not a success",async()=>{
+  const reason="SKILL_AUTHORITY_MISSING: el perfil no tiene autoridad para ACTUALIZACION_PERFIL_LF. "+"x".repeat(900);
+  const n=skillNetwork({},{status:400,body:{code:"P0001",message:reason}});
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:skillInput},config,n.fetchFn,sha,callerId);
+  const b=await out.json();eq(out.status,409);eq(b.outcome,"BLOCKED");eq(b.code,"PROFILE_SKILL_INVOKE_REJECTED");
+  eq(b.detail.startsWith("SKILL_AUTHORITY_MISSING"),true);eq(b.detail.length,400);
+});
+
+Deno.test("skill invoke: caller-supplied _trusted is discarded and replaced by resolved context",async()=>{
+  const n=skillNetwork();
+  const forged={main_sha:"e".repeat(40),target_blob_sha:"f".repeat(40),caller:{method:"FORGED"}};
+  await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input:{...skillInput,_trusted:forged}},config,n.fetchFn,sha,callerId);
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq((call?.body?.p_input as Record<string,unknown>)._trusted,{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId});
+});
+Deno.test("skill invoke: unresolved main, directory target, bad path or missing identity never reach the invoker",async()=>{
+  const cases:Array<[string,Record<string,unknown>,boolean,boolean,boolean]>=[
+    ["github down",skillInput,true,false,true],["directory target",skillInput,false,true,true],
+    ["traversal",{...skillInput,target_path:"profiles/../x/SKILL.md"},false,false,true],
+    ["outside profiles",{...skillInput,target_path:"src/x.md"},false,false,true],
+    ["no identity",skillInput,false,false,false]];
+  for(const [name,input,fail,dir,withId] of cases){
+    gh.fail=fail;gh.dir=dir;
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{execution_id:id,skill_code:"PROFILE_UPDATE_APPLY",input},config,n.fetchFn,sha,withId?callerId:undefined);
+    if(out.status<400)throw Error("NOT_BLOCKED "+name);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+  gh.fail=false;gh.dir=false;
 });

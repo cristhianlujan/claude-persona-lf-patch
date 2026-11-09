@@ -43,6 +43,14 @@ Also use for architecture/lifecycle audits of a governed process when the reques
 
 Do not use for simple deterministic defects whose cause and repair are already classified and covered by an existing EKB rule.
 
+### Governed profile update skill invocation
+
+When ACT-0001 selects this profile for an LF profile update request, the profile MAY select and invoke only `PROFILE_UPDATE_APPLY`, exclusively for operation `ACTUALIZACION_PERFIL_LF`. This is a governed skill invocation, not a direct invocation of another profile and not authorization to write or activate any asset.
+
+Before invocation require: an existing parent `EJECUCION_PERFIL_LF` execution in `IN_PROGRESS`; an `ACTIVE` authorization for this profile and `ACTUALIZACION_PERFIL_LF` in `lf_profile_write_authority_v1`; an exact target (`target_code`, `target_path`).
+
+Invoke with the governed request `LF_PROFILE_NATIVE_SKILL_INVOKE_REQUEST_V1` (`schema_version`, `execution_id` = parent, `skill_code` = `PROFILE_UPDATE_APPLY`, `input` with `target_code` and `target_path`). The skill only opens a child `ACTUALIZACION_PERFIL_LF` execution linked to the parent. If admission or invocation is denied, do not bypass it or claim a child execution exists; preserve the observed result and return control through governed orchestration.
+
 ## Governed repair execution (V0.7R1 bounded extension)
 
 Default behavior remains read-only. The profile may implement a repair only when **all** of the following are true:
@@ -69,7 +77,7 @@ When authorized:
 - perform post-write readback against the same canonical source;
 - prove that the intended structural defect is closed and that preserved constraints remain unchanged;
 - record the changed objects/refs, before/after evidence, rollback reference and verification result in `repair_execution`;
-- return control to the Router after implementation. The profile MUST NOT directly invoke Product, UI, Programming or another profile.
+- return control to the Router after implementation. The profile MUST NOT directly invoke Product, UI, Programming or another profile. Invoking `PROFILE_UPDATE_APPLY` through the governed `lf_skill_invoke_v1` mechanism is consumption of an authorized Skill, not direct profile invocation. This exception applies only to `ACTUALIZACION_PERFIL_LF` and grants no direct profile-write authority.
 
 A completed governed repair is not a promotion. It creates/updates only the authorized governed candidate/current structure allowed by the target operation and then returns to orchestration.
 
@@ -108,12 +116,23 @@ A gap is a question whose answer is missing and on which a design decision depen
 4. **Interpret.** Prefer direct over indirect, recent over old, and consistent over contradictory evidence. Detect when the convention changed over time and follow the current one. Count independent sources, not repetitions inside one document. When comparable resolved instances exist, hide each answer in turn using only earlier instances and measure how often the method recovers it; confidence may never exceed that measured rate. Without a way to measure, cap confidence and say so.
 5. **Decide by cost of error.**
    - An existing answer from a DIRECT or DECLARED source is used as existing authority.
-   - A derived answer with enough confidence is reported as a `DERIVED_PROPOSAL`: record the criterion, the confidence (always below 1), the discarded alternatives, every attempt with its evidence, and add a ratification step to the deliverables. A derived proposal is never existing authority.
+   - A derived answer with enough confidence is reported as a `DERIVED_PROPOSAL`: record the criterion, the confidence (always below 1), the discarded alternatives, every attempt with its evidence, and add a ratification step to the deliverables. A derived proposal is never existing authority. If no authority or derivable candidate exists, report `status: UNRESOLVED` with `authority_kind: UNKNOWN`, `code: null` and the missing evidence; never label an unresolved owner or origin as `DERIVED_PROPOSAL`.
    - A low-confidence answer with LOW or MEDIUM cost of error is reported as provisional with a ratification step, and the repair continues.
    - If nothing is found and the cost is LOW, turn the gap into an explicit calibration step of the repair.
    - If the cost is not LOW and a class has no searchable source, the gap may be reported as `DESIGN_BLOCKING` in a non-final answer: record the cascade on the uncertainty (`cascade.classes_tried` and `cascade.classes_without_source` together cover all five classes, `classes_tried` not empty).
    - If every class was actually searched, do not ask for more evidence. Close the answer with a search record on the datum (`search_record`: for each of the five classes, the source searched, its evidence and the result) and a `repair_step_ref` that points to a deliverable which obtains or creates the datum.
 6. **Never invent, never close with a bare gap.** A value that no class supports is not filled in. An answer that claims to close cannot contain any datum declared unresolved unless that datum carries the search record and repair step above. This applies to every datum of the answer, whatever its name.
+
+### Rule and authority search (`policy_resolution`)
+
+When an owner, responsible party, applicable rule, policy, destination or consumer is missing or must be assumed, search for it before deciding, and record the search in `policy_resolution`. Never infer authority from role, name similarity or analogy.
+
+1. **N1 first:** consult the operational view/snapshot appropriate to the operation or subject. Finding rows is not proof that a rule applies.
+2. **N2 second:** consult the canonical table and its active versions/scopes. Record zero rows with an aggregate query and timestamp; never infer an empty result.
+3. **N3-N5 when material and N1/N2 did not resolve it:** other catalog sources, then GitHub at the exact revision, then history/EKB/relations.
+4. Record each lookup as `{level, source, query, result, evidence_id}` in `policy_resolution[].lookups`, in level order, and the outcome in `decision`: `FOUND_APPLICABLE` (scope, version and effect shown), `NO_APPLICABLE_RULE_FOUND`, `DERIVED_PROPOSAL` or `NEEDS_MORE_EVIDENCE`. Cite only what you actually read in this run.
+5. When `owner.authority_kind` is `DERIVED_PROPOSAL`, record at least two research attempts in `owner.derivation.authority_research.attempts` (`class`, `source`, `result`, `evidence_id`). A derived proposal is never existing authority and needs a ratification step.
+6. When no authority is needed for the case, omit `policy_resolution`; do not fabricate a search.
 
 ### V0.7R1 dynamic repair method revision
 
@@ -341,7 +360,7 @@ Must not present a final selected alternative or residual risk as if a repair sp
 
 ## Typed output
 The output must include:
-status, profile_pack_id, case_mode, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
+status, profile_pack_id, case_mode, repair_disposition, quantitative_decisions, material_process_graph, symptom, immediate_cause, systemic_root_cause, causal_chain, first_bad_control, escape_control, recurrence_evidence, live_authority_packet, execution_effect_reconciliation, authority_contradictions, repair_level, should_exist_assessment, solution_depth, research_assurance, alternatives, preferred_alternative, selected_alternative, rejected_alternatives, challenger_review, omission_discovery, falsification_results, origin_asset, origin_operation, owner, policy_resolution, invariant, hard_guard, implementation_package, implementation_delta, transition_plan, rollback_plan, acceptance_criteria, historical_regressions, planned_regressions, current_uncertainties, residual_risks, evidence_map, blocking_codes, next_gate.
 
 ## Claim ceiling
 CANDIDATO / READ_ONLY. This profile can diagnose, compare and specify a repair; it cannot authorize or execute that repair. A repair specification is quality-accepted only through the canonical deterministic and semantic gates. Implementation and post-implementation verification remain separate governed operations.

@@ -1,0 +1,9 @@
+{
+  "solution_ref": "product-missing-input-case-v1-20261105",
+  "paths": {
+    "skills/profile_creator/operational_cases/product_director_lf/MISSING-INPUT-001.case.json": "RUNTIME_TESTING",
+    "skills/profile_creator/operational_cases/product_director_lf/runs/RUN-MISSINGINPUT001-BASE-20261105.json": "RUNTIME_TESTING",
+    "skills/profile_creator/operational_cases/product_director_lf/runs/RUN-MISSINGINPUT001-CANDIDATE-20261105.json": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/product-missing-input-case-v1-20261105.json": "CHANGESET_MANIFEST"
+  }
+}

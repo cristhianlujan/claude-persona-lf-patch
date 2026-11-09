@@ -3,7 +3,15 @@
 // write authority. All substantive transitions use existing canonical RPCs.
 export const PROFILE_SOURCE_BIND_ACTION = "profile_native_source_bind_v1";
 export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
-export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION] as const;
+// A read-only profile calls a governed skill through its own route. The skill invoker
+// (lf_skill_invoke_v1) owns the authority/input checks; this action only transports the call.
+export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
+export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION] as const;
+const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
+const SKILL_TARGET_PATH_RE = /^profiles\/[A-Za-z0-9][A-Za-z0-9_./-]*$/;
+const SHA40_RE = /^[0-9a-f]{40}$/;
+const GITHUB_API = "https://api.github.com";
+const MAX_SKILL_INPUT_BYTES = 65536;
 
 // Native executors are bound to their provider; any other mode/provider pair is rejected.
 const NATIVE_EXECUTOR_PROVIDER_BY_MODE = new Set([
@@ -13,6 +21,8 @@ const NATIVE_EXECUTOR_PROVIDER_BY_MODE = new Set([
 
 type Fetcher = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 type Config = { supabaseUrl: string; serviceRoleKey: string; repository: string };
+// Identity of the authenticated OIDC caller of this route (verified by the Edge function, never by the request body).
+export type CallerIdentity = { method: string; repository: string; workflow_ref: string; run_id: string; workflow_sha: string };
 type Execution = {
   execution_id: string;
   status: string;
@@ -143,18 +153,30 @@ async function resolveExistingPostModelStep(
     "input_validate", "context_admission", "research_baseline_freeze",
     "execute_profile", "output_validate",
   ];
+  const semanticStatus = steps.get("semantic_judge");
+  // The prepare RPC counts CLEAN steps, not rows: a failed semantic attempt
+  // is the tenth row while only the first nine steps are clean.
+  const expectedClean = completed.length + (semanticStatus === "STEP_PASS_WITH_EVIDENCE" ? 1 : 0);
   if (
-    steps.size !== prepareResult.clean_step_count ||
+    (steps.size !== 9 && steps.size !== 10) ||
+    steps.size !== completed.length + (semanticStatus === undefined ? 0 : 1) ||
+    prepareResult.clean_step_count !== expectedClean ||
     !completed.every(step => steps.get(step) === "STEP_PASS_WITH_EVIDENCE") ||
+    [...steps.keys()].some(step => step !== "semantic_judge" && !completed.includes(step)) ||
     steps.has("report_output")
   ) return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
 
   let nextStep: string;
   let phase: string;
-  if (steps.size === 9 && !steps.has("semantic_judge")) {
+  if (steps.size === 9 && semanticStatus === undefined) {
     nextStep = "semantic_judge";
     phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
-  } else if (steps.size === 10 && steps.get("semantic_judge") === "STEP_PASS_WITH_EVIDENCE") {
+  } else if (steps.size === 10 &&
+             (semanticStatus === "BLOCKED_STEP_NOT_CLEAN" || semanticStatus === "RETURN_TO_ROUTER")) {
+    // Only the canonical step-70 recorder may replace a blocked/return attempt.
+    nextStep = "semantic_judge";
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
+  } else if (steps.size === 10 && semanticStatus === "STEP_PASS_WITH_EVIDENCE") {
     nextStep = "report_output";
     phase = "REPORT_OUTPUT_REQUIRED";
   } else {
@@ -183,10 +205,74 @@ async function resolveExistingPostModelStep(
       status: phase,
       last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
       next_step: nextStep,
-      clean_step_count: steps.size,
+      clean_step_count: prepareResult.clean_step_count,
       execution_id: e.execution_id,
     },
   });
+}
+
+async function githubGet(fetchFn: Fetcher, path: string): Promise<{ ok: boolean; data: unknown }> {
+  try {
+    const r = await fetchFn(`${GITHUB_API}${path}`, {
+      method: "GET",
+      headers: { accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "user-agent": "lf-profile-skill-context-resolver-v1" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    return { ok: r.ok, data: await parseResponse(r) };
+  } catch { return { ok: false, data: null }; }
+}
+
+// The skill child execution needs the same trusted starting context a Profile Update init execution gets:
+// the current main revision and the exact target blob. They are resolved here, from GitHub, and any value the
+// request supplied under the reserved key is discarded.
+async function trustedSkillContext(
+  config: Config, fetchFn: Fetcher, targetPath: string, callerIdentity: CallerIdentity | undefined,
+): Promise<{ context?: Payload; error?: Response }> {
+  if (!callerIdentity) return { error: blocked("PROFILE_SKILL_CALLER_IDENTITY_MISSING", 500) };
+  if (!SKILL_TARGET_PATH_RE.test(targetPath) || targetPath.includes("..")) return { error: blocked("PROFILE_SKILL_TARGET_PATH_INVALID", 400) };
+  const ref = await githubGet(fetchFn, `/repos/${config.repository}/git/ref/heads/main`);
+  const mainSha = String(((ref.data as Payload | null)?.object as Payload | undefined)?.sha ?? "").toLowerCase();
+  if (!ref.ok || !SHA40_RE.test(mainSha)) return { error: blocked("PROFILE_SKILL_MAIN_REVISION_UNRESOLVED", 502) };
+  const encoded = targetPath.split("/").map(encodeURIComponent).join("/");
+  const target = await githubGet(fetchFn, `/repos/${config.repository}/contents/${encoded}?ref=${mainSha}`);
+  if (!target.ok || !target.data || Array.isArray(target.data)) return { error: blocked("PROFILE_SKILL_EXACT_TARGET_FILE_REQUIRED", 409) };
+  const blob = String((target.data as Payload).sha ?? "").toLowerCase();
+  if (!SHA40_RE.test(blob)) return { error: blocked("PROFILE_SKILL_TARGET_BLOB_UNRESOLVED", 502) };
+  return { context: { main_sha: mainSha, target_blob_sha: blob, caller: { ...callerIdentity } } };
+}
+
+async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn: Fetcher, callerIdentity?: CallerIdentity): Promise<Response> {
+  const skill = body.skill_code;
+  const input = body.input;
+  if (typeof skill !== "string" || !SKILL_CODE_RE.test(skill)) return blocked("PROFILE_SKILL_CODE_INVALID", 400);
+  if (!input || typeof input !== "object" || Array.isArray(input) || JSON.stringify(input).length > MAX_SKILL_INPUT_BYTES) {
+    return blocked("PROFILE_SKILL_INPUT_INVALID", 400);
+  }
+  // "_trusted" is reserved for this transport: whatever the request put there is dropped.
+  const { _trusted: _discarded, ...cleanInput } = input as Payload;
+  let skillInput: Payload = cleanInput;
+  if (typeof cleanInput.target_path === "string") {
+    const resolved = await trustedSkillContext(config, fetchFn, cleanInput.target_path, callerIdentity);
+    if (resolved.error) return resolved.error;
+    skillInput = { ...cleanInput, _trusted: resolved.context };
+  }
+  let response: Response;
+  try {
+    response = await fetchFn(`${config.supabaseUrl}/rest/v1/rpc/lf_skill_invoke_v1`, {
+      method: "POST",
+      headers: { apikey: config.serviceRoleKey, authorization: `Bearer ${config.serviceRoleKey}`, "content-type": "application/json" },
+      // The parent is always the authenticated, read-only profile execution, never a caller-supplied id.
+      body: JSON.stringify({ p_skill: skill, p_execution_id: e.execution_id, p_input: skillInput }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch { return blocked("PROFILE_SKILL_INVOKE_TRANSPORT_FAILED", 502); }
+  const data = await parseResponse(response) as Payload | null;
+  if (!response.ok) {
+    // The invoker raises explicit, human-readable block reasons (what is missing and where): pass them on.
+    const detail = typeof data?.message === "string" ? data.message.slice(0, 400) : null;
+    return respond({ outcome: "BLOCKED", code: "PROFILE_SKILL_INVOKE_REJECTED", skill_code: skill, execution_id: e.execution_id, detail }, 409);
+  }
+  return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
 }
 
 export async function handleProfileContinuation(
@@ -195,6 +281,7 @@ export async function handleProfileContinuation(
   config: Config,
   fetchFn: Fetcher,
   callerRevision: string,
+  callerIdentity?: CallerIdentity,
 ): Promise<Response> {
   const executionId = typeof body.execution_id === "string" ? body.execution_id : "";
   const { execution: e, error } = await authorizedExecution(config, fetchFn, executionId);
@@ -210,6 +297,7 @@ export async function handleProfileContinuation(
       next_action: "READ_PROFILE_AT_AUTHORIZED_SOURCE_REVISION",
     });
   }
+  if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
   const revision = body.source_revision;
   const digest = body.source_digest;
