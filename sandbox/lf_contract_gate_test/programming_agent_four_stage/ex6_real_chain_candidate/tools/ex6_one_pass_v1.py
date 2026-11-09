@@ -170,11 +170,11 @@ def stage09(pg07, truth):
 
 def stage10(pg09, pg07, truth):
     """No EX6 conflict asserted: exercise original v1 with empty observations."""
-    from pg10_c1_conflict_detection_candidate_v1 import prepare_pg10_c1
-    from pg10_c2_precedence_candidate_v1 import prepare_pg10_c2
-    from pg10_c3_resolution_routing_candidate_v1 import prepare_pg10_c3
+    from pg10_c1_conflict_inventory_candidate_v1 import prepare_pg10_c1
+    from pg10_c2_precedence_legacy_guard_candidate_v1 import prepare_pg10_c2
+    from pg10_c3_typed_decision_routing_candidate_v1 import prepare_pg10_c3
     from pg10_c4_human_decision_packet_candidate_v1 import prepare_pg10_c4
-    from pg10_c5_adversarial_scenario_candidate_v1 import prepare_pg10_c5
+    from pg10_c5_negative_assurance_candidate_v1 import prepare_pg10_c5
     ids=[x["solution_id"] for x in pg09["c4"]["solutions"]]
     conflicts=[{"solution_id":sid,"conflicts":[]} for sid in ids]
     c1=prepare_pg10_c1(pg07_c5=pg07["c5"],pg09_c4=pg09["c4"],
@@ -192,7 +192,10 @@ def stage10(pg09, pg07, truth):
 def stage11(truth):
     """Original C1 with the exact three EX6 added-file hunks and scopes."""
     from pg11_c1_diff_hygiene_candidate_v1 import prepare_pg11_c1
-    diff, scope, traces=authorize_from_real_hunks(truth)
+    diff, authorized, traces=authorize_from_real_hunks(truth)
+    scope=[{**row,**{k:auth["authorized_links"][0][k]
+           for k in ("scope_ref","requirement_ref","batch_ref")}}
+           for row,auth in zip(diff,authorized)]
     c1=prepare_pg11_c1(
          expected_base_sha=truth["base_head_sha"],
          expected_head_sha="13ef9c319fb62f7e08f6f030d447c60ee7bfa7f5",
