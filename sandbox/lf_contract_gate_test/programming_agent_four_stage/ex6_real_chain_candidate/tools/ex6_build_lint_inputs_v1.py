@@ -9,6 +9,9 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+from contextvars import ContextVar
+from contextlib import contextmanager
+from ex6_n1_receipts_v1 import load as load_exact_receipt, EXPECTED as RECEIPTS
 
 from ex6_build_lint_index_v1 import original_zip_integrity, EX6EvidenceBlocked
 from ex6_source_truth_v1 import RUN_REF, SPEC_REF
@@ -17,15 +20,33 @@ BUNDLE_REF = "ex6://sandbox/actions/runs/42707967927/artifacts/13715275651"
 SNAPSHOT_BASE = "53ab6b1a85da95f3e2a38d7f3298af731c6698ab"
 SNAPSHOT_MERGED = "912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
 AOSP_RULE = "CHG-0015-AOSP"
+_ACTIVE=ContextVar("ex6_receipt_version",default="N")
+@contextmanager
+def using_receipt(label):
+    if label not in RECEIPTS:
+        raise EX6EvidenceBlocked("EX6_UNKNOWN_RECEIPT")
+    token=_ACTIVE.set(label)
+    try:
+        yield
+    finally:
+        _ACTIVE.reset(token)
+def active_label():
+    return _ACTIVE.get()
+def active_ref():
+    row=RECEIPTS[active_label()]
+    return "ex6://sandbox/actions/runs/"+str(row["run"])+"/sha256/"+row["json"]
+def active_candidate():
+    return RECEIPTS[active_label()]["candidate"]
+
 
 def sha(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),
         ensure_ascii=True).encode()).hexdigest()
 
 def observed():
-    d=original_zip_integrity()
+    d=load_exact_receipt(active_label())
     if ([s["commit"] for s in d["snapshots"]] !=
-         [SNAPSHOT_BASE,SNAPSHOT_MERGED] or
+         [SNAPSHOT_BASE,active_candidate()] or
         d["formatter_flags"] != ["--aosp","--dry-run","--set-exit-if-changed"]):
         raise EX6EvidenceBlocked("EX6_BUNDLE_SNAPSHOT_OR_AOSP_DRIFT")
     base,cand=(s["commands"] for s in d["snapshots"])
@@ -44,18 +65,18 @@ def observed():
         or base["javac_lint"]["exit_code"]!=0
         or cand["javac_lint"]["exit_code"]!=0
         or base["format_aosp"]["exit_code"]!=0
-        or cand["format_aosp"]["exit_code"]!=1
+        or cand["format_aosp"]["exit_code"]!=RECEIPTS[active_label()]["aosp"]
         or cand["visible_ex6"]["exit_code"]!=0):
         raise EX6EvidenceBlocked("EX6_BUNDLE_COMMAND_RESULT_DRIFT")
     stdout=base64.b64decode(cand["format_aosp"]["stdout"]["base64"]).decode("utf-8")
     paths=stdout.splitlines()
     expected={"ReminderStats.java","ReminderStatsService.java","ReminderStatsController.java"}
-    if len(paths)!=3 or {Path(v).name for v in paths}!=expected:
+    if (active_label()=="N" and (len(paths)!=3 or {Path(v).name for v in paths}!=expected)) or (active_label()=="N1" and paths):
         raise EX6EvidenceBlocked("EX6_BUNDLE_AOSP_FINDINGS_DRIFT")
     return d
 
 def command_ref(snapshot, key):
-    return BUNDLE_REF + "#"+snapshot+"/commands/"+key
+    return active_ref() + "#"+snapshot+"/commands/"+key
 
 def config_sha(d, name):
     if name=="build":
@@ -92,15 +113,15 @@ def baseline(pg05_exit):
                 "execution_receipt_ref":command_ref("baseline",name)+
                     "#jsonsha256="+hashlib.sha256(
                         (Path(__file__).resolve().parents[1]/"evidence"/
-                         "ex6-build-lint-aosp-two-snapshots-v1.zip").read_bytes()
+                         RECEIPTS[active_label()]["name"]).read_bytes()
                     ).hexdigest(),
             })
     return {
         "schema_version":"PG06_UNCHANGED_TARGET_BASELINE_OBSERVATION_CANDIDATE_V1",
         "target_repo":pg05_exit["target_binding"]["repo_full_name"],
         "base_head_sha":SNAPSHOT_BASE,
-        "observation_ref":BUNDLE_REF+"#baseline",
-        "execution_environment_ref":BUNDLE_REF+"#snapshot/baseline",
+        "observation_ref":active_ref()+"#baseline",
+        "execution_environment_ref":active_ref()+"#snapshot/baseline",
         "unchanged_target_claim":True,
         "command_results":rows,
     }
@@ -124,7 +145,7 @@ def pg08_build(pg07_c6):
                 "tool_name":"maven",
                 "tool_version":"pom/spring-boot-4.1.1",
                 "config_sha256":config_sha(d,"build"),
-                "execution_receipt_ref":BUNDLE_REF+"#snapshot/candidate-merged-"+SNAPSHOT_MERGED,
+                "execution_receipt_ref":active_ref()+"#snapshot/candidate-merged-"+active_candidate(),
                 "stdout_sha256":v["stdout"]["sha256"],
                 "stderr_sha256":v["stderr"]["sha256"],
                 "result":"PASS" if v["exit_code"]==0 else "FAIL",
@@ -144,7 +165,7 @@ def pg08_format_lint(pg07_c6):
         for kind,name in (("FORMAT","format_aosp"),("LINT","javac_lint")):
             v=commands[name]
             findings=[{
-                "violation_ref":BUNDLE_REF+"#aosp/"+p,
+                "violation_ref":active_ref()+"#aosp/"+p,
                 "severity":"BLOCK","rule_id":AOSP_RULE,
                 "path":p,"line":None,"scope":"DIFF",
             } for p in format_paths] if kind=="FORMAT" else []
@@ -154,7 +175,7 @@ def pg08_format_lint(pg07_c6):
                 "tool_name":"google-java-format" if kind=="FORMAT" else "javac",
                 "tool_version":"1.30.0 --aosp" if kind=="FORMAT" else "21 -Xlint:all",
                 "config_sha256":config_sha(d,name),
-                "execution_receipt_ref":BUNDLE_REF+"#original-zip-preserved",
+                "execution_receipt_ref":active_ref()+"#original-zip-preserved",
                 "stdout_sha256":v["stdout"]["sha256"],
                 "stderr_sha256":v["stderr"]["sha256"],
                 "result":"PASS" if v["exit_code"]==0 else "FAIL",
@@ -183,7 +204,7 @@ def rem_d4_process():
         "aosp_receipt_ref":command_ref("candidate","format_aosp"),
         "aosp_exit_code":v["format_aosp"]["exit_code"],
         "aosp_stdout_sha256":v["format_aosp"]["stdout"]["sha256"],
-        "process_requirement_satisfied":False,
-        "reason":"FORMAT_AOSP_EXIT_1",
+        "process_requirement_satisfied":v["visible_ex6"]["exit_code"]==0 and v["format_aosp"]["exit_code"]==0,
+        "reason":"VISIBLE_AND_AOSP_PASS" if v["visible_ex6"]["exit_code"]==0 and v["format_aosp"]["exit_code"]==0 else "FORMAT_OR_VISIBLE_FAILED",
         "production_authority":False,
     }
