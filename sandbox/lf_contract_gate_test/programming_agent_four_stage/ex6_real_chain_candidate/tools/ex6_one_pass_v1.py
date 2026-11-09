@@ -24,6 +24,8 @@ FIXTURES = {
     "PG01": "test_pg06_c1_c5_chain_v1.pg01",
     "PG06_A7": "test_pg06_c1_c5_chain_v1.a7_and_plans",
     "PG06_LINT_PROBE_ONLY": "test_pg06_c1_c5_chain_v1.baseline",
+    "PG09_BUDGET_POLICY_UNATTESTED": "test_pg09_iteration_chain_v1.policy",
+    "PG10_SCENARIOS": "test_pg10_decision_chain_v1.scenarios",
 }
 FORBIDDEN = ("ex5c", "lote-c")
 
@@ -40,8 +42,11 @@ def only_ex6(value):
 def entry(stage, outcome, code, origin, *, producer_invoked=True, fixtures=()):
     return {"stage": stage, "outcome": outcome, "code": code,
             "producer_invoked": producer_invoked,
-            "provenance": origin, "fixture_status":
-            ["FIXTURE_UNATTESTED:" + f for f in fixtures],
+            "provenance": origin,
+            "fixture_status": ["FIXTURE_UNATTESTED:" + f for f in fixtures
+                               if f in FIXTURES],
+            "unattested_projections": ["UNATTESTED:" + f for f in fixtures
+                                       if f not in FIXTURES],
             "production_authority": False}
 
 def attempt(stage, fn, *, origin, fixtures=()):
@@ -372,9 +377,26 @@ def run_all():
                 evidence["pg09_c1_request_diagnostic"]=pg09["c1"]["request_diagnostic"]
                 evidence["pg09_c1_cost_unknown"]=pg09["c1"]["missing_usage_requires_decision"]
                 evidence["pg09_c1_known_cost"]=pg09["c1"]["reported_request_known_cost"]
+                from pg09_c1_iteration_cost_governor_candidate_v2 import (
+                    prepare_pg09_c1 as native_cost_v2)
+                proof={"executor_mode":"GPT_NATIVE",
+                    "api_calls":truth["cost"]["api_calls"],
+                    "proposal_sha256":truth["proposal_sha256"],
+                    "expected_proposal_sha256":truth["status"]["proposal_sha256"],
+                    "tool_receipt_ref":None,
+                    "cost_receipt_ref":RUN_REF+"#cost.json",
+                    "status_receipt_ref":RUN_REF+"#status.json",
+                    "subscription_cost":truth["subscription_cost"]}
+                v2=native_cost_v2(pg07_c1=pg07["c1"],pg07_c5=pg07["c5"],
+                    budget_policy=pg09["budget_fixture"],
+                    usage_observations=pg09["usage"],
+                    native_execution_evidence=proof)
+                evidence["pg09_v2_request_diagnostic"]=v2["request_diagnostic"]
+                evidence["pg09_v2_subscription_cost"]=v2["native_subscription_cost"]
+                table[-1]["after_v2"]=v2["request_diagnostic"]
                 row, pg10=attempt("PG-10",lambda:stage10(pg09,pg07,truth),
                      origin="EX6_NO_ASSERTED_CONFLICT_OR_DECISION",
-                     fixtures=("PG09_BUDGET_POLICY_UNATTESTED",))
+                     fixtures=("PG09_BUDGET_POLICY_UNATTESTED","PG10_SCENARIOS"))
                 table.append(row)
             else:
                 table.append(entry("PG-10","NOT_RUN",
@@ -403,6 +425,11 @@ def run_all():
         row,_=attempt("PG-14",lambda:stage14(truth),
              origin="ISOLATED_ORIGINAL_TESTING_C1_MISSING_FREEZE")
         table.append(row)
+        evidence["ex6_reversibility_plan"]={
+             "status":"SOURCE_DERIVED_NOT_EXECUTED",
+             "operation":"DELETE_ADDED_FILES",
+             "paths":truth["write_paths"],
+             "base_restored_if_no_other_changes":True}
         return {"stages":table,"evidence":evidence,
                 "fixture_allowlist":FIXTURES,
                 "patch_sha256":truth["patch_sha256"],
