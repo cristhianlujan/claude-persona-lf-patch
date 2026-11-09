@@ -1,0 +1,36 @@
+name: LF isolated skill-owned child PG17 temporary proof
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*lf_skill_update_owned_child_adapter_v1.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/fixtures/skill_update_owned_child_pg17_*.sql'
+      - '.github/workflows/lf-skill-update-owned-child-pg17-temporary.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-pg17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Start isolated PG17
+        run: |
+          docker run -d --name lf-skill-child-pg17 -e POSTGRES_PASSWORD=fixture-only postgres:17.6
+          for i in $(seq 1 45); do
+            docker exec lf-skill-child-pg17 pg_isready -U postgres >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Install fixture, apply real adapter migration, run positive and negatives
+        run: |
+          set -euo pipefail
+          find supabase/migrations -maxdepth 1 -name '*_lf_skill_update_owned_child_adapter_v1.sql' | tee /tmp/migrations
+          test "$(wc -l </tmp/migrations)" -eq 1
+          docker exec -i lf-skill-child-pg17 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < sandbox/lf_contract_gate_test/profile_execution_runtime/fixtures/skill_update_owned_child_pg17_fixture.sql
+          docker exec -i lf-skill-child-pg17 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$(cat /tmp/migrations)"
+          docker exec -i lf-skill-child-pg17 psql -U postgres -d postgres -v ON_ERROR_STOP=1 < sandbox/lf_contract_gate_test/profile_execution_runtime/fixtures/skill_update_owned_child_pg17_assert.sql
