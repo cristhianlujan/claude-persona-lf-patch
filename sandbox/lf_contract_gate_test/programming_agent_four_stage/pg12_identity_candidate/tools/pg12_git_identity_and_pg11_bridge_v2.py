@@ -45,8 +45,18 @@ def bridge_pg11_to_pg12_identity(*,pg10_pg11_bridge,pg11_c5,pg12_c1,
     if (pg11_c5.get("source_pg11_c4_sha256") is None or
         pg10_pg11_bridge.get("source_pg11_c1_sha256") is None):
         block("PG12_PG11_C1_C5_LINEAGE_MISSING")
-    if (pg10_pg11_bridge.get("base_head_sha")!=pg12_c1.get("base_commit_sha_reported")
-        or pg10_pg11_bridge.get("expected_head_sha")!=pg12_c1.get("candidate_commit_sha_reported")
+    lineage=pg10_pg11_bridge.get("lineage")
+    if not isinstance(lineage,list) or len(lineage)<2 or any(
+        not isinstance(item,dict) or set(item)!={"solution_id","head"} for item in lineage
+    ):
+        block("PG12_PG11_V2_LINEAGE_MISSING")
+    # The PG12 candidate is the final incremental diff (N -> N+1),
+    # not a falsely asserted single diff from initial run baseline to N+1.
+    previous=lineage[-2]["head"]
+    final=lineage[-1]["head"]
+    if (previous!=pg12_c1.get("base_commit_sha_reported")
+        or final!=pg12_c1.get("candidate_commit_sha_reported")
+        or pg10_pg11_bridge.get("expected_head_sha")!=final
         or pg10_pg11_bridge.get("target_repo")!=repo_ref
         or pg12_c1.get("repository_ref_reported")!=repo_ref):
         block("PG12_PG11_RUN_REPO_COMMIT_DRIFT")
