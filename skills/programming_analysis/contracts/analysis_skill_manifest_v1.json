@@ -70,9 +70,12 @@
         "ANALYSIS_CHANGE_CLASSIFICATION_V1"
       ],
       "guard": "Missing/stale/contradictory material authority -> NEED_MORE_EVIDENCE or BLOCKED; no speculative full search.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_SOURCE_READBACK_CONSUMER_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a3/validators/run.py:run",
+      "operationally_verified": false,
+      "source_attested": false,
+      "next_step_allowed": false,
+      "integration_note": "Consumes A2 existing exact two-input preview plus host-provided governed LF source readback; no live dispatch, source attestation, independent judge or A4 admission."
     },
     {
       "step_id": "A4",
