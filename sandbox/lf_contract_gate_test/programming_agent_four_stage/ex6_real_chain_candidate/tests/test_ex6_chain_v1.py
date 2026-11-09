@@ -47,6 +47,33 @@ class EX6ChainV1Tests(unittest.TestCase):
         chain.uninstall()
         self.assertEqual(before, sys.path)
 
+    def test_pg01_fixture_binding_is_official_and_sole_exception(self):
+        chain.install()
+        try:
+            from test_pg06_c1_c5_chain_v1 import pg01
+            official = pg01()
+            imported = chain.official_pg01_fixture()
+            self.assertEqual(imported, official)
+            self.assertEqual(imported["pg01_decision_ref"], "fixture://pg01/currentness")
+            self.assertEqual(imported["pg01_decision_sha256"], official["pg01_decision_sha256"])
+            self.assertEqual(imported["authority_fingerprint_sha256"],
+                             official["authority_fingerprint_sha256"])
+            self.assertEqual(imported["source_snapshot_sha256"],
+                             official["source_snapshot_sha256"])
+            # The only non-EX6 provenance in downstream EX6 inputs is the
+            # exact official PG01 fixture, not any copied synthetic setup.
+            truth = source.source_truth()
+            self.assertNotIn("fixture://", json.dumps(truth, sort_keys=True))
+            self.assertNotIn("ex5c", json.dumps(truth, sort_keys=True).lower())
+            self.assertNotIn("lote-c", json.dumps(truth, sort_keys=True).lower())
+            pg05 = chain.make_pg05(chain.make_pg04(truth), truth)
+            pg06 = chain.make_pg06(pg05)
+            self.assertEqual(pg06["pg01_binding"], official)
+            self.assertEqual(pg06["pg01_status"], "FIXTURE_UNATTESTED")
+            self.assertFalse(pg06["production_authority"])
+        finally:
+            chain.uninstall()
+
     def test_pg04_to_pg14_does_not_claim_unrun_stages(self):
         result = chain.run_v1()
         self.assertEqual(len(result), 11)
