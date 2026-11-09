@@ -55,6 +55,12 @@ def project(effective: Any, policy_links: Any, readback: Any,
     records = readback.get("policy_objects")
     if not isinstance(records, list):
         return blocked("A3_POLICY_DEFINITIONS_ITEMS_MISSING")
+    supplemental = readback.get("supplemental_policy_source_refs")
+    if not isinstance(supplemental, list) or any(
+        not isinstance(x, str) or not x.startswith("supabase://lf_ops.politicas_")
+        for x in supplemental
+    ) or len(supplemental) != len(set(supplemental)):
+        return blocked("A3_SUPPLEMENTAL_POLICY_SOURCE_INVENTORY_REQUIRED")
     by_ref, by_key, approved_objects, excluded_objects = {}, {}, [], []
     for obj in records:
         if not isinstance(obj, dict):
@@ -72,12 +78,27 @@ def project(effective: Any, policy_links: Any, readback: Any,
         ref = "supabase://" + table + "/" + str(pid)
         if obj.get("source_ref") != ref or ref in by_ref:
             return blocked("A3_POLICY_OBJECT_DUPLICATE_OR_REF_DRIFT")
+        origin = obj.get("read_origin")
+        if origin == "DIRECT_CANONICAL_POLICY_LOOKUP":
+            if ref not in supplemental or obj.get("read_source_ref") != ref:
+                return blocked("A3_SUPPLEMENTAL_POLICY_PROVENANCE_MISSING")
+        elif origin == "LF_SCREEN_CONTRACT":
+            if ref in supplemental or obj.get("read_source_ref") != screen_ref:
+                return blocked("A3_SCREEN_CONTRACT_POLICY_PROVENANCE_MISMATCH")
+        else:
+            return blocked("A3_POLICY_OBJECT_ORIGIN_NOT_DECLARED")
         entry = {"source_ref": ref, "policy_code": policy_code,
+                 "read_origin": origin, "read_source_ref": obj["read_source_ref"],
                  "status": status, "parameter_values": deepcopy(values),
                  "source_attested": False}
         by_ref[ref] = entry
         by_key[ref] = (table, pk, pid)
         (approved_objects if status == "VIGENTE" else excluded_objects).append(entry)
+    if set(supplemental) != {
+        obj["source_ref"] for obj in records
+        if obj["read_origin"] == "DIRECT_CANONICAL_POLICY_LOOKUP"
+    }:
+        return blocked("A3_SUPPLEMENTAL_POLICY_SOURCES_UNRECONCILED")
     bindings = {}
     link_items = []
     for link in policy_links:
@@ -164,6 +185,7 @@ def project(effective: Any, policy_links: Any, readback: Any,
     return {
         "status": "POLICIES_PROJECTED_UNATTESTED",
         "policy_source_ref": screen_ref, "policy_source_function": readback["source_function"],
+        "supplemental_policy_source_refs": supplemental[:],
         "approved_policy_objects": approved_objects,
         "excluded_policy_objects": excluded_objects,
         "policy_link_resolution": link_items,
