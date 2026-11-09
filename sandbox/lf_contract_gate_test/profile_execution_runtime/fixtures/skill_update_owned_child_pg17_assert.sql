@@ -18,7 +18,13 @@ BEGIN
         'method','GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1',
         'repository',v_repo,
         'run_id','1234567890','workflow_sha',repeat('d',40),
-        'workflow_ref',v_repo||'/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main')));
+        'workflow_ref',v_repo||'/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main'),
+      'github_owner',jsonb_build_object(
+        'asset_code','ACT-0045',
+        'root_path','skills/profile_creator',
+        'readme_path','skills/profile_creator/README.md',
+        'readme_blob_sha',repeat('e',40),
+        'main_sha',repeat('a',40))));
 
   v_result:=public.lf_skill_h_skill_update_propose_v1(v_input);
   IF v_result->>'escribe' IS DISTINCT FROM 'false'
