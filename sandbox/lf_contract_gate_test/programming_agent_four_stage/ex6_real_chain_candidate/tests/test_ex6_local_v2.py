@@ -58,6 +58,17 @@ class EX6LocalV2(unittest.TestCase):
         self.assertEqual(x["c1"]["candidate_commit_sha_reported"],local.N)
         self.assertFalse(x["bridge"]["freeze_enforced"])
 
+    def test_pg14_v2_local_testing_receiver_accepts_shape_and_blocks_tamper(self):
+        x=local.make_pg14_v2()
+        self.assertEqual(x["c3"]["status"],"CANDIDATE_NOT_ADMITTED")
+        self.assertEqual(x["verdict"]["verdict"],"ACCEPT")
+        self.assertEqual(x["verdict"]["reason"],"LOCAL_FIXTURE_SHAPE_ACCEPTED_ONLY")
+        self.assertEqual(x["tampered_verdict"]["verdict"],"BLOCK")
+        self.assertFalse(x["verdict"]["production_authority"])
+        self.assertFalse(x["verdict"]["testing_real_invoked"])
+        self.assertFalse(x["c1"]["production_authority"])
+        self.assertEqual(x["local_freeze"]["blocked_mutation_count"],5)
+
     def test_disposable_postgres_real_readback(self):
         if os.environ.get("PG12_DISPOSABLE_DB")!="YES":
             self.skipTest("Local disposable DB explicit opt-in only")
