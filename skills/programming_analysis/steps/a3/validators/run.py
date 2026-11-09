@@ -13,6 +13,70 @@ from typing import Any
 
 SCHEMA = "TARGETED_EVIDENCE_SET_V1"
 INPUTS = {"REQUEST_CONTEXT_V1", "ANALYSIS_CHANGE_CLASSIFICATION_V1"}
+MATERIAL_SECTIONS = {
+    "fields": list, "errors": list, "visual": dict,
+    "context": dict, "metadata": dict, "profiles": list,
+    "analytics": list, "evidence": list,
+}
+
+
+def _material_contract(value: Any, screen_ref: str) -> dict:
+    """Keep ALL material contract definitions, typed by source status.
+
+    Consolidated screen contract only; source metadata is checked at the
+    authorized provider seam. This is not approval, source attestation, A4
+    admission, or an independent judge.
+    """
+    if not isinstance(value, dict) or set(value) != set(MATERIAL_SECTIONS):
+        return blocked("A3_MATERIAL_CONTRACT_SECTIONS_INCOMPLETE")
+    for key, typ in MATERIAL_SECTIONS.items():
+        if not isinstance(value[key], typ):
+            return blocked("A3_MATERIAL_CONTRACT_SECTION_TYPE_INVALID")
+    statuses = []
+    seen_paths = set()
+
+    def scan(node: Any, pointer: str) -> None:
+        if isinstance(node, dict):
+            status = node.get("status")
+            if isinstance(status, str):
+                if not status.strip():
+                    raise ValueError("A3_MATERIAL_EMPTY_STATUS")
+                if pointer in seen_paths:
+                    raise ValueError("A3_MATERIAL_DUPLICATE_PATH")
+                seen_paths.add(pointer)
+                statuses.append({
+                    "pointer": pointer,
+                    "source_ref": screen_ref + "#contract/" + pointer,
+                    "source_status": status,
+                    "source_only_candidate": status == "VIGENTE",
+                    "implementation_approved": False,
+                })
+            for key, item in node.items():
+                scan(item, pointer + "/" + str(key).replace("~", "~0").replace("/", "~1"))
+        elif isinstance(node, list):
+            for index, item in enumerate(node):
+                scan(item, pointer + "/" + str(index))
+
+    try:
+        for section in MATERIAL_SECTIONS:
+            scan(value[section], section)
+    except (ValueError, RecursionError):
+        return blocked("A3_MATERIAL_CONTRACT_STATUS_STRUCTURE_INVALID")
+    return {
+        "status": "MATERIAL_CONTRACT_PROJECTED_UNATTESTED",
+        "source_ref": screen_ref,
+        "source_function": "lf_ops.fn_screen_contract_v1",
+        "contract_sections": deepcopy(value),
+        "status_items": statuses,
+        "counts": {
+            "sections": len(MATERIAL_SECTIONS),
+            "status_items": len(statuses),
+            "vigente_source_candidates": sum(x["source_only_candidate"] for x in statuses),
+            "pending_or_other_status": sum(not x["source_only_candidate"] for x in statuses),
+        },
+        "source_attested": False, "runtime_authorized": False,
+        "a4_allowed": False,
+    }
 
 
 def blocked(code: str) -> dict:
@@ -246,6 +310,15 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
     # Scope accepted by the user: pending definitions are excluded, not a
     # universal prerequisite to continue the approved part of the screen.
     alerts = []
+    material = None
+    if "contract_sections" not in resolved_sources:
+        gaps.append("CONSOLIDATED_SCREEN_MATERIAL_READBACK_MISSING")
+    else:
+        material = _material_contract(resolved_sources["contract_sections"], ref)
+        if material["status"] == "BLOCKED":
+            return blocked(material["blocking_codes"][0])
+        if material["counts"]["pending_or_other_status"]:
+            alerts.append("SCREEN_MATERIAL_PENDING_ITEMS_SOURCE_ONLY_NOT_IMPLEMENTABLE")
     if resolved_sources["screen_status"] != "VIGENTE":
         alerts.append("SCREEN_DEFINITION_NOT_VIGENTE")
     if any(not p["approved_for_binding"] for p in policy_states):
@@ -312,6 +385,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         },
         "policy_link_items": policy_states,
         "policy_resolution": policy_resolution,
+        "material_contract_readback": material,
         "counts": {
             "direct_rules_total": len(rows),
             "direct_rules_vigente_no_pending": len(approved),
@@ -322,6 +396,8 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "inherited_derived_global_vigente": len(inherited_approved),
             "inherited_derived_global_excluded": len(inherited_excluded),
             "policy_links_total": len(policies),
+            "material_sections_total": material["counts"]["sections"] if material else 0,
+            "material_items_pending_or_other_status": material["counts"]["pending_or_other_status"] if material else 0,
             "policy_links_not_vigente": sum(not p["approved_for_binding"] for p in policy_states),
             "policy_objects_resolved": policy_resolution["counts"]["policy_objects"],
             "policy_objects_vigente": policy_resolution["counts"]["policy_objects_vigente"],
