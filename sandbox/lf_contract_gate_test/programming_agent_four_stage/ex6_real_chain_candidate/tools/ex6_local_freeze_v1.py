@@ -7,9 +7,11 @@ from __future__ import annotations
 import hashlib
 import subprocess
 import tempfile
+import sys
 from pathlib import Path
 
 from ex6_source_truth_v1 import source_truth, _reader, EVIDENCE, git_blob_sha
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "pg13_freeze_candidate" / "tools"))
 from pg13_disposable_git_mutation_test_v1 import (
     HOOK, git, require, read_ref, reject_and_preserve
 )
