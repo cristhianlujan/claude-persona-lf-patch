@@ -67,6 +67,11 @@ DECLARE
   v_res jsonb;
   v_ep jsonb;
   v_root text;
+  v_canonical_root text;
+  v_owner_execution text;
+  v_hist_count integer;
+  v_root_count integer;
+  v_required_count integer;
   v_path text := btrim(coalesce(p_input->>'target_path',''));
   v_target text := upper(btrim(coalesce(p_input->>'target_code','')));
   v_repo constant text := 'cristhianlujan/claude-persona-lf-patch';
@@ -120,25 +125,49 @@ BEGIN
   WHERE codigo_activo=v_target AND tipo_activo='SKILL'
     AND archived_at IS NULL;
   IF NOT FOUND THEN RAISE EXCEPTION 'SKILL_UPDATE_CHILD_ASSET_NOT_CURRENT'; END IF;
-  -- Current GitHub ownership must be ratified by the canonical owner.
-  -- A legacy Drive path or old PASS_SANDBOX receipt cannot authorize writes.
-  v_owner := v_asset.metadata->'github_owner_binding';
+  -- G1 owner: combine a canonical COMPLETED skill update (all active
+  -- contract steps clean) with the README at the exact current GitHub main.
+  -- No new owner registry; neither Drive history nor sandbox receipts authorize.
+  v_owner := v_t->'github_owner';
   v_root := v_owner->>'root_path';
   IF jsonb_typeof(v_owner) IS DISTINCT FROM 'object'
-    OR v_owner->>'schema_version' IS DISTINCT FROM 'LF_SKILL_GITHUB_OWNER_BINDING_V1'
-    OR v_owner->>'status' IS DISTINCT FROM 'CURRENT_VERIFIED'
-    OR v_owner->>'repository' IS DISTINCT FROM v_repo
+    OR v_owner->>'asset_code' IS DISTINCT FROM v_target
+    OR v_owner->>'main_sha' IS DISTINCT FROM v_t->>'main_sha'
+    OR coalesce(v_owner->>'readme_blob_sha','') !~ '^[0-9a-f]{40}$'
     OR coalesce(v_root,'') !~ '^skills/[a-z0-9_-]+$'
+    OR v_owner->>'readme_path' IS DISTINCT FROM v_root||'/README.md'
     OR v_path NOT LIKE v_root||'/%'
-    OR coalesce(v_owner->>'approval_execution_id','')=''
-    OR coalesce(v_owner->>'receipt_ref','')=''
-    OR NOT EXISTS(
-      SELECT 1 FROM public.lf_operation_execution e
-      WHERE e.execution_id=v_owner->>'approval_execution_id'
-        AND e.operation_code='ACTUALIZACION_SKILL_LF'
-        AND e.target_type='SKILL' AND e.target_code=v_target
-        AND e.status='COMPLETED')
-  THEN RAISE EXCEPTION 'SKILL_UPDATE_CHILD_CANONICAL_OWNER_NOT_RATIFIED'; END IF;
+  THEN RAISE EXCEPTION 'SKILL_UPDATE_CHILD_CURRENT_OWNER_PROOF_INVALID'; END IF;
+
+  SELECT count(*) INTO v_required_count
+    FROM public.lf_operation_step_contracts
+    WHERE operation_code=v_op AND status='ACTIVE_ENFORCEMENT';
+  IF v_required_count<>14
+  THEN RAISE EXCEPTION 'SKILL_UPDATE_CHILD_STEP_CONTRACT_DRIFT:%',v_required_count; END IF;
+
+  WITH verified_owner AS (
+    SELECT e.execution_id,e.target_path
+    FROM public.lf_operation_execution e
+    JOIN public.lf_operation_execution_steps sr
+      ON sr.execution_id=e.execution_id AND sr.step_id='skill_resolve'
+    WHERE e.operation_code=v_op AND e.target_type='SKILL'
+      AND e.target_code=v_target AND e.status='COMPLETED'
+      AND sr.status='STEP_PASS_WITH_EVIDENCE'
+      AND sr.evidence_payload->>'codigo_activo'=v_target
+      AND sr.evidence_payload->>'repo_path'=e.target_path
+      AND sr.evidence_payload->>'exact_skill_resolved'='true'
+      AND (SELECT count(*) FROM public.lf_operation_execution_steps x
+           WHERE x.execution_id=e.execution_id)=v_required_count
+      AND (SELECT count(*) FROM public.lf_operation_execution_steps x
+           WHERE x.execution_id=e.execution_id
+             AND x.status='STEP_PASS_WITH_EVIDENCE')=v_required_count
+  )
+  SELECT count(*),count(DISTINCT target_path),
+         min(target_path),min(execution_id)
+  INTO v_hist_count,v_root_count,v_canonical_root,v_owner_execution
+  FROM verified_owner;
+  IF v_hist_count<1 OR v_root_count<>1 OR v_canonical_root IS DISTINCT FROM v_root
+  THEN RAISE EXCEPTION 'SKILL_UPDATE_CHILD_CANONICAL_OWNER_NOT_VERIFIED'; END IF;
   -- Explicitly re-derive ACT-0001 receipt for the REGISTERED OIDC caller;
   -- no Router execution or direct profile dispatch is introduced.
   v_c := public.lf_skill_child_caller_manifest_v1('SKILL_UPDATE_APPLY');
@@ -191,6 +220,11 @@ BEGIN
       'router_governed_caller_code',v_g->>'caller_code',
       'initial_main_revision',v_t->>'main_sha',
       'initial_target_blob_sha',v_t->>'target_blob_sha',
+      'owner_provenance',jsonb_build_object(
+        'canonical_execution_id',v_owner_execution,
+        'canonical_root_path',v_root,
+        'source','public.lf_operation_execution+GitHub_MAIN_README',
+        'readme_blob_sha',v_owner->>'readme_blob_sha'),
       'github_write_executed',false,'runtime_write_executed',false,
       'production_authorized',false,'automatic_runtime_promotion',false,
       'target_root_path',v_root) || v_c
@@ -214,6 +248,8 @@ BEGIN
     'operation_code',v_op,'target_type','SKILL',
     'source_revision',v_t->>'main_sha',
     'asset_owner_binding',v_asset.codigo_activo,
+    'verified_owner_execution_id',v_owner_execution,
+    'owner_readme_blob_sha',v_owner->>'readme_blob_sha',
     'router_semantic_receipt_sha256',v_g->>'semantic_receipt_sha256',
     'assertions_checked',jsonb_build_array('execution_row_created',
       'asset_current_owner_verified','router_rederived','parent_operation_active'),
