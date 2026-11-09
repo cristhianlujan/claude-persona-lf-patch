@@ -130,7 +130,7 @@ def load_evidence(root: Path = EVIDENCE) -> dict:
             for x in feedback["commands"])):
         fail("EX6_VISIBLE_ACCEPTANCE_DRIFT")
     patch = files["worker.patch"].decode("utf-8")
-    paths = re.findall(r"(?m)^diff --git a/([^\\s]+) b/([^\\s]+)$", patch)
+    paths = re.findall(r"(?m)^diff --git a/(\S+) b/(\S+)$", patch)
     if (not paths or sorted(a for a, z in paths) != EXACT_PATHS
         or any(a != z for a, z in paths)
         or patch.count("--- /dev/null") != 3
