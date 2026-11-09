@@ -104,7 +104,11 @@ def real_hunks(patch: bytes) -> list[dict]:
             "git_blob_oid": git_blob_sha(new_bytes),
             "header_ref": RUN_REF + "#verified-patch/" + str(index + 1),
             "source_ref": SPEC_REF,
-            "requirements": {\n                "ReminderStats.java": ["REM-D1"],\n                "ReminderStatsService.java": ["REM-D2"],\n                "ReminderStatsController.java": ["REM-D3", "REM-D4"],\n            }[Path(path).name],
+            "requirements": {
+                "ReminderStats.java": ["REM-D1"],
+                "ReminderStatsService.java": ["REM-D2"],
+                "ReminderStatsController.java": ["REM-D3", "REM-D4"],
+            }[Path(path).name],
             "batch_ref": "ex6://batch/EX6-SOL-001",
             "scope_ref": "ex6://scope/" + path,
         })
