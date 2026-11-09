@@ -1,6 +1,6 @@
 # H4 · EX6 → PG-04…PG-14 · resultados reales v1 (candidato, NO ADMITIDO)
 
-**Corte:** 2026-11-09. **PR:** #3740 (draft). **Estado:** H4 PARCIAL; PG-06 C1 bloquea por dependencia PG-01 no acreditada. **No hay v2 nuevo**, porque el único rechazo observado no corresponde a PG-08/PG-09. No declarar el objetivo PG-04→PG-14 completado.
+**Corte:** 2026-11-09. **PR:** #3740 (draft). **Estado:** H4 PARCIAL; PG-06 C1 pasa usando exclusivamente el fixture oficial PG-01 marcado `FIXTURE_UNATTESTED`, pero PG-06 C2 bloquea por catálogo de toolchain ausente. **No hay v2 nuevo**, porque el único rechazo observado no corresponde a PG-08/PG-09. No declarar el objetivo PG-04→PG-14 completado.
 
 ## Procedencia exclusiva de EX6
 
@@ -30,7 +30,7 @@ Los SHA de miembros originales se validan en `ex6_real_world_v1.py` sin reescrib
 
 ## Origen del alcance y hunks
 
-`tools/ex6_source_truth_v1.py` lee **solo** el spec completo real del commit base y extrae Lote D (REM-D1–D4), `task_spec` EX6, sobre público de propuesta, y los 3 ZIP. Todos los snapshots Git se verifican por blob SHA; el diff real tiene exactamente **tres hunks ADD**, un archivo nuevo por hunk. `authorize_from_real_hunks` liga los 3 a un solo batch `ex6://batch/EX6-SOL-001` y un scope distinto por archivo:
+`tools/ex6_source_truth_v1.py` lee **solo** el Lote D (REM-D1–D4), el `task_spec` EX6 y los 3 ZIP originales. Todos los snapshots Git se verifican por blob SHA; el diff real tiene exactamente **tres hunks ADD**, un archivo nuevo por hunk. `authorize_from_real_hunks` liga los 3 a un solo batch `ex6://batch/EX6-SOL-001` y un scope distinto por archivo:
 
 | Archivo | Obligaciones trazadas |
 |---|---|
@@ -38,18 +38,18 @@ Los SHA de miembros originales se validan en `ex6_real_world_v1.py` sin reescrib
 | `ReminderStatsService.java` | REM-D2 |
 | `ReminderStatsController.java` | REM-D3, REM-D4 |
 
-Las rutas existentes permanecen protegidas, con escritura restringida a estos tres archivos. El sobre original y el diff de Git tienen idénticas líneas de código: la comparación permite quitar **únicamente** las tres líneas añadidas `index 0000000..OID` de metadatos Git para cotejarlos. Ninguna línea de fuente es normalizada.
+Las rutas existentes permanecen protegidas, con escritura restringida a estos tres archivos. Los hunks se extraen **únicamente** de `native-verified-patch.zip`, verificando los blobs de Git. Ninguna línea de fuente es normalizada.
 
 ## Corrida original de productores v1 · antes/después
 
-Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution`, corridas [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943) y [#42695047716](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695047716), que ejecutó los productores originales PG-04, PG-05 y PG-06 C1. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
+Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution` y `H4 temporary PG06 C2 missing-evidence diagnostic`, corridas [#42695528644](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695528644) y [#42695772442](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695772442), que ejecutaron los productores originales PG-04, PG-05, PG-06 C1 y C2. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
 
 | Etapa | Antes de v2 · productor real EX6 | Después de v2 | Código exacto o límite |
 |---|---|---|---|
 | PG-04 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | Partition, DoD, coverage, review request y exit originales; sin autoridad |
 | PG-05 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | C1–C5 y handoff originales; sin locks ni permisos de escritura |
-| PG-06 | **BLOCK** | SIN_V2 · BLOCK | `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
-| PG-07 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
+| PG-06 | **C1 PASS_SOURCE_ONLY; C2 BLOCK** | SIN_V2 · C2 BLOCK | `PG06_C2_CATALOG_SHAPE_INVALID`; PG01=`FIXTURE_UNATTESTED` |
+| PG-07 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C2_CATALOG_SHAPE_INVALID` |
 | PG-08 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
 | PG-09 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente; v1 costo nativo **no probado con EX6 aún** |
 | PG-10 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
@@ -60,7 +60,9 @@ Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary origina
 
 **Importante:** los campos de manifiesto A9/PG03 usados para construir el paquete source-only PG-04 son candidatos explícitamente `ex6://unattested/`; **no son certificaciones de origen, decisiones de Análisis ni autenticación**. El contrato original PG-04 devuelve `CANDIDATE_NOT_ADMITTED`. No se debe confundir ese PASS estructural con un cierre de PG-04 productivo.
 
-**PG-06 C1:** se pasó `pg01_currentness_binding=None` explícitamente, porque ninguno de los artefactos públicos EX6 es un recibo `CURRENTNESS_AUTHORITY` de PG-01. El productor **real** devolvió `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE`. Sustituirlo por hashes inventados permitiría simular avance de PG-06 a PG-14, violando el mandato.
+**PG-01 fixture:** `ex6_real_chain_v1.py` importa `pg01()` desde `pg06_preflight_candidate/tests/test_pg06_c1_c5_chain_v1.py` sin copiar ni modificar valores. La prueba compara el dict completo, `pg01_decision_ref=fixture://pg01/currentness` y todas sus huellas con el fixture original. Es **el único dato ajeno a EX6 permitido** en las entradas, etiquetado `FIXTURE_UNATTESTED`. No es una decisión PG-01 real; EX5C comparte exactamente esa limitación. El productor original PG-06 C1 pasa como candidato no admitido.
+
+**PG-06 C2:** el material EX6 aporta un Maven `package` exitoso pero no un catálogo de versiones exactas ni observaciones independientes del entorno del commit base. El productor original recibió `toolchain_catalog=None`, `environment_observations=None` (sin inventar valores), y devolvió `PG06_C2_CATALOG_SHAPE_INVALID`. PG-07…PG-14 no se invocaron.
 
 ## Costos y autoridad
 
@@ -68,13 +70,13 @@ En `cost.json`: `api_calls=0`, `real_api_usage=false`, `total_usd=0`, `cost_scop
 
 ## Pruebas ejecutadas sin contaminar suites
 
-- [#42695047716](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695047716): 10/10 tests EX6; 29/29 tests sintéticos PG-04 v1; 13/13 tests sintéticos PG-05 v1. Todos SUCCESS tras fijar el spec completo del commit base. Los productores v1 y las pruebas originales no se modificaron.
+- [#42695772442](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695772442): **11/11 tests EX6**, incluido binding exacto del fixture, y **15/15 pruebas sintéticas PG-06 v1** SUCCESS. Corridas anteriores: 29/29 PG-04 y 13/13 PG-05, inalteradas. Los productores v1 y las pruebas originales no se modificaron.
 - `install()/uninstall()` restaura `sys.path`; no hay cambios de funciones/constantes sintéticas.
 - Anticontaminación: los campos del resultado de `source_truth()` no contienen `ex5c` ni `lote-c`. Fuente de verdad EX6 no lee bundles del ejercicio previo.
 - Fallo de un byte de cualquiera de los ZIP originales se rechaza. Sobre y parche se atan por SHA y por código byte-a-byte salvo metadatos `index`.
 
 ## Rechazo que sí justifica trabajo siguiente
 
-**Bloqueo de procedencia de PG-01**, no un defecto en contratos v1 PG-08/PG-09. Antes de crear PG-09 C1 v2 o PG-08 C1/C8 v2, se necesita una vinculación PG-01 real y autorizada —o una decisión gobernada que permita un marcador `unattested`—, sin tocar Análisis productivo. Luego se reejecuta PG-06→PG-14 para observar el siguiente rechazo exacto. La necesidad funcional prevista de costo API conocido 0 en PG-09 sigue siendo hipótesis de revisión estática hasta esa prueba.
+**Bloqueo de evidencia de toolchain PG-06 C2**, no de PG-01 ni de los modos PG-08/PG-09. Para continuar se requiere un catálogo Java 21/Maven/Spring fijado y observaciones del entorno de la base EX6 respaldadas por recibos auténticos; el PASS visible de Maven no demuestra por sí solo la versión exacta. El fixture PG-01 sigue explícitamente no acreditado. Sin ejecutar PG-08/PG-09 no corresponde crear contratos v2 ni afirmar un rechazo de costo nativo. La necesidad funcional prevista de costo API conocido 0 en PG-09 sigue siendo hipótesis de revisión estática hasta esa prueba.
 
 **No se crearon v2 sin prueba. No hay SUPABASE writes, SUPER_ADMIN, merge, Train, cambios a `main`, cambios v1 ni `vendor/`. No poner `ready-to-merge`.**
