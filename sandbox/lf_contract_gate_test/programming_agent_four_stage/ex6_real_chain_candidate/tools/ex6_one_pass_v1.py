@@ -179,13 +179,13 @@ def stage10(pg09, pg07, truth):
     conflicts=[{"solution_id":sid,"conflicts":[]} for sid in ids]
     c1=prepare_pg10_c1(pg07_c5=pg07["c5"],pg09_c4=pg09["c4"],
                         conflict_observations=conflicts)
-    from test_pg10_decision_chain_v1 import precedence, routes, packets
+    from test_pg10_decision_chain_v1 import precedence, routes, packets, scenarios
     c2=prepare_pg10_c2(pg10_c1=c1,precedence_observations=precedence(c1))
     c3=prepare_pg10_c3(pg10_c2=c2,routing_observations=routes(c2))
     c4=prepare_pg10_c4(pg10_c3=c3,decision_observations=packets(c3))
     # Original test scenarios are authority-free structural fixtures.
     c5=prepare_pg10_c5(pg10_c1=c1,pg10_c2=c2,pg10_c3=c3,
-                       pg10_c4=c4,scenario_observations=[])
+                       pg10_c4=c4,scenario_observations=scenarios())
     return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5}
 
 
@@ -201,8 +201,48 @@ def stage11(truth):
          expected_head_sha="13ef9c319fb62f7e08f6f030d447c60ee7bfa7f5",
          declared_diff=diff,authorized_scope=scope,
          residue_observations=[],dependency_observations=[],
-         compatibility_observations=[])
-    return {"c1":c1,"diff":diff,"scope":scope,"traces":traces}
+         compatibility_observations=[{
+            "surface":"MODULE_CONTRACT",
+            "contract_ref":SPEC_REF+"#REM-D3",
+            "baseline_ref":"ex6://source/base/"+truth["base_head_sha"]+"/apps/time-service",
+            "evidence_ref":RUN_REF+"#status.json/PASS",
+            "compatible_reported":True}])
+    from pg11_c2_terminology_catalog_candidate_v1 import prepare_pg11_c2
+    from pg11_c3_suppression_waiver_candidate_v1 import prepare_pg11_c3
+    from pg11_c4_diff_requirement_batch_trace_candidate_v1 import prepare_pg11_c4
+    from pg11_c5_independent_reviewer_candidate_v1 import prepare_pg11_c5
+    rows=[{"path":h["path"],
+           "symbol_ref":h["header_ref"]+"#"+Path(h["path"]).stem,
+           "kind":"DOMAIN_IDENTIFIER",
+           "literal_value":Path(h["path"]).stem,
+           "source_ref":h["header_ref"],
+           "term_ids":h["requirements"],
+           "term_exists_reported":False,
+           "term_matches_reported":False,
+           "literal_match_reported":True,
+           "neighbor_match_reported":False}
+          for h in truth["hunks"]]
+    c2=prepare_pg11_c2(pg11_c1=c1,declared_changed_paths=[d["path"] for d in diff],
+         terminology_observations=rows,glossary_snapshot_ref=SPEC_REF,
+         catalog_snapshot_ref=SPEC_REF,messages_snapshot_ref=SPEC_REF,
+         neighbor_baseline_ref="ex6://source/base/"+truth["base_head_sha"])
+    c3=prepare_pg11_c3(pg11_c2=c2,suppression_observations=[],
+           waiver_observations=[],std_gen_05_source_ref=SPEC_REF)
+    c4=prepare_pg11_c4(pg11_c1=c1,pg11_c2=c2,pg11_c3=c3,
+          declared_diff=diff,authorized_scope=scope,trace_observations=traces)
+    reviews=[{"path":h["path"],
+         "builder_principal_ref":"ex6://principal/gpt-native-worker",
+         "reviewer_principal_ref":"ex6://unattested/independent-reviewer",
+         "reviewer_role_ref":"ex6://unattested/independent-verifier",
+         "builder_provenance_ref":RUN_REF,
+         "reviewer_provenance_ref":"ex6://unattested/reviewer-provenance",
+         "review_scope_ref":RUN_REF+"#native-verified-patch",
+         "reviewer_is_builder_reported":False,
+         "reviewer_independence_reported":True} for h in truth["hunks"]]
+    c5=prepare_pg11_c5(pg11_c4=c4,review_observations=reviews,
+         review_policy_ref="ex6://unattested/independent-review-policy")
+    return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5,
+            "diff":diff,"scope":scope,"traces":traces}
 
 
 def run_all():
