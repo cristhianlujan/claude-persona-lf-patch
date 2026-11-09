@@ -122,6 +122,38 @@ def governed_request():
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
         return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+    # Reuse the SAME profile Issue/OIDC/Edge lane for one bounded,
+    # sequential batch of the ALREADY OPENED governed skill-update child.
+    # This never opens another RUN and cannot provide signer/role credentials.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_STEP_BATCH_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "child_execution_id", "steps"}:
+            raise ValueError("SKILL_STEP_BATCH_SCHEMA_INVALID")
+        parent, child, steps = data["execution_id"], data["child_execution_id"], data["steps"]
+        allowed = [
+            "router", "skill_resolve", "baseline_read", "change_scope",
+            "regression_plan", "pre_write_execution_binding_gate",
+        ]
+        if (not isinstance(parent, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", parent)
+                or not isinstance(child, str) or not re.fullmatch(r"EXEC-SKILL-[A-Za-z0-9]{12,40}", child)
+                or not isinstance(steps, list) or not 1 <= len(steps) <= 6
+                or len(json.dumps(steps, ensure_ascii=False)) > 52000):
+            raise ValueError("SKILL_STEP_BATCH_INVALID")
+        positions = []
+        for step in steps:
+            if not isinstance(step, dict) or set(step) != {"step_id", "evidence_ref", "evidence_payload"}:
+                raise ValueError("SKILL_STEP_BATCH_ITEM_INVALID")
+            name, ref, payload = step["step_id"], step["evidence_ref"], step["evidence_payload"]
+            if (name not in allowed or not isinstance(ref, str) or not 1 <= len(ref) <= 1500
+                    or not isinstance(payload, dict) or len(json.dumps(payload, ensure_ascii=False)) > 44000
+                    or any(key in payload for key in (
+                        "server_assertions", "server_hard_fails", "trust_validation",
+                        "derived_result", "derived_by_judge", "step_result", "mini_judge_result"))):
+                raise ValueError("SKILL_STEP_BATCH_ITEM_UNSAFE")
+            positions.append(allowed.index(name))
+        if positions != sorted(set(positions)):
+            raise ValueError("SKILL_STEP_BATCH_OUT_OF_ORDER")
+        return {"kind": "SKILL_STEP_BATCH", "execution_id": parent,
+                "child_execution_id": child, "steps": steps}
     # Same profile-owned Issue/OIDC/Edge lane; this bounded first slice is
     # effect-free. Never infer write authority from a skill name or payload.
     if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1":
@@ -644,6 +676,30 @@ def main():
                           "next_step": receipt["next_step"]}, ensure_ascii=False))
         # A successful skill plan is not profile terminality, hence nonzero.
         return 1
+    if isinstance(request, dict) and request.get("kind") == "SKILL_STEP_BATCH":
+        code, reply = call_json(EDGE_URL, {
+            "action": "profile_native_skill_step_batch_v1",
+            "execution_id": request["execution_id"],
+            "child_execution_id": request["child_execution_id"],
+            "steps": request["steps"],
+        }, headers)
+        success = (code == 200 and isinstance(reply, dict)
+                   and reply.get("outcome") == "SKILL_CHILD_STEP_BATCH_RECORDED"
+                   and reply.get("child_execution_id") == request["child_execution_id"]
+                   and reply.get("execution_id") == request["execution_id"]
+                   and reply.get("steps_recorded") == len(request["steps"]))
+        print(json.dumps({
+            "phase": "PROFILE_SKILL_CHILD_STEP_BATCH",
+            "http_status": code,
+            "outcome": reply.get("outcome") if isinstance(reply, dict) else None,
+            "code": reply.get("code") if isinstance(reply, dict) else None,
+            "failed_step": reply.get("failed_step") if isinstance(reply, dict) else None,
+            "execution_id": request["execution_id"],
+            "child_execution_id": request["child_execution_id"],
+            "steps_recorded": reply.get("steps_recorded", 0) if isinstance(reply, dict) else 0,
+            "no_file_write": True,
+        }, ensure_ascii=False))
+        return 0 if success else 1
     if isinstance(request, dict) and request.get("kind") == "SKILL_INVOKE":
         code, invoked = call_json(EDGE_URL, {
             "action": "profile_native_skill_invoke_v1",
