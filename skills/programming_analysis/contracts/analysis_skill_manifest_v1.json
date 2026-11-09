@@ -89,9 +89,13 @@
         "ANALYSIS_CHANGE_CLASSIFICATION_V1"
       ],
       "guard": "Unknown impact is visible, never silently excluded; no new parallel impact engine.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_DETERMINISTIC_SOURCE_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a4/validators/run.py:run",
+      "operationally_verified": false,
+      "source_set_contract": "steps/a4/contracts/deterministic_source_set_v1.json",
+      "integration_note": "A3+A2 only plus host-provided inventory exact object binding and existing fn_impact_analysis_v1/fn_dependencies_v1; no arbitrary research or live RUN, source attestation or A5 admission. Empty graph/unmapped target => IMPACT_UNKNOWN.",
+      "source_attested": false,
+      "next_step_allowed": false
     },
     {
       "step_id": "A5",
