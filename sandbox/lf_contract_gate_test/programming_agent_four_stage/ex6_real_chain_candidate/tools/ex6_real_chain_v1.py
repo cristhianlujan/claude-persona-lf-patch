@@ -346,6 +346,15 @@ def run_v1():
                     state[5] = make_pg05(state[4], truth)
                 elif i == 6:
                     state[6] = make_pg06(state[5])
+                    # PG06 C1 PASS using the official *test* fixture only.
+                    # EX6 public ZIPs carry no authenticated exact-version
+                    # toolchain catalog or environment observations for the
+                    # base commit. Pass missing evidence as None; do not infer
+                    # a successful version check from a Maven package PASS.
+                    from pg06_c2_toolchain_environment_candidate_v1 import prepare_pg06_c2
+                    state[6]["c2"] = prepare_pg06_c2(
+                        pg05_exit=state[5]["handoff"], pg06_c1=state[6]["c1"],
+                        toolchain_catalog=None, environment_observations=None)
                 else:
                     raise RuntimeError("EX6_PRODUCER_UNWIRED_AFTER_PG06")
                 results.append({"stage": f"PG-{i:02d}", "before_v2": "PASS_SOURCE_ONLY",
