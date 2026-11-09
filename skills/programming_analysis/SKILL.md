@@ -9,7 +9,8 @@ El perfil del Agente de Programación debe seleccionar y consumir **una sola ski
 - **A1:** `steps/a1/validators/run.py` normaliza solicitud y contexto `REQUEST_CONTEXT_V1`. Módulo candidato, no calificado operacionalmente. Interpretación en lenguaje natural espera un productor externo y un juez independiente con recibos reales.
 - **A2:** `steps/a2/validators/run.py` consume un resultado A1 válido y señales tipadas aportadas externamente; **proyecta** las reglas L1/L2/L3 del contrato canónico `analysis_change_classification_contract_v1.json`, sin pesos ni heurística nueva. Devuelve candidato `ANALYSIS_CHANGE_CLASSIFICATION_V1`; `source_attested=false`, `next_step=null`. No resuelve identidad de especialista por su cuenta.
 - **Puente local A1→A2:** `adapters/a1_a2_candidate_bridge_v1.py` permite pruebas determinísticas de continuidad, **sin** invocar el perfil, Router, juez o runtime. No equivale a transición operativa acreditada.
-- **A3–A9:** contratos de investigación, impacto, decisión, implementabilidad, frentes, STOP y handoff referenciados; sin módulos conectados todavía.
+- **A3:** `steps/a3/validators/run.py` consume los dos contratos existentes A2→A3 y un readback LF ya obtenido por los adaptadores autorizados. Clasifica reglas VIGENTE/no pendientes frente a CANDIDATO, conserva vínculos de políticas y brechas. **Solo módulo candidato probado localmente con datos SQL reales**; no resuelve fuentes por sí mismo, no atesta CURRENT ni habilita A4.
+- **A4–A9:** contratos de impacto, decisión, implementabilidad, frentes, STOP y handoff referenciados; sin módulos conectados todavía.
 - **A10–A15:** campañas de evaluación, adversariales, benchmark, remediación, holdout y freeze. Son **gates de calificación**, no pasos a ejecutar automáticamente en cada solicitud.
 
 ## Contratos y fronteras
@@ -20,7 +21,7 @@ La profundidad L1/L2/L3 **no es permiso de ejecución**. Ausencia/contradicción
 ## Bloqueos
 - El registro de activo no demuestra runtime. Prohibido declarar `SKILL_READY`, `ANALYSIS_READY`, `SKILL_INTEGRATED` o efectos.
 - A1/A2 son implementaciones locales candidatas; A2 no puede atestar la procedencia de señales por sí mismo ni autoproclamar juez independiente.
-- A3–A15 aún no están conectados. A10–A15 conservan `requires=null` con `NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE`: null significa **pendiente**, nunca que no haya requisitos.
+- A3 tiene módulo consumidor local, pero **no** transporte RUN, atestación de fuente ni juez operativo. A4–A15 aún no están conectados. A10–A15 conservan `requires=null` con `NOT_RECONCILED_FROM_CANONICAL_VALIDATION_SOURCE`: null significa **pendiente**, nunca que no haya requisitos.
 - Reutilizar `EJECUCION_SKILL_LF`, políticas/Router y autoridad server-side existentes. No usar `supabase_read_only_user` para escritura ni `lf_record_creacion_skill_step_v1` para invocar pasos.
 
 ## Verificación
