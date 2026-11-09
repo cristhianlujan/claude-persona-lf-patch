@@ -7,7 +7,10 @@ import pathlib
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
-MIGRATION = ROOT / "supabase/migrations/20261109140000_lf_programacion_interim_repair_selection_v1.sql"
+MIGRATION_CANDIDATES = sorted((ROOT / "supabase/migrations").glob("*_lf_programacion_interim_repair_selection_v1.sql"))
+if len(MIGRATION_CANDIDATES) != 1:
+    raise AssertionError("INTERIM_SELECTOR_EXACTLY_ONE_TRAIN_VERSION_REQUIRED")
+MIGRATION = MIGRATION_CANDIDATES[0]
 
 
 class InterimProgrammingRepairSelectionSourceTest(unittest.TestCase):
