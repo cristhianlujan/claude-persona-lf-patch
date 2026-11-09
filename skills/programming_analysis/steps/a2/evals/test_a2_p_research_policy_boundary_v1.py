@@ -73,9 +73,18 @@ class ResearchPreclassificationBoundary(unittest.TestCase):
         self.assertFalse(result["a3_dispatch_allowed"])
 
     def test_08_material_open_a1_cannot_be_auto_promoted_to_a2(self):
-        a1 = make("02")
+        source = a1input()
+        source["ambiguities"] = [{
+            "code": "MATERIAL_PORTAL_MODE",
+            "statement": "Sin definición de modo de acceso",
+            "materiality": "MATERIAL",
+            "resolution_state": "OPEN",
+        }]
+        a1 = RUN_A1.run(source)
+        self.assertEqual(a1["status"], "REQUIRES_DECISION")
         output = RUN.run(a1, low())
-        self.assertEqual(output["status"], "BLOCKED")
+        self.assertEqual(output["blocking_codes"],
+                         ["A1_SEMANTIC_OR_STATUS_GATE_UNRESOLVED"])
         self.assertIsNone(output["classification"])
         self.assertIsNone(output["next_step"])
 
