@@ -24,11 +24,22 @@ def check(a1: Any, a2: Any, signals: Any) -> dict:
 
     if not all(isinstance(x, dict) for x in (a1, a2, signals)):
         return blocked("SEMANTIC_BINDING_INPUT_INVALID")
-    if (a1.get("skill_code") != "PROGRAMMING_ANALYSIS_LF"
+    if (a1.get("schema_version") != "A1_INTERNAL_STEP_CANDIDATE_RESULT_V1"
+            or a1.get("skill_code") != "PROGRAMMING_ANALYSIS_LF"
+            or a1.get("step_code") != "A1"
+            or a2.get("schema_version") != "A2_INTERNAL_STEP_CANDIDATE_RESULT_V1"
+            or a2.get("skill_code") != "PROGRAMMING_ANALYSIS_LF"
+            or a2.get("step_code") != "A2"
+            or signals.get("schema_version") != "ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1"
             or a1.get("business") != "LF" or a2.get("business") != "LF"
             or signals.get("business") != "LF"):
         return blocked("SEMANTIC_BINDING_BUSINESS_INVALID")
-    if (a1.get("status") != "VALID_OUTPUT"
+    if (a1.get("external_authority_verified") is not False
+            or a1.get("operationally_integrated") is not False
+            or a1.get("effects_executed") is not False
+            or a2.get("operationally_integrated") is not False
+            or a2.get("effects_executed") is not False
+            or a1.get("status") != "VALID_OUTPUT"
             or a1.get("interpretation_state") != "SEMANTIC_REVIEWED_CANDIDATE"
             or a1.get("semantic_review_required") is not False
             or a1.get("next_capability") != "A2"
@@ -43,6 +54,10 @@ def check(a1: Any, a2: Any, signals: Any) -> dict:
     intent, context, classification = (a1.get("intent_analysis"),
                                        a1.get("payload"), a2.get("classification"))
     if not all(isinstance(x, dict) for x in (intent, context, classification)):
+        return blocked("SEMANTIC_BINDING_CONTEXT_INVALID")
+    if (intent.get("schema_version") != "A1_INTENT_ANALYSIS_CANDIDATE_V1"
+            or context.get("schema_version") != "REQUEST_CONTEXT_V1"
+            or classification.get("schema_version") != "ANALYSIS_CHANGE_CLASSIFICATION_V1"):
         return blocked("SEMANTIC_BINDING_CONTEXT_INVALID")
     raw = context.get("objective", {}).get("problem_statement") if isinstance(
         context.get("objective"), dict) else None
