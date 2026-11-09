@@ -22,7 +22,7 @@ def persist_readback(accepted, blocked):
             fail("PG14_REMOTE_ENV_HOST_FORBIDDEN")
     if os.environ.get("PGSERVICE") or os.environ.get("PGSERVICEFILE"):
         fail("PG14_PG_SERVICE_REDIRECTION_FORBIDDEN")
-    connected = psql(dsn, "SELECT current_database() || '|' || coalesce(inet_server_addr()::text,'LOCAL_SOCKET');")
+    connected = psql(dsn, "SELECT current_database() || '|' || coalesce(host(inet_server_addr()),'LOCAL_SOCKET');")
     parts = connected.split("|")
     if len(parts) != 2 or not parts[0].startswith("pg14_test_") or parts[1] not in (
             "LOCAL_SOCKET", "127.0.0.1", "::1"):
