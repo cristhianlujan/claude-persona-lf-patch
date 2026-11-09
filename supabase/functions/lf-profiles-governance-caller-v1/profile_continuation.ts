@@ -229,7 +229,7 @@ async function githubGet(fetchFn: Fetcher, path: string): Promise<{ ok: boolean;
 // the current main revision and the exact target blob. They are resolved here, from GitHub, and any value the
 // request supplied under the reserved key is discarded.
 async function trustedSkillContext(
-  config: Config, fetchFn: Fetcher, skillCode: string, targetPath: string, callerIdentity: CallerIdentity | undefined,
+  config: Config, fetchFn: Fetcher, skillCode: string, targetCode: unknown, targetPath: string, callerIdentity: CallerIdentity | undefined,
 ): Promise<{ context?: Payload; error?: Response }> {
   if (!callerIdentity) return { error: blocked("PROFILE_SKILL_CALLER_IDENTITY_MISSING", 500) };
   const validTargetPath = skillCode === "SKILL_UPDATE_APPLY"
@@ -246,7 +246,46 @@ async function trustedSkillContext(
   if (!target.ok || !target.data || Array.isArray(target.data)) return { error: blocked("PROFILE_SKILL_EXACT_TARGET_FILE_REQUIRED", 409) };
   const blob = String((target.data as Payload).sha ?? "").toLowerCase();
   if (!SHA40_RE.test(blob)) return { error: blocked("PROFILE_SKILL_TARGET_BLOB_UNRESOLVED", 502) };
-  return { context: { main_sha: mainSha, target_blob_sha: blob, caller: { ...callerIdentity } } };
+  let githubOwner: Payload | null = null;
+  if (skillCode === "SKILL_UPDATE_APPLY") {
+    // Currentness is read from the exact same GitHub main tree as target_blob_sha.
+    // SQL independently verifies historical 14/14 skill ownership and asset status.
+    if (typeof targetCode !== "string" || !/^[A-Z][A-Z0-9_-]{3,159}$/.test(targetCode)) {
+      return { error: blocked("SKILL_UPDATE_TARGET_CODE_INVALID", 400) };
+    }
+    const root = targetPath.split("/").slice(0, 2).join("/");
+    const readmePath = root + "/README.md";
+    const readme = await githubGet(fetchFn,
+      `/repos/${config.repository}/contents/${readmePath.split("/").map(encodeURIComponent).join("/")}?ref=${mainSha}`);
+    if (!readme.ok || !readme.data || Array.isArray(readme.data)) {
+      return { error: blocked("SKILL_UPDATE_OWNER_README_UNAVAILABLE", 409) };
+    }
+    const doc = readme.data as Payload;
+    const readmeSha = typeof doc.sha === "string" ? doc.sha.toLowerCase() : "";
+    if (doc.type !== "file" || !SHA40_RE.test(readmeSha) ||
+        doc.encoding !== "base64" || typeof doc.content !== "string" ||
+        doc.content.length > 180000) {
+      return { error: blocked("SKILL_UPDATE_OWNER_README_INVALID", 409) };
+    }
+    let content = "";
+    try {
+      const bytes = Uint8Array.from(atob(doc.content.replace(/\\s/g, "")), c => c.charCodeAt(0));
+      content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch {
+      return { error: blocked("SKILL_UPDATE_OWNER_README_INVALID", 409) };
+    }
+    // A historical citation is not an owner declaration. Require one explicit
+    // line declaring the governing asset, rather than a mere code occurrence.
+    const ownerMatch = content.match(/(?:^|\\n)\\s*(?:[-*]\\s*)?(ACT-[0-9]{4,})\\s+is\\s+the\\s+governing\\s+asset\\b/i)
+      ?? content.match(/(?:^|\\n)\\s*(?:[-*]\\s*)?(?:source|governing)\\s+authority\\s*:\\s*(ACT-[0-9]{4,})\\b/i);
+    if (ownerMatch?.[1]?.toUpperCase() !== targetCode) {
+      return { error: blocked("SKILL_UPDATE_OWNER_DECLARATION_MISMATCH", 409) };
+    }
+    githubOwner = { asset_code: targetCode, root_path: root,
+      readme_path: readmePath, readme_blob_sha: readmeSha, main_sha: mainSha };
+  }
+  return { context: { main_sha: mainSha, target_blob_sha: blob, caller: { ...callerIdentity },
+    ...(githubOwner ? { github_owner: githubOwner } : {}) } };
 }
 
 async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn: Fetcher, callerIdentity?: CallerIdentity): Promise<Response> {
@@ -260,7 +299,7 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
   const { _trusted: _discarded, ...cleanInput } = input as Payload;
   let skillInput: Payload = cleanInput;
   if (typeof cleanInput.target_path === "string") {
-    const resolved = await trustedSkillContext(config, fetchFn, skill, cleanInput.target_path, callerIdentity);
+    const resolved = await trustedSkillContext(config, fetchFn, skill, cleanInput.target_code, cleanInput.target_path, callerIdentity);
     if (resolved.error) return resolved.error;
     skillInput = { ...cleanInput, _trusted: resolved.context };
   }
