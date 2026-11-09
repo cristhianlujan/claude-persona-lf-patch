@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-skill-invoker-idempotent-replay-20261109",
+  "paths": {
+    "supabase/migrations/20261109101500_lf_skill_invoker_idempotent_replay_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-skill-invoker-idempotent-replay-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
