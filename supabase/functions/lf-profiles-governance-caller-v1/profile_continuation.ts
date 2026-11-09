@@ -6,7 +6,8 @@ export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // A read-only profile calls a governed skill through its own route. The skill invoker
 // (lf_skill_invoke_v1) owns the authority/input checks; this action only transports the call.
 export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
-export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION] as const;
+export const PROFILE_SKILL_STEP_BATCH_ACTION = "profile_native_skill_step_batch_v1";
+export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION, PROFILE_SKILL_STEP_BATCH_ACTION] as const;
 const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
 const SKILL_TARGET_PATH_RE = /^profiles\/[A-Za-z0-9][A-Za-z0-9_./-]*$/;
 // Extra GitHub path type is *only* allowed for SKILL_UPDATE_APPLY; the invoker
@@ -322,6 +323,121 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
   return respond({ outcome: "SKILL_INVOKED", skill_code: skill, execution_id: e.execution_id, profile_code: e.target_code, result: data });
 }
 
+// Governed skill update steps through the EXISTING OIDC Edge and recorder.
+// No Router dispatch, extra executor, model provider or product write.
+const SKILL_UPDATE_PREWRITE_STEPS = [
+ "router","skill_resolve","baseline_read","change_scope",
+ "regression_plan","pre_write_execution_binding_gate",
+] as const;
+
+async function recordSkillChildSteps(
+ parent:Execution,body:Payload,config:Config,fetchFn:Fetcher,identity?:CallerIdentity,
+):Promise<Response>{
+ if(!identity)return blocked("SKILL_CHILD_STEP_OIDC_IDENTITY_REQUIRED",403);
+ const childId=body.child_execution_id, steps=body.steps;
+ if(typeof childId!=="string" || !/^EXEC-SKILL-[A-Za-z0-9]{12,40}$/.test(childId) ||
+    !Array.isArray(steps)||steps.length===0||steps.length>6||JSON.stringify(steps).length>52000){
+   return blocked("SKILL_CHILD_STEP_BATCH_INPUT_INVALID",400);
+ }
+ const positions:number[]=[];
+ for(const item of steps){
+   if(!item||typeof item!=="object"||Array.isArray(item))
+     return blocked("SKILL_CHILD_STEP_ITEM_INVALID",400);
+   const step=item as Payload;
+   if(Object.keys(step).sort().join(",")!=="evidence_payload,evidence_ref,step_id" ||
+     typeof step.step_id!=="string" ||
+     !(SKILL_UPDATE_PREWRITE_STEPS as readonly string[]).includes(step.step_id) ||
+     typeof step.evidence_ref!=="string"||step.evidence_ref.length<1||step.evidence_ref.length>1500||
+     !step.evidence_payload||typeof step.evidence_payload!=="object"||
+     Array.isArray(step.evidence_payload)||JSON.stringify(step.evidence_payload).length>44000)
+     return blocked("SKILL_CHILD_STEP_ITEM_INVALID",400);
+   const p=step.evidence_payload as Payload;
+   if(["server_assertions","server_hard_fails","trust_validation","derived_result",
+        "derived_by_judge","step_result","mini_judge_result"].some(
+         k=>Object.prototype.hasOwnProperty.call(p,k)))
+     return blocked("SKILL_CHILD_STEP_ASSERTION_INJECTION",400);
+   positions.push(SKILL_UPDATE_PREWRITE_STEPS.indexOf(
+     step.step_id as typeof SKILL_UPDATE_PREWRITE_STEPS[number]));
+ }
+ if(positions.some((v,i)=>i>0&&v<=positions[i-1]))
+   return blocked("SKILL_CHILD_STEP_BATCH_ORDER_INVALID",400);
+
+ const endpoint=config.supabaseUrl+"/rest/v1/lf_operation_execution?execution_id=eq."+
+   encodeURIComponent(childId)+
+   "&select=execution_id,status,operation_code,target_type,target_code,target_repo,target_path,created_by_execution_id,manifest";
+ let res:Response;
+ try{
+   res=await fetchFn(endpoint,{method:"GET",
+     headers:{apikey:config.serviceRoleKey,authorization:"Bearer "+config.serviceRoleKey},
+     signal:AbortSignal.timeout(15000)});
+ }catch{return blocked("SKILL_CHILD_STEP_EXECUTION_READ_FAILED",502);}
+ if(!res.ok)return blocked("SKILL_CHILD_STEP_EXECUTION_READ_FAILED",502);
+ const rows=await parseResponse(res);
+ if(!Array.isArray(rows)||rows.length!==1||!rows[0]||typeof rows[0]!=="object")
+   return blocked("SKILL_CHILD_STEP_EXECUTION_UNRESOLVED",404);
+ const child=rows[0] as Execution & {created_by_execution_id?:string};
+ const handoff=child.manifest?.profile_handoff as Payload|undefined;
+ if(child.execution_id!==childId||child.operation_code!=="ACTUALIZACION_SKILL_LF"||
+   child.target_type!=="SKILL"||child.target_code!=="ACT-0045"||
+   child.status!=="IN_PROGRESS"||child.target_repo!==config.repository||
+   !SKILL_UPDATE_TARGET_PATH_RE.test(child.target_path)||
+   child.target_path.includes("..")||child.target_path.includes("//")||
+   child.created_by_execution_id!==parent.execution_id||
+   handoff?.source_execution_id!==parent.execution_id||
+   child.manifest?.router_governed_caller_code!=="CALLER-GHA-NATIVE-SKILL-UPDATE-V1")
+   return blocked("SKILL_CHILD_STEP_PARENT_CHILD_AUTHORITY_MISMATCH",403);
+
+ const proof=await trustedSkillContext(config,fetchFn,"SKILL_UPDATE_APPLY",
+   child.target_code,child.target_path,identity);
+ if(proof.error||!proof.context)
+   return proof.error??blocked("SKILL_CHILD_STEP_CONTEXT_UNRESOLVED",409);
+ let completed=0;
+ const receipts:Payload[]=[];
+ for(const item of steps){
+   const step=item as Payload;
+   const recorded=await rpc(config,fetchFn,"lf_skill_update_child_step_v1",{
+     p_parent:parent.execution_id,p_child:childId,p_step:step.step_id,
+     p_evidence_ref:step.evidence_ref,p_evidence:step.evidence_payload,
+     p_server_context:proof.context,
+   });
+   if(recorded.error)return respond({outcome:"BLOCKED",code:"SKILL_CHILD_STEP_RPC_DENIED",
+     execution_id:parent.execution_id,child_execution_id:childId,
+     failed_step:step.step_id,steps_recorded:completed},502);
+   const result=recorded.result;
+   if(result?.outcome!=="STEP_RECORDED"||result.status!=="STEP_PASS_WITH_EVIDENCE"||
+     result.step_id!==step.step_id)
+     return respond({outcome:"BLOCKED",code:result?.code??"SKILL_CHILD_STEP_NOT_CLEAN",
+       execution_id:parent.execution_id,child_execution_id:childId,
+       failed_step:step.step_id,steps_recorded:completed},409);
+   completed++;
+   receipts.push({step_id:step.step_id,status:result.status,replay:result.replay===true});
+ }
+ // Read back from the same canonical operation ledger rather than trusting
+ // the RPC success body alone.
+ const url=config.supabaseUrl+"/rest/v1/lf_operation_execution_steps?execution_id=eq."+
+    encodeURIComponent(childId)+"&select=step_id,status";
+ let back:Response;
+ try{
+   back=await fetchFn(url,{method:"GET",
+     headers:{apikey:config.serviceRoleKey,authorization:"Bearer "+config.serviceRoleKey},
+     signal:AbortSignal.timeout(15000)});
+ }catch{return blocked("SKILL_CHILD_STEP_READBACK_TRANSPORT_FAILED",502);}
+ if(!back.ok)return blocked("SKILL_CHILD_STEP_READBACK_REJECTED",502);
+ const entries=await parseResponse(back);
+ if(!Array.isArray(entries)||steps.some(item=>entries.filter((v:unknown)=>{
+    if(!v||typeof v!=="object")return false;
+    const row=v as Payload;
+    return row.step_id===(item as Payload).step_id&&row.status==="STEP_PASS_WITH_EVIDENCE";
+ }).length!==1))return blocked("SKILL_CHILD_STEP_READBACK_NOT_CLEAN",409);
+ const last=positions[positions.length-1];
+ return respond({outcome:"SKILL_CHILD_STEP_BATCH_RECORDED",
+   execution_id:parent.execution_id,child_execution_id:childId,
+   operation_code:"ACTUALIZACION_SKILL_LF",steps_recorded:completed,
+   steps:receipts,next_step:last<SKILL_UPDATE_PREWRITE_STEPS.length-1
+      ? SKILL_UPDATE_PREWRITE_STEPS[last+1] : "github_write_SEPARATE_GOVERNED_GATE",
+   no_file_write:true,profile_completed:false,child_completed:false});
+}
+
 export async function handleProfileContinuation(
   action: string,
   body: Payload,
@@ -345,6 +461,7 @@ export async function handleProfileContinuation(
     });
   }
   if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
+  if (action === PROFILE_SKILL_STEP_BATCH_ACTION) return await recordSkillChildSteps(e, body, config, fetchFn, callerIdentity);
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
   const revision = body.source_revision;
   const digest = body.source_digest;
