@@ -141,7 +141,7 @@ def prepare_pg11_c4(*, pg11_c1, pg11_c2, pg11_c3, declared_diff,
             fail("PG11_C4_SUPPRESSION_AUTHORITY_INVALID")
         suppression_ids.add(sid)
         path=suppression["path_reported"]
-        if suppression.get("requirement_ref_reported") != scopes[path]["requirement_ref"]:
+        if suppression.get("requirement_ref_reported") not in {item[0] for item in authorized_by_path[path]}:
             fail("PG11_C4_SUPPRESSION_REQUIREMENT_DRIFT")
     result = {
         "schema_version":"PG11_C4_DIFF_REQUIREMENT_BATCH_TRACE_CANDIDATE_V2",
