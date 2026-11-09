@@ -56,7 +56,7 @@ SALY_DS_V1 (no importa tokens LF)
 ## 5. Requisitos QA
 
 1. Contraste mínimo WCAG 2.2 AA: texto normal >= 4.5:1, controles e íconos funcionales >= 3:1.
-2. No usar dorado sobre blanco como texto o icono operativo fino (contraste insuficiente): solicitar corrección de tono o superficie.
+2. No usar `#F6B400` sobre blanco como texto ni icono funcional; para icono candidato se propone `#9D6800` sobre `#FFF9E9` (AA), sujeto a validación de marca.
 3. Estados error, focus, loading y disabled revisados en Home y Solicitud.
 4. Targets táctiles >= 44px de tamaño de diseño candidato; ajustar al estándar aplicable en plataforma nativa.
 5. Screenshot en 320, 360, 390 y 430 px; sin overflow del monto, CTA o la tercera celda.
