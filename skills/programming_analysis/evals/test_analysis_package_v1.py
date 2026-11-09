@@ -30,8 +30,15 @@ class AnalysisStagePackage(unittest.TestCase):
  def test_procedure_parity(self):
   src=json.loads((REPO/M['procedure_source']).read_text(encoding='utf-8'))
   self.assertEqual([s['source_contract'] for s in M['steps'][:9]],[s['source_contract'] for s in src['steps']])
- def test_a3_to_a15_are_not_fake_executors(self):
-  self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][2:]))
+ def test_a3_candidate_consumer_and_remaining_steps_not_fake_executors(self):
+  a3=M['steps'][2]
+  self.assertEqual(a3['module_entrypoint'],'steps/a3/validators/run.py:run')
+  self.assertTrue((P/'steps/a3/validators/run.py').is_file())
+  self.assertEqual(a3['implementation_state'],'LOCAL_SOURCE_READBACK_CONSUMER_CANDIDATE_UNQUALIFIED')
+  self.assertFalse(a3['operationally_verified'])
+  self.assertFalse(a3['source_attested'])
+  self.assertFalse(a3['next_step_allowed'])
+  self.assertTrue(all(s['module_entrypoint'] is None for s in M['steps'][3:]))
  def test_a2_internal_candidate_not_operational(self):
   self.assertEqual(M['steps'][1]['module_entrypoint'],'steps/a2/validators/run.py:run')
   self.assertEqual(M['steps'][1]['implementation_state'],'LOCAL_TYPED_POLICY_PROJECTION_CANDIDATE_UNQUALIFIED')
