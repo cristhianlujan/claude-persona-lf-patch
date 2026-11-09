@@ -50,7 +50,7 @@
       "commands": {
         "build": {
           "exit_code": 0,
-          "stdout_sha256": "2bcde8dbc87ff61a",
+          "stdout_sha256": "2bcde8dbc87ff61afddc26a19e7057fe55a7881cb562b5d701a6580784104e49",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "format_aosp": {
