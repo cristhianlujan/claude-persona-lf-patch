@@ -152,8 +152,7 @@ def source_truth(root: Path = EVIDENCE) -> dict:
     if sorted(proposal.get("changed_paths", [])) != _reader.EXACT_PATHS:
         block("EX6_ENVELOPE_CHANGED_SCOPE_INVALID")
     original_patch = members["worker.patch"]
-    if proposal.get("patch") != original_patch.decode("utf-8"):
-        block("EX6_ENVELOPE_PATCH_DIFFERS_FROM_WORKER")
+    # Git emits one added-blob index line per new file after applying the\n    # original native unidiff; compare code bytes after removing ONLY those\n    # exact index metadata lines, never normalize source or hunk bodies.\n    git_patch = original_patch.decode("utf-8")\n    proposal_patch = re.sub(r"(?m)^index 0000000\\.\\.[0-9a-f]{7,40}\\n", "", git_patch)\n    if proposal.get("patch") != proposal_patch:\n        block("EX6_ENVELOPE_PATCH_DIFFERS_FROM_WORKER")
     if (public["patch_sha256"] != sha(original_patch)
         or json.loads(members["status.json"]).get("status") != "PASS"):
         block("EX6_PASS_OR_PATCH_DRIFT")
