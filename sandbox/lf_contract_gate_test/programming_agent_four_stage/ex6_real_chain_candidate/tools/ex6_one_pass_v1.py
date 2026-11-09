@@ -427,6 +427,49 @@ def run_all():
         row,_=attempt("PG-14",lambda:stage14(truth),
              origin="ISOLATED_ORIGINAL_TESTING_C1_MISSING_FREEZE")
         table.append(row)
+        # Original V2 source-only chain is an independent, explicit extension
+        # of v1, never a production approval or authenticated Analysis handoff.
+        from ex6_pg12_pg13_v2 import (make_pg11_v2,make_pg12_v2,
+            make_pg13_v2,make_pg14_v2)
+        from ex6_local_freeze_v1 import local_freeze_and_attacks
+        import os
+        v11=make_pg11_v2(truth)
+        v12=make_pg12_v2(v11,truth)
+        v13=make_pg13_v2(v12,truth)
+        freeze=local_freeze_and_attacks()
+        v14=make_pg14_v2(v13,freeze,truth)
+        evidence["local_v2"]={
+            "pg11_c5":v11["c5"]["status"],
+            "pg11_actual_link_count":sum(len(x["links"]) for x in v11["traces"]),
+            "pg12_c4":v12["c4"]["status"],
+            "pg12_c4_payload_sha256":v12["c4"]["payload_candidate_sha256"],
+            "pg13_c3":v13["c3"]["status"],
+            "pg13_bridge":v13["bridge"]["status"],
+            "pg13_local_mutations_blocked":freeze["blocked_mutation_count"],
+            "pg14_c3":v14["c3"]["status"],
+            "pg14_local_verdict":v14["verdict"]["reason"],
+            "pg14_tampered_verdict":v14["tampered_verdict"]["verdict"],
+            "real_analysis_ready":False,
+            "real_testing_invoked":False,
+            "production_authority":False,
+        }
+        if os.environ.get("PG12_DISPOSABLE_DB")=="YES":
+            from pg12_disposable_postgres_readback_v2 import persist_readback
+            readback=persist_readback(v12["c4"])
+            if readback!=v12["c4"]["payload_candidate_sha256"]:
+                raise AssertionError("EX6_POSTGRES_V2_PAYLOAD_SHA_DRIFT")
+            evidence["local_v2"]["pg12_local_postgres_readback"]="PASS"
+        else:
+            evidence["local_v2"]["pg12_local_postgres_readback"]="PENDING_DISPOSABLE_OPT_IN"
+        for row in table:
+            if row["stage"]=="PG-11":
+                row["after_existing_v2"]="PASS_SOURCE_ONLY_N_M_EX6"
+            if row["stage"]=="PG-12":
+                row["after_existing_v2"]="C1_C4_SOURCE_ONLY_LOCAL_READBACK_NOT_AUTHORITY"
+            if row["stage"]=="PG-13":
+                row["after_existing_v2"]="PASS_LOCAL_SOURCE_ONLY_FIVE_ATTACKS_BLOCKED"
+            if row["stage"]=="PG-14":
+                row["after_existing_v2"]="PASS_LOCAL_TESTING_FIXTURE_ONLY_NOT_REAL_ADMISSION"
         evidence["ex6_reversibility_plan"]={
              "status":"SOURCE_DERIVED_NOT_EXECUTED",
              "operation":"DELETE_ADDED_FILES",
