@@ -231,6 +231,17 @@ CREATE UNIQUE INDEX lf_op_idempotency_fixture_v1 ON public.lf_operation_executio
 CREATE UNIQUE INDEX lf_skill_invocation_pk_fixture_v1 ON public.lf_skill_invocation_v1(skill_run_id);
 CREATE UNIQUE INDEX lf_reglas_code_uniq_fixture_v1 ON lf_ops.reglas(codigo);
 CREATE UNIQUE INDEX lf_step_run_order_uniq_fixture_v1 ON public.lf_operation_execution_steps(execution_id,step_order);
+CREATE TABLE public.lf_task_mode_catalog (
+ task_mode text,description text,allows_new_target boolean,
+ requires_existing_target boolean,mutation_intent boolean,reference_source text,
+ status text,created_by_execution_id text,created_at timestamptz,updated_at timestamptz
+);
+CREATE TABLE public.lf_execution_mode_catalog (
+ execution_mode text,description text,allows_partial_input boolean,
+ canonical_write_allowed boolean,runtime_allowed boolean,promotion_allowed boolean,
+ requires_evidence_complete boolean,reference_source text,status text,
+ created_by_execution_id text,created_at timestamptz,updated_at timestamptz
+);
 CREATE OR REPLACE FUNCTION public.fn_lf_operation_reserve_execution_v1(p_execution_id text, p_operation_code text, p_target_type text, p_target_code text, p_idempotency_key text, p_request_sha256 text, p_actor_execution_id text, p_target_repo text DEFAULT NULL::text, p_target_path text DEFAULT NULL::text, p_manifest jsonb DEFAULT '{}'::jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
