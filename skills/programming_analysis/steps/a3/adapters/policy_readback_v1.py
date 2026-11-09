@@ -177,10 +177,43 @@ def project(effective: Any, policy_links: Any, readback: Any,
             target = options[0] if options else None
             obj = by_ref.get(target) if target else None
             bind_status = bindings.get((p["role"], target))
-            if obj is None:
+            binding_role = p["role"] if bind_status is not None else None
+            # A generic policy PK may be bound by ONE exact-target specialised
+            # role on this screen. Resolve by target, never numeric ID alone.
+            alias_links = []
+            if obj is not None and bind_status is None and p["role"] == by_key[target][1]:
+                alias_links = [(role, state) for (role, ref), state in bindings.items()
+                               if ref == target and role.endswith(p["role"])]
+                if len(alias_links) == 1:
+                    binding_role, bind_status = alias_links[0]
+            # E.g. trusted_device_policy_id does not mean security_policy_id.
+            # An equal numeric ID can only be an untyped observation.
+            untyped_id_observation = None
+            if obj is None and p["id"] is not None and not any(
+                p["role"].endswith(pk) for _table, pk, _pid in by_key.values()
+            ):
+                id_matches = [ref for ref, (_table, _pk, pid) in by_key.items()
+                              if pid == p["id"]]
+                if len(id_matches) == 1:
+                    observed = by_ref[id_matches[0]]
+                    untyped_id_observation = {
+                        "source_ref": id_matches[0],
+                        "policy_code": observed["policy_code"],
+                        "status": observed["status"],
+                        "relation_attested": False,
+                        "observation_basis": "NUMERIC_ID_ONLY_NOT_TYPED_BINDING",
+                    }
+                    disposition = "POLICY_REFERENCE_TYPE_UNBOUND_OBJECT_OBSERVED"
+                elif len(id_matches) > 1:
+                    disposition = "POLICY_REFERENCE_TYPE_UNBOUND_AMBIGUOUS_ID"
+                else:
+                    disposition = "POLICY_REFERENCE_TYPE_UNBOUND_NO_OBJECT"
+            elif obj is None:
                 disposition = "POLICY_TARGET_MISSING"
             elif obj["status"] != "VIGENTE":
                 disposition = "POLICY_NOT_VIGENTE"
+            elif len(alias_links) > 1:
+                disposition = "POLICY_BINDING_ROLE_AMBIGUOUS"
             elif bind_status == "VIGENTE":
                 disposition = "APPROVED_POLICY_AND_BINDING"
             else:
@@ -193,10 +226,13 @@ def project(effective: Any, policy_links: Any, readback: Any,
                 "rule_code": code, "reference_role": p["role"], "path": p["path"],
                 "reference_kind": p.get("reference_kind", "NUMERIC_POLICY_ID"),
                 "policy_target_ref": target,
-                "policy_status": obj["status"] if obj else "NOT_FOUND",
+                "policy_status": obj["status"] if obj else (
+                    "UNBOUND_TYPE" if untyped_id_observation else "NOT_FOUND"),
                 "policy_code": obj["policy_code"] if obj else None,
                 "binding_status": bind_status or "NOT_FOUND",
+                "binding_role": binding_role,
                 "status": disposition,
+                "untyped_id_observation": untyped_id_observation,
                 "eligible_for_implementation": ok,
             })
         if applicable:
