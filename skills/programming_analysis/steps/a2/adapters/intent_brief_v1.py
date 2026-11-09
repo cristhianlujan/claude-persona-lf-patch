@@ -39,6 +39,9 @@ def build_brief(a1: dict, a2: dict, signals: dict, golden: dict) -> dict:
         return invalid('INTENT_OBJECTIVE_INCOMPLETE')
     if a1.get('business')!=a2.get('business') or a1.get('business')!=signals.get('business'):
         return invalid('INTENT_BUSINESS_MISMATCH')
+    # A human preview must never read as a SALY-qualified LF skill output.
+    if a1.get('business') != 'LF':
+        return invalid('INTENT_BUSINESS_NOT_ENABLED_FOR_SKILL')
     classification=a2.get('classification')
     if not isinstance(classification,dict) or not _text(classification.get('target_ref')):
         return invalid('INTENT_CLASSIFICATION_MISSING')
