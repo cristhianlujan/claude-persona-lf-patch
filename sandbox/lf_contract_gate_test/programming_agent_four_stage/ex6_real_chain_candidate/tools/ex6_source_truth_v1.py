@@ -19,7 +19,7 @@ _reader = importlib.util.module_from_spec(_loader)
 _loader.loader.exec_module(_reader)
 
 BLOBS = {
-    "lote_d_spec.md": "9973c1ec2d7ff8e774f393d8aa5e9170e25e3b47",
+    "ex6_base_REMINDERS_SPEC.md": "01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72",
     "ex6_task_registration.json": "15fd94d238215dbbc21a3bdc3cc719028c8513e7",
 }
 SPEC_REF = "ex6://source/spec/" + _reader.BASE_SHA + "#lote-d"
@@ -119,7 +119,10 @@ def real_hunks(patch: bytes) -> list[dict]:
 def source_truth(root: Path = EVIDENCE) -> dict:
     public = _reader.load_evidence(root)
     members = _reader.read_bundle(root)
-    lote = pinned_public_file("lote_d_spec.md", root).decode("utf-8")
+    complete_spec = pinned_public_file("ex6_base_REMINDERS_SPEC.md", root).decode("utf-8")
+    if complete_spec.count("## Lote D —") != 1:
+        block("EX6_BASE_SPEC_LOTE_D_NOT_UNIQUE")
+    lote = "## Lote D —" + complete_spec.split("## Lote D —", 1)[1]
     registration = json.loads(pinned_public_file("ex6_task_registration.json", root))
     if (lote.count("## Lote D") != 1 or
         any(lote.count(req) != 1 for req in REQUIREMENTS)):
