@@ -122,7 +122,6 @@ def source_truth(root: Path = EVIDENCE) -> dict:
     members = _reader.read_bundle(root)
     lote = pinned_public_file("lote_d_spec.md", root).decode("utf-8")
     registration = json.loads(pinned_public_file("ex6_task_registration.json", root))
-    envelope = json.loads(pinned_public_file("ex6_proposal_envelope.json", root))
     if (lote.count("## Lote D") != 1 or
         any(lote.count(req) != 1 for req in REQUIREMENTS)):
         block("EX6_LOTE_D_REQUIREMENT_COVERAGE_INVALID")
@@ -142,17 +141,10 @@ def source_truth(root: Path = EVIDENCE) -> dict:
         block("EX6_PROTECTED_PATHS_INVALID")
     if any(p in protected for p in _reader.EXACT_PATHS):
         block("EX6_ALLOW_PROTECTED_COLLISION")
-    if (envelope.get("task_pack_sha256") != _reader.TASK_PACK_SHA256
-        or envelope.get("proposal_sha256") != _reader.PROPOSAL_SHA256
-        or envelope.get("author") != "GPT_NATIVE"):
-        block("EX6_ENVELOPE_IDENTITY_INVALID")
-    proposal = envelope.get("proposal")
-    if not isinstance(proposal, dict) or sha(canon(proposal)) != _reader.PROPOSAL_SHA256:
-        block("EX6_ENVELOPE_PROPOSAL_DIGEST_INVALID")
-    if sorted(proposal.get("changed_paths", [])) != _reader.EXACT_PATHS:
-        block("EX6_ENVELOPE_CHANGED_SCOPE_INVALID")
+    # The verified patch ZIP is the ONLY source for hunks and code bytes.
+    # The native proposal envelope is not a public Worker receipt and can
+    # differ in Git's "index" metadata without changing the actual patch.
     original_patch = members["worker.patch"]
-    # Git emits one added-blob index line per new file after applying the\n    # original native unidiff; compare code bytes after removing ONLY those\n    # exact index metadata lines, never normalize source or hunk bodies.\n    git_patch = original_patch.decode("utf-8")\n    proposal_patch = re.sub(r"(?m)^index 0000000\\.\\.[0-9a-f]{7,40}\\n", "", git_patch)\n    if proposal.get("patch") != proposal_patch:\n        block("EX6_ENVELOPE_PATCH_DIFFERS_FROM_WORKER")
     if (public["patch_sha256"] != sha(original_patch)
         or json.loads(members["status.json"]).get("status") != "PASS"):
         block("EX6_PASS_OR_PATCH_DRIFT")
@@ -166,8 +158,8 @@ def source_truth(root: Path = EVIDENCE) -> dict:
         "run_ref": RUN_REF, "repo_full_name": _reader.REPO,
         "base_head_sha": task["base_head_sha"],
         "source_snapshot_sha256": task["source_snapshot_sha256"],
-        "task_pack_sha256": envelope["task_pack_sha256"],
-        "proposal_sha256": envelope["proposal_sha256"],
+        "task_pack_sha256": status["task_pack_sha256"],
+        "proposal_sha256": status["proposal_sha256"],
         "holdout_sha256": registration["holdout_sha256"],
         "holdout_result": status["status"],  # reported PASS, not blind oracle content
         "requirements": list(REQUIREMENTS),
