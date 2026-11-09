@@ -7,6 +7,10 @@ No tests in this file claim production authority, model inference or Testing.
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
+import tempfile
 import copy
 import os
 import sys
@@ -37,7 +41,8 @@ from pg11_pg10_handoff_bridge_candidate_v2 import (  # noqa: E402
 )
 from pg12_disposable_postgres_readback_v2 import persist_readback as pg12_readback  # noqa: E402
 from pg14_disposable_testing_readback_v2 import persist_readback as pg14_readback  # noqa: E402
-from pg07_ex5c_format_remediation_v3_adapter_v1 import load_v3, V3_FIXTURE, V3_SHA  # noqa: E402
+from ex5c_source_truth_v2 import (check_controller_repository_boundary_v2, smoke_v3_provenance_v2, SOURCE_ONLY_EXCEPTIONS)
+from pg07_ex5c_format_remediation_v3_adapter_v1 import load_v3, V3_FIXTURE, V3_SHA, EX5CV3Blocked, decode  # noqa: E402
 
 
 class EX5CRealN2V2(unittest.TestCase):
@@ -235,6 +240,38 @@ class EX5CRealN2V2(unittest.TestCase):
         self.assertEqual(pg14["verdict"]["verdict"], "ACCEPT")
         self.assertEqual(pg14["blocked"]["verdict"], "BLOCK")
         pg14_readback(pg14["verdict"], pg14["blocked"])
+
+    def test_controller_repository_dependency_executed_from_v3(self):
+        result = check_controller_repository_boundary_v2()
+        self.assertEqual(result["commands"][0]["exit_code"], 0)
+        self.assertEqual(result["commands"][1]["exit_code"], 1)
+        self.assertEqual(result["commands"][1]["findings"], [])
+        self.assertFalse(result["production_authority"])
+        print("EX5C_V2_PG08_CONTROLLER_INTERFACE_ONLY_GREP_PASS")
+
+    def test_smoke_and_pricing_assumptions_are_explicit(self):
+        observations = smoke_v3_provenance_v2()
+        self.assertFalse(observations["process_exit_code_authenticated"])
+        self.assertEqual(observations["http_steps_observed_from_v3"], 5)
+        self.assertIn("pg07.cached_input_price_per_million", SOURCE_ONLY_EXCEPTIONS)
+        self.assertIn("pg07.context_window_tokens", SOURCE_ONLY_EXCEPTIONS)
+        self.assertIn("pg04.validation_registry", SOURCE_ONLY_EXCEPTIONS)
+        print("EX5C_V2_SOURCE_ONLY_EXCEPTIONS_DECLARED_PASS")
+
+    def test_one_v3_file_byte_mutation_blocks_even_when_bundle_is_rehashed(self):
+        real = load_v3(V3_FIXTURE, V3_SHA)
+        altered = copy.deepcopy(real)
+        entry = next(f for f in altered["git"]["files"] if f["path"].endswith("ReminderController.java"))
+        payload = bytearray(decode(entry["content_base64"]))
+        payload[0] ^= 1
+        entry["content_base64"] = base64.b64encode(payload).decode("ascii")
+        with tempfile.TemporaryDirectory() as temp:
+            file = Path(temp) / "v3.json"
+            raw = (json.dumps(altered, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            file.write_bytes(raw)
+            with self.assertRaisesRegex(EX5CV3Blocked, "V3_GIT_BLOB_OID_BLOCK"):
+                load_v3(file, hashlib.sha256(raw).hexdigest())
+        print("EX5C_V2_N1_BLOB_ONE_BYTE_TAMPER_BLOCK")
 
     def test_v3_source_remains_unattested(self):
         v3 = load_v3(V3_FIXTURE, V3_SHA)
