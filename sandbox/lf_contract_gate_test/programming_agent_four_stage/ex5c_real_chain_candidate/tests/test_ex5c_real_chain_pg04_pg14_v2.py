@@ -48,7 +48,7 @@ from pg07_ex5c_format_remediation_v3_adapter_v1 import load_v3, V3_FIXTURE, V3_S
 class EX5CRealN2V2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.original_fixture = t11.fixture
+        cls.original_fixture = staticmethod(t11.fixture)
         w.install()
         cls.addClassCleanup(w.uninstall)
         cls.pg11 = chain.make_pg11_v2()
