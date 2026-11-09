@@ -118,12 +118,15 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         "SOURCE_READBACK_CURRENTNESS_AND_AUTHORITY_NOT_ATTESTED",
         "GITHUB_CURRENT_IMPLEMENTATION_AND_AS_IS_MISSING",
     ]
+    # Scope accepted by the user: pending definitions are excluded, not a
+    # universal prerequisite to continue the approved part of the screen.
+    alerts = []
     if resolved_sources["screen_status"] != "VIGENTE":
-        gaps.append("SCREEN_DEFINITION_NOT_VIGENTE")
+        alerts.append("SCREEN_DEFINITION_NOT_VIGENTE")
     if any(not p["is_approved_binding"] for p in policy_states):
-        gaps.append("SCREEN_POLICY_ASSOCIATIONS_NOT_ALL_VIGENTE")
+        alerts.append("SCREEN_POLICY_ASSOCIATIONS_EXCLUDED_PENDING_APPROVAL")
     if excluded:
-        gaps.append("CANDIDATE_OR_UNRESOLVED_RULES_EXCLUDED_FROM_APPROVED_SCOPE")
+        alerts.append("PENDING_RULES_EXCLUDED_AS_USER_REQUESTED")
     consolidated = resolved_sources.get("consolidated_rule_status_counts")
     if consolidated is not None:
         if (not isinstance(consolidated, dict)
@@ -131,11 +134,12 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
                        for k, v in consolidated.items())):
             return blocked("A3_CONSOLIDATED_COUNTS_INVALID")
         if sum(consolidated.values()) > len(rows):
-            gaps.append("TRANSVERSAL_RULE_APPLICABILITY_NOT_BOUND_TO_SCREEN")
+            alerts.append("TRANSVERSAL_RULE_APPLICABILITY_REQUIRES_EXACT_BINDING")
     return {
         "schema_version": SCHEMA,
         "status": "SOURCE_READBACK_PROCESSED_UNATTESTED",
         "blocking_codes": gaps[:],
+        "scope_alerts": alerts,
         "sufficiency_verdict": "NEED_MORE_EVIDENCE",
         "business": "LF", "target_ref": target,
         "target_granularity": cls["target_granularity"],
