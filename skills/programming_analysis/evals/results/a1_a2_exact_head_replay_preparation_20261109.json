@@ -85,8 +85,9 @@
     "actual_repo_regression_executed_after_correction": false
   },
   "commands": {
-    "safe_runner": "python3 -I -B skills/programming_analysis/evals/run_a1_a2_exact_head_candidate_v1.py --repo-root \"$PWD\" --expected-head \"$(git rev-parse HEAD)\" --receipt-dir /tmp/lf-a1a2-exact-head-receipts",
-    "authority": "Execute only inside an approved unprivileged offline/sandboxed checkout bound by host to exact commit; do not treat a CLI-provided expected hash as independent host attestation."
+    "safe_runner": "python3 -I -B skills/programming_analysis/evals/run_a1_a2_exact_head_candidate_v1.py --repo-root \"$PWD\" --expected-head \"$HOST_VERIFIED_PR_HEAD_SHA\" --receipt-dir /tmp/lf-a1a2-exact-head-receipts",
+    "authority": "Execute only inside an approved unprivileged offline/sandboxed checkout bound by host to exact commit; do not treat a CLI-provided expected hash as independent host attestation.",
+    "prerequisite": "HOST_VERIFIED_PR_HEAD_SHA must be resolved out-of-band by the authorized runner from the intended GitHub PR HEAD; never set to self-read git rev-parse HEAD without independent comparison."
   },
   "blockers": [
     "EXACT_HEAD_74_TESTS_NOT_EXECUTED",
