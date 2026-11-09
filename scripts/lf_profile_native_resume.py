@@ -122,6 +122,30 @@ def governed_request():
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
         return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+    # Same profile-owned Issue/OIDC/Edge lane; this bounded first slice is
+    # effect-free. Never infer write authority from a skill name or payload.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "calls"}:
+            raise ValueError("PROFILE_SKILL_PLAN_SCHEMA_INVALID")
+        execution_id = data["execution_id"]
+        calls = data["calls"]
+        if (not isinstance(execution_id, str)
+            or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+            or not isinstance(calls, list) or not 1 <= len(calls) <= 8
+            or len(json.dumps(calls, ensure_ascii=False)) > 45000):
+            raise ValueError("PROFILE_SKILL_PLAN_INPUT_INVALID")
+        seen = set()
+        for item in calls:
+            if (not isinstance(item, dict) or set(item) != {"skill_code", "input"}
+                or item["skill_code"] not in ("SCREEN_RULES_SNAPSHOT", "RULE_UPDATE_PROPOSE")
+                or not isinstance(item["input"], dict)
+                or len(json.dumps(item["input"], ensure_ascii=False)) > 10000):
+                raise ValueError("PROFILE_SKILL_PLAN_UNSAFE_OR_INVALID_CALL")
+            key = (item["skill_code"], json.dumps(item["input"], sort_keys=True, separators=(",", ":")))
+            if key in seen:
+                raise ValueError("PROFILE_SKILL_PLAN_DUPLICATE_CALL")
+            seen.add(key)
+        return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
@@ -557,9 +581,69 @@ def build_semantic_receipt(review):
 
 def main():
     request = governed_request()
-    source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "SKILL_PLAN":
+        # This is an invocation batch, NOT the semantic agent or a new
+        # orchestration boundary. The signed Edge checks each parent and skill.
+        # Only two known non-effecting skills are supported until the current
+        # catalog effect + idempotency are server-attested.
+        parent_id = request["execution_id"]
+        observed = []
+        phase = "PROFILE_SKILL_PLAN"
+        for item in request["calls"]:
+            code, reply = call_json(EDGE_URL, {
+                "action": "profile_native_skill_invoke_v1",
+                "execution_id": parent_id,
+                "skill_code": item["skill_code"],
+                "input": item["input"],
+            }, headers)
+            result = reply.get("result") if isinstance(reply, dict) else None
+            ok = (
+                code == 200 and isinstance(reply, dict)
+                and reply.get("outcome") == "SKILL_INVOKED"
+                and isinstance(result, dict)
+                and result.get("status") == "COMPLETED"
+                and isinstance(result.get("skill_run_id"), str)
+                and result["skill_run_id"].startswith("RUN-")
+                and isinstance(result.get("evidence_ref"), str)
+                and result["evidence_ref"].startswith("SKILLRUN:")
+                and not result.get("child_execution_id")
+            )
+            observed.append({
+                "skill_code": item["skill_code"],
+                "input_sha256": hashlib.sha256(json.dumps(
+                    item["input"], sort_keys=True, ensure_ascii=False,
+                    separators=(",", ":")).encode("utf-8")).hexdigest(),
+                "skill_run_id": result.get("skill_run_id") if ok else None,
+                "evidence_ref": result.get("evidence_ref") if ok else None,
+                "status": "EVIDENCE_RECEIVED" if ok else "BLOCKED",
+            })
+            if not ok:
+                phase = "BLOCKED"
+                break
+        receipt = {
+            "schema_version": "LF_PROFILE_SKILL_PLAN_CONTINUATION_V1",
+            "execution_id": parent_id,
+            "status": "SKILL_PLAN_EVIDENCE_READY" if phase != "BLOCKED" else "BLOCKED",
+            "profile_execution_complete": False,
+            "business_write_performed": False,
+            "child_operation_completed": False,
+            "same_parent_execution": True,
+            "next_step": "execute_profile" if phase != "BLOCKED" else "skill_plan_repair",
+            "required_input": "REAL_PROFILE_NATIVE_OUTPUT" if phase != "BLOCKED" else "FIX_DENIED_SKILL_CALL",
+            "transport": "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+            "calls": observed,
+        }
+        (Path.cwd() / "profile-native-continuation.json").write_text(
+            json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps({"phase": phase, "execution_id": parent_id,
+                          "status": receipt["status"], "calls_attempted": len(observed),
+                          "next_step": receipt["next_step"]}, ensure_ascii=False))
+        # A successful skill plan is not profile terminality, hence nonzero.
+        return 1
     if isinstance(request, dict) and request.get("kind") == "SKILL_INVOKE":
         code, invoked = call_json(EDGE_URL, {
             "action": "profile_native_skill_invoke_v1",
@@ -575,6 +659,10 @@ def main():
                           "skill_code": request["skill_code"], "execution_id": request["execution_id"],
                           "result": result if ok else None}, ensure_ascii=False))
         return 0 if ok else 1
+    # Source revision is required only for profile BEGIN/RESUME, not for
+    # profile-owned skill invocations: OIDC + server-side parent authority
+    # already bind the call to an existing execution.
+    source_revision = os.environ["GITHUB_SHA"]
     if isinstance(request, dict) and request.get("kind") == "BEGIN":
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical
