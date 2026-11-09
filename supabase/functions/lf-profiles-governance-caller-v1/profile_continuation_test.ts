@@ -394,10 +394,27 @@ Deno.test("continuation: post-model 10/11 goes to report, never reruns semantic 
   eq(body.result.next_step,"report_output");
   eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
 });
-Deno.test("continuation: false 9/11, blocked judge and unexpected step fail closed",async()=>{
+Deno.test("continuation: blocked or returned step70 retries SAME RUN without bypassing predecessors",async()=>{
+  for(const retryStatus of ["BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]){
+    const n=postModelNetwork([...cleanRows(),{step_id:"semantic_judge",status:retryStatus}],9);
+    const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+      execution_id:id,source_revision:sha,source_digest:digest,
+    },config,n.fetchFn,sha);
+    const body=await out.json();
+    eq(out.status,200);eq(body.outcome,"CONTINUATION_REQUIRED");
+    eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+    eq(body.execution_id,id);eq(body.result.next_step,"semantic_judge");
+    eq(body.result.clean_step_count,9);
+    eq(n.urls.filter(u=>u.includes("/lf_operation_execution_steps?")).length,1);
+    eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+  }
+});
+Deno.test("continuation: false clean count or unexpected step fails closed",async()=>{
   const cases=[
     {rows:cleanRows().map(x=>x.step_id==="output_validate"?{...x,status:"BLOCKED_STEP_NOT_CLEAN"}:x),count:9},
-    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:9},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:10},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"UNKNOWN"}],count:9},
+    {rows:cleanRows(true),count:9},
     {rows:[...cleanRows().slice(0,8),{step_id:"unexpected",status:"STEP_PASS_WITH_EVIDENCE"}],count:9},
     {rows:cleanRows(),count:8},
   ];

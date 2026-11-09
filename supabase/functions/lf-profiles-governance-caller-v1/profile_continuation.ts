@@ -153,18 +153,30 @@ async function resolveExistingPostModelStep(
     "input_validate", "context_admission", "research_baseline_freeze",
     "execute_profile", "output_validate",
   ];
+  const semanticStatus = steps.get("semantic_judge");
+  // The prepare RPC counts CLEAN steps, not rows: a failed semantic attempt
+  // is the tenth row while only the first nine steps are clean.
+  const expectedClean = completed.length + (semanticStatus === "STEP_PASS_WITH_EVIDENCE" ? 1 : 0);
   if (
-    steps.size !== prepareResult.clean_step_count ||
+    (steps.size !== 9 && steps.size !== 10) ||
+    steps.size !== completed.length + (semanticStatus === undefined ? 0 : 1) ||
+    prepareResult.clean_step_count !== expectedClean ||
     !completed.every(step => steps.get(step) === "STEP_PASS_WITH_EVIDENCE") ||
+    [...steps.keys()].some(step => step !== "semantic_judge" && !completed.includes(step)) ||
     steps.has("report_output")
   ) return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
 
   let nextStep: string;
   let phase: string;
-  if (steps.size === 9 && !steps.has("semantic_judge")) {
+  if (steps.size === 9 && semanticStatus === undefined) {
     nextStep = "semantic_judge";
     phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
-  } else if (steps.size === 10 && steps.get("semantic_judge") === "STEP_PASS_WITH_EVIDENCE") {
+  } else if (steps.size === 10 &&
+             (semanticStatus === "BLOCKED_STEP_NOT_CLEAN" || semanticStatus === "RETURN_TO_ROUTER")) {
+    // Only the canonical step-70 recorder may replace a blocked/return attempt.
+    nextStep = "semantic_judge";
+    phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
+  } else if (steps.size === 10 && semanticStatus === "STEP_PASS_WITH_EVIDENCE") {
     nextStep = "report_output";
     phase = "REPORT_OUTPUT_REQUIRED";
   } else {
@@ -193,7 +205,7 @@ async function resolveExistingPostModelStep(
       status: phase,
       last_completed_step: nextStep === "semantic_judge" ? "output_validate" : "semantic_judge",
       next_step: nextStep,
-      clean_step_count: steps.size,
+      clean_step_count: prepareResult.clean_step_count,
       execution_id: e.execution_id,
     },
   });
