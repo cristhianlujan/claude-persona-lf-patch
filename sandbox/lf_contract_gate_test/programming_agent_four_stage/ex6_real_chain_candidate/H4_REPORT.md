@@ -1,6 +1,6 @@
 # H4 · EX6 → PG-04…PG-14 · resultados reales v1 (candidato, NO ADMITIDO)
 
-**Corte:** 2026-11-09. **PR:** #3740 (draft). **Estado:** H4 PARCIAL; PG-06 C1 pasa usando exclusivamente el fixture oficial PG-01 marcado `FIXTURE_UNATTESTED`, pero PG-06 C2 bloquea por catálogo de toolchain ausente. **No hay v2 nuevo**, porque el único rechazo observado no corresponde a PG-08/PG-09. No declarar el objetivo PG-04→PG-14 completado.
+**Corte:** 2026-11-09. **PR:** #3740 (draft). **Estado:** H4 PARCIAL; PG-06 C1 pasa usando exclusivamente el fixture oficial PG-01 marcado `FIXTURE_UNATTESTED`, pero PG-06 C2 supera el chequeo de catálogo/observación con evidencia real de Java 21; PG-06 C3 bloquea por A7 no acreditado. **No hay v2 nuevo**, porque el único rechazo observado no corresponde a PG-08/PG-09. No declarar el objetivo PG-04→PG-14 completado.
 
 ## Procedencia exclusiva de EX6
 
@@ -40,29 +40,45 @@ Los SHA de miembros originales se validan en `ex6_real_world_v1.py` sin reescrib
 
 Las rutas existentes permanecen protegidas, con escritura restringida a estos tres archivos. Los hunks se extraen **únicamente** de `native-verified-patch.zip`, verificando los blobs de Git. Ninguna línea de fuente es normalizada.
 
+## Evidencia independiente de toolchain y base EX6 (C2/C4)
+
+Fuente C2: `apps/time-service/pom.xml` del commit base `53ab6b1a85da95f3e2a38d7f3298af731c6698ab`, Git blob `dab45a1d6580ed53ebe67b341312ef588cb80131`. El parser XML obtiene `java.version=21` y Spring Boot parent `4.1.1` (sin configurar la versión Java desde un fixture). El perfil solicitado es `stack://java21-maven-spring-boot`, y el catálogo se liga al blob original.
+
+Observación C2: corrida [worker-native #42674262914](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914), job `129351701663`: el log original muestra `Resolved Java 21.0.13+9 from tool-cache`, Temurin `21.0.13-9`, y `EX6_ISOLATED_JAVA21_AND_MAVEN_PASS`. Extracto **literal** preservado en `evidence/ex6_native_java21_log_excerpt.txt`, blob Git `8c7254cd16c45ee777bbf219fdc161155ed24743`; `ex6_pg06_evidence_v1.py` calcula su SHA-256 en cada lectura y lo introduce en el `evidence_ref`. El productor C2 v1 devuelve `MATCH_REPORTED_UNVERIFIED`, `CANDIDATE_NOT_ADMITTED` y autoridad False: **no** autentica la ejecución como un juicio productivo.
+
+La comparación independiente de árboles Git da **el mismo árbol** `apps/time-service/` en la base, el HEAD #51 y el checkout merge usado realmente por CI:
+
+| Referencia | Commit | SHA del árbol `apps/time-service/` |
+|---|---|---|
+| EX6 base | `53ab6b1a85da95f3e2a38d7f3298af731c6698ab` | `2c199d6c49b76ea8a23e15149425ece0f29e1410` |
+| PR #51 HEAD | `3634fdea8ae63b0f5e48fc4925e7f9dfd0d74f62` | `2c199d6c49b76ea8a23e15149425ece0f29e1410` |
+| PR #51 test merge ref | `6e5a0a444edaa6fc0ec66d59883c4c83d218717f` | `2c199d6c49b76ea8a23e15149425ece0f29e1410` |
+
+C4: [CI #42664733176, job 129325278303](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42664733176/job/129325278303) check `backend (Maven verify)` = `SUCCESS`, ejecutó `mvn -B -q -f apps/time-service/pom.xml test` sobre el checkout merge equivalente. Extracto literal: `evidence/ex6_baseline_ci_log_excerpt.txt`, Git blob `4913a5ffdf93df35dce52f1cb518e80710b6daaf`, con SHA-256 computado por el lector. **No hay observación de lint/formato de la base** ni SHA autenticado del stdout/stderr íntegros: `lint_status=pending-execution`, `command_results=[]` y esquema deliberado `EX6_PG06_BASELINE_PARTIAL_V1`. Esto no se presenta como un `PG06_UNCHANGED_TARGET_BASELINE_OBSERVATION_CANDIDATE_V1` válido ni se hace pasar por un PASS de C4. La ejecución real C4 está pendiente de C3 y de completar BUILD+LINT.
+
 ## Corrida original de productores v1 · antes/después
 
-Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution` y `H4 temporary PG06 C2 missing-evidence diagnostic`, corridas [#42695528644](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695528644) y [#42695772442](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695772442), que ejecutaron los productores originales PG-04, PG-05, PG-06 C1 y C2. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
+La corrida [#42697234378](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42697234378) ejecutó las pruebas EX6 (13/13 PASS), la cadena v1 en fuente real y las pruebas sintéticas PG-06 originales (15/15 PASS), sin cambiar productor alguno. El fixture oficial PG-01 sigue con estado `FIXTURE_UNATTESTED`, idéntico al de los ensayos anteriores. Después de completar C2, el primer bloqueo concreto ahora es C3.
 
-| Etapa | Antes de v2 · productor real EX6 | Después de v2 | Código exacto o límite |
+| Etapa | Antes de v2 · EX6 | Después de v2 | Código exacto o límite |
 |---|---|---|---|
-| PG-04 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | Partition, DoD, coverage, review request y exit originales; sin autoridad |
-| PG-05 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | C1–C5 y handoff originales; sin locks ni permisos de escritura |
-| PG-06 | **C1 PASS_SOURCE_ONLY; C2 BLOCK** | SIN_V2 · C2 BLOCK | `PG06_C2_CATALOG_SHAPE_INVALID`; PG01=`FIXTURE_UNATTESTED` |
-| PG-07 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C2_CATALOG_SHAPE_INVALID` |
-| PG-08 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
-| PG-09 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente; v1 costo nativo **no probado con EX6 aún** |
-| PG-10 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
-| PG-11 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
-| PG-12 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
-| PG-13 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
-| PG-14 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-04 | **PASS_SOURCE_ONLY** | SIN_V2 | Candidato original no admitido |
+| PG-05 | **PASS_SOURCE_ONLY** | SIN_V2 | Candidato original no admitido |
+| PG-06 C1 | **PASS_SOURCE_ONLY** | SIN_V2 | PG01=`FIXTURE_UNATTESTED`, importado sin cambios |
+| PG-06 C2 | **PASS_SOURCE_ONLY** | SIN_V2 | `MATCH_REPORTED_UNVERIFIED`, candidato no admitido |
+| PG-06 C3 | **BLOCK** | SIN_V2 | `PG06_C3_A7_COVERAGE_SHAPE_INVALID` |
+| PG-06 C4 | **NOT_RUN** | NOT_RUN | Baseline BUILD visible; LINT `pending-execution`; falta upstream C3 |
+| PG-06 C5 | **NOT_RUN** | NOT_RUN | Upstream C3 |
+| PG-07 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C3_A7_COVERAGE_SHAPE_INVALID` |
+| PG-08 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
+| PG-09 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo; sin rechazo de costo observado |
+| PG-10 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
+| PG-11 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
+| PG-12 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
+| PG-13 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
+| PG-14 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo |
 
-**Importante:** los campos de manifiesto A9/PG03 usados para construir el paquete source-only PG-04 son candidatos explícitamente `ex6://unattested/`; **no son certificaciones de origen, decisiones de Análisis ni autenticación**. El contrato original PG-04 devuelve `CANDIDATE_NOT_ADMITTED`. No se debe confundir ese PASS estructural con un cierre de PG-04 productivo.
-
-**PG-01 fixture:** `ex6_real_chain_v1.py` importa `pg01()` desde `pg06_preflight_candidate/tests/test_pg06_c1_c5_chain_v1.py` sin copiar ni modificar valores. La prueba compara el dict completo, `pg01_decision_ref=fixture://pg01/currentness` y todas sus huellas con el fixture original. Es **el único dato ajeno a EX6 permitido** en las entradas, etiquetado `FIXTURE_UNATTESTED`. No es una decisión PG-01 real; EX5C comparte exactamente esa limitación. El productor original PG-06 C1 pasa como candidato no admitido.
-
-**PG-06 C2:** el material EX6 aporta un Maven `package` exitoso pero no un catálogo de versiones exactas ni observaciones independientes del entorno del commit base. El productor original recibió `toolchain_catalog=None`, `environment_observations=None` (sin inventar valores), y devolvió `PG06_C2_CATALOG_SHAPE_INVALID`. PG-07…PG-14 no se invocaron.
+**Importante:** el PG-01 importado no prueba una vinculación real a Análisis. Los campos de manifiesto A9/PG03 son explícitamente `ex6://unattested/`. La autorización H4 productiva no está demostrada. El C3 original exige una cobertura A7 `MATERIAL_FRONT_COVERAGE_V1` con fuente y huellas que **no aparecen en EX6**; se pasó `None` y `[]` (no se importó el A7 sintético), obteniendo `PG06_C3_A7_COVERAGE_SHAPE_INVALID`.
 
 ## Costos y autoridad
 
@@ -70,13 +86,12 @@ En `cost.json`: `api_calls=0`, `real_api_usage=false`, `total_usd=0`, `cost_scop
 
 ## Pruebas ejecutadas sin contaminar suites
 
-- [#42695772442](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695772442): **11/11 tests EX6**, incluido binding exacto del fixture, y **15/15 pruebas sintéticas PG-06 v1** SUCCESS. Corridas anteriores: 29/29 PG-04 y 13/13 PG-05, inalteradas. Los productores v1 y las pruebas originales no se modificaron.
-- `install()/uninstall()` restaura `sys.path`; no hay cambios de funciones/constantes sintéticas.
-- Anticontaminación: los campos del resultado de `source_truth()` no contienen `ex5c` ni `lote-c`. Fuente de verdad EX6 no lee bundles del ejercicio previo.
-- Fallo de un byte de cualquiera de los ZIP originales se rechaza. El parche viene del ZIP original; la propuesta se vincula por el SHA declarado en `status.json`.
+- [#42697234378](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42697234378): **13/13 tests EX6** y **15/15 PG-06 sintéticas** PASS; tests incluyen equivalencia de fuente, C2 real, base C4 parcial y compatibilidad de fixture PG-01. Los productores v1 no fueron modificados.
+- `install()/uninstall()` conserva `sys.path` de las suites sintéticas. Los tres ZIP originales, hunks y huellas se siguen verificando. Las entradas EX6 no contienen datos de otros ejercicios, salvo el único fixture PG-01 autorizado.
+- La fuente PG06 C2 usa XML/CI originales sin reescribir resultados. El manifiesto C4 distingue `SUCCESS` del check CI de `LINT=pending-execution`.
 
-## Rechazo que sí justifica trabajo siguiente
+## Rechazo exacto que impide la continuación
 
-**Bloqueo de evidencia de toolchain PG-06 C2**, no de PG-01 ni de los modos PG-08/PG-09. Para continuar se requiere un catálogo Java 21/Maven/Spring fijado y observaciones del entorno de la base EX6 respaldadas por recibos auténticos; el PASS visible de Maven no demuestra por sí solo la versión exacta. El fixture PG-01 sigue explícitamente no acreditado. Sin ejecutar PG-08/PG-09 no corresponde crear contratos v2 ni afirmar un rechazo de costo nativo. La necesidad funcional prevista de costo API conocido 0 en PG-09 sigue siendo hipótesis de revisión estática hasta esa prueba.
+**PG06_C3_A7_COVERAGE_SHAPE_INVALID**. Se requiere un recibo de cobertura A7 real y una planificación de reversibilidad atribuibles a EX6, o una decisión gobernada sobre cómo representar justificadamente `not-applicable`; no se debe inventar ni copiar otro A7. La comprobación formal de C4 requiere además lint de la base. No hay evidencia todavía para crear PG-08/PG-09 v2: sus productores no fueron ejecutados.
 
 **No se crearon v2 sin prueba. No hay SUPABASE writes, SUPER_ADMIN, merge, Train, cambios a `main`, cambios v1 ni `vendor/`. No poner `ready-to-merge`.**
