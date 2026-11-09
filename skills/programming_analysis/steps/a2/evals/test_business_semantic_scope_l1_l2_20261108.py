@@ -239,5 +239,33 @@ class ApprovedScopeSemantics(unittest.TestCase):
         self.assertEqual(len(result["required_evidence_gaps"]), 33)
 
 
+class AuxiliaryBusinessScope(unittest.TestCase):
+    def test_biz11_golden_rejects_saly_same_business(self):
+        from test_golden_dimensions_v1 import fixture as golden_fixture, build_golden, CATALOG
+        a1, a2, signals = golden_fixture()
+        for value in (a1, a2, signals):
+            value["business"] = "SALY"
+        out = build_golden(a1, a2, signals, catalog_path=CATALOG)
+        self.assertEqual(out["blocking_codes"],
+                         ["GOLDEN_BUSINESS_NOT_ENABLED_FOR_SKILL"])
+
+    def test_biz12_preview_rejects_saly_same_business(self):
+        from test_a2_a3_intake_preview_v1 import fixture as preview_fixture, prepare_preview
+        a1, a2, signals, golden = preview_fixture()
+        for value in (a1, a2, signals):
+            value["business"] = "SALY"
+        out = prepare_preview(a1, a2, signals, golden)
+        self.assertEqual(out["blocking_codes"],
+                         ["A2_A3_BUSINESS_NOT_ENABLED_FOR_SKILL"])
+
+    def test_biz13_human_brief_rejects_saly_same_business(self):
+        a1, a2, signals, golden = brief_fixture()
+        for value in (a1, a2, signals):
+            value["business"] = "SALY"
+        out = BRIEF.build_brief(a1, a2, signals, golden)
+        self.assertEqual(out["blocking_codes"],
+                         ["INTENT_BUSINESS_NOT_ENABLED_FOR_SKILL"])
+
+
 if __name__ == "__main__":
     unittest.main()
