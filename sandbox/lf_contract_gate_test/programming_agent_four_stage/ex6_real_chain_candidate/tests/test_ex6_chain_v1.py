@@ -74,6 +74,53 @@ class EX6ChainV1Tests(unittest.TestCase):
         finally:
             chain.uninstall()
 
+    def test_pg06_c2_real_java21_pom_and_ci_log_not_synthetic(self):
+        from ex6_pg06_evidence_v1 import source_evidence, c2_inputs
+        facts = source_evidence()
+        self.assertEqual(facts["java_version"], "21")
+        self.assertEqual(facts["spring_boot_version"], "4.1.1")
+        self.assertEqual(facts["temurin_version"], "21.0.13+9")
+        self.assertEqual(facts["base_tree_sha"], facts["pr_head_tree_sha"])
+        self.assertEqual(facts["pr_head_tree_sha"], facts["pr_merge_tree_sha"])
+        chain.install()
+        try:
+            from pg06_c2_toolchain_environment_candidate_v1 import prepare_pg06_c2
+            pg05 = chain.make_pg05()
+            binding = chain.make_pg06(pg05)
+            cat, obs = c2_inputs(pg05["handoff"])
+            self.assertEqual(cat["requirements"][0]["version_exact"], "21")
+            self.assertEqual(cat["profile_ref"], "stack://java21-maven-spring-boot")
+            self.assertIn(facts["native_log_excerpt_sha256"],
+                          obs["observations"][0]["evidence_ref"])
+            result = prepare_pg06_c2(pg05_exit=pg05["handoff"],
+                      pg06_c1=binding["c1"], toolchain_catalog=cat,
+                      environment_observations=obs)
+            self.assertEqual(result["status"], "CANDIDATE_NOT_ADMITTED")
+            self.assertEqual(result["required_toolchains"][0]["diagnostic_status"],
+                             "MATCH_REPORTED_UNVERIFIED")
+            self.assertFalse(result["production_authority"])
+        finally:
+            chain.uninstall()
+
+    def test_pg06_c4_baseline_is_partial_not_fabricated(self):
+        from ex6_pg06_evidence_v1 import source_evidence, c4_partial_baseline
+        facts = source_evidence()
+        chain.install()
+        try:
+            pg05 = chain.make_pg05()
+            partial = c4_partial_baseline(pg05["handoff"])
+            self.assertEqual(partial["base_head_sha"],
+                             "53ab6b1a85da95f3e2a38d7f3298af731c6698ab")
+            self.assertEqual(partial["proven_build"]["check"], "backend (Maven verify)")
+            self.assertEqual(partial["proven_build"]["tree_sha"],
+                             facts["base_tree_sha"])
+            self.assertEqual(partial["lint_status"], "pending-execution")
+            self.assertEqual(partial["command_results"], [])
+            self.assertNotIn("ex5c", json.dumps(partial).lower())
+            self.assertNotIn("lote-c", json.dumps(partial).lower())
+        finally:
+            chain.uninstall()
+
     def test_pg04_to_pg14_does_not_claim_unrun_stages(self):
         result = chain.run_v1()
         self.assertEqual(len(result), 11)
