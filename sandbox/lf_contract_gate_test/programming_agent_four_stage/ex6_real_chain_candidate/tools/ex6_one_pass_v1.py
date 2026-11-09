@@ -228,8 +228,12 @@ def stage11(truth):
          neighbor_baseline_ref="ex6://source/base/"+truth["base_head_sha"])
     c3=prepare_pg11_c3(pg11_c2=c2,suppression_observations=[],
            waiver_observations=[],std_gen_05_source_ref=SPEC_REF)
+    # PG11 C4 v1 represents only one requirement per path. This projection
+    # deliberately reports the REM-D4 secondary link as *unrepresented*;
+    # complete N:M trace admission requires the separately existing v2.
+    v1_traces=[{**t,"links":t["links"][:1]} for t in traces]
     c4=prepare_pg11_c4(pg11_c1=c1,pg11_c2=c2,pg11_c3=c3,
-          declared_diff=diff,authorized_scope=scope,trace_observations=traces)
+          declared_diff=diff,authorized_scope=scope,trace_observations=v1_traces)
     reviews=[{"path":h["path"],
          "builder_principal_ref":"ex6://principal/gpt-native-worker",
          "reviewer_principal_ref":"ex6://unattested/independent-reviewer",
@@ -242,7 +246,76 @@ def stage11(truth):
     c5=prepare_pg11_c5(pg11_c4=c4,review_observations=reviews,
          review_policy_ref="ex6://unattested/independent-review-policy")
     return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5,
-            "diff":diff,"scope":scope,"traces":traces}
+            "diff":diff,"scope":scope,"traces":traces,
+            "v1_trace_limitation":"EX6_REM_D4_SECONDARY_LINK_NOT_COVERED_BY_V1"}
+
+
+def stage12(pg11, truth):
+    """Original PG12 C1 with real Git identity; reject unavailable lint C2."""
+    from pg12_c1_candidate_identity_v1 import prepare_pg12_c1
+    from pg12_c2_execution_inputs_usage_candidate_v1 import prepare_pg12_c2
+    commit="912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
+    tree="72e5f54ca75cb3a1186dbc160469cf8f5dd070c5"
+    changed=[{"path":h["path"],"change_type":"ADDED","old_path":None,
+              "object_type":"blob","object_oid":h["git_blob_oid"],
+              "old_object_oid":None} for h in truth["hunks"]]
+    c1=prepare_pg12_c1(
+          pg11_c5=pg11["c5"],repo_ref=truth["repo_full_name"],
+          base_commit_sha=truth["base_head_sha"],
+          candidate_commit_sha=commit,candidate_tree_sha=tree,
+          diff_sha256=truth["patch_sha256"],changed_objects=changed,
+          builder_principal_ref="ex6://principal/gpt-native-worker",
+          builder_provenance_ref=RUN_REF)
+    row={"stage_ref":"PG-07","input_tokens":0,"output_tokens":0,
+         "cached_input_tokens":0,"cost_reported":"0",
+         "wasted_cost_reported":"0"}
+    # These are API counters, not total ChatGPT usage.
+    totals={**row,"stage_ref":"TOTAL"}
+    try:
+        prepare_pg12_c2(
+            pg12_c1=c1,
+            context_id="ex6://source/task-pack/"+truth["task_pack_sha256"],
+            catalog_version_ref=SPEC_REF,
+            skill_versions=[{"name":"programming-worker-v0.8",
+                             "version_ref":"ex6://vendor/programming-agent"}],
+            stack_profile_ref="ex6://source/base/"+truth["base_head_sha"],
+            provider_ref="ex6://native/chatgpt",model_ref="GPT_NATIVE",
+            ekb_snapshot_ref=SPEC_REF,
+            toolchain_versions=[{"name":"java","version_ref":
+               "ex6://run/42674262914#Temurin-21.0.13"}],
+            # Lint has not been run, thus cannot be given a true SHA256.
+            linter_config_sha256=None,optimization_mode="HYBRID",
+            usage_totals=totals,usage_by_stage=[row],
+            extra_queries=[],identifier_term_map=[],
+            billing_currency="USD",
+        )
+        raise AssertionError("EX6_PG12_C2_WITHOUT_LINT_UNEXPECTED_PASS")
+    except Exception as exc:
+        if isinstance(exc,AssertionError):
+            raise
+        return {"c1":c1, "c2_rejection":str(exc).splitlines()[0],
+                "candidate_git_commit":commit,"candidate_git_tree":tree}
+
+
+def stage13():
+    """Probe original PG13 C1 without fictitious persisted PG12 readback."""
+    from pg13_c1_freeze_intent_candidate_v1 import prepare_pg13_c1
+    return prepare_pg13_c1(pg12_c4=None,
+         candidate_commit_sha="912c4ad9ea71f48edbd1ac58089441f9ed2c3449",
+         candidate_tree_sha="72e5f54ca75cb3a1186dbc160469cf8f5dd070c5",
+         freeze_policy_ref="ex6://pending-execution/freeze-policy",
+         freeze_request_ref="ex6://pending-execution/freeze-request")
+
+
+def stage14(truth):
+    """Probe original PG14 C1 without fabricated immutable freeze receipt."""
+    from pg14_c1_testing_execution_contract_candidate_v1 import prepare_pg14_c1
+    return prepare_pg14_c1(pg13_c3=None,admission_contract=None,
+         analysis_package_ref="ex6://unattested/analysis-package",
+         analysis_package_sha256=truth["source_snapshot_sha256"],
+         source_currentness_ref="ex6://unattested/source-currentness",
+         frozen_candidate_ref="ex6://pending-execution/frozen-candidate",
+         frozen_candidate_sha256=truth["proposal_sha256"])
 
 
 def run_all():
@@ -311,12 +384,25 @@ def run_all():
                 table.append(entry(stage,"NOT_RUN",
                      "EX6_UPSTREAM_PG07_NOT_AVAILABLE","SOURCE_CHAIN",producer_invoked=False))
         row, pg11=attempt("PG-11",lambda:stage11(truth),
-                origin="EX6_REAL_ADDED_FILE_HUNKS_ONLY")
+                origin="EX6_REAL_ADDED_FILE_HUNKS_V1_LINK_PROJECTION",
+                fixtures=("PG11_INDEPENDENT_REVIEW_UNATTESTED",))
         table.append(row)
-        for stage in ("PG-12","PG-13","PG-14"):
-            table.append(entry(stage,"NOT_RUN",
-                 "EX6_ORIGINAL_STAGE_IDENTITY_OR_FREEZE_READBACK_UNATTESTED",
-                 "NO_FABRICATED_SOURCE",producer_invoked=False))
+        if pg11:
+            evidence["pg11_v1_trace_limitation"]=pg11["v1_trace_limitation"]
+            pg12=stage12(pg11,truth)
+            evidence["pg12_c1_status"]=pg12["c1"]["status"]
+            table.append(entry("PG-12","BLOCK",pg12["c2_rejection"],
+                 "EX6_REAL_GIT_IDENTITY_WITHOUT_LINT_C2"))
+        else:
+            table.append(entry("PG-12","NOT_RUN",
+                "PG11_UPSTREAM_REVIEW_UNATTESTED",
+                "NO_FABRICATED_GIT_IDENTITY",producer_invoked=False))
+        row,_=attempt("PG-13",stage13,
+             origin="ISOLATED_ORIGINAL_FREEZE_C1_MISSING_PERSISTED_READBACK")
+        table.append(row)
+        row,_=attempt("PG-14",lambda:stage14(truth),
+             origin="ISOLATED_ORIGINAL_TESTING_C1_MISSING_FREEZE")
+        table.append(row)
         return {"stages":table,"evidence":evidence,
                 "fixture_allowlist":FIXTURES,
                 "patch_sha256":truth["patch_sha256"],
