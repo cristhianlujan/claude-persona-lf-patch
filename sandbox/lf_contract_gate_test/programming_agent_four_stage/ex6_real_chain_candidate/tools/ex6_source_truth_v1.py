@@ -21,7 +21,6 @@ _loader.loader.exec_module(_reader)
 BLOBS = {
     "lote_d_spec.md": "9973c1ec2d7ff8e774f393d8aa5e9170e25e3b47",
     "ex6_task_registration.json": "15fd94d238215dbbc21a3bdc3cc719028c8513e7",
-    "ex6_proposal_envelope.json": "85761b8722f553fe25cf70d937105a4c35ce871e",
 }
 SPEC_REF = "ex6://source/spec/" + _reader.BASE_SHA + "#lote-d"
 TASK_REF = "ex6://source/task/912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
