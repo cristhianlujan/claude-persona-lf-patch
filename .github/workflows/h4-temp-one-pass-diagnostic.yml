@@ -1,4 +1,4 @@
-name: H4 temporary EX6 unified original v1 diagnostic C
+name: H4 temporary EX6 unified original v1 diagnostic D
 on:
   push:
     branches: [lf/h4-ex6-real-chain-evidence-20261109]
