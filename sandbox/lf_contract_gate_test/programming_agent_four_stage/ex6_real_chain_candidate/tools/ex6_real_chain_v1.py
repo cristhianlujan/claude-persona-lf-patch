@@ -277,14 +277,11 @@ def run_v1():
     try:
         truth = source_truth()
         authorize_from_real_hunks(truth)
-        stages = [(4, lambda: make_pg04(truth)),
-                  (5, lambda: make_pg05(value04, truth)),
-                  (6, lambda: make_pg06(value05))]
         state = {}
         current_block = None
         for i in range(4, 15):
             if current_block:
-                results.append({"stage": f"PG-{i:02d}", "before_v2": "BLOCK",
+                results.append({"stage": f"PG-{i:02d}", "before_v2": "NOT_RUN_UPSTREAM_BLOCKED",
                                 "code": "UPSTREAM_BLOCKED:" + current_block,
                                 "producer_invoked": False})
                 continue
