@@ -27,6 +27,17 @@ class SkillInitialOwnerContract(unittest.TestCase):
                        "'production_authorized',false",
                        "'automatic_runtime_promotion',false"]:
             self.assertIn(needle,s)
+    def test_existing_step_recorder_uses_bound_skill_root(self):
+        s=MIGRATION.read_text()
+        self.assertIn("CREATE OR REPLACE FUNCTION public.lf_skill_update_child_step_v1",s)
+        self.assertNotIn("target_type='SKILL' AND target_code='ACT-0045'",s)
+        self.assertNotIn("v_child.target_path NOT LIKE 'skills/profile_creator/%'",s)
+        for token in ["v_child.manifest#>>'{owner_provenance,canonical_root_path}'",
+                      "SKILL_UPDATE_STEP_PARENT_CHILD_BINDING_INVALID",
+                      "SKILL_UPDATE_STEP_SERVER_CONTEXT_OR_DRIFT_INVALID",
+                      "p_evidence->>'skill_identity' IS DISTINCT FROM v_child.target_code",
+                      "lf_record_operation_step_core_v1"]:
+            self.assertIn(token,s)
     def test_edge_requires_typed_readme_and_delegates_final_authority(self):
         s=EDGE.read_text()
         self.assertIn('declaration_kind: "REGISTERED_CANDIDATE"',s)
