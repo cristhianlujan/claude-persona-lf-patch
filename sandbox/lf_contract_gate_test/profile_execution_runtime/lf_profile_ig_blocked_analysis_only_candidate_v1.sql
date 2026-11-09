@@ -1,6 +1,19 @@
 -- Source-first candidate. Do not apply from sandbox.
 -- LIVE SOURCE MD5: 231072262af6be9fe3e03e68d1550c7d
 -- Invariant: only read-only scoped analysis branch added, baseline function intact.
+-- Governance prestate: this is a patch to an existing SECURITY DEFINER function.
+-- Abort atomically if LIVE source drifted; never overwrite another revision.
+DO $lf_profile_ig_analysis_prestate$
+BEGIN
+  IF md5(pg_get_functiondef(
+       'public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)'::regprocedure
+     )) IS DISTINCT FROM '231072262af6be9fe3e03e68d1550c7d'
+  THEN
+    RAISE EXCEPTION 'BLOCK_PROFILE_IG_ANALYSIS_BASELINE_DRIFT';
+  END IF;
+END;
+$lf_profile_ig_analysis_prestate$;
+
 CREATE OR REPLACE FUNCTION public.lf_profile_execution_input_validate_v1(p_execution_id text, p_input_literal text, p_input_source_ref text, p_handoff jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
