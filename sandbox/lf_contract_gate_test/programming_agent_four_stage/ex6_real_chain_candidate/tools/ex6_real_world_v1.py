@@ -14,7 +14,7 @@ import re
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "evidence"
 RUN_ID = 42674262914
 BASE_SHA = "53ab6b1a85da95f3e2a38d7f3298af731c6698ab"
