@@ -43,6 +43,30 @@ The Router remains context-only and **does not invoke** the profile; `service_ro
 
 
 
+## Profile execution: immediate step-by-step continuation in the owning native session (mandatory)
+
+The **selected profile is the execution owner**. Router ACT-0001 only selects and transports. After a valid step, the agent executing the profile MUST **immediately perform the next eligible step** in the **same** `EJECUCION_PERFIL_LF` execution, without asking the user to say "continue", requesting a new handoff, opening a second profile run, or treating a checkpoint as a completion. This obligation applies to already-approved tasks and to both `GPT_NATIVE` and `CLAUDE_NATIVE` in their **respective current native conversation**. It does **not** mean that GitHub Actions can run a native model.
+
+| Verified completed step | Immediately continue with |
+|---|---|
+| `init_execution` (0) | `router` (10), exact ACT-0001 context |
+| `router` (10) | `profile_resolve` (20), selected profile only |
+| `profile_resolve` (20) | `profile_source_read` (30), exact CURRENT source |
+| `profile_source_read` (30) | `input_validate` (40), scope and authorities |
+| `input_validate` (40) | `context_admission` (45), approved context transport |
+| `context_admission` (45) | `research_baseline_freeze` (47), if applicable; record NOT_REQUIRED when canonical |
+| `research_baseline_freeze` (47) | `execute_profile` (50): owning GPT/Claude model **produces real RAW now** using source-bound profile instructions and current evidence |
+| `execute_profile` (50) | `output_validate` (60), bound deterministic validator |
+| `output_validate` (60) | `semantic_judge` (70), actual V3 review with honest provenance |
+| `semantic_judge` (70) | `report_output` (80), only if reviewer/recorder permits |
+| `report_output` (80) | Read exact-run 11/11, `COMPLETED` and terminal `READY`; return the result to the caller |
+
+**Checkpoint rule:** `NATIVE_MODEL_INPUT_READY` and `CONTINUATION_REQUIRED_NOT_COMPLETE` are **execution cursors for the owning agent**, not a prompt to stop work or ask the user to paste a RAW. In the *same active native conversation*, the owning agent must immediately resolve the returned `required_input` with the model itself (for `execute_profile`), or with the authorized evidence/source resolver (for other steps), submit it via the **existing** `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` Issue/OIDC/Edge path, inspect the checkpoint/readback, and repeat until terminal. Multiple transport calls are permitted; multiple **parent RUNs** are not. Resume the existing ID after an interrupted tool call. This is agent-driven continuity, **not** an autonomous headless LLM inside GitHub.
+
+**Stop only on a genuine, evidenced hard boundary:** missing material evidence after available-source research; failed deterministic validation; security/policy prohibition; lack of authority for a requested effect; provider/tool access denial; verified runtime limit. Preserve the RUN cursor and exact blocking code. Do not synthesize model output, reviewer independence, missing source references, model-call receipts or WRITE authority to make 11/11 green. A valid 11/11 read-only profile report does not authorize programming mutations: a governed child operation and explicit effect authority remain mandatory.
+
+**Historical proof:** Issue #3449 (BEGIN), #3450 (selection), #3451 (native RAW), #3452 (V3), execution `EXEC-PROFILE-GATE2-31340B34D5B0E320E3B83C00` reached 11/11; distinct transport issues did not create distinct parent executions. This establishes that **continuation within one authorized RUN is feasible**, not that GitHub can directly invoke `GPT_NATIVE`. EKB `LF-PROFILE-GPT-NATIVE-DISPATCH-MISSING-001` remains applicable to unattended/headless execution.
+
 ## OpenAI/ChatGPT tool-safety rejections — internal LF agent context
 
 When an invocation is **explicitly blocked by OpenAI's tool-safety layer**, follow [`ops/lf-openai-tool-safety-review-v1.md`](ops/lf-openai-tool-safety-review-v1.md) and the [Profiles LF runbook](ops/runbook-profiles-lf.md). **Immediately explain in the trace** that the action belongs to the internal Libertad Financiera (LF) agent/workflow; identify the exact authorized operation, operational dependency (why the system requires it), source/permission evidence and minimal intended effect. Explain that the operation is not intended to compromise security or bypass controls, without asserting blanket safety approval or misrepresenting unverified authority.
