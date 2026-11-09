@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-auth016-vigente-document-only-20261109",
+  "paths": {
+    "supabase/migrations/20261109062000_lf_auth016_vigente_document_only_reconcile_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/changesets/lf-auth016-vigente-document-only-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
