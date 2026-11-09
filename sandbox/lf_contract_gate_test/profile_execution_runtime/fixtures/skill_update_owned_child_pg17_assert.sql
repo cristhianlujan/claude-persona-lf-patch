@@ -86,11 +86,31 @@ BEGIN
   WHERE execution_id='EXEC-SKILL-G1-CURRENT' AND step_id='semantic_judge';
   RAISE NOTICE 'PASS_PARTIAL_LEDGER_BLOCKS';
 
+  -- Wrong input with original run must fail invocation hash first.
   BEGIN
     PERFORM public.lf_skill_o_skill_update_v1(
       v_child,
       jsonb_set(v_input,'{_trusted,github_owner,asset_code}','"ACT-9999"'::jsonb),
       v_parent,v_run,repeat('a',64));
+    RAISE EXCEPTION 'NEGATIVE_DID_NOT_BLOCK';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_INVOCATION_UNBOUND%' THEN RAISE; END IF;
+  END;
+  RAISE NOTICE 'PASS_FORGED_INPUT_HASH_BLOCKS';
+
+  -- A separate synthetically bound invocation verifies the owner check itself.
+  INSERT INTO public.lf_skill_invocation_v1 VALUES(
+    'RUN-ABCDEF1234567890FAKE','SKILL_UPDATE_APPLY',
+    v_parent,'EXEC-SKILL-FORGED-OWNER',
+    'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF','COMPLETED',
+    encode(extensions.digest(convert_to(
+      jsonb_set(v_input,'{_trusted,github_owner,asset_code}','"ACT-9999"'::jsonb)::text,
+      'UTF8'),'sha256'),'hex'));
+  BEGIN
+    PERFORM public.lf_skill_o_skill_update_v1(
+      'EXEC-SKILL-FORGED-OWNER',
+      jsonb_set(v_input,'{_trusted,github_owner,asset_code}','"ACT-9999"'::jsonb),
+      v_parent,'RUN-ABCDEF1234567890FAKE',repeat('a',64));
     RAISE EXCEPTION 'NEGATIVE_DID_NOT_BLOCK';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_CURRENT_OWNER_PROOF_INVALID%' THEN RAISE; END IF;
