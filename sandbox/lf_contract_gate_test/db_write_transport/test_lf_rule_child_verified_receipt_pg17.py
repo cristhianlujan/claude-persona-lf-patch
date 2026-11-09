@@ -16,6 +16,7 @@ ORIG=BASE/"lf_rule_child_pg17_original_source_fixture_v1.sql"
 SEED=BASE/"lf_rule_child_pg17_seed_v1.sql"
 C31=ROOT/"supabase/migrations/20261109092529_lf_profile_rule_update_child_execution_v1.sql"
 C32=ROOT/"supabase/migrations/20261109121500_lf_profile_rule_child_verified_return_v1.sql"
+HANDLER=BASE/"lf_rule_child_receipt_pg17_handler_source_v1.sql"
 PARENT="EXEC-PROFILE-GATE2-PG17RULECHILD001"
 RULE="TEST-RULE-DOC-001"
 PATCH={"rule_code":RULE,"change_kind":"DOCUMENTARY_ONLY","changes":{"descripcion":"Descripcion corregida documentada y autorizada por el perfil"}}
@@ -54,13 +55,14 @@ def invoke(json_str):
 
 def main():
     test(bool(CONTAINER),"EPHEMERAL_DOCKER_TARGET_PRESENT")
-    for path in [ORIG,SEED,C31,C32]:
+    for path in [ORIG,SEED,C31,C32,HANDLER]:
         test(path.is_file(),"SOURCE_EXISTS_"+path.stem.upper())
     query(ORIG.read_text(encoding="utf-8"))
     test(query("SELECT md5(pg_get_functiondef('public.lf_skill_invoke_v1(text,text,jsonb)'::regprocedure))")==EXPECTED_HASH,
          "EXACT_ORIGINAL_INVOKER_SOURCE")
     query(SEED.read_text(encoding="utf-8"))
     query(C31.read_text(encoding="utf-8"))
+    query(HANDLER.read_text(encoding="utf-8"))
     test(query("SELECT opener_fn FROM public.lf_skill_catalog_v1 WHERE skill_code='RULE_UPDATE_APPLY'")=="lf_skill_o_rule_update_v1",
          "RULE_CHILD_OPENER_EXISTS")
     query(C32.read_text(encoding="utf-8"))
