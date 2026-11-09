@@ -1,0 +1,36 @@
+name: LF skill update inactive bootstrap PG17 temporary isolated proof
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*lf_skill_update_apply_inactive_bootstrap_v1.sql'
+      - 'sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_skill_update_inactive_bootstrap_pg17.py'
+      - '.github/workflows/lf-skill-update-bootstrap-pg17-temporary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-pg17:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Start isolated PostgreSQL 17
+        run: |
+          docker run -d --name lf-skill-update-pg17 \
+            -e POSTGRES_PASSWORD=temporary-fixture-only \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            postgres:17.6
+          for i in $(seq 1 45); do
+            docker exec lf-skill-update-pg17 pg_isready -U postgres >/dev/null 2>&1 && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Execute real migration on synthetic catalog and negative cases
+        env:
+          PG_CONTAINER: lf-skill-update-pg17
+        run: python3 sandbox/lf_contract_gate_test/profile_execution_runtime/test_lf_skill_update_inactive_bootstrap_pg17.py
