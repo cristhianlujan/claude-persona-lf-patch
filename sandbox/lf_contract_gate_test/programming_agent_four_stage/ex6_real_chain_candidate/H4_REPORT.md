@@ -23,6 +23,36 @@ El stdout AOSP del candidato menciona exactamente `ReminderStats.java`, `Reminde
 
 **REM-D4:** en el Lote D es obligación de proceso. Quedan referenciados el `visible-tests/ex6/run_visible.py` con resultado `EX6_VISIBLE_OK` y el recibo AOSP real. El primero pasa; el segundo reporta diferencias de formato, de modo que el requisito no está totalmente satisfecho para el snapshot `912c4ad`. Cualquier reparación debe conservar este recibo inmutable y crear una nueva evidencia N+1, nunca reescribirlo.
 
+## H4 N→N+1 y PG12/13 local, verificación 09/11/2026
+
+**N AOSP FAIL (inmutable):** `912c4ad9ea71f48edbd1ac58089441f9ed2c3449`, sandbox Actions [#42707967927](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42707967927), ZIP `ex6-build-lint-aosp-two-snapshots-v1.zip`, SHA-256 `2e8950a77ee9707df3cc7ab77e52e592a96f317fb4cc0736b3c28e8044671769`, formato candidato AOSP **exit 1**. No fue borrado ni editado.
+
+**Remediación N+1 preparada, NO fusionada:** [sandbox PR #55 (CHG-0022)](https://github.com/paulozterra/lf-programming-sandbox/pull/55), rama `lf/ex6-aosp-format-n1-20261109`. El [generador local de prueba #42713083575](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42713083575) produjo únicamente los tres `ReminderStats*.java` con google-java-format 1.30.0 `--aosp`; **12/12 `.class` byte-idénticos** bajo `javac -g:none`. CI PR #55 incluye el gate `ex6-n1-exact-aosp-class-equivalence` y controles de estándares. **No existe todavía SHA definitivo del merge N+1 ni su corrida de evidencia**. La versión original de `ex6-build-lint-evidence.yml` está fijada a `912c4ad`, por lo que no debe despacharse sin introducir primero la variante gobernada N+1 en un PR separado o actualizar formalmente el pin. La tabla siguiente corresponde a N, **no** a N+1.
+
+**Readback PG-12 / freeze PG-13 con contratos v2 originales:** [corrida LF #42715162878](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42715162878) ejecutó **37/37 pruebas EX6 PASS** y la única pasada PG04→PG14 con extensiones PG11/12/13/14 v2. PostgreSQL se instaló sobre el runner y escuchó **127.0.0.1** en la base desechable `pg12_test_ex6`; `PG12_TEST_DSN` y `PG12_DISPOSABLE_DB=YES` fueron obligatorios. El productor `pg12_disposable_postgres_readback_v2.persist_readback` devolvió **PASS**: SHA-256 escrito y leído exactamente `16ee8a1700daf3941781b58003eca45a517bee3f3baf0c574ebf072a969fc374`. La función elimina el esquema temporal en `finally`. **No se usó Supabase**.
+
+`ex6_local_freeze_v1.local_freeze_and_attacks` reconstruyó exclusivamente los **3 blobs Git del parche original EX6** en repositorio Git temporal, verificó sus OID y rechazó **5/5 ataques** con el hook original `pg13_disposable_git_mutation_test_v1`: FORCE_PUSH, NORMAL_FAST_FORWARD, DELETE, RECREATE_DIFFERENT_SHA y DELETE_ANNOTATED_TAG. Se comprobaron las referencias congeladas antes/después. **El freeze no se aplicó a GitHub ni a LF productivo.**
+
+Los productores **PG-11 C1–C5 v2**, **PG-12 C1–C4 v2**, **PG-13 C1–C3 v2**, **PG-14 C1–C3 v2** son los originales existentes y conservan `CANDIDATE_NOT_ADMITTED`, `handoff_allowed=False` y `production_authority=False`. Se usan referencias `ex6://` derivadas del lote D, task_spec y ZIP originales, salvo el nombre obligatorio de la referencia Git local `refs/tags/frozen/<SHA>` que exige el bridge original. PG-14 local devolvió `LOCAL_FIXTURE_SHAPE_ACCEPTED_ONLY` y rechazó la petición manipulada; **Análisis está NOT_READY y Testing real NO fue invocado**. La prueba EX6 adicional no afirma reconstrucción de commit Git raíz fuera del contenido disponible.
+
+### Pasada única actual — N con readbacks desechables
+
+| Etapa | Productor v1 (N) | Extensión existente v2 / observación real |
+|---|---|---|
+| PG-04 | PASS_SOURCE_ONLY | Sin cambio |
+| PG-05 | PASS_SOURCE_ONLY | Sin cambio |
+| PG-06 | PASS_FIXTURE_UNATTESTED | C4 BUILD/LINT base reales exit 0; PG01/A7 oficiales no acreditados |
+| PG-07 | PASS_FIXTURE_UNATTESTED | GPT_NATIVE, task y recibos EX6, costo API 0 |
+| PG-08 | PASS_FIXTURE_UNATTESTED | BUILD PASS, javac LINT PASS, **AOSP FAIL exit 1** |
+| PG-09 | v1 `REQUIRES_DECISION` | **C1 v2 ya probado**: `REPORTED_WITHIN_BUDGET_UNVERIFIED`, API 0 |
+| PG-10 | PASS_FIXTURE_UNATTESTED | Sin cambio de productor |
+| PG-11 | PASS_FIXTURE_UNATTESTED | **C1–C5 v2 N:M**: 4 enlaces reales en 3 archivos; REM-D4 proceso visible PASS + AOSP FAIL |
+| PG-12 | PASS_SOURCE_ONLY (C1/C2 v1) | **C1–C4 v2** y readback JSONB local **PASS**, SHA idéntico; no persistencia productiva |
+| PG-13 | v1 `C1_UPSTREAM_SCHEMA` | **C1–C3 v2** fuente; bridge exacto y **5/5 ataques locales bloqueados**, no freeze productivo |
+| PG-14 | v1 `C1_UPSTREAM_SCHEMA` | **C1–C3 v2**, receptor Testing simulado acepta shape y bloquea manipulación; Análisis NOT_READY, no admisión real |
+
+**Contrato nuevo por modo nativo:** ninguno en PG-08 o PG-11–14. Solo el PG-09 C1 v2 existente responde a un rechazo por modo `GPT_NATIVE` observado anteriormente. **No se atribuye PASS integral productivo**, y la tabla definitiva N+1 está pendiente del commit fusionado y del nuevo bundle AOSP esperado en PASS.
+
 ## Fuentes verificables exclusivas de EX6
 
 - Worker `GPT_NATIVE`, [corrida #42674262914](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914), intento 1/3, estado público PASS, `api_calls=0`, costo **incremental API** = 0, costo de suscripción `NOT_EVALUATED`.
@@ -130,4 +160,4 @@ Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/
 - `tests/test_ex6_pg09_native_v2.py`
 - Fuera del directorio candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/pg09_iteration_candidate/tools/pg09_c1_iteration_cost_governor_candidate_v2.py`.
 
-**Pendientes reales antes de una admisión total:** (i) reparar exclusivamente el formato de los tres Java en un ciclo gobernado N+1 con nueva evidencia sin reescribir N; (ii) demostrar el REM-D4 de proceso con visible PASS y AOSP PASS (hoy AOSP FAIL); (iii) identidad/autoría y persistencia PG12 plenamente verificadas; (iv) congelación y recepción/testing reales PG13/PG14. No se sustituyen con fixtures para declarar PASS productivo.
+**Pendientes reales antes de una admisión total (actualizado):** (i) reparar exclusivamente el formato de los tres Java en un ciclo gobernado N+1 con nueva evidencia sin reescribir N; (ii) demostrar el REM-D4 de proceso con visible PASS y AOSP PASS (hoy AOSP FAIL); (iii) readback PG12 local verificado pero persistencia/autoría productivas no acreditadas; (iv) freeze local 5/5 y receiver simulado verificados, pero no congelación ni Testing reales. No se sustituyen con fixtures para declarar PASS productivo.
