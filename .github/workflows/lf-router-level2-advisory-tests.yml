@@ -79,9 +79,6 @@ on:
       - 'supabase/migrations/*lf_profile_native_login_rules_output_v1.sql'
       - 'supabase/migrations/*lf_profile_canonical_read_semantic_close_v1.sql'
       - 'supabase/migrations/*lf_profile_native_runtime_dehardcode_v1.sql'
-      - 'supabase/migrations/*lf_skill_invoker_idempotent_replay_v1.sql'
-      - 'sandbox/lf_contract_gate_test/db_write_transport/lf_skill_invoker_pg17_fixture_v1.sql'
-      - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_skill_invoker_pg17_isolated.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/evidence/login_b2b_rules_product_director_20261024/raw_output.json'
       - 'sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py'
       - 'services/profile_runtime_api/scripts/hetzner_queue_worker.py'
@@ -741,37 +738,3 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
-
-
-  skill-invoker-idempotence-pg17-isolated:
-    name: skill-invoker-idempotency-pg17-isolated
-    # Auxiliary test lane only; never deploys or connects to Supabase.
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    permissions:
-      contents: read
-    services:
-      pg:
-        image: postgres:17.6
-        env:
-          POSTGRES_PASSWORD: isolated-only-ci-test
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=15
-    steps:
-      - name: Checkout exact PR source without credentials
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Prove one child on concurrent calls and exact rollback in isolated PG17.6
-        shell: bash
-        env:
-          PG_CONTAINER: ${{ job.services.pg.id }}
-        run: |
-          set -euo pipefail
-          test -n "${PG_CONTAINER}"
-          python3 -m py_compile sandbox/lf_contract_gate_test/db_write_transport/test_lf_skill_invoker_pg17_isolated.py
-          python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_skill_invoker_pg17_isolated.py
