@@ -47,32 +47,55 @@ BEGIN
     'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF','COMPLETED',
     encode(extensions.digest(convert_to(v_input::text,'UTF8'),'sha256'),'hex'));
 
-  -- G1 is deliberately unresolved: canonical asset carries only Drive history.
+  -- Negative: current README alone does not replace a completed 14/14 LF run.
   BEGIN
-    PERFORM public.lf_skill_o_skill_update_v1(
-      v_child,v_input,v_parent,v_run,repeat('a',64));
+    PERFORM public.lf_skill_o_skill_update_v1(v_child,v_input,v_parent,v_run,repeat('a',64));
     RAISE EXCEPTION 'NEGATIVE_DID_NOT_BLOCK';
   EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_CANONICAL_OWNER_NOT_RATIFIED%'
-    THEN RAISE; END IF;
+    IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_CANONICAL_OWNER_NOT_VERIFIED%' THEN RAISE; END IF;
   END;
   IF EXISTS(SELECT 1 FROM public.lf_operation_execution WHERE execution_id=v_child)
   THEN RAISE EXCEPTION 'FAIL_NO_CHILD_BEFORE_OWNER'; END IF;
-  RAISE NOTICE 'PASS_UNRATIFIED_OWNER_BLOCKS';
+  RAISE NOTICE 'PASS_NO_CANONICAL_LEDGER_BLOCKS';
 
+  -- Synthetic historical 14/14 clean operation, NOT live authority.
   INSERT INTO public.lf_operation_execution(
     execution_id,operation_code,target_type,target_code,status,manifest,
-    request_sha256,created_by_execution_id) VALUES(
-    'EXEC-SKILL-G1-CURRENT','ACTUALIZACION_SKILL_LF','SKILL',
-    'ACT-0045','COMPLETED','{}',repeat('a',64),'TEST');
-  UPDATE public.lf_activos SET metadata=jsonb_build_object(
-    'github_owner_binding',jsonb_build_object(
-      'schema_version','LF_SKILL_GITHUB_OWNER_BINDING_V1',
-      'status','CURRENT_VERIFIED','repository',v_repo,
-      'root_path','skills/profile_creator',
-      'approval_execution_id','EXEC-SKILL-G1-CURRENT',
-      'receipt_ref','supabase://public/lf_operation_execution/EXEC-SKILL-G1-CURRENT'))
-    WHERE codigo_activo='ACT-0045';
+    request_sha256,created_by_execution_id,target_path)
+  VALUES('EXEC-SKILL-G1-CURRENT','ACTUALIZACION_SKILL_LF','SKILL',
+    'ACT-0045','COMPLETED','{}',repeat('a',64),'TEST','skills/profile_creator');
+  INSERT INTO public.lf_operation_execution_steps(
+    execution_id,step_order,step_id,status,evidence_payload)
+  SELECT 'EXEC-SKILL-G1-CURRENT',step_order,step_id,'STEP_PASS_WITH_EVIDENCE',
+    CASE WHEN step_id='skill_resolve' THEN
+      jsonb_build_object('codigo_activo','ACT-0045',
+        'repo_path','skills/profile_creator','exact_skill_resolved',true)
+    ELSE '{}'::jsonb END
+  FROM public.lf_operation_step_contracts
+  WHERE operation_code='ACTUALIZACION_SKILL_LF' AND status='ACTIVE_ENFORCEMENT';
+
+  UPDATE public.lf_operation_execution_steps SET status='STEP_BLOCKED'
+  WHERE execution_id='EXEC-SKILL-G1-CURRENT' AND step_id='semantic_judge';
+  BEGIN
+    PERFORM public.lf_skill_o_skill_update_v1(v_child,v_input,v_parent,v_run,repeat('a',64));
+    RAISE EXCEPTION 'NEGATIVE_DID_NOT_BLOCK';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_CANONICAL_OWNER_NOT_VERIFIED%' THEN RAISE; END IF;
+  END;
+  UPDATE public.lf_operation_execution_steps SET status='STEP_PASS_WITH_EVIDENCE'
+  WHERE execution_id='EXEC-SKILL-G1-CURRENT' AND step_id='semantic_judge';
+  RAISE NOTICE 'PASS_PARTIAL_LEDGER_BLOCKS';
+
+  BEGIN
+    PERFORM public.lf_skill_o_skill_update_v1(
+      v_child,
+      jsonb_set(v_input,'{_trusted,github_owner,asset_code}','"ACT-9999"'::jsonb),
+      v_parent,v_run,repeat('a',64));
+    RAISE EXCEPTION 'NEGATIVE_DID_NOT_BLOCK';
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLERRM NOT LIKE '%SKILL_UPDATE_CHILD_CURRENT_OWNER_PROOF_INVALID%' THEN RAISE; END IF;
+  END;
+  RAISE NOTICE 'PASS_FORGED_README_PROOF_BLOCKS';
 
   -- Even with a synthetic approved owner, caller remains disabled.
   BEGIN
