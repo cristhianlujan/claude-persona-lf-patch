@@ -6,14 +6,11 @@ A source readback is not a currentness attestation or runtime permission.
 """
 from __future__ import annotations
 from copy import deepcopy
+import re
 from typing import Any
 
-FAMILIES = {
-    "lf_ops.politicas_seguridad": "security_policy_id",
-    "lf_ops.politicas_sesion": "session_policy_id",
-    "lf_ops.politicas_rate_limit": "rate_limit_policy_id",
-    "lf_ops.politicas_timeout": "timeout_policy_id",
-}
+POLICY_TABLE = re.compile(r"^lf_ops\\.politicas_[a-z][a-z0-9_]*$")
+POLICY_PK = re.compile(r"^[a-z][a-z0-9_]*_policy_id$")
 
 
 def blocked(code: str) -> dict:
@@ -58,14 +55,15 @@ def project(effective: Any, policy_links: Any, readback: Any,
     records = readback.get("policy_objects")
     if not isinstance(records, list):
         return blocked("A3_POLICY_DEFINITIONS_ITEMS_MISSING")
-    by_ref, approved_objects, excluded_objects = {}, [], []
+    by_ref, by_key, approved_objects, excluded_objects = {}, {}, [], []
     for obj in records:
         if not isinstance(obj, dict):
             return blocked("A3_POLICY_OBJECT_INVALID")
         table, pk, pid = obj.get("table"), obj.get("primary_key"), obj.get("policy_id")
         status, policy_code = obj.get("status"), obj.get("policy_code")
         values = obj.get("parameters")
-        if (table not in FAMILIES or pk != FAMILIES[table]
+        if (not isinstance(table, str) or not POLICY_TABLE.fullmatch(table)
+                or not isinstance(pk, str) or not POLICY_PK.fullmatch(pk)
                 or type(pid) is not int or pid < 1
                 or not isinstance(policy_code, str) or not policy_code
                 or not isinstance(status, str) or not status
@@ -78,6 +76,7 @@ def project(effective: Any, policy_links: Any, readback: Any,
                  "status": status, "parameter_values": deepcopy(values),
                  "source_attested": False}
         by_ref[ref] = entry
+        by_key[ref] = (table, pk, pid)
         (approved_objects if status == "VIGENTE" else excluded_objects).append(entry)
     bindings = {}
     link_items = []
@@ -93,6 +92,8 @@ def project(effective: Any, policy_links: Any, readback: Any,
             return blocked("A3_POLICY_LINK_TARGET_UNRESOLVED")
         if target not in by_ref:
             return blocked("A3_POLICY_LINK_TARGET_NOT_READ")
+        if not role.endswith(by_key[target][1]):
+            return blocked("A3_POLICY_LINK_ROLE_TARGET_MISMATCH")
         key = (role, target)
         if key in bindings:
             return blocked("A3_POLICY_LINK_DUPLICATE")
@@ -123,16 +124,17 @@ def project(effective: Any, policy_links: Any, readback: Any,
         applicable = True
         for p in refs:
             total_refs += 1
-            options = [table for table, pk in FAMILIES.items() if p["role"].endswith(pk)]
-            if p["id"] is None or len(options) != 1:
+            options = [ref for ref, (_table, pk, pid) in by_key.items()
+                       if p["role"].endswith(pk) and p["id"] == pid]
+            if p["id"] is None or len(options) > 1:
                 dependencies.append({
                     "rule_code": code, "reference_role": p["role"], "path": p["path"],
                     "status": "UNRESOLVED_POLICY_REFERENCE", "eligible_for_implementation": False,
                 })
                 applicable = False
                 continue
-            target = "supabase://" + options[0] + "/" + str(p["id"])
-            obj = by_ref.get(target)
+            target = options[0] if options else None
+            obj = by_ref.get(target) if target else None
             bind_status = bindings.get((p["role"], target))
             if obj is None:
                 disposition = "POLICY_TARGET_MISSING"
