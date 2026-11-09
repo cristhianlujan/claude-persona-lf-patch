@@ -11,9 +11,9 @@
 - `task_pack_sha256`: `31a01a43c13d1a6c8ef5d861825e03211d05566abecded7eeea023dcfaba048e`.
 - `proposal_sha256`: `c469a00ebb78d1346cecab0b19bd7c385e13e428a2eaf1fccea61e30dc838d78`.
 - `holdout_sha256` público en registro: `c2b583ebcc14e8e73e1b66eff38d86dd3814b75e5f5e1857de65deee5c8b1a57`. El recibo público reporta PASS; ningún archivo, resultado detallado ni comando del examen oculto fue buscado o reconstruido.
-- Spec base público **completo**, copiado byte por byte a `evidence/ex6_base_REMINDERS_SPEC.md`, Git blob `01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72`; se extrae Lote D de ese documento fijado.
+- Lote D público del spec base, fijado en `evidence/lote_d_spec.md`; derivado de `apps/time-service/REMINDERS_SPEC.md` en el commit base `53ab6b1a85da95f3e2a38d7f3298af731c6698ab` (blob original `01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72`).
 - Registro EX6 Git blob `15fd94d238215dbbc21a3bdc3cc719028c8513e7`.
-- Sobre público de propuesta Git blob `85761b8722f553fe25cf70d937105a4c35ce871e`.
+- El SHA de propuesta se toma del recibo `status.json`; el sobre de propuesta no se utiliza como fuente de hunks ni se incluye en el PR.
 
 | ZIP original de Actions, **sin edición** | SHA-256 | Git blob |
 |---|---|---|
@@ -73,7 +73,7 @@ En `cost.json`: `api_calls=0`, `real_api_usage=false`, `total_usd=0`, `cost_scop
 - [#42695772442](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695772442): **11/11 tests EX6**, incluido binding exacto del fixture, y **15/15 pruebas sintéticas PG-06 v1** SUCCESS. Corridas anteriores: 29/29 PG-04 y 13/13 PG-05, inalteradas. Los productores v1 y las pruebas originales no se modificaron.
 - `install()/uninstall()` restaura `sys.path`; no hay cambios de funciones/constantes sintéticas.
 - Anticontaminación: los campos del resultado de `source_truth()` no contienen `ex5c` ni `lote-c`. Fuente de verdad EX6 no lee bundles del ejercicio previo.
-- Fallo de un byte de cualquiera de los ZIP originales se rechaza. Sobre y parche se atan por SHA y por código byte-a-byte salvo metadatos `index`.
+- Fallo de un byte de cualquiera de los ZIP originales se rechaza. El parche viene del ZIP original; la propuesta se vincula por el SHA declarado en `status.json`.
 
 ## Rechazo que sí justifica trabajo siguiente
 
