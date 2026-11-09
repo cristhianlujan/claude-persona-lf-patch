@@ -202,7 +202,9 @@ class ApprovedScopeSemantics(unittest.TestCase):
         )
         self.assertEqual(result["status"], "VALID_OUTPUT")
         self.assertEqual(result["payload"]["constraints"], CONSTRAINTS)
-        self.assertEqual(result["payload"]["original_request"], RAW)
+        self.assertEqual(result["payload"]["objective"]["problem_statement"], RAW)
+        self.assertNotIn("original_request", result["payload"])
+        self.assertEqual(result["original_request_sha256"], __import__("hashlib").sha256(RAW.encode("utf-8")).hexdigest())
 
     def test_sem06_a2_does_not_authorize_implementation(self):
         a1 = RUN_A1.run(
