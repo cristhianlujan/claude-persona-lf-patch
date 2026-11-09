@@ -4,6 +4,25 @@
 
 Se ejecutó un diagnóstico unificado contra **productores originales v1** (y el único contrato nuevo PG-09 C1 v2) con entradas EX6 verificadas. Se continuó con pruebas **independientes** en etapas posteriores aun cuando la cadena estricta estaba bloqueada; los PASS de esas pruebas no se confunden con una cadena real admitida. Los productores v1 y `vendor/` no se tocaron.
 
+## Evidencia EX6 BUILD/LINT nueva — corrida #42707967927 (09/11/2026)
+
+[GitHub Actions #42707967927](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42707967927) ejecutó exitosamente el workflow manual sin secretos, sobre `53ab6b1a85da95f3e2a38d7f3298af731c6698ab` y `912c4ad9ea71f48edbd1ac58089441f9ed2c3449`.
+
+**Artefacto fuente:** `ex6-build-lint-aosp-two-snapshots-v1`, ID `13715275651`; **SHA-256 del ZIP original:** `2e8950a77ee9707df3cc7ab77e52e592a96f317fb4cc0736b3c28e8044671769`. **SHA-256 del JSON original:** `5008714c29f55c2813792d6da98002393febdc5adbe5070ae194970742ff9fbd`. El .sha256 interior coincide exactamente.
+
+| Comando | Base real | Candidato EX6 |
+|---|---|---|
+| `mvn -B -q -f apps/time-service/pom.xml package` | exit `0` | exit `0` |
+| AOSP 1.30.0 `--aosp --dry-run --set-exit-if-changed` | exit `0` | **exit `1`** |
+| `javac --release 21 -Xlint:all` | exit `0` | exit `0` |
+| `python3 apps/time-service/visible-tests/ex6/run_visible.py` | N/A | exit `0`, `EX6_VISIBLE_OK` |
+
+El stdout AOSP del candidato menciona exactamente `ReminderStats.java`, `ReminderStatsService.java` y `ReminderStatsController.java`; ningún otro Java. **No convertir `exit_code=1` en PASS**. `javac -Xlint:all` pasó sin bytes en stdout ni stderr; el linter de PG12 ahora tiene material verificable, pero el digest de configuración y el enlazado al recibo original deben verificarse por el productor, no se infieren de este resumen.
+
+**Procedencia y límite:** `evidence/ex6_run_42707967927_receipt_index.json` es un índice derivado sin inventar el estado de los comandos. `tools/ex6_build_lint_index_v1.py` bloquea cambios de huellas, salidas contradictorias y escaladas de autoridad; dispone de un lector que valida el ZIP original byte por byte **cuando esté localmente disponible**. El índice **NO reemplaza** al ZIP binario original y no debe ser considerado un recibo autenticado. La copia binaria original **todavía no forma parte del árbol del PR**; por eso esta revisión **no declara nuevos PASS de PG-06 C4/PG-08/PG-12/PG-13/PG-14**.
+
+**REM-D4:** en el Lote D es obligación de proceso. Quedan referenciados el `visible-tests/ex6/run_visible.py` con resultado `EX6_VISIBLE_OK` y el recibo AOSP real. El primero pasa; el segundo reporta diferencias de formato, de modo que el requisito no está totalmente satisfecho para el snapshot `912c4ad`. Cualquier reparación debe conservar este recibo inmutable y crear una nueva evidencia N+1, nunca reescribirlo.
+
 ## Fuentes verificables exclusivas de EX6
 
 - Worker `GPT_NATIVE`, [corrida #42674262914](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914), intento 1/3, estado público PASS, `api_calls=0`, costo **incremental API** = 0, costo de suscripción `NOT_EVALUATED`.
