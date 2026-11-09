@@ -51,6 +51,28 @@ class EX5CRealChainNegatives(unittest.TestCase):
         w.install()
         cls.addClassCleanup(w.uninstall)
 
+    def test_uninstall_restores_test_builders_and_synthetic_chain(self):
+        # Save the exact caller-side builders installed by w.install().
+        originals = {
+            (mod, attr): old
+            for mod, attr, old in w._UNDO
+            if attr != "__constants__"
+        }
+        self.assertTrue(originals)
+        w.uninstall()
+        try:
+            self.assertEqual(w.OVERRIDES, [])
+            self.assertEqual(w._UNDO, [])
+            for (mod, attr), old in originals.items():
+                self.assertIs(getattr(mod, attr), old)
+            self.assertIs(t11.fixture, self.original_pg11_fixture)
+            # Original synthetic builder must still construct its old chain.
+            synthetic = t8.make_chain()
+            self.assertNotEqual(synthetic["c1"]["target_repo"], w.REPO)
+        finally:
+            w.install()
+        print("EX5C_REAL_UNINSTALL_SYNTHETIC_BUILDER_RESTORATION_PASS")
+
     def test_bundle_single_byte_mutation_blocks_v1_v2_v3(self):
         fixed = [
             ("lf-evidence-bundle-v1.json", w.V1_SHA),
