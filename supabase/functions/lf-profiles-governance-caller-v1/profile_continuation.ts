@@ -9,6 +9,9 @@ export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
 export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION] as const;
 const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
 const SKILL_TARGET_PATH_RE = /^profiles\/[A-Za-z0-9][A-Za-z0-9_./-]*$/;
+// Extra GitHub path type is *only* allowed for SKILL_UPDATE_APPLY; the invoker
+// still refuses DRAFT skills and the governed child opener owns target authority.
+const SKILL_UPDATE_TARGET_PATH_RE = /^skills\/[a-z0-9_-]+(?:\/[A-Za-z0-9_.-]+)+$/;
 const SHA40_RE = /^[0-9a-f]{40}$/;
 const GITHUB_API = "https://api.github.com";
 const MAX_SKILL_INPUT_BYTES = 65536;
@@ -226,10 +229,15 @@ async function githubGet(fetchFn: Fetcher, path: string): Promise<{ ok: boolean;
 // the current main revision and the exact target blob. They are resolved here, from GitHub, and any value the
 // request supplied under the reserved key is discarded.
 async function trustedSkillContext(
-  config: Config, fetchFn: Fetcher, targetPath: string, callerIdentity: CallerIdentity | undefined,
+  config: Config, fetchFn: Fetcher, skillCode: string, targetPath: string, callerIdentity: CallerIdentity | undefined,
 ): Promise<{ context?: Payload; error?: Response }> {
   if (!callerIdentity) return { error: blocked("PROFILE_SKILL_CALLER_IDENTITY_MISSING", 500) };
-  if (!SKILL_TARGET_PATH_RE.test(targetPath) || targetPath.includes("..")) return { error: blocked("PROFILE_SKILL_TARGET_PATH_INVALID", 400) };
+  const validTargetPath = skillCode === "SKILL_UPDATE_APPLY"
+    ? SKILL_UPDATE_TARGET_PATH_RE.test(targetPath)
+    : SKILL_TARGET_PATH_RE.test(targetPath);
+  if (!validTargetPath || targetPath.includes("..") || targetPath.includes("//")) {
+    return { error: blocked("PROFILE_SKILL_TARGET_PATH_INVALID", 400) };
+  }
   const ref = await githubGet(fetchFn, `/repos/${config.repository}/git/ref/heads/main`);
   const mainSha = String(((ref.data as Payload | null)?.object as Payload | undefined)?.sha ?? "").toLowerCase();
   if (!ref.ok || !SHA40_RE.test(mainSha)) return { error: blocked("PROFILE_SKILL_MAIN_REVISION_UNRESOLVED", 502) };
@@ -252,7 +260,7 @@ async function invokeSkill(e: Execution, body: Payload, config: Config, fetchFn:
   const { _trusted: _discarded, ...cleanInput } = input as Payload;
   let skillInput: Payload = cleanInput;
   if (typeof cleanInput.target_path === "string") {
-    const resolved = await trustedSkillContext(config, fetchFn, cleanInput.target_path, callerIdentity);
+    const resolved = await trustedSkillContext(config, fetchFn, skill, cleanInput.target_path, callerIdentity);
     if (resolved.error) return resolved.error;
     skillInput = { ...cleanInput, _trusted: resolved.context };
   }
