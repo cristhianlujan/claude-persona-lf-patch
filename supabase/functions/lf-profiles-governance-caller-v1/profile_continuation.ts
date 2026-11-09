@@ -153,18 +153,25 @@ async function resolveExistingPostModelStep(
     "input_validate", "context_admission", "research_baseline_freeze",
     "execute_profile", "output_validate",
   ];
+  // Exactly nine clean pre-model and output-validation steps are mandatory.
+  // A rejected semantic review remains durable and may be retried ONLY via
+  // the same governed judge RPC. The core recorder keeps its attempt_history.
+  const cleanCount = [...steps.values()].filter(status => status === "STEP_PASS_WITH_EVIDENCE").length;
+  const semanticStatus = steps.get("semantic_judge");
+  const semanticRetryable = semanticStatus === "BLOCKED_STEP_NOT_CLEAN" || semanticStatus === "RETURN_TO_WORKER";
   if (
-    steps.size !== prepareResult.clean_step_count ||
+    (steps.size !== 9 && steps.size !== 10) ||
+    cleanCount !== prepareResult.clean_step_count ||
     !completed.every(step => steps.get(step) === "STEP_PASS_WITH_EVIDENCE") ||
     steps.has("report_output")
   ) return blocked("PROFILE_POST_MODEL_STEPS_NOT_CLEAN", 409);
 
   let nextStep: string;
   let phase: string;
-  if (steps.size === 9 && !steps.has("semantic_judge")) {
+  if ((steps.size === 9 && !semanticStatus) || (steps.size === 10 && semanticRetryable && cleanCount === 9)) {
     nextStep = "semantic_judge";
     phase = "INDEPENDENT_SEMANTIC_JUDGE_REQUIRED";
-  } else if (steps.size === 10 && steps.get("semantic_judge") === "STEP_PASS_WITH_EVIDENCE") {
+  } else if (steps.size === 10 && semanticStatus === "STEP_PASS_WITH_EVIDENCE" && cleanCount === 10) {
     nextStep = "report_output";
     phase = "REPORT_OUTPUT_REQUIRED";
   } else {
