@@ -87,7 +87,7 @@ def real_hunks(patch: bytes) -> list[dict]:
         if (int(h.group("oldstart")) != 0 or before != 0
             or int(h.group("newstart")) != 1 or after <= 0):
             block("EX6_REAL_HUNK_SPAN_INVALID")
-        added = fragment[h.end():]
+        added = fragment[h.end():].removeprefix("\n")
         lines = added.splitlines(keepends=True)
         if len(lines) != after or not all(x.startswith("+") for x in lines):
             block("EX6_REAL_HUNK_BODY_INVALID")
