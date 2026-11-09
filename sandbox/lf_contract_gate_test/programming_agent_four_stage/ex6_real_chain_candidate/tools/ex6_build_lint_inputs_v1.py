@@ -33,6 +33,8 @@ def using_receipt(label):
 def active_label():
     return _ACTIVE.get()
 def active_ref():
+    if active_label()=="N":
+        return BUNDLE_REF  # original ref stays byte-for-byte identical for old contracts
     row=RECEIPTS[active_label()]
     return "ex6://sandbox/actions/runs/"+str(row["run"])+"/sha256/"+row["json"]
 def active_candidate():
