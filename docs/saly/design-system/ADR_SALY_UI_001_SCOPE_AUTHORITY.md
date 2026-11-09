@@ -64,7 +64,7 @@ Vincular además el `request_sha256` literal, el SHA256 de `design_system.json` 
 ## Dependencias y cierre
 
 1. **Autoridad humana vigente** para registrar exactamente esa decisión en el sistema operacional; no basta este ADR.
-2. Transporte verificable del archivo fuente `SALY_DS_V1` al repositorio. Localización actual en la conversación no constituye readback GitHub.
+2. Transporte de fuente **cumplido en PR #3715**: `candidate/design_system.json` Git blob `551469ed451f60af43e874c4688451a210a82dc1` (SHA256 original `2967f2e3cbdc6d4651ffd877a05fdd6c3377266561e522e22e315fe8e64096d5`), y `candidate/ESPECIFICACION_SALY_DS_V1.md` Git blob `12549166fe48450a405d62d4bbed58bb694a1ec9`. La captura aprobada permanece fuera de GitHub y sigue siendo dependencia para cotejo visual exacto.
 3. Evidencia de que la ruta existente de Edge/OIDC puede comprobar la tupla sin ampliaciones de acceso.
 4. Parche incremental reversible mediante `ACTUALIZACION_ROUTER_LF`; para migraciones, solo `ACTUALIZACION_DB_LF` y Merge Train, conforme a AGENTS.md.
 5. Pruebas T01-T12 sobre HEAD congelado, readback contra DB y ejecución real con identificador nuevo.
