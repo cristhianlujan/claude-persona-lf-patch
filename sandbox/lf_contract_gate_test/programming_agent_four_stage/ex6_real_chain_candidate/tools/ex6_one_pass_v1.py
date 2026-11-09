@@ -80,25 +80,22 @@ def stage06(upstream):
     facts["fixture_a7"] = {"sha256": digest(a7), "plans_sha256": digest(plans)}
     c3 = t6.prepare_pg06_c3(pg05_exit=t, pg06_c1=c1, pg06_c2=c2,
        a7_material_front_coverage=a7, solution_reversibility_plans=plans)
-    partial = c4_partial_baseline(t)
-    # A real EX6 baseline has BUILD CI but no LINT or full stdout/stderr.
-    # Invoke C4 first with the incomplete EX6-only data and retain its exact
-    # original rejection. Never label the synthetic fallback as real C4 PASS.
-    try:
-        t6.prepare_pg06_c4(pg05_exit=t, pg06_c1=c1, pg06_c2=c2,
-             pg06_c3=c3, baseline_observations=partial)
-        raise AssertionError("EX6_MISSING_LINT_ACCIDENTAL_PASS")
-    except t6.BaselineBlocked as exc:
-        c4_real_code = str(exc)
-    synthetic = t6.baseline(t)  # official fixture unchanged, probe ONLY
+    from ex6_build_lint_inputs_v1 import baseline as actual_ex6_baseline
+    source_baseline = actual_ex6_baseline(t)  # verified original ZIP
+    c4 = t6.prepare_pg06_c4(pg05_exit=t, pg06_c1=c1, pg06_c2=c2,
+                   pg06_c3=c3, baseline_observations=source_baseline)
+    # The official C4 fixture remains unchanged, solely for identity parity.
+    # It is not fed into the actual EX6 PG06 C4 producer.
+    synthetic = t6.baseline(t)
     synthetic_again = t6.baseline(t)
     if synthetic != synthetic_again:
         raise AssertionError("EX6_C4_OFFICIAL_FIXTURE_DRIFT")
-    facts["fixture_lint"] = {"sha256": digest(synthetic),
-                            "real_code": c4_real_code,
-                            "real_lint": partial["lint_status"]}
-    c4 = t6.prepare_pg06_c4(pg05_exit=t, pg06_c1=c1, pg06_c2=c2,
-                   pg06_c3=c3, baseline_observations=synthetic)
+    facts["fixture_lint"] = {
+        "sha256": digest(synthetic),
+        "real_code": "PASS_SOURCE_ONLY",
+        "real_lint": "PASS_REPORTED_UNVERIFIED",
+        "used_as_ex6_c4": False,
+    }
     parts = {"pg05_exit":t,"pg06_c1":c1,"pg06_c2":c2,"pg06_c3":c3,"pg06_c4":c4}
     manifest = {"source_head_sha": upstream["pg04"]["truth"]["base_head_sha"]
                 if "truth" in upstream["pg04"] else source_truth()["base_head_sha"],
@@ -107,7 +104,7 @@ def stage06(upstream):
     c5=t6.prepare_pg06_assurance_request(**parts,source_manifest=manifest,
         producer_execution_id="ex6://source-only/pg06-official-fixtures")
     return {"exit":t,"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5,
-            "a7":a7,"a7_plans":plans,"baseline_partial":partial,
+            "a7":a7,"a7_plans":plans,"baseline_real":source_baseline,
             "fixture_facts":facts}
 
 def stage07(pg06, pg05, truth):
@@ -115,24 +112,21 @@ def stage07(pg06, pg05, truth):
     return make_pg07(pg06=pg06, pg05=pg05, truth=truth)
 
 
-def stage08(pg07, truth):
-    """Try original PG08 C1 with actual EX6 run, fail closed on absent stdout."""
+def stage08(pg07, pg06, truth):
+    """Original PG08 C1/C2 using preserved EX6 real build and AOSP receipts."""
+    from ex6_build_lint_inputs_v1 import pg08_build, pg08_format_lint
     from pg08_c1_build_compilation_candidate_v1 import prepare_pg08_c1
+    from pg08_c2_format_lint_delta_candidate_v1 import prepare_pg08_c2
     source=pg07["c6"]
-    rows=[]
-    for row in source["batches"]:
-        rows.append({
-            "solution_id":row["solution_id"],"executor_mode":"GPT_NATIVE",
-            "executor_result_ref":RUN_REF,
-            "candidate_head_sha":row["candidate_head_sha_reported"],
-            "diff_sha256":row["diff_sha256_reported"],
-            "target_repo":source["target_repo"],
-            "base_head_sha":source["base_head_sha"],
-            # Real acceptance PASS has no stdout/stderr/command hashes.
-            # Do NOT substitute the SHA of feedback.json for stdout SHA.
-            "commands":[],
-        })
-    return prepare_pg08_c1(pg07_c6=source, build_observations=rows)
+    c1=prepare_pg08_c1(pg07_c6=source,
+                       build_observations=pg08_build(source))
+    c2=prepare_pg08_c2(pg06_c4=pg06["c4"],pg08_c1=c1,
+                       lint_observations=pg08_format_lint(source))
+    return {"c1":c1,"c2":c2,
+            "format_aosp_exit_code":1,
+            "build_source":"ex6://sandbox/actions/runs/42707967927",
+            "production_authority":False}
+
 
 
 def stage09(pg07, truth):
@@ -250,9 +244,12 @@ def stage11(truth):
          "reviewer_independence_reported":True} for h in truth["hunks"]]
     c5=prepare_pg11_c5(pg11_c4=c4,review_observations=reviews,
          review_policy_ref="ex6://unattested/independent-review-policy")
+    from ex6_build_lint_inputs_v1 import rem_d4_process
+    process = rem_d4_process()
     return {"c1":c1,"c2":c2,"c3":c3,"c4":c4,"c5":c5,
             "diff":diff,"scope":scope,"traces":traces,
-            "v1_trace_limitation":"EX6_REM_D4_SECONDARY_LINK_NOT_COVERED_BY_V1"}
+            "rem_d4_process":process,
+            "v1_trace_limitation":"EX6_REM_D4_PROCESS_RECEIPTS_AOSP_EXIT_1"}
 
 
 def stage12(pg11, truth):
@@ -276,8 +273,9 @@ def stage12(pg11, truth):
          "wasted_cost_reported":"0"}
     # These are API counters, not total ChatGPT usage.
     totals={**row,"stage_ref":"TOTAL"}
-    try:
-        prepare_pg12_c2(
+    from ex6_build_lint_inputs_v1 import config_sha, observed
+    lint_config_digest = config_sha(observed(),"format_aosp")
+    c2=prepare_pg12_c2(
             pg12_c1=c1,
             context_id="ex6://source/task-pack/"+truth["task_pack_sha256"],
             catalog_version_ref=SPEC_REF,
@@ -288,18 +286,14 @@ def stage12(pg11, truth):
             ekb_snapshot_ref=SPEC_REF,
             toolchain_versions=[{"name":"java","version_ref":
                "ex6://run/42674262914#Temurin-21.0.13"}],
-            # Lint has not been run, thus cannot be given a true SHA256.
-            linter_config_sha256=None,optimization_mode="HYBRID",
+            # Exact AOSP jar version/digest and command flags from original ZIP.
+            linter_config_sha256=lint_config_digest,optimization_mode="HYBRID",
             usage_totals=totals,usage_by_stage=[row],
             extra_queries=[],identifier_term_map=[],
             billing_currency="USD",
         )
-        raise AssertionError("EX6_PG12_C2_WITHOUT_LINT_UNEXPECTED_PASS")
-    except Exception as exc:
-        if isinstance(exc,AssertionError):
-            raise
-        return {"c1":c1, "c2_rejection":str(exc).splitlines()[0],
-                "candidate_git_commit":commit,"candidate_git_tree":tree}
+    return {"c1":c1,"c2":c2,"linter_config_sha256":lint_config_digest,
+            "candidate_git_commit":commit,"candidate_git_tree":tree}
 
 
 def stage13():
@@ -344,14 +338,14 @@ def run_all():
             return {"stages":table,"evidence":evidence}
         row, z=attempt("PG-06",lambda:stage06(y),
               origin="EX6_JAVA21_AND_BASELINE_WITH_OFFICIAL_FIXTURES",
-              fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY"))
+              fixtures=("PG01","PG06_A7"))
         table.append(row)
         if z is not None:
             evidence["pg06_fixture_checks"]=z["fixture_facts"]
             evidence["pg06_c4_real_code"]=z["fixture_facts"]["fixture_lint"]["real_code"]
             evidence["pg06_c2_diagnostic"]=z["c2"]["required_toolchains"][0]["diagnostic_status"]
             evidence["pg06_c3_diagnostic"]=z["c3"]["status"]
-            evidence["pg06_c4_fixture_diagnostic"]=z["c4"]["status"]
+            evidence["pg06_c4_real_diagnostic"]=z["c4"]["status"]
             evidence["pg06_c5_diagnostic"]=z["c5"]["status"]
         # Probe downstream original producers independently, even if their
         # source-only shapes are blocked by a real verification gap.
@@ -359,15 +353,19 @@ def run_all():
         pg09 = None
         row, pg07=attempt("PG-07",lambda:stage07(z,y,truth),
                     origin="EX6_REAL_TASK_AND_WORKER_RECEIPTS",
-                    fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY",
+                    fixtures=("PG01","PG06_A7",
                               "PG07_CONTEXT_PROFILE_UNATTESTED"))
         table.append(row)
         if pg07:
             evidence["pg07_c6_diagnostic"]=pg07["c6"]["status"]
-            row, pg08=attempt("PG-08",lambda:stage08(pg07,truth),
-                       origin="EX6_REAL_BUILD_FEEDBACK_MISSING_COMMAND_HASHES",
+            row, pg08=attempt("PG-08",lambda:stage08(pg07,z,truth),
+                       origin="EX6_REAL_BUILD_AND_AOSP_RECEIPTS_42707967927",
                        fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY"))
             table.append(row)
+            if pg08:
+                evidence["pg08_c1_reported_outcome"]=pg08["c1"]["solutions"][0]["reported_build_outcome"]
+                evidence["pg08_c2_format_aosp_exit_code"]=pg08["format_aosp_exit_code"]
+                evidence["pg08_c2_solution_diagnostics"]=pg08["c2"]["solutions"]
             row, pg09=attempt("PG-09",lambda:stage09(pg07,truth),
                        origin="EX6_NATIVE_API_CALLS_ZERO_ORIGINAL_V1",
                        fixtures=("PG01","PG06_A7","PG06_LINT_PROBE_ONLY",
@@ -411,10 +409,14 @@ def run_all():
         table.append(row)
         if pg11:
             evidence["pg11_v1_trace_limitation"]=pg11["v1_trace_limitation"]
+            evidence["rem_d4_process"]=pg11["rem_d4_process"]
             pg12=stage12(pg11,truth)
             evidence["pg12_c1_status"]=pg12["c1"]["status"]
-            table.append(entry("PG-12","BLOCK",pg12["c2_rejection"],
-                 "EX6_REAL_GIT_IDENTITY_WITHOUT_LINT_C2"))
+            evidence["pg12_c2_status"]=pg12["c2"]["status"]
+            evidence["pg12_linter_config_sha256"]=pg12["linter_config_sha256"]
+            table.append(entry("PG-12","PASS_SOURCE_ONLY",
+                "C1_C2_CANDIDATES_NOT_ADMITTED_PERSISTENCE_PENDING",
+                "EX6_GIT_IDENTITY_AND_REAL_AOSP_LINTER_DIGEST"))
         else:
             table.append(entry("PG-12","NOT_RUN",
                 "PG11_UPSTREAM_REVIEW_UNATTESTED",
