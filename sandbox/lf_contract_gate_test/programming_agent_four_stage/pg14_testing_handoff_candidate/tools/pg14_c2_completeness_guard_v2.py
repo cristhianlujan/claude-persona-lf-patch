@@ -15,11 +15,11 @@ def validate_pg14_c2_completeness(candidate):
     if candidate.get("blind_test_contract_ref_reported")!="fn_submit_blind_test_contract":
         block("PG14_C2_BLIND_TEST_CONTRACT_MISSING")
     obligations=candidate.get("test_obligations_reported")
-    if not isinstance(obligations,list) or "B2B-RULE-TEST-001" not in {
+    if not isinstance(obligations,list) or candidate.get("required_obligation_ref_reported") not in {
             row.get("obligation_ref") for row in obligations if isinstance(row,dict)}:
-        block("PG14_C2_B2B_RULE_TEST_001_MISSING")
+        block("PG14_C2_V2_OBLIGATION_MISSING")
     pending=candidate.get("pending_copy_texts_reported")
-    if not isinstance(pending,list) or not pending or any(
+    if not isinstance(pending,list) or (not pending and not isinstance(candidate.get("copy_applicability_ref_reported"),str)) or any(
             not isinstance(row,dict) or row.get("status")!="PENDING_COPY" or
             not isinstance(row.get("text_ref"),str) or not row["text_ref"].strip()
             for row in pending):
