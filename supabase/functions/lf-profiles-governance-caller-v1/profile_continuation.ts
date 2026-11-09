@@ -269,15 +269,15 @@ async function trustedSkillContext(
     }
     let content = "";
     try {
-      const bytes = Uint8Array.from(atob(doc.content.replace(/\\s/g, "")), c => c.charCodeAt(0));
+      const bytes = Uint8Array.from(atob(doc.content.replace(/\s/g, "")), c => c.charCodeAt(0));
       content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     } catch {
       return { error: blocked("SKILL_UPDATE_OWNER_README_INVALID", 409) };
     }
     // A historical citation is not an owner declaration. Require one explicit
     // line declaring the governing asset, rather than a mere code occurrence.
-    const ownerMatch = content.match(/(?:^|\\n)\\s*(?:[-*]\\s*)?(ACT-[0-9]{4,})\\s+is\\s+the\\s+governing\\s+asset\\b/i)
-      ?? content.match(/(?:^|\\n)\\s*(?:[-*]\\s*)?(?:source|governing)\\s+authority\\s*:\\s*(ACT-[0-9]{4,})\\b/i);
+    const ownerMatch = content.match(/(?:^|\n)\s*(?:[-*]\s*)?(ACT-[0-9]{4,})\s+is\s+the\s+governing\s+asset\b/i)
+      ?? content.match(/(?:^|\n)\s*(?:[-*]\s*)?(?:source|governing)\s+authority\s*:\s*(ACT-[0-9]{4,})\b/i);
     if (ownerMatch?.[1]?.toUpperCase() !== targetCode) {
       return { error: blocked("SKILL_UPDATE_OWNER_DECLARATION_MISMATCH", 409) };
     }
