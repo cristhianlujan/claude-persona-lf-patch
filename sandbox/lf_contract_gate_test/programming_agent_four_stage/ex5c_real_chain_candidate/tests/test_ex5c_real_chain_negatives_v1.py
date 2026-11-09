@@ -193,7 +193,7 @@ class EX5CRealChainNegatives(unittest.TestCase):
         self.assertEqual(
             out["findings"]["out_of_scope_paths_reported"], [unlisted]
         )
-        self.assertIn("SCOPE_INVENTORY_MISMATCH", out["reported_blockers"])
+        self.assertIn("SCOPE_INVENTORY_MISMATCH", out["blocker_hints"])
         self.assertFalse(out["handoff_allowed"])
         print("EX5C_REAL_PG11_C1_OUT_OF_SCOPE_REPORTED_BLOCK_PASS")
 
