@@ -37,7 +37,7 @@ def valid_path(value):
 
 def prepare_pg12_c1(*, pg11_c5, repo_ref, base_commit_sha, candidate_commit_sha,
                     candidate_tree_sha, diff_sha256, changed_objects,
-                    builder_principal_ref, builder_provenance_ref):
+                    builder_principal_ref, builder_provenance_ref, builder_bindings=None):
     """One record per changed path.
 
     changed_objects: [{path, change_type, old_path, object_type,
@@ -66,6 +66,19 @@ def prepare_pg12_c1(*, pg11_c5, repo_ref, base_commit_sha, candidate_commit_sha,
         fail("PG12_C1_BASE_EQUALS_CANDIDATE")
     if not isinstance(diff_sha256, str) or not SHA256.fullmatch(diff_sha256):
         fail("PG12_C1_DIFF_DIGEST_INVALID")
+    if builder_bindings is not None:
+        if not isinstance(builder_bindings, list) or not builder_bindings:
+            fail("PG12_C1_V2_BUILDER_BINDINGS_INVALID")
+        mapped_builders = {}
+        for binding in builder_bindings:
+            fields = {"path", "builder_principal_ref", "builder_provenance_ref"}
+            if not isinstance(binding, dict) or set(binding) != fields or not valid_path(binding["path"]) or binding["path"] in mapped_builders:
+                fail("PG12_C1_V2_BUILDER_BINDINGS_INVALID")
+            if not all(ref(binding[k]) for k in ("builder_principal_ref", "builder_provenance_ref")):
+                fail("PG12_C1_V2_BUILDER_BINDINGS_INVALID")
+            mapped_builders[binding["path"]] = binding
+    else:
+        mapped_builders = None
     reviews = pg11_c5.get("reviews")
     if not isinstance(reviews, list) or not reviews:
         fail("PG12_C1_UPSTREAM_REVIEW_SET_INVALID")
@@ -77,9 +90,16 @@ def prepare_pg12_c1(*, pg11_c5, repo_ref, base_commit_sha, candidate_commit_sha,
         if p in review_paths:
             fail("PG12_C1_UPSTREAM_DUPLICATE_PATH")
         review_paths.add(p)
-        if (review.get("builder_principal_ref_reported") != builder_principal_ref or
-            review.get("builder_provenance_ref_reported") != builder_provenance_ref):
+        expected = mapped_builders.get(p) if mapped_builders is not None else {
+            "builder_principal_ref": builder_principal_ref,
+            "builder_provenance_ref": builder_provenance_ref,
+        }
+        if (expected is None or
+            review.get("builder_principal_ref_reported") != expected["builder_principal_ref"] or
+            review.get("builder_provenance_ref_reported") != expected["builder_provenance_ref"]):
             fail("PG12_C1_BUILDER_DRIFT")
+    if mapped_builders is not None and set(mapped_builders) != review_paths:
+        fail("PG12_C1_V2_BUILDER_COVERAGE_DRIFT")
     if not isinstance(changed_objects, list) or len(changed_objects) != len(review_paths):
         fail("PG12_C1_CHANGED_OBJECT_COVERAGE_INVALID")
     seen = set()
@@ -126,6 +146,8 @@ def prepare_pg12_c1(*, pg11_c5, repo_ref, base_commit_sha, candidate_commit_sha,
         "changed_paths_reported": sorted(seen),
         "changed_objects_reported": sorted(recorded, key=lambda x: x["path"]),
         "changed_objects_manifest_sha256": digest(changed_objects),
+        "builder_bindings_reported": sorted(deepcopy(builder_bindings), key=lambda v: v["path"]) if builder_bindings is not None else None,
+        "builder_bindings_sha256": digest(builder_bindings) if builder_bindings is not None else None,
         "builder_principal_ref_reported": builder_principal_ref,
         "builder_provenance_ref_reported": builder_provenance_ref,
         "base_commit_readback_verified": False,
