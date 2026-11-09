@@ -3,6 +3,7 @@
   "paths": {
     "scripts/lf_profile_native_resume.py": "RUNTIME_TESTING",
     "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
-    "sandbox/lf_contract_gate_test/changesets/profile-native-ig-blocked-receipt-20261108.json": "CHANGESET_MANIFEST"
+    "sandbox/lf_contract_gate_test/changesets/profile-native-ig-blocked-receipt-20261108.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_native_ig_blocked_bridge_v1.py": "RUNTIME_TESTING"
   }
 }
