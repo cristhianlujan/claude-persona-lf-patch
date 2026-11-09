@@ -6,6 +6,6 @@
     "sandbox/lf_contract_gate_test/db_write_transport/test_lf_skill_invoker_idempotence_source_v1.py": "TRAIN_WRITE_TRANSPORT",
     "sandbox/lf_contract_gate_test/db_write_transport/lf_skill_invoker_pg17_fixture_v1.sql": "TRAIN_WRITE_TRANSPORT",
     "sandbox/lf_contract_gate_test/db_write_transport/test_lf_skill_invoker_pg17_isolated.py": "TRAIN_WRITE_TRANSPORT",
-    ".github/workflows/lf-router-level2-advisory-tests.yml": "WORKFLOW"
+    "sandbox/lf_contract_gate_test/db_write_transport/lf_skill_invoker_pg17_evidence_20261109.json": "TRAIN_WRITE_TRANSPORT"
   }
 }
