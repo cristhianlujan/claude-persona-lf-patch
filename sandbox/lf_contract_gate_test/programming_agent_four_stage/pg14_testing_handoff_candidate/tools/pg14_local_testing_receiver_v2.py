@@ -5,7 +5,7 @@ explicitly NOT READY and a source-only PG13-to-PG14 bridge. ACCEPT means
 the local fixture has intact shape; not Testing production admission.
 """
 import hashlib,json
-from pg14_c2_completeness_guard_v1 import validate_pg14_c2_completeness,PG14C2CompletenessBlocked
+from pg14_c2_completeness_guard_v2 import validate_pg14_c2_completeness,PG14C2CompletenessBlocked
 
 class PG14LocalReceiverBlocked(ValueError):pass
 def block(s):raise PG14LocalReceiverBlocked(s)
@@ -39,11 +39,11 @@ def simulate_testing_receiver(*,pg14_bridge,pg14_c1,pg14_c2,pg14_c3,request_payl
             or pg14_c2.get("blind_test_contract_ref_reported")!="fn_submit_blind_test_contract"):
             block("PG14_RECEIVER_MISSING_CATALOG_OR_BLIND_TEST")
         obligations=pg14_c2.get("test_obligations_reported")
-        if not isinstance(obligations,list) or "B2B-RULE-TEST-001" not in {
+        if not isinstance(obligations,list) or pg14_c2.get("required_obligation_ref_reported") not in {
             o.get("obligation_ref") for o in obligations if isinstance(o,dict)}:
-            block("PG14_RECEIVER_MISSING_B2B_TEST_OBLIGATION")
+            block("PG14_RECEIVER_V2_MISSING_SPEC_OBLIGATION")
         pending=pg14_c2.get("pending_copy_texts_reported")
-        if not isinstance(pending,list) or not pending:
+        if not isinstance(pending,list) or (not pending and not pg14_c2.get("copy_applicability_ref_reported")):
             block("PG14_RECEIVER_MISSING_COPY_LIST")
         if (pg14_c1.get("testing_admission_invoked") is not False or
             pg14_c2.get("testing_invoked") is not False or
