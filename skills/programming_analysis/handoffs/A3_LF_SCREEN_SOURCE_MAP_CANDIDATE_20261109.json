@@ -1,0 +1,138 @@
+{
+  "schema_version": "A3_BUSINESS_SOURCE_MAP_CANDIDATE_V1",
+  "state": "SOURCE_ONLY_NO_A3_EXECUTION",
+  "business": "LF",
+  "business_router_state_at_readback": "ENABLED",
+  "artifact_family": "SCREEN",
+  "sample_target": "B2B-AUTH-001",
+  "source_selection": "GOVERNED_TARGET_BINDING_AND_MATERIAL_EVIDENCE_NEED",
+  "routing_rules": [
+    "Only authoritative host-bound business=LF may select this map; A1 user text does not authenticate business",
+    "SALY=RECOGNIZED_NOT_ENABLED must not be looked up or reclassified as LF",
+    "Favor one consolidated screen-contract read; expand to link tables only to resolve authority, currentness or material gaps",
+    "Separate source object status, relation/binding status, decision state, and applicable obligation",
+    "An approved underlying policy does not imply the screen-policy association is approved",
+    "Never use this document as A3's third canonical input; A3 retains REQUEST_CONTEXT_V1 + ANALYSIS_CHANGE_CLASSIFICATION_V1",
+    "Never assert implementation exists because definition exists; inspect GitHub baseline and AS-IS when necessary",
+    "All source readbacks must have exact ref/version/hash/currentness or typed unknown, and must preserve constraints"
+  ],
+  "source_order": [
+    {
+      "step": 1,
+      "need": "EXACT_TARGET_IDENTITY_AND_CONSOLIDATED_DEFINITIONS",
+      "source": "lf_ops.fn_screen_contract_v1(p_app_shell_code,p_module_code,p_screen_code)",
+      "provider": "SUPABASE",
+      "volatility": "STABLE",
+      "verified_exists": true,
+      "observed_contract_sections": [
+        "analytics",
+        "context",
+        "errors",
+        "evidence",
+        "fields",
+        "metadata",
+        "policies",
+        "profiles",
+        "rules",
+        "visual"
+      ],
+      "caution": "Contract content mixes statuses and is not blanket approval; screen status CANDIDATO at readback."
+    },
+    {
+      "step": 2,
+      "need": "CURRENT_RULES_WITH_LINK_AND_DECISION_STATUS",
+      "source": "lf_ops.pantallas + lf_ops.reglas_pantallas + lf_ops.reglas",
+      "provider": "SUPABASE",
+      "verified_exists": true,
+      "caution": "Filter by exact target ID; status VIGENTE and pendiente_decision must be resolved in source, not guessed from name."
+    },
+    {
+      "step": 3,
+      "need": "POLICIES_AND_BINDINGS",
+      "source": "lf_ops.pantallas_politicas and its verified policy objects",
+      "provider": "SUPABASE",
+      "verified_exists": true,
+      "caution": "Distinguish CANDIDATO associations from independently VIGENTE policy objects."
+    },
+    {
+      "step": 4,
+      "need": "ELEMENTS_STATES_VARIANTS_AND_DEPENDENCIES",
+      "source": "lf_ops.pantalla_elementos; lf_ops.pantallas_estados; lf_ops.pantalla_variantes; lf_ops.relaciones_b2b",
+      "provider": "SUPABASE",
+      "verified_exists": true,
+      "caution": "Check linkage and applicable decision status; avoid treating design candidates as approved."
+    },
+    {
+      "step": 5,
+      "need": "SCHEMA_CROSS_REFERENCES_AND_DEPENDENCIES",
+      "source": "inventory.objects; inventory.dependencies; inventory.fn_lookup_v3",
+      "provider": "SUPABASE",
+      "volatility": "STABLE",
+      "verified_exists": true,
+      "caution": "Technical inventory is evidence of cataloging; external business authority is not inferred."
+    },
+    {
+      "step": 6,
+      "need": "CURRENT_IMPLEMENTATION_AND_AS_IS_DELTA",
+      "source": "GitHub repository and exact ref authorized by LF run binding",
+      "provider": "GITHUB",
+      "verified_exists": true,
+      "caution": "Unresolved repository/commit is UNKNOWN, not proof that implementation does not exist."
+    },
+    {
+      "step": 7,
+      "need": "EKB_AND_HISTORICAL_DECISIONS_IF_MATERIAL",
+      "source": "public.lf_error_knowledge and linked official decisions",
+      "provider": "SUPABASE",
+      "verified_exists": true,
+      "caution": "EKB prevention is constraint/context, not a replacement for target-specific policy authority."
+    }
+  ],
+  "source_readback": {
+    "function_signature": "lf_ops.fn_screen_contract_v1(text,text,text) RETURNS TABLE(...contract jsonb)",
+    "function_volatility": "STABLE",
+    "sample_args": [
+      "B2B_APP_SHELL",
+      "B2B_AUTENTICACION",
+      "B2B-AUTH-001"
+    ],
+    "sample_screen_status": "CANDIDATO",
+    "sample_contract_version": "v1.2",
+    "sample_sections_count": 10,
+    "sample_section_keys": [
+      "analytics",
+      "context",
+      "errors",
+      "evidence",
+      "fields",
+      "metadata",
+      "policies",
+      "profiles",
+      "rules",
+      "visual"
+    ],
+    "business_catalog_readback": [
+      {
+        "business": "LF",
+        "status": "ENABLED"
+      },
+      {
+        "business": "SALY",
+        "status": "RECOGNIZED_NOT_ENABLED"
+      }
+    ]
+  },
+  "source_resolvers_reuse": [
+    "private.lf_evidence_resolver_registry_v1: LF_SUPABASE_READBACK_V1",
+    "private.lf_evidence_resolver_registry_v1: LF_GITHUB_SOURCE_READBACK_V1"
+  ],
+  "access_protection": {
+    "read_only": true,
+    "extra_sql_functions_created": false,
+    "router_modified": false,
+    "saly_enabled": false,
+    "currentness_attested_for_target": false,
+    "a3_runtime_dispatch_allowed": false
+  },
+  "next_step": "Bind source map through existing A3 source resolver under authenticated LF business and exact contract before runtime admission. No new A2 catalog."
+}
