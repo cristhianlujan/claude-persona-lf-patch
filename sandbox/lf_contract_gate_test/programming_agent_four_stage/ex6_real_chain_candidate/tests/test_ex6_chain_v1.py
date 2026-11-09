@@ -132,14 +132,19 @@ class EX6ChainV1Tests(unittest.TestCase):
         self.assertEqual(by["PG-05"]["outcome"],"PASS_SOURCE_ONLY")
         self.assertEqual(by["PG-06"]["outcome"],"PASS_FIXTURE_UNATTESTED")
         self.assertEqual(by["PG-07"]["outcome"],"PASS_FIXTURE_UNATTESTED")
-        self.assertEqual(by["PG-08"]["code"],"PG08_C1_BUILD_COMMANDS_MISSING")
+        self.assertEqual(by["PG-08"]["outcome"],"PASS_FIXTURE_UNATTESTED")
+        self.assertEqual(result["evidence"]["pg08_c1_reported_outcome"],"REPORTED_PASS_UNVERIFIED")
+        self.assertEqual(result["evidence"]["pg08_c2_format_aosp_exit_code"],1)
         self.assertEqual(by["PG-09"]["after_v2"],
                          "REPORTED_WITHIN_BUDGET_UNVERIFIED")
-        self.assertEqual(by["PG-12"]["code"],"PG12_C2_LINTER_DIGEST_INVALID")
+        self.assertEqual(by["PG-12"]["outcome"],"PASS_SOURCE_ONLY")
+        self.assertEqual(result["evidence"]["pg12_c2_status"],"CANDIDATE_NOT_ADMITTED")
         self.assertEqual(by["PG-13"]["code"],"C1_UPSTREAM_SCHEMA")
         self.assertEqual(by["PG-14"]["code"],"C1_UPSTREAM_SCHEMA")
         self.assertEqual(result["evidence"]["pg06_c4_real_code"],
-                         "PG06_C4_OBSERVATION_SCHEMA_INVALID")
+                         "PASS_SOURCE_ONLY")
+        self.assertEqual(result["evidence"]["rem_d4_process"]["reason"],
+                         "FORMAT_AOSP_EXIT_1")
         self.assertEqual(result["evidence"]["pg09_c1_request_diagnostic"],
                          "REQUIRES_DECISION")
         self.assertEqual(result["evidence"]["pg09_v2_subscription_cost"],
@@ -173,6 +178,9 @@ class EX6ChainV1Tests(unittest.TestCase):
                              unified.digest(official_plans))
             self.assertEqual(v["fixture_facts"]["fixture_lint"]["sha256"],
                              unified.digest(official_baseline))
+            self.assertFalse(v["fixture_facts"]["fixture_lint"]["used_as_ex6_c4"])
+            self.assertEqual(v["c4"]["observation_ref"],
+                             "ex6://sandbox/actions/runs/42707967927/artifacts/13715275651#baseline")
         finally:
             chain.uninstall()
 
