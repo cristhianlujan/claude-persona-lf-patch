@@ -62,12 +62,29 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         return blocked("A3_GOVERNED_SOURCE_READBACK_REQUIRED")
     if (resolved_sources.get("schema_version") != "LF_SCREEN_SOURCE_READBACK_V1"
             or resolved_sources.get("business") != "LF"
-            or resolved_sources.get("target_ref") != target
             or resolved_sources.get("source_function") != "lf_ops.fn_screen_contract_v1"):
         return blocked("A3_LF_SOURCE_IDENTITY_CONFLICT")
+    canonical_target = resolved_sources.get("target_ref")
+    if not isinstance(canonical_target, str) or not canonical_target.strip():
+        return blocked("A3_CANONICAL_TARGET_REQUIRED")
     ref = resolved_sources.get("screen_ref")
-    if ref != "supabase://lf_ops.pantallas/" + target:
+    if ref != "supabase://lf_ops.pantallas/" + canonical_target:
         return blocked("A3_EXACT_SCREEN_REF_MISMATCH")
+    # A1 intentionally retains the literal target mention, not a guessed ID.
+    # Resolution belongs to the existing A3 authorized source-readback seam.
+    # This adapter checks an untrusted source projection; it cannot attest it.
+    identity = None
+    if canonical_target != target:
+        identity = resolved_sources.get("target_identity_binding")
+        if (not isinstance(identity, dict)
+                or identity.get("requested_target_ref") != target
+                or target not in context["objective"].get("problem_statement", "")
+                or identity.get("resolved_target_ref") != canonical_target
+                or identity.get("source_ref") != ref
+                or identity.get("source_function") != resolved_sources["source_function"]
+                or identity.get("resolution_state") != "SOURCE_MATCH_CANDIDATE_UNATTESTED"
+                or identity.get("source_attested") is not False):
+            return blocked("A3_RAW_TARGET_IDENTITY_BINDING_MISSING_OR_UNVERIFIED")
     if (not isinstance(resolved_sources.get("screen_status"), str)
             or not isinstance(resolved_sources.get("contract_version"), str)):
         return blocked("A3_SCREEN_METADATA_MISSING")
@@ -147,7 +164,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         mod = importlib.util.module_from_spec(spec)
         try:
             spec.loader.exec_module(mod)
-            as_is = mod.project(resolved_sources["as_is_readback"], target)
+            as_is = mod.project(resolved_sources["as_is_readback"], canonical_target)
         except (OSError, ValueError, TypeError, AttributeError):
             return blocked("A3_AS_IS_PROJECTION_MODULE_UNAVAILABLE")
         if as_is.get("status") == "BLOCKED":
@@ -160,7 +177,15 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         "blocking_codes": gaps[:],
         "scope_alerts": alerts,
         "sufficiency_verdict": "NEED_MORE_EVIDENCE",
-        "business": "LF", "target_ref": target,
+        "business": "LF", "target_ref": canonical_target,
+        "declared_target_hint": target,
+        "target_identity_binding": {
+            "requested_target_ref": target,
+            "resolved_target_ref": canonical_target,
+            "source_ref": ref,
+            "resolution_state": "SOURCE_MATCH_CANDIDATE_UNATTESTED",
+            "source_attested": False,
+        },
         "target_granularity": cls["target_granularity"],
         "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN",
         "evidence_items": approved,
@@ -179,7 +204,8 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         "currentness_refs": [],
         "authority_binding_refs": [],
         "target_resolution": {
-            "target_ref": target,
+            "target_ref": canonical_target,
+            "declared_target_hint": target,
             "source_ref": ref,
             "declared_screen_status": resolved_sources["screen_status"],
             "contract_version": resolved_sources["contract_version"],
