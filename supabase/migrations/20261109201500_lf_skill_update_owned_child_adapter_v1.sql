@@ -102,6 +102,7 @@ BEGIN
     AND target_type='PERFIL' FOR UPDATE;
   IF NOT FOUND OR v_par.manifest->>'read_only' IS DISTINCT FROM 'true'
     OR v_par.manifest->>'no_write' IS DISTINCT FROM 'true'
+    OR v_par.manifest->>'no_promotion' IS DISTINCT FROM 'true'
     OR v_par.manifest->'router_profile_handoff'
        ->'router_authorization_receipt'->>'profile_execution_allowed'
        IS DISTINCT FROM 'true'
@@ -161,6 +162,14 @@ BEGIN
       AND (SELECT count(*) FROM public.lf_operation_execution_steps x
            WHERE x.execution_id=e.execution_id
              AND x.status='STEP_PASS_WITH_EVIDENCE')=v_required_count
+      AND NOT EXISTS (
+        SELECT 1 FROM public.lf_operation_step_contracts c
+        LEFT JOIN public.lf_operation_execution_steps x
+          ON x.execution_id=e.execution_id AND x.step_id=c.step_id
+             AND x.step_order=c.step_order
+        WHERE c.operation_code=v_op AND c.status='ACTIVE_ENFORCEMENT'
+          AND x.status IS DISTINCT FROM 'STEP_PASS_WITH_EVIDENCE'
+      )
   )
   SELECT count(*),count(DISTINCT target_path),
          min(target_path),min(execution_id)
