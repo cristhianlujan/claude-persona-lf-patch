@@ -9,7 +9,7 @@ from copy import deepcopy
 import re
 from typing import Any
 
-POLICY_TABLE = re.compile(r"^lf_ops\\.politicas_[a-z][a-z0-9_]*$")
+POLICY_TABLE = re.compile(r"^lf_ops\.politicas_[a-z][a-z0-9_]*$")
 POLICY_PK = re.compile(r"^[a-z][a-z0-9_]*_policy_id$")
 
 
@@ -28,6 +28,14 @@ def _references(config: Any, prefix: str = "$") -> list[dict]:
                 elif val is not None:
                     result.append({"role": key, "id": None, "path": pointer,
                                    "unresolved_reason": "POLICY_ID_NOT_POSITIVE_INTEGER"})
+            elif key in ("relation_key", "relation_keys"):
+                # Generic declared linkage can reference a central policy
+                # without duplicating its numeric ID inside the rule.
+                roles = [val] if isinstance(val, str) else val if isinstance(val, list) else []
+                for role in roles:
+                    if isinstance(role, str) and role.endswith("_policy_id"):
+                        result.append({"role": role, "id": None, "path": pointer,
+                                       "reference_kind": "DECLARED_POLICY_ROLE"})
             elif isinstance(val, (dict, list)):
                 result.extend(_references(val, pointer))
     elif isinstance(config, list):
@@ -139,15 +147,27 @@ def project(effective: Any, policy_links: Any, readback: Any,
         if config is not None and not isinstance(config, (dict, list)):
             return blocked("A3_POLICY_RULE_CONFIG_INVALID")
         refs = _references(config)
+        numeric_roles = {p["role"] for p in refs if p["id"] is not None}
+        # A declared relation is satisfied by a more specific numeric role,
+        # e.g. security_policy_id by mfa_security_policy_id.
+        refs = [
+            p for p in refs
+            if p["id"] is not None or not any(
+                r == p["role"] or r.endswith(p["role"]) for r in numeric_roles
+            )
+        ]
         if not refs:
             eligible.add(code)
             continue
         applicable = True
         for p in refs:
             total_refs += 1
-            options = [ref for ref, (_table, pk, pid) in by_key.items()
-                       if p["role"].endswith(pk) and p["id"] == pid]
-            if p["id"] is None or len(options) > 1:
+            if p["id"] is None and p.get("reference_kind") == "DECLARED_POLICY_ROLE":
+                options = [target for (role, target) in bindings if role == p["role"]]
+            else:
+                options = [ref for ref, (_table, pk, pid) in by_key.items()
+                           if p["role"].endswith(pk) and p["id"] == pid]
+            if (p["id"] is None and p.get("reference_kind") != "DECLARED_POLICY_ROLE") or len(options) > 1:
                 dependencies.append({
                     "rule_code": code, "reference_role": p["role"], "path": p["path"],
                     "status": "UNRESOLVED_POLICY_REFERENCE", "eligible_for_implementation": False,
@@ -171,6 +191,7 @@ def project(effective: Any, policy_links: Any, readback: Any,
             applicable = applicable and ok
             dependencies.append({
                 "rule_code": code, "reference_role": p["role"], "path": p["path"],
+                "reference_kind": p.get("reference_kind", "NUMERIC_POLICY_ID"),
                 "policy_target_ref": target,
                 "policy_status": obj["status"] if obj else "NOT_FOUND",
                 "policy_code": obj["policy_code"] if obj else None,
