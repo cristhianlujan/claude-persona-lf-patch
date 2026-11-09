@@ -48,6 +48,15 @@
     },
     {
       "step": 3,
+      "need": "MANDATORY_EFFECTIVE_AND_INHERITED_RULE_LINK_READBACK",
+      "source": "programacion.fn_input_effective_rule_links_v1(p_pantalla_id,'INPUT_GOVERNANCE')",
+      "provider": "SUPABASE",
+      "verified_exists": true,
+      "read_authorized_in_current_lf_context": true,
+      "caution": "Reconcile all 283 effective links against the 71 direct links; 212 DERIVED_GLOBAL are source-derived, never auto-promote recommendations; neither status nor source readback proves current authority."
+    },
+    {
+      "step": 4,
       "need": "POLICIES_AND_BINDINGS",
       "source": "lf_ops.pantallas_politicas and its verified policy objects",
       "provider": "SUPABASE",
@@ -55,7 +64,7 @@
       "caution": "Distinguish CANDIDATO associations from independently VIGENTE policy objects."
     },
     {
-      "step": 4,
+      "step": 5,
       "need": "ELEMENTS_STATES_VARIANTS_AND_DEPENDENCIES",
       "source": "lf_ops.pantalla_elementos; lf_ops.pantallas_estados; lf_ops.pantalla_variantes; lf_ops.relaciones_b2b",
       "provider": "SUPABASE",
@@ -63,7 +72,7 @@
       "caution": "Check linkage and applicable decision status; avoid treating design candidates as approved."
     },
     {
-      "step": 5,
+      "step": 6,
       "need": "SCHEMA_CROSS_REFERENCES_AND_DEPENDENCIES",
       "source": "inventory.objects; inventory.dependencies; inventory.fn_lookup_v3",
       "provider": "SUPABASE",
@@ -72,7 +81,7 @@
       "caution": "Technical inventory is evidence of cataloging; external business authority is not inferred."
     },
     {
-      "step": 6,
+      "step": 7,
       "need": "CURRENT_IMPLEMENTATION_AND_AS_IS_DELTA",
       "source": "GitHub repository and exact ref authorized by LF run binding",
       "provider": "GITHUB",
@@ -80,7 +89,7 @@
       "caution": "Unresolved repository/commit is UNKNOWN, not proof that implementation does not exist."
     },
     {
-      "step": 7,
+      "step": 8,
       "need": "EKB_AND_HISTORICAL_DECISIONS_IF_MATERIAL",
       "source": "public.lf_error_knowledge and linked official decisions",
       "provider": "SUPABASE",
@@ -134,5 +143,43 @@
     "currentness_attested_for_target": false,
     "a3_runtime_dispatch_allowed": false
   },
-  "next_step": "Bind source map through existing A3 source resolver under authenticated LF business and exact contract before runtime admission. No new A2 catalog."
+  "next_step": "Bind source map through existing A3 source resolver under authenticated LF business and exact contract before runtime admission. No new A2 catalog.",
+  "mandatory_effective_rule_inheritance": {
+    "state": "REQUIRED_SOURCE_READBACK_BEFORE_A3_RULE_SELECTION",
+    "source": "programacion.fn_input_effective_rule_links_v1(p_pantalla_id, 'INPUT_GOVERNANCE')",
+    "origin_types": [
+      "LEGACY_EXPLICIT",
+      "DECLARATIVE_APPLICABILITY_V1",
+      "DERIVED_GLOBAL"
+    ],
+    "input_location": "resolved_sources.effective_rule_readback",
+    "input_contract_note": "A3 retains exactly two canonical inputs: REQUEST_CONTEXT_V1 + ANALYSIS_CHANGE_CLASSIFICATION_V1; this is existing LF governed source evidence sidecar",
+    "readback_fields": [
+      "business=LF",
+      "target_ref",
+      "screen_id (canonical numeric id)",
+      "consumer=INPUT_GOVERNANCE",
+      "source_function",
+      "source_ref",
+      "source_attested=false",
+      "rules[{code,status,pending_decision,source_ref,binding_source}]"
+    ],
+    "validation": "All direct rows must match their effective counterparts. DERIVED_GLOBAL entries must be distinct, VIGENTE and not pending. Missing, drifted or duplicated readback BLOCKS A3, never quietly uses only direct rules.",
+    "scope_rule": "Use all VIGENTE/no-pending effective rules as source-only candidates. Exclude CANDIDATO/pending. Never claim currentness nor semantic applicability for derived global from status alone.",
+    "t_remed_similarity": "programacion.fn_t_remed_inherited_rules_v1 returns recommendations from similar screens, NOT authorized effective links; do not add automatically. Current read-only user lacks EXECUTE; no bypass attempted.",
+    "sample_readback_20261109": {
+      "target": "B2B-AUTH-001",
+      "screen_id": 51,
+      "total_effective": 283,
+      "distinct_rule_ids": 283,
+      "established_status_vigente_no_pending": 250,
+      "candidato": 33,
+      "derived_global": 212,
+      "declared_applicability": 2,
+      "legacy_explicit": 69,
+      "crosscheck_missing_direct": 0,
+      "crosscheck_inherited_overlap_direct": 0,
+      "currentness_attested": false
+    }
+  }
 }
