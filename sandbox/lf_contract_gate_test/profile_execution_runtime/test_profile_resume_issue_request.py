@@ -585,5 +585,70 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                 self.assertFalse(receipt["profile_execution_complete"])
 
 
+    def _child_step_body(self):
+        return {
+            "schema_version": "LF_PROFILE_NATIVE_SKILL_STEP_BATCH_REQUEST_V1",
+            "execution_id": "EXEC-PROFILE-GATE2-" + "A" * 24,
+            "child_execution_id": "EXEC-SKILL-49797550002EE84C",
+            "steps": [
+                {"step_id": "router", "evidence_ref": "git:verified-router",
+                 "evidence_payload": {"router_read": "c" * 64,
+                                      "action": "SKILL_UPDATE", "blocking_codes": []}},
+                {"step_id": "skill_resolve", "evidence_ref": "git:owner-readback",
+                 "evidence_payload": {"codigo_activo": "ACT-0045",
+                                      "repo_path": "skills/profile_creator",
+                                      "exact_skill_resolved": True, "blocking_codes": []}},
+            ],
+        }
+
+    def test_child_step_batch_parses_under_same_parent_without_credentials(self):
+        body = self._child_step_body()
+        self.event["issue"]["body"] = json.dumps(body)
+        result = self.check()
+        self.assertEqual(result["kind"], "SKILL_STEP_BATCH")
+        self.assertEqual(result["execution_id"], body["execution_id"])
+        self.assertEqual(result["child_execution_id"], body["child_execution_id"])
+        self.assertEqual(len(result["steps"]), 2)
+
+    def test_child_step_batch_rejects_forged_pass_wrong_order_and_write_step(self):
+        original = self._child_step_body()
+        for mutate in [
+            lambda x: x.update(service_role="FAKE"),
+            lambda x: x.update(child_execution_id="EXEC-ATTACKER"),
+            lambda x: x["steps"].reverse(),
+            lambda x: x["steps"].append(x["steps"][0]),
+            lambda x: x["steps"][0].update(step_id="github_write"),
+            lambda x: x["steps"][0]["evidence_payload"].update(server_assertions=["PASS"]),
+            lambda x: x["steps"][0]["evidence_payload"].update(step_result="STEP_PASS_WITH_EVIDENCE"),
+        ]:
+            item = json.loads(json.dumps(original))
+            mutate(item)
+            self.event["issue"]["body"] = json.dumps(item)
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                self.check()
+
+    def test_child_step_batch_uses_existing_oidc_edge_action_only(self):
+        body = self._child_step_body()
+        self.event["issue"]["body"] = json.dumps(body)
+        self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
+        with patch.dict(os.environ, self.env, clear=True):
+            m = runpy.run_path(str(SCRIPT), run_name="skill_child_step_test")
+            requests = []
+            def edge(url, b, headers):
+                requests.append(b)
+                self.assertEqual(b["action"], "profile_native_skill_step_batch_v1")
+                self.assertEqual(b["execution_id"], body["execution_id"])
+                self.assertEqual(b["child_execution_id"], body["child_execution_id"])
+                self.assertNotIn("service_role", json.dumps(b).lower())
+                return 200, {"outcome": "SKILL_CHILD_STEP_BATCH_RECORDED",
+                    "execution_id": b["execution_id"],
+                    "child_execution_id": b["child_execution_id"], "steps_recorded": 2}
+            with patch.dict(m["main"].__globals__, {
+                "oidc": lambda: "test-oidc-token", "call_json": edge,
+            }):
+                self.assertEqual(m["main"](), 0)
+        self.assertEqual(len(requests), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
