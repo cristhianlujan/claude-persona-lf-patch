@@ -1,70 +1,80 @@
-# H4 — EX6 real source evidence, candidate (NOT ADMITTED)
+# H4 · EX6 → PG-04…PG-14 · resultados reales v1 (candidato, NO ADMITIDO)
 
-**Status:** PARTIAL. Original EX6 evidence preserved; real PG04/PG05 original producers PASS_SOURCE_ONLY, PG06 blocks with an exact reason and PG07–PG14 are not invoked. No stage may be marked PASS from mere file hashes. This candidate stays in draft; it is not eligible for `ready-to-merge` until an independently reviewed H4 completion.
+**Corte:** 2026-11-09. **PR:** #3740 (draft). **Estado:** H4 PARCIAL; PG-06 C1 bloquea por dependencia PG-01 no acreditada. **No hay v2 nuevo**, porque el único rechazo observado no corresponde a PG-08/PG-09. No declarar el objetivo PG-04→PG-14 completado.
 
-## Original source
-- Sandbox run: https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914 (worker-native, SUCCESS, attempt 1)
-- Source base: `53ab6b1a85da95f3e2a38d7f3298af731c6698ab`
-- Proposal commit: `13ef9c319fb62f7e08f6f030d447c60ee7bfa7f5`
-- Task pack SHA-256: `31a01a43c13d1a6c8ef5d861825e03211d05566abecded7eeea023dcfaba048e`
-- Proposal SHA-256: `c469a00ebb78d1346cecab0b19bd7c385e13e428a2eaf1fccea61e30dc838d78`
-- Run and feedback status: PASS **reported by source CI**; production authority False; receipt authenticated False; hidden oracle contents unavailable and never accessed.
+## Procedencia exclusiva de EX6
 
-## Original binary ZIPs (unaltered; SHA-256)
-| Filename | Artifact ID | Original ZIP SHA-256 | Git blob OID |
-|---|---:|---|---|
-| `evidence/native-attempt-proof.zip` | 13699547221 | `237baba0c483f1330244dff94314fc883a7321b1f41295686dc501b4f7527114` | `b176e839dab6a526192bb2032e7a03e161667a0a` |
-| `evidence/native-visible-feedback-and-cost.zip` | 13699208046 | `fb76b00b8870ebc0f11b509e5770a185f58e2564b4af8e9fb9349a74e9625e5b` | `ff719db0d05f037a845117810f69bcf95e4289fa` |
-| `evidence/native-verified-patch.zip` | 13699771867 | `57f73f828ec5a926b6f77e712ed952e2a7c79a1471e16f73f6810cb88ec4dd04` | `81549f61cef3de587b136fba8af26a06ea6afd9e` |
+- Run source: https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42674262914, intento 1/3, resultado público PASS.
+- Sandbox base: `53ab6b1a85da95f3e2a38d7f3298af731c6698ab`.
+- Commit de propuesta: `13ef9c319fb62f7e08f6f030d447c60ee7bfa7f5`.
+- Commit de incorporación a main sandbox: PR #53, `912c4ad9ea71f48edbd1ac58089441f9ed2c3449`.
+- `task_pack_sha256`: `31a01a43c13d1a6c8ef5d861825e03211d05566abecded7eeea023dcfaba048e`.
+- `proposal_sha256`: `c469a00ebb78d1346cecab0b19bd7c385e13e428a2eaf1fccea61e30dc838d78`.
+- `holdout_sha256` público en registro: `c2b583ebcc14e8e73e1b66eff38d86dd3814b75e5f5e1857de65deee5c8b1a57`. El recibo público reporta PASS; ningún archivo, resultado detallado ni comando del examen oculto fue buscado o reconstruido.
+- Spec base público `REMINDERS_SPEC.md` Git blob `01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72`.
+- Registro EX6 Git blob `15fd94d238215dbbc21a3bdc3cc719028c8513e7`.
+- Sobre público de propuesta Git blob `85761b8722f553fe25cf70d937105a4c35ce871e`.
 
-Original member SHA-256:
-- `attempt-proof.json`: `e45dd320598739b959849137033e6908fa6a12cfbdb0faacdce1a009f6120336`
-- `feedback.json`: `9b796e549eccc582ee0717d4bcf4a6859237c49eca6699fe403d9075595e66bb`
-- `cost.json`: `78d6445696d10a2b1bb15f1bc936cd05c3882bd64bd5327757d1b7ff0cbffe25`
-- `status.json`: `c2725691a6f941648becd262ff45a51b3bcb1a883ac0fd81b274019edc0cb6af`
-- `worker.patch`: `e0c3675f7bc7b2b80ed199be3cd5fffadae564d8b354da75ef6c56bb21bf7ce5`
+| ZIP original de Actions, **sin edición** | SHA-256 | Git blob |
+|---|---|---|
+| `native-attempt-proof.zip` (13699547221) | `237baba0c483f1330244dff94314fc883a7321b1f41295686dc501b4f7527114` | `b176e839dab6a526192bb2032e7a03e161667a0a` |
+| `native-visible-feedback-and-cost.zip` (13699208046) | `fb76b00b8870ebc0f11b509e5770a185f58e2564b4af8e9fb9349a74e9625e5b` | `ff719db0d05f037a845117810f69bcf95e4289fa` |
+| `native-verified-patch.zip` (13699771867) | `57f73f828ec5a926b6f77e712ed952e2a7c79a1471e16f73f6810cb88ec4dd04` | `81549f61cef3de587b136fba8af26a06ea6afd9e` |
 
-The original patch creates only:
-1. `apps/time-service/src/main/java/lf/sandbox/time/reminder/ReminderStats.java`
-2. `apps/time-service/src/main/java/lf/sandbox/time/reminder/ReminderStatsController.java`
-3. `apps/time-service/src/main/java/lf/sandbox/time/reminder/ReminderStatsService.java`
+Los SHA de miembros originales se validan en `ex6_real_world_v1.py` sin reescribir ZIP:
+`attempt-proof.json=e45dd320598739b959849137033e6908fa6a12cfbdb0faacdce1a009f6120336`,
+`feedback.json=9b796e549eccc582ee0717d4bcf4a6859237c49eca6699fe403d9075595e66bb`,
+`cost.json=78d6445696d10a2b1bb15f1bc936cd05c3882bd64bd5327757d1b7ff0cbffe25`,
+`status.json=c2725691a6f941648becd262ff45a51b3bcb1a883ac0fd81b274019edc0cb6af`,
+`worker.patch=e0c3675f7bc7b2b80ed199be3cd5fffadae564d8b354da75ef6c56bb21bf7ce5`.
 
-## PG-04→PG-14: original producers, real EX6, v1 first
+## Origen del alcance y hunks
 
-Executed on immutable candidate HEAD `1f73f343edf1ca230d1a9f722880efc7b86fe1c9` in [GitHub Actions run 42694144179](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694144179). All ten EX6 integrity, scope, anti-contamination and isolation tests passed. The chain builder calls **original PG-04, PG-05 and PG-06 C1 v1 producer functions**; later producers were not invoked after the earliest concrete block.
+`tools/ex6_source_truth_v1.py` lee **solo** el spec Lote D real (REM-D1–D4), `task_spec` EX6, sobre público de propuesta, y los 3 ZIP. Todos los snapshots Git se verifican por blob SHA; el diff real tiene exactamente **tres hunks ADD**, un archivo nuevo por hunk. `authorize_from_real_hunks` liga los 3 a un solo batch `ex6://batch/EX6-SOL-001` y un scope distinto por archivo:
 
-| Stage | Before v2 | After v2 | Exact code / source |
+| Archivo | Obligaciones trazadas |
+|---|---|
+| `ReminderStats.java` | REM-D1 |
+| `ReminderStatsService.java` | REM-D2 |
+| `ReminderStatsController.java` | REM-D3, REM-D4 |
+
+Las rutas existentes permanecen protegidas, con escritura restringida a estos tres archivos. El sobre original y el diff de Git tienen idénticas líneas de código: la comparación permite quitar **únicamente** las tres líneas añadidas `index 0000000..OID` de metadatos Git para cotejarlos. Ninguna línea de fuente es normalizada.
+
+## Corrida original de productores v1 · antes/después
+
+Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution`, corrida [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943), que ejecutó los productores originales PG-04, PG-05 y PG-06 C1. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
+
+| Etapa | Antes de v2 · productor real EX6 | Después de v2 | Código exacto o límite |
 |---|---|---|---|
-| PG-04 | PASS_SOURCE_ONLY | NOT_APPLICABLE | Original partition/dossier/DoD/review and exit producers; no production authority |
-| PG-05 | PASS_SOURCE_ONLY | NOT_APPLICABLE | Original C1–C5 and PG05→PG06 exit; no production authority |
-| PG-06 | BLOCK | NOT_APPLICABLE | `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
-| PG-07 | UPSTREAM_BLOCKED | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
-| PG-08 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-09 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-10 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-11 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-12 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-13 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
-| PG-14 | UPSTREAM_BLOCKED | NOT_RUN | same upstream code; producer not invoked |
+| PG-04 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | Partition, DoD, coverage, review request y exit originales; sin autoridad |
+| PG-05 | **PASS_SOURCE_ONLY** | SIN_V2, mismo candidato | C1–C5 y handoff originales; sin locks ni permisos de escritura |
+| PG-06 | **BLOCK** | SIN_V2 · BLOCK | `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
+| PG-07 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | `UPSTREAM_BLOCKED:PG-06:PG06_C1_PG01_DECISION_BINDING_INCOMPLETE` |
+| PG-08 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-09 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente; v1 costo nativo **no probado con EX6 aún** |
+| PG-10 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-11 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-12 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-13 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
+| PG-14 | **NOT_RUN_UPSTREAM_BLOCKED** | NOT_RUN | Mismo bloqueo ascendente |
 
-**Why not bypass PG06:** its first original contract requires independently attested PG01 currentness authority, decision digest and related binding. None is in the allowed EX6 ZIPs, Lote D specification or task spec. Passing a fabricated fixture would contaminate the claimed real chain. `EX6SourceBlocked` is separate from the actual original PG06 rejection.
+**Importante:** los campos de manifiesto A9/PG03 usados para construir el paquete source-only PG-04 son candidatos explícitamente `ex6://unattested/`; **no son certificaciones de origen, decisiones de Análisis ni autenticación**. El contrato original PG-04 devuelve `CANDIDATE_NOT_ADMITTED`. No se debe confundir ese PASS estructural con un cierre de PG-04 productivo.
 
-**No v2 built or invoked:** the expected `PG09_C1` cost projection mismatch cannot yet be demonstrated from the EX6 original-producer chain; `PG08_C1/C8` already allow GPT_NATIVE and have not rejected DETERMINISTIC_TOOL on EX6. Versions v1 and their producers are unchanged.
+**PG-06 C1:** se pasó `pg01_currentness_binding=None` explícitamente, porque ninguno de los artefactos públicos EX6 es un recibo `CURRENTNESS_AUTHORITY` de PG-01. El productor **real** devolvió `PG06_C1_PG01_DECISION_BINDING_INCOMPLETE`. Sustituirlo por hashes inventados permitiría simular avance de PG-06 a PG-14, violando el mandato.
 
-Additional baseline synthetic regression, executed locally on the unchanged producer tree (not a CI attestation): PG04 29/29, PG05 13/13, PG06 15/15. `install()`/`uninstall()` was also exercised by the 10/10 CI test suite.
+## Costos y autoridad
 
-## Validated public evidence, not the chain
-- ZIP/member SHA-256, Git blob OIDs, canonical feedback SHA, task and proposal binding, `api_calls=0`, `real_api_usage=false`, `total_usd=0` scoped to `incremental_api`, subscription `NOT_EVALUATED`.
-- Both visible acceptance commands report PASS / return code 0.
-- Reported authority is `REAL_SANDBOX_UNAUTHENTICATED`; no invented blind-test evidence, no SUPER_ADMIN signature.
-- New tests mutate one ZIP byte and assert fail-closed. Tests do not assert the downstream chain.
+En `cost.json`: `api_calls=0`, `real_api_usage=false`, `total_usd=0`, `cost_scope=incremental_api`, `subscription_cost=NOT_EVALUATED`. No equivale a costo total cero. `executor_mode=GPT_NATIVE`. Todos los flags `production_authority`, `handoff_allowed` y `receipt_authenticated` quedan `False`.
 
-## Remaining required work before H4 approval
-1. Obtain independently verifiable PG01 currentness binding for the immutable EX6 task base; do not infer or forge it from native Worker receipts.
-2. Resume the original PG06 producer chain with genuine baseline/toolchain/reversibility material; repeat downstream original PG07–PG14 only if each predecessor is actually source-backed.
-3. Only on an actual producer rejection, introduce narrowly scoped independent v2 files (PG09 C1 native zero API if observed; PG08 C1/C8 DETERMINISTIC_TOOL only if exercised). Keep all v1 original code unchanged.
-4. Negatives: native nonzero API, missing/mismatched proposal SHA, unknown mode, and byte-for-byte WORKER_API v1 equivalence.
-5. Repeat producer chain and CI tests, document per-stage after-v2 results. Keep PG12/14 PostgreSQL readbacks disposable (never production).
-6. Require Claude review, then a PASE/Train manifest before any `ready-to-merge`.
+## Pruebas ejecutadas sin contaminar suites
 
-**No Supabase writes; no merge/train dispatched; no producer v1 edits.**
+- [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943): 10/10 tests EX6; 29/29 tests sintéticos PG-04 v1; 13/13 tests sintéticos PG-05 v1. Todos SUCCESS. Los productores v1 y las pruebas originales no se modificaron.
+- `install()/uninstall()` restaura `sys.path`; no hay cambios de funciones/constantes sintéticas.
+- Anticontaminación: los campos del resultado de `source_truth()` no contienen `ex5c` ni `lote-c`. Fuente de verdad EX6 no lee bundles del ejercicio previo.
+- Fallo de un byte de cualquiera de los ZIP originales se rechaza. Sobre y parche se atan por SHA y por código byte-a-byte salvo metadatos `index`.
+
+## Rechazo que sí justifica trabajo siguiente
+
+**Bloqueo de procedencia de PG-01**, no un defecto en contratos v1 PG-08/PG-09. Antes de crear PG-09 C1 v2 o PG-08 C1/C8 v2, se necesita una vinculación PG-01 real y autorizada —o una decisión gobernada que permita un marcador `unattested`—, sin tocar Análisis productivo. Luego se reejecuta PG-06→PG-14 para observar el siguiente rechazo exacto. La necesidad funcional prevista de costo API conocido 0 en PG-09 sigue siendo hipótesis de revisión estática hasta esa prueba.
+
+**No se crearon v2 sin prueba. No hay SUPABASE writes, SUPER_ADMIN, merge, Train, cambios a `main`, cambios v1 ni `vendor/`. No poner `ready-to-merge`.**
