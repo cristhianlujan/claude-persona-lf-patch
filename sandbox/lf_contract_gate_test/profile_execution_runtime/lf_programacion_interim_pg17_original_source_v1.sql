@@ -4,6 +4,12 @@
 -- Never apply this fixture to Supabase.
 CREATE SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE TABLE public.lf_profile_selection_registry_v1
+  (profile_code text PRIMARY KEY, descriptor_status text);
+INSERT INTO public.lf_profile_selection_registry_v1 VALUES
+  ('PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF','CURRENT'),
+  ('PERFIL-UI-ARCHITECT','CURRENT'),
+  ('PERFIL-PRODUCT-DIRECTOR-LF','CURRENT');
 CREATE TABLE public.lf_profile_selector_policy_v1
   (profile_code text PRIMARY KEY, entry_policy text, channels text[]);
 CREATE TABLE public.lf_profile_write_authority_v1
