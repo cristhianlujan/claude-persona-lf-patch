@@ -25,6 +25,12 @@ class ProfileIGReadOnlyAnalysisSourceTest(unittest.TestCase):
         cls.guard = cls.original_source.split(BEGIN, 1)[1].split(END, 1)[0]
         cls.prior_source = cls.original_source.replace(BEGIN + cls.guard, "", 1).removesuffix(";\n")
 
+    def test_atomic_deployment_prestate_requires_exact_live_source(self):
+        self.assertIn("DO $lf_profile_ig_analysis_prestate$", self.sql)
+        self.assertIn("'public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)'::regprocedure", self.sql)
+        self.assertIn("IS DISTINCT FROM '231072262af6be9fe3e03e68d1550c7d'", self.sql)
+        self.assertIn("RAISE EXCEPTION 'BLOCK_PROFILE_IG_ANALYSIS_BASELINE_DRIFT'", self.sql)
+
     def test_exact_live_baseline_preserved_outside_one_guard(self):
         self.assertEqual(
             hashlib.md5(self.prior_source.encode("utf-8")).hexdigest(),
