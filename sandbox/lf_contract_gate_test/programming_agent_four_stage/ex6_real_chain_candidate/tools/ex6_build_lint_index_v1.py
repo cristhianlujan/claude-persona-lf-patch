@@ -1,7 +1,7 @@
-"""EX6 run 42707967927: provenance-gated summary, NOT a raw immutable receipt.
+"""EX6 run 42707967927: original ZIP readback and provenance-gated summary.
 
-The original two-snapshot ZIP remains external to this candidate. The index is
-derived from original download and MUST NOT be used as an authenticated receipt
+The original two-snapshot ZIP is preserved as an exact Git blob. The index is
+derived from original download and MUST NOT replace raw ZIP validation
 in a production judge. In particular AOSP candidate exit=1 is a real negative.
 """
 from __future__ import annotations
@@ -50,9 +50,10 @@ def summary():
         raise EX6EvidenceBlocked("EX6_EVIDENCE_AUTHORITY_DRIFT")
     return obj
 
-def original_zip_integrity(archive_path: Path):
+def original_zip_integrity(archive_path: Path | None = None):
     """Actual original downloaded artifact must be byte-identical; no synthesis."""
     import zipfile
+    archive_path = archive_path or (EVIDENCE / "ex6-build-lint-aosp-two-snapshots-v1.zip")
     raw=archive_path.read_bytes()
     if hashlib.sha256(raw).hexdigest()!=ZIP_SHA:
         raise EX6EvidenceBlocked("EX6_EVIDENCE_ORIGINAL_ZIP_SHA_MISMATCH")
