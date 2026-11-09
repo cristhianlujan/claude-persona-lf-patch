@@ -581,7 +581,6 @@ def build_semantic_receipt(review):
 
 def main():
     request = governed_request()
-    source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
     if isinstance(request, dict) and request.get("kind") == "SKILL_PLAN":
@@ -660,6 +659,10 @@ def main():
                           "skill_code": request["skill_code"], "execution_id": request["execution_id"],
                           "result": result if ok else None}, ensure_ascii=False))
         return 0 if ok else 1
+    # Source revision is required only for profile BEGIN/RESUME, not for
+    # profile-owned skill invocations: OIDC + server-side parent authority
+    # already bind the call to an existing execution.
+    source_revision = os.environ["GITHUB_SHA"]
     if isinstance(request, dict) and request.get("kind") == "BEGIN":
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical

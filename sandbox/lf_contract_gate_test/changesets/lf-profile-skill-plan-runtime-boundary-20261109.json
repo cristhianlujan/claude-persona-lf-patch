@@ -1,0 +1,7 @@
+{
+  "solution_ref": "lf-profile-skill-plan-runtime-boundary-20261109",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-skill-plan-runtime-boundary-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
