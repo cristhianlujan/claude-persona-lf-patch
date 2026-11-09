@@ -16,20 +16,23 @@ def span(needle, dimension):
 
 def fixture():
     intent={
+       "schema_version":"A1_INTENT_ANALYSIS_CANDIDATE_V1",
        "operation":{"kind":"IMPLEMENT"},
        "target":{"artifact_kind":"SCREEN","raw_mentions":[TARGET]},
        "desired_outcome":"Login B2B con reglas aprobadas",
        "explicit_constraints":[{"text":x} for x in CONSTRAINTS],
        "evidence_spans":[span("Programa","OPERATION"),span(TARGET,"ARTIFACT"),span("b2b","ACTOR_SCOPE"),span(CONSTRAINTS[0],"CONSTRAINT"),span(CONSTRAINTS[1],"NEGATION")]
     }
-    context={"objective":{"problem_statement":RAW,"desired_outcome":intent["desired_outcome"]},
+    context={"schema_version":"REQUEST_CONTEXT_V1","objective":{"problem_statement":RAW,"desired_outcome":intent["desired_outcome"]},
              "target_hints":[TARGET],"constraints":CONSTRAINTS[:]}
-    sig={"business":"LF","target_ref":TARGET,"depth_signals":{"materiality_level":"UNKNOWN"}}
-    a2={"business":"LF","status":"NEED_MORE_EVIDENCE","source_attested":False,
-        "independent_judge_verified":False,"next_step":None,
-        "classification":{"target_ref":TARGET,"change_type":"IMPLEMENT","target_granularity":"SCREEN",
+    sig={"schema_version":"ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1","business":"LF","target_ref":TARGET,"depth_signals":{"materiality_level":"UNKNOWN"}}
+    a2={"schema_version":"A2_INTERNAL_STEP_CANDIDATE_RESULT_V1","skill_code":"PROGRAMMING_ANALYSIS_LF","step_code":"A2","business":"LF",
+        "status":"NEED_MORE_EVIDENCE","source_attested":False,
+        "independent_judge_verified":False,"operationally_integrated":False,"effects_executed":False,"next_step":None,
+        "classification":{"schema_version":"ANALYSIS_CHANGE_CLASSIFICATION_V1","target_ref":TARGET,"change_type":"IMPLEMENT","target_granularity":"SCREEN",
                            "signals_sha256":_digest(sig)}}
-    a1={"skill_code":"PROGRAMMING_ANALYSIS_LF","business":"LF","status":"VALID_OUTPUT",
+    a1={"schema_version":"A1_INTERNAL_STEP_CANDIDATE_RESULT_V1","skill_code":"PROGRAMMING_ANALYSIS_LF","step_code":"A1","business":"LF","status":"VALID_OUTPUT",
+        "external_authority_verified":False,"operationally_integrated":False,"effects_executed":False,
         "interpretation_state":"SEMANTIC_REVIEWED_CANDIDATE","semantic_review_required":False,
         "next_capability":"A2","semantic_review_identity_verified":False,
         "semantic_reviewer_ref":"fixture://non-independent",
