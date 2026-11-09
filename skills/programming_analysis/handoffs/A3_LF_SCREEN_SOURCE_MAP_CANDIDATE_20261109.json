@@ -197,9 +197,9 @@
       "policy_objects[{table,primary_key,policy_id,policy_code,status,parameters,source_ref,read_origin,read_source_ref}]",
       "supplemental_policy_source_refs[]: exact refs for canonical policy rows absent from consolidated contract"
     ],
-    "effective_rules_required": "effective_rule_readback.rules[] must each include 'config' = lf_ops.reglas.valor_config (object, list or null), for approved AND pending rules, allowing readback parity and recursive extraction of numeric *_policy_id references",
+    "effective_rules_required": "effective_rule_readback.rules[] must each include 'config' = lf_ops.reglas.valor_config (object, list or null), for approved AND pending rules, allowing readback parity and recursive extraction of numeric *_policy_id references; also inspect declaration fields relation_key/relation_keys ending in _policy_id when rules intentionally delegate numeric lookup to a screen-level binding",
     "screen_policy_links_required": "policy_links[] must each carry reference_role and policy_target_ref in addition to source_ref, policy_kind, status",
-    "policy_scope": "all effective rule references, including inherited/DERIVED_GLOBAL, plus all screen policy binding objects, not only 13 direct links; compare exact numeric IDs, status, role and source refs",
+    "policy_scope": "all effective-rule numeric *_policy_id refs and generic relation_key/relation_keys declarations (even without embedded numeric ID), including inherited DERIVED_GLOBAL, plus every screen-policy binding object",
     "partial_pending_policy_behavior": "policy status not VIGENTE or screen association not VIGENTE => exclude only that policy-dependent rule/function from implementation scope, keep unrelated approved rules; record references and alerts",
     "fail_closed": "missing mandatory source/readback fields, duplicate policy IDs/source_ref, incomplete rule configs, link-target mismatch, drift => A3 BLOCKED (inventory unreliable), never falsely approved",
     "attestation_note": "SQL readback and candidate projection are NOT currentness attestation, independent judge, A4 permission or runtime",
@@ -217,7 +217,15 @@
       "missing_object_status": "CANDIDATO",
       "missing_object_code": "SEC-B2B-TRUSTED-DEVICE",
       "all_screen_binding_links_status": "CANDIDATO",
-      "note": "source-only observed facts; no authorized implementation binding"
+      "note": "source-only observed facts; no authorized implementation binding",
+      "indirect_reference_declarations": [
+        "B2B-RULE-RATE-001:rate_limit_policy_id",
+        "B2B-RULE-TIMEOUT-001:timeout_policy_id"
+      ],
+      "total_reference_occurrences_including_declared": 16,
+      "distinct_rules_with_policy_dependencies": 12,
+      "central_total_including_typed_fallback": 14,
+      "central_candidate_including_typed_fallback": 6
     }
   }
 }
