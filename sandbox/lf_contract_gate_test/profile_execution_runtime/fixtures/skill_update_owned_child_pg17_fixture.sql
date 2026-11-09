@@ -25,6 +25,8 @@ CREATE TABLE public.lf_operation_contracts(
  operation_code text,status text,contract_code text,contract_sha text);
 CREATE TABLE public.lf_operation_steps(
  operation_code text,step_id text,step_order integer,active boolean);
+CREATE TABLE public.lf_operation_step_contracts(
+ operation_code text,step_order integer,step_id text,status text);
 CREATE TABLE public.lf_operation_step_judge_bindings(
  operation_code text,step_id text,step_order integer,status text,
  clean_result_value text,judge_code text);
@@ -83,13 +85,28 @@ INSERT INTO public.lf_operation_contracts VALUES(
  'CONTRACT-ACTUALIZACION-SKILL-LF-v0.1',NULL);
 INSERT INTO public.lf_operation_steps VALUES(
  'ACTUALIZACION_SKILL_LF','init_execution',0,true);
+INSERT INTO public.lf_operation_step_contracts VALUES
+ ('ACTUALIZACION_SKILL_LF',0,'init_execution','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',10,'router','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',20,'skill_resolve','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',30,'baseline_read','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',40,'change_scope','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',50,'regression_plan','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',60,'pre_write_execution_binding_gate','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',70,'github_write','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',80,'github_readback','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',90,'deterministic_validation','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',100,'semantic_judge','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',110,'regression_after','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',120,'close','ACTIVE_ENFORCEMENT'),
+ ('ACTUALIZACION_SKILL_LF',130,'report_output','ACTIVE_ENFORCEMENT');
 INSERT INTO public.lf_operation_step_judge_bindings VALUES(
  'ACTUALIZACION_SKILL_LF','init_execution',0,'ACTIVE_ENFORCEMENT',
  'STEP_PASS_WITH_EVIDENCE','JUDGE-ACTUALIZACION-SKILL-LF-v0.1');
 INSERT INTO public.lf_operation_execution VALUES(
  'EXEC-PROFILE-GATE2-FIXTURE','EJECUCION_PERFIL_LF','PERFIL',
  'PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF','IN_PROGRESS',
- jsonb_build_object('read_only',true,'no_write',true,
+ jsonb_build_object('read_only',true,'no_write',true,'no_promotion',true,
  'router_profile_handoff',jsonb_build_object('router_authorization_receipt',
    jsonb_build_object('profile_execution_allowed',true))),
  repeat('a',64),NULL,NULL,NULL,'FIXTURE');
