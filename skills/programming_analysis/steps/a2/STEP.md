@@ -125,3 +125,14 @@ Pruebas locales sintéticas: `python -m unittest discover -s skills/programming_
 - **Ciclo P0 sin resolver:** A1 `REQUIRES_DECISION` por ambigüedad material no puede convertirse en `VALID_OUTPUT` ni abrir A3 por atajo. El preview de investigación conserva `a2_classification=null`, `a3_canonical_inputs=null`, `a3_dispatch_allowed=false`. La preclasificación de investigación A2-P y el gate research-only de A3 aún necesitan revisión independiente, señales tipadas y RUN/autoridad verificables, siempre con los dos contratos canónicos de A3.
 - **Mapa de fuentes propuesto:** `lf_ops.fn_screen_contract_v1` (STABLE, 10 secciones en B2B-AUTH-001) y fuentes LF relacionadas; separado de `saly.reglas`. Router: LF `ENABLED`, SALY `RECOGNIZED_NOT_ENABLED`. La pantalla B2B-AUTH-001 continúa `CANDIDATO`; una extracción no equivale a aprobación.
 - **Gobernanza:** PR DRAFT / NO-GO. PASE SUCCESS certifica el gate correspondiente, NO la ejecución especializada Python ni la calificación A2→A3. Sin modificaciones de Router, Main, Supabase o contratos canónicos.
+
+## Lote P0 2026-11-09 — Preclasificación A2-P / investigación gobernada
+
+**Estado real:** sin admisión operativa; NO se activó A3 ni se cambió el contrato canónico.
+
+- Hallazgo P0: `material_contradiction` en la política canónica A2 es `BOOLEAN`. La cadena `UNKNOWN` no es un valor permitido. No atribuir `false` por falta de prueba negativa para desbloquear A2-P. Véase `handoffs/A2_P_RESEARCH_GATE_CANONICAL_SIGNAL_CONFLICT_20261109.md`.
+- Dos fuentes canónicas de A3 sin cambio: `REQUEST_CONTEXT_V1` y `ANALYSIS_CHANGE_CLASSIFICATION_V1`. A1 `REQUIRES_DECISION` no puede ser convertido en `VALID_OUTPUT`; la ruta A2-P aún debe obtener pruebas tipadas y permiso de investigación sin eludir revisión ni RUN.
+- Readback: `private.fn_lf_source_investigation_prepare_v1` existe pero la llamada directa devolvió 42501 (ACL). El usuario SQL tampoco posee EXECUTE sobre `private.fn_lf_d1_inventory_candidates_v1` ni `public.lf_targeted_evidence_acquisition_plan_v1`. No se ejecutó con rol alternativo; debe usarse una fachada gobernada.
+- 14/14 comprobaciones de **política y fuentes exactas** PASS (simulación de predicados del contrato, no ejecución Python A2): `steps/a2/evals/results/a2_p_research_policy_boundary_readback_20261109.json`.
+- Diez pruebas especializadas nuevas están **definidas, no ejecutadas** en `steps/a2/evals/test_a2_p_research_policy_boundary_v1.py`. Las 30 regresiones anteriores en checkout completo también están pendientes. No inferir cierre por PASE.
+- Decisión de lote: no realizar cast de contradicción desconocida, no cambiar esquema, no desactivar gate de ambigüedad; A2-P→A3 se mantiene NO-GO hasta permiso de resolutor, señal tipada, juez independiente y pruebas Python exact HEAD.
