@@ -265,6 +265,45 @@ def make_pg06(pg05=None):
         pg05_exit=pg05["handoff"], pg01_currentness_binding=None)
 
 
+# Explicit per-stage boundaries. No caller may treat a placeholder as a PASS.
+# These functions are deliberately fail-closed until the preceding real
+# producer has been admitted with source-backed EX6 inputs.
+def _missing(stage: int, predecessor: str):
+    raise RuntimeError(f"EX6_PG{stage:02d}_UPSTREAM_UNATTESTED:{predecessor}")
+
+
+def make_pg07(pg06=None):
+    _missing(7, "ex6://pending-execution/pg06-real-preflight")
+
+
+def make_pg08(pg07=None):
+    _missing(8, "ex6://pending-execution/pg07-real-worker-dispatch")
+
+
+def make_pg09(pg08=None):
+    _missing(9, "ex6://pending-execution/pg08-real-build-evidence")
+
+
+def make_pg10(pg09=None):
+    _missing(10, "ex6://pending-execution/pg09-real-budget")
+
+
+def make_pg11(pg10=None):
+    _missing(11, "ex6://pending-execution/pg10-real-conflict-review")
+
+
+def make_pg12(pg11=None):
+    _missing(12, "ex6://pending-execution/pg11-real-diff-trace")
+
+
+def make_pg13(pg12=None):
+    _missing(13, "ex6://pending-execution/pg12-real-identity")
+
+
+def make_pg14(pg13=None):
+    _missing(14, "ex6://pending-execution/pg13-real-freeze")
+
+
 def _code(exc):
     reason = str(exc).splitlines()[0]
     return reason if reason else type(exc).__name__
