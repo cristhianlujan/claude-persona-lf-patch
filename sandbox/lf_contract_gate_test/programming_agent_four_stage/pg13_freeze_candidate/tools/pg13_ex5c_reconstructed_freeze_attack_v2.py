@@ -64,10 +64,10 @@ def local_freeze_and_attacks() -> dict:
         branch_ref = "refs/heads/frozen"
         require(git("branch", "frozen", frozen, cwd=work), "branch frozen")
         require(git("push", "origin", "frozen:"+branch_ref, cwd=work), "push initial frozen")
-        tag_ref = "refs/tags/frozen/" + rebuilt
+        tag_ref = "refs/tags/frozen/" + EXPECTED_COMMIT
         require(git("-c", "user.name=LF local only", "-c", "user.email=lf@example.invalid",
-                    "tag", "-a", "frozen/" + rebuilt,
-                    "-m", "EX5C reconstructed subtree OID " + rebuilt, frozen,
+                    "tag", "-a", "frozen/" + EXPECTED_COMMIT,
+                    "-m", "EX5C N+1 source commit " + EXPECTED_COMMIT + " reconstructed subtree OID " + rebuilt, frozen,
                     cwd=work), "tag exact subtree")
         require(git("push", "origin", tag_ref, cwd=work), "push original freeze tag")
         tag_oid = read_ref(root, bare, tag_ref)
