@@ -12,7 +12,10 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[3]
 BASE = ROOT / "sandbox/lf_contract_gate_test/profile_execution_runtime"
 ORIGINAL = BASE / "lf_programacion_interim_pg17_original_source_v1.sql"
-MIGRATION = ROOT / "supabase/migrations/20261109140000_lf_programacion_interim_repair_selection_v1.sql"
+MIGRATION_CANDIDATES = sorted((ROOT / "supabase/migrations").glob("*_lf_programacion_interim_repair_selection_v1.sql"))
+if len(MIGRATION_CANDIDATES) != 1:
+    raise AssertionError("INTERIM_SELECTOR_EXACTLY_ONE_TRAIN_VERSION_REQUIRED")
+MIGRATION = MIGRATION_CANDIDATES[0]
 CONTAINER = os.environ.get("PG_CONTAINER", "")
 BEFORE_MD5 = "de64438021ab995e27cf0494862f5f23"
 PROFILE = "PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF"
