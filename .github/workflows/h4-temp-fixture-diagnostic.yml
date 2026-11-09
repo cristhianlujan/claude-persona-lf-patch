@@ -1,4 +1,4 @@
-name: H4 temporary PG01 fixture diagnostic
+name: H4 temporary PG06 C2 missing-evidence diagnostic
 on:
   push:
     branches:
