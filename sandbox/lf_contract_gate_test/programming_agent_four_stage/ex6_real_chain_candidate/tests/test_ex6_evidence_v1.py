@@ -29,7 +29,7 @@ class EX6EvidenceTests(unittest.TestCase):
         import hashlib
         for name in w.ARCHIVES:
             raw = (w.EVIDENCE / name).read_bytes()
-            oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\\0" + raw).hexdigest()
+            oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
             self.assertEqual(oid, {
                 "native-attempt-proof.zip": "b176e839dab6a526192bb2032e7a03e161667a0a",
                 "native-visible-feedback-and-cost.zip": "ff719db0d05f037a845117810f69bcf95e4289fa",
