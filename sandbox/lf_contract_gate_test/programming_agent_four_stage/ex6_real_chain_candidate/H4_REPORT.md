@@ -29,7 +29,7 @@ El stdout AOSP del candidato menciona exactamente `ReminderStats.java`, `Reminde
 
 **Remediación N+1 preparada, NO fusionada:** [sandbox PR #55 (CHG-0022)](https://github.com/paulozterra/lf-programming-sandbox/pull/55), rama `lf/ex6-aosp-format-n1-20261109`. El [generador local de prueba #42713083575](https://github.com/paulozterra/lf-programming-sandbox/actions/runs/42713083575) produjo únicamente los tres `ReminderStats*.java` con google-java-format 1.30.0 `--aosp`; **12/12 `.class` byte-idénticos** bajo `javac -g:none`. CI PR #55 incluye el gate `ex6-n1-exact-aosp-class-equivalence` y controles de estándares. **No existe todavía SHA definitivo del merge N+1 ni su corrida de evidencia**. La versión original de `ex6-build-lint-evidence.yml` está fijada a `912c4ad`, por lo que no debe despacharse sin introducir primero la variante gobernada N+1 en un PR separado o actualizar formalmente el pin. La tabla siguiente corresponde a N, **no** a N+1.
 
-**Readback PG-12 / freeze PG-13 con contratos v2 originales:** [corrida LF #42715162878](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42715162878) ejecutó **37/37 pruebas EX6 PASS** y la única pasada PG04→PG14 con extensiones PG11/12/13/14 v2. PostgreSQL se instaló sobre el runner y escuchó **127.0.0.1** en la base desechable `pg12_test_ex6`; `PG12_TEST_DSN` y `PG12_DISPOSABLE_DB=YES` fueron obligatorios. El productor `pg12_disposable_postgres_readback_v2.persist_readback` devolvió **PASS**: SHA-256 escrito y leído exactamente `16ee8a1700daf3941781b58003eca45a517bee3f3baf0c574ebf072a969fc374`. La función elimina el esquema temporal en `finally`. **No se usó Supabase**.
+**Readback PG-12 / freeze PG-13 con contratos v2 originales:** [corrida LF #42715515886](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42715515886) ejecutó **37/37 pruebas EX6 PASS** y la única pasada PG04→PG14 con extensiones PG11/12/13/14 v2. PostgreSQL se instaló sobre el runner y escuchó **127.0.0.1** en la base desechable `pg12_test_ex6`; `PG12_TEST_DSN` y `PG12_DISPOSABLE_DB=YES` fueron obligatorios. El productor `pg12_disposable_postgres_readback_v2.persist_readback` devolvió **PASS**: SHA-256 escrito y leído exactamente `16ee8a1700daf3941781b58003eca45a517bee3f3baf0c574ebf072a969fc374`. La función elimina el esquema temporal en `finally`. **No se usó Supabase**.
 
 `ex6_local_freeze_v1.local_freeze_and_attacks` reconstruyó exclusivamente los **3 blobs Git del parche original EX6** en repositorio Git temporal, verificó sus OID y rechazó **5/5 ataques** con el hook original `pg13_disposable_git_mutation_test_v1`: FORCE_PUSH, NORMAL_FAST_FORWARD, DELETE, RECREATE_DIFFERENT_SHA y DELETE_ANNOTATED_TAG. Se comprobaron las referencias congeladas antes/después. **El freeze no se aplicó a GitHub ni a LF productivo.**
 
@@ -131,7 +131,7 @@ Negativos probados: llamadas API no cero, propuesta faltante, propuesta incorrec
 - Los tres ZIP se conservan byte por byte. Sin acceso al examen oculto; sin Supabase writes, sin migraciones, sin SUPER_ADMIN, sin cambios en `vendor/` ni productores v1.
 - La corrida auxiliares se conserva como evidencia histórica; su workflow temporal se **elimina del PR antes de revisión**. No crear ni activar `ready-to-merge` sin dictamen de Claude. El PR no está listo para fusionar como H4 completo.
 
-## Inventario de archivos (incluye evidencia EX6 original, sin workflow temporal)
+## Inventario exacto del PR: 27 archivos (ZIP N intacto, sin workflow temporal)
 
 Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/ex6_real_chain_candidate/`.
 
@@ -154,10 +154,13 @@ Raíz de candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/
 - `tools/ex6_build_lint_inputs_v1.py`
 - `tools/ex6_pg07_v1.py`
 - `tools/ex6_one_pass_v1.py`
+- `tools/ex6_pg12_pg13_v2.py` — productores originales PG11/12/13/14 v2 aplicados a datos solo EX6
+- `tools/ex6_local_freeze_v1.py` — reconstrucción exacta de blobs EX6 y cinco ataques en Git temporal
 - `tests/test_ex6_evidence_v1.py`
 - `tests/test_ex6_chain_v1.py`
 - `tests/test_ex6_bundle_index_v1.py`
 - `tests/test_ex6_pg09_native_v2.py`
+- `tests/test_ex6_local_v2.py` — PostgreSQL loopback y Git freeze con fuente real
 - Fuera del directorio candidato: `sandbox/lf_contract_gate_test/programming_agent_four_stage/pg09_iteration_candidate/tools/pg09_c1_iteration_cost_governor_candidate_v2.py`.
 
 **Pendientes reales antes de una admisión total (actualizado):** (i) reparar exclusivamente el formato de los tres Java en un ciclo gobernado N+1 con nueva evidencia sin reescribir N; (ii) demostrar el REM-D4 de proceso con visible PASS y AOSP PASS (hoy AOSP FAIL); (iii) readback PG12 local verificado pero persistencia/autoría productivas no acreditadas; (iv) freeze local 5/5 y receiver simulado verificados, pero no congelación ni Testing reales. No se sustituyen con fixtures para declarar PASS productivo.
