@@ -1,0 +1,41 @@
+{
+  "schema_version": "LF_PROFILE_RULE_CHILD_VERIFIED_RECEIPT_PG17_EVIDENCE_V1",
+  "pr": 3722,
+  "tested_head": "b20e03d22e43f4f52d3e4645fae4ad81d5e4bf26",
+  "migration": "supabase/migrations/20261109121500_lf_profile_rule_child_verified_return_v1.sql",
+  "migration_blob_sha1": "7dd2200c27666e25a98938abfeb5ab7d3f36ee52",
+  "ci_run_id": 42594693895,
+  "ci_job_id": 129084374456,
+  "job_conclusion": "SUCCESS",
+  "test_checks_passed": 33,
+  "environment": "EPHEMERAL_POSTGRES_17_6_NO_SUPABASE_CREDENTIALS",
+  "code_interactions": [
+    "public.lf_skill_invoke_v1",
+    "public.lf_skill_o_rule_update_v1",
+    "public.lf_rule_candidate_write_v1",
+    "public.lf_skill_rule_child_readback_v1"
+  ],
+  "source_functions_real": true,
+  "parent_profile_raw_synthetic": true,
+  "model_call_executed": false,
+  "business_write_official": false,
+  "promotion_executed": false,
+  "positive": [
+    "verified child returns APPLIED_VERIFIED with exact parent/skill IDs",
+    "same inputs return exact same child and hash without duplication",
+    "one child 7/7 canonical steps and candidate state preserved",
+    "service role only access"
+  ],
+  "negative": [
+    "forged parent/skill_run blocked",
+    "child IN_PROGRESS cannot claim effect",
+    "a failed child step blocks receipt",
+    "canonical row drift blocks receipt and replay",
+    "parent remains IN_PROGRESS"
+  ],
+  "limitations": [
+    "proof is on isolated fixture, not live Product Director GPT_NATIVE",
+    "PASE fails while temporary second ordinary PR workflow exists; remove it before merge",
+    "no automatic rule promotion or production authorization"
+  ]
+}
