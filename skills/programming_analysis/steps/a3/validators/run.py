@@ -170,7 +170,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
                 return blocked("A3_EFFECTIVE_DIRECT_RULE_DRIFT")
             effective_direct.add(code)
             continue
-        if code in direct_by_code or status != "VIGENTE" or pending:
+        if code in direct_by_code:
             return blocked("A3_DERIVED_GLOBAL_RULE_STATE_OR_SCOPE_CONFLICT")
         row = {
             "rule_code": code,
@@ -184,10 +184,20 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "evidence_kind": "INHERITED_GLOBAL_EFFECTIVE_RULE",
             "source_attestation_state": "PROVIDER_READBACK_UNATTESTED",
         }
-        inherited_approved.append(row)
+        # User-approved partial scope: pending/non-current inherited rules
+        # are excluded with evidence; they do not block unrelated VIGENTE.
+        if status == "VIGENTE" and not pending:
+            inherited_approved.append(row)
+        else:
+            row["exclusion_reason"] = (
+                "DECISION_PENDING" if pending else "RULE_NOT_VIGENTE"
+            )
+            inherited_excluded.append(row)
     if effective_direct != set(direct_by_code):
         return blocked("A3_EFFECTIVE_RULE_INVENTORY_INCOMPLETE")
-    if len(effective_codes) != len(direct_by_code) + len(inherited_approved):
+    if len(effective_codes) != (
+        len(direct_by_code) + len(inherited_approved) + len(inherited_excluded)
+    ):
         return blocked("A3_EFFECTIVE_RULE_CARDINALITY_MISMATCH")
     policy_states = []
     for p in policies:
@@ -242,7 +252,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         alerts.append("SCREEN_POLICY_ASSOCIATIONS_EXCLUDED_PENDING_APPROVAL")
     if policy_resolution["rule_codes_policy_dependency_pending"]:
         alerts.append("POLICY_DEPENDENT_RULES_WITH_UNAPPROVED_BINDING_OR_POLICY_EXCLUDED")
-    if excluded:
+    if excluded or inherited_excluded:
         alerts.append("PENDING_RULES_EXCLUDED_AS_USER_REQUESTED")
     if inherited_approved:
         alerts.append("DERIVED_GLOBAL_EFFECTIVE_READBACK_NOT_RUNTIME_ATTESTATION")
@@ -310,6 +320,7 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "effective_rules_vigente_no_pending": len(approved) + len(inherited_approved),
             "effective_rules_excluded": len(excluded) + len(inherited_excluded),
             "inherited_derived_global_vigente": len(inherited_approved),
+            "inherited_derived_global_excluded": len(inherited_excluded),
             "policy_links_total": len(policies),
             "policy_links_not_vigente": sum(not p["approved_for_binding"] for p in policy_states),
             "policy_objects_resolved": policy_resolution["counts"]["policy_objects"],
