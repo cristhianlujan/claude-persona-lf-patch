@@ -1,0 +1,44 @@
+{
+  "schema_version": "LF_RULE_CHILD_PG17_ISOLATED_EVIDENCE_V1",
+  "source_pr": 3721,
+  "tested_head_sha": "5544f8ceb95b59fcb7ad0c9447c0b52d106f6523",
+  "migration": "supabase/migrations/20261109113000_lf_profile_rule_update_child_execution_v1.sql",
+  "migration_blob_sha1": "2d0b72901305347466d8b38a2d8f04cb07690485",
+  "test_run_id": 42592527199,
+  "test_job_id": 129077314933,
+  "test_status": "SUCCESS",
+  "positive_controls": 28,
+  "test_type": "POSTGRESQL_17_6_EPHEMERAL_DOCKER_WITH_ACTUAL_SOURCE_DEFINITIONS",
+  "model_executed": false,
+  "semantic_judge_fixture_only": true,
+  "production_write": false,
+  "source_function_checks": [
+    "lf_skill_invoke_v1",
+    "lf_regla_candidate_write_v1",
+    "lf_record_operation_step_core_v1"
+  ],
+  "positive_controls_scope": [
+    "SQL candidate installs exactly",
+    "same-parent child completes",
+    "7 core-judged steps",
+    "canonical candidate writer applied exact documentary patch",
+    "configuration unchanged, no promotion",
+    "readback SHA stored",
+    "transaction rollback restores rule/child/steps"
+  ],
+  "negative_controls_scope": [
+    "stale rule snapshot",
+    "patch not in judged output",
+    "protected field mutation",
+    "missing profile authority",
+    "unclean semantic judge",
+    "wrong selected screen",
+    "VIGENTE rejected",
+    "no child residue from denied mutations"
+  ],
+  "independent_runtime_proof": false,
+  "actual_profile_live_run": false,
+  "known_limit": "PG fixture validates server-side rule child enforcement, not authentic model decision nor Edge return to the parent.",
+  "ci_workflow_added_temporarily_for_test": true,
+  "ci_workflow_will_not_be_integrated": true
+}
