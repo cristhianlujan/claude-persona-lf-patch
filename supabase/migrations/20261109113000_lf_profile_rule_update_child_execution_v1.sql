@@ -90,7 +90,7 @@ BEGIN
  v_patch := p_input->'candidate_patch';
  v_changes := v_patch->'changes';
  IF (SELECT count(*) FROM jsonb_object_keys(v_patch))<>3
-    OR jsonb_object_length(v_changes) NOT BETWEEN 1 AND 3 THEN
+    OR (SELECT count(*) FROM jsonb_object_keys(v_changes)) NOT BETWEEN 1 AND 3 THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_PATCH_KEYS';
  END IF;
  FOR v_field IN SELECT jsonb_object_keys(v_changes) LOOP
@@ -106,10 +106,10 @@ BEGIN
  WHERE execution_id=p_parent AND operation_code='EJECUCION_PERFIL_LF'
    AND status='IN_PROGRESS' FOR UPDATE;
  IF NOT FOUND OR v_par.target_type<>'PERFIL'
-    OR v_par.manifest->>'read_only'<>'true'
-    OR v_par.manifest->>'no_write'<>'true'
-    OR v_par.manifest->>'no_promotion'<>'true'
-    OR v_par.manifest->'router_profile_handoff'->'router_authorization_receipt'->>'profile_execution_allowed'<>'true'
+    OR v_par.manifest->>'read_only' IS DISTINCT FROM 'true'
+    OR v_par.manifest->>'no_write' IS DISTINCT FROM 'true'
+    OR v_par.manifest->>'no_promotion' IS DISTINCT FROM 'true'
+    OR v_par.manifest->'router_profile_handoff'->'router_authorization_receipt'->>'profile_execution_allowed' IS DISTINCT FROM 'true'
  THEN RAISE EXCEPTION 'BLOCK_RULE_CHILD_PARENT_NOT_AUTHORIZED'; END IF;
  IF NOT EXISTS (SELECT 1 FROM public.lf_profile_write_authority_v1
     WHERE profile_code=v_par.target_code
@@ -142,9 +142,10 @@ BEGIN
  FROM public.lf_operation_execution_steps
  WHERE execution_id=p_parent AND step_id='execute_profile'
    AND status='STEP_PASS_WITH_EVIDENCE';
- IF v_profile_output IS NULL OR v_profile_output->>'worker'<>'product_director_lf'
-    OR v_profile_output->>'output_type'<>'PRODUCT_DIRECTION_SPEC'
-    OR v_profile_output->>'self_verdict'<>'PASS'
+ IF v_profile_output IS NULL OR v_profile_output->>'worker' IS DISTINCT FROM 'product_director_lf'
+    OR v_profile_output->>'output_type' IS DISTINCT FROM 'PRODUCT_DIRECTION_SPEC'
+    OR v_profile_output->>'self_verdict' IS DISTINCT FROM 'PASS'
+    OR v_profile_output->'deliverable_created'->>'authority_status' IS NULL
     OR v_profile_output->'deliverable_created'->>'authority_status'
           NOT IN ('SUPPORTED','CONFLICT_RESOLVED') THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_PRODUCT_DECISION_NOT_FOUND'; END IF;
@@ -191,8 +192,8 @@ BEGIN
  IF v_new_reason IS DISTINCT FROM v_old_reason THEN v_changed:=v_changed+1; END IF;
  IF v_changed=0 THEN RAISE EXCEPTION 'BLOCK_RULE_CHILD_NO_MATERIAL_CHANGE'; END IF;
  v_mode:=public.lf_resolve_operation_mode_v1('ACTUALIZACION_REGLA_LF','REMEDIATE_EXISTING','GOVERNED');
- IF v_mode->>'status'<>'READY' OR v_mode->>'destination_kind'<>'CANONICAL_CANDIDATE'
-    OR v_mode->>'write_allowed'<>'true' THEN
+ IF v_mode->>'status' IS DISTINCT FROM 'READY' OR v_mode->>'destination_kind' IS DISTINCT FROM 'CANONICAL_CANDIDATE'
+    OR v_mode->>'write_allowed' IS DISTINCT FROM 'true' THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_GOVERNED_MODE_NOT_READY'; END IF;
  v_reservation:=public.fn_lf_operation_reserve_execution_v1(
    p_child,'ACTUALIZACION_REGLA_LF','REGLA',v_rule,
@@ -233,9 +234,9 @@ BEGIN
     v_new_desc,v_new_reason,v_before.valor_config,
     v_before.es_transversal,v_before.origen
  );
- IF v_written->>'result'<>'RULE_CANDIDATE_UPDATED'
-    OR v_written->'before'->>'estado'<>'CANDIDATO'
-    OR v_written->'after'->>'estado'<>'CANDIDATO' THEN
+ IF v_written->>'result' IS DISTINCT FROM 'RULE_CANDIDATE_UPDATED'
+    OR v_written->'before'->>'estado' IS DISTINCT FROM 'CANDIDATO'
+    OR v_written->'after'->>'estado' IS DISTINCT FROM 'CANDIDATO' THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_WRITER_RESULT_MISMATCH'; END IF;
  v_step_payload:=jsonb_build_object(
     'execution_id',p_child,'rule_code',v_rule,
@@ -247,10 +248,10 @@ BEGIN
     OR v_after->>'titulo' IS DISTINCT FROM v_new_title
     OR v_after->>'descripcion' IS DISTINCT FROM v_new_desc
     OR v_after->>'razon' IS DISTINCT FROM v_new_reason
-    OR v_after->'valor_config' IS DISTINCT FROM to_jsonb(v_before.valor_config)
+    OR coalesce(v_after->'valor_config','null'::jsonb) IS DISTINCT FROM coalesce(to_jsonb(v_before.valor_config),'null'::jsonb)
     OR v_after->>'categoria' IS DISTINCT FROM v_before.categoria
     OR v_after->>'es_transversal' IS DISTINCT FROM v_before.es_transversal::text
-    OR v_after->>'pendiente_decision'<>'true'
+    OR v_after->>'pendiente_decision' IS DISTINCT FROM 'true'
  THEN RAISE EXCEPTION 'BLOCK_RULE_CHILD_CANONICAL_READBACK_MISMATCH'; END IF;
  v_after_sha:=public.lf_asset_snapshot_sha_v1('REGLA',v_rule);
  IF v_after_sha IS NULL OR v_after_sha=v_snapshot THEN
