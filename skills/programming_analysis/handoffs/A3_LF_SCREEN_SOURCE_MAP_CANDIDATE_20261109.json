@@ -57,11 +57,11 @@
     },
     {
       "step": 4,
-      "need": "POLICIES_AND_BINDINGS",
-      "source": "lf_ops.pantallas_politicas and its verified policy objects",
+      "need": "MANDATORY_CENTRAL_POLICIES_AND_RULE_DEPENDENCIES",
+      "source": "lf_ops.fn_screen_contract_v1(...).contract.policies; lf_ops.reglas.valor_config; lf_ops.pantallas_politicas",
       "provider": "SUPABASE",
       "verified_exists": true,
-      "caution": "Distinguish CANDIDATO associations from independently VIGENTE policy objects."
+      "caution": "Resolve every explicit numeric policy reference in 283 effective rules (250 VIGENTE) against canonical policy objects and screen-binding status; read source params but never infer approval from a CANDIDATO association. Mandatory policy readback required."
     },
     {
       "step": 5,
@@ -181,5 +181,27 @@
       "crosscheck_inherited_overlap_direct": 0,
       "currentness_attested": false
     }
+  },
+  "mandatory_central_policy_resolution": {
+    "state": "REQUIRED_SOURCE_READBACK_BEFORE_A3_IMPLEMENTABLE_SCOPE",
+    "source": "lf_ops.fn_screen_contract_v1(...).contract.policies + lf_ops.reglas.valor_config + lf_ops.pantallas_politicas",
+    "resolution": "reuse existing LF screen contract and T-REMED/IG effective-rule read path; never introduce new policy resolver",
+    "required_readback_sidecar": "resolved_sources.policy_resolution_readback",
+    "required_source_fields": [
+      "schema_version=LF_SCREEN_POLICIES_READBACK_V1",
+      "business=LF",
+      "target_ref",
+      "source_function=lf_ops.fn_screen_contract_v1",
+      "source_ref=supabase://lf_ops.pantallas/<target>",
+      "source_attested=false",
+      "policy_objects[{table,primary_key,policy_id,policy_code,status,parameters,source_ref}]"
+    ],
+    "effective_rules_required": "effective_rule_readback.rules[] must each include 'config' = lf_ops.reglas.valor_config (object, list or null), for approved AND pending rules, allowing readback parity and recursive extraction of numeric *_policy_id references",
+    "screen_policy_links_required": "policy_links[] must each carry reference_role and policy_target_ref in addition to source_ref, policy_kind, status",
+    "policy_scope": "all effective rule references, including inherited/DERIVED_GLOBAL, plus all screen policy binding objects, not only 13 direct links; compare exact numeric IDs, status, role and source refs",
+    "partial_pending_policy_behavior": "policy status not VIGENTE or screen association not VIGENTE => exclude only that policy-dependent rule/function from implementation scope, keep unrelated approved rules; record references and alerts",
+    "fail_closed": "missing mandatory source/readback fields, duplicate policy IDs/source_ref, incomplete rule configs, link-target mismatch, drift => A3 BLOCKED (inventory unreliable), never falsely approved",
+    "attestation_note": "SQL readback and candidate projection are NOT currentness attestation, independent judge, A4 permission or runtime",
+    "no_write_performed": true
   }
 }
