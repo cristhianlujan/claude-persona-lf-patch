@@ -35,10 +35,11 @@ def blocked(code: str) -> dict:
 def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) -> dict:
     if not all(isinstance(x,dict) for x in (a1_result,a2_result,signal_bundle,golden)):
         return blocked('A2_A3_TYPED_INPUT_REQUIRED')
+    a1_mode = a1_result.get('interpretation_state')
     if (a1_result.get('schema_version')!='A1_INTERNAL_STEP_CANDIDATE_RESULT_V1'
        or a1_result.get('status')!='VALID_OUTPUT'
        or a1_result.get('semantic_review_required') is not False
-       or a1_result.get('interpretation_state')!='PRESTRUCTURED_UNATTESTED'
+       or a1_mode not in ('PRESTRUCTURED_UNATTESTED','SEMANTIC_REVIEWED_CANDIDATE')
        or not isinstance(a1_result.get('payload'),dict)):
         return blocked('A2_A3_A1_NOT_ELIGIBLE')
     business=a1_result.get('business')
@@ -53,6 +54,20 @@ def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) ->
         return blocked('A2_A3_A2_CLASSIFICATION_UNAVAILABLE')
     if business != a2_result.get('business') or business!=signal_bundle.get('business'):
         return blocked('A2_A3_BUSINESS_CROSS_SCOPE')
+    if a1_mode == 'SEMANTIC_REVIEWED_CANDIDATE':
+        # Integrity-only guard; cannot attest native semantic judge identity.
+        guard_path = Path(__file__).resolve().with_name('a2_semantic_input_integrity_v1.py')
+        guard_spec = importlib.util.spec_from_file_location('a2_semantic_binding_guard', guard_path)
+        if guard_spec is None or guard_spec.loader is None:
+            return blocked('A2_A3_SEMANTIC_GUARD_UNAVAILABLE')
+        guard_module = importlib.util.module_from_spec(guard_spec)
+        try:
+            guard_spec.loader.exec_module(guard_module)
+            check = guard_module.check(a1_result,a2_result,signal_bundle)
+        except (OSError, ValueError, TypeError, AttributeError):
+            return blocked('A2_A3_SEMANTIC_GUARD_UNAVAILABLE')
+        if check.get('status') != 'CHECKED_SOURCE_ONLY':
+            return blocked('A2_A3_SEMANTIC_BINDING_INVALID')
     if any(a2_result.get(k) is True for k in ('source_attested','independent_judge_verified',
                                              'operationally_integrated','effects_executed')) or a2_result.get('next_step') is not None:
         return blocked('A2_A3_A2_FALSE_AUTHORITY')
