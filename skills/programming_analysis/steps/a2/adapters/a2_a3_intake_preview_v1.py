@@ -44,6 +44,9 @@ def prepare_preview(a1_result:Any,a2_result:Any,signal_bundle:Any,golden:Any) ->
     business=a1_result.get('business')
     if not isinstance(business,str) or not 2<=len(business)<=32 or business.strip()!=business:
         return blocked('A2_A3_A1_BUSINESS_INVALID')
+    # This preview belongs to PROGRAMMING_ANALYSIS_LF, not SALY admission.
+    if business != 'LF':
+        return blocked('A2_A3_BUSINESS_NOT_ENABLED_FOR_SKILL')
     if (a2_result.get('schema_version')!='A2_INTERNAL_STEP_CANDIDATE_RESULT_V1'
         or a2_result.get('status') not in ('CANDIDATE_UNATTESTED','NEED_MORE_EVIDENCE')
         or signal_bundle.get('schema_version')!='ANALYSIS_A2_TYPED_SIGNAL_CANDIDATE_V1'):
