@@ -11,7 +11,7 @@
 - `task_pack_sha256`: `31a01a43c13d1a6c8ef5d861825e03211d05566abecded7eeea023dcfaba048e`.
 - `proposal_sha256`: `c469a00ebb78d1346cecab0b19bd7c385e13e428a2eaf1fccea61e30dc838d78`.
 - `holdout_sha256` público en registro: `c2b583ebcc14e8e73e1b66eff38d86dd3814b75e5f5e1857de65deee5c8b1a57`. El recibo público reporta PASS; ningún archivo, resultado detallado ni comando del examen oculto fue buscado o reconstruido.
-- Spec base público `REMINDERS_SPEC.md` Git blob `01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72`.
+- Spec base público **completo**, copiado byte por byte a `evidence/ex6_base_REMINDERS_SPEC.md`, Git blob `01895c09cb6b3983f4fa2ab7fc1db628b2bbaa72`; se extrae Lote D de ese documento fijado.
 - Registro EX6 Git blob `15fd94d238215dbbc21a3bdc3cc719028c8513e7`.
 - Sobre público de propuesta Git blob `85761b8722f553fe25cf70d937105a4c35ce871e`.
 
@@ -30,7 +30,7 @@ Los SHA de miembros originales se validan en `ex6_real_world_v1.py` sin reescrib
 
 ## Origen del alcance y hunks
 
-`tools/ex6_source_truth_v1.py` lee **solo** el spec Lote D real (REM-D1–D4), `task_spec` EX6, sobre público de propuesta, y los 3 ZIP. Todos los snapshots Git se verifican por blob SHA; el diff real tiene exactamente **tres hunks ADD**, un archivo nuevo por hunk. `authorize_from_real_hunks` liga los 3 a un solo batch `ex6://batch/EX6-SOL-001` y un scope distinto por archivo:
+`tools/ex6_source_truth_v1.py` lee **solo** el spec completo real del commit base y extrae Lote D (REM-D1–D4), `task_spec` EX6, sobre público de propuesta, y los 3 ZIP. Todos los snapshots Git se verifican por blob SHA; el diff real tiene exactamente **tres hunks ADD**, un archivo nuevo por hunk. `authorize_from_real_hunks` liga los 3 a un solo batch `ex6://batch/EX6-SOL-001` y un scope distinto por archivo:
 
 | Archivo | Obligaciones trazadas |
 |---|---|
@@ -42,7 +42,7 @@ Las rutas existentes permanecen protegidas, con escritura restringida a estos tr
 
 ## Corrida original de productores v1 · antes/después
 
-Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution`, corrida [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943), que ejecutó los productores originales PG-04, PG-05 y PG-06 C1. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
+Evidencia de ejecución: workflow temporal de diagnóstico `H4 temporary original producer execution`, corridas [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943) y [#42695047716](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695047716), que ejecutó los productores originales PG-04, PG-05 y PG-06 C1. Las pruebas pasan, y luego el workflow temporal se elimina del PR (no se cambia la allowlist de PASE).
 
 | Etapa | Antes de v2 · productor real EX6 | Después de v2 | Código exacto o límite |
 |---|---|---|---|
@@ -68,7 +68,7 @@ En `cost.json`: `api_calls=0`, `real_api_usage=false`, `total_usd=0`, `cost_scop
 
 ## Pruebas ejecutadas sin contaminar suites
 
-- [#42694308943](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42694308943): 10/10 tests EX6; 29/29 tests sintéticos PG-04 v1; 13/13 tests sintéticos PG-05 v1. Todos SUCCESS. Los productores v1 y las pruebas originales no se modificaron.
+- [#42695047716](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42695047716): 10/10 tests EX6; 29/29 tests sintéticos PG-04 v1; 13/13 tests sintéticos PG-05 v1. Todos SUCCESS tras fijar el spec completo del commit base. Los productores v1 y las pruebas originales no se modificaron.
 - `install()/uninstall()` restaura `sys.path`; no hay cambios de funciones/constantes sintéticas.
 - Anticontaminación: los campos del resultado de `source_truth()` no contienen `ex5c` ni `lote-c`. Fuente de verdad EX6 no lee bundles del ejercicio previo.
 - Fallo de un byte de cualquiera de los ZIP originales se rechaza. Sobre y parche se atan por SHA y por código byte-a-byte salvo metadatos `index`.
