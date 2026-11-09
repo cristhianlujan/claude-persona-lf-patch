@@ -24,7 +24,7 @@ EVALUATOR_REL = Path("skills/profile_creator/validators/evaluate_s26_profile_bas
 BASELINE_REL = Path("skills/profile_creator/contracts/s26_profile_baseline_v1.json")
 
 
-def runtime_validator_binding_check(profile_dir: Path) -> dict[str, Any]:
+def runtime_validator_binding_check(profile_dir: Path, expected_slug: str) -> dict[str, Any]:
     """Static check of the canonical native validator binding (not a model run)."""
     path = profile_dir / "contracts" / "runtime_binding.json"
     if not path.is_file():
@@ -42,7 +42,7 @@ def runtime_validator_binding_check(profile_dir: Path) -> dict[str, Any]:
             issues.append("BINDING_OBJECT_REQUIRED")
     if binding.get("schema") != "LF_PROFILE_RUNTIME_BINDING_V1":
         issues.append("BINDING_SCHEMA_MISMATCH")
-    if binding.get("profile_slug") != profile_dir.name:
+    if binding.get("profile_slug") != expected_slug:
         issues.append("PROFILE_SLUG_MISMATCH")
     runtime = binding.get("runtime_schema")
     validator = binding.get("canonical_validator")
@@ -140,8 +140,8 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path,
     # Group 2 (operational cases): trusted cases and runs from the trusted root, bound to the exact trees.
     operational = opc.evaluate(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, base_dir, candidate_dir)
     result["operational"] = operational
-    base_binding = runtime_validator_binding_check(base_dir)
-    candidate_binding = runtime_validator_binding_check(candidate_dir)
+    base_binding = runtime_validator_binding_check(base_dir, slug)
+    candidate_binding = runtime_validator_binding_check(candidate_dir, slug)
     result["runtime_validator_binding"] = {"base": base_binding, "candidate": candidate_binding}
     binding_improved = base_binding["status"] == "FAIL" and candidate_binding["status"] == "PASS"
     basis = ((["STRUCTURAL_S26"] if improved else [])
@@ -186,7 +186,7 @@ def measure(trusted_root: Path, slug: str, profile_dir: Path, operational_root: 
     # Group 2: a structurally complete profile still needs an update while a trusted business-case check
     # recorded for this exact tree is unmet. Without bound runs nothing changes.
     operational = opc.unmet(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, profile_dir)
-    binding_check = runtime_validator_binding_check(profile_dir)
+    binding_check = runtime_validator_binding_check(profile_dir, slug)
     result["runtime_validator_binding"] = binding_check
     real_operational_unmet = bool(operational.get("unmet_checks"))
     if binding_check["status"] == "FAIL":
