@@ -171,6 +171,9 @@ def build_golden(a1_result: Any, a2_result: Any, signal_bundle: Any, *, catalog_
     biz = a1_result.get("business")
     if not isinstance(biz,str) or not biz or biz!=signal_bundle.get("business") or biz!=a2_result.get("business"):
         return _blocked("GOLDEN_BUSINESS_CONFLICT")
+    # Reject synthetic same-business SALY envelopes in the LF Golden projection.
+    if biz != "LF":
+        return _blocked("GOLDEN_BUSINESS_NOT_ENABLED_FOR_SKILL")
     if classification.get("target_ref") != signal_bundle.get("target_ref") or classification.get("target_ref") not in context.get("target_hints", []):
         return _blocked("GOLDEN_TARGET_CONFLICT")
     if classification.get("signals_sha256") != _digest(signal_bundle):
