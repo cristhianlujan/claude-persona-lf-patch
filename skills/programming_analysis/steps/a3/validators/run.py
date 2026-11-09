@@ -122,6 +122,73 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
                 "DECISION_PENDING" if pending else "RULE_NOT_VIGENTE"
             )
             excluded.append(row)
+    # Mandatory rule-inheritance readback: effective = explicit + declarative
+    # applicability + derived global, from the EXISTING T-REMED/IG read path.
+    # Never mistake recommendations from similar screens for effective links.
+    effective = resolved_sources.get("effective_rule_readback")
+    if not isinstance(effective, dict):
+        return blocked("A3_EFFECTIVE_RULE_INHERITANCE_READ_REQUIRED")
+    screen_id = effective.get("screen_id")
+    effective_ref = (
+        "supabase://programacion.fn_input_effective_rule_links_v1/"
+        + str(screen_id) + "/INPUT_GOVERNANCE"
+    )
+    if (type(screen_id) is not int or screen_id < 1
+            or effective.get("source_function") != "programacion.fn_input_effective_rule_links_v1"
+            or effective.get("business") != "LF"
+            or effective.get("target_ref") != canonical_target
+            or effective.get("consumer") != "INPUT_GOVERNANCE"
+            or effective.get("source_ref") != effective_ref
+            or effective.get("source_attested") is not False):
+        return blocked("A3_EFFECTIVE_RULE_INHERITANCE_SOURCE_INVALID")
+    links = effective.get("rules")
+    if not isinstance(links, list) or not links:
+        return blocked("A3_EFFECTIVE_RULE_INHERITANCE_ITEMS_MISSING")
+    direct_by_code = {row["rule_code"]: row for row in approved + excluded}
+    effective_codes, effective_direct, inherited_approved, inherited_excluded = set(), set(), [], []
+    for link in links:
+        if not isinstance(link, dict):
+            return blocked("A3_EFFECTIVE_RULE_ITEM_INVALID")
+        code = link.get("code")
+        source = link.get("source_ref")
+        status = link.get("status")
+        pending = link.get("pending_decision")
+        origin = link.get("binding_source")
+        if (not isinstance(code, str) or not code or code in effective_codes
+                or origin not in ("LEGACY_EXPLICIT", "DECLARATIVE_APPLICABILITY_V1", "DERIVED_GLOBAL")
+                or status not in ("VIGENTE", "CANDIDATO", "SUSPENDIDO", "INACTIVO")
+                or type(pending) is not bool
+                or not isinstance(source, str) or not source.startswith("supabase://lf_ops.reglas/")
+                or not source.removeprefix("supabase://lf_ops.reglas/").isdigit()):
+            return blocked("A3_EFFECTIVE_RULE_ITEM_UNSUPPORTED_OR_DUPLICATE")
+        effective_codes.add(code)
+        if origin != "DERIVED_GLOBAL":
+            direct = direct_by_code.get(code)
+            if (direct is None or direct["source_ref"] != source
+                    or direct["rule_status"] != status
+                    or direct["pending_decision"] != pending):
+                return blocked("A3_EFFECTIVE_DIRECT_RULE_DRIFT")
+            effective_direct.add(code)
+            continue
+        if code in direct_by_code or status != "VIGENTE" or pending:
+            return blocked("A3_DERIVED_GLOBAL_RULE_STATE_OR_SCOPE_CONFLICT")
+        row = {
+            "rule_code": code,
+            "title": link.get("title"),
+            "description": link.get("description"),
+            "rule_status": status,
+            "pending_decision": pending,
+            "source_ref": source,
+            "association_ref": effective_ref,
+            "binding_source": origin,
+            "evidence_kind": "INHERITED_GLOBAL_EFFECTIVE_RULE",
+            "source_attestation_state": "PROVIDER_READBACK_UNATTESTED",
+        }
+        inherited_approved.append(row)
+    if effective_direct != set(direct_by_code):
+        return blocked("A3_EFFECTIVE_RULE_INVENTORY_INCOMPLETE")
+    if len(effective_codes) != len(direct_by_code) + len(inherited_approved):
+        return blocked("A3_EFFECTIVE_RULE_CARDINALITY_MISMATCH")
     policy_states = []
     for p in policies:
         if (not isinstance(p, dict)
@@ -146,6 +213,8 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         alerts.append("SCREEN_POLICY_ASSOCIATIONS_EXCLUDED_PENDING_APPROVAL")
     if excluded:
         alerts.append("PENDING_RULES_EXCLUDED_AS_USER_REQUESTED")
+    if inherited_approved:
+        alerts.append("DERIVED_GLOBAL_EFFECTIVE_READBACK_NOT_RUNTIME_ATTESTATION")
     consolidated = resolved_sources.get("consolidated_rule_status_counts")
     if consolidated is not None:
         if (not isinstance(consolidated, dict)
@@ -188,18 +257,31 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
         },
         "target_granularity": cls["target_granularity"],
         "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN",
-        "evidence_items": approved,
-        "excluded_rule_items": excluded,
+        "evidence_items": approved + inherited_approved,
+        "excluded_rule_items": excluded + inherited_excluded,
+        "inheritance_readback": {
+            "source_ref": effective_ref,
+            "source_function": effective["source_function"],
+            "consumer": effective["consumer"],
+            "binding_sources": ["LEGACY_EXPLICIT", "DECLARATIVE_APPLICABILITY_V1", "DERIVED_GLOBAL"],
+            "source_attested": False,
+            "similarity_recommendations_are_not_effective_rules": True,
+        },
         "policy_link_items": policy_states,
         "counts": {
             "direct_rules_total": len(rows),
             "direct_rules_vigente_no_pending": len(approved),
             "direct_rules_excluded": len(excluded),
+            "effective_rules_total": len(effective_codes),
+            "effective_rules_vigente_no_pending": len(approved) + len(inherited_approved),
+            "effective_rules_excluded": len(excluded) + len(inherited_excluded),
+            "inherited_derived_global_vigente": len(inherited_approved),
             "policy_links_total": len(policies),
             "policy_links_not_vigente": sum(not p["is_approved_binding"] for p in policy_states),
             "consolidated_rule_status_counts": deepcopy(consolidated),
         },
-        "source_refs": [ref] + [x["source_ref"] for x in approved]
+        "source_refs": [ref, effective_ref]
+                       + [x["source_ref"] for x in approved + inherited_approved]
                        + (as_is["source_refs"] if as_is else []),
         "currentness_refs": [],
         "authority_binding_refs": [],
