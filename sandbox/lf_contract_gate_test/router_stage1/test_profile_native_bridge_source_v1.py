@@ -89,7 +89,11 @@ class ProfileNativeBridgeSourceV1(unittest.TestCase):
             self.sql,
         )
         self.assertIn("profiles/product_director_lf/SKILL.md", self.sql)
-        source = ROOT / "profiles" / "product_director_lf" / "SKILL.md"
+        # Canary pins a historical Git commit, not the mutable main branch.
+        source = (
+            ROOT / "sandbox" / "lf_contract_gate_test" / "router_stage1"
+            / "fixtures" / "product_director_lf_skill_fc88aca0874f3bee7d4dbe29379e975989b26cb2.md"
+        )
         self.assertEqual(
             hashlib.sha256(source.read_bytes()).hexdigest(),
             "1ddca16b29e65e6748f61fdc31e02081ca3990c67b079be705dde3a6a3c58209",
