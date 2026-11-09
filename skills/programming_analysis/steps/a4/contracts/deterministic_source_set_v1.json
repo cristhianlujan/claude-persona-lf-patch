@@ -1,0 +1,117 @@
+{
+  "schema_version": "A4_DETERMINISTIC_SOURCE_SET_V1",
+  "skill_code": "PROGRAMMING_ANALYSIS_LF",
+  "step_code": "A4",
+  "state": "SOURCE_CANDIDATE_UNATTESTED",
+  "purpose": "No open-ended research; A4 projects exact A3 evidence and bound existing impact core.",
+  "canonical_inputs": [
+    "TARGETED_EVIDENCE_SET_V1",
+    "ANALYSIS_CHANGE_CLASSIFICATION_V1"
+  ],
+  "readback_sidecar": "A4_EXISTING_IMPACT_CORE_READBACK_V1",
+  "binding": {
+    "input_target": "A3.target_ref (canonical); A2.target_ref must match A3.declared_target_hint or A3.target_ref",
+    "inventory_key": "inventory.objects.object_ref",
+    "match": "EXACT_EQUALITY_ONLY",
+    "query_only_after": "inventory.objects active exact row with source binding",
+    "no_matched_inventory_object": "IMPACT_UNKNOWN_UNBOUND_TECHNICAL_IDENTITY",
+    "no_heuristic_lookup": true,
+    "zero_rows_is_not_zero_impact": true,
+    "version_and_currentness": "Host revalidates exact A3 source_refs/currentness; A4 never self-attests."
+  },
+  "sources": [
+    {
+      "id": "S1_A3",
+      "priority": 1,
+      "producer": "PROGRAMMING_ANALYSIS_LF/A3",
+      "read": "TARGETED_EVIDENCE_SET_V1",
+      "fields": [
+        "target_ref",
+        "declared_target_hint",
+        "evidence_items",
+        "policy_resolution",
+        "material_contract_readback",
+        "as_is_baseline_or_new_implementation_evidence",
+        "source_refs",
+        "unresolved_material_gaps",
+        "authority_state",
+        "implementation_state"
+      ],
+      "no_reread": true
+    },
+    {
+      "id": "S2_A2",
+      "priority": 2,
+      "producer": "PROGRAMMING_ANALYSIS_LF/A2",
+      "read": "ANALYSIS_CHANGE_CLASSIFICATION_V1",
+      "fields": [
+        "target_ref",
+        "change_type",
+        "target_granularity",
+        "evidence_refs"
+      ],
+      "no_reread": true
+    },
+    {
+      "id": "S3_INV_OBJECT",
+      "priority": 3,
+      "producer": "inventory.objects",
+      "lookup": "EXACT object_ref supplied through authorized A3->inventory binding",
+      "required_fields": [
+        "object_ref",
+        "object_type",
+        "active",
+        "currentness",
+        "source_version",
+        "definition_sha256",
+        "observed_main_sha"
+      ],
+      "lookup_policy": "No SQL LIKE or full catalog search; unknown binding returns blocker"
+    },
+    {
+      "id": "S4_IMPACT_CORE",
+      "priority": 4,
+      "producer": "inventory.fn_impact_analysis_v1",
+      "query": "p_object_ref=<S3.object_ref>;p_max_depth=3;p_min_confidence=0.80",
+      "return_fields": [
+        "depth",
+        "affected_ref",
+        "affected_type",
+        "via_relation",
+        "min_confidence",
+        "source_system"
+      ],
+      "max_depth": 3,
+      "min_confidence": 0.8,
+      "consumer": "SHARED_CHANGE_IMPACT_ANALYSIS"
+    },
+    {
+      "id": "S5_DEPENDENCIES",
+      "priority": 5,
+      "producer": "inventory.fn_dependencies_v1",
+      "query": "p_object_ref=<S3.object_ref>;p_direction=BOTH;p_max_depth=2",
+      "return_fields": [
+        "depth",
+        "direction",
+        "source_ref",
+        "relation_type",
+        "target_ref",
+        "evidence_type",
+        "confidence"
+      ],
+      "max_depth": 2,
+      "direction": "BOTH"
+    }
+  ],
+  "exception": "If A4 finds a specific material missing source or stale binding, emit gap with exact target and requested source; A8 may return to A3 for that gap only. Never restart full research.",
+  "security": [
+    "LF only; SALY not enabled",
+    "Existing governed host acquires reads; no SQL/network inside A4",
+    "Do not conflate policy VIGENTE with code implemented/deployed",
+    "No unknown->NONE conversion",
+    "No new impact engine; same shared core as TST-05",
+    "Unknown/partial dependency graph remains visible",
+    "Readback is not independent attestation or A4 operational approval"
+  ],
+  "reference_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/shared_change_impact_contract_v1.json"
+}
