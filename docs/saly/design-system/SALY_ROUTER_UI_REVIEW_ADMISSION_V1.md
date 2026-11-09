@@ -29,7 +29,7 @@ Neither `Stage1.negocio_codigo`, a name in `target_hint`, nor a forged `p_caller
 
 ## Files
 - `saly_router_preflight_read_only.sql`: runnable SELECT-only diagnostic, not an activation test.
-- Candidate Design System artifact remains external to the repository (ChatGPT package `SALY_DS_V1_paquete_gobernado.zip`, SHA256 `04f69f41ff3be3b30b7043e288765f48f9ae6a6c84ab7243f90bd8971c5a4546`). It must be independently transported and read back by a governed method before a native profile run.
+- Candidate design-source files are now versioned under `docs/saly/design-system/candidate/` in this DRAFT PR. Exact Git blob readback: `design_system.json` = `551469ed451f60af43e874c4688451a210a82dc1` (source SHA256 `2967f2e3cbdc6d4651ffd877a05fdd6c3377266561e522e22e315fe8e64096d5`) and `ESPECIFICACION_SALY_DS_V1.md` = `12549166fe48450a405d62d4bbed58bb694a1ec9`. Both match the original source blobs byte-for-byte. The visual screenshot `evidencia_home_visual_aprobado.png` (SHA256 `b2d355bf2d1cf0e4614a0ecd21e837346eb5fe59234fda70c4cd6e7fc10cde7a`) remains outside GitHub; visual review must acknowledge that dependency.
 
 ## Required next governed steps
 1. Bind source/currentness and a narrowly authorized service-owned SALY review tuple in existing governance. Inspect related contracts, don't guess.
