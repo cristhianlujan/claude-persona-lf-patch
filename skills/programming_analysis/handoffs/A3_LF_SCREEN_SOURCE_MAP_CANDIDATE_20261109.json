@@ -58,10 +58,10 @@
     {
       "step": 4,
       "need": "MANDATORY_CENTRAL_POLICIES_AND_RULE_DEPENDENCIES",
-      "source": "lf_ops.fn_screen_contract_v1(...).contract.policies; lf_ops.reglas.valor_config; lf_ops.pantallas_politicas",
+      "source": "lf_ops.fn_screen_contract_v1(...).contract.policies; lf_ops.reglas.valor_config; lf_ops.pantallas_politicas; fallback typed lf_ops.politicas_* for refs missing from contract.policies",
       "provider": "SUPABASE",
       "verified_exists": true,
-      "caution": "Resolve every explicit numeric policy reference in 283 effective rules (250 VIGENTE) against canonical policy objects and screen-binding status; read source params but never infer approval from a CANDIDATO association. Mandatory policy readback required."
+      "caution": "Resolve every explicit numeric policy reference in 283 effective rules (250 VIGENTE) against canonical policy objects and screen-binding status; read source params but never infer approval from a CANDIDATO association. Mandatory policy readback required. Missing policy security_policy_id=25 found CANDIDATO via typed read; keep provenance. Do not promote."
     },
     {
       "step": 5,
@@ -194,7 +194,8 @@
       "source_function=lf_ops.fn_screen_contract_v1",
       "source_ref=supabase://lf_ops.pantallas/<target>",
       "source_attested=false",
-      "policy_objects[{table,primary_key,policy_id,policy_code,status,parameters,source_ref}]"
+      "policy_objects[{table,primary_key,policy_id,policy_code,status,parameters,source_ref,read_origin,read_source_ref}]",
+      "supplemental_policy_source_refs[]: exact refs for canonical policy rows absent from consolidated contract"
     ],
     "effective_rules_required": "effective_rule_readback.rules[] must each include 'config' = lf_ops.reglas.valor_config (object, list or null), for approved AND pending rules, allowing readback parity and recursive extraction of numeric *_policy_id references",
     "screen_policy_links_required": "policy_links[] must each carry reference_role and policy_target_ref in addition to source_ref, policy_kind, status",
@@ -202,6 +203,21 @@
     "partial_pending_policy_behavior": "policy status not VIGENTE or screen association not VIGENTE => exclude only that policy-dependent rule/function from implementation scope, keep unrelated approved rules; record references and alerts",
     "fail_closed": "missing mandatory source/readback fields, duplicate policy IDs/source_ref, incomplete rule configs, link-target mismatch, drift => A3 BLOCKED (inventory unreliable), never falsely approved",
     "attestation_note": "SQL readback and candidate projection are NOT currentness attestation, independent judge, A4 permission or runtime",
-    "no_write_performed": true
+    "no_write_performed": true,
+    "supplemental_fallback_rule": "If a rule references a numeric policy ID missing from contract.policies, use the existing typed canonical lf_ops.politicas_* table read with source_ref provenance; never assert that it came from the screen contract.",
+    "test_case_findings_20261109": {
+      "central_contract_policy_objects": 13,
+      "central_contract_vigente": 8,
+      "central_contract_candidato": 5,
+      "rule_numeric_policy_references": 14,
+      "referencing_approved_rules": 10,
+      "missing_from_screen_contract": [
+        "supabase://lf_ops.politicas_seguridad/25"
+      ],
+      "missing_object_status": "CANDIDATO",
+      "missing_object_code": "SEC-B2B-TRUSTED-DEVICE",
+      "all_screen_binding_links_status": "CANDIDATO",
+      "note": "source-only observed facts; no authorized implementation binding"
+    }
   }
 }
