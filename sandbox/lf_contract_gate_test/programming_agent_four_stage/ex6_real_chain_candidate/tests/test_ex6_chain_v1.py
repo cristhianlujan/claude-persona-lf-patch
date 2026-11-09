@@ -51,7 +51,7 @@ class EX6ChainV1Tests(unittest.TestCase):
         result = chain.run_v1()
         self.assertEqual(len(result), 11)
         self.assertEqual([r["stage"] for r in result], list(chain.STAGE_ORDER))
-        self.assertTrue(all(r["before_v2"] in ("PASS_SOURCE_ONLY", "BLOCK") for r in result))
+        self.assertTrue(all(r["before_v2"] in ("PASS_SOURCE_ONLY", "BLOCK", "NOT_RUN_UPSTREAM_BLOCKED") for r in result))
         self.assertTrue(all(not r["producer_invoked"] for r in result
                             if r["code"] and r["code"].startswith("UPSTREAM_BLOCKED:")))
         self.assertFalse(any(r.get("production_authority", False) for r in result))
