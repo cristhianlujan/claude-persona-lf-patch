@@ -1,0 +1,41 @@
+{
+  "schema_version": "LF_SKILL_INVOKER_PG17_ISOLATED_EVIDENCE_V1",
+  "candidate_pr": 3719,
+  "candidate_tested_head": "fbf395a410dc1ce7dc2c7039d17f09d007843331",
+  "candidate_sql_path": "supabase/migrations/20261109101500_lf_skill_invoker_idempotent_replay_v1.sql",
+  "candidate_sql_blob_sha1": "678967066af5c669a4577e8067b1687969931d8d",
+  "source_live_fn_pg_get_functiondef_md5": "289ef129239ba1a4cbb33314f4484f4b",
+  "run_id": 42588317849,
+  "job_id": 129063417554,
+  "test_job_conclusion": "SUCCESS",
+  "workflow_overall_conclusion": "FAILURE",
+  "workflow_failure_scope": "OTHER_AUXILIARY_JOBS_UNRELATED_TO_SKILL_INVOCATION_TEST",
+  "test_positive_codes": [
+    "PASS_ORIGINAL_FUNCTION_EXACT_PG17_MD5",
+    "PASS_EXACT_UNIQUE_INDEX_PRESENT",
+    "PASS_INVOKER_DEPLOYED_IN_ISOLATED_PG",
+    "PASS_TWO_SESSIONS_COMPLETED",
+    "PASS_TWO_SESSIONS_SAME_INVOCATION_AND_CHILD",
+    "PASS_RACE_HAS_ONE_FIRST_AND_ONE_REPLAY",
+    "PASS_ONE_PERSISTED_INVOCATION_ONE_CHILD",
+    "PASS_LOST_RESPONSE_REPLAY_SAME_IDS",
+    "PASS_AMBIGUOUS_HISTORY_FAIL_CLOSED",
+    "PASS_HISTORICAL_ROWS_UNTOUCHED",
+    "PASS_UNAUTHORIZED_OPERATION_BLOCKED",
+    "PASS_UNAUTHORIZED_HAS_NO_CHILD",
+    "PASS_PARENT_TERMINAL_REJECTS_FRESH_CHILD",
+    "PASS_PARENT_TERMINAL_NO_CHILD",
+    "PASS_ROLLBACK_DATABASE_CREATED",
+    "PASS_TRANSACTIONAL_ROLLBACK_RESTORES_FUNCTION_AND_INDEX",
+    "PASS_ROLLBACK_NO_INVOCATION_RESIDUE"
+  ],
+  "test_positive_count": 17,
+  "test_environment": "GH_ACTIONS_UBUNTU_POSTGRES_17_6_EPHEMERAL_DOCKER",
+  "supabase_credentials_used": false,
+  "official_supabase_mutation_performed": false,
+  "limitations": [
+    "Auxiliary workflow overall failed in a pre-existing router test job; idempotency job succeeded.",
+    "This is a fresh isolated PG test, not a live Supabase application.",
+    "Promoting candidate rules and profile child lifecycle are separate capabilities."
+  ]
+}
