@@ -1,0 +1,9 @@
+{
+  "solution_ref": "profile-ig-blocked-readonly-analysis-20261108",
+  "paths": {
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/lf_profile_ig_blocked_analysis_only_candidate_v1.sql": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_ig_analysis_only_contract_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/edge_function_operation/test_profile_ig_analysis_only_candidate_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/profile-ig-blocked-readonly-analysis-20261108.json": "CHANGESET_MANIFEST"
+  }
+}
