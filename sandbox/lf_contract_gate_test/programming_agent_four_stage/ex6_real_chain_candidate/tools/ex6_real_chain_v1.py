@@ -256,13 +256,28 @@ def make_pg05(pg04=None, truth=None):
             "c3": c3, "c4": c4, "c5": c5, "handoff": handoff}
 
 
+PG01_FIXTURE_STATUS = "FIXTURE_UNATTESTED"
+PG01_FIXTURE_ALLOWED_REF = "fixture://pg01/currentness"
+
+
+def official_pg01_fixture():
+    """Import official PG06 test fixture unmodified; sole EX6 non-source input."""
+    from test_pg06_c1_c5_chain_v1 import pg01
+    binding = pg01()
+    if binding.get("pg01_decision_ref") != PG01_FIXTURE_ALLOWED_REF:
+        raise ValueError("EX6_PG01_FIXTURE_IDENTITY_DRIFT")
+    return binding
+
+
 def make_pg06(pg05=None):
     from pg06_c1_currentness_reuse_candidate_v1 import prepare_pg06_c1
     pg05 = pg05 or make_pg05()
-    # The EX6 ZIPs contain no PG01 CURRENTNESS_AUTHORITY binding. Supply None,
-    # never a fabricated currentness fingerprint or decision.
-    return prepare_pg06_c1(
-        pg05_exit=pg05["handoff"], pg01_currentness_binding=None)
+    binding = official_pg01_fixture()
+    c1 = prepare_pg06_c1(
+        pg05_exit=pg05["handoff"], pg01_currentness_binding=binding)
+    return {"c1": c1, "pg01_binding": binding,
+            "pg01_status": PG01_FIXTURE_STATUS,
+            "production_authority": False, "handoff_allowed": False}
 
 
 # Explicit per-stage boundaries. No caller may treat a placeholder as a PASS.
@@ -334,11 +349,13 @@ def run_v1():
                 else:
                     raise RuntimeError("EX6_PRODUCER_UNWIRED_AFTER_PG06")
                 results.append({"stage": f"PG-{i:02d}", "before_v2": "PASS_SOURCE_ONLY",
-                                "code": None, "producer_invoked": True})
+                                "code": None, "producer_invoked": True,
+                                "pg01_status": PG01_FIXTURE_STATUS if i >= 6 else "NOT_USED"})
             except (Exception,) as exc:
                 current_block = f"PG-{i:02d}:" + _code(exc)
                 results.append({"stage": f"PG-{i:02d}", "before_v2": "BLOCK",
-                                "code": _code(exc), "producer_invoked": True})
+                                "code": _code(exc), "producer_invoked": True,
+                                "pg01_status": PG01_FIXTURE_STATUS if i >= 6 else "NOT_USED"})
         return results
     finally:
         uninstall()
