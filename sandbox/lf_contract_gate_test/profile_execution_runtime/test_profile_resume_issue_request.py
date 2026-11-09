@@ -486,5 +486,104 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
 
 
 
+    def _skill_plan_issue(self, calls):
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1",
+            "execution_id": "EXEC-PROFILE-GATE2-" + "A" * 24,
+            "calls": calls,
+        })
+        return self.check()
+
+    def test_skill_plan_accepts_dynamic_targets_only_for_non_effecting_skills(self):
+        request = self._skill_plan_issue([
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ])
+        self.assertEqual(request["kind"], "SKILL_PLAN")
+        self.assertEqual(len(request["calls"]), 2)
+        self.assertTrue(request["execution_id"].startswith("EXEC-PROFILE-GATE2-"))
+
+    def test_skill_plan_rejects_write_and_duplicate_or_unbounded_calls(self):
+        valid = [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "HOME-001"}}]
+        for calls in (
+            [{"skill_code": "RULE_UPDATE_APPLY", "input": {"regla_codigo": "X"}}],
+            valid * 2,
+            [],
+            valid * 9,
+            [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "X"}, "authority": "FAKE"}],
+            [{"skill_code": "SCREEN_RULES_SNAPSHOT", "input": "not_an_object"}],
+        ):
+            with self.subTest(calls=calls), self.assertRaises(ValueError):
+                self._skill_plan_issue(calls)
+
+    def test_skill_plan_calls_existing_edge_sequentially_and_never_closes_parent(self):
+        calls = [
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ]
+        self._skill_plan_issue(calls)
+        with patch.dict(os.environ, self.env, clear=True), patch(
+            "pathlib.Path.cwd", return_value=Path(self.tmp.name)
+        ):
+            m = runpy.run_path(str(SCRIPT), run_name="skill_plan_runtime_test")
+            observed = []
+            def fake_edge(url, body, headers):
+                observed.append(body)
+                self.assertEqual(body["action"], "profile_native_skill_invoke_v1")
+                self.assertEqual(body["execution_id"], "EXEC-PROFILE-GATE2-" + "A" * 24)
+                self.assertNotIn("service_role", json.dumps(body).lower())
+                i = len(observed)
+                return 200, {"outcome": "SKILL_INVOKED", "result": {
+                    "status": "COMPLETED", "skill_run_id": "RUN-" + str(i),
+                    "evidence_ref": "SKILLRUN:RUN-" + str(i) + ":digest",
+                    "next_action": "CONTINUE_PROFILE",
+                }}
+            with patch.dict(m["main"].__globals__, {
+                "oidc": lambda: "test-token", "call_json": fake_edge,
+            }):
+                self.assertEqual(m["main"](), 1)
+        self.assertEqual([c["skill_code"] for c in observed],
+                         ["SCREEN_RULES_SNAPSHOT", "RULE_UPDATE_PROPOSE"])
+        receipt = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+        self.assertEqual(receipt["status"], "SKILL_PLAN_EVIDENCE_READY")
+        self.assertEqual(len(receipt["calls"]), 2)
+        self.assertEqual(receipt["next_step"], "execute_profile")
+        self.assertFalse(receipt["profile_execution_complete"])
+        self.assertFalse(receipt["business_write_performed"])
+        self.assertTrue(receipt["same_parent_execution"])
+
+    def test_skill_plan_denial_and_unexpected_child_fail_closed(self):
+        call_items = [
+            {"skill_code": "SCREEN_RULES_SNAPSHOT", "input": {"pantalla_codigo": "B2B-AUTH-001"}},
+            {"skill_code": "RULE_UPDATE_PROPOSE", "input": {"regla_codigo": "B2B-RULE-AUTH-047"}},
+        ]
+        for denied in (True, False):
+            with self.subTest(denied=denied):
+                self._skill_plan_issue(call_items)
+                with patch.dict(os.environ, self.env, clear=True), patch(
+                    "pathlib.Path.cwd", return_value=Path(self.tmp.name)
+                ):
+                    m = runpy.run_path(str(SCRIPT), run_name="skill_plan_blocked_test")
+                    observed = []
+                    def fake_edge(url, body, headers):
+                        observed.append(body)
+                        if denied:
+                            return 403, {"outcome": "BLOCKED", "code": "DENIED"}
+                        return 200, {"outcome": "SKILL_INVOKED", "result": {
+                            "status": "COMPLETED", "skill_run_id": "RUN-1",
+                            "evidence_ref": "SKILLRUN:RUN-1:digest",
+                            "child_execution_id": "EXEC-SKILL-UNEXPECTED",
+                        }}
+                    with patch.dict(m["main"].__globals__, {
+                        "oidc": lambda: "test-token", "call_json": fake_edge,
+                    }):
+                        self.assertEqual(m["main"](), 1)
+                self.assertEqual(len(observed), 1)
+                receipt = json.loads((Path(self.tmp.name) / "profile-native-continuation.json").read_text())
+                self.assertEqual(receipt["status"], "BLOCKED")
+                self.assertEqual(receipt["next_step"], "skill_plan_repair")
+                self.assertFalse(receipt["profile_execution_complete"])
+
+
 if __name__ == "__main__":
     unittest.main()
