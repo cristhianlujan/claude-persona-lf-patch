@@ -24,6 +24,57 @@ EVALUATOR_REL = Path("skills/profile_creator/validators/evaluate_s26_profile_bas
 BASELINE_REL = Path("skills/profile_creator/contracts/s26_profile_baseline_v1.json")
 
 
+def runtime_validator_binding_check(profile_dir: Path) -> dict[str, Any]:
+    """Static check of the canonical native validator binding (not a model run)."""
+    path = profile_dir / "contracts" / "runtime_binding.json"
+    if not path.is_file():
+        return {"status": "NOT_APPLICABLE", "valid": True, "issues": [],
+                "check_source": "TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION"}
+    issues: list[str] = []
+    try:
+        binding = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        binding = None
+        issues.append("BINDING_JSON_INVALID")
+    if not isinstance(binding, dict):
+        binding = {}
+        if "BINDING_JSON_INVALID" not in issues:
+            issues.append("BINDING_OBJECT_REQUIRED")
+    if binding.get("schema") != "LF_PROFILE_RUNTIME_BINDING_V1":
+        issues.append("BINDING_SCHEMA_MISMATCH")
+    if binding.get("profile_slug") != profile_dir.name:
+        issues.append("PROFILE_SLUG_MISMATCH")
+    runtime = binding.get("runtime_schema")
+    validator = binding.get("canonical_validator")
+    if not isinstance(runtime, dict):
+        runtime = {}
+        issues.append("RUNTIME_SCHEMA_DECLARATION_REQUIRED")
+    if not isinstance(validator, dict):
+        validator = {}
+        issues.append("CANONICAL_VALIDATOR_DECLARATION_REQUIRED")
+    if validator.get("callable") != "validate":
+        issues.append("VALIDATOR_CALLABLE_INVALID")
+    if validator.get("transport") not in {"STDIN_JSON", "JSON_FILE_ARGUMENT"}:
+        issues.append("VALIDATOR_TRANSPORT_MISSING_OR_INVALID")
+    for field, candidate in (("SCHEMA", runtime.get("default")),
+                             ("VALIDATOR", validator.get("path"))):
+        if not isinstance(candidate, str) or not candidate:
+            issues.append(f"{field}_PATH_INVALID")
+            continue
+        rel = Path(candidate)
+        if rel.is_absolute() or ".." in rel.parts or "\\" in candidate:
+            issues.append(f"{field}_PATH_UNSAFE")
+            continue
+        absolute = (profile_dir / rel).resolve()
+        if not absolute.is_relative_to(profile_dir.resolve()) or not absolute.is_file():
+            issues.append(f"{field}_SOURCE_UNRESOLVED")
+    issues = sorted(set(issues))
+    return {"status": "PASS" if not issues else "FAIL", "valid": not issues,
+            "issues": issues, "check_source": "TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION",
+            "model_run_executed": False,
+            "binding_sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
 def _load_evaluator(trusted_root: Path):
     path = trusted_root / EVALUATOR_REL
     spec = importlib.util.spec_from_file_location("trusted_s26_evaluator", path)
@@ -89,8 +140,17 @@ def compare(trusted_root: Path, slug: str, base_dir: Path, candidate_dir: Path,
     # Group 2 (operational cases): trusted cases and runs from the trusted root, bound to the exact trees.
     operational = opc.evaluate(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, base_dir, candidate_dir)
     result["operational"] = operational
-    basis = (["STRUCTURAL_S26"] if improved else []) + (["OPERATIONAL_COVERAGE"] if operational["improved_checks"] else [])
-    if operational.get("candidate_validator_schema_contradictions"):
+    base_binding = runtime_validator_binding_check(base_dir)
+    candidate_binding = runtime_validator_binding_check(candidate_dir)
+    result["runtime_validator_binding"] = {"base": base_binding, "candidate": candidate_binding}
+    binding_improved = base_binding["status"] == "FAIL" and candidate_binding["status"] == "PASS"
+    basis = ((["STRUCTURAL_S26"] if improved else [])
+             + (["OPERATIONAL_COVERAGE"] if operational["improved_checks"] else [])
+             + (["RUNTIME_VALIDATOR_BINDING"] if binding_improved else []))
+    if candidate_binding["status"] == "FAIL":
+        result["blocking_codes"].append("CANDIDATE_RUNTIME_VALIDATOR_BINDING_INVALID")
+        result["verdict"] = "BLOCKED"
+    elif operational.get("candidate_validator_schema_contradictions"):
         result["blocking_codes"].append("CANDIDATE_VALIDATOR_SCHEMA_CONTRADICTION")
         result["verdict"] = "BLOCKED"
     elif regressed or operational["regressed_checks"]:
@@ -126,11 +186,21 @@ def measure(trusted_root: Path, slug: str, profile_dir: Path, operational_root: 
     # Group 2: a structurally complete profile still needs an update while a trusted business-case check
     # recorded for this exact tree is unmet. Without bound runs nothing changes.
     operational = opc.unmet(operational_root or trusted_root / opc.OPERATIONAL_REL, slug, profile_dir)
-    if operational["status"] != "NOT_APPLICABLE":
+    binding_check = runtime_validator_binding_check(profile_dir)
+    result["runtime_validator_binding"] = binding_check
+    real_operational_unmet = bool(operational.get("unmet_checks"))
+    if binding_check["status"] == "FAIL":
+        operational = dict(operational)
+        operational["unmet_checks"] = sorted(set(operational.get("unmet_checks", [])) | {
+            "RUNTIME_VALIDATOR_BINDING:" + issue for issue in binding_check["issues"]
+        })
+        operational["runtime_binding_check_source"] = "TRUSTED_STATIC_CONTRACT_NOT_MODEL_EVAL"
+    if operational["status"] != "NOT_APPLICABLE" or binding_check["status"] == "FAIL":
         result["operational"] = operational
         if result["decision"] == "NO_UPDATE_REQUIRED" and operational["unmet_checks"]:
             result["decision"] = "UPDATE_REQUIRED"
-            result["update_basis"] = ["OPERATIONAL_COVERAGE"]
+            result["update_basis"] = (["OPERATIONAL_COVERAGE"] if real_operational_unmet else []) + (
+                ["RUNTIME_VALIDATOR_BINDING"] if binding_check["status"] == "FAIL" else [])
     return _seal(result)
 
 
