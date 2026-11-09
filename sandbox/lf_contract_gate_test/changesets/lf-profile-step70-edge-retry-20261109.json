@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-profile-step70-edge-retry-20261109",
+  "paths": {
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-step70-edge-retry-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
