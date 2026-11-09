@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MIGRATION=ROOT/"supabase/migrations/20261109210500_lf_skill_update_initial_registration_owner_v1.sql"
+MIGRATION=ROOT/"supabase/migrations/20261109213000_lf_skill_update_initial_registration_owner_v1.sql"
 EDGE=ROOT/"supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts"
 TEST=ROOT/"supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts"
 
