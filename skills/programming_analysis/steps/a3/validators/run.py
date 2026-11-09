@@ -7,6 +7,8 @@ organizes *supplied* source rows and never attests identity or currentness.
 from __future__ import annotations
 
 from copy import deepcopy
+import importlib.util
+from pathlib import Path
 from typing import Any
 
 SCHEMA = "TARGETED_EVIDENCE_SET_V1"
@@ -135,6 +137,23 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             return blocked("A3_CONSOLIDATED_COUNTS_INVALID")
         if sum(consolidated.values()) > len(rows):
             alerts.append("TRANSVERSAL_RULE_APPLICABILITY_REQUIRES_EXACT_BINDING")
+    as_is = None
+    if "as_is_readback" in resolved_sources:
+        # The governed host supplies the readback; no new resolver is created.
+        helper = Path(__file__).resolve().parents[1] / "adapters/as_is_projection_v1.py"
+        spec = importlib.util.spec_from_file_location("a3_as_is_projection", helper)
+        if spec is None or spec.loader is None:
+            return blocked("A3_AS_IS_PROJECTION_MODULE_UNAVAILABLE")
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+            as_is = mod.project(resolved_sources["as_is_readback"], target)
+        except (OSError, ValueError, TypeError, AttributeError):
+            return blocked("A3_AS_IS_PROJECTION_MODULE_UNAVAILABLE")
+        if as_is.get("status") == "BLOCKED":
+            return blocked(as_is["blocking_code"])
+        gaps.remove("GITHUB_CURRENT_IMPLEMENTATION_AND_AS_IS_MISSING")
+        gaps.extend(as_is["material_gaps"])
     return {
         "schema_version": SCHEMA,
         "status": "SOURCE_READBACK_PROCESSED_UNATTESTED",
@@ -155,7 +174,8 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "policy_links_not_vigente": sum(not p["is_approved_binding"] for p in policy_states),
             "consolidated_rule_status_counts": deepcopy(consolidated),
         },
-        "source_refs": [ref] + [x["source_ref"] for x in approved],
+        "source_refs": [ref] + [x["source_ref"] for x in approved]
+                       + (as_is["source_refs"] if as_is else []),
         "currentness_refs": [],
         "authority_binding_refs": [],
         "target_resolution": {
@@ -165,8 +185,10 @@ def run(canonical_inputs: Any, resolved_sources: Any = None,
             "contract_version": resolved_sources["contract_version"],
             "authority_state": "UNKNOWN", "implementation_state": "UNKNOWN",
             "screen_readback_not_source_attestation": True,
+            "related_as_is_component_count": len(as_is["related_components"]) if as_is else 0,
+            "authority_candidate_ref": as_is["authority_candidate"]["source_ref"] if as_is else None,
         },
-        "as_is_baseline_or_new_implementation_evidence": None,
+        "as_is_baseline_or_new_implementation_evidence": deepcopy(as_is) if as_is else None,
         "unresolved_material_gaps": gaps,
         "declared_constraints": deepcopy(context["constraints"]),
         "source_readback_function": resolved_sources["source_function"],
