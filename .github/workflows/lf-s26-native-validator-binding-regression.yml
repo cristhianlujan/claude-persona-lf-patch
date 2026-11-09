@@ -1,0 +1,32 @@
+name: LF S26 Native Validator Binding Regression
+
+on:
+  pull_request:
+    paths:
+      - 'skills/profile_creator/validators/compare_s26_profile_evolution_v1.py'
+      - 'skills/profile_creator/validators/test_compare_s26_profile_evolution_v1.py'
+      - 'skills/profile_creator/validators/test_operational_coverage_v1.py'
+      - '.github/workflows/lf-s26-native-validator-binding-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  s26-static-binding-and-operational-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR candidate exact merge
+        uses: actions/checkout@v4
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned S26 proof dependency
+        run: python -m pip install --disable-pip-version-check --no-input 'jsonschema==4.26.0'
+      - name: Run actual S26 unit and operational regression suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s skills/profile_creator/validators -p 'test_compare_s26_profile_evolution_v1.py' -v
+          python3 -m unittest discover -s skills/profile_creator/validators -p 'test_operational_coverage_v1.py' -v
