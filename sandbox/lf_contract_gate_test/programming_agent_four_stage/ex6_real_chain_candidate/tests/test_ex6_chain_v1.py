@@ -121,6 +121,61 @@ class EX6ChainV1Tests(unittest.TestCase):
         finally:
             chain.uninstall()
 
+    def test_one_pass_all_stages_real_producer_codes_and_fixture_ledger(self):
+        import ex6_one_pass_v1 as unified
+        result=unified.run_all()
+        stages=result["stages"]
+        self.assertEqual([x["stage"] for x in stages],
+                         [f"PG-{n:02d}" for n in range(4,15)])
+        by={x["stage"]:x for x in stages}
+        self.assertEqual(by["PG-04"]["outcome"],"PASS_SOURCE_ONLY")
+        self.assertEqual(by["PG-05"]["outcome"],"PASS_SOURCE_ONLY")
+        self.assertEqual(by["PG-06"]["outcome"],"PASS_FIXTURE_UNATTESTED")
+        self.assertEqual(by["PG-07"]["outcome"],"PASS_FIXTURE_UNATTESTED")
+        self.assertEqual(by["PG-08"]["code"],"PG08_C1_BUILD_COMMANDS_MISSING")
+        self.assertEqual(by["PG-09"]["after_v2"],
+                         "REPORTED_WITHIN_BUDGET_UNVERIFIED")
+        self.assertEqual(by["PG-12"]["code"],"PG12_C2_LINTER_DIGEST_INVALID")
+        self.assertEqual(by["PG-13"]["code"],"C1_UPSTREAM_SCHEMA")
+        self.assertEqual(by["PG-14"]["code"],"C1_UPSTREAM_SCHEMA")
+        self.assertEqual(result["evidence"]["pg06_c4_real_code"],
+                         "PG06_C4_OBSERVATION_SCHEMA_INVALID")
+        self.assertEqual(result["evidence"]["pg09_c1_request_diagnostic"],
+                         "REQUIRES_DECISION")
+        self.assertEqual(result["evidence"]["pg09_v2_subscription_cost"],
+                         "NOT_EVALUATED")
+        self.assertEqual(result["evidence"]["ex6_reversibility_plan"]["operation"],
+                         "DELETE_ADDED_FILES")
+        self.assertEqual(len(result["evidence"]["ex6_reversibility_plan"]["paths"]),3)
+        self.assertTrue(all(x["production_authority"] is False for x in stages))
+        for x in stages:
+            for item in x["fixture_status"]:
+                self.assertIn(item.removeprefix("FIXTURE_UNATTESTED:"),
+                              unified.FIXTURES)
+        text=json.dumps(result,sort_keys=True).lower()
+        self.assertNotIn("ex5c",text)
+        self.assertNotIn("lote-c",text)
+
+    def test_a7_and_c4_fixture_unchanged_by_one_pass(self):
+        import ex6_one_pass_v1 as unified
+        chain.install()
+        try:
+            from test_pg06_c1_c5_chain_v1 import a7_and_plans, baseline
+            pg05=chain.make_pg05()
+            official_a7,official_plans=a7_and_plans(pg05["handoff"])
+            official_baseline=baseline(pg05["handoff"])
+            v=unified.stage06(pg05)
+            self.assertEqual(v["a7"],official_a7)
+            self.assertEqual(v["a7_plans"],official_plans)
+            self.assertEqual(v["fixture_facts"]["fixture_a7"]["sha256"],
+                             unified.digest(official_a7))
+            self.assertEqual(v["fixture_facts"]["fixture_a7"]["plans_sha256"],
+                             unified.digest(official_plans))
+            self.assertEqual(v["fixture_facts"]["fixture_lint"]["sha256"],
+                             unified.digest(official_baseline))
+        finally:
+            chain.uninstall()
+
     def test_pg04_to_pg14_does_not_claim_unrun_stages(self):
         result = chain.run_v1()
         self.assertEqual(len(result), 11)
