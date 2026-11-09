@@ -145,6 +145,20 @@ class EX6ChainV1Tests(unittest.TestCase):
                          "PASS_SOURCE_ONLY")
         self.assertEqual(result["evidence"]["rem_d4_process"]["reason"],
                          "FORMAT_AOSP_EXIT_1")
+        local_v2=result["evidence"]["local_v2"]
+        self.assertEqual(local_v2["pg11_actual_link_count"],4)
+        self.assertEqual(local_v2["pg12_c4"],"CANDIDATE_NOT_ADMITTED")
+        self.assertEqual(local_v2["pg13_local_mutations_blocked"],5)
+        self.assertEqual(local_v2["pg14_local_verdict"],
+                         "LOCAL_FIXTURE_SHAPE_ACCEPTED_ONLY")
+        self.assertEqual(local_v2["pg14_tampered_verdict"],"BLOCK")
+        self.assertFalse(local_v2["real_analysis_ready"])
+        self.assertFalse(local_v2["real_testing_invoked"])
+        self.assertFalse(local_v2["production_authority"])
+        self.assertEqual(by["PG-13"]["after_existing_v2"],
+                         "PASS_LOCAL_SOURCE_ONLY_FIVE_ATTACKS_BLOCKED")
+        self.assertEqual(by["PG-14"]["after_existing_v2"],
+                         "PASS_LOCAL_TESTING_FIXTURE_ONLY_NOT_REAL_ADMISSION")
         self.assertEqual(result["evidence"]["pg09_c1_request_diagnostic"],
                          "REQUIRES_DECISION")
         self.assertEqual(result["evidence"]["pg09_v2_subscription_cost"],
