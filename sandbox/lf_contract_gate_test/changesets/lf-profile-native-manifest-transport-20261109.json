@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-profile-native-manifest-transport-20261109",
+  "paths": {
+    ".github/workflows/lf-edge-deploy-credential-readback.yml": "WORKFLOW",
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "sandbox/lf_contract_gate_test/profile_execution_runtime/test_profile_resume_issue_request.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-native-manifest-transport-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
