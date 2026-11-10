@@ -48,3 +48,6 @@ jobs:
             --failure-code FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY \
             --allow-reconciliation-source \
             "${migration_paths[@]}"
+  owner-super-admin-578-pg17:
+    if: github.head_ref == 'lf/issue-3779-owner-super-admin-all-rules-v1'
+    uses: ./.github/workflows/lf-rule-owner-super-admin-pg17.yml
