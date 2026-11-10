@@ -96,7 +96,7 @@ def main():
           =="DECISION_MENTION_REQUIRES_AUTHORITY_REVIEW")
     check("IG_MISSING_SOURCE_NO_FAKE_BUSINESS_APPROVAL",
           next(p for p in ig["proposals"] if p["rule_code"]=="TEST-RULE-DOC-001")
-          ["proposed_action"]=="RECOVER_ORIGINAL_AUTHORITY")
+          ["proposed_action"]=="RECONCILE_RELATED_DECISION_REFERENCE")
     check("IG_SOURCE_APPROVED_PROPOSES_GOVERNED_ACTION",
           next(p for p in ig["proposals"] if p["rule_code"]==RULE)
           ["proposed_action"]=="REQUEST_GOVERNED_PROMOTION")
