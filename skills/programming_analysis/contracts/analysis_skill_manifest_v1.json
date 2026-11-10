@@ -111,9 +111,13 @@
         "SHARED_CHANGE_IMPACT_ANALYSIS"
       ],
       "guard": "Required new ADR or unresolved owner decision -> REQUIRES_DECISION; analysis cannot approve itself; local HOW remains PG-03.",
-      "implementation_state": "CANONICAL_CONTRACT_REFERENCED_UNWIRED",
-      "module_entrypoint": null,
-      "operationally_verified": false
+      "implementation_state": "LOCAL_DECISION_AND_ADR_SOURCE_PROJECTION_CANDIDATE_UNQUALIFIED",
+      "module_entrypoint": "steps/a5/validators/run.py:run",
+      "operationally_verified": false,
+      "source_set_contract": "steps/a5/contracts/deterministic_decision_sources_v1.json",
+      "integration_note": "Four exact A1-A4 inputs + authorized host ADR trigger readback. Existing ADR current assertion and historical ASOF only via canonical providers; no human decision inferred for pending rules or evidence gaps; no currentness attestation, append-only persistence, selected strategy, A6 permission or live RUN.",
+      "source_attested": false,
+      "next_step_allowed": false
     },
     {
       "step_id": "A6",
