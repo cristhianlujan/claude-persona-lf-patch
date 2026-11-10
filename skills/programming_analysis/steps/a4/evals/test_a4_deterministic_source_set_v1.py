@@ -213,6 +213,72 @@ class A4DeterministicSourceTests(unittest.TestCase):
         sidecar=readback();sidecar["target_ref"]="OTHER"
         self.assertEqual(a4.run(evidence,classification,sidecar)["status"],"BLOCKED")
 
+    def test_actions_are_classified_from_a2_explicit_intent(self):
+        for operation, expected in [
+            ("CREATE", "CREATE"), ("IMPLEMENT", "CREATE"),
+            ("MODIFY", "MODIFY"), ("UPDATE", "MODIFY"),
+            ("DELETE", "DELETE"), ("REMOVE", "DELETE"),
+            ("REPLACE", "REPLACE"), ("REUSE", "REUSE"),
+            ("NO_CHANGE", "NO_CHANGE"),
+        ]:
+            with self.subTest(operation=operation):
+                classification=a2()
+                classification["change_type"]=operation
+                source=readback()
+                result=a4.run(a3(),classification,source)
+                self.assertEqual(result["target_change_action"],expected)
+                self.assertEqual(result["requested_change_type"],operation)
+                self.assertEqual(result["change_action_basis"],
+                                 "A2_DECLARED_TARGET_INTENT_UNVERIFIED")
+                self.assertFalse(result["a5_allowed"])
+
+    def test_existing_graph_has_no_inferred_item_modifications_or_deletions(self):
+        classification=a2();classification["change_type"]="DELETE"
+        result=a4.run(a3(),classification,readback())
+        self.assertEqual(result["target_change_action"],"DELETE")
+        self.assertTrue(result["direct_impacts"])
+        self.assertTrue(result["indirect_impacts"])
+        self.assertTrue(all(x["change_action"]=="UNKNOWN"
+                            for x in result["direct_impacts"]+result["indirect_impacts"]))
+        self.assertTrue(all(x["change_action"]=="UNKNOWN"
+                            for x in result["dependency_paths"]))
+        self.assertTrue(result["no_write_performed"])
+
+    def test_new_screen_is_created_but_existing_rule_definition_is_reused(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[
+            {"rule_code":"LOGIN-RULE-01","source_ref":"supabase://lf_ops.reglas/1",
+             "rule_status":"VIGENTE","pending_decision":False}
+        ]
+        evidence["material_contract_readback"]={
+            "status":"MATERIAL_CONTRACT_PROJECTED_UNATTESTED",
+            "status_items":[
+                {"source_ref":SCREEN_REF+"#contract/visual/colors/0",
+                 "source_status":"VIGENTE"},
+                {"source_ref":SCREEN_REF+"#contract/fields/0",
+                 "source_status":"CANDIDATO"},
+            ]
+        }
+        classification=a2();classification["change_type"]="CREATE"
+        result=a4.run(evidence,classification)
+        self.assertEqual(result["target_change_action"],"CREATE")
+        self.assertTrue(all(x["change_action"]=="CREATE"
+                            for x in result["direct_impacts"]))
+        self.assertTrue(all(x["definition_action"]=="REUSE"
+                            for x in result["direct_impacts"]))
+        self.assertEqual(result["excluded_pending_obligations"][0]["change_action"],
+                         "UNKNOWN")
+        self.assertIsNone(result["target_code_destination"])
+        self.assertFalse(result["a5_allowed"])
+
+    def test_unrecognized_operation_has_explicit_unknown_no_implicit_modify(self):
+        classification=a2();classification["change_type"]="DO_SOMETHING_VAGUE"
+        result=a4.run(a3(),classification,readback())
+        self.assertEqual(result["status"],"NEED_MORE_EVIDENCE")
+        self.assertEqual(result["target_change_action"],"UNKNOWN")
+        self.assertEqual(result["direct_impacts"],[])
+        self.assertFalse(result["a5_allowed"])
+
     def test_missing_host_readback_no_fallback_search(self):
         r=a4.run(a3(),a2(),None)
         self.assertEqual(r["status"],"NEED_MORE_EVIDENCE")
