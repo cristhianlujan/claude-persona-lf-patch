@@ -135,3 +135,25 @@ Para `REQUEST`, reemplazar `rule_authority_action=REQUEST` y suministrar `rule_c
 **Sin rutas ni jueces adicionales:** se conservan los once pasos oficiales; juez 70 permanece obligatorio, no se crea nuevo perfil ni se modifica ACT-0001. Los controles deterministas post-70 no constituyen otra evaluación semántica con otro LLM.
 
 **Evidencia y estado:** PG17 y Deno se ejecutan en CI sobre HEAD específico; siempre volver a verificar el HEAD tras documentación. Supabase real no tiene issuer protegido activo y las funciones siguen no desplegadas; PR DRAFT / NO-GO.
+
+## Lote 5 — Búsqueda determinista y recuperador de fuentes de 33 reglas
+
+**Fuente oficial consultada antes de editar:** INPUT GOVERNANCE LF — INSTRUCCIONES OPERATIVAS V1.4 (Router solo selecciona; Product Director gobierna RUN e invoca IG; step 40/50/60/70/80); EKB activo INPUT-GOV-DECISION-RULE-PROVENANCE-PARITY-001.
+
+**Nuevo recuperador read-only** `public.lf_ig_rule_source_recovery_v1(execution_id,screen_code)`: para cada regla candidata recopila determinísticamente origen, creador histórico, referencias directas a decisiones, menciones de la regla en otras decisiones (sin recontar la decisión directa), enlaces técnicos de T_REMED, relaciones a políticas de seguridad/sesión/rate-limit/timeout/OTP, estado de cada política y estado de la decisión fuente. Devuelve SHA de evidencia, `discovery_status`, y `owner_approval_proven=false` / `action_authorized=false`. No modifica reglas ni abre cola humana.
+
+**Integración del flujo simplificado:** `lf_ig_rule_proposal_prepare_v1` agrega `source_recovery` y vincula `ig_proposal_sha256` a la evaluación semántica de autoridad *y* a la evidencia recuperada. Product Director la recibe una vez en la Edge OIDC antes del paso 50, decide por regla y el juez 70 sigue siendo obligatorio. Si cambia una política o fuente, el hash viejo pierde vigencia y bloquea cualquier marca o promoción.
+
+**Acciones por tipo de pista sin afirmar aprobación:**
+- Mención de decisión: `RECONCILE_RELATED_DECISION_REFERENCE`.
+- Política explícita: `RECONCILE_POLICY_LINEAGE_AND_OWNER_DECISION`.
+- Relación técnica: `RECONCILE_TECHNICAL_LINEAGE_TO_ORIGINAL_APPROVAL`.
+- Sin pista directa en catálogos SQL: `SEARCH_ORIGINAL_OWNER_SOURCE`.
+
+**Readback en Supabase oficial, únicamente SELECT, `B2B-AUTH-001`:** 33 reglas `CANDIDATO`: una con decisión directa (todavía `CANDIDATO_CONTROLADO`), y **32 sin aprobación fuente acreditada directamente**. Clasificación de las 32: 1 mención de otra decisión, 4 pistas de política explícita, 2 pistas de relación técnica, **25 sin fuente localizada dentro del alcance determinista SQL**. Se identificaron 6 reglas con vínculos T_REMED; algunas coinciden con pistas de política. Las fuentes originales pueden estar en otros documentos/proveedores; no afirmar ausencia absoluta. Evidencia por regla: `b2b_auth_001_source_leads_readback_20261110.json`, fuente read-only, sin valores inventados.
+
+**Búsqueda documental complementaria:** Se consultó Google Drive por `B2B-AUTH-001`, `B2B LOGIN`, `B2B_AUTENTICACION` y títulos de handoff. El documento `IG-EVO — Registro único y acumulativo de hallazgos (R1–R6)` (Google Docs ID `1_12oOBUfn0Apmng7D9dqC4Nk3ladNJagRVgh2o-adKg`) contiene referencias técnicas de B2B-RULE-AUTH-021 y B2B-RULE-SECURITY-BASELINE-001, pero no se ha acreditado mediante esta lectura la decisión original exacta/material de las 25 pendientes. Se usa solo como referencia para investigación, no como autorización.
+
+**Verificación PG17 aislado:** 84 PASS en HEAD anterior, incluidos descubrimiento, menciones, relación técnica, política con decisión CANDIDATO, cambio de política invalidante, sin aprobación implícita y promoción/rollback sintéticos; más Edge OIDC Deno 51 PASS. Obtener el readback de CI de HEAD final antes de afirmar pase en nuevo commit.
+
+**NO-GO:** 0/32 reglas reconciliadas en autoridad de negocio, 0 promociones reales. IG ya puede identificar 7 pistas concretas, pero **aún debe realizar recuperación documental para las 25 sin fuente SQL**, después vincular decisión original + comparación de campos materiales y ejecutar operación gobernada. PR DRAFT, funciones sin desplegar, emisor protegido ausente y operación `PROMOCION_REGLA_LF` no registrada.
