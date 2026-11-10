@@ -13,13 +13,13 @@ from pathlib import Path
 
 from ex6_source_truth_v1 import source_truth, SPEC_REF, RUN_REF, TASK_REF
 from ex6_real_chain_v1 import authorize_from_real_hunks
-from ex6_build_lint_inputs_v1 import observed, config_sha, rem_d4_process
+from ex6_build_lint_inputs_v1 import observed, config_sha, rem_d4_process, active_ref
 
 TREE="72e5f54ca75cb3a1186dbc160469cf8f5dd070c5"
 N="912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
 BUILDER="ex6://principal/gpt-native-worker"
 REVIEWER="ex6://unattested/independent-reviewer"
-RECEIPT="ex6://sandbox/actions/runs/42707967927/artifacts/13715275651"
+active_ref()="ex6://sandbox/actions/runs/42707967927/artifacts/13715275651"
 
 def h(obj):
     return hashlib.sha256(json.dumps(obj,sort_keys=True,
@@ -43,7 +43,7 @@ def make_pg11_v2(truth=None):
         compatibility_observations=[{
             "surface":"MODULE_CONTRACT","contract_ref":SPEC_REF+"#REM-D3",
             "baseline_ref":"ex6://source/base/"+truth["base_head_sha"],
-            "evidence_ref":RECEIPT+"#candidate/commands/build",
+            "evidence_ref":active_ref()+"#candidate/commands/build",
             "compatible_reported":True}])
     observed_terms=[{
         "path":x["path"],"symbol_ref":x["header_ref"]+"#"+Path(x["path"]).stem,
@@ -123,8 +123,8 @@ def make_pg12_v2(pg11=None,truth=None):
         provider_ref="ex6://provider/chatgpt-native",model_ref="GPT_NATIVE",
         ekb_snapshot_ref=SPEC_REF,
         toolchain_versions=[
-            {"name":"java","version_ref":RECEIPT+"#java21"},
-            {"name":"maven","version_ref":RECEIPT+"#candidate/commands/build"},
+            {"name":"java","version_ref":active_ref()+"#java21"},
+            {"name":"maven","version_ref":active_ref()+"#candidate/commands/build"},
             {"name":"google-java-format","version_ref":d["formatter_sha256"]}],
         linter_config_sha256=config_sha(d,"format_aosp"),
         optimization_mode="HYBRID",
@@ -144,7 +144,7 @@ def make_pg12_v2(pg11=None,truth=None):
         "candidate_identity_sha256":c1["candidate_sha256"],
         "check_contract_ref":("ex6://lf/pg"+str(stage)+"/c"+str(i)),
         "result_ref":None,"result_digest_sha256":None,
-        "runner_ref":RECEIPT,"observed_outcome":"NOT_RUN",
+        "runner_ref":active_ref(),"observed_outcome":"NOT_RUN",
         "execution_receipt_ref":None,
     } for stage,max_c in ((8,8),(11,5)) for i in range(1,max_c+1)]
     c3=prepare_pg12_c3(pg12_c2=c2,
@@ -181,11 +181,11 @@ def make_pg13_v2(pg12=None,truth=None):
     reported_sha=candidate["commands"]["build"]["stdout"]["sha256"]
     c2=prepare_pg13_c2(
         pg13_c1=c1,rebuild_observations=[{
-            "artifact_ref":RECEIPT+"#candidate/maven/stdout-only",
+            "artifact_ref":active_ref()+"#candidate/maven/stdout-only",
             "baseline_digest_sha256":reported_sha,
             "rebuild_digest_sha256":reported_sha,
             "difference_ref":None}],
-        build_recipe_ref=RECEIPT+"#candidate/commands/build",
+        build_recipe_ref=active_ref()+"#candidate/commands/build",
         environment_lock_ref=d["formatter_sha256"])
     scenarios=[{
         "scenario_code":code,
@@ -241,7 +241,7 @@ def make_pg14_v2(pg13=None,local_freeze=None,truth=None):
     obligations=[{
         "obligation_ref":req,
         "spec_ref":SPEC_REF+"#"+req,
-        "test_case_ref":RECEIPT+"#candidate/commands/visible_ex6" if req=="REM-D4"
+        "test_case_ref":active_ref()+"#candidate/commands/visible_ex6" if req=="REM-D4"
                         else RUN_REF+"#visible-tests/ex6",
         "expected_oracle_ref":"ex6://holdout/sha256/"+truth["holdout_sha256"]+"/PASS",
     } for req in truth["requirements"]]
