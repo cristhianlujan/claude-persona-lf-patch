@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-s26-binding-proof-verifier-20261109",
+  "paths": {
+    "supabase/functions/run-creacion-perfil-lf/verified_proof_evidence.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/run-creacion-perfil-lf/verified_proof_evidence.test.mjs": "SUPABASE_FUNCTION",
+    "sandbox/lf_contract_gate_test/changesets/lf-s26-binding-proof-verifier-20261109.json": "CHANGESET_MANIFEST"
+  }
+}
