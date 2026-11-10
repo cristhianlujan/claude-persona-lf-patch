@@ -152,6 +152,10 @@ def project(a3: Any, a4: Any) -> dict:
         "source_collection_counts": counts,
         "missing_collections": missing,
         "source_detail": source_detail,
+        "upstream_contract_snapshot": {
+            "A3": deepcopy(a3),
+            "A4": deepcopy(a4),
+        },
         "source_digest_sha256": canonical_sha({"a3": a3, "a4": a4}),
         "source_attested": False,
     }
