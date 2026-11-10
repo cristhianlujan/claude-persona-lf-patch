@@ -28,3 +28,12 @@ jobs:
           python-version: '3.12'
       - name: Run A5 deterministic decisions / ADR tests
         run: python3 -m unittest discover -s skills/programming_analysis/steps/a5/evals -p 'test_*.py' -v
+      - name: Export complete human-readable synthetic Login B2B output
+        run: python3 skills/programming_analysis/steps/a5/evals/render_a5_material_human_v1.py "$RUNNER_TEMP/a5-artifacts"
+      - name: Upload complete synthetic A5 material and evidence (not real LF data)
+        uses: actions/upload-artifact@v4
+        with:
+          name: a5-login-b2b-material-completo-sintetico
+          path: ${{ runner.temp }}/a5-artifacts/*
+          if-no-files-found: error
+
