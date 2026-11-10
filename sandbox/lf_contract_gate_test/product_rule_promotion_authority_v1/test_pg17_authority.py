@@ -144,6 +144,39 @@ def main():
 
     # New, filterable per-rule markers must be registered ONLY after the
     # same profile run has a clean validated semantic judge and Router receipt.
+    def set_disposition(choice):
+        query=(
+            "UPDATE public.lf_operation_execution_steps st "
+            "SET evidence_payload=jsonb_set(st.evidence_payload,"
+            "'{profile_output,traceability,ig_rule_proposal_decisions}',"
+            "(SELECT jsonb_agg(CASE WHEN e.value->>'rule_code'="
+            f"'{RULE}' THEN jsonb_set(e.value,'{{disposition}}',"
+            f"'\"{choice}\"'::jsonb) ELSE e.value END) "
+            "FROM jsonb_array_elements(st.evidence_payload#>"
+            "'{profile_output,traceability,ig_rule_proposal_decisions}') e(value)),false)"
+            f" WHERE st.execution_id='{PARENT}' AND st.step_id='execute_profile';"
+        )
+        sql(query)
+
+    # Product disagreement means documented remediation, NEVER auto-promotion.
+    set_disposition("ADJUST_PROPOSAL")
+    adjust=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
+    check("PRODUCT_ADJUSTMENT_MARK_RECORDED",adjust.get("status")=="MARKS_RECORDED")
+    check("PRODUCT_ADJUSTMENT_BLOCKS_PROMOTION",sql(
+      "SELECT marca FROM public.lf_rule_authority_tracking_v1 "
+      f"WHERE rule_code='{RULE}';")=="PRODUCT_IG_ADJUSTMENT_REQUIRED")
+    set_disposition("REJECT_PROPOSAL")
+    reject=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
+    check("PRODUCT_REJECTION_MARK_RECORDED",reject.get("status")=="MARKS_RECORDED")
+    check("PRODUCT_REJECTION_BLOCKS_PROMOTION",sql(
+      "SELECT marca FROM public.lf_rule_authority_tracking_v1 "
+      f"WHERE rule_code='{RULE}';")=="PRODUCT_IG_REJECTED")
+    check("PRODUCT_REJECTION_NEVER_CREATES_REQUEST",
+          sql("SELECT count(*) FROM public.lf_rule_promotion_v1;")=="0")
+    set_disposition("ACCEPT_PROPOSAL")
+
     marker=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
       f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
     check("MARKS_DURABLE_RECORDED",marker.get("status")=="MARKS_RECORDED"
