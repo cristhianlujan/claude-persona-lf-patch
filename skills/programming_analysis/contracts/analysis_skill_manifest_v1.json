@@ -115,9 +115,12 @@
       "module_entrypoint": "steps/a5/validators/run.py:run",
       "operationally_verified": false,
       "source_set_contract": "steps/a5/contracts/deterministic_decision_sources_v1.json",
-      "integration_note": "Four exact A1-A4 inputs + authorized host ADR trigger readback. Existing ADR current assertion and historical ASOF only via canonical providers; no human decision inferred for pending rules or evidence gaps; no currentness attestation, append-only persistence, selected strategy, A6 permission or live RUN.",
+      "integration_note": "A1-A4 exact contract inputs, source-only full material items + A3/A4 snapshots, separate evidence gaps/excluded definitions and owner decisions, canonical ADR/ASOF unchanged. Mechanical parity tested; semantic independent reviewer NOT attested; runtime source currentness, govern receipt and A6 admission still false.",
       "source_attested": false,
-      "next_step_allowed": false
+      "next_step_allowed": false,
+      "material_output_contract": "steps/a5/contracts/a5_material_decision_output_v1.json",
+      "material_parity_judge": "steps/a5/judges/material_parity_v1.py",
+      "semantic_judge_packet": "steps/a5/judges/semantic_review_packet_v1.py"
     },
     {
       "step_id": "A6",
