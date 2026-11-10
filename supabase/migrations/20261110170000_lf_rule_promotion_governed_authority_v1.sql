@@ -59,11 +59,14 @@ BEGIN
     s.decision->>'id_decision' AS decision_id,
     s.decision->>'estado_normalizado' AS decision_state,
     s.decision->'raw_payload' AS payload,
-    s.source_count=1 AND (
-       s.decision->>'estado_original'='APROBADO_POR_OWNER'
-       OR s.decision->>'estado_normalizado' IN
+    s.source_count=1
+      AND s.decision->>'estado_normalizado' IN
           ('APROBADA','VIGENTE','CANDIDATO_APROBADO_POR_OWNER')
-    ) AS source_owner_approved,
+      AND (
+        s.decision->>'estado_original'='APROBADO_POR_OWNER'
+        OR s.decision->>'estado_normalizado' IN
+          ('APROBADA','VIGENTE','CANDIDATO_APROBADO_POR_OWNER')
+      ) AS source_owner_approved,
     s.source_count=1 AND
       s.decision->'raw_payload'->>'rule_code'=s.codigo AND
       s.decision->'raw_payload'->>'title'=s.titulo AND
