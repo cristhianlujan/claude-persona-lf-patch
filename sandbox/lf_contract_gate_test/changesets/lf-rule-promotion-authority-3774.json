@@ -4,6 +4,7 @@
     ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
     "sandbox/lf_contract_gate_test/changesets/lf-rule-promotion-authority-3774.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/ACCEPTANCE.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/b2b_auth_001_source_leads_readback_20261110.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/live_source_pg17.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/seed_pg17.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/test_pg17_authority.py": "ENGINEERING_CHECKPOINTS",
