@@ -1,0 +1,30 @@
+name: LF A4 Candidate Tests
+
+# Exact-HEAD local unit tests for the candidate A4 source adapter only.
+# Does not run Router, invoke Supabase, attest sources, judge, or activate skill.
+on:
+  push:
+    paths:
+      - 'skills/programming_analysis/steps/a4/**'
+      - '.github/workflows/lf-analysis-a4-candidate-tests.yml'
+  pull_request:
+    paths:
+      - 'skills/programming_analysis/steps/a4/**'
+      - '.github/workflows/lf-analysis-a4-candidate-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  a4-candidate-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run A4 deterministic behavior tests
+        run: python3 -m unittest discover -s skills/programming_analysis/steps/a4/evals -p 'test_*.py' -v
