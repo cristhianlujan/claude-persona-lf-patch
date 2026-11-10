@@ -134,8 +134,52 @@ def enrich(base: Any, inputs: Any, readback: Any = None) -> dict:
             "source_attested": False,
         })
     out = deepcopy(base)
+    # A canonical ADR trigger is not itself a fully grounded owner question.
+    # Distinguish missing question evidence from an actual human decision.
+    architecture = []
+    flags = out.get("material_adr_triggers_true", [])
+    if not isinstance(flags, list):
+        flags = []
+    disposition = out.get("decision_context", {}).get("adr_disposition")
+    trigger_review = (
+        readback.get("adr_trigger_review", {})
+        if isinstance(readback, dict) else {}
+    )
+    detail = trigger_review.get("material_detail", {}) if isinstance(trigger_review, dict) else {}
+    if not isinstance(detail, dict):
+        return _blocked("A5_ADR_MATERIAL_DETAIL_INVALID", base)
+    for flag in flags:
+        provided = detail.get(flag)
+        question = None
+        evidence_ref = None
+        if provided is not None:
+            if not isinstance(provided, dict):
+                return _blocked("A5_ADR_MATERIAL_DETAIL_ROW_INVALID", base)
+            q = provided.get("material_question")
+            ref = provided.get("evidence_ref")
+            if (not isinstance(q, str) or len(q.strip()) < 20
+                    or not q.strip().endswith("?")
+                    or not isinstance(ref, str) or ref not in a3_refs+a4_refs):
+                return _blocked("A5_ADR_QUESTION_NOT_SOURCE_BOUND", base)
+            question, evidence_ref = q, ref
+        need_decision = disposition == "NEW_ADR_REQUIRED"
+        architecture.append({
+            "trigger": flag,
+            "material_question": question,
+            "evidence_ref": evidence_ref,
+            "decision_required": need_decision,
+            "semantic_review_needed": need_decision and question is None,
+            "status": (
+                "REQUIRES_OWNER_DECISION_CANDIDATE" if need_decision and question
+                else "MATERIAL_QUESTION_EVIDENCE_REQUIRED" if need_decision
+                else "REUSE_CURRENT_ADR_OR_UNRESOLVED"
+            ),
+            "selected_option_ref": None,
+            "authority_currentness_attested": False,
+        })
     out["material_ledger"] = ledger
     out["decision_items"] = items
+    out["architecture_decision_items"] = architecture
     out["pending_owner_decisions"] = owner
     out["pending_evidence_items"] = [
         {"decision_item_id": x["decision_item_id"],
