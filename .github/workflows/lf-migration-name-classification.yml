@@ -60,7 +60,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: isolated-only
         options: >-
-          --health-cmd 'pg_isready -U postgres'
+          --health-cmd "pg_isready -U postgres"
           --health-interval 5s
           --health-timeout 4s
           --health-retries 8
