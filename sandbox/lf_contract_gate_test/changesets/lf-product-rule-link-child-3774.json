@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-product-rule-link-child-3774",
+  "paths": {
+    "supabase/migrations/20261110130000_lf_product_rule_link_child_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/product_rule_link_child_v1/ACCEPTANCE.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-product-rule-link-child-3774.json": "CHANGESET_MANIFEST"
+  }
+}
