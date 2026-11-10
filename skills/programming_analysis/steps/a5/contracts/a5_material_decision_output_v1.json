@@ -64,7 +64,22 @@
     "material_coverage": "input vs projected counts; all missing collections visible",
     "scope_disposition": "candidate advisory, not runtime or source authority",
     "candidate_independent_scope_available": "advisory only for independent approved definition candidates",
-    "a6_allowed": "always false until external governed admission"
+    "a6_allowed": "always false until external governed admission",
+    "architecture_decision_items": {
+      "required": [
+        "trigger",
+        "material_question",
+        "evidence_ref",
+        "decision_required",
+        "semantic_review_needed",
+        "status",
+        "selected_option_ref",
+        "authority_currentness_attested"
+      ],
+      "source": "A5 canonical ADR trigger classification plus optional source-bound material_detail",
+      "missing_question": "null and semantic_review_needed=true; never invent owner question",
+      "currentness": "unattested pending external authority"
+    }
   },
   "judges": {
     "deterministic": "steps/a5/judges/material_parity_v1.py",
