@@ -91,6 +91,8 @@ on:
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/test_login_b2b_gpt_chat_raw.py'
       - 'sandbox/lf_contract_gate_test/profile_execution_runtime/lf_product_director_ig949_chat_raw_record_candidate_20261030.sql'
       - 'supabase/migrations/20261031004000_lf_profile_product_director_ig949_chat_raw_record_v1.sql'
+      - 'skills/programming_analysis/steps/a4/**'
+      - 'skills/programming_analysis/steps/a5/**'
       - '.github/workflows/lf-router-level2-advisory-tests.yml'
   push:
     branches: [main]
@@ -738,3 +740,31 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
+
+  programming-analysis-a4-a5-candidate:
+    name: programming-analysis-a4-a5-source-only
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout candidate without production credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: A4 deterministic source-set tests
+        run: python3 -m unittest discover -s skills/programming_analysis/steps/a4/evals -p 'test_*.py' -v
+      - name: A5 per-rule material, layer and parity tests
+        run: python3 -m unittest discover -s skills/programming_analysis/steps/a5/evals -p 'test_*.py' -v
+      - name: Export full synthetic Login B2B A5 human and JSON evidence
+        run: python3 skills/programming_analysis/steps/a5/evals/render_a5_material_human_v1.py "$RUNNER_TEMP/a5-artifacts"
+      - name: Archive synthetic A5 material (not canonical LF evidence)
+        uses: actions/upload-artifact@v4
+        with:
+          name: a5-login-b2b-material-completo-sintetico
+          path: ${{ runner.temp }}/a5-artifacts/*
+          if-no-files-found: error
