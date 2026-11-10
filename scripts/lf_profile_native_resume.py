@@ -404,7 +404,45 @@ def prepare_product_director_raw(target_path, profile_output):
     return prepared
 
 
-def run_bound_validator(target_path, profile_code, profile_output):
+def unwrap_profile_native_evidence(target_path, profile_output):
+    """Keep the model candidate separate from its external provenance manifest.
+
+    The repair profile's V0.6 proof validator needs both objects. This envelope
+    is transport-only; its candidate alone is recorded as the original RAW.
+    Other profiles retain the unchanged plain-object contract.
+    """
+    if target_path != "profiles/systemic_root_cause_repair_lf/SKILL.md":
+        return profile_output, None
+    if not isinstance(profile_output, dict) or set(profile_output) != {"candidate", "evidence_manifest"}:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_ENVELOPE_REQUIRED")
+    candidate = profile_output["candidate"]
+    manifest = profile_output["evidence_manifest"]
+    if not isinstance(candidate, dict) or not isinstance(manifest, dict):
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_ENVELOPE_INVALID")
+    if manifest.get("manifest_version") != "SRCR_EVIDENCE_MANIFEST_V1":
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_VERSION_INVALID")
+    if not isinstance(manifest.get("evidence"), list) or not manifest["evidence"]:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_EMPTY")
+    encoded = json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 24000:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_TOO_LARGE")
+    return candidate, manifest
+
+
+def attach_bound_evidence_manifest(repo_root, packet, evidence_manifest):
+    """Store genuine supplied evidence beside RAW; bind bytes for canonical runner."""
+    if evidence_manifest is None:
+        return
+    encoded = json.dumps(evidence_manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 24000:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_TOO_LARGE")
+    manifest_path = repo_root / "profile-native-evidence-manifest.json"
+    manifest_path.write_bytes(encoded)
+    packet["evidence_manifest_ref"] = manifest_path.relative_to(repo_root).as_posix()
+    packet["evidence_manifest_sha256"] = hashlib.sha256(encoded).hexdigest()
+
+
+def run_bound_validator(target_path, profile_code, profile_output, evidence_manifest=None):
     """Run only the validator declared by the exact profile runtime binding."""
     source_path = PurePosixPath(target_path)
     slug = source_path.parts[1]
@@ -464,6 +502,7 @@ def run_bound_validator(target_path, profile_code, profile_output):
         "raw_output_ref": raw_path.relative_to(repo_root).as_posix(),
         "raw_output_sha256": hashlib.sha256(raw_bytes).hexdigest(),
     }
+    attach_bound_evidence_manifest(repo_root, packet, evidence_manifest)
     packet_path = repo_root / "profile-native-validation-binding.json"
     packet_path.write_text(
         json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
@@ -949,9 +988,10 @@ def main():
                 "execute_profile", "NATIVE_PROFILE_RAW_OUTPUT",
             )
         try:
+            profile_output, evidence_manifest = unwrap_profile_native_evidence(target_path, profile_output)
             profile_output = prepare_product_director_raw(target_path, profile_output)
             validation, raw_ref, validator_ref = run_bound_validator(
-                target_path, source.get("profile_code"), profile_output
+                target_path, source.get("profile_code"), profile_output, evidence_manifest
             )
         except ValueError as exc:
             print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))
