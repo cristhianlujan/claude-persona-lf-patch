@@ -151,6 +151,47 @@ def main():
     check("PROTECTED_RECEIPT_INSERTED",rid>0)
     check("CURRENT_RULE_NOT_YET_PROMOTED",status()=="CANDIDATO")
 
+    # A different protected issuer can issue a genuine receipt in the
+    # synthetic database, but it must not authorize this rule's promotion.
+    sql("INSERT INTO programacion.provenance_channels("
+        "channel_code,secret_sha256,allowed_kinds,description)"
+        "SELECT 'OTHER_EVIDENCE_CHANNEL',secret_sha256,allowed_kinds,'synthetic wrong issuer'"
+        " FROM programacion.provenance_channels "
+        "WHERE channel_code='LF_RULE_PROMOTION_ACTION_AUTHORITY_V1';")
+    other_channel_insert=insert.replace(
+        "LF_RULE_PROMOTION_ACTION_AUTHORITY_V1","OTHER_EVIDENCE_CHANNEL")
+    sql("BEGIN; SET LOCAL programacion.provenance_channel_token = "
+        f"'{TOKEN}'; {other_channel_insert} COMMIT;")
+    foreign_id=int(sql("SELECT id FROM programacion.provenance_receipts "
+        "WHERE issuer_channel='OTHER_EVIDENCE_CHANNEL' LIMIT 1;"))
+    check("WRONG_ISSUER_BLOCKED",
+          promote(foreign_id)["code"]=="EXTERNAL_ACTION_RECEIPT_NOT_VERIFIED")
+    check("WRONG_ISSUER_ZERO_EFFECT",status()=="CANDIDATO")
+
+    # A superseding decision, even still CANDIDATO, invalidates old currentness.
+    sql("INSERT INTO public.lf_decisiones_gov("
+        "id_decision,estado_normalizado,decision_number,raw_payload) VALUES("
+        "'DEC-SUPERSEDING-001','CANDIDATO_CONTROLADO',301,"
+        "'{\"supersedes_decision_id\":\"DEC-OWNER-001\"}'::jsonb);")
+    check("SUPERSEDED_SOURCE_BLOCKED",
+          promote(rid)["code"]=="SOURCE_SEMANTIC_AUTHORITY_UNPROVEN")
+    sql("DELETE FROM public.lf_decisiones_gov "
+        "WHERE id_decision='DEC-SUPERSEDING-001';")
+    check("SOURCE_CURRENTNESS_RECOVERED",
+          detail(RULE)["blocking_code"]=="ACTION_AUTHORIZATION_RECEIPT_REQUIRED")
+
+    # Tampering with a protected receipt after issuance cannot bypass the
+    # canonical digest even if the stale receipt_sha256 is left unchanged.
+    sql("UPDATE programacion.provenance_receipts SET "
+        "payload=jsonb_set(payload,'{security_gate}','\"FAIL\"'::jsonb) "
+        f"WHERE id={rid};")
+    check("TAMPERED_RECEIPT_BLOCKED",
+          promote(rid)["code"]=="EXTERNAL_ACTION_RECEIPT_NOT_VERIFIED")
+    sql("UPDATE programacion.provenance_receipts SET "
+        "payload=jsonb_set(payload,'{security_gate}','\"PASS\"'::jsonb) "
+        f"WHERE id={rid};")
+    check("TAMPER_RESTORE_NO_EFFECT",status()=="CANDIDATO")
+
     # Fail closed on a valid receipt bound to a rule whose source changed.
     sql("UPDATE public.lf_decisiones_gov SET estado_normalizado='CANDIDATO_CONTROLADO' "
         "WHERE id_decision='DEC-OWNER-001';")
