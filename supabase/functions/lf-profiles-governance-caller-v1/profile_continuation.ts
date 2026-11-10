@@ -1155,6 +1155,19 @@ export async function handleProfileContinuation(
     execution_id: e.execution_id,
     profile_code: e.target_code,
     next_action: result.next_action ?? null,
-    result: igRuleBundle ? {...result,ig_rule_proposals:igRuleBundle} : result,
+    result: igRuleBundle ? {
+      ...result,ig_rule_proposals:igRuleBundle,
+      ig_rule_review_contract:{
+        required:(igRuleBundle.proposals as unknown[]).length>0,
+        output_field:"traceability.ig_rule_proposal_decisions",
+        coverage:"EXACT_ONE_PRODUCT_RESPONSE_PER_IG_PROPOSAL",
+        allowed_dispositions:["ACCEPT_PROPOSAL","ADJUST_PROPOSAL","REJECT_PROPOSAL"],
+        required_fields:["rule_code","ig_proposal_sha256","disposition","rationale"],
+        decision_owner:"PERFIL-PRODUCT-DIRECTOR-LF",
+        one_llm:true,
+        no_second_ig_semantic_review:true,
+        operation_still_requires_governed_authorization:true,
+      },
+    } : result,
   }, recognized ? 200 : 409);
 }
