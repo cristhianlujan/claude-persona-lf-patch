@@ -54,6 +54,7 @@ def consolidate(a3: Any, a4: Any, decision_items: Any,
             _failure("A5_RULE_LAYER_DECISION_ITEM_IDENTITY_INVALID")
         all_items[item["decision_item_id"]]=item
     rules, code_by_ref={},{}
+    unresolved_rule_identities=[]
     for section, disposition in RULE_GROUPS:
         records=a3.get(section)
         if records is None:
@@ -65,8 +66,19 @@ def consolidate(a3: Any, a4: Any, decision_items: Any,
                 _failure("A5_RULE_LAYER_ROW_INVALID")
             code, ref=row.get("rule_code"),row.get("source_ref")
             if (not isinstance(code,str) or not code
-                    or not isinstance(ref,str) or not ref
-                    or ref not in a3["source_refs"] and section=="policy_scope_clear_rule_candidates"):
+                    or not isinstance(ref,str) or not ref):
+                if disposition=="APPROVED_SCOPE":
+                    _failure("A5_RULE_LAYER_RULE_IDENTITY_NOT_BOUND")
+                unresolved_rule_identities.append({
+                    "source_item_id":f"A3:{section}:{i}",
+                    "rule_code":code if isinstance(code,str) else None,
+                    "rule_source_ref":ref if isinstance(ref,str) else None,
+                    "scope":disposition,
+                    "reason":"UNRESOLVED_RULE_IDENTITY_NOT_IMPLEMENTABLE",
+                    "source_row":deepcopy(row),
+                })
+                continue
+            if ref not in a3["source_refs"] and section=="policy_scope_clear_rule_candidates":
                 _failure("A5_RULE_LAYER_RULE_IDENTITY_NOT_BOUND")
             if code in rules or (ref in code_by_ref and code_by_ref[ref] != code):
                 _failure("A5_RULE_LAYER_DUPLICATE_OR_CONFLICTING_RULE")
@@ -256,6 +268,7 @@ def consolidate(a3: Any, a4: Any, decision_items: Any,
         "rule_layer_evidence_missing_count":sum(
             bool(x["unresolved_layer_evidence"]) for x in rules.values()),
         "unlinked_explicit_rule_impact_items":unlinked,
+        "unresolved_rule_identities":unresolved_rule_identities,
         "applicability_source_attested":False,
         "independent_semantic_review":False,
         "a6_allowed":False,
