@@ -177,6 +177,20 @@ def enrich(base: Any, inputs: Any, readback: Any = None) -> dict:
             "selected_option_ref": None,
             "authority_currentness_attested": False,
         })
+    # Consolidate A3 approved, deferred and excluded rule identities exactly
+    # once. Optional host-supplied layer readback does not self-attest.
+    helper=ROOT / "rule_layer_consolidation_v1.py"
+    spec=importlib.util.spec_from_file_location("a5_rule_layer_consumer",helper)
+    if spec is None or spec.loader is None:
+        return _blocked("A5_RULE_LAYER_ADAPTER_UNAVAILABLE",base)
+    adapter=importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(adapter)
+        rule_profiles=adapter.consolidate(a3,a4,items,readback)
+    except (ValueError,TypeError,AttributeError,RecursionError,OSError) as exc:
+        code=str(exc) if str(exc).startswith("A5_") else "A5_RULE_LAYER_PROJECTION_FAILED"
+        return _blocked(code,base)
+    out["rule_profiles"] = rule_profiles
     out["material_ledger"] = ledger
     out["decision_items"] = items
     out["architecture_decision_items"] = architecture
