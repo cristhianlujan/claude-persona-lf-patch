@@ -7,8 +7,8 @@
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/live_source_pg17.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/seed_pg17.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/test_pg17_authority.py": "ENGINEERING_CHECKPOINTS",
-    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "ENGINEERING_CHECKPOINTS",
-    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "EDGE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts": "SUPABASE_FUNCTION",
+    "supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts": "SUPABASE_FUNCTION",
     "supabase/migrations/20261110170000_lf_rule_promotion_governed_authority_v1.sql": "MIGRATION",
     "supabase/migrations/20261110181000_lf_rule_authority_marks_and_product_handoff_v1.sql": "MIGRATION"
   }
