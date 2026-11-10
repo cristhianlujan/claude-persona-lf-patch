@@ -322,7 +322,18 @@ BEGIN
       'ig_problem_code',itm.value->>'blocking_code',
       'proposed_action',
        CASE itm.value->>'blocking_code'
-       WHEN 'SOURCE_LOOKUP_REQUIRED' THEN 'RECOVER_ORIGINAL_AUTHORITY'
+       WHEN 'SOURCE_LOOKUP_REQUIRED' THEN (
+         SELECT CASE src.value->>'discovery_status'
+         WHEN 'DECISION_MENTION_REQUIRES_AUTHORITY_REVIEW'
+           THEN 'RECONCILE_RELATED_DECISION_REFERENCE'
+         WHEN 'POLICY_LINEAGE_REQUIRES_AUTHORITY_REVIEW'
+           THEN 'RECONCILE_POLICY_LINEAGE_AND_OWNER_DECISION'
+         WHEN 'TECHNICAL_LINEAGE_REQUIRES_AUTHORITY_REVIEW'
+           THEN 'RECONCILE_TECHNICAL_LINEAGE_TO_ORIGINAL_APPROVAL'
+         ELSE 'SEARCH_ORIGINAL_OWNER_SOURCE' END
+         FROM jsonb_array_elements(recovery->'items') src(value)
+         WHERE src.value->>'rule_code'=itm.value->>'rule_code'
+       )
        WHEN 'SOURCE_AMBIGUOUS' THEN 'RECONCILE_MULTIPLE_AUTHORITY_SOURCES'
        WHEN 'SOURCE_NOT_OWNER_APPROVED' THEN 'RESOLVE_EXISTING_OWNER_DECISION'
        WHEN 'SOURCE_SUPERSEDED_RECONCILE' THEN 'BIND_LATEST_APPROVED_DECISION'
@@ -336,7 +347,7 @@ BEGIN
         WHEN itm.value->>'blocking_code'='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
         THEN 'Current owner source and exact rule parity proved; action authorization remains separate'
         WHEN itm.value->>'blocking_code'='SOURCE_LOOKUP_REQUIRED'
-        THEN 'No exact original approval ref found; recover from controlled sources before any semantic assertion'
+        THEN 'No direct approved owner decision; use linked evidence only as search leads, verify original owner authority and rule parity before any promotion'
         ELSE 'Preserve current candidate state until exact authority, values and supersession are reconciled'
         END,
       'rule_sha256',itm.value->>'rule_sha256',
