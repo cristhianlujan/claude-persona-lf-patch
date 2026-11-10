@@ -6,6 +6,7 @@ runtime transition. A5 consumes A1/A2/A3/A4 + host-authorized readback.
 from __future__ import annotations
 
 from copy import deepcopy
+import importlib.util
 import hashlib
 import json
 from pathlib import Path
