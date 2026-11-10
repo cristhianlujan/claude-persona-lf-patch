@@ -8,6 +8,10 @@ BEGIN
    <> 'ac7e351e1834cbfb91aabf26e1a04a8d'
  OR md5(pg_get_functiondef('public.lf_record_operation_step_core_v1(text,text,text,jsonb,text,text,text,text,text,text,jsonb,boolean,text)'::regprocedure))
    <> 'fe08a25c8e3c023d7181194d2dfdee0d'
+ OR md5(pg_get_functiondef('public.lf_regla_pantalla_link_v1(text,text,integer,text)'::regprocedure))
+   <> '915f9be58ad48c8a839316b7a65fb561'
+ OR md5(pg_get_functiondef('public.fn_lf_operation_reserve_execution_v1(text,text,text,text,text,text,text,text,text,jsonb)'::regprocedure))
+   <> '311a0377c43c0698ec12826c1a7f6a78'
  THEN RAISE EXCEPTION 'LINK_CHILD_SOURCE_DRIFT'; END IF;
  IF (SELECT count(*) FROM public.lf_skill_catalog_v1
    WHERE skill_code='RULE_LINK_APPLY' AND status='READY'
@@ -123,6 +127,9 @@ BEGIN
   OR val->>'output_contract_result' IS DISTINCT FROM 'PASS'
   OR judge->'unsupported_claims' IS DISTINCT FROM '[]'::jsonb
   OR judge->'blocking_codes' IS DISTINCT FROM '[]'::jsonb
+  OR judge#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
+  OR judge#>'{semantic_judge_result,result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
+  OR judge#>'{semantic_judge_result,result,blocking_codes}' IS DISTINCT FROM '[]'::jsonb
   OR coalesce(judge#>>'{semantic_judge_result,verdict}','') NOT IN
     ('PASS_INDEPENDENT_SEMANTIC','PASS_REVIEWED_CURRENT_CONTEXT')
   OR judge#>>'{semantic_judge_result,candidate_sha256}'
