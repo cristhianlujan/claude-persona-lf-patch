@@ -74,6 +74,92 @@ JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
 LEFT JOIN public.lf_rule_authority_tracking_v1 t
  ON t.rule_code=r.codigo AND t.screen_code=p.codigo;
 
+-- Input Governance proposes once, BEFORE Product Director starts work.
+-- This is read-only, not a second LLM and never a permit to promote.
+-- Source evidence is exactly the preexisting authority assessment; when
+-- authority is missing the proposal is to recover it, NOT invent rule values.
+CREATE FUNCTION public.lf_ig_rule_proposal_prepare_v1(
+ p_execution_id text,p_screen_code text
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path='pg_catalog','public','lf_ops','extensions'
+AS $igproposal$
+DECLARE par public.lf_operation_execution%ROWTYPE;
+ assess jsonb; proposals jsonb;
+BEGIN
+ SELECT * INTO par FROM public.lf_operation_execution
+ WHERE execution_id=p_execution_id AND operation_code='EJECUCION_PERFIL_LF'
+ AND target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+ AND target_type='PERFIL' AND status='IN_PROGRESS';
+ IF NOT FOUND OR par.manifest->>'read_only' IS DISTINCT FROM 'true'
+ OR par.manifest->>'no_write' IS DISTINCT FROM 'true'
+ OR par.manifest->>'no_promotion' IS DISTINCT FROM 'true'
+ OR par.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'
+   IS DISTINCT FROM 'true'
+ OR par.manifest#>>'{screen_selection_result,selected_screen_code}'
+   IS DISTINCT FROM p_screen_code
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+   'code','IG_PROPOSAL_ROUTER_OR_SCOPE_INVALID'); END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps st
+    WHERE st.execution_id=p_execution_id
+      AND st.step_id='input_validate'
+      AND st.status='STEP_PASS_WITH_EVIDENCE'
+ ) THEN RETURN jsonb_build_object('status','BLOCKED',
+   'code','IG_PROPOSAL_INPUT_GOVERNANCE_STEP40_REQUIRED'); END IF;
+ assess:=public.lf_rule_promotion_authority_assess_v1(p_screen_code);
+ IF assess->>'status' IS DISTINCT FROM 'ASSESSED_READ_ONLY'
+ OR assess->>'action_authorized' IS DISTINCT FROM 'false'
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+   'code','IG_PROPOSAL_SOURCE_ASSESSMENT_INVALID'); END IF;
+ SELECT coalesce(jsonb_agg(
+    jsonb_build_object(
+      'rule_code',itm.value->>'rule_code',
+      'ig_problem_code',itm.value->>'blocking_code',
+      'proposed_action',
+       CASE itm.value->>'blocking_code'
+       WHEN 'SOURCE_LOOKUP_REQUIRED' THEN 'RECOVER_ORIGINAL_AUTHORITY'
+       WHEN 'SOURCE_AMBIGUOUS' THEN 'RECONCILE_MULTIPLE_AUTHORITY_SOURCES'
+       WHEN 'SOURCE_NOT_OWNER_APPROVED' THEN 'RESOLVE_EXISTING_OWNER_DECISION'
+       WHEN 'SOURCE_SUPERSEDED_RECONCILE' THEN 'BIND_LATEST_APPROVED_DECISION'
+       WHEN 'MATERIAL_PARITY_UNPROVEN' THEN 'RECONCILE_RULE_TO_CURRENT_APPROVED_SOURCE'
+       WHEN 'PENDING_DECISION_UNRESOLVED' THEN 'RESOLVE_EXPLICIT_PENDING_DECISION'
+       WHEN 'PRODUCTION_ACTIVATION_NOT_AUTHORIZED' THEN 'KEEP_PRODUCTION_BLOCKED'
+       WHEN 'ACTION_AUTHORIZATION_RECEIPT_REQUIRED' THEN 'REQUEST_GOVERNED_PROMOTION'
+       ELSE 'BLOCK_UNCLASSIFIED_CASE'
+       END,
+      'reason',CASE
+        WHEN itm.value->>'blocking_code'='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+        THEN 'Current owner source and exact rule parity proved; action authorization remains separate'
+        WHEN itm.value->>'blocking_code'='SOURCE_LOOKUP_REQUIRED'
+        THEN 'No exact original approval ref found; recover from controlled sources before any semantic assertion'
+        ELSE 'Preserve current candidate state until exact authority, values and supersession are reconciled'
+        END,
+      'rule_sha256',itm.value->>'rule_sha256',
+      'source_decision_id',itm.value->>'source_decision_id',
+      'source_decision_sha256',itm.value->>'source_decision_sha256',
+      'ig_proposal_sha256',encode(extensions.digest(
+         convert_to(itm.value::text,'UTF8'),'sha256'),'hex'),
+      'source_evidence',itm.value,
+      'needs_human_decision',CASE
+        WHEN itm.value->>'blocking_code'='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+        THEN 'NO_NEW_BUSINESS_DECISION'
+        ELSE 'UNDETERMINED_UNTIL_RECONCILIATION' END,
+      'action_authorized',false
+    ) ORDER BY itm.value->>'rule_code'),'[]'::jsonb)
+ INTO proposals
+ FROM jsonb_array_elements(assess->'details') AS itm(value);
+ RETURN jsonb_build_object(
+   'schema_version','LF_IG_RULE_RESOLUTION_PROPOSAL_V1',
+   'status','IG_PROPOSAL_READY',
+   'execution_id',p_execution_id,'screen_code',p_screen_code,
+   'proposal_count',jsonb_array_length(proposals),
+   'proposals',proposals,
+   'next_actor','PERFIL-PRODUCT-DIRECTOR-LF',
+   'next_action','PROFILE_REVIEW_EXISTING_IG_PROPOSAL',
+   'action_authorized',false,
+   'promotion_allowed',false);
+END $igproposal$;
+
 -- Checks canonical parent, original Router receipt, stage 70 independent
 -- judge, and output-validator SHA before permitting ONLY ledger marks.
 CREATE FUNCTION public.lf_rule_authority_parent_guard_v1(
@@ -360,6 +446,10 @@ REVOKE ALL ON TABLE public.v_lf_rule_authority_filter_v1
  FROM PUBLIC,anon,authenticated;
 GRANT SELECT ON TABLE public.lf_rule_authority_tracking_v1 TO service_role;
 GRANT SELECT ON TABLE public.v_lf_rule_authority_filter_v1 TO service_role;
+REVOKE ALL ON FUNCTION public.lf_ig_rule_proposal_prepare_v1(text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_ig_rule_proposal_prepare_v1(text,text)
+ TO service_role;
 REVOKE ALL ON FUNCTION public.lf_rule_authority_parent_guard_v1(text,text)
  FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.lf_rule_authority_mark_refresh_v1(text,text,text)
