@@ -15,6 +15,7 @@ CONTRACT = ROOT / "contracts/deterministic_source_set_v1.json"
 SCHEMA = "SHARED_CHANGE_IMPACT_ANALYSIS"
 CORE = "SHARED_CHANGE_IMPACT_MAP_V1"
 SIDECAR = "A4_EXISTING_IMPACT_CORE_READBACK_V1"
+BUILD_INTENTS = frozenset({"CREATE", "CREATE_SCREEN", "IMPLEMENT", "IMPLEMENT_NEW", "BUILD_NEW"})
 
 
 def _blocked(code: str, *, target: str | None = None) -> dict:
@@ -33,6 +34,96 @@ def _gap(code: str, *, target: str, source: str) -> dict:
     return {"code": code, "target_ref": target, "source_id": source,
             "resolution": "TARGETED_RETURN_TO_A3_OR_EXACT_PROVIDER",
             "impact_state": "UNKNOWN"}
+
+
+def _planned_build(a3: dict, a2: dict, target: str) -> dict:
+    """Project the *to-be-built* obligations; no target code/destination exists.
+
+    A2's build intention is not independent proof that no implementation
+    exists. A3 approved scope is still source-only, never runtime permission.
+    """
+    rule_items = a3.get("policy_scope_clear_rule_candidates")
+    material = a3.get("material_contract_readback")
+    if not isinstance(rule_items, list):
+        return _blocked("A4_APPROVED_RULE_SCOPE_READBACK_REQUIRED", target=target)
+    direct, excluded = [], []
+    for rule in rule_items:
+        if (not isinstance(rule, dict)
+                or not isinstance(rule.get("rule_code"), str)
+                or not isinstance(rule.get("source_ref"), str)
+                or rule.get("rule_status") != "VIGENTE"
+                or rule.get("pending_decision") is not False):
+            return _blocked("A4_BUILD_RULE_SOURCE_STATUS_INVALID", target=target)
+        if rule.get("policy_dependency_disposition") not in (
+            None, "NO_KNOWN_POLICY_DEPENDENCY_BLOCKER"
+        ):
+            return _blocked("A4_BUILD_RULE_POLICY_SCOPE_INVALID", target=target)
+        direct.append({
+            "affected_ref": rule["source_ref"],
+            "requirement_code": rule["rule_code"],
+            "evidence_origin": "S1_A3",
+            "impact_class": "PLANNED_NEW_IMPLEMENTATION_OBLIGATION",
+            "existing_code_delta": False,
+            "source_status": "VIGENTE",
+            "source_attested": False,
+        })
+    if material is not None:
+        if (not isinstance(material, dict)
+                or material.get("status") != "MATERIAL_CONTRACT_PROJECTED_UNATTESTED"
+                or not isinstance(material.get("status_items"), list)):
+            return _blocked("A4_MATERIAL_PROJECTION_INVALID", target=target)
+        for item in material["status_items"]:
+            if (not isinstance(item, dict)
+                    or not isinstance(item.get("source_ref"), str)
+                    or not isinstance(item.get("source_status"), str)):
+                return _blocked("A4_MATERIAL_ITEM_SOURCE_INVALID", target=target)
+            projection = {
+                "affected_ref": item["source_ref"],
+                "evidence_origin": "S1_A3",
+                "impact_class": "PLANNED_MATERIAL_DEFINITION",
+                "source_status": item["source_status"],
+                "existing_code_delta": False,
+                "source_attested": False,
+            }
+            if item["source_status"] == "VIGENTE":
+                direct.append(projection)
+            else:
+                excluded.append(projection)
+    gaps = []
+    if material is None:
+        gaps.append(_gap("A4_SCREEN_MATERIAL_NOT_READ", target=target, source="S1_A3"))
+    if not direct:
+        gaps.append(_gap("A4_APPROVED_SCOPE_HAS_NO_MATERIAL_OBLIGATIONS",
+                         target=target, source="S1_A3"))
+    # The source readback has not established runtime currentness, or scoped
+    # external dependencies. Preserve uncertainty but do not invent code paths.
+    gaps.append(_gap("A4_EXISTING_SHARED_DEPENDENCIES_NOT_ATTESTED",
+                     target=target, source="S3_INV_OBJECT"))
+    return {
+        "schema_version": SCHEMA,
+        "core_output_contract": CORE,
+        "status": "PLANNED_BUILD_IMPACT_UNATTESTED",
+        "business": "LF", "target_ref": target,
+        "requested_change_type": a2.get("change_type"),
+        "analysis_mode": "PLANNED_BUILD",
+        "target_code_state": "NOT_ESTABLISHED_BY_SOURCE",
+        "target_code_destination": None,
+        "technical_root_ref": None,
+        "direct_impacts": direct, "indirect_impacts": [],
+        "consumers": [], "dependency_paths": [],
+        "excluded_pending_obligations": excluded,
+        "evidence_refs": deepcopy(a3["source_refs"]),
+        "unresolved_material_impacts": gaps,
+        "counts": {"direct": len(direct), "indirect": 0, "consumers": 0,
+                   "dependency_paths": 0,
+                   "excluded_pending": len(excluded)},
+        "implementation_scope_progress_possible": bool(direct),
+        "no_code_path_required_to_analyze": True,
+        "no_impact_claimed": False,
+        "source_set_ref": "steps/a4/contracts/deterministic_source_set_v1.json",
+        "source_attested": False, "impact_verified": False,
+        "a5_allowed": False, "no_write_performed": True,
+    }
 
 
 def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict:
@@ -65,12 +156,16 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         return _blocked("A4_A3_NOT_ADMISSIBLE_EVIDENCE_CANDIDATE", target=target)
     if not isinstance(a3.get("source_refs"), list) or not a3["source_refs"]:
         return _blocked("A4_A3_EVIDENCE_REFS_REQUIRED", target=target)
-    if not isinstance(readback, dict):
+    build_intent = a2.get("change_type") in BUILD_INTENTS
+    if readback is None:
+        if build_intent:
+            return _planned_build(a3, a2, target)
         return {
             **_blocked("A4_EXACT_HOST_SOURCE_READBACK_REQUIRED", target=target),
             "status": "NEED_MORE_EVIDENCE",
         }
-    if (readback.get("schema_version") != SIDECAR
+    if (not isinstance(readback, dict)
+            or readback.get("schema_version") != SIDECAR
             or readback.get("business") != "LF"
             or readback.get("target_ref") != target
             or readback.get("source_attested") is not False):
@@ -78,6 +173,8 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
     inv = readback.get("inventory_object")
     binding = readback.get("identity_binding")
     if inv is None and binding is None:
+        if build_intent:
+            return _planned_build(a3, a2, target)
         return {
             **_blocked("A4_TARGET_NOT_MAPPED_TO_INVENTORY_OBJECT", target=target),
             "status": "IMPACT_UNKNOWN",
