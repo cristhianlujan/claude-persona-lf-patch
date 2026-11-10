@@ -123,7 +123,7 @@ def main():
       "'RULE_PROMOTION_ACTION_AUTHORIZATION',NULL,"
       f"'{HEAD}','LF_RULE_PROMOTION','{PROM}',"
       f"'{details['rule_sha256']}',"
-      "'ISOLATED_RULE_PROMOTION_ISSUER','SYNTHETIC_EXTERNAL_SIGNER',"
+      "'LF_RULE_PROMOTION_ACTION_AUTHORITY_V1','SYNTHETIC_EXTERNAL_SIGNER',"
       "'ISOLATED_PG17_ACTION_RECEIPT',"
       f"{src},"
       "programacion.fn_v09_sha256_jsonb("
@@ -135,7 +135,7 @@ def main():
       f"'{PROM}',"
       "'subject_sha256',"
       f"'{details['rule_sha256']}',"
-      "'issuer_channel','ISOLATED_RULE_PROMOTION_ISSUER',"
+      "'issuer_channel','LF_RULE_PROMOTION_ACTION_AUTHORITY_V1',"
       "'issuer_identity','SYNTHETIC_EXTERNAL_SIGNER',"
       "'verification_ref','ISOLATED_PG17_ACTION_RECEIPT',"
       f"'payload',{src}))"
@@ -175,7 +175,7 @@ def main():
       f"SELECT status FROM public.lf_rule_promotion_v1 WHERE promotion_id='{PROM}';")=="APPLIED")
     check("EXACT_GOVERNED_ISSUER",sql(
       f"SELECT decided_by FROM public.lf_rule_promotion_v1 WHERE promotion_id='{PROM}';"
-      ).startswith("GOVERNED:ISOLATED_RULE_PROMOTION_ISSUER"))
+      ).startswith("GOVERNED:LF_RULE_PROMOTION_ACTION_AUTHORITY_V1"))
     check("NO_SECOND_APPLY",promote(rid)["code"]=="PROMOTION_REQUEST_NOT_PENDING")
     print("LF_PROMOTION_AUTHORITY_PG17_POSITIVE_NEGATIVE_ROLLBACK_PASS",flush=True)
 
