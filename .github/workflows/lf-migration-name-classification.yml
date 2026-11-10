@@ -48,3 +48,32 @@ jobs:
             --failure-code FAIL_UNCLASSIFIED_MIGRATION_PRE_APPLY \
             --allow-reconciliation-source \
             "${migration_paths[@]}"
+
+  product-rule-link-pg17:
+    name: product-rule-link-pg17-isolated
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      pg:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: isolated-only
+        options: >-
+          --health-cmd 'pg_isready -U postgres'
+          --health-interval 5s
+          --health-timeout 4s
+          --health-retries 8
+    steps:
+      - name: Checkout exact PR candidate without production credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run original-source PostgreSQL 17 link child and rollback tests
+        shell: bash
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        run: |
+          set -euo pipefail
+          test -n "$PG_CONTAINER"
+          python3 sandbox/lf_contract_gate_test/product_rule_link_child_v1/test_rule_link_child_pg17.py
