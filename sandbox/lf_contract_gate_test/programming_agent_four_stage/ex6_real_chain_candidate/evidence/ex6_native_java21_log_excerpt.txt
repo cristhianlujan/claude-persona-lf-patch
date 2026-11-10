@@ -1,0 +1,5 @@
+2026-11-09T18:28:08.1819273Z   java-version: 21
+2026-11-09T18:28:08.4813221Z Resolved Java 21.0.13+9 from tool-cache
+2026-11-09T18:28:08.4839102Z Setting Java 21.0.13+9 as the default
+2026-11-09T18:28:08.5272962Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-09T18:28:11.1879897Z EX6_ISOLATED_JAVA21_AND_MAVEN_PASS
