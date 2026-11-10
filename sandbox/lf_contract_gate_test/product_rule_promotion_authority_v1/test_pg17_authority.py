@@ -94,9 +94,13 @@ def main():
     # New, filterable per-rule markers must be registered ONLY after the
     # same profile run has a clean validated semantic judge and Router receipt.
     marker=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
-      f"'{PARENT}','B2B-AUTH-001','PG17/JUDGE/70');"))
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
     check("MARKS_DURABLE_RECORDED",marker.get("status")=="MARKS_RECORDED"
           and marker.get("marked")==6)
+    bad_ref=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','FORGED_EVIDENCE');"))
+    check("FORGED_JUDGE_EVIDENCE_REF_BLOCKED",
+          bad_ref.get("code")=="EXACT_JUDGE_EVIDENCE_REF_REQUIRED")
     check("MARKS_SIX_FILTERABLE",sql(
       "SELECT count(*) FROM public.v_lf_rule_authority_filter_v1 "
       "WHERE pantalla_codigo='B2B-AUTH-001' "
@@ -163,7 +167,7 @@ def main():
       f"SELECT marca FROM public.lf_rule_authority_tracking_v1 "
       f"WHERE rule_code='{RULE}';")=="PROMOTION_REQUESTED")
     rerun=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
-      f"'{PARENT}','B2B-AUTH-001','PG17/RECHECK');"))
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
     check("REASSESSMENT_SUCCESS",rerun.get("status")=="MARKS_RECORDED")
     check("REASSESSMENT_PRESERVES_PENDING_PROMOTION",
           sql("SELECT marca||':'||estado_flujo FROM "
