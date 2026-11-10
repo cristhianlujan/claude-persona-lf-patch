@@ -149,7 +149,13 @@ BEGIN
  IF auth->>'status'<>'PASS' THEN RETURN auth; END IF;
  IF nullif(btrim(coalesce(p_evidence_ref,'')),'') IS NULL
  OR length(p_evidence_ref)>1200
- THEN RETURN jsonb_build_object('status','BLOCKED','code','EXACT_EVIDENCE_REF_REQUIRED'); END IF;
+ OR NOT EXISTS (SELECT 1 FROM public.lf_operation_execution_steps step
+    WHERE step.execution_id=p_execution_id
+    AND step.step_id='semantic_judge'
+    AND step.status='STEP_PASS_WITH_EVIDENCE'
+    AND step.evidence_ref=p_evidence_ref)
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+  'code','EXACT_JUDGE_EVIDENCE_REF_REQUIRED'); END IF;
  assessment:=public.lf_rule_promotion_authority_assess_v1(p_screen_code);
  IF assessment->>'status'<>'ASSESSED_READ_ONLY'
  OR assessment->>'action_authorized' IS DISTINCT FROM 'false'
