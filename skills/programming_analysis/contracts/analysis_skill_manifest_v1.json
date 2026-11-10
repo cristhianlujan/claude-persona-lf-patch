@@ -93,9 +93,10 @@
       "module_entrypoint": "steps/a4/validators/run.py:run",
       "operationally_verified": false,
       "source_set_contract": "steps/a4/contracts/deterministic_source_set_v1.json",
-      "integration_note": "Two deterministic modes: PLANNED_BUILD projects approved A3 rules and material definitions without target implementation path, source code or inventory binding; no claim that related code is absent. EXISTING_CHANGE uses exact inventory.object_ref + existing transversal impact/dependency providers; missing or empty graph remains UNKNOWN. No arbitrary research, live RUN, attestation or A5 admission.",
+      "integration_note": "A3+A2 fixed sources, planned vs existing modes. Existing definitions reused for new target implementation (CREATE on target, REUSE on rule/policy definition). Existing graph edges => UNKNOWN item action until exact delta. Missing target path never blocks new screen. No live RUN/currentness/judge/A5 admission.",
       "source_attested": false,
-      "next_step_allowed": false
+      "next_step_allowed": false,
+      "operation_output": "requested_change_type (A2 literal) + target_change_action (CREATE/MODIFY/DELETE/REPLACE/REUSE/NO_CHANGE/UNKNOWN) + direct_impacts[].change_action/definition_action (source-backed only)"
     },
     {
       "step_id": "A5",
