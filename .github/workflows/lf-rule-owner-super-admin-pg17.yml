@@ -1,11 +1,7 @@
 name: LF rule SUPER_ADMIN owner metadata | isolated PG17
 
 on:
-  pull_request:
-    paths:
-      - "supabase/migrations/20261110230000_lf_rule_owner_super_admin_assignment_v1.sql"
-      - "sandbox/lf_contract_gate_test/rules_owner_super_admin_v1/**"
-      - ".github/workflows/lf-rule-owner-super-admin-pg17.yml"
+  workflow_call:
   workflow_dispatch:
 
 permissions:
