@@ -118,3 +118,20 @@ Para `REQUEST`, reemplazar `rule_authority_action=REQUEST` y suministrar `rule_c
 4. El perfil continúa `READ_ONLY` y el SQL nuevo aún no está desplegado. Se requiere el camino gobernado de despliegue, la prueba E2E sobre autoridad auténtica y readback.
 
 **Estado operativo: DRAFT / NO-GO** para promoción efectiva. El número de PASS de CI aislado nunca se convierte en progreso productivo.
+
+## Lote 4 — Arquitectura simplificada: un solo LLM, propuesta única de IG
+
+**Ruta aprobada:** ACT-0001 → Product Director → Input Governance (diagnóstico, fuentes, solución propuesta en paso 40) → Product Director (acepta/ajusta/rechaza en paso 50) → validador 60 + juez oficial 70 → operación gobernada → readback → salida paso 80.
+
+- La función **lf_ig_rule_proposal_prepare_v1** es read-only y requiere RUN original, recibo del Router, pantalla seleccionada y input_validate PASS. Entrega LF_IG_RULE_RESOLUTION_PROPOSAL_V1 por cada regla con issue, acción, justificación, fuentes conocidas, snapshot y SHA exacto.
+- La Edge **profile_native_continue_v1** adjunta IG en el NATIVE_MODEL_INPUT_READY de Product Director. La misma ejecución y mismo LLM evalúan la propuesta sin enviar la solución de vuelta a IG para una segunda ronda semántica.
+- Producto responde en **traceability.ig_rule_proposal_decisions[]** con cobertura exacta: rule_code, ig_proposal_sha256, disposition (ACCEPT_PROPOSAL, ADJUST_PROPOSAL o REJECT_PROPOSAL) y rationale. Sin coincidencia exacta, Edge bloquea ANTES de registrar RAW.
+- Después del juez oficial 70, **lf_rule_authority_mark_refresh_v1** compara en SQL las decisiones Product Director contra las propuestas originales de IG y verifica SHA actuales, fuente, evidencia del juez y estado. No inserta marcas con validación incompleta.
+- ADJUST_PROPOSAL y REJECT_PROPOSAL dejan marca **PRODUCT_IG_ADJUSTMENT_REQUIRED** o **PRODUCT_IG_REJECTED**, siempre en remediación sin promoción. Solamente ACCEPT_PROPOSAL puede continuar a solicitar autorización gobernada y únicamente si la fuente de negocio ya fue aprobada.
+- La operación gobernada sigue exigiendo recibo protegido independiente de autorización de acción. El LLM nunca emite ese recibo ni se da permiso de escritura.
+
+**Límite real:** 32 reglas B2B siguen sin vínculos acreditados de fuente original. Su primera propuesta segura es RECOVER_ORIGINAL_AUTHORITY, no una solución de negocio inventada. La recuperación documental detallada sigue pendiente de implementación/validación. No declararlas reconciliadas.
+
+**Sin rutas ni jueces adicionales:** se conservan los once pasos oficiales; juez 70 permanece obligatorio, no se crea nuevo perfil ni se modifica ACT-0001. Los controles deterministas post-70 no constituyen otra evaluación semántica con otro LLM.
+
+**Evidencia y estado:** PG17 y Deno se ejecutan en CI sobre HEAD específico; siempre volver a verificar el HEAD tras documentación. Supabase real no tiene issuer protegido activo y las funciones siguen no desplegadas; PR DRAFT / NO-GO.
