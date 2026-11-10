@@ -46,6 +46,19 @@ Además del `decision_context` canónico y el motor ADR existente, A5 emite `mat
 **Evals:** casos sintéticos complejos con reglas, definiciones, políticas, dependencias y adversariales. No sustituyen una ejecución real A3→A5 ni la revisión semántica independiente.
 
 **Vista humana íntegra:** `evals/render_a5_material_human_v1.py` publica en GitHub Actions un ejemplo de Inicio de sesión B2B sintético, con cada elemento, todos sus campos originales y ambos contratos upstream completos. No es evidencia operativa LF.
+## Ficha única por regla — Frontend / Backend / Compartida
+
+`adapters/rule_layer_consolidation_v1.py` consolida por `rule_code + source_ref` exactos; no duplica por ocurrencias A3 `policy_scope_clear_rule_candidates`, `policy_deferred_rule_items`, `excluded_rule_items`, `evidence_items` ni por impactos A4. Conserva título, descripción, estado, `association_ref` y `binding_source` de herencia (nunca infiere GLOBAL a partir de `es_transversal`), referencias y contenidos de políticas **solo por `policy_resolution.rule_policy_dependencies[rule_code]`**, impactos A4 con vínculo exacto, y cada `material_item_id`.
+
+Para cada regla se emite `rule_profiles.rules[]` con `layers.FRONTEND` y `layers.BACKEND`. Cada capa tiene `applicability` (`APPLIES`, `NOT_APPLICABLE`, `UNKNOWN`), responsabilidad concreta **solo cuando está suministrada**, evidencia y estado de verificación. La clasificación derivada es `SHARED_CANDIDATE`, `FRONTEND_ONLY_CANDIDATE`, `BACKEND_ONLY_CANDIDATE`, `NO_APPLICABLE_LAYER_CANDIDATE` o `UNKNOWN`.
+
+**Fuente real verificada:** `lf_ops.reglas` no tiene campo Front/Back específico; `programacion.fn_input_effective_rule_links_v1` devuelve vínculo efectivo con `binding_source`, pero tampoco demuestra responsabilidad por capa. En ausencia de readback de capa vinculado a regla, **ambas capas son UNKNOWN**; está prohibido inferir la capa por título, contexto visual, `es_transversal`, nombre o tecnología. Una sola afirmación positiva **no** permite declarar `FRONTEND_ONLY/BACKEND_ONLY`: la otra debe estar explícitamente marcada `NOT_APPLICABLE`.
+
+El sidecar autorizado `A5_GOVERNED_DECISION_READBACK_V1.rule_layer_bindings[]` es **opcional** y tipado: `rule_code`, `rule_source_ref`, `layer`, `applicability`, `responsibility`, `evidence_ref`, `source_attested=false`. Los vínculos exigen identidad exacta y `evidence_ref == rule_source_ref` dentro de A3; duplicados, referencias falsas y responsabilidades vacías para `APPLIES` bloquean. **Incluso los readbacks plausibles permanecen SOURCE_CANDIDATE_UNATTESTED** hasta acreditación del host y revisión semántica independiente. No se consulta libremente un repositorio ni se crea un resolvedor paralelo.
+
+Reglas excluidas incompletas sin referencia mantienen `unresolved_rule_identities[]`, no entran al alcance de implementación ni bloquean por sí solas el resto aprobado. Una regla vigente sin referencia canónica sí bloquea la ficha. Objetivo nuevo: `code_destination=null` válido.
+
+Pruebas: `evals/test_a5_rule_layer_consolidation_v1.py` y `evals/test_a5_rule_layer_judge_v1.py`. Juez mecánico adicional: `judges/rule_layer_parity_v1.py`. Rúbrica semántica ampliada para roles Front/Back y ninguna inferencia por nombre, pero **veredicto independiente no emitido**. La vista humana íntegra exporta también todas las fichas y sus datos originales.
 ## Control de calidad
 
 Tests: `steps/a5/evals/test_a5_decision_adr_v1.py` (suite de pruebas A5 ampliada, ver CI exact-HEAD). CI: `.github/workflows/lf-analysis-a5-candidate-tests.yml`, exact-HEAD, sin secretos. No afirmar PASS de nuevo HEAD sin logs.
