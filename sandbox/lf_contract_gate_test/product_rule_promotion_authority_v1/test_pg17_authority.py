@@ -68,6 +68,32 @@ def main():
         f"'{PARENT}','B2B-AUTH-001');"))
     check("IG_PROPOSES_BEFORE_PRODUCT_REVIEW",
           ig.get("status")=="IG_PROPOSAL_READY" and ig.get("proposal_count")==6)
+    recovery=json.loads(sql(f"SELECT public.lf_ig_rule_source_recovery_v1("
+        f"'{PARENT}','B2B-AUTH-001');"))
+    check("IG_DETERMINISTIC_SOURCE_DISCOVERY_ALL_RULES",
+          recovery.get("status")=="IG_SOURCE_DISCOVERY_READ_ONLY"
+          and recovery.get("rule_count")==6)
+    check("IG_SOURCE_DISCOVERY_ONE_UNRESOLVED_DIRECT_DECISION",
+          recovery.get("source_lookup_count")==1)
+    check("IG_DISCOVERY_TECHNICAL_LINEAGE_FOUND",
+          recovery.get("technical_linked_rule_count")==1)
+    check("IG_DISCOVERY_POLICY_REFERENCE_FOUND",
+          recovery.get("policy_linked_rule_count")==1)
+    check("IG_DISCOVERY_DECISION_MENTION_FOUND",
+          recovery.get("text_mentioned_rule_count")==1)
+    doc=next(x for x in recovery["items"] if x["rule_code"]=="TEST-RULE-DOC-001")
+    check("IG_DISCOVERY_MENTION_NOT_APPROVAL",
+          doc["discovery_status"]=="DECISION_MENTION_REQUIRES_AUTHORITY_REVIEW"
+          and doc["owner_approval_proven"] is False
+          and doc["action_authorized"] is False
+          and doc["evidence"]["decision_text_mentions"][0]["state"]=="CANDIDATO_CONTROLADO")
+    check("IG_DISCOVERY_POLICY_SOURCE_CURRENTNESS_VISIBLE",
+          doc["evidence"]["explicit_policy_references"][0]["source_decision_state"]
+          =="CANDIDATO_CONTROLADO")
+    check("IG_DISCOVERY_INCLUDES_LINEAGE_IN_PRODUCT_PROPOSAL",
+          next(x for x in ig["proposals"] if x["rule_code"]=="TEST-RULE-DOC-001")
+          ["source_recovery"]["discovery_status"]
+          =="DECISION_MENTION_REQUIRES_AUTHORITY_REVIEW")
     check("IG_MISSING_SOURCE_NO_FAKE_BUSINESS_APPROVAL",
           next(p for p in ig["proposals"] if p["rule_code"]=="TEST-RULE-DOC-001")
           ["proposed_action"]=="RECOVER_ORIGINAL_AUTHORITY")
@@ -114,6 +140,16 @@ def main():
               "'{profile_output,traceability,ig_rule_proposal_decisions}')"
               " FROM public.lf_operation_execution_steps WHERE "
               f"execution_id='{PARENT}' AND step_id='execute_profile';")=="6")
+    sql("UPDATE lf_ops.politicas_seguridad SET status='CANDIDATO' "
+        "WHERE security_policy_id=18;")
+    changed=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
+    check("IG_DISCOVERY_CHANGED_POLICY_INVALIDATES_PRODUCT_DECISION",
+          changed.get("code")=="PRODUCT_IG_PROPOSAL_SHA_OR_REVIEW_INVALID")
+    check("POLICY_DRIFT_DID_NOT_RECORD_FALSE_MARK",
+          sql("SELECT count(*) FROM public.lf_rule_authority_tracking_v1;")=="0")
+    sql("UPDATE lf_ops.politicas_seguridad SET status='VIGENTE' "
+        "WHERE security_policy_id=18;")
     current=assessment()
     check("READ_ONLY_STATUS",current["status"]=="ASSESSED_READ_ONLY")
     check("ALL_SYNTHETIC_CANDIDATES",current["candidate_count"]==6)
