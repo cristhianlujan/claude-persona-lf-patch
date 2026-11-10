@@ -17,10 +17,7 @@ jobs:
     name: phase1 disposable suites / no production
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:16
-        env:
+    env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: localtest
           POSTGRES_DB: postgres
@@ -45,7 +42,16 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Local PostgreSQL client
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Install a local loopback PostgreSQL server (not Docker or Supabase)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql postgresql-client
+          version="$(ls /etc/postgresql | sort -V | tail -1)"
+          sudo pg_ctlcluster "$version" main start || sudo pg_ctlcluster "$version" main status
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "ALTER ROLE postgres PASSWORD 'localtest'"
+          actual="$(PGPASSWORD=localtest psql -X -At -h 127.0.0.1 -U postgres -d postgres -c "SELECT host(inet_server_addr())")"
+          test "$actual" = "127.0.0.1"
+          echo "LOCAL_POSTGRES_SERVER_IP=127.0.0.1"
       - name: Offline fixtures and PG00 immutable catalog suite
         run: bash sandbox/lf_contract_gate_test/programming_agent_four_stage/programmer_profiles_exp/qualification/run_phase1_suite.sh
