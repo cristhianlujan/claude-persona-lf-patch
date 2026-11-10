@@ -201,11 +201,14 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
             or readback.get("target_ref") != target
             or readback.get("source_attested") is not False):
         return _blocked("A4_HOST_SOURCE_IDENTITY_INVALID", target=target)
+    # A build remains a new-target operation even if related reusable
+    # existing assets are inventoried. Their identity is not the new target.
+    # A separate typed asset binding is needed to assess their graph impact.
+    if build_intent:
+        return _planned_build(a3, a2, target, target_action)
     inv = readback.get("inventory_object")
     binding = readback.get("identity_binding")
     if inv is None and binding is None:
-        if build_intent:
-            return _planned_build(a3, a2, target, target_action)
         return {
             **_blocked("A4_TARGET_NOT_MAPPED_TO_INVENTORY_OBJECT", target=target),
             "status": "IMPACT_UNKNOWN",
