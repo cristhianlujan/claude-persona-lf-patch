@@ -123,7 +123,7 @@ BEGIN
   OR val->>'output_contract_result' IS DISTINCT FROM 'PASS'
   OR judge->'unsupported_claims' IS DISTINCT FROM '[]'::jsonb
   OR judge->'blocking_codes' IS DISTINCT FROM '[]'::jsonb
-  OR judge#>>'{semantic_judge_result,verdict}' NOT IN
+  OR coalesce(judge#>>'{semantic_judge_result,verdict}','') NOT IN
     ('PASS_INDEPENDENT_SEMANTIC','PASS_REVIEWED_CURRENT_CONTEXT')
   OR judge#>>'{semantic_judge_result,candidate_sha256}'
     IS DISTINCT FROM val->>'raw_output_sha256'
@@ -131,7 +131,7 @@ BEGIN
  IF outp->>'worker' IS DISTINCT FROM 'product_director_lf'
   OR outp->>'output_type' IS DISTINCT FROM 'PRODUCT_DIRECTION_SPEC'
   OR outp->>'self_verdict' IS DISTINCT FROM 'PASS'
-  OR outp#>>'{deliverable_created,authority_status}' NOT IN
+  OR coalesce(outp#>>'{deliverable_created,authority_status}','') NOT IN
     ('SUPPORTED','CONFLICT_RESOLVED')
   OR outp#>>'{deliverable_created,product_decision,decision_id}'
     IS DISTINCT FROM p_input->>'decision_id'
