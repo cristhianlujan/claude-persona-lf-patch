@@ -7,6 +7,23 @@ CREATE TABLE public.lf_decisiones_gov(
   decision_number bigint,updated_at timestamptz DEFAULT now(),
   raw_payload jsonb NOT NULL DEFAULT '{}'::jsonb
 );
+-- Mirror source-recovery registry columns used from live LF (synthetic).
+ALTER TABLE public.lf_decisiones_gov ADD COLUMN decision text, ADD COLUMN documento_relacionado text;
+CREATE TABLE programacion.t_remed_links(
+ link_id bigint PRIMARY KEY,subject_kind text,subject_id bigint,
+ reference_role text,target_table text,target_id bigint,status text);
+CREATE TABLE programacion.t_remed_link_sources(link_id bigint,rule_id bigint);
+CREATE TABLE lf_ops.politicas_seguridad(
+ security_policy_id bigint PRIMARY KEY, policy_code text,status text,
+ source_decision_id text,source_decision_number bigint);
+CREATE TABLE lf_ops.politicas_sesion(
+ session_policy_id bigint PRIMARY KEY,policy_code text,status text,source_decision_id text);
+CREATE TABLE lf_ops.politicas_rate_limit(
+ rate_limit_policy_id bigint PRIMARY KEY,policy_code text,status text,source_decision_id text);
+CREATE TABLE lf_ops.politicas_timeout(
+ timeout_policy_id bigint PRIMARY KEY,policy_code text,status text,source_decision_id text);
+CREATE TABLE lf_ops.otp_politicas(id integer PRIMARY KEY,codigo text,estado text);
+
 CREATE TABLE public.lf_rule_promotion_v1(
   promotion_id text PRIMARY KEY DEFAULT ('PROM-' || upper(substr(md5(random()::text || clock_timestamp()::text),1,16))),rule_code text NOT NULL,
   request_execution_id text NOT NULL,requested_by_profile text NOT NULL,
@@ -140,6 +157,23 @@ INSERT INTO public.lf_decisiones_gov(
  "reason":"Producción desautorizada prevalece",
  "category":"SECURITY","transversal":false,
  "rule_config":{"production_authorized":false,"max_attempts":3}}'::jsonb);
+
+-- A source *clue* with pending owner status is never promotion authority.
+UPDATE lf_ops.reglas SET valor_config='{"existing":true,"security_policy_id":18}'::jsonb
+WHERE codigo='TEST-RULE-DOC-001';
+INSERT INTO programacion.t_remed_links(
+ link_id,subject_kind,subject_id,reference_role,target_table,target_id,status)
+VALUES (1001,'PANTALLA',51,'security_policy_id','lf_ops.politicas_seguridad',18,'VIGENTE');
+INSERT INTO programacion.t_remed_link_sources(link_id,rule_id)
+VALUES (1001,435);
+INSERT INTO lf_ops.politicas_seguridad(security_policy_id,policy_code,status,source_decision_id)
+VALUES (18,'SEC-B2B-AUTH-FAIL-CLOSED','VIGENTE','DEC-RELATED-NOT-APPROVED');
+INSERT INTO public.lf_decisiones_gov(
+ id_decision,estado_original,estado_normalizado,decision_number,
+ decision,documento_relacionado,raw_payload)
+VALUES ('DEC-RELATED-NOT-APPROVED','PENDIENTE','CANDIDATO_CONTROLADO',206,
+ 'Technical note references TEST-RULE-DOC-001; not approved',
+ 'TEST-RULE-DOC-001', '{"production_authorized":false}'::jsonb);
 
 -- Test-only protected issuer, DOES NOT modify or create channels in Supabase.
 INSERT INTO programacion.provenance_channels(
