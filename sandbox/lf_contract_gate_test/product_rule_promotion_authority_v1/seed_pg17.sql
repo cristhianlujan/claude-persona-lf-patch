@@ -107,7 +107,7 @@ INSERT INTO public.lf_decisiones_gov(
 -- Test-only protected issuer, DOES NOT modify or create channels in Supabase.
 INSERT INTO programacion.provenance_channels(
  channel_code,secret_sha256,allowed_kinds,description)
-VALUES ('ISOLATED_RULE_PROMOTION_ISSUER',
+VALUES ('LF_RULE_PROMOTION_ACTION_AUTHORITY_V1',
  encode(extensions.digest(convert_to(
  'isolated-unit-test-provenance-token-very-long-32-character-string','UTF8'),'sha256'),'hex'),
  ARRAY['RULE_PROMOTION_ACTION_AUTHORIZATION'],
