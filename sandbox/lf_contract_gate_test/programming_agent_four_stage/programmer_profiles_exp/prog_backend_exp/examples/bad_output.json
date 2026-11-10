@@ -1,0 +1,10 @@
+{
+  "status": "BLOCK_PIPELINE",
+  "pack_type": "profile",
+  "deliverable_created": {},
+  "evidence_map": [],
+  "blocking_codes": [
+    "BASIC_SKILL_OUTPUT_NOT_ACCEPTABLE"
+  ],
+  "next_gate": "RETURN_TO_WORKER_FOR_SELF_REPAIR"
+}

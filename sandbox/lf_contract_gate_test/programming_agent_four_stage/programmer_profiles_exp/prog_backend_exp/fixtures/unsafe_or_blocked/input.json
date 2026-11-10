@@ -1,0 +1,12 @@
+{
+  "task_id": "FIXTURE-BACKEND",
+  "profile_code": "PERFIL-PROG-BACKEND-EXP",
+  "area": "FRONTEND",
+  "write_scope": [
+    "src/lot/backend.change"
+  ],
+  "protected_paths": [
+    "tests/protected/**"
+  ],
+  "production_authority": false
+}

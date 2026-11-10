@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": [
+    "status",
+    "blocking_codes"
+  ],
+  "properties": {
+    "status": {
+      "const": "RETURN_TO_ORCHESTRATOR"
+    },
+    "blocking_codes": {
+      "type": "array"
+    }
+  }
+}
