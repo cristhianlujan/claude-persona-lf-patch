@@ -9,7 +9,7 @@ BEGIN;
 DO $preflight$
 BEGIN
  IF md5(pg_get_functiondef('public.lf_rule_promotion_decide_v1(text,text,text,text)'::regprocedure))
-    <> '9a5c5cd294d3814b11785bdbedb20379' THEN
+    <> '16e45f40dad5cecc215a2f978be47728' THEN
    -- Source drift must be deliberately reconciled before changing any path.
    RAISE EXCEPTION 'BLOCK_RULE_PROMOTION_HUMAN_DECIDER_SOURCE_DRIFT';
  END IF;
@@ -87,6 +87,8 @@ BEGIN
       WHEN has_successor THEN 'SOURCE_SUPERSEDED_RECONCILE'
       WHEN NOT exact_material_parity THEN 'MATERIAL_PARITY_UNPROVEN'
       WHEN coalesce(pendiente_decision,false) THEN 'PENDING_DECISION_UNRESOLVED'
+      WHEN coalesce(valor_config->>'production_authorized','true')='false'
+        THEN 'PRODUCTION_ACTIVATION_NOT_AUTHORIZED'
       ELSE 'ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
     END AS blocking_code
   FROM checked x
@@ -167,8 +169,9 @@ BEGIN
  IF screen_code IS NULL THEN
  RETURN jsonb_build_object('status','BLOCKED','code','RULE_SCREEN_SCOPE_MISSING'); END IF;
  eligible:=public.lf_rule_promotion_authority_assess_v1(screen_code);
- SELECT x INTO detail FROM jsonb_array_elements(eligible->'details') x
- WHERE x->>'rule_code'=promo.rule_code;
+ SELECT elem.value INTO detail
+ FROM jsonb_array_elements(eligible->'details') AS elem(value)
+ WHERE elem.value->>'rule_code'=promo.rule_code;
  IF detail IS NULL OR detail->>'blocking_code'<>'ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
  THEN RETURN jsonb_build_object('status','BLOCKED',
    'code','SOURCE_SEMANTIC_AUTHORITY_UNPROVEN','assessment',detail); END IF;
@@ -177,8 +180,7 @@ BEGIN
  SELECT allowed_kinds INTO issuer_kinds FROM programacion.provenance_channels
  WHERE channel_code=proof.issuer_channel;
  IF NOT FOUND OR proof.receipt_kind<>'RULE_PROMOTION_ACTION_AUTHORIZATION'
- OR proof.receipt_kind<>ALL(issuer_kinds) AND
-    NOT (proof.receipt_kind=ANY(issuer_kinds))
+ OR NOT coalesce(proof.receipt_kind=ANY(issuer_kinds),false)
  OR proof.subject_type<>'LF_RULE_PROMOTION'
  OR proof.subject_ref IS DISTINCT FROM p_promotion_id
  OR proof.subject_sha256 IS DISTINCT FROM promo.request_snapshot_sha256
@@ -191,6 +193,8 @@ BEGIN
  OR proof.payload->>'source_currentness' IS DISTINCT FROM 'CURRENT'
  OR proof.payload->>'semantic_parity' IS DISTINCT FROM 'MATCH_EXACT'
  OR proof.payload->>'decision' IS DISTINCT FROM 'APPROVE'
+ OR proof.payload->>'security_gate' IS DISTINCT FROM 'PASS'
+ OR proof.payload->>'owner_policy' IS DISTINCT FROM 'CURRENT_AUTHORITY'
  OR proof.payload->>'rule_snapshot_sha256' IS DISTINCT FROM promo.request_snapshot_sha256
  OR proof.payload->>'head_sha' IS DISTINCT FROM proof.head_sha
  OR proof.payload->>'subject_sha256' IS DISTINCT FROM proof.subject_sha256
