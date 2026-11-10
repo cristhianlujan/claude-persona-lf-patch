@@ -170,7 +170,7 @@ BEGIN
            'source_decision_state',d.estado_normalizado,
            'evidence_role','POLICY_REFERENCE_NOT_RULE_PARITY',
            'policy_sha256',pol.policy_sha256
-         ) ORDER BY pol.registry,pol.policy_code),'[]'::jsonb)
+         ) ORDER BY pol.registry,pol.policy_code)
          FROM (
            SELECT 'lf_ops.politicas_seguridad' registry,
              p.security_policy_id::text policy_id,p.policy_code,p.status state,
