@@ -81,7 +81,7 @@ begin
     'runtime_activation',false,
     'promotion_authorized',false
   );
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.lf_skill_h_rule_link_propose_v1(p_input jsonb)
  RETURNS jsonb
@@ -94,5 +94,5 @@ begin
  if not exists(select 1 from lf_ops.reglas r where r.codigo=p_input->>'regla_codigo' and r.estado in ('CANDIDATO','VIGENTE')) then raise exception 'RULE_NOT_LINKABLE:%', p_input->>'regla_codigo'; end if;
  if not exists(select 1 from lf_ops.pantallas p where p.id=(p_input->>'pantalla_id')::int) then raise exception 'SCREEN_NOT_FOUND:%', p_input->>'pantalla_id'; end if;
  return jsonb_build_object('regla_codigo',p_input->>'regla_codigo','pantalla_id',p_input->>'pantalla_id','operacion_requerida','VINCULACION_REGLA_PANTALLA_LF','escribe',false);
-end $function$
+end $function$;
 
