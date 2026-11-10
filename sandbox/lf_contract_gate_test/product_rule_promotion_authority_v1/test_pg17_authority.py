@@ -62,6 +62,7 @@ def main():
         "ON lf_ops.reglas FOR EACH ROW WHEN (OLD.estado IS DISTINCT FROM NEW.estado) "
         "EXECUTE FUNCTION public.lf_rule_promotion_guard_v1();")
     load(ROOT/"supabase/migrations/20261110170000_lf_rule_promotion_governed_authority_v1.sql")
+    load(ROOT/"supabase/migrations/20261110181000_lf_rule_authority_marks_and_product_handoff_v1.sql")
     current=assessment()
     check("READ_ONLY_STATUS",current["status"]=="ASSESSED_READ_ONLY")
     check("ALL_SYNTHETIC_CANDIDATES",current["candidate_count"]==6)
@@ -90,11 +91,67 @@ def main():
           sql("SELECT has_function_privilege('service_role',"
           "'public.lf_rule_promotion_auto_ratify_v1(text,bigint)','EXECUTE');")=="t")
 
-    sql(f"INSERT INTO public.lf_rule_promotion_v1(promotion_id,rule_code,"
-        "request_execution_id,requested_by_profile,request_snapshot_sha256,"
-        "status,reason) VALUES("
-        f"'{PROM}','{RULE}','{PARENT}','PERFIL-PRODUCT-DIRECTOR-LF',"
-        f"public.lf_asset_snapshot_sha_v1('REGLA','{RULE}'),'PENDING','synthetic');")
+    # New, filterable per-rule markers must be registered ONLY after the
+    # same profile run has a clean validated semantic judge and Router receipt.
+    marker=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17/JUDGE/70');"))
+    check("MARKS_DURABLE_RECORDED",marker.get("status")=="MARKS_RECORDED"
+          and marker.get("marked")==6)
+    check("MARKS_SIX_FILTERABLE",sql(
+      "SELECT count(*) FROM public.v_lf_rule_authority_filter_v1 "
+      "WHERE pantalla_codigo='B2B-AUTH-001' "
+      "AND marca NOT IN ('SIN_EVALUACION_REGISTRADA','REVALIDAR_SNAPSHOT');")=="6")
+    check("SOURCE_LOOKUP_FLAG_FILTERABLE",sql(
+      "SELECT count(*) FROM public.v_lf_rule_authority_filter_v1 "
+      "WHERE pantalla_codigo='B2B-AUTH-001' AND marca='SOURCE_LOOKUP_REQUIRED';")=="1")
+    check("PENDING_RECEIPT_FLAG_FILTERABLE",sql(
+      "SELECT count(*) FROM public.v_lf_rule_authority_filter_v1 "
+      "WHERE pantalla_codigo='B2B-AUTH-001' "
+      "AND marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED';")=="1")
+    check("MARK_NO_AUTO_PROMOTION",status()=="CANDIDATO"
+          and sql("SELECT count(*) FROM public.lf_rule_promotion_v1;")=="0")
+    check("MARK_NOT_PUBLICLY_WRITABLE",sql(
+      "SELECT has_table_privilege('authenticated',"
+      "'public.lf_rule_authority_tracking_v1','UPDATE');")=="f")
+
+    sql("UPDATE public.lf_operation_execution_steps SET "
+      "evidence_payload=jsonb_set(evidence_payload,"
+      "'{semantic_judge_result,status}','\"FAIL\"'::jsonb) "
+      f"WHERE execution_id='{PARENT}' AND step_id='semantic_judge';")
+    guard=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17/NEGATIVE');"))
+    check("FAILED_JUDGE_CANNOT_MARK",
+          guard.get("code")=="PRODUCT_JUDGE_OR_VALIDATOR_NOT_CLEAN")
+    sql("UPDATE public.lf_operation_execution_steps SET "
+      "evidence_payload=jsonb_set(evidence_payload,"
+      "'{semantic_judge_result,status}','\"PASS\"'::jsonb) "
+      f"WHERE execution_id='{PARENT}' AND step_id='semantic_judge';")
+
+    # No independent issuer configured -> no speculative pending promotion.
+    sql("UPDATE programacion.provenance_channels SET allowed_kinds=ARRAY[]::text[] "
+        "WHERE channel_code='LF_RULE_PROMOTION_ACTION_AUTHORITY_V1';")
+    noissuer=json.loads(sql(
+      f"SELECT public.lf_rule_promotion_request_eligible_v1("
+      f"'{PARENT}','B2B-AUTH-001','{RULE}');"))
+    check("NO_ISSUER_NO_PROMOTION_REQUEST",
+          noissuer.get("code")=="INDEPENDENT_PROMOTION_ISSUER_NOT_CONFIGURED"
+          and sql("SELECT count(*) FROM public.lf_rule_promotion_v1;")=="0")
+    sql("UPDATE programacion.provenance_channels SET "
+      "allowed_kinds=ARRAY['RULE_PROMOTION_ACTION_AUTHORIZATION'] "
+      "WHERE channel_code='LF_RULE_PROMOTION_ACTION_AUTHORITY_V1';")
+
+    global PROM
+    opened=json.loads(sql(
+      f"SELECT public.lf_rule_promotion_request_eligible_v1("
+      f"'{PARENT}','B2B-AUTH-001','{RULE}');"))
+    check("PRODUCT_POST_JUDGE_PROMOTION_REQUEST",
+          opened.get("status")=="WAIT_GOVERNED_ACTION_RECEIPT"
+          and opened.get("business_redecision_required") is False)
+    PROM=opened["promotion_id"]
+    check("PROMOTION_REQUEST_TRACKED",sql(
+      f"SELECT marca FROM public.lf_rule_authority_tracking_v1 "
+      f"WHERE rule_code='{RULE}';")=="PROMOTION_REQUESTED")
+    check("PENDING_RECEIPT_NOT_VIGENTE",status()=="CANDIDATO")
     check("HUMAN_DECIDER_UNCHANGED",json.loads(sql(
        f"SELECT public.lf_rule_promotion_decide_v1('{PROM}','APPROVE',"
        "'GOVERNED:FORGED','test');"))["blocking_code"]=="APPROVER_MUST_BE_HUMAN")
@@ -207,8 +264,16 @@ def main():
     check("ROLLBACK_REQUEST_STILL_PENDING",sql(
       f"SELECT status FROM public.lf_rule_promotion_v1 WHERE promotion_id='{PROM}';")=="PENDING")
 
-    result=promote(rid)
+    result=json.loads(sql(f"SELECT public.lf_rule_promotion_complete_tracked_v1("
+      f"'{PARENT}','B2B-AUTH-001','{RULE}',{rid});"))
     check("ACTUAL_AUTO_APPLY_VERIFIED",result.get("status")=="APPLIED_VERIFIED")
+    check("PROMOTION_MARK_VIGENTE_FILTER",sql(
+      "SELECT count(*) FROM public.v_lf_rule_authority_filter_v1 "
+      f"WHERE regla_codigo='{RULE}' AND marca='PROMOVIDA_VERIFICADA';")=="1")
+    check("PROMOTION_LEDGER_MARK_PERSISTED",sql(
+      "SELECT count(*) FROM public.lf_rule_authority_tracking_v1 "
+      f"WHERE rule_code='{RULE}' AND marca='PROMOTED_VERIFIED' "
+      "AND estado_flujo='VIGENTE_VERIFICADA';")=="1")
     check("STATE_VIGENTE",status()=="VIGENTE")
     check("RULE_NOT_PENDING_DECISION",sql(
       f"SELECT pendiente_decision::text FROM lf_ops.reglas WHERE codigo='{RULE}';")=="false")
