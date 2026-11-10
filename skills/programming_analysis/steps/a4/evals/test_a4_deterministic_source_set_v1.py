@@ -279,6 +279,26 @@ class A4DeterministicSourceTests(unittest.TestCase):
         self.assertEqual(result["direct_impacts"],[])
         self.assertFalse(result["a5_allowed"])
 
+    def test_new_screen_with_related_existing_component_stays_create(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[
+            {"rule_code":"LOGIN-RULE-01",
+             "source_ref":"supabase://lf_ops.reglas/1",
+             "rule_status":"VIGENTE","pending_decision":False}
+        ]
+        classification=a2()
+        classification["change_type"]="CREATE"
+        # This readback includes a related reusable component. It must not
+        # become the code destination or turn CREATE into MODIFY.
+        result=a4.run(evidence,classification,readback())
+        self.assertEqual(result["analysis_mode"],"PLANNED_BUILD")
+        self.assertEqual(result["target_change_action"],"CREATE")
+        self.assertIsNone(result["target_code_destination"])
+        self.assertIsNone(result["technical_root_ref"])
+        self.assertEqual(result["direct_impacts"][0]["change_action"],"CREATE")
+        self.assertEqual(result["direct_impacts"][0]["definition_action"],"REUSE")
+        self.assertFalse(result["a5_allowed"])
+
     def test_missing_host_readback_no_fallback_search(self):
         r=a4.run(a3(),a2(),None)
         self.assertEqual(r["status"],"NEED_MORE_EVIDENCE")
