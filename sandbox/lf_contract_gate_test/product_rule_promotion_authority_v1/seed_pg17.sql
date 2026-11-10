@@ -8,7 +8,7 @@ CREATE TABLE public.lf_decisiones_gov(
   raw_payload jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 CREATE TABLE public.lf_rule_promotion_v1(
-  promotion_id text PRIMARY KEY,rule_code text NOT NULL,
+  promotion_id text PRIMARY KEY DEFAULT ('PROM-' || upper(substr(md5(random()::text || clock_timestamp()::text),1,16))),rule_code text NOT NULL,
   request_execution_id text NOT NULL,requested_by_profile text NOT NULL,
   request_snapshot_sha256 text NOT NULL,status text NOT NULL DEFAULT 'PENDING',
   reason text,decided_by text,decided_at timestamptz,
