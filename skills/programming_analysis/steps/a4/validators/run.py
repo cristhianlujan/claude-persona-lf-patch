@@ -55,7 +55,15 @@ def _planned_build(a3: dict, a2: dict, target: str, target_action: str) -> dict:
     rule_items = a3.get("policy_scope_clear_rule_candidates")
     material = a3.get("material_contract_readback")
     if not isinstance(rule_items, list):
-        return _blocked("A4_APPROVED_RULE_SCOPE_READBACK_REQUIRED", target=target)
+        return {
+            **_blocked("A4_APPROVED_RULE_SCOPE_READBACK_REQUIRED", target=target),
+            "requested_change_type": a2.get("change_type"),
+            "target_change_action": target_action,
+            "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
+            "analysis_mode": "PLANNED_BUILD",
+            "target_code_destination": None,
+            "implementation_scope_progress_possible": False,
+        }
     direct, excluded = [], []
     for rule in rule_items:
         if (not isinstance(rule, dict)
