@@ -1,0 +1,58 @@
+{
+  "schema_version": "LF_FASE1_PASE_MANIFEST_V1",
+  "status": "CANDIDATE_SANDBOX_ONLY",
+  "pase": "QUALIFICATION_ONLY_NOT_PRODUCTION",
+  "target_repository": "cristhianlujan/claude-persona-lf-patch",
+  "base_main_sha": "9f6a66891869ab7623f179f849b9134b08856fcc",
+  "sources": [
+    {
+      "pr": 3666,
+      "sha": "6c91b6fed5d7f1c69c531b12fb076be78c3d66e1",
+      "scope": "selector experimental"
+    },
+    {
+      "pr": 3667,
+      "sha": "c37be952b69aca0f9729f9f91738c8409f78b1a8",
+      "scope": "PG04-PG07 bridge"
+    },
+    {
+      "pr": 3672,
+      "sha": "bca3ade5d3d38c73ccf032890e996ed8d169bdf0",
+      "scope": "roles and stacked skills; supersedes PR3670"
+    }
+  ],
+  "normative_catalog": {
+    "repository": "paulozterra/lf-programming-sandbox",
+    "path": "standards/catalog.json",
+    "commit_sha": "f18b2d96b7e1a8263749d35a7afcc9c043521cb8",
+    "sha256": "26ca9cf9936ef01b50f9af504e4a9b796ee7d7d538d5724ff388c9fb90e8ddb3",
+    "source_status": "BORRADOR_EN_REPO_DE_CALIFICACION",
+    "qualification_only": true
+  },
+  "required_suites": [
+    "PG00 exact source and negatives",
+    "profile packs",
+    "selector experimental",
+    "selector original parity",
+    "PG04-PG07 bridge",
+    "PG04-PG14 regression"
+  ],
+  "rules": {
+    "scope_prefix": "sandbox/lf_contract_gate_test/programming_agent_four_stage/",
+    "production_authority": false,
+    "profiles_real_write": false,
+    "skills_real_write": false,
+    "supabase_access": false,
+    "worker_dispatch": false,
+    "promotion": false,
+    "original_untouched": true
+  },
+  "evidence_policy": {
+    "claim_pass_only_from_run": true,
+    "attach_ci_url": true,
+    "log_exact_head": true,
+    "discard_local_databases": true
+  },
+  "independent_review": "CLAUDE_REQUIRED",
+  "promotion_gate": "BLOCKED"
+}

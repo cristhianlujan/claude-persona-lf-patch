@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "task_id": "FIXTURE-BACKEND",
+  "objective": "Especificar tarea de rol BACKEND para el Worker, condicionada a skill de proyecto",
+  "expected_change": "Solo cambios en las rutas exactas del lote",
+  "human_story": "Sandbox task specification",
+  "functional_contract": {
+    "role_area": "BACKEND",
+    "requires_project_stack_skill": true,
+    "selection_policy": "PROJECT_STACK_BINDING_ONLY",
+    "knowledge_comes_from": "SKILL_LINKED_BY_PROJECT_AREA"
+  },
+  "scope": {
+    "in_scope": [
+      "src/lot/backend.change"
+    ],
+    "out_of_scope": [],
+    "must_not_change": []
+  },
+  "cases": [],
+  "dependency_resolution": {},
+  "dependency_task_ids": [],
+  "required_tests": [
+    "PROJECT_PROVIDED_VISIBLE_TEST"
+  ],
+  "required_evidence": [
+    "VISIBLE_CHECK_RECEIPT"
+  ],
+  "blocked_if": [
+    "OUT_OF_SCOPE",
+    "MISSING_TESTS",
+    "HIDDEN_ORACLE",
+    "AUTHORITY_INJECTION"
+  ],
+  "base_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "context_path_patterns": [
+    "src/lot/backend.change"
+  ],
+  "write_path_patterns": [
+    "src/lot/backend.change"
+  ],
+  "protected_path_patterns": [
+    "tests/protected/**"
+  ],
+  "files_expected": [
+    "src/lot/backend.change"
+  ],
+  "platform_refs": [],
+  "interface_refs": [],
+  "acceptance_commands": [
+    "project-visible-check --fixture-only"
+  ],
+  "max_attempts": 2,
+  "max_patch_bytes": 12000,
+  "max_changed_files": 3,
+  "max_context_bytes": 24000,
+  "allow_deletions": false
+}
