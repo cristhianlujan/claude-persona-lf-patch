@@ -16,6 +16,13 @@ BEGIN
  IF to_regprocedure('public.lf_rule_promotion_authority_assess_v1(text)') IS NOT NULL
  OR to_regprocedure('public.lf_rule_promotion_auto_ratify_v1(text,bigint)') IS NOT NULL
  THEN RAISE EXCEPTION 'BLOCK_RULE_PROMOTION_ALREADY_INSTALLED'; END IF;
+ IF md5(pg_get_functiondef('public.lf_rule_promotion_apply_v1(text)'::regprocedure))
+     <> 'd7fe763c999db6f6259b6b1e2bd69644'
+ OR md5(pg_get_functiondef('public.lf_rule_promotion_guard_v1()'::regprocedure))
+     <> 'ee782e4bd0128c80ee13881899c0d74e'
+ OR md5(pg_get_functiondef('programacion.fn_guard_provenance_receipt_insert()'::regprocedure))
+     <> '32da02afebd3f8ff4281b52312f0aaec'
+ THEN RAISE EXCEPTION 'BLOCK_RULE_PROMOTION_GUARD_SOURCE_DRIFT'; END IF;
 END $preflight$;
 
 CREATE FUNCTION public.lf_rule_promotion_authority_assess_v1(p_screen_code text)
@@ -143,6 +150,11 @@ DECLARE
  screen_code text;eligible jsonb;detail jsonb;expected_source_sha text;
  report jsonb; issuer_kinds text[];
 BEGIN
+ IF md5(pg_get_functiondef('public.lf_rule_promotion_apply_v1(text)'::regprocedure))
+     <> 'd7fe763c999db6f6259b6b1e2bd69644'
+ OR md5(pg_get_functiondef('public.lf_rule_promotion_guard_v1()'::regprocedure))
+     <> 'ee782e4bd0128c80ee13881899c0d74e'
+ THEN RETURN jsonb_build_object('status','BLOCKED','code','PROMOTION_RUNTIME_SOURCE_DRIFT'); END IF;
  IF coalesce(p_promotion_id,'')='' OR p_receipt_id IS NULL
  THEN RETURN jsonb_build_object('status','BLOCKED','code','RATIFICATION_INPUT_REQUIRED'); END IF;
  SELECT * INTO promo FROM public.lf_rule_promotion_v1
@@ -182,7 +194,11 @@ BEGIN
  SELECT * INTO proof FROM programacion.provenance_receipts WHERE id=p_receipt_id;
  SELECT allowed_kinds INTO issuer_kinds FROM programacion.provenance_channels
  WHERE channel_code=proof.issuer_channel;
- IF NOT FOUND OR proof.receipt_kind<>'RULE_PROMOTION_ACTION_AUTHORIZATION'
+ IF NOT FOUND OR proof.issuer_channel IS DISTINCT FROM 'LF_RULE_PROMOTION_ACTION_AUTHORITY_V1'
+ OR nullif(btrim(proof.issuer_identity),'') IS NULL
+ OR proof.issuer_identity='product_director_lf'
+ OR proof.created_at<promo.created_at
+ OR proof.receipt_kind<>'RULE_PROMOTION_ACTION_AUTHORIZATION'
  OR NOT coalesce(proof.receipt_kind=ANY(issuer_kinds),false)
  OR proof.subject_type<>'LF_RULE_PROMOTION'
  OR proof.subject_ref IS DISTINCT FROM p_promotion_id
