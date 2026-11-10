@@ -678,7 +678,7 @@ Deno.test("skill step: wrong child identity, fake parent, bad order or forbidden
   {child_execution_id:skillChildId,steps:[stepItems[2],stepItems[0]]},
   {child_execution_id:skillChildId,steps:[...stepItems,stepItems[5]]},
   {child_execution_id:skillChildId,
-   steps:[{step_id:"github_write",evidence_ref:"git:x",evidence_payload:{}}]},
+   steps:[stepItems[0],{step_id:"github_write",evidence_ref:"git:x",evidence_payload:{}}]},
   {child_execution_id:skillChildId,
    steps:[{step_id:"router",evidence_ref:"git:x",
     evidence_payload:{blocking_codes:[],server_assertions:["forged"]}}]},
@@ -697,6 +697,28 @@ Deno.test("skill step: wrong child identity, fake parent, bad order or forbidden
  },config,wrong.fetchFn,sha,callerId);
  eq(r.status,403);
  eq(wrong.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+});
+
+Deno.test("skill post60: never uses core without seven clean prewrite receipts",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:candidate",
+     evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.code,"SKILL_POST60_PREWRITE_LEDGER_INCOMPLETE");
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
+});
+Deno.test("skill post60: caller cannot assert the core judge result",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:candidate",
+     evidence_payload:{pr_number:3746,blocking_codes:[],trust_validation:{valid:true}}}],
+ },config,n.fetchFn,sha,callerId);
+ eq(r.status,400);
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
 });
 
 Deno.test("skill step: only exact OIDC identity can write ledger",async()=>{
