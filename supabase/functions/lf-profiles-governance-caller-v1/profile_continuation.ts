@@ -996,6 +996,28 @@ export async function handleProfileContinuation(
   const postModel = await resolveExistingPostModelStep(e, result, config, fetchFn);
   if (postModel) return postModel;
 
+  // Simplified single-LLM path: IG supplies once, before Product Director
+  // generates its step-50 RAW. Never send Product's solution back for a
+  // second IG semantic assessment; existing step-70 judge stays canonical.
+  let igRuleBundle: Payload | null = null;
+  if (result.status === "NATIVE_MODEL_INPUT_READY" &&
+      e.target_code === "PERFIL-PRODUCT-DIRECTOR-LF") {
+    const ig = await rpc(config, fetchFn, "lf_ig_rule_proposal_prepare_v1", {
+      p_execution_id: e.execution_id, p_screen_code: null,
+    });
+    if (ig.error || !ig.result) return ig.error ?? blocked("IG_RULE_PROPOSAL_UNAVAILABLE", 502);
+    if (!["IG_PROPOSAL_READY","IG_PROPOSAL_NOT_APPLICABLE"].includes(String(ig.result.status)) ||
+        !Array.isArray(ig.result.proposals) ||
+        ig.result.action_authorized !== false) {
+      return respond({
+        outcome:"BLOCKED",
+        code:ig.result.code ?? "IG_RULE_PROPOSAL_NOT_TRUSTED",
+        execution_id:e.execution_id,result:ig.result,
+      },409);
+    }
+    igRuleBundle = ig.result;
+  }
+
   // Post-model submission is accepted only from this already-authorized OIDC
   // continuation transport. The model supplies only its RAW profile output;
   // deterministic validity must come from the source-bound canonical runner.
@@ -1004,6 +1026,43 @@ export async function handleProfileContinuation(
       return blocked("PROFILE_NATIVE_OUTPUT_NOT_REQUESTED", 409);
     }
     const profileOutput = body.profile_output;
+    // One Product decision per exact IG proposal. Same model, no duplicate
+    // IG semantic pass. Source/sha and choice are checked deterministically.
+    if (igRuleBundle && (igRuleBundle.proposals as unknown[]).length > 0) {
+      const output = profileOutput as Record<string,unknown> | undefined;
+      const trace = output && typeof output==="object" && !Array.isArray(output)
+        ? output.traceability as Record<string,unknown> | undefined : undefined;
+      const decisions = trace?.ig_rule_proposal_decisions;
+      if (!Array.isArray(decisions) ||
+          decisions.length !== (igRuleBundle.proposals as unknown[]).length) {
+        return blocked("PRODUCT_IG_PROPOSAL_DECISIONS_REQUIRED",409);
+      }
+      const seen = new Set<string>();
+      for (const rawProposal of (igRuleBundle.proposals as unknown[])) {
+        if (!rawProposal || typeof rawProposal!=="object" || Array.isArray(rawProposal)) {
+          return blocked("IG_RULE_PROPOSAL_MALFORMED",409);
+        }
+        const proposal=rawProposal as Record<string,unknown>;
+        const code=String(proposal.rule_code ?? "");
+        const sha=String(proposal.ig_proposal_sha256 ?? "");
+        const reviews=decisions.filter(x=>{
+          if (!x || typeof x!=="object" || Array.isArray(x)) return false;
+          const d=x as Record<string,unknown>;
+          return d.rule_code===code && d.ig_proposal_sha256===sha;
+        });
+        if (seen.has(code) || reviews.length!==1) {
+          return blocked("PRODUCT_IG_PROPOSAL_BINDING_INVALID",409);
+        }
+        seen.add(code);
+        const decision=reviews[0] as Record<string,unknown>;
+        if (!["ACCEPT_PROPOSAL","ADJUST_PROPOSAL","REJECT_PROPOSAL"].includes(
+          String(decision.disposition ?? "")) ||
+          typeof decision.rationale!=="string" ||
+          decision.rationale.trim().length<8) {
+          return blocked("PRODUCT_IG_PROPOSAL_REVIEW_INVALID",409);
+        }
+      }
+    }
     const validation = body.validation_result;
     const rawEvidenceRef = body.raw_evidence_ref;
     const validatorEvidenceRef = body.validator_evidence_ref;
@@ -1096,6 +1155,6 @@ export async function handleProfileContinuation(
     execution_id: e.execution_id,
     profile_code: e.target_code,
     next_action: result.next_action ?? null,
-    result,
+    result: igRuleBundle ? {...result,ig_rule_proposals:igRuleBundle} : result,
   }, recognized ? 200 : 409);
 }
