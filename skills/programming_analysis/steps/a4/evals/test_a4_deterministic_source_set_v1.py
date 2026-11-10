@@ -140,6 +140,79 @@ class A4DeterministicSourceTests(unittest.TestCase):
         bad=a2(); bad["target_ref"]="OTHER-TARGET"
         self.assertEqual(a4.run(a3(),bad,readback())["status"],"BLOCKED")
 
+    def test_new_screen_build_without_code_path_or_inventory(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[
+            {"rule_code":"RULE-A","source_ref":"supabase://lf_ops.reglas/1",
+             "rule_status":"VIGENTE","pending_decision":False,
+             "policy_dependency_disposition":"NO_KNOWN_POLICY_DEPENDENCY_BLOCKER"}
+        ]
+        evidence["material_contract_readback"]={
+            "status":"MATERIAL_CONTRACT_PROJECTED_UNATTESTED",
+            "status_items":[
+                {"source_ref":SCREEN_REF+"#contract/visual/colors/0",
+                 "source_status":"VIGENTE"},
+                {"source_ref":SCREEN_REF+"#contract/fields/0",
+                 "source_status":"CANDIDATO"},
+            ]
+        }
+        classification=a2();classification["change_type"]="IMPLEMENT"
+        before=deepcopy(evidence)
+        result=a4.run(evidence,classification)
+        self.assertEqual(result["status"],"PLANNED_BUILD_IMPACT_UNATTESTED")
+        self.assertEqual(result["analysis_mode"],"PLANNED_BUILD")
+        self.assertIsNone(result["target_code_destination"])
+        self.assertIsNone(result["technical_root_ref"])
+        self.assertEqual(result["counts"]["direct"],2)
+        self.assertEqual(result["counts"]["excluded_pending"],1)
+        self.assertEqual(result["target_code_state"],"NOT_ESTABLISHED_BY_SOURCE")
+        self.assertTrue(result["implementation_scope_progress_possible"])
+        self.assertFalse(result["no_impact_claimed"])
+        self.assertFalse(result["a5_allowed"])
+        self.assertEqual(evidence,before)
+
+    def test_new_screen_with_no_technical_binding_still_projects_scope(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[
+            {"rule_code":"RULE-A","source_ref":"supabase://lf_ops.reglas/1",
+             "rule_status":"VIGENTE","pending_decision":False}
+        ]
+        classification=a2();classification["change_type"]="CREATE"
+        sidecar=readback()
+        sidecar["inventory_object"]=None
+        sidecar["identity_binding"]=None
+        result=a4.run(evidence,classification,sidecar)
+        self.assertEqual(result["status"],"PLANNED_BUILD_IMPACT_UNATTESTED")
+        self.assertEqual(result["counts"]["direct"],1)
+        self.assertIsNone(result["target_code_destination"])
+
+    def test_new_screen_without_source_rules_cannot_claim_ready(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[]
+        classification=a2();classification["change_type"]="BUILD_NEW"
+        result=a4.run(evidence,classification)
+        self.assertFalse(result["implementation_scope_progress_possible"])
+        self.assertFalse(result["a5_allowed"])
+        self.assertIn("A4_APPROVED_SCOPE_HAS_NO_MATERIAL_OBLIGATIONS",
+                      [x["code"] for x in result["unresolved_material_impacts"]])
+
+    def test_new_screen_cannot_promote_candidate_rule(self):
+        evidence=a3()
+        evidence["policy_scope_clear_rule_candidates"]=[
+            {"rule_code":"RULE-C","source_ref":"supabase://lf_ops.reglas/3",
+             "rule_status":"CANDIDATO","pending_decision":False}
+        ]
+        classification=a2();classification["change_type"]="IMPLEMENT"
+        result=a4.run(evidence,classification)
+        self.assertEqual(result["status"],"BLOCKED")
+        self.assertIn("A4_BUILD_RULE_SOURCE_STATUS_INVALID",result["blocking_codes"])
+
+    def test_new_screen_does_not_ignore_forged_provider_readback(self):
+        evidence=a3();evidence["policy_scope_clear_rule_candidates"]=[]
+        classification=a2();classification["change_type"]="CREATE"
+        sidecar=readback();sidecar["target_ref"]="OTHER"
+        self.assertEqual(a4.run(evidence,classification,sidecar)["status"],"BLOCKED")
+
     def test_missing_host_readback_no_fallback_search(self):
         r=a4.run(a3(),a2(),None)
         self.assertEqual(r["status"],"NEED_MORE_EVIDENCE")
