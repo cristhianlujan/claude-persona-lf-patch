@@ -146,10 +146,15 @@ BEGIN
            'state',d.estado_normalizado,
            'evidence_role','MENTION_ONLY_NOT_BUSINESS_APPROVAL'
          ) ORDER BY d.decision_number)
-         FROM public.lf_decisiones_gov d WHERE
+         FROM public.lf_decisiones_gov d WHERE (
            position(r.codigo in coalesce(d.documento_relacionado,''))>0
            OR position(r.codigo in coalesce(d.decision,''))>0
            OR position(r.codigo in coalesce(d.raw_payload::text,''))>0
+         ) AND d.id_decision IS DISTINCT FROM r.origen
+           AND d.id_decision IS DISTINCT FROM r.valor_config->>'source_decision_id'
+           AND (coalesce(r.valor_config->>'source_decision_number','')=''
+                OR d.decision_number::text IS DISTINCT FROM
+                   r.valor_config->>'source_decision_number')
        ),'[]'::jsonb),
        'technical_links',coalesce((
          SELECT jsonb_agg(jsonb_build_object(
