@@ -330,13 +330,204 @@ const SKILL_UPDATE_PREWRITE_STEPS = [
  "regression_plan","pre_write_execution_binding_gate",
 ] as const;
 
+
+const SKILL_UPDATE_POSTWRITE_STEPS = [
+ "github_write","github_readback","deterministic_validation","semantic_judge",
+ "regression_after","close","report_output",
+] as const;
+
+// Same OIDC Edge, same operation-neutral SQL core; no additional writer or Router path.
+async function recordSkillPostWriteSteps(
+ parent:Execution,child:Execution,steps:Payload[],config:Config,fetchFn:Fetcher,
+):Promise<Response>{
+ const childId=child.execution_id;
+ const ledgerUrl=config.supabaseUrl+"/rest/v1/lf_operation_execution_steps?execution_id=eq."+
+   encodeURIComponent(childId)+"&select=step_order,step_id,status,evidence_payload&order=step_order.asc";
+ const getLedger=async():Promise<Payload[]|null>=>{
+   try{
+     const r=await fetchFn(ledgerUrl,{method:"GET",headers:{
+       apikey:config.serviceRoleKey,authorization:"Bearer "+config.serviceRoleKey,
+     },signal:AbortSignal.timeout(15000)});
+     const rows=await parseResponse(r);
+     return r.ok&&Array.isArray(rows)?rows as Payload[]:null;
+   }catch{return null;}
+ };
+ const existing=await getLedger();
+ const pre=["init_execution","router","skill_resolve","baseline_read",
+   "change_scope","regression_plan","pre_write_execution_binding_gate"];
+ if(!existing||pre.some((name,i)=>existing.filter(row=>
+     row.step_id===name&&row.step_order===i*10&&row.status==="STEP_PASS_WITH_EVIDENCE").length!==1))
+   return blocked("SKILL_POST60_PREWRITE_LEDGER_INCOMPLETE");
+ const gate=existing.find(r=>r.step_id==="pre_write_execution_binding_gate")?.evidence_payload as Payload|undefined;
+ const plan=gate?.write_plan;
+ const expected=Array.isArray(plan)&&plan.length===1?(plan[0] as Payload):null;
+ if(!expected||expected.path!==child.target_path||
+   typeof expected.content_sha256!=="string"||
+   !/^[0-9a-f]{64}$/.test(expected.content_sha256)||
+   child.manifest?.pre_write_bound_write_plan_sha256!==gate?.write_plan_hash||
+   child.manifest?.pre_write_bound_main_revision!==gate?.bound_revision||
+   child.manifest?.pre_write_bound_target_blob_sha!==gate?.source_blob_sha)
+   return blocked("SKILL_POST60_FROZEN_PREWRITE_INVALID");
+ const first=steps[0].evidence_payload as Payload;
+ const prNumber=first.pr_number;
+ if(!Number.isInteger(prNumber)||Number(prNumber)<1)
+   return blocked("SKILL_POST60_PR_NUMBER_REQUIRED",400);
+ if(steps.some(item=>(item.evidence_payload as Payload).pr_number!==prNumber))
+   return blocked("SKILL_POST60_PR_IDENTITY_DRIFT",400);
+ const api="/repos/"+config.repository;
+ const prRes=await githubGet(fetchFn,api+"/pulls/"+prNumber);
+ if(!prRes.ok||!prRes.data||typeof prRes.data!=="object")
+   return blocked("SKILL_POST60_PR_UNRESOLVED",502);
+ const pr=prRes.data as Payload;
+ const head=pr.head as Payload|undefined,base=pr.base as Payload|undefined;
+ const headRepo=head?.repo as Payload|undefined;
+ const headSha=head?.sha;
+ if(pr.number!==prNumber||headRepo?.full_name!==config.repository||
+   base?.ref!=="main"||typeof head?.ref!=="string"||
+   !/^[A-Za-z0-9_./-]{3,180}$/.test(head.ref)||
+   typeof headSha!=="string"||!SHA40_RE.test(headSha)||
+   (pr.merged!==true&&base?.sha!==gate?.bound_revision))
+   return blocked("SKILL_POST60_PR_BINDING_DRIFT");
+ const filename=child.target_path.split("/").map(encodeURIComponent).join("/");
+ const fileRes=await githubGet(fetchFn,api+"/contents/"+filename+"?ref="+headSha);
+ const file=fileRes.data as Payload|null;
+ if(!fileRes.ok||!file||Array.isArray(file)||file.type!=="file"||
+   file.encoding!=="base64"||typeof file.content!=="string"||
+   !SHA40_RE.test(String(file.sha??""))||file.content.length>500000)
+   return blocked("SKILL_POST60_TARGET_NOT_READABLE",502);
+ let sha256="";
+ try{
+   const bytes=Uint8Array.from(atob(file.content.replace(/\s/g,"")),c=>c.charCodeAt(0));
+   const digest=await crypto.subtle.digest("SHA-256",bytes);
+   sha256=Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join("");
+ }catch{return blocked("SKILL_POST60_CONTENT_HASH_FAILED",502);}
+ if(sha256!==expected.content_sha256)
+   return blocked("SKILL_POST60_CANDIDATE_SHA256_MISMATCH");
+ const files=await githubGet(fetchFn,api+"/pulls/"+prNumber+"/files?per_page=100");
+ if(!files.ok||!Array.isArray(files.data)||files.data.length<1||files.data.length>20)
+   return blocked("SKILL_POST60_PR_FILE_SCOPE_UNPROVEN",502);
+ const paths=files.data.map(v=>String((v as Payload).filename??""));
+ const root=child.target_path.split("/").slice(0,-1).join("/");
+ if(!paths.includes(child.target_path)||paths.some(p=>
+    p!==child.target_path&&!(p.startsWith(root+"/")&&
+      /^test_[A-Za-z0-9_.-]+\.py$/.test(p.slice(root.length+1)))))
+   return blocked("SKILL_POST60_PR_SCOPE_EXCEEDED");
+ const verifyRun=async(runId:unknown,name:string,sha:string):Promise<boolean>=>{
+   if(!Number.isInteger(runId)||Number(runId)<=0)return false;
+   const r=await githubGet(fetchFn,api+"/actions/runs/"+runId);
+   const run=r.data as Payload|null;
+   return !!(r.ok&&run&&run.name===name&&run.status==="completed"&&
+     run.conclusion==="success"&&run.head_sha===sha);
+ };
+ let completed=0;
+ const receipts:Payload[]=[];
+ for(const item of steps){
+   const step=String(item.step_id);
+   const input=item.evidence_payload as Payload;
+   if(input.blocking_codes&&(!Array.isArray(input.blocking_codes)||input.blocking_codes.length))
+     return blocked("SKILL_POST60_INPUT_BLOCKERS_NOT_CLEAN");
+   const prior=await getLedger();
+   if(!prior)return blocked("SKILL_POST60_READBACK_FAILED",502);
+   const index=SKILL_UPDATE_POSTWRITE_STEPS.indexOf(step as typeof SKILL_UPDATE_POSTWRITE_STEPS[number]);
+   const earlier=SKILL_UPDATE_POSTWRITE_STEPS.slice(0,index);
+   if(earlier.some(s=>prior.filter(r=>r.step_id===s&&r.status==="STEP_PASS_WITH_EVIDENCE").length!==1))
+     return blocked("SKILL_POST60_PRIOR_STEP_MISSING");
+   if((step==="github_write"||step==="github_readback")&&
+      ((input.commit_sha&&input.commit_sha!==headSha)||
+       (input.exact_head&&input.exact_head!==headSha)||
+       (input.branch&&input.branch!==head.ref)))
+     return blocked("SKILL_POST60_GITHUB_RECEIPT_MISMATCH");
+   if(step==="deterministic_validation"||step==="regression_after"){
+     if(!await verifyRun(input.pase_run_id,"PASE",headSha))
+       return blocked("SKILL_POST60_PASE_EXACT_HEAD_REQUIRED");
+     const qa=await githubGet(fetchFn,api+"/actions/runs/"+input.test_run_id);
+     const run=qa.data as Payload|null;
+     if(!qa.ok||!run||run.name!=="LF S26 Native Validator Binding Regression"||
+       run.status!=="completed"||run.conclusion!=="success"||
+       !SHA40_RE.test(String(run.head_sha??"")))
+       return blocked("SKILL_POST60_TEST_RUN_NOT_VERIFIED");
+     for(const path of paths){
+       const p=path.split("/").map(encodeURIComponent).join("/");
+       const old=await githubGet(fetchFn,api+"/contents/"+p+"?ref="+run.head_sha);
+       const now=await githubGet(fetchFn,api+"/contents/"+p+"?ref="+headSha);
+       if(!old.ok||!now.ok||(old.data as Payload)?.sha!==(now.data as Payload)?.sha)
+         return blocked("SKILL_POST60_QA_SOURCE_DRIFT");
+     }
+   }
+   if(step==="semantic_judge"){
+     const review=input.semantic_judge_result as Payload|undefined;
+     if(!review||review.review_mode!=="CURRENT_CONTEXT_REVIEW"||
+       review.independent_review_attested!==false||
+       review.verdict!=="PASS_REVIEWED_CURRENT_CONTEXT"||
+       !Array.isArray(input.coverage_manifest)||input.coverage_manifest.length<1||
+       !Array.isArray(input.authority_checks)||input.authority_checks.length<1||
+       !Array.isArray(input.directionality_checks)||input.directionality_checks.length<1||
+       !Array.isArray(input.upstream_validity_checks)||input.upstream_validity_checks.length<1||
+       typeof input.evidence_ceiling_check!=="string"||
+       input.router_direct_consistency!=="NOT_TESTED / not_applicable / ROUTER_ONLY")
+       return blocked("SKILL_POST60_SEMANTIC_EVIDENCE_INCOMPLETE");
+   }
+   if(step==="close"||step==="report_output"){
+     if(pr.merged!==true||!SHA40_RE.test(String(pr.merge_commit_sha??""))||
+       child.manifest?.runtime_write_executed!==false||
+       child.manifest?.automatic_runtime_promotion!==false||
+       !Array.isArray(input.open_blockers)||input.open_blockers.length!==0)
+       return blocked("SKILL_POST60_CLOSE_NOT_AUTHORIZED");
+   }
+   const attested:Payload={...input,
+     pr_number:prNumber,git_commit_sha:headSha,source_sha256:sha256,
+     candidate_path:child.target_path,verification_source:"EXISTING_OIDC_EDGE_GITHUB_API",
+     blocking_codes:[]};
+   if(step==="github_write")
+     Object.assign(attested,{branch:head.ref,written_files:paths,
+       commit_sha:headSha,identity_preserved:true});
+   if(step==="github_readback")
+     Object.assign(attested,{exact_head:headSha,readback_files:paths,
+       sha_match:true,identity_preserved:true});
+   if(step==="close")
+     Object.assign(attested,{all_required_steps_clean:true,open_blockers:[],
+       runtime_unchanged:true,no_auto_promotion:true});
+   if(step==="report_output")
+     Object.assign(attested,{exact_head:headSha,open_blockers:[],
+       next_gate:input.next_gate??"RETURN_TO_PARENT_PROFILE"});
+   const receipt=await rpc(config,fetchFn,"lf_record_operation_step_core_v1",{
+      p_execution_id:childId,p_step_id:step,p_evidence_ref:item.evidence_ref,
+      p_evidence_payload:attested,p_actor_execution_id:parent.execution_id,
+      p_expected_operation_code:"ACTUALIZACION_SKILL_LF",
+      p_expected_target_type:"SKILL",p_contract_status:"ACTIVE_ENFORCEMENT",
+      p_binding_status:"ACTIVE_ENFORCEMENT",p_judge_status:"ACTIVE_ENFORCEMENT",
+      p_trust_validation:{valid:true,source:"OIDC_EDGE_GITHUB_VERIFIED",
+        server_assertions:[],server_hard_fails:[],verified_head_sha:headSha,
+        verified_sha256:sha256},
+      p_close_on_report_output:step==="report_output",
+      p_recorder_name:"lf_skill_update_post60_existing_core_oidc_v1",
+   });
+   if(receipt.error||receipt.result?.outcome!=="STEP_RECORDED"||
+     receipt.result?.status!=="STEP_PASS_WITH_EVIDENCE")
+     return blocked(String(receipt.result?.code??"SKILL_POST60_CORE_REJECTED"));
+   const back=await getLedger();
+   if(!back||back.filter(r=>r.step_id===step&&
+     r.status==="STEP_PASS_WITH_EVIDENCE").length!==1)
+     return blocked("SKILL_POST60_STEP_READBACK_FAILED");
+   completed++;
+   receipts.push({step_id:step,status:"STEP_PASS_WITH_EVIDENCE"});
+ }
+ const last=String(steps[steps.length-1].step_id);
+ return respond({outcome:"SKILL_CHILD_STEP_BATCH_RECORDED",
+   execution_id:parent.execution_id,child_execution_id:childId,steps_recorded:completed,
+   steps:receipts,next_step:last==="report_output"?"RETURN_TO_PARENT_PROFILE":
+     SKILL_UPDATE_POSTWRITE_STEPS[
+       SKILL_UPDATE_POSTWRITE_STEPS.indexOf(last as typeof SKILL_UPDATE_POSTWRITE_STEPS[number])+1],
+   child_completed:last==="report_output",no_file_write:true});
+}
+
 async function recordSkillChildSteps(
  parent:Execution,body:Payload,config:Config,fetchFn:Fetcher,identity?:CallerIdentity,
 ):Promise<Response>{
  if(!identity)return blocked("SKILL_CHILD_STEP_OIDC_IDENTITY_REQUIRED",403);
  const childId=body.child_execution_id, steps=body.steps;
  if(typeof childId!=="string" || !/^EXEC-SKILL-[A-Za-z0-9]{12,40}$/.test(childId) ||
-    !Array.isArray(steps)||steps.length===0||steps.length>6||JSON.stringify(steps).length>52000){
+    !Array.isArray(steps)||steps.length===0||steps.length>7||JSON.stringify(steps).length>52000){
    return blocked("SKILL_CHILD_STEP_BATCH_INPUT_INVALID",400);
  }
  const positions:number[]=[];
@@ -346,7 +537,7 @@ async function recordSkillChildSteps(
    const step=item as Payload;
    if(Object.keys(step).sort().join(",")!=="evidence_payload,evidence_ref,step_id" ||
      typeof step.step_id!=="string" ||
-     !(SKILL_UPDATE_PREWRITE_STEPS as readonly string[]).includes(step.step_id) ||
+     !([...SKILL_UPDATE_PREWRITE_STEPS,...SKILL_UPDATE_POSTWRITE_STEPS] as readonly string[]).includes(step.step_id) ||
      typeof step.evidence_ref!=="string"||step.evidence_ref.length<1||step.evidence_ref.length>1500||
      !step.evidence_payload||typeof step.evidence_payload!=="object"||
      Array.isArray(step.evidence_payload)||JSON.stringify(step.evidence_payload).length>44000)
@@ -356,10 +547,11 @@ async function recordSkillChildSteps(
         "derived_by_judge","step_result","mini_judge_result"].some(
          k=>Object.prototype.hasOwnProperty.call(p,k)))
      return blocked("SKILL_CHILD_STEP_ASSERTION_INJECTION",400);
-   positions.push(SKILL_UPDATE_PREWRITE_STEPS.indexOf(
-     step.step_id as typeof SKILL_UPDATE_PREWRITE_STEPS[number]));
+   positions.push([...SKILL_UPDATE_PREWRITE_STEPS,...SKILL_UPDATE_POSTWRITE_STEPS].indexOf(step.step_id));
  }
- if(positions.some((v,i)=>i>0&&v<=positions[i-1]))
+ if(positions.some((v,i)=>i>0&&v<=positions[i-1])||
+    (positions[0]<SKILL_UPDATE_PREWRITE_STEPS.length&&
+     positions[positions.length-1]>=SKILL_UPDATE_PREWRITE_STEPS.length))
    return blocked("SKILL_CHILD_STEP_BATCH_ORDER_INVALID",400);
 
  const endpoint=config.supabaseUrl+"/rest/v1/lf_operation_execution?execution_id=eq."+
@@ -387,6 +579,8 @@ async function recordSkillChildSteps(
    child.manifest?.router_governed_caller_code!=="CALLER-GHA-NATIVE-SKILL-UPDATE-V1")
    return blocked("SKILL_CHILD_STEP_PARENT_CHILD_AUTHORITY_MISMATCH",403);
 
+ if(positions[0]>=SKILL_UPDATE_PREWRITE_STEPS.length)
+   return recordSkillPostWriteSteps(parent,child,steps as Payload[],config,fetchFn);
  const proof=await trustedSkillContext(config,fetchFn,"SKILL_UPDATE_APPLY",
    child.target_code,child.target_path,identity);
  if(proof.error||!proof.context)
