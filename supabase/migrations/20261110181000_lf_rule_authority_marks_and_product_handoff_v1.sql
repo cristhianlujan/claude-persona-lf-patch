@@ -84,21 +84,26 @@ CREATE FUNCTION public.lf_ig_rule_proposal_prepare_v1(
 SET search_path='pg_catalog','public','lf_ops','extensions'
 AS $igproposal$
 DECLARE par public.lf_operation_execution%ROWTYPE;
- assess jsonb; proposals jsonb;
+ assess jsonb; proposals jsonb; v_screen_code text;
 BEGIN
  SELECT * INTO par FROM public.lf_operation_execution
  WHERE execution_id=p_execution_id AND operation_code='EJECUCION_PERFIL_LF'
  AND target_code='PERFIL-PRODUCT-DIRECTOR-LF'
  AND target_type='PERFIL' AND status='IN_PROGRESS';
+ v_screen_code:=coalesce(nullif(btrim(coalesce(p_screen_code,'')),''),
+    par.manifest#>>'{screen_selection_result,selected_screen_code}');
  IF NOT FOUND OR par.manifest->>'read_only' IS DISTINCT FROM 'true'
  OR par.manifest->>'no_write' IS DISTINCT FROM 'true'
  OR par.manifest->>'no_promotion' IS DISTINCT FROM 'true'
  OR par.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'
    IS DISTINCT FROM 'true'
  OR par.manifest#>>'{screen_selection_result,selected_screen_code}'
-   IS DISTINCT FROM p_screen_code
+   IS DISTINCT FROM v_screen_code
  THEN RETURN jsonb_build_object('status','BLOCKED',
    'code','IG_PROPOSAL_ROUTER_OR_SCOPE_INVALID'); END IF;
+ IF v_screen_code IS NULL THEN RETURN jsonb_build_object(
+  'status','IG_PROPOSAL_NOT_APPLICABLE','proposal_count',0,
+  'proposals','[]'::jsonb,'action_authorized',false); END IF;
  IF NOT EXISTS(
    SELECT 1 FROM public.lf_operation_execution_steps st
     WHERE st.execution_id=p_execution_id
@@ -106,7 +111,7 @@ BEGIN
       AND st.status='STEP_PASS_WITH_EVIDENCE'
  ) THEN RETURN jsonb_build_object('status','BLOCKED',
    'code','IG_PROPOSAL_INPUT_GOVERNANCE_STEP40_REQUIRED'); END IF;
- assess:=public.lf_rule_promotion_authority_assess_v1(p_screen_code);
+ assess:=public.lf_rule_promotion_authority_assess_v1(v_screen_code);
  IF assess->>'status' IS DISTINCT FROM 'ASSESSED_READ_ONLY'
  OR assess->>'action_authorized' IS DISTINCT FROM 'false'
  THEN RETURN jsonb_build_object('status','BLOCKED',
@@ -151,7 +156,7 @@ BEGIN
  RETURN jsonb_build_object(
    'schema_version','LF_IG_RULE_RESOLUTION_PROPOSAL_V1',
    'status','IG_PROPOSAL_READY',
-   'execution_id',p_execution_id,'screen_code',p_screen_code,
+   'execution_id',p_execution_id,'screen_code',v_screen_code,
    'proposal_count',jsonb_array_length(proposals),
    'proposals',proposals,
    'next_actor','PERFIL-PRODUCT-DIRECTOR-LF',
