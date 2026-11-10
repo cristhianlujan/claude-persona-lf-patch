@@ -617,7 +617,7 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             lambda x: x.update(child_execution_id="EXEC-ATTACKER"),
             lambda x: x["steps"].reverse(),
             lambda x: x["steps"].append(x["steps"][0]),
-            lambda x: x["steps"][0].update(step_id="github_write"),
+            lambda x: x["steps"][1].update(step_id="github_write"),
             lambda x: x["steps"][0]["evidence_payload"].update(server_assertions=["PASS"]),
             lambda x: x["steps"][0]["evidence_payload"].update(step_result="STEP_PASS_WITH_EVIDENCE"),
         ]:
@@ -625,6 +625,43 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             mutate(item)
             self.event["issue"]["body"] = json.dumps(item)
             with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                self.check()
+
+    def test_post60_batch_uses_same_request_schema_and_run(self):
+        body = self._child_step_body()
+        names = ["github_write", "github_readback", "deterministic_validation",
+                 "semantic_judge", "regression_after", "close", "report_output"]
+        body["steps"] = [
+            {"step_id": step, "evidence_ref": "git:verified:" + step,
+             "evidence_payload": {"pr_number": 3746, "blocking_codes": []}}
+            for step in names
+        ]
+        self.event["issue"]["body"] = json.dumps(body)
+        result = self.check()
+        self.assertEqual(result["kind"], "SKILL_STEP_BATCH")
+        self.assertEqual(result["execution_id"], body["execution_id"])
+        self.assertEqual(result["child_execution_id"], body["child_execution_id"])
+        self.assertEqual([s["step_id"] for s in result["steps"]], names)
+
+    def test_post60_rejects_mixed_phase_and_forged_judge(self):
+        body = self._child_step_body()
+        cases = [
+            [{"step_id": "pre_write_execution_binding_gate", "evidence_ref": "git:gate",
+              "evidence_payload": {}},
+             {"step_id": "github_write", "evidence_ref": "git:write",
+              "evidence_payload": {}}],
+            [{"step_id": "semantic_judge", "evidence_ref": "git:review",
+              "evidence_payload": {"derived_result": "STEP_PASS_WITH_EVIDENCE"}}],
+            [{"step_id": "github_readback", "evidence_ref": "git:readback",
+              "evidence_payload": {}},
+             {"step_id": "github_write", "evidence_ref": "git:write",
+              "evidence_payload": {}}],
+        ]
+        for steps in cases:
+            item = json.loads(json.dumps(body))
+            item["steps"] = steps
+            self.event["issue"]["body"] = json.dumps(item)
+            with self.subTest(steps=steps), self.assertRaises(ValueError):
                 self.check()
 
     def test_child_step_batch_uses_existing_oidc_edge_action_only(self):

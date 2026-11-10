@@ -132,10 +132,12 @@ def governed_request():
         allowed = [
             "router", "skill_resolve", "baseline_read", "change_scope",
             "regression_plan", "pre_write_execution_binding_gate",
+            "github_write", "github_readback", "deterministic_validation",
+            "semantic_judge", "regression_after", "close", "report_output",
         ]
         if (not isinstance(parent, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", parent)
                 or not isinstance(child, str) or not re.fullmatch(r"EXEC-SKILL-[A-Za-z0-9]{12,40}", child)
-                or not isinstance(steps, list) or not 1 <= len(steps) <= 6
+                or not isinstance(steps, list) or not 1 <= len(steps) <= 7
                 or len(json.dumps(steps, ensure_ascii=False)) > 52000):
             raise ValueError("SKILL_STEP_BATCH_INVALID")
         positions = []
@@ -150,7 +152,7 @@ def governed_request():
                         "derived_result", "derived_by_judge", "step_result", "mini_judge_result"))):
                 raise ValueError("SKILL_STEP_BATCH_ITEM_UNSAFE")
             positions.append(allowed.index(name))
-        if positions != sorted(set(positions)):
+        if positions != sorted(set(positions)) or (positions[0] < 6 <= positions[-1]):
             raise ValueError("SKILL_STEP_BATCH_OUT_OF_ORDER")
         return {"kind": "SKILL_STEP_BATCH", "execution_id": parent,
                 "child_execution_id": child, "steps": steps}
