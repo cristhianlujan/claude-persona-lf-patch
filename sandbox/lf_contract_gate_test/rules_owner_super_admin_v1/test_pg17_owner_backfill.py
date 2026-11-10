@@ -84,7 +84,7 @@ check("POPULATION_DRIFT_NO_METADATA_TABLE",
     "SELECT to_regclass('lf_ops.reglas_owner_metadata_v1') IS NULL;", "t")
 first_code = records[0]["codigo"]
 psql(f"INSERT INTO lf_ops.reglas(id,codigo,created_by) "
-     f"VALUES ({first_id},{escape(first_code)},'Cristhian');")
+     f"VALUES ({first_id},{escape(first_code)},'ChatGPT');")
 
 # 2. Guard rejects a swapped code even with 578 records.
 psql(f"UPDATE lf_ops.reglas SET codigo='CHANGED-UNAUTHORIZED' WHERE id={first_id};")
