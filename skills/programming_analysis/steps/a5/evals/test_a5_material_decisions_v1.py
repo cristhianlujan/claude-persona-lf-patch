@@ -274,6 +274,43 @@ class A5ItemTests(unittest.TestCase):
         self.assertIn("A5_EXCLUDED_RULE_CANNOT_TRIGGER_OWNER_DECISION",
                       out["blocking_codes"])
 
+    def test_new_adr_trigger_without_question_does_not_invent_owner_question(self):
+        p=sidecar()
+        p["adr_trigger_review"]["flags"]["cross_stage_or_multi_consumer_contract_changes"]=True
+        p["adr_search"]={
+            "state":"NO_CURRENT_ADR","source_function":"transversal.decision_log",
+            "target_ref":TARGET,"source_attested":False,"evidence_ref":SCREEN
+        }
+        out=a5.run(full_input(),p)
+        self.assertEqual(out["status"],"REQUIRES_DECISION")
+        self.assertEqual(len(out["architecture_decision_items"]),1)
+        item=out["architecture_decision_items"][0]
+        self.assertIsNone(item["material_question"])
+        self.assertTrue(item["semantic_review_needed"])
+        self.assertTrue(item["decision_required"])
+        self.assertFalse(out["a6_allowed"])
+
+    def test_new_adr_trigger_with_source_bound_material_question(self):
+        p=sidecar()
+        flag="cross_stage_or_multi_consumer_contract_changes"
+        p["adr_trigger_review"]["flags"][flag]=True
+        p["adr_search"]={
+            "state":"NO_CURRENT_ADR","source_function":"transversal.decision_log",
+            "target_ref":TARGET,"source_attested":False,"evidence_ref":SCREEN
+        }
+        p["adr_trigger_review"]["material_detail"]={
+            flag:{"material_question":"¿Se aprueba modificar el contrato compartido entre consumidores?",
+                  "evidence_ref":SCREEN}
+        }
+        out=a5.run(full_input(),p)
+        self.assertEqual(out["architecture_decision_items"][0]["status"],
+                         "REQUIRES_OWNER_DECISION_CANDIDATE")
+        self.assertFalse(out["architecture_decision_items"][0]["semantic_review_needed"])
+        self.assertFalse(out["a6_allowed"])
+        p["adr_trigger_review"]["material_detail"][flag]["evidence_ref"]="unknown://not-bound"
+        self.assertIn("A5_ADR_QUESTION_NOT_SOURCE_BOUND",
+                      a5.run(full_input(),p)["blocking_codes"])
+
     def test_repeatable_and_changes_hash_when_material_evidence_changes(self):
         a=a5.run(full_input(),sidecar())
         b=a5.run(full_input(),sidecar())
