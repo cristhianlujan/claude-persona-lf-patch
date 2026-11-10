@@ -78,3 +78,43 @@ La vista enumera reglas incluso antes de la primera corrida mediante `SIN_EVALUA
 **Reglas B2B actuales:** 32 SOURCE_LOOKUP_REQUIRED y 1 SOURCE_NOT_OWNER_APPROVED con la evidencia observada, **no 32 decisiones humanas**. La ejecución automática de búsqueda de las 32 fuentes sigue sin recibo, y la marca por sí sola no las remedia ni promociona. Estas fuentes deben resolverse por Product Director/IG, actualizando únicamente los metadatos gobernados de procedencia y reejecutando el juez.
 
 **Limitaciones de activación:** Supabase actual no tiene el issuer `LF_RULE_PROMOTION_ACTION_AUTHORITY_V1`, las migraciones no están desplegadas, y Product Director no tiene E2E write-enabled demostrado. El paquete conserva NO-GO. No se crea issuer ni se pone service_role en Router.
+
+## Lote 3 — Transporte OIDC hacia Product Director y contrato del recibo
+
+**Corrección imprescindible al SQL base:** el esquema real `programacion.provenance_receipts` solo admitía ocho clases de recibo. Su `CHECK` (md5 `c7a32a57bc482030e35a10c2b3c09830`) no incluía `RULE_PROMOTION_ACTION_AUTHORIZATION`. La migración `20261110170000` ya añade ese tipo mediante DDL atómico, con guard del contrato exacto. **No se cambiaron el trigger de procedencia ni los tipos anteriores.**
+
+**Conexión al runtime existente, sin Router ni perfil extra:**
+
+- El mismo Edge caller `lf-profiles-governance-caller-v1` acepta ahora `profile_native_rule_authority_v1`.
+- Ruta OIDC: solo identidad `GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1` y workflow exacto `.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main`, no `caller` suministrado por JSON.
+- El RUN debe ser el Product Director exacto en `profiles/product_director_lf/SKILL.md`, read-only y con Router receipt.
+- `MARK` → RPC `lf_rule_authority_mark_refresh_v1`; exige `evidence_ref` **idéntico** al recibo del juez 70 registrado.
+- `REQUEST` → RPC `lf_rule_promotion_request_eligible_v1`; exige regla elegible, fuente y hash actuales, más emisor independiente provisionado.
+- `COMPLETE` → RPC `lf_rule_promotion_complete_tracked_v1`; exige `receipt_id` real; la función ratificadora valida emisor, digest, currentness, regla y fuente antes de aplicar y cerrar.
+- La función de transporte no emite recibos, no recibe service_role en la solicitud y no escribe `lf_ops.reglas` directamente.
+- Respuesta `BLOCKED` del SQL → HTTP 409, nunca `COMPLETED` sintético.
+
+Ejemplo de llamada **solo para documentación**, usando el canal OIDC ya autenticado:
+
+```json
+{
+  "action": "profile_native_rule_authority_v1",
+  "execution_id": "<RUN_EXISTENTE>",
+  "source_revision": "<SHA_MAIN_VERIFICADO>",
+  "screen_code": "B2B-AUTH-001",
+  "rule_authority_action": "MARK",
+  "evidence_ref": "<REFERENCIA_EXACTA_DEL_JUEZ_70>"
+}
+```
+
+Para `REQUEST`, reemplazar `rule_authority_action=REQUEST` y suministrar `rule_code`; para `COMPLETE`, suministrar también `receipt_id`. En todos los casos el perfil espera salida y readback antes de reportar el paso 80; no se agregan etapas oficiales numeradas.
+
+**Pruebas sobre fuente candidata:** 62 PASS PostgreSQL 17 aislado, 48 PASS Deno OIDC, PASE/F0 PASS. Ambas suites usan mocks/datos sintéticos; no constituyen emisión oficial ni implementación productiva.
+
+**Pendientes con código exacto o contrato no acreditados:**
+1. `LF_RULE_PROMOTION_ACTION_AUTHORITY_V1`: cero registros reales; falta emisor independiente y su política/credenciales protegidas, no basta con tener el nuevo tipo de recibo admitido.
+2. `PROMOCION_REGLA_LF` no figura en `public.lf_operation_registry` aunque ya existen funciones de solicitud/decisión/aplicación y autoridad de perfil; revisar el contrato y registrar la operación por el proceso oficial antes de activarla.
+3. Faltan 32 procedencias B2B por reconciliar. No inferir aprobación o equivalencia desde `origen`.
+4. El perfil continúa `READ_ONLY` y el SQL nuevo aún no está desplegado. Se requiere el camino gobernado de despliegue, la prueba E2E sobre autoridad auténtica y readback.
+
+**Estado operativo: DRAFT / NO-GO** para promoción efectiva. El número de PASS de CI aislado nunca se convierte en progreso productivo.
