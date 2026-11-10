@@ -1,7 +1,7 @@
 {
   "solution_ref": "lf-product-rule-link-child-3774",
   "paths": {
-    ".github/workflows/lf-migration-name-classification.yml": "CI_PLATFORM_GOVERNANCE",
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
     "sandbox/lf_contract_gate_test/changesets/lf-product-rule-link-child-3774.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/product_rule_link_child_v1/ACCEPTANCE.md": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/product_rule_link_child_v1/lf_link_seed_pg17.sql": "ENGINEERING_CHECKPOINTS",
