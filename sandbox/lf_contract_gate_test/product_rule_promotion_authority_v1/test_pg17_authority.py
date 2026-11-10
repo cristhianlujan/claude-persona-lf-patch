@@ -110,6 +110,17 @@ def main():
       "AND marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED';")=="1")
     check("MARK_NO_AUTO_PROMOTION",status()=="CANDIDATO"
           and sql("SELECT count(*) FROM public.lf_rule_promotion_v1;")=="0")
+    sql("UPDATE lf_ops.reglas SET descripcion='CHANGED_AFTER_MARK' "
+        f"WHERE codigo='{RULE}';")
+    check("STALE_RULE_CANNOT_KEEP_ELIGIBILITY_MARK",sql(
+      "SELECT marca FROM public.v_lf_rule_authority_filter_v1 "
+      f"WHERE regla_codigo='{RULE}';")=="REVALIDAR_SNAPSHOT")
+    sql("UPDATE lf_ops.reglas SET "
+        "descripcion='Regla sintética con campos exactamente equivalentes' "
+        f"WHERE codigo='{RULE}';")
+    check("RESTORED_RULE_RESTORES_ORIGINAL_MARK",sql(
+      "SELECT marca FROM public.v_lf_rule_authority_filter_v1 "
+      f"WHERE regla_codigo='{RULE}';")=="ACTION_AUTHORIZATION_RECEIPT_REQUIRED")
     check("MARK_NOT_PUBLICLY_WRITABLE",sql(
       "SELECT has_table_privilege('authenticated',"
       "'public.lf_rule_authority_tracking_v1','UPDATE');")=="f")
@@ -151,6 +162,16 @@ def main():
     check("PROMOTION_REQUEST_TRACKED",sql(
       f"SELECT marca FROM public.lf_rule_authority_tracking_v1 "
       f"WHERE rule_code='{RULE}';")=="PROMOTION_REQUESTED")
+    rerun=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17/RECHECK');"))
+    check("REASSESSMENT_SUCCESS",rerun.get("status")=="MARKS_RECORDED")
+    check("REASSESSMENT_PRESERVES_PENDING_PROMOTION",
+          sql("SELECT marca||':'||estado_flujo FROM "
+          "public.lf_rule_authority_tracking_v1 "
+          f"WHERE rule_code='{RULE}';")=="PROMOTION_REQUESTED:PROMOCION_SOLICITADA")
+    check("REASSESSMENT_PRESERVES_ORIGINAL_PROMOTION_ID",
+          sql("SELECT promotion_id FROM public.lf_rule_authority_tracking_v1 "
+          f"WHERE rule_code='{RULE}';")==PROM)
     check("PENDING_RECEIPT_NOT_VIGENTE",status()=="CANDIDATO")
     check("HUMAN_DECIDER_UNCHANGED",json.loads(sql(
        f"SELECT public.lf_rule_promotion_decide_v1('{PROM}','APPROVE',"
