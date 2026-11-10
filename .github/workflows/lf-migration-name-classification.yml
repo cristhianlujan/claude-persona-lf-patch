@@ -77,3 +77,32 @@ jobs:
           set -euo pipefail
           test -n "$PG_CONTAINER"
           python3 sandbox/lf_contract_gate_test/product_rule_link_child_v1/test_rule_link_child_pg17.py
+
+  product-rule-create-pg17:
+    name: product-rule-create-pg17-isolated
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      pg:
+        image: postgres:17.6
+        env:
+          POSTGRES_PASSWORD: isolated-only
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 4s
+          --health-retries 8
+    steps:
+      - name: Checkout stacked candidate without production credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Execute original-source create-candidate contract in ephemeral PostgreSQL
+        env:
+          PG_CONTAINER: ${{ job.services.pg.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$PG_CONTAINER"
+          python3 sandbox/lf_contract_gate_test/product_rule_create_child_v1/test_rule_create_pg17.py
