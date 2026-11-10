@@ -386,8 +386,27 @@ async function recordSkillPostWriteSteps(
    base?.ref!=="main"||typeof head?.ref!=="string"||
    !/^[A-Za-z0-9_./-]{3,180}$/.test(head.ref)||
    typeof headSha!=="string"||!SHA40_RE.test(headSha)||
-   (pr.merged!==true&&base?.sha!==gate?.bound_revision))
+   typeof gate?.bound_revision!=="string")
    return blocked("SKILL_POST60_PR_BINDING_DRIFT");
+
+ // Main may advance for this very Edge fix. Rebind only when the skill's
+ // canonical baseline blob and declared owner README have not changed.
+ if(pr.merged!==true){
+   const current=await githubGet(fetchFn,api+"/git/ref/heads/main");
+   const mainSha=String(((current.data as Payload|null)?.object as Payload|undefined)?.sha??"");
+   if(!current.ok||!SHA40_RE.test(mainSha))
+     return blocked("SKILL_POST60_MAIN_READBACK_FAILED");
+   const source=await githubGet(fetchFn,api+"/contents/"+
+     child.target_path.split("/").map(encodeURIComponent).join("/")+"?ref="+mainSha);
+   const rootPath=child.target_path.split("/").slice(0,2).join("/");
+   const owner=await githubGet(fetchFn,api+"/contents/"+
+     rootPath+"/README.md?ref="+mainSha);
+   const prov=child.manifest?.owner_provenance as Payload|undefined;
+   if(!source.ok||!owner.ok||
+      (source.data as Payload)?.sha!==gate?.source_blob_sha||
+      (owner.data as Payload)?.sha!==prov?.readme_blob_sha)
+     return blocked("SKILL_POST60_BASELINE_OR_OWNER_DRIFT");
+ }
  const filename=child.target_path.split("/").map(encodeURIComponent).join("/");
  const fileRes=await githubGet(fetchFn,api+"/contents/"+filename+"?ref="+headSha);
  const file=fileRes.data as Payload|null;
