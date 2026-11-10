@@ -35,7 +35,24 @@ INSERT INTO public.lf_operation_execution(
  manifest,created_by_execution_id
 ) VALUES('EXEC-PROFILE-PG17-PROMO','EJECUCION_PERFIL_LF',
  'PERFIL','PERFIL-PRODUCT-DIRECTOR-LF','IN_PROGRESS',repeat('f',64),
- '{"read_only":true,"no_write":true,"no_promotion":true}'::jsonb,'ISOLATED_TEST_ONLY');
+ '{"read_only":true,"no_write":true,"no_promotion":true,
+   "router_profile_handoff":{"router_authorization_receipt":{"profile_execution_allowed":true}},
+   "screen_selection_result":{"selected_screen_code":"B2B-AUTH-001"}}'::jsonb,'ISOLATED_TEST_ONLY');
+
+-- Synthetic, explicitly NOT an actual independent judge or live GPT run.
+INSERT INTO public.lf_operation_execution_steps(
+  execution_id,step_order,step_id,status,evidence_ref,evidence_payload)
+VALUES
+('EXEC-PROFILE-PG17-PROMO',60,'output_validate','STEP_PASS_WITH_EVIDENCE',
+  'PG17_SYNTHETIC/60',
+  '{"output_contract_result":"PASS",
+    "raw_output_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'::jsonb),
+('EXEC-PROFILE-PG17-PROMO',70,'semantic_judge','STEP_PASS_WITH_EVIDENCE',
+  'PG17_SYNTHETIC/70',
+  '{"unsupported_claims":[],"blocking_codes":[],
+    "semantic_judge_result":{"status":"PASS","verdict":"PASS_REVIEWED_CURRENT_CONTEXT",
+      "candidate_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "result":{"unsupported_claims":[],"blocking_codes":[]}}}'::jsonb);
 
 INSERT INTO lf_ops.reglas(id,codigo,categoria,titulo,descripcion,razon,
  valor_config,es_transversal,estado,origen,pendiente_decision,created_by)
