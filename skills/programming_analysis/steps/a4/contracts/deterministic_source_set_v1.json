@@ -3,7 +3,7 @@
   "skill_code": "PROGRAMMING_ANALYSIS_LF",
   "step_code": "A4",
   "state": "SOURCE_CANDIDATE_UNATTESTED",
-  "purpose": "No open-ended research; A4 projects exact A3 evidence and bound existing impact core.",
+  "purpose": "A4 uses A3/A2 definitions first. Existing graph providers are conditional on exact references to existing reusable assets; no target code or destination is required for planned new development.",
   "canonical_inputs": [
     "TARGETED_EVIDENCE_SET_V1",
     "ANALYSIS_CHANGE_CLASSIFICATION_V1"
@@ -13,11 +13,12 @@
     "input_target": "A3.target_ref (canonical); A2.target_ref must match A3.declared_target_hint or A3.target_ref",
     "inventory_key": "inventory.objects.object_ref",
     "match": "EXACT_EQUALITY_ONLY",
-    "query_only_after": "inventory.objects active exact row with source binding",
-    "no_matched_inventory_object": "IMPACT_UNKNOWN_UNBOUND_TECHNICAL_IDENTITY",
+    "query_only_after": "Optional exact inventory reference for a preexisting reusable/affected asset, not necessarily a target implementation",
+    "no_matched_inventory_object": "PLANNED_BUILD_WITH_UNVERIFIED_EXISTING_IMPACT when change intent is a new build; otherwise IMPACT_UNKNOWN. Never block code creation solely because there is no target path.",
     "no_heuristic_lookup": true,
     "zero_rows_is_not_zero_impact": true,
-    "version_and_currentness": "Host revalidates exact A3 source_refs/currentness; A4 never self-attests."
+    "version_and_currentness": "Host revalidates exact A3 source_refs/currentness; A4 never self-attests.",
+    "target_code_location_required": false
   },
   "sources": [
     {
@@ -66,7 +67,9 @@
         "definition_sha256",
         "observed_main_sha"
       ],
-      "lookup_policy": "No SQL LIKE or full catalog search; unknown binding returns blocker"
+      "lookup_policy": "Exact object_ref from authorized binding only; no target-code destination required in PLANNED_BUILD",
+      "conditional": true,
+      "required_for": "EXISTING_CHANGE or preexisting reusable asset graph impact only"
     },
     {
       "id": "S4_IMPACT_CORE",
@@ -83,7 +86,9 @@
       ],
       "max_depth": 3,
       "min_confidence": 0.8,
-      "consumer": "SHARED_CHANGE_IMPACT_ANALYSIS"
+      "consumer": "SHARED_CHANGE_IMPACT_ANALYSIS",
+      "conditional": true,
+      "required_for": "An existing inventory object with exact reference, never a planned target"
     },
     {
       "id": "S5_DEPENDENCIES",
@@ -100,10 +105,12 @@
         "confidence"
       ],
       "max_depth": 2,
-      "direction": "BOTH"
+      "direction": "BOTH",
+      "conditional": true,
+      "required_for": "An existing inventory object with exact reference, never a planned target"
     }
   ],
-  "exception": "If A4 finds a specific material missing source or stale binding, emit gap with exact target and requested source; A8 may return to A3 for that gap only. Never restart full research.",
+  "exception": "Planned target with no code path uses A3-approved obligations, no graph lookup or invented destination. Unknown dependency/cross-system impact is explicit and scoped; A8 can return only to the material missing source.",
   "security": [
     "LF only; SALY not enabled",
     "Existing governed host acquires reads; no SQL/network inside A4",
@@ -113,5 +120,31 @@
     "Unknown/partial dependency graph remains visible",
     "Readback is not independent attestation or A4 operational approval"
   ],
-  "reference_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/shared_change_impact_contract_v1.json"
+  "reference_contract": "sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/shared_change_impact_contract_v1.json",
+  "modes": {
+    "PLANNED_BUILD": {
+      "trigger": "Explicit A2 operation CREATE, IMPLEMENT or BUILD_NEW; an unverified intention, not proof that no code exists",
+      "target_destination_required": false,
+      "target_implementation_ref_required": false,
+      "inputs": [
+        "S1_A3",
+        "S2_A2"
+      ],
+      "direct_output": "Source-linked scoped implementation obligations from approved rule candidates and material sections",
+      "excluded": "Pending/candidate definitions and policy-dependent rules without approved binding",
+      "existing_dependencies": "No source-qualified existing asset => UNKNOWN, not NO_IMPACT",
+      "source_research": "Only targeted A3 readback if a material decision can change"
+    },
+    "EXISTING_CHANGE": {
+      "trigger": "Exact target or affected existing asset bound to inventory.object_ref",
+      "target_inventory_binding": "REQUIRED_FOR_GRAPH_LOOKUP",
+      "inputs": [
+        "S1_A3",
+        "S2_A2",
+        "S3_INV_OBJECT",
+        "S4_IMPACT_CORE",
+        "S5_DEPENDENCIES"
+      ]
+    }
+  }
 }
