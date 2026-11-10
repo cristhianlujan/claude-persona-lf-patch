@@ -25,9 +25,27 @@ Contrato cerrado: `contracts/deterministic_source_set_v1.json`.
 ## Evidencia verificable
 Se verificó en PostgreSQL la firma real de ambos proveedores y sus parámetros por defecto. `inventory.objects` tiene 6 671 registros activos y `inventory.dependencies` 14 048 dependencias activas en la lectura de 2026-11-09; no se encontró coincidencia por referencia `B2B-AUTH-001` o `B2B_AUTENTICACION`. Este resultado **no autoriza** afirmar que no existe implementación; tampoco obliga a asignar un destino al código todavía no desarrollado. Las dependencias sobre componentes ya existentes se revisan solo cuando hay binding exacto.
 
+## Clasificación de operación (sin inferencia de código)
+
+A4 registra `requested_change_type` tal como llega de A2 y `target_change_action` normalizado a **CREATE, MODIFY, DELETE, REPLACE, REUSE, NO_CHANGE o UNKNOWN**, mediante el mapa cerrado del contrato de fuentes. Es **intención solicitada**, no evidencia de ejecución ni autorización.
+
+En `PLANNED_BUILD` cada regla/elemento VIGENTE que se necesita implementar en la nueva pantalla aparece con `change_action=CREATE` (crear su implementación en el nuevo objetivo) y `definition_action=REUSE` (reutilizar la definición vigente, sin crear otra política/regla). Los candidatos quedan excluidos sin asignarles una creación.
+
+En `EXISTING_CHANGE`, el gráfico identifica posibles afectados, pero **NO** transforma automáticamente todas las dependencias en `MODIFY` o `DELETE`; cada `direct_impact`/`indirect_impact` tiene `change_action=UNKNOWN` hasta tener un delta específico respaldado por código o definición. Una petición de DELETE/REPLACE se mantiene como intención y necesita autoridad/evidencia antes de que pueda ser ejecutada.
+
+La falta de código o destino para nueva pantalla no bloquea CREATE. Un tipo de operación A2 no reconocido devuelve `UNKNOWN` y `NEED_MORE_EVIDENCE`, nunca `MODIFY` por defecto. El grafo vacío jamás acredita `NO_CHANGE`.
+
+### Ejemplo de salida A4 para pantalla nueva
+
+| Elemento | Acción en nuevo objetivo | Definición existente | Evidencia |
+|---|---|---|---|
+| Pantalla Login B2B | `CREATE` (intención A2) | Definida en Supabase, código objetivo no establecido | A2 + A3 |
+| Regla de acceso VIGENTE | `CREATE` implementación en pantalla | `REUSE` definición sin alterarla | A3 regla + estado |
+| Política/visual CANDIDATO | Excluir del alcance | No promover | A3 estado |
+| Dependencias de componentes actuales | `UNKNOWN` | Sin dato suficiente para acción | Brecha focal |
 ## Código
 - `validators/run.py:run` — proyección genérica y cierre de búsqueda.
-- `evals/test_a4_deterministic_source_set_v1.py` — trece tests sintéticos creados; ejecución CI exact-head pendiente.
+- `evals/test_a4_deterministic_source_set_v1.py` — diecisiete tests sintéticos creados; ejecución CI exact-head pendiente.
 - Manifiesto de la skill única: `skills/programming_analysis/contracts/analysis_skill_manifest_v1.json`.
 
 ## No hacer
