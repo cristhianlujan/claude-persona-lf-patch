@@ -9,6 +9,15 @@ ROOT = Path(__file__).resolve().parents[3]
 SLUG = "customer_financial_ux_decisioning"
 
 
+def prepare_staging_native_binding(profile_dir):
+    """The operational-coverage fixtures isolate behavior unrelated to native transport."""
+    path = profile_dir / "contracts/runtime_binding.json"
+    if path.is_file():
+        binding = json.loads(path.read_text(encoding="utf-8"))
+        binding["canonical_validator"]["transport"] = "STDIN_JSON"
+        path.write_text(json.dumps(binding), encoding="utf-8")
+
+
 class Checks(unittest.TestCase):
     DOC = {"output": {"status": "OK", "items": [1, 2, 3], "owner": {"kind": "DERIVED", "ref": "R"}, "n": {"x": [{"status": "UNRESOLVED"}]}},
            "validator": {"valid": True}}
@@ -61,6 +70,7 @@ class Integration(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.base, self.cand = self.tmp / "base", self.tmp / "cand"
         shutil.copytree(ROOT / "profiles" / SLUG, self.base)
+        prepare_staging_native_binding(self.base)
         shutil.copytree(self.base, self.cand)
         with open(self.cand / "contracts/main_contract.md", "a") as f:
             f.write("\nnote that changes the tree but not the structural score\n")
@@ -150,6 +160,7 @@ class Measure(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.prof = self.tmp / "p"
         shutil.copytree(ROOT / "profiles" / CEILING_SLUG, self.prof)
+        prepare_staging_native_binding(self.prof)
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
