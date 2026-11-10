@@ -191,6 +191,9 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         return {
             **_blocked("A4_EXACT_HOST_SOURCE_READBACK_REQUIRED", target=target),
             "status": "NEED_MORE_EVIDENCE",
+            "requested_change_type": a2.get("change_type"),
+            "target_change_action": target_action,
+            "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
         }
     if (not isinstance(readback, dict)
             or readback.get("schema_version") != SIDECAR
@@ -206,6 +209,9 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         return {
             **_blocked("A4_TARGET_NOT_MAPPED_TO_INVENTORY_OBJECT", target=target),
             "status": "IMPACT_UNKNOWN",
+            "requested_change_type": a2.get("change_type"),
+            "target_change_action": target_action,
+            "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
             "unresolved_material_impacts": [
                 _gap("A4_TARGET_NOT_MAPPED_TO_INVENTORY_OBJECT",
                      target=target, source="S3_INV_OBJECT")
@@ -229,6 +235,9 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         return {
             **_blocked("A4_DEPENDENCY_SOURCE_READBACK_MISSING", target=target),
             "status": "IMPACT_UNKNOWN",
+            "requested_change_type": a2.get("change_type"),
+            "target_change_action": target_action,
+            "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
         }
     expected = [
         (impact, "inventory.fn_impact_analysis_v1",
