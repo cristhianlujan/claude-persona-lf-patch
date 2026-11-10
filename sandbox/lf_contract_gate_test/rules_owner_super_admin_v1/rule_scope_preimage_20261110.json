@@ -1,0 +1,2323 @@
+{
+  "schema_version": "LF_RULE_OWNER_ASSIGNMENT_PREIMAGE_V1",
+  "source": "Supabase lf_ops.reglas read-only SELECT id,codigo ORDER BY id",
+  "user_declaration": "Current 578 rules created by ChatGPT; rule ownership SUPER_ADMIN",
+  "legacy_created_by_must_be_preserved": true,
+  "original_rule_hashes_must_be_preserved": true,
+  "count": 578,
+  "inventory_md5": "c758e1215c5fe5a11d34d42456a09664",
+  "rows": [
+    {
+      "id": 6,
+      "codigo": "REG_ONB_001"
+    },
+    {
+      "id": 7,
+      "codigo": "REG_ONB_002"
+    },
+    {
+      "id": 8,
+      "codigo": "REG_ONB_003"
+    },
+    {
+      "id": 9,
+      "codigo": "REG_ONB_004"
+    },
+    {
+      "id": 10,
+      "codigo": "REG_COPY_001"
+    },
+    {
+      "id": 11,
+      "codigo": "REG_COPY_002"
+    },
+    {
+      "id": 12,
+      "codigo": "REG_COPY_003"
+    },
+    {
+      "id": 13,
+      "codigo": "REG_HOME_001"
+    },
+    {
+      "id": 14,
+      "codigo": "REG_SES_001"
+    },
+    {
+      "id": 15,
+      "codigo": "REG_SES_002"
+    },
+    {
+      "id": 16,
+      "codigo": "REG_SES_003"
+    },
+    {
+      "id": 17,
+      "codigo": "REG_SES_004"
+    },
+    {
+      "id": 18,
+      "codigo": "REG_SES_005"
+    },
+    {
+      "id": 19,
+      "codigo": "REG_SEG_001"
+    },
+    {
+      "id": 20,
+      "codigo": "REG_SEG_002"
+    },
+    {
+      "id": 21,
+      "codigo": "REG_SEG_003"
+    },
+    {
+      "id": 22,
+      "codigo": "REG_SEG_004"
+    },
+    {
+      "id": 23,
+      "codigo": "REG_SEG_005"
+    },
+    {
+      "id": 24,
+      "codigo": "REG_SEG_006"
+    },
+    {
+      "id": 25,
+      "codigo": "REG_SEG_007"
+    },
+    {
+      "id": 26,
+      "codigo": "REG_RATE_001"
+    },
+    {
+      "id": 27,
+      "codigo": "REG_RATE_002"
+    },
+    {
+      "id": 28,
+      "codigo": "REG_RATE_003"
+    },
+    {
+      "id": 29,
+      "codigo": "REG_RATE_004"
+    },
+    {
+      "id": 30,
+      "codigo": "REG_RATE_005"
+    },
+    {
+      "id": 31,
+      "codigo": "REG_FLUJO_001"
+    },
+    {
+      "id": 32,
+      "codigo": "REG_FLUJO_002"
+    },
+    {
+      "id": 33,
+      "codigo": "REG_FLUJO_003"
+    },
+    {
+      "id": 34,
+      "codigo": "REG_FLUJO_004"
+    },
+    {
+      "id": 35,
+      "codigo": "REG_FLUJO_005"
+    },
+    {
+      "id": 36,
+      "codigo": "REG_AUD_001"
+    },
+    {
+      "id": 37,
+      "codigo": "REG_AUD_002"
+    },
+    {
+      "id": 38,
+      "codigo": "REG_AUD_003"
+    },
+    {
+      "id": 39,
+      "codigo": "REG_AUD_004"
+    },
+    {
+      "id": 40,
+      "codigo": "REG_AUD_005"
+    },
+    {
+      "id": 41,
+      "codigo": "REG_UNI_001"
+    },
+    {
+      "id": 42,
+      "codigo": "REG_UNI_002"
+    },
+    {
+      "id": 43,
+      "codigo": "REG_UNI_003"
+    },
+    {
+      "id": 44,
+      "codigo": "REG_UNI_004"
+    },
+    {
+      "id": 45,
+      "codigo": "REG_ACC_001"
+    },
+    {
+      "id": 46,
+      "codigo": "REG_ACC_002"
+    },
+    {
+      "id": 47,
+      "codigo": "REG_ACC_003"
+    },
+    {
+      "id": 48,
+      "codigo": "REG_ACC_004"
+    },
+    {
+      "id": 49,
+      "codigo": "REG_ACC_005"
+    },
+    {
+      "id": 62,
+      "codigo": "REG_SEG_008"
+    },
+    {
+      "id": 63,
+      "codigo": "REG_RL_001"
+    },
+    {
+      "id": 64,
+      "codigo": "REG_RL_002"
+    },
+    {
+      "id": 65,
+      "codigo": "REG_RL_003"
+    },
+    {
+      "id": 66,
+      "codigo": "REG_FLU_001"
+    },
+    {
+      "id": 67,
+      "codigo": "REG_FLU_002"
+    },
+    {
+      "id": 68,
+      "codigo": "REG_FLU_003"
+    },
+    {
+      "id": 69,
+      "codigo": "REG_FLU_004"
+    },
+    {
+      "id": 70,
+      "codigo": "REG_FLU_005"
+    },
+    {
+      "id": 85,
+      "codigo": "REG_ACC_006"
+    },
+    {
+      "id": 86,
+      "codigo": "REG_ANL_001"
+    },
+    {
+      "id": 87,
+      "codigo": "REG_ANL_002"
+    },
+    {
+      "id": 88,
+      "codigo": "REG_ANL_003"
+    },
+    {
+      "id": 89,
+      "codigo": "REG_ANL_004"
+    },
+    {
+      "id": 90,
+      "codigo": "REG_ANL_005"
+    },
+    {
+      "id": 91,
+      "codigo": "REG_ANL_006"
+    },
+    {
+      "id": 92,
+      "codigo": "REG_ANL_007"
+    },
+    {
+      "id": 93,
+      "codigo": "REG_ANL_008"
+    },
+    {
+      "id": 94,
+      "codigo": "REG_OBS_001"
+    },
+    {
+      "id": 95,
+      "codigo": "REG_OBS_002"
+    },
+    {
+      "id": 96,
+      "codigo": "REG_OBS_003"
+    },
+    {
+      "id": 97,
+      "codigo": "REG_OBS_004"
+    },
+    {
+      "id": 98,
+      "codigo": "REG_OBS_005"
+    },
+    {
+      "id": 99,
+      "codigo": "REG_OBS_006"
+    },
+    {
+      "id": 100,
+      "codigo": "REG_TAG_001"
+    },
+    {
+      "id": 101,
+      "codigo": "REG_TAG_002"
+    },
+    {
+      "id": 102,
+      "codigo": "REG_TAG_003"
+    },
+    {
+      "id": 103,
+      "codigo": "REG_TAG_004"
+    },
+    {
+      "id": 104,
+      "codigo": "REG_TAG_005"
+    },
+    {
+      "id": 105,
+      "codigo": "REG_TAG_006"
+    },
+    {
+      "id": 106,
+      "codigo": "REG_HMP_001"
+    },
+    {
+      "id": 107,
+      "codigo": "REG_HMP_002"
+    },
+    {
+      "id": 108,
+      "codigo": "REG_HMP_003"
+    },
+    {
+      "id": 109,
+      "codigo": "REG_HMP_004"
+    },
+    {
+      "id": 110,
+      "codigo": "REG_ALR_001"
+    },
+    {
+      "id": 111,
+      "codigo": "REG_ALR_002"
+    },
+    {
+      "id": 112,
+      "codigo": "REG_ALR_003"
+    },
+    {
+      "id": 113,
+      "codigo": "REG_ALR_004"
+    },
+    {
+      "id": 114,
+      "codigo": "REG_ALR_005"
+    },
+    {
+      "id": 115,
+      "codigo": "REG_ALR_006"
+    },
+    {
+      "id": 116,
+      "codigo": "REG_ABT_001"
+    },
+    {
+      "id": 117,
+      "codigo": "REG_ABT_002"
+    },
+    {
+      "id": 118,
+      "codigo": "REG_ABT_003"
+    },
+    {
+      "id": 119,
+      "codigo": "REG_ABT_004"
+    },
+    {
+      "id": 120,
+      "codigo": "REG_ABT_005"
+    },
+    {
+      "id": 121,
+      "codigo": "REG_ATQ_001"
+    },
+    {
+      "id": 122,
+      "codigo": "REG_ATQ_002"
+    },
+    {
+      "id": 123,
+      "codigo": "REG_ATQ_003"
+    },
+    {
+      "id": 124,
+      "codigo": "REG_ATQ_004"
+    },
+    {
+      "id": 125,
+      "codigo": "REG_ATQ_005"
+    },
+    {
+      "id": 126,
+      "codigo": "REG_ATQ_006"
+    },
+    {
+      "id": 127,
+      "codigo": "REG_ATQ_007"
+    },
+    {
+      "id": 128,
+      "codigo": "REG_ATQ_008"
+    },
+    {
+      "id": 129,
+      "codigo": "REG_ATQ_009"
+    },
+    {
+      "id": 130,
+      "codigo": "REG_ATQ_010"
+    },
+    {
+      "id": 131,
+      "codigo": "REG_ATQ_011"
+    },
+    {
+      "id": 132,
+      "codigo": "REG_ATQ_012"
+    },
+    {
+      "id": 133,
+      "codigo": "REG_ATQ_013"
+    },
+    {
+      "id": 134,
+      "codigo": "REG_ATQ_014"
+    },
+    {
+      "id": 135,
+      "codigo": "REG_ATQ_015"
+    },
+    {
+      "id": 136,
+      "codigo": "REG_ATQ_016"
+    },
+    {
+      "id": 137,
+      "codigo": "REG_ATQ_017"
+    },
+    {
+      "id": 138,
+      "codigo": "REG_ATQ_018"
+    },
+    {
+      "id": 139,
+      "codigo": "REG_ATQ_019"
+    },
+    {
+      "id": 140,
+      "codigo": "REG_ATQ_020"
+    },
+    {
+      "id": 141,
+      "codigo": "REG_HMV_001"
+    },
+    {
+      "id": 142,
+      "codigo": "REG_HMV_002"
+    },
+    {
+      "id": 143,
+      "codigo": "REG_HMV_003"
+    },
+    {
+      "id": 144,
+      "codigo": "REG_HMV_004"
+    },
+    {
+      "id": 145,
+      "codigo": "REG_HMV_005"
+    },
+    {
+      "id": 146,
+      "codigo": "REG_OFR_001"
+    },
+    {
+      "id": 147,
+      "codigo": "REG_OFR_002"
+    },
+    {
+      "id": 148,
+      "codigo": "REG_OFR_003"
+    },
+    {
+      "id": 149,
+      "codigo": "REG_OFR_004"
+    },
+    {
+      "id": 150,
+      "codigo": "REG_OFR_005"
+    },
+    {
+      "id": 151,
+      "codigo": "REG_OFR_006"
+    },
+    {
+      "id": 152,
+      "codigo": "REG_OFR_007"
+    },
+    {
+      "id": 153,
+      "codigo": "REG_OFR_008"
+    },
+    {
+      "id": 154,
+      "codigo": "REG_OFR_009"
+    },
+    {
+      "id": 155,
+      "codigo": "REG_CHK_001"
+    },
+    {
+      "id": 156,
+      "codigo": "REG_CHK_002"
+    },
+    {
+      "id": 157,
+      "codigo": "REG_CUO_001"
+    },
+    {
+      "id": 158,
+      "codigo": "REG_CUO_002"
+    },
+    {
+      "id": 159,
+      "codigo": "REG_CUO_003"
+    },
+    {
+      "id": 160,
+      "codigo": "REG_CUO_004"
+    },
+    {
+      "id": 161,
+      "codigo": "REG_CUO_005"
+    },
+    {
+      "id": 162,
+      "codigo": "REG_DAT_001"
+    },
+    {
+      "id": 163,
+      "codigo": "REG_DAT_002"
+    },
+    {
+      "id": 164,
+      "codigo": "REG_DAT_003"
+    },
+    {
+      "id": 165,
+      "codigo": "REG_DAT_004"
+    },
+    {
+      "id": 166,
+      "codigo": "REG_FLU_006"
+    },
+    {
+      "id": 167,
+      "codigo": "REG_FLU_007"
+    },
+    {
+      "id": 168,
+      "codigo": "REG_FLU_008"
+    },
+    {
+      "id": 169,
+      "codigo": "REG_FLU_009"
+    },
+    {
+      "id": 170,
+      "codigo": "REG_UX_001"
+    },
+    {
+      "id": 171,
+      "codigo": "REG_UX_002"
+    },
+    {
+      "id": 172,
+      "codigo": "REG_UX_003"
+    },
+    {
+      "id": 173,
+      "codigo": "REG_COPY_004"
+    },
+    {
+      "id": 174,
+      "codigo": "REG_COPY_005"
+    },
+    {
+      "id": 175,
+      "codigo": "REG_FLU_010"
+    },
+    {
+      "id": 176,
+      "codigo": "REG_OFR_010"
+    },
+    {
+      "id": 177,
+      "codigo": "REG_TEC_001"
+    },
+    {
+      "id": 178,
+      "codigo": "REG_TEC_002"
+    },
+    {
+      "id": 179,
+      "codigo": "REG_TEC_003"
+    },
+    {
+      "id": 180,
+      "codigo": "REG_TEC_004"
+    },
+    {
+      "id": 181,
+      "codigo": "REG_TEC_005"
+    },
+    {
+      "id": 182,
+      "codigo": "REG_TEC_006"
+    },
+    {
+      "id": 183,
+      "codigo": "REG_TEC_007"
+    },
+    {
+      "id": 184,
+      "codigo": "REG_TEC_008"
+    },
+    {
+      "id": 185,
+      "codigo": "REG_TEC_009"
+    },
+    {
+      "id": 186,
+      "codigo": "REG_TEC_010"
+    },
+    {
+      "id": 187,
+      "codigo": "REG_TEC_011"
+    },
+    {
+      "id": 188,
+      "codigo": "REG_TEC_012"
+    },
+    {
+      "id": 189,
+      "codigo": "REG_ERR_001"
+    },
+    {
+      "id": 190,
+      "codigo": "REG_ERR_002"
+    },
+    {
+      "id": 191,
+      "codigo": "REG_ERR_003"
+    },
+    {
+      "id": 192,
+      "codigo": "REG_ERR_004"
+    },
+    {
+      "id": 193,
+      "codigo": "REG_ERR_005"
+    },
+    {
+      "id": 194,
+      "codigo": "REG_ERR_006"
+    },
+    {
+      "id": 195,
+      "codigo": "REG_ERR_007"
+    },
+    {
+      "id": 196,
+      "codigo": "REG_ERR_008"
+    },
+    {
+      "id": 197,
+      "codigo": "REG_ERR_009"
+    },
+    {
+      "id": 198,
+      "codigo": "REG_ERR_010"
+    },
+    {
+      "id": 199,
+      "codigo": "REG_UI_001"
+    },
+    {
+      "id": 200,
+      "codigo": "REG_UI_002"
+    },
+    {
+      "id": 201,
+      "codigo": "REG_UI_003"
+    },
+    {
+      "id": 202,
+      "codigo": "REG_UI_004"
+    },
+    {
+      "id": 203,
+      "codigo": "REG_UI_005"
+    },
+    {
+      "id": 204,
+      "codigo": "REG_UI_006"
+    },
+    {
+      "id": 205,
+      "codigo": "REG_UI_007"
+    },
+    {
+      "id": 206,
+      "codigo": "REG_UI_008"
+    },
+    {
+      "id": 207,
+      "codigo": "REG_CHK_003"
+    },
+    {
+      "id": 208,
+      "codigo": "REG_CHK_004"
+    },
+    {
+      "id": 209,
+      "codigo": "REG_CHK_005"
+    },
+    {
+      "id": 210,
+      "codigo": "REG_CHK_006"
+    },
+    {
+      "id": 211,
+      "codigo": "REG_CHK_007"
+    },
+    {
+      "id": 212,
+      "codigo": "REG_CHK_008"
+    },
+    {
+      "id": 213,
+      "codigo": "REG_API_001"
+    },
+    {
+      "id": 214,
+      "codigo": "REG_API_002"
+    },
+    {
+      "id": 215,
+      "codigo": "REG_API_003"
+    },
+    {
+      "id": 216,
+      "codigo": "REG_API_004"
+    },
+    {
+      "id": 217,
+      "codigo": "REG_API_005"
+    },
+    {
+      "id": 218,
+      "codigo": "REG_API_006"
+    },
+    {
+      "id": 219,
+      "codigo": "REG_NOT_001"
+    },
+    {
+      "id": 220,
+      "codigo": "REG_NOT_002"
+    },
+    {
+      "id": 221,
+      "codigo": "REG_NOT_003"
+    },
+    {
+      "id": 222,
+      "codigo": "REG_NOT_004"
+    },
+    {
+      "id": 223,
+      "codigo": "REG_NOT_005"
+    },
+    {
+      "id": 224,
+      "codigo": "REG_NOT_006"
+    },
+    {
+      "id": 225,
+      "codigo": "REG_NIU_001"
+    },
+    {
+      "id": 226,
+      "codigo": "REG_NIU_002"
+    },
+    {
+      "id": 227,
+      "codigo": "REG_NIU_003"
+    },
+    {
+      "id": 228,
+      "codigo": "REG_NIU_004"
+    },
+    {
+      "id": 229,
+      "codigo": "REG_NIU_005"
+    },
+    {
+      "id": 230,
+      "codigo": "REG_NIU_006"
+    },
+    {
+      "id": 231,
+      "codigo": "REG_B2B_001"
+    },
+    {
+      "id": 232,
+      "codigo": "REG_B2B_002"
+    },
+    {
+      "id": 233,
+      "codigo": "REG_B2B_003"
+    },
+    {
+      "id": 234,
+      "codigo": "REG_B2B_004"
+    },
+    {
+      "id": 235,
+      "codigo": "REG_B2B_005"
+    },
+    {
+      "id": 236,
+      "codigo": "REG_B2B_006"
+    },
+    {
+      "id": 237,
+      "codigo": "REG_B2B_007"
+    },
+    {
+      "id": 238,
+      "codigo": "REG_MOD_001"
+    },
+    {
+      "id": 239,
+      "codigo": "REG_MOD_002"
+    },
+    {
+      "id": 240,
+      "codigo": "REG_CUO_006"
+    },
+    {
+      "id": 241,
+      "codigo": "REG_CUO_007"
+    },
+    {
+      "id": 242,
+      "codigo": "REG_MOD_003"
+    },
+    {
+      "id": 243,
+      "codigo": "REG_MOD_004"
+    },
+    {
+      "id": 244,
+      "codigo": "REG_MOD_005"
+    },
+    {
+      "id": 245,
+      "codigo": "REG_MOD_006"
+    },
+    {
+      "id": 246,
+      "codigo": "REG_PRI_001"
+    },
+    {
+      "id": 247,
+      "codigo": "REG_PRI_002"
+    },
+    {
+      "id": 248,
+      "codigo": "REG_PRI_003"
+    },
+    {
+      "id": 249,
+      "codigo": "REG_PRI_004"
+    },
+    {
+      "id": 250,
+      "codigo": "REG_PRI_005"
+    },
+    {
+      "id": 251,
+      "codigo": "REG_PRI_006"
+    },
+    {
+      "id": 252,
+      "codigo": "REG_PRI_005_V2"
+    },
+    {
+      "id": 253,
+      "codigo": "REG_PRI_007"
+    },
+    {
+      "id": 254,
+      "codigo": "REG_PRI_008"
+    },
+    {
+      "id": 255,
+      "codigo": "REG_PRI_009"
+    },
+    {
+      "id": 256,
+      "codigo": "REG_PRI_010"
+    },
+    {
+      "id": 257,
+      "codigo": "REG_PRI_011"
+    },
+    {
+      "id": 258,
+      "codigo": "REG_CUO_008"
+    },
+    {
+      "id": 259,
+      "codigo": "REG_CUO_009"
+    },
+    {
+      "id": 260,
+      "codigo": "REG_CUO_010"
+    },
+    {
+      "id": 261,
+      "codigo": "REG_CUO_011"
+    },
+    {
+      "id": 262,
+      "codigo": "REG_CUO_012"
+    },
+    {
+      "id": 263,
+      "codigo": "REG_CUO_013"
+    },
+    {
+      "id": 270,
+      "codigo": "REG_CUO_014"
+    },
+    {
+      "id": 271,
+      "codigo": "REG_CUO_015"
+    },
+    {
+      "id": 272,
+      "codigo": "REG_CHK_009"
+    },
+    {
+      "id": 273,
+      "codigo": "REG_CHK_010"
+    },
+    {
+      "id": 274,
+      "codigo": "REG_CHK_011"
+    },
+    {
+      "id": 275,
+      "codigo": "REG_CHK_012"
+    },
+    {
+      "id": 276,
+      "codigo": "REG_CHK_013"
+    },
+    {
+      "id": 277,
+      "codigo": "REG_CHK_014"
+    },
+    {
+      "id": 278,
+      "codigo": "REG_CHK_015"
+    },
+    {
+      "id": 279,
+      "codigo": "REG_CHK_016"
+    },
+    {
+      "id": 280,
+      "codigo": "REG_CHK_017"
+    },
+    {
+      "id": 281,
+      "codigo": "REG_CHK_018"
+    },
+    {
+      "id": 282,
+      "codigo": "REG_CHK_019"
+    },
+    {
+      "id": 283,
+      "codigo": "REG_CHK_020"
+    },
+    {
+      "id": 284,
+      "codigo": "REG_CHK_CUO_001"
+    },
+    {
+      "id": 285,
+      "codigo": "REG_CHK_CUO_002"
+    },
+    {
+      "id": 286,
+      "codigo": "REG_CHK_CUO_003"
+    },
+    {
+      "id": 287,
+      "codigo": "REG_CHK_CUO_004"
+    },
+    {
+      "id": 288,
+      "codigo": "REG_CHK_CUO_005"
+    },
+    {
+      "id": 289,
+      "codigo": "REG_CHK_CUO_006"
+    },
+    {
+      "id": 290,
+      "codigo": "REG_CHK_CUO_007"
+    },
+    {
+      "id": 291,
+      "codigo": "REG_CHK_CUO_008"
+    },
+    {
+      "id": 292,
+      "codigo": "REG_CHK_CUO_009"
+    },
+    {
+      "id": 293,
+      "codigo": "REG_CHK_CUO_010"
+    },
+    {
+      "id": 294,
+      "codigo": "REG_CHK_CUO_011"
+    },
+    {
+      "id": 307,
+      "codigo": "REG_CHK_021"
+    },
+    {
+      "id": 308,
+      "codigo": "REG_CHK_022"
+    },
+    {
+      "id": 313,
+      "codigo": "REG_CHK_023"
+    },
+    {
+      "id": 314,
+      "codigo": "REG_CHK_024"
+    },
+    {
+      "id": 315,
+      "codigo": "REG_CHK_025"
+    },
+    {
+      "id": 316,
+      "codigo": "REG_CHK_026"
+    },
+    {
+      "id": 317,
+      "codigo": "REG_CHK_027"
+    },
+    {
+      "id": 324,
+      "codigo": "REG_SUC_001"
+    },
+    {
+      "id": 325,
+      "codigo": "REG_SUC_002"
+    },
+    {
+      "id": 326,
+      "codigo": "REG_SUC_003"
+    },
+    {
+      "id": 327,
+      "codigo": "REG_SUC_004"
+    },
+    {
+      "id": 328,
+      "codigo": "REG_SUC_005"
+    },
+    {
+      "id": 329,
+      "codigo": "REG_SUC_006"
+    },
+    {
+      "id": 330,
+      "codigo": "REG_SUC_007"
+    },
+    {
+      "id": 331,
+      "codigo": "REG_SUC_008"
+    },
+    {
+      "id": 332,
+      "codigo": "REG_SUC_009"
+    },
+    {
+      "id": 333,
+      "codigo": "REG_ERR_011"
+    },
+    {
+      "id": 334,
+      "codigo": "REG_ERR_012"
+    },
+    {
+      "id": 335,
+      "codigo": "REG_ERR_013"
+    },
+    {
+      "id": 336,
+      "codigo": "REG_ERR_014"
+    },
+    {
+      "id": 337,
+      "codigo": "REG_ERR_015"
+    },
+    {
+      "id": 338,
+      "codigo": "REG_ERR_016"
+    },
+    {
+      "id": 347,
+      "codigo": "LEGAL-RECLAMOS-01"
+    },
+    {
+      "id": 348,
+      "codigo": "LEGAL-RECLAMOS-02"
+    },
+    {
+      "id": 349,
+      "codigo": "LEGAL-RECLAMOS-03"
+    },
+    {
+      "id": 350,
+      "codigo": "LEGAL-RECLAMOS-04"
+    },
+    {
+      "id": 351,
+      "codigo": "LEGAL-RECLAMOS-05"
+    },
+    {
+      "id": 352,
+      "codigo": "LEGAL-RECLAMOS-06"
+    },
+    {
+      "id": 353,
+      "codigo": "LEGAL-RECLAMOS-07"
+    },
+    {
+      "id": 354,
+      "codigo": "LEGAL-RECLAMOS-08"
+    },
+    {
+      "id": 355,
+      "codigo": "UX-HOME-CAPABILITY-01"
+    },
+    {
+      "id": 356,
+      "codigo": "UX-HOME-CAPABILITY-02"
+    },
+    {
+      "id": 357,
+      "codigo": "UX-HOME-CAPABILITY-03"
+    },
+    {
+      "id": 358,
+      "codigo": "NEG-GAMIF-ETICA-01"
+    },
+    {
+      "id": 359,
+      "codigo": "UX-GAMIF-TERMOMETRO-01"
+    },
+    {
+      "id": 360,
+      "codigo": "UX-TOKEN-CONSOLIDACION-01"
+    },
+    {
+      "id": 361,
+      "codigo": "UX-TOKEN-CONSOLIDACION-02"
+    },
+    {
+      "id": 362,
+      "codigo": "NEG-GOBERNANZA-PROVENANCE-01"
+    },
+    {
+      "id": 363,
+      "codigo": "NEG-GOBERNANZA-UPDATED-AT-01"
+    },
+    {
+      "id": 364,
+      "codigo": "UX-RUTA-ACCESIBILIDAD-01"
+    },
+    {
+      "id": 365,
+      "codigo": "NEG-PROCESO-COMPOSICION-01"
+    },
+    {
+      "id": 366,
+      "codigo": "NEG-PROCESO-ITERACION-01"
+    },
+    {
+      "id": 367,
+      "codigo": "UX-RESPALDO-VARIANTES-01"
+    },
+    {
+      "id": 368,
+      "codigo": "NEG-RESPALDO-SIN-CAJAS-VACIAS-01"
+    },
+    {
+      "id": 369,
+      "codigo": "UX-RESPALDO-NO-COMPITE-01"
+    },
+    {
+      "id": 370,
+      "codigo": "NEG-GOBERNANZA-VISUAL-CONFIRM-01"
+    },
+    {
+      "id": 371,
+      "codigo": "LEGAL-CONSENTIMIENTO-DATOS-01"
+    },
+    {
+      "id": 372,
+      "codigo": "LEGAL-INCIDENTES-48H-01"
+    },
+    {
+      "id": 373,
+      "codigo": "UX-RUTA-MODELO-2CAPAS-01"
+    },
+    {
+      "id": 374,
+      "codigo": "EDU-NODO-01-DIAGNOSTICO"
+    },
+    {
+      "id": 375,
+      "codigo": "EDU-NODO-02-EXPLORA"
+    },
+    {
+      "id": 376,
+      "codigo": "EDU-NODO-03-ELIGE"
+    },
+    {
+      "id": 377,
+      "codigo": "EDU-NODO-04-CIERRA"
+    },
+    {
+      "id": 378,
+      "codigo": "EDU-NODO-05-RECUPERA"
+    },
+    {
+      "id": 379,
+      "codigo": "NEG-RUTA-ELEGIBILIDAD-B2B-01"
+    },
+    {
+      "id": 380,
+      "codigo": "LEGAL-CESION-DEUDA-NOTIFICACION-01"
+    },
+    {
+      "id": 381,
+      "codigo": "LEGAL-COBRANZA-LIMITES-01"
+    },
+    {
+      "id": 382,
+      "codigo": "UX-HOME-CAPABILITY-04"
+    },
+    {
+      "id": 384,
+      "codigo": "BUG-HOME-JUANDIGITAL-FOTO-REAL-01"
+    },
+    {
+      "id": 385,
+      "codigo": "BUG-HOME-PRENSA-REAPARICION-01"
+    },
+    {
+      "id": 386,
+      "codigo": "BUG-ASSET-LOGO-NORMAL-SIN-ALPHA-01"
+    },
+    {
+      "id": 387,
+      "codigo": "B2B-RULE-DESIGN-001"
+    },
+    {
+      "id": 388,
+      "codigo": "B2B-RULE-DESIGN-002"
+    },
+    {
+      "id": 389,
+      "codigo": "B2B-RULE-THEME-001"
+    },
+    {
+      "id": 390,
+      "codigo": "B2B-RULE-THEME-002"
+    },
+    {
+      "id": 391,
+      "codigo": "B2B-RULE-RESP-001"
+    },
+    {
+      "id": 392,
+      "codigo": "B2B-RULE-RESP-002"
+    },
+    {
+      "id": 393,
+      "codigo": "B2B-RULE-RESP-003"
+    },
+    {
+      "id": 394,
+      "codigo": "B2B-RULE-A11Y-001"
+    },
+    {
+      "id": 395,
+      "codigo": "B2B-RULE-A11Y-002"
+    },
+    {
+      "id": 396,
+      "codigo": "B2B-RULE-AUTH-001"
+    },
+    {
+      "id": 397,
+      "codigo": "B2B-RULE-AUTH-002"
+    },
+    {
+      "id": 398,
+      "codigo": "B2B-RULE-AUTH-003"
+    },
+    {
+      "id": 399,
+      "codigo": "B2B-RULE-SESSION-001"
+    },
+    {
+      "id": 400,
+      "codigo": "B2B-RULE-SESSION-002"
+    },
+    {
+      "id": 401,
+      "codigo": "B2B-RULE-STORAGE-001"
+    },
+    {
+      "id": 402,
+      "codigo": "B2B-RULE-STORAGE-002"
+    },
+    {
+      "id": 403,
+      "codigo": "B2B-RULE-IDEMP-001"
+    },
+    {
+      "id": 404,
+      "codigo": "B2B-RULE-STATE-001"
+    },
+    {
+      "id": 405,
+      "codigo": "B2B-RULE-APPROVAL-001"
+    },
+    {
+      "id": 406,
+      "codigo": "B2B-RULE-APPROVAL-002"
+    },
+    {
+      "id": 407,
+      "codigo": "B2B-RULE-APPROVAL-003"
+    },
+    {
+      "id": 408,
+      "codigo": "B2B-RULE-ERROR-001"
+    },
+    {
+      "id": 409,
+      "codigo": "B2B-RULE-ERROR-002"
+    },
+    {
+      "id": 410,
+      "codigo": "B2B-RULE-ERROR-003"
+    },
+    {
+      "id": 411,
+      "codigo": "B2B-RULE-PRIVACY-001"
+    },
+    {
+      "id": 412,
+      "codigo": "B2B-RULE-OBS-001"
+    },
+    {
+      "id": 413,
+      "codigo": "B2B-RULE-OBS-002"
+    },
+    {
+      "id": 414,
+      "codigo": "B2B-RULE-ANALYTICS-001"
+    },
+    {
+      "id": 415,
+      "codigo": "B2B-RULE-CRASH-001"
+    },
+    {
+      "id": 416,
+      "codigo": "B2B-RULE-AUDIT-001"
+    },
+    {
+      "id": 417,
+      "codigo": "B2B-RULE-TIMEOUT-001"
+    },
+    {
+      "id": 418,
+      "codigo": "B2B-RULE-RATE-001"
+    },
+    {
+      "id": 419,
+      "codigo": "B2B-RULE-PERF-001"
+    },
+    {
+      "id": 420,
+      "codigo": "B2B-RULE-LOGO-001"
+    },
+    {
+      "id": 421,
+      "codigo": "B2B-RULE-LEGAL-001"
+    },
+    {
+      "id": 422,
+      "codigo": "B2B-RULE-INSTALLMENT-001"
+    },
+    {
+      "id": 423,
+      "codigo": "B2B-RULE-RETENTION-001"
+    },
+    {
+      "id": 424,
+      "codigo": "B2B-RULE-PROD-001"
+    },
+    {
+      "id": 425,
+      "codigo": "B2B-RULE-AUTH-004"
+    },
+    {
+      "id": 426,
+      "codigo": "B2B-RULE-AUTH-005"
+    },
+    {
+      "id": 427,
+      "codigo": "B2B-RULE-AUTH-006"
+    },
+    {
+      "id": 428,
+      "codigo": "B2B-RULE-AUTH-007"
+    },
+    {
+      "id": 429,
+      "codigo": "B2B-RULE-AUTH-008"
+    },
+    {
+      "id": 430,
+      "codigo": "B2B-RULE-AUTH-011"
+    },
+    {
+      "id": 431,
+      "codigo": "B2B-RULE-AUTH-012"
+    },
+    {
+      "id": 432,
+      "codigo": "B2B-RULE-AUTH-013"
+    },
+    {
+      "id": 433,
+      "codigo": "B2B-RULE-AUTH-014"
+    },
+    {
+      "id": 434,
+      "codigo": "B2B-RULE-AUTH-015"
+    },
+    {
+      "id": 435,
+      "codigo": "B2B-RULE-AUTH-016"
+    },
+    {
+      "id": 436,
+      "codigo": "B2B-RULE-AUTH-017"
+    },
+    {
+      "id": 437,
+      "codigo": "B2B-RULE-AUTH-018"
+    },
+    {
+      "id": 438,
+      "codigo": "B2B-RULE-AUTH-019"
+    },
+    {
+      "id": 439,
+      "codigo": "B2B-RULE-AUTH-020"
+    },
+    {
+      "id": 440,
+      "codigo": "B2B-RULE-AUTH-021"
+    },
+    {
+      "id": 441,
+      "codigo": "B2B-RULE-AUTH-022"
+    },
+    {
+      "id": 442,
+      "codigo": "B2B-RULE-AUTH-023"
+    },
+    {
+      "id": 443,
+      "codigo": "B2B-RULE-AUTH-024"
+    },
+    {
+      "id": 444,
+      "codigo": "B2B-RULE-AUTH-025"
+    },
+    {
+      "id": 445,
+      "codigo": "B2B-RULE-AUTH-026"
+    },
+    {
+      "id": 446,
+      "codigo": "B2B-RULE-AUTH-027"
+    },
+    {
+      "id": 447,
+      "codigo": "B2B-RULE-AUTH-028"
+    },
+    {
+      "id": 448,
+      "codigo": "B2B-RULE-AUTH-029"
+    },
+    {
+      "id": 449,
+      "codigo": "B2B-RULE-AUTH-030"
+    },
+    {
+      "id": 450,
+      "codigo": "B2B-RULE-AUTH-031"
+    },
+    {
+      "id": 451,
+      "codigo": "B2B-RULE-AUTH-032"
+    },
+    {
+      "id": 452,
+      "codigo": "B2B-RULE-AUTH-033"
+    },
+    {
+      "id": 453,
+      "codigo": "B2B-RULE-AUTH-034"
+    },
+    {
+      "id": 454,
+      "codigo": "B2B-RULE-AUTH-035"
+    },
+    {
+      "id": 455,
+      "codigo": "REG_FLOW_CELL_FIRST_001"
+    },
+    {
+      "id": 456,
+      "codigo": "REG_AUTH_PHONE_OWNERSHIP_001"
+    },
+    {
+      "id": 457,
+      "codigo": "REG_FLOW_PHONE_BRANCH_001"
+    },
+    {
+      "id": 458,
+      "codigo": "REG_IDV_PROGRESSIVE_001"
+    },
+    {
+      "id": 459,
+      "codigo": "REG_RISK_ONB_TELEMETRY_001"
+    },
+    {
+      "id": 460,
+      "codigo": "REG_REC_PHONE_001"
+    },
+    {
+      "id": 461,
+      "codigo": "UX-RUTA-COMPLETADO-01"
+    },
+    {
+      "id": 462,
+      "codigo": "UX-RUTA-ESTADOS-01"
+    },
+    {
+      "id": 463,
+      "codigo": "B2B-RULE-STORY-READINESS-001"
+    },
+    {
+      "id": 464,
+      "codigo": "B2B-RULE-NAV-LEGAL-001"
+    },
+    {
+      "id": 465,
+      "codigo": "B2B-RULE-A11Y-003"
+    },
+    {
+      "id": 466,
+      "codigo": "B2B-RULE-A11Y-004"
+    },
+    {
+      "id": 467,
+      "codigo": "B2B-RULE-COMPAT-001"
+    },
+    {
+      "id": 468,
+      "codigo": "B2B-RULE-CONTEXT-FRESHNESS-001"
+    },
+    {
+      "id": 469,
+      "codigo": "B2B-RULE-AUTH-036"
+    },
+    {
+      "id": 470,
+      "codigo": "B2B-RULE-UISTATE-001"
+    },
+    {
+      "id": 471,
+      "codigo": "B2B-RULE-DEPENDENCY-001"
+    },
+    {
+      "id": 472,
+      "codigo": "B2B-RULE-TEST-001"
+    },
+    {
+      "id": 473,
+      "codigo": "B2B-RULE-SOURCE-001"
+    },
+    {
+      "id": 474,
+      "codigo": "B2B-RULE-CONTEXT-001"
+    },
+    {
+      "id": 475,
+      "codigo": "B2B-RULE-EVIDENCE-001"
+    },
+    {
+      "id": 476,
+      "codigo": "B2B-RULE-RUNTIME-001"
+    },
+    {
+      "id": 477,
+      "codigo": "B2B-RULE-THEME-003"
+    },
+    {
+      "id": 482,
+      "codigo": "REG_ONB001_COPY_001"
+    },
+    {
+      "id": 483,
+      "codigo": "REG_ONB001_PHONE_DISPLAY_001"
+    },
+    {
+      "id": 484,
+      "codigo": "REG_ONB001_PHONE_PREFIX_001"
+    },
+    {
+      "id": 485,
+      "codigo": "REG_ONB001_NAV_LINKS_001"
+    },
+    {
+      "id": 486,
+      "codigo": "REG_ONB002_COPY_PHONE_CONTROL_001"
+    },
+    {
+      "id": 487,
+      "codigo": "REG_ONB002_STEP_INDICATOR_001"
+    },
+    {
+      "id": 488,
+      "codigo": "REG_ONB002_NAVIGATION_001"
+    },
+    {
+      "id": 489,
+      "codigo": "REG_ONB002_TRUST_CLAIMS_001"
+    },
+    {
+      "id": 490,
+      "codigo": "REG_ONB003_DNI_ONLY_001"
+    },
+    {
+      "id": 491,
+      "codigo": "REG_ONB003_SESSION_BINDING_001"
+    },
+    {
+      "id": 492,
+      "codigo": "REG_ONB003_DNI_CLIENT_STORAGE_001"
+    },
+    {
+      "id": 493,
+      "codigo": "B2B-RULE-AUTH-037"
+    },
+    {
+      "id": 494,
+      "codigo": "B2B-RULE-AUTH-038"
+    },
+    {
+      "id": 495,
+      "codigo": "REG_ONB003_DNI_RESOLUTION_ATOMIC_001"
+    },
+    {
+      "id": 496,
+      "codigo": "B2B-RULE-AUTH-039"
+    },
+    {
+      "id": 497,
+      "codigo": "B2B-RULE-AUTH-040"
+    },
+    {
+      "id": 498,
+      "codigo": "B2B-RULE-AUTH-041"
+    },
+    {
+      "id": 499,
+      "codigo": "REG_ONB003_ANTI_ENUM_EXPLICIT_001"
+    },
+    {
+      "id": 500,
+      "codigo": "REG_NEW_CLIENT_DATA_COMPLETION_001"
+    },
+    {
+      "id": 501,
+      "codigo": "B2B-RULE-AUTH-042"
+    },
+    {
+      "id": 502,
+      "codigo": "REG_CLIENT_DOC_DEMO_VERSIONING_001"
+    },
+    {
+      "id": 503,
+      "codigo": "B2B-RULE-AUTH-043"
+    },
+    {
+      "id": 504,
+      "codigo": "REG_NEW_CLIENT_COMPLETION_SUBMIT_001"
+    },
+    {
+      "id": 505,
+      "codigo": "B2B-RULE-AUTH-044"
+    },
+    {
+      "id": 506,
+      "codigo": "B2B-RULE-AUTH-045"
+    },
+    {
+      "id": 507,
+      "codigo": "REG_CLIENT_RECOVERY_PHONE_CONTROL_001"
+    },
+    {
+      "id": 508,
+      "codigo": "REG_CLIENT_RECOVERY_REBIND_ATOMIC_001"
+    },
+    {
+      "id": 509,
+      "codigo": "REG_RISK_PHONE_MULTI_DNI_001"
+    },
+    {
+      "id": 510,
+      "codigo": "REG_CLIENT_RECOVERY_IDV_STEPUP_001"
+    },
+    {
+      "id": 511,
+      "codigo": "REG_CLIENT_RECOVERY_IDV_OUTCOME_001"
+    },
+    {
+      "id": 512,
+      "codigo": "REG_CLIENT_PHONE_PASSWORDLESS_ACCESS_001"
+    },
+    {
+      "id": 513,
+      "codigo": "REG_CLIENT_RECOVERY_ACCESS_AFTER_REBIND_001"
+    },
+    {
+      "id": 514,
+      "codigo": "REG_CLIENT_AUTH_HOME_RESOLUTION_001"
+    },
+    {
+      "id": 515,
+      "codigo": "REG_CLIENT_NEW_ACCOUNT_ACCESS_AFTER_CREATION_001"
+    },
+    {
+      "id": 516,
+      "codigo": "REG_CLIENT_HOME_OFFER_LOAD_FAILURE_001"
+    },
+    {
+      "id": 517,
+      "codigo": "REG_CLIENT_HOME_ACTIVE_OFFER_VARIANT_001"
+    },
+    {
+      "id": 518,
+      "codigo": "REG_CLIENT_HOME_NO_OFFER_001"
+    },
+    {
+      "id": 519,
+      "codigo": "REG_CLIENT_CHECKOUT_ENTRY_001"
+    },
+    {
+      "id": 520,
+      "codigo": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001"
+    },
+    {
+      "id": 521,
+      "codigo": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001"
+    },
+    {
+      "id": 522,
+      "codigo": "REG_CLIENT_CHECKOUT_PRICING_QUOTE_001"
+    },
+    {
+      "id": 523,
+      "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001"
+    },
+    {
+      "id": 524,
+      "codigo": "REG_CLIENT_PAYMENT_CONFIRMED_POST_ACTIONS_001"
+    },
+    {
+      "id": 525,
+      "codigo": "REG_CLIENT_PAYMENT_SUCCESS_VIEW_001"
+    },
+    {
+      "id": 526,
+      "codigo": "REG_CLIENT_MY_OPERATIONS_SCOPE_001"
+    },
+    {
+      "id": 527,
+      "codigo": "REG_CLIENT_RECURRING_PAYMENT_MANAGEMENT_001"
+    },
+    {
+      "id": 528,
+      "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001"
+    },
+    {
+      "id": 529,
+      "codigo": "REG_CLIENT_INSTALLMENT_PLAN_VIEW_001"
+    },
+    {
+      "id": 530,
+      "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001"
+    },
+    {
+      "id": 531,
+      "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001"
+    },
+    {
+      "id": 532,
+      "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001"
+    },
+    {
+      "id": 533,
+      "codigo": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001"
+    },
+    {
+      "id": 534,
+      "codigo": "REG_CLIENT_NO_DEBT_LETTER_STATUS_001"
+    },
+    {
+      "id": 535,
+      "codigo": "REG_CLIENT_CHECKOUT_CONFIRMING_STATE_001"
+    },
+    {
+      "id": 536,
+      "codigo": "REG_CLIENT_CHECKOUT_ERROR_STATE_001"
+    },
+    {
+      "id": 537,
+      "codigo": "REG_CLIENT_AUTH_HEADER_CAPABILITY_GATING_001"
+    },
+    {
+      "id": 538,
+      "codigo": "REG_CLIENT_CHECKOUT_CARD_DATA_BOUNDARY_001"
+    },
+    {
+      "id": 539,
+      "codigo": "REG_CLIENT_CHECKOUT_QR_CONFIRMATION_001"
+    },
+    {
+      "id": 540,
+      "codigo": "REG_CLIENT_CHECKOUT_PROVIDER_HANDOFF_001"
+    },
+    {
+      "id": 541,
+      "codigo": "REG_CLIENT_PAYMENT_SUCCESS_INSTALLMENTS_001"
+    },
+    {
+      "id": 542,
+      "codigo": "REG_CLIENT_CHECKOUT_SCHEDULE_CONTEXT_001"
+    },
+    {
+      "id": 543,
+      "codigo": "REG_CLIENT_CHECKOUT_INSTALLMENTS_VIEW_001"
+    },
+    {
+      "id": 544,
+      "codigo": "REG_CLIENT_RECLAMO_EFFECTIVE_CLASSIFICATION_001"
+    },
+    {
+      "id": 545,
+      "codigo": "REG_CLIENT_LIBRO_SUBMIT_001"
+    },
+    {
+      "id": 546,
+      "codigo": "REG_CLIENT_HOME_PUBLIC_ENTRY_001"
+    },
+    {
+      "id": 547,
+      "codigo": "REG_CLIENT_HOME_PUBLIC_PREAUTH_BOUNDARY_001"
+    },
+    {
+      "id": 548,
+      "codigo": "REG_CLIENT_HOME_PUBLIC_LETTER_CLAIM_001"
+    },
+    {
+      "id": 549,
+      "codigo": "REG_CLIENT_HOME_CLARITY_PUBLIC_BOUNDARY_001"
+    },
+    {
+      "id": 550,
+      "codigo": "REG_CLIENT_HOME_CLARITY_CONTENT_FRESHNESS_001"
+    },
+    {
+      "id": 551,
+      "codigo": "REG_CLIENT_HOME_CLARITY_CTA_001"
+    },
+    {
+      "id": 552,
+      "codigo": "REG_CLIENT_HOME_LEARN_DECIDE_001"
+    },
+    {
+      "id": 553,
+      "codigo": "REG_CLIENT_HOME_LEARN_PUBLIC_BOUNDARY_001"
+    },
+    {
+      "id": 554,
+      "codigo": "REG_CLIENT_HOME_FAQ_001"
+    },
+    {
+      "id": 555,
+      "codigo": "REG_CLIENT_HOME_FOOTER_001"
+    },
+    {
+      "id": 556,
+      "codigo": "REG_CLIENT_PUBLIC_LEGAL_NAV_001"
+    },
+    {
+      "id": 557,
+      "codigo": "REG_CLIENT_HOME_TRUST_SOURCE_GATING_001"
+    },
+    {
+      "id": 558,
+      "codigo": "REG_CLIENT_HOME_PRICE_DETAIL_MODAL_001"
+    },
+    {
+      "id": 559,
+      "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_MODAL_001"
+    },
+    {
+      "id": 560,
+      "codigo": "REG_CLIENT_HOME_SINGLE_OFFER_PAY_ONLY_001"
+    },
+    {
+      "id": 561,
+      "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_SELECTION_001"
+    },
+    {
+      "id": 562,
+      "codigo": "REG_CLIENT_HOME_INSTALLMENT_PLAN_DETAIL_001"
+    },
+    {
+      "id": 563,
+      "codigo": "REG_CLIENT_HOME_SINGLE_OFFER_BOTH_001"
+    },
+    {
+      "id": 564,
+      "codigo": "REG_CLIENT_HOME_MULTI_OFFER_001"
+    },
+    {
+      "id": 567,
+      "codigo": "REG_ONB002_PHONE_DISPLAY_001"
+    },
+    {
+      "id": 568,
+      "codigo": "REG_ONB002_UI_STATES_001"
+    },
+    {
+      "id": 569,
+      "codigo": "REG_ONB003_DOCUMENT_TYPE_001"
+    },
+    {
+      "id": 573,
+      "codigo": "REG_ONB003_CONSENT_DATA_001"
+    },
+    {
+      "id": 574,
+      "codigo": "REG_ONB003_UI_STATES_001"
+    },
+    {
+      "id": 575,
+      "codigo": "REG_ONB003_STEPPER_4_001"
+    },
+    {
+      "id": 576,
+      "codigo": "B2B-RULE-AUTH-046"
+    },
+    {
+      "id": 577,
+      "codigo": "B2B-RULE-AUTH-047"
+    },
+    {
+      "id": 578,
+      "codigo": "REG_ONB004_UI_STATES_001"
+    },
+    {
+      "id": 579,
+      "codigo": "REG_ONB004_STEPPER_4_001"
+    },
+    {
+      "id": 580,
+      "codigo": "B2B-RULE-AUTH-048"
+    },
+    {
+      "id": 581,
+      "codigo": "B2B-RULE-LOAD-WIZARD-001"
+    },
+    {
+      "id": 582,
+      "codigo": "B2B-RULE-LOAD-REPROCESS-001"
+    },
+    {
+      "id": 583,
+      "codigo": "B2B-RULE-COMPANY-LIFECYCLE-001"
+    },
+    {
+      "id": 584,
+      "codigo": "B2B-RULE-USER-LIFECYCLE-001"
+    },
+    {
+      "id": 585,
+      "codigo": "B2B-RULE-APPROVAL-POLICY-LIFECYCLE-001"
+    },
+    {
+      "id": 586,
+      "codigo": "B2B-RULE-SCOPE-001"
+    },
+    {
+      "id": 587,
+      "codigo": "B2B-RULE-SCOPE-002"
+    },
+    {
+      "id": 588,
+      "codigo": "REG_ONB004_MARKETING_INFO_MODAL_001"
+    },
+    {
+      "id": 589,
+      "codigo": "REG_CLIENT_AUTH_NAVIGATION_001"
+    },
+    {
+      "id": 590,
+      "codigo": "B2B-RULE-SCOPE-003"
+    },
+    {
+      "id": 591,
+      "codigo": "B2B-RULE-SHELL-STATE-001"
+    },
+    {
+      "id": 592,
+      "codigo": "REG_LF_BENEFITS_DEV_ACTIVATION_001"
+    },
+    {
+      "id": 593,
+      "codigo": "REG_LF_BENEFITS_REVERSIBILITY_001"
+    },
+    {
+      "id": 594,
+      "codigo": "REG_LF_BENEFITS_CONFIG_001"
+    },
+    {
+      "id": 595,
+      "codigo": "REG_LF_BENEFITS_SURFACE_RESOLUTION_001"
+    },
+    {
+      "id": 596,
+      "codigo": "REG_LF_BENEFITS_CHANGE_CONTROL_001"
+    },
+    {
+      "id": 597,
+      "codigo": "REG_LF_BENEFITS_B2B_CAMPAIGN_001"
+    },
+    {
+      "id": 598,
+      "codigo": "REG_CLIENT_HOME_BENEFIT_OFFER_PRESENTATION_001"
+    },
+    {
+      "id": 599,
+      "codigo": "REG_CLIENT_HOME_LIFECYCLE_ORCHESTRATION_001"
+    },
+    {
+      "id": 600,
+      "codigo": "REG_CLIENT_HOME_PRIMARY_ACTION_PRIORITY_001"
+    },
+    {
+      "id": 601,
+      "codigo": "REG_CLIENT_HOME_DYNAMIC_BLOCK_COMPOSITION_001"
+    },
+    {
+      "id": 602,
+      "codigo": "B2B-RULE-PORTAL-BOUNDARY-001"
+    },
+    {
+      "id": 603,
+      "codigo": "B2B-RULE-DASHBOARD-001"
+    },
+    {
+      "id": 604,
+      "codigo": "B2B-RULE-PAYMENT-FLOW-001"
+    },
+    {
+      "id": 605,
+      "codigo": "B2B-RULE-PAYMENT-LEDGER-001"
+    },
+    {
+      "id": 606,
+      "codigo": "B2B-RULE-SETTLEMENT-001"
+    },
+    {
+      "id": 607,
+      "codigo": "B2B-RULE-RECONCILIATION-001"
+    },
+    {
+      "id": 608,
+      "codigo": "B2B-RULE-PORTAL-TREE-001"
+    },
+    {
+      "id": 609,
+      "codigo": "B2B-RULE-CONFIG-001"
+    },
+    {
+      "id": 610,
+      "codigo": "B2B-RULE-PAGE-HEADER-001"
+    },
+    {
+      "id": 611,
+      "codigo": "B2B-RULE-PORTFOLIO-BAJAS-001"
+    },
+    {
+      "id": 612,
+      "codigo": "B2B-RULE-OFFER-UPDATE-001"
+    },
+    {
+      "id": 613,
+      "codigo": "B2B-RULE-PORTFOLIO-MAINTENANCE-001"
+    },
+    {
+      "id": 614,
+      "codigo": "B2B-RULE-SHELL-SCROLL-001"
+    },
+    {
+      "id": 615,
+      "codigo": "B2B-RULE-SHELL-OVERLAY-001"
+    },
+    {
+      "id": 616,
+      "codigo": "B2B-RULE-SHELL-BODY-STATES-001"
+    },
+    {
+      "id": 617,
+      "codigo": "B2B-RULE-INSTALLMENT-PLAN-001"
+    },
+    {
+      "id": 618,
+      "codigo": "B2B-RULE-IMPORT-SOURCE-MAPPING-001"
+    },
+    {
+      "id": 619,
+      "codigo": "B2B-RULE-LOW-FRICTION-LOAD-001"
+    },
+    {
+      "id": 620,
+      "codigo": "B2B-RULE-INSTALLMENT-ASSISTED-LOAD-001"
+    },
+    {
+      "id": 622,
+      "codigo": "B2B-RULE-INPUT-APPLICABILITY-001"
+    },
+    {
+      "id": 623,
+      "codigo": "B2B-RULE-LOAD-NAMING-001"
+    },
+    {
+      "id": 624,
+      "codigo": "B2B-RULE-VALIDATION-VALID-ONLY-001"
+    },
+    {
+      "id": 625,
+      "codigo": "REG_CLIENT_PAYMENT_REFUND_POLICY_001"
+    },
+    {
+      "id": 626,
+      "codigo": "B2B-RULE-SIMULA-SOURCE-001"
+    },
+    {
+      "id": 627,
+      "codigo": "REG_CLIENT_CHECKOUT_PAY_ONLY_VIEW_001"
+    },
+    {
+      "id": 628,
+      "codigo": "B2B-RULE-SIMULA-AGE-BASIS-001"
+    },
+    {
+      "id": 629,
+      "codigo": "B2B-RULE-SIMULA-FILE-CONTRACT-001"
+    },
+    {
+      "id": 630,
+      "codigo": "B2B-RULE-LOAD-HISTORY-001"
+    },
+    {
+      "id": 641,
+      "codigo": "B2B-RULE-SIMULA-COGNITIVE-FLOW-001"
+    },
+    {
+      "id": 642,
+      "codigo": "B2B-RULE-SIMULA-TIERS-001"
+    },
+    {
+      "id": 643,
+      "codigo": "B2B-RULE-SIMULA-ADVISORY-AUTHORITY-001"
+    },
+    {
+      "id": 644,
+      "codigo": "B2B-RULE-SIMULA-REVENUE-OBJECTIVE-001"
+    },
+    {
+      "id": 645,
+      "codigo": "B2B-RULE-SIMULA-PLUS-MOTORS-001"
+    },
+    {
+      "id": 646,
+      "codigo": "B2B-RULE-SIMULA-LEARNING-001"
+    },
+    {
+      "id": 647,
+      "codigo": "B2B-RULE-SIMULA-INTELLIGENCE-BOUNDARY-001"
+    },
+    {
+      "id": 648,
+      "codigo": "B2B-RULE-LOAD-DEBT-TEMPORAL-BASIS-001"
+    },
+    {
+      "id": 649,
+      "codigo": "B2B-RULE-CAMPAIGN-ARCHITECTURE-001"
+    },
+    {
+      "id": 650,
+      "codigo": "B2B-RULE-NEGOTIATION-BANDS-001"
+    },
+    {
+      "id": 651,
+      "codigo": "B2B-RULE-SIMULA-PLUS-NEGOTIATION-001"
+    },
+    {
+      "id": 652,
+      "codigo": "B2B-RULE-LOAD-DETAIL-001"
+    },
+    {
+      "id": 653,
+      "codigo": "B2B-RULE-SHELL-NAV-001"
+    },
+    {
+      "id": 654,
+      "codigo": "B2B-RULE-LOAD-MULTI-OFFER-001"
+    },
+    {
+      "id": 655,
+      "codigo": "B2B-RULE-AUTH-STATE-001"
+    },
+    {
+      "id": 657,
+      "codigo": "B2B-RULE-SECURITY-BASELINE-001"
+    },
+    {
+      "id": 661,
+      "codigo": "INPUT-GOV-RECURATION-AUTHORIZED-SCREENS-001"
+    },
+    {
+      "id": 677,
+      "codigo": "EXTERNAL-BASELINE-SYNC-POLICY-001"
+    },
+    {
+      "id": 679,
+      "codigo": "B2B-RULE-LOAD-RESULT-FINAL-001"
+    },
+    {
+      "id": 680,
+      "codigo": "B2B-RULE-OFFER-ASSIGNMENT-SCREEN-001"
+    },
+    {
+      "id": 681,
+      "codigo": "B2B-RULE-SIMULA-SEGMENT-LIFECYCLE-001"
+    },
+    {
+      "id": 682,
+      "codigo": "B2B-RULE-SIMULA-SEGMENT-MEMBERSHIP-001"
+    },
+    {
+      "id": 683,
+      "codigo": "B2B-RULE-SIMULA-OFFER-EXCEPTION-001"
+    },
+    {
+      "id": 684,
+      "codigo": "B2B-RULE-OFFER-SEGMENT-DECISION-001"
+    },
+    {
+      "id": 685,
+      "codigo": "B2B-RULE-REPORTS-EXTRACTION-001"
+    },
+    {
+      "id": 686,
+      "codigo": "LF-RULE-SUPPORT-CONTACTS-001"
+    }
+  ]
+}
