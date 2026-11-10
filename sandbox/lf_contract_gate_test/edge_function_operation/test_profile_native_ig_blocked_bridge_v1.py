@@ -20,6 +20,15 @@ class ProfileNativeIGBlockedBridgeTest(unittest.TestCase):
         self.assertIn('"status": "BLOCKED_NOT_COMPLETE"', script)
 
 
+    def test_v06_manifest_uses_existing_bound_runner(self):
+        script = (ROOT / "scripts/lf_profile_native_resume.py").read_text(encoding="utf-8")
+        self.assertIn("def unwrap_profile_native_evidence(", script)
+        self.assertIn("def attach_bound_evidence_manifest(", script)
+        self.assertIn('packet["evidence_manifest_sha256"]', script)
+        workflow = (ROOT / ".github/workflows/lf-edge-deploy-credential-readback.yml").read_text(encoding="utf-8")
+        self.assertIn("profile-native-evidence-manifest.json", workflow)
+
+
 def load_tests(loader, tests, pattern):
     if not TARGET.is_file():
         raise RuntimeError("PROFILE_NATIVE_TEST_SOURCE_MISSING_IN_EXACT_CHECKOUT")
