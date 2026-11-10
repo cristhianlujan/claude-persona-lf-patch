@@ -25,6 +25,34 @@ BEGIN
  THEN RAISE EXCEPTION 'BLOCK_RULE_PROMOTION_GUARD_SOURCE_DRIFT'; END IF;
 END $preflight$;
 
+-- The live provenance_receipts domain CHECK currently has no dedicated LF
+-- promotion-action kind. Extend the exact current check, preserving all eight
+-- existing kinds. The source hash guard prevents silent policy drift.
+DO $receipt_preflight$
+DECLARE v_constraint oid;
+BEGIN
+ SELECT c.oid INTO v_constraint
+ FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid
+ JOIN pg_namespace n ON n.oid=t.relnamespace
+ WHERE n.nspname='programacion'
+ AND t.relname='provenance_receipts'
+ AND c.conname='provenance_receipts_receipt_kind_check';
+ IF v_constraint IS NULL
+ OR md5(pg_get_constraintdef(v_constraint))<>'c7a32a57bc482030e35a10c2b3c09830'
+ THEN RAISE EXCEPTION 'BLOCK_RULE_PROMOTION_RECEIPT_KIND_CONTRACT_DRIFT'; END IF;
+END $receipt_preflight$;
+
+ALTER TABLE programacion.provenance_receipts
+ DROP CONSTRAINT provenance_receipts_receipt_kind_check;
+ALTER TABLE programacion.provenance_receipts
+ ADD CONSTRAINT provenance_receipts_receipt_kind_check
+ CHECK (receipt_kind IN (
+   'RETRIEVAL_PASS','TRACEABILITY_GRAPH','PLAYWRIGHT_RUN',
+   'EVIDENCE_VERIFICATION','AUDIT_VERDICT','HUMAN_DECISION',
+   'AUD24_F05_BASELINE_AUTHORIZATION','HUMAN_ROUTING_DECISION',
+   'RULE_PROMOTION_ACTION_AUTHORIZATION'
+ ));
+
 CREATE FUNCTION public.lf_rule_promotion_authority_assess_v1(p_screen_code text)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path='pg_catalog','public','lf_ops','extensions'
