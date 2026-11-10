@@ -43,6 +43,24 @@ function operationalImprovement(proof: any): boolean {
     && Array.isArray(op.regressed_checks) && op.regressed_checks.length === 0;
 }
 
+/** Group 3: exact static runtime-validator transport defect was fixed, without claiming model execution. */
+function runtimeBindingImprovement(proof: any): boolean {
+  const binding = proof.runtime_validator_binding;
+  const base = binding?.base, candidate = binding?.candidate;
+  return Array.isArray(proof.evolution_basis)
+    && proof.evolution_basis.includes("RUNTIME_VALIDATOR_BINDING")
+    && base?.check_source === "TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION"
+    && candidate?.check_source === "TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION"
+    && base?.status === "FAIL" && base?.valid === false
+    && candidate?.status === "PASS" && candidate?.valid === true
+    && Array.isArray(base?.issues) && base.issues.includes("VALIDATOR_TRANSPORT_MISSING_OR_INVALID")
+    && Array.isArray(candidate?.issues) && candidate.issues.length === 0
+    && base?.model_run_executed === false && candidate?.model_run_executed === false
+    && SHA64.test(String(base?.binding_sha256 ?? ""))
+    && SHA64.test(String(candidate?.binding_sha256 ?? ""))
+    && base.binding_sha256 !== candidate.binding_sha256;
+}
+
 export async function verifyEvolutionProofRun(input: Input): Promise<ProofVerified> {
   const { repository, mode, profileSlug, baseSha, gh } = input;
   const candidate = mode === "compare" ? String(input.candidateSha ?? "") : ZERO40;
@@ -86,7 +104,7 @@ export async function verifyEvolutionProofRun(input: Input): Promise<ProofVerifi
     }
   } else if (proof.schema !== "S26_PROFILE_EVOLUTION_PROOF_V1" || proof.verdict !== "EVOLUTION_DEMONSTRATED"
       || !Array.isArray(proof.regressed_dimensions) || proof.regressed_dimensions.length !== 0
-      || !(structuralImprovement(proof) || operationalImprovement(proof))) {
+      || !(structuralImprovement(proof) || operationalImprovement(proof) || runtimeBindingImprovement(proof))) {
     return { ok: false, code: "PROOF_COMPARISON_NOT_DEMONSTRATED" };
   }
 
