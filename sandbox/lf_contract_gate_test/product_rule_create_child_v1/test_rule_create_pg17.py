@@ -46,6 +46,22 @@ def count_child():
 def receipt(parent,run,child):
     return json.loads(query(f"SELECT public.lf_skill_rule_create_child_readback_v1('{parent}','{run}','{child}');"))
 
+def fork(parent):
+    query("INSERT INTO public.lf_operation_execution("
+          "execution_id,operation_code,target_type,target_code,status,request_sha256,manifest,created_by_execution_id)"
+          f" SELECT '{parent}',operation_code,target_type,target_code,status,request_sha256,manifest,'ISOLATED_PG17'"
+          f" FROM public.lf_operation_execution WHERE execution_id='{PARENT}';")
+    query("INSERT INTO public.lf_operation_execution_steps("
+          "execution_id,step_order,step_id,status,evidence_ref,evidence_payload)"
+          f" SELECT '{parent}',step_order,step_id,status,evidence_ref,evidence_payload"
+          f" FROM public.lf_operation_execution_steps WHERE execution_id='{PARENT}';")
+
+def must_block(parent,expected_code):
+    ans=invoke(parent=parent)
+    check(expected_code+"_BLOCKED",ans.get("status") in ("BLOCKED","FAILED"))
+    check(expected_code+"_EXACT",ans.get("blocking_code")==expected_code)
+    check(expected_code+"_NO_EFFECT",count_rule()==0 and count_child()==0)
+
 def main():
     check("PG_CONTAINER_PRESENT",bool(CONTAINER))
     for path in [
@@ -67,6 +83,46 @@ def main():
     check("OPENER_SERVICE_ROLE",query(
       "SELECT has_function_privilege('service_role','public.lf_skill_o_rule_create_v1(text,jsonb,text,text,text)','EXECUTE');")=="t")
     check("ABSENT_BEFORE",count_rule()==0 and count_child()==0)
+
+    bad_judge="EXEC-PROFILE-GATE2-PG17CREATEJUDGEFAIL"
+    fork(bad_judge)
+    query("UPDATE public.lf_operation_execution_steps SET "
+      "evidence_payload=jsonb_set(evidence_payload,"
+      "'{semantic_judge_result,status}','\"FAIL\"'::jsonb) "
+      f"WHERE execution_id='{bad_judge}' AND step_id='semantic_judge';")
+    must_block(bad_judge,"BLOCK_CREATE_JUDGE")
+
+    bad_router="EXEC-PROFILE-GATE2-PG17CREATEROUTERFAIL"
+    fork(bad_router)
+    query("UPDATE public.lf_operation_execution SET manifest=jsonb_set(manifest,"
+      "'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}',"
+      "'false'::jsonb) "
+      f"WHERE execution_id='{bad_router}';")
+    must_block(bad_router,"BLOCK_CREATE_PARENT_AUTHORITY")
+
+    bad_source="EXEC-PROFILE-GATE2-PG17CREATESOURCEFAIL"
+    fork(bad_source)
+    query("UPDATE public.lf_operation_execution_steps SET evidence_payload=jsonb_set("
+      "evidence_payload,'{profile_output,deliverable_created,product_decision,source_refs,0,source_ref}',"
+      "'\"supabase://public.lf_decisiones_gov/999\"'::jsonb) "
+      f"WHERE execution_id='{bad_source}' AND step_id='execute_profile';")
+    must_block(bad_source,"BLOCK_CREATE_SOURCE_REFS")
+
+    bad_screen="EXEC-PROFILE-GATE2-PG17CREATESCREENFAIL"
+    fork(bad_screen)
+    query("UPDATE public.lf_operation_execution SET manifest=jsonb_set(manifest,"
+      "'{screen_selection_result,selected_screen_code}',"
+      "'\"OTHER-AUTH\"'::jsonb) "
+      f"WHERE execution_id='{bad_screen}';")
+    must_block(bad_screen,"BLOCK_CREATE_SCREEN")
+
+    bad_auth="EXEC-PROFILE-GATE2-PG17CREATEAUTHFAIL"
+    fork(bad_auth)
+    query("UPDATE public.lf_profile_write_authority_v1 "
+      "SET status='RETIRED' WHERE operation_code='CREACION_REGLA_LF';")
+    must_block(bad_auth,"SKILL_NOT_AUTHORIZED_FOR_PROFILE")
+    query("UPDATE public.lf_profile_write_authority_v1 "
+      "SET status='ACTIVE' WHERE operation_code='CREACION_REGLA_LF';")
 
     encoded=json.dumps(INPUT,sort_keys=True).replace("'","''")
     tx=query(f"BEGIN;SELECT public.lf_skill_invoke_v1('RULE_CREATE_APPLY','{PARENT}','{encoded}'::jsonb);ROLLBACK;")
