@@ -39,6 +39,8 @@ def judge(inputs: Any, out: Any, readback: Any = None) -> dict:
         return {"verdict":"FAIL","violations":failures,"independent_semantic_review":False}
     if ledger.get("source_digest_sha256") != _sha({"a3":a3,"a4":a4}):
         failures.append("SOURCE_DIGEST_NOT_PARITY")
+    if ledger.get("upstream_contract_snapshot") != {"A3":a3,"A4":a4}:
+        failures.append("UPSTREAM_CONTRACT_SNAPSHOT_LOSS")
     actual = ledger.get("items")
     if not isinstance(actual, list) or len(result_items) != len(actual):
         failures.append("MATERIAL_ITEM_COUNT_NOT_PARITY")
