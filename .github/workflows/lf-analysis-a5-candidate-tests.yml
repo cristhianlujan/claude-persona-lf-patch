@@ -7,10 +7,6 @@ on:
     paths:
       - 'skills/programming_analysis/steps/a5/**'
       - '.github/workflows/lf-analysis-a5-candidate-tests.yml'
-  pull_request:
-    paths:
-      - 'skills/programming_analysis/steps/a5/**'
-      - '.github/workflows/lf-analysis-a5-candidate-tests.yml'
 
 permissions:
   contents: read
