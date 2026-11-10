@@ -36,7 +36,7 @@ BEGIN
  THEN RETURN jsonb_build_object('status','BLOCKED','code','SCREEN_NOT_FOUND_OR_UNSCOPED'); END IF;
 
  WITH candidates AS (
-   SELECT DISTINCT r.id,r.codigo,r.categoria,r.titulo,r.descripcion,r.razon,
+   SELECT DISTINCT r.id,r.codigo,r.categoria,r.titulo,r.descripcion,r.razon,r.es_transversal,
      r.valor_config,r.estado,r.origen,r.pendiente_decision,r.pendiente_detalle,
      r.updated_at,public.lf_asset_snapshot_sha_v1('REGLA',r.codigo) rule_sha256
    FROM lf_ops.reglas r
