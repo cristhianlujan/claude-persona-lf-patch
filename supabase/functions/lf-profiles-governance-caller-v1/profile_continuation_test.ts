@@ -721,6 +721,92 @@ Deno.test("skill post60: caller cannot assert the core judge result",async()=>{
  eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
 });
 
+
+async function post60Mock(tamper=false){
+ const n=stepNetwork({childOverride:{manifest:{
+   profile_handoff:{source_execution_id:id},
+   router_governed_caller_code:"CALLER-GHA-NATIVE-SKILL-UPDATE-V1",
+   pre_write_bound_write_plan_sha256:"f".repeat(64),
+   pre_write_bound_main_revision:mainSha,
+   pre_write_bound_target_blob_sha:blobSha,
+   owner_provenance:{readme_blob_sha:readmeSha},
+ }}});
+ const candidate="def test_exact_binding():\n  return True\n";
+ const hash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",
+   new TextEncoder().encode(candidate)))).map(x=>x.toString(16).padStart(2,"0")).join("");
+ const gate={write_plan:[{path:childPath,content_sha256:tamper?"0".repeat(64):hash}],
+   write_plan_hash:"f".repeat(64),bound_revision:mainSha,source_blob_sha:blobSha};
+ const pre=["init_execution","router","skill_resolve","baseline_read",
+   "change_scope","regression_plan","pre_write_execution_binding_gate"];
+ const ledger:Record<string,unknown>[]=pre.map((step_id,i)=>({
+   step_order:i*10,step_id,status:"STEP_PASS_WITH_EVIDENCE",
+   evidence_payload:i===6?gate:{},
+ }));
+ const headSha="b".repeat(40);
+ const calls=n.calls;
+ const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+   const url=String(input);
+   const body=typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null;
+   if(url.includes("/lf_operation_execution_steps?")){
+     calls.push({url,body});
+     return new Response(JSON.stringify(ledger),{status:200});
+   }
+   if(url.endsWith("/lf_record_operation_step_core_v1")){
+     calls.push({url,body});
+     ledger.push({step_id:body?.p_step_id,status:"STEP_PASS_WITH_EVIDENCE"});
+     return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+       step_id:body?.p_step_id,status:"STEP_PASS_WITH_EVIDENCE"}),{status:200});
+   }
+   if(url.includes("/pulls/3746/files?"))
+     return new Response(JSON.stringify([{filename:childPath},
+       {filename:"skills/profile_creator/validators/test_compare_s26_profile_evolution_v1.py"}]),{status:200});
+   if(url.endsWith("/pulls/3746"))
+     return new Response(JSON.stringify({number:3746,merged:false,
+       head:{sha:headSha,ref:"fix/s26",repo:{full_name:repo}},
+       base:{ref:"main",sha:mainSha}}),{status:200});
+   if(url.includes("/git/ref/heads/main"))
+     return new Response(JSON.stringify({object:{sha:mainSha}}),{status:200});
+   if(url.includes("/contents/"+childPath+"?ref="+mainSha))
+     return new Response(JSON.stringify({sha:blobSha}),{status:200});
+   if(url.includes("/contents/skills/profile_creator/README.md?ref="+mainSha))
+     return new Response(JSON.stringify({sha:readmeSha}),{status:200});
+   if(url.includes("/contents/"+childPath+"?ref="+headSha))
+     return new Response(JSON.stringify({type:"file",encoding:"base64",
+       sha:"d".repeat(40),content:btoa(candidate)}),{status:200});
+   return n.fetchFn(input,init);
+ };
+ return {fetchFn,calls,ledger};
+}
+Deno.test("skill post60: exact GitHub SHA and frozen plan reach existing core 70/80",async()=>{
+ const n=await post60Mock();
+ const out=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:write",
+      evidence_payload:{pr_number:3746,blocking_codes:[]}},
+     {step_id:"github_readback",evidence_ref:"git:readback",
+      evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await out.json();
+ eq(out.status,200);eq(b.outcome,"SKILL_CHILD_STEP_BATCH_RECORDED");
+ eq(b.steps_recorded,2);eq(b.no_file_write,true);
+ const rpc=n.calls.filter(c=>c.url.endsWith("/lf_record_operation_step_core_v1"));
+ eq(rpc.length,2);
+ eq(rpc.map(c=>c.body?.p_step_id),["github_write","github_readback"]);
+ eq((rpc[0].body?.p_trust_validation as Record<string,unknown>)?.source,
+   "OIDC_EDGE_GITHUB_VERIFIED");
+});
+Deno.test("skill post60: candidate SHA mismatch fails before the SQL writer",async()=>{
+ const n=await post60Mock(true);
+ const out=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:write",
+     evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await out.json();
+ eq(out.status,409);eq(b.code,"SKILL_POST60_CANDIDATE_SHA256_MISMATCH");
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
+});
+
 Deno.test("skill step: only exact OIDC identity can write ledger",async()=>{
  const n=stepNetwork();
  const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
