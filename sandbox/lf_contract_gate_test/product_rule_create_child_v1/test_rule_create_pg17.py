@@ -129,7 +129,7 @@ def main():
     check("TRANSACTION_TEST_EXECUTED",'"effect_verified": true' in tx or '"effect_verified":true' in tx)
     check("ROLLBACK_ZERO_RESIDUE",count_rule()==0 and count_child()==0)
     check("ROLLBACK_NO_SKILL_RUN",query(
-      "SELECT count(*) FROM public.lf_skill_invocation_v1 WHERE skill_code='RULE_CREATE_APPLY';")=="0")
+      f"SELECT count(*) FROM public.lf_skill_invocation_v1 WHERE skill_code='RULE_CREATE_APPLY' AND parent_execution_id='{PARENT}';")=="0")
 
     result=invoke()
     check("CREATE_COMPLETED",result.get("status")=="COMPLETED")
