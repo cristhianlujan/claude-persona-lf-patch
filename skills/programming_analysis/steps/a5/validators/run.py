@@ -63,7 +63,7 @@ def _decision(subject: str, scope: list[str], *, status: str,
     return row
 
 
-def run(inputs: Any, readback: Any = None, *, business: str = "LF") -> dict:
+def _run_base(inputs: Any, readback: Any = None, *, business: str = "LF") -> dict:
     if business != "LF":
         return _blocked("A5_BUSINESS_NOT_ENABLED_FOR_LF_SKILL")
     try:
@@ -226,3 +226,34 @@ def run(inputs: Any, readback: Any = None, *, business: str = "LF") -> dict:
         "source_attested": False, "independent_judge_verified": False,
         "a6_allowed": False, "no_write_performed": True,
     }
+
+
+
+def run(inputs: Any, readback: Any = None, *, business: str = "LF") -> dict:
+    """Expose source-material per-item decisions without changing ADR core.
+
+    The deterministic adapter cannot attest source currentness or authorize
+    A6. Semantic adjudication of material questions remains an independent
+    check, not an LLM call hidden inside this step.
+    """
+    base = _run_base(inputs, readback, business=business)
+    if base.get("status") == "BLOCKED" or business != "LF":
+        return base
+    helper = Path(__file__).resolve().parents[1] / "adapters/material_decision_enrichment_v1.py"
+    spec = importlib.util.spec_from_file_location("a5_material_enrichment_v1", helper)
+    if spec is None or spec.loader is None:
+        return _blocked("A5_MATERIAL_ENRICHMENT_ADAPTER_UNAVAILABLE",
+                        base.get("target_ref"))
+    mod = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(mod)
+        output = mod.enrich(base, inputs, readback)
+    except (OSError, ValueError, TypeError, AttributeError, RecursionError):
+        return _blocked("A5_MATERIAL_ENRICHMENT_FAILED", base.get("target_ref"))
+    if output.get("status") == "BLOCKED":
+        return output
+    if isinstance(output.get("decision_context"), dict):
+        dc = output["decision_context"]
+        dc["decision_fingerprint_sha256"] = _digest(dc)
+        output["decisions"] = [deepcopy(dc)]
+    return output
