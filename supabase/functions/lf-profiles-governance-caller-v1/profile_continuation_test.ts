@@ -945,3 +945,118 @@ Deno.test("Product authority: issuer not provisioned surfaces BLOCKED, never cla
   eq(r.status,409);eq(v.outcome,"BLOCKED");
   eq(v.code,"INDEPENDENT_PROMOTION_ISSUER_NOT_CONFIGURED");
 });
+
+
+const igRuleSha="f".repeat(64);
+const igRuleOffer={
+  status:"IG_PROPOSAL_READY",
+  schema_version:"LF_IG_RULE_RESOLUTION_PROPOSAL_V1",
+  screen_code:"B2B-AUTH-001",
+  proposal_count:1,
+  proposals:[{
+    rule_code:"TEST-RULE-AUTO-001",
+    ig_problem_code:"ACTION_AUTHORIZATION_RECEIPT_REQUIRED",
+    proposed_action:"REQUEST_GOVERNED_PROMOTION",
+    ig_proposal_sha256:igRuleSha,
+    action_authorized:false,
+  }],
+  action_authorized:false,
+};
+function productReadyWithIG(igResult:Record<string,unknown>=igRuleOffer){
+  const product="PERFIL-PRODUCT-DIRECTOR-LF";
+  const n=network({
+    target_code:product,target_path:"profiles/product_director_lf/SKILL.md",
+    manifest:{
+      executor_mode:"GPT_NATIVE",executor_provider:"OPENAI_CHATGPT_NATIVE",
+      read_only:true,no_write:true,no_promotion:true,governed_repair_write:false,
+      router_profile_handoff:{
+        profile_code:product,
+        router_authorization_receipt:{
+          profile_code:product,profile_execution_allowed:true,effect_authority:false,
+        },
+      },
+    },
+  });
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit)=>{
+    const url=String(input);
+    if(url.endsWith("/lf_ig_rule_proposal_prepare_v1")){
+      n.calls.push({url,body:typeof init?.body==="string"?
+        JSON.parse(init.body) as Record<string,unknown>:null});
+      return new Response(JSON.stringify(igResult),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  return {fetchFn,calls:n.calls};
+}
+const productContinue={
+  execution_id:id,source_revision:sha,source_digest:digest,
+  screen_selection_draft:{decision:"SELECTED",selected_screen_code:"B2B-AUTH-001"},
+};
+const goodOutputValidator={
+  schema:"PROFILE_OUTPUT_VALIDATION_RESULT_V1",
+  status:"CANDIDATE_OUTPUT_PARITY_OBSERVED",
+  structural_check_executed:true,profile_validator_executed:true,
+  source_readback_matched:true,independent_review_executed:false,
+  provider_attested:false,admission_authorized:false,
+  profile_write_authorized:false,runtime_activation_authorized:false,
+  blocking_codes:[],validator_errors:[],raw_output_sha256:"d".repeat(64),
+};
+Deno.test("IG first: Product Director gets automatic proposal in NATIVE_MODEL_INPUT_READY",async()=>{
+  const n=productReadyWithIG();
+  const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,
+    productContinue,config,n.fetchFn,sha,callerId);
+  const b=await r.json();
+  eq(r.status,200);eq(b.phase,"NATIVE_MODEL_INPUT_READY");
+  eq(b.result.ig_rule_proposals.proposals[0].ig_proposal_sha256,igRuleSha);
+  eq(b.result.ig_rule_review_contract.required,true);
+  eq(b.result.ig_rule_review_contract.no_second_ig_semantic_review,true);
+  const igCalls=n.calls.filter(x=>x.url.endsWith("/lf_ig_rule_proposal_prepare_v1"));
+  eq(igCalls.length,1);eq(igCalls[0].body?.p_execution_id,id);
+  eq(igCalls[0].body?.p_screen_code,null);
+});
+Deno.test("IG first: unreviewed and SHA-mismatched Product output are blocked before recording",async()=>{
+  for(const wrong of [
+    {worker:"product_director_lf",traceability:{}},
+    {worker:"product_director_lf",traceability:{
+      ig_rule_proposal_decisions:[{
+        rule_code:"TEST-RULE-AUTO-001",
+        ig_proposal_sha256:"b".repeat(64),
+        disposition:"ACCEPT_PROPOSAL",
+        rationale:"Checked proposal with existing owner approval",
+      }],
+    }},
+  ]){
+    const n=productReadyWithIG();
+    const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+      ...productContinue,profile_output:wrong,
+      validation_result:goodOutputValidator,
+      raw_evidence_ref:"actions://test/lf/raw",validator_evidence_ref:"actions://test/lf/validator",
+    },config,n.fetchFn,sha,callerId);
+    const b=await r.json();
+    eq(r.status,409);
+    eq(b.code,wrong.traceability?.ig_rule_proposal_decisions?
+      "PRODUCT_IG_PROPOSAL_BINDING_INVALID":"PRODUCT_IG_PROPOSAL_DECISIONS_REQUIRED");
+    eq(n.calls.some(x=>x.url.endsWith("/lf_profile_native_bridge_record_output_v1")),false);
+  }
+});
+Deno.test("IG first: exact Product response continues to existing semantic judge only",async()=>{
+  const n=productReadyWithIG();
+  const r=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+    ...productContinue,
+    profile_output:{
+      worker:"product_director_lf",
+      traceability:{ig_rule_proposal_decisions:[{
+        rule_code:"TEST-RULE-AUTO-001",ig_proposal_sha256:igRuleSha,
+        disposition:"ACCEPT_PROPOSAL",
+        rationale:"Owner-approved, source-current and all restrictions preserved",
+      }]},
+    },
+    validation_result:goodOutputValidator,
+    raw_evidence_ref:"actions://test/lf/raw",
+    validator_evidence_ref:"actions://test/lf/validator",
+  },config,n.fetchFn,sha,callerId);
+  const b=await r.json();
+  eq(r.status,200);eq(b.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+  eq(n.calls.filter(x=>x.url.endsWith("/lf_ig_rule_proposal_prepare_v1")).length,1);
+  eq(n.calls.filter(x=>x.url.endsWith("/lf_profile_native_bridge_record_output_v1")).length,1);
+});
