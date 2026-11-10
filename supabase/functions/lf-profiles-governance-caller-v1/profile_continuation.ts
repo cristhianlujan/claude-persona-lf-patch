@@ -7,7 +7,10 @@ export const PROFILE_CONTINUE_ACTION = "profile_native_continue_v1";
 // (lf_skill_invoke_v1) owns the authority/input checks; this action only transports the call.
 export const PROFILE_SKILL_INVOKE_ACTION = "profile_native_skill_invoke_v1";
 export const PROFILE_SKILL_STEP_BATCH_ACTION = "profile_native_skill_step_batch_v1";
-export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION, PROFILE_SKILL_STEP_BATCH_ACTION] as const;
+// Controlled post-70 action owned by Product Director. No Router dispatch
+// or profile run is created; issuer identity stays outside this caller.
+export const PROFILE_RULE_AUTHORITY_ACTION = "profile_native_rule_authority_v1";
+export const PROFILE_CONTINUATION_ACTIONS = [PROFILE_SOURCE_BIND_ACTION, PROFILE_CONTINUE_ACTION, PROFILE_SKILL_INVOKE_ACTION, PROFILE_SKILL_STEP_BATCH_ACTION, PROFILE_RULE_AUTHORITY_ACTION] as const;
 const SKILL_CODE_RE = /^[A-Z][A-Z0-9_]{2,63}$/;
 const SKILL_TARGET_PATH_RE = /^profiles\/[A-Za-z0-9][A-Za-z0-9_./-]*$/;
 // Extra GitHub path type is *only* allowed for SKILL_UPDATE_APPLY; the invoker
@@ -651,6 +654,92 @@ async function recordSkillChildSteps(
    no_file_write:true,profile_completed:false,child_completed:false});
 }
 
+// Caller-verified, no credentials in body. The canonical SQL procedures
+// perform original Router, Product RAW/validator/judge, source/currentness and
+// exact promotion receipt checks. This transport NEVER signs a receipt.
+async function handleRuleAuthority(
+  e: Execution,
+  body: Payload,
+  config: Config,
+  fetchFn: Fetcher,
+  callerRevision: string,
+  callerIdentity?: CallerIdentity,
+): Promise<Response> {
+  const trustedWorkflow =
+    `${config.repository}/.github/workflows/lf-edge-deploy-credential-readback.yml@refs/heads/main`;
+  if (
+    e.target_code !== "PERFIL-PRODUCT-DIRECTOR-LF" ||
+    e.target_path !== "profiles/product_director_lf/SKILL.md"
+  ) return blocked("RULE_AUTHORITY_PRODUCT_DIRECTOR_ONLY", 403);
+  if (
+    callerIdentity?.method !== "GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1" ||
+    callerIdentity.repository !== config.repository ||
+    callerIdentity.workflow_ref !== trustedWorkflow ||
+    !/^[1-9][0-9]*$/.test(callerIdentity.run_id)
+  ) return blocked("RULE_AUTHORITY_VERIFIED_OIDC_REQUIRED", 403);
+  if (
+    body.source_revision !== callerRevision ||
+    typeof body.screen_code !== "string" ||
+    !/^[A-Z][A-Z0-9_-]{3,63}$/.test(body.screen_code)
+  ) return blocked("RULE_AUTHORITY_SOURCE_OR_SCREEN_INVALID", 400);
+
+  const step = body.rule_authority_action;
+  let procedure: string;
+  let params: Payload = {
+    p_execution_id: e.execution_id,
+    p_screen_code: body.screen_code,
+  };
+  if (step === "MARK") {
+    if (
+      typeof body.evidence_ref !== "string" ||
+      body.evidence_ref.length < 8 || body.evidence_ref.length > 1200
+    ) return blocked("RULE_AUTHORITY_JUDGE_EVIDENCE_REQUIRED", 400);
+    procedure = "lf_rule_authority_mark_refresh_v1";
+    params = {...params, p_evidence_ref: body.evidence_ref};
+  } else if (step === "REQUEST" || step === "COMPLETE") {
+    if (
+      typeof body.rule_code !== "string" ||
+      !/^[A-Z0-9][A-Z0-9_-]{3,159}$/.test(body.rule_code)
+    ) return blocked("RULE_AUTHORITY_EXACT_RULE_REQUIRED", 400);
+    params = {...params, p_rule_code: body.rule_code};
+    if (step === "REQUEST") {
+      procedure = "lf_rule_promotion_request_eligible_v1";
+    } else {
+      if (
+        typeof body.receipt_id !== "number" ||
+        !Number.isSafeInteger(body.receipt_id) || body.receipt_id <= 0
+      ) return blocked("RULE_AUTHORITY_VERIFIED_RECEIPT_ID_REQUIRED", 400);
+      procedure = "lf_rule_promotion_complete_tracked_v1";
+      params = {...params, p_receipt_id: body.receipt_id};
+    }
+  } else return blocked("RULE_AUTHORITY_ACTION_UNSUPPORTED", 400);
+
+  const call = await rpc(config, fetchFn, procedure, params);
+  if (call.error || !call.result) return call.error ?? blocked("RULE_AUTHORITY_RPC_UNAVAILABLE", 502);
+  const result = call.result;
+  const expected = step === "MARK" ? "MARKS_RECORDED" :
+    step === "REQUEST" ? "WAIT_GOVERNED_ACTION_RECEIPT" : "APPLIED_VERIFIED";
+  if (result.status !== expected) {
+    return respond({
+      outcome: "BLOCKED",
+      code: result.code ?? result.blocking_code ?? "RULE_AUTHORITY_GOVERNED_OPERATION_BLOCKED",
+      execution_id: e.execution_id,
+      rule_authority_action: step,
+      result,
+    }, 409);
+  }
+  return respond({
+    outcome: "RULE_AUTHORITY_GOVERNED_STEP_ACCEPTED",
+    execution_id: e.execution_id,
+    profile_code: e.target_code,
+    rule_authority_action: step,
+    result,
+    no_router_mutation: true,
+    independent_issuer_required: true,
+    profile_completed: false,
+  });
+}
+
 export async function handleProfileContinuation(
   action: string,
   body: Payload,
@@ -675,6 +764,9 @@ export async function handleProfileContinuation(
   }
   if (action === PROFILE_SKILL_INVOKE_ACTION) return await invokeSkill(e, body, config, fetchFn, callerIdentity);
   if (action === PROFILE_SKILL_STEP_BATCH_ACTION) return await recordSkillChildSteps(e, body, config, fetchFn, callerIdentity);
+  if (action === PROFILE_RULE_AUTHORITY_ACTION) {
+    return await handleRuleAuthority(e, body, config, fetchFn, callerRevision, callerIdentity);
+  }
   if (action !== PROFILE_CONTINUE_ACTION) return blocked("PROFILE_CONTINUATION_ACTION_UNSUPPORTED", 400);
   const revision = body.source_revision;
   const digest = body.source_digest;
