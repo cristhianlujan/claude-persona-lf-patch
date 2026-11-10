@@ -43,6 +43,10 @@ INSERT INTO public.lf_operation_execution(
 INSERT INTO public.lf_operation_execution_steps(
   execution_id,step_order,step_id,status,evidence_ref,evidence_payload)
 VALUES
+('EXEC-PROFILE-PG17-PROMO',50,'execute_profile','STEP_PASS_WITH_EVIDENCE',
+  'PG17_SYNTHETIC/50',
+  '{"profile_output":{"worker":"product_director_lf",
+    "output_type":"PRODUCT_DIRECTION_SPEC","self_verdict":"PASS"}}'::jsonb),
 ('EXEC-PROFILE-PG17-PROMO',60,'output_validate','STEP_PASS_WITH_EVIDENCE',
   'PG17_SYNTHETIC/60',
   '{"output_contract_result":"PASS",
