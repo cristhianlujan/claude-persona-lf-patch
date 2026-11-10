@@ -82,7 +82,7 @@ CREATE FUNCTION public.lf_rule_authority_parent_guard_v1(
 SET search_path='pg_catalog','public','lf_ops'
 AS $guard$
 DECLARE par public.lf_operation_execution%ROWTYPE;
- val jsonb;jud jsonb;
+ val jsonb;jud jsonb;outp jsonb;
 BEGIN
  SELECT * INTO par FROM public.lf_operation_execution
  WHERE execution_id=p_execution_id
@@ -99,6 +99,10 @@ BEGIN
     IS DISTINCT FROM p_screen_code THEN
   RETURN jsonb_build_object('status','BLOCKED','code','PRODUCT_RUN_SCOPE_OR_ROUTER_INVALID');
  END IF;
+ SELECT evidence_payload->'profile_output' INTO outp
+ FROM public.lf_operation_execution_steps
+ WHERE execution_id=p_execution_id AND step_id='execute_profile'
+ AND status='STEP_PASS_WITH_EVIDENCE';
  SELECT evidence_payload INTO val
  FROM public.lf_operation_execution_steps
  WHERE execution_id=p_execution_id AND step_id='output_validate'
@@ -107,7 +111,9 @@ BEGIN
  FROM public.lf_operation_execution_steps
  WHERE execution_id=p_execution_id AND step_id='semantic_judge'
  AND status='STEP_PASS_WITH_EVIDENCE';
- IF val IS NULL OR jud IS NULL
+ IF outp IS NULL OR outp->>'worker' IS DISTINCT FROM 'product_director_lf'
+ OR outp->>'output_type' IS DISTINCT FROM 'PRODUCT_DIRECTION_SPEC'
+ OR val IS NULL OR jud IS NULL
  OR val->>'output_contract_result' IS DISTINCT FROM 'PASS'
  OR coalesce(val->>'raw_output_sha256','') !~ '^[0-9a-f]{64}$'
  OR jud#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
@@ -177,21 +183,65 @@ BEGIN
    encode(extensions.digest(convert_to(item::text,'UTF8'),'sha256'),'hex'),now()
   )
   ON CONFLICT(screen_code,rule_code) DO UPDATE SET
-   marca=EXCLUDED.marca,motivo_codigo=EXCLUDED.motivo_codigo,
-   estado_flujo=EXCLUDED.estado_flujo,
+   -- Preserve a genuinely pending request ONLY while rule AND decision
+   -- source match the new authoritative assessment. Otherwise invalidate.
+   marca=CASE
+      WHEN public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
+       AND EXCLUDED.marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+       AND public.lf_rule_authority_tracking_v1.rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256
+       AND public.lf_rule_authority_tracking_v1.source_decision_sha256
+           IS NOT DISTINCT FROM EXCLUDED.source_decision_sha256
+       AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
+         WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
+           AND q.status='PENDING'
+           AND q.request_snapshot_sha256=EXCLUDED.rule_snapshot_sha256)
+      THEN 'PROMOTION_REQUESTED' ELSE EXCLUDED.marca END,
+   motivo_codigo=CASE
+      WHEN public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
+       AND EXCLUDED.marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+       AND public.lf_rule_authority_tracking_v1.rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256
+       AND public.lf_rule_authority_tracking_v1.source_decision_sha256
+           IS NOT DISTINCT FROM EXCLUDED.source_decision_sha256
+       AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
+         WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
+           AND q.status='PENDING')
+      THEN 'WAIT_GOVERNED_ACTION_RECEIPT' ELSE EXCLUDED.motivo_codigo END,
+   estado_flujo=CASE
+      WHEN public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
+       AND EXCLUDED.marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+       AND public.lf_rule_authority_tracking_v1.rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256
+       AND public.lf_rule_authority_tracking_v1.source_decision_sha256
+           IS NOT DISTINCT FROM EXCLUDED.source_decision_sha256
+       AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
+         WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
+           AND q.status='PENDING')
+      THEN 'PROMOCION_SOLICITADA' ELSE EXCLUDED.estado_flujo END,
    rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256,
    source_decision_id=EXCLUDED.source_decision_id,
    source_decision_sha256=EXCLUDED.source_decision_sha256,
-   -- Preserve a verified existing promotion request only for identical SHA.
    promotion_id=CASE
-    WHEN public.lf_rule_authority_tracking_v1.rule_snapshot_sha256
-      =EXCLUDED.rule_snapshot_sha256
-     AND public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
-     AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
-       WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
-       AND q.status IN ('PENDING','APPROVED'))
+    WHEN public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
+      AND EXCLUDED.marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+      AND public.lf_rule_authority_tracking_v1.rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256
+      AND public.lf_rule_authority_tracking_v1.source_decision_sha256
+          IS NOT DISTINCT FROM EXCLUDED.source_decision_sha256
+      AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
+        WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
+          AND q.status='PENDING'
+          AND q.request_snapshot_sha256=EXCLUDED.rule_snapshot_sha256)
     THEN public.lf_rule_authority_tracking_v1.promotion_id ELSE NULL END,
-   execution_id=EXCLUDED.execution_id,evidence_ref=EXCLUDED.evidence_ref,
+   execution_id=CASE
+    WHEN public.lf_rule_authority_tracking_v1.marca='PROMOTION_REQUESTED'
+      AND EXCLUDED.marca='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
+      AND public.lf_rule_authority_tracking_v1.rule_snapshot_sha256=EXCLUDED.rule_snapshot_sha256
+      AND public.lf_rule_authority_tracking_v1.source_decision_sha256
+          IS NOT DISTINCT FROM EXCLUDED.source_decision_sha256
+      AND EXISTS(SELECT 1 FROM public.lf_rule_promotion_v1 q
+        WHERE q.promotion_id=public.lf_rule_authority_tracking_v1.promotion_id
+          AND q.status='PENDING')
+    THEN public.lf_rule_authority_tracking_v1.execution_id
+    ELSE EXCLUDED.execution_id END,
+   evidence_ref=EXCLUDED.evidence_ref,
    evidence_sha256=EXCLUDED.evidence_sha256,last_checked_at=now();
   checked_count:=checked_count+1;
  END LOOP;
