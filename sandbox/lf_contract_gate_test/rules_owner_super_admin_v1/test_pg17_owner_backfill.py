@@ -55,6 +55,9 @@ CREATE SCHEMA lf_ops;
 CREATE TABLE lf_ops.reglas (
  id integer PRIMARY KEY,
  codigo text NOT NULL UNIQUE,
+ categoria text NOT NULL DEFAULT 'SECURITY',
+ es_transversal boolean NOT NULL DEFAULT false,
+ origen text NOT NULL DEFAULT 'FIXTURE_ONLY',
  created_by text,
  estado text NOT NULL DEFAULT 'CANDIDATO',
  created_at timestamptz DEFAULT now(),
