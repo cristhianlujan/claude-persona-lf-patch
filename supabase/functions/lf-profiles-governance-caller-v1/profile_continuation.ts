@@ -566,7 +566,7 @@ async function recordSkillChildSteps(
         "derived_by_judge","step_result","mini_judge_result"].some(
          k=>Object.prototype.hasOwnProperty.call(p,k)))
      return blocked("SKILL_CHILD_STEP_ASSERTION_INJECTION",400);
-   positions.push([...SKILL_UPDATE_PREWRITE_STEPS,...SKILL_UPDATE_POSTWRITE_STEPS].indexOf(step.step_id));
+   positions.push(([...SKILL_UPDATE_PREWRITE_STEPS,...SKILL_UPDATE_POSTWRITE_STEPS] as readonly string[]).indexOf(step.step_id));
  }
  if(positions.some((v,i)=>i>0&&v<=positions[i-1])||
     (positions[0]<SKILL_UPDATE_PREWRITE_STEPS.length&&
