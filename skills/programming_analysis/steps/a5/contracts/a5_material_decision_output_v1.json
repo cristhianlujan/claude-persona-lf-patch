@@ -79,6 +79,72 @@
       "source": "A5 canonical ADR trigger classification plus optional source-bound material_detail",
       "missing_question": "null and semantic_review_needed=true; never invent owner question",
       "currentness": "unattested pending external authority"
+    },
+    "rule_profiles": {
+      "schema_version": "A5_RULE_LAYER_CONSOLIDATION_V1",
+      "granularity": "one record per unique A3 rule_code + canonical source_ref, not one per occurrence",
+      "mandatory_fields": [
+        "rule_code",
+        "rule_source_ref",
+        "title",
+        "description",
+        "rule_status",
+        "pending_decision",
+        "implementation_scope",
+        "scope_approved_source_candidate",
+        "inheritance",
+        "policy_dependencies",
+        "policy_objects",
+        "material_item_ids",
+        "implementation_impacts",
+        "layers.FRONTEND",
+        "layers.BACKEND",
+        "layer_classification",
+        "layer_verification_state",
+        "unresolved_layer_evidence",
+        "rule_source_row",
+        "source_attested",
+        "independent_semantic_review",
+        "code_destination",
+        "rule_fingerprint_sha256"
+      ],
+      "input_sources": [
+        "A3.policy_scope_clear_rule_candidates",
+        "A3.policy_deferred_rule_items",
+        "A3.excluded_rule_items",
+        "A3.evidence_items",
+        "A3.policy_resolution.rule_policy_dependencies",
+        "A3.policy_resolution.approved_policy_objects",
+        "A3.policy_resolution.excluded_policy_objects",
+        "A4.direct_impacts",
+        "conditional A5 host readback rule_layer_bindings"
+      ],
+      "layer_values": [
+        "FRONTEND",
+        "BACKEND"
+      ],
+      "layer_applicability": [
+        "APPLIES",
+        "NOT_APPLICABLE",
+        "UNKNOWN"
+      ],
+      "layer_classification": [
+        "SHARED_CANDIDATE",
+        "FRONTEND_ONLY_CANDIDATE",
+        "BACKEND_ONLY_CANDIDATE",
+        "NO_APPLICABLE_LAYER_CANDIDATE",
+        "UNKNOWN"
+      ],
+      "layer_determination": "Require source-bound explicit classification for each layer. Only dual affirmative establishes shared; single affirmative plus explicit negative establishes single-layer candidate; missing => UNKNOWN.",
+      "no_heuristic_inference": true,
+      "no_invented_responsibility": true,
+      "approved_rule_identity_missing": "BLOCKED",
+      "excluded_rule_identity_missing": "Retain full row in unresolved_rule_identities, do not block unrelated approved scope",
+      "code_destination_required": false,
+      "not_runtime_attested": true,
+      "exact_material_item_links": true,
+      "no_new_policy_resolver": true,
+      "evidence_and_semantic_review_required_for_real_layer_verdict": true
     }
   },
   "judges": {
@@ -91,11 +157,15 @@
       "PROPER_OWNER_AND_AUTHORITY",
       "NO_POLICY_PROMOTION",
       "SCOPE_CONTINUITY",
-      "A6_IMPLEMENTABILITY_USEFULNESS"
+      "A6_IMPLEMENTABILITY_USEFULNESS",
+      "RULE_IDENTITY_NO_DUPLICATION",
+      "FRONTEND_BACKEND_RESPONSIBILITY_GROUNDED",
+      "NO_LAYER_GUESS_FROM_RULE_NAME"
     ],
     "model_inference_inside_a5": false,
     "independent_semantic_review_required_before_operational_certification": true,
-    "proof_of_independence_from_unit_tests": false
+    "proof_of_independence_from_unit_tests": false,
+    "rule_layer_parity": "steps/a5/judges/rule_layer_parity_v1.py"
   },
   "restrictions": [
     "No new ADR engine or store",
@@ -104,7 +174,8 @@
     "No runtime approval from an exact quote or source URL alone",
     "Pending or CANDIDATO rule not implementable",
     "Source-only candidate even if all mechanical tests pass",
-    "No rewrite A1/A2/A3/A4"
+    "No rewrite A1/A2/A3/A4",
+    "Do not infer Frontend/Backend from rule names, screen kind or source URL; source readbacks without layer scope result UNKNOWN"
   ],
   "testing": {
     "candidate_suite": "python3 -m unittest discover -s skills/programming_analysis/steps/a5/evals -p 'test_*.py' -v",
