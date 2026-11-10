@@ -79,6 +79,190 @@ JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
 LEFT JOIN public.lf_rule_authority_tracking_v1 t
  ON t.rule_code=r.codigo AND t.screen_code=p.codigo;
 
+-- Read-only deterministic source discovery inside the EXISTING IG dependency.
+-- Technical policy links and mentions are SEARCH LEADS, never owner authority.
+-- This function does not update rule origins, issue receipt, or open human queues.
+CREATE FUNCTION public.lf_ig_rule_source_recovery_v1(
+ p_execution_id text,p_screen_code text
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET search_path='pg_catalog','public','lf_ops','programacion','extensions'
+AS $recover$
+DECLARE par public.lf_operation_execution%ROWTYPE;
+ result jsonb; v_n integer;
+BEGIN
+ SELECT * INTO par FROM public.lf_operation_execution
+ WHERE execution_id=p_execution_id
+   AND operation_code='EJECUCION_PERFIL_LF'
+   AND target_type='PERFIL'
+   AND target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+   AND status='IN_PROGRESS';
+ IF NOT FOUND OR par.manifest->>'read_only' IS DISTINCT FROM 'true'
+ OR par.manifest->>'no_write' IS DISTINCT FROM 'true'
+ OR par.manifest->>'no_promotion' IS DISTINCT FROM 'true'
+ OR par.manifest#>>'{router_profile_handoff,router_authorization_receipt,profile_execution_allowed}'
+    IS DISTINCT FROM 'true'
+ OR par.manifest#>>'{screen_selection_result,selected_screen_code}'
+    IS DISTINCT FROM p_screen_code THEN
+  RETURN jsonb_build_object('status','BLOCKED',
+    'code','IG_RECOVERY_ROUTER_OR_SCOPE_INVALID'); END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.lf_operation_execution_steps st
+   WHERE st.execution_id=p_execution_id
+     AND st.step_id='input_validate' AND st.status='STEP_PASS_WITH_EVIDENCE') THEN
+  RETURN jsonb_build_object('status','BLOCKED',
+    'code','IG_RECOVERY_STEP40_REQUIRED'); END IF;
+ WITH scope AS (
+   SELECT DISTINCT r.id,r.codigo,r.origen,r.created_by,r.valor_config,r.estado,
+    public.lf_asset_snapshot_sha_v1('REGLA',r.codigo) rule_sha
+   FROM lf_ops.reglas r
+   JOIN lf_ops.reglas_pantallas rp ON rp.regla_id=r.id
+   JOIN lf_ops.pantallas p ON p.id=rp.pantalla_id
+   WHERE p.codigo=p_screen_code AND r.estado='CANDIDATO'
+ ), raw_evidence AS (
+   SELECT r.codigo,r.rule_sha,
+     jsonb_build_object(
+       'rule_code',r.codigo,'rule_snapshot_sha256',r.rule_sha,
+       'origin_label',r.origen,'historical_created_by',r.created_by,
+       'origin_class',CASE WHEN r.origen LIKE 'OWNER_%'
+         THEN 'OWNER_CLAIM_NOT_ATTESTED'
+         WHEN r.origen LIKE 'DEC-%' THEN 'DECISION_REFERENCE_NOT_YET_PARITY_PROOF'
+         ELSE 'HANDOFF_OR_LOT_LABEL_NOT_APPROVAL' END,
+       'source_decision_direct',coalesce((
+         SELECT jsonb_agg(jsonb_build_object(
+           'decision_id',d.id_decision,'state',d.estado_normalizado,
+           'decision_number',d.decision_number,
+           'authority_status','CHECK_EXACT_MATERIAL_PARITY_SEPARATELY'
+         ) ORDER BY d.id_decision)
+         FROM public.lf_decisiones_gov d WHERE
+           d.id_decision=r.origen
+           OR (nullif(r.valor_config->>'source_decision_id','') IS NOT NULL
+             AND d.id_decision=r.valor_config->>'source_decision_id')
+           OR (coalesce(r.valor_config->>'source_decision_number','')
+               ~ '^[0-9]{1,12}$' AND
+             d.decision_number::text=r.valor_config->>'source_decision_number')
+       ),'[]'::jsonb),
+       'decision_text_mentions',coalesce((
+         SELECT jsonb_agg(jsonb_build_object(
+           'decision_id',d.id_decision,'decision_number',d.decision_number,
+           'state',d.estado_normalizado,
+           'evidence_role','MENTION_ONLY_NOT_BUSINESS_APPROVAL'
+         ) ORDER BY d.decision_number)
+         FROM public.lf_decisiones_gov d WHERE
+           position(r.codigo in coalesce(d.documento_relacionado,''))>0
+           OR position(r.codigo in coalesce(d.decision,''))>0
+           OR position(r.codigo in coalesce(d.raw_payload::text,''))>0
+       ),'[]'::jsonb),
+       'technical_links',coalesce((
+         SELECT jsonb_agg(jsonb_build_object(
+           'link_id',l.link_id,'reference_role',l.reference_role,
+           'target_table',l.target_table,'target_id',l.target_id,
+           'link_state',l.status,
+           'evidence_role','TECHNICAL_REFERENCE_NOT_OWNER_APPROVAL'
+         ) ORDER BY l.link_id)
+         FROM programacion.t_remed_link_sources x
+         JOIN programacion.t_remed_links l ON l.link_id=x.link_id
+         WHERE x.rule_id=r.id
+       ),'[]'::jsonb),
+       'explicit_policy_references',coalesce((
+         SELECT jsonb_agg(jsonb_build_object(
+           'registry',pol.registry,'policy_code',pol.policy_code,
+           'policy_id',pol.policy_id,'state',pol.state,
+           'source_decision_id',pol.source_decision_id,
+           'source_decision_state',d.estado_normalizado,
+           'evidence_role','POLICY_REFERENCE_NOT_RULE_PARITY',
+           'policy_sha256',pol.policy_sha256
+         ) ORDER BY pol.registry,pol.policy_code),'[]'::jsonb)
+         FROM (
+           SELECT 'lf_ops.politicas_seguridad' registry,
+             p.security_policy_id::text policy_id,p.policy_code,p.status state,
+             p.source_decision_id,
+             encode(extensions.digest(convert_to(to_jsonb(p)::text,'UTF8'),'sha256'),'hex') policy_sha256
+           FROM lf_ops.politicas_seguridad p
+           WHERE p.security_policy_id::text=r.valor_config->>'security_policy_id'
+           UNION ALL
+           SELECT 'lf_ops.politicas_sesion',p.session_policy_id::text,
+             p.policy_code,p.status,p.source_decision_id,
+             encode(extensions.digest(convert_to(to_jsonb(p)::text,'UTF8'),'sha256'),'hex')
+           FROM lf_ops.politicas_sesion p
+           WHERE p.session_policy_id::text=r.valor_config->>'session_policy_id'
+           UNION ALL
+           SELECT 'lf_ops.politicas_rate_limit',p.rate_limit_policy_id::text,
+             p.policy_code,p.status,p.source_decision_id,
+             encode(extensions.digest(convert_to(to_jsonb(p)::text,'UTF8'),'sha256'),'hex')
+           FROM lf_ops.politicas_rate_limit p
+           WHERE p.rate_limit_policy_id::text=r.valor_config->>'rate_limit_policy_id'
+           UNION ALL
+           SELECT 'lf_ops.politicas_timeout',p.timeout_policy_id::text,
+             p.policy_code,p.status,p.source_decision_id,
+             encode(extensions.digest(convert_to(to_jsonb(p)::text,'UTF8'),'sha256'),'hex')
+           FROM lf_ops.politicas_timeout p
+           WHERE p.timeout_policy_id::text=r.valor_config->>'timeout_policy_id'
+           UNION ALL
+           SELECT 'lf_ops.otp_politicas',p.id::text,p.codigo,
+             p.estado,NULL::text,
+             encode(extensions.digest(convert_to(to_jsonb(p)::text,'UTF8'),'sha256'),'hex')
+           FROM lf_ops.otp_politicas p
+           WHERE p.codigo=r.valor_config->>'email_otp_policy_code'
+         ) pol LEFT JOIN public.lf_decisiones_gov d
+           ON d.id_decision=pol.source_decision_id
+       ),'[]'::jsonb),
+       'unresolved_policy_keys',coalesce((
+         SELECT jsonb_agg(jsonb_build_object('key',kv.key,'value',kv.value)
+           ORDER BY kv.key)
+         FROM jsonb_each(r.valor_config) kv
+         WHERE kv.key LIKE '%policy_id' OR kv.key LIKE '%policy_code'
+       ),'[]'::jsonb),
+       'rule_semantics_approved',false,
+       'promotion_authorized',false
+     ) AS evidence
+   FROM scope r
+ ), classified AS (
+  SELECT e.codigo,e.rule_sha,e.evidence,
+   CASE
+    WHEN jsonb_array_length(e.evidence->'source_decision_direct')>0
+      THEN 'DIRECT_DECISION_REFERENCE_REQUIRES_PARITY'
+    WHEN jsonb_array_length(e.evidence->'decision_text_mentions')>0
+      THEN 'DECISION_MENTION_REQUIRES_AUTHORITY_REVIEW'
+    WHEN jsonb_array_length(e.evidence->'explicit_policy_references')>0
+      THEN 'POLICY_LINEAGE_REQUIRES_AUTHORITY_REVIEW'
+    WHEN jsonb_array_length(e.evidence->'technical_links')>0
+      THEN 'TECHNICAL_LINEAGE_REQUIRES_AUTHORITY_REVIEW'
+    ELSE 'ORIGINAL_SOURCE_NOT_FOUND'
+   END status
+  FROM raw_evidence e
+ )
+ SELECT jsonb_build_object(
+  'status','IG_SOURCE_DISCOVERY_READ_ONLY',
+  'schema_version','LF_IG_RULE_SOURCE_RECOVERY_V1',
+  'screen_code',p_screen_code,'execution_id',p_execution_id,
+  'rule_count',count(*),'direct_decision_count',
+   count(*) FILTER(WHERE status='DIRECT_DECISION_REFERENCE_REQUIRES_PARITY'),
+  'source_lookup_count',
+   count(*) FILTER(WHERE status<>'DIRECT_DECISION_REFERENCE_REQUIRES_PARITY'),
+  'technical_linked_rule_count',
+   count(*) FILTER(WHERE jsonb_array_length(evidence->'technical_links')>0),
+  'policy_linked_rule_count',
+   count(*) FILTER(WHERE jsonb_array_length(evidence->'explicit_policy_references')>0),
+  'text_mentioned_rule_count',
+   count(*) FILTER(WHERE jsonb_array_length(evidence->'decision_text_mentions')>0),
+  'items',coalesce(jsonb_agg(jsonb_build_object(
+   'rule_code',codigo,'rule_snapshot_sha256',rule_sha,
+   'discovery_status',status,
+   'evidence',evidence,
+   'discovery_sha256',encode(extensions.digest(
+     convert_to(evidence::text,'UTF8'),'sha256'),'hex'),
+   'owner_approval_proven',false,
+   'action_authorized',false
+  ) ORDER BY codigo),'[]'::jsonb),
+  'owner_authority_inferred',false,'promoted',0,'human_queue_created',false
+ ) INTO result FROM classified;
+ RETURN result;
+END $recover$;
+
+REVOKE ALL ON FUNCTION public.lf_ig_rule_source_recovery_v1(text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_ig_rule_source_recovery_v1(text,text)
+ TO service_role;
+
 -- Input Governance proposes once, BEFORE Product Director starts work.
 -- This is read-only, not a second LLM and never a permit to promote.
 -- Source evidence is exactly the preexisting authority assessment; when
@@ -89,7 +273,7 @@ CREATE FUNCTION public.lf_ig_rule_proposal_prepare_v1(
 SET search_path='pg_catalog','public','lf_ops','extensions'
 AS $igproposal$
 DECLARE par public.lf_operation_execution%ROWTYPE;
- assess jsonb; proposals jsonb; v_screen_code text;
+ assess jsonb; proposals jsonb; recovery jsonb; v_screen_code text;
 BEGIN
  SELECT * INTO par FROM public.lf_operation_execution
  WHERE execution_id=p_execution_id AND operation_code='EJECUCION_PERFIL_LF'
@@ -121,6 +305,12 @@ BEGIN
  OR assess->>'action_authorized' IS DISTINCT FROM 'false'
  THEN RETURN jsonb_build_object('status','BLOCKED',
    'code','IG_PROPOSAL_SOURCE_ASSESSMENT_INVALID'); END IF;
+ recovery:=public.lf_ig_rule_source_recovery_v1(p_execution_id,v_screen_code);
+ IF recovery->>'status' IS DISTINCT FROM 'IG_SOURCE_DISCOVERY_READ_ONLY'
+ OR recovery->>'rule_count' IS DISTINCT FROM assess->>'candidate_count'
+ OR recovery->>'owner_authority_inferred' IS DISTINCT FROM 'false'
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+   'code','IG_PROPOSAL_SOURCE_DISCOVERY_UNTRUSTED_OR_DRIFT'); END IF;
  SELECT coalesce(jsonb_agg(
     jsonb_build_object(
       'rule_code',itm.value->>'rule_code',
@@ -147,8 +337,17 @@ BEGIN
       'rule_sha256',itm.value->>'rule_sha256',
       'source_decision_id',itm.value->>'source_decision_id',
       'source_decision_sha256',itm.value->>'source_decision_sha256',
+      'source_recovery',(
+       SELECT src.value FROM jsonb_array_elements(recovery->'items') src(value)
+       WHERE src.value->>'rule_code'=itm.value->>'rule_code'
+      ),
       'ig_proposal_sha256',encode(extensions.digest(
-         convert_to(itm.value::text,'UTF8'),'sha256'),'hex'),
+         convert_to(jsonb_build_object(
+           'authority_assessment',itm.value,
+           'source_recovery',(
+             SELECT src.value FROM jsonb_array_elements(recovery->'items') src(value)
+             WHERE src.value->>'rule_code'=itm.value->>'rule_code'
+           ))::text,'UTF8'),'sha256'),'hex'),
       'source_evidence',itm.value,
       'needs_human_decision',CASE
         WHEN itm.value->>'blocking_code'='ACTION_AUTHORIZATION_RECEIPT_REQUIRED'
@@ -163,6 +362,12 @@ BEGIN
    'status','IG_PROPOSAL_READY',
    'execution_id',p_execution_id,'screen_code',v_screen_code,
    'proposal_count',jsonb_array_length(proposals),
+   'source_discovery_summary',jsonb_build_object(
+    'rule_count',recovery->'rule_count',
+    'source_lookup_count',recovery->'source_lookup_count',
+    'technical_linked_rule_count',recovery->'technical_linked_rule_count',
+    'policy_linked_rule_count',recovery->'policy_linked_rule_count',
+    'text_mentioned_rule_count',recovery->'text_mentioned_rule_count'),
    'proposals',proposals,
    'next_actor','PERFIL-PRODUCT-DIRECTOR-LF',
    'next_action','PROFILE_REVIEW_EXISTING_IG_PROPOSAL',
