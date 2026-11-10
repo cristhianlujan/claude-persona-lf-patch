@@ -36,7 +36,17 @@ def _gap(code: str, *, target: str, source: str) -> dict:
             "impact_state": "UNKNOWN"}
 
 
-def _planned_build(a3: dict, a2: dict, target: str) -> dict:
+def _change_action(change_type: Any, policy: dict) -> str:
+    """Map declared A2 operation through a closed, externally inspectable set."""
+    aliases = policy.get("change_operation", {}).get("intent_aliases", {})
+    if not isinstance(change_type, str):
+        return "UNKNOWN"
+    matches = [action for action, values in aliases.items()
+               if isinstance(values, list) and change_type in values]
+    return matches[0] if len(matches) == 1 else "UNKNOWN"
+
+
+def _planned_build(a3: dict, a2: dict, target: str, target_action: str) -> dict:
     """Project the *to-be-built* obligations; no target code/destination exists.
 
     A2's build intention is not independent proof that no implementation
@@ -63,6 +73,9 @@ def _planned_build(a3: dict, a2: dict, target: str) -> dict:
             "requirement_code": rule["rule_code"],
             "evidence_origin": "S1_A3",
             "impact_class": "PLANNED_NEW_IMPLEMENTATION_OBLIGATION",
+            "change_action": "CREATE",
+            "definition_action": "REUSE",
+            "change_action_basis": "A2_NEW_TARGET_INTENT_PLUS_A3_APPROVED_DEFINITION",
             "existing_code_delta": False,
             "source_status": "VIGENTE",
             "source_attested": False,
@@ -81,6 +94,10 @@ def _planned_build(a3: dict, a2: dict, target: str) -> dict:
                 "affected_ref": item["source_ref"],
                 "evidence_origin": "S1_A3",
                 "impact_class": "PLANNED_MATERIAL_DEFINITION",
+                "change_action": "CREATE" if item["source_status"] == "VIGENTE" else "UNKNOWN",
+                "definition_action": "REUSE" if item["source_status"] == "VIGENTE" else "UNKNOWN",
+                "change_action_basis": "A2_NEW_TARGET_INTENT_PLUS_A3_APPROVED_DEFINITION"
+                    if item["source_status"] == "VIGENTE" else "EXCLUDED_SOURCE_NOT_APPROVED",
                 "source_status": item["source_status"],
                 "existing_code_delta": False,
                 "source_attested": False,
@@ -105,6 +122,8 @@ def _planned_build(a3: dict, a2: dict, target: str) -> dict:
         "status": "PLANNED_BUILD_IMPACT_UNATTESTED",
         "business": "LF", "target_ref": target,
         "requested_change_type": a2.get("change_type"),
+        "target_change_action": target_action,
+        "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
         "analysis_mode": "PLANNED_BUILD",
         "target_code_state": "NOT_ESTABLISHED_BY_SOURCE",
         "target_code_destination": None,
@@ -156,10 +175,19 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         return _blocked("A4_A3_NOT_ADMISSIBLE_EVIDENCE_CANDIDATE", target=target)
     if not isinstance(a3.get("source_refs"), list) or not a3["source_refs"]:
         return _blocked("A4_A3_EVIDENCE_REFS_REQUIRED", target=target)
+    target_action = _change_action(a2.get("change_type"), policy)
+    if target_action == "UNKNOWN":
+        return {
+            **_blocked("A4_CHANGE_OPERATION_NOT_CLASSIFIABLE", target=target),
+            "status": "NEED_MORE_EVIDENCE",
+            "requested_change_type": a2.get("change_type"),
+            "target_change_action": "UNKNOWN",
+            "change_action_basis": "UNRECOGNIZED_A2_OPERATION",
+        }
     build_intent = a2.get("change_type") in BUILD_INTENTS
     if readback is None:
         if build_intent:
-            return _planned_build(a3, a2, target)
+            return _planned_build(a3, a2, target, target_action)
         return {
             **_blocked("A4_EXACT_HOST_SOURCE_READBACK_REQUIRED", target=target),
             "status": "NEED_MORE_EVIDENCE",
@@ -174,7 +202,7 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
     binding = readback.get("identity_binding")
     if inv is None and binding is None:
         if build_intent:
-            return _planned_build(a3, a2, target)
+            return _planned_build(a3, a2, target, target_action)
         return {
             **_blocked("A4_TARGET_NOT_MAPPED_TO_INVENTORY_OBJECT", target=target),
             "status": "IMPACT_UNKNOWN",
@@ -234,6 +262,9 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
             "confidence": item["min_confidence"],
             "evidence_origin": "S4_IMPACT_CORE",
             "impact_class": "POTENTIAL_GRAPH_RELATION_NOT_BEHAVIOR_PROOF",
+            "change_action": "UNKNOWN",
+            "definition_action": "UNKNOWN",
+            "change_action_basis": "GRAPH_RELATION_ONLY_NO_ITEM_DELTA",
         }
         (direct if item["depth"] == 1 else indirect).append(projected)
     for item in deps["rows"]:
@@ -255,6 +286,8 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
             "confidence": item["confidence"],
             "evidence_type": item.get("evidence_type"),
             "evidence_origin": "S5_DEPENDENCIES",
+            "change_action": "UNKNOWN",
+            "change_action_basis": "DEPENDENCY_EDGE_NOT_A_REQUESTED_CHANGE",
         }
         paths.append(projected)
         if item["direction"] == "IN":
@@ -282,6 +315,8 @@ def run(a3: Any, a2: Any, readback: Any = None, *, business: str = "LF") -> dict
         "status": "PROJECTED_UNATTESTED" if not unresolved else "IMPACT_UNKNOWN",
         "business": "LF", "target_ref": target,
         "requested_change_type": a2.get("change_type"),
+        "target_change_action": target_action,
+        "change_action_basis": "A2_DECLARED_TARGET_INTENT_UNVERIFIED",
         "technical_root_ref": root,
         "direct_impacts": direct, "indirect_impacts": indirect,
         "consumers": consumers, "dependency_paths": paths,
