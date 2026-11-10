@@ -19,7 +19,6 @@ TREE="72e5f54ca75cb3a1186dbc160469cf8f5dd070c5"
 N="912c4ad9ea71f48edbd1ac58089441f9ed2c3449"
 BUILDER="ex6://principal/gpt-native-worker"
 REVIEWER="ex6://unattested/independent-reviewer"
-active_ref()="ex6://sandbox/actions/runs/42707967927/artifacts/13715275651"
 
 def h(obj):
     return hashlib.sha256(json.dumps(obj,sort_keys=True,
