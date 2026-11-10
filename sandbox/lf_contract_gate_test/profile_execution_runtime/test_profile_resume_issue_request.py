@@ -38,6 +38,8 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
             self.get_request = mod["governed_request"]
             self.validator_continuation = mod["is_direct_validator_continuation"]
             self.blocked_ig_receipt = mod["record_blocked_ig_receipt"]
+            self.unwrap_profile_native_evidence = mod["unwrap_profile_native_evidence"]
+            self.attach_bound_evidence_manifest = mod["attach_bound_evidence_manifest"]
 
     def check(self):
         self.event_path.write_text(json.dumps(self.event), encoding="utf-8")
@@ -201,6 +203,55 @@ class NativeProfileIssueRequestTest(unittest.TestCase):
                         code, bad, execution_id, profile_code))
                     self.assertFalse((Path(self.tmp.name) /
                                       "profile-native-continuation.json").exists())
+
+    def test_reparador_v06_manifest_is_separate_from_raw_and_sha_bound(self):
+        profile = "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        manifest = {"manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+                    "bundle_id": "evidence-current-case",
+                    "evidence": [{"evidence_id": "EV-CURRENT",
+                                  "source_locator": "supabase://public/lf_operation_execution/EXAMPLE",
+                                  "state": "CURRENT"}]}
+        candidate = {"status": "NEEDS_MORE_EVIDENCE", "profile_pack_id": "SYSTEMIC_ROOT_CAUSE_REPAIR_LF_V0_6"}
+        envelope = {"candidate": candidate, "evidence_manifest": manifest}
+        self.event["issue"]["body"] = json.dumps({
+            "schema_version": SCHEMA, "execution_id": "EXEC-PROFILE-GATE2-EXAMPLE",
+            "profile_output": envelope})
+        self.assertEqual(self.check()[2], envelope)
+        actual, source = self.unwrap_profile_native_evidence(profile, envelope)
+        self.assertEqual(actual, candidate)
+        self.assertEqual(source, manifest)
+        packet = {"schema": "PROFILE_OUTPUT_VALIDATION_BINDING_V1"}
+        import hashlib
+        root = Path(self.tmp.name)
+        self.attach_bound_evidence_manifest(root, packet, source)
+        stored = root / packet["evidence_manifest_ref"]
+        self.assertEqual(stored.name, "profile-native-evidence-manifest.json")
+        self.assertEqual(packet["evidence_manifest_sha256"], hashlib.sha256(stored.read_bytes()).hexdigest())
+        self.assertEqual(json.loads(stored.read_text()), manifest)
+
+    def test_v06_missing_or_malformed_manifest_fails_closed(self):
+        profile = "profiles/systemic_root_cause_repair_lf/SKILL.md"
+        candidate = {"status": "NEEDS_MORE_EVIDENCE"}
+        valid = {"manifest_version": "SRCR_EVIDENCE_MANIFEST_V1",
+                 "evidence": [{"evidence_id": "EV-A"}]}
+        cases = [
+            candidate,
+            {"candidate": candidate},
+            {"candidate": candidate, "evidence_manifest": None},
+            {"candidate": [], "evidence_manifest": valid},
+            {"candidate": candidate, "evidence_manifest": {"manifest_version": "BAD", "evidence": [{"evidence_id": "EV-A"}]}},
+            {"candidate": candidate, "evidence_manifest": {"manifest_version": "SRCR_EVIDENCE_MANIFEST_V1", "evidence": []}},
+            {"candidate": candidate, "evidence_manifest": valid, "extra": "surplus"},
+        ]
+        for case in cases:
+            with self.subTest(case=case), self.assertRaises(ValueError):
+                self.unwrap_profile_native_evidence(profile, case)
+        other = "profiles/product_director_lf/SKILL.md"
+        self.assertEqual(self.unwrap_profile_native_evidence(other, candidate), (candidate, None))
+        packet = {}
+        with self.assertRaises(ValueError):
+            self.attach_bound_evidence_manifest(Path(self.tmp.name), packet, {"junk": "x" * 25000})
+        self.assertFalse((Path(self.tmp.name) / "profile-native-evidence-manifest.json").exists())
 
     def test_valid_issue_payload(self):
         self.assertEqual(self.check(), ("EXEC-PROFILE-GATE2-EXAMPLE", "", None, None))
