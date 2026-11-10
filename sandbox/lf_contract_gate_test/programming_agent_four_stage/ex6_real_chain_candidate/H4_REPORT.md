@@ -12,9 +12,9 @@ Se ejecutó un diagnóstico unificado contra **productores originales v1** (y el
 
 `tools/ex6_n1_receipts_v1.py` verifica en **ambos archivos originales** los SHA-256 de ZIP y JSON, sidecars, miembros, versión, flags AOSP, commits, alcance, stdout/stderr y autoridad False; `tests/test_ex6_n1_one_pass_v1.py` cubre mutación de un byte en ambos ZIP y selección aislada N/N+1, sin tocar el examen oculto.
 
-**CI de prueba real:** [LF Actions #42724864253](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42724864253) SUCCESS: **41/41 tests** y ejecución explícita de `ex6_n1_one_pass_v1.run_n1()` que invoca `ex6_one_pass_v1.run_all()` **una vez para PG-04→PG-14**. Artefacto `h4-ex6-n1-pg04-pg14-source-only` ID `13720714984`, SHA-256 ZIP `00ae236735b8cf363c3cc25d4632fbc8fc398e4bce18537bc5975b1185234a96`; contiene el JSON real de la pasada y el marcador `EX6_N1_PG04_PG14_ONE_PASS_SOURCE_ONLY_PASS`. El workflow auxiliar se retira del PR final para conservar el punto de entrada único PASE; su run y artefacto siguen como historial.
+**CI de prueba real:** [LF Actions #42725187981](https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/42725187981) SUCCESS: **41/41 tests** y ejecución explícita de `ex6_n1_one_pass_v1.run_n1()` que invoca `ex6_one_pass_v1.run_all()` **una vez para PG-04→PG-14**. Artefacto `h4-ex6-n1-pg04-pg14-source-only` ID `13722146342`, SHA-256 ZIP `555d84280e52bb0d44f685e871d13bbc0ac3d92dc711fbd81264769d689dfaa3`; contiene el JSON real de la pasada y el marcador `EX6_N1_PG04_PG14_ONE_PASS_SOURCE_ONLY_PASS`. El workflow auxiliar se retira del PR final para conservar el punto de entrada único PASE; su run y artefacto siguen como historial.
 
-**Readback v2 en runner desechable con recibo N+1 activo:** PostgreSQL loopback `pg12_test_ex6`, SHA de payload escrito y leído `1edc9ab23edbe59445153ec60eb3a966beefc92c8d9242c23cc758c6b417a2a1`, 5/5 mutaciones Git locales bloqueadas y Testing simulado rechaza manipulación. Se registran `handoff_allowed=False`/`production_authority=False`, Análisis `NOT_READY`, Testing real NO invocado.
+**Readback v2 en runner desechable con recibo N+1 activo:** PostgreSQL loopback `pg12_test_ex6`, SHA de payload escrito y leído `b0af5ff999b4a4310d1d028c619549ba397b6102cc7897a850334c895f82971c`, 5/5 mutaciones Git locales bloqueadas y Testing simulado rechaza manipulación. Se registran `handoff_allowed=False`/`production_authority=False`, Análisis `NOT_READY`, Testing real NO invocado.
 
 ### Tabla final — N, N+1 y después de v2
 
@@ -28,7 +28,7 @@ Se ejecutó un diagnóstico unificado contra **productores originales v1** (y el
 | PG-09 | C1 v1 `REQUIRES_DECISION` | C1 v1 igual; 0 llamadas API | C1 v2 `REPORTED_WITHIN_BUDGET_UNVERIFIED`, suscripción `NOT_EVALUATED` |
 | PG-10 | PASS estructural | PASS estructural | Escenarios oficiales aún no acreditados |
 | PG-11 | 3 archivos, 4 enlaces; REM-D4 AOSP FAIL | 3 archivos, 4 enlaces; REM-D4 visible PASS y AOSP PASS | C1–C5 v2 N:M source-only; revisor independiente pendiente |
-| PG-12 | C1/C2 source-only para identidad Git **N** | C1/C2 source-only con linter N+1, identidad de parche permanece **N** | C1–C4 v2 y readback PostgreSQL local PASS (`1edc9ab2…a2a1`); **no readback de identidad Git N+1** |
+| PG-12 | C1/C2 source-only para identidad Git **N** | C1/C2 source-only con linter N+1, identidad de parche permanece **N** | C1–C4 v2 y readback PostgreSQL local PASS (`b0af5ff9…971c`); **no readback de identidad Git N+1** |
 | PG-13 | C1 v1 BLOCK `C1_UPSTREAM_SCHEMA` | C1 v1 sigue BLOCK `C1_UPSTREAM_SCHEMA` | C1–C3 v2 y **5/5 ataques** Git locales bloqueados; freeze de blobs **N**, no del commit N+1 ni freeze productivo |
 | PG-14 | C1 v1 BLOCK `C1_UPSTREAM_SCHEMA` | C1 v1 sigue BLOCK `C1_UPSTREAM_SCHEMA` | C1–C3 v2 y receptor Testing **simulado**: forma ACCEPT, tamper BLOCK; Análisis NOT_READY |
 
