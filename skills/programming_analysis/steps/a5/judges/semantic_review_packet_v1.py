@@ -81,6 +81,7 @@ def build(inputs: Any, output: Any, *, batch_size: int = 25) -> dict:
         "ledger_digest_sha256":ledger.get("ledger_fingerprint_sha256"),
         "total_items":len(items),
         "batches":batches,
+        "architecture_decision_items":deepcopy(output.get("architecture_decision_items", [])),
         "material_question_judgment":"REQUIRES_INDEPENDENT_SEMANTIC_REVIEW",
         "checks":deepcopy(RUBRIC),
         "citation_requirement":CITATION_REQUIREMENT,
