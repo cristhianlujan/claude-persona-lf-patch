@@ -1,0 +1,11 @@
+{
+  "solution_ref": "lf-product-rule-create-child-3774",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "supabase/migrations/20261110150000_lf_product_rule_create_child_v1.sql": "MIGRATION",
+    "sandbox/lf_contract_gate_test/product_rule_create_child_v1/lf_create_handler_pg17.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/product_rule_create_child_v1/lf_create_seed_pg17.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/product_rule_create_child_v1/test_rule_create_pg17.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-product-rule-create-child-3774.json": "CHANGESET_MANIFEST"
+  }
+}
