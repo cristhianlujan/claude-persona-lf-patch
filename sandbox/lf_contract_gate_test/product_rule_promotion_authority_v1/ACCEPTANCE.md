@@ -26,3 +26,55 @@
 
 **Cierre técnico** = SQL y tests positivos/negativos PASS sobre HEAD congelado.  
 **Cierre operativo** = issuer externo, readback Supabase, 33 reglas evaluadas, Product Director+IG E2E, trazabilidad de cada decisión y autorización de despliegue.
+
+## Marca filtrable y paso posterior al juez (implementación candidata)
+
+Migration `20261110181000_lf_rule_authority_marks_and_product_handoff_v1.sql`.
+
+**Ruta oficial sin nueva etapa numerada ni segundo perfil:**
+
+```text
+ACT-0001 → Product Director → IG / fuentes / reglas (40/50)
+  → output_validate (60) → semantic_judge (70)
+  → subacción 70.5: lf_rule_authority_mark_refresh_v1(RUN, pantalla, evidencia)
+     - guarda 1 marca por regla CANDIDATO
+     - SOURCE_LOOKUP_REQUIRED = recuperar fuente, NO aprobación humana inmediata
+     - SOURCE_NOT_OWNER_APPROVED = resolver decisión actual sin promoción
+     - MATERIAL_PARITY_UNPROVEN = corregir semántica y revalidar
+     - ACTION_AUTHORIZATION_RECEIPT_REQUIRED = autoridad semántica demostrada, falta permiso de ACCIÓN
+  → subacción 70.5b: lf_rule_promotion_request_eligible_v1(RUN, pantalla, regla)
+     - solo cuando el emisor protegido está configurado
+     - reutiliza lf_rule_promotion_request_v1; NO inventa HUMAN:
+     - registra PROMOTION_REQUESTED; espera recibo independiente
+  → subacción 70.6: lf_rule_promotion_complete_tracked_v1(RUN, pantalla, regla, receipt_id)
+     - reutiliza lf_rule_promotion_auto_ratify_v1 + apply oficial
+     - APPLIED_VERIFIED + readback → PROMOTED_VERIFIED
+  → report_output (80) con marcas y bloqueos por regla
+```
+
+**No cambiar los 11 pasos canónicos de EJECUCION_PERFIL_LF.** Las subacciones son llamadas bajo el RUN vigente, nunca un segundo Router ni una llamada del Router al perfil.
+
+**Consulta para seguimiento en Supabase (solo lectura):**
+
+```sql
+SELECT pantalla_codigo, regla_codigo, estado_regla, marca,
+       estado_flujo, motivo_codigo, source_decision_id,
+       promotion_id, execution_id, evidence_ref, last_checked_at
+FROM public.v_lf_rule_authority_filter_v1
+WHERE pantalla_codigo = 'B2B-AUTH-001'
+  AND marca IN (
+    'SOURCE_LOOKUP_REQUIRED',
+    'SOURCE_NOT_OWNER_APPROVED',
+    'MATERIAL_PARITY_UNPROVEN',
+    'REVALIDAR_SNAPSHOT',
+    'ACTION_AUTHORIZATION_RECEIPT_REQUIRED',
+    'PROMOTION_REQUESTED',
+    'PROMOVIDA_VERIFICADA')
+ORDER BY marca, regla_codigo;
+```
+
+La vista enumera reglas incluso antes de la primera corrida mediante `SIN_EVALUACION_REGISTRADA`. Las marcas efectivamente evaluadas se guardan en `public.lf_rule_authority_tracking_v1` con SHA y evidencia. Una modificación de la regla devuelve `REVALIDAR_SNAPSHOT` en la vista; un registro anterior NO autoriza escritura. `PROMOVIDA_VERIFICADA` exige estado VIGENTE y registro APPLIED en la operación de promoción.
+
+**Reglas B2B actuales:** 32 SOURCE_LOOKUP_REQUIRED y 1 SOURCE_NOT_OWNER_APPROVED con la evidencia observada, **no 32 decisiones humanas**. La ejecución automática de búsqueda de las 32 fuentes sigue sin recibo, y la marca por sí sola no las remedia ni promociona. Estas fuentes deben resolverse por Product Director/IG, actualizando únicamente los metadatos gobernados de procedencia y reejecutando el juez.
+
+**Limitaciones de activación:** Supabase actual no tiene el issuer `LF_RULE_PROMOTION_ACTION_AUTHORITY_V1`, las migraciones no están desplegadas, y Product Director no tiene E2E write-enabled demostrado. El paquete conserva NO-GO. No se crea issuer ni se pone service_role en Router.
