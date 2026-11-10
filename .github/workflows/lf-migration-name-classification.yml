@@ -77,3 +77,22 @@ jobs:
           set -euo pipefail
           test -n "$PG_CONTAINER"
           python3 sandbox/lf_contract_gate_test/product_rule_promotion_authority_v1/test_pg17_authority.py
+
+  product-rule-authority-edge-tests:
+    name: Product Director OIDC authority Edge tests
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck governed Product authority transport
+        run: |
+          deno check supabase/functions/lf-profiles-governance-caller-v1/profile_continuation.ts
+          deno check supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts
+      - name: Run exact OIDC and post-judge workflow tests
+        run: deno test supabase/functions/lf-profiles-governance-caller-v1/profile_continuation_test.ts
