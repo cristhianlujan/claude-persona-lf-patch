@@ -79,6 +79,8 @@ BEGIN
       s.decision->'raw_payload'->>'title'=s.titulo AND
       s.decision->'raw_payload'->>'description'=s.descripcion AND
       s.decision->'raw_payload'->>'reason' IS NOT DISTINCT FROM s.razon AND
+      s.decision->'raw_payload'->>'category'=s.categoria AND
+      s.decision->'raw_payload'->>'transversal'=s.es_transversal::text AND
       s.decision->'raw_payload'->'rule_config' IS NOT DISTINCT FROM s.valor_config
       AS exact_material_parity,
     EXISTS(SELECT 1 FROM public.lf_decisiones_gov newer
@@ -93,9 +95,9 @@ BEGIN
     CASE
       WHEN source_count=0 THEN 'SOURCE_LOOKUP_REQUIRED'
       WHEN source_count<>1 THEN 'SOURCE_AMBIGUOUS'
-      WHEN NOT source_owner_approved THEN 'SOURCE_NOT_OWNER_APPROVED'
+      WHEN NOT coalesce(source_owner_approved,false) THEN 'SOURCE_NOT_OWNER_APPROVED'
       WHEN has_successor THEN 'SOURCE_SUPERSEDED_RECONCILE'
-      WHEN NOT exact_material_parity THEN 'MATERIAL_PARITY_UNPROVEN'
+      WHEN NOT coalesce(exact_material_parity,false) THEN 'MATERIAL_PARITY_UNPROVEN'
       WHEN coalesce(pendiente_decision,false) THEN 'PENDING_DECISION_UNRESOLVED'
       WHEN coalesce(valor_config->>'production_authorized','true')='false'
         THEN 'PRODUCTION_ACTIVATION_NOT_AUTHORIZED'
