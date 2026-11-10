@@ -1,0 +1,10 @@
+{
+  "solution_ref": "lf-rule-owner-super-admin-3779",
+  "paths": {
+    ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
+    "sandbox/lf_contract_gate_test/changesets/lf-rule-owner-super-admin-3779.json": "CHANGESET_MANIFEST",
+    "sandbox/lf_contract_gate_test/rules_owner_super_admin_v1/rule_scope_preimage_20261110.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rules_owner_super_admin_v1/test_pg17_owner_backfill.py": "ENGINEERING_CHECKPOINTS",
+    "supabase/migrations/20261110230000_lf_rule_owner_super_admin_assignment_v1.sql": "MIGRATION"
+  }
+}
