@@ -53,7 +53,7 @@ def render(out):
             lines.append("  - "+key+": "+pretty(value))
         lines.append("")
     lines.extend(["## Decisiones y controles globales",""])
-    for key in ("decision_context","pending_owner_decisions","pending_evidence_items",
+    for key in ("decision_context","architecture_decision_items","pending_owner_decisions","pending_evidence_items",
                 "unresolved_material_questions","material_coverage",
                 "material_adr_triggers_true","material_adr_triggers_unknown"):
         lines.append("### "+key)
