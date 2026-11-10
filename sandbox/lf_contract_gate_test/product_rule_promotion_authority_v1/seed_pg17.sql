@@ -26,6 +26,15 @@ CREATE TABLE programacion.provenance_receipts(
  issuer_identity text NOT NULL,verification_ref text NOT NULL,
  payload jsonb NOT NULL,receipt_sha256 text NOT NULL,created_at timestamptz DEFAULT now()
 );
+-- Freeze the exact currently deployed eight-kind CHECK, before the candidate
+-- migration extends it. This prevents an optimistic synthetic schema.
+ALTER TABLE programacion.provenance_receipts
+ ADD CONSTRAINT provenance_receipts_receipt_kind_check
+ CHECK (receipt_kind IN (
+  'RETRIEVAL_PASS','TRACEABILITY_GRAPH','PLAYWRIGHT_RUN',
+  'EVIDENCE_VERIFICATION','AUDIT_VERDICT','HUMAN_DECISION',
+  'AUD24_F05_BASELINE_AUTHORIZATION','HUMAN_ROUTING_DECISION'
+ ));
 CREATE UNIQUE INDEX rule_promotion_test_rule_unique
  ON lf_ops.reglas(codigo);
 INSERT INTO public.lf_profile_write_authority_v1(profile_code,operation_code,status)
