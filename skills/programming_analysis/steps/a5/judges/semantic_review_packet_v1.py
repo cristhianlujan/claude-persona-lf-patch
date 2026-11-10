@@ -41,6 +41,18 @@ RUBRIC = [
         "check": "A6_IMPLEMENTABILITY_USEFULNESS",
         "question": "For each material item, can A6 read its original content, required action, evidence and unresolved specifics without material reinterpretation?",
     },
+    {
+        "check": "RULE_IDENTITY_NO_DUPLICATION",
+        "question": "Are A3 approved/deferred/excluded rule identities consolidated without losing original occurrences, inherited bindings or policy dependencies?",
+    },
+    {
+        "check": "FRONTEND_BACKEND_RESPONSIBILITY_GROUNDED",
+        "question": "Does each rule's Frontend and Backend applicability and responsibility follow explicit source-backed information, without imposing one layer on all rules?",
+    },
+    {
+        "check": "NO_LAYER_GUESS_FROM_RULE_NAME",
+        "question": "Does unknown applicability remain UNKNOWN instead of being inferred from rule title, category, screen identity or a guessed code destination?",
+    },
 ]
 CITATION_REQUIREMENT = "quote the source item source_payload verbatim and the output decision item field"
 
@@ -82,6 +94,7 @@ def build(inputs: Any, output: Any, *, batch_size: int = 25) -> dict:
         "total_items":len(items),
         "batches":batches,
         "architecture_decision_items":deepcopy(output.get("architecture_decision_items", [])),
+        "rule_profiles":deepcopy(output.get("rule_profiles")),
         "material_question_judgment":"REQUIRES_INDEPENDENT_SEMANTIC_REVIEW",
         "checks":deepcopy(RUBRIC),
         "citation_requirement":CITATION_REQUIREMENT,
