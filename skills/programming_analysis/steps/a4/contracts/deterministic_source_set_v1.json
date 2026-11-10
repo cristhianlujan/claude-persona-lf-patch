@@ -130,7 +130,7 @@
         "S1_A3",
         "S2_A2"
       ],
-      "direct_output": "Source-linked scoped implementation obligations from approved rule candidates and material sections",
+      "direct_output": "CREATION obligations on new target, each with change_action=CREATE and source definition_action=REUSE; A2 intent is unverified, not authority to create",
       "excluded": "Pending/candidate definitions and policy-dependent rules without approved binding",
       "existing_dependencies": "No source-qualified existing asset => UNKNOWN, not NO_IMPACT",
       "source_research": "Only targeted A3 readback if a material decision can change"
@@ -144,7 +144,70 @@
         "S3_INV_OBJECT",
         "S4_IMPACT_CORE",
         "S5_DEPENDENCIES"
-      ]
+      ],
+      "expected_item_change_action": "UNKNOWN without exact per-item before/after evidence"
     }
+  },
+  "change_operation": {
+    "scope": "CLASSIFY_TARGET_ACTION_AND_PER_ITEM_IMPLEMENTATION; NOT AN AUTHORIZATION",
+    "action_vocabulary": [
+      "CREATE",
+      "MODIFY",
+      "DELETE",
+      "REPLACE",
+      "REUSE",
+      "NO_CHANGE",
+      "UNKNOWN"
+    ],
+    "intent_aliases": {
+      "CREATE": [
+        "CREATE",
+        "CREATE_SCREEN",
+        "IMPLEMENT",
+        "IMPLEMENT_NEW",
+        "BUILD_NEW"
+      ],
+      "MODIFY": [
+        "MODIFY",
+        "UPDATE",
+        "PATCH",
+        "REFACTOR",
+        "RESTRUCTURE"
+      ],
+      "DELETE": [
+        "DELETE",
+        "REMOVE"
+      ],
+      "REPLACE": [
+        "REPLACE"
+      ],
+      "REUSE": [
+        "REUSE",
+        "USE_AS_IS"
+      ],
+      "NO_CHANGE": [
+        "NO_CHANGE"
+      ]
+    },
+    "unsupported_intent": "UNKNOWN_WITH_EXPLICIT_GAP_NO_INFERRED_CHANGE",
+    "target_intent_is_not_implementation_fact": true,
+    "item_action_rules": {
+      "PLANNED_BUILD": "Source rule/field existing => definition_action=REUSE; new target screen obligation => change_action=CREATE; never claim existing policy is created",
+      "EXISTING_CHANGE": "Graph edges imply POSSIBLE_IMPACT, not item change; change_action=UNKNOWN until exact item-level delta is provided",
+      "DELETE": "Requires explicit A2 intent and target authority; does not execute deletion",
+      "REPLACE": "Requires explicit A2 intent and comparison of old/new; no inferred replacement from missing path",
+      "REUSE": "No code mutation; only claim REUSE_AS_IS/NO_CHANGE if exact currentness and parity independently evidenced",
+      "NO_CHANGE": "Cannot be concluded from a zero-row impact graph"
+    },
+    "output_fields": [
+      "requested_change_type",
+      "target_change_action",
+      "change_action_basis",
+      "direct_impacts[].change_action",
+      "direct_impacts[].definition_action",
+      "direct_impacts[].change_action_basis"
+    ],
+    "unapproved_source_definition_is_not_changed": true,
+    "target_code_destination_required": false
   }
 }
