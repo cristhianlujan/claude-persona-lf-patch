@@ -40,7 +40,27 @@ def render(out):
                 "candidate_independent_scope_available","source_attested",
                 "independent_judge_verified","a6_allowed","no_write_performed"):
         lines.append("- "+key+": "+pretty(out.get(key)))
-    lines.extend(["","## Detalle íntegro de cada elemento material",""])
+    profiles=out.get("rule_profiles",{})
+    cards=profiles.get("rules",[]) if isinstance(profiles,dict) else []
+    lines.extend(["","## Ficha completa por regla única y capa",""])
+    for i,rule in enumerate(cards,1):
+        lines.append("### Regla "+str(i)+" de "+str(len(cards))+": "+str(rule.get("rule_code")))
+        for key in ("rule_source_ref","title","description","rule_status","pending_decision",
+                    "implementation_scope","scope_approved_source_candidate",
+                    "inheritance","policy_dependencies","policy_objects","material_item_ids",
+                    "implementation_impacts","layer_classification","layer_verification_state",
+                    "unresolved_layer_evidence","rule_source_row","rule_fingerprint_sha256"):
+            lines.append("- "+key+": "+pretty(rule.get(key)))
+        for layer in ("FRONTEND","BACKEND"):
+            lines.append("- **"+layer+"**:")
+            for key,value in rule["layers"][layer].items():
+                lines.append("  - "+key+": "+pretty(value))
+        lines.append("")
+    lines.append("### Reglas excluidas con identidad incompleta")
+    for item in profiles.get("unresolved_rule_identities",[]) if isinstance(profiles,dict) else []:
+        lines.append("- "+pretty(item))
+    lines.append("")
+    lines.extend(["## Detalle íntegro de cada elemento material",""])
     for idx,item in enumerate(out.get("decision_items",[]),1):
         lines.append("### Elemento "+str(idx)+" de "+str(len(out["decision_items"])))
         for key in ("decision_item_id","kind","source_stage","source_path","subject_ref",
