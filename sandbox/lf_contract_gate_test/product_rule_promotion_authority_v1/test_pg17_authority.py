@@ -63,6 +63,57 @@ def main():
         "EXECUTE FUNCTION public.lf_rule_promotion_guard_v1();")
     load(ROOT/"supabase/migrations/20261110170000_lf_rule_promotion_governed_authority_v1.sql")
     load(ROOT/"supabase/migrations/20261110181000_lf_rule_authority_marks_and_product_handoff_v1.sql")
+    # IG proposes BEFORE the model step-50 result; the same Product model reviews.
+    ig=json.loads(sql(f"SELECT public.lf_ig_rule_proposal_prepare_v1("
+        f"'{PARENT}','B2B-AUTH-001');"))
+    check("IG_PROPOSES_BEFORE_PRODUCT_REVIEW",
+          ig.get("status")=="IG_PROPOSAL_READY" and ig.get("proposal_count")==6)
+    check("IG_MISSING_SOURCE_NO_FAKE_BUSINESS_APPROVAL",
+          next(p for p in ig["proposals"] if p["rule_code"]=="TEST-RULE-DOC-001")
+          ["proposed_action"]=="RECOVER_ORIGINAL_AUTHORITY")
+    check("IG_SOURCE_APPROVED_PROPOSES_GOVERNED_ACTION",
+          next(p for p in ig["proposals"] if p["rule_code"]==RULE)
+          ["proposed_action"]=="REQUEST_GOVERNED_PROMOTION")
+    sql(f"UPDATE public.lf_operation_execution_steps SET status='BLOCKED_STEP_NOT_CLEAN'"
+        f" WHERE execution_id='{PARENT}' AND step_id='input_validate';")
+    blocked_ig=json.loads(sql(f"SELECT public.lf_ig_rule_proposal_prepare_v1("
+        f"'{PARENT}','B2B-AUTH-001');"))
+    check("IG_PROPOSAL_REQUIRES_REAL_INPUT_VALIDATION",
+          blocked_ig.get("code")=="IG_PROPOSAL_INPUT_GOVERNANCE_STEP40_REQUIRED")
+    sql(f"UPDATE public.lf_operation_execution_steps SET status='STEP_PASS_WITH_EVIDENCE'"
+        f" WHERE execution_id='{PARENT}' AND step_id='input_validate';")
+
+    # Before the exact Product response, a clean judge alone MUST NOT create
+    # a mark or authorize the candidate.
+    missing=json.loads(sql(f"SELECT public.lf_rule_authority_mark_refresh_v1("
+      f"'{PARENT}','B2B-AUTH-001','PG17_SYNTHETIC/70');"))
+    check("NO_PRODUCT_REVIEW_NO_MARK",
+          missing.get("code")=="PRODUCT_IG_PROPOSAL_REVIEW_MISSING_OR_DRIFT")
+    check("NO_PRODUCT_REVIEW_ZERO_WRITES",
+          sql("SELECT count(*) FROM public.lf_rule_authority_tracking_v1;")=="0")
+
+    # Synthetic Product output explicitly reviews each IG proposal, binding
+    # exact proposal hashes. No extra IG semantic LLM call is required.
+    sql(
+      "UPDATE public.lf_operation_execution_steps st SET evidence_payload="
+      "jsonb_set(st.evidence_payload,'{profile_output}',"
+      "(st.evidence_payload->'profile_output') || jsonb_build_object("
+      "'traceability',jsonb_build_object('ig_rule_proposal_decisions',"
+      "(SELECT jsonb_agg(jsonb_build_object("
+      "'rule_code',p.value->>'rule_code',"
+      "'ig_proposal_sha256',p.value->>'ig_proposal_sha256',"
+      "'disposition','ACCEPT_PROPOSAL',"
+      "'rationale','Same Product Director reviewed exact original IG proposal'))"
+      " FROM jsonb_array_elements("
+      f" (public.lf_ig_rule_proposal_prepare_v1('{PARENT}','B2B-AUTH-001')->'proposals')"
+      ") p(value)))))"
+      f" WHERE st.execution_id='{PARENT}' AND st.step_id='execute_profile';"
+    )
+    check("PRODUCT_REVIEW_SIX_EXACT_SHA",
+          sql("SELECT jsonb_array_length(evidence_payload#>"
+              "'{profile_output,traceability,ig_rule_proposal_decisions}')"
+              " FROM public.lf_operation_execution_steps WHERE "
+              f"execution_id='{PARENT}' AND step_id='execute_profile';")=="6")
     current=assessment()
     check("READ_ONLY_STATUS",current["status"]=="ASSESSED_READ_ONLY")
     check("ALL_SYNTHETIC_CANDIDATES",current["candidate_count"]==6)
