@@ -213,6 +213,9 @@ DECLARE
  v_new_config jsonb;
  v_new_transversal boolean;
  v_new_origen text;
+ v_max_patch_fields integer;
+ v_expected_result text;
+ v_expected_state text;
  v_evidence text;
  v_steps text[] := ARRAY[
   'ekb_preflight','classify','existing_check','destination_validate',
@@ -235,10 +238,12 @@ BEGIN
  v_patch := p_input->'candidate_patch';
  v_changes := v_patch->'changes';
  v_change_kind := v_patch->>'change_kind';
+ v_max_patch_fields:=CASE v_change_kind
+   WHEN 'ADMINISTRATIVE_ONLY' THEN 2
+   WHEN 'DOCUMENTARY_ONLY' THEN 3 ELSE 7 END;
  IF (SELECT count(*) FROM jsonb_object_keys(v_patch))<>3
-    OR (SELECT count(*) FROM jsonb_object_keys(v_changes)) NOT BETWEEN 1 AND
-       CASE v_change_kind WHEN 'ADMINISTRATIVE_ONLY' THEN 2
-         WHEN 'DOCUMENTARY_ONLY' THEN 3 ELSE 7 END THEN
+    OR (SELECT count(*) FROM jsonb_object_keys(v_changes))
+        NOT BETWEEN 1 AND v_max_patch_fields THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_PATCH_KEYS';
  END IF;
  FOR v_field IN SELECT jsonb_object_keys(v_changes) LOOP
@@ -437,14 +442,14 @@ BEGIN
        v_new_desc,v_new_reason,v_new_config,
        v_new_transversal,v_new_origen);
  END IF;
- IF v_written->>'result' IS DISTINCT FROM
-     CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY'
-      THEN 'RULE_ADMINISTRATIVE_UPDATED' ELSE 'RULE_CANDIDATE_UPDATED' END
+ v_expected_result:=CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY'
+      THEN 'RULE_ADMINISTRATIVE_UPDATED' ELSE 'RULE_CANDIDATE_UPDATED' END;
+ v_expected_state:=CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY'
+      THEN v_before.estado ELSE 'CANDIDATO' END;
+ IF v_written->>'result' IS DISTINCT FROM v_expected_result
     OR v_written->'before' IS DISTINCT FROM to_jsonb(v_before)
     OR v_written->'before'->>'estado' IS DISTINCT FROM v_before.estado
-    OR v_written->'after'->>'estado' IS DISTINCT FROM
-       CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY'
-            THEN v_before.estado ELSE 'CANDIDATO' END THEN
+    OR v_written->'after'->>'estado' IS DISTINCT FROM v_expected_state THEN
     RAISE EXCEPTION 'BLOCK_RULE_CHILD_WRITER_RESULT_MISMATCH'; END IF;
  v_step_payload:=jsonb_build_object(
     'execution_id',p_child,'rule_code',v_rule,
@@ -456,9 +461,7 @@ BEGIN
  PERFORM public.lf_skill_rule_step_record_v1(p_child,'candidate_write',v_evidence||'/50',v_step_payload,v_trust);
  SELECT to_jsonb(r) INTO v_after FROM lf_ops.reglas r WHERE r.codigo=v_rule;
  IF v_after IS NULL
-    OR v_after->>'estado' IS DISTINCT FROM
-       CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY'
-           THEN v_before.estado ELSE 'CANDIDATO' END
+    OR v_after->>'estado' IS DISTINCT FROM v_expected_state
     OR (v_change_kind<>'ADMINISTRATIVE_ONLY' AND (
        v_after->>'titulo' IS DISTINCT FROM v_new_title
        OR v_after->>'descripcion' IS DISTINCT FROM v_new_desc
