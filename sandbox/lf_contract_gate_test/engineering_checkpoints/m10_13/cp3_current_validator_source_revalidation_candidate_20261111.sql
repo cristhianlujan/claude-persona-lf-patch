@@ -6,6 +6,8 @@
 -- Do not use this file in a migration train without explicit authorization,
 -- independently certified oracle, CI exact-head, rollback, and governed promotion.
 -- The candidate purposely preserves semantic independence = false.
+-- TRADEOFF: uncached classifier avoids frozen M10.4 dependencies; benchmark
+-- required because canonical graph may be rebuilt once per family.
 -- NOTE: This is a candidate COMPLETE FUNCTION definition (nondeployed).
 CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validate_v2(p_run_id bigint, p_validator_identity text)
  RETURNS jsonb
@@ -18,7 +20,6 @@ declare
   v_semantic_required_families text[];
   v_comparison_requested boolean;
   -- M10.13 CP3 source-integrity witness (not an independent semantic oracle).
-  v_cp3_graph jsonb;
   v_cp3_current jsonb;
   v_cp3_subject jsonb;
   v_cp3_threat jsonb;
@@ -61,11 +62,9 @@ begin
   select count(*) into v_pending_before from programacion.input_family_assessments where run_id=p_run_id and validator_outcome='PENDING';
 
   v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
-  -- Canonical graph once per validator chunk. Do not call frozen legacy classifier.
-  -- No graph is needed for an empty/finalization-only chunk.
-  IF v_pending_before>0 THEN
-    v_cp3_graph:=programacion.fn_input_screen_canonical_graph(v_pantalla_id,v_version);
-  END IF;
+  -- Use existing uncached classifier: its live static dependency graph has
+  -- zero paths to the 26 frozen M10.4 routines. It rebuilds the graph internally;
+  -- no new session-cached graph or cross-run reuse is introduced here.
   for a in
     select * from programacion.input_family_assessments
     where run_id=p_run_id and validator_outcome='PENDING'
@@ -82,8 +81,8 @@ begin
         'finding_code','IG_CP3_CLASSIFIER_SHA_MISSING',
         'family_code',a.family_code));
     ELSE
-      v_cp3_current:=programacion.fn_input_governance_bootstrap_classify_v2_ctx(
-        v_pantalla_id,a.family_code,v_version,v_cp3_graph);
+      v_cp3_current:=programacion.fn_input_governance_bootstrap_classify_v2(
+        v_pantalla_id,a.family_code,v_version);
       IF a.curator_evidence->>'bootstrap_classifier_sha256'
            IS DISTINCT FROM v_cp3_current->>'classifier_sha256' THEN
         v_cp3_findings:=v_cp3_findings||jsonb_build_array(jsonb_build_object(
