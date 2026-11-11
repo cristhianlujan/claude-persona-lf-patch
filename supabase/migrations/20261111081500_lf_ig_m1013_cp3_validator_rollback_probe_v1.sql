@@ -1,0 +1,359 @@
+-- IG M10.13 CP3 governed rollback-only compile probe.
+-- Only through ACTUALIZACION_DB_LF / LF Migration Merge Train; PR #3784.
+-- Existing precedent PR #3086. No activation, no CP3 close, no M10.4 change.
+BEGIN;
+SET LOCAL lock_timeout = '1500ms';
+SET LOCAL statement_timeout = '30000ms';
+DO $ig_cp3$
+DECLARE
+  v_execution text;
+  v_before text;
+  v_after text;
+  v_acl_before text;
+  v_acl_after text;
+  v_owner_before oid;
+  v_owner_after oid;
+  v_event_id bigint;
+  v_receipt jsonb;
+BEGIN
+  SELECT e.execution_id INTO v_execution
+  FROM public.lf_operation_execution e
+  WHERE e.operation_code='ACTUALIZACION_DB_LF'
+    AND e.target_type='MIGRATION'
+    AND e.target_code ~ ('^[0-9]{14}_lf_ig_m1013_cp3_validator_rollback_probe_v1$')
+    AND e.target_repo='cristhianlujan/claude-persona-lf-patch'
+    AND e.target_path='supabase/migrations/'||e.target_code||'.sql'
+    AND e.manifest->>'producer'='lf-migration-merge-train'
+    AND e.manifest->>'pr'='3784'
+    AND e.status='IN_PROGRESS'
+  ORDER BY e.created_at DESC LIMIT 1;
+  IF v_execution IS NULL THEN
+    RAISE EXCEPTION 'IG_CP3_TRAIN_EXECUTION_NOT_AUTHORIZED';
+  END IF;
+  IF (SELECT status FROM programacion.engineering_work_checkpoints
+      WHERE work_item_id=474 AND checkpoint_code='ZERO_LEGACY_CALLERS') IS DISTINCT FROM 'PENDING'
+    OR (SELECT status FROM programacion.engineering_work_checkpoints
+      WHERE work_item_id=474 AND checkpoint_code='AUD045_EVIDENCE') IS DISTINCT FROM 'PENDING'
+  THEN RAISE EXCEPTION 'IG_CP3_CHECKPOINT_PRECONDITION_DRIFT'; END IF;
+  SELECT p.prosrc,p.proacl::text,p.proowner INTO STRICT v_before,v_acl_before,v_owner_before
+  FROM pg_proc p
+  WHERE p.oid='programacion.fn_input_governance_validate_v2(bigint,text)'::regprocedure;
+  IF md5(v_before) IS DISTINCT FROM '1a7a662fcd586e8eaac70ef3717a84a5'
+    OR (SELECT md5(p.prosrc) FROM pg_proc p
+        WHERE p.oid='programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)'::regprocedure)
+        IS DISTINCT FROM 'f991bf655a7b4f2a89d68138c6862012'
+  THEN RAISE EXCEPTION 'IG_CP3_EXACT_SOURCE_PIN_DRIFT'; END IF;
+  -- PostgreSQL exception subtransaction, following the verified PE10-C6 precedent.
+  BEGIN
+    EXECUTE $candidate$
+CREATE OR REPLACE FUNCTION programacion.fn_input_governance_validate_v2(p_run_id bigint, p_validator_identity text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'programacion'
+AS $function$
+declare
+  v_version bigint:=public.fn_lf_version_compatibility_current_version_id_v1('PROGRAMACION_CONTRACT','INPUT_READINESS_CONTRACT','INPUT_GOVERNANCE_AGENT');
+  v_semantic_required_families text[];
+  v_comparison_requested boolean;
+  -- M10.13 CP3 source-integrity witness (not an independent semantic oracle).
+  v_cp3_current jsonb;
+  v_cp3_subject jsonb;
+  v_cp3_threat jsonb;
+  v_cp3_findings jsonb;
+  v_status text; v_pantalla_id integer; v_family_count integer; v_curator_identity text; v_parent bigint;
+  v_existing_validator text; v_contract_revision text; v_validator_component bigint; v_source_sha text; v_pass integer; v_fail integer; v_blocked integer; v_pending integer;
+  v_pre jsonb; v_assertions jsonb; v_exec_id text:=gen_random_uuid()::text; v_assertion_set_sha256 text; v_assertion_set jsonb; v_logical_evidence jsonb; v_physical_evidence jsonb;
+  v_payload jsonb; v_result jsonb; v_prop jsonb; a record; v_pending_before integer; v_outcome text; v_findings jsonb; v_assertion jsonb; v_eval jsonb;
+  v_started timestamptz:=clock_timestamp(); v_completed timestamptz; v_phase_started timestamptz; v_prev_completed timestamptz;
+  v_classification_ms bigint:=0; v_assertions_ms bigint:=0; v_ekb_ms bigint:=0; v_gap_ms bigint:=0; v_db_write_ms bigint:=0;
+  v_wait_ms bigint:=0; v_chunk_no integer; v_families_processed integer:=0;
+begin
+  if p_validator_identity !~ '^INPUT_VALIDATOR:(EDGE:input-governance-validator-v1|SQL:ig-governed-dispatch-v1):[A-Za-z0-9_-]{6,128}$' then raise exception 'INPUT_GOVERNANCE_VALIDATOR_RUNTIME_IDENTITY_INVALID'; end if;
+  perform pg_advisory_xact_lock(hashtextextended('input_governance_validator_v2:'||p_run_id::text,0));
+  select status,pantalla_id,family_count,curator_identity,validator_identity,contract_revision,supersedes_run_id
+    into v_status,v_pantalla_id,v_family_count,v_curator_identity,v_existing_validator,v_contract_revision,v_parent
+  from programacion.input_readiness_runs
+  where id=p_run_id and version_id=v_version and scope->>'analysis_revision'='INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX';
+  if v_status is null then raise exception 'INPUT_REMEDIATION_VALIDATOR_RUN_NOT_FOUND:%',p_run_id; end if;
+  if v_status='COMPLETED' then return jsonb_build_object('status','NOOP_COMPLETED','run_id',p_run_id,'promotion_authorized',false,'production_authorized',false); end if;
+  if p_validator_identity=v_curator_identity then raise exception 'VALIDATOR_IDENTITY_NOT_INDEPENDENT'; end if;
+
+  v_phase_started:=clock_timestamp();
+  v_pre:=programacion.fn_input_governance_ekb_checkpoint('PRE_VALIDATOR',v_pantalla_id,p_run_id);
+  v_ekb_ms:=round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+  if not coalesce((v_pre->>'pass')::boolean,false) then raise exception 'INPUT_GOVERNANCE_EKB_BLOCKED:PRE_VALIDATOR'; end if;
+
+  select id into v_validator_component from programacion.componentes where version_id=v_version and componente_codigo='INPUT_VALIDATOR';
+  if v_validator_component is null then raise exception 'INPUT_REMEDIATION_VALIDATOR_COMPONENT_UNRESOLVED'; end if;
+  if v_status='CURATING' then
+    if (select count(*) from programacion.input_family_assessments where run_id=p_run_id)<>v_family_count then raise exception 'CURATOR_UNIVERSE_INCOMPLETE'; end if;
+    v_phase_started:=clock_timestamp();
+    update programacion.input_readiness_runs set status='VALIDATING',validator_identity=p_validator_identity,validator_component_id=v_validator_component where id=p_run_id;
+    v_db_write_ms:=v_db_write_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+  elsif v_status='VALIDATING' then
+    if v_existing_validator is distinct from p_validator_identity then raise exception 'VALIDATOR_IDENTITY_MISMATCH'; end if;
+  else raise exception 'INPUT_REMEDIATION_VALIDATOR_INVALID_RUN_STATUS:%',v_status; end if;
+
+  select source_snapshot_sha256,contract_revision into v_source_sha,v_contract_revision from programacion.input_readiness_runs where id=p_run_id;
+  select count(*) into v_pending_before from programacion.input_family_assessments where run_id=p_run_id and validator_outcome='PENDING';
+
+  v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
+  -- Use existing uncached classifier: its live static dependency graph has
+  -- zero paths to the 26 frozen M10.4 routines. It rebuilds the graph internally;
+  -- no new session-cached graph or cross-run reuse is introduced here.
+  for a in
+    select * from programacion.input_family_assessments
+    where run_id=p_run_id and validator_outcome='PENDING'
+    order by family_code
+    limit 10
+  loop
+    v_comparison_requested:=a.family_code=ANY(v_semantic_required_families);
+    v_cp3_findings:='[]'::jsonb;
+    -- Independently reread current sources; this is a deterministic currentness/
+    -- coverage check, NOT independence of the semantic model's judgment.
+    IF nullif(a.curator_evidence->>'bootstrap_classifier_sha256','') IS NULL THEN
+      v_cp3_findings:=v_cp3_findings||jsonb_build_array(jsonb_build_object(
+        'finding_type','SOURCE_REVALIDATION',
+        'finding_code','IG_CP3_CLASSIFIER_SHA_MISSING',
+        'family_code',a.family_code));
+    ELSE
+      v_cp3_current:=programacion.fn_input_governance_bootstrap_classify_v2(
+        v_pantalla_id,a.family_code,v_version);
+      IF a.curator_evidence->>'bootstrap_classifier_sha256'
+           IS DISTINCT FROM v_cp3_current->>'classifier_sha256' THEN
+        v_cp3_findings:=v_cp3_findings||jsonb_build_array(jsonb_build_object(
+          'finding_type','SOURCE_REVALIDATION',
+          'finding_code','IG_CP3_CLASSIFIER_DRIFT',
+          'family_code',a.family_code,
+          'stored_sha256',a.curator_evidence->>'bootstrap_classifier_sha256',
+          'recomputed_sha256',v_cp3_current->>'classifier_sha256'));
+      END IF;
+    END IF;
+    IF a.family_code IN ('DESIGN_SYSTEM','SECURITY') THEN
+      v_cp3_subject:=programacion.fn_input_subject_depth_expected(
+        v_pantalla_id,a.family_code);
+      IF a.subject_coverage IS DISTINCT FROM v_cp3_subject THEN
+        v_cp3_findings:=v_cp3_findings||jsonb_build_array(jsonb_build_object(
+          'finding_type','SOURCE_REVALIDATION',
+          'finding_code','IG_CP3_SUBJECT_DEPTH_DRIFT',
+          'family_code',a.family_code));
+      END IF;
+      IF a.family_code='SECURITY' THEN
+        v_cp3_threat:=programacion.fn_input_security_threat_expected(v_pantalla_id);
+        IF a.threat_coverage IS DISTINCT FROM v_cp3_threat THEN
+          v_cp3_findings:=v_cp3_findings||jsonb_build_array(jsonb_build_object(
+            'finding_type','SOURCE_REVALIDATION',
+            'finding_code','IG_CP3_THREAT_DEPTH_DRIFT',
+            'family_code',a.family_code));
+        END IF;
+      END IF;
+    END IF;
+    v_phase_started:=clock_timestamp();
+    v_assertions:=case
+      when v_parent is not null
+       and not exists (
+         select 1
+         from programacion.input_family_assessments pa
+         cross join lateral jsonb_array_elements(
+           programacion.fn_input_validator_evidence_rehydrate_v1(pa.validator_evidence)->'assertions'
+         ) x(value)
+         where pa.run_id=v_parent
+           and pa.family_code=a.family_code
+           and x.value#>>'{source_ref,kind}'='CONTRACT'
+       )
+      then programacion.fn_input_v58_build_assertions(p_run_id,v_parent,a.family_code)
+      else programacion.fn_input_governance_bootstrap_assertions_v1(p_run_id,a.family_code)
+    end;
+    v_assertions_ms:=v_assertions_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+    if jsonb_array_length(v_assertions)=0 then raise exception 'INPUT_REMEDIATION_VALIDATOR_ASSERTIONS_EMPTY:%',a.family_code; end if;
+
+    v_phase_started:=clock_timestamp();
+    v_logical_evidence:=jsonb_build_object('component_id',v_validator_component,'execution_id',v_exec_id,'validated_curator_execution_id',a.curator_evidence->>'execution_id','execution_mode','INDEPENDENT_VALIDATOR','runtime','SUPABASE_EDGE_FUNCTION:input-governance-validator-v1','direct_source_readback',true,'contract_revision',v_contract_revision,'source_snapshot_sha256',v_source_sha,'curator_sha256',a.curator_sha256,'semantic_depth_sha256',a.semantic_depth_sha256,'bootstrap_classifier_sha256',null,'semantic_conclusion_independence','UNPROVEN','validation_phase','SOURCE_INTEGRITY','semantic_comparison_requested',v_comparison_requested,'semantic_independence_credited',false,
+      'cp3_source_revalidation_findings',v_cp3_findings,
+      'cp3_source_revalidation_passed',jsonb_array_length(v_cp3_findings)=0,
+      'cp3_source_revalidation_scope','DETERMINISTIC_INTEGRITY_NOT_SEMANTIC_INDEPENDENCE',
+      'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','assertions',v_assertions);
+    v_assertion_set_sha256:=programacion.fn_v09_sha256_jsonb(v_assertions);
+    insert into programacion.input_validator_assertion_sets_v1(assertion_set_sha256,assertions)
+    values(v_assertion_set_sha256,v_assertions)
+    on conflict (assertion_set_sha256) do nothing;
+    select s.assertions into v_assertion_set
+    from programacion.input_validator_assertion_sets_v1 s
+    where s.assertion_set_sha256=v_assertion_set_sha256;
+    if not found
+       or v_assertion_set is distinct from v_assertions
+       or programacion.fn_v09_sha256_jsonb(v_assertion_set) is distinct from v_assertion_set_sha256 then
+      raise exception 'R5D_ASSERTION_SET_READBACK_MISMATCH:%',a.family_code;
+    end if;
+    v_physical_evidence:=(v_logical_evidence-'assertions')
+      || jsonb_build_object('assertion_set_sha256',v_assertion_set_sha256);
+    if programacion.fn_input_validator_evidence_rehydrate_v1(v_physical_evidence)
+         is distinct from v_logical_evidence then
+      raise exception 'R5D_LOGICAL_EVIDENCE_REHYDRATION_MISMATCH:%',a.family_code;
+    end if;
+    v_outcome:='BLOCKED';
+    v_findings:='[]'::jsonb;
+    for v_assertion in select value from jsonb_array_elements(v_assertions) loop
+      v_eval:=programacion.fn_input_evaluate_assertion(p_run_id,a.family_code,v_assertion);
+      if coalesce((v_eval->>'passed')::boolean,false) is not true then
+        v_findings:=v_findings||jsonb_build_array(jsonb_build_object(
+          'finding_type','ASSERTION_FAILURE',
+          'finding_code','VALIDATOR_ASSERTION_FAILED',
+          'family_code',a.family_code,
+          'assertion_class',v_eval->>'assertion_class',
+          'source_ref',v_eval->'source_ref',
+          'path',v_eval->'path',
+          'operator',v_eval->>'operator',
+          'expected',v_eval->'expected',
+          'actual',v_eval->'actual'
+        ));
+      end if;
+    end loop;
+    if jsonb_array_length(v_findings)>0 then
+      v_outcome:='FAIL';
+    ELSE
+      IF v_comparison_requested THEN
+        v_outcome:='BLOCKED';
+        v_findings:=jsonb_build_array(jsonb_build_object(
+          'finding_type','INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN',
+          'family_code',a.family_code,'source_integrity_passed',true
+        ));
+      ELSE
+        v_outcome:='PASS';
+        v_findings:='[]'::jsonb;
+      END IF;
+    END IF;
+    IF jsonb_array_length(v_cp3_findings)>0 THEN
+      -- Preserve pre-existing assertion FAIL; CP3 findings must not mask it.
+      IF v_outcome IS DISTINCT FROM 'FAIL' THEN
+        v_outcome:='BLOCKED';
+      END IF;
+      v_findings:=v_findings||v_cp3_findings;
+    END IF;
+    update programacion.input_family_assessments
+       set validator_outcome=v_outcome,
+           validator_findings=v_findings,
+           validator_evidence=v_physical_evidence,
+           validator_identity=p_validator_identity,
+           validator_assessed_at=now()
+     where id=a.id;
+    v_db_write_ms:=v_db_write_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+    v_families_processed:=v_families_processed+1;
+  end loop;
+
+  select count(*) filter (where validator_outcome='PASS'),
+         count(*) filter (where validator_outcome='FAIL'),
+         count(*) filter (where validator_outcome='BLOCKED'),
+         count(*) filter (where validator_outcome='PENDING')
+    into v_pass,v_fail,v_blocked,v_pending
+  from programacion.input_family_assessments
+  where run_id=p_run_id;
+
+  if v_pass<v_family_count then
+    if v_pending=0 then
+      v_result:=jsonb_build_object(
+        'status',case when v_blocked>0 then 'VALIDATION_BLOCKED' else 'VALIDATION_FAILED' end,
+        'run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,
+        'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,
+        'pending_count',v_pending,'validator_identity',p_validator_identity,
+        'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX',
+        'promotion_authorized',false,'production_authorized',false
+      );
+    else
+      v_result:=jsonb_build_object(
+        'status','VALIDATOR_CONTINUE_REQUIRED',
+        'run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,
+        'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,
+        'pending_count',v_pending,'validator_identity',p_validator_identity,
+        'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX',
+        'promotion_authorized',false,'production_authorized',false
+      );
+    end if;
+  elsif v_pending_before>0 then
+    v_result:=jsonb_build_object('status','VALIDATOR_CONTINUE_REQUIRED','run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,'validator_pass_count',v_pass,'pending_count',v_pending,'validator_identity',p_validator_identity,'analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','next_phase','PROPOSAL_VALIDATION','promotion_authorized',false,'production_authorized',false);
+  else
+    v_phase_started:=clock_timestamp();
+    v_prop:=programacion.fn_input_governance_validate_gap_proposals_v1(p_run_id,p_validator_identity);
+    v_gap_ms:=round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+    v_phase_started:=clock_timestamp();
+    update programacion.input_readiness_runs set status='COMPLETED',validator_completed_at=clock_timestamp() where id=p_run_id;
+    v_db_write_ms:=v_db_write_ms+round(extract(epoch from(clock_timestamp()-v_phase_started))*1000)::bigint;
+    v_payload:=jsonb_build_object('status','COMPLETED','run_id',p_run_id,'pantalla_id',v_pantalla_id,'family_count',v_family_count,'validator_pass_count',v_pass,'validator_fail_count',v_fail,'validator_blocked_count',v_blocked,'validator_identity',p_validator_identity,'required_role','DISPATCHER_FINALIZE','analysis_revision','INPUT_GOV_REMEDIATION_1_4_SAFE_AUTOFIX','proposal_validation',v_prop,'promotion_authorized',false,'production_authorized',false);
+    v_result:=v_payload||jsonb_build_object('output_sha256',programacion.fn_v09_sha256_jsonb(v_payload));
+  end if;
+
+  v_completed:=clock_timestamp();
+  select coalesce(max(chunk_no),0)+1,max(completed_at) into v_chunk_no,v_prev_completed
+  from programacion.input_validator_chunk_timings where run_id=p_run_id and validator_identity=p_validator_identity;
+  if v_prev_completed is not null then v_wait_ms:=greatest(0,round(extract(epoch from(v_started-v_prev_completed))*1000)::bigint); end if;
+  insert into programacion.input_validator_chunk_timings(
+    run_id,validator_identity,chunk_no,route,started_at,completed_at,duration_ms,result_status,
+    validator_pass_count,family_count,pending_count,classification_ms,assertions_ms,ekb_ms,gap_proposals_ms,db_write_ms,wait_resume_ms,families_processed
+  ) values(
+    p_run_id,p_validator_identity,v_chunk_no,'VALIDATE_V2',v_started,v_completed,
+    round(extract(epoch from(v_completed-v_started))*1000)::bigint,v_result->>'status',v_pass,v_family_count,v_pending,
+    v_classification_ms,v_assertions_ms,v_ekb_ms,v_gap_ms,v_db_write_ms,v_wait_ms,v_families_processed
+  );
+  return v_result;
+end;
+$function$
+$candidate$;
+    SELECT p.prosrc INTO STRICT v_after FROM pg_proc p
+    WHERE p.oid='programacion.fn_input_governance_validate_v2(bigint,text)'::regprocedure;
+    IF v_after IS NOT DISTINCT FROM v_before
+      OR v_after NOT LIKE '%IG_CP3_CLASSIFIER_DRIFT%'
+      OR v_after NOT LIKE '%IG_CP3_SUBJECT_DEPTH_DRIFT%'
+      OR v_after NOT LIKE '%IG_CP3_THREAT_DEPTH_DRIFT%'
+      OR v_after NOT LIKE '%IG_CP3_CLASSIFIER_SHA_MISSING%'
+    THEN RAISE EXCEPTION 'IG_CP3_CANDIDATE_COMPILE_POSTCONDITION_FAILED'; END IF;
+    IF v_after LIKE '%fn_input_governance_bootstrap_classify_v2_cached_v2%'
+      OR v_after LIKE '%fn_input_governance_bootstrap_classify_v2_ctx%'
+      OR v_after NOT LIKE '%INDEPENDENT_SEMANTIC_ORACLE_UNPROVEN%'
+    THEN RAISE EXCEPTION 'IG_CP3_CANDIDATE_FROZEN_OR_ORACLE_BOUNDARY'; END IF;
+    RAISE EXCEPTION 'IG_CP3_EXPECTED_SUBTX_ROLLBACK';
+  EXCEPTION WHEN SQLSTATE 'P0001' THEN
+    IF SQLERRM IS DISTINCT FROM 'IG_CP3_EXPECTED_SUBTX_ROLLBACK' THEN RAISE; END IF;
+  END;
+  SELECT p.prosrc,p.proacl::text,p.proowner INTO STRICT v_after,v_acl_after,v_owner_after
+  FROM pg_proc p WHERE p.oid='programacion.fn_input_governance_validate_v2(bigint,text)'::regprocedure;
+  IF v_after IS DISTINCT FROM v_before
+    OR v_acl_after IS DISTINCT FROM v_acl_before
+    OR v_owner_after IS DISTINCT FROM v_owner_before
+  THEN RAISE EXCEPTION 'IG_CP3_TRANSACTIONAL_RESIDUE'; END IF;
+  IF programacion.fn_input_run_is_source_current(951) IS DISTINCT FROM true
+    OR (programacion.fn_input_run_semantic_revalidation_v1(951)->>'required') IS DISTINCT FROM 'false'
+  THEN RAISE EXCEPTION 'IG_CP3_LIVE_BASELINE_REGRESSION'; END IF;
+  v_receipt:=jsonb_build_object(
+    'evidence_schema_version','operational-event/v2',
+    'schema_version','IG_M1013_CP3_ROLLBACK_COMPILATION_RECEIPT_V1',
+    'execution_id',v_execution,
+    'producer','LF_MIGRATION_TRAIN_IG_M1013_CP3',
+    'purpose','Verify temporary Validator candidate compilation and exact rollback without activation',
+    'acceptance_declared',false,
+    'occurred_at',clock_timestamp(),
+    'source_md5','1a7a662fcd586e8eaac70ef3717a84a5',
+    'candidate_compilation_verified',true,
+    'transactional_rollback_verified',true,
+    'run951_legacy_baseline_current',true,
+    'candidate_validator_runtime_e2e_executed',false,
+    'candidate_47_family_parity_executed',false,
+    'semantic_independence_credited',false,
+    'checkpoint_pass',false,'production_activation',false,
+    'retirement_authorized',false
+  );
+  INSERT INTO public.lf_eventos(
+    evento_tipo,entidad_tipo,entidad_codigo,descripcion,severidad,origen,
+    created_by_execution_id,payload
+  ) VALUES (
+    'ARTIFACT_RECONCILED','PROGRAM_PLAN','IG_M1013_CP3_ROLLBACK_COMPILATION_PROBE_V1',
+    'Candidate compiled in governed subtransaction and restored; no semantic E2E',
+    'INFO','DERIVE_FROM_EXECUTION_ID',v_execution,v_receipt
+  ) RETURNING id INTO v_event_id;
+  IF NOT EXISTS(SELECT 1 FROM public.lf_eventos
+    WHERE id=v_event_id AND payload->>'transactional_rollback_verified'='true'
+    AND payload->>'checkpoint_pass'='false')
+  THEN RAISE EXCEPTION 'IG_CP3_RECEIPT_READBACK_FAILED'; END IF;
+END;
+$ig_cp3$;
+COMMIT;
