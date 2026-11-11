@@ -9,6 +9,7 @@
     "sandbox/lf_contract_gate_test/rule_update_bulk_v1/opener_batch_patch.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_update_bulk_v1/test_pg17_rule_owner_bulk_atomic.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_child_readback_live_source_fixture.sql": "ENGINEERING_CHECKPOINTS",
-    "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_update_handler_live_source_fixture.sql": "ENGINEERING_CHECKPOINTS"
+    "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_update_handler_live_source_fixture.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_skill_invoke_current_live_source_fixture.sql": "ENGINEERING_CHECKPOINTS"
   }
 }
