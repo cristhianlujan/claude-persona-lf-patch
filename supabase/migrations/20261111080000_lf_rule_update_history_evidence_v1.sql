@@ -322,7 +322,7 @@ BEGIN
    'parent_execution_id',p_parent,'rule_code',v_rule,
    'result_snapshot_sha256',v_after_sha,'promotion_authorized',false);
 END
-$function$
+$function$;
 
 
 
