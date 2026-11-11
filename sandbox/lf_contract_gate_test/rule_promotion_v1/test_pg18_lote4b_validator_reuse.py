@@ -36,14 +36,14 @@ def check(name,cond,raw):
     N+=1
     print("PASS_"+name,flush=True)
 
-def bootstrap():
-    sql("CREATE DATABASE "+DB+";",db="postgres")
-    sql((HERE/"promotion_pg18_sandbox_fixture.sql").read_text())
-    sql((HERE/"live_promotion_baseline_fixture.sql").read_text())
+def bootstrap(db=DB):
+    sql("CREATE DATABASE "+db+";",db="postgres")
+    sql((HERE/"promotion_pg18_sandbox_fixture.sql").read_text(),db=db)
+    sql((HERE/"live_promotion_baseline_fixture.sql").read_text(),db=db)
     sql("""CREATE TRIGGER trg_lf_rule_promotion_guard_v1
       BEFORE UPDATE OF estado ON lf_ops.reglas
-      FOR EACH ROW EXECUTE FUNCTION public.lf_rule_promotion_guard_v1();""")
-    sql(M3.read_text())
+      FOR EACH ROW EXECUTE FUNCTION public.lf_rule_promotion_guard_v1();""",db=db)
+    sql(M3.read_text(),db=db)
     sql("""
 CREATE TABLE public.l4b_ig_stub_state(
  id boolean primary key default true,
@@ -116,9 +116,9 @@ RETURNS jsonb LANGUAGE sql STABLE AS $$
      END
  END
  FROM public.l4b_ig_stub_state s WHERE s.id=true
-$$;
-""")
-    sql(M4.read_text())
+$;
+""",db=db)
+    sql(M4.read_text(),db=db)
 
 def lit(v):
     if v is None: return "NULL"
