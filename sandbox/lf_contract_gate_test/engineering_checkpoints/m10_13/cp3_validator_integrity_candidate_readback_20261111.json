@@ -1,0 +1,86 @@
+{
+  "schema_version": "IG_M1013_CP3_FUNCTION1_VALIDATOR_INTEGRITY_CANDIDATE_V1",
+  "scope": {
+    "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit": "M10.13",
+    "checkpoint": "ZERO_LEGACY_CALLERS",
+    "legacy_pair": [
+      "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+      "programacion.fn_input_run_semantic_revalidation_v1(bigint)"
+    ]
+  },
+  "candidate": {
+    "implementation_owner": "programacion.fn_input_governance_validate_v2(bigint,text)",
+    "strategy": "MODIFY_EXISTING_NONFROZEN_VALIDATOR_SOURCE_INTEGRITY_PHASE",
+    "source_file": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_current_validator_source_revalidation_candidate_20261111.sql",
+    "source_blob_sha": "3d098cb82c113bd00997b2cae86a59d443d18699",
+    "rollback_only_drill_file": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_existing_validator_rollback_drill_unapplied_20261111.sql",
+    "rollback_only_drill_blob_sha": "cec6f0cab757689daf574a7799320c9ad22a50b4",
+    "source_precondition_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+    "new_runtime_engine": false,
+    "new_rpc": false,
+    "approved_for_deployment": false,
+    "executed_live": false
+  },
+  "readback": {
+    "sample_time": "2026-11-11 07:36:29.423289+00",
+    "checkpoint": "PENDING",
+    "aud045": "PENDING",
+    "current_validator_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+    "consumer_md5": "44a7f21a3c01411662ab568af58c4091",
+    "classifier_md5": "7257b9bbc86b1f61e5435a37479d63a1"
+  },
+  "static_check": {
+    "checks": {
+      "source_pinned": true,
+      "recalc_once_per_chunk": true,
+      "uses_current_nonfrozen_classifier": true,
+      "missing_hash_fail_closed": true,
+      "classifier_drift_fail_closed": true,
+      "design_subject_drift_fail_closed": true,
+      "security_threat_drift_fail_closed": true,
+      "blocks_on_findings": true,
+      "no_semantic_credit": true,
+      "rollback_drill_unapplied": true,
+      "function_identity_only": true
+    },
+    "pass": 11,
+    "total": 11
+  },
+  "functional_owner": {
+    "run_identity": "existing Validator entrypoint RUN_NOT_FOUND remains fail closed; legacy JSON output not identical",
+    "source_currentness": "existing continuation_currentness_v1 and source gate, 4/4 read-only observed on runs 944 951 949 and missing",
+    "classifier_sha": "existing active fn_input_governance_bootstrap_classify_v2_ctx on one canonical graph per validation chunk; compare curator evidence SHA",
+    "missing_sha": "detect null or empty stored SHA and fail closed",
+    "design_depth": "recompute DESIGN_SYSTEM expected subject_coverage and compare persisted",
+    "security_depth": "recompute SECURITY subject_coverage and threat_coverage and compare",
+    "result_form": "per-family validator_findings and evidence; cannot claim equivalence to legacy JSON counts until an explicit aggregation/output parity test",
+    "semantic_independence": "preserve independent oracle unproven and semantic_independence_credited=false"
+  },
+  "evidence": {
+    "previous_4_real_legacy_cases": "pass read-only",
+    "previous_negative_fixture_suite": "6/6 pass (CTE simulation; not executed candidate)",
+    "previous_pr1484_guard_suite": "4/4 pass candidate only",
+    "source_integrity_checks": "11/11 static source checks pass",
+    "readback_provenance": "live pg_proc + git exact blobs"
+  },
+  "blocking_gates": [
+    "Compilation/rollback drill requires authorized sandbox SQL execution; NOT_TESTED",
+    "Exact 47-family paired parity between live cached legacy and active ctx on canonical graph NOT_TESTED",
+    "Latency budget for 47-family recalc and 10-family chunks NOT_TESTED",
+    "Missing/altered hash and changed subject/threat must be validated against candidate runtime in rollback fixture; CTE-only tests insufficient",
+    "Independent semantic oracle for current screen not implemented; AUD045_EVIDENCE=PENDING",
+    "PR #1484 must be reconciled before guard promotion",
+    "Registry member legacy still present and M10.4 freeze intact",
+    "Official migration train and post-promotion Git/Supabase readback NOT_AUTHORIZED"
+  ],
+  "decision": {
+    "classification": "CANDIDATE_IMPLEMENTED_AS_SANDBOX_SOURCE_ONLY",
+    "functional_equivalence": "NOT_PROVEN",
+    "no_false_pass": "PRESERVED_BY_STATIC_DESIGN_NOT_E2E_CREDITED",
+    "governed_retirement": "NO_GO",
+    "zero_legacy_callers": "PENDING",
+    "m1013_pct_official": 35
+  },
+  "next_action": "Run source candidate + rollback in authorized clone/isolated governed environment and compare 47 families, then prepare official source mutation and lifecycle promotion if proven."
+}
