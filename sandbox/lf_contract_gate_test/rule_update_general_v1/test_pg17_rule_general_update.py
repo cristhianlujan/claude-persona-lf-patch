@@ -147,7 +147,7 @@ def main() -> None:
                "AND blocked->>'vigente_direct_update'='true' "
                "AND blocked->>'vigente_functional_change'='true' "
                "AND blocked->>'production_promotion'='true' "
-               "AND required_after_write ? 'estado_CANDIDATO')::text "
+               "AND required_after_write ? 'estado_CANDIDATO') "
                "FROM public.lf_operation_contracts "
                "WHERE operation_code='ACTUALIZACION_REGLA_LF'")=="t")
     verify("ADMIN_CONTRACT_PARENT_GOVERNED_TRACE",
