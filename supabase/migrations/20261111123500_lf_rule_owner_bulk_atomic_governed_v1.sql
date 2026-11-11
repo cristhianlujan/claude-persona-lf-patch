@@ -633,6 +633,13 @@ BEGIN
        AND nullif(btrim(r->>'source_ref'),'') IS NOT NULL
    )
  THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_PRODUCT_SCOPE_OR_OWNER_APPROVAL'; END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps s
+   WHERE s.execution_id=p_parent_execution_id AND s.step_id='input_validate'
+     AND s.status='STEP_PASS_WITH_EVIDENCE'
+     AND s.evidence_payload#>>'{input_governance,catalog_md5}'=
+         v_batch->>'source_catalog_md5'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_CATALOG_HASH_DRIFT'; END IF;
 
  -- One serial transaction protects ALL mutable rules and their lineages;
  -- external readers see original OR final data, never schema-only state.
