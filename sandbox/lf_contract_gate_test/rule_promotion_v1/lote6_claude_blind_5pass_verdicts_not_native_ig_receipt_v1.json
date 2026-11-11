@@ -1,0 +1,1103 @@
+{
+  "schema_version": "LF_L6_CLAUDE_BLIND_5PASS_VERDICTS_V1",
+  "fixture_label": "CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT",
+  "authority": "USER_SUPPLIED_AUDITOR_RESULTS_NOT_PRODUCTION_AUTHORITY",
+  "source": "Auditor's three message blocks 2026-11-11",
+  "source_basis": "lote4c_fresh_blind_v1.json",
+  "source_blind_fingerprint_fnv32": "13ab94b3",
+  "reported_passes": 5,
+  "reported_identical_passes": true,
+  "reporting_mode": "ONE_VERDICT_PER_CASE_REPEATED_IDENTICALLY_FIVE_TIMES_NO_PER_PASS_RAW",
+  "citation_status": "UNVERIFIED_NOT_CAPTURED",
+  "provenance_note": "Per-case verbatim quotations are NOT in the supplied data. This is NOT #3682 receipt and CANNOT authorize promotion.",
+  "counts": {
+    "total": 154,
+    "allow": 24,
+    "block": 130,
+    "blocks": [
+      52,
+      51,
+      51
+    ]
+  },
+  "entries": [
+    {
+      "id": "K00A10207",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A4BF9A",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A87D2D",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00AC3AC0",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00AFF853",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B3B5E6",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B77379",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00BB310C",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00BEEE9F",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C2AC32",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C669C5",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00CA2758",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00CDE4EB",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D1A27E",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D56011",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D91DA4",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00DCDB37",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E098CA",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E4565D",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E813F0",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00EBD183",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00EF8F16",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F34CA9",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F70A3C",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00FAC7CF",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00FE8562",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010242F5",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01060088",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0109BE1B",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010D7BAE",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01113941",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0114F6D4",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0118B467",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K011C71FA",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01202F8D",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0123ED20",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0127AAB3",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K012B6846",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K012F25D9",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0132E36C",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0136A0FF",
+      "verdict": "ALLOW",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013A5E92",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013E1C25",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0141D9B8",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0145974B",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014954DE",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014D1271",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0150D004",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01548D97",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01584B2A",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K015C08BD",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K015FC650",
+      "verdict": "BLOCK",
+      "block": 1,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A24138",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A5FECB",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A9BC5E",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00AD79F1",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B13784",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B4F517",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B8B2AA",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00BC703D",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C02DD0",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C3EB63",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C7A8F6",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00CB6689",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00CF241C",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D2E1AF",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D69F42",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00DA5CD5",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00DE1A68",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E1D7FB",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E5958E",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E95321",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00ED10B4",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F0CE47",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F48BDA",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F8496D",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00FC0700",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00FFC493",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01038226",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01073FB9",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010AFD4C",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010EBADF",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01127872",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01163605",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0119F398",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K011DB12B",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01216EBE",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01252C51",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0128E9E4",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K012CA777",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0130650A",
+      "verdict": "ALLOW",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0134229D",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0137E030",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013B9DC3",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013F5B56",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014318E9",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0146D67C",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014A940F",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014E51A2",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01520F35",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0155CCC8",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01598A5B",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K015D47EE",
+      "verdict": "BLOCK",
+      "block": 2,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A38069",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00A73DFC",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00AAFB8F",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00AEB922",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B276B5",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B63448",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00B9F1DB",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00BDAF6E",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C16D01",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C52A94",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00C8E827",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00CCA5BA",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D0634D",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D420E0",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00D7DE73",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00DB9C06",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00DF5999",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E3172C",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00E6D4BF",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00EA9252",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00EE4FE5",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F20D78",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F5CB0B",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00F9889E",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K00FD4631",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010103C4",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0104C157",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01087EEA",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010C3C7D",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K010FFA10",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0113B7A3",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01177536",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K011B32C9",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K011EF05C",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0122ADEF",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01266B82",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K012A2915",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K012DE6A8",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0131A43B",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013561CE",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01391F61",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K013CDCF4",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01409A87",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K0144581A",
+      "verdict": "ALLOW",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014815AD",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014BD340",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K014F90D3",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01534E66",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K01570BF9",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K015AC98C",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    },
+    {
+      "id": "K015E871F",
+      "verdict": "BLOCK",
+      "block": 3,
+      "citation_status": "UNVERIFIED_NOT_CAPTURED",
+      "exact_excerpt": null
+    }
+  ]
+}
