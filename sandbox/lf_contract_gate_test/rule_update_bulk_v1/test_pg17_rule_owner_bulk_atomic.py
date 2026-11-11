@@ -12,6 +12,7 @@ FILES=[
 "sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_pg17_seed_v1.sql",
 "supabase/migrations/20261109092529_lf_profile_rule_update_child_execution_v1.sql",
 "supabase/migrations/20261111080000_lf_rule_update_history_evidence_v1.sql",
+"sandbox/lf_contract_gate_test/rule_update_general_v1/lf_rule_operation_contract_pg17_fixture.sql",
 "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql",
 "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_update_handler_live_source_fixture.sql",
 "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_child_readback_live_source_fixture.sql",
@@ -39,8 +40,16 @@ def load():
     sql("CREATE DATABASE "+DB+";",db="postgres")
     for i,path in enumerate(FILES):
         content=(ROOT/path).read_text(encoding="utf-8")
-        if i==4:content="SET lf.rule_update_governance_execution_id='"+PARENT+"';\n"+content
+        if path.endswith("20261111100000_lf_rule_update_general_admin_functional_v1.sql"):content="SET lf.rule_update_governance_execution_id='"+PARENT+"';\n"+content
         sql(content)
+    check("BULK_ADMIN_CONTRACT_SCOPE_INSTALLED",
+          one("(SELECT allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,mode}' "
+              "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')"
+              "='ADMINISTRATIVE_ONLY'")=="t")
+    check("BULK_LEGACY_FUNCTIONAL_VIGENTE_STILL_BLOCKED",
+          one("(SELECT blocked->>'vigente_functional_change' "
+              "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')"
+              "='true'")=="t")
     check("OFFICIAL_BATCH_INSTALLED",
           one("to_regprocedure('public.lf_rule_admin_bulk_atomic_v1(text,text)') IS NOT NULL")=="t")
     check("BULK_DENIED_TO_ANON",
