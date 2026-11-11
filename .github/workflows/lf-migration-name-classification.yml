@@ -7,6 +7,7 @@ on:
       - ".github/workflows/lf-migration-merge-train.yml"
       - ".github/workflows/lf-migration-name-classification.yml"
       - "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4*"
+      - "sandbox/lf_contract_gate_test/rule_promotion_v1/test_lote4c_*"
       - "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_*"
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py"
@@ -322,9 +323,12 @@ jobs:
       - name: "L3693 static contract: semantic family remediation preserves promotion_authorized=false"
         if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
         run: python3 -m unittest sandbox/lf_contract_gate_test/engineering_checkpoints/ig_evo/test_semantic_family_remediation_detail_v1.py
-      - name: "L4B existing IG Validator reuse: promotion-run link, hashes, retry and block"
+      - name: "L4C blind dataset: novel cases, minimum per family, no leaked key"
         if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
-        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py
+        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_lote4c_blind_packet_contract.py
+      - name: "L4C existing IG Validator: quote, synthetic Step70, policy drift, rollback"
+        if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
+        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py
       - name: Preserve reproducible native gate spec and blind datasets
         uses: actions/upload-artifact@v4
         if: always()
