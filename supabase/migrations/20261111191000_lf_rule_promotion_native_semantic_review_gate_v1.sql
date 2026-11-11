@@ -113,6 +113,13 @@ BEGIN
     'blocking_code','REVIEWER_GOVERNED_RUN_NOT_FOUND'); END IF;
  IF reviewer.manifest#>>'{semantic_review,subject_promotion_id}' IS DISTINCT FROM p_promotion_id
     OR reviewer.manifest#>>'{semantic_review,review_mode}' IS DISTINCT FROM 'SEPARATE_NATIVE_CONTEXT'
+    OR reviewer.manifest->>'executor_mode' IS DISTINCT FROM 'GPT_NATIVE'
+    OR reviewer.manifest->>'executor_provider' IS DISTINCT FROM 'OPENAI_CHATGPT_NATIVE'
+    OR reviewer.manifest->>'read_only' IS DISTINCT FROM 'true'
+    OR reviewer.manifest->>'no_write' IS DISTINCT FROM 'true'
+    OR reviewer.manifest->>'no_promotion' IS DISTINCT FROM 'true'
+    OR reviewer.manifest ? 'queue_request_id'
+    OR nullif(reviewer.manifest->>'runtime_target','') IS NOT NULL
     OR reviewer.target_code=p.requested_by_profile
  THEN RETURN jsonb_build_object('status','BLOCKED',
     'blocking_code','REVIEWER_ROLE_OR_SCOPE_NOT_ATTESTED'); END IF;
@@ -123,6 +130,19 @@ BEGIN
     OR nullif(st.created_by_execution_id,'') IS NULL
     OR st.evidence_payload->>'test_only_synthetic'='true'
     OR st.evidence_payload#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
+    OR st.evidence_payload#>>'{semantic_judge_result,validator_status}' IS DISTINCT FROM 'PASS'
+    OR NOT (
+      (st.evidence_payload#>>'{semantic_judge_result,verdict}'='PASS_REVIEWED_CURRENT_CONTEXT'
+       AND st.evidence_payload#>>'{semantic_judge_result,review_mode}'='CURRENT_CONTEXT_REVIEW'
+       AND st.evidence_payload#>>'{semantic_judge_result,reviewer_is_producer}'='true'
+       AND st.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}'='false'
+       AND st.evidence_payload#>>'{semantic_judge_result,model_call_count}'='0')
+      OR
+      (st.evidence_payload#>>'{semantic_judge_result,verdict}'='PASS_INDEPENDENT_SEMANTIC'
+       AND st.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}'='true'
+       AND st.evidence_payload#>>'{semantic_judge_result,model_call_count}'='1')
+    )
+    OR st.evidence_payload#>'{semantic_judge_result,result,blocking_codes}' IS DISTINCT FROM '[]'::jsonb
     OR st.evidence_payload#>'{semantic_judge_result,result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
  THEN RETURN jsonb_build_object('status','BLOCKED',
     'blocking_code','REVIEWER_STEP70_RECEIPT_NOT_ATTESTED'); END IF;
@@ -206,7 +226,14 @@ BEGIN
   WHERE execution_id=p.semantic_reviewer_execution_id
     AND operation_code='EJECUCION_PERFIL_LF' AND status='COMPLETED'
     AND execution_id<>p.request_execution_id;
- IF NOT FOUND OR reviewer.target_code=p.requested_by_profile
+ IF NOT FOUND OR reviewer.manifest->>'executor_mode' IS DISTINCT FROM 'GPT_NATIVE'
+    OR reviewer.manifest->>'executor_provider' IS DISTINCT FROM 'OPENAI_CHATGPT_NATIVE'
+    OR reviewer.manifest->>'read_only' IS DISTINCT FROM 'true'
+    OR reviewer.manifest->>'no_write' IS DISTINCT FROM 'true'
+    OR reviewer.manifest->>'no_promotion' IS DISTINCT FROM 'true'
+    OR reviewer.manifest ? 'queue_request_id'
+    OR nullif(reviewer.manifest->>'runtime_target','') IS NOT NULL
+    OR reviewer.target_code=p.requested_by_profile
     OR reviewer.manifest#>>'{semantic_review,subject_promotion_id}' IS DISTINCT FROM p.promotion_id
  THEN RETURN jsonb_build_object('status','BLOCKED',
  'blocking_code','BLOCK_SEMANTIC_REVIEWER_NOT_DISTINCT'); END IF;
@@ -217,6 +244,19 @@ BEGIN
   OR nullif(st.created_by_execution_id,'') IS NULL
   OR st.evidence_payload->>'test_only_synthetic'='true'
   OR st.evidence_payload#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
+  OR st.evidence_payload#>>'{semantic_judge_result,validator_status}' IS DISTINCT FROM 'PASS'
+  OR NOT (
+     (st.evidence_payload#>>'{semantic_judge_result,verdict}'='PASS_REVIEWED_CURRENT_CONTEXT'
+      AND st.evidence_payload#>>'{semantic_judge_result,review_mode}'='CURRENT_CONTEXT_REVIEW'
+      AND st.evidence_payload#>>'{semantic_judge_result,reviewer_is_producer}'='true'
+      AND st.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}'='false'
+      AND st.evidence_payload#>>'{semantic_judge_result,model_call_count}'='0')
+     OR
+     (st.evidence_payload#>>'{semantic_judge_result,verdict}'='PASS_INDEPENDENT_SEMANTIC'
+      AND st.evidence_payload#>>'{semantic_judge_result,producer_independence_proven}'='true'
+      AND st.evidence_payload#>>'{semantic_judge_result,model_call_count}'='1')
+  )
+  OR st.evidence_payload#>'{semantic_judge_result,result,blocking_codes}' IS DISTINCT FROM '[]'::jsonb
   OR st.evidence_payload#>'{semantic_judge_result,result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
   OR st.evidence_payload#>'{semantic_judge_result,result,promotion_semantic_review}' IS DISTINCT FROM p.semantic_receipt
  THEN RETURN jsonb_build_object('status','BLOCKED',
