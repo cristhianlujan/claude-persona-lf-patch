@@ -510,6 +510,9 @@ DECLARE
  v_history_count integer;
  v_batch_id text;
  v_screen_pre_hashes jsonb;
+ v_ig_impact jsonb := '[]'::jsonb;
+ v_ig_unresolved integer := 0;
+ v_ig_material integer := 0;
 BEGIN
  IF coalesce(p_parent_execution_id,'')='' OR coalesce(p_batch_id,'')=''
  THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_IDENTITY_MISSING'; END IF;
@@ -644,6 +647,79 @@ BEGIN
     v_batch->>'screen_preimage_root_sha256' THEN
    RAISE EXCEPTION 'BLOCK_RULE_BULK_SCREEN_SOURCE_PREIMAGE_DRIFT'; END IF;
 
+ -- IG dependency preflight is structural, not an assertion of CURRENTNESS.
+ -- Terminal runs are not mutated. A post-cut currentness/freshness verifier
+ -- must decide which sources need a governed Curator->Validator successor.
+ IF to_regclass('programacion.input_readiness_runs') IS NULL THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_IG_SOURCE_LEDGER_UNAVAILABLE'; END IF;
+ WITH active_runs AS (
+   SELECT ir.id AS run_id, ir.pantalla_id, p.codigo AS screen_code,
+          ir.source_manifest,
+          CASE WHEN jsonb_typeof(ir.source_manifest)='array'
+            THEN jsonb_array_length(ir.source_manifest) ELSE 0 END AS manifest_items
+   FROM programacion.input_readiness_runs ir
+   JOIN lf_ops.pantallas p ON p.id=ir.pantalla_id
+   WHERE ir.status='COMPLETED' AND ir.invalidated_at IS NULL
+     AND NOT EXISTS (
+       SELECT 1 FROM programacion.input_readiness_runs successor
+       WHERE successor.supersedes_run_id=ir.id AND successor.status='COMPLETED'
+     )
+     AND EXISTS (
+       SELECT 1 FROM lf_ops.reglas_pantallas edge
+       WHERE edge.pantalla_id=ir.pantalla_id
+     )
+ ), pins AS (
+   SELECT active.run_id,active.pantalla_id,active.screen_code,
+          active.manifest_items,pin.value->'ref'->>'kind' AS kind,
+          pin.value->'ref'->>'codigo' AS rule_code,
+          r.id AS resolved_rule_id
+   FROM active_runs active
+   LEFT JOIN LATERAL jsonb_array_elements(
+     CASE WHEN jsonb_typeof(active.source_manifest)='array'
+       THEN active.source_manifest ELSE '[]'::jsonb END
+   ) pin(value) ON true
+   LEFT JOIN lf_ops.reglas r ON pin.value->'ref'->>'kind'='RULE'
+    AND r.codigo=pin.value->'ref'->>'codigo'
+ ), per_run AS (
+   SELECT run_id,pantalla_id,screen_code,max(manifest_items) manifest_items,
+          count(*) FILTER(WHERE kind='RULE' AND resolved_rule_id IS NOT NULL)
+            AS material_rule_pins,
+          count(*) FILTER(WHERE kind='RULE' AND resolved_rule_id IS NULL)
+            AS unresolved_rule_pins,
+          count(*) FILTER(WHERE kind='SCREEN_RULE_SET') AS screen_rule_set_pins,
+          count(*) FILTER(WHERE kind='SCREEN_CANONICAL_GRAPH') AS graph_pins,
+          coalesce(jsonb_agg(DISTINCT rule_code)
+            FILTER(WHERE kind='RULE' AND resolved_rule_id IS NOT NULL),
+            '[]'::jsonb) AS material_rule_codes
+   FROM pins GROUP BY run_id,pantalla_id,screen_code
+ ), classified AS (
+   SELECT *,
+     CASE WHEN manifest_items=0 OR unresolved_rule_pins>0
+       THEN 'BLOCK_IG_SOURCE_PIN_UNRESOLVED'
+       WHEN material_rule_pins>0 OR screen_rule_set_pins>0
+       THEN 'POST_CUT_FRESHNESS_DELTA_REQUIRED'
+       WHEN graph_pins>0 THEN 'POST_CUT_CURRENTNESS_READBACK'
+       ELSE 'NO_DIRECT_RULE_DEPENDENCY'
+     END AS impact_class
+   FROM per_run
+ )
+ SELECT coalesce(jsonb_agg(jsonb_build_object(
+      'run_id',run_id,'pantalla_id',pantalla_id,'screen_code',screen_code,
+      'impact_class',impact_class,'material_rule_pins',material_rule_pins,
+      'screen_rule_set_pins',screen_rule_set_pins,'graph_pins',graph_pins,
+      'material_rule_codes',material_rule_codes,
+      'source_currentness','NOT_EVALUATED',
+      'post_cut_authority','REQUIRED_NOT_ATTESTED'
+    ) ORDER BY run_id)
+    FILTER(WHERE impact_class<>'NO_DIRECT_RULE_DEPENDENCY'),'[]'::jsonb),
+    count(*) FILTER(WHERE impact_class='BLOCK_IG_SOURCE_PIN_UNRESOLVED'),
+    count(*) FILTER(WHERE impact_class='POST_CUT_FRESHNESS_DELTA_REQUIRED')
+ INTO v_ig_impact,v_ig_unresolved,v_ig_material
+ FROM classified;
+ IF v_ig_unresolved<>0 THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_IG_UNRESOLVED_RULE_PIN:%',
+     v_ig_unresolved; END IF;
+
  -- Existing canonical schema is evolved IN THE SAME transaction as all
  -- canonical child writes; on any error this DDL also rolls back.
  EXECUTE 'ALTER TABLE lf_ops.reglas ADD COLUMN owner_name text';
@@ -747,6 +823,15 @@ BEGIN
    'source_catalog_md5',v_catalog_md5,'source_preimage_root_sha256',v_rows_root,
    'screens_preimage_root_sha256',v_screens_root,
    'production_status','REQUIRES_GOVERNED_IG_CURRENTNESS_VALIDATION',
+   'ig_currentness_gate',jsonb_build_object(
+     'schema_version','LF_RULE_BULK_IG_CURRENTNESS_GATE_V1',
+     'status','POST_CUT_AUTHORITY_PENDING',
+     'candidate_run_count',jsonb_array_length(v_ig_impact),
+     'material_rule_candidate_count',v_ig_material,
+     'candidates',v_ig_impact,
+     'source_currentness_attested',false,
+     'validator_receipt_attested',false,
+     'production_release_authorized',false),
    'promotion_authorized',false);
 END
 $bulk$;
