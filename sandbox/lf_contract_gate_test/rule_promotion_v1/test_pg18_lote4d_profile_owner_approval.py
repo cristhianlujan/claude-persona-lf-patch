@@ -27,6 +27,10 @@ def bootstrap():
        ADD COLUMN evidence_ref text, ADD COLUMN created_by_execution_id text;
     """)
     sql(M4D.read_text(encoding="utf-8"))
+    sql("""CREATE TABLE public.lf_error_knowledge(
+       codigo text PRIMARY KEY,estado text NOT NULL);
+       INSERT INTO public.lf_error_knowledge VALUES(
+        'PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001','RESOLVED');""")
     sql("""INSERT INTO public.lf_profile_write_authority_v1 VALUES
       ('PERFIL-OWNER-RULE-LF','PROMOCION_REGLA_LF','ACTIVE');""")
 
@@ -34,7 +38,7 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
              grant=True,bad_quote=False,policy_drift=False,
              tamper_owner_hash=False,synthetic_owner=False,
              synthetic_parent=False,missing_owner_run=False,
-             same_execution=False,auth_only=False):
+             same_execution=False,auth_only=False,ekb_active=False):
     quote="UNTRUSTED_FABRICATED_QUOTE_XYZ" if bad_quote else "Test baseline"
     owner_run="EXEC-PARENT-TEST-001" if same_execution else "EXEC-OWNER-L4D-001"
     actor_rows=""
@@ -105,6 +109,7 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
       VALUES('RULE-TEST-001',{base.lit(owner_profile)},
        public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'source_decision_sha256','ACTIVE');
     {drift}
+    {"UPDATE public.lf_error_knowledge SET estado='ACTIVE' WHERE codigo='PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001';" if ekb_active else ""}
     SELECT 'PRE|'||public.lf_rule_promotion_governed_decide_v1(
        'PROM-TEST','LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1')::text;
     {setup_owner}
@@ -206,6 +211,66 @@ def main():
     check("OWNER_CANNOT_USE_PARENT_RUN",
       r["OWNER_APPROVAL"]["blocking_code"]=="PROFILE_OWNER_EXECUTION_NOT_ATTESTED"
       and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=run_case(ekb_active=True)
+    check("ACTIVE_EKB_PREVENTS_OWNER_APPROVAL",
+      r["OWNER_APPROVAL"]["blocking_code"]=="PROFILE_SEMANTIC_JUDGE_EKB_NOT_RESOLVED"
+      and r["APPLY"]["status"]=="BLOCKED"
+      and r["ROLLBACK"]["promotions"]==0,r)
+
+    # A profile owner cannot assume the existing IG Validator identity.
+    r=sql("""BEGIN;
+      DO $$
+      DECLARE accepted boolean:=false;
+      BEGIN
+        BEGIN
+          INSERT INTO public.lf_rule_promotion_profile_owner_v1(
+            rule_code,owner_profile_code,source_decision_sha256,status)
+          VALUES('RULE-TEST-001',
+            'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:abcdef',
+            repeat('f',64),'ACTIVE');
+          accepted:=true;
+        EXCEPTION WHEN check_violation THEN accepted:=false;
+        END;
+        IF accepted THEN RAISE EXCEPTION 'IG_ACTOR_MUST_NOT_BE_PROFILE_OWNER'; END IF;
+      END $$;
+      SELECT 'IG_ACTOR_REJECTED|'||jsonb_build_object('count',(
+        SELECT count(*) FROM public.lf_rule_promotion_profile_owner_v1))::text;
+      ROLLBACK;""")
+    check("IG_ACTOR_CANNOT_ASSUME_OWNER_PROFILE_IDENTITY",
+       r["IG_ACTOR_REJECTED"]["count"]==0,r)
+
+    # Restore the old 33 labelled mutation safety check: without a genuine
+    # owner-profile Step70 receipt NONE can be promoted, irrespective of label.
+    baselines=json.loads((ROOT/"sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_semantic_mutations_labeled_v1.json").read_text(encoding="utf-8"))
+    adversarial=json.loads((ROOT/"sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_adversarial_mutations_labeled_v1.json").read_text(encoding="utf-8"))
+    cases=baselines["cases"]+adversarial["cases"]
+    assert len(cases)==33
+    failures=[]
+    for c in cases:
+        config={"source_decision_number":101,"security_policy_code":"SEC-AUTH",
+                "deny_by_default":True,"depends_on_rules":["RULE-DEPENDENCY-001"]}
+        config.update(c.get("config_patch",{}))
+        r=sql("BEGIN;"+
+          "UPDATE lf_ops.reglas SET descripcion="+base.lit(c["mutated_description"])+
+          ",valor_config="+base.lit(json.dumps(config,ensure_ascii=False))+
+          "::jsonb WHERE codigo='RULE-TEST-001';"+
+          "UPDATE public.lf_operation_execution_steps SET evidence_payload=jsonb_set("+
+          "evidence_payload,'{input_governance,rule_source_sha256}',"+
+          "to_jsonb(public.lf_asset_snapshot_sha_v1('REGLA','RULE-TEST-001')),true)"+
+          " WHERE execution_id='EXEC-PARENT-TEST-001' AND step_id='input_validate';"+
+          "SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1("+
+          "'EXEC-PARENT-TEST-001','RULE-TEST-001','L4D legacy unreviewed safety')::text;"+
+          "SELECT 'DECISION|'||public.lf_rule_promotion_governed_decide_v1("+
+          "'PROM-TEST','LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1')::text;"+
+          "SELECT 'APPLY|'||public.lf_rule_promotion_apply_v1('PROM-TEST')::text;"+
+          "ROLLBACK;")
+        if r["DECISION"]["status"]=="APPROVED" or r["APPLY"]["status"]=="APPLIED":
+            failures.append(c["id"])
+    raw={"n":len(cases),"auto_approved_without_profile_owner":len(failures),
+         "unsafe_ids":failures,"independence_proven":False}
+    check("LEGACY_33_CASES_NO_UNREVIEWED_APPROVAL",
+      len(cases)==33 and len(failures)==0,raw)
 
     print("LF_L4D_PROFILE_OWNER_AUTHORITY_PG18_PASS checks="+str(N),flush=True)
     print("SIMULATED_OWNER_RUNS_ONLY=true NATIVE_MODEL_CALLS=0 IG_PROFILE_INDEPENDENCE=false",flush=True)
