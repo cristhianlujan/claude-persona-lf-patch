@@ -1,0 +1,117 @@
+{
+  "schema_version": "IG_M1013_CP3_SEVEN_ENTRYPOINTS_READBACK_V1",
+  "plan_code": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit_code": "M10.13",
+  "checkpoint_code": "ZERO_LEGACY_CALLERS",
+  "observed_at_utc": "2026-11-11 06:12:30.353542+00",
+  "evidence_status": "OBSERVED_STATIC_ONLY_WITH_NEGATIVE_PASS",
+  "checkpoint_terminal_status": "PENDING",
+  "source_ref": {
+    "repository": "cristhianlujan/claude-persona-lf-patch",
+    "branch": "test/ig-m1013-cp3-live-bidirectional-readback-20261110",
+    "path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_seven_entrypoints_negative_guard_20261111.sql",
+    "git_blob_sha": "865a10d9d4548e467e2d21ec3ba60c4134d360cd"
+  },
+  "live_edge_source": [
+    {
+      "slug": "input-governance-agent-v1",
+      "version": 18,
+      "ezbr_sha256": "42213db2f0b39066a3136fface82f299f194f8b631423b486654bd2e782b7255"
+    },
+    {
+      "slug": "input-governance-curator-v1",
+      "version": 15,
+      "ezbr_sha256": "3f138e0e0b42d76ce60d457a0ec4712c887c7181fe07f43fcefdcc8ef5098e6a"
+    },
+    {
+      "slug": "input-governance-validator-v1",
+      "version": 19,
+      "ezbr_sha256": "7eb06ce43bb62613d96dac099715015fc208d89c647d28be6f275cf74461237c"
+    }
+  ],
+  "edge_rpc_entrypoints": [
+    "fn_input_governance_execute",
+    "fn_input_governance_safe_autofix_v1",
+    "fn_input_governance_curator_materialize_v1",
+    "fn_input_governance_curator_handoff_receipt_v1",
+    "fn_input_governance_validator_handoff_assert_v1",
+    "fn_input_governance_validator_validate_handoff_v1",
+    "fn_input_governance_validator_resume_context_v1"
+  ],
+  "test_results": [
+    {
+      "scenario": "ACTUAL",
+      "reachable_functions": 120,
+      "target_seen": 0,
+      "consumer_seen": 0,
+      "verdict": "NO_ACTIVE_STATIC_PATHS_DETECTED",
+      "adversarial_test_pass": true
+    },
+    {
+      "scenario": "MUTATED_REINTRODUCTION",
+      "reachable_functions": 124,
+      "target_seen": 1,
+      "consumer_seen": 1,
+      "verdict": "FAIL_LEGACY_PATH_DETECTED",
+      "adversarial_test_pass": true
+    }
+  ],
+  "negative_case": {
+    "injected_only_in_readonly_cte": "public.fn_input_governance_curator_materialize_v1 -> programacion.fn_input_run_semantic_revalidation_v1",
+    "new_real_sql_or_edge_functions": 0,
+    "impact_to_runtime": false
+  },
+  "runtime_receipts": {
+    "profile_execution": "EXEC-PROFILE-GATE2-6FBA871B254F838684B84663",
+    "profile_input_validate": "STEP_PASS_WITH_EVIDENCE",
+    "input_governance_run_id": 951,
+    "ig_status": "BLOCKED",
+    "ig_remediation_state": "INTERNAL_REMEDIATION_REQUIRED",
+    "new_ig_run_created": false
+  },
+  "other_sweeps": {
+    "cron_jobs_total": 10,
+    "cron_jobs_direct_legacy": 0,
+    "pg_stat_statements_since_reset": "2026-10-10T02:45:35.862139Z",
+    "pg_stat_statements_count_at_check": 4944,
+    "pg_stat_statements_target_direct_matches": 0,
+    "sql_routines_other_than_legacy_consumer_direct_calling_legacy_classifier": 0,
+    "active_edge_deployments": 39,
+    "explicit_legacy_name_mentions_in_live_edge_sources": 0,
+    "anon_schema_usage_programacion": false,
+    "authenticated_schema_usage_programacion": false,
+    "service_role_schema_usage_programacion": false
+  },
+  "legacy_signatures": [
+    {
+      "signature": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+      "md5": "7257b9bbc86b1f61e5435a37479d63a1",
+      "historical_class": "LEGACY_REFERENCED",
+      "direct_sql_caller": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+      "direct_sql_outbound_count": 5
+    },
+    {
+      "signature": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+      "md5": "44a7f21a3c01411662ab568af58c4091",
+      "historical_class": "LEGACY_UNREFERENCED",
+      "direct_sql_caller_count": 0,
+      "direct_sql_outbound_count": 5
+    }
+  ],
+  "proof_limits": [
+    "No full SQL nested runtime call count: track_functions=none; pg_stat_statements.track=top",
+    "Graph is conservative lexical reachability, not runtime profiling",
+    "No statement that unknown external clients were absent",
+    "Open unmerged legacy/CP3 candidate PR #3126 must be reconciled",
+    "M10.4 freeze forbids change/drop/revoke without governed retirement",
+    "Neither diagnostic parent profile execution is terminal 11/11"
+  ],
+  "governance": {
+    "lifecycle": "ASSET_RETIREMENT_GOVERNANCE",
+    "classification_candidate": "KEEP_HISTORICAL_NONOPERATIONAL_PENDING_RETIRED_IDENTITY_GOVERNANCE",
+    "terminal_closure_eligible": false,
+    "pass_claimed": false,
+    "promotion_authorized": false
+  },
+  "next_action": "Reconcile current descendant PR, external consumers and retirement guard; no change to production/current sources until separate authority and post-promotion readback."
+}
