@@ -541,7 +541,308 @@ BEGIN
    WHERE s.execution_id=p_parent_execution_id
      AND s.step_id='input_validate' AND s.status='STEP_PASS_WITH_EVIDENCE'
      AND coalesce(s.evidence_payload->>'scope_authority_packet_sha256','')
-          ~ '^[0-9a-f]{64}$'
+          ~ '^sha256:[0-9a-f]{64}
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED'; END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps s
+   WHERE s.execution_id=p_parent_execution_id AND s.step_id='output_validate'
+     AND s.status='STEP_PASS_WITH_EVIDENCE'
+     AND s.evidence_payload->>'output_contract_result'='PASS'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_PROFILE_OUTPUT_INVALID'; END IF;
+ SELECT s.evidence_payload->'semantic_judge_result' INTO v_judge
+ FROM public.lf_operation_execution_steps s
+ WHERE s.execution_id=p_parent_execution_id AND s.step_id='semantic_judge'
+ AND s.status='STEP_PASS_WITH_EVIDENCE'
+ AND s.evidence_payload->'blocking_codes'='[]'::jsonb;
+ IF v_judge IS NULL
+ OR v_judge->>'verdict' NOT IN (
+   'PASS_INDEPENDENT_SEMANTIC','PASS_REVIEWED_CURRENT_CONTEXT')
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_JUDGE_NOT_CLEAN'; END IF;
+ SELECT s.evidence_payload->'profile_output' INTO v_output
+ FROM public.lf_operation_execution_steps s
+ WHERE s.execution_id=p_parent_execution_id AND s.step_id='execute_profile'
+   AND s.status='STEP_PASS_WITH_EVIDENCE';
+ IF v_output->>'worker' IS DISTINCT FROM 'product_director_lf'
+ OR v_output->>'output_type' IS DISTINCT FROM 'PRODUCT_DIRECTION_SPEC'
+ OR v_output->>'self_verdict' IS DISTINCT FROM 'PASS'
+ OR v_output#>>'{deliverable_created,authority_status}' NOT IN ('SUPPORTED','CONFLICT_RESOLVED')
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_PRODUCT_OUTPUT_INVALID'; END IF;
+ v_batch:=v_output#>'{deliverable_created,governed_rule_batch}';
+ v_provenance:=v_output#>'{deliverable_created,product_decision}';
+ IF jsonb_typeof(v_batch) IS DISTINCT FROM 'object'
+ OR (SELECT count(*) FROM jsonb_object_keys(v_batch))<>10
+ OR v_batch->>'batch_id' IS DISTINCT FROM p_batch_id
+ OR v_batch->>'scope' IS DISTINCT FROM 'ALL_CANONICAL_RULES'
+ OR v_batch->>'operation_code' IS DISTINCT FROM 'ACTUALIZACION_REGLA_LF'
+ OR v_batch->>'change_kind' IS DISTINCT FROM 'ADMINISTRATIVE_ONLY'
+ OR v_batch->'changes' IS DISTINCT FROM
+     '{"owner_name":"SUPER_ADMIN","created_by":"ChatGPT"}'::jsonb
+ OR v_batch->>'source_catalog_md5' !~ '^[0-9a-f]{32}$'
+ OR v_batch->>'rule_preimage_root_sha256' !~ '^[0-9a-f]{64}$'
+ OR v_batch->>'screen_preimage_root_sha256' !~ '^[0-9a-f]{64}$'
+ OR v_batch->>'lineage_md5' !~ '^[0-9a-f]{32}$'
+ OR v_batch->>'expected_count' IS DISTINCT FROM '578'
+ OR v_provenance->>'decision_id' IS NULL
+ OR jsonb_typeof(v_provenance->'source_refs') IS DISTINCT FROM 'array'
+ OR NOT EXISTS(
+     SELECT 1 FROM jsonb_array_elements(v_provenance->'source_refs') r
+     WHERE r->>'authority'='AUTHORITATIVE'
+       AND r->>'current'='true'
+       AND nullif(btrim(r->>'source_ref'),'') IS NOT NULL
+   )
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_PRODUCT_SCOPE_OR_OWNER_APPROVAL'; END IF;
+
+ -- One serial transaction protects ALL mutable rules and their lineages;
+ -- external readers see original OR final data, never schema-only state.
+ LOCK TABLE lf_ops.reglas IN ACCESS EXCLUSIVE MODE;
+ LOCK TABLE lf_ops.reglas_pantallas IN SHARE MODE;
+ LOCK TABLE lf_ops.pantallas IN SHARE MODE;
+ IF EXISTS(SELECT 1 FROM information_schema.columns
+     WHERE table_schema='lf_ops' AND table_name='reglas'
+       AND column_name='owner_name') THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_OWNER_SCHEMA_ALREADY_PRESENT'; END IF;
+ SELECT count(*),md5(string_agg(r.id::text||':'||r.codigo,E'\n' ORDER BY r.id)),
+        jsonb_agg(to_jsonb(r) ORDER BY r.id)
+ INTO v_scope_count,v_catalog_md5,v_preimages FROM lf_ops.reglas r;
+ IF v_scope_count<>578
+ OR v_catalog_md5 IS DISTINCT FROM v_batch->>'source_catalog_md5'
+ OR (SELECT count(*) FROM jsonb_array_elements(v_preimages))<>578
+ OR EXISTS(SELECT 1 FROM lf_ops.reglas r
+    WHERE r.estado NOT IN ('VIGENTE','CANDIDATO'))
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_SOURCE_CATALOG_PREIMAGE_DRIFT'; END IF;
+
+ SELECT encode(extensions.digest(convert_to(jsonb_agg(
+   jsonb_build_object(
+     'id',(e.value->>'id')::integer,
+     'codigo',e.value->>'codigo',
+     'sha',encode(extensions.digest(convert_to(
+       (e.value-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
+   ) ORDER BY (e.value->>'id')::integer)::text,'UTF8'),'sha256'),'hex')
+ INTO v_rows_root FROM jsonb_array_elements(v_preimages) e(value);
+ IF v_rows_root IS DISTINCT FROM v_batch->>'rule_preimage_root_sha256' THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_RULE_MATERIAL_PREIMAGE_DRIFT'; END IF;
+
+ SELECT count(*),
+   md5(string_agg(pantalla_id::text||':'||regla_id::text,E'\n'
+       ORDER BY pantalla_id,regla_id))
+ INTO v_link_count,v_lineage_md5 FROM lf_ops.reglas_pantallas;
+ IF v_link_count<>6176 OR v_lineage_md5 IS DISTINCT FROM
+    v_batch->>'lineage_md5' THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_SCREEN_LINEAGE_DRIFT'; END IF;
+
+ WITH per_screen AS (
+ SELECT p.id,p.codigo, public.lf_asset_snapshot_sha_v1('PANTALLA',p.codigo) sha
+ FROM lf_ops.pantallas p
+ WHERE EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp
+              WHERE rp.pantalla_id=p.id)
+ )
+ SELECT count(*),
+   encode(extensions.digest(convert_to(jsonb_agg(
+      jsonb_build_object('id',id,'codigo',codigo,'sha',sha)
+      ORDER BY id)::text,'UTF8'),'sha256'),'hex'),
+   jsonb_object_agg(codigo,sha)
+ INTO v_screen_count,v_screens_root,v_screen_pre_hashes
+ FROM per_screen;
+ IF v_screen_count<>56 OR v_screens_root IS DISTINCT FROM
+    v_batch->>'screen_preimage_root_sha256' THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_SCREEN_SOURCE_PREIMAGE_DRIFT'; END IF;
+
+ -- IG dependency preflight is structural, not an assertion of CURRENTNESS.
+ -- Terminal runs are not mutated. A post-cut currentness/freshness verifier
+ -- must decide which sources need a governed Curator->Validator successor.
+ IF to_regclass('programacion.input_readiness_runs') IS NULL THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_IG_SOURCE_LEDGER_UNAVAILABLE'; END IF;
+ WITH active_runs AS (
+   SELECT ir.id AS run_id, ir.pantalla_id, p.codigo AS screen_code,
+          ir.source_manifest,
+          CASE WHEN jsonb_typeof(ir.source_manifest)='array'
+            THEN jsonb_array_length(ir.source_manifest) ELSE 0 END AS manifest_items
+   FROM programacion.input_readiness_runs ir
+   JOIN lf_ops.pantallas p ON p.id=ir.pantalla_id
+   WHERE ir.status='COMPLETED' AND ir.invalidated_at IS NULL
+     AND NOT EXISTS (
+       SELECT 1 FROM programacion.input_readiness_runs successor
+       WHERE successor.supersedes_run_id=ir.id AND successor.status='COMPLETED'
+     )
+     AND EXISTS (
+       SELECT 1 FROM lf_ops.reglas_pantallas edge
+       WHERE edge.pantalla_id=ir.pantalla_id
+     )
+ ), pins AS (
+   SELECT active.run_id,active.pantalla_id,active.screen_code,
+          active.manifest_items,pin.value->'ref'->>'kind' AS kind,
+          pin.value->'ref'->>'codigo' AS rule_code,
+          r.id AS resolved_rule_id
+   FROM active_runs active
+   LEFT JOIN LATERAL jsonb_array_elements(
+     CASE WHEN jsonb_typeof(active.source_manifest)='array'
+       THEN active.source_manifest ELSE '[]'::jsonb END
+   ) pin(value) ON true
+   LEFT JOIN lf_ops.reglas r ON pin.value->'ref'->>'kind'='RULE'
+    AND r.codigo=pin.value->'ref'->>'codigo'
+ ), per_run AS (
+   SELECT run_id,pantalla_id,screen_code,max(manifest_items) manifest_items,
+          count(*) FILTER(WHERE kind='RULE' AND resolved_rule_id IS NOT NULL)
+            AS material_rule_pins,
+          count(*) FILTER(WHERE kind='RULE' AND resolved_rule_id IS NULL)
+            AS unresolved_rule_pins,
+          count(*) FILTER(WHERE kind='SCREEN_RULE_SET') AS screen_rule_set_pins,
+          count(*) FILTER(WHERE kind='SCREEN_CANONICAL_GRAPH') AS graph_pins,
+          coalesce(jsonb_agg(DISTINCT rule_code)
+            FILTER(WHERE kind='RULE' AND resolved_rule_id IS NOT NULL),
+            '[]'::jsonb) AS material_rule_codes
+   FROM pins GROUP BY run_id,pantalla_id,screen_code
+ ), classified AS (
+   SELECT *,
+     CASE WHEN manifest_items=0 OR unresolved_rule_pins>0
+       THEN 'BLOCK_IG_SOURCE_PIN_UNRESOLVED'
+       WHEN material_rule_pins>0 OR screen_rule_set_pins>0
+       THEN 'POST_CUT_FRESHNESS_DELTA_REQUIRED'
+       WHEN graph_pins>0 THEN 'POST_CUT_CURRENTNESS_READBACK'
+       ELSE 'NO_DIRECT_RULE_DEPENDENCY'
+     END AS impact_class
+   FROM per_run
+ )
+ SELECT coalesce(jsonb_agg(jsonb_build_object(
+      'run_id',run_id,'pantalla_id',pantalla_id,'screen_code',screen_code,
+      'impact_class',impact_class,'material_rule_pins',material_rule_pins,
+      'screen_rule_set_pins',screen_rule_set_pins,'graph_pins',graph_pins,
+      'material_rule_codes',material_rule_codes,
+      'source_currentness','NOT_EVALUATED',
+      'post_cut_authority','REQUIRED_NOT_ATTESTED'
+    ) ORDER BY run_id)
+    FILTER(WHERE impact_class<>'NO_DIRECT_RULE_DEPENDENCY'),'[]'::jsonb),
+    count(*) FILTER(WHERE impact_class='BLOCK_IG_SOURCE_PIN_UNRESOLVED'),
+    count(*) FILTER(WHERE impact_class='POST_CUT_FRESHNESS_DELTA_REQUIRED')
+ INTO v_ig_impact,v_ig_unresolved,v_ig_material
+ FROM classified;
+ IF v_ig_unresolved<>0 THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_IG_UNRESOLVED_RULE_PIN:%',
+     v_ig_unresolved; END IF;
+
+ -- Existing canonical schema is evolved IN THE SAME transaction as all
+ -- canonical child writes; on any error this DDL also rolls back.
+ EXECUTE 'ALTER TABLE lf_ops.reglas ADD COLUMN owner_name text';
+
+ FOR v_rule IN SELECT value FROM jsonb_array_elements(v_preimages) LOOP
+   v_code:=v_rule->>'codigo';
+   IF (SELECT to_jsonb(r)-'owner_name' FROM lf_ops.reglas r
+       WHERE r.codigo=v_code) IS DISTINCT FROM v_rule THEN
+     RAISE EXCEPTION 'BLOCK_RULE_BULK_PER_RULE_PRE_SCHEMA_DRIFT:%',v_code;
+   END IF;
+   v_patch:=jsonb_build_object('rule_code',v_code,
+     'change_kind','ADMINISTRATIVE_ONLY','changes',v_batch->'changes');
+   v_packet:=jsonb_build_object(
+     'regla_codigo',v_code,
+     'analysis_snapshot_sha256',
+        public.lf_asset_snapshot_sha_v1('REGLA',v_code),
+     'decision_id',v_provenance->>'decision_id',
+     'candidate_patch',v_patch,
+     'rule_owner_batch_id',p_batch_id,
+     'before_schema_source_row',v_rule);
+   v_receipt:=public.lf_skill_invoke_v1(
+     'RULE_UPDATE_APPLY',p_parent_execution_id,v_packet);
+   IF v_receipt->>'status' IS DISTINCT FROM 'COMPLETED'
+      OR v_receipt->>'effect_verified' IS DISTINCT FROM 'true'
+      OR v_receipt#>>'{child_receipt,status}' IS DISTINCT FROM 'APPLIED_VERIFIED'
+      OR v_receipt#>>'{child_receipt,rule_code}' IS DISTINCT FROM v_code
+      OR coalesce(v_receipt->>'replay','false')='true'
+   THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_CHILD_NOT_VERIFIED:%:%',
+      v_code,coalesce(v_receipt#>>'{child_receipt,code}',
+         v_receipt->>'blocking_code',v_receipt->>'status','NO_RECEIPT'); END IF;
+   v_count:=v_count+1;
+ END LOOP;
+
+ IF v_count<>578 OR (SELECT count(*) FROM lf_ops.reglas)<>578
+ OR (SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\n' ORDER BY r.id))
+     FROM lf_ops.reglas r) IS DISTINCT FROM v_catalog_md5
+ OR EXISTS(SELECT 1 FROM lf_ops.reglas r
+           WHERE r.owner_name IS DISTINCT FROM 'SUPER_ADMIN'
+              OR r.created_by IS DISTINCT FROM 'ChatGPT')
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_FINAL_RULE_READBACK'; END IF;
+
+ -- Compare all original protected fields to the frozen before-schema source.
+ SELECT count(*) INTO v_preimage_same
+ FROM jsonb_array_elements(v_preimages) e(value)
+ JOIN lf_ops.reglas r ON r.id=(e.value->>'id')::integer
+ WHERE (to_jsonb(r)-'owner_name'-'created_by'-'updated_at')
+  IS DISTINCT FROM (e.value-'created_by'-'updated_at');
+ IF v_preimage_same<>0 THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_PROTECTED_FIELDS_DRIFT:%',v_preimage_same; END IF;
+
+ -- Verify every affected SCREEN from its ORIGINAL rule rows + target values.
+ -- No rewriting or fake refreshing previous Input Governance runs.
+ FOR v_screen IN
+ SELECT p.id,p.codigo FROM lf_ops.pantallas p
+ WHERE EXISTS(SELECT 1 FROM lf_ops.reglas_pantallas rp WHERE rp.pantalla_id=p.id)
+ ORDER BY p.codigo LOOP
+   SELECT encode(extensions.digest(convert_to(
+      jsonb_agg((e.value
+         || jsonb_build_object('owner_name','SUPER_ADMIN','created_by','ChatGPT'))
+         -'created_at'-'updated_at'
+         ORDER BY e.value->>'codigo')::text,'UTF8'),'sha256'),'hex')
+   INTO v_expected_sha
+   FROM lf_ops.reglas_pantallas rp
+   JOIN jsonb_array_elements(v_preimages) e(value)
+     ON (e.value->>'id')::integer=rp.regla_id
+   WHERE rp.pantalla_id=v_screen.id;
+   v_observed_sha:=public.lf_asset_snapshot_sha_v1('PANTALLA',v_screen.codigo);
+   IF v_expected_sha IS DISTINCT FROM v_observed_sha
+      OR v_observed_sha IS NOT DISTINCT FROM
+         v_screen_pre_hashes->>v_screen.codigo THEN
+      RAISE EXCEPTION 'BLOCK_RULE_BULK_SCREEN_HASH_READBACK:%',v_screen.codigo;
+   END IF;
+   v_screens_changed:=v_screens_changed+1;
+ END LOOP;
+ IF v_screens_changed<>56
+ OR (SELECT count(*) FROM lf_ops.reglas_pantallas)<>v_link_count
+ OR (SELECT md5(string_agg(pantalla_id::text||':'||regla_id::text,E'\n'
+              ORDER BY pantalla_id,regla_id))
+     FROM lf_ops.reglas_pantallas) IS DISTINCT FROM v_lineage_md5
+ THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_LINEAGE_READBACK'; END IF;
+
+ SELECT count(DISTINCT e.execution_id) INTO v_history_count
+ FROM public.lf_operation_execution e
+ JOIN public.lf_operation_execution_steps st ON st.execution_id=e.execution_id
+ WHERE e.operation_code='ACTUALIZACION_REGLA_LF'
+   AND e.created_by_execution_id=p_parent_execution_id
+   AND e.status='COMPLETED'
+   AND st.step_id='readback' AND st.status='PASS_CLEAN'
+   AND st.evidence_payload#>>'{rule_update_history_v1,rule_owner_batch_id}'
+       =p_batch_id
+   AND st.evidence_payload#>'{rule_update_history_v1,pre_schema_source_row}'
+       IS NOT NULL;
+ IF v_history_count<>578 THEN
+   RAISE EXCEPTION 'BLOCK_RULE_BULK_HISTORY_578_MISSING:%',v_history_count; END IF;
+
+ RETURN jsonb_build_object(
+   'status','APPLIED_VERIFIED','operation_code','ACTUALIZACION_REGLA_LF',
+   'parent_execution_id',p_parent_execution_id,'batch_id',p_batch_id,
+   'rules_updated',v_count,'histories_written',v_history_count,
+   'screens_sha_verified',v_screens_changed,'rule_links_verified',v_link_count,
+   'source_catalog_md5',v_catalog_md5,'source_preimage_root_sha256',v_rows_root,
+   'screens_preimage_root_sha256',v_screens_root,
+   'production_status','REQUIRES_GOVERNED_IG_CURRENTNESS_VALIDATION',
+   'ig_currentness_gate',jsonb_build_object(
+     'schema_version','LF_RULE_BULK_IG_CURRENTNESS_GATE_V1',
+     'status','POST_CUT_AUTHORITY_PENDING',
+     'candidate_run_count',jsonb_array_length(v_ig_impact),
+     'material_rule_candidate_count',v_ig_material,
+     'candidates',v_ig_impact,
+     'source_currentness_attested',false,
+     'validator_receipt_attested',false,
+     'production_release_authorized',false),
+   'promotion_authorized',false);
+END
+$bulk$;
+
+REVOKE ALL ON FUNCTION public.lf_rule_admin_bulk_atomic_v1(text,text)
+  FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_rule_admin_bulk_atomic_v1(text,text)
+  TO service_role;
+
+COMMIT;
+
  ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED'; END IF;
  IF NOT EXISTS(
    SELECT 1 FROM public.lf_operation_execution_steps s
