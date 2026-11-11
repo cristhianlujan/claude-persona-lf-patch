@@ -116,7 +116,7 @@ RETURNS jsonb LANGUAGE sql STABLE AS $$
      END
  END
  FROM public.l4b_ig_stub_state s WHERE s.id=true
-$;
+$$;
 """,db=db)
     sql(M4.read_text(),db=db)
 
