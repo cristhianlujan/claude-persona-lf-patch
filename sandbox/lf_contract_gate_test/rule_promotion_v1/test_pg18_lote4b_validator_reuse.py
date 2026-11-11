@@ -49,10 +49,13 @@ CREATE TABLE public.l4b_ig_stub_state(
  id boolean primary key default true,
  receipt_status text not null,
  audit_verdict text,
- candidate_sha256 text
+ candidate_sha256 text,
+ semantic_verdict text,
+ evidence_quote text
 );
-INSERT INTO public.l4b_ig_stub_state(id,receipt_status,audit_verdict,candidate_sha256)
-VALUES(true,'SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED',NULL,repeat('a',64));
+INSERT INTO public.l4b_ig_stub_state(
+ id,receipt_status,audit_verdict,candidate_sha256,semantic_verdict,evidence_quote)
+VALUES(true,'SEMANTIC_CANDIDATE_VERIFICATION_REQUIRED',NULL,repeat('a',64),NULL,'Test baseline');
 
 CREATE OR REPLACE FUNCTION public.fn_input_governance_semantic_packet_v1(
  p_run_id bigint,p_validator_identity text,p_receipt_id bigint,p_ticket uuid)
@@ -92,6 +95,25 @@ RETURNS jsonb LANGUAGE sql STABLE AS $$
     'audit_verdict',s.audit_verdict,'model_candidate_verified',true,'auditor_verified',true,
     'semantic_independence_credited',false,'official_write_authorized',false,
     'promotion_authorized',false,'production_authorized',false)
+   || CASE WHEN s.semantic_verdict IS NULL THEN '{}'::jsonb
+     ELSE jsonb_build_object('semantic_review',jsonb_build_object(
+       'promotion_id','PROM-TEST',
+       'ig_run_id',p_run_id,
+       'rule_code','RULE-TEST-001',
+       'rule_snapshot_sha256',public.lf_asset_snapshot_sha_v1('REGLA','RULE-TEST-001'),
+       'packet_sha256',repeat('b',64),
+       'candidate_sha256',s.candidate_sha256,
+       'security_policy_set_sha256',
+           public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'security_policy_set_sha256',
+       'dependency_sha256',
+           public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'dependency_sha256',
+       'verdict',s.semantic_verdict,
+       'cited_evidence',jsonb_build_array(jsonb_build_object(
+         'source_code','RULE-TEST-001',
+         'source_sha256',public.lf_asset_snapshot_sha_v1('REGLA','RULE-TEST-001'),
+         'exact_excerpt',s.evidence_quote,
+         'implication','Synthetic runtime wiring only; NOT a real semantic review'))))
+     END
  END
  FROM public.l4b_ig_stub_state s WHERE s.id=true
 $$;
@@ -102,7 +124,9 @@ def lit(v):
     if v is None: return "NULL"
     return "'" + str(v).replace("'", "''") + "'"
 
-def case(receipt_status,audit_verdict=None,mutate_after_bind=False,security_bypass=False):
+def case(receipt_status,audit_verdict=None,mutate_after_bind=False,security_bypass=False,
+         semantic_verdict=None,evidence_quote="Test baseline",synthetic_step70=False,
+         policy_drift=False,receipt_tamper=False):
     candidate="a"*64
     mut=""
     if security_bypass:
@@ -114,10 +138,23 @@ def case(receipt_status,audit_verdict=None,mutate_after_bind=False,security_bypa
         WHERE execution_id='EXEC-PARENT-TEST-001' AND step_id='input_validate';"""
     drift=""
     if mutate_after_bind:
-        drift="UPDATE lf_ops.reglas SET descripcion=descripcion||' drift' WHERE codigo='RULE-TEST-001';"
+        drift+="UPDATE lf_ops.reglas SET descripcion=descripcion||' drift' WHERE codigo='RULE-TEST-001';"
+    if policy_drift:
+        drift+="UPDATE lf_ops.politicas_seguridad SET policy_config=jsonb_set(policy_config,'{server_side_enforcement}','false'::jsonb,true) WHERE policy_code='SEC-AUTH';"
+    if receipt_tamper:
+        drift+="UPDATE public.lf_rule_promotion_v1 SET ig_semantic_external_receipt=jsonb_set(ig_semantic_external_receipt,'{audit_verdict}','\"FAIL\"'::jsonb,true) WHERE promotion_id='PROM-TEST';"
+    if synthetic_step70:
+        clean_step70=""
+    else:
+        # Only a synthetic disposable DB scenario. Does NOT evidence a real model or step70.
+        clean_step70="""UPDATE public.lf_operation_execution_steps
+        SET evidence_payload=jsonb_set(evidence_payload,'{test_only_synthetic}','false'::jsonb,true)
+        WHERE execution_id='EXEC-PARENT-TEST-001' AND step_id='semantic_judge';"""
     script=f"""BEGIN;
 UPDATE public.l4b_ig_stub_state SET receipt_status={lit(receipt_status)},
- audit_verdict={lit(audit_verdict)};
+ audit_verdict={lit(audit_verdict)},semantic_verdict={lit(semantic_verdict)},
+ evidence_quote={lit(evidence_quote)};
+{clean_step70}
 {mut}
 SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1(
  'EXEC-PARENT-TEST-001','RULE-TEST-001','L4B existing validator reuse')::text;
@@ -138,6 +175,7 @@ SELECT 'ROLLBACK|'||jsonb_build_object(
 def main():
     bootstrap()
     md5=sql("""SELECT 'MD5|'||jsonb_build_object(
+      'citation',md5(pg_get_functiondef('public.lf_rule_promotion_ig_citation_verify_v1(text,jsonb,bigint,text,text,text,text,text)'::regprocedure)),
       'bind',md5(pg_get_functiondef('public.lf_rule_promotion_bind_ig_semantic_v1(text,bigint,text,bigint,uuid,text)'::regprocedure)),
       'verify',md5(pg_get_functiondef('public.lf_rule_promotion_ig_semantic_verify_v1(text)'::regprocedure)),
       'decide',md5(pg_get_functiondef('public.lf_rule_promotion_governed_decide_v1(text,text)'::regprocedure)),
@@ -157,7 +195,7 @@ def main():
       r["VERIFY"]["status"]=="RETRY_REQUIRED"
       and r["DECISION"]["status"]=="RETRY_REQUIRED",r)
 
-    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS')
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="PERMITIR")
     check("EXISTING_IG_AUDIT_PASS_STILL_NOT_PROMOTABLE",
       r["VERIFY"]["blocking_code"]=="RETRY_SEMANTIC_QUALITY_GATE_NOT_AUTHORIZED"
       and r["DECISION"]["status"]=="RETRY_REQUIRED"
@@ -168,17 +206,48 @@ def main():
       r["VERIFY"]["blocking_code"]=="BLOCK_EXISTING_IG_SEMANTIC_AUDIT"
       and r["DECISION"]["status"]=="BLOCKED",r)
 
-    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',mutate_after_bind=True)
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',mutate_after_bind=True,semantic_verdict="PERMITIR")
     check("RULE_SNAPSHOT_DRIFT_BLOCKS",
       r["VERIFY"]["blocking_code"]=="BLOCK_IG_SEMANTIC_RULE_SNAPSHOT_DRIFT"
       and r["DECISION"]["status"]=="BLOCKED",r)
 
-    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',security_bypass=True)
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',security_bypass=True,semantic_verdict="PERMITIR")
     check("DETERMINISTIC_BLOCK_CANNOT_BE_OVERRIDDEN",
       r["BIND"]["blocking_code"]=="DETERMINISTIC_FIRST_FILTER_NOT_AUTO_APPROVABLE"
       and r["DECISION"]["status"]=="BLOCKED",r)
 
-    print("LF_L4B_EXISTING_IG_VALIDATOR_REUSE_PG18_PASS checks="+str(N),flush=True)
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="PERMITIR",evidence_quote="FABRICATED_QUOTE_NO_SOURCE")
+    check("FABRICATED_EXACT_CITATION_REJECTED",
+      r["BIND"]["blocking_code"]=="BLOCK_IG_SEMANTIC_CITATION_NOT_IN_CURRENT_SOURCE"
+      and r["DECISION"]["status"]=="RETRY_REQUIRED"
+      and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="PERMITIR",synthetic_step70=True)
+    check("SYNTHETIC_PARENT_STEP70_REJECTED",
+      r["BIND"]["blocking_code"]=="BLOCK_SYNTHETIC_PARENT_STEP70_EVIDENCE"
+      and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="PERMITIR",policy_drift=True)
+    check("SECURITY_POLICY_DRIFT_BLOCKS",
+      r["VERIFY"]["blocking_code"]=="BLOCK_IG_SEMANTIC_POLICY_DEPENDENCY_DRIFT"
+      and r["DECISION"]["status"]=="BLOCKED" and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="BLOQUEAR")
+    check("NATIVE_BLOCK_CANNOT_PROMOTE",
+      r["VERIFY"]["blocking_code"]=="BLOCK_IG_NATIVE_SEMANTIC_CONTRADICTION"
+      and r["DECISION"]["status"]=="BLOCKED" and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="INCONCLUSO")
+    check("NATIVE_INCONCLUSIVE_RETRY_NOT_PROMOTE",
+      r["VERIFY"]["blocking_code"]=="RETRY_IG_NATIVE_SEMANTIC_INCONCLUSIVE"
+      and r["DECISION"]["status"]=="RETRY_REQUIRED" and r["APPLY"]["status"]=="BLOCKED",r)
+
+    r=case('SEMANTIC_AUDIT_RECEIPT_VERIFIED_NOT_PROMOTABLE','PASS',semantic_verdict="PERMITIR",receipt_tamper=True)
+    check("AUDIT_RECEIPT_HASH_TAMPER_REJECTED",
+      r["VERIFY"]["blocking_code"]=="BLOCK_IG_SEMANTIC_RECEIPT_HASH_DRIFT"
+      and r["DECISION"]["status"]=="BLOCKED" and r["APPLY"]["status"]=="BLOCKED",r)
+
+    print("LF_L4C_EXISTING_IG_VALIDATOR_REUSE_PG18_PASS checks="+str(N),flush=True)
     print("NATIVE_MODEL_CALLS=0 STRUCTURAL_RUNTIME_ONLY=true",flush=True)
 
 if __name__=="__main__":
