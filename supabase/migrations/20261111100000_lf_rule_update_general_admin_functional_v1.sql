@@ -358,7 +358,8 @@ BEGIN
  -- functional candidate write, the exact source decision must be present
  -- in the real governed decision register and in judged source refs.
  -- Its material parity is still verified by the existing judge 70.
- IF v_change_kind='FUNCTIONAL_CANDIDATE' AND NOT EXISTS (
+ IF v_change_kind='FUNCTIONAL_CANDIDATE' THEN
+  IF NOT EXISTS (
    SELECT 1 FROM public.lf_decisiones_gov d
    WHERE d.id_decision=p_input->>'decision_id'
      AND d.estado_normalizado IN ('VIGENTE','APROBADA')
@@ -371,6 +372,7 @@ BEGIN
      )
  ) THEN
    RAISE EXCEPTION 'BLOCK_RULE_FUNCTIONAL_ORIGINAL_AUTHORITY_UNVERIFIED';
+  END IF;
  END IF;
  v_snapshot := public.lf_asset_snapshot_sha_v1('REGLA',v_rule);
  IF v_snapshot IS DISTINCT FROM encode(extensions.digest(
