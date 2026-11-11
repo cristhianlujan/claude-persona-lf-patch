@@ -87,11 +87,11 @@ BEGIN
  WHERE p.oid='public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)'::regprocedure;
  IF v_anchor_md5 IS DISTINCT FROM '730d37e8698885335228c91d00231b1f'
    OR NOT has_function_privilege('service_role',
-     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
+     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
    OR has_function_privilege('anon',
-     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
+     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
    OR has_function_privilege('authenticated',
-     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
+     'public.fn_lf_evidence_ledger_anchor_v1(text,text,text,text,text,text,text,text,text,text,text,text,text,text,jsonb,jsonb,text)','EXECUTE')
  THEN RAISE EXCEPTION 'IG_CP3_LEDGER_ANCHOR_SOURCE_OR_ACL_DRIFT'; END IF;
 
  -- No unknown nonfrozen callers to any M10.4 function, besides the exact
