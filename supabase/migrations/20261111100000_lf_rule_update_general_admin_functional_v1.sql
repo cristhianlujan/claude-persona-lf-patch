@@ -115,6 +115,9 @@ BEGIN
    'judge_step70_clean_required',true,
    'allowed_states',jsonb_build_array('CANDIDATO','VIGENTE'),
    'allowed_fields',jsonb_build_array('created_by','owner_name'),
+   'functional_owner','LF_GOVERNANCE',
+   'governance_guard','SUPER_ADMIN',
+   'guard_receipt_required',true,
    'preserve_existing_state',true,
    'legacy_state_gate_override_only_this_mode',true,
    'protected_fields_must_remain_unchanged',true,
@@ -173,6 +176,17 @@ BEGIN
    WHERE st.execution_id=p_execution_id AND st.step_id='destination_validate'
      AND st.status='PASS_CLEAN') THEN
    RAISE EXCEPTION 'BLOCK_RULE_ADMIN_WRITER_GOVERNED_CHILD_OR_STEP'; END IF;
+ -- This is a policy-bound guard, not an assertion that SUPER_ADMIN approved.
+ -- Real parent + judged child receipts remain mandatory for any effect.
+ IF NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts c
+   WHERE c.operation_code='ACTUALIZACION_REGLA_LF'
+     AND c.status='ACTIVE_ENFORCEMENT'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,functional_owner}'='LF_GOVERNANCE'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}'='SUPER_ADMIN'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,guard_receipt_required}'='true'
+ ) OR (p_changes ? 'owner_name'
+     AND p_changes->>'owner_name' IS DISTINCT FROM 'LF_GOVERNANCE')
+ THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_GOVERNANCE_GUARD_OR_OWNER_MISMATCH'; END IF;
  IF p_changes ? 'owner_name' AND NOT EXISTS (
     SELECT 1 FROM information_schema.columns WHERE table_schema='lf_ops'
        AND table_name='reglas' AND column_name='owner_name')
