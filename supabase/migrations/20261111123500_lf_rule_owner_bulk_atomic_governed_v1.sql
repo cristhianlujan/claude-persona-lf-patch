@@ -572,6 +572,19 @@ BEGIN
      AND coalesce(s.evidence_payload->>'scope_authority_packet_sha256','')
           ~ '^sha256:[0-9a-f]{64}$'
  ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED'; END IF;
+ -- Fail before DDL if Step40 did not validate the entire RULE scope.
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps s
+   WHERE s.execution_id=p_parent_execution_id
+     AND s.step_id='input_validate' AND s.status='STEP_PASS_WITH_EVIDENCE'
+     AND s.evidence_payload#>>'{input_governance,status}'='READY'
+     AND s.evidence_payload#>>'{input_governance,scope_type}'='REGLA'
+     AND s.evidence_payload#>>'{input_governance,scope_mode}'='ALL_CANONICAL_RULES'
+     AND s.evidence_payload#>>'{input_governance,source_scope_validated}'='true'
+     AND s.evidence_payload#>>'{input_governance,rule_count}'='578'
+     AND s.evidence_payload#>>'{input_governance,screen_not_current_count}'='0'
+     AND s.evidence_payload#>>'{input_governance,inactive_only_rule_count}'='0'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_RULE_SCOPE_NOT_ATTESTED'; END IF;
  IF NOT EXISTS(
    SELECT 1 FROM public.lf_operation_execution_steps s
    WHERE s.execution_id=p_parent_execution_id AND s.step_id='output_validate'
