@@ -77,7 +77,10 @@ begin
 
   v_semantic_required_families:=programacion.fn_input_validator_semantic_scope_v1(p_run_id);
   -- Canonical graph once per validator chunk. Do not call frozen legacy classifier.
-  v_cp3_graph:=programacion.fn_input_screen_canonical_graph(v_pantalla_id,v_version);
+  -- No graph is needed for an empty/finalization-only chunk.
+  IF v_pending_before>0 THEN
+    v_cp3_graph:=programacion.fn_input_screen_canonical_graph(v_pantalla_id,v_version);
+  END IF;
   for a in
     select * from programacion.input_family_assessments
     where run_id=p_run_id and validator_outcome='PENDING'
@@ -201,7 +204,10 @@ begin
       END IF;
     END IF;
     IF jsonb_array_length(v_cp3_findings)>0 THEN
-      v_outcome:='BLOCKED';
+      -- Preserve pre-existing assertion FAIL; CP3 findings must not mask it.
+      IF v_outcome IS DISTINCT FROM 'FAIL' THEN
+        v_outcome:='BLOCKED';
+      END IF;
       v_findings:=v_findings||v_cp3_findings;
     END IF;
     update programacion.input_family_assessments
@@ -271,6 +277,7 @@ begin
   return v_result;
 end;
 $function$
+
 DO $postflight$
 DECLARE v_src text;
 BEGIN
