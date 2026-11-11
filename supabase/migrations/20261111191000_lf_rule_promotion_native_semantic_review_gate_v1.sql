@@ -24,25 +24,31 @@ SET search_path TO 'pg_catalog','public','lf_ops','extensions'
 AS $packet$
 DECLARE
  p record;r record;d jsonb;v_payload jsonb;v_sha text;
- v_candidates jsonb;v_count integer;
+ v_candidates jsonb;v_global_catalog jsonb;v_count integer;
 BEGIN
  SELECT * INTO p FROM public.lf_rule_promotion_v1 WHERE promotion_id=p_promotion_id;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_NOT_FOUND'); END IF;
  SELECT * INTO r FROM lf_ops.reglas WHERE codigo=p.rule_code;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','RULE_NOT_FOUND'); END IF;
  d:=public.lf_rule_promotion_quality_judge_v1(p_promotion_id);
- -- Same-category subset may be INCOMPLETE. Native model must abstain on
- -- duplicates or cross-category contradiction if context is incomplete.
+ -- Include the complete VIGENTE catalogue (titles/descriptions) and
+ -- full same-category config. No silent top-N truncation.
  SELECT count(*) INTO v_count FROM lf_ops.reglas x
  WHERE x.codigo<>r.codigo AND x.estado='VIGENTE' AND x.categoria=r.categoria;
  SELECT coalesce(jsonb_agg(jsonb_build_object('codigo',q.codigo,'titulo',q.titulo,
-       'descripcion',q.descripcion,'estado',q.estado,
+       'descripcion',q.descripcion,'estado',q.estado,'valor_config',q.valor_config,
        'source_sha256',public.lf_asset_snapshot_sha_v1('REGLA',q.codigo))
        ORDER BY q.codigo),'[]'::jsonb) INTO v_candidates
- FROM (SELECT x.codigo,x.titulo,x.descripcion,x.estado
+ FROM (SELECT x.codigo,x.titulo,x.descripcion,x.estado,x.valor_config
        FROM lf_ops.reglas x
        WHERE x.codigo<>r.codigo AND x.estado='VIGENTE' AND x.categoria=r.categoria
-       ORDER BY x.codigo LIMIT 120) q;
+       ORDER BY x.codigo) q;
+ SELECT coalesce(jsonb_agg(jsonb_build_object(
+       'codigo',g.codigo,'categoria',g.categoria,'titulo',g.titulo,
+       'descripcion',g.descripcion,'estado',g.estado,
+       'source_sha256',public.lf_asset_snapshot_sha_v1('REGLA',g.codigo))
+       ORDER BY g.codigo),'[]'::jsonb) INTO v_global_catalog
+ FROM lf_ops.reglas g WHERE g.codigo<>r.codigo AND g.estado='VIGENTE';
  v_payload:=jsonb_build_object(
    'schema_version','LF_RULE_PROMOTION_NATIVE_SEMANTIC_PACKET_V1',
    'promotion_id',p.promotion_id,
@@ -63,8 +69,9 @@ BEGIN
       FROM lf_ops.politicas_seguridad s WHERE s.status='VIGENTE'),'[]'::jsonb),
    'same_category_rules',v_candidates,
    'same_category_total_count',v_count,
-   'same_category_coverage_complete',(v_count<=120),
-   'other_categories_checked',false,
+   'same_category_coverage_complete',true,
+   'global_vigente_catalog',v_global_catalog,
+   'global_catalog_coverage_complete',true,
    'requester_profile',p.requested_by_profile,
    'input_is_untrusted_data',true,
    'ground_truth_label_in_packet',false,
