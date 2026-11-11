@@ -117,5 +117,63 @@
     "production_changed": false,
     "PR_state": "DRAFT",
     "next_lot": "Resolve complete successor ownership / external call boundaries for legacy consumer, not function 2/3"
+  },
+  "successor_ownership_probe": {
+    "evidence_scope": "SQL source text inspection only; not behavioral equivalence",
+    "legacy_consumer_outputs": [
+      "classifier_drift_count",
+      "missing_classifier_count",
+      "semantic_depth_drift_count",
+      "eligible",
+      "required"
+    ],
+    "partial_current_implementations": [
+      {
+        "function": "programacion.fn_input_governance_bootstrap_materialize_v2",
+        "md5": "6760c7c0e1c8e27c3e6bdfb25a8b13ba",
+        "observed_source_fields": [
+          "classifier_sha256",
+          "subject_coverage",
+          "threat_coverage"
+        ],
+        "full_semantic_revalidation_receipt": false
+      },
+      {
+        "function": "programacion.fn_input_governance_recurate_source_stale_v1",
+        "md5": "5ac9061dd4a5aea5daf9246b85032103",
+        "observed_source_fields": [
+          "classifier_sha256",
+          "subject_coverage",
+          "threat_coverage"
+        ],
+        "full_semantic_revalidation_receipt": false
+      },
+      {
+        "function": "programacion.fn_input_governance_predecision_crosscheck_v1",
+        "md5": "5566e54a3b81a620d081b80c121f868e",
+        "observed_source_fields": [
+          "classifier_sha256"
+        ],
+        "full_semantic_revalidation_receipt": false
+      },
+      {
+        "function": "programacion.fn_input_governance_bootstrap_validate_v1",
+        "md5": "158bbe28dadac194b22d4cb8941be59e",
+        "observed_source_fields": [
+          "classifier_sha256"
+        ],
+        "full_semantic_revalidation_receipt": false
+      },
+      {
+        "function": "programacion.fn_input_governance_validate_v2",
+        "md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+        "observed_source_fields": [
+          "classifier_sha256"
+        ],
+        "full_semantic_revalidation_receipt": false
+      }
+    ],
+    "all_legacy_consumer_required_output_fields_demonstrably_replaced": false,
+    "decision": "NO_EQUIVALENT_OWNER_PROVEN_DO_NOT_RETIRE"
   }
 }
