@@ -283,7 +283,8 @@ BEGIN
  semantic_gate:=public.lf_rule_promotion_semantic_verify_v1(p_promotion_id);
  IF semantic_gate->>'status' IS DISTINCT FROM 'VERIFIED_PASS' THEN
    RETURN jsonb_build_object(
-     'status', 'RETRY_OR_BLOCK',
+     'status',CASE WHEN semantic_gate->>'status'='RETRY_REQUIRED'
+                   THEN 'RETRY_REQUIRED' ELSE 'BLOCKED' END,
      'blocking_code', coalesce(semantic_gate->>'blocking_code','BLOCK_SEMANTIC_REVIEW_UNVERIFIED'),
      'judge_receipt_sha256',v_sha,
      'semantic_gate',semantic_gate,
