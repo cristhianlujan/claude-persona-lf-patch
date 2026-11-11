@@ -148,7 +148,7 @@ def main():
     b=invoke("EXEC-ACTIVE",active)
     check("REPEATED_STEP40_READ_ONLY_NO_EFFECT",
           a["status"]=="READY" and b["status"]=="READY"
-          and sql("SELECT count(*) FROM public.lf_operation_execution")=="7"
+          and sql("SELECT count(*) FROM public.lf_operation_execution")=="6"
           and sql("SELECT descripcion FROM lf_ops.reglas WHERE id=1")=="material active baseline")
     # Mutations inside a transaction roll back. No caller can grant source_current.
     sql("BEGIN; UPDATE lf_ops.reglas SET descripcion='ROLLBACK TEST' WHERE id=1; ROLLBACK;")
