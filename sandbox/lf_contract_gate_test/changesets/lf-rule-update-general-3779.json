@@ -6,7 +6,6 @@
     "sandbox/lf_contract_gate_test/rule_update_general_v1/test_pg17_rule_general_update.py": "ENGINEERING_CHECKPOINTS",
     "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql": "MIGRATION",
     "sandbox/lf_contract_gate_test/rule_update_general_v1/rule_owner_schema_impact_preimage_20261111.json": "ENGINEERING_CHECKPOINTS",
-    "sandbox/lf_contract_gate_test/rule_update_general_v1/test_rule_owner_schema_impact.py": "ENGINEERING_CHECKPOINTS",
-    "supabase/migrations/20261111115000_lf_rule_update_child_readback_state_aware_v1.sql": "MIGRATION"
+    "sandbox/lf_contract_gate_test/rule_update_general_v1/test_rule_owner_schema_impact.py": "ENGINEERING_CHECKPOINTS"
   }
 }
