@@ -27,7 +27,7 @@ WITH requested AS (
  SELECT t.*,
    (SELECT count(*) FROM lf_ops.reglas) AS canonical_rule_count,
    (SELECT count(*) FROM lf_ops.reglas
-    WHERE owner_name='SUPER_ADMIN' AND created_by='ChatGPT')
+    WHERE to_jsonb(lf_ops.reglas)->>'owner_name'='SUPER_ADMIN' AND created_by='ChatGPT')
      AS canonical_updated_count,
    EXISTS(SELECT 1 FROM information_schema.columns
     WHERE table_schema='lf_ops' AND table_name='reglas'
