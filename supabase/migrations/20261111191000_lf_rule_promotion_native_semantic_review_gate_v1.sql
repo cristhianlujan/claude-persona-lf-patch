@@ -136,6 +136,31 @@ BEGIN
     OR v_review->>'verdict' NOT IN ('PASS','BLOCK','INCONCLUSIVE')
     OR jsonb_typeof(v_review->'cited_evidence') IS DISTINCT FROM 'array'
     OR jsonb_array_length(coalesce(v_review->'cited_evidence','[]'::jsonb))<1
+    OR packet#>>'{packet,same_category_coverage_complete}' IS DISTINCT FROM 'true'
+    OR EXISTS(
+       SELECT 1 FROM jsonb_array_elements(coalesce(v_review->'cited_evidence','[]'::jsonb)) cite(item)
+       WHERE jsonb_typeof(cite.item)<>'object'
+         OR nullif(btrim(coalesce(cite.item->>'exact_excerpt','')),'') IS NULL
+         OR nullif(btrim(coalesce(cite.item->>'implication','')),'') IS NULL
+         OR nullif(btrim(coalesce(cite.item->>'claim_type','')),'') IS NULL
+         OR NOT (
+            EXISTS(
+              SELECT 1 FROM lf_ops.reglas rr
+              WHERE rr.codigo=cite.item->>'source_code'
+                AND public.lf_asset_snapshot_sha_v1('REGLA',rr.codigo)=
+                   cite.item->>'source_sha256'
+                AND position(cite.item->>'exact_excerpt' IN rr.descripcion)>0
+            )
+            OR EXISTS(
+              SELECT 1 FROM lf_ops.politicas_seguridad pp
+              WHERE pp.policy_code=cite.item->>'source_code'
+                AND pp.status='VIGENTE'
+                AND cite.item->>'source_sha256'=
+                    packet#>>'{packet,security_policy_sha256}'
+                AND position(cite.item->>'exact_excerpt' IN pp.policy_config::text)>0
+            )
+         )
+    )
     OR v_review->'unsupported_claims' IS DISTINCT FROM '[]'::jsonb
  THEN RETURN jsonb_build_object('status','BLOCKED',
     'blocking_code','SEMANTIC_REVIEW_SOURCE_PACKET_MISMATCH'); END IF;
