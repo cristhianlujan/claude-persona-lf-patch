@@ -200,6 +200,13 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
     check("CANONICAL_PROVENANCE_MISSING_BLOCKED",
       "CANONICAL_DECISION_SOURCE_NOT_APPROVED" in source["DECISION"]["blocking_codes"]
       and source["APPLY"]["status"]=="BLOCKED",source)
+    unbound=run_case("NEG_CANONICAL_DECISION_UNBOUND_TO_RULE",
+      setup="""UPDATE public.lf_decisiones_gov SET raw_payload=jsonb_set(
+        raw_payload,'{rule_code}','"UNRELATED-RULE-001"'::jsonb,true)
+       WHERE decision_number=101;""")
+    check("CANONICAL_DECISION_MUST_BIND_TO_EXACT_RULE",
+      "CANONICAL_DECISION_RULE_BINDING_MISSING" in unbound["DECISION"]["blocking_codes"]
+      and unbound["APPLY"]["status"]=="BLOCKED",unbound)
     source_drift=run_case("NEG_CANONICAL_SOURCE_CHANGED_AFTER_JUDGE",
       after_decision="""UPDATE public.lf_decisiones_gov SET raw_payload=
        jsonb_set(raw_payload,'{source}','"CHANGED_AFTER_DECISION"'::jsonb,true)
