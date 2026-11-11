@@ -536,6 +536,17 @@ BEGIN
      AND operation_code='ACTUALIZACION_REGLA_LF'
      AND status='ACTIVE'
  ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_OPERATION_AUTHORITY'; END IF;
+ -- The approved owner is functional; SUPER_ADMIN remains the guard
+ -- in the existing operation contract, not a rule's owner_name.
+ -- Do not mistake this declared guard for a human judge receipt.
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_contracts c
+   WHERE c.operation_code='ACTUALIZACION_REGLA_LF'
+     AND c.status='ACTIVE_ENFORCEMENT'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,functional_owner}'='LF_GOVERNANCE'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}'='SUPER_ADMIN'
+     AND c.allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,guard_receipt_required}'='true'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_OWNER_GUARD_CONTRACT_MISMATCH'; END IF;
  IF NOT EXISTS(
    SELECT 1 FROM public.lf_operation_execution_steps s
    WHERE s.execution_id=p_parent_execution_id
@@ -576,7 +587,7 @@ BEGIN
  OR v_batch->>'operation_code' IS DISTINCT FROM 'ACTUALIZACION_REGLA_LF'
  OR v_batch->>'change_kind' IS DISTINCT FROM 'ADMINISTRATIVE_ONLY'
  OR v_batch->'changes' IS DISTINCT FROM
-     '{"owner_name":"SUPER_ADMIN","created_by":"ChatGPT"}'::jsonb
+     '{"owner_name":"LF_GOVERNANCE","created_by":"ChatGPT"}'::jsonb
  OR v_batch->>'source_catalog_md5' !~ '^[0-9a-f]{32}$'
  OR v_batch->>'rule_preimage_root_sha256' !~ '^[0-9a-f]{64}$'
  OR v_batch->>'screen_preimage_root_sha256' !~ '^[0-9a-f]{64}$'
@@ -757,7 +768,7 @@ BEGIN
  OR (SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\n' ORDER BY r.id))
      FROM lf_ops.reglas r) IS DISTINCT FROM v_catalog_md5
  OR EXISTS(SELECT 1 FROM lf_ops.reglas r
-           WHERE r.owner_name IS DISTINCT FROM 'SUPER_ADMIN'
+           WHERE r.owner_name IS DISTINCT FROM 'LF_GOVERNANCE'
               OR r.created_by IS DISTINCT FROM 'ChatGPT')
  THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_FINAL_RULE_READBACK'; END IF;
 
@@ -778,7 +789,7 @@ BEGIN
  ORDER BY p.codigo LOOP
    SELECT encode(extensions.digest(convert_to(
       jsonb_agg((e.value
-         || jsonb_build_object('owner_name','SUPER_ADMIN','created_by','ChatGPT'))
+         || jsonb_build_object('owner_name','LF_GOVERNANCE','created_by','ChatGPT'))
          -'created_at'-'updated_at'
          ORDER BY e.value->>'codigo')::text,'UTF8'),'sha256'),'hex')
    INTO v_expected_sha
