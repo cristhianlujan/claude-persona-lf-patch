@@ -40,7 +40,7 @@ def decide():
 def apply():
     return """SELECT 'APPLY|'||public.lf_rule_promotion_apply_v1('PROM-TEST')::text;
 """
-def reviewer(verdict="PASS",mode="SEPARATE_NATIVE_CONTEXT",synthetic_mark=False):
+def reviewer(verdict="PASS",mode="SEPARATE_NATIVE_CONTEXT",synthetic_mark=False,evidence_excerpt="Test baseline"):
     # This SQL deliberately manufactures ONLY A FIXTURE; never pass as real.
     return """
 INSERT INTO public.lf_operation_execution(
@@ -75,7 +75,7 @@ SELECT 'EXEC-L4-REVIEWER-FIXTURE-001','semantic_judge',
        'cited_evidence',jsonb_build_array(jsonb_build_object(
          'source_code','RULE-TEST-001',
          'source_sha256',pack.info#>>'{packet,candidate_source_sha256}',
-         'exact_excerpt','Test baseline',
+         'exact_excerpt','""" + evidence_excerpt + """',
          'implication','Synthetic structural control only',
          'claim_type','TEST_FIXTURE_NOT_NATIVE_REVIEW')),
        'unsupported_claims','[]'::jsonb))))
@@ -149,6 +149,12 @@ def main():
         SELECT 'RECORD|'||public.lf_rule_promotion_semantic_record_v1(
           'PROM-TEST','EXEC-L4-REVIEWER-FIXTURE-001')::text;""",
         want=lambda o:o["RECORD"]["blocking_code"]=="REVIEWER_STEP70_RECEIPT_NOT_ATTESTED")
+    run("FABRICATED_SOURCE_CITATION_REJECTED",
+        mid=reviewer(evidence_excerpt="THIS_QUOTE_DOES_NOT_EXIST")+"""
+        SELECT 'RECORD|'||public.lf_rule_promotion_semantic_record_v1(
+          'PROM-TEST','EXEC-L4-REVIEWER-FIXTURE-001')::text;""",
+        want=lambda o:o["RECORD"]["blocking_code"]=="SEMANTIC_REVIEW_SOURCE_PACKET_MISMATCH"
+          and o["APPLY"]["status"]=="BLOCKED")
     run("EKB_ACTIVE_BLOCKS_AUTOMATIC_APPROVAL",
         mid=reviewer()+"""
         SELECT 'RECORD|'||public.lf_rule_promotion_semantic_record_v1(
