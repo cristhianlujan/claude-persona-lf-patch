@@ -29,6 +29,12 @@ CREATE TABLE lf_ops.politicas_seguridad(
  security_policy_id integer PRIMARY KEY,
  policy_code text UNIQUE NOT NULL,status text NOT NULL,
  policy_config jsonb NOT NULL,parameter_provenance jsonb DEFAULT '{}'::jsonb);
+CREATE TABLE public.lf_decisiones_gov(
+ decision_number bigint PRIMARY KEY,id_decision text NOT NULL,
+ estado_normalizado text NOT NULL,raw_payload jsonb NOT NULL);
+INSERT INTO public.lf_decisiones_gov VALUES(
+ 101,'DEC-GOV-TEST','VIGENTE',
+ '{"authority_class":"AUTOMATED_ALLOWED","source":"synthetic_test_approved"}'::jsonb);
 CREATE TABLE public.lf_rule_promotion_v1(
  promotion_id text PRIMARY KEY DEFAULT 'PROM-TEST',
  rule_code text NOT NULL,
