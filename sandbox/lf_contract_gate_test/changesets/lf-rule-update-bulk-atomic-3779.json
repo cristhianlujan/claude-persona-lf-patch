@@ -5,7 +5,13 @@
     "sandbox/lf_contract_gate_test/changesets/lf-rule-update-bulk-atomic-3779.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/live_currentness_authority_fixture.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/live_promotion_baseline_fixture.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_adversarial_mutations_labeled_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_native_semantic_gate_contract_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_real_conflict_signals_v1.json": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_semantic_mutations_labeled_v1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/promotion_pg18_sandbox_fixture.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_scope_v1/lf_profile_input_validate_live_9293aa23_fixture.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_scope_v1/rule_promotion_readonly_audit_20261111.md": "ENGINEERING_CHECKPOINTS",
@@ -21,6 +27,7 @@
     "supabase/migrations/20261111115000_lf_rule_update_child_readback_state_aware_v1.sql": "MIGRATION",
     "supabase/migrations/20261111123500_lf_rule_owner_bulk_atomic_governed_v1.sql": "MIGRATION",
     "supabase/migrations/20261111170000_lf_profile_input_governance_rule_scope_loop_v1.sql": "MIGRATION",
-    "supabase/migrations/20261111182000_lf_rule_promotion_deterministic_judge_governed_v1.sql": "MIGRATION"
+    "supabase/migrations/20261111182000_lf_rule_promotion_deterministic_judge_governed_v1.sql": "MIGRATION",
+    "supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql": "MIGRATION"
   }
 }
