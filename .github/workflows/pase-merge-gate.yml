@@ -65,6 +65,17 @@ jobs:
           echo "PASE_CURRENT_MAIN_SHA=$CURRENT_MAIN_SHA" >> "$GITHUB_ENV"
           echo "PASE_HEAD_REPOSITORY=$HEAD_REPOSITORY" >> "$GITHUB_ENV"
 
+      - name: IG M10.13 CP3 frozen caller anti-reintroduction (trusted PR base)
+        run: |
+          set -euo pipefail
+          guard=sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_reintroduction_guard_v1.py
+          if [ -f "$guard" ]; then
+            python3 "$guard" self-test
+            python3 "$guard" check-commit --base "$PASE_BASE_SHA" --head "$PASE_HEAD_SHA"
+          else
+            echo "M1013_CP3_GUARD_BOOTSTRAP_NOT_YET_ON_TRUSTED_BASE"
+          fi
+
       - name: Evaluate base-anchored PASE merge gate
         env:
           PASE_REPOSITORY: ${{ github.repository }}
