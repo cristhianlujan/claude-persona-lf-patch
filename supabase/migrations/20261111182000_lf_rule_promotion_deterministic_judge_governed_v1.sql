@@ -87,9 +87,9 @@ BEGIN
       -- A valid decision number can still refer to a DIFFERENT rule.
       -- Require an explicit canonical rule-code binding before auto approval.
       IF v_decision.raw_payload->>'rule_code' IS DISTINCT FROM r.codigo
-         AND NOT (
+         AND NOT COALESCE((
            jsonb_typeof(v_decision.raw_payload->'rule_codes')='array'
-           AND (v_decision.raw_payload->'rule_codes') ? r.codigo)
+           AND (v_decision.raw_payload->'rule_codes') ? r.codigo),false)
       THEN v_blocks:=array_append(v_blocks,'CANONICAL_DECISION_RULE_BINDING_MISSING');
       END IF;
       v_decision_sha:=encode(extensions.digest(convert_to(
