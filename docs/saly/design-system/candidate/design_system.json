@@ -1,0 +1,308 @@
+{
+  "code": "SALY_DS_V1",
+  "name": "Saly Design System",
+  "project_code": "SALY",
+  "revision": "1.0.0-candidate.1",
+  "artifact_status": "CANDIDATO_GOBERNADO_NO_REGISTRADO",
+  "effective_in_app": false,
+  "registry_write_performed": false,
+  "scope": {
+    "product": "Saly - App Cliente",
+    "channel": "MOBILE_APP",
+    "independent_from": [
+      "LF_DS_V1",
+      "OVC_DS_OVERALL_CASH_V0_1"
+    ],
+    "modes": [
+      "SALY",
+      "CO_BRANDING",
+      "WHITE_LABEL"
+    ]
+  },
+  "design_principles": [
+    "Una acción financiera protagonista",
+    "Monto retirable real como dato central",
+    "Poca carga cognitiva",
+    "Información explicativa bajo demanda",
+    "No mostrar sueldo",
+    "Accesibilidad y trazabilidad por token"
+  ],
+  "source": {
+    "visual_artifact": "evidencia_home_visual_aprobado.png",
+    "visual_sha256": "b2d355bf2d1cf0e4614a0ecd21e837346eb5fe59234fda70c4cd6e7fc10cde7a",
+    "approval_boundary": "Home Saly: card blanca, importe navy, CTA verde; aprobado en conversación 2026-11-07. Hex exactos no aprobados.",
+    "approved_saly_decisions": [
+      "SALY-DEC-004",
+      "SALY-DEC-005",
+      "SALY-DEC-040",
+      "SALY-DEC-041",
+      "SALY-DEC-042",
+      "SALY-DEC-043",
+      "SALY-DEC-044",
+      "SALY-DEC-045",
+      "SALY-DEC-046",
+      "SALY-DEC-047",
+      "SALY-DEC-049"
+    ]
+  },
+  "tokens": {
+    "color": {
+      "brand.green.600": {
+        "value": "#008200",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Marca / acción primaria"
+      },
+      "ink.navy.900": {
+        "value": "#081631",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Texto principal y cifras"
+      },
+      "surface.white": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Card protagonista y superficies"
+      },
+      "surface.canvas": {
+        "value": "#F5F7F7",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Superficies secundarias"
+      },
+      "surface.mint": {
+        "value": "#EAF9EE",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Fondo de Saly Plus y estados suaves"
+      },
+      "ink.gray.600": {
+        "value": "#5C6577",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Texto secundario"
+      },
+      "accent.reward.yellow": {
+        "value": "#F6B400",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Acento decorativo Rewards, NO texto/ícono funcional sobre blanco"
+      },
+      "accent.reward.gold.700": {
+        "value": "#9D6800",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Ícono funcional Rewards contrastado"
+      },
+      "surface.reward": {
+        "value": "#FFF9E9",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Fondo Rewards"
+      },
+      "accent.benefits.purple": {
+        "value": "#923CF3",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Identidad de Beneficios"
+      },
+      "stroke.gray.200": {
+        "value": "#E4E8E8",
+        "type": "color",
+        "status": "candidate",
+        "usage": "Bordes y separadores"
+      }
+    },
+    "semantic": {
+      "color.action.primary.bg": {
+        "alias": "{color.brand.green.600}",
+        "status": "CANDIDATO"
+      },
+      "color.action.primary.text": {
+        "alias": "{color.surface.white}",
+        "status": "CANDIDATO"
+      },
+      "color.text.primary": {
+        "alias": "{color.ink.navy.900}",
+        "status": "CANDIDATO"
+      },
+      "color.text.secondary": {
+        "alias": "{color.ink.gray.600}",
+        "status": "CANDIDATO"
+      },
+      "color.surface.page": {
+        "alias": "{color.surface.white}",
+        "status": "CANDIDATO"
+      },
+      "color.surface.card": {
+        "alias": "{color.surface.white}",
+        "status": "CANDIDATO"
+      },
+      "color.surface.subtle": {
+        "alias": "{color.surface.canvas}",
+        "status": "CANDIDATO"
+      },
+      "color.border.subtle": {
+        "alias": "{color.stroke.gray.200}",
+        "status": "CANDIDATO"
+      },
+      "color.module.plus.icon": {
+        "alias": "{color.brand.green.600}",
+        "status": "CANDIDATO"
+      },
+      "color.module.plus.bg": {
+        "alias": "{color.surface.mint}",
+        "status": "CANDIDATO"
+      },
+      "color.module.rewards.icon": {
+        "alias": "{color.accent.reward.gold.700}",
+        "status": "CANDIDATO"
+      },
+      "color.module.rewards.bg": {
+        "alias": "{color.surface.reward}",
+        "status": "CANDIDATO"
+      },
+      "color.module.benefits.icon": {
+        "alias": "{color.accent.benefits.purple}",
+        "status": "CANDIDATO"
+      }
+    },
+    "typography": {
+      "font.family.base": {
+        "value": "Inter, system-ui, sans-serif",
+        "status": "CANDIDATO"
+      },
+      "font.amount.hero": {
+        "size_px": 48,
+        "line_height_px": 56,
+        "weight": 700,
+        "status": "CANDIDATO"
+      },
+      "font.heading.card": {
+        "size_px": 20,
+        "line_height_px": 28,
+        "weight": 600,
+        "status": "CANDIDATO"
+      },
+      "font.heading.section": {
+        "size_px": 22,
+        "line_height_px": 30,
+        "weight": 700,
+        "status": "CANDIDATO"
+      },
+      "font.body.default": {
+        "size_px": 16,
+        "line_height_px": 24,
+        "weight": 400,
+        "status": "CANDIDATO"
+      },
+      "font.body.secondary": {
+        "size_px": 14,
+        "line_height_px": 20,
+        "weight": 400,
+        "status": "CANDIDATO"
+      },
+      "font.caption": {
+        "size_px": 12,
+        "line_height_px": 16,
+        "weight": 400,
+        "status": "CANDIDATO"
+      },
+      "font.button.primary": {
+        "size_px": 16,
+        "line_height_px": 24,
+        "weight": 600,
+        "status": "CANDIDATO"
+      }
+    },
+    "spacing": {
+      "space.4": {
+        "px": 4,
+        "status": "CANDIDATO"
+      },
+      "space.8": {
+        "px": 8,
+        "status": "CANDIDATO"
+      },
+      "space.12": {
+        "px": 12,
+        "status": "CANDIDATO"
+      },
+      "space.16": {
+        "px": 16,
+        "status": "CANDIDATO"
+      },
+      "space.24": {
+        "px": 24,
+        "status": "CANDIDATO"
+      },
+      "space.32": {
+        "px": 32,
+        "status": "CANDIDATO"
+      },
+      "space.48": {
+        "px": 48,
+        "status": "CANDIDATO"
+      }
+    },
+    "radius": {
+      "radius.card.hero": {
+        "px": 24,
+        "status": "CANDIDATO"
+      },
+      "radius.card.secondary": {
+        "px": 16,
+        "status": "CANDIDATO"
+      },
+      "radius.button.primary": {
+        "px": 14,
+        "status": "CANDIDATO"
+      },
+      "radius.pill": {
+        "px": 999,
+        "status": "CANDIDATO"
+      }
+    },
+    "accessibility": {
+      "touch_target_min_px": 44,
+      "supports_font_scaling": true,
+      "use_color_as_sole_signal": false,
+      "status": "CANDIDATO"
+    }
+  },
+  "themes": {
+    "SALY_LIGHT": {
+      "base": "SALY_DS_V1",
+      "status": "CANDIDATO",
+      "token_overrides": {}
+    },
+    "CO_BRANDING": {
+      "inherits": "SALY_LIGHT",
+      "constraints": [
+        "Firma visual de empresa sujeta a aprobación",
+        "No alterar lógica del disponible",
+        "No modificar tokens globales"
+      ],
+      "status": "PLANIFICADO"
+    },
+    "WHITE_LABEL": {
+      "inherits": "SALY_LIGHT",
+      "constraints": [
+        "Branding y release independientes por empresa",
+        "Frontend funcional común",
+        "Backend y motores compartidos",
+        "Overrides aislados y trazables por tenant"
+      ],
+      "status": "PLANIFICADO"
+    }
+  },
+  "release_gates": [
+    "Identidad de marca aprobada con HEX verificados",
+    "Contraste y estados accesibles",
+    "Vinculación de todos los componentes a tokens",
+    "Paquete sometido a ruta gobernada SALY y juez",
+    "Registro en catálogo canónico con readback",
+    "Prueba de propagación en 2 o más pantallas"
+  ]
+}
