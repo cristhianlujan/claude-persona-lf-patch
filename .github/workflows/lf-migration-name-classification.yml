@@ -351,4 +351,5 @@ jobs:
             docs/input-governance/L5_ORPHAN_PROFILE_RUNS_READONLY_TRIAGE_V1.json
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote6_claude_blind_5pass_verdicts_not_native_ig_receipt_v1.json
             docs/input-governance/L6_RUNTIME_ORPHANS_21_AND_PROFILE3_READONLY_TRIAGE_V1.json
+            docs/input-governance/L6_CLAUDE_VERDICTS_NO_QUOTES_GOVERNED_CAPTURE_PLAN_V1.md
           if-no-files-found: error
