@@ -154,6 +154,20 @@ WHERE st.execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
  AND st.step_id='execute_profile';
 """
     sql(scoped)
+    # Synthetic Step40 receipt. NOT a real IG Currentness or judge receipt.
+    # Its only purpose is testing the downstream server-side binding gate.
+    sql(r"""
+UPDATE public.lf_operation_execution_steps st SET
+ evidence_payload=jsonb_set(st.evidence_payload,'{input_governance}',(
+ SELECT jsonb_build_object(
+ 'status','READY','scope_type','REGLA','scope_mode','ALL_CANONICAL_RULES',
+ 'source_scope_validated',true,'rule_count',578,
+ 'screen_not_current_count',0,'inactive_only_rule_count',0,
+ 'catalog_md5',(SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\\n'
+ ORDER BY r.id)) FROM lf_ops.reglas r)) ),true)
+WHERE st.execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+  AND st.step_id='input_validate';
+""")
 def call(fail=False):
     return sql("SELECT public.lf_rule_admin_bulk_atomic_v1('"+PARENT+"','"+BATCH+"');",fail=fail)
 def test():
