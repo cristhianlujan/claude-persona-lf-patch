@@ -42,10 +42,20 @@ def load():
         content=(ROOT/path).read_text(encoding="utf-8")
         if path.endswith("20261111100000_lf_rule_update_general_admin_functional_v1.sql"):content="SET lf.rule_update_governance_execution_id='"+PARENT+"';\n"+content
         sql(content)
+    check("BULK_GUARD_IS_NOT_OWNER",
+          one("(SELECT allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,functional_owner}' "
+              "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')="
+              "'LF_GOVERNANCE'")=="t"
+          and one("(SELECT allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}' "
+              "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')="
+              "'SUPER_ADMIN'")=="t")
     check("BULK_ADMIN_CONTRACT_SCOPE_INSTALLED",
           one("(SELECT allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY,mode}' "
               "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')"
               "='ADMINISTRATIVE_ONLY'")=="t")
+    check("BULK_GUARD_RUNTIME_MATCH_REQUIRED",
+          "BLOCK_RULE_BULK_OWNER_GUARD_CONTRACT_MISMATCH" in
+          (ROOT/"supabase/migrations/20261111123500_lf_rule_owner_bulk_atomic_governed_v1.sql").read_text(encoding="utf-8"))
     check("BULK_LEGACY_FUNCTIONAL_VIGENTE_STILL_BLOCKED",
           one("(SELECT blocked->>'vigente_functional_change' "
               "FROM public.lf_operation_contracts WHERE operation_code='ACTUALIZACION_REGLA_LF')"
@@ -124,7 +134,7 @@ WITH ru AS(
  SELECT jsonb_build_object(
  'batch_id','LF-OWNER-BULK-PG17-578','scope','ALL_CANONICAL_RULES',
  'operation_code','ACTUALIZACION_REGLA_LF','change_kind','ADMINISTRATIVE_ONLY',
- 'changes',jsonb_build_object('owner_name','SUPER_ADMIN','created_by','ChatGPT'),
+ 'changes',jsonb_build_object('owner_name','LF_GOVERNANCE','created_by','ChatGPT'),
  'expected_count',(SELECT count(*) FROM ru),
  'source_catalog_md5',(SELECT md5(string_agg(id::text||':'||codigo,E'\n' ORDER BY id)) FROM ru),
  'rule_preimage_root_sha256',(SELECT encode(extensions.digest(convert_to(
@@ -246,7 +256,7 @@ FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
     check("56_SCREENS_REHASHED",result["screens_sha_verified"]==56)
     check("6176_LINKS_VERIFIED",result["rule_links_verified"]==6176)
     check("578_OWNER_CREATOR_FINAL",
-          one("(SELECT count(*) FROM lf_ops.reglas WHERE owner_name='SUPER_ADMIN' "
+          one("(SELECT count(*) FROM lf_ops.reglas WHERE owner_name='LF_GOVERNANCE' "
           "AND created_by='ChatGPT')=578")=="t")
     check("412_VIGENTE_PRESERVED",
           one("(SELECT count(*) FROM lf_ops.reglas WHERE estado='VIGENTE')=412")=="t")
