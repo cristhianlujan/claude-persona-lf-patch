@@ -10,8 +10,151 @@ BEGIN
       IS DISTINCT FROM '7c9f4932ddf54abb188873d5a8b197f7'
     OR md5(pg_get_functiondef('public.lf_rule_promotion_apply_v1(text)'::regprocedure))
       IS DISTINCT FROM 'b0e8ea53e051667cb6b7ffecaa7fbdaf'
+    OR md5(pg_get_functiondef('public.lf_rule_promotion_bind_ig_semantic_v1(text,bigint,text,bigint,uuid,text)'::regprocedure))
+      IS DISTINCT FROM '4d7c4a4b9f997a372aea3d22cebf38e5'
  THEN RAISE EXCEPTION 'BLOCK_L4D_UPSTREAM_GATE_MD5_DRIFT'; END IF;
 END $guard$;
+
+ALTER TABLE public.lf_rule_promotion_v1
+ ADD COLUMN ig_semantic_bind_failure_code text;
+
+-- Preserve citation failures in the promotion row so HUMAN escalation can
+-- read back an invalid quote even though the IG binding itself was rejected.
+CREATE OR REPLACE FUNCTION public.lf_rule_promotion_bind_ig_semantic_v1(
+ p_promotion_id text,
+ p_run_id bigint,
+ p_validator_identity text,
+ p_handoff_receipt_id bigint,
+ p_ticket uuid,
+ p_candidate_sha256 text DEFAULT NULL
+) RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'pg_catalog','public','lf_ops','extensions'
+AS $bind$
+DECLARE
+ p public.lf_rule_promotion_v1%ROWTYPE;
+ judgement jsonb;
+ packet jsonb;
+ receipt jsonb;
+ packet_sha text;
+ receipt_sha text;
+ rule_sha text;
+ review_sha text;
+ binding_sha text;
+ candidate_sha text;
+ review jsonb;
+ citation_gate jsonb;
+ step70 jsonb;
+BEGIN
+ SELECT * INTO p FROM public.lf_rule_promotion_v1
+  WHERE promotion_id=p_promotion_id FOR UPDATE;
+ IF NOT FOUND OR p.status<>'PENDING' THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_NOT_PENDING');
+ END IF;
+ IF p_run_id IS NULL OR p_run_id<1
+    OR p_handoff_receipt_id IS NULL OR p_handoff_receipt_id<1
+    OR p_validator_identity !~ '^INPUT_VALIDATOR:EDGE:input-governance-validator-v1:[A-Za-z0-9_-]{6,128}$'
+ THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','IG_SEMANTIC_BINDING_INPUT_INVALID'); END IF;
+
+ SELECT evidence_payload INTO step70
+ FROM public.lf_operation_execution_steps
+ WHERE execution_id=p.request_execution_id
+   AND step_id='semantic_judge' AND status='STEP_PASS_WITH_EVIDENCE';
+ IF coalesce(step70->>'test_only_synthetic','false')='true'
+    OR coalesce(step70#>>'{semantic_judge_result,test_only_synthetic}','false')='true'
+    OR coalesce(step70#>>'{semantic_judge_result,model_call_count}','1')='0'
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+  'blocking_code','BLOCK_SYNTHETIC_PARENT_STEP70_EVIDENCE'); END IF;
+
+ judgement:=public.lf_rule_promotion_quality_judge_v1(p_promotion_id);
+ IF judgement->>'classification'<>'AUTO_APPROVABLE' THEN
+   RETURN jsonb_build_object('status','BLOCKED',
+     'blocking_code','DETERMINISTIC_FIRST_FILTER_NOT_AUTO_APPROVABLE',
+     'deterministic_classification',judgement->>'classification',
+     'blocking_codes',judgement->'blocking_codes');
+ END IF;
+
+ rule_sha:=public.lf_asset_snapshot_sha_v1('REGLA',p.rule_code);
+ IF rule_sha IS DISTINCT FROM p.request_snapshot_sha256 THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_RULE_SNAPSHOT_DRIFT');
+ END IF;
+
+ packet:=public.fn_input_governance_semantic_packet_v1(
+   p_run_id,p_validator_identity,p_handoff_receipt_id,p_ticket);
+ IF packet->>'run_id' IS DISTINCT FROM p_run_id::text
+    OR packet->>'status' NOT IN ('READY_FOR_MODEL_CANDIDATE','REMEDIATION_REQUIRED','SOURCE_SNAPSHOT_PIN_REQUIRED')
+ THEN RETURN jsonb_build_object('status','BLOCKED',
+   'blocking_code','IG_SEMANTIC_PACKET_INVALID','packet_status',packet->>'status'); END IF;
+
+ packet_sha:=packet->>'db_packet_sha256';
+ IF packet_sha IS NULL OR packet_sha !~ '^[a-f0-9]{64}$' THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_IG_PACKET_SHA_INVALID'); END IF;
+
+ receipt:=public.fn_input_governance_semantic_external_receipt_readback_v1(
+   p_run_id,p_validator_identity,p_handoff_receipt_id,p_ticket,p_candidate_sha256);
+ IF receipt->>'run_id' IS DISTINCT FROM p_run_id::text THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','IG_SEMANTIC_RECEIPT_RUN_MISMATCH');
+ END IF;
+ IF receipt ? 'candidate_sha256'
+    AND p_candidate_sha256 IS NOT NULL
+    AND receipt->>'candidate_sha256' IS DISTINCT FROM p_candidate_sha256
+ THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','IG_SEMANTIC_CANDIDATE_SHA_MISMATCH'); END IF;
+
+ receipt_sha:=encode(extensions.digest(convert_to(receipt::text,'UTF8'),'sha256'),'hex');
+ candidate_sha:=coalesce(receipt->>'candidate_sha256',p_candidate_sha256);
+ review:=receipt->'semantic_review';
+
+ IF review IS NOT NULL THEN
+   citation_gate:=public.lf_rule_promotion_ig_citation_verify_v1(
+     p_promotion_id,review,p_run_id,packet_sha,candidate_sha,rule_sha,
+     judgement->>'security_policy_set_sha256',judgement->>'dependency_sha256');
+   IF citation_gate->>'status' IS DISTINCT FROM 'VERIFIED_CITATIONS' THEN
+     UPDATE public.lf_rule_promotion_v1
+       SET ig_semantic_bind_failure_code=citation_gate->>'blocking_code'
+     WHERE promotion_id=p_promotion_id;
+     RETURN citation_gate; END IF;
+ END IF;
+ review_sha:=CASE WHEN review IS NOT NULL THEN
+   encode(extensions.digest(convert_to(review::text,'UTF8'),'sha256'),'hex')
+   ELSE NULL END;
+ binding_sha:=encode(extensions.digest(convert_to(
+     jsonb_build_object('promotion_id',p_promotion_id,'ig_run_id',p_run_id,
+     'rule_sha',rule_sha,'packet_sha',packet_sha,'candidate_sha',candidate_sha,
+     'receipt_sha',receipt_sha,'review_sha',review_sha,
+     'policy_sha',judgement->>'security_policy_set_sha256',
+     'dependency_sha',judgement->>'dependency_sha256')::text,'UTF8'),'sha256'),'hex');
+
+ UPDATE public.lf_rule_promotion_v1
+ SET ig_semantic_run_id=p_run_id,
+     ig_semantic_validator_identity=p_validator_identity,
+     ig_semantic_handoff_receipt_id=p_handoff_receipt_id,
+     ig_semantic_candidate_sha256=candidate_sha,
+     ig_semantic_packet_sha256=packet_sha,
+     ig_semantic_external_receipt=receipt,
+     ig_semantic_external_receipt_sha256=receipt_sha,
+     ig_semantic_rule_snapshot_sha256=rule_sha,
+     ig_semantic_policy_set_sha256=judgement->>'security_policy_set_sha256',
+     ig_semantic_dependency_sha256=judgement->>'dependency_sha256',
+     ig_semantic_review=review,
+     ig_semantic_review_sha256=review_sha,
+     ig_semantic_binding_sha256=binding_sha,
+     ig_semantic_bind_failure_code=NULL
+ WHERE promotion_id=p_promotion_id;
+
+ RETURN jsonb_build_object(
+   'status','BOUND_EXISTING_IG_SEMANTIC_EVIDENCE',
+   'promotion_id',p_promotion_id,
+   'ig_run_id',p_run_id,
+   'packet_status',packet->>'status',
+   'external_receipt_status',receipt->>'status',
+   'packet_sha256',packet_sha,
+   'external_receipt_sha256',receipt_sha,
+   'rule_snapshot_sha256',rule_sha,
+   'binding_sha256',binding_sha,
+   'semantic_verdict',coalesce(review->>'verdict','NOT_TESTED'),
+   'promotion_authorized',false,
+   'independent_semantic_judge_attested',false);
+END $bind$;
 
 -- Authority is a rule-specific governable mapping, NEVER a field claimed by
 -- the candidate rule. No initial rows, no self-service writes.
@@ -274,6 +417,17 @@ BEGIN
  UPDATE public.lf_rule_promotion_v1 SET judge_receipt=judgement,
    judge_receipt_sha256=v_sha,decision_route=judgement->>'classification'
  WHERE promotion_id=p_promotion_id;
+ IF p.ig_semantic_bind_failure_code IN (
+      'BLOCK_IG_SEMANTIC_CITATION_NOT_IN_CURRENT_SOURCE',
+      'BLOCK_IG_SEMANTIC_CITATION_MALFORMED',
+      'BLOCK_IG_SEMANTIC_CITATION_COUNT_INVALID',
+      'BLOCK_IG_SEMANTIC_REVIEW_BINDING_INVALID'
+    ) THEN
+      UPDATE public.lf_rule_promotion_v1 SET decision_route='HUMAN_DECISION_REQUIRED'
+      WHERE promotion_id=p_promotion_id;
+      RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
+        'blocking_code',p.ig_semantic_bind_failure_code,'promotion_id',p_promotion_id);
+ END IF;
  IF judgement->>'classification'='HUMAN_DECISION_REQUIRED' THEN
    UPDATE public.lf_rule_promotion_v1 SET decision_route='HUMAN_DECISION_REQUIRED'
       WHERE promotion_id=p_promotion_id;
