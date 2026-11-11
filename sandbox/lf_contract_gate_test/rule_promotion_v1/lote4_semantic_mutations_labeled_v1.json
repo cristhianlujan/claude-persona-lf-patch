@@ -1,0 +1,395 @@
+{
+  "schema_version": "LF_L4_INJECTED_MUTATIONS_V1",
+  "source": "Supabase LF select-only 2026-11-11",
+  "truth_rule": "INJECTED_KNOWN_DEFECT vs UNCHANGED_OR_EQUIVALENT_CONTROL; labels are scenario construction, not model verdicts",
+  "scope_note": "Original text/valor_config sourced live; CI inserts source descriptions into a synthetic CANDIDATO wrapper with approved fixture decision 101. No real rows mutated. Healthy control label tests acceptance of unchanged/meaning-preserving text within same synthetic wrapper.",
+  "baselines": [
+    {
+      "codigo": "B2B-RULE-AUTH-001",
+      "titulo": "Denegar por defecto",
+      "descripcion": "Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.",
+      "valor_config": {
+        "model": "RBAC_PLUS_COMPANY_POLICY",
+        "deny_by_default": true,
+        "permission_resolution": "USER_DENY_GT_USER_ALLOW_GT_PROFILE_ALLOW_GT_DENY_DEFAULT",
+        "server_side_enforcement": true,
+        "effective_permission_sources": [
+          "lf_ops.empresa_usuarios_perfiles",
+          "lf_ops.perfiles_permisos",
+          "lf_ops.empresa_usuarios_permisos",
+          "lf_ops.pantallas_permisos",
+          "lf_ops.estados_transiciones"
+        ],
+        "transition_permission_source": "lf_ops.estados_transiciones.required_permission_id",
+        "preauth_grants_operational_access": "DENY",
+        "client_direct_operational_table_access": "DENY",
+        "screen_access_requires_screen_permission": true,
+        "preauth_flows_use_specific_auth_contracts": true,
+        "authorization_recheck_on_every_server_action": "REQUIRED",
+        "operational_access_requires_complete_authentication": true
+      },
+      "estado": "VIGENTE"
+    },
+    {
+      "codigo": "B2B-RULE-AUTH-002",
+      "titulo": "Aislamiento por empresa",
+      "descripcion": "Toda consulta o mutación operativa B2B con alcance de empresa debe resolverse server-side contra la empresa objetivo dentro del conjunto de empresas autorizadas para el usuario activo. Para usuarios con alcance simple, el conjunto contiene una sola empresa; para usuarios multiempresa, puede contener varias empresas explícitamente asignadas conforme B2B-RULE-SCOPE-002. El tenant puede estar en company_id de la fila o derivarse por su relación padre canónica; si no existe una relación de tenant y scope autorizada, el recurso permanece server-only. Los flujos pre-auth sin tenant resuelto no quedan autorizados por esta regla ni pueden acceder a recursos operativos.",
+      "valor_config": {
+        "tenant_key": "company_id",
+        "cross_tenant": "DENY",
+        "security_policy_id": 1,
+        "rls_policy_required": true,
+        "direct_company_tables": [
+          "lf_ops.cargas_lotes",
+          "lf_ops.auditoria_eventos",
+          "lf_ops.dispositivos_confiables"
+        ],
+        "tenant_resolution_mode": "AUTHORIZED_COMPANY_SET",
+        "multi_company_scope_rule": "B2B-RULE-SCOPE-002",
+        "negative_cross_tenant_test": "REQUIRED",
+        "preauth_tenant_requirement": "NOT_APPLICABLE_UNTIL_TENANT_RESOLVED",
+        "rls_enabled_without_policy": "FAIL_GATE",
+        "tenant_resolution_authority": "SERVER_ONLY",
+        "parent_derived_company_tables": {
+          "lf_ops.cargas_archivos": "load_id -> lf_ops.cargas_lotes.company_id",
+          "lf_ops.aprobaciones_registros": "load_id -> lf_ops.cargas_lotes.company_id"
+        },
+        "rls_required_before_production": true,
+        "single_company_scope_supported": true,
+        "multi_company_physical_model_status": "PENDING_FUNCTIONAL_DEFINITION",
+        "multi_company_scope_supported_by_rule": true,
+        "server_only_without_authorized_tenant_relation": [
+          "lf_ops.errores_ocurrencias",
+          "lf_ops.otp_entrega_eventos"
+        ]
+      },
+      "estado": "VIGENTE"
+    },
+    {
+      "codigo": "REG_RATE_002",
+      "titulo": "Límite de intentos de validación OTP por IP",
+      "descripcion": "Máximo 10 intentos de validación OTP desde el mismo IP en 10 minutos, independientemente de la sesión.",
+      "valor_config": {
+        "max_intentos": 10,
+        "ventana_minutos": 10
+      },
+      "estado": "VIGENTE"
+    },
+    {
+      "codigo": "REG_SEG_003",
+      "titulo": "DNI no se expone en logs ni analytics",
+      "descripcion": "El DNI es PII crítico. No debe aparecer en logs de aplicación, eventos de analytics, mensajes de error visibles al usuario ni headers HTTP.",
+      "valor_config": {
+        "campos_protegidos": [
+          "dni",
+          "phone_number",
+          "email",
+          "full_name"
+        ]
+      },
+      "estado": "VIGENTE"
+    },
+    {
+      "codigo": "REG_SEG_004",
+      "titulo": "OTP no se almacena en texto plano en producción",
+      "descripcion": "En producción el otp_code debe almacenarse como hash. En sandbox/proto se permite texto plano solo para facilitar pruebas.",
+      "valor_config": {
+        "ambiente_proto": "texto_plano_permitido",
+        "ambiente_produccion": "hash_obligatorio"
+      },
+      "estado": "VIGENTE"
+    },
+    {
+      "codigo": "REG_SES_003",
+      "titulo": "Una sesión activa por dispositivo/IP en onboarding",
+      "descripcion": "No se permite más de una sesión de onboarding activa simultánea desde el mismo IP en un período de 5 minutos.",
+      "valor_config": {
+        "max_sesiones": 1,
+        "ventana_minutos": 5
+      },
+      "estado": "VIGENTE"
+    }
+  ],
+  "cases": [
+    {
+      "id": "NEG_01",
+      "family": "NEGATION_INVERTED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Después de autenticarse, las operaciones se permiten por defecto; la comprobación de permisos es opcional.",
+      "config_patch": {},
+      "transformation": "Inversión DENY_DEFAULT -> ALLOW_DEFAULT"
+    },
+    {
+      "id": "NEG_02",
+      "family": "NEGATION_INVERTED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "REG_SEG_003",
+      "mutated_description": "El DNI y los datos personales sí podrán incluirse en logs, analytics y errores.",
+      "config_patch": {},
+      "transformation": "Negación NO PII LOG -> PII LOG"
+    },
+    {
+      "id": "THR_01",
+      "family": "THRESHOLD_CHANGED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "REG_RATE_002",
+      "mutated_description": "Máximo 100 intentos de OTP desde una IP durante diez minutos, sin limitar por sesión.",
+      "config_patch": {},
+      "transformation": "Umbral 10->100 con mismo scope/ventana"
+    },
+    {
+      "id": "THR_02",
+      "family": "THRESHOLD_CHANGED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "REG_SES_003",
+      "mutated_description": "Se permiten hasta 5 sesiones activas por dispositivo/IP durante 5 minutos.",
+      "config_patch": {},
+      "transformation": "Umbral 1->5"
+    },
+    {
+      "id": "SCP_01",
+      "family": "SCOPE_WIDENED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-002",
+      "mutated_description": "El servidor devuelve datos de todas las empresas a cualquier usuario autenticado, aunque no estén asignadas.",
+      "config_patch": {},
+      "transformation": "Scope AUTHORISED_COMPANIES -> ALL"
+    },
+    {
+      "id": "SCP_02",
+      "family": "SCOPE_WIDENED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Una vez autenticado, cualquier empleado puede ejecutar acciones de cualquier empresa sin resolver permiso individual.",
+      "config_patch": {},
+      "transformation": "Permisos scope user+tenant -> any employee"
+    },
+    {
+      "id": "EXC_01",
+      "family": "EXCEPTION_CANCELLATION",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Acciones operativas requieren autorización, excepto cuando el empleado llegue desde el portal interno.",
+      "config_patch": {},
+      "transformation": "Excepción invalida control obligatorio"
+    },
+    {
+      "id": "EXC_02",
+      "family": "EXCEPTION_CANCELLATION",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "REG_SEG_004",
+      "mutated_description": "Se usa hash del OTP en producción salvo si la operación se realiza durante la noche; entonces puede almacenarse en claro.",
+      "config_patch": {},
+      "transformation": "Excepción a no plaintext production"
+    },
+    {
+      "id": "COND_01",
+      "family": "CONDITION_REMOVED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "La operación se ejecuta directamente sin comprobar autenticación completa ni permisos efectivos.",
+      "config_patch": {},
+      "transformation": "Se remueve precondición authentication+RBAC"
+    },
+    {
+      "id": "COND_02",
+      "family": "CONDITION_REMOVED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-002",
+      "mutated_description": "La consulta utiliza company_id sin verificar que la empresa pertenezca al usuario.",
+      "config_patch": {},
+      "transformation": "Se remueve authorized tenant check"
+    },
+    {
+      "id": "PAR_01",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-002",
+      "mutated_description": "La información de organizaciones no vinculadas al usuario puede consultarse para mejorar la experiencia.",
+      "config_patch": {},
+      "transformation": "Contradicción conceptual con SEC-B2B-TENANT-ISOLATION VIGENTE"
+    },
+    {
+      "id": "PAR_02",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Las pantallas administrativas pueden habilitar acciones aunque no exista validación de permisos en el backend.",
+      "config_patch": {},
+      "transformation": "Contradicción conceptual con DENY_DEFAULT / security rule"
+    },
+    {
+      "id": "DUP_01",
+      "family": "SEMANTIC_DUPLICATE",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.",
+      "config_patch": {
+        "duplicate_of": "B2B-RULE-AUTH-001"
+      },
+      "transformation": "Candidato duplica texto de regla VIGENTE"
+    },
+    {
+      "id": "DUP_02",
+      "family": "SEMANTIC_DUPLICATE",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "REG_SEG_003",
+      "mutated_description": "La identificación personal no se envía a sistemas de telemetría ni a trazas de la aplicación; tampoco se incluye en mensajes de error.",
+      "config_patch": {},
+      "transformation": "Paráfrasis equivalente de regla existente VIGENTE"
+    },
+    {
+      "id": "PRE_01",
+      "family": "PRECEDENCE_INVERTED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Si concurren una asignación explícita de permiso y una prohibición individual, prevalece el permiso.",
+      "config_patch": {
+        "permission_resolution": "USER_ALLOW_GT_USER_DENY_GT_PROFILE_ALLOW"
+      },
+      "transformation": "Se invierte USER_DENY_GT_USER_ALLOW"
+    },
+    {
+      "id": "PRE_02",
+      "family": "PRECEDENCE_INVERTED",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "En un conflicto de autorizaciones, la excepción permisiva siempre tiene prioridad sobre la denegación.",
+      "config_patch": {},
+      "transformation": "Se invierte deny priority en texto"
+    },
+    {
+      "id": "BYPS_01",
+      "family": "UNKNOWN_BYPASS",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Las solicitudes que ya pasaron por el gateway conservan credenciales suficientes y no requieren controles adicionales de la capa LF.",
+      "config_patch": {},
+      "transformation": "Bypass server-side sin literal auth_bypass"
+    },
+    {
+      "id": "BYPS_02",
+      "family": "UNKNOWN_BYPASS",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-002",
+      "mutated_description": "Cuando el usuario pertenece a una cuenta corporativa, las empresas ajenas pueden tratarse como si estuviesen asignadas.",
+      "config_patch": {
+        "tenant_access_mode": "INFER_ALL_FOR_ENTERPRISE"
+      },
+      "transformation": "Bypass entre tenants con key no conocido"
+    },
+    {
+      "id": "EXP_01",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.",
+      "config_patch": {
+        "auth_bypass": true
+      },
+      "transformation": "Defecto conocido auth_bypass=true"
+    },
+    {
+      "id": "EXP_02",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "label": "BLOCK",
+      "label_origin": "INJECTED_KNOWN_DEFECT",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.",
+      "config_patch": {
+        "deny_by_default": false
+      },
+      "transformation": "Conflicto exacto de valor con política SEC-AUTH"
+    },
+    {
+      "id": "HEALTHY_B2B-RULE-AUTH-001",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Toda acción operativa del Backoffice posterior a autenticación completa se deniega por defecto y requiere autorización server-side. El servidor resuelve usuario activo, empresa, pantalla/recurso, permiso efectivo y, cuando aplica, transición de estado. Las acciones pre-auth de Login, MFA y recuperación se gobiernan por sus reglas AUTH específicas y nunca conceden por sí mismas permisos operativos.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_B2B-RULE-AUTH-002",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "B2B-RULE-AUTH-002",
+      "mutated_description": "Toda consulta o mutación operativa B2B con alcance de empresa debe resolverse server-side contra la empresa objetivo dentro del conjunto de empresas autorizadas para el usuario activo. Para usuarios con alcance simple, el conjunto contiene una sola empresa; para usuarios multiempresa, puede contener varias empresas explícitamente asignadas conforme B2B-RULE-SCOPE-002. El tenant puede estar en company_id de la fila o derivarse por su relación padre canónica; si no existe una relación de tenant y scope autorizada, el recurso permanece server-only. Los flujos pre-auth sin tenant resuelto no quedan autorizados por esta regla ni pueden acceder a recursos operativos.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_REG_RATE_002",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "REG_RATE_002",
+      "mutated_description": "Máximo 10 intentos de validación OTP desde el mismo IP en 10 minutos, independientemente de la sesión.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_REG_SEG_003",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "REG_SEG_003",
+      "mutated_description": "El DNI es PII crítico. No debe aparecer en logs de aplicación, eventos de analytics, mensajes de error visibles al usuario ni headers HTTP.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_REG_SEG_004",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "REG_SEG_004",
+      "mutated_description": "En producción el otp_code debe almacenarse como hash. En sandbox/proto se permite texto plano solo para facilitar pruebas.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_REG_SES_003",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "REG_SES_003",
+      "mutated_description": "No se permite más de una sesión de onboarding activa simultánea desde el mismo IP en un período de 5 minutos.",
+      "config_patch": {},
+      "transformation": "Descripción de regla VIGENTE extraída sin mutación"
+    },
+    {
+      "id": "HEALTHY_REWORD_B2B",
+      "family": "HEALTHY_CONTROL",
+      "label": "ALLOW",
+      "label_origin": "UNCHANGED_OR_EQUIVALENT_CONTROL",
+      "base_code": "B2B-RULE-AUTH-001",
+      "mutated_description": "Las operaciones administrativas permanecen denegadas hasta que el servidor confirme la autorización efectiva del usuario.",
+      "config_patch": {},
+      "transformation": "Reformulación preserva denegar-por-defecto"
+    }
+  ]
+}
