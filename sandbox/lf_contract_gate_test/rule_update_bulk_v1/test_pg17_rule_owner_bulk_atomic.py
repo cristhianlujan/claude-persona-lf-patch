@@ -136,9 +136,10 @@ CREATE TRIGGER t_mid BEFORE UPDATE ON lf_ops.reglas
 FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
 """)
     failure=call(True)
-    check("MID_BATCH_FAILURE_ROLLS_BACK",
-          "BLOCK_RULE_BULK_CHILD_NOT_VERIFIED" in failure
-          and "PG17_MID_BATCH_INJECTED_FAILURE" in failure)
+    if not ("BLOCK_RULE_BULK_CHILD_NOT_VERIFIED" in failure
+            and "PG17_MID_BATCH_INJECTED_FAILURE" in failure):
+        raise AssertionError("BLOCK_MID_BATCH_FAILURE_CAUSE_MISMATCH: "+failure[-1500:])
+    check("MID_BATCH_FAILURE_ROLLS_BACK",True)
     check("NO_OWNER_COLUMN_AFTER_ROLLBACK",
           one("NOT EXISTS(SELECT 1 FROM information_schema.columns "
           "WHERE table_schema='lf_ops' AND table_name='reglas' AND column_name='owner_name')")=="t")
