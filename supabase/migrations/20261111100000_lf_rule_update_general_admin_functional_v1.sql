@@ -86,6 +86,62 @@ VALUES (
  ||'Requires existing skill judged parent and child official readback.',
  'ACTIVE',current_setting('lf.rule_update_governance_execution_id'));
 
+-- Reconcile one canonical operation contract; no new contract row/route.
+-- Existing default/CANDIDATO requirements remain intact. Only the existing
+-- governed RULE_UPDATE_APPLY/ADMINISTRATIVE_ONLY child has a state override.
+-- 'vigente_direct_update=true' continues to forbid ungoverned direct writes.
+DO $admin_contract_scope$
+DECLARE c public.lf_operation_contracts%ROWTYPE; v_scope jsonb;
+BEGIN
+ SELECT * INTO c FROM public.lf_operation_contracts
+ WHERE operation_code='ACTUALIZACION_REGLA_LF' FOR UPDATE;
+ IF NOT FOUND
+ OR c.contract_code IS DISTINCT FROM 'CONTRACT-ACTUALIZACION_REGLA_LF-v0.1'
+ OR c.status IS DISTINCT FROM 'ACTIVE_ENFORCEMENT'
+ OR c.allowed IS DISTINCT FROM
+  '{"destination":"lf_ops.reglas","single_rule":true,"write_state":"CANDIDATO","relation_mutation":false,"automatic_promotion":false}'::jsonb
+ OR c.blocked IS DISTINCT FROM
+  '{"relation_delete":true,"duplicate_create":true,"production_promotion":true,"missing_update_target":true,"vigente_direct_update":true}'::jsonb
+ OR c.required_after_write IS DISTINCT FROM
+  '["exact_rule_readback","estado_CANDIDATO","execution_trace","no_promotion"]'::jsonb
+ THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_CONTRACT_ORIGINAL_DRIFT'; END IF;
+ v_scope:=jsonb_build_object(
+   'mode','ADMINISTRATIVE_ONLY',
+   'execution_mode','GOVERNED',
+   'operation_code','ACTUALIZACION_REGLA_LF',
+   'skill_code','RULE_UPDATE_APPLY',
+   'parent_profile','PERFIL-PRODUCT-DIRECTOR-LF',
+   'governed_child_required',true,
+   'judge_step70_clean_required',true,
+   'allowed_states',jsonb_build_array('CANDIDATO','VIGENTE'),
+   'allowed_fields',jsonb_build_array('created_by','owner_name'),
+   'preserve_existing_state',true,
+   'legacy_state_gate_override_only_this_mode',true,
+   'protected_fields_must_remain_unchanged',true,
+   'no_promotion',true,
+   'after_write',jsonb_build_array(
+     'exact_rule_readback','state_preserved','before_after_sha256',
+     'immutable_history','execution_trace','no_promotion'));
+ UPDATE public.lf_operation_contracts
+ SET allowed=jsonb_set(allowed,'{mode_overrides}',jsonb_build_object(
+    'ADMINISTRATIVE_ONLY',v_scope),true),
+     blocked=blocked || '{"vigente_functional_change":true,"vigente_documentary_change":true,"administrative_without_governed_child":true}'::jsonb,
+     updated_by_execution_id=current_setting('lf.rule_update_governance_execution_id')
+ WHERE operation_code='ACTUALIZACION_REGLA_LF';
+ IF NOT FOUND THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_CONTRACT_UPDATE_MISSING'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.lf_operation_contracts v
+   WHERE v.operation_code='ACTUALIZACION_REGLA_LF'
+     AND v.allowed#>'{mode_overrides,ADMINISTRATIVE_ONLY}'=v_scope
+     AND v.allowed->>'write_state'='CANDIDATO'
+     AND v.blocked->>'vigente_direct_update'='true'
+     AND v.blocked->>'vigente_functional_change'='true'
+     AND v.blocked->>'production_promotion'='true'
+     AND v.required_after_write ? 'estado_CANDIDATO'
+     AND v.updated_by_execution_id=
+           current_setting('lf.rule_update_governance_execution_id'))
+ THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_CONTRACT_READBACK'; END IF;
+END $admin_contract_scope$;
+
 CREATE FUNCTION public.lf_regla_admin_governed_write_v1(
  p_execution_id text,p_rule_code text,p_expected_sha text,p_changes jsonb
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER
