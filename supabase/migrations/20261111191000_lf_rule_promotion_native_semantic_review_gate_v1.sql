@@ -37,9 +37,8 @@ CREATE UNIQUE INDEX lf_rule_promotion_one_ig_run_v1
  WHERE ig_semantic_run_id IS NOT NULL;
 
 
--- Read-only evidence validator. Quotes are treated as UNTRUSTED DATA and
--- must be exact substrings of CURRENT rule/policy sources, each SHA-bound.
--- It is not a semantic judge or a new IG flow.
+-- Read-only evidence validator. Proposals and quotations are UNTRUSTED DATA.
+-- This is source-precision verification, NOT a semantic judge or a second IG.
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_ig_citation_verify_v1(
  p_promotion_id text,p_review jsonb,p_ig_run_id bigint,
  p_packet_sha text,p_candidate_sha text,p_rule_sha text,
@@ -51,8 +50,7 @@ AS $citations$
 DECLARE
  p public.lf_rule_promotion_v1%ROWTYPE;
  c jsonb; v_code text; v_quote text; v_source_sha text;
- v_valid boolean;
- v_citations jsonb;
+ v_valid boolean; v_citations jsonb;
 BEGIN
  SELECT * INTO p FROM public.lf_rule_promotion_v1 WHERE promotion_id=p_promotion_id;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_NOT_FOUND'); END IF;
@@ -69,10 +67,10 @@ BEGIN
     OR p_review->>'verdict' NOT IN ('PERMITIR','BLOQUEAR','INCONCLUSO')
     OR jsonb_typeof(p_review->'cited_evidence') IS DISTINCT FROM 'array'
  THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_IG_SEMANTIC_REVIEW_BINDING_INVALID'); END IF;
-
  v_citations:=p_review->'cited_evidence';
  IF jsonb_array_length(v_citations)<1 OR jsonb_array_length(v_citations)>24 THEN
    RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_IG_SEMANTIC_CITATION_COUNT_INVALID'); END IF;
+
  FOR c IN SELECT value FROM jsonb_array_elements(v_citations) AS q(value) LOOP
    v_code:=nullif(btrim(coalesce(c->>'source_code','')),'');
    v_quote:=nullif(btrim(coalesce(c->>'exact_excerpt','')),'');
@@ -81,9 +79,38 @@ BEGIN
       OR v_code IS NULL OR v_quote IS NULL
       OR nullif(btrim(coalesce(c->>'implication','')),'') IS NULL
       OR coalesce(array_length(regexp_split_to_array(v_quote,E'\\s+'),1),0)>25
-      OR v_source_sha !~ '^[a-f0-9]{64}
--- existing Validator packet + external semantic receipt readback.
--- It never fabricates a verdict and never upgrades IG authority.
+      OR v_source_sha !~ '^[a-f0-9]{64}$'
+   THEN RETURN jsonb_build_object('status','BLOCKED',
+       'blocking_code','BLOCK_IG_SEMANTIC_CITATION_MALFORMED'); END IF;
+   SELECT EXISTS(
+     SELECT 1 FROM lf_ops.reglas rr
+     WHERE rr.codigo=v_code AND rr.estado IN ('VIGENTE','CANDIDATO')
+       AND public.lf_asset_snapshot_sha_v1('REGLA',rr.codigo)=v_source_sha
+       AND position(v_quote IN rr.descripcion)>0
+   ) OR EXISTS(
+     SELECT 1 FROM lf_ops.politicas_seguridad ps
+     WHERE ps.policy_code=v_code AND ps.status='VIGENTE'
+       AND v_source_sha=p_policy_sha
+       AND position(v_quote IN ps.policy_config::text)>0
+   ) INTO v_valid;
+   IF NOT coalesce(v_valid,false) THEN
+     RETURN jsonb_build_object('status','BLOCKED',
+       'blocking_code','BLOCK_IG_SEMANTIC_CITATION_NOT_IN_CURRENT_SOURCE',
+       'source_code',v_code); END IF;
+ END LOOP;
+ RETURN jsonb_build_object('status','VERIFIED_CITATIONS',
+   'rule_snapshot_sha256',p_rule_sha,
+   'cited_evidence_sha256',encode(extensions.digest(
+       convert_to(v_citations::text,'UTF8'),'sha256'),'hex'),
+   'review_verdict',p_review->>'verdict');
+END $citations$;
+
+REVOKE ALL ON FUNCTION public.lf_rule_promotion_ig_citation_verify_v1(text,jsonb,bigint,text,text,text,text,text)
+ FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_ig_citation_verify_v1(text,jsonb,bigint,text,text,text,text,text)
+ TO service_role;
+
+-- Thin adapter to existing IG Validator; no self-issued semantic receipt.
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_bind_ig_semantic_v1(
  p_promotion_id text,
  p_run_id bigint,
