@@ -185,6 +185,24 @@ BEGIN
          IS DISTINCT FROM v_bulk_authority->>'source_catalog_md5'
       OR jsonb_typeof(p_input->'before_schema_source_row') IS DISTINCT FROM 'object'
    THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_BATCH_PATCH_SCOPE_NOT_JUDGED'; END IF;
+   -- Cross-check the exact Step40 REGLA scope before bypassing screen selection.
+   -- Only an already judged ADMINISTRATIVE_ONLY full-catalog child can enter.
+   IF NOT EXISTS(
+     SELECT 1 FROM public.lf_operation_execution_steps st
+     WHERE st.execution_id=p_parent AND st.step_id='input_validate'
+       AND st.status='STEP_PASS_WITH_EVIDENCE'
+       AND st.evidence_payload#>>'{scope_authority_packet_sha256}'
+           ~ '^sha256:[0-9a-f]{64}$'
+       AND st.evidence_payload#>>'{input_governance,status}'='READY'
+       AND st.evidence_payload#>>'{input_governance,scope_type}'='REGLA'
+       AND st.evidence_payload#>>'{input_governance,scope_mode}'='ALL_CANONICAL_RULES'
+       AND st.evidence_payload#>>'{input_governance,source_scope_validated}'='true'
+       AND st.evidence_payload#>>'{input_governance,rule_count}'='578'
+       AND st.evidence_payload#>>'{input_governance,catalog_md5}'=
+           v_bulk_authority->>'source_catalog_md5'
+       AND st.evidence_payload#>>'{input_governance,screen_not_current_count}'='0'
+       AND st.evidence_payload#>>'{input_governance,inactive_only_rule_count}'='0'
+   ) THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_BATCH_STEP40_SCOPE_NOT_ATTESTED'; END IF;
  ELSE
    IF v_profile_output->'deliverable_created'->'governed_rule_patch'
          IS DISTINCT FROM v_patch THEN
