@@ -331,7 +331,7 @@ def main() -> None:
                 f"WHERE execution_id='{PARENT}' AND step_id='execute_profile';")
 
     admin_patch = {"rule_code": CODE, "change_kind": "ADMINISTRATIVE_ONLY",
-                   "changes": {"owner_name": "SUPER_ADMIN", "created_by": "ChatGPT"}}
+                   "changes": {"owner_name": "LF_GOVERNANCE", "created_by": "ChatGPT"}}
     set_parent_patch(admin_patch)
     expect_block("RUN-NO-OWNER-COLUMN-001",
                  "BLOCK_RULE_ADMIN_OWNER_COLUMN_NOT_YET_INSTALLED",
@@ -342,6 +342,13 @@ def main() -> None:
     # Temporary column exists ONLY in isolated PG17; production schema remains
     # untouched and needs separately governed schema-impact remediation.
     sql("ALTER TABLE lf_ops.reglas ADD COLUMN owner_name text;")
+    guard_as_owner_patch = {"rule_code": CODE, "change_kind": "ADMINISTRATIVE_ONLY",
+        "changes": {"owner_name": "SUPER_ADMIN", "created_by": "ChatGPT"}}
+    set_parent_patch(guard_as_owner_patch)
+    expect_block("RUN-GUARD-AS-OWNER-001",
+                 "BLOCK_RULE_ADMIN_GOVERNANCE_GUARD_OR_OWNER_MISMATCH",
+                 patch=guard_as_owner_patch)
+    set_parent_patch(admin_patch)
     sql(invocation("RUN-ADMIN-VIGENTE-001","EXEC-SKILL-ADMIN-VIGENTE-001",
                    patch=admin_patch))
     out=sql(apply("RUN-ADMIN-VIGENTE-001","EXEC-SKILL-ADMIN-VIGENTE-001",
@@ -352,7 +359,7 @@ def main() -> None:
            =="VIGENTE")
     verify("ADMIN_OWNER_AND_CREATOR_WRITTEN",
            sql(f"SELECT owner_name||':'||created_by FROM lf_ops.reglas "
-               f"WHERE codigo='{CODE}'")=="SUPER_ADMIN:ChatGPT")
+               f"WHERE codigo='{CODE}'")=="LF_GOVERNANCE:ChatGPT")
     verify("ADMIN_HISTORY_SAVED_IN_CANONICAL_STEP",
            sql("SELECT evidence_payload#>>'{rule_update_history_v1,change_kind}' "
                "FROM public.lf_operation_execution_steps "
