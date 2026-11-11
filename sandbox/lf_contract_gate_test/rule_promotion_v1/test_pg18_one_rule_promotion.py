@@ -155,7 +155,7 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
       positive["CURRENTNESS_SUCCESSOR"]["source_current"] is True,
       positive["CURRENTNESS_SUCCESSOR"])
     check("SAME_RUN_SAME_HASH_REPLAY_BLOCKED",
-      positive["SAME_HASH_PRE_APPLY"]=="true"
+      positive["SAME_HASH_PRE_APPLY"] is True
       and positive["REPLAY_SAME_HASH_DECIDE"]["blocking_code"]=="PROMOTION_NOT_PENDING"
       and positive["REPLAY_SAME_HASH_REQUEST"]["blocking_code"]=="PROMOTION_ALREADY_OPEN"
       and positive["REPLAY_DECIDE"]["blocking_code"]=="PROMOTION_NOT_PENDING"
