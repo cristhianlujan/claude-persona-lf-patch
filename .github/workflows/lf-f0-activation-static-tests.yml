@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/**'
+      - 'supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql'
+      - 'sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_*'
       - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
       - 'sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py'
       - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py'
