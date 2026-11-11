@@ -39,7 +39,7 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
              tamper_owner_hash=False,synthetic_owner=False,
              synthetic_parent=False,missing_owner_run=False,
              same_execution=False,auth_only=False,ekb_active=False,
-             extra_after_bind="",extra_before_apply="",extra_after_apply=""):
+             extra_before_bind="",extra_after_bind="",extra_before_apply="",extra_after_apply=""):
     quote="UNTRUSTED_FABRICATED_QUOTE_XYZ" if bad_quote else "Test baseline"
     owner_run="EXEC-PARENT-TEST-001" if same_execution else "EXEC-OWNER-L4D-001"
     actor_rows=""
@@ -102,6 +102,7 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
     {actor_rows}
     SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1(
        'EXEC-PARENT-TEST-001','RULE-TEST-001','PG18 L4D owner profile')::text;
+    {extra_before_bind}
     SELECT 'BIND|'||public.lf_rule_promotion_bind_ig_semantic_v1(
        'PROM-TEST',9001,'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:abcdef',
        7001,'00000000-0000-0000-0000-000000000001'::uuid,repeat('a',64))::text;
