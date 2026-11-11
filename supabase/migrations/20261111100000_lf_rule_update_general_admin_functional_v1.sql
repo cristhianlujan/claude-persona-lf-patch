@@ -129,6 +129,9 @@ BEGIN
    RAISE EXCEPTION 'BLOCK_RULE_ADMIN_WRITER_STALE_SHA'; END IF;
  v_creator:=CASE WHEN p_changes ? 'created_by'
     THEN p_changes->>'created_by' ELSE v_before.created_by END;
+ v_owner:=CASE WHEN p_changes ? 'owner_name'
+    THEN p_changes->>'owner_name'
+    ELSE to_jsonb(v_before)->>'owner_name' END;
  IF p_changes ? 'owner_name' THEN
    -- The owner field will only be installed via separately impact-approved
    -- evolution of the existing lf_ops.reglas schema. No shadow table.
@@ -146,9 +149,7 @@ BEGIN
       -'owner_name'-'created_by')
     IS DISTINCT FROM
     (to_jsonb(v_before)-'created_at'-'updated_at'-'owner_name'-'created_by')
- OR (to_jsonb(v_after)->>'owner_name') IS DISTINCT FROM
-    CASE WHEN p_changes ? 'owner_name' THEN p_changes->>'owner_name'
-         ELSE to_jsonb(v_before)->>'owner_name' END
+ OR (to_jsonb(v_after)->>'owner_name') IS DISTINCT FROM v_owner
  OR v_after.created_by IS DISTINCT FROM v_creator THEN
    RAISE EXCEPTION 'BLOCK_RULE_ADMIN_WRITER_PROTECTED_FIELD_CHANGED'; END IF;
  v_after_sha:=public.lf_asset_snapshot_sha_v1('REGLA',p_rule_code);
