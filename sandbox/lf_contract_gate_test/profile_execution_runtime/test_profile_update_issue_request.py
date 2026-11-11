@@ -127,13 +127,6 @@ class ProofTest(unittest.TestCase):
         self.assertIn("candidate_sha=" + B40, cmd)
 
 
-class AnnotationTest(unittest.TestCase):
-    def test_workflow_publishes_execution_id_and_batch_outcome_as_annotations(self):
-        wf = open(".github/workflows/lf-customer-profile-creator-governance-caller.yml", encoding="utf-8").read()
-        self.assertEqual(wf.count("::notice title=LF_PROFILE_UPDATE_EXECUTION::"), 1)
-        self.assertEqual(wf.count("::notice title=LF_PROFILE_UPDATE_BATCH::"), 2)
-
-
 class DeployTest(unittest.TestCase):
     DEPLOY = {"schema_version": "LF_PROFILE_UPDATE_REQUEST_V1", "action": "profile_runtime_deploy"}
 
@@ -159,22 +152,15 @@ class DispatchTest(unittest.TestCase):
 
 
 class WorkflowShapeTest(unittest.TestCase):
+    """The OIDC workflow no longer carries the profile-update path (retired); customer creation stays."""
     text = WORKFLOW.read_text(encoding="utf-8")
 
-    def test_issue_entry_is_label_gated_and_separate_from_oidc_job(self):
-        self.assertIn("issues:\n    types: [labeled]", self.text)
-        self.assertIn("github.event.label.name == 'lf-profile-update-governed'", self.text)
-        self.assertIn("github.event.issue.pull_request == null", self.text)
-        self.assertIn("environment: lf-edge-deploy", self.text)
-        self.assertIn("if: ${{ github.event_name != 'issues' }}", self.text)
+    def test_update_path_is_absent_from_oidc_workflow(self):
+        for token in ("lf-profile-update-governed", "profile_update_init", "profile_update_record_batch",
+                      "governed-update-issue-request", "GITHUB_ACTIONS_OIDC_EXACT_PROFILE_UPDATE_V1"):
+            self.assertNotIn(token, self.text)
+        self.assertNotIn("\n  issues:", self.text)
 
-    def test_dispatcher_job_has_no_oidc_and_oidc_job_unchanged(self):
-        dispatcher = self.text.split("governed-update-issue-request:")[1].split("customer-profile-creator-governed-caller:")[0]
-        self.assertIn("actions: write", dispatcher)
-        self.assertNotIn("id-token", dispatcher)
-        self.assertNotIn("getIDToken", dispatcher)
-        self.assertNotIn("curl", dispatcher)
-
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_customer_creation_path_is_kept(self):
+        for token in ("profile_creator_init_v1", "customer-profile-creator-governed-caller", "id-token: write"):
+            self.assertIn(token, self.text)

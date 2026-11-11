@@ -268,15 +268,12 @@ At minimum:
 10. never create retroactive receipts or auxiliary PRs merely to compare branches;
 11. after merge, read back from the new `main`, close the canonical execution with evidence and enrich EKB.
 
-### Single-command update (Router -> profile -> updater, native chat)
+### Profile update entry (retired GitHub OIDC route)
 
-When the user says "actualiza el perfil X" (or equivalent), the Router (ACT-0001) resolves the registered action `PROFILE_UPDATE` -> `ACTUALIZACION_PERFIL_LF` through the governed caller `CALLER-GHA-PROFILE-UPDATE-V1`. A native GPT or Claude chat completes it end to end with one command; the user uploads nothing:
+The GitHub OIDC / issue-label route for `ACTUALIZACION_PERFIL_LF` (label `lf-profile-update-governed`, workflow actions `profile_update_init` / `profile_update_record_batch`, edge action `profile_update_init_v1`) is **retired**. The caller `lf-profile-creator-governance-caller-v1` now refuses any `ACTUALIZACION_PERFIL_LF` execution with `PROFILE_UPDATE_RETIRED_FROM_OIDC_ROUTE`.
 
-1. Read the profile and its failing evidence. Measure first if needed: `python3 scripts/lf_profile_update_run.py ... --dry-run` validates every request offline and writes nothing.
-2. Author the candidate as a full profile directory in a scratch folder, in this chat (zero-cost: the native chat is the model).
-3. Run `python3 scripts/lf_profile_update_run.py --slug <slug> --target-code <PERFIL-CODE> --candidate-dir <dir> --state <file>`. It opens the execution, measures, records the steps, pushes the branch, runs the compare proof on the exact commit, passes the Merge Train, reads back from `main` and closes. It stops with a stable code if an update is not justified, `main` moved, or a check fails; rerunning resumes from the state file. When it prints `status: BLOCKED`, nothing was opened or written: read `why`, `missing` (what, exact path, the tree hash to bind) and `how`, supply exactly that, and rerun.
-4. Do not dispatch workflows by hand, write to the database, or merge directly. Report the final status and the open limits (self-review, single run, pending semantic checks).
-5. The update does not change the profile runtime state. Enabling is the separate governed operation `ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF`.
+A profile update enters only through a profile, as a governed skill: the Router derives, the native profile runs, and only the Reparador (`PERFIL-SYSTEMIC-ROOT-CAUSE-REPAIR-LF`) may call the update skill. Do not dispatch workflows by hand, write to the database, or merge directly. `scripts/lf_profile_update_run.py` and `scripts/lf_profile_update_issue_dispatch.py` target the retired route and are pending removal in a follow-up. The customer profile creation path (`profile_creator_init_v1`) is unchanged.
+Enabling runtime remains the separate governed operation `ACTUALIZACION_RUNTIME_EJECUCION_PERFIL_LF`.
 
 ## Governed profile execution — LF native route (mandatory and first)
 
