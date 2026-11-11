@@ -672,7 +672,8 @@ BEGIN
       OR v_receipt#>>'{child_receipt,rule_code}' IS DISTINCT FROM v_code
       OR coalesce(v_receipt->>'replay','false')='true'
    THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_CHILD_NOT_VERIFIED:%:%',
-      v_code,coalesce(v_receipt->>'blocking_code','NO_RECEIPT'); END IF;
+      v_code,coalesce(v_receipt#>>'{child_receipt,code}',
+         v_receipt->>'blocking_code',v_receipt->>'status','NO_RECEIPT'); END IF;
    v_count:=v_count+1;
  END LOOP;
 
