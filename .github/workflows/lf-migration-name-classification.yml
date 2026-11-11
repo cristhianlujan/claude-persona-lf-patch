@@ -49,7 +49,7 @@ jobs:
             --allow-reconciliation-source \
             "${migration_paths[@]}"
   rule-history-pg17:
-    if: github.head_ref == 'lf/issue-3779-rule-update-history-v1'
+    if: github.head_ref == 'lf/issue-3779-rule-update-history-v1' || github.head_ref == 'lf/issue-3779-rule-update-general-v1' || github.head_ref == 'lf/issue-3779-rule-bulk-atomic-v1'
     name: Rule history | full pre/post, SHA, rollback, immutable
     runs-on: ubuntu-latest
     timeout-minutes: 20
