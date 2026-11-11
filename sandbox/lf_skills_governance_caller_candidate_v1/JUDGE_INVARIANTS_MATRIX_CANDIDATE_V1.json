@@ -1,0 +1,1034 @@
+{
+  "schema": "LF_SKILL_JUDGE_REQUIREMENT_RISK_INVARIANT_MATRIX_CANDIDATE_V1",
+  "state": "PROPOSAL_ONLY_NOT_OFFICIAL_NOT_DEPLOYED",
+  "generated_date": "2026-11-06",
+  "operation_code": "EJECUCION_SKILL_LF",
+  "canonical_judge_observed": {
+    "judge_code": "JUDGE-EJECUCION-SKILL-LF-v0.1",
+    "status": "ACTIVE_ENFORCEMENT",
+    "judge_sha": null,
+    "pass_if": [],
+    "fail_if": [],
+    "coverage_qualified": false
+  },
+  "architecture": {
+    "global_judge_binding": "SAME_JUDGE_CODE_ALL_STEPS",
+    "global_pass_if_recommendation": "COMMON_ONLY_AFTER_REVIEW_AND_SOURCE_ATTESTATION",
+    "step_specific_invariants": "SKILL_TRUST_WRAPPER_PER_STEP_SERVER_READBACK",
+    "source_of_authority": "INVARIANTS_FROM_SERVER_NOT_CALLER",
+    "deterministic_first": true,
+    "never_promote_fixture_to_pass": true,
+    "independent_inner_A2_judge_requires_real_receipt": true,
+    "max_a2_attempts": 3,
+    "target_steps_source": "PUBLIC_LF_OPERATION_STEPS_LIVE_CURRENT_SELECT",
+    "fail_closed_until_qualified": true
+  },
+  "observed_steps": [
+    {
+      "step_order": 0,
+      "step_id": "init_execution",
+      "required_evidence_keys": [
+        "execution_id_created"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 10,
+      "step_id": "router",
+      "required_evidence_keys": [
+        "router_read",
+        "action"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 20,
+      "step_id": "skill_resolve",
+      "required_evidence_keys": [
+        "exact_skill_resolved",
+        "codigo_activo",
+        "skill_identity"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 30,
+      "step_id": "skill_source_read",
+      "required_evidence_keys": [
+        "skill_source_ref",
+        "source_revision",
+        "source_authority"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 40,
+      "step_id": "input_validate",
+      "required_evidence_keys": [
+        "input_scope",
+        "activation_trigger_match"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 50,
+      "step_id": "execute_skill",
+      "required_evidence_keys": [
+        "skill_output",
+        "source_refs"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 60,
+      "step_id": "output_validate",
+      "required_evidence_keys": [
+        "output_contract_result",
+        "deterministic_validation"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 70,
+      "step_id": "semantic_judge",
+      "required_evidence_keys": [
+        "semantic_judge_result",
+        "unsupported_claims"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    },
+    {
+      "step_order": 80,
+      "step_id": "report_output",
+      "required_evidence_keys": [
+        "result",
+        "skill_code",
+        "execution_id",
+        "no_write_performed"
+      ],
+      "active": true,
+      "contract_status": "ACTIVE_ENFORCEMENT",
+      "binding_status": "ACTIVE_ENFORCEMENT"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "C01",
+      "step_id": "COMMON",
+      "requirement": "caller_oidc_workflow",
+      "description": "Verificar caller_oidc_workflow con evidencia server-side",
+      "risk": "El caller privilegiado puede ser falsificado",
+      "invariant": "caller_oidc_workflow",
+      "classification": "DETERMINISTIC",
+      "source_authority": "OIDC_JWKS_AND_PROTECTED_WORKFLOW_SERVER_VERIFICATION",
+      "evidence_fields": [
+        {
+          "ref": "evidence://COMMON/C01",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_c01_verified",
+      "fail_assertion": "skill_c01_failed",
+      "positive_test_id": "SKILL_C01_POS",
+      "negative_test_id": "SKILL_C01_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "EACH_STEP_COMMON"
+    },
+    {
+      "id": "C02",
+      "step_id": "COMMON",
+      "requirement": "parent_profile_authority_business",
+      "description": "Verificar parent_profile_authority_business con evidencia server-side",
+      "risk": "Un RUN ajeno o SALY puede usar la skill LF",
+      "invariant": "parent_profile_authority_business",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_PARENT_AND_ROUTER_ACT_0001_RECEIPT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://COMMON/C02",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_c02_verified",
+      "fail_assertion": "skill_c02_failed",
+      "positive_test_id": "SKILL_C02_POS",
+      "negative_test_id": "SKILL_C02_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "EACH_STEP_COMMON"
+    },
+    {
+      "id": "C03",
+      "step_id": "COMMON",
+      "requirement": "current_judge_source_and_topology",
+      "description": "Verificar current_judge_source_and_topology con evidencia server-side",
+      "risk": "Un juez vacío produce PASS sin pruebas o evalúa invariantes futuras en paso 0",
+      "invariant": "current_judge_source_and_topology",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_JUDGE_BINDINGS_AND_ATTESTED_SOURCE_DIGEST",
+      "evidence_fields": [
+        {
+          "ref": "evidence://COMMON/C03",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_c03_verified",
+      "fail_assertion": "skill_c03_failed",
+      "positive_test_id": "SKILL_C03_POS",
+      "negative_test_id": "SKILL_C03_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "EACH_STEP_COMMON"
+    },
+    {
+      "id": "C04",
+      "step_id": "COMMON",
+      "requirement": "runner_input_source_idempotency",
+      "description": "Verificar runner_input_source_idempotency con evidencia server-side",
+      "risk": "Un replay reutiliza otro manifiesto o input",
+      "invariant": "runner_input_source_idempotency",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_RUN_INVOCATION_AND_SOURCE_SNAPSHOT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://COMMON/C04",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_c04_verified",
+      "fail_assertion": "skill_c04_failed",
+      "positive_test_id": "SKILL_C04_POS",
+      "negative_test_id": "SKILL_C04_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "EACH_STEP_COMMON"
+    },
+    {
+      "id": "S00",
+      "step_id": "init_execution",
+      "requirement": "immutable_init_execution",
+      "description": "Verificar immutable_init_execution con evidencia server-side",
+      "risk": "Puede declararse iniciada una skill sin RUN auténtico",
+      "invariant": "immutable_init_execution",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_RESERVE_AND_STEP0_READBACK",
+      "evidence_fields": [
+        {
+          "ref": "evidence://init_execution/S00",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s00_verified",
+      "fail_assertion": "skill_s00_failed",
+      "positive_test_id": "SKILL_S00_POS",
+      "negative_test_id": "SKILL_S00_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S10",
+      "step_id": "router",
+      "requirement": "router_skill_execution_route",
+      "description": "Verificar router_skill_execution_route con evidencia server-side",
+      "risk": "Desvío o bypass del Router",
+      "invariant": "router_skill_execution_route",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_ROUTER_ACTION_REGISTRY_AND_RECEIPT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://router/S10",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s10_verified",
+      "fail_assertion": "skill_s10_failed",
+      "positive_test_id": "SKILL_S10_POS",
+      "negative_test_id": "SKILL_S10_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S20",
+      "step_id": "skill_resolve",
+      "requirement": "skill_catalog_ready_authority",
+      "description": "Verificar skill_catalog_ready_authority con evidencia server-side",
+      "risk": "Se ejecuta skill no admitida o perfil sin permiso",
+      "invariant": "skill_catalog_ready_authority",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_SKILL_ASSET_CATALOG_AUTHORITY",
+      "evidence_fields": [
+        {
+          "ref": "evidence://skill_resolve/S20",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s20_verified",
+      "fail_assertion": "skill_s20_failed",
+      "positive_test_id": "SKILL_S20_POS",
+      "negative_test_id": "SKILL_S20_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S30",
+      "step_id": "skill_source_read",
+      "requirement": "exact_main_source_file",
+      "description": "Verificar exact_main_source_file con evidencia server-side",
+      "risk": "Código distinto del aprobado o sin hash",
+      "invariant": "exact_main_source_file",
+      "classification": "DETERMINISTIC",
+      "source_authority": "GITHUB_MAIN_COMMIT_BLOB_AND_ASSET_PATH",
+      "evidence_fields": [
+        {
+          "ref": "evidence://skill_source_read/S30",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s30_verified",
+      "fail_assertion": "skill_s30_failed",
+      "positive_test_id": "SKILL_S30_POS",
+      "negative_test_id": "SKILL_S30_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S31",
+      "step_id": "skill_source_read",
+      "requirement": "stage_source_refs_attested",
+      "description": "Verificar stage_source_refs_attested con evidencia server-side",
+      "risk": "Source refs de pasos internos no corresponden a Main",
+      "invariant": "stage_source_refs_attested",
+      "classification": "DETERMINISTIC",
+      "source_authority": "SERVER_ATTESTED_INTERNAL_SKILL_STEP_DIGESTS",
+      "evidence_fields": [
+        {
+          "ref": "evidence://skill_source_read/S31",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s31_verified",
+      "fail_assertion": "skill_s31_failed",
+      "positive_test_id": "SKILL_S31_POS",
+      "negative_test_id": "SKILL_S31_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S40",
+      "step_id": "input_validate",
+      "requirement": "business_and_request_input_scope",
+      "description": "Verificar business_and_request_input_scope con evidencia server-side",
+      "risk": "La skill confunde LF y SALY o parámetros",
+      "invariant": "business_and_request_input_scope",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_PROFILE_PARENT_REQUEST_AND_INPUT_SHA",
+      "evidence_fields": [
+        {
+          "ref": "evidence://input_validate/S40",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s40_verified",
+      "fail_assertion": "skill_s40_failed",
+      "positive_test_id": "SKILL_S40_POS",
+      "negative_test_id": "SKILL_S40_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S41",
+      "step_id": "input_validate",
+      "requirement": "activation_trigger_match",
+      "description": "Verificar activation_trigger_match con evidencia server-side",
+      "risk": "Se consume habilidad para otra finalidad",
+      "invariant": "activation_trigger_match",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_CATALOG_INPUT_REQUIRED_AND_ROUTER_SCOPE",
+      "evidence_fields": [
+        {
+          "ref": "evidence://input_validate/S41",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s41_verified",
+      "fail_assertion": "skill_s41_failed",
+      "positive_test_id": "SKILL_S41_POS",
+      "negative_test_id": "SKILL_S41_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S50",
+      "step_id": "execute_skill",
+      "requirement": "output_digest_and_producer",
+      "description": "Verificar output_digest_and_producer con evidencia server-side",
+      "risk": "Resultado de ejecución no corresponde al RUN",
+      "invariant": "output_digest_and_producer",
+      "classification": "DETERMINISTIC",
+      "source_authority": "MODEL_PRODUCER_RECEIPT_AND_SERVER_HASH",
+      "evidence_fields": [
+        {
+          "ref": "evidence://execute_skill/S50",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s50_verified",
+      "fail_assertion": "skill_s50_failed",
+      "positive_test_id": "SKILL_S50_POS",
+      "negative_test_id": "SKILL_S50_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S51",
+      "step_id": "execute_skill",
+      "requirement": "a2_internal_judge_before_a3",
+      "description": "Verificar a2_internal_judge_before_a3 con evidencia server-side",
+      "risk": "A3 empieza antes del juez o sin feedback",
+      "invariant": "a2_internal_judge_before_a3",
+      "classification": "HYBRID",
+      "source_authority": "A2_INNER_JUDGE_RECEIPTS_AND_ATTEMPT_HISTORY",
+      "evidence_fields": [
+        {
+          "ref": "evidence://execute_skill/S51",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s51_verified",
+      "fail_assertion": "skill_s51_failed",
+      "positive_test_id": "SKILL_S51_POS",
+      "negative_test_id": "SKILL_S51_NEG",
+      "deterministic_precondition_required": true,
+      "independent_judge_evidence_required": true,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S52",
+      "step_id": "execute_skill",
+      "requirement": "max_three_a2_attempts_and_terminal",
+      "description": "Verificar max_three_a2_attempts_and_terminal con evidencia server-side",
+      "risk": "Se reintenta indefinidamente o reporta sin expediente",
+      "invariant": "max_three_a2_attempts_and_terminal",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_A2_ATTEMPTS_AND_TERMINAL_TICKET_READBACK",
+      "evidence_fields": [
+        {
+          "ref": "evidence://execute_skill/S52",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s52_verified",
+      "fail_assertion": "skill_s52_failed",
+      "positive_test_id": "SKILL_S52_POS",
+      "negative_test_id": "SKILL_S52_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S53",
+      "step_id": "execute_skill",
+      "requirement": "model_source_provenance",
+      "description": "Verificar model_source_provenance con evidencia server-side",
+      "risk": "El modelo declara pruebas no ejecutadas",
+      "invariant": "model_source_provenance",
+      "classification": "HYBRID",
+      "source_authority": "PRODUCER_OUTPUT_AND_INDEPENDENT_SOURCE_ATTESTATION",
+      "evidence_fields": [
+        {
+          "ref": "evidence://execute_skill/S53",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s53_verified",
+      "fail_assertion": "skill_s53_failed",
+      "positive_test_id": "SKILL_S53_POS",
+      "negative_test_id": "SKILL_S53_NEG",
+      "deterministic_precondition_required": true,
+      "independent_judge_evidence_required": true,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S60",
+      "step_id": "output_validate",
+      "requirement": "output_contract_and_no_false_claims",
+      "description": "Verificar output_contract_and_no_false_claims con evidencia server-side",
+      "risk": "Se aprueba salida inválida o incompleta",
+      "invariant": "output_contract_and_no_false_claims",
+      "classification": "DETERMINISTIC",
+      "source_authority": "BOUND_OUTPUT_VALIDATOR_AND_SOURCE_DIGEST",
+      "evidence_fields": [
+        {
+          "ref": "evidence://output_validate/S60",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s60_verified",
+      "fail_assertion": "skill_s60_failed",
+      "positive_test_id": "SKILL_S60_POS",
+      "negative_test_id": "SKILL_S60_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S61",
+      "step_id": "output_validate",
+      "requirement": "deterministic_fail_precedence",
+      "description": "Verificar deterministic_fail_precedence con evidencia server-side",
+      "risk": "Un PASS semántico oculta fallo determinístico",
+      "invariant": "deterministic_fail_precedence",
+      "classification": "DETERMINISTIC",
+      "source_authority": "SERVER_TRUST_HARD_FAIL_LINEAGE",
+      "evidence_fields": [
+        {
+          "ref": "evidence://output_validate/S61",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s61_verified",
+      "fail_assertion": "skill_s61_failed",
+      "positive_test_id": "SKILL_S61_POS",
+      "negative_test_id": "SKILL_S61_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S70",
+      "step_id": "semantic_judge",
+      "requirement": "independent_semantic_judge",
+      "description": "Verificar independent_semantic_judge con evidencia server-side",
+      "risk": "Autocertificación del productor o PASS fabricado",
+      "invariant": "independent_semantic_judge",
+      "classification": "INDETERMINISTIC",
+      "source_authority": "INDEPENDENT_MODEL_PROVIDER_RECEIPT_OR_CANONICAL_READ_JUDGE",
+      "evidence_fields": [
+        {
+          "ref": "evidence://semantic_judge/S70",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s70_verified",
+      "fail_assertion": "skill_s70_failed",
+      "positive_test_id": "SKILL_S70_POS",
+      "negative_test_id": "SKILL_S70_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": true,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S71",
+      "step_id": "semantic_judge",
+      "requirement": "same_output_and_business_digest",
+      "description": "Verificar same_output_and_business_digest con evidencia server-side",
+      "risk": "El juez valida otro resultado o negocio",
+      "invariant": "same_output_and_business_digest",
+      "classification": "DETERMINISTIC",
+      "source_authority": "OUTPUT_SHA_AND_PARENT_BUSINESS_SNAPSHOT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://semantic_judge/S71",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s71_verified",
+      "fail_assertion": "skill_s71_failed",
+      "positive_test_id": "SKILL_S71_POS",
+      "negative_test_id": "SKILL_S71_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S72",
+      "step_id": "semantic_judge",
+      "requirement": "unsupported_claims_accounted",
+      "description": "Verificar unsupported_claims_accounted con evidencia server-side",
+      "risk": "El juez acepta evidencia o conclusiones sin soporte",
+      "invariant": "unsupported_claims_accounted",
+      "classification": "HYBRID",
+      "source_authority": "INDEPENDENT_SEMANTIC_FINDINGS_AND_SUPPORTING_REFS",
+      "evidence_fields": [
+        {
+          "ref": "evidence://semantic_judge/S72",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s72_verified",
+      "fail_assertion": "skill_s72_failed",
+      "positive_test_id": "SKILL_S72_POS",
+      "negative_test_id": "SKILL_S72_NEG",
+      "deterministic_precondition_required": true,
+      "independent_judge_evidence_required": true,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S80",
+      "step_id": "report_output",
+      "requirement": "all_required_steps_clean",
+      "description": "Verificar all_required_steps_clean con evidencia server-side",
+      "risk": "Cierre antes de los pasos obligatorios",
+      "invariant": "all_required_steps_clean",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_OPERATION_STEPS_AND_BINDINGS_CURRENT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://report_output/S80",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s80_verified",
+      "fail_assertion": "skill_s80_failed",
+      "positive_test_id": "SKILL_S80_POS",
+      "negative_test_id": "SKILL_S80_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S81",
+      "step_id": "report_output",
+      "requirement": "terminal_invocation_and_child_consistency",
+      "description": "Verificar terminal_invocation_and_child_consistency con evidencia server-side",
+      "risk": "SQL COMPLETED antes de RUN 80 o sin readback",
+      "invariant": "terminal_invocation_and_child_consistency",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_CHILD_RUN_INVOCATION_AND_TERMINAL_RECEIPT",
+      "evidence_fields": [
+        {
+          "ref": "evidence://report_output/S81",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s81_verified",
+      "fail_assertion": "skill_s81_failed",
+      "positive_test_id": "SKILL_S81_POS",
+      "negative_test_id": "SKILL_S81_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    },
+    {
+      "id": "S82",
+      "step_id": "report_output",
+      "requirement": "no_business_write_read_only",
+      "description": "Verificar no_business_write_read_only con evidencia server-side",
+      "risk": "Una skill READ_ONLY impacta activos de negocio",
+      "invariant": "no_business_write_read_only",
+      "classification": "DETERMINISTIC",
+      "source_authority": "DB_OPERATION_EFFECTS_AND_AUDIT_WRITE_BOUNDARIES",
+      "evidence_fields": [
+        {
+          "ref": "evidence://report_output/S82",
+          "server_only": true
+        }
+      ],
+      "pass_assertion": "skill_s82_verified",
+      "fail_assertion": "skill_s82_failed",
+      "positive_test_id": "SKILL_S82_POS",
+      "negative_test_id": "SKILL_S82_NEG",
+      "deterministic_precondition_required": false,
+      "independent_judge_evidence_required": false,
+      "execution_status": "NOT_RUN_CANDIDATE_TEST_REQUIRED",
+      "authority_level": "PROPOSAL_NOT_ACTIVE",
+      "scope": "STEP_LOCAL_ONLY"
+    }
+  ],
+  "proposed_tests": [
+    {
+      "id": "SKILL_C01_POS",
+      "invariant_id": "C01",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C01_NEG",
+      "invariant_id": "C01",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C02_POS",
+      "invariant_id": "C02",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C02_NEG",
+      "invariant_id": "C02",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C03_POS",
+      "invariant_id": "C03",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C03_NEG",
+      "invariant_id": "C03",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C04_POS",
+      "invariant_id": "C04",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_C04_NEG",
+      "invariant_id": "C04",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S00_POS",
+      "invariant_id": "S00",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S00_NEG",
+      "invariant_id": "S00",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S10_POS",
+      "invariant_id": "S10",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S10_NEG",
+      "invariant_id": "S10",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S20_POS",
+      "invariant_id": "S20",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S20_NEG",
+      "invariant_id": "S20",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S30_POS",
+      "invariant_id": "S30",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S30_NEG",
+      "invariant_id": "S30",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S31_POS",
+      "invariant_id": "S31",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S31_NEG",
+      "invariant_id": "S31",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S40_POS",
+      "invariant_id": "S40",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S40_NEG",
+      "invariant_id": "S40",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S41_POS",
+      "invariant_id": "S41",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S41_NEG",
+      "invariant_id": "S41",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S50_POS",
+      "invariant_id": "S50",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S50_NEG",
+      "invariant_id": "S50",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S51_POS",
+      "invariant_id": "S51",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S51_NEG",
+      "invariant_id": "S51",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S52_POS",
+      "invariant_id": "S52",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S52_NEG",
+      "invariant_id": "S52",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S53_POS",
+      "invariant_id": "S53",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S53_NEG",
+      "invariant_id": "S53",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S60_POS",
+      "invariant_id": "S60",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S60_NEG",
+      "invariant_id": "S60",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S61_POS",
+      "invariant_id": "S61",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S61_NEG",
+      "invariant_id": "S61",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S70_POS",
+      "invariant_id": "S70",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S70_NEG",
+      "invariant_id": "S70",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S71_POS",
+      "invariant_id": "S71",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S71_NEG",
+      "invariant_id": "S71",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S72_POS",
+      "invariant_id": "S72",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S72_NEG",
+      "invariant_id": "S72",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S80_POS",
+      "invariant_id": "S80",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S80_NEG",
+      "invariant_id": "S80",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S81_POS",
+      "invariant_id": "S81",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S81_NEG",
+      "invariant_id": "S81",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S82_POS",
+      "invariant_id": "S82",
+      "kind": "POSITIVE",
+      "expected": "QUALIFICATION_CANDIDATE_CONSISTENT_NOT_AUTHENTICATED",
+      "status": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SKILL_S82_NEG",
+      "invariant_id": "S82",
+      "kind": "NEGATIVE",
+      "expected": "BLOCKED",
+      "status": "PLANNED_NOT_EXECUTED"
+    }
+  ],
+  "accepted_by": "INDEPENDENT_REVIEW_REQUIRED",
+  "source_readback_sha256": null,
+  "promotion_allowed": false
+}
