@@ -350,7 +350,30 @@ def main() -> None:
     expect_block("RUN-FUNCTIONAL-NO-PARITY-001",
                  "BLOCK_RULE_FUNCTIONAL_SEMANTIC_PARITY_NOT_VERIFIED",
                  patch=functional_patch)
+    # Only a real register entry + an exact source reference in the judged
+    # Product output can authorize a functional candidate modification.
+    sql("CREATE TABLE public.lf_decisiones_gov "
+        "(id_decision text PRIMARY KEY,estado_normalizado text);")
     set_parent_patch(functional_patch,verified_parity=True)
+    expect_block("RUN-FUNCTIONAL-MISSING-DECISION-001",
+                 "BLOCK_RULE_FUNCTIONAL_ORIGINAL_AUTHORITY_UNVERIFIED",
+                 patch=functional_patch)
+    sql("INSERT INTO public.lf_decisiones_gov(id_decision,estado_normalizado) "
+        "VALUES('PG17-DOC-001','CANDIDATO_CONTROLADO');")
+    expect_block("RUN-FUNCTIONAL-PENDING-DECISION-001",
+                 "BLOCK_RULE_FUNCTIONAL_ORIGINAL_AUTHORITY_UNVERIFIED",
+                 patch=functional_patch)
+    sql("UPDATE public.lf_decisiones_gov SET estado_normalizado='VIGENTE' "
+        "WHERE id_decision='PG17-DOC-001';")
+    expect_block("RUN-FUNCTIONAL-MISSING-EXACT-REF-001",
+                 "BLOCK_RULE_FUNCTIONAL_ORIGINAL_AUTHORITY_UNVERIFIED",
+                 patch=functional_patch)
+    sql("UPDATE public.lf_operation_execution_steps SET evidence_payload="
+        "jsonb_set(evidence_payload,"
+        "'{profile_output,deliverable_created,product_decision,source_refs}',"
+        "'[{\"authority\":\"AUTHORITATIVE\",\"current\":true,"
+        "\"source_ref\":\"supabase://lf_decisiones_gov/PG17-DOC-001\"}]'::jsonb) "
+        f"WHERE execution_id='{PARENT}' AND step_id='execute_profile';")
     sql(invocation("RUN-FUNCTIONAL-CANDIDATE-001",
                    "EXEC-SKILL-FUNCTIONAL-CANDIDATE-001",
                    patch=functional_patch))
