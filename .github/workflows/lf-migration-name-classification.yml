@@ -6,6 +6,8 @@ on:
       - "supabase/migrations/**/*.sql"
       - ".github/workflows/lf-migration-merge-train.yml"
       - ".github/workflows/lf-migration-name-classification.yml"
+      - "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4*"
+      - "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_*"
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_source_parity_ci_context.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/lf_migration_name_classification_check.py"
       - "sandbox/lf_contract_gate_test/migration_source_parity/test_migration_name_pre_apply.py"
