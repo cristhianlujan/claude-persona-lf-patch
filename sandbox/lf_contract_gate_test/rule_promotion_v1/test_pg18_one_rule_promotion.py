@@ -214,6 +214,22 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
     check("SOURCE_CHANGE_AFTER_JUDGE_INVALIDATES_RECEIPT",
       source_drift["DECISION"]["status"]=="APPROVED"
       and source_drift["APPLY"]["blocking_code"]=="PROMOTION_JUDGE_RECEIPT_NOT_CURRENT",source_drift)
+    tampered_receipt=run_case("NEG_JUDGE_RECEIPT_HASH_TAMPER",
+      after_decision="""UPDATE public.lf_rule_promotion_v1
+      SET judge_receipt_sha256=repeat('0',64)
+      WHERE promotion_id='PROM-TEST';""")
+    check("RECEIPT_HASH_TAMPERING_BLOCKS_APPLY",
+      tampered_receipt["DECISION"]["status"]=="APPROVED"
+      and tampered_receipt["APPLY"]["blocking_code"]=="PROMOTION_JUDGE_RECEIPT_NOT_CURRENT",
+      tampered_receipt)
+    policy_drift=run_case("NEG_POLICY_CHANGED_AFTER_JUDGE",
+      after_decision="""UPDATE lf_ops.politicas_seguridad SET policy_config=
+       jsonb_set(policy_config,'{deny_by_default}','false'::jsonb,true)
+       WHERE policy_code='SEC-AUTH';""")
+    check("POLICY_DRIFT_INVALIDATES_JUDGE_RECEIPT",
+      policy_drift["DECISION"]["status"]=="APPROVED"
+      and policy_drift["APPLY"]["blocking_code"]=="PROMOTION_JUDGE_RECEIPT_NOT_CURRENT",
+      policy_drift)
     stale=run_case("NEG_HASH_TAMPER",
       before_judge="UPDATE lf_ops.reglas SET descripcion='TAMPERED' WHERE codigo='RULE-TEST-001';")
     check("HASH_TAMPER_BLOCKED",
