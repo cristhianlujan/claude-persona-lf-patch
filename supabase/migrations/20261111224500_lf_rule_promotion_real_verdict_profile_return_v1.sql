@@ -155,7 +155,7 @@ GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_blind_verdict_pin_v1(text) TO
 
 -- Canonical readback uses server-read rule row, not an external flag.
 CREATE OR REPLACE FUNCTION public.lf_rule_promotion_rule_readback_v1(p_rule_code text)
- RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
+ RETURNS jsonb LANGUAGE sql VOLATILE SECURITY DEFINER
  SET search_path TO 'pg_catalog','public','extensions' AS $rb$
  SELECT jsonb_build_object('estado',r.estado,
   'rule_code',r.codigo,
@@ -619,8 +619,12 @@ BEGIN
  IF v_sha IS DISTINCT FROM p.rule_return_sha256
     OR rb->>'estado' IS DISTINCT FROM 'VIGENTE'
     OR rb->>'snapshot_sha256' IS DISTINCT FROM p.rule_return_payload->>'readback_snapshot_sha256'
-    OR public.lf_rule_promotion_blind_verdict_verify_v1(p_promotion_id)->>'status'
-        IS DISTINCT FROM 'REAL_VERDICT_ALLOW_VERIFIED'
+    OR p.rule_return_payload->>'blind_case_binding_sha256' IS DISTINCT FROM
+        p.l5_blind_case_binding_sha256
+    OR p.l5_blind_case_sha256 IS DISTINCT FROM encode(extensions.digest(
+        convert_to((p.ig_semantic_external_receipt->'l5_blind_case_verdict')::text,'UTF8'),'sha256'),'hex')
+    OR p.ig_semantic_external_receipt_sha256 IS DISTINCT FROM encode(extensions.digest(
+        convert_to(p.ig_semantic_external_receipt::text,'UTF8'),'sha256'),'hex')
  THEN RETURN jsonb_build_object('status','RETRY_REQUIRED',
    'blocking_code','RULE_PROMOTION_PROFILE_RETURN_READBACK_DRIFT'); END IF;
  RETURN p.rule_return_payload || jsonb_build_object(
