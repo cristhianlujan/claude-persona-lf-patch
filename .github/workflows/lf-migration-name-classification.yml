@@ -344,4 +344,6 @@ jobs:
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_native_semantic_gate_contract_v1.json
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_semantic_mutations_labeled_v1.json
             sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_adversarial_mutations_labeled_v1.json
+            docs/input-governance/L5_REAL_VERDICT_PROFILE_OWNER_RETURN_CONTRACT_V1.md
+            docs/input-governance/L5_ORPHAN_PROFILE_RUNS_READONLY_TRIAGE_V1.json
           if-no-files-found: error
