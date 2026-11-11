@@ -279,11 +279,18 @@ async function trustedSkillContext(
     // line declaring the governing asset, rather than a mere code occurrence.
     const ownerMatch = content.match(/(?:^|\n)\s*(?:[-*]\s*)?(ACT-[0-9]{4,})\s+is\s+the\s+governing\s+asset\b/i)
       ?? content.match(/(?:^|\n)\s*(?:[-*]\s*)?(?:source|governing)\s+authority\s*:\s*(ACT-[0-9]{4,})\b/i);
-    if (ownerMatch?.[1]?.toUpperCase() !== targetCode) {
+    // A previously registered candidate may have its *first* governed update:
+    // this exact declaration is NOT a runtime approval or historical ownership.
+    // SQL must separately prove unique current catalog path and the completed
+    // asset-registration Migration Merge Train; otherwise it fails closed.
+    const registeredCandidate = ownerMatch ? null : content.match(
+      /(?:^|\n)\s*\*\*Una skill registrable:\*\*\s*`([A-Z][A-Z0-9_-]{3,159})`\s*\.?\s*(?=\n|$)/i);
+    if ((ownerMatch ?? registeredCandidate)?.[1]?.toUpperCase() !== targetCode) {
       return { error: blocked("SKILL_UPDATE_OWNER_DECLARATION_MISMATCH", 409) };
     }
     githubOwner = { asset_code: targetCode, root_path: root,
-      readme_path: readmePath, readme_blob_sha: readmeSha, main_sha: mainSha };
+      readme_path: readmePath, readme_blob_sha: readmeSha, main_sha: mainSha,
+      ...(registeredCandidate ? { declaration_kind: "REGISTERED_CANDIDATE" } : {}) };
   }
   return { context: { main_sha: mainSha, target_blob_sha: blob, caller: { ...callerIdentity },
     ...(githubOwner ? { github_owner: githubOwner } : {}) } };

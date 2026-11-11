@@ -431,8 +431,8 @@ Deno.test("continuation: false clean count or unexpected step fails closed",asyn
 
 // --- skill invocation from a read-only profile through its own governed route ---
 const mainSha="c".repeat(40),blobSha="d".repeat(40),readmeSha="e".repeat(40);
-const gh:{fail:boolean;dir:boolean;ownerValid:boolean;ownerMissing:boolean}={
-  fail:false,dir:false,ownerValid:true,ownerMissing:false};
+const gh:{fail:boolean;dir:boolean;ownerValid:boolean;ownerMissing:boolean;registeredCandidate:boolean}={
+  fail:false,dir:false,ownerValid:true,ownerMissing:false,registeredCandidate:false};
 const ownerProof={asset_code:"ACT-0045",root_path:"skills/profile_creator",
   readme_path:"skills/profile_creator/README.md",readme_blob_sha:readmeSha,main_sha:mainSha};
 const callerId={method:"GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1",repository:repo,workflow_ref:oidc.workflow_ref,run_id:"100",workflow_sha:sha};
@@ -446,7 +446,9 @@ function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;
       if(url.includes("/git/ref/heads/main"))return new Response(JSON.stringify({object:{sha:mainSha}}),{status:200});
       if(url.includes("/contents/skills/") && url.includes("/README.md?ref=")){
         if(gh.ownerMissing)return new Response("{}",{status:404});
-        const line=gh.ownerValid?"- ACT-0045 is the governing asset for Profile Creator.":"- ACT-9999 is the governing asset.";
+        const line=gh.registeredCandidate
+          ? "**Una skill registrable:** `PROGRAMMING_ANALYSIS_LF`."
+          : gh.ownerValid?"- ACT-0045 is the governing asset for Profile Creator.":"- ACT-9999 is the governing asset.";
         return new Response(JSON.stringify({sha:readmeSha,type:"file",encoding:"base64",content:btoa(line)}),{status:200});
       }
       if(url.includes("/contents/"))return new Response(JSON.stringify(gh.dir?[{name:"a"}]:{sha:blobSha,type:"file"}),{status:200});
@@ -530,6 +532,30 @@ Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trus
     p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}}});
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
   eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/README.md?ref=")),true);
+});
+
+Deno.test("skill invoke: first registered candidate has typed owner provenance, not approval",async()=>{
+  gh.registeredCandidate=true;
+  try {
+    const input={target_code:"PROGRAMMING_ANALYSIS_LF",target_path:"skills/programming_analysis/SKILL.md"};
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
+    eq(out.status,200);
+    const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+    eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
+      p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,
+        github_owner:{asset_code:"PROGRAMMING_ANALYSIS_LF",
+          root_path:"skills/programming_analysis",
+          readme_path:"skills/programming_analysis/README.md",
+          readme_blob_sha:readmeSha,main_sha:mainSha,declaration_kind:"REGISTERED_CANDIDATE"}}}});
+    const forged=skillNetwork();
+    const denied=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:"SKILL_UPDATE_APPLY",
+      input:{...input,target_code:"PROGRAMMING_ANALYSIS_OTHER"}},config,forged.fetchFn,sha,callerId);
+    eq(denied.status,409);
+    eq(forged.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  } finally { gh.registeredCandidate=false; }
 });
 
 Deno.test("skill invoke: only SKILL_UPDATE_APPLY can resolve skills paths",async()=>{
