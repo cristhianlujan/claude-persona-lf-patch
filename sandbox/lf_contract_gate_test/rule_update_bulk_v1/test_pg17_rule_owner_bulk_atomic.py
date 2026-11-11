@@ -179,6 +179,23 @@ SET evidence_payload=jsonb_set(evidence_payload,
     '{scope_authority_packet_sha256}',to_jsonb('sha256:'||repeat('a',64)),true)
 WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
  AND step_id='input_validate';""")
+    # Mutating the contract guard must fail closed before DDL or any child.
+    sql("""UPDATE public.lf_operation_contracts
+SET allowed=jsonb_set(allowed,
+ '{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}',
+ '"UNVERIFIED_GUARD"'::jsonb,true)
+WHERE operation_code='ACTUALIZACION_REGLA_LF';""")
+    check("GUARD_CONTRACT_MUTATION_BLOCKS_ATOMIC_CUT",
+          "BLOCK_RULE_BULK_OWNER_GUARD_CONTRACT_MISMATCH" in call(True))
+    check("GUARD_BLOCK_HAS_NO_OWNER_COLUMN",
+          one("NOT EXISTS(SELECT 1 FROM information_schema.columns "
+              "WHERE table_schema='lf_ops' AND table_name='reglas' "
+              "AND column_name='owner_name')")=="t")
+    sql("""UPDATE public.lf_operation_contracts
+SET allowed=jsonb_set(allowed,
+ '{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}',
+ '"SUPER_ADMIN"'::jsonb,true)
+WHERE operation_code='ACTUALIZACION_REGLA_LF';""")
     sql("UPDATE lf_ops.reglas SET descripcion='UNAUTHORIZED' WHERE id=1000;")
     check("BLOCK_MATERIAL_DRIFT_SAME_CODES",
           "BLOCK_RULE_BULK_RULE_MATERIAL_PREIMAGE_DRIFT" in call(True))
