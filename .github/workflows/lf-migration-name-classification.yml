@@ -199,3 +199,39 @@ jobs:
           fi
       - name: Run existing child writer with synthetic judged parent (not independent judge)
         run: python3 sandbox/lf_contract_gate_test/rule_update_bulk_v1/test_pg17_rule_owner_bulk_atomic.py
+
+  rule-promotion-governed-pg18:
+    if: github.head_ref == 'lf/issue-3779-lote3-governed-rule-promotion-v1'
+    name: One rule | governed deterministic judge and existing promotion route PG18
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: "127.0.0.1"
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Ensure PostgreSQL client
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+      - name: Execute one-rule request/decide/apply, real currentness copy, negatives and ROLLBACK
+        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py
