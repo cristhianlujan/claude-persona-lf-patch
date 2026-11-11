@@ -4,6 +4,7 @@ PG18 fixture is NEVER an #3682 native receipt. No new production judge or IG.
 All case manipulations within ROLLBACK; no historical RUN touched.
 """
 import json
+import hashlib
 from pathlib import Path
 import test_pg18_lote5_real_verdict_profile_return as l5
 import test_pg18_lote4b_validator_reuse as base
@@ -24,6 +25,8 @@ def assert_case(name,condition,raw):
     print("PASS_L6_"+name,flush=True)
 
 def main():
+    fixture_sha256=hashlib.sha256(FIXTURE.read_bytes()).hexdigest()
+    print("RAW_L6_USER_VERDICT_FIXTURE_SHA256 "+fixture_sha256,flush=True)
     fixture=json.loads(FIXTURE.read_text(encoding="utf-8"))
     blind=json.loads(BLIND.read_text(encoding="utf-8"))
     key=json.loads(KEY.read_text(encoding="utf-8"))
@@ -164,6 +167,32 @@ def main():
       {"source":"L5_SYNTHETIC_POSITIVE_CONTROL_NOT_USER_REVIEW",
        "apply":control["APPLY"],"state":control["WITHIN_TX"],
        "user_case_promotion_attested":False})
+
+    triage_path=ROOT/"docs/input-governance/L6_RUNTIME_ORPHANS_21_AND_PROFILE3_READONLY_TRIAGE_V1.json"
+    triage=json.loads(triage_path.read_text(encoding="utf-8"))
+    runtime=triage["runtime_execution_rows"]
+    assert_case("READONLY_RUNTIME_21_DISCREPANCY_NEVER_COLLAPSE_TO_20",
+       len(runtime)==21
+       and triage["declared_by_auditor_runtime_count"]==20
+       and triage["live_actual_runtime_count"]==21
+       and triage["confirmed_active_leases"]==0
+       and triage["checkpoint_positive"]==0
+       and triage["no_mutations"] is True
+       and len({r["execution_id"] for r in runtime})==21,
+       {"auditor_reported":20,"live_readback":len(runtime),"active_leases":triage["confirmed_active_leases"],
+        "checkpoint_positive":triage["checkpoint_positive"],"no_mutations":triage["no_mutations"]})
+
+    early=triage["previous_three_profile_runs_reclassified"]
+    assert_case("THREE_EARLY_PROFILE_RUNS_NOT_PROVEN_STEP40_FAILURE",
+       len(early)==3
+       and all(r["step40_executed"] is False and int(r["last_step"])<40
+               and r["classification"]=="RECOVERY_REQUIRES_CONTEXT_VALIDATION_NOT_DISCARDABLE"
+               for r in early)
+       and {r["scope_target_type"] for r in early}=={"PANTALLA","REGLA","INPUT_GOVERNANCE"},
+       {"three": [{"id":r["execution_id"],"last_step":r["last_step"],
+                   "scope":r["scope_target_type"],"classification":r["classification"]}
+                  for r in early],
+        "step40_causality":"UNVERIFIED_NO_STEP40_INVOCATION"})
 
     print("LF_L6_UNCITED_USER_VERDICT_FIXTURE_PG18_PASS checks="+str(N),flush=True)
     print("CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT=true REAL_CITATIONS=UNVERIFIED_NOT_CAPTURED",flush=True)
