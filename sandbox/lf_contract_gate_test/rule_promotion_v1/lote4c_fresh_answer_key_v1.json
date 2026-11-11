@@ -1,0 +1,1573 @@
+{
+  "schema_version": "LF_L4C_PRIVATE_ANSWER_KEY_V1",
+  "visibility": "EVALUATION_OPERATOR_ONLY_NOT_FOR_REVIEWERS",
+  "source_basis": "OBJECTIVE_BY_CONSTRUCTION_WITH_SEMANTIC_QA_PENDING",
+  "expected_case_count": 154,
+  "acceptance": {
+    "defects_per_family_min": 10,
+    "healthy_min": 20,
+    "min_repetitions": 5,
+    "max_verdict_variations": 0,
+    "min_detection_rate_per_family": 1,
+    "max_false_positives": 0
+  },
+  "cases": [
+    {
+      "id": "K00A10207",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A24138",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_09",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A38069",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_07",
+      "base_code": "REG_RATE_002",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K00A4BF9A",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_08",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A5FECB",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_05",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A73DFC",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A87D2D",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00A9BC5E",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_10",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00AAFB8F",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_06",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00AC3AC0",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_06",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00AD79F1",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-001_1",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00AEB922",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00AFF853",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_01",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B13784",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_04",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B276B5",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B3B5E6",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_04",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B4F517",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B63448",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_08",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B77379",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_10",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B8B2AA",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00B9F1DB",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_10",
+      "base_code": "REG_SEG_003",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K00BB310C",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00BC703D",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_09",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00BDAF6E",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00BEEE9F",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_07",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C02DD0",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_05",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C16D01",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C2AC32",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_10",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C3EB63",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_003_4",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00C52A94",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-002_1",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00C669C5",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C7A8F6",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_10",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00C8E827",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_RATE_002_4",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00CA2758",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_08",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00CB6689",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_02",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00CCA5BA",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_03",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00CDE4EB",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_02",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00CF241C",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-002_2",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00D0634D",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_10",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D1A27E",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_10",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D2E1AF",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_05",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D420E0",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_04",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D56011",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_05",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K00D69F42",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_06",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D7DE73",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_03",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00D91DA4",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00DA5CD5",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-001_2",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00DB9C06",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_08",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00DCDB37",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_03",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00DE1A68",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-001_3",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00DF5999",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_02",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00E098CA",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_06",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K00E1D7FB",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_003_3",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00E3172C",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SES_003_4",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00E4565D",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00E5958E",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_10",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00E6D4BF",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_RATE_002_2",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00E813F0",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_004_1",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00E95321",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_06",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00EA9252",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_09",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00EBD183",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_10",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00ED10B4",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00EE4FE5",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_03",
+      "base_code": "REG_SEG_004",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K00EF8F16",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_05",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F0CE47",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_003_1",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00F20D78",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_09",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F34CA9",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-002_4",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00F48BDA",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_04",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F5CB0B",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_09",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F70A3C",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_03",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F8496D",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_04",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00F9889E",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00FAC7CF",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_003_2",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00FC0700",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_RATE_002_1",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K00FD4631",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_08",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00FE8562",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K00FFC493",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_06",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010103C4",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_05",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010242F5",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_08",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01038226",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0104C157",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_09",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01060088",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01073FB9",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_06",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01087EEA",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_10",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0109BE1B",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_04",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010AFD4C",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_05",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010C3C7D",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_04",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010D7BAE",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_09",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010EBADF",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_09",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K010FFA10",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SES_003_3",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K01113941",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_07",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01127872",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0113B7A3",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_004_4",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0114F6D4",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_07",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01163605",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_004_2",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K01177536",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_10",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0118B467",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0119F398",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_10",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K011B32C9",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_08",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K011C71FA",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_04",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K011DB12B",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K011EF05C",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_06",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01202F8D",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_08",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01216EBE",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_08",
+      "base_code": "REG_SES_003",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K0122ADEF",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_05",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0123ED20",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_06",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01252C51",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_08",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01266B82",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0127AAB3",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_04",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0128E9E4",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K012A2915",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_02",
+      "base_code": "REG_SES_003",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K012B6846",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-002_3",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K012CA777",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_04",
+      "base_code": "REG_SEG_003",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K012DE6A8",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_08",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K012F25D9",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SEG_004_3",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0130650A",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_RATE_002_3",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0131A43B",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_03",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0132E36C",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SES_003_1",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0134229D",
+      "expected": "BLOCK",
+      "family": "CONDITION_REMOVED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "CONDITION_REMOVED_03",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013561CE",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_09",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0136A0FF",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_B2B-RULE-AUTH-001_4",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0137E030",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_09",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01391F61",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_01",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013A5E92",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_09",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013B9DC3",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_04",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013CDCF4",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_05",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013E1C25",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_05",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K013F5B56",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01409A87",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_09",
+      "base_code": "REG_SEG_004",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K0141D9B8",
+      "expected": "BLOCK",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PARAPHRASED_SECURITY_CONFLICT_06",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014318E9",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_06",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0144581A",
+      "expected": "ALLOW",
+      "family": "HEALTHY_CONTROL",
+      "provenance": "CONTROL_PRESERVING_PARAPHRASE",
+      "mutation_index": "HEALTHY_REG_SES_003_2",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "All baseline scope, exceptions, thresholds, contexts retained; configuration unchanged"
+    },
+    {
+      "id": "K0145974B",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_01",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0146D67C",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_05",
+      "base_code": "REG_SEG_004",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014815AD",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_04",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014954DE",
+      "expected": "BLOCK",
+      "family": "EXPLICIT_KNOWN_SECURITY",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXPLICIT_KNOWN_SECURITY_06",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014A940F",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_02",
+      "base_code": "REG_RATE_002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014BD340",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_10",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014D1271",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_05",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K014E51A2",
+      "expected": "BLOCK",
+      "family": "SEMANTIC_DUPLICATE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SEMANTIC_DUPLICATE_01",
+      "base_code": "REG_RATE_002",
+      "operation": "CREATE",
+      "rationale": "New rule duplicates already-current rule in same scope"
+    },
+    {
+      "id": "K014F90D3",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_03",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0150D004",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_08",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01520F35",
+      "expected": "BLOCK",
+      "family": "THRESHOLD_CHANGED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "THRESHOLD_CHANGED_09",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01534E66",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01548D97",
+      "expected": "BLOCK",
+      "family": "SCOPE_WIDENED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "SCOPE_WIDENED_02",
+      "base_code": "B2B-RULE-AUTH-002",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K0155CCC8",
+      "expected": "BLOCK",
+      "family": "UNKNOWN_BYPASS",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "UNKNOWN_BYPASS_05",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01570BF9",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_PROMPT_INJECTION_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01584B2A",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_OBFUSCATION_04",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K01598A5B",
+      "expected": "BLOCK",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "ADVERSARIAL_SPLIT_RULE_07",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K015AC98C",
+      "expected": "BLOCK",
+      "family": "EXCEPTION_CANCELLATION",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "EXCEPTION_CANCELLATION_06",
+      "base_code": "REG_SES_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K015C08BD",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_07",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K015D47EE",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_07",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K015E871F",
+      "expected": "BLOCK",
+      "family": "NEGATION_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "NEGATION_INVERTED_02",
+      "base_code": "REG_SEG_003",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    },
+    {
+      "id": "K015FC650",
+      "expected": "BLOCK",
+      "family": "PRECEDENCE_INVERTED",
+      "provenance": "INJECTED_KNOWN_DEFECT",
+      "mutation_index": "PRECEDENCE_INVERTED_08",
+      "base_code": "B2B-RULE-AUTH-001",
+      "operation": "MODIFY",
+      "rationale": "Controlled malicious mutation, never a policy instruction"
+    }
+  ],
+  "blind_integrity_fingerprint_fnv32": "13ab94b3",
+  "family_totals": {
+    "ADVERSARIAL_OBFUSCATION": 10,
+    "PRECEDENCE_INVERTED": 10,
+    "SEMANTIC_DUPLICATE": 10,
+    "PARAPHRASED_SECURITY_CONFLICT": 10,
+    "UNKNOWN_BYPASS": 10,
+    "EXCEPTION_CANCELLATION": 10,
+    "THRESHOLD_CHANGED": 10,
+    "ADVERSARIAL_SPLIT_RULE": 10,
+    "HEALTHY_CONTROL": 24,
+    "SCOPE_WIDENED": 10,
+    "NEGATION_INVERTED": 10,
+    "CONDITION_REMOVED": 10,
+    "EXPLICIT_KNOWN_SECURITY": 10,
+    "ADVERSARIAL_PROMPT_INJECTION": 10
+  }
+}
