@@ -38,7 +38,8 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
              grant=True,bad_quote=False,policy_drift=False,
              tamper_owner_hash=False,synthetic_owner=False,
              synthetic_parent=False,missing_owner_run=False,
-             same_execution=False,auth_only=False,ekb_active=False):
+             same_execution=False,auth_only=False,ekb_active=False,
+             extra_after_bind="",extra_before_apply="",extra_after_apply=""):
     quote="UNTRUSTED_FABRICATED_QUOTE_XYZ" if bad_quote else "Test baseline"
     owner_run="EXEC-PARENT-TEST-001" if same_execution else "EXEC-OWNER-L4D-001"
     actor_rows=""
@@ -109,6 +110,7 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
       VALUES('RULE-TEST-001',{base.lit(owner_profile)},
        public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'source_decision_sha256','ACTIVE');
     {drift}
+    {extra_after_bind}
     {"UPDATE public.lf_error_knowledge SET estado='ACTIVE' WHERE codigo='PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001';" if ekb_active else ""}
     SELECT 'PRE|'||public.lf_rule_promotion_governed_decide_v1(
        'PROM-TEST','LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1')::text;
@@ -116,7 +118,9 @@ def run_case(verdict="PERMITIR",owner_profile="PERFIL-OWNER-RULE-LF",
     SELECT 'OWNER_APPROVAL|'||public.lf_rule_promotion_profile_approve_v1(
       'PROM-TEST',{base.lit(owner_run)})::text;
     {tamper}
+    {extra_before_apply}
     SELECT 'APPLY|'||public.lf_rule_promotion_apply_v1('PROM-TEST')::text;
+    {extra_after_apply}
     SELECT 'WITHIN_TX|'||jsonb_build_object(
        'candidate_state',(SELECT estado FROM lf_ops.reglas WHERE codigo='RULE-TEST-001'),
        'promotion_state',(SELECT status FROM public.lf_rule_promotion_v1 WHERE promotion_id='PROM-TEST'),
