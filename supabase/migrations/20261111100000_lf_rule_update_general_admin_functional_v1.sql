@@ -158,7 +158,8 @@ BEGIN
     'operation_code','ACTUALIZACION_REGLA_LF','execution_id',p_execution_id,
     'before',to_jsonb(v_before),'after',to_jsonb(v_after),
     'source_snapshot_sha256',v_before_sha,'result_snapshot_sha256',v_after_sha);
-END $lf_admin$;
+END;
+$lf_admin$;
 
 REVOKE ALL ON FUNCTION
  public.lf_regla_admin_governed_write_v1(text,text,text,jsonb)
