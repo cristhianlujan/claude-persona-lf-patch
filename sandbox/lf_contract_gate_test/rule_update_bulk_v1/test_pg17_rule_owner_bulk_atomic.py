@@ -241,7 +241,7 @@ WHERE operation_code='ACTUALIZACION_REGLA_LF';""")
     sql("""UPDATE public.lf_operation_execution_steps SET
       evidence_payload=jsonb_set(evidence_payload,
        '{input_governance,catalog_md5}', (
-          SELECT to_jsonb(md5(string_agg(id::text||':'||codigo,E'\\n'
+          SELECT to_jsonb(md5(string_agg(id::text||':'||codigo,E'\n'
             ORDER BY id))) FROM lf_ops.reglas),true)
       WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
         AND step_id='input_validate';""")
