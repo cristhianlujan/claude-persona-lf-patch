@@ -22,6 +22,7 @@ SEED = ROOT / "sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_pg
 MIGRATION = ROOT / "supabase/migrations/20261109092529_lf_profile_rule_update_child_execution_v1.sql"
 HISTORY = ROOT / "supabase/migrations/20261111080000_lf_rule_update_history_evidence_v1.sql"
 GENERAL = ROOT / "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql"
+CONTRACT_FIXTURE = ROOT / "sandbox/lf_contract_gate_test/rule_update_general_v1/lf_rule_operation_contract_pg17_fixture.sql"
 
 
 def sql(script: str, *, expect_fail: bool = False) -> str:
@@ -93,7 +94,7 @@ def expect_block(run: str, code: str, *, patch: dict | None = None,
 
 
 def main() -> None:
-    for f in (FIXTURE, SEED, MIGRATION, HISTORY, GENERAL):
+    for f in (FIXTURE, SEED, MIGRATION, HISTORY, CONTRACT_FIXTURE, GENERAL):
         verify("SOURCE_FILE_EXISTS_" + f.stem.upper(), f.is_file())
     sql(FIXTURE.read_text(encoding="utf-8"))
     expected = {
@@ -116,11 +117,42 @@ def main() -> None:
             "'public.lf_skill_o_rule_update_v1(text,jsonb,text,text,text)'"
             "::regprocedure))")=="dc97a0e7c65b65ae1951e2da86c6238b")
     sql(HISTORY.read_text(encoding="utf-8"))
+    sql(CONTRACT_FIXTURE.read_text(encoding="utf-8"))
     # A governed Product Director parent is installed by the synthetic seed.
     # The mode migration requires its exact real-in-database execution id,
     # never a synthetic ID hardcoded inside the production migration.
     sql("SET lf.rule_update_governance_execution_id = '"+PARENT+"';\n"
         +GENERAL.read_text(encoding="utf-8"))
+    # Contract is conditional for ADMINISTRATIVE_ONLY only; legacy default
+    # candidate and direct-VIGENTE/functional guardrails must survive.
+    override=json.loads(sql("SELECT allowed#>>'{mode_overrides,ADMINISTRATIVE_ONLY}' "
+                            "FROM public.lf_operation_contracts "
+                            "WHERE operation_code='ACTUALIZACION_REGLA_LF'"))
+    verify("ADMIN_CONTRACT_EXACT_MODE_SCOPED",
+           override["mode"]=="ADMINISTRATIVE_ONLY"
+           and override["operation_code"]=="ACTUALIZACION_REGLA_LF"
+           and override["skill_code"]=="RULE_UPDATE_APPLY"
+           and override["parent_profile"]=="PERFIL-PRODUCT-DIRECTOR-LF"
+           and override["allowed_states"]==["CANDIDATO","VIGENTE"]
+           and override["allowed_fields"]==["created_by","owner_name"]
+           and override["legacy_state_gate_override_only_this_mode"] is True)
+    verify("ADMIN_CONTRACT_STATE_AND_HISTORY_REQUIRED",
+           override["preserve_existing_state"] is True
+           and override["governed_child_required"] is True
+           and override["judge_step70_clean_required"] is True
+           and "immutable_history" in override["after_write"]
+           and override["no_promotion"] is True)
+    verify("ADMIN_CONTRACT_LEGACY_CANDIDATE_AND_VIGENTE_BLOCK",
+           sql("SELECT (allowed->>'write_state'='CANDIDATO' "
+               "AND blocked->>'vigente_direct_update'='true' "
+               "AND blocked->>'vigente_functional_change'='true' "
+               "AND blocked->>'production_promotion'='true' "
+               "AND required_after_write ? 'estado_CANDIDATO')::text "
+               "FROM public.lf_operation_contracts "
+               "WHERE operation_code='ACTUALIZACION_REGLA_LF'")=="t")
+    verify("ADMIN_CONTRACT_PARENT_GOVERNED_TRACE",
+           sql("SELECT updated_by_execution_id FROM public.lf_operation_contracts "
+               "WHERE operation_code='ACTUALIZACION_REGLA_LF'")==PARENT)
     verify("GENERAL_METADATA_MODE_BOUND",
            sql("SELECT destination_kind FROM public.lf_operation_mode_bindings "
                "WHERE operation_code='ACTUALIZACION_REGLA_LF' AND "
