@@ -3,7 +3,6 @@
   "paths": {
     ".github/workflows/lf-migration-name-classification.yml": "WORKFLOW",
     "sandbox/lf_contract_gate_test/changesets/lf-rule-update-general-3779.json": "CHANGESET_MANIFEST",
-    "sandbox/lf_contract_gate_test/rule_update_general_v1/opener_candidate.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_update_general_v1/test_pg17_rule_general_update.py": "ENGINEERING_CHECKPOINTS",
     "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql": "MIGRATION"
   }
