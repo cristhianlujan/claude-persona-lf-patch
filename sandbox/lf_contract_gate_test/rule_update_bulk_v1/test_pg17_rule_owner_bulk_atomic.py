@@ -163,7 +163,7 @@ UPDATE public.lf_operation_execution_steps st SET
  'status','READY','scope_type','REGLA','scope_mode','ALL_CANONICAL_RULES',
  'source_scope_validated',true,'rule_count',578,
  'screen_not_current_count',0,'inactive_only_rule_count',0,
- 'catalog_md5',(SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\\n'
+ 'catalog_md5',(SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\n'
  ORDER BY r.id)) FROM lf_ops.reglas r)) ),true)
 WHERE st.execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
   AND st.step_id='input_validate';
