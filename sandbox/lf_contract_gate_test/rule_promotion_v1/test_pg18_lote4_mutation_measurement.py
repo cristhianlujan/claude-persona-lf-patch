@@ -11,6 +11,7 @@ DATABASE="lf_3779_l4_mutation_measure_pg18"
 MIG=ROOT/"supabase/migrations/20261111182000_lf_rule_promotion_deterministic_judge_governed_v1.sql"
 DATA=HERE/"lote4_semantic_mutations_labeled_v1.json"
 SIGNALS=HERE/"lote4_real_conflict_signals_v1.json"
+ADVERSARIAL=HERE/"lote4_adversarial_mutations_labeled_v1.json"
 OUT=HERE/"lote4_deterministic_measurement_runtime.json"
 def sql(source,db=DATABASE):
     env={**os.environ,**{"PGHOST":"127.0.0.1","PGPORT":"5432","PGUSER":"postgres","PGPASSWORD":"postgres"}}
@@ -23,8 +24,14 @@ def run_row(case,base):
     cfg={"source_decision_number":101,"security_policy_code":"SEC-AUTH",
          "deny_by_default":True,"depends_on_rules":["RULE-DEPENDENCY-001"]}
     cfg.update(case["config_patch"])
+    related = ""
+    if case.get("related_rule_description"):
+        related = ("UPDATE lf_ops.reglas SET descripcion="+
+          lit(case["related_rule_description"])+
+          " WHERE codigo='RULE-DEPENDENCY-001';")
     command="""
 BEGIN;
+"""+related+"""
 UPDATE lf_ops.reglas SET titulo=%s,descripcion=%s,valor_config=%s::jsonb
  WHERE codigo='RULE-TEST-001';
 UPDATE public.lf_operation_execution_steps
@@ -51,11 +58,13 @@ SELECT 'READBACK|'||jsonb_build_object(
 def main():
     dataset=json.loads(DATA.read_text())
     signals=json.loads(SIGNALS.read_text())
+    adversarial=json.loads(ADVERSARIAL.read_text())
     assert dataset["schema_version"]=="LF_L4_INJECTED_MUTATIONS_V1"
     assert len(dataset["cases"])==27
     assert len(signals["cases"])==9
+    assert len(adversarial["cases"])==6
     bases={x["codigo"]:x for x in dataset["baselines"]}
-    for x in dataset["cases"]:
+    for x in (dataset["cases"]+adversarial["cases"]):
         if x["base_code"] not in bases:raise AssertionError("BASE_ABSENT "+x["base_code"])
         if x["label"] not in ("ALLOW","BLOCK"):raise AssertionError("TRUTH_INVALID")
     sql("CREATE DATABASE "+DATABASE+";",db="postgres")
@@ -65,7 +74,7 @@ def main():
     sql(MIG.read_text())
     initial=sql("SELECT md5(pg_get_functiondef('public.lf_rule_promotion_quality_judge_v1(text)'::regprocedure));")
     rows=[]
-    for case in dataset["cases"]:
+    for case in (dataset["cases"]+adversarial["cases"]):
         out=run_row(case,bases[case["base_code"]])
         judge=out["JUDGE"]
         blocked=judge["classification"]=="BLOCKED"
@@ -92,12 +101,27 @@ def main():
             "true_negative":sum(not x["expected_defect"] and not x["detected"] for x in rr)}
         summaries[f]=sums
         print("RAW_FAMILY "+f+" "+json.dumps(sums,sort_keys=True),flush=True)
-    totals={"cases":len(rows),
+    totals={"cases":len(rows),"core_cases":len(dataset["cases"]),
+        "adversarial_cases":len(adversarial["cases"]),
         "defects":sum(x["expected_defect"] for x in rows),
         "detected":sum(x["expected_defect"] and x["detected"] for x in rows),
         "false_negatives":sum(x["false_negative"] for x in rows),
         "healthy":sum(not x["expected_defect"] for x in rows),
         "false_positives":sum(x["false_positive"] for x in rows)}
+    # Repeated identical SQL snapshots measure DETERMINISTIC stability only.
+    # A native LLM is NOT invoked here; its N-run stability is UNVERIFIED.
+    stability=[]
+    for stability_case in (dataset["cases"][0],dataset["cases"][-1]):
+        repeated=[]
+        for ix in range(5):
+            v=run_row(stability_case,bases[stability_case["base_code"]])["JUDGE"]
+            repeated.append({"classification":v["classification"],
+                              "blocking_codes":v["blocking_codes"]})
+        varied=len({json.dumps(x,sort_keys=True) for x in repeated})-1
+        stability.append({"id":stability_case["id"],"N":5,
+                          "variations":varied,"raw":repeated,
+                          "mode":"DETERMINISTIC_SQL_NOT_NATIVE_MODEL"})
+        print("RAW_STABILITY "+json.dumps(stability[-1],sort_keys=True),flush=True)
     # Real signals: state/status is objective. Normative contradiction is NOT
     # objectively established where scopes differ or policy is only candidate.
     real=[{"id":x["id"],"family":x["family"],
@@ -111,10 +135,13 @@ def main():
             "truth":"INJECTED_KNOWN_DEFECT/HEALTHY_CONTROL",
             "totals":totals,"families":summaries,"raw":rows,
             "source_grounded_real_signals":real,
+            "deterministic_stability":stability,
+            "native_model_stability":{"status":"NOT_TESTED","N":0},
             "limitations":["Does not assess semantic contradictions in real production DB",
              "One synthetic candidate wrapper; real descriptions read-only from live",
              "Unknown real-case applicability is not counted as a false negative",
-             "No native model was called by CI"] }
+             "No native model was called by CI",
+             "Related-rule split tests operate on synthetic support rule"] }
     OUT.write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n")
     print("RAW_TOTALS "+json.dumps(totals,sort_keys=True),flush=True)
     print("LF_L4_DETERMINISTIC_MEASUREMENT_COMPLETE "+str(len(rows))+" cases; NOT a reliability PASS",flush=True)
