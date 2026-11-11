@@ -7,10 +7,7 @@ BEGIN
   'public.lf_profile_execution_input_validate_v1(text,text,text,jsonb)'::regprocedure))
     IS DISTINCT FROM '9293aa23cb29f3bb984a37799b6e5ff3'
  THEN RAISE EXCEPTION 'BLOCK_PROFILE_RULE_SCOPE_STEP40_LIVE_MD5_DRIFT'; END IF;
- IF md5(pg_get_functiondef(
-  'public.lf_skill_o_rule_update_v1(text,jsonb,text,text,text)'::regprocedure))
-    IS DISTINCT FROM 'dc97a0e7c65b65ae1951e2da86c6238b'
- THEN RAISE EXCEPTION 'BLOCK_PROFILE_RULE_SCOPE_ORIGINAL_WRITER_MD5_DRIFT'; END IF;
+ -- Writer source is separately pinned and patched by preceding #3787 migration.
 END $check_live$;
 -- Read-only internal extension of the existing profile IG dependency.
 -- Calls the EXACT existing per-screen IG; it is not a second IG entrypoint.
