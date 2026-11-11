@@ -47,7 +47,7 @@ def parse_lines(out):
         rows[key]=val
     return rows
 
-def run_case(name, setup="", before_judge="", after_apply="", decide_actor="LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1", apply=True):
+def run_case(name, setup="", before_judge="", after_decision="", after_apply="", decide_actor="LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1", apply=True):
     statement = """
 BEGIN;
 """ + setup + """
@@ -56,7 +56,7 @@ SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1(
 """ + before_judge + """
 SELECT 'DECISION|'||public.lf_rule_promotion_governed_decide_v1(
  'PROM-TEST','""" + decide_actor + """')::text;
-""" + ("""
+""" + after_decision + ("""
 SELECT 'APPLY|'||public.lf_rule_promotion_apply_v1('PROM-TEST')::text;
 """ if apply else "") + after_apply + """
 SELECT 'PROMOTION|'||to_jsonb(p)::text FROM public.lf_rule_promotion_v1 p WHERE promotion_id='PROM-TEST';
@@ -110,7 +110,18 @@ def main():
     print("RAW_MD5_NEW_DECIDER "+governed_md5,flush=True)
     check("NEW_JUDGE_AND_DECIDER_SOURCE_HASHED",len(judge_md5)==len(governed_md5)==32)
 
-    positive=run_case("ONE_RULE_POSITIVE",after_apply="""
+    positive=run_case("ONE_RULE_POSITIVE",after_decision="""
+SELECT 'SAME_HASH_PRE_APPLY|'||((
+ SELECT request_snapshot_sha256 FROM public.lf_rule_promotion_v1
+ WHERE promotion_id='PROM-TEST')
+ =public.lf_asset_snapshot_sha_v1('REGLA','RULE-TEST-001'))::text;
+SELECT 'REPLAY_SAME_HASH_DECIDE|'||
+ public.lf_rule_promotion_governed_decide_v1('PROM-TEST',
+  'LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1')::text;
+SELECT 'REPLAY_SAME_HASH_REQUEST|'||
+ public.lf_rule_promotion_request_v1('EXEC-PARENT-TEST-001',
+  'RULE-TEST-001','same parent and unchanged snapshot')::text;
+""",after_apply="""
 SELECT 'CURRENTNESS_POST_APPLY|'||programacion.fn_input_run_source_currentness_v1(1101)::text;
 INSERT INTO programacion.input_readiness_runs(
  id,version_id,pantalla_id,status,contract_version,contract_revision,
@@ -144,7 +155,10 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
       positive["CURRENTNESS_SUCCESSOR"]["source_current"] is True,
       positive["CURRENTNESS_SUCCESSOR"])
     check("SAME_RUN_SAME_HASH_REPLAY_BLOCKED",
-      positive["REPLAY_DECIDE"]["blocking_code"]=="PROMOTION_NOT_PENDING"
+      positive["SAME_HASH_PRE_APPLY"]=="true"
+      and positive["REPLAY_SAME_HASH_DECIDE"]["blocking_code"]=="PROMOTION_NOT_PENDING"
+      and positive["REPLAY_SAME_HASH_REQUEST"]["blocking_code"]=="PROMOTION_ALREADY_OPEN"
+      and positive["REPLAY_DECIDE"]["blocking_code"]=="PROMOTION_NOT_PENDING"
       and positive["REPLAY_APPLY"]["blocking_code"]=="PROMOTION_NOT_APPROVED"
       and positive["REPLAY_REQUEST"]["blocking_code"]=="RULE_NOT_CANDIDATE",
       positive)
@@ -153,6 +167,13 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
     check("DEPENDENCY_CANDIDATE_BLOCKED",
       "RULE_DEPENDENCY_NOT_VIGENTE" in dep["DECISION"]["blocking_codes"]
       and dep["APPLY"]["status"]=="BLOCKED",dep)
+    inverse=run_case("NEG_VIGENTE_DEPENDS_ON_CANDIDATO",
+      setup="""UPDATE lf_ops.reglas SET valor_config=
+        '{"depends_on_rules":["RULE-TEST-001"],"source_decision_number":99}'::jsonb
+      WHERE codigo='RULE-DEPENDENCY-001';""")
+    check("VIGENTE_TO_CANDIDATO_DEPENDENCY_BLOCKED",
+      "VIGENTE_DEPENDS_ON_CANDIDATO" in inverse["DECISION"]["blocking_codes"]
+      and inverse["APPLY"]["status"]=="BLOCKED",inverse)
     security=run_case("NEG_SECURITY_POLICY_CONFLICT",
       setup="""UPDATE lf_ops.reglas SET valor_config=
       jsonb_set(valor_config,'{deny_by_default}','false'::jsonb,true)
@@ -172,6 +193,20 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
     check("OWNER_ABSENT_BLOCKED",
       "FUNCTIONAL_OWNER_MISSING_OR_WRONG" in owner["DECISION"]["blocking_codes"]
       and owner["APPLY"]["status"]=="BLOCKED",owner)
+    source=run_case("NEG_CANONICAL_PROVENANCE_NOT_APPROVED",
+      setup="""UPDATE lf_ops.reglas SET valor_config=
+       jsonb_set(valor_config,'{source_decision_number}','999'::jsonb,true)
+       WHERE codigo='RULE-TEST-001';"""+update_step40_sha())
+    check("CANONICAL_PROVENANCE_MISSING_BLOCKED",
+      "CANONICAL_DECISION_SOURCE_NOT_APPROVED" in source["DECISION"]["blocking_codes"]
+      and source["APPLY"]["status"]=="BLOCKED",source)
+    source_drift=run_case("NEG_CANONICAL_SOURCE_CHANGED_AFTER_JUDGE",
+      after_decision="""UPDATE public.lf_decisiones_gov SET raw_payload=
+       jsonb_set(raw_payload,'{source}','"CHANGED_AFTER_DECISION"'::jsonb,true)
+       WHERE decision_number=101;""")
+    check("SOURCE_CHANGE_AFTER_JUDGE_INVALIDATES_RECEIPT",
+      source_drift["DECISION"]["status"]=="APPROVED"
+      and source_drift["APPLY"]["blocking_code"]=="PROMOTION_JUDGE_RECEIPT_NOT_CURRENT",source_drift)
     stale=run_case("NEG_HASH_TAMPER",
       before_judge="UPDATE lf_ops.reglas SET descripcion='TAMPERED' WHERE codigo='RULE-TEST-001';")
     check("HASH_TAMPER_BLOCKED",
@@ -182,9 +217,9 @@ SELECT 'REPLAY_REQUEST|'||public.lf_rule_promotion_request_v1(
       self_decider["DECISION"]["blocking_code"]=="DECIDER_NOT_SEPARATE_FROM_REQUESTER"
       and self_decider["APPLY"]["status"]=="BLOCKED",self_decider)
     human=run_case("NEG_HUMAN_AUTHORITY_UNVERIFIED",
-      setup="""UPDATE lf_ops.reglas SET valor_config=jsonb_set(
-       valor_config,'{authority_required}','"HUMAN"'::jsonb,true)
-       WHERE codigo='RULE-TEST-001';"""+update_step40_sha(),
+      setup="""UPDATE public.lf_decisiones_gov SET raw_payload=jsonb_set(
+       raw_payload,'{authority_class}','"HUMAN_ONLY"'::jsonb,true)
+       WHERE decision_number=101;""",
       after_apply="""SELECT 'HUMAN_TEXT_DECIDE|'||
        public.lf_rule_promotion_decide_v1('PROM-TEST','APPROVE',
        'HUMAN:CLAIM_ONLY','unverified')::text;""")
