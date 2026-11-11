@@ -1,0 +1,121 @@
+{
+  "schema_version": "IG_M1013_CP3_LEGACY_CONTRACT_RECONCILIATION_V1",
+  "scope": {
+    "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit": "M10.13",
+    "checkpoint": "ZERO_LEGACY_CALLERS",
+    "function_1_of_3": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+    "consumer": "programacion.fn_input_run_semantic_revalidation_v1(bigint)"
+  },
+  "source_authority": {
+    "official_doc": "https://docs.google.com/document/d/1nUFk29HhCl_kCg-W-bwkpyLuwx9gURQNJAGKhhgerTk/edit",
+    "official_doc_revision_read": "AHj4eMSvi3hd6laS04thW8b-C3MNKmsXqp-UazHKDpQOp32BVz3RPAjEzgJAhJ1hBz65mqBm7CW3w-6wOLzwrOOm-icLxp8RYSW4cr-BNm8",
+    "checkpoint_text": "0 callers legacy (re-ejecución del inventario M10.9)",
+    "retirement_contract": "sandbox/lf_contract_gate_test/transversal_assets/asset_retirement_governance/asset_retirement_contract_v1.json",
+    "retirement_contract_blob_sha": "3bff326fd740f1d5e1b04592eaff96e0119ae019",
+    "ekb": [
+      "GOV-ASSET-RETIREMENT-GOVERNANCE-V1-001",
+      "IG-M1011-HISTORICAL-UNREFERENCED-LIVE-SQL-CALLER-001",
+      "IG-M104-LEGACY-ACTIVE-FREEZE-SCOPE-001"
+    ]
+  },
+  "observations": {
+    "live_schema": "programacion",
+    "target_prosrc_md5": "7257b9bbc86b1f61e5435a37479d63a1",
+    "consumer_prosrc_md5": "44a7f21a3c01411662ab568af58c4091",
+    "target_direct_sql_callers": [
+      "programacion.fn_input_run_semantic_revalidation_v1(bigint)"
+    ],
+    "consumer_direct_sql_callers": [],
+    "target_outbound_call_count": 5,
+    "consumer_outbound_call_count": 5,
+    "source_frozen_by_m104": true,
+    "live_ig_entrypoints_static_reachability_to_target": false,
+    "live_ig_entrypoints_static_reachability_to_consumer": false,
+    "legacy_consumer_task": "Check source currentness and compare stored classifier hashes / semantic subject and security threat coverage",
+    "complete_equivalent_successor_proven": false,
+    "runtime_invocation_counter": "NOT_AVAILABLE_track_functions_none",
+    "external_consumers_absence": "NOT_PROVEN",
+    "stale_PR_possible": "#3126 open DRAFT, not reviewed for full resurrection here",
+    "cp3_readback": "PENDING"
+  },
+  "contract_reconciliation": {
+    "literal_zero_legacy_sql_callers_met": false,
+    "zero_operational_paths_static_component_met": true,
+    "historical_only_currently_eligible": false,
+    "reason": "The retirement contract permits non-operational references in EKB/immutable receipts/negative guards; live executable SQL calling a legacy function is not an archival-only reference. Zero static operational reachability does not override the literal CP3 no-callers requirement.",
+    "recommended_class": "DORMANT_EXECUTABLE_LEGACY_PAIR_PENDING_GOVERNED_RETIREMENT",
+    "decision": "BLOCK_CLOSURE_REQUIRES_RETIREMENT_LIFECYCLE",
+    "new_rule_or_exception_adopted": false
+  },
+  "negative_tests": {
+    "read_only": true,
+    "executed_on_live_pgproc": true,
+    "results": [
+      {
+        "scenario": "CURRENT",
+        "executable_callers": 1,
+        "permitted_archival_mentions": 1,
+        "frozen_hash_matches": true,
+        "verdict": "BLOCK_SQL_CALLER_PRESENT",
+        "expected_test_pass": true
+      },
+      {
+        "scenario": "FALSE_HISTORICAL_ONLY_CLAIM",
+        "executable_callers": 1,
+        "permitted_archival_mentions": 1,
+        "frozen_hash_matches": true,
+        "verdict": "BLOCK_SQL_CALLER_PRESENT",
+        "expected_test_pass": true
+      },
+      {
+        "scenario": "HYPOTHETICAL_ARCHIVAL_ONLY",
+        "executable_callers": 0,
+        "permitted_archival_mentions": 1,
+        "frozen_hash_matches": true,
+        "verdict": "SQL_COMPONENT_CANDIDATE_ONLY_MORE_GATES_REQUIRED",
+        "expected_test_pass": true
+      }
+    ],
+    "passed": 3,
+    "of": 3,
+    "prove": "Detect false HISTORICAL_ONLY claim while executable SQL callers remain; reject CP3 closure.",
+    "do_not_prove": "Full runtime invocation telemetry, zero unknown external callers, readiness for DROP/REVOKE, or CP3 PASS"
+  },
+  "ordered_next_actions": [
+    {
+      "step": "CLASSIFY_RESPONSIBILITIES",
+      "action": "Retain semantic-currentness and security/subject-depth check responsibilities; source-bound verify whether current Curator/Validator owns full behavior; no presumed equivalence",
+      "authority": "read-only"
+    },
+    {
+      "step": "MAP_CONSUMERS",
+      "action": "Reconcile uninspected client references and open descendant PR #3126; current explicit Edge/pg_cron/SQL readbacks are not exhaustive for external integrations",
+      "authority": "read-only"
+    },
+    {
+      "step": "DISCONNECT_REHOME",
+      "action": "Only after equivalence, prepare governed change to release/update M10.4 frozen identity and disconnect/remove executable legacy consumer or its legacy call without breaking historical tests",
+      "authority": "separately governed source mutation, not authorized by this evidence"
+    },
+    {
+      "step": "GUARD",
+      "action": "Enforce no reintroduction of retired pair from active entries and code after governed cutover; retain EKB receipts/negative tests",
+      "authority": "candidate tests then governed promotion"
+    },
+    {
+      "step": "PROMOTE_READBACK_CLOSE",
+      "action": "Exact-head CI, Git/Supabase post-promotion readback, zero callers, no stale routing/receipts/relations, explicit evidence; only then propose CP3 DONE",
+      "authority": "separately governed deployment and checkpoint transition"
+    }
+  ],
+  "state": {
+    "proposal_recorded": true,
+    "current_execution_effects": "NONE",
+    "checkpoint_marked_done": false,
+    "freeze_modified": false,
+    "production_changed": false,
+    "PR_state": "DRAFT",
+    "next_lot": "Resolve complete successor ownership / external call boundaries for legacy consumer, not function 2/3"
+  }
+}
