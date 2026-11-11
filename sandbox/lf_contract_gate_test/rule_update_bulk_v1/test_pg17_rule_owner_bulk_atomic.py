@@ -13,6 +13,7 @@ FILES=[
 "supabase/migrations/20261109092529_lf_profile_rule_update_child_execution_v1.sql",
 "supabase/migrations/20261111080000_lf_rule_update_history_evidence_v1.sql",
 "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql",
+"sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_update_handler_live_source_fixture.sql",
 "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_child_readback_live_source_fixture.sql",
 "supabase/migrations/20261111115000_lf_rule_update_child_readback_state_aware_v1.sql",
 "supabase/migrations/20261111123500_lf_rule_owner_bulk_atomic_governed_v1.sql"
@@ -136,7 +137,8 @@ FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
 """)
     failure=call(True)
     check("MID_BATCH_FAILURE_ROLLS_BACK",
-          "BLOCK_RULE_BULK_CHILD_NOT_VERIFIED" in failure)
+          "BLOCK_RULE_BULK_CHILD_NOT_VERIFIED" in failure
+          and "PG17_MID_BATCH_INJECTED_FAILURE" in failure)
     check("NO_OWNER_COLUMN_AFTER_ROLLBACK",
           one("NOT EXISTS(SELECT 1 FROM information_schema.columns "
           "WHERE table_schema='lf_ops' AND table_name='reglas' AND column_name='owner_name')")=="t")
