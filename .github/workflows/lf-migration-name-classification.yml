@@ -319,6 +319,9 @@ jobs:
       - name: "L4 semantic receipt gate: missing, forged, inconclusive, stale and synthetic positives"
         if: github.head_ref == 'lf/issue-3779-lote4-semantic-measurement-v1'
         run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py
+      - name: "L3693 static contract: semantic family remediation preserves promotion_authorized=false"
+        if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
+        run: python3 -m unittest sandbox/lf_contract_gate_test/engineering_checkpoints/ig_evo/test_semantic_family_remediation_detail_v1.py
       - name: "L4B existing IG Validator reuse: promotion-run link, hashes, retry and block"
         if: github.head_ref == 'lf/issue-3779-lote4b-validator-reuse-audit-v1'
         run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py
