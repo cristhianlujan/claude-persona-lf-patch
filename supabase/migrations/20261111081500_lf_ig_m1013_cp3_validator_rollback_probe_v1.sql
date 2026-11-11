@@ -325,8 +325,13 @@ $candidate$;
     OR (programacion.fn_input_run_semantic_revalidation_v1(951)->>'required') IS DISTINCT FROM 'false'
   THEN RAISE EXCEPTION 'IG_CP3_LIVE_BASELINE_REGRESSION'; END IF;
   v_receipt:=jsonb_build_object(
+    'evidence_schema_version','operational-event/v2',
     'schema_version','IG_M1013_CP3_ROLLBACK_COMPILATION_RECEIPT_V1',
-    'execution_id',v_execution,'producer','LF_MIGRATION_TRAIN',
+    'execution_id',v_execution,
+    'producer','LF_MIGRATION_TRAIN_IG_M1013_CP3',
+    'purpose','Verify temporary Validator candidate compilation and exact rollback without activation',
+    'acceptance_declared',false,
+    'occurred_at',clock_timestamp(),
     'source_md5','1a7a662fcd586e8eaac70ef3717a84a5',
     'candidate_compilation_verified',true,
     'transactional_rollback_verified',true,
