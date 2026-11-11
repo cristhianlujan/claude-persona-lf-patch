@@ -1,0 +1,147 @@
+{
+  "schema_version": "LF_L4_REAL_SOURCE_SIGNALS_V1",
+  "source": "Supabase LF SELECT-only 2026-11-11",
+  "warning": "Source values verified. Semantic contradiction not presumed when scope/policy state differs.",
+  "cases": [
+    {
+      "id": "REAL_RATE_B2B_IP_HARD",
+      "family": "RATE_POLICY_SCOPE",
+      "label": "REVIEW_REQUIRED_NOT_OBJECTIVELY_PROVEN_CONTRADICTION",
+      "source_a": {
+        "policy_code": "RATE-B2B-LOGIN",
+        "status": "VIGENTE",
+        "resource_code": "AUTH_LOGIN",
+        "window_seconds": 900,
+        "max_requests": 5,
+        "scope_key": "IP_USER"
+      },
+      "source_b": {
+        "security_policy_id": 22,
+        "policy_code": "SEC-B2B-AUTH-ABUSE-PROTECTION",
+        "status": "CANDIDATO",
+        "ip_hard_limit": "DENY"
+      },
+      "why": "RATE-B2B-LOGIN VIGENTE IP_USER; policy 22 ip_hard_limit DENY pero policy 22 estado CANDIDATO. No afirmar contradicción con politica VIGENTE."
+    },
+    {
+      "id": "REAL_SESSION_SCOPE_1_VS_3",
+      "family": "SESSION_SCOPE",
+      "label": "REVIEW_REQUIRED_NOT_OBJECTIVELY_PROVEN_CONTRADICTION",
+      "source_a": {
+        "codigo": "REG_SES_003",
+        "estado": "VIGENTE",
+        "descripcion": "No se permite más de una sesión de onboarding activa simultánea desde el mismo IP en un período de 5 minutos.",
+        "valor_config": {
+          "max_sesiones": 1,
+          "ventana_minutos": 5
+        }
+      },
+      "source_b": {
+        "policy_code": "SESSION-CLIENT-DEFAULT",
+        "status": "VIGENTE",
+        "max_concurrent_sessions": 3,
+        "scope_code": "CLIENT_APP_SHELL"
+      },
+      "why": "1 por dispositivo/IP onboarding 5m vs 3 simultáneas CLIENT_APP_SHELL: diferentes scopes, verificar precedencia antes de decir conflicto."
+    },
+    {
+      "id": "REAL_OTP_IP_10_VS_CODE_5",
+      "family": "OTP_SCOPE",
+      "label": "REVIEW_REQUIRED_NOT_OBJECTIVELY_PROVEN_CONTRADICTION",
+      "source_a": {
+        "codigo": "REG_RATE_002",
+        "estado": "VIGENTE",
+        "descripcion": "Máximo 10 intentos de validación OTP desde el mismo IP en 10 minutos, independientemente de la sesión.",
+        "valor_config": {
+          "max_intentos": 10,
+          "ventana_minutos": 10
+        }
+      },
+      "source_b": {
+        "codigo": "OTP_POL_DEFAULT",
+        "estado": "ACTIVO",
+        "max_intentos": 5
+      },
+      "why": "10 intentos por IP 10 minutos vs 5 por OTP/código: ambos límites pueden coexistir; comparar eje antes de dictamen."
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_1",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "B2B-RULE-AUTH-002",
+        "key": "multi_company_scope_rule",
+        "reference": "B2B-RULE-SCOPE-002",
+        "target_code": "B2B-RULE-SCOPE-002",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_2",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "B2B-RULE-AUTH-016",
+        "key": "duplicate_submit_rule_id",
+        "reference": "431",
+        "target_code": "B2B-RULE-AUTH-012",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_3",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "B2B-RULE-AUTH-022",
+        "key": "mfa_gate_rule_id",
+        "reference": "437",
+        "target_code": "B2B-RULE-AUTH-018",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_4",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "B2B-RULE-THEME-003",
+        "key": "dark_promotion_gate_rule_id",
+        "reference": "390",
+        "target_code": "B2B-RULE-THEME-002",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_5",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+        "key": "legacy_rules_to_reconcile",
+        "reference": "REG_CHK_011",
+        "target_code": "REG_CHK_011",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    },
+    {
+      "id": "REF_VIGENTE_TO_CANDIDATO_6",
+      "family": "VIGENTE_REFERENCE_CANDIDATO",
+      "label": "REFERENCE_STATE_FACT_REVIEW_DEPENDENCY_SEMANTICS",
+      "source": {
+        "src": "REG_CLIENT_CHECKOUT_AUTODEBIT_CONSENT_CONTEXT_001",
+        "key": "legacy_rules_to_reconcile",
+        "reference": "REG_CHK_CUO_003",
+        "target_code": "REG_CHK_CUO_003",
+        "target_state": "CANDIDATO"
+      },
+      "why": "Verificable VIGENTE -> CANDIDATO; no toda referencia es dependencia exigible (por ejemplo legacy_rules_to_reconcile)"
+    }
+  ],
+  "observed_reference_candidates": 17
+}
