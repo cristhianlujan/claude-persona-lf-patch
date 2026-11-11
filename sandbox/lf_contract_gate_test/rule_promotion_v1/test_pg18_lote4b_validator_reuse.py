@@ -98,6 +98,10 @@ $$;
 """)
     sql(M4.read_text())
 
+def lit(v):
+    if v is None: return "NULL"
+    return "'" + str(v).replace("'", "''") + "'"
+
 def case(receipt_status,audit_verdict=None,mutate_after_bind=False,security_bypass=False):
     candidate="a"*64
     mut=""
@@ -112,14 +116,14 @@ def case(receipt_status,audit_verdict=None,mutate_after_bind=False,security_bypa
     if mutate_after_bind:
         drift="UPDATE lf_ops.reglas SET descripcion=descripcion||' drift' WHERE codigo='RULE-TEST-001';"
     script=f"""BEGIN;
-UPDATE public.l4b_ig_stub_state SET receipt_status={json.dumps(receipt_status)},
- audit_verdict={('NULL' if audit_verdict is None else json.dumps(audit_verdict))};
+UPDATE public.l4b_ig_stub_state SET receipt_status={lit(receipt_status)},
+ audit_verdict={lit(audit_verdict)};
 {mut}
 SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1(
  'EXEC-PARENT-TEST-001','RULE-TEST-001','L4B existing validator reuse')::text;
 SELECT 'BIND|'||public.lf_rule_promotion_bind_ig_semantic_v1(
  'PROM-TEST',9001,'INPUT_VALIDATOR:EDGE:input-governance-validator-v1:abcdef',
- 7001,'00000000-0000-0000-0000-000000000001'::uuid,{json.dumps(candidate)})::text;
+ 7001,'00000000-0000-0000-0000-000000000001'::uuid,{lit(candidate)})::text;
 {drift}
 SELECT 'VERIFY|'||public.lf_rule_promotion_ig_semantic_verify_v1('PROM-TEST')::text;
 SELECT 'DECISION|'||public.lf_rule_promotion_governed_decide_v1(
