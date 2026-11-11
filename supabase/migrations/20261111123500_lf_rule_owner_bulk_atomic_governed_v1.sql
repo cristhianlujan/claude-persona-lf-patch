@@ -567,7 +567,7 @@ BEGIN
  v_batch:=v_output#>'{deliverable_created,governed_rule_batch}';
  v_provenance:=v_output#>'{deliverable_created,product_decision}';
  IF jsonb_typeof(v_batch) IS DISTINCT FROM 'object'
- OR (SELECT count(*) FROM jsonb_object_keys(v_batch))<>8
+ OR (SELECT count(*) FROM jsonb_object_keys(v_batch))<>10
  OR v_batch->>'batch_id' IS DISTINCT FROM p_batch_id
  OR v_batch->>'scope' IS DISTINCT FROM 'ALL_CANONICAL_RULES'
  OR v_batch->>'operation_code' IS DISTINCT FROM 'ACTUALIZACION_REGLA_LF'
