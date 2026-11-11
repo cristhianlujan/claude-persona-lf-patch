@@ -1,0 +1,61 @@
+{
+  "schema_version": "LF_L4C_LABEL_AUDIT_V1",
+  "status": "CANDIDATE_OBJECTIVE_REVIEW_NOT_INDEPENDENT",
+  "source_commit": "cb95212096a3495becfab1f833e5eb4df5e0a58c",
+  "preserves_prior_raw_labels": true,
+  "revised_cases_used_in_fresh_blind_eval": false,
+  "cases": [
+    {
+      "id": "ADV_HEALTHY_SECURITY",
+      "prior_label": "ALLOW",
+      "finding": "INCOMPLETE_EQUIVALENCE",
+      "missing_controls": [
+        "HTTP headers; explicit sensitive DNI framing"
+      ],
+      "resolution": "REWRITE_FOR_FUTURE_HEALTHY",
+      "corrected_description": "El DNI es información personal crítica: no se expondrá en logs de aplicación, eventos de analytics, mensajes de error visibles para el usuario ni en headers HTTP. Se mantienen sin cambios los demás campos protegidos de valor_config.",
+      "objective_reason": "La propuesta previa carecía del canal headers HTTP, exigido textualmente por REG_SEG_003; la reformulación enumera los cuatro canales y conserva valor_config."
+    },
+    {
+      "id": "HEALTHY_REWORD_B2B",
+      "prior_label": "ALLOW",
+      "finding": "INCOMPLETE_EQUIVALENCE",
+      "missing_controls": [
+        "acciones operativas no solo administrativas",
+        "autenticación completa",
+        "usuario,empresa,pantalla/recurso, permiso y transición",
+        "preauth específico no autoriza operaciones"
+      ],
+      "resolution": "REWRITE_FOR_FUTURE_HEALTHY",
+      "corrected_description": "Tras autenticación completa, toda acción operativa del Backoffice permanece denegada salvo autorización comprobada por el servidor. El servidor resuelve usuario activo, empresa, pantalla o recurso, permiso efectivo y la transición de estado cuando corresponda. Login, MFA y recuperación previos a autenticación siguen sus reglas AUTH particulares y jamás conceden permisos operativos.",
+      "objective_reason": "El texto previo cubría solo un subconjunto de la regla B2B-RULE-AUTH-001."
+    },
+    {
+      "id": "ADV_HEALTHY_SCOPE",
+      "prior_label": "ALLOW",
+      "finding": "EQUIVALENCE_NOT_FULLY_EVIDENCED",
+      "missing_controls": [
+        "comprobación server-side",
+        "single vs multiempresa explícita",
+        "derivación por relación padre canónica",
+        "server-only si no hay vínculo",
+        "preauth no autoriza"
+      ],
+      "resolution": "REWRITE_FOR_FUTURE_HEALTHY",
+      "corrected_description": "Toda consulta o mutación operativa B2B con ámbito empresarial se comprueba en el servidor contra el conjunto de empresas autorizadas del usuario activo: una en alcance simple, varias solo cuando estén asignadas expresamente conforme B2B-RULE-SCOPE-002. El tenant proviene de company_id o relación padre canónica; sin relación de tenant y scope autorizada, el recurso queda server-only. Los flujos pre-auth sin tenant resuelto no autorizan recursos operativos.",
+      "objective_reason": "La frase anterior destacaba el aislamiento, pero no acreditaba íntegramente condiciones y excepciones de B2B-RULE-AUTH-002."
+    }
+  ],
+  "measurement_5_separate_chats": {
+    "source": "USER_REPORTED_NOT_EXTERNALLY_READBACK_VERIFIED",
+    "defects_detected": 120,
+    "defects_total": 120,
+    "false_positives_by_case": {
+      "ADV_HEALTHY_SECURITY": 5,
+      "HEALTHY_REWORD_B2B": 3,
+      "ADV_HEALTHY_SCOPE": 2
+    },
+    "verdict_variation_cases": 2,
+    "acceptance_met": false
+  }
+}
