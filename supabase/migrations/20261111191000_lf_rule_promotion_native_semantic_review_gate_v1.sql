@@ -256,7 +256,7 @@ REVOKE ALL ON FUNCTION public.lf_rule_promotion_semantic_verify_v1(text)
  FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.lf_rule_promotion_semantic_verify_v1(text) TO service_role;
 
-CREATE FUNCTION public.lf_rule_promotion_governed_decide_v1(
+CREATE OR REPLACE FUNCTION public.lf_rule_promotion_governed_decide_v1(
  p_promotion_id text,p_decider_actor text
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO 'pg_catalog','public','extensions','lf_ops'
