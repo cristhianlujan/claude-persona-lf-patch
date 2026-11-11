@@ -245,6 +245,9 @@ BEGIN
   END LOOP;
   IF v_pairs<>47 OR v_match<>47 OR jsonb_array_length(v_bad)<>0
   THEN RAISE EXCEPTION 'IG_CP3_NA_47_PARITY_FAILED:pairs=%,match=%,diff=%',v_pairs,v_match,v_bad; END IF;
+  IF v_active_ms>greatest(v_legacy_ms*3,v_legacy_ms+150) THEN
+    RAISE EXCEPTION 'IG_CP3_NA_PERFORMANCE_REGRESSION:legacy_ms=%,active_ms=%',round(v_legacy_ms,3),round(v_active_ms,3);
+  END IF;
   -- Pair equality is a prerequisite, not a terminal pass for the checkpoint.
   PERFORM set_config('lf.ig_cp3_na_pairs',v_pairs::text,true);
   PERFORM set_config('lf.ig_cp3_na_legacy_ms',round(v_legacy_ms,3)::text,true);
@@ -505,7 +508,8 @@ BEGIN
     'source_disconnection','programacion.fn_input_governance_bootstrap_classify_v1_ctx',
     'target_function','programacion.fn_input_na_positive_authority_v512(text,integer,bigint,jsonb)',
     'checkpoint_code','ZERO_LEGACY_CALLERS','checkpoint_pass',false,
-    'semantic_independence_credited',false,'production_activation',false,
+    'semantic_independence_credited',false,'new_runtime_activated',false,
+    'production_code_mutation','EXISTING_CURATOR_CALLSITE_REHOMED',
     'next_gate','REMAINING_FROZEN_REACHABLE_PATHS'
   );
   IF private.fn_lf_event_acceptance_signal_v2(
