@@ -88,7 +88,7 @@ jobs:
       - name: Execute canonical writer and immutable-history negative tests
         run: python3 sandbox/lf_contract_gate_test/rule_update_history_v1/test_pg17_rule_history.py
   rule-general-update-pg17:
-    if: github.head_ref == 'lf/issue-3779-rule-update-general-v1'
+    if: github.head_ref == 'lf/issue-3779-rule-update-general-v1' || github.head_ref == 'lf/issue-3779-rule-bulk-atomic-v1'
     name: Rule update general | admin VIGENTE and functional candidate
     runs-on: ubuntu-latest
     timeout-minutes: 12
