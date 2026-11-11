@@ -22,6 +22,8 @@ SEED = ROOT / "sandbox/lf_contract_gate_test/db_write_transport/lf_rule_child_pg
 MIGRATION = ROOT / "supabase/migrations/20261109092529_lf_profile_rule_update_child_execution_v1.sql"
 HISTORY = ROOT / "supabase/migrations/20261111080000_lf_rule_update_history_evidence_v1.sql"
 GENERAL = ROOT / "supabase/migrations/20261111100000_lf_rule_update_general_admin_functional_v1.sql"
+STATE_AWARE = ROOT / "supabase/migrations/20261111115000_lf_rule_update_child_readback_state_aware_v1.sql"
+READBACK_BASELINE = ROOT / "sandbox/lf_contract_gate_test/rule_update_bulk_v1/lf_rule_child_readback_live_source_fixture.sql"
 
 
 def sql(script: str, *, expect_fail: bool = False) -> str:
@@ -93,7 +95,7 @@ def expect_block(run: str, code: str, *, patch: dict | None = None,
 
 
 def main() -> None:
-    for f in (FIXTURE, SEED, MIGRATION, HISTORY, GENERAL):
+    for f in (FIXTURE, SEED, MIGRATION, HISTORY, GENERAL, READBACK_BASELINE, STATE_AWARE):
         verify("SOURCE_FILE_EXISTS_" + f.stem.upper(), f.is_file())
     sql(FIXTURE.read_text(encoding="utf-8"))
     expected = {
@@ -121,6 +123,13 @@ def main() -> None:
     # never a synthetic ID hardcoded inside the production migration.
     sql("SET lf.rule_update_governance_execution_id = '"+PARENT+"';\n"
         +GENERAL.read_text(encoding="utf-8"))
+    sql(READBACK_BASELINE.read_text(encoding="utf-8"))
+    sql(STATE_AWARE.read_text(encoding="utf-8"))
+    verify("STATE_AWARE_CHILD_READBACK_INSTALLED",
+           "RULE_CHILD_ADMIN_HISTORY_OR_STATE_MISMATCH" in
+           sql("SELECT pg_get_functiondef("
+               "'public.lf_skill_rule_child_readback_v1(text,text,text)'"
+               "::regprocedure)"))
     verify("GENERAL_METADATA_MODE_BOUND",
            sql("SELECT destination_kind FROM public.lf_operation_mode_bindings "
                "WHERE operation_code='ACTUALIZACION_REGLA_LF' AND "
@@ -310,6 +319,10 @@ def main() -> None:
     verify("ADMIN_VIGENTE_STATUS_PRESERVED",
            sql(f"SELECT estado FROM lf_ops.reglas WHERE codigo='{CODE}'")
            =="VIGENTE")
+    verify("ADMIN_VIGENTE_OFFICIAL_SKILL_CHILD_READBACK",
+           json.loads(sql("SELECT public.lf_skill_rule_child_readback_v1("
+               "'"+PARENT+"','RUN-ADMIN-VIGENTE-001',"
+               "'EXEC-SKILL-ADMIN-VIGENTE-001')"))["status"]=="APPLIED_VERIFIED")
     verify("ADMIN_OWNER_AND_CREATOR_WRITTEN",
            sql(f"SELECT owner_name||':'||created_by FROM lf_ops.reglas "
                f"WHERE codigo='{CODE}'")=="SUPER_ADMIN:ChatGPT")
