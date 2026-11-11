@@ -34,7 +34,7 @@ CREATE TABLE public.lf_decisiones_gov(
  estado_normalizado text NOT NULL,raw_payload jsonb NOT NULL);
 INSERT INTO public.lf_decisiones_gov VALUES(
  101,'DEC-GOV-TEST','VIGENTE',
- '{"authority_class":"AUTOMATED_ALLOWED","source":"synthetic_test_approved"}'::jsonb);
+ '{"authority_class":"AUTOMATED_ALLOWED","source":"synthetic_test_approved","rule_code":"RULE-TEST-001"}'::jsonb);
 CREATE TABLE public.lf_rule_promotion_v1(
  promotion_id text PRIMARY KEY DEFAULT 'PROM-TEST',
  rule_code text NOT NULL,
