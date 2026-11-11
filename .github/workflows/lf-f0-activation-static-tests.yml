@@ -3,8 +3,6 @@ on:
   pull_request:
     paths:
       - '.github/workflows/**'
-      - 'supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql'
-      - 'sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_*'
       - 'sandbox/lf_contract_gate_test/f0_workflow_activation/**'
       - 'sandbox/lf_contract_gate_test/db_write_transport/lf_migration_assign_version.py'
       - 'sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py'
@@ -26,50 +24,3 @@ jobs:
         run: python3 sandbox/lf_contract_gate_test/f0_workflow_activation/test_scope.py
       - name: Test Train UTC future-version policy
         run: python3 sandbox/lf_contract_gate_test/db_write_transport/test_lf_migration_assign_version.py
-
-  issue-3779-lote4-pg18:
-    if: github.head_ref == 'lf/issue-3779-lote4-semantic-measurement-v1'
-    name: Lote4 | isolated PG18 mutation, old 42, native-review gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    services:
-      postgres:
-        image: postgres:18
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
-    env:
-      PGHOST: "127.0.0.1"
-      PGPORT: "5432"
-      PGUSER: postgres
-      PGPASSWORD: postgres
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Ensure PostgreSQL client
-        run: |
-          if ! command -v psql >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y postgresql-client
-          fi
-      - name: Measure objective 33-case deterministic and adversarial dataset
-        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py
-      - name: Prove original Lote3 42 baseline regressions
-        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py
-      - name: Native semantic receipt structural gate and fail closed test
-        run: python3 sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py
-      - name: Export labelled confusion matrix and raw
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: lf-3779-l4-f0-pg18-confusion-matrix
-          path: sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_deterministic_measurement_runtime.json
-          if-no-files-found: warn
