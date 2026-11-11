@@ -302,6 +302,17 @@ BEGIN
  SELECT * INTO p FROM public.lf_rule_promotion_v1 WHERE promotion_id=p_promotion_id;
  IF NOT FOUND THEN RETURN jsonb_build_object('status','BLOCKED','blocking_code','PROMOTION_NOT_FOUND'); END IF;
  j:=public.lf_rule_promotion_quality_judge_v1(p_promotion_id);
+ -- Preserve the L4 legacy enforcement guard: an unresolved semantic
+ -- Step70 enforcement EKB must not be bypassed by an owner-profile receipt.
+ IF to_regclass('public.lf_error_knowledge') IS NULL THEN
+   RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
+    'blocking_code','PROFILE_SEMANTIC_JUDGE_EKB_READBACK_UNAVAILABLE'); END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_error_knowledge k
+    WHERE k.codigo='PROFILE-EXECUTION-SEMANTIC-JUDGE-NOT-ENFORCED-001'
+      AND k.estado IN ('RESOLVED','VALIDATED_TESTED')
+ ) THEN RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
+    'blocking_code','PROFILE_SEMANTIC_JUDGE_EKB_NOT_RESOLVED'); END IF;
  SELECT * INTO owner_map FROM public.lf_rule_promotion_profile_owner_v1
  WHERE rule_code=p.rule_code AND status='ACTIVE';
  IF NOT FOUND OR owner_map.owner_profile_code IS NULL
