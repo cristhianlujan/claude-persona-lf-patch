@@ -125,5 +125,7 @@ jobs:
             sudo apt-get install -y postgresql-client
           fi
       - name: Execute canonical writer and immutable-history negative tests
-        run: python3 sandbox/lf_contract_gate_test/rule_update_general_v1/test_pg17_rule_general_update.py
+        run: |
+          python3 sandbox/lf_contract_gate_test/rule_update_general_v1/test_pg17_rule_general_update.py
+          python3 sandbox/lf_contract_gate_test/rule_update_general_v1/test_rule_owner_schema_impact.py
 
