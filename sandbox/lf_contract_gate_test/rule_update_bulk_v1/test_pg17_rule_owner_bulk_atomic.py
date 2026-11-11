@@ -66,7 +66,7 @@ INSERT INTO public.lf_operation_execution_steps(
  execution_id,step_order,step_id,status,evidence_ref,evidence_payload)
 VALUES('EXEC-PROFILE-GATE2-PG17RULECHILD001',40,'input_validate',
  'STEP_PASS_WITH_EVIDENCE','SYNTHETIC-PG17-NOT-REAL',
- jsonb_build_object('scope_authority_packet_sha256',repeat('a',64)));
+ jsonb_build_object('scope_authority_packet_sha256','sha256:'||repeat('a',64)));
 """)
     # Only a synthetic source ledger in isolated PG17. Never mock CURRENTNESS
     # as PASS; the production code must return a post-cut verification obligation.
@@ -147,6 +147,19 @@ def test():
     check("REQUIRE_STEP40_PROOF","BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED" in call(True))
     sql("UPDATE public.lf_operation_execution_steps SET status='STEP_PASS_WITH_EVIDENCE' "
         "WHERE execution_id='"+PARENT+"' AND step_id='input_validate';")
+    # Deployed input_validate records sha256:<64 hex>, not a bare digest.
+    sql("""UPDATE public.lf_operation_execution_steps
+SET evidence_payload=jsonb_set(evidence_payload,
+    '{scope_authority_packet_sha256}',to_jsonb(repeat('a',64)),true)
+WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+ AND step_id='input_validate';""")
+    check("REJECT_UNPREFIXED_STEP40_SHA",
+          "BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED" in call(True))
+    sql("""UPDATE public.lf_operation_execution_steps
+SET evidence_payload=jsonb_set(evidence_payload,
+    '{scope_authority_packet_sha256}',to_jsonb('sha256:'||repeat('a',64)),true)
+WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+ AND step_id='input_validate';""")
     sql("UPDATE lf_ops.reglas SET descripcion='UNAUTHORIZED' WHERE id=1000;")
     check("BLOCK_MATERIAL_DRIFT_SAME_CODES",
           "BLOCK_RULE_BULK_RULE_MATERIAL_PREIMAGE_DRIFT" in call(True))
