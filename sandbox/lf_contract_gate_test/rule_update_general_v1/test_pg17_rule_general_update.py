@@ -145,6 +145,14 @@ def main() -> None:
            and override["allowed_states"]==["CANDIDATO","VIGENTE"]
            and override["allowed_fields"]==["created_by","owner_name"]
            and override["legacy_state_gate_override_only_this_mode"] is True)
+    verify("ADMIN_OWNER_GUARD_DISTINCT",
+           override["functional_owner"]=="LF_GOVERNANCE"
+           and override["governance_guard"]=="SUPER_ADMIN"
+           and override["functional_owner"]!=override["governance_guard"]
+           and override["guard_receipt_required"] is True)
+    verify("ADMIN_WRITER_POLICY_GUARD_ENFORCED",
+           "BLOCK_RULE_ADMIN_GOVERNANCE_GUARD_OR_OWNER_MISMATCH" in
+           GENERAL.read_text(encoding="utf-8"))
     verify("ADMIN_CONTRACT_STATE_AND_HISTORY_REQUIRED",
            override["preserve_existing_state"] is True
            and override["governed_child_required"] is True
