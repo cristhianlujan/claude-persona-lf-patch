@@ -206,6 +206,56 @@ def main():
         SELECT 'SEMANTIC_READBACK|'||public.lf_rule_promotion_semantic_verify_v1('PROM-TEST')::text;""",
         want=lambda o:o["SEMANTIC_READBACK"]["blocking_code"]==
                     "BLOCK_SEMANTIC_SOURCE_OR_RECEIPT_DRIFT")
+    # AFTER safety measurement, not semantic capability. No native model is
+    # called, so every would-be auto approval MUST remain RETRY_REQUIRED.
+    from pathlib import Path
+    mutations=json.loads((HERE/"lote4_semantic_mutations_labeled_v1.json").read_text())
+    adversarial=json.loads((HERE/"lote4_adversarial_mutations_labeled_v1.json").read_text())
+    real_bases={x["codigo"]:x for x in mutations["baselines"]}
+    samples=mutations["cases"]+adversarial["cases"]
+    after=[]
+    for case in samples:
+        config={"source_decision_number":101,"security_policy_code":"SEC-AUTH",
+            "deny_by_default":True,"depends_on_rules":["RULE-DEPENDENCY-001"]}
+        config.update(case["config_patch"])
+        def lit(x):return "'"+str(x).replace("'","''")+"'"
+        related=""
+        if case.get("related_rule_description"):
+            related="UPDATE lf_ops.reglas SET descripcion="+lit(case["related_rule_description"])+\
+            " WHERE codigo='RULE-DEPENDENCY-001';"
+        sqlscript="""BEGIN;
+""" + related + """
+UPDATE lf_ops.reglas SET descripcion="""+lit(case["mutated_description"])+""",
+valor_config="""+lit(json.dumps(config,ensure_ascii=False))+"""::jsonb
+WHERE codigo='RULE-TEST-001';
+UPDATE public.lf_operation_execution_steps SET evidence_payload=jsonb_set(
+evidence_payload,'{input_governance,rule_source_sha256}',
+to_jsonb(public.lf_asset_snapshot_sha_v1('REGLA','RULE-TEST-001')),true)
+WHERE execution_id='EXEC-PARENT-TEST-001' AND step_id='input_validate';
+SELECT 'REQUEST|'||public.lf_rule_promotion_request_v1(
+ 'EXEC-PARENT-TEST-001','RULE-TEST-001','L4 failclosed accuracy probe')::text;
+SELECT 'DECISION|'||public.lf_rule_promotion_governed_decide_v1(
+ 'PROM-TEST','LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1')::text;
+ROLLBACK;"""
+        o=sql(sqlscript)
+        decision=o["DECISION"]
+        if decision["status"]=="APPROVED":
+            raise AssertionError("UNSAFE_AUTO_APPROVAL_WITHOUT_NATIVE_REVIEW:"+case["id"])
+        after.append({"case":case["id"],"label":case["label"],
+          "status":decision["status"],"blocking_code":decision.get("blocking_code"),
+          "blocking_codes":decision.get("blocking_codes"),
+          "semantic_review_executed":False})
+        print("RAW_AFTER_FAILCLOSED_"+case["id"]+" "+json.dumps(after[-1],sort_keys=True),flush=True)
+    total={"n":len(after),"defects":sum(x["label"]=="BLOCK" for x in after),
+      "healthy":sum(x["label"]=="ALLOW" for x in after),
+      "auto_approved_without_native_review":sum(x["status"]=="APPROVED" for x in after),
+      "pending_native_review":sum(x["status"]=="RETRY_REQUIRED" for x in after),
+      "hard_blocked_deterministic":sum(x["status"]=="BLOCKED" for x in after),
+      "semantic_model_executions":0}
+    print("RAW_AFTER_FAILCLOSED_TOTAL "+json.dumps(total,sort_keys=True),flush=True)
+    check("ALL_LABELED_CASES_NO_UNREVIEWED_APPROVAL",
+        total["n"]==33 and total["auto_approved_without_native_review"]==0
+        and total["semantic_model_executions"]==0,total)
     print("LF_L4_SEMANTIC_GATE_STRUCTURAL_PG18_PASS",N,flush=True)
     print("NATIVE_MODEL_CALLS=0 INDEPENDENT_JUDGE_RECEIPTS=0",flush=True)
 if __name__=="__main__":main()
