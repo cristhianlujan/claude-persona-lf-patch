@@ -20,7 +20,21 @@ END $source_guard$;
 -- One new task-mode RECORD inside the existing governance catalog; no new
 -- table, skill, router entry or child operation.
 DO $mode_preflight$
+DECLARE v_binding_execution_id text;
 BEGIN
+ v_binding_execution_id:=nullif(
+   current_setting('lf.rule_update_governance_execution_id',true),'');
+ IF v_binding_execution_id IS NULL OR NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution e
+   JOIN public.lf_operation_execution_steps st ON st.execution_id=e.execution_id
+   WHERE e.execution_id=v_binding_execution_id
+     AND e.operation_code='EJECUCION_PERFIL_LF'
+     AND e.target_code='PERFIL-PRODUCT-DIRECTOR-LF'
+     AND e.status='IN_PROGRESS'
+     AND st.step_id='semantic_judge'
+     AND st.status='STEP_PASS_WITH_EVIDENCE'
+     AND st.evidence_payload->'blocking_codes'='[]'::jsonb)
+ THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_MODE_REAL_PARENT_JUDGE_RECEIPT_REQUIRED'; END IF;
  IF EXISTS(SELECT 1 FROM public.lf_task_mode_catalog
   WHERE task_mode='MAINTAIN_METADATA')
  OR EXISTS(SELECT 1 FROM public.lf_operation_mode_bindings
@@ -50,8 +64,8 @@ BEGIN
      'CANONICAL_EXISTING','NO_WRITE'));
 END $mode_constraint$;
 
--- A source label is not evidence that a child execution occurred.
--- The effective write authority remains the parent judged profile RUN.
+-- Catalog entries are bound to an EXISTING judged Product Director parent
+-- execution; no synthetic receipt or fabricated execution identity.
 INSERT INTO public.lf_task_mode_catalog(
  task_mode,description,allows_new_target,requires_existing_target,
  mutation_intent,reference_source,status,created_by_execution_id)
@@ -59,7 +73,7 @@ VALUES (
  'MAINTAIN_METADATA',
  'Controlled administrative-only amendment retaining canonical rule state',
  false,true,true,'ISSUE-3779_USER_AUTHORIZED_SCOPE','ACTIVE',
- 'MIGRATION-ISSUE-3779-NOT-EXECUTION-RECEIPT');
+ current_setting('lf.rule_update_governance_execution_id'));
 
 INSERT INTO public.lf_operation_mode_bindings(
  operation_code,task_mode,execution_mode,allowed,write_allowed,
@@ -70,7 +84,7 @@ VALUES (
  'CANONICAL_EXISTING','COMPLETE_REQUIRED',NULL,'CANDIDATO_OR_VIGENTE',
  'Changes to created_by / owner_name only, preserving status and material rule. '
  ||'Requires existing skill judged parent and child official readback.',
- 'ACTIVE','MIGRATION-ISSUE-3779-NOT-EXECUTION-RECEIPT');
+ 'ACTIVE',current_setting('lf.rule_update_governance_execution_id'));
 
 CREATE FUNCTION public.lf_regla_admin_governed_write_v1(
  p_execution_id text,p_rule_code text,p_expected_sha text,p_changes jsonb
