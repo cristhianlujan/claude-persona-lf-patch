@@ -1,0 +1,8 @@
+{
+  "solution_ref": "lf-pg02-a2-canary-historical-skill-20261102",
+  "paths": {
+    "sandbox/lf_contract_gate_test/router_stage1/fixtures/product_director_lf_skill_fc88aca0874f3bee7d4dbe29379e975989b26cb2.md": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/router_stage1/test_profile_native_bridge_source_v1.py": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/changesets/lf-pg02-a2-canary-historical-skill-20261102.json": "CHANGESET_MANIFEST"
+  }
+}

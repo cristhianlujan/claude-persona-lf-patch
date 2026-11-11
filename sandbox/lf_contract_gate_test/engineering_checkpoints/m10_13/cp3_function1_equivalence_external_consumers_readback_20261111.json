@@ -1,0 +1,146 @@
+{
+  "schema_version": "IG_M1013_CP3_FUNCTION1_EQUIVALENCE_CONSUMER_AUDIT_V1",
+  "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+  "unit": "M10.13",
+  "checkpoint": "ZERO_LEGACY_CALLERS",
+  "candidate_number": 1,
+  "target": "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+  "direct_consumer": "programacion.fn_input_run_semantic_revalidation_v1(bigint)",
+  "authority": [
+    "GOV-ASSET-RETIREMENT-GOVERNANCE-V1-001",
+    "IG-M1011-HISTORICAL-UNREFERENCED-LIVE-SQL-CALLER-001",
+    "IG-M104-LEGACY-ACTIVE-FREEZE-SCOPE-001"
+  ],
+  "source_pin": {
+    "test_sql_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_functional_overlap_run951_20261111.sql",
+    "test_sql_blob_sha": "a1582505edfd490968fab9f941ed2780c8339727",
+    "legacy_consumer_md5": "44a7f21a3c01411662ab568af58c4091",
+    "legacy_classifier_md5": "7257b9bbc86b1f61e5435a37479d63a1",
+    "frozen_m104_match": true
+  },
+  "test_run": {
+    "id": 951,
+    "source_current": true,
+    "pantalla_id": 51,
+    "mode": "RUNTIME_GOVERNED_RECURATION_V2",
+    "profile_execution_id": "EXEC-PROFILE-GATE2-6FBA871B254F838684B84663",
+    "execution_scope": "READ_ONLY_DIAGNOSTIC_NO_NEW_IG_RUN",
+    "observed": {
+      "run_id": 951,
+      "ig_run_status": "COMPLETED",
+      "version_id": 19,
+      "pantalla_id": 51,
+      "family_count": 47,
+      "source_current": true,
+      "legacy_schema": "INPUT_RUN_SEMANTIC_REVALIDATION_V1",
+      "legacy_eligible": "true",
+      "legacy_required": "false",
+      "legacy_classifier_drift": 0,
+      "legacy_missing_classifier": 0,
+      "legacy_semantic_depth_drift": 0,
+      "assessment_count": 47,
+      "validator_pass_count": 47,
+      "independence_unproven_count": 47,
+      "independence_credited_count": 0,
+      "validator_sha_null_count": 47,
+      "curator_sha_null_count": 0,
+      "semantic_comparison_requested_count": 0,
+      "parity_disposition": "NO_FUNCTIONAL_EQUIVALENCE_ATTESTED",
+      "expected_no_false_parity_test": true,
+      "cp3_state": "PENDING"
+    }
+  },
+  "responsibility_matrix": [
+    {
+      "id": "SRC_CURRENTNESS",
+      "legacy": "fn_input_run_is_source_current",
+      "current_candidate": "fn_input_governance_continuation_currentness_v1",
+      "disposition": "PARTIAL_REUSE_NO_SAME_OUTPUT_RECEIPT"
+    },
+    {
+      "id": "CLASSIFIER_DRIFT",
+      "legacy": "Recompute classifier_sha256 on all stored eligible families; compare per family; count drift",
+      "current_candidate": "Curator recomputation and Validator SOURCE_INTEGRITY",
+      "disposition": "NOT_EQUIVALENT_REVALIDATION_NOT_ATTESTED"
+    },
+    {
+      "id": "CLASSIFIER_MISSING",
+      "legacy": "Count missing curator_evidence.bootstrap_classifier_sha256",
+      "current_candidate": "Curator stores 47 hashes for RUN 951",
+      "disposition": "CURRENT_DATA_OK_NO_EQUIVALENT_NEGATIVE_PROOF"
+    },
+    {
+      "id": "SUBJECT_THREAT_DEPTH",
+      "legacy": "Recompute DESIGN_SYSTEM subject and SECURITY subject+threat and count drift",
+      "current_candidate": "Curator derives subject_coverage/threat_coverage and semantic_depth_sha256; validator currently SOURCE_INTEGRITY",
+      "disposition": "NOT_EQUIVALENT_INDEPENDENT_RECOMPUTATION_UNPROVEN"
+    },
+    {
+      "id": "REVALIDATION_DECISION",
+      "legacy": "eligible, required, drift counters; source-stale and nonexistent branches",
+      "current_candidate": "Validator status/pass count + IG stage gate",
+      "disposition": "DIFFERENT_CONTRACT_NOT_EQUIVALENT"
+    }
+  ],
+  "root_cause": "No complete behavioral-equivalence receipt. Current Validator pass=47 on SOURCE_INTEGRITY is intentionally separate from independent semantic comparison; 47 UNPROVEN and 0 credited.",
+  "runtime_consumer_inventory": {
+    "sql_target_direct_caller_count": 1,
+    "sql_consumer_direct_callers": 0,
+    "sql_active_edge_path_7_roots_target_reachability": 0,
+    "sql_active_edge_path_7_roots_consumer_reachability": 0,
+    "edge_active_deployments": 39,
+    "edge_literal_references_to_pair": 0,
+    "cron_jobs_current": 10,
+    "cron_direct_references_to_pair": 0,
+    "pg_stat_statements_recent_direct_mentions": 0,
+    "pg_stat_statements_since_reset": "2026-10-10T02:45:35.862139Z",
+    "track_functions": "none",
+    "contracts_matching_pair": 0,
+    "lf_ops_rules_matching_pair": 0,
+    "lf_activo_relaciones_matching_pair": 0,
+    "asset_registry": {
+      "codigo_activo": "PROGRAMACION_FN_INPUT_GOVERNANCE_SEMANTIC_CLASSIFICATION_SET",
+      "estado_operativo": "READ_ONLY",
+      "runtime_estado": "CANDIDATE_READ_ONLY",
+      "classifier_present_in_raw_payload_members": true,
+      "consumer_present_in_raw_payload_members": false,
+      "action": "RECONCILE_MEMBERSHIP_BEFORE_RETIREMENT"
+    },
+    "source_branch_risks": [
+      {
+        "pr": 1484,
+        "state": "open",
+        "draft": true,
+        "head_sha": "4ffece1aacb1e3e3121adc3dd60bce093807bc35",
+        "reason": "CANDIDATE_REINTRODUCES_CACHED_CLASSIFIER_IN_VALIDATOR",
+        "impact": "NO_CURRENT_RUNTIME_IMPACT_UNMERGED"
+      },
+      {
+        "pr": 3126,
+        "state": "open",
+        "draft": true,
+        "head_sha": "67188698c243e11450b3d5a9c581d13d34f22a47",
+        "reason": "CANDIDATE_READONLY_REGRESSION_AND_EXTERNAL_BOUNDARY",
+        "impact": "NO_CURRENT_RUNTIME_IMPACT_UNMERGED"
+      }
+    ],
+    "external_clients": "UNKNOWN_NOT_PROVEN_ABSENT",
+    "notes": [
+      "Effective anon/authenticated/service_role direct schema USAGE programacion false at inspection, despite EXECUTE on consumer via default PUBLIC.",
+      "Nested function call counter off; absence of logs is NOT absence of real calls.",
+      "Legacy function was invoked once as an authorized SELECT-only diagnostic over existing RUN 951; not as independent Input Governance production route."
+    ],
+    "next_gate": "Governed retirement requires equivalent owner with 5 outputs/negative controls, source freeze M10.4 governed handling, PR #1484 reconciliation and exact-head guard and post-promotion readback."
+  },
+  "closure": {
+    "candidate_function1_evidence_readback": "COMPLETE_FOR_CURRENT_ASIS",
+    "legacy_retirement": "NO_GO",
+    "functional_equivalence": "NOT_DEMONSTRATED",
+    "zero_legacy_callers": "PENDING",
+    "retirement_lifecycle_stage": "MAP_CONSUMERS_AND_CLASSIFY_RESPONSIBILITIES",
+    "progress_pct_official": 35,
+    "source_impact": "NONE",
+    "merge_authorized": false,
+    "production_changed": false
+  }
+}

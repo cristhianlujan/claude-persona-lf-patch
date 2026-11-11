@@ -1,0 +1,10 @@
+{
+  "task_id": "FIXTURE-FRONTEND",
+  "profile_code": "PERFIL-PROG-FRONTEND-EXP",
+  "area": "FRONTEND",
+  "write_scope": [],
+  "protected_paths": [
+    "tests/frontend/"
+  ],
+  "production_authority": false
+}

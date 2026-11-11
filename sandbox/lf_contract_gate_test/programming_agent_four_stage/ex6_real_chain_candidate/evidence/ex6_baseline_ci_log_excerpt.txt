@@ -1,0 +1,4 @@
+2026-11-09T17:27:14.6186240Z   java-version: 21
+2026-11-09T17:27:14.9173486Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.13-9/x64
+2026-11-09T17:27:46.6588362Z ##[group]Run mvn -B -q -f apps/time-service/pom.xml test
+2026-11-09T17:27:56.1473429Z 2026-11-09T17:27:56.116Z  INFO 2373 --- [           main] lf.sandbox.time.TimeServiceContextTest   : Starting TimeServiceContextTest using Java 21.0.13 with PID 2373 (started by runner in /home/runner/work/lf-programming-sandbox/lf-programming-sandbox/apps/time-service)

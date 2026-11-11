@@ -122,6 +122,64 @@ def governed_request():
                 or not isinstance(skill_input, dict) or len(json.dumps(skill_input)) > 50000):
             raise ValueError("PROFILE_SKILL_INVOKE_REQUEST_INVALID")
         return {"kind": "SKILL_INVOKE", "execution_id": execution_id, "skill_code": skill, "input": skill_input}
+    # Reuse the SAME profile Issue/OIDC/Edge lane for one bounded,
+    # sequential batch of the ALREADY OPENED governed skill-update child.
+    # This never opens another RUN and cannot provide signer/role credentials.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_STEP_BATCH_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "child_execution_id", "steps"}:
+            raise ValueError("SKILL_STEP_BATCH_SCHEMA_INVALID")
+        parent, child, steps = data["execution_id"], data["child_execution_id"], data["steps"]
+        allowed = [
+            "router", "skill_resolve", "baseline_read", "change_scope",
+            "regression_plan", "pre_write_execution_binding_gate",
+            "github_write", "github_readback", "deterministic_validation",
+            "semantic_judge", "regression_after", "close", "report_output",
+        ]
+        if (not isinstance(parent, str) or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", parent)
+                or not isinstance(child, str) or not re.fullmatch(r"EXEC-SKILL-[A-Za-z0-9]{12,40}", child)
+                or not isinstance(steps, list) or not 1 <= len(steps) <= 7
+                or len(json.dumps(steps, ensure_ascii=False)) > 52000):
+            raise ValueError("SKILL_STEP_BATCH_INVALID")
+        positions = []
+        for step in steps:
+            if not isinstance(step, dict) or set(step) != {"step_id", "evidence_ref", "evidence_payload"}:
+                raise ValueError("SKILL_STEP_BATCH_ITEM_INVALID")
+            name, ref, payload = step["step_id"], step["evidence_ref"], step["evidence_payload"]
+            if (name not in allowed or not isinstance(ref, str) or not 1 <= len(ref) <= 1500
+                    or not isinstance(payload, dict) or len(json.dumps(payload, ensure_ascii=False)) > 44000
+                    or any(key in payload for key in (
+                        "server_assertions", "server_hard_fails", "trust_validation",
+                        "derived_result", "derived_by_judge", "step_result", "mini_judge_result"))):
+                raise ValueError("SKILL_STEP_BATCH_ITEM_UNSAFE")
+            positions.append(allowed.index(name))
+        if positions != sorted(set(positions)) or (positions[0] < 6 <= positions[-1]):
+            raise ValueError("SKILL_STEP_BATCH_OUT_OF_ORDER")
+        return {"kind": "SKILL_STEP_BATCH", "execution_id": parent,
+                "child_execution_id": child, "steps": steps}
+    # Same profile-owned Issue/OIDC/Edge lane; this bounded first slice is
+    # effect-free. Never infer write authority from a skill name or payload.
+    if isinstance(data, dict) and data.get("schema_version") == "LF_PROFILE_NATIVE_SKILL_PLAN_REQUEST_V1":
+        if set(data) != {"schema_version", "execution_id", "calls"}:
+            raise ValueError("PROFILE_SKILL_PLAN_SCHEMA_INVALID")
+        execution_id = data["execution_id"]
+        calls = data["calls"]
+        if (not isinstance(execution_id, str)
+            or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+            or not isinstance(calls, list) or not 1 <= len(calls) <= 8
+            or len(json.dumps(calls, ensure_ascii=False)) > 45000):
+            raise ValueError("PROFILE_SKILL_PLAN_INPUT_INVALID")
+        seen = set()
+        for item in calls:
+            if (not isinstance(item, dict) or set(item) != {"skill_code", "input"}
+                or item["skill_code"] not in ("SCREEN_RULES_SNAPSHOT", "RULE_UPDATE_PROPOSE")
+                or not isinstance(item["input"], dict)
+                or len(json.dumps(item["input"], ensure_ascii=False)) > 10000):
+                raise ValueError("PROFILE_SKILL_PLAN_UNSAFE_OR_INVALID_CALL")
+            key = (item["skill_code"], json.dumps(item["input"], sort_keys=True, separators=(",", ":")))
+            if key in seen:
+                raise ValueError("PROFILE_SKILL_PLAN_DUPLICATE_CALL")
+            seen.add(key)
+        return {"kind": "SKILL_PLAN", "execution_id": execution_id, "calls": calls}
     if not isinstance(data, dict) or set(data) - {
         "schema_version", "execution_id", "screen_selection_draft", "profile_output", "semantic_judge_review"
     } or data.get("schema_version") != "LF_PROFILE_NATIVE_RESUME_REQUEST_V1":
@@ -175,6 +233,100 @@ def record_incomplete_continuation(execution_id, profile_code, phase, next_step,
     print(json.dumps(checkpoint, ensure_ascii=False, sort_keys=True))
     # Nonzero is deliberate: an incomplete 9/11 run must never make CI green.
     return 1
+
+
+
+def record_blocked_ig_receipt(http_status, response, execution_id, profile_code):
+    """Record only a bound, digested IG BLOCKED response; never promote it to PASS.
+
+    This runs inside the existing OIDC GitHub Actions caller. Full IG response
+    and context may contain sensitive material; preserve hashes, not raw data.
+    """
+    if (http_status != 409 or not isinstance(response, dict)
+        or response.get("outcome") != "BLOCKED"
+        or response.get("phase") != "BLOCKED"
+        or response.get("code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"
+        or response.get("execution_id") != execution_id
+        or response.get("profile_code") != profile_code
+        or not isinstance(execution_id, str)
+        or not re.fullmatch(r"EXEC-PROFILE-GATE2-[A-Za-z0-9]{8,64}", execution_id)
+        or not isinstance(profile_code, str) or not profile_code):
+        return False
+    bridge = response.get("result")
+    if (not isinstance(bridge, dict)
+        or bridge.get("execution_id") != execution_id
+        or bridge.get("status") != "BLOCKED"
+        or bridge.get("blocking_code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"):
+        return False
+    validate = bridge.get("input_validate")
+    if (not isinstance(validate, dict)
+        or validate.get("status") != "BLOCKED"
+        or validate.get("blocking_code") != "BLOCK_PROFILE_INPUT_GOVERNANCE"):
+        return False
+    ig = validate.get("input_governance")
+    if (not isinstance(ig, dict)
+        or ig.get("applicable") is not True
+        or ig.get("status") != "BLOCKED"
+        or ig.get("decision") != "BLOCKED"
+        or ig.get("continuation_allowed") is not False
+        or ig.get("profile_code") != profile_code
+        or ig.get("consumer") != "CONTEXT_PACK"
+        or not isinstance(ig.get("pantalla_id"), int)
+        or isinstance(ig.get("pantalla_id"), bool)
+        or ig["pantalla_id"] <= 0):
+        return False
+    governance = ig.get("governance_result")
+    if (not isinstance(governance, dict)
+        or governance.get("status") != "BLOCKED"
+        or governance.get("consumer") != "CONTEXT_PACK"
+        or governance.get("pantalla_id") != ig["pantalla_id"]
+        or not isinstance(governance.get("output_sha256"), str)
+        or not re.fullmatch(r"[0-9a-f]{64}", governance["output_sha256"])):
+        return False
+
+    # Hash canonicalized parsed JSON, never claim it hashes original wire bytes.
+    def digest(value):
+        canonical = json.dumps(value, ensure_ascii=False, sort_keys=True,
+                               separators=(",", ":"), allow_nan=False)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    receipt = {
+        "schema_version": "LF_PROFILE_NATIVE_IG_BLOCKED_EVIDENCE_V1",
+        "execution_id": execution_id,
+        "profile_code": profile_code,
+        "phase": "INPUT_GOVERNANCE_BLOCKED",
+        "status": "BLOCKED_NOT_COMPLETE",
+        "source_http_status": 409,
+        "blocking_code": "BLOCK_PROFILE_INPUT_GOVERNANCE",
+        "consumer": "CONTEXT_PACK",
+        "pantalla_id": ig["pantalla_id"],
+        "governance_run_id": governance.get("run_id") if type(governance.get("run_id")) is int else None,
+        "governance_declared_output_sha256": governance["output_sha256"],
+        "governance_result_canonical_sha256": digest(governance),
+        "edge_response_canonical_sha256": digest(response),
+        "hash_scope": "PARSED_JSON_CANONICAL_NOT_WIRE_BYTES",
+        "evidence_quality": "RECEIVED_WITHOUT_SEMANTIC_APPROVAL",
+        "next_step": "input_validate",
+        "last_run_completed": False,
+        "continuation_allowed": False,
+        "pass_claimed": False,
+        "router_reentry_required": False,
+        "raw_payload_persisted": False,
+        "reused_transport": "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+    }
+    # The existing workflow uploads this already-declared artifact path.
+    (Path.cwd() / "profile-native-continuation.json").write_text(
+        json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps({
+        "phase": "INPUT_GOVERNANCE_BLOCKED",
+        "execution_id": execution_id,
+        "status": "BLOCKED_NOT_COMPLETE",
+        "receipt": "profile-native-continuation.json",
+        "pass_claimed": False,
+    }, sort_keys=True))
+    return True
 
 
 def is_direct_validator_continuation(status, response):
@@ -252,7 +404,45 @@ def prepare_product_director_raw(target_path, profile_output):
     return prepared
 
 
-def run_bound_validator(target_path, profile_code, profile_output):
+def unwrap_profile_native_evidence(target_path, profile_output):
+    """Keep the model candidate separate from its external provenance manifest.
+
+    The repair profile's V0.6 proof validator needs both objects. This envelope
+    is transport-only; its candidate alone is recorded as the original RAW.
+    Other profiles retain the unchanged plain-object contract.
+    """
+    if target_path != "profiles/systemic_root_cause_repair_lf/SKILL.md":
+        return profile_output, None
+    if not isinstance(profile_output, dict) or set(profile_output) != {"candidate", "evidence_manifest"}:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_ENVELOPE_REQUIRED")
+    candidate = profile_output["candidate"]
+    manifest = profile_output["evidence_manifest"]
+    if not isinstance(candidate, dict) or not isinstance(manifest, dict):
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_ENVELOPE_INVALID")
+    if manifest.get("manifest_version") != "SRCR_EVIDENCE_MANIFEST_V1":
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_VERSION_INVALID")
+    if not isinstance(manifest.get("evidence"), list) or not manifest["evidence"]:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_EMPTY")
+    encoded = json.dumps(manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 24000:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_TOO_LARGE")
+    return candidate, manifest
+
+
+def attach_bound_evidence_manifest(repo_root, packet, evidence_manifest):
+    """Store genuine supplied evidence beside RAW; bind bytes for canonical runner."""
+    if evidence_manifest is None:
+        return
+    encoded = json.dumps(evidence_manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > 24000:
+        raise ValueError("PROFILE_NATIVE_EVIDENCE_MANIFEST_TOO_LARGE")
+    manifest_path = repo_root / "profile-native-evidence-manifest.json"
+    manifest_path.write_bytes(encoded)
+    packet["evidence_manifest_ref"] = manifest_path.relative_to(repo_root).as_posix()
+    packet["evidence_manifest_sha256"] = hashlib.sha256(encoded).hexdigest()
+
+
+def run_bound_validator(target_path, profile_code, profile_output, evidence_manifest=None):
     """Run only the validator declared by the exact profile runtime binding."""
     source_path = PurePosixPath(target_path)
     slug = source_path.parts[1]
@@ -312,6 +502,7 @@ def run_bound_validator(target_path, profile_code, profile_output):
         "raw_output_ref": raw_path.relative_to(repo_root).as_posix(),
         "raw_output_sha256": hashlib.sha256(raw_bytes).hexdigest(),
     }
+    attach_bound_evidence_manifest(repo_root, packet, evidence_manifest)
     packet_path = repo_root / "profile-native-validation-binding.json"
     packet_path.write_text(
         json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
@@ -413,12 +604,30 @@ def validate_independent_semantic_review(review):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_CONTEXT_REFS_REQUIRED")
     if not review.get("counterfactual_result"):
         raise ValueError("PROFILE_SEMANTIC_REVIEW_COUNTERFACTUAL_REQUIRED")
+    if mode == "CURRENT_CONTEXT_REVIEW":
+        normalize_current_context_counterfactual(review)
     for key in ("candidate_sha256", "scope_packet_sha256"):
         if not isinstance(review.get(key), str) or not re.fullmatch(r"[0-9a-f]{64}", review[key]):
             raise ValueError("PROFILE_SEMANTIC_REVIEW_HASH_INVALID:" + key)
 
 
+def normalize_current_context_counterfactual(review):
+    """Match the deployed V2 trust contract while preserving real counterfactual evidence."""
+    if review.get("review_mode") != "CURRENT_CONTEXT_REVIEW":
+        return review
+    counterfactual = review.get("counterfactual_result")
+    if isinstance(counterfactual, dict):
+        examples = counterfactual.get("counterfactuals")
+        if counterfactual.get("status") != "PASS" or not isinstance(examples, list) or not examples:
+            raise ValueError("PROFILE_CURRENT_CONTEXT_COUNTERFACTUAL_NOT_PASS")
+        return {**review, "counterfactual_result": "PASS", "counterfactual_details": counterfactual}
+    if counterfactual != "PASS":
+        raise ValueError("PROFILE_CURRENT_CONTEXT_COUNTERFACTUAL_NOT_PASS")
+    return review
+
+
 def build_semantic_receipt(review):
+    review = normalize_current_context_counterfactual(review)
     current_context = review.get("review_mode") == "CURRENT_CONTEXT_REVIEW"
     verdict = ("PASS_REVIEWED_CURRENT_CONTEXT" if current_context
                else "PASS_INDEPENDENT_SEMANTIC")
@@ -445,9 +654,93 @@ def build_semantic_receipt(review):
 
 def main():
     request = governed_request()
-    source_revision = os.environ["GITHUB_SHA"]
     token = oidc()
     headers = {"authorization": f"Bearer {token}"}
+    if isinstance(request, dict) and request.get("kind") == "SKILL_PLAN":
+        # This is an invocation batch, NOT the semantic agent or a new
+        # orchestration boundary. The signed Edge checks each parent and skill.
+        # Only two known non-effecting skills are supported until the current
+        # catalog effect + idempotency are server-attested.
+        parent_id = request["execution_id"]
+        observed = []
+        phase = "PROFILE_SKILL_PLAN"
+        for item in request["calls"]:
+            code, reply = call_json(EDGE_URL, {
+                "action": "profile_native_skill_invoke_v1",
+                "execution_id": parent_id,
+                "skill_code": item["skill_code"],
+                "input": item["input"],
+            }, headers)
+            result = reply.get("result") if isinstance(reply, dict) else None
+            ok = (
+                code == 200 and isinstance(reply, dict)
+                and reply.get("outcome") == "SKILL_INVOKED"
+                and isinstance(result, dict)
+                and result.get("status") == "COMPLETED"
+                and isinstance(result.get("skill_run_id"), str)
+                and result["skill_run_id"].startswith("RUN-")
+                and isinstance(result.get("evidence_ref"), str)
+                and result["evidence_ref"].startswith("SKILLRUN:")
+                and not result.get("child_execution_id")
+            )
+            observed.append({
+                "skill_code": item["skill_code"],
+                "input_sha256": hashlib.sha256(json.dumps(
+                    item["input"], sort_keys=True, ensure_ascii=False,
+                    separators=(",", ":")).encode("utf-8")).hexdigest(),
+                "skill_run_id": result.get("skill_run_id") if ok else None,
+                "evidence_ref": result.get("evidence_ref") if ok else None,
+                "status": "EVIDENCE_RECEIVED" if ok else "BLOCKED",
+            })
+            if not ok:
+                phase = "BLOCKED"
+                break
+        receipt = {
+            "schema_version": "LF_PROFILE_SKILL_PLAN_CONTINUATION_V1",
+            "execution_id": parent_id,
+            "status": "SKILL_PLAN_EVIDENCE_READY" if phase != "BLOCKED" else "BLOCKED",
+            "profile_execution_complete": False,
+            "business_write_performed": False,
+            "child_operation_completed": False,
+            "same_parent_execution": True,
+            "next_step": "execute_profile" if phase != "BLOCKED" else "skill_plan_repair",
+            "required_input": "REAL_PROFILE_NATIVE_OUTPUT" if phase != "BLOCKED" else "FIX_DENIED_SKILL_CALL",
+            "transport": "EXISTING_GITHUB_ISSUE_OIDC_EDGE",
+            "calls": observed,
+        }
+        (Path.cwd() / "profile-native-continuation.json").write_text(
+            json.dumps(receipt, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps({"phase": phase, "execution_id": parent_id,
+                          "status": receipt["status"], "calls_attempted": len(observed),
+                          "next_step": receipt["next_step"]}, ensure_ascii=False))
+        # A successful skill plan is not profile terminality, hence nonzero.
+        return 1
+    if isinstance(request, dict) and request.get("kind") == "SKILL_STEP_BATCH":
+        code, reply = call_json(EDGE_URL, {
+            "action": "profile_native_skill_step_batch_v1",
+            "execution_id": request["execution_id"],
+            "child_execution_id": request["child_execution_id"],
+            "steps": request["steps"],
+        }, headers)
+        success = (code == 200 and isinstance(reply, dict)
+                   and reply.get("outcome") == "SKILL_CHILD_STEP_BATCH_RECORDED"
+                   and reply.get("child_execution_id") == request["child_execution_id"]
+                   and reply.get("execution_id") == request["execution_id"]
+                   and reply.get("steps_recorded") == len(request["steps"]))
+        print(json.dumps({
+            "phase": "PROFILE_SKILL_CHILD_STEP_BATCH",
+            "http_status": code,
+            "outcome": reply.get("outcome") if isinstance(reply, dict) else None,
+            "code": reply.get("code") if isinstance(reply, dict) else None,
+            "failed_step": reply.get("failed_step") if isinstance(reply, dict) else None,
+            "execution_id": request["execution_id"],
+            "child_execution_id": request["child_execution_id"],
+            "steps_recorded": reply.get("steps_recorded", 0) if isinstance(reply, dict) else 0,
+            "no_file_write": True,
+        }, ensure_ascii=False))
+        return 0 if success else 1
     if isinstance(request, dict) and request.get("kind") == "SKILL_INVOKE":
         code, invoked = call_json(EDGE_URL, {
             "action": "profile_native_skill_invoke_v1",
@@ -463,6 +756,10 @@ def main():
                           "skill_code": request["skill_code"], "execution_id": request["execution_id"],
                           "result": result if ok else None}, ensure_ascii=False))
         return 0 if ok else 1
+    # Source revision is required only for profile BEGIN/RESUME, not for
+    # profile-owned skill invocations: OIDC + server-side parent authority
+    # already bind the call to an existing execution.
+    source_revision = os.environ["GITHUB_SHA"]
     if isinstance(request, dict) and request.get("kind") == "BEGIN":
         # Profile invokes its own existing governed operation. Server-side
         # Edge authenticates OIDC and applies service_role at the canonical
@@ -535,7 +832,16 @@ def main():
 
     code, result = call_json(EDGE_URL, payload, headers)
     if code != 200:
-        print(json.dumps({"phase": "PREPARE", "status": code, "code": result.get("code")}))
+        # The server returned a full fail-closed IG payload. Keep a bounded,
+        # non-sensitive, hash-bound receipt in the existing Actions artifact.
+        # Never retry, authorize downstream, or print its raw governance data.
+        if record_blocked_ig_receipt(code, result, execution_id, source.get("profile_code")):
+            return 1
+        print(json.dumps({"phase": "PREPARE", "status": code,
+                          "code": "BLOCKED_IG_RESPONSE_UNVERIFIED"
+                          if code == 409 and isinstance(result, dict)
+                          and result.get("code") == "BLOCK_PROFILE_INPUT_GOVERNANCE"
+                          else result.get("code") if isinstance(result, dict) else "UNKNOWN"}))
         return 1
 
     # Input Governance is a runtime concern, not a profile/Router bypass.
@@ -682,9 +988,10 @@ def main():
                 "execute_profile", "NATIVE_PROFILE_RAW_OUTPUT",
             )
         try:
+            profile_output, evidence_manifest = unwrap_profile_native_evidence(target_path, profile_output)
             profile_output = prepare_product_director_raw(target_path, profile_output)
             validation, raw_ref, validator_ref = run_bound_validator(
-                target_path, source.get("profile_code"), profile_output
+                target_path, source.get("profile_code"), profile_output, evidence_manifest
             )
         except ValueError as exc:
             print(json.dumps({"phase":"BOUND_VALIDATOR","code":str(exc)}))

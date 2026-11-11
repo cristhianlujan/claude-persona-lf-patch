@@ -1,0 +1,239 @@
+{
+  "schema_version": "LF_IG_M1013_CP3_FUNCTION1_NEGATIVES_REINTRODUCTION_READBACK_V1",
+  "scope": "M10.13/ZERO_LEGACY_CALLERS, function 1 of 3 and direct consumer",
+  "observed_at": "2026-11-11 07:28:54.05998+00",
+  "official_source_readback": {
+    "checkpoint": "PENDING",
+    "unit_status": "IN_PROGRESS",
+    "run951_status": "COMPLETED",
+    "legacy_registry_member_count": 1,
+    "classifier_md5": "7257b9bbc86b1f61e5435a37479d63a1",
+    "consumer_md5": "44a7f21a3c01411662ab568af58c4091"
+  },
+  "runtime_tests": {
+    "real_legacy_call_cases": [
+      {
+        "run_id": 951,
+        "case": "CURRENT",
+        "result": {
+          "eligible": true,
+          "required": false,
+          "classifier_drift_count": 0,
+          "missing_classifier_count": 0,
+          "semantic_depth_drift_count": 0
+        },
+        "observed_live": true
+      },
+      {
+        "run_id": 944,
+        "case": "CURRENT",
+        "result": {
+          "eligible": true,
+          "required": false,
+          "classifier_drift_count": 0,
+          "missing_classifier_count": 0,
+          "semantic_depth_drift_count": 0
+        },
+        "observed_live": true
+      },
+      {
+        "run_id": 949,
+        "case": "SOURCE_NOT_CURRENT",
+        "result": {
+          "eligible": false,
+          "required": false,
+          "reason": "SOURCE_NOT_CURRENT"
+        },
+        "observed_live": true
+      },
+      {
+        "run_id": "9223372036854775807",
+        "case": "RUN_NOT_FOUND",
+        "result": {
+          "eligible": false,
+          "required": false,
+          "reason": "RUN_NOT_FOUND"
+        },
+        "observed_live": true
+      }
+    ],
+    "real_cases_verified": 4
+  },
+  "fixture_test": {
+    "source": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_revalidation_five_responsibility_negative_fixtures_20261111.sql",
+    "source_blob_sha": "fcf3e336db66981aa9b920926be40700325912af",
+    "results": [
+      {
+        "scenario": "BASELINE",
+        "families": 47,
+        "classifier_drift": 0,
+        "missing_sha": 0,
+        "depth_drift": 0,
+        "exp_classifier_drift": 0,
+        "exp_missing": 0,
+        "exp_semantic_depth": 0,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      },
+      {
+        "scenario": "COMBINED",
+        "families": 47,
+        "classifier_drift": 1,
+        "missing_sha": 1,
+        "depth_drift": 2,
+        "exp_classifier_drift": 1,
+        "exp_missing": 1,
+        "exp_semantic_depth": 2,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      },
+      {
+        "scenario": "MISSING_CLASSIFIER_SHA",
+        "families": 47,
+        "classifier_drift": 0,
+        "missing_sha": 1,
+        "depth_drift": 0,
+        "exp_classifier_drift": 0,
+        "exp_missing": 1,
+        "exp_semantic_depth": 0,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      },
+      {
+        "scenario": "MUTATE_CLASSIFIER_SHA",
+        "families": 47,
+        "classifier_drift": 1,
+        "missing_sha": 0,
+        "depth_drift": 0,
+        "exp_classifier_drift": 1,
+        "exp_missing": 0,
+        "exp_semantic_depth": 0,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      },
+      {
+        "scenario": "MUTATE_DESIGN_SUBJECT",
+        "families": 47,
+        "classifier_drift": 0,
+        "missing_sha": 0,
+        "depth_drift": 1,
+        "exp_classifier_drift": 0,
+        "exp_missing": 0,
+        "exp_semantic_depth": 1,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      },
+      {
+        "scenario": "MUTATE_SECURITY_THREAT",
+        "families": 47,
+        "classifier_drift": 0,
+        "missing_sha": 0,
+        "depth_drift": 1,
+        "exp_classifier_drift": 0,
+        "exp_missing": 0,
+        "exp_semantic_depth": 1,
+        "fixture_test_pass": true,
+        "proof_scope": "CTE_FIXTURE_NOT_REAL_MUTATED_LEGACY_RUN"
+      }
+    ],
+    "passed": 6,
+    "total": 6,
+    "scope": "CTE_SIMULATION_WITH_PERSISTED_RUN951_SNAPSHOT_NOT_AN_INDEPENDENT_ORACLE"
+  },
+  "reintroduction_guard_test": {
+    "source": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_pr1484_stale_reintroduction_guard_candidate_20261111.sql",
+    "source_blob_sha": "f7e1ae9a4eb26f3353e50794793cfca95818241b",
+    "results": [
+      {
+        "scenario": "ACTUAL_MAIN",
+        "live_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+        "already_calls_legacy": false,
+        "legacy_classifier_member_present": true,
+        "candidate_legacy_call": false,
+        "pinned_md5": null,
+        "verdict": "PASS_NO_NEW_VALIDATOR_LEGACY_CALL",
+        "expected_verdict": "PASS_NO_NEW_VALIDATOR_LEGACY_CALL",
+        "test_pass": true,
+        "proof_scope": "CANDIDATE_TEST_NOT_DEPLOYED_ENFORCEMENT"
+      },
+      {
+        "scenario": "PR1484_HYPOTHETICAL_REBASED",
+        "live_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+        "already_calls_legacy": false,
+        "legacy_classifier_member_present": true,
+        "candidate_legacy_call": true,
+        "pinned_md5": null,
+        "verdict": "BLOCK_LEGACY_REINTRODUCTION",
+        "expected_verdict": "BLOCK_LEGACY_REINTRODUCTION",
+        "test_pass": true,
+        "proof_scope": "CANDIDATE_TEST_NOT_DEPLOYED_ENFORCEMENT"
+      },
+      {
+        "scenario": "PR1484_UNREBASED",
+        "live_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+        "already_calls_legacy": false,
+        "legacy_classifier_member_present": true,
+        "candidate_legacy_call": true,
+        "pinned_md5": "b4b186c5a832d1f83bcb6db45230c0d7",
+        "verdict": "BLOCK_STALE_SOURCE_PIN",
+        "expected_verdict": "BLOCK_STALE_SOURCE_PIN",
+        "test_pass": true,
+        "proof_scope": "CANDIDATE_TEST_NOT_DEPLOYED_ENFORCEMENT"
+      },
+      {
+        "scenario": "REGISTRY_RETIREMENT_CLAIM",
+        "live_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+        "already_calls_legacy": false,
+        "legacy_classifier_member_present": true,
+        "candidate_legacy_call": false,
+        "pinned_md5": null,
+        "verdict": "BLOCK_ASSET_MEMBERSHIP",
+        "expected_verdict": "BLOCK_ASSET_MEMBERSHIP",
+        "test_pass": true,
+        "proof_scope": "CANDIDATE_TEST_NOT_DEPLOYED_ENFORCEMENT"
+      }
+    ],
+    "passed": 4,
+    "total": 4,
+    "scope": "CANDIDATE_SQL_TEST_NOT_DEPLOYED_CI_GUARD"
+  },
+  "pr1484_risk": {
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/pull/1484",
+    "state": "OPEN_DRAFT",
+    "source_head": "4ffece1aacb1e3e3121adc3dd60bce093807bc35",
+    "candidate_migration_path": "supabase/migrations/20261002083500_ig_cv_n8_validator_graph_once_per_chunk_v1.sql",
+    "candidate_migration_blob_sha": "d7879d2aea5060b14971c67f9b5587c395c3d5d2",
+    "current_live_validator_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+    "expected_original_source_md5": "b4b186c5a832d1f83bcb6db45230c0d7",
+    "current_candidate_compatible": false,
+    "if_rebased_without_removing_legacy": "BLOCK_LEGACY_REINTRODUCTION",
+    "action": "RECONCILE_OPEN_PR_BEFORE_PROMOTION_NO_MUTATION_NOW"
+  },
+  "functional_equivalence": {
+    "run951_validator_pass": 47,
+    "run951_validator_semantic_independence_unproven": 47,
+    "verdict": "NOT_DEMONSTRATED",
+    "reason": "Fixture oracle and current Validator source-integrity receipts do not replace independent recomputation of classifier and semantic coverage."
+  },
+  "decision": {
+    "functional_tests_satisfactory_for_candidate_proposal": true,
+    "governed_retirement_allowed": false,
+    "checkpoint_closed": false,
+    "registry_membership_resolved": false,
+    "old_pr_resolved": false,
+    "full_external_consumers_absence_proved": false,
+    "next_lot": "Design exact equivalent owner for the five legacy outputs and plan independent E2E negative tests; reconcile PR #1484 and membership through governed source change when eligible"
+  },
+  "security_and_impact": {
+    "sql_functions_modified": false,
+    "acl_modified": false,
+    "router_modified": false,
+    "freeze_modified": false,
+    "produced_only_git_draft_evidence": true
+  },
+  "ekb": [
+    "GOV-ASSET-RETIREMENT-GOVERNANCE-V1-001",
+    "IG-M1011-HISTORICAL-UNREFERENCED-LIVE-SQL-CALLER-001",
+    "IG-M104-LEGACY-ACTIVE-FREEZE-SCOPE-001"
+  ]
+}

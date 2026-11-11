@@ -1,0 +1,254 @@
+{
+  "schema_version": "IG_M1013_CP3_FUNCTION1_VALIDATOR_INTEGRITY_CANDIDATE_V2",
+  "scope": {
+    "plan": "IG_CURATOR_VALIDATOR_REFACTOR_V2",
+    "unit": "M10.13",
+    "checkpoint": "ZERO_LEGACY_CALLERS",
+    "legacy_pair": [
+      "programacion.fn_input_governance_bootstrap_classify_v2_cached_v2(integer,text,bigint,jsonb)",
+      "programacion.fn_input_run_semantic_revalidation_v1(bigint)"
+    ]
+  },
+  "candidate": {
+    "implementation_owner": "programacion.fn_input_governance_validate_v2(bigint,text)",
+    "strategy": "MODIFY_EXISTING_VALIDATOR_USING_EXISTING_NONFROZEN_UNCACHED_V2",
+    "source_file": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_current_validator_source_revalidation_candidate_20261111.sql",
+    "source_blob_sha": "17671191b6a80438ba68832472dc824dd49d3666",
+    "rollback_only_drill_file": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_existing_validator_rollback_drill_unapplied_20261111.sql",
+    "rollback_only_drill_blob_sha": "3ebb93835495a14be0ab0c10814f65f6f4538840",
+    "source_precondition_md5": "1a7a662fcd586e8eaac70ef3717a84a5",
+    "new_runtime_engine": false,
+    "new_rpc": false,
+    "approved_for_deployment": false,
+    "executed_live": false,
+    "disposition": "SOURCE_PREPARED_ONLY_NOT_COMPILED_NOT_PROMOTED",
+    "added_active_frozen_paths": 0,
+    "rejected_previous_ctx_legacy_paths": 3,
+    "previous_ctx_variant": "REJECTED_TRANSITIVE_FROZEN_DEPENDENCIES",
+    "new_classifier_signature": "programacion.fn_input_governance_bootstrap_classify_v2(integer,text,bigint)",
+    "new_classifier_source_md5": "f991bf655a7b4f2a89d68138c6862012"
+  },
+  "readback": {
+    "sampled_at": "2026-11-11 07:55:30.056783+00",
+    "cp3": "PENDING",
+    "aud045": "PENDING",
+    "validator_md5": "1a7a662fcd586e8eaac70ef3717a84a5"
+  },
+  "static_check": {
+    "checks": {
+      "source_expected_original_md5": true,
+      "nonfrozen_classifier_v2": true,
+      "no_cached_ctx": true,
+      "no_frozen_classifier": true,
+      "no_session_cache_injection": true,
+      "missing_sha_block": true,
+      "classifier_drift_block": true,
+      "design_subject_block": true,
+      "security_threat_block": true,
+      "existing_fail_preserved": true,
+      "semantic_oracle_unproven": true,
+      "validator_function_only": true,
+      "rollback_only": true,
+      "drill_sync": true,
+      "paired_47_test_prepared": true,
+      "transitive_guard_source": true
+    },
+    "pass": 16,
+    "total": 16
+  },
+  "functional_owner": {
+    "run_identity": "existing Validator entrypoint RUN_NOT_FOUND remains fail closed; legacy JSON output not identical",
+    "source_currentness": "existing continuation_currentness_v1 and source gate, 4/4 read-only observed on runs 944 951 949 and missing",
+    "classifier_sha": "existing active fn_input_governance_bootstrap_classify_v2_ctx on one canonical graph per validation chunk; compare curator evidence SHA",
+    "missing_sha": "detect null or empty stored SHA and fail closed",
+    "design_depth": "recompute DESIGN_SYSTEM expected subject_coverage and compare persisted",
+    "security_depth": "recompute SECURITY subject_coverage and threat_coverage and compare",
+    "result_form": "per-family validator_findings and evidence; cannot claim equivalence to legacy JSON counts until an explicit aggregation/output parity test",
+    "semantic_independence": "preserve independent oracle unproven and semantic_independence_credited=false"
+  },
+  "evidence": {
+    "previous_4_real_legacy_cases": "pass read-only",
+    "previous_negative_fixture_suite": "6/6 pass (CTE simulation; not executed candidate)",
+    "previous_pr1484_guard_suite": "4/4 pass candidate only",
+    "source_integrity_checks": "11/11 static source checks pass",
+    "readback_provenance": "live pg_proc + git exact blobs"
+  },
+  "blocking_gates": [
+    "Supabase list_branches shows only default main; no isolated branch available",
+    "read_only connector cannot create Postgres branch or execute candidate DDL",
+    "local container has no PostgreSQL server executables",
+    "Candidate PL/pgSQL compilation NOT_TESTED",
+    "Candidate 47-family classifier functional parity NOT_TESTED",
+    "Candidate latency versus legacy and timeout risk NOT_TESTED",
+    "Candidate negative mutations against actual Validator NOT_TESTED",
+    "Independent semantic oracle AUD045_EVIDENCE PENDING",
+    "PR 1484 and registry membership unreconciled",
+    "Freeze M10.4 unchanged; exact-head CI and governed deployment not authorized"
+  ],
+  "decision": {
+    "classification": "REVISED_CANDIDATE_ONLY",
+    "functional_equivalence": "NOT_PROVEN",
+    "governed_retirement": "NO_GO",
+    "zero_legacy_callers": "PENDING",
+    "m1013_pct_official": 35
+  },
+  "next_action": "Run source candidate + rollback in authorized clone/isolated governed environment and compare 47 families, then prepare official source mutation and lifecycle promotion if proven.",
+  "transitive_negative_guard": {
+    "source_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_validator_uncached_v2_frozen_transitive_negative_20261111.sql",
+    "blob_sha": "e6b7a8e834768f704a25d06dbcf546c96b5b5c41",
+    "test_results": [
+      {
+        "scenario": "CANDIDATE_UNCACHED_V2",
+        "added_classifier": "programacion.fn_input_governance_bootstrap_classify_v2",
+        "expected_frozen_count": 0,
+        "reachable_functions": 54,
+        "reached_frozen_count": 0,
+        "reached_frozen": [],
+        "negative_guard_test_pass": true,
+        "verdict": "NO_STATIC_FROZEN_PATHS",
+        "proof_scope": "STATIC_REACHABILITY_NOT_RUNTIME_EXECUTION"
+      },
+      {
+        "scenario": "CURRENT_VALIDATOR",
+        "added_classifier": null,
+        "expected_frozen_count": 0,
+        "reachable_functions": 34,
+        "reached_frozen_count": 0,
+        "reached_frozen": [],
+        "negative_guard_test_pass": true,
+        "verdict": "NO_STATIC_FROZEN_PATHS",
+        "proof_scope": "STATIC_REACHABILITY_NOT_RUNTIME_EXECUTION"
+      },
+      {
+        "scenario": "REJECTED_CACHED_CTX",
+        "added_classifier": "programacion.fn_input_governance_bootstrap_classify_v2_ctx",
+        "expected_frozen_count": 3,
+        "reachable_functions": 54,
+        "reached_frozen_count": 3,
+        "reached_frozen": [
+          "programacion.fn_input_governance_field_reference_probe_v1_cached_v1",
+          "programacion.fn_input_governance_semantic_probe_v2_cached_v1",
+          "programacion.fn_input_na_positive_authority_v512_cached_v1"
+        ],
+        "negative_guard_test_pass": true,
+        "verdict": "BLOCK_FROZEN_DEPENDENCY_REINTRODUCTION",
+        "proof_scope": "STATIC_REACHABILITY_NOT_RUNTIME_EXECUTION"
+      }
+    ],
+    "pass": 3,
+    "total": 3,
+    "proof_scope": "STATIC_ONLY_NEEDS_RUNTIME_PROFILING"
+  },
+  "parity_test": {
+    "source_path": "sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_classifier_47_family_uncached_pair_parity_unexecuted_20261111.sql",
+    "blob_sha": "ca50baded23d8f3dd9f63e6017143c4e7e58811e",
+    "execution": "NOT_TESTED_NO_ISOLATED_SANDBOX_OR_PROPER_PRIVILEGES",
+    "family_count_expected": 47
+  },
+  "benchmark": {
+    "legacy_only_single_run_ms": [
+      {
+        "run_id": 951,
+        "execution_ms": 2906.705
+      },
+      {
+        "run_id": 944,
+        "execution_ms": 2829.168
+      }
+    ],
+    "candidate_ms": null,
+    "interpretation": "LEGACY_BASELINE_ONLY_NOT_CANDIDATE_PARITY"
+  },
+  "production_test_authorization_20261111": {
+    "user_scope": "TEST_IN_PRODUCTION_IF_NO_SANDBOX",
+    "state": "AUTHORIZED_BY_USER_BUT_CANDIDATE_EXECUTION_TECHNICALLY_BLOCKED",
+    "production_project_ref": "mhwmirqcgxxukpctffuv",
+    "precise_readback_at_utc": "2026-11-11T08:11:47.308291Z",
+    "connection_permissions": {
+      "current_user": "supabase_read_only_user",
+      "transaction_read_only": "on",
+      "default_transaction_read_only": "on",
+      "database_create": false,
+      "programacion_schema_create": false,
+      "public_schema_create": false,
+      "execute_existing_validator": false,
+      "execute_new_classifier": false
+    },
+    "governed_writer": {
+      "known_path": "ACTUALIZACION_DB_LF → lf-migration-merge-train",
+      "workflow": ".github/workflows/lf-migration-merge-train.yml",
+      "mode": "REAL",
+      "execution_mode": "ENFORCED",
+      "trigger": "PR label ready-to-merge",
+      "risk": "APPLIES_EXACT_MIGRATION_AND_MERGES_PR_NOT_AN_ISOLATED_ROLLBACK_TEST",
+      "invoked": false
+    },
+    "production_read_only_smoke": {
+      "type": "EXECUTED_AGAINST_LIVE_PRODUCTION",
+      "results": [
+        {
+          "run_id": "951",
+          "case": "COMPLETED_CURRENT",
+          "legacy_eligible": true,
+          "legacy_required": false,
+          "legacy_drift": [
+            0,
+            0,
+            0
+          ],
+          "current_gate": true,
+          "validator_pass_count": 47,
+          "semantic_independence_unproven": 47,
+          "check": "PASS"
+        },
+        {
+          "run_id": "944",
+          "case": "COMPLETED_CURRENT",
+          "legacy_eligible": true,
+          "legacy_required": false,
+          "legacy_drift": [
+            0,
+            0,
+            0
+          ],
+          "current_gate": true,
+          "validator_pass_count": 47,
+          "semantic_independence_unproven": 47,
+          "check": "PASS"
+        },
+        {
+          "run_id": "949",
+          "case": "SOURCE_NOT_CURRENT",
+          "legacy_eligible": false,
+          "current_gate": false,
+          "check": "PASS"
+        },
+        {
+          "run_id": "9223372036854775807",
+          "case": "RUN_NOT_FOUND",
+          "legacy_eligible": false,
+          "current_gate": false,
+          "check": "PASS"
+        }
+      ],
+      "passed": 4,
+      "total": 4,
+      "source": "Supabase SQL live readback on 2026-11-11 08:11:47Z",
+      "persists_changes": false,
+      "creates_ig_runs": false
+    },
+    "candidate_test": {
+      "compile": "NOT_TESTED",
+      "rollback": "NOT_TESTED",
+      "47_family_parity": "NOT_TESTED",
+      "candidate_latency": "NOT_TESTED",
+      "negative_e2e": "NOT_TESTED",
+      "reason": "READ_ONLY_PRODUCTION_SQL_ACCESS_AND_NO_ISOLATED_BRANCH",
+      "source_promoted": false
+    },
+    "next_authorized_step": "Execute guarded rollback-only source candidate through a separately enabled GOVERNED test executor with production permissions. Do not use the REAL Merge Train as a dry-run or route around privileges.",
+    "checkpoint": "PENDING",
+    "production_code_modified": false,
+    "network_or_external_dispatch": false
+  }
+}

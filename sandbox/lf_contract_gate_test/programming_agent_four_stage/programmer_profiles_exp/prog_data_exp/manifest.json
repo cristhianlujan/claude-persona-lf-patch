@@ -1,0 +1,55 @@
+{
+  "schema_version": "lf-profile-pack-manifest/v1",
+  "profile_pack_id": "PERFIL-PROG-DATA-EXP",
+  "profile_slug": "prog_data_exp",
+  "operation": "CREACION_PERFIL_LF",
+  "artifact_type": "PROFILE_PACK_CANDIDATE",
+  "document_status": "CANDIDATE_SANDBOX_ONLY",
+  "operational_status": "READ_ONLY",
+  "runtime": "NO_HABILITADO",
+  "automatic_impact": "BLOQUEADO",
+  "runtime_enabled": false,
+  "promotion_allowed": false,
+  "exposes_user_facing_output": false,
+  "source_authority": [
+    "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql",
+    "skills/profile_creator/SKILL.md",
+    "cristhianlujan/programming-agent/docs/WORKER.md"
+  ],
+  "evidence_map": [
+    {
+      "claim": "STANDARDS_FAMILY_REFERENCE_ONLY",
+      "source_ref": "supabase/migrations/20261028160000_lf_programming_pg00_standards_checkpoints_decisions_v2.sql"
+    },
+    {
+      "claim": "VISIBLE_WORKER_SPEC",
+      "source_ref": "cristhianlujan/programming-agent/docs/WORKER.md"
+    }
+  ],
+  "required_files": [
+    "SKILL.md",
+    "README.md",
+    "adapters/document_patch_adapter.md",
+    "adapters/github_pack_adapter.md",
+    "checklists/preflight_checklist.md",
+    "checklists/priority_checklist.md",
+    "contracts/main_contract.md",
+    "contracts/missing_input_policy.md",
+    "evals/eval_matrix.json",
+    "examples/bad_output.json",
+    "examples/good_output.json",
+    "examples/self_repair_output.json",
+    "fixtures/happy_path/input.json",
+    "fixtures/missing_inputs/input.json",
+    "fixtures/self_repair/bad_output.json",
+    "fixtures/unsafe_or_blocked/input.json",
+    "handoffs/to_quality_pack.handoff.json",
+    "judges/mini_judge.md",
+    "judges/score_rubric.md",
+    "manifest.json",
+    "schemas/missing_input.schema.json",
+    "schemas/output.schema.json",
+    "validators/validate_pack.py",
+    "contracts/runtime_binding.json"
+  ]
+}

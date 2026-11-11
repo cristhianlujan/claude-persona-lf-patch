@@ -112,6 +112,38 @@ Allowed stop classifications:
 
 **Negatives to retain:** direct read-only RPC returns 42501; retired `router_profile_admit_context_v2` and `profile_execution_begin_from_router_context_v1` actions return 410 with zero backend calls; unauthorized GitHub OIDC or unvalidated context is denied; no reuse of old completed run as proof of new execution. The active automated Edge source tests `router_stage6_stage7_test.ts` and `test_profile_resume_issue_request.py` cover the canonical admission boundary.
 
+## 6.10. Immediate native profile execution loop — no stage-by-stage user confirmation
+
+**Binding:** `EJECUCION_PERFIL_LF`, one exact parent `EXEC-PROFILE-GATE2-...` for an already-authorized request. The agent that owns the selected profile must consume the **next cursor itself** as soon as the preceding step's readback is clean; do not treat a GitHub nonzero continuation checkpoint as a final result or send an unnecessary handoff to the user. No alteration of ACT-0001, OIDC, Edge, selected profile, provider or write authority.
+
+**Step contract and next action (immediately on `STEP_PASS_WITH_EVIDENCE`):**
+
+| Order / canonical step | Next action in the SAME run |
+|---|---|
+| 0 `init_execution` | 10 `router` |
+| 10 `router` | 20 `profile_resolve` |
+| 20 `profile_resolve` | 30 `profile_source_read` |
+| 30 `profile_source_read` | 40 `input_validate` |
+| 40 `input_validate` | 45 `context_admission` |
+| 45 `context_admission` | 47 `research_baseline_freeze` |
+| 47 `research_baseline_freeze` | 50 `execute_profile`: **produce** genuine schema-bound GPT/Claude native RAW *inside the same native chat*, not inside CI |
+| 50 `execute_profile` | 60 `output_validate`: run bound deterministic validator on the real RAW |
+| 60 `output_validate` | 70 `semantic_judge`: source-supported V3 evaluation, honest review mode and producer provenance |
+| 70 `semantic_judge` | 80 `report_output`: record only when clean and authorized |
+| 80 `report_output` | Read back 11/11 + `COMPLETED` + terminal `READY`, then return the actual result |
+
+**Handling each execution boundary, without pausing for the user:**
+
+1. Read the exact `execution_id`, `phase`, `next_step` and `required_input` from the latest Edge/Action checkpoint or Supabase readback. If a tool call stalls, recover this cursor and resume; do **not** BEGIN another parent run.
+2. If `phase=NATIVE_MODEL_INPUT_READY`, in the **current owning native chat** execute the selected profile's actual instructions now using fetched sources, create truthful RAW, validate against the exact bound runtime contract, and submit the RAW via the existing `LF_PROFILE_NATIVE_RESUME_REQUEST_V1` GitHub Issue/OIDC/Edge transport. **Never** substitute a remote API, GitHub-based synthetic inference or a historical RAW for `GPT_NATIVE`.
+3. Immediately repeat the readback → next-step loop for 50/60/70/80, using the already-authorized native V3 review pathway and the exact same execution ID. A `CONTINUATION_REQUIRED_NOT_COMPLETE` artifact is a **continuation request to the owning agent**, not a failure that must be handed back to the user. One chat may open successive issues to transport separate payloads. This does not make GitHub Actions a model executor.
+4. Stop only on an evidenced material blocker (security, authority, missing essential evidence after accessible-source search, failing validator, unavailable tool/provider, genuine runtime limit). Preserve the checkpoint and exact code. No false PASS, fake reviewer identity, escalation of privilege, extra executor or automatic product write.
+5. No output is `DONE` until the terminal receipt for this run proves 11/11. Keep the **profile execution** and any separately authorized **implementation** distinct: this run is `read_only/no_write` unless the exact manifest and governed effect authority explicitly say otherwise.
+
+**Regression/readback case:** `EXEC-PROFILE-GATE2-31340B34D5B0E320E3B83C00` completed 11/11 via Issues #3449–#3452. The steps were resumed under one parent identity, not an unattended GitHub model call. For the current Reparador case, `EXEC-PROFILE-GATE2-8DC96C01CF8C81DEEAB067DA` was verified 7/11 and `NATIVE_MODEL_INPUT_READY`; do not use the older completed case as this run's evidence.
+
+**Risk guard:** EKB `LF-PROFILE-GPT-NATIVE-DISPATCH-MISSING-001`, `S26-EXECUTOR-MODE-ADAPTER-PROVENANCE-MISMATCH-001` and `GOV-010`: native-chat continuity is valid; claiming autonomous invocation of ChatGPT from GitHub without real provider evidence is not.
+
 ## 7.0. Mandatory continuation of the already-authorized profile execution (60 → 70 → 80)
 
 A governed profile execution is **not** complete after `execute_profile`/50 or `output_validate`/60. This rule applies across LF profiles, including Product Director; it does not extend the Router's role or require a new dispatcher.

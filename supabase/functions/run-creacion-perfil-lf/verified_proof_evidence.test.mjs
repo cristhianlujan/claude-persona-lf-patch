@@ -120,6 +120,43 @@ test('operational improvement is rejected when it is incomplete, regressed or no
   }
 });
 
+const RUNTIME_TRANSPORT_REPAIR = {
+  improved_dimensions: [],
+  evolution_basis: ['RUNTIME_VALIDATOR_BINDING'],
+  runtime_validator_binding: {
+    base: {binding_sha256: '1'.repeat(64), check_source: 'TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION',
+      issues: ['VALIDATOR_TRANSPORT_MISSING_OR_INVALID'], model_run_executed: false, status: 'FAIL', valid: false},
+    candidate: {binding_sha256: '2'.repeat(64), check_source: 'TRUSTED_RUNTIME_BINDING_STATIC_INSPECTION',
+      issues: [], model_run_executed: false, status: 'PASS', valid: true},
+  },
+};
+
+test('compare accepts exactly verified static validator-transport repair without model-run claim', async () => {
+  const r = await call(setup({proof: RUNTIME_TRANSPORT_REPAIR}));
+  assert.equal(r.ok, true);
+  assert.equal(r.evidence.proof.runtime_validator_binding.candidate.status, 'PASS');
+});
+
+test('compare rejects synthetic, regressed, or untrusted runtime-binding repair', async () => {
+  const mutate = (fn) => {const x = structuredClone(RUNTIME_TRANSPORT_REPAIR); fn(x); return x;};
+  const invalid = [
+    mutate(p => {p.evolution_basis = []; }),
+    mutate(p => {p.runtime_validator_binding.base.issues = []; }),
+    mutate(p => {p.runtime_validator_binding.candidate.issues = ['VALIDATOR_PATH_UNSAFE']; }),
+    mutate(p => {p.runtime_validator_binding.base.check_source = 'CALLER_ASSERTED'; }),
+    mutate(p => {p.runtime_validator_binding.candidate.check_source = 'CALLER_ASSERTED'; }),
+    mutate(p => {p.runtime_validator_binding.base.valid = true; }),
+    mutate(p => {p.runtime_validator_binding.candidate.status = 'FAIL'; }),
+    mutate(p => {p.runtime_validator_binding.candidate.model_run_executed = true; }),
+    mutate(p => {p.runtime_validator_binding.candidate.binding_sha256 = '1'.repeat(64); }),
+    mutate(p => {p.regressed_dimensions = ['B02']; }),
+  ];
+  for (const proof of invalid) {
+    const r = await call(setup({proof}));
+    assert.deepEqual(r, {ok: false, code: 'PROOF_COMPARISON_NOT_DEMONSTRATED'});
+  }
+});
+
 test('measure rejects blocked or malformed measurements', async () => {
   const st = (proof) => setup({mode: 'measure', proof});
   for (const proof of [{decision: 'BLOCKED'}, {score: 'x'}, {schema: 'OTHER'}]) {

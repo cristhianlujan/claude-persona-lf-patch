@@ -110,6 +110,7 @@ type HarnessOptions = {
   allowlistPayload?: unknown;
   inputStatus?: string;
   runtimeTicketAuthorized?: boolean;
+  agentRequiresTicket?: boolean;
   executionOverrides?: Record<string, unknown>;
   nativePrepareStatus?: string;
   selectionAccepted?: boolean;
@@ -151,6 +152,10 @@ function harness(options: HarnessOptions = {}) {
         ), { status: 200, headers: { "content-type": "application/json" } });
       }
       if (url.endsWith("/functions/v1/input-governance-agent-v1")) {
+        if (options.agentRequiresTicket === true &&
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(body?.ticket ?? ""))) {
+          return new Response(JSON.stringify({ error: "IG_PROFILE_TICKET_REQUIRED" }), { status: 403 });
+        }
         const id = Number(body?.pantalla_id ?? 0);
         return new Response(JSON.stringify({ result: { status: inputStatus, run_id: 10000 + id } }), { status: 200 });
       }
@@ -326,7 +331,7 @@ Deno.test("CONTEXT_PACK continuation: Validator resume is explicit direct contin
 });
 
 Deno.test("positive profile runtime ticket: same EJECUCION_PERFIL_LF invokes CONTEXT_PACK without OIDC", async () => {
-  const h = harness();
+  const h = harness({ agentRequiresTicket: true });
   const { response, payload } = await invokeRuntime(h, {
     action: "input_readiness_context_pack_runtime_v1",
     execution_id: "EXEC-PROFILE-RUNTIME-11111111-2222-3333-4444-555555555555",
@@ -347,7 +352,18 @@ Deno.test("positive profile runtime ticket: same EJECUCION_PERFIL_LF invokes CON
   assertEquals(ticketCalls[0].body?.p_consumer, "CONTEXT_PACK");
   const edgeCalls = h.calls.filter((c) => c.url.endsWith("/functions/v1/input-governance-agent-v1"));
   assertEquals(edgeCalls.length, 1);
-  assertEquals(edgeCalls[0].body, { pantalla_id: 51, consumer: "CONTEXT_PACK" });
+  assertEquals(edgeCalls[0].body, {
+    pantalla_id: 51, consumer: "CONTEXT_PACK",
+    ticket: "11111111-2222-4333-8444-555555555555",
+  });
+});
+
+Deno.test("negative: legacy OIDC CONTEXT_PACK cannot bypass deployed Agent profile-ticket requirement", async () => {
+  const h = harness({ agentRequiresTicket: true });
+  const { response, payload } = await invoke(h, contextPackBody(51));
+  assertEquals(response.status, 409);
+  assertEquals(payload.outcome, "BLOCKED");
+  assert(String(payload.code).includes("IG_PROFILE_TICKET_REQUIRED"));
 });
 
 Deno.test("negative profile runtime ticket: invalid or expired ticket fails before IG Edge", async () => {
@@ -798,3 +814,4 @@ Deno.test("CP2: native profile resume: fail closed before prepare for invalid au
   assertEquals(output.response.status, 400);
   assertEquals(h.calls.length, 1);
 });
+

@@ -1,0 +1,9 @@
+{
+  "solution_ref": "lf-profile-step70-counterfactual-retry-20261109",
+  "paths": {
+    "scripts/lf_profile_native_resume.py": "SERVICE_RUNTIME",
+    "supabase/migrations/20261109043500_lf_profile_step70_counterfactual_retry_v1.sql": "MIGRATION",
+    "tests/test_profile_native_current_context_counterfactual_v1.py": "RUNTIME_TESTING",
+    "sandbox/lf_contract_gate_test/changesets/lf-profile-step70-counterfactual-retry-20261109.json": "CHANGESET_MANIFEST"
+  }
+}

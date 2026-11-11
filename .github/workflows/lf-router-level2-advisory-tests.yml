@@ -5,6 +5,17 @@ name: LF Router Level2 Advisory Tests
 on:
   pull_request:
     paths:
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02_qualification/**'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c7_material_sufficiency_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c7_material_sufficiency_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/test_pg01_c4_six_source_frame_synthetic_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c5_negative_guard_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c5_negative_guard_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/pg01_c3_scope_front_clean_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c3_scope_front_clean_v1.py'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/**'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/**'
+      - 'sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02/test_h2c4_pg03_c6_integration_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_level2_advisory_handoff_v1.py'
       - 'sandbox/lf_contract_gate_test/canonical_route_guard/test_router_exact_identity_source_v1.py'
@@ -285,6 +296,63 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: PG-03 C1 exact Git object stack candidate (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_source_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_semantics_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_stack_source_candidate/test_pg03_stack_lock_v1.py
+
+      - name: PG-03 C3 strategy candidate isolated tests (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_strategy_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_reuse_binding_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_domain_judges_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_analysis_rule_projection_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c5_projection_integrity_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c2_catalog_adapter_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c2_skill_receipt_binding_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c2_l3_type_b_binding_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c2_precedence_candidate_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_semantic_adapter_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_assurance_envelope_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_c9_subject_binding_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_sufficiency_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_exception_routing_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_handoff_boundary_v1.py
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg03_strategy_candidate/test_pg03_architecture_d15_v1.py
+
+      - name: PG-01 C3 scope/front clean candidate (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c3_scope_front_clean_v1.py
+
+      - name: PG-01 C5 eight negative cases and zero rediscovery (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c5_negative_guard_v1.py
+
+      - name: PG-01 C7 five material categories and analysis return (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/wave1_boundary_contracts/test_pg01_c7_material_sufficiency_v1.py
+
+      - name: PG-02 C5 independent sample qualification (advisory only)
+        run: |
+          set -euo pipefail
+          python3 sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02_qualification/test_pg02_c5_independent_sample_v1.py
+
+      - name: PG-02 candidate exact-head regressions (advisory only)
+        run: |
+          set -euo pipefail
+          cd sandbox/lf_contract_gate_test/programming_agent_four_stage/pg02
+          for test in test_*.py; do
+            echo "PG02_ADVISORY_RUNNING=$test"
+            python3 "$test"
+          done
+          echo "PG02_ADVISORY_ALL_TEST_SCRIPTS_PASS"
+
       - name: Execute ACT-0001 Stage1 V1/V2 and Stage2 handoff regression tests
         run: |
           set -euo pipefail
@@ -740,6 +808,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py
           python3 sandbox/lf_contract_gate_test/router_wave/verify_rw106_c1_commit_reveal_v1.py self-test
+
 
   programming-analysis-a4-a5-candidate:
     name: programming-analysis-a4-a5-source-only

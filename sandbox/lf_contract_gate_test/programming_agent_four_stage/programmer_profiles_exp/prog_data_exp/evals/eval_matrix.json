@@ -1,0 +1,90 @@
+{
+  "eval_id": "EVAL_DATA_PACK_WORKER_V08",
+  "minimum_pass_rate": "7/7",
+  "cases": [
+    {
+      "id": "HAPPY_PATH",
+      "case_id": "HAPPY_PATH",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "HAPPY_PATH",
+      "expected_status": "VALID_OUTPUT",
+      "expected": "VALID_OUTPUT",
+      "assertions": [
+        "A visible Worker v0.8 spec passes the exact lot scope and runtime disabled checks."
+      ]
+    },
+    {
+      "id": "OUTSIDE_LOT",
+      "case_id": "OUTSIDE_LOT",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "OUTSIDE_LOT",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "A write path outside the resolved lot is rejected even if the rest matches."
+      ]
+    },
+    {
+      "id": "EMPTY_TESTS",
+      "case_id": "EMPTY_TESTS",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "EMPTY_TESTS",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "Empty acceptance_commands cannot be treated as a valid visible test plan."
+      ]
+    },
+    {
+      "id": "HIDDEN_ORACLE",
+      "case_id": "HIDDEN_ORACLE",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "HIDDEN_ORACLE",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "Hidden oracle envelope and related secrets never reach the Builder."
+      ]
+    },
+    {
+      "id": "WRONG_AREA",
+      "case_id": "WRONG_AREA",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "WRONG_AREA",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "Declared target area must match this profile and the source lot."
+      ]
+    },
+    {
+      "id": "AUTHORITY_INJECTED",
+      "case_id": "AUTHORITY_INJECTED",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "AUTHORITY_INJECTED",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "Any production_authority or route_authority field invalidates the visible spec."
+      ]
+    },
+    {
+      "id": "NON_CANONICAL_PATH",
+      "case_id": "NON_CANONICAL_PATH",
+      "fixture": "examples/good_output.json",
+      "input_fixture": "fixtures/happy_path/input.json",
+      "mutator": "TRAILING_SLASH_PROTECTED_PATH",
+      "expected_status": "BLOCK_PIPELINE",
+      "expected": "BLOCK_PIPELINE",
+      "assertions": [
+        "tests/protected/ is not canonical. Must return a typed blocking finding, never auto-normalize to tests/protected/**."
+      ]
+    }
+  ]
+}

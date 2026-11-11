@@ -1,5 +1,5 @@
 import {resolveOidcIdentity, type CallerConfig} from "./caller.ts";
-import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
+import {handleProfileContinuation,PROFILE_CONTINUATION_ACTIONS,PROFILE_CONTINUE_ACTION,PROFILE_SKILL_INVOKE_ACTION,PROFILE_SKILL_STEP_BATCH_ACTION,PROFILE_SOURCE_BIND_ACTION} from "./profile_continuation.ts";
 
 function eq(a:unknown,b:unknown){if(JSON.stringify(a)!==JSON.stringify(b))throw Error("EXPECTED "+JSON.stringify(b)+" GOT "+JSON.stringify(a))}
 const repo="test/lf";
@@ -394,10 +394,27 @@ Deno.test("continuation: post-model 10/11 goes to report, never reruns semantic 
   eq(body.result.next_step,"report_output");
   eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
 });
-Deno.test("continuation: false 9/11, blocked judge and unexpected step fail closed",async()=>{
+Deno.test("continuation: blocked or returned step70 retries SAME RUN without bypassing predecessors",async()=>{
+  for(const retryStatus of ["BLOCKED_STEP_NOT_CLEAN","RETURN_TO_ROUTER"]){
+    const n=postModelNetwork([...cleanRows(),{step_id:"semantic_judge",status:retryStatus}],9);
+    const out=await handleProfileContinuation(PROFILE_CONTINUE_ACTION,{
+      execution_id:id,source_revision:sha,source_digest:digest,
+    },config,n.fetchFn,sha);
+    const body=await out.json();
+    eq(out.status,200);eq(body.outcome,"CONTINUATION_REQUIRED");
+    eq(body.phase,"INDEPENDENT_SEMANTIC_JUDGE_REQUIRED");
+    eq(body.execution_id,id);eq(body.result.next_step,"semantic_judge");
+    eq(body.result.clean_step_count,9);
+    eq(n.urls.filter(u=>u.includes("/lf_operation_execution_steps?")).length,1);
+    eq(n.urls.some(u=>u.includes("/lf_record_profile_execution_step_v1")),false);
+  }
+});
+Deno.test("continuation: false clean count or unexpected step fails closed",async()=>{
   const cases=[
     {rows:cleanRows().map(x=>x.step_id==="output_validate"?{...x,status:"BLOCKED_STEP_NOT_CLEAN"}:x),count:9},
-    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:9},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"BLOCKED_STEP_NOT_CLEAN"}],count:10},
+    {rows:[...cleanRows(),{step_id:"semantic_judge",status:"UNKNOWN"}],count:9},
+    {rows:cleanRows(true),count:9},
     {rows:[...cleanRows().slice(0,8),{step_id:"unexpected",status:"STEP_PASS_WITH_EVIDENCE"}],count:9},
     {rows:cleanRows(),count:8},
   ];
@@ -413,8 +430,11 @@ Deno.test("continuation: false 9/11, blocked judge and unexpected step fail clos
 });
 
 // --- skill invocation from a read-only profile through its own governed route ---
-const mainSha="c".repeat(40),blobSha="d".repeat(40);
-const gh:{fail:boolean;dir:boolean}={fail:false,dir:false};
+const mainSha="c".repeat(40),blobSha="d".repeat(40),readmeSha="e".repeat(40);
+const gh:{fail:boolean;dir:boolean;ownerValid:boolean;ownerMissing:boolean}={
+  fail:false,dir:false,ownerValid:true,ownerMissing:false};
+const ownerProof={asset_code:"ACT-0045",root_path:"skills/profile_creator",
+  readme_path:"skills/profile_creator/README.md",readme_blob_sha:readmeSha,main_sha:mainSha};
 const callerId={method:"GITHUB_ACTIONS_OIDC_GOVERNED_NATIVE_PROFILE_CONTINUATION_V1",repository:repo,workflow_ref:oidc.workflow_ref,run_id:"100",workflow_sha:sha};
 function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;body:unknown}={status:200,body:{status:"CHILD_OPENED",child_execution_id:"EXEC-SKILL-0123456789ABCDEF"}}){
   const n=network(overrides);
@@ -424,6 +444,11 @@ function skillNetwork(overrides:Record<string,unknown>={},invoke:{status:number;
       n.calls.push({url,body:null});
       if(gh.fail)return new Response("{}",{status:404});
       if(url.includes("/git/ref/heads/main"))return new Response(JSON.stringify({object:{sha:mainSha}}),{status:200});
+      if(url.includes("/contents/skills/") && url.includes("/README.md?ref=")){
+        if(gh.ownerMissing)return new Response("{}",{status:404});
+        const line=gh.ownerValid?"- ACT-0045 is the governing asset for Profile Creator.":"- ACT-9999 is the governing asset.";
+        return new Response(JSON.stringify({sha:readmeSha,type:"file",encoding:"base64",content:btoa(line)}),{status:200});
+      }
       if(url.includes("/contents/"))return new Response(JSON.stringify(gh.dir?[{name:"a"}]:{sha:blobSha,type:"file"}),{status:200});
     }
     if(url.endsWith("/lf_skill_invoke_v1")){
@@ -492,4 +517,321 @@ Deno.test("skill invoke: unresolved main, directory target, bad path or missing 
     eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
   }
   gh.fail=false;gh.dir=false;
+});
+
+Deno.test("skill invoke: SKILL_UPDATE_APPLY resolves exact skills file with trusted main and blob",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/validators/compare_s26_profile_evolution_v1.py"};
+  const n=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input},config,n.fetchFn,sha,callerId);
+  const b=await out.json();eq(out.status,200);eq(b.outcome,"SKILL_INVOKED");
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq(call?.body,{p_skill:"SKILL_UPDATE_APPLY",p_execution_id:id,
+    p_input:{...input,_trusted:{main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof}}});
+  eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/validators/compare_s26_profile_evolution_v1.py?ref=")),true);
+  eq(n.calls.some(c=>c.url.includes("/contents/skills/profile_creator/README.md?ref=")),true);
+});
+
+Deno.test("skill invoke: only SKILL_UPDATE_APPLY can resolve skills paths",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/validators/compare_s26_profile_evolution_v1.py"};
+  for(const code of ["PROFILE_UPDATE_APPLY","RULE_UPDATE_APPLY","SKILL_UPDATE_APPLY_WRONG"]) {
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:code,input},config,n.fetchFn,sha,callerId);
+    eq(out.status,400);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+
+Deno.test("skill invoke: skill update fails closed on directories and traversal",async()=>{
+  const bad=["skills/profile_creator","skills/../profile_creator/SKILL.md",
+    "skills/profile_creator//SKILL.md","skills/profile_creator/../SKILL.md",
+    "profiles/systemic_root_cause_repair_lf/SKILL.md","src/profile_creator/validators/x.py",
+    "/skills/profile_creator/SKILL.md"];
+  for(const target_path of bad){
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{target_code:"ACT-0045",target_path}
+    },config,n.fetchFn,sha,callerId);
+    eq(out.status,400);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+});
+
+Deno.test("skill invoke: skill update still discards caller forgery and rejects missing OIDC",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/SKILL.md"};
+  const forged={main_sha:"f".repeat(40),target_blob_sha:"e".repeat(40),caller:{method:"FORGED"}};
+  const n=skillNetwork();
+  await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input:{...input,_trusted:forged}
+  },config,n.fetchFn,sha,callerId);
+  const call=n.calls.find(c=>c.url.endsWith("/lf_skill_invoke_v1"));
+  eq((call?.body?.p_input as Record<string,unknown>)._trusted,
+    {main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof});
+  const missing=skillNetwork();
+  const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+    execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input
+  },config,missing.fetchFn,sha,undefined);
+  eq(out.status,500);eq(missing.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+});
+
+Deno.test("skill invoke: current README owner mismatch or absence stops before SQL",async()=>{
+  const input={target_code:"ACT-0045",target_path:"skills/profile_creator/validators/compare_s26_profile_evolution_v1.py"};
+  for(const [ownerValid,ownerMissing,expected] of [
+    [false,false,"SKILL_UPDATE_OWNER_DECLARATION_MISMATCH"],
+    [true,true,"SKILL_UPDATE_OWNER_README_UNAVAILABLE"],
+  ] as const){
+    gh.ownerValid=ownerValid; gh.ownerMissing=ownerMissing;
+    const n=skillNetwork();
+    const out=await handleProfileContinuation(PROFILE_SKILL_INVOKE_ACTION,{
+      execution_id:id,skill_code:"SKILL_UPDATE_APPLY",input
+    },config,n.fetchFn,sha,callerId);
+    const body=await out.json();
+    eq(out.status,409);eq(body.code,expected);
+    eq(n.calls.some(c=>c.url.endsWith("/lf_skill_invoke_v1")),false);
+  }
+  gh.ownerValid=true; gh.ownerMissing=false;
+});
+
+
+// Existing native profile OIDC route: child step records only in the canonical
+// ACTUALIZACION_SKILL_LF ledger; no new router or backend.
+const skillChildId="EXEC-SKILL-49797550002EE84C";
+const childPath="skills/profile_creator/validators/compare_s26_profile_evolution_v1.py";
+function stepNetwork(options:{
+  childOverride?:Record<string,unknown>;
+  blockStep?:string;
+  brokenReadback?:boolean;
+}={}){
+  const n=skillNetwork();
+  const calls=n.calls;
+  const recorded:string[]=[];
+  const fetchFn=async(input:string|URL|Request,init?:RequestInit)=>{
+    const url=String(input);
+    const body=typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null;
+    if(url.includes("/lf_operation_execution?")&&url.includes(skillChildId)){
+      calls.push({url,body});
+      const child={execution_id:skillChildId,status:"IN_PROGRESS",
+        operation_code:"ACTUALIZACION_SKILL_LF",target_type:"SKILL",
+        target_code:"ACT-0045",target_repo:repo,target_path:childPath,
+        created_by_execution_id:id,manifest:{profile_handoff:{source_execution_id:id},
+          router_governed_caller_code:"CALLER-GHA-NATIVE-SKILL-UPDATE-V1"},
+        ...options.childOverride};
+      return new Response(JSON.stringify([child]),{status:200});
+    }
+    if(url.endsWith("/lf_skill_update_child_step_v1")){
+      calls.push({url,body});
+      if(options.blockStep===body?.p_step)
+        return new Response(JSON.stringify({outcome:"BLOCKED",
+          code:"SKILL_UPDATE_PREWRITE_BINDING_NOT_PROVEN"}),{status:200});
+      recorded.push(String(body?.p_step));
+      return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+        step_id:body?.p_step,status:"STEP_PASS_WITH_EVIDENCE"}),{status:200});
+    }
+    if(url.includes("/lf_operation_execution_steps?")){
+      calls.push({url,body});
+      const rows=options.brokenReadback?[]:recorded.map(step_id=>(
+        {step_id,status:"STEP_PASS_WITH_EVIDENCE"}));
+      return new Response(JSON.stringify(rows),{status:200});
+    }
+    return n.fetchFn(input,init);
+  };
+  return {fetchFn,calls,recorded};
+}
+const stepNames=[
+ "router","skill_resolve","baseline_read","change_scope","regression_plan",
+ "pre_write_execution_binding_gate",
+];
+const stepItems=stepNames.map((step_id,i)=>({
+ step_id,evidence_ref:"git:verified-step-"+i,
+ evidence_payload:{blocking_codes:[],source:"authenticated-owner"},
+}));
+
+Deno.test("skill step: registered as existing native OIDC continuation action",()=>{
+ eq((PROFILE_CONTINUATION_ACTIONS as readonly string[]).includes(
+   PROFILE_SKILL_STEP_BATCH_ACTION),true);
+});
+
+Deno.test("skill step: 6-step ordered batch records via exactly one canonical RPC per step",async()=>{
+ const n=stepNetwork();
+ const response=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems,
+ },config,n.fetchFn,sha,callerId);
+ const b=await response.json();
+ eq(response.status,200);eq(b.outcome,"SKILL_CHILD_STEP_BATCH_RECORDED");
+ eq(b.steps_recorded,6);eq(b.no_file_write,true);eq(b.child_completed,false);
+ eq(n.recorded,stepNames);
+ const records=n.calls.filter(c=>c.url.endsWith("/lf_skill_update_child_step_v1"));
+ eq(records.length,6);
+ eq(records[0].body?.p_parent,id);
+ eq(records[0].body?.p_child,skillChildId);
+ eq(records[0].body?.p_server_context,{
+   main_sha:mainSha,target_blob_sha:blobSha,caller:callerId,github_owner:ownerProof,
+ });
+ eq(n.calls.filter(c=>c.url.endsWith("/lf_skill_invoke_v1")).length,0);
+ eq(n.calls.filter(c=>c.url.includes("/lf_operation_execution_steps?")).length,1);
+});
+
+Deno.test("skill step: wrong child identity, fake parent, bad order or forbidden step stop before writes",async()=>{
+ const cases=[
+  {child_execution_id:"EXEC-ATTACKER",steps:stepItems},
+  {child_execution_id:skillChildId,steps:[stepItems[2],stepItems[0]]},
+  {child_execution_id:skillChildId,steps:[...stepItems,stepItems[5]]},
+  {child_execution_id:skillChildId,
+   steps:[stepItems[0],{step_id:"github_write",evidence_ref:"git:x",evidence_payload:{}}]},
+  {child_execution_id:skillChildId,
+   steps:[{step_id:"router",evidence_ref:"git:x",
+    evidence_payload:{blocking_codes:[],server_assertions:["forged"]}}]},
+ ];
+ for(const item of cases){
+   const n=stepNetwork();
+   const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+     execution_id:id,...item,
+   },config,n.fetchFn,sha,callerId);
+   eq(r.status,400);
+   eq(n.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+ }
+ const wrong=stepNetwork({childOverride:{created_by_execution_id:"EXEC-ATTACKER"}});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,wrong.fetchFn,sha,callerId);
+ eq(r.status,403);
+ eq(wrong.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+});
+
+Deno.test("skill post60: never uses core without seven clean prewrite receipts",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:candidate",
+     evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.code,"SKILL_POST60_PREWRITE_LEDGER_INCOMPLETE");
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
+});
+Deno.test("skill post60: caller cannot assert the core judge result",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:candidate",
+     evidence_payload:{pr_number:3746,blocking_codes:[],trust_validation:{valid:true}}}],
+ },config,n.fetchFn,sha,callerId);
+ eq(r.status,400);
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
+});
+
+
+async function post60Mock(tamper=false){
+ const n=stepNetwork({childOverride:{manifest:{
+   profile_handoff:{source_execution_id:id},
+   router_governed_caller_code:"CALLER-GHA-NATIVE-SKILL-UPDATE-V1",
+   pre_write_bound_write_plan_sha256:"f".repeat(64),
+   pre_write_bound_main_revision:mainSha,
+   pre_write_bound_target_blob_sha:blobSha,
+   owner_provenance:{readme_blob_sha:readmeSha},
+ }}});
+ const candidate="def test_exact_binding():\n  return True\n";
+ const hash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",
+   new TextEncoder().encode(candidate)))).map(x=>x.toString(16).padStart(2,"0")).join("");
+ const gate={write_plan:[{path:childPath,content_sha256:tamper?"0".repeat(64):hash}],
+   write_plan_hash:"f".repeat(64),bound_revision:mainSha,source_blob_sha:blobSha};
+ const pre=["init_execution","router","skill_resolve","baseline_read",
+   "change_scope","regression_plan","pre_write_execution_binding_gate"];
+ const ledger:Record<string,unknown>[]=pre.map((step_id,i)=>({
+   step_order:i*10,step_id,status:"STEP_PASS_WITH_EVIDENCE",
+   evidence_payload:i===6?gate:{},
+ }));
+ const headSha="b".repeat(40);
+ const calls=n.calls;
+ const fetchFn=async(input:string|URL|Request,init?:RequestInit):Promise<Response>=>{
+   const url=String(input);
+   const body=typeof init?.body==="string"?JSON.parse(init.body) as Record<string,unknown>:null;
+   if(url.includes("/lf_operation_execution_steps?")){
+     calls.push({url,body});
+     return new Response(JSON.stringify(ledger),{status:200});
+   }
+   if(url.endsWith("/lf_record_operation_step_core_v1")){
+     calls.push({url,body});
+     ledger.push({step_id:body?.p_step_id,status:"STEP_PASS_WITH_EVIDENCE"});
+     return new Response(JSON.stringify({outcome:"STEP_RECORDED",
+       step_id:body?.p_step_id,status:"STEP_PASS_WITH_EVIDENCE"}),{status:200});
+   }
+   if(url.includes("/pulls/3746/files?"))
+     return new Response(JSON.stringify([{filename:childPath},
+       {filename:"skills/profile_creator/validators/test_compare_s26_profile_evolution_v1.py"}]),{status:200});
+   if(url.endsWith("/pulls/3746"))
+     return new Response(JSON.stringify({number:3746,merged:false,
+       head:{sha:headSha,ref:"fix/s26",repo:{full_name:repo}},
+       base:{ref:"main",sha:mainSha}}),{status:200});
+   if(url.includes("/git/ref/heads/main"))
+     return new Response(JSON.stringify({object:{sha:mainSha}}),{status:200});
+   if(url.includes("/contents/"+childPath+"?ref="+mainSha))
+     return new Response(JSON.stringify({sha:blobSha}),{status:200});
+   if(url.includes("/contents/skills/profile_creator/README.md?ref="+mainSha))
+     return new Response(JSON.stringify({sha:readmeSha}),{status:200});
+   if(url.includes("/contents/"+childPath+"?ref="+headSha))
+     return new Response(JSON.stringify({type:"file",encoding:"base64",
+       sha:"d".repeat(40),content:btoa(candidate)}),{status:200});
+   return n.fetchFn(input,init);
+ };
+ return {fetchFn,calls,ledger};
+}
+Deno.test("skill post60: exact GitHub SHA and frozen plan reach existing core 70/80",async()=>{
+ const n=await post60Mock();
+ const out=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:write",
+      evidence_payload:{pr_number:3746,blocking_codes:[]}},
+     {step_id:"github_readback",evidence_ref:"git:readback",
+      evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await out.json();
+ eq(out.status,200);eq(b.outcome,"SKILL_CHILD_STEP_BATCH_RECORDED");
+ eq(b.steps_recorded,2);eq(b.no_file_write,true);
+ const rpc=n.calls.filter(c=>c.url.endsWith("/lf_record_operation_step_core_v1"));
+ eq(rpc.length,2);
+ eq(rpc.map(c=>c.body?.p_step_id),["github_write","github_readback"]);
+ eq((rpc[0].body?.p_trust_validation as Record<string,unknown>)?.source,
+   "OIDC_EDGE_GITHUB_VERIFIED");
+});
+Deno.test("skill post60: candidate SHA mismatch fails before the SQL writer",async()=>{
+ const n=await post60Mock(true);
+ const out=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,
+   steps:[{step_id:"github_write",evidence_ref:"git:write",
+     evidence_payload:{pr_number:3746,blocking_codes:[]}}],
+ },config,n.fetchFn,sha,callerId);
+ const b=await out.json();
+ eq(out.status,409);eq(b.code,"SKILL_POST60_CANDIDATE_SHA256_MISMATCH");
+ eq(n.calls.some(c=>c.url.endsWith("/lf_record_operation_step_core_v1")),false);
+});
+
+Deno.test("skill step: only exact OIDC identity can write ledger",async()=>{
+ const n=stepNetwork();
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,n.fetchFn,sha,undefined);
+ eq(r.status,403);
+ eq(n.calls.some(c=>c.url.endsWith("/lf_skill_update_child_step_v1")),false);
+});
+
+Deno.test("skill step: a rejected canonical step aborts batch without false success",async()=>{
+ const n=stepNetwork({blockStep:"skill_resolve"});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,3),
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.outcome,"BLOCKED");
+ eq(b.failed_step,"skill_resolve");eq(b.steps_recorded,1);
+ eq(n.recorded,["router"]);
+});
+
+Deno.test("skill step: missing canonical readback is not a completed batch",async()=>{
+ const n=stepNetwork({brokenReadback:true});
+ const r=await handleProfileContinuation(PROFILE_SKILL_STEP_BATCH_ACTION,{
+   execution_id:id,child_execution_id:skillChildId,steps:stepItems.slice(0,1),
+ },config,n.fetchFn,sha,callerId);
+ const b=await r.json();
+ eq(r.status,409);eq(b.code,"SKILL_CHILD_STEP_READBACK_NOT_CLEAN");
 });
