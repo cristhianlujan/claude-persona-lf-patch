@@ -68,6 +68,32 @@ VALUES('EXEC-PROFILE-GATE2-PG17RULECHILD001',40,'input_validate',
  'STEP_PASS_WITH_EVIDENCE','SYNTHETIC-PG17-NOT-REAL',
  jsonb_build_object('scope_authority_packet_sha256',repeat('a',64)));
 """)
+    # Only a synthetic source ledger in isolated PG17. Never mock CURRENTNESS
+    # as PASS; the production code must return a post-cut verification obligation.
+    sql(r"""
+CREATE SCHEMA IF NOT EXISTS programacion;
+CREATE TABLE programacion.input_readiness_runs(
+ id bigint PRIMARY KEY,pantalla_id integer,status text,
+ invalidated_at timestamptz,supersedes_run_id bigint,source_manifest jsonb
+);
+INSERT INTO programacion.input_readiness_runs VALUES
+(929,58,'COMPLETED',NULL,NULL,
+ '[{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0001"}}]'::jsonb),
+(930,58,'COMPLETED',NULL,929,
+ '[{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0001"}},{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0002"}},{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0003"}},{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb),
+(931,59,'COMPLETED',NULL,NULL,
+ '[{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb),
+(932,60,'COMPLETED',NULL,NULL,
+ '[{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb),
+(944,61,'COMPLETED',NULL,NULL,
+ '[{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb),
+(951,62,'COMPLETED',NULL,NULL,
+ '[{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb),
+(910,58,'BLOCKED',NULL,NULL,
+ '[{"ref":{"kind":"RULE","codigo":"MISSING"}}]'::jsonb),
+(911,58,'COMPLETED','2026-11-01T00:00:00Z',NULL,
+ '[{"ref":{"kind":"RULE","codigo":"MISSING"}}]'::jsonb);
+""")
     check("578_RULES",
           one("(SELECT count(*) FROM lf_ops.reglas)=578")=="t")
     check("412_VIGENTE",
@@ -125,6 +151,26 @@ def test():
     check("BLOCK_MATERIAL_DRIFT_SAME_CODES",
           "BLOCK_RULE_BULK_RULE_MATERIAL_PREIMAGE_DRIFT" in call(True))
     sql("UPDATE lf_ops.reglas SET descripcion='Descripcion original protegida' WHERE id=1000;")
+    # Missing direct RULE ref MUST block before DDL, without writing.
+    sql("""UPDATE programacion.input_readiness_runs
+SET source_manifest='[{"ref":{"kind":"RULE","codigo":"DOES_NOT_EXIST"}}]'::jsonb
+WHERE id=930;""")
+    check("BLOCK_UNRESOLVED_IG_RULE_PIN",
+          "BLOCK_RULE_BULK_IG_UNRESOLVED_RULE_PIN" in call(True))
+    check("NO_OWNER_COLUMN_AFTER_IG_BLOCK",
+          one("NOT EXISTS(SELECT 1 FROM information_schema.columns "
+          "WHERE table_schema='lf_ops' AND table_name='reglas' "
+          "AND column_name='owner_name')")=="t")
+    sql("""UPDATE programacion.input_readiness_runs
+SET source_manifest='[{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0001"}},{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0002"}},{"ref":{"kind":"RULE","codigo":"TEST-BULK-RULE-0003"}},{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb
+WHERE id=930;""")
+    # Malformed manifests also fail closed for linked canonical screens.
+    sql("UPDATE programacion.input_readiness_runs SET source_manifest='[]'::jsonb WHERE id=931;")
+    check("BLOCK_EMPTY_IG_MANIFEST",
+          "BLOCK_RULE_BULK_IG_UNRESOLVED_RULE_PIN" in call(True))
+    sql("""UPDATE programacion.input_readiness_runs
+SET source_manifest='[{"ref":{"kind":"SCREEN_CANONICAL_GRAPH"}}]'::jsonb
+WHERE id=931;""")
     sql(r"""
 CREATE FUNCTION lf_ops.fail_owner_mid_batch() RETURNS trigger LANGUAGE plpgsql AS $fail$
 BEGIN
@@ -154,6 +200,25 @@ FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
           "WHERE evidence_payload ? 'rule_update_history_v1')=0")=="t")
     sql("DROP TRIGGER t_mid ON lf_ops.reglas;DROP FUNCTION lf_ops.fail_owner_mid_batch();")
     result=json.loads(call())
+    gate=result["ig_currentness_gate"]
+    check("IG_GATE_STRUCTURAL_CONTRACT",
+          gate["schema_version"]=="LF_RULE_BULK_IG_CURRENTNESS_GATE_V1"
+          and gate["status"]=="POST_CUT_AUTHORITY_PENDING")
+    check("IG_GATE_LATEST_FIVE_ONLY",
+          gate["candidate_run_count"]==5
+          and sorted(row["run_id"] for row in gate["candidates"])==[930,931,932,944,951])
+    check("IG_GATE_MATERIAL_THREE_RULE_PINS",
+          gate["material_rule_candidate_count"]==1
+          and next(row for row in gate["candidates"] if row["run_id"]==930)["material_rule_pins"]==3)
+    check("IG_GATE_GRAPH_ONLY_NO_BLIND_RECURATION",
+          all(row["impact_class"]=="POST_CUT_CURRENTNESS_READBACK"
+              for row in gate["candidates"] if row["run_id"]!=930))
+    check("IG_GATE_NEVER_FORGES_CURRENT_OR_RELEASE",
+          gate["source_currentness_attested"] is False
+          and gate["validator_receipt_attested"] is False
+          and gate["production_release_authorized"] is False
+          and result["production_status"]=="REQUIRES_GOVERNED_IG_CURRENTNESS_VALIDATION"
+          and all(row["source_currentness"]=="NOT_EVALUATED" for row in gate["candidates"]))
     check("578_CHILDREN_APPLIED",result["rules_updated"]==578 and result["status"]=="APPLIED_VERIFIED")
     check("578_HISTORIES_VERIFIED",result["histories_written"]==578)
     check("56_SCREENS_REHASHED",result["screens_sha_verified"]==56)
