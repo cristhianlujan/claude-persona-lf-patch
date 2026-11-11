@@ -178,7 +178,8 @@ BEGIN
    'blocking_code','IG_SEMANTIC_PACKET_INVALID','packet_status',packet->>'status'); END IF;
 
  packet_sha:=packet->>'db_packet_sha256';
- IF packet_sha IS NULL OR packet_sha !~ '^[a-f0-9]{64}
+ IF packet_sha IS NULL OR packet_sha !~ '^[a-f0-9]{64}$' THEN
+   RETURN jsonb_build_object('status','BLOCKED','blocking_code','BLOCK_IG_PACKET_SHA_INVALID'); END IF;
 
  receipt:=public.fn_input_governance_semantic_external_receipt_readback_v1(
    p_run_id,p_validator_identity,p_handoff_receipt_id,p_ticket,p_candidate_sha256);
