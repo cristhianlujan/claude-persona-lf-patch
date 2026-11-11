@@ -48,7 +48,9 @@ INSERT INTO public.lf_operation_execution(
 VALUES('EXEC-L4-REVIEWER-FIXTURE-001','EJECUCION_PERFIL_LF',
  'PERFIL-L4-SEMANTIC-REVIEWER-TEST','PERFIL','COMPLETED',
  jsonb_build_object('semantic_review',jsonb_build_object(
- 'subject_promotion_id','PROM-TEST','review_mode','"""+mode+"""')));
+ 'subject_promotion_id','PROM-TEST','review_mode','"""+mode+"""'),
+ 'executor_mode','GPT_NATIVE','executor_provider','OPENAI_CHATGPT_NATIVE',
+ 'read_only',true,'no_write',true,'no_promotion',true));
 INSERT INTO public.lf_operation_execution_steps(
  execution_id,step_id,status,evidence_ref,created_by_execution_id,evidence_payload)
 SELECT 'EXEC-L4-REVIEWER-FIXTURE-001','semantic_judge',
@@ -59,6 +61,10 @@ SELECT 'EXEC-L4-REVIEWER-FIXTURE-001','semantic_judge',
   'test_only_synthetic',"""+("true" if synthetic_mark else "false")+""",
   'semantic_judge_result',jsonb_build_object(
     'status','PASS','validator_status','PASS',
+    'verdict','PASS_REVIEWED_CURRENT_CONTEXT',
+    'review_mode','CURRENT_CONTEXT_REVIEW',
+    'reviewer_is_producer',true,'producer_independence_proven',false,
+    'model_call_count',0,
     'result',jsonb_build_object(
       'unsupported_claims','[]'::jsonb,'blocking_codes','[]'::jsonb,
       'promotion_semantic_review',jsonb_build_object(
