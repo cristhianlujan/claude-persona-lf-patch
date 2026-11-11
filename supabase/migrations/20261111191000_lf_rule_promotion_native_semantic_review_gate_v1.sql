@@ -116,10 +116,10 @@ BEGIN
     OR nullif(st.created_by_execution_id,'') IS NULL
     OR st.evidence_payload->>'test_only_synthetic'='true'
     OR st.evidence_payload#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
-    OR st.evidence_payload#>'{semantic_judge_result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
+    OR st.evidence_payload#>'{semantic_judge_result,result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
  THEN RETURN jsonb_build_object('status','BLOCKED',
     'blocking_code','REVIEWER_STEP70_RECEIPT_NOT_ATTESTED'); END IF;
- v_review:=st.evidence_payload->'promotion_semantic_review';
+ v_review:=st.evidence_payload#>'{semantic_judge_result,result,promotion_semantic_review}';
  packet:=public.lf_rule_promotion_semantic_packet_v1(p_promotion_id);
  IF v_review IS NULL OR v_review->>'schema_version' IS DISTINCT FROM 'LF_RULE_PROMOTION_NATIVE_SEMANTIC_REVIEW_V1'
     OR v_review->>'reviewer_execution_id' IS DISTINCT FROM p_review_execution_id
@@ -185,8 +185,8 @@ BEGIN
   OR nullif(st.created_by_execution_id,'') IS NULL
   OR st.evidence_payload->>'test_only_synthetic'='true'
   OR st.evidence_payload#>>'{semantic_judge_result,status}' IS DISTINCT FROM 'PASS'
-  OR st.evidence_payload#>'{semantic_judge_result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
-  OR st.evidence_payload->'promotion_semantic_review' IS DISTINCT FROM p.semantic_receipt
+  OR st.evidence_payload#>'{semantic_judge_result,result,unsupported_claims}' IS DISTINCT FROM '[]'::jsonb
+  OR st.evidence_payload#>'{semantic_judge_result,result,promotion_semantic_review}' IS DISTINCT FROM p.semantic_receipt
  THEN RETURN jsonb_build_object('status','BLOCKED',
  'blocking_code','BLOCK_SEMANTIC_REVIEWER_RECEIPT_CHANGED'); END IF;
  packet:=public.lf_rule_promotion_semantic_packet_v1(p_promotion_id);
