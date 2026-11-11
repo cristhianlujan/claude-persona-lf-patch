@@ -158,5 +158,97 @@
     ],
     "candidate_ms": null,
     "interpretation": "LEGACY_BASELINE_ONLY_NOT_CANDIDATE_PARITY"
+  },
+  "production_test_authorization_20261111": {
+    "user_scope": "TEST_IN_PRODUCTION_IF_NO_SANDBOX",
+    "state": "AUTHORIZED_BY_USER_BUT_CANDIDATE_EXECUTION_TECHNICALLY_BLOCKED",
+    "production_project_ref": "mhwmirqcgxxukpctffuv",
+    "precise_readback_at_utc": "2026-11-11T08:11:47.308291Z",
+    "connection_permissions": {
+      "current_user": "supabase_read_only_user",
+      "transaction_read_only": "on",
+      "default_transaction_read_only": "on",
+      "database_create": false,
+      "programacion_schema_create": false,
+      "public_schema_create": false,
+      "execute_existing_validator": false,
+      "execute_new_classifier": false
+    },
+    "governed_writer": {
+      "known_path": "ACTUALIZACION_DB_LF → lf-migration-merge-train",
+      "workflow": ".github/workflows/lf-migration-merge-train.yml",
+      "mode": "REAL",
+      "execution_mode": "ENFORCED",
+      "trigger": "PR label ready-to-merge",
+      "risk": "APPLIES_EXACT_MIGRATION_AND_MERGES_PR_NOT_AN_ISOLATED_ROLLBACK_TEST",
+      "invoked": false
+    },
+    "production_read_only_smoke": {
+      "type": "EXECUTED_AGAINST_LIVE_PRODUCTION",
+      "results": [
+        {
+          "run_id": "951",
+          "case": "COMPLETED_CURRENT",
+          "legacy_eligible": true,
+          "legacy_required": false,
+          "legacy_drift": [
+            0,
+            0,
+            0
+          ],
+          "current_gate": true,
+          "validator_pass_count": 47,
+          "semantic_independence_unproven": 47,
+          "check": "PASS"
+        },
+        {
+          "run_id": "944",
+          "case": "COMPLETED_CURRENT",
+          "legacy_eligible": true,
+          "legacy_required": false,
+          "legacy_drift": [
+            0,
+            0,
+            0
+          ],
+          "current_gate": true,
+          "validator_pass_count": 47,
+          "semantic_independence_unproven": 47,
+          "check": "PASS"
+        },
+        {
+          "run_id": "949",
+          "case": "SOURCE_NOT_CURRENT",
+          "legacy_eligible": false,
+          "current_gate": false,
+          "check": "PASS"
+        },
+        {
+          "run_id": "9223372036854775807",
+          "case": "RUN_NOT_FOUND",
+          "legacy_eligible": false,
+          "current_gate": false,
+          "check": "PASS"
+        }
+      ],
+      "passed": 4,
+      "total": 4,
+      "source": "Supabase SQL live readback on 2026-11-11 08:11:47Z",
+      "persists_changes": false,
+      "creates_ig_runs": false
+    },
+    "candidate_test": {
+      "compile": "NOT_TESTED",
+      "rollback": "NOT_TESTED",
+      "47_family_parity": "NOT_TESTED",
+      "candidate_latency": "NOT_TESTED",
+      "negative_e2e": "NOT_TESTED",
+      "reason": "READ_ONLY_PRODUCTION_SQL_ACCESS_AND_NO_ISOLATED_BRANCH",
+      "source_promoted": false
+    },
+    "next_authorized_step": "Execute guarded rollback-only source candidate through a separately enabled GOVERNED test executor with production permissions. Do not use the REAL Merge Train as a dry-run or route around privileges.",
+    "checkpoint": "PENDING",
+    "production_code_modified": false,
+    "network_or_external_dispatch": false
   }
 }
