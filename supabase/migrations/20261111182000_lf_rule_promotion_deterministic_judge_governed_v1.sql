@@ -34,6 +34,8 @@ DECLARE
  conf jsonb;
  deps jsonb;
  policy record;
+ v_decision record;
+ v_decision_sha text;
  v_blocks text[]:=ARRAY[]::text[];
  v_class text;
  v_scope text;
@@ -68,12 +70,34 @@ BEGIN
    THEN v_blocks:=array_append(v_blocks,'RULE_SNAPSHOT_CHANGED'); END IF;
  IF v_owner IS DISTINCT FROM 'LF_GOVERNANCE'
    THEN v_blocks:=array_append(v_blocks,'FUNCTIONAL_OWNER_MISSING_OR_WRONG'); END IF;
- IF v_origin IS NULL OR (
-     COALESCE((conf->>'source_decision_number') ~ '^[1-9][0-9]*$',false)=false
-     AND NOT (jsonb_typeof(conf->'parameter_provenance')='object'
-          AND nullif(conf#>>'{parameter_provenance,source_ref}','') IS NOT NULL
-          AND conf#>>'{parameter_provenance,verified}'='true'))
- THEN v_blocks:=array_append(v_blocks,'PARAMETER_PROVENANCE_NOT_ATTESTED'); END IF;
+ -- An ID asserted in the candidate is NOT sufficient: bind it to an
+ -- approved and identity-matching record in the canonical decision ledger.
+ IF v_origin IS NULL OR
+   COALESCE((conf->>'source_decision_number') ~ '^[1-9][0-9]*$',false)=false
+ THEN v_blocks:=array_append(v_blocks,'PARAMETER_PROVENANCE_NOT_ATTESTED');
+ ELSE
+   SELECT id_decision,decision_number,estado_normalizado,raw_payload
+   INTO v_decision FROM public.lf_decisiones_gov
+   WHERE decision_number=(conf->>'source_decision_number')::bigint
+     AND estado_normalizado IN ('VIGENTE','APROBADA')
+     AND id_decision=v_origin;
+   IF NOT FOUND THEN
+      v_blocks:=array_append(v_blocks,'CANONICAL_DECISION_SOURCE_NOT_APPROVED');
+   ELSE
+      v_decision_sha:=encode(extensions.digest(convert_to(
+         to_jsonb(v_decision)::text,'UTF8'),'sha256'),'hex');
+   END IF;
+ END IF;
+ -- Sensitive numeric parameters require an explicit per-rule provenance
+ -- reference that matches that authoritative decision, not a bare number.
+ IF EXISTS(SELECT 1 FROM jsonb_each(conf) f(key,value)
+       WHERE jsonb_typeof(f.value)='number' AND f.key<>'source_decision_number')
+   AND NOT (
+     jsonb_typeof(conf->'parameter_provenance')='object'
+     AND conf#>>'{parameter_provenance,source_ref}'=v_origin
+     AND conf#>>'{parameter_provenance,verified}'='true')
+ THEN v_blocks:=array_append(v_blocks,'NUMERIC_PARAMETER_SOURCE_NOT_ATTESTED');
+ END IF;
  IF conf ? 'numeric_thresholds_in_rule' AND conf->>'numeric_thresholds_in_rule'='DENY'
     AND EXISTS (SELECT 1 FROM jsonb_object_keys(conf) f(name)
                 WHERE f.name LIKE '%timeout_seconds%' OR f.name LIKE '%rate_limit_count%')
@@ -134,6 +158,10 @@ BEGIN
    IF NOT FOUND OR policy.status<>'VIGENTE' THEN
      v_blocks:=array_append(v_blocks,'CANONICAL_SECURITY_POLICY_NOT_VIGENTE');
    ELSE
+     IF EXISTS(SELECT 1 FROM jsonb_object_keys(policy.policy_config) item(key)
+       WHERE item.key NOT IN ('deny_by_default','server_side_enforcement',
+                              'rls_policy_required','cross_tenant_access'))
+     THEN v_blocks:=array_append(v_blocks,'SECURITY_POLICY_CHECK_COVERAGE_INCOMPLETE'); END IF;
      IF (policy.policy_config->>'deny_by_default'='true'
           AND conf->>'deny_by_default'='false')
        OR (policy.policy_config->>'server_side_enforcement'='true'
@@ -151,10 +179,9 @@ BEGIN
       'policy_config',s.policy_config) ORDER BY s.policy_code)
       FROM lf_ops.politicas_seguridad s WHERE s.status='VIGENTE'),
     '[]'::jsonb)::text,'UTF8'),'sha256'),'hex');
- -- Real owner authority is not inferred from the candidate's free-form text.
- -- If explicitly marked as owner-only, escalate; no fake HUMAN approval.
- v_human_required:=conf->>'authority_required'='HUMAN'
-        AND COALESCE((conf->>'source_decision_number') ~ '^[1-9][0-9]*$',false);
+ -- HUMAN route is classified ONLY from the approved canonical decision,
+ -- never from a free-form value in the candidate rule.
+ v_human_required:=coalesce(v_decision.raw_payload->>'authority_class','')='HUMAN_ONLY';
  v_class:=CASE WHEN cardinality(v_blocks)>0 THEN 'BLOCKED'
       WHEN v_human_required THEN 'HUMAN_DECISION_REQUIRED'
       ELSE 'AUTO_APPROVABLE' END;
@@ -167,7 +194,8 @@ BEGIN
    'judge_actor','LF_RULE_PROMOTION_DETERMINISTIC_JUDGE_V1',
    'source_snapshot_sha256',v_rule_sha,
    'request_snapshot_sha256',p.request_snapshot_sha256,
-   'owner_name',v_owner,'dependency_sha256',v_deps_sha,
+   'owner_name',v_owner,'source_decision_sha256',v_decision_sha,
+   'dependency_sha256',v_deps_sha,
    'security_policy_set_sha256',v_policy_sha,
    'scope_verified',NOT('PRODUCT_DIRECTOR_RULE_SCOPE_NOT_ATTESTED'=ANY(v_blocks)),
    'source_current',v_rule_sha IS NOT DISTINCT FROM p.request_snapshot_sha256,
