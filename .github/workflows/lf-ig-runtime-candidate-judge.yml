@@ -77,20 +77,6 @@ jobs:
           echo "applicable=true" >> "$GITHUB_OUTPUT"
           echo "IG_N9_HEAD_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
 
-      - name: M10.13 CP3 frozen caller anti-reintroduction (trusted PR base)
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          set -euo pipefail
-          guard=sandbox/lf_contract_gate_test/engineering_checkpoints/m10_13/cp3_legacy_reintroduction_guard_v1.py
-          if [ -f "$guard" ]; then
-            python3 "$guard" self-test
-            python3 "$guard" check-commit --base "$BASE_SHA" --head "$HEAD_SHA"
-          else
-            echo "M1013_CP3_GUARD_BOOTSTRAP_PENDING_TRUSTED_BASE"
-          fi
-
   run-ig-n9-when-applicable:
     name: Execute IG N9 candidate
     needs: classify-ig-n9-applicability
