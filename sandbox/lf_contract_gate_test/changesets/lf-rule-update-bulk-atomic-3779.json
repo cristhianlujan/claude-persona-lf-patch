@@ -5,6 +5,7 @@
     "sandbox/lf_contract_gate_test/changesets/lf-rule-update-bulk-atomic-3779.json": "CHANGESET_MANIFEST",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/live_currentness_authority_fixture.sql": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/live_promotion_baseline_fixture.sql": "ENGINEERING_CHECKPOINTS",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_adversarial_mutations_labeled_v1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_real_conflict_signals_v1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_semantic_mutations_labeled_v1.json": "ENGINEERING_CHECKPOINTS",
     "sandbox/lf_contract_gate_test/rule_promotion_v1/promotion_pg18_sandbox_fixture.sql": "ENGINEERING_CHECKPOINTS",
