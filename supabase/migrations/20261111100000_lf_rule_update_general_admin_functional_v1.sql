@@ -486,25 +486,16 @@ BEGIN
  WHERE n.value IS DISTINCT FROM b.value;
  IF jsonb_typeof(v_history_delta) IS DISTINCT FROM 'object'
  OR EXISTS(SELECT 1 FROM jsonb_object_keys(v_history_delta) k(field)
-   WHERE k.field NOT IN (
-    CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY' THEN 'owner_name'
-         ELSE 'titulo' END,
-    CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY' THEN 'created_by'
-         ELSE 'descripcion' END,
-    CASE WHEN v_change_kind='ADMINISTRATIVE_ONLY' THEN 'owner_name'
-         ELSE 'razon' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'categoria'
-         ELSE 'pendiente_decision' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'valor_config'
-         ELSE 'pendiente_detalle' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'es_transversal'
-         ELSE 'pendiente_decision' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'origen'
-         ELSE 'pendiente_detalle' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'pendiente_decision'
-         ELSE 'pendiente_decision' END,
-    CASE WHEN v_change_kind='FUNCTIONAL_CANDIDATE' THEN 'pendiente_detalle'
-         ELSE 'pendiente_detalle' END)) THEN
+   WHERE (v_change_kind='ADMINISTRATIVE_ONLY'
+            AND k.field NOT IN ('owner_name','created_by'))
+      OR (v_change_kind='DOCUMENTARY_ONLY'
+            AND k.field NOT IN (
+                 'titulo','descripcion','razon','pendiente_decision','pendiente_detalle'))
+      OR (v_change_kind='FUNCTIONAL_CANDIDATE'
+            AND k.field NOT IN (
+                 'titulo','descripcion','razon','categoria','origen',
+                 'valor_config','es_transversal','pendiente_decision','pendiente_detalle'))
+ ) THEN
     RAISE EXCEPTION 'BLOCK_RULE_HISTORY_UNAUTHORIZED_MATERIAL_DELTA';
  END IF;
  -- Store full source and result, both SHA, and field delta in existing
