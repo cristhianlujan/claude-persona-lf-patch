@@ -185,6 +185,24 @@ BEGIN
          IS DISTINCT FROM v_bulk_authority->>'source_catalog_md5'
       OR jsonb_typeof(p_input->'before_schema_source_row') IS DISTINCT FROM 'object'
    THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_BATCH_PATCH_SCOPE_NOT_JUDGED'; END IF;
+   -- Cross-check the exact Step40 REGLA scope before bypassing screen selection.
+   -- Only an already judged ADMINISTRATIVE_ONLY full-catalog child can enter.
+   IF NOT EXISTS(
+     SELECT 1 FROM public.lf_operation_execution_steps st
+     WHERE st.execution_id=p_parent AND st.step_id='input_validate'
+       AND st.status='STEP_PASS_WITH_EVIDENCE'
+       AND st.evidence_payload#>>'{scope_authority_packet_sha256}'
+           ~ '^sha256:[0-9a-f]{64}$'
+       AND st.evidence_payload#>>'{input_governance,status}'='READY'
+       AND st.evidence_payload#>>'{input_governance,scope_type}'='REGLA'
+       AND st.evidence_payload#>>'{input_governance,scope_mode}'='ALL_CANONICAL_RULES'
+       AND st.evidence_payload#>>'{input_governance,source_scope_validated}'='true'
+       AND st.evidence_payload#>>'{input_governance,rule_count}'='578'
+       AND st.evidence_payload#>>'{input_governance,catalog_md5}'=
+           v_bulk_authority->>'source_catalog_md5'
+       AND st.evidence_payload#>>'{input_governance,screen_not_current_count}'='0'
+       AND st.evidence_payload#>>'{input_governance,inactive_only_rule_count}'='0'
+   ) THEN RAISE EXCEPTION 'BLOCK_RULE_ADMIN_BATCH_STEP40_SCOPE_NOT_ATTESTED'; END IF;
  ELSE
    IF v_profile_output->'deliverable_created'->'governed_rule_patch'
          IS DISTINCT FROM v_patch THEN
@@ -554,6 +572,19 @@ BEGIN
      AND coalesce(s.evidence_payload->>'scope_authority_packet_sha256','')
           ~ '^sha256:[0-9a-f]{64}$'
  ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_SCOPE_NOT_ATTESTED'; END IF;
+ -- Fail before DDL if Step40 did not validate the entire RULE scope.
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps s
+   WHERE s.execution_id=p_parent_execution_id
+     AND s.step_id='input_validate' AND s.status='STEP_PASS_WITH_EVIDENCE'
+     AND s.evidence_payload#>>'{input_governance,status}'='READY'
+     AND s.evidence_payload#>>'{input_governance,scope_type}'='REGLA'
+     AND s.evidence_payload#>>'{input_governance,scope_mode}'='ALL_CANONICAL_RULES'
+     AND s.evidence_payload#>>'{input_governance,source_scope_validated}'='true'
+     AND s.evidence_payload#>>'{input_governance,rule_count}'='578'
+     AND s.evidence_payload#>>'{input_governance,screen_not_current_count}'='0'
+     AND s.evidence_payload#>>'{input_governance,inactive_only_rule_count}'='0'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_RULE_SCOPE_NOT_ATTESTED'; END IF;
  IF NOT EXISTS(
    SELECT 1 FROM public.lf_operation_execution_steps s
    WHERE s.execution_id=p_parent_execution_id AND s.step_id='output_validate'
@@ -602,6 +633,13 @@ BEGIN
        AND nullif(btrim(r->>'source_ref'),'') IS NOT NULL
    )
  THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_PRODUCT_SCOPE_OR_OWNER_APPROVAL'; END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.lf_operation_execution_steps s
+   WHERE s.execution_id=p_parent_execution_id AND s.step_id='input_validate'
+     AND s.status='STEP_PASS_WITH_EVIDENCE'
+     AND s.evidence_payload#>>'{input_governance,catalog_md5}'=
+         v_batch->>'source_catalog_md5'
+ ) THEN RAISE EXCEPTION 'BLOCK_RULE_BULK_STEP40_CATALOG_HASH_DRIFT'; END IF;
 
  -- One serial transaction protects ALL mutable rules and their lineages;
  -- external readers see original OR final data, never schema-only state.

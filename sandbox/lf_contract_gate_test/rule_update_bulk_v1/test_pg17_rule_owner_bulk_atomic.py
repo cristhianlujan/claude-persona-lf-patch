@@ -154,10 +154,27 @@ WHERE st.execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
  AND st.step_id='execute_profile';
 """
     sql(scoped)
+    # Synthetic Step40 receipt. NOT a real IG Currentness or judge receipt.
+    # Its only purpose is testing the downstream server-side binding gate.
+    sql(r"""
+UPDATE public.lf_operation_execution_steps st SET
+ evidence_payload=jsonb_set(st.evidence_payload,'{input_governance}',(
+ SELECT jsonb_build_object(
+ 'status','READY','scope_type','REGLA','scope_mode','ALL_CANONICAL_RULES',
+ 'source_scope_validated',true,'rule_count',578,
+ 'screen_not_current_count',0,'inactive_only_rule_count',0,
+ 'catalog_md5',(SELECT md5(string_agg(r.id::text||':'||r.codigo,E'\n'
+ ORDER BY r.id)) FROM lf_ops.reglas r)) ),true)
+WHERE st.execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+  AND st.step_id='input_validate';
+""")
 def call(fail=False):
     return sql("SELECT public.lf_rule_admin_bulk_atomic_v1('"+PARENT+"','"+BATCH+"');",fail=fail)
 def test():
     load();seed_all()
+    source_after=one("md5(pg_get_functiondef("+
+        "'public.lf_skill_o_rule_update_v1(text,jsonb,text,text,text)'::regprocedure))")
+    print("RAW_WRITER_MD5_AFTER "+source_after,flush=True)
     check("NO_OWNER_COLUMN_BEFORE_START",
           one("NOT EXISTS(SELECT 1 FROM information_schema.columns "
           "WHERE table_schema='lf_ops' AND table_name='reglas' AND column_name='owner_name')")=="t")
@@ -196,6 +213,38 @@ SET allowed=jsonb_set(allowed,
  '{mode_overrides,ADMINISTRATIVE_ONLY,governance_guard}',
  '"SUPER_ADMIN"'::jsonb,true)
 WHERE operation_code='ACTUALIZACION_REGLA_LF';""")
+    # Runtime Step40 scope is not a free caller flag: tampering blocks
+    # before the first child or schema mutation.
+    sql("""UPDATE public.lf_operation_execution_steps SET
+      evidence_payload=jsonb_set(evidence_payload,
+       '{input_governance,scope_mode}', '"ONE_CANONICAL_RULE"'::jsonb,true)
+      WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+        AND step_id='input_validate';""")
+    error=call(True)
+    print("RAW_NEGATIVE_STEP40_SCOPE "+error.strip()[-850:],flush=True)
+    check("ALTERED_STEP40_SCOPE_BLOCKS_BEFORE_DDL",
+      "BLOCK_RULE_BULK_STEP40_RULE_SCOPE_NOT_ATTESTED" in error)
+    sql("""UPDATE public.lf_operation_execution_steps SET
+      evidence_payload=jsonb_set(evidence_payload,
+       '{input_governance,scope_mode}', '"ALL_CANONICAL_RULES"'::jsonb,true)
+      WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+        AND step_id='input_validate';""")
+    sql("""UPDATE public.lf_operation_execution_steps SET
+      evidence_payload=jsonb_set(evidence_payload,
+       '{input_governance,catalog_md5}', '"00000000000000000000000000000000"'::jsonb,true)
+      WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+        AND step_id='input_validate';""")
+    error=call(True)
+    print("RAW_NEGATIVE_STEP40_CATALOG "+error.strip()[-850:],flush=True)
+    check("ALTERED_STEP40_CATALOG_BLOCKS_BEFORE_DDL",
+       "BLOCK_RULE_BULK_STEP40_CATALOG_HASH_DRIFT" in error)
+    sql("""UPDATE public.lf_operation_execution_steps SET
+      evidence_payload=jsonb_set(evidence_payload,
+       '{input_governance,catalog_md5}', (
+          SELECT to_jsonb(md5(string_agg(id::text||':'||codigo,E'\n'
+            ORDER BY id))) FROM lf_ops.reglas),true)
+      WHERE execution_id='EXEC-PROFILE-GATE2-PG17RULECHILD001'
+        AND step_id='input_validate';""")
     sql("UPDATE lf_ops.reglas SET descripcion='UNAUTHORIZED' WHERE id=1000;")
     check("BLOCK_MATERIAL_DRIFT_SAME_CODES",
           "BLOCK_RULE_BULK_RULE_MATERIAL_PREIMAGE_DRIFT" in call(True))
@@ -232,6 +281,7 @@ CREATE TRIGGER t_mid BEFORE UPDATE ON lf_ops.reglas
 FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
 """)
     failure=call(True)
+    print("RAW_NEGATIVE_MID_BATCH "+failure.strip()[-850:],flush=True)
     if not ("BLOCK_RULE_BULK_CHILD_NOT_VERIFIED" in failure
             and "PG17_MID_BATCH_INJECTED_FAILURE" in failure):
         raise AssertionError("BLOCK_MID_BATCH_FAILURE_CAUSE_MISMATCH: "+failure[-1500:])
@@ -249,6 +299,7 @@ FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
           "WHERE evidence_payload ? 'rule_update_history_v1')=0")=="t")
     sql("DROP TRIGGER t_mid ON lf_ops.reglas;DROP FUNCTION lf_ops.fail_owner_mid_batch();")
     result=json.loads(call())
+    print("RAW_POSITIVE_ATOMIC_578 "+json.dumps(result,sort_keys=True),flush=True)
     gate=result["ig_currentness_gate"]
     check("IG_GATE_STRUCTURAL_CONTRACT",
           gate["schema_version"]=="LF_RULE_BULK_IG_CURRENTNESS_GATE_V1"
@@ -283,7 +334,9 @@ FOR EACH ROW EXECUTE FUNCTION lf_ops.fail_owner_mid_batch();
           one("(SELECT count(*) FROM public.lf_operation_execution_steps "
           "WHERE evidence_payload#>>'{rule_update_history_v1,pre_schema_source_row,created_by}'"
           "='ORIGINAL_ACTOR')=577")=="t")
+    replay_error=call(True)
+    print("RAW_NEGATIVE_SAME_RUN_REPLAY "+replay_error.strip()[-850:],flush=True)
     check("REPLAY_IS_BLOCKED",
-          "BLOCK_RULE_BULK_OWNER_SCHEMA_ALREADY_PRESENT" in call(True))
+          "BLOCK_RULE_BULK_OWNER_SCHEMA_ALREADY_PRESENT" in replay_error)
     print("LF_RULE_BULK_ATOMIC_PG17_PASS",N,flush=True)
 if __name__=="__main__":test()
