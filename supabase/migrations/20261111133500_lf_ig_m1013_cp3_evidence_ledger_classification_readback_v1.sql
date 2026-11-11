@@ -76,7 +76,11 @@ BEGIN
  SELECT count(*)::integer, count(*) FILTER(WHERE p.oid IS NOT NULL AND md5(p.prosrc)=f.value->>'prosrc_md5')::integer
  INTO v_freeze_count,v_freeze_matching
  FROM jsonb_array_elements(v_freeze_before->'legacy_functions') f(value)
- LEFT JOIN pg_proc p ON p.oid=to_regprocedure(f.value->>'identity');
+ LEFT JOIN LATERAL (
+   SELECT p.oid,p.prosrc FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname||'.'||p.proname||'('||pg_get_function_identity_arguments(p.oid)||')'
+     =f.value->>'identity'
+ ) p ON true;
  IF v_freeze_count<>26 OR v_freeze_matching<>26
  THEN RAISE EXCEPTION 'IG_CP3_LEDGER_M104_FREEZE_DRIFT:count=%,equal=%',v_freeze_count,v_freeze_matching; END IF;
  SELECT md5(p.prosrc) INTO STRICT v_anchor_md5 FROM pg_proc p
@@ -114,10 +118,10 @@ BEGIN
  FROM edges;
  IF v_external_edges<>4 OR v_frozen_to_frozen<>15 OR v_other_external<>0
    OR v_callers IS DISTINCT FROM jsonb_build_array(
+     jsonb_build_object('signature','lf_record_independent_review_step_v3(text,text,text,jsonb,text,text)','source_md5','3e73aace98776b5f65c0dc05e76801c2'),
      jsonb_build_object('signature','programacion.fn_ig_graph_receipt_emit_per_run_v1(bigint,text,text,text,text)','source_md5','18fe88230f954a1d22ecf54fa679773b'),
      jsonb_build_object('signature','programacion.fn_ig_spec_traversal_emit_per_run_v1(bigint,text,text,text)','source_md5','0e8d978c0f28a77dab8230a0c3cc00b6'),
-     jsonb_build_object('signature','programacion.fn_input_governance_shadow_receipt_emit_v1(jsonb,jsonb)','source_md5','f566ae975f30cdcc370c4134fe5746e5'),
-     jsonb_build_object('signature','lf_record_independent_review_step_v3(text,text,text,jsonb,text,text)','source_md5','3e73aace98776b5f65c0dc05e76801c2')
+     jsonb_build_object('signature','programacion.fn_input_governance_shadow_receipt_emit_v1(jsonb,jsonb)','source_md5','f566ae975f30cdcc370c4134fe5746e5')
    )
  THEN RAISE EXCEPTION 'IG_CP3_LEDGER_UNEXPECTED_CALLER_GRAPH:external=%,internal=%,nonledger=%',
     v_external_edges,v_frozen_to_frozen,v_other_external; END IF;
