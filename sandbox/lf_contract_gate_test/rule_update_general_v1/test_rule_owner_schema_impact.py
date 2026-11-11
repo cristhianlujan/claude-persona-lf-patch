@@ -78,26 +78,26 @@ INSERT INTO test_rule_impact(id,codigo,estado,created_by)
  VALUES(1,'RULE-ONE','VIGENTE','legacy-a'),(2,'RULE-TWO','CANDIDATO','legacy-b');
 INSERT INTO test_screen_impact VALUES('SCREEN-ONE',1),('SCREEN-ONE',2);
 SELECT 'BEFORE_RULE|'||
- encode(digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
+ encode(extensions.digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
  FROM test_rule_impact r WHERE codigo='RULE-ONE';
 SELECT 'BEFORE_SCREEN|'||
- encode(digest(convert_to(jsonb_agg(
+ encode(extensions.digest(convert_to(jsonb_agg(
  (to_jsonb(r)-'created_at'-'updated_at') ORDER BY r.codigo)::text,'UTF8'),'sha256'),'hex')
  FROM test_screen_impact t JOIN test_rule_impact r ON r.id=t.rule_id;
 ALTER TABLE test_rule_impact ADD COLUMN owner_name text;
 SELECT 'INTERIM_RULE|'||
- encode(digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
+ encode(extensions.digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
  FROM test_rule_impact r WHERE codigo='RULE-ONE';
 SELECT 'INTERIM_SCREEN|'||
- encode(digest(convert_to(jsonb_agg(
+ encode(extensions.digest(convert_to(jsonb_agg(
  (to_jsonb(r)-'created_at'-'updated_at') ORDER BY r.codigo)::text,'UTF8'),'sha256'),'hex')
  FROM test_screen_impact t JOIN test_rule_impact r ON r.id=t.rule_id;
 UPDATE test_rule_impact SET owner_name='SUPER_ADMIN',created_by='ChatGPT';
 SELECT 'FINAL_RULE|'||
- encode(digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
+ encode(extensions.digest(convert_to((to_jsonb(r)-'created_at'-'updated_at')::text,'UTF8'),'sha256'),'hex')
  FROM test_rule_impact r WHERE codigo='RULE-ONE';
 SELECT 'FINAL_SCREEN|'||
- encode(digest(convert_to(jsonb_agg(
+ encode(extensions.digest(convert_to(jsonb_agg(
  (to_jsonb(r)-'created_at'-'updated_at') ORDER BY r.codigo)::text,'UTF8'),'sha256'),'hex')
  FROM test_screen_impact t JOIN test_rule_impact r ON r.id=t.rule_id;
 SELECT 'AFTER_STATUS|'||string_agg(codigo||':'||estado,',' ORDER BY codigo) FROM test_rule_impact;
