@@ -75,7 +75,7 @@ SELECT 'EXEC-L4-REVIEWER-FIXTURE-001','semantic_judge',
        'cited_evidence',jsonb_build_array(jsonb_build_object(
          'source_code','RULE-TEST-001',
          'source_sha256',pack.info#>>'{packet,candidate_source_sha256}',
-         'exact_excerpt','Test baseline from source fixture',
+         'exact_excerpt','Test baseline',
          'implication','Synthetic structural control only',
          'claim_type','TEST_FIXTURE_NOT_NATIVE_REVIEW')),
        'unsupported_claims','[]'::jsonb))))
