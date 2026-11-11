@@ -434,6 +434,16 @@ BEGIN
    RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
      'blocking_codes',judgement->'blocking_codes','promotion_id',p_promotion_id); END IF;
  IF judgement->>'classification'<>'AUTO_APPROVABLE' THEN
+   -- A policy/dependency drift is not silently hidden by a deterministic
+   -- BLOCK. It is sent to HUMAN for investigation; no apply is authorized.
+   gate:=public.lf_rule_promotion_ig_semantic_verify_v1(p_promotion_id);
+   IF gate->>'blocking_code'='BLOCK_IG_SEMANTIC_POLICY_DEPENDENCY_DRIFT' THEN
+     UPDATE public.lf_rule_promotion_v1 SET decision_route='HUMAN_DECISION_REQUIRED'
+       WHERE promotion_id=p_promotion_id;
+     RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
+       'blocking_code',gate->>'blocking_code',
+       'deterministic_blocking_codes',judgement->'blocking_codes',
+       'promotion_id',p_promotion_id); END IF;
    RETURN jsonb_build_object('status','BLOCKED','blocking_codes',
      judgement->'blocking_codes','promotion_id',p_promotion_id); END IF;
 
