@@ -223,7 +223,10 @@ def positive_saly(token):
   "closure":out["CLOSE"],"rollback":out["AFTER_ROLLBACK"],
   "sequence":"ONE_BEGIN_ONE_SQL_CONNECTION_ONE_ROLLBACK"})
 def whole_good_prelude(token):
- return prelude_lf(token,False)
+ # In the original BC fixture REG_SEG_004 is an explicit correction, not
+ # an acceptable independent new rule. Reuse the positively verified B
+ # lineage for N2..N6 so every negative reaches its intended boundary.
+ return prelude_lf(token,True)
 def negatives(token):
  not_curator="BEGIN;\n"+prelude_lf(token,False,False)+"\nROLLBACK;"
  fail("N1_PROMOTION_WITHOUT_CURATOR_BLOCKED",not_curator,"BLOCK_L23_CURATOR_NOT_ACCEPTED")
