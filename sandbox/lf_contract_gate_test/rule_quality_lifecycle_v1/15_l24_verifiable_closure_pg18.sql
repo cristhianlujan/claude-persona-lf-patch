@@ -100,15 +100,15 @@ BEGIN
  v_target:=l20_target_readback_v1(p_project,p_rule);
  SELECT status INTO v_ticket FROM activation_tickets
   WHERE project_code=p_project AND rule_code=p_rule;
- IF v_target->>'registry' IS DISTINCT FROM 'VIGENTE'
-    OR v_target->>'source' IS DISTINCT FROM 'VIGENTE'
-    OR v_ticket IS DISTINCT FROM 'CONSUMED' THEN
-  RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_READBACK_NOT_READY';
- END IF;
  SELECT count(*) INTO v_div FROM l20_list_divergences_v1(p_project) d
   WHERE d.rule_code=p_rule;
  IF v_div<>0 OR coalesce((v_target->>'target_divergence')::int,1)<>0 THEN
   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_DIVERGENCE_REGISTER_SOURCE';
+ END IF;
+ IF v_target->>'registry' IS DISTINCT FROM 'VIGENTE'
+    OR v_target->>'source' IS DISTINCT FROM 'VIGENTE'
+    OR v_ticket IS DISTINCT FROM 'CONSUMED' THEN
+  RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L24_READBACK_NOT_READY';
  END IF;
  IF p_project='lf' THEN
   IF v_engine<>'LF_FROZEN_APPLY' OR nullif(p_owner_run,'') IS NULL THEN
