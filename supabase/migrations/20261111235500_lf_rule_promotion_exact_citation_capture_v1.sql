@@ -294,11 +294,14 @@ BEGIN
  v_sha:=encode(extensions.digest(convert_to(v_binding::text,'UTF8'),'sha256'),'hex');
  IF v_sha IS DISTINCT FROM x.capture_binding_sha256 THEN
   RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED','blocking_code','L7_CAPTURE_SHA256_TAMPER'); END IF;
+ IF x.verdict='BLOCK' THEN RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
+    'blocking_code','L7_BLOCK_QUOTE_VERIFIED_NO_PROMOTION',
+    'case_id',x.case_id,'binding_sha256',v_sha,'promotable',false); END IF;
  IF x.source_provenance IN ('UNVERIFIED_NOT_FROM_REAL_REVIEW','UNVERIFIED_NOT_CAPTURED') THEN
    RETURN jsonb_build_object('status','PROFILE_OWNER_REVIEW_ONLY',
       'blocking_code','L7_CAPTURED_QUOTE_NOT_REAL_REVIEW_ATTESTED',
       'case_id',x.case_id,'verdict',x.verdict,'promotable',false,
-      'binding_sha256',v_sha); END IF;
+      'next_actor','PROFILE_OWNER','binding_sha256',v_sha); END IF;
  IF x.source_provenance IS DISTINCT FROM 'OFFICIAL_STEP70_VERIFIED_NATIVE_IG' THEN
   RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED','blocking_code','L7_SOURCE_PROVENANCE_UNTRUSTED'); END IF;
  IF x.verdict='BLOCK' THEN RETURN jsonb_build_object('status','HUMAN_DECISION_REQUIRED',
