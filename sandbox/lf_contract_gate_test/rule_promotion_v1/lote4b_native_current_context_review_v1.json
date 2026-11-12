@@ -1,0 +1,284 @@
+{
+  "schema_version": "LF_L4B_NATIVE_CURRENT_CONTEXT_REVIEW_V1",
+  "subject": "Lote 4B semantic review of the 22 deterministic false negatives plus 9 healthy controls",
+  "review_mode": "CURRENT_CONTEXT_REVIEW",
+  "reviewer_model": "GPT-5.6 Sol",
+  "separate_context": false,
+  "independent": false,
+  "model_call_count": 1,
+  "semantic_model_execution_real": true,
+  "source_dataset_refs": [
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_semantic_mutations_labeled_v1.json",
+    "sandbox/lf_contract_gate_test/rule_promotion_v1/lote4_adversarial_mutations_labeled_v1.json"
+  ],
+  "warning": "This is one native model review in the current conversation context. It is not an independent receipt, not a #3682 external receipt, and not promotion authority.",
+  "totals": {
+    "reviewed": 31,
+    "defects": 22,
+    "healthy": 9,
+    "correct": 31,
+    "false_negatives_after": 0,
+    "false_positives_after": 0
+  },
+  "stability": {
+    "status": "UNVERIFIED",
+    "native_repetitions": 1,
+    "required_repetitions_per_contract": 5,
+    "variation_rate": null
+  },
+  "acceptance_policy": {
+    "defect_families": "100% detection required; production sample target >=10 per family",
+    "healthy_controls": "0 false positives required; production sample target >=20",
+    "stability": "N>=5 identical-input repetitions with 0 verdict variation"
+  },
+  "rows": [
+    {
+      "id": "NEG_01",
+      "family": "NEGATION_INVERTED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "NEG_02",
+      "family": "NEGATION_INVERTED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "THR_01",
+      "family": "THRESHOLD_CHANGED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "THR_02",
+      "family": "THRESHOLD_CHANGED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "SCP_01",
+      "family": "SCOPE_WIDENED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "SCP_02",
+      "family": "SCOPE_WIDENED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "EXC_01",
+      "family": "EXCEPTION_CANCELLATION",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "EXC_02",
+      "family": "EXCEPTION_CANCELLATION",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "COND_01",
+      "family": "CONDITION_REMOVED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "COND_02",
+      "family": "CONDITION_REMOVED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "PAR_01",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "PAR_02",
+      "family": "PARAPHRASED_SECURITY_CONFLICT",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "DUP_01",
+      "family": "SEMANTIC_DUPLICATE",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "DUP_02",
+      "family": "SEMANTIC_DUPLICATE",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "PRE_01",
+      "family": "PRECEDENCE_INVERTED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "PRE_02",
+      "family": "PRECEDENCE_INVERTED",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "BYPS_01",
+      "family": "UNKNOWN_BYPASS",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "BYPS_02",
+      "family": "UNKNOWN_BYPASS",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "ADV_OBFUSCATED_PRIVILEGE",
+      "family": "ADVERSARIAL_OBFUSCATION",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "ADV_SPLIT_AUTH_2_RULES",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "ADV_SPLIT_TENANT_2_RULES",
+      "family": "ADVERSARIAL_SPLIT_RULE",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "ADV_PROMPT_INJECTION",
+      "family": "ADVERSARIAL_PROMPT_INJECTION",
+      "ground_truth": "BLOCK",
+      "deterministic_before": "FALSE_NEGATIVE",
+      "native_current_context_verdict": "BLOCK",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_B2B-RULE-AUTH-001",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_B2B-RULE-AUTH-002",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_REG_RATE_002",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_REG_SEG_003",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_REG_SEG_004",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_REG_SES_003",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "HEALTHY_REWORD_B2B",
+      "family": "HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "ADV_HEALTHY_SCOPE",
+      "family": "ADVERSARIAL_HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    },
+    {
+      "id": "ADV_HEALTHY_SECURITY",
+      "family": "ADVERSARIAL_HEALTHY_CONTROL",
+      "ground_truth": "ALLOW",
+      "deterministic_before": "TRUE_NEGATIVE",
+      "native_current_context_verdict": "PASS",
+      "correct": true
+    }
+  ]
+}

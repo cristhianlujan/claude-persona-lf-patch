@@ -1,0 +1,34 @@
+{
+  "schema_version": "LF_L9_REAL_REVIEW_PASS1_CHAT_EXPORT_V1",
+  "fixture_label": "REAL_REVIEW_PASS1_CHAT_EXPORT_NOT_NATIVE_IG_RECEIPT",
+  "reviewer_provenance": "REVIEWER_CHAT_EXPORT_MODEL_UNATTESTED",
+  "origin_note": "User supplied 154 lines copied from ChatGPT conversation UI. Model identity not attested. Not a native IG #3682 receipt nor an authenticated Step70.",
+  "conversation_id": "c/6af4e9a2-f0f4-83ea-84af-c5a66452cba1",
+  "source_file": "lote9_real_review_pass1_chat_export_model_unattested.txt",
+  "expected_sha256": "d319670079ece0e0285e37a3194a1e1c9e784e9b7b6f5e7d35ed4882200bf4bc",
+  "encoding": "UTF-8",
+  "line_endings": "LF",
+  "terminal_lf": true,
+  "expected_entries": 154,
+  "expected_distribution": {
+    "ALLOW": 24,
+    "BLOCK": 130
+  },
+  "expected_diagnostic": {
+    "CAPTURABLE": 106,
+    "L7_QUOTE_NOT_LITERAL_IN_FROZEN_TEXT": 22,
+    "L7_QUOTE_EMPTY_OR_TRIVIAL": 26
+  },
+  "expected_structural_profile_owner_review_only": 22,
+  "auto_promotion_authorized": false,
+  "native_ig_receipt": false,
+  "owner_profile_authority_attested": false,
+  "allowed_test_mode": "PG18_ROLLBACK_ONLY",
+  "comparator": "L4C frozen case base_rule.description/proposal.description; L7 ≥40 Unicode chars and ≥6 whitespace-separated words, no Unicode normalization",
+  "reviewer_model": "ChatGPT",
+  "reviewer_model_source": "OWNER_DECLARED_NOT_SYSTEM_ATTESTED",
+  "reviewer_model_system_attestation": false,
+  "reviewer_model_same_as_ig_and_owner": true,
+  "review_independence": "CONSISTENCY_NOT_INDEPENDENCE",
+  "reviewer_owner_declaration_note": "User declares ChatGPT processed IG, owner profile, and five blind reviews; owner statement only, not an authenticated model/provider receipt."
+}

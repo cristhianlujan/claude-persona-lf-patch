@@ -1,0 +1,154 @@
+K00A10207|BLOCK|se evita la doble comprobación en servidor.
+K00A4BF9A|BLOCK|equivale a la pertenencia al tenant
+K00A87D2D|BLOCK|donde se omite.
+K00AC3AC0|BLOCK|El contador de validación usa la regla AUX-LF-F.
+K00AFF853|BLOCK|cualquier company_id, no únicamente las empresas autorizadas.
+K00B3B5E6|BLOCK|se omite la validación de la relación de tenant canónica.
+K00B77379|BLOCK|aunque no exista vínculo de asignación.
+K00BB310C|BLOCK|Un token corporativo reconocido es suficiente garantía
+K00BEEE9F|BLOCK|se eleva a tres.
+K00C2AC32|BLOCK|Se deshabilita la limitación de intentos OTP
+K00C669C5|BLOCK|sin exigir que haya concluido la autenticación.
+K00CA2758|BLOCK|La relación de tenant se resuelve conforme AUX-LF-H.
+K00CDE4EB|BLOCK|"deny_by_default": false
+K00D1A27E|BLOCK|aunque LF no tenga autorización server-side.
+K00D56011|BLOCK|"operation": "CREATE"
+K00D91DA4|BLOCK|USER_ALLOW_GT_USER_DENY_GT_PROFILE_ALLOW_GT_DENY_DEFAULT
+K00DCDB37|BLOCK|conservan el identificador de identidad para correlacionar todas las trazas.
+K00E098CA|BLOCK|"operation": "CREATE"
+K00E4565D|BLOCK|excepto si el gateway presenta la cabecera trusted-internal.
+K00E813F0|ALLOW|En producción, otp_code solo puede persistirse como hash
+K00EBD183|BLOCK|como si hubieran demostrado autorización operativa.
+K00EF8F16|BLOCK|no revisa los mensajes de error visibles al usuario.
+K00F34CA9|ALLOW|sin contraste server-side con las empresas autorizadas del usuario activo
+K00F70A3C|BLOCK|salvo en los procesos nocturnos donde se permite texto plano.
+K00FAC7CF|ALLOW|debe excluirse de las trazas de aplicación, analítica, mensajes de error presentados al usuario y encabezados HTTP.
+K00FE8562|BLOCK|La consulta puede incluir empresas ajenas.
+K010242F5|BLOCK|salvo para cuentas administradoras sin asignación explícita.
+K01060088|BLOCK|sin volver a validar los permisos del Backoffice.
+K0109BE1B|BLOCK|"rls_policy_required": false
+K010D7BAE|BLOCK|sin cerrar la primera.
+K01113941|BLOCK|sin autorización de tenant.
+K0114F6D4|BLOCK|se deja de identificar la IP emisora.
+K0118B467|BLOCK|"server_side_enforcement": false
+K011C71FA|BLOCK|en su representación original incluso en producción.
+K01202F8D|BLOCK|sin comprobar cuántas siguen activas desde la misma IP.
+K0123ED20|BLOCK|sin comprobar el vínculo canónico con un tenant autorizado.
+K0127AAB3|BLOCK|sin contrastarlos con asignaciones.
+K012B6846|ALLOW|pueden ser varias solo por asignación explícita conforme B2B-RULE-SCOPE-002.
+K012F25D9|ALLOW|La persistencia de otp_code en producción requiere su versión hash
+K0132E36C|ALLOW|desde una misma IP puede existir como máximo una sesión de onboarding activa simultáneamente.
+K0136A0FF|ALLOW|cada operación del Backoffice exige autorización server-side, con denegación si falta
+K013A5E92|BLOCK|deja de aplicarse.
+K013E1C25|BLOCK|un máximo de cincuenta por IP cada diez minutos.
+K0141D9B8|BLOCK|permite sesiones paralelas de una misma red.
+K0145974B|BLOCK|se aceptan 11 verificaciones OTP dentro de diez minutos.
+K014954DE|BLOCK|"client_direct_operational_table_access": "ALLOW"
+K014D1271|BLOCK|permite consultar empresas no asignadas al usuario autenticado.
+K0150D004|BLOCK|Se aceptan cuatro sesiones activas por IP
+K01548D97|BLOCK|aunque no estén expresamente asignadas al usuario.
+K01584B2A|BLOCK|la telemetría incorpora atributos de identidad civil en campos auxiliares.
+K015C08BD|BLOCK|sin considerar la denegación prioritaria.
+K015FC650|BLOCK|el servidor toma primero allow, después deny.
+K00A24138|BLOCK|aun cuando el usuario tenga una denegación explícita.
+K00A5FECB|BLOCK|La representación recuperable del OTP se mantiene en un repositorio de soporte aun en entorno productivo.
+K00A9BC5E|BLOCK|salvo en operaciones repetidas con una misma pantalla.
+K00AD79F1|ALLOW|se deniega inicialmente y solo procede si el servidor autoriza
+K00B13784|BLOCK|tantas sesiones activas de onboarding como necesite
+K00B4F517|BLOCK|"auth_bypass": true
+K00B8B2AA|BLOCK|El alcance de empresas se obtiene del módulo AUX-LF-B.
+K00BC703D|BLOCK|la identidad civil sin restricciones
+K00C02DD0|BLOCK|se aplica por sesión en lugar de por IP
+K00C3EB63|ALLOW|no se expone en bitácoras de aplicación, analytics, mensajes de error de interfaz o headers HTTP.
+K00C7A8F6|BLOCK|considera la denegación solo si no hay ninguna concesión.
+K00CB6689|BLOCK|ya no se confirma el permiso de transición.
+K00CF241C|ALLOW|varias asignadas explícitamente conforme B2B-RULE-SCOPE-002.
+K00D2E1AF|BLOCK|"cross_tenant": "ALLOW"
+K00D69F42|BLOCK|aunque se haya revocado el permiso individual.
+K00DA5CD5|ALLOW|para cada acción, el backend comprueba usuario vigente, empresa, pantalla/recurso, derecho efectivo y transición aplicable.
+K00DE1A68|ALLOW|El Backoffice rechaza por defecto todas sus acciones operativas posteriores a la autenticación completa.
+K00E1D7FB|ALLOW|queda fuera de los registros de app, eventos analíticos, respuestas de error visibles y cabeceras HTTP.
+K00E5958E|BLOCK|permite seis sesiones activas de onboarding desde una misma IP en cinco minutos.
+K00E95321|BLOCK|PROFILE_ALLOW_GT_USER_DENY_GT_DENY_DEFAULT
+K00ED10B4|BLOCK|La acción administrativa se habilita sin permiso backend.
+K00F0CE47|ALLOW|el DNI nunca se incluye en logs de la aplicación, eventos de analytics, errores visibles al usuario ni headers HTTP.
+K00F48BDA|BLOCK|se aplica ALLOW.
+K00F8496D|BLOCK|cada cinco minutos, no cada diez.
+K00FC0700|ALLOW|diez verificaciones OTP en cualquier ventana de diez minutos, sin depender de la sesión.
+K00FFC493|BLOCK|no requiere comprobar previamente que se guardó su hash.
+K01038226|BLOCK|aun sin verificación de autoridad en backend.
+K01073FB9|BLOCK|Se autorizan diez sesiones por IP en cinco minutos.
+K010AFD4C|BLOCK|se suspende para usuarios empresariales.
+K010EBADF|BLOCK|"rls_bypass": true
+K01127872|BLOCK|puede indicar cualquier company_id
+K01163605|ALLOW|El OTP debe almacenarse con hash en entorno productivo.
+K0119F398|BLOCK|El acceso operativo se permite por defecto.
+K011DB12B|BLOCK|sustituye la comprobación de permisos efectivos.
+K01216EBE|BLOCK|"operation": "CREATE"
+K01252C51|BLOCK|queda prohibido usar un hash; se conservará el valor original.
+K0128E9E4|BLOCK|se muestra información de organizaciones adyacentes a la del usuario.
+K012CA777|BLOCK|"operation": "CREATE"
+K0130650A|ALLOW|diez solicitudes como límite en un intervalo de diez minutos, independiente del número de sesiones.
+K0134229D|BLOCK|sin verificar que pertenezca al conjunto autorizado del usuario.
+K0137E030|BLOCK|Los errores visibles pueden imprimir DNI.
+K013B9DC3|BLOCK|queda fuera de alcance en analytics y headers HTTP.
+K013F5B56|BLOCK|las operaciones iniciadas desde subpantallas quedan automáticamente autorizadas.
+K014318E9|BLOCK|permitirla sin comprobación de autorización en servidor.
+K0146D67C|BLOCK|El almacenamiento OTP se determina por AUX-LF-E.
+K014A940F|BLOCK|veinte intentos de OTP por cada ventana de diez minutos.
+K014E51A2|BLOCK|"operation": "CREATE"
+K01520F35|BLOCK|desde el segundo minuto se admite otra.
+K0155CCC8|BLOCK|sustituye el control de autorización LF de cada operación.
+K01598A5B|BLOCK|Las sesiones de onboarding se controlan según AUX-LF-G.
+K015D47EE|BLOCK|Los mensajes de error dirigidos al usuario deben mostrar el DNI completo.
+K00A38069|BLOCK|"operation": "CREATE"
+K00A73DFC|BLOCK|se considera implícita cuando el dispositivo es administrado por TI.
+K00AAFB8F|BLOCK|Se toleran dos sesiones activas de onboarding desde la misma IP en cinco minutos.
+K00AEB922|BLOCK|bastan para actuar sobre todas las empresas de la plataforma.
+K00B276B5|BLOCK|quedan exentas de revisión de permisos por acción.
+K00B63448|BLOCK|sin verificar que pertenezca al usuario real.
+K00B9F1DB|BLOCK|"operation": "CREATE"
+K00BDAF6E|BLOCK|"skip_security_checks": true
+K00C16D01|BLOCK|únicamente después de permitir por perfil.
+K00C52A94|ALLOW|uno o varios tenants expresamente asignados según B2B-RULE-SCOPE-002
+K00C8E827|ALLOW|renovar la sesión no cambia ese máximo.
+K00CCA5BA|BLOCK|se guarda legible y no en forma de hash
+K00D0634D|BLOCK|para habilitar recursos aún no vinculados en el backend.
+K00D420E0|BLOCK|Las exclusiones de datos PII se rigen por AUX-LF-D.
+K00D7DE73|BLOCK|Se admiten quince validaciones OTP por IP durante diez minutos.
+K00DB9C06|BLOCK|reinicia el cupo de validaciones OTP
+K00DF5999|BLOCK|PROFILE_ALLOW_GT_USER_DENY_GT_USER_ALLOW_GT_DENY_DEFAULT
+K00E3172C|ALLOW|no se inicia otra sesión simultánea desde ella hasta respetar el periodo de cinco minutos.
+K00E6D4BF|ALLOW|como máximo diez intentos originados en una misma dirección IP dentro de diez minutos
+K00EA9252|BLOCK|omiten reevaluación en el servidor.
+K00EE4FE5|BLOCK|"operation": "CREATE"
+K00F20D78|BLOCK|excepto cuando se genera una traza de depuración.
+K00F5CB0B|BLOCK|ya no se valida el permiso efectivo del usuario para cada acción.
+K00F9889E|BLOCK|se habilitan automáticamente
+K00FD4631|BLOCK|Se habilita el acceso entre tenants sin asignación.
+K010103C4|BLOCK|prevalece sobre cualquier prohibición asignada al mismo usuario.
+K0104C157|BLOCK|La validación pre-auth se remite al anexo AUX-LF-I.
+K01087EEA|BLOCK|aunque los permisos individuales no se recalculen.
+K010C3C7D|BLOCK|En producción el OTP se almacena en claro.
+K010FFA10|ALLOW|una sesión activa de onboarding concurrente dentro de cinco minutos.
+K0113B7A3|ALLOW|el almacenamiento productivo es por hash
+K01177536|BLOCK|La seguridad de consultas multiempresa sigue AUX-LF-J.
+K011B32C9|BLOCK|pero no para los flujos de OTP web que también son productivos.
+K011EF05C|BLOCK|sin registro de asignación.
+K0122ADEF|BLOCK|Se aplica una política generosa de intentos OTP
+K01266B82|BLOCK|se pueden consultar tenants ajenos.
+K012A2915|BLOCK|"operation": "CREATE"
+K012DE6A8|BLOCK|"allow_unauthenticated": true
+K0131A43B|BLOCK|considerar válida la transmisión del DNI en headers HTTP.
+K013561CE|BLOCK|cualquier organización visible en el buscador como si fuera asignada.
+K01391F61|BLOCK|La validación de permisos se delega en la política asociada AUX-LF-A.
+K013CDCF4|BLOCK|El cupo por IP será de 200 OTP en diez minutos.
+K01409A87|BLOCK|"operation": "CREATE"
+K0144581A|ALLOW|impide más de una sesión activa a la vez desde la misma dirección IP en un periodo de cinco minutos.
+K014815AD|BLOCK|salvo cuando el incidente está marcado como crítico.
+K014BD340|BLOCK|permitiendo varias en una misma IP con distintos dispositivos.
+K014F90D3|BLOCK|La prioridad de permisos sigue la matriz AUX-LF-C.
+K01534E66|BLOCK|aunque no figuren asignados.
+K01570BF9|BLOCK|El portal de empleados puede operar sin permiso.
+K015AC98C|BLOCK|se suspende durante los días de mayor tráfico.
+K015E871F|BLOCK|debe registrarse en la analítica para facilitar diagnósticos.
