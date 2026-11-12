@@ -1,16 +1,16 @@
 {
   "schema_version": "LF_L25_LITERAL_RULE_DIFF_V1",
   "read_only": true,
-  "source_proposal_git_blob": "902057b234af3f028d56635b65e28e63ca8cc9c6",
-  "source_curator_git_blob": "0c3d68ee8c677b6bfd35c5b70782ed36cf4603d5",
-  "count": 12,
+  "source_proposal_git_blob": "d3d1fb7e537e74b17c2d5ba0e993ea7e77e3eac7",
+  "source_curator_git_blob": "2f5654371da45bf274742503cb991a9b3577df87",
+  "count": 13,
   "entries": [
     {
       "id": "L25-01",
       "tipo": "NUEVA_PROPUESTA",
       "code": "REG_CLIENT_INSTALLMENT_STATUS_025",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": null,
       "despues": {
         "codigo": "REG_CLIENT_INSTALLMENT_STATUS_025",
@@ -42,15 +42,16 @@
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
-      "live_row_preimage_sha256": null
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
+      "live_row_preimage_sha256": null,
+      "warning": null
     },
     {
       "id": "L25-02",
       "tipo": "NUEVA_PROPUESTA",
       "code": "REG_CLIENT_INSTALLMENT_MIDNIGHT_RECON_025",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": null,
       "despues": {
         "codigo": "REG_CLIENT_INSTALLMENT_MIDNIGHT_RECON_025",
@@ -79,15 +80,16 @@
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
-      "live_row_preimage_sha256": null
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
+      "live_row_preimage_sha256": null,
+      "warning": null
     },
     {
       "id": "L25-03",
       "tipo": "NUEVA_PROPUESTA",
       "code": "REG_CLIENT_INSTALLMENT_RECON_ALERT_025",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": null,
       "despues": {
         "codigo": "REG_CLIENT_INSTALLMENT_RECON_ALERT_025",
@@ -116,21 +118,22 @@
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
-      "live_row_preimage_sha256": null
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
+      "live_row_preimage_sha256": null,
+      "warning": null
     },
     {
       "id": "L25-04",
       "tipo": "NUEVA_PROPUESTA",
       "code": "REG_CLIENT_INSTALLMENT_CANCELLATION_025",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": null,
       "despues": {
         "codigo": "REG_CLIENT_INSTALLMENT_CANCELLATION_025",
         "categoria": "pago",
         "titulo": "Cancelación de cuota o plan con estados finales y pendientes",
-        "descripcion": "La cancelación puede solicitarse para una cuota o para el plan completo. Los estados PAGADA y CANCELADA son finales y no cambian. Para EN_PROCESO se propone bloquear la cancelación hasta reconciliar el intento, pero esta restricción es un SUPUESTO PENDIENTE DE CONFIRMACIÓN DEL DUEÑO. La posibilidad de cancelar una cuota VENCIDA permanece PENDIENTE_DE_LEGAL y no se resuelve aquí. No se definen políticas de mora, reintentos ni recordatorios.",
+        "descripcion": "La cancelación puede solicitarse para una cuota o el plan completo. PAGADA y CANCELADA no cambian. Por decisión confirmada del dueño, una cuota EN_PROCESO no puede cancelarse hasta reconciliarse, y una cuota VENCIDA sí puede cancelarse. La cancelación automática por antigüedad se gobierna en una regla y parámetro separados. No define mora, reintentos ni recordatorios.",
         "valor_config": {
           "alcances": [
             "CUOTA",
@@ -140,24 +143,27 @@
             "PAGADA",
             "CANCELADA"
           ],
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO_NO_HASTA_RECONCILIAR",
-          "cancelacion_vencida": "PENDIENTE_DE_LEGAL",
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_vencida": "ALLOW_CONFIRMED_BY_OWNER",
           "mora": "NO_DEFINIDA",
           "reintentos": "NO_DEFINIDOS",
-          "recordatorios": "NO_DEFINIDOS"
+          "recordatorios": "NO_DEFINIDOS",
+          "estado_decision_en_proceso": "CONFIRMADA_E",
+          "estado_decision_vencida": "CONFIRMADA_E"
         },
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
-      "live_row_preimage_sha256": null
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
+      "live_row_preimage_sha256": null,
+      "warning": null
     },
     {
       "id": "L25-05",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
       "code": "REG_NIU_001",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_NIU_001",
         "categoria": "niubiz",
@@ -219,16 +225,16 @@
           "despues": "NIUBIZ_UNICO_PROVEEDOR"
         }
       ],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": "CANDIDATO documental; ningún UPDATE sobre VIGENTE ni INSERT de mismo código"
     },
     {
       "id": "L25-06",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
       "code": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
         "categoria": "pago",
@@ -304,16 +310,16 @@
           "despues": "KEEP_EN_PROCESO_ESCALATE_AND_ALERT"
         }
       ],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": "CANDIDATO documental; ningún UPDATE sobre VIGENTE ni INSERT de mismo código"
     },
     {
       "id": "L25-07",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
       "code": "REG_CHK_CUO_006",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CHK_CUO_006",
         "categoria": "checkout",
@@ -331,15 +337,15 @@
         "codigo": "REG_CHK_CUO_006",
         "categoria": "checkout",
         "titulo": "Cancelación del plan sin penalidades",
-        "descripcion": "Se mantiene la cancelación del plan en cuotas sin penalidades y su visibilidad antes del pago. El texto actual «en cualquier momento» requiere conciliarse con una restricción PROPUESTA, NO APROBADA: si una cuota está EN_PROCESO, no cancelar hasta reconciliar. La cancelación de VENCIDA permanece PENDIENTE_DE_LEGAL. El copy final requiere revisión y aprobación del dueño; no se publica esta redacción.",
+        "descripcion": "El cobro recurrente del plan se puede cancelar sin penalidades, con información visible en checkout. El alcance histórico «en cualquier momento» se reemplaza por la restricción confirmada: mientras exista cuota EN_PROCESO no se puede cancelar hasta reconciliar el intento. Una cuota VENCIDA sí puede cancelarse. El copy propuesto necesita revisión visual antes de publicar.",
         "valor_config": {
           "posicion": "bajo_checkbox_autorizacion",
           "penalidad": false,
-          "texto_visible": "Podrás cancelar tu plan cuando lo necesites. Sin penalidades.",
+          "texto_visible": "Puedes cancelar tu plan sin penalidades. Si hay un cobro en proceso, primero debe reconciliarse.",
           "cancelacion_permitida": true,
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
-          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL",
-          "texto_visible_estado": "PENDIENTE_REVISION_NO_PUBLICAR"
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_cuota_vencida": "ALLOW_CONFIRMED_BY_OWNER",
+          "texto_visible_estado": "PROPUESTA_REQUIERE_REVISION_UX_ANTES_PUBLICACION"
         },
         "estado": "CANDIDATO"
       },
@@ -347,7 +353,7 @@
         {
           "path": "/descripcion",
           "antes": "El usuario puede cancelar el cobro recurrente del plan en cuotas en cualquier momento. No hay penalidades por cancelación anticipada. Esta condición debe estar visible en la pantalla de checkout antes del pago.",
-          "despues": "Se mantiene la cancelación del plan en cuotas sin penalidades y su visibilidad antes del pago. El texto actual «en cualquier momento» requiere conciliarse con una restricción PROPUESTA, NO APROBADA: si una cuota está EN_PROCESO, no cancelar hasta reconciliar. La cancelación de VENCIDA permanece PENDIENTE_DE_LEGAL. El copy final requiere revisión y aprobación del dueño; no se publica esta redacción."
+          "despues": "El cobro recurrente del plan se puede cancelar sin penalidades, con información visible en checkout. El alcance histórico «en cualquier momento» se reemplaza por la restricción confirmada: mientras exista cuota EN_PROCESO no se puede cancelar hasta reconciliar el intento. Una cuota VENCIDA sí puede cancelarse. El copy propuesto necesita revisión visual antes de publicar."
         },
         {
           "path": "/estado",
@@ -357,29 +363,34 @@
         {
           "path": "/valor_config/cancelacion_cuota_vencida",
           "antes": null,
-          "despues": "PENDIENTE_DE_LEGAL"
+          "despues": "ALLOW_CONFIRMED_BY_OWNER"
         },
         {
           "path": "/valor_config/cancelacion_en_proceso",
           "antes": null,
-          "despues": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO"
+          "despues": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER"
+        },
+        {
+          "path": "/valor_config/texto_visible",
+          "antes": "Podrás cancelar tu plan cuando lo necesites. Sin penalidades.",
+          "despues": "Puedes cancelar tu plan sin penalidades. Si hay un cobro en proceso, primero debe reconciliarse."
         },
         {
           "path": "/valor_config/texto_visible_estado",
           "antes": null,
-          "despues": "PENDIENTE_REVISION_NO_PUBLICAR"
+          "despues": "PROPUESTA_REQUIERE_REVISION_UX_ANTES_PUBLICACION"
         }
       ],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": "CANDIDATO documental; ningún UPDATE sobre VIGENTE ni INSERT de mismo código"
     },
     {
       "id": "L25-08",
       "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
       "code": "REG_CHK_014",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CHK_014",
         "categoria": "checkout",
@@ -397,14 +408,14 @@
         "codigo": "REG_CHK_014",
         "categoria": "checkout",
         "titulo": "Cancelación del plan sin penalidades",
-        "descripcion": "La cancelación del cobro recurrente del plan se solicita desde Mis operaciones y no genera penalidades. El alcance «en cualquier momento» necesita validación del dueño cuando haya cuota EN_PROCESO: se propone esperar su reconciliación, aún no aprobado. Cancelar una cuota VENCIDA sigue PENDIENTE_DE_LEGAL. La carta de no adeudo solo corresponde a deuda totalmente cancelada.",
+        "descripcion": "El usuario puede solicitar cancelación del cobro recurrente desde Mis operaciones, sin penalidades. Si una cuota está EN_PROCESO, no puede cancelarse hasta reconciliar; VENCIDA sí puede cancelarse, conforme a decisión del dueño. La carta de no adeudo solo procede tras la cancelación total real de deuda, no por cancelar el plan.",
         "valor_config": {
           "desde": "Mis operaciones",
           "penalidades": false,
           "carta_no_adeudo": "al_cancelar_totalmente",
           "cancelacion_permitida": true,
-          "cancelacion_en_proceso": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO",
-          "cancelacion_cuota_vencida": "PENDIENTE_DE_LEGAL"
+          "cancelacion_en_proceso": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER",
+          "cancelacion_cuota_vencida": "ALLOW_CONFIRMED_BY_OWNER"
         },
         "estado": "CANDIDATO"
       },
@@ -412,7 +423,7 @@
         {
           "path": "/descripcion",
           "antes": "El usuario puede cancelar el cobro recurrente de su plan en cualquier momento desde \"Mis operaciones\". La cancelación no genera penalidades. La carta de no adeudo se emite solo cuando la deuda está totalmente cancelada.",
-          "despues": "La cancelación del cobro recurrente del plan se solicita desde Mis operaciones y no genera penalidades. El alcance «en cualquier momento» necesita validación del dueño cuando haya cuota EN_PROCESO: se propone esperar su reconciliación, aún no aprobado. Cancelar una cuota VENCIDA sigue PENDIENTE_DE_LEGAL. La carta de no adeudo solo corresponde a deuda totalmente cancelada."
+          "despues": "El usuario puede solicitar cancelación del cobro recurrente desde Mis operaciones, sin penalidades. Si una cuota está EN_PROCESO, no puede cancelarse hasta reconciliar; VENCIDA sí puede cancelarse, conforme a decisión del dueño. La carta de no adeudo solo procede tras la cancelación total real de deuda, no por cancelar el plan."
         },
         {
           "path": "/estado",
@@ -422,24 +433,24 @@
         {
           "path": "/valor_config/cancelacion_cuota_vencida",
           "antes": null,
-          "despues": "PENDIENTE_DE_LEGAL"
+          "despues": "ALLOW_CONFIRMED_BY_OWNER"
         },
         {
           "path": "/valor_config/cancelacion_en_proceso",
           "antes": null,
-          "despues": "SUPUESTO_PENDIENTE_CONFIRMACION_DUENO"
+          "despues": "DENY_UNTIL_RECONCILED_CONFIRMED_BY_OWNER"
         }
       ],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": "CANDIDATO documental; ningún UPDATE sobre VIGENTE ni INSERT de mismo código"
     },
     {
       "id": "L25-09",
       "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
       "code": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
         "categoria": "notificacion",
@@ -497,16 +508,16 @@
         "estado": "VIGENTE"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "7e88a217176aa486daea2675cad57eb9d4a3fa9633a3fb1a25f87be8ba391c25",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": null
     },
     {
       "id": "L25-10",
       "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
       "code": "REG_CHK_CUO_003",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CHK_CUO_003",
         "categoria": "checkout",
@@ -530,16 +541,16 @@
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "483bb657d94cd07b624ccc033c6a3843c8df82f364442e9579832c2b1d5dc3df",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": null
     },
     {
       "id": "L25-11",
       "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
       "code": "REG_CHK_CUO_009",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CHK_CUO_009",
         "categoria": "checkout",
@@ -565,16 +576,16 @@
         "estado": "VIGENTE"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": null
     },
     {
       "id": "L25-12",
       "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
       "code": "REG_CHK_011",
       "classification": "REQUIERE_REVISION_SEMANTICA",
-      "scope": "NOT_EXECUTABLE_PROPOSAL",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
       "antes": {
         "codigo": "REG_CHK_011",
         "categoria": "checkout",
@@ -606,11 +617,60 @@
         "estado": "CANDIDATO"
       },
       "diff_literal": [],
-      "curator_readback_sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "live_row_preimage_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3",
-      "warning": "CANDIDATO es propuesta documental de una nueva versión; NO usar UPDATE ni INSERT con mismo codigo VIGENTE"
+      "warning": null
+    },
+    {
+      "id": "L25-13",
+      "tipo": "NUEVA_PROPUESTA",
+      "code": "REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025",
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "scope": "DOCUMENTARY_NOT_EXECUTABLE",
+      "antes": null,
+      "despues": {
+        "codigo": "REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025",
+        "categoria": "pago",
+        "titulo": "Cancelación automática por antigüedad de cuota vencida y arrastre del plan",
+        "descripcion": "Si una cuota VENCIDA alcanza el umbral configurable ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES, medido en meses calendario desde la fecha de esa cuota, se cancelan automáticamente las cuotas PENDIENTE y VENCIDA del mismo plan. La cuota disparadora registra causa AUTO_ANTIGUEDAD; las demás canceladas registran ARRASTRE_PLAN_AUTO. PAGADA y CANCELADA mantienen su estado; las PAGADA conservan su importe pagado. Si hay una cuota EN_PROCESO, no se cancela ninguna cuota por este proceso: se reconcilia primero y se reevalúa el plan en la siguiente corrida. Se registran causa y fecha, y el proceso es idempotente. El importe cancelado (nunca lo ya pagado) constituye la deuda cancelada propuesta INCOBRABLE; el significado del estado y destino contable quedan REQUIERE_REVISION_SEMANTICA por Negocio/Legal/Finanzas. Si falta el parámetro o es inválido, no se cancela nada y se alerta. No crea políticas de mora, reintentos ni recordatorios.",
+        "valor_config": {
+          "trigger_state": "VENCIDA",
+          "parameter_code": "ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES",
+          "parameter_value_source": "CONFIG_VERSIONADA_NO_HARDCODE",
+          "parameter_unit": "MESES_CALENDARIO",
+          "threshold_reference": "FECHA_CUOTA",
+          "clock_timezone": "America/Lima",
+          "trigger_condition": "VENCIDA_CUMPLE_UMBRAL_CONFIGURADO",
+          "auto_cancel_scope": "TODAS_CUOTAS_NO_PAGADAS_DEL_PLAN_CON_ESTADO_PENDIENTE_O_VENCIDA",
+          "trigger_cause": "AUTO_ANTIGUEDAD",
+          "plan_carry_cause": "ARRASTRE_PLAN_AUTO",
+          "preserve_states": [
+            "PAGADA",
+            "CANCELADA"
+          ],
+          "when_any_installment_en_proceso": "NO_CANCELAR_NINGUNA_RECONCILIAR_PRIMERO_REEVALUAR_PLAN_CORRIDA_SIGUIENTE",
+          "amount_uncobrable": "SUMA_IMPORTES_DE_CUOTAS_CANCELADAS_NO_INCLUIR_PAGADAS",
+          "debt_status_proposed": "INCOBRABLE_REQUIERE_REVISION_SEMANTICA_NEGOCIO_LEGAL_FINANZAS",
+          "accounting_destination": "PENDIENTE_DE_NEGOCIO_LEGAL_FINANZAS",
+          "missing_or_invalid_parameter": "FAIL_CLOSED_CANCEL_NONE_AND_ALERT",
+          "idempotent": true,
+          "audit_fields_required": [
+            "causa_cancelacion",
+            "fecha_cancelacion"
+          ],
+          "mora": "NO_DEFINIDA",
+          "reintentos": "NO_DEFINIDOS",
+          "recordatorios": "NO_DEFINIDOS"
+        },
+        "estado": "CANDIDATO"
+      },
+      "diff_literal": [],
+      "curator_readback_sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
+      "live_row_preimage_sha256": null,
+      "warning": null
     }
   ],
   "approval": "OWNER_PENDING",
-  "production": "NO_GO_UNVERIFIED"
+  "production": "NO_GO_UNVERIFIED",
+  "addendum": "E/F applied with owner confirmation; INCOBRABLE semantic/accounting pending"
 }
