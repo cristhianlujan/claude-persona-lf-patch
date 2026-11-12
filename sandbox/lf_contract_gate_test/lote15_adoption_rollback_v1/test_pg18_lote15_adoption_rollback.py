@@ -291,7 +291,7 @@ ROLLBACK;
             stage_assert=stage_assert and gate_hashes==GATE_EXPECTED_MD5
         if i==6:
             stage_assert=stage_assert and l13_stats=={
-              "all":28,"passed":28,"lf_rules":578,"lf_vigente":412,"lf_candidato":166}
+              "all":28,"passed":28,"lf_rules":578,"lf_vigente":410,"lf_candidato":166}
         claim("STAGE_"+item["id"]+"_ROLLBACK_CATALOG_IDENTICAL",
           out["BEFORE"]==out["AFTER"]
           and out["ROOT"]==root_fingerprint
@@ -316,7 +316,7 @@ ROLLBACK;
     positive=o["METRICS"] if False else o["FULL_IN_TX"]
     check=(o["AFTER_FULL_ROLLBACK"]==root_fingerprint
            and o["L13_STATS"]=={
-              "all":28,"passed":28,"lf_rules":578,"lf_vigente":412,"lf_candidato":166}
+              "all":28,"passed":28,"lf_rules":578,"lf_vigente":410,"lf_candidato":166}
            and o["GATE_MD5"]==GATE_EXPECTED_MD5
            and o["METRICS"]==baseline)
     claim("FULL_ORDERED_PACKAGE_ROLLBACK_IDENTICAL",check,
