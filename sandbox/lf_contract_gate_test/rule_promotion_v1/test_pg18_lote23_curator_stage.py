@@ -38,12 +38,11 @@ def setup():
 def run_lf(variant,claim):
     corrected=variant=="B_CORRECTED"
     body=l20.prelude_lf(claim,corrected)
-    # PG18 test-only nonconflicting LF positive fixture: align overlapping config
-    # with existing active source BEFORE frozen request/snapshot computation.
-    # Contradictory values remain a separate mandatory negative (N3).
-    marker="FROM lf_ops.reglas WHERE codigo='RULE-TEST-001';"
-    if marker not in body:raise AssertionError("L23_SOURCE_FIXTURE_INSERTION_MISSING")
-    body=body.replace(marker,marker+"\nUPDATE lf_ops.reglas SET valor_config=(SELECT valor_config FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001') WHERE codigo="+lit(l14.l11b.RULE)+";",1)
+    # A_NEW is a separate, sandbox-only new rule with no preexisting active
+    # conflicting source in its category; B_CORRECTED intentionally retains old
+    # VIGENTE and requires explicit signed correction lineage.
+    if not corrected:
+        body="UPDATE lf_ops.reglas SET estado='CANDIDATO' WHERE codigo='RULE-DEPENDENCY-001';\n"+body
     pos=body.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
     if pos<0 or "SELECT 'WRAP|'" not in body[pos:]:
         raise AssertionError("L23_PRELUDE_INSERTION_NOT_AT_FINAL_WRAPPER")
