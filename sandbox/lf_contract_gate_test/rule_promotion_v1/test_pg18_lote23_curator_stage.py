@@ -38,11 +38,7 @@ def setup():
 def run_lf(variant,claim):
     corrected=variant=="B_CORRECTED"
     body=l20.prelude_lf(claim,corrected)
-    # A_NEW is a separate, sandbox-only new rule with no preexisting active
-    # conflicting source in its category; B_CORRECTED intentionally retains old
-    # VIGENTE and requires explicit signed correction lineage.
-    if not corrected:
-        body="UPDATE lf_ops.reglas SET estado='CANDIDATO' WHERE codigo='RULE-DEPENDENCY-001';\n"+body
+    # B_CORRECTED: preserve the VIGENTE source and require signed owner lineage.
     pos=body.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
     if pos<0 or "SELECT 'WRAP|'" not in body[pos:]:
         raise AssertionError("L23_PRELUDE_INSERTION_NOT_AT_FINAL_WRAPPER")
@@ -67,6 +63,34 @@ def run_lf(variant,claim):
       and out["AFTER_ROLLBACK"]["curator_rows"]==0 and out["AFTER_ROLLBACK"]["rule_rows"]==0)
     check("POSITIVE_"+variant,ok,"Curator ACCEPT -> unchanged LF apply APPLIED and L14 readback READY; rollback",out)
     SCENARIOS.append({"scenario":variant,"result":"PASS","curator_status":"REAL_EN_SANDBOX","production_curator":"NO_PROBADO","verdict":out["CURATOR"]["verdict"]})
+
+def run_lf_new_curator(claim):
+    # LF new positive tests the Curator PRE-GATE stage only: no synthetic fake
+    # promotion receipt and no edits to the VIGENTE source. Frozen LF apply is
+    # exercised in B_CORRECTED where an owner-approved exception exists.
+    q=("SELECT 'PREP|'||rule_quality_l13.quality_prepare_new_v2("
+       "'lf','LF-L14-NEW-OK','IDENTIDAD_SEGURIDAD')::text;\n"
+       "SELECT 'CURATOR|'||rule_quality_l13.l23_curator_evaluate_v1("
+       "'lf','LF-L14-NEW-OK')::text;")
+    out=sql("BEGIN;\nUPDATE lf_ops.reglas SET valor_config='{}'::jsonb "
+       "WHERE codigo='LF-L14-NEW-OK';\n"+owner(claim,q)+
+       "\nSELECT 'BEFORE|'||jsonb_build_object("
+       "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo='LF-L14-NEW-OK'),"
+       "'quality',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='LF-L14-NEW-OK'),"
+       "'verdict',(SELECT verdict FROM rule_quality_l13.l23_curator_verdicts WHERE project_code='lf' AND rule_code='LF-L14-NEW-OK'))::text;\n"
+       "ROLLBACK;\nSELECT 'AFTER|'||jsonb_build_object("
+       "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo='LF-L14-NEW-OK'),"
+       "'quality',(SELECT count(*) FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='LF-L14-NEW-OK'),"
+       "'verdict',(SELECT count(*) FROM rule_quality_l13.l23_curator_verdicts WHERE project_code='lf' AND rule_code='LF-L14-NEW-OK'))::text;")
+    check("POSITIVE_A_LF_NEW",
+      out["CURATOR"]["verdict"]=="ACEPTAR" and
+      out["PREP"]["status"]=="QUALITY_PREPARED" and
+      out["BEFORE"]=={"source":"CANDIDATO","quality":"EN_REVISION","verdict":"ACEPTAR"} and
+      out["AFTER"]=={"source":"CANDIDATO","quality":0,"verdict":0},
+      "new LF candidate curator accepted and remained unpromoted; rollback",out)
+    SCENARIOS.append({"scenario":"A_NEW","result":"PASS","curator_status":"REAL_EN_SANDBOX",
+     "promotion_gate_after_curator":"NOT_EXECUTED_FOR_A_NEW",
+     "production_curator":"NO_PROBADO","verdict":"ACEPTAR"})
 
 def run_saly(claim):
     q=(
@@ -143,7 +167,7 @@ def negative_wrong_owner(lf_claim):
 def negative_tampered(lf_claim):
     # A privileged PG18 test-fixture actor tampers with the sealed row;
     # ordinary application roles lack DML, tested separately.
-    script=("BEGIN;\n"+
+    script=("BEGIN;\nUPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo='LF-L14-NEW-OK';\n"+
       owner(lf_claim,"SELECT 'PREP|'||rule_quality_l13.quality_prepare_new_v2('lf','LF-L14-NEW-OK','IDENTIDAD_SEGURIDAD')::text;\n"+
                      "SELECT 'C|'||rule_quality_l13.l23_curator_evaluate_v1('lf','LF-L14-NEW-OK')::text;")+
       "\nUPDATE rule_quality_l13.l23_curator_verdicts SET reason_text='attacker modified reason'"
@@ -161,7 +185,7 @@ def negative_no_grant(lf_claim):
 def negative_stale(lf_claim):
     # Create accepted verdict in transaction then modify source candidate content (no active edit).
     q="SELECT 'PREP|'||rule_quality_l13.quality_prepare_new_v2('lf','LF-L14-NEW-OK','IDENTIDAD_SEGURIDAD')::text;\nSELECT 'C|'||rule_quality_l13.l23_curator_evaluate_v1('lf','LF-L14-NEW-OK')::text;"
-    script=("BEGIN;\n"+owner(lf_claim,q)+
+    script=("BEGIN;\nUPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo='LF-L14-NEW-OK';\n"+owner(lf_claim,q)+
      "\nUPDATE lf_ops.reglas SET valor_config=jsonb_build_object('l23_after','changed') "
      "WHERE codigo='LF-L14-NEW-OK';\n"+
      owner(lf_claim,"SELECT rule_quality_l13.quality_apply_envelope_v2('lf','LF-L14-NEW-OK','PROM-TEST','EXEC-OWNER-L11B-001');")+
@@ -174,7 +198,7 @@ def main():
     check("MD5_FROZEN_BEFORE",before==EXPECTED,EXPECTED,before)
     lf=l17.token("lf","lf-sub-owner-001","lf_owner_role")
     sy=l17.token("saly","saly-sub-owner-001","saly_owner_role")
-    run_lf("A_NEW",lf)
+    run_lf_new_curator(lf)
     run_lf("B_CORRECTED",lf)
     run_saly(sy)
     negative_missing(sy)
