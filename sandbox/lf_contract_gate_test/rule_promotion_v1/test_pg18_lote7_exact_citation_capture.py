@@ -16,6 +16,7 @@ import test_pg18_lote4b_validator_reuse as base
 ROOT=Path(__file__).resolve().parents[3]
 BLIND=ROOT/"sandbox/lf_contract_gate_test/rule_promotion_v1/lote4c_fresh_blind_v1.json"
 M7=ROOT/"supabase/migrations/20261111235500_lf_rule_promotion_exact_citation_capture_v1.sql"
+M8=ROOT/"supabase/migrations/20261112004000_lf_rule_promotion_citation_reuse_scoped_v2.sql"
 DB="lf_3779_l7_exact_citation_pg18"
 BLIND_SHA=hashlib.sha256(BLIND.read_bytes()).hexdigest()
 CASES={c["id"]:c for c in json.loads(BLIND.read_text(encoding="utf-8"))["cases"]}
@@ -32,7 +33,7 @@ def check(name,ok,raw):
 def jlit(v):return base.lit(json.dumps(v,ensure_ascii=False,sort_keys=True))
 def lit(v):return base.lit(v)
 
-def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,prebind=False):
+def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,prebind=False,capture_run="EXEC-PARENT-TEST-001"):
     c=CASES[case_id]
     rule=c["base_rule"]["code"]
     if quote is None:quote=c["base_rule"]["description"]
@@ -52,7 +53,7 @@ def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,pre
       request_snapshot_sha256,status,ig_semantic_run_id,
       ig_semantic_packet_sha256,ig_semantic_candidate_sha256,ig_semantic_binding_sha256,
       ig_semantic_external_receipt,ig_semantic_external_receipt_sha256)
-    SELECT {lit(promo)},{rid},'EXEC-PARENT-TEST-001','PERFIL-PRODUCT-DIRECTOR-LF',
+    SELECT {lit(promo)},{rid},{lit(capture_run)},'PERFIL-PRODUCT-DIRECTOR-LF',
       public.lf_asset_snapshot_sha_v1('REGLA',{rid}),'PENDING',
       {9001 if promo=="PROM-L7" else 9002},repeat('b',64),repeat('a',64),repeat('c',64),
       jsonb_build_object('l5_blind_case_verdict',jsonb_build_object(
@@ -76,7 +77,7 @@ def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,pre
     """+ (f"""
     UPDATE public.lf_operation_execution_steps st
     SET evidence_ref='PG18_STEP70_CONSTRUCTED_NOT_REVIEW',
-      created_by_execution_id='EXEC-PARENT-TEST-001',
+      created_by_execution_id={lit(capture_run)},
       evidence_payload=st.evidence_payload || jsonb_build_object(
          'test_only_synthetic',false,
          'semantic_judge_result',jsonb_build_object('status','PASS','validator_status','PASS'),
@@ -88,7 +89,7 @@ def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,pre
          'rule_promotion_citation_provenance','UNVERIFIED_NOT_FROM_REAL_REVIEW')
     FROM public.lf_rule_promotion_citation_source_v1 s
     JOIN public.lf_rule_promotion_v1 p ON p.promotion_id=s.promotion_id
-    WHERE st.execution_id='EXEC-PARENT-TEST-001' AND st.step_id='semantic_judge'
+    WHERE st.execution_id={lit(capture_run)} AND st.step_id='semantic_judge'
       AND s.promotion_id={lit(promo)};
     """ if with_step70 else "")
 
@@ -228,6 +229,7 @@ def main():
     l5.l4d.DB=DB
     l5.bootstrap()
     sql(M7.read_text(encoding="utf-8"))
+    sql(M8.read_text(encoding="utf-8"))  # L7 suite must pass with the L8 policy applied.
     md5=sql("""SELECT 'MD5|'||jsonb_build_object(
       'existing_ig_citation_before','a9b001fe715fe3a71fcba505fb03ce5d',
       'existing_ig_citation_after',md5(pg_get_functiondef(
