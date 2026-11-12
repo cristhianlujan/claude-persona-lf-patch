@@ -1,0 +1,557 @@
+{
+  "schema_version": "L25_READONLY_CURATOR_READBACK_V1",
+  "supabase_project": "mhwmirqcgxxukpctffuv",
+  "mode": "SELECT_ONLY",
+  "only_pg18_fixture_family_map": true,
+  "family_registry_verified_live": false,
+  "source_rule_proposal_file_blob": "7d339b902c44bb0f2b97e87061671d45d7deb59c",
+  "probes": [
+    {
+      "id": "G25_01",
+      "n": 5,
+      "sha256": "e062cf7af6d929a44d5ea5d07e85e8da7fe37905fa24bd559734ae83c490aa68",
+      "rows": [
+        {
+          "n": 1,
+          "estado": "VIGENTE",
+          "categoria": "notificacion"
+        },
+        {
+          "n": 11,
+          "estado": "CANDIDATO",
+          "categoria": "checkout"
+        },
+        {
+          "n": 28,
+          "estado": "VIGENTE",
+          "categoria": "checkout"
+        },
+        {
+          "n": 6,
+          "estado": "VIGENTE",
+          "categoria": "niubiz"
+        },
+        {
+          "n": 8,
+          "estado": "VIGENTE",
+          "categoria": "pago"
+        }
+      ]
+    },
+    {
+      "id": "G25_02",
+      "n": 12,
+      "sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "rows": [
+        {
+          "id": "L25-01",
+          "tipo": "NUEVA_PROPUESTA",
+          "codigo": "REG_CLIENT_INSTALLMENT_STATUS_025",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "pago",
+          "same_code": [],
+          "base_codigo": null,
+          "live_preimage_sha256": null,
+          "same_code_live_count": 0,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-02",
+          "tipo": "NUEVA_PROPUESTA",
+          "codigo": "REG_CLIENT_INSTALLMENT_MIDNIGHT_RECON_025",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "pago",
+          "same_code": [],
+          "base_codigo": null,
+          "live_preimage_sha256": null,
+          "same_code_live_count": 0,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-03",
+          "tipo": "NUEVA_PROPUESTA",
+          "codigo": "REG_CLIENT_INSTALLMENT_RECON_ALERT_025",
+          "familia": "CONTENIDO_COMUNICACIONES",
+          "categoria": "notificacion",
+          "same_code": [],
+          "base_codigo": null,
+          "live_preimage_sha256": null,
+          "same_code_live_count": 0,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-04",
+          "tipo": "NUEVA_PROPUESTA",
+          "codigo": "REG_CLIENT_INSTALLMENT_CANCELLATION_025",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "pago",
+          "same_code": [],
+          "base_codigo": null,
+          "live_preimage_sha256": null,
+          "same_code_live_count": 0,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-05",
+          "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+          "codigo": "REG_NIU_001",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "niubiz",
+          "same_code": [
+            {
+              "codigo": "REG_NIU_001",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_NIU_001",
+          "live_preimage_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-06",
+          "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "pago",
+          "same_code": [
+            {
+              "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "live_preimage_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [
+            "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001"
+          ],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 1
+        },
+        {
+          "id": "L25-07",
+          "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+          "codigo": "REG_CHK_CUO_006",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "checkout",
+          "same_code": [
+            {
+              "codigo": "REG_CHK_CUO_006",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_CHK_CUO_006",
+          "live_preimage_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [
+            "REG_CHK_020",
+            "REG_CHK_CUO_008"
+          ],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 2
+        },
+        {
+          "id": "L25-08",
+          "tipo": "CAMBIO_PROPUESTO_NO_ACTUALIZAR_VIGENTE",
+          "codigo": "REG_CHK_014",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "checkout",
+          "same_code": [
+            {
+              "codigo": "REG_CHK_014",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_CHK_014",
+          "live_preimage_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-09",
+          "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+          "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "familia": "CONTENIDO_COMUNICACIONES",
+          "categoria": "notificacion",
+          "same_code": [
+            {
+              "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "live_preimage_sha256": "7e88a217176aa486daea2675cad57eb9d4a3fa9633a3fb1a25f87be8ba391c25",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-10",
+          "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+          "codigo": "REG_CHK_CUO_003",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "checkout",
+          "same_code": [
+            {
+              "codigo": "REG_CHK_CUO_003",
+              "estado": "CANDIDATO"
+            }
+          ],
+          "base_codigo": "REG_CHK_CUO_003",
+          "live_preimage_sha256": "483bb657d94cd07b624ccc033c6a3843c8df82f364442e9579832c2b1d5dc3df",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-11",
+          "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+          "codigo": "REG_CHK_CUO_009",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "checkout",
+          "same_code": [
+            {
+              "codigo": "REG_CHK_CUO_009",
+              "estado": "VIGENTE"
+            }
+          ],
+          "base_codigo": "REG_CHK_CUO_009",
+          "live_preimage_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [
+            "REG_CHK_017"
+          ],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 1
+        },
+        {
+          "id": "L25-12",
+          "tipo": "REVISADA_SIN_CAMBIO_PROPUESTO",
+          "codigo": "REG_CHK_011",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "checkout",
+          "same_code": [
+            {
+              "codigo": "REG_CHK_011",
+              "estado": "CANDIDATO"
+            }
+          ],
+          "base_codigo": "REG_CHK_011",
+          "live_preimage_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3",
+          "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        }
+      ]
+    },
+    {
+      "id": "G25_03",
+      "n": 16,
+      "sha256": "a0aebc613bd8a8358bec8d9a3ee9801ee3a22301cd8ffa75ac73129784a80107",
+      "rows": [
+        {
+          "codigo": "REG_CHK_010",
+          "estado": "VIGENTE",
+          "titulo": "Tarjeta recomendada para planes en cuotas",
+          "categoria": "checkout",
+          "config_relevant": {},
+          "live_row_sha256": "d58d59201e4638e44290fb85086a0ad7e832d6c494dbefa712ea24f9542d033c",
+          "excerpt_for_triage_only": "La tarjeta de débito o crédito es el medio recomendado para planes en cuotas porque habilita el débito automático mensual. Yape está disponible solo para el mon"
+        },
+        {
+          "codigo": "REG_CHK_011",
+          "estado": "CANDIDATO",
+          "titulo": "Yape en cuotas — cobros recurrentes pendiente de definir",
+          "categoria": "checkout",
+          "config_relevant": {
+            "cuotas_siguientes": "PENDIENTE_DEFINICION"
+          },
+          "live_row_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3",
+          "excerpt_for_triage_only": "Yape está disponible para pagar el monto inicial del plan en cuotas. El mecanismo para cobrar las cuotas siguientes cuando el usuario pagó con Yape está pendien"
+        },
+        {
+          "codigo": "REG_CHK_014",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "config_relevant": {
+            "cancelacion_permitida": true
+          },
+          "live_row_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459",
+          "excerpt_for_triage_only": "El usuario puede cancelar el cobro recurrente de su plan en cualquier momento desde \"Mis operaciones\". La cancelación no genera penalidades. La carta de no adeu"
+        },
+        {
+          "codigo": "REG_CHK_CUO_002",
+          "estado": "VIGENTE",
+          "titulo": "Tarjeta es el medio recomendado para cuotas",
+          "categoria": "checkout",
+          "config_relevant": {},
+          "live_row_sha256": "f7ba7e31a7f84895e8a05f4e172653f4dddcfe12bdf1d13642fe484e1149eb3d",
+          "excerpt_for_triage_only": "La tarjeta de débito o crédito es el medio recomendado porque permite programar el débito automático de las cuotas siguientes. El badge \"Recomendada\" aparece so"
+        },
+        {
+          "codigo": "REG_CHK_CUO_003",
+          "estado": "CANDIDATO",
+          "titulo": "Yape disponible solo para monto inicial",
+          "categoria": "checkout",
+          "config_relevant": {},
+          "live_row_sha256": "483bb657d94cd07b624ccc033c6a3843c8df82f364442e9579832c2b1d5dc3df",
+          "excerpt_for_triage_only": "Yape está habilitado para pagar el monto inicial únicamente. Las cuotas siguientes no pueden cobrarse por Yape. La configuración del cobro recurrente de cuotas "
+        },
+        {
+          "codigo": "REG_CHK_CUO_005",
+          "estado": "VIGENTE",
+          "titulo": "Autorización de cobro automático es obligatoria",
+          "categoria": "checkout",
+          "config_relevant": {},
+          "live_row_sha256": "3b04552f29da632717d1644d7381bc00f7f7e668eecebbc16b930085bcb2bdb9",
+          "excerpt_for_triage_only": "El checkbox \"Autorizo el cobro automático de las cuotas según el cronograma del plan.\" es obligatorio antes de pagar. Sin esta autorización el botón de pago per"
+        },
+        {
+          "codigo": "REG_CHK_CUO_006",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "config_relevant": {
+            "cancelacion_permitida": true
+          },
+          "live_row_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5",
+          "excerpt_for_triage_only": "El usuario puede cancelar el cobro recurrente del plan en cuotas en cualquier momento. No hay penalidades por cancelación anticipada. Esta condición debe estar "
+        },
+        {
+          "codigo": "REG_CHK_CUO_009",
+          "estado": "VIGENTE",
+          "titulo": "Carta de no adeudo se emite al cancelar la deuda total",
+          "categoria": "checkout",
+          "config_relevant": {},
+          "live_row_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e",
+          "excerpt_for_triage_only": "En el contexto de cuotas, la carta de no adeudo se emite cuando el usuario completa el pago total del plan (última cuota). No se emite al pagar el monto inicial"
+        },
+        {
+          "codigo": "REG_CLIENT_CHECKOUT_PAYMENT_METHOD_ELIGIBILITY_001",
+          "estado": "VIGENTE",
+          "titulo": "Elegibilidad server-side de medios de pago Cliente",
+          "categoria": "flujo",
+          "config_relevant": {
+            "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER"
+          },
+          "live_row_sha256": "04dbd0b13a8f76ded4118db45763b1f45a0e9678a3b42bd6844d5272182a29b5",
+          "excerpt_for_triage_only": "El checkout Cliente muestra únicamente medios de pago que el backend determine elegibles para la combinación vigente de aliado, oferta, modalidad, plan, monto y"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "estado": "VIGENTE",
+          "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+          "categoria": "pago",
+          "config_relevant": {
+            "overdue_authority": "CONTRACTUAL_SCHEDULE_PLUS_CANONICAL_GRACE_POLICY",
+            "grace_or_delinquency_policy": "PENDING_BUSINESS_LEGAL_POLICY"
+          },
+          "live_row_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b",
+          "excerpt_for_triage_only": "Un intento de cobro de una cuota reutiliza los outcomes normalizados de pago. PAYMENT_CONFIRMED marca esa cuota como pagada. PAYMENT_DECLINED_CONFIRMED mantiene"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "estado": "VIGENTE",
+          "titulo": "Recordatorios operativos de cuotas pendientes",
+          "categoria": "notificacion",
+          "config_relevant": {
+            "channel_policy": "PENDING_CANONICAL_NOTIFICATION_CHANNEL_POLICY"
+          },
+          "live_row_sha256": "7e88a217176aa486daea2675cad57eb9d4a3fa9633a3fb1a25f87be8ba391c25",
+          "excerpt_for_triage_only": "Los recordatorios de una cuota pendiente se generan únicamente desde un plan activo y su cronograma contractual. Son comunicaciones operativas del plan, no mark"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PAYMENT_DUE_001",
+          "estado": "VIGENTE",
+          "titulo": "Comportamiento de próxima cuota según modalidad de cobro",
+          "categoria": "pago",
+          "config_relevant": {},
+          "live_row_sha256": "f6909438e10f2d21475363bab2963f9bd2c35f92a0795c89f3c6c632503c67ce",
+          "excerpt_for_triage_only": "La acción sobre una cuota pendiente depende del collection_mode guardado en el snapshot del plan, no del nombre del medio de pago mostrado en UI. Para AUTOMATIC"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "estado": "VIGENTE",
+          "titulo": "Snapshot contractual del plan de cuotas activado",
+          "categoria": "pago",
+          "config_relevant": {},
+          "live_row_sha256": "753265ddccdba94faa9a23e4b03705f254fffd3355a9131e7633401c2040c35e",
+          "excerpt_for_triage_only": "Cuando un pago inicial confirmado activa un plan de cuotas, el backend debe consolidar un snapshot inmutable de las condiciones aceptadas para ese plan. Las cuo"
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "estado": "VIGENTE",
+          "titulo": "Resultados normalizados y manejo seguro de estado ambiguo de pago",
+          "categoria": "pago",
+          "config_relevant": {
+            "provider_binding": "PENDING_CANONICAL_PAYMENT_PROVIDER"
+          },
+          "live_row_sha256": "010f662ba1dbf8237e056e10001526bbbb9c8ba2f6802d7ea06ba6a54c1aa789",
+          "excerpt_for_triage_only": "Todo resultado del proveedor de pago se normaliza server-side antes de afectar el Sistema Cliente. Un pago solo se considera confirmado cuando existe evidencia "
+        },
+        {
+          "codigo": "REG_NIU_001",
+          "estado": "VIGENTE",
+          "titulo": "Niubiz como gateway de pago principal",
+          "categoria": "niubiz",
+          "config_relevant": {},
+          "live_row_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7",
+          "excerpt_for_triage_only": "Niubiz es el gateway de pago principal del producto para el mercado peruano. Toda transacción de pago pasa por Niubiz. No se implementan otros gateways en el MV"
+        },
+        {
+          "codigo": "REG_NIU_003",
+          "estado": "VIGENTE",
+          "titulo": "Integración vía SDK de Niubiz",
+          "categoria": "niubiz",
+          "config_relevant": {},
+          "live_row_sha256": "28b8046874b07f88ac83a662ff5b275c8d133650bf69df3581075b017df56c4a",
+          "excerpt_for_triage_only": "La integración con Niubiz usa el SDK oficial, no llamadas directas a la API. El SDK maneja el formulario de tarjeta en un iframe seguro. Los datos de tarjeta nu"
+        }
+      ]
+    },
+    {
+      "id": "G25_04",
+      "n": 5,
+      "sha256": "615577b24d8da32f8e8a6118ab859427fda83eaefc42e5b79bbaa266d8a2f48c",
+      "rows": [
+        {
+          "args": "",
+          "schema_name": "public",
+          "function_md5": "ee782e4bd0128c80ee13881899c0d74e",
+          "function_name": "lf_rule_promotion_guard_v1"
+        },
+        {
+          "args": "p_ids text[], p_decision text, p_decided_by text, p_note text",
+          "schema_name": "public",
+          "function_md5": "6cdf2aa9a03c6abc7315b7ebc9d2f3ce",
+          "function_name": "lf_rule_promotion_decide_batch_v1"
+        },
+        {
+          "args": "p_ids text[]",
+          "schema_name": "public",
+          "function_md5": "4e98f486f5ff65b596e5999f22cc8dde",
+          "function_name": "lf_rule_promotion_apply_batch_v1"
+        },
+        {
+          "args": "p_page integer, p_size integer",
+          "schema_name": "public",
+          "function_md5": "e3e521aaa933604de88d697196f54564",
+          "function_name": "lf_rule_promotion_report_v1"
+        },
+        {
+          "args": "p_promotion_id text",
+          "schema_name": "public",
+          "function_md5": "d7fe763c999db6f6259b6b1e2bd69644",
+          "function_name": "lf_rule_promotion_apply_v1"
+        }
+      ]
+    },
+    {
+      "id": "G25_05",
+      "n": 8,
+      "sha256": "69562194551fcc4776e191ad35ea533d170869f3314a0cfac1dd0286a705cfb6",
+      "rows": [
+        {
+          "codigo": "REG_CHK_011",
+          "estado": "CANDIDATO",
+          "categoria": "checkout",
+          "live_config_sha256": "60ce707a08f5a0b4f46f1f0fd7b8b99de4a53b69062bf89f35bef6c337214bee",
+          "live_full_row_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3"
+        },
+        {
+          "codigo": "REG_CHK_014",
+          "estado": "VIGENTE",
+          "categoria": "checkout",
+          "live_config_sha256": "2ac26d262a8c9154b35f846d3ce0416845d0cf9b47bb5825820391d66218074c",
+          "live_full_row_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459"
+        },
+        {
+          "codigo": "REG_CHK_CUO_003",
+          "estado": "CANDIDATO",
+          "categoria": "checkout",
+          "live_config_sha256": "a9cb299b5d2e8c410f753ffc63376071534e4c208870012f0178736b8dac1958",
+          "live_full_row_sha256": "483bb657d94cd07b624ccc033c6a3843c8df82f364442e9579832c2b1d5dc3df"
+        },
+        {
+          "codigo": "REG_CHK_CUO_006",
+          "estado": "VIGENTE",
+          "categoria": "checkout",
+          "live_config_sha256": "f36716609ba4a5d96e284d8384c7a9592c8045e76adca79ead85142693708bbd",
+          "live_full_row_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5"
+        },
+        {
+          "codigo": "REG_CHK_CUO_009",
+          "estado": "VIGENTE",
+          "categoria": "checkout",
+          "live_config_sha256": "401ae27ab76b6d9fc6bc1cddee852834c14e5d543c6ba1c98a325aa88999c0e8",
+          "live_full_row_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "estado": "VIGENTE",
+          "categoria": "pago",
+          "live_config_sha256": "3e54316498bb9c4777f2a22691fcd1d19bcc1c512c752e2240e28afb8dcf4c0a",
+          "live_full_row_sha256": "bf4a7fcad3282227d164e92107dc6970e1238a08b60bafcee6e06d1ddf99b96b"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_DUE_NOTIFICATION_001",
+          "estado": "VIGENTE",
+          "categoria": "notificacion",
+          "live_config_sha256": "05acf9dfbb044de8c89985fdde47d8314d8677e8e4e017dd0791497144fa5f5f",
+          "live_full_row_sha256": "7e88a217176aa486daea2675cad57eb9d4a3fa9633a3fb1a25f87be8ba391c25"
+        },
+        {
+          "codigo": "REG_NIU_001",
+          "estado": "VIGENTE",
+          "categoria": "niubiz",
+          "live_config_sha256": "c97f6e125a05e5c9cdd5ae676fb53be216f55231b8654106585e63db6f2f1155",
+          "live_full_row_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7"
+        }
+      ]
+    }
+  ],
+  "classification_note": "G25_02 possible_structural_config_conflict is a review signal, NOT a proven business contradiction",
+  "judge": "GPT6_SAME_MODEL_NOT_INDEPENDENT",
+  "production": "NO_GO_UNVERIFIED"
+}
