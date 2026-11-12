@@ -1,0 +1,50 @@
+{
+  "schema_version": "LF_L25_PARAMETER_CANDIDATE_V1",
+  "decision_owner": "F_CONFIRMADA",
+  "type": "PARAMETRO_CONFIGURABLE_CANDIDATO_NO_DML_DDL",
+  "parametro": {
+    "codigo": "ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES",
+    "valor_inicial": 12,
+    "unidad": "MESES_CALENDARIO",
+    "fecha_base": "FECHA_CUOTA",
+    "reloj_referencia": "America/Lima",
+    "almacenamiento": "VARIABLE_CONFIGURABLE_VERSIONADA_PENDIENTE_IMPLEMENTACION_PRODUCTO",
+    "hardcode_en_proceso": "DENY",
+    "rango_valido": "PENDIENTE_DE_DEFINICION_Y_VALIDACION",
+    "mantenimiento": {
+      "responsable": "PRODUCTO",
+      "pantalla": "PENDIENTE_CONSTRUIR_FUERA_DE_INPUT_GOVERNANCE",
+      "requisitos_IG": [
+        "HISTORIAL_DE_CAMBIOS",
+        "ROL_AUTORIZADO",
+        "RANGO_VALIDO"
+      ]
+    },
+    "sin_valor_o_invalido": "FALLA_CERRADA_NO_CANCELAR_NADA_Y_ALERTAR",
+    "estado": "CANDIDATO",
+    "registro_operativo": "NO_EXISTE_EN_LF_OPS_REGLAS_G25_07",
+    "campo_de_parametro": "CONFIGURACION_DE_PRODUCTO_PENDIENTE_DE_IMPLEMENTAR",
+    "validacion_rango": "OBLIGATORIA_PERO_LIMITES_NO_DECIDIDOS"
+  },
+  "linked_rule_code": "REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025",
+  "evidence": {
+    "G25_07_SHA256": "65980d83241ab76857f93f98c6b623508679a44faef41537d1048ff019143a64",
+    "source": "SELECT count exact code/reference in lf_ops.reglas, and candidate config table names only; does not prove parameter absence from all systems"
+  },
+  "non_authorized": [
+    "CREATE_TABLE",
+    "CREATE_SCREEN_BY_IG",
+    "SET_RUNTIME_CONFIG",
+    "FIX_RANGE_LIMITS_UNILATERALLY",
+    "ACTIVATE_RULE",
+    "PRODUCTION"
+  ],
+  "pending_external": [
+    "RANGO_VALIDO_Y_VALIDACION",
+    "SOPORTE_DE_FECHA_FIN_DE_MES_Y_BISIESTO",
+    "INCOBRABLE_SEMANTICA",
+    "CONTABILIDAD_Y_DESTINO"
+  ],
+  "classification": "REQUIERE_REVISION_SEMANTICA",
+  "status": "PENDIENTE_DE_APROBACION_Y_CONSTRUCCION_PRODUCTO"
+}
