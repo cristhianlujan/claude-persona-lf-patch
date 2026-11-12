@@ -1,0 +1,44 @@
+{
+  "lote": 13,
+  "state": "GATE_UNTOUCHED_VERIFIED",
+  "comparison_base": "lf/issue-3779-lote12-rule-quality-audit-v1",
+  "comparison_target": "lf/issue-3779-lote13-family-lifecycle-v1",
+  "algorithm": "MD5 UTF-8 bytes, implementation self-tested against abc",
+  "gate_files": [
+    {
+      "path": "supabase/migrations/20261111191000_lf_rule_promotion_native_semantic_review_gate_v1.sql",
+      "md5_base": "7d475fc6057839953d152ca08359e31c",
+      "md5_lote13": "7d475fc6057839953d152ca08359e31c",
+      "git_blob_base": "b9b1beac377ccef3b493e450cad59201ab26a0c9",
+      "git_blob_lote13": "b9b1beac377ccef3b493e450cad59201ab26a0c9",
+      "identical": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/promotion_pg18_sandbox_fixture.sql",
+      "md5_base": "d58299c54b76432eee030189dd72e8ae",
+      "md5_lote13": "d58299c54b76432eee030189dd72e8ae",
+      "git_blob_base": "924eef469fd2f2c039eaf26b8f7e673ef585f655",
+      "git_blob_lote13": "924eef469fd2f2c039eaf26b8f7e673ef585f655",
+      "identical": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+      "md5_base": "b88c0c856cf4891745828ba783c36d93",
+      "md5_lote13": "b88c0c856cf4891745828ba783c36d93",
+      "git_blob_base": "a8869ccf8824754f54d2007235cf5399af4cf5f9",
+      "git_blob_lote13": "a8869ccf8824754f54d2007235cf5399af4cf5f9",
+      "identical": true
+    },
+    {
+      "path": ".github/workflows/pase-merge-gate.yml",
+      "md5_base": "5278a2d3284e17e4ddd3c7bcbfccfdee",
+      "md5_lote13": "5278a2d3284e17e4ddd3c7bcbfccfdee",
+      "git_blob_base": "5cbc316126a3d04ddf238873e664a86241d86282",
+      "git_blob_lote13": "5cbc316126a3d04ddf238873e664a86241d86282",
+      "identical": true
+    }
+  ],
+  "production_status": "UNVERIFIED_NO_GO",
+  "ci_sandbox_job": "43284490129",
+  "note": "Identical Git blob SHA and MD5 for every compared gate-related file. No other L11 workflow or promotion gate was modified."
+}
