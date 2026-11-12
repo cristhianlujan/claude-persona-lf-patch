@@ -71,3 +71,24 @@ CREATE TRIGGER trg_l14_saly_quality_activate
  BEFORE INSERT OR UPDATE OF vigente ON saly_source_synthetic FOR EACH ROW
  EXECUTE FUNCTION source_quality_activation_guard(
   'saly','codigo','categoria','regla','vigente','true');
+
+-- Immutable content of already-active rules. Corrections must be separately proposed
+-- via explicit version/successor, never silently UPDATE a VIGENTE row in place.
+CREATE FUNCTION source_quality_no_active_in_place_edit() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=rule_quality_l13,pg_temp AS $fn$
+DECLARE v_old jsonb:=to_jsonb(OLD);v_new jsonb:=to_jsonb(NEW);
+BEGIN
+ IF v_old->>TG_ARGV[0] = TG_ARGV[1]
+    AND ((v_old->>TG_ARGV[2]) IS DISTINCT FROM (v_new->>TG_ARGV[2])
+         OR (v_old->TG_ARGV[3]) IS DISTINCT FROM (v_new->TG_ARGV[3])) THEN
+   RAISE EXCEPTION USING ERRCODE='23514',
+     MESSAGE='BLOCK_QUALITY_ACTIVE_RULE_IN_PLACE_MUTATION';
+ END IF;
+ RETURN NEW;
+END $fn$;
+CREATE TRIGGER trg_l14_lf_no_inplace_active_edit
+ BEFORE UPDATE OF descripcion,valor_config ON lf_ops.reglas FOR EACH ROW
+ EXECUTE FUNCTION source_quality_no_active_in_place_edit('estado','VIGENTE','descripcion','valor_config');
+CREATE TRIGGER trg_l14_saly_no_inplace_active_edit
+ BEFORE UPDATE OF regla,valor_config ON saly_source_synthetic FOR EACH ROW
+ EXECUTE FUNCTION source_quality_no_active_in_place_edit('vigente','true','regla','valor_config');

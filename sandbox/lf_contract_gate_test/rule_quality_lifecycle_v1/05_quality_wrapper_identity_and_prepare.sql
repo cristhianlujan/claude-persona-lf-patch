@@ -75,10 +75,10 @@ END $fn$;
 
 -- The same generic function uses the adapter columns in LF and SALY.
 CREATE FUNCTION quality_prepare_new(p_project text,p_rule text,p_family text,
- p_review_at timestamptz DEFAULT '2026-11-12T00:00:00Z')
+ p_review_at timestamptz DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=rule_quality_l13,pg_temp AS $fn$
 DECLARE v_actor text;v_adapter project_source_adapters%ROWTYPE;
-        v_category text;v_description text;v_state text;v_days integer;v_mapping text;
+        v_category text;v_description text;v_state text;v_days integer;v_mapping text;v_now timestamptz;
 BEGIN
  v_actor:=trusted_actor_role(p_project);
  IF p_family IS NULL OR btrim(p_family)='' THEN
@@ -109,14 +109,18 @@ BEGIN
  IF EXISTS (SELECT 1 FROM rules WHERE project_code=p_project AND rule_code=p_rule) THEN
    RAISE EXCEPTION USING ERRCODE='23505',MESSAGE='BLOCK_QUALITY_EXISTS_USE_SUCCESSOR';
  END IF;
+ IF p_review_at IS NOT NULL THEN
+   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_QUALITY_CALLER_REVIEW_TIME_FORBIDDEN';
+ END IF;
+ v_now:=clock_timestamp();
  SELECT review_interval_days INTO v_days FROM projects WHERE project_code=p_project;
  INSERT INTO rules(project_code,rule_code,family_code,category_raw,entity_code,
                    definition_text,config,state,reviewed_at,next_review_at,effective_from)
  VALUES (p_project,p_rule,p_family,v_category,'GENERAL',v_description,
-         '{}'::jsonb,'EN_REVISION',p_review_at,
-         p_review_at+make_interval(days=>v_days),p_review_at);
+         '{}'::jsonb,'EN_REVISION',v_now,
+         v_now+make_interval(days=>v_days),v_now);
  RETURN jsonb_build_object('status','QUALITY_PREPARED','project_code',p_project,
     'rule_code',p_rule,'family_code',p_family,'owner_role',v_actor,
-    'reviewed_at',p_review_at,
-    'next_review_at',p_review_at+make_interval(days=>v_days));
+    'reviewed_at',v_now,
+    'next_review_at',v_now+make_interval(days=>v_days));
 END $fn$;

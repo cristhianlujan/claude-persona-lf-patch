@@ -103,6 +103,14 @@ def test_permissions_and_negatives():
       "23514","BLOCK_QUALITY_ACTIVE_METADATA_MISSING")
     # Because previous P1 transaction ROLLBACK, quality metadata was not persisted.
     # Re-run P1 in a transaction and attempt bypass to ensure ticket-specific denial.
+    negative("N10_REVIEW_TIME_CANNOT_BE_SPOOFED",
+      role_session("lf_owner_role",
+       "SELECT rule_quality_l13.quality_prepare_new('lf','LF-L14-NEG-NO-FAM','IDENTIDAD_SEGURIDAD','2099-01-01T00:00:00Z');",
+       "lf_owner_role"),
+      "23514","BLOCK_QUALITY_CALLER_REVIEW_TIME_FORBIDDEN")
+    negative("N11_VIGENTE_CONTENT_IS_IMMUTABLE",
+      "BEGIN; UPDATE lf_ops.reglas SET descripcion='illicit in-place rewrite' WHERE codigo='RULE-DEPENDENCY-001'; ROLLBACK;",
+      "23514","BLOCK_QUALITY_ACTIVE_RULE_IN_PLACE_MUTATION")
     negative("N8_NO_TICKET_EVEN_WITH_METADATA",
       """BEGIN;
       SET SESSION AUTHORIZATION lf_owner_role;
