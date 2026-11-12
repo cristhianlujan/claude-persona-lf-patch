@@ -1,0 +1,534 @@
+{
+  "lote": 17,
+  "status": "SANDBOX_VERIFIED",
+  "global_status": "NO_GO_UNVERIFIED",
+  "github_actions": {
+    "run_id": 43294775544,
+    "job_id": 131450041374,
+    "test_commit": "3d044c878dc382fbfddb6e51d2be78309e93fa10",
+    "workflow_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43294775544",
+    "workflow_conclusion": "success"
+  },
+  "postgresql": "18.x clean isolated postgres:18 Docker image; no production",
+  "legacy_regressions_l13": {
+    "total": 28,
+    "passed": 28,
+    "result": "SANDBOX_VERIFIED"
+  },
+  "prior_and_current_pg18_scripts": {
+    "failed": 0,
+    "passed": 16,
+    "scripts": [
+      {
+        "log_sha256": "38acafe8ad6b986933cf3a8c09d31795d5d938275e39ca38b016df66ffe11cc1",
+        "log_size": 16615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote10_owner_declared_e2e_attestation_limits.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "7e1adbf2ba08aba771f1217aba2ec44449d093f6730ebe71f48fd3a7e6d64112",
+        "log_size": 9709,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11_synthetic_positive_reachability.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "1838ae8506f82d66accee399dbd8471b96e7ccebb57a3c652713af699a1110f3",
+        "log_size": 42186,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote11b_mechanical_positive.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "3e5fe0ba3755d6850a9542eecb5254747a180151021c1347cb62a7be49719e1d",
+        "log_size": 29265,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote14_quality_wrapper.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "eca47cd67c90efc483789fd3f2ceb9d87fbef9edd6c17c32aa7f56381cab62b4",
+        "log_size": 17429,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote17_actor_identity_adapter.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "37145e146930f0ac78357b8d1c298c51db852dccf48491604fa377bc4b6241b6",
+        "log_size": 21622,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_mutation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4_semantic_gate.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "9c1bb3dc0b9e0f11f22fc4805561a09946944a2a10924ab7a5fd3a2df48f281a",
+        "log_size": 19695,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4b_validator_reuse.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "32a38d6c68d16cfffc39509d60af3090374a6fb3d5d01a258031b66b5caf1a7a",
+        "log_size": 22740,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote4d_profile_owner_approval.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0455e266085b6579c5ca09c97b618c4e9b0f1abaf6c9e61883c31ced930ab8e0",
+        "log_size": 17103,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote5_real_verdict_profile_return.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f04e7b0f2d50c21395f11dff95029297b6a0fbc87b60f7f23bb0fdcb0a777680",
+        "log_size": 4175,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote6_claude_blind_5pass_uncited.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "f33594571d0f411a1bf9eda5adcbe32b36a66bb35727c9ea7759888d1981e2b9",
+        "log_size": 20355,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote7_exact_citation_capture.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "15f076c5623ea208dae9422d3c8efed0256a86c180aad904ee21762e176fce0b",
+        "log_size": 8250,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote8_quote_reuse_scoped.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "bd58aeefa9374a829b3e6f785b02318309a555cf07db3dab9789d8ff1341f4b5",
+        "log_size": 68615,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote9_real_chat_export_citation_measurement.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "fc760d8ba60afeae4abbbbfb96b1e0d0284b53c70c0ad84cc43aea28bf0dbf91",
+        "log_size": 42544,
+        "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_one_rule_promotion.py",
+        "status": "PASS"
+      },
+      {
+        "log_sha256": "0d6abe0e13835bec20df46bb41ba832d4b4e58644ea1a1f4037274c6dae533d5",
+        "log_size": 14681,
+        "path": "sandbox/lf_contract_gate_test/rule_scope_v1/test_pg18_step40_rule_scope.py",
+        "status": "PASS"
+      }
+    ],
+    "tested": 16
+  },
+  "l17_v2_actor_cases": {
+    "caller_identity": "l17_authenticator with SET LOCAL ROLE",
+    "case_count": 25,
+    "cases": [
+      {
+        "expected": "L14 V1 rejects session_user=l17_authenticator even when current_user=lf_owner_role",
+        "id": "L17_01_V1_SESSION_USER_FAILS",
+        "observed": {
+          "sql_error": "ERROR:  42501: BLOCK_QUALITY_ROLE_UNMAPPED",
+          "status": "EXPECTED_NEGATIVE"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "authenticator session, owner current_user after SET LOCAL ROLE",
+        "id": "L17_02_POSTGREST_CONTEXT",
+        "observed": {
+          "current_user": "lf_owner_role",
+          "role": "lf_owner_role",
+          "session_user": "l17_authenticator"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "L17_00_FROZEN_GATE_MD5_BEFORE",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "valid LF HMAC claim + role + sub + project mapping",
+        "id": "L17_03_LF_SIGNED_SUB_ROLE_PASS",
+        "observed": {
+          "CTX": {
+            "current_user": "lf_owner_role",
+            "jwt_local": true,
+            "role": "lf_owner_role",
+            "session_user": "l17_authenticator"
+          },
+          "IDENTITY": {
+            "actor_code": "lf_owner_role",
+            "exp": 1794516863,
+            "profile_code": "LF_GOVERNANCE",
+            "project_code": "lf",
+            "role": "lf_owner_role",
+            "session_user": "l17_authenticator",
+            "status": "JWT_HMAC_SANDBOX_VERIFIED",
+            "sub": "lf-sub-owner-001"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "same verification functions with SALY adapter",
+        "id": "L17_04_SALY_SAME_VERIFIER_PASS",
+        "observed": {
+          "CTX": {
+            "current_user": "saly_owner_role",
+            "jwt_local": true,
+            "role": "saly_owner_role",
+            "session_user": "l17_authenticator"
+          },
+          "IDENTITY": {
+            "actor_code": "saly_owner_role",
+            "exp": 1794516863,
+            "profile_code": "SALY_OWNER",
+            "project_code": "saly",
+            "role": "saly_owner_role",
+            "session_user": "l17_authenticator",
+            "status": "JWT_HMAC_SANDBOX_VERIFIED",
+            "sub": "saly-sub-owner-001"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_SIGNATURE_INVALID",
+        "id": "L17_05_BAD_HMAC",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_SIGNATURE_INVALID"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_PROJECT_MISMATCH",
+        "id": "L17_06_OTHER_PROJECT",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_PROJECT_MISMATCH"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_SUB_UNMAPPED",
+        "id": "L17_07_UNMAPPED_SUB",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_SUB_UNMAPPED"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_EFFECTIVE_ROLE_MISMATCH",
+        "id": "L17_08_ROLE_MISMATCH",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_EFFECTIVE_ROLE_MISMATCH"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_SUPER_ADMIN_APPROVAL",
+        "id": "L17_09_SUPER_ADMIN_DENIED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_SUPER_ADMIN_APPROVAL"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_NOT_PROJECT_OWNER",
+        "id": "L17_10_READER_DENIED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_NOT_PROJECT_OWNER"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_EXPIRED_OR_NOT_YET_VALID",
+        "id": "L17_11_EXPIRED_JWT",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_EXPIRED_OR_NOT_YET_VALID"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_MISSING",
+        "id": "L17_12_CLAIMS_MISSING",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_MISSING"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_NOT_AUTHENTICATOR_SESSION",
+        "id": "L17_13_DIRECT_LOGIN_NOT_POSTGREST",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_NOT_AUTHENTICATOR_SESSION"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "permission denied for table rules",
+        "id": "L17_14_DIRECT_DML_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: permission denied for table rules"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "permission denied for function l17_sandbox_mint",
+        "id": "L17_15_SIGNING_ORACLE_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: permission denied for function l17_sandbox_mint"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "must be owner of table saly_source_synthetic",
+        "id": "L17_16_SOURCE_TRIGGER_DISABLE_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: must be owner of table saly_source_synthetic"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "BLOCK_L17_JWT_MISSING",
+        "id": "L17_17_LEGACY_DEFINER_NO_JWT_BYPASS",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: BLOCK_L17_JWT_MISSING"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "SET ROLE is not authorization: valid signed sub required",
+        "id": "L17_18_ROLE_ALONE_NOT_AUTHORITY",
+        "observed": {
+          "ROLE_ONLY": {
+            "role": "lf_owner_role",
+            "session": "l17_authenticator"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "permission denied for table l17_actor_subjects",
+        "id": "L17_19_DIRECT_ACTOR_MAP_DML_BLOCKED",
+        "observed": {
+          "exit": 3,
+          "sql_error": "ERROR:  42501: permission denied for table l17_actor_subjects"
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "transaction-local claims not retained in next connection",
+        "id": "L17_20_TRANSACTION_LOCAL_CLAIMS_RESET",
+        "observed": {
+          "claim_after_rollback": null
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "Saly same v2 functions; synthetic mechanic only",
+        "id": "L17_21_SALY_PREPARE_APPLY_READY",
+        "observed": {
+          "PREP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T19:54:24.446508+00:00",
+            "owner_role": "saly_owner_role",
+            "project_code": "saly",
+            "reviewed_at": "2026-11-12T19:54:24.446508+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "QUALITY_PREPARED"
+          },
+          "WRAP": {
+            "family_code": "MOTOR_DISPONIBLE",
+            "gate": {
+              "fixture_only": true,
+              "rule_code": "SALY-L14-NEW",
+              "status": "APPLIED"
+            },
+            "identity_v2": {
+              "project_code": "saly",
+              "role": "saly_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "saly-sub-owner-001"
+            },
+            "next_review_at": "2027-01-11T19:54:24.446508+00:00",
+            "owner_role": "saly_owner_role",
+            "profile_return": {
+              "readback_verified": true,
+              "sandbox_fixture": true,
+              "status": "READY"
+            },
+            "project_code": "saly",
+            "quality_readback": "VIGENTE",
+            "reviewed_at": "2026-11-12T19:54:24.446508+00:00",
+            "rule_code": "SALY-L14-NEW",
+            "status": "READY"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "valid signed owner proposes new version; never silent edit",
+        "id": "L17_22_EXPLICIT_VERSION_REVIEW",
+        "observed": {
+          "CORRECTION": {
+            "original_rule_code": "LF-SYN-0009",
+            "owner_role": "lf_owner_role",
+            "project_code": "lf",
+            "status": "EN_REVISION",
+            "successor_rule_code": "LF-SYN-0009-L17"
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": "L11B mechanistic apply APPLIED -> source & quality VIGENTE + READY -> all rollback",
+        "id": "L17_23_L11B_SIGNED_SUB_WRAP_READY",
+        "observed": {
+          "gate": {
+            "independence_attested": false,
+            "profile_return_status": "READY",
+            "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+            "readback_status": "VERIFIED",
+            "rule_code": "REG_SEG_004",
+            "status": "APPLIED"
+          },
+          "gate_md5": {
+            "apply": "86b0494984edf95cf0f9c0a0df67000b",
+            "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+            "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+            "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+          },
+          "identity": {
+            "project_code": "lf",
+            "role": "lf_owner_role",
+            "status": "JWT_HMAC_SANDBOX_VERIFIED",
+            "sub": "lf-sub-owner-001"
+          },
+          "prepare": {
+            "family_code": "IDENTIDAD_SEGURIDAD",
+            "identity_v2": {
+              "project_code": "lf",
+              "role": "lf_owner_role",
+              "status": "JWT_HMAC_SANDBOX_VERIFIED",
+              "sub": "lf-sub-owner-001"
+            },
+            "next_review_at": "2027-02-10T19:54:24.535851+00:00",
+            "owner_role": "lf_owner_role",
+            "project_code": "lf",
+            "reviewed_at": "2026-11-12T19:54:24.535851+00:00",
+            "rule_code": "REG_SEG_004",
+            "status": "QUALITY_PREPARED"
+          },
+          "readback": {
+            "family": "IDENTIDAD_SEGURIDAD",
+            "next_review_at": "2027-02-10T19:54:24.535851+00:00",
+            "quality": "VIGENTE",
+            "reviewed_at": "2026-11-12T19:54:24.535851+00:00",
+            "source": "VIGENTE",
+            "ticket": "CONSUMED"
+          },
+          "return": {
+            "blind_case_binding_sha256": "888757f89f0abdd1e967aebf60cea201b0f68de3ecdb494b1f6163291c2d6c8c",
+            "estado": "VIGENTE",
+            "ig_external_receipt_sha256": "102d12a84cab63f7abe0dd350c1bb251d114badda452ad089f3d1f082ba64267",
+            "owner_approval_binding_sha256": "85061056df0b2557c0bcc3f117043b7e01956687c40856bcfcca0cc8141de50c",
+            "owner_execution_id": "EXEC-OWNER-L11B-001",
+            "owner_profile_code": "PERFIL-OWNER-RULE-LF",
+            "profile_return_contract": "EXISTING_PROFILE_CONTINUATION_NO_NEW_TRANSPORT",
+            "promotion_id": "PROM-TEST",
+            "readback_receipt_sha256": "8ff383d92ab7f339a5053982a8c6fb037e1c9225287a9254e58ff8f77daf2ab4",
+            "readback_snapshot_sha256": "d63c717b40a23d00bd18fb39b57e44a3be07b391e194b2009a56756ad737b654",
+            "readback_verified": true,
+            "rule_code": "REG_SEG_004",
+            "status": "READY"
+          },
+          "rollback": {
+            "quality_rule_rows": 0,
+            "source_rule_rows": 0,
+            "tickets": 0
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "expected": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "id": "L17_24_FROZEN_GATE_MD5_AFTER",
+        "observed": {
+          "apply": "86b0494984edf95cf0f9c0a0df67000b",
+          "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+          "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+          "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+        },
+        "status": "PASS"
+      }
+    ],
+    "effective_user": "current_user outside SECURITY DEFINER",
+    "frozen_gate_md5_after": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "frozen_gate_md5_before": {
+      "apply": "86b0494984edf95cf0f9c0a0df67000b",
+      "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+      "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+      "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+    },
+    "function_effective_role": "PostgreSQL role GUC inside SECURITY DEFINER",
+    "global_status": "NO_GO_UNVERIFIED",
+    "jwt_auth": "SANDBOX_HMAC_NOT_SUPABASE_AUTH",
+    "jwt_source": "set_config(request.jwt.claims,..,true)",
+    "live_db_changes": 0,
+    "native_oidc": false,
+    "native_step70": false,
+    "native_supabase_auth": false,
+    "schema_version": "LF_L17_ACTOR_IDENTITY_ADAPTER_PG18_V1",
+    "scope": "PG18_SYNTHETIC_ONLY"
+  },
+  "original_runtime_artifact_sha256": "7bf2b65394385b89ba8c3cb732915688c22f1098194dc425f0a55adb79244b2d",
+  "model_attestation": "GPT-6; Claude identity not attested",
+  "source_of_truth": "GitHub Actions stdout RAW_L17_REPORT and RAW_L14_LEGACY_SUITE_SUMMARY",
+  "limitations": [
+    "HMAC generated with a private ephemeral key in PG18 only; no Supabase Auth JWT trust",
+    "JWT was simulated as signed JSON in request.jwt.claims, not a validated compact Supabase JWT",
+    "The owner role is simulated; no real Step70/OIDC/Profile authorization",
+    "No Supabase DML/DDL; no production deploy or merge",
+    "Original L11B mechanical positive uses non-official provenance data and is not a native approval"
+  ]
+}
