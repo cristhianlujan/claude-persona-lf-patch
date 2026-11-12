@@ -43,7 +43,7 @@ jobs:
           CID='${{ job.services.pg18.id }}'
           BASE='sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1'
           docker exec "$CID" psql -U postgres -d rule_quality_sbx -X -At -c 'SHOW server_version;' | tee "$RUNNER_TEMP/pg18_version.txt"
-          sha256sum "$BASE"/01_schema.sql "$BASE"/02_seed_synthetic.sql "$BASE"/03_test_cases.sql | tee "$RUNNER_TEMP/pg18_source_sha256.txt"
+          sha256sum "$BASE"/01_schema.sql "$BASE"/02_seed_synthetic.sql "$BASE"/03_test_cases.sql "$BASE"/04_birth_expiry_tests.sql | tee "$RUNNER_TEMP/pg18_source_sha256.txt"
           for sql in 01_schema.sql 02_seed_synthetic.sql 03_test_cases.sql 04_birth_expiry_tests.sql; do
             printf '\n### Executing %s\n' "$sql" | tee -a "$RUNNER_TEMP/pg18_full.log"
             docker exec -i "$CID" psql -v ON_ERROR_STOP=1 -X -U postgres -d rule_quality_sbx < "$BASE/$sql" | tee -a "$RUNNER_TEMP/pg18_full.log"
