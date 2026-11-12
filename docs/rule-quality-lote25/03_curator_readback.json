@@ -593,6 +593,122 @@
           "motivo_busqueda": "GRACIA"
         }
       ]
+    },
+    {
+      "id": "G25_07",
+      "n": 1,
+      "sha256": "65980d83241ab76857f93f98c6b623508679a44faef41537d1048ff019143a64",
+      "rows": [
+        {
+          "auto_rule_code_exists": 0,
+          "manual_rule_code_exists": 0,
+          "parameter_as_rule_code_exists": 0,
+          "rules_with_parameter_code_reference": 0,
+          "candidate_config_tables_not_evidence_of_parameter_ownership": [
+            "lf_ops.analytics_eventos_parametros",
+            "public.lf_b2b_pricing_config",
+            "public.lf_log_config",
+            "public.lf_router_architecture_config_v1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G25_08",
+      "n": 8,
+      "sha256": "f338ec8eefbc51b7a4e93eb800f48951327cdb6342f9a413190f55bdb24b0c7f",
+      "rows": [
+        {
+          "codigo": "REG_CHK_014",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "full_row_sha256": "26fa7d1b227da5e2f897aaf5023f26505acb45724c753fe3f70cfb9e1da81459",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CHK_017",
+          "estado": "VIGENTE",
+          "titulo": "Carta de no adeudo se emite al cancelar totalmente",
+          "categoria": "checkout",
+          "full_row_sha256": "4c3a390b6cd5773a76f62e57c70de90da5b30649f3809ef81b06194ab05acdce",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CHK_CUO_006",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "full_row_sha256": "cd54ae85954be1a2736336ef6152057cfbc48606aa8b3c7c899b6ab730af99d5",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CHK_CUO_009",
+          "estado": "VIGENTE",
+          "titulo": "Carta de no adeudo se emite al cancelar la deuda total",
+          "categoria": "checkout",
+          "full_row_sha256": "76d9b53bffc198ff868f1c1b3ff916cfa0e164225c646cf269dd7b2980cb9d9e",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CLIENT_DEBT_SETTLEMENT_STATUS_001",
+          "estado": "VIGENTE",
+          "titulo": "Estado de cancelación total por deuda Cliente",
+          "categoria": "negocio",
+          "full_row_sha256": "38f42ad40db9d2746009900c248c39d4e5b25c3475c1d1cbc9f57f1a7bb5c030",
+          "omitted_description": "",
+          "canonical_debt_states": [
+            "ACTIVE_BALANCE",
+            "FINAL_PAYMENT_PENDING_CONFIRMATION",
+            "SETTLED_CONFIRMED"
+          ],
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001",
+          "estado": "VIGENTE",
+          "titulo": "Snapshot contractual del plan de cuotas activado",
+          "categoria": "pago",
+          "full_row_sha256": "753265ddccdba94faa9a23e4b03705f254fffd3355a9131e7633401c2040c35e",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": "PEND-CLIENT-PAYMENT-LEDGER-001"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_PLAN_VIEW_001",
+          "estado": "VIGENTE",
+          "titulo": "Detalle funcional de plan activo en Mis operaciones",
+          "categoria": "flujo",
+          "full_row_sha256": "dcc0ad5bf3f7c087d9fbe6966f4f01800eb13cf81de2c07a37f95de73f4b0e2b",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        },
+        {
+          "codigo": "REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001",
+          "estado": "VIGENTE",
+          "titulo": "Resultados normalizados y manejo seguro de estado ambiguo de pago",
+          "categoria": "pago",
+          "full_row_sha256": "010f662ba1dbf8237e056e10001526bbbb9c8ba2f6802d7ea06ba6a54c1aa789",
+          "omitted_description": "",
+          "canonical_debt_states": null,
+          "canonical_ledger_dependency": null
+        }
+      ]
+    },
+    {
+      "id": "G25_09",
+      "n": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rows": []
     }
   ],
   "classification_note": "G25_02 possible_structural_config_conflict is a review signal, NOT a proven business contradiction",
@@ -611,5 +727,6 @@
   ],
   "G25_06_scope": "keyword pattern search only; not exhaustive proof of absent contradictions",
   "addendum": "E_F_INCLUDED_13_PROPOSALS_1_PARAMETER",
-  "parameter_registration_state": "PROPOSED_NOT_PERSISTED"
+  "parameter_registration_state": "PROPOSED_NOT_PERSISTED",
+  "addendum_g25_07_09": "G25_07 confirms only literal code references in lf_ops.reglas; other parameter storage not certified. G25_08 scans 8 implicated rules; G25_09 scans explicit INCOBRABLE text/config."
 }
