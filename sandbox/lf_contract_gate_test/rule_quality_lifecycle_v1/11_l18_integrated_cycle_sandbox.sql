@@ -162,3 +162,67 @@ GRANT EXECUTE ON FUNCTION l18_prepare_explicit_successor_v1(text,text,text),
  l18_close_sandbox_cycle_v1(text,text,text,text),
  l18_owner_review_decide_v1(text,text,text,timestamptz,jsonb,text)
  TO lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
+
+
+-- Read-only overdue detector via verified actor; never grants table SELECT.
+-- as_of is next_review_at + one second, a declared simulated clock.
+CREATE FUNCTION l18_due_snapshot_v1(p_project text,p_rule text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=rule_quality_l13,pg_temp AS $f$
+DECLARE v_actor text;v_date timestamptz;v_state text;v_due_count integer;
+BEGIN
+ v_actor:=trusted_actor_role_v2(p_project);
+ SELECT next_review_at,state INTO v_date,v_state FROM rules
+ WHERE project_code=p_project AND rule_code=p_rule;
+ IF v_date IS NULL THEN
+  RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L18_DUE_DATE_NOT_SET';
+ END IF;
+ SELECT count(*) INTO v_due_count FROM list_review_due(p_project,v_date+interval '1 second')
+ WHERE rule_code=p_rule;
+ RETURN jsonb_build_object('as_of_simulated',v_date+interval '1 second',
+  'next_review_at',v_date,'state',v_state,'due',v_due_count,
+  'proposal_only',true,'caller',v_actor);
+END $f$;
+
+-- A separate authenticated, owner-only decision: no caller-supplied identity or wall-clock.
+CREATE FUNCTION l18_owner_due_decide_v1(p_project text,p_rule text,
+ p_decision text,p_evidence jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=rule_quality_l13,pg_temp AS $f$
+DECLARE v_actor text;v_date timestamptz;v_result jsonb;
+BEGIN
+ v_actor:=trusted_actor_role_v2(p_project);
+ IF p_decision NOT IN ('KEEP_VIGENTE','EXPIRE') THEN
+  RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L18_ONLY_RENEW_OR_EXPIRE';
+ END IF;
+ SELECT next_review_at INTO v_date FROM rules
+ WHERE project_code=p_project AND rule_code=p_rule;
+ IF v_date IS NULL THEN
+  RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L18_DUE_DATE_NOT_SET';
+ END IF;
+ v_result:=l18_owner_review_decide_v1(p_project,p_rule,p_decision,
+   v_date+interval '1 second',p_evidence);
+ RETURN v_result || jsonb_build_object('clock_mode','SIMULATED_AS_OF_NEXT_REVIEW_PLUS_1_SECOND');
+END $f$;
+
+CREATE FUNCTION l18_readback_rule_state_v1(p_project text,p_rule text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=rule_quality_l13,pg_temp AS $f$
+DECLARE v_actor text;v_state text;v_date timestamptz;v_count integer;
+BEGIN
+ v_actor:=trusted_actor_role_v2(p_project);
+ SELECT state,next_review_at INTO v_state,v_date FROM rules
+ WHERE project_code=p_project AND rule_code=p_rule;
+ SELECT count(*) INTO v_count FROM review_decisions
+ WHERE project_code=p_project AND rule_code=p_rule;
+ RETURN jsonb_build_object('state',v_state,'next_review_at',v_date,
+  'decision_rows',v_count,'owner_actor',v_actor);
+END $f$;
+
+REVOKE ALL ON FUNCTION l18_due_snapshot_v1(text,text),
+ l18_owner_due_decide_v1(text,text,text,jsonb),
+ l18_readback_rule_state_v1(text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION l18_due_snapshot_v1(text,text),
+ l18_owner_due_decide_v1(text,text,text,jsonb),
+ l18_readback_rule_state_v1(text,text) TO
+ lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
