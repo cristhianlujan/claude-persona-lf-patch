@@ -78,6 +78,7 @@ def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True):
       created_by_execution_id='EXEC-PARENT-TEST-001',
       evidence_payload=st.evidence_payload || jsonb_build_object(
          'test_only_synthetic',false,
+         'semantic_judge_result',jsonb_build_object('status','PASS','validator_status','PASS'),
          'sandbox_fixture_provenance','PG18_CONSTRUCTED_NOT_REVIEW',
          'rule_promotion_citation_line',{lit(line)},
          'rule_promotion_citation_case_id',{lit(case_id)},
@@ -216,10 +217,11 @@ def main():
        and x["GATE_BEFORE"]["next_actor"]=="PROFILE_OWNER"
        and x["APPLY"]["status"]=="BLOCKED"
        and x["ROLLBACK"]["case_source_rows"]==0 and x["ROLLBACK"]["capture_rows"]==0,x)
-    for name,quote in [("FABRICATED","NOT_REAL_"*12),("EMPTY",""),("TRIVIAL","a")]:
+    for name,quote in [("FABRICATED","Esta supuesta cita fabricada no aparece en el texto original de la regla ni en su propuesta y debe rechazarse."),("EMPTY",""),("TRIVIAL","a")]:
         r=run(quote=quote)
         check(name+"_QUOTE_REJECTED",
-          r["LINE"]["status"]=="HUMAN_DECISION_REQUIRED"
+          (name!="FABRICATED" or r["LINE"]["blocking_code"]=="L7_QUOTE_NOT_LITERAL_IN_FROZEN_TEXT")
+          and r["LINE"]["status"]=="HUMAN_DECISION_REQUIRED"
           and r["CAPTURE"]["status"]=="HUMAN_DECISION_REQUIRED"
           and r["GATE_BEFORE"]["status"]=="HUMAN_DECISION_REQUIRED"
           and r["APPLY"]["status"]=="BLOCKED"
