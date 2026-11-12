@@ -32,7 +32,7 @@ def check(name,ok,raw):
 def jlit(v):return base.lit(json.dumps(v,ensure_ascii=False,sort_keys=True))
 def lit(v):return base.lit(v)
 
-def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True):
+def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True,prebind=False):
     c=CASES[case_id]
     rule=c["base_rule"]["code"]
     if quote is None:quote=c["base_rule"]["description"]
@@ -67,6 +67,7 @@ def seed(case_id,promo="PROM-L7",verdict="ALLOW",quote=None,with_step70=True):
     SET ig_semantic_external_receipt_sha256=encode(extensions.digest(
       convert_to(ig_semantic_external_receipt::text,'UTF8'),'sha256'),'hex')
     WHERE promotion_id={lit(promo)};
+    {("UPDATE public.lf_rule_promotion_v1 SET ig_semantic_packet_sha256=NULL, ig_semantic_external_receipt_sha256=NULL WHERE promotion_id="+lit(promo)+";" if prebind else "")}
     SET LOCAL ROLE lf_rule_citation_source_custodian;
     SELECT 'SOURCE_{promo}|'||public.lf_rule_promotion_citation_source_publish_v1(
        {lit(promo)},{lit(case_id)},{src}::jsonb,{prop}::jsonb,
@@ -168,6 +169,40 @@ def other_rule_quote():
       ROLLBACK;"""
     return sql(script)
 
+def proposal_prebind():
+    c=CASES["K00FE8562"]
+    rule=c["base_rule"]["code"]
+    quote=c["proposal"]["description"]
+    review=f"""jsonb_build_object(
+       'promotion_id','PROM-L7','ig_run_id',9001,'rule_code',{lit(rule)},
+       'rule_snapshot_sha256',public.lf_asset_snapshot_sha_v1('REGLA',{lit(rule)}),
+       'packet_sha256',repeat('b',64),'candidate_sha256',repeat('a',64),
+       'security_policy_set_sha256',repeat('c',64),'dependency_sha256',repeat('d',64),
+       'verdict','BLOQUEAR',
+       'cited_evidence',jsonb_build_array(jsonb_build_object(
+        'case_id','K00FE8562','source_code',{lit(rule)},
+        'source_sha256',public.lf_asset_snapshot_sha_v1('REGLA',{lit(rule)}),
+        'exact_excerpt',{lit(quote)},
+        'implication','PG18 constructed proposal citation only')))
+    """
+    review_wrong=review.replace("'K00FE8562','source_code'","'K00A10207','source_code'")
+    def call(rev):
+        return f"""public.lf_rule_promotion_ig_citation_verify_v1(
+         'PROM-L7',{rev},9001,repeat('b',64),repeat('a',64),
+         public.lf_asset_snapshot_sha_v1('REGLA',{lit(rule)}),
+         repeat('c',64),repeat('d',64))"""
+    script=f"""BEGIN;
+    {seed("K00FE8562",verdict="BLOCK",quote=quote,with_step70=False,prebind=True)}
+    SELECT 'PREBIND|'||jsonb_build_object('packet_pinned',
+       (SELECT packet_sha256 FROM public.lf_rule_promotion_citation_source_v1
+         WHERE case_id='K00FE8562'),
+       'receipt_pinned',(SELECT ig_external_receipt_sha256
+        FROM public.lf_rule_promotion_citation_source_v1 WHERE case_id='K00FE8562'))::text;
+    SELECT 'PROPOSAL_OK|'||{call(review)}::text;
+    SELECT 'WRONG_CASE|'||{call(review_wrong)}::text;
+    ROLLBACK;"""
+    return sql(script)
+
 def injected_quote():
     c=CASES["K00FE8562"]
     quote=c["proposal"]["description"]
@@ -254,6 +289,13 @@ def main():
        and block["GATE_BEFORE"]["status"]=="HUMAN_DECISION_REQUIRED"
        and block["APPLY"]["status"]=="BLOCKED"
        and block["WITHIN_TX"]["rule_state"]=="CANDIDATO",block)
+    proposal=proposal_prebind()
+    check("EXISTING_IG_VALIDATOR_ACCEPTS_FROZEN_PROPOSAL_PREBIND_ONLY",
+       proposal["PREBIND"]["packet_pinned"] is None
+       and proposal["PREBIND"]["receipt_pinned"] is None
+       and proposal["PROPOSAL_OK"]["status"]=="VERIFIED_CITATIONS"
+       and proposal["WRONG_CASE"]["blocking_code"]=="BLOCK_IG_SEMANTIC_CITATION_NOT_IN_CURRENT_SOURCE",
+       proposal)
     injected=injected_quote()
     check("QUOTED_PROMPT_INJECTION_IS_DATA_VERDICT_UNCHANGED",
        injected["INJECT"]["status"]=="LITERAL_STRUCTURE_VERIFIED_FOR_CAPTURE"
