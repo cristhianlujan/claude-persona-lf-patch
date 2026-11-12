@@ -96,7 +96,11 @@ $mock_l11b$;
 def setup(variant):
     actor=IG_ACTOR if variant=="OWNER_EQ_IG" else "PERFIL-OWNER-RULE-LF"
     owner_registry_sql=f"""
-{owner_registry_sql}
+INSERT INTO public.lf_rule_promotion_profile_owner_v1(
+ rule_code,owner_profile_code,source_decision_sha256,status)
+SELECT p.rule_code,{lit(actor)},
+ public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'source_decision_sha256',
+ 'ACTIVE' FROM public.lf_rule_promotion_v1 p WHERE p.promotion_id='PROM-TEST';
 """
     if variant=="OWNER_EQ_IG":
         # Existing CHECK constraint rejects IG actors as owners before approval.
@@ -194,11 +198,7 @@ JOIN public.lf_rule_promotion_v1 p ON p.promotion_id=src.promotion_id
 WHERE st.execution_id='EXEC-PARENT-TEST-001' AND st.step_id='semantic_judge'
  AND src.promotion_id='PROM-TEST';
 
-INSERT INTO public.lf_rule_promotion_profile_owner_v1(
- rule_code,owner_profile_code,source_decision_sha256,status)
-SELECT p.rule_code,{lit(actor)},
- public.lf_rule_promotion_quality_judge_v1('PROM-TEST')->>'source_decision_sha256',
- 'ACTIVE' FROM public.lf_rule_promotion_v1 p WHERE p.promotion_id='PROM-TEST';
+{owner_registry_sql}
 """
 
 def owner_run():
