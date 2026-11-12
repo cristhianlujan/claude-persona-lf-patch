@@ -1,0 +1,104 @@
+{
+  "lote": 20,
+  "status": "SANDBOX_READBACK_VERIFIED",
+  "production": "NO_GO_UNVERIFIED",
+  "branch": "lf/issue-3779-lote20-lifecycle-source-sync-v1",
+  "base_commit": "9956c2ffaf695030919fa23bb5f83519fcdd23a9",
+  "branch_head_before_manifest": "8b32c04d28a39b50ae7452d8008e179272e37e96",
+  "CI_tested_commit": "b7e362b36e82b4075bc9effc363ec777c6756d87",
+  "CI_run_id": 43305361826,
+  "comparison": {
+    "base_confirmed": "9956c2ffaf695030919fa23bb5f83519fcdd23a9",
+    "ahead_by": 13,
+    "behind_by": 0,
+    "changed_paths": [
+      ".github/workflows/l20-lifecycle-source-sync-pg18.yml",
+      "docs/rule-quality-lote20/00_live_readonly_inventory.json",
+      "docs/rule-quality-lote20/01_pg18_evidence_actual_results.json",
+      "docs/rule-quality-lote20/03_resultado_y_limites.md",
+      "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote20_source_sync.py",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/12_l20_atomic_owner_source_sync_pg18.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/13_l20_proposed_columns_UP_DRAFT_NOT_DEPLOY.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/14_l20_proposed_columns_DOWN_DRAFT_NOT_DEPLOY.sql"
+    ],
+    "all_paths_allowed": true
+  },
+  "files": [
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/12_l20_atomic_owner_source_sync_pg18.sql",
+      "sha256_utf8": "99e402dde5339cb27ec07dd65908ab0ad504b764f11203717abf75a3dcefcb22",
+      "git_blob_sha": "bb508c26a10f3345171e0db00e21ba084ffff622",
+      "bytes_utf8": 17574,
+      "same_blob_as_tested": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/13_l20_proposed_columns_UP_DRAFT_NOT_DEPLOY.sql",
+      "sha256_utf8": "ef65c2f5d8c64547d017d410e14093403890de281d83aaf924437b7d6db29819",
+      "git_blob_sha": "f14fc9b81552439b54cd6f6e3cea8b5fd79af80e",
+      "bytes_utf8": 1031,
+      "same_blob_as_tested": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/14_l20_proposed_columns_DOWN_DRAFT_NOT_DEPLOY.sql",
+      "sha256_utf8": "c2bd75ea6e2858cc4e4c692b6a5c253637fd16fb3f7a6638135cbd8a1ca84b30",
+      "git_blob_sha": "0efc19de15d2111eec76715e69d8e92f05ed5f75",
+      "bytes_utf8": 533,
+      "same_blob_as_tested": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote20_source_sync.py",
+      "sha256_utf8": "aceeab1fc0140541e0aa63eed8d44a00a300e086e097c4e7c616f6d2359d654a",
+      "git_blob_sha": "9d813fd81aa20c569e58a33991bb1c28e8d06560",
+      "bytes_utf8": 21526,
+      "same_blob_as_tested": true
+    },
+    {
+      "path": ".github/workflows/l20-lifecycle-source-sync-pg18.yml",
+      "sha256_utf8": "0483061c9a5b3cc30093a33da4d57de8a7c2c851f7ccfcbaa8f993004df62718",
+      "git_blob_sha": "06f2f95f374c16931bf3000e714ec6d14a2d5b44",
+      "bytes_utf8": 12035,
+      "same_blob_as_tested": true
+    },
+    {
+      "path": "docs/rule-quality-lote20/00_live_readonly_inventory.json",
+      "sha256_utf8": "7f16c3b00eab6946de5c8e6bebc779fd8dc1007865752da41d33edcf47cc977d",
+      "git_blob_sha": "5eb7d10e1efbd2e9b5b99773a87d3fde40641f91",
+      "bytes_utf8": 2749,
+      "same_blob_as_tested": null
+    },
+    {
+      "path": "docs/rule-quality-lote20/01_pg18_evidence_actual_results.json",
+      "sha256_utf8": "da9fee5fb84836ef235e7bab098ae0e88f9f6ed27b979dea0367fc193c9c0573",
+      "git_blob_sha": "f243751ff021e78cb18ba05066542783ace2f909",
+      "bytes_utf8": 36140,
+      "same_blob_as_tested": null
+    },
+    {
+      "path": "docs/rule-quality-lote20/03_resultado_y_limites.md",
+      "sha256_utf8": "15976626e325ad4d5ba37cb8e667f5c9d60b5521f365dbdb6bccf648ced2e466",
+      "git_blob_sha": "4b28a22978061bb049c541a0713636597e830d3b",
+      "bytes_utf8": 11658,
+      "same_blob_as_tested": null
+    }
+  ],
+  "all_tested_SQL_Python_CI_blobs_identical_after_docs": true,
+  "tests": {
+    "L13": 28,
+    "L14": 18,
+    "L17": 25,
+    "L18": 16,
+    "L20": 17,
+    "pg18_scripts": 18
+  },
+  "frozen_gate_md5": {
+    "apply": "86b0494984edf95cf0f9c0a0df67000b",
+    "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+    "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+    "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+  },
+  "runner_raw_json_sha256": "a6f84763a00f6f5f1b521d4d9b6bd013a39b93d2a369a84d719ce873bdc1eaca",
+  "live_schema": "READ ONLY; 578 LF/412 active, 14 SALY/14 active. 426 potential comparison scope, actual divergences NOT MEASURABLE.",
+  "SHA256_method": "SHA256 on UTF-8 bytes of fetched GitHub sources; selftest abc known-answer",
+  "live_DB_writes": 0,
+  "no_native_step70_or_oidc": true
+}
