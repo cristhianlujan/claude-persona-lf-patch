@@ -4,7 +4,7 @@
   "mode": "SELECT_ONLY",
   "only_pg18_fixture_family_map": true,
   "family_registry_verified_live": false,
-  "source_rule_proposal_file_blob": "7d339b902c44bb0f2b97e87061671d45d7deb59c",
+  "source_rule_proposal_file_blob": "902057b234af3f028d56635b65e28e63ca8cc9c6",
   "probes": [
     {
       "id": "G25_01",
@@ -549,9 +549,49 @@
           "live_full_row_sha256": "77d6dfa00fe4e65e8a10ffbf61cc63f3201713a5fc123ca350b4a06c9f5b23c7"
         }
       ]
+    },
+    {
+      "id": "G25_06",
+      "n": 3,
+      "sha256": "ccde80ceaafe4aa2568e204e33220fbad2d0cfc76a9f83a6eadae7508d61660f",
+      "rows": [
+        {
+          "codigo": "REG_CHK_014",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "motivo_busqueda": "CANCELACION"
+        },
+        {
+          "codigo": "REG_CHK_CUO_006",
+          "estado": "VIGENTE",
+          "titulo": "Cancelación del plan sin penalidades",
+          "categoria": "checkout",
+          "motivo_busqueda": "CANCELACION"
+        },
+        {
+          "codigo": "REG_CLIENT_INSTALLMENT_COLLECTION_FAILURE_001",
+          "estado": "VIGENTE",
+          "titulo": "Manejo de cobro de cuota fallido o ambiguo",
+          "categoria": "pago",
+          "motivo_busqueda": "GRACIA"
+        }
+      ]
     }
   ],
   "classification_note": "G25_02 possible_structural_config_conflict is a review signal, NOT a proven business contradiction",
   "judge": "GPT6_SAME_MODEL_NOT_INDEPENDENT",
-  "production": "NO_GO_UNVERIFIED"
+  "production": "NO_GO_UNVERIFIED",
+  "comparison_fields_G25_02": [
+    "codigo",
+    "categoria",
+    "familia_propuesta",
+    "descripcion",
+    "valor_config"
+  ],
+  "comparison_fields_ignored_G25_02": [
+    "titulo",
+    "estado_propuesto"
+  ],
+  "G25_06_scope": "keyword pattern search only; not exhaustive proof of absent contradictions"
 }
