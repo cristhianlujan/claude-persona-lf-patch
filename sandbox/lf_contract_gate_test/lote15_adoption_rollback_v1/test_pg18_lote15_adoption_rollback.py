@@ -25,8 +25,29 @@ RESULTS=[]
 L13_SHA256={
  "01_schema.sql":"3c955e96a3995716a9509ce1020ee75f6743527e6165eff8e8f92ec218f96cbf",
  "02_seed_synthetic.sql":"9378a6ee4d00751a00c2189edb8293bd887b4ebfb7c1ed5deb8d7607f73031ca",
- "03_test_cases.sql":"add2dff455df2bf37efae49833735c903a2ea4d8ea36d5d6c2357da0b098a2", # replace if L13 pinned manifest differs
+ "03_test_cases.sql":"add2dff455df2bf37efae49833735a5d0dec63b5512883ac0f23b70468048370",
+ "04_birth_expiry_tests.sql":"01f791b28a7701c004da9132e00d881b59eef707d5a56abd2fbdff20fd660bef",
 }
+GATE_EXPECTED_MD5={
+ "apply":"86b0494984edf95cf0f9c0a0df67000b",
+ "capture_record":"89cbfac4162dbc9f8ecca59f2c3ab4c3",
+ "citation_verify":"773a62783baa5edbe967200cac66b8c3",
+ "l8_guard":"522d12f0843be1da3c785cef3c0bf3fc",
+}
+L13_STATS_SQL="""SELECT 'L13_STATS|'||jsonb_build_object(
+ 'all', (SELECT count(*) FROM rule_quality_l13.sandbox_test_results),
+ 'passed', (SELECT count(*) FROM rule_quality_l13.sandbox_test_results WHERE status='PASS'),
+ 'lf_rules', (SELECT count(*) FROM rule_quality_l13.rules WHERE project_code='lf'),
+ 'lf_vigente', (SELECT count(*) FROM rule_quality_l13.rules WHERE project_code='lf' AND state='VIGENTE'),
+ 'lf_candidato', (SELECT count(*) FROM rule_quality_l13.rules WHERE project_code='lf' AND state='CANDIDATO')
+)::text;"""
+GATE_MD5_SQL="""SELECT 'GATE_MD5|'||jsonb_build_object(
+ 'apply',md5(pg_get_functiondef('public.lf_rule_promotion_apply_v1(text)'::regprocedure)),
+ 'capture_record',md5(pg_get_functiondef('public.lf_rule_promotion_citation_record_v1(text,text,text)'::regprocedure)),
+ 'citation_verify',md5(pg_get_functiondef('public.lf_rule_promotion_citation_verify_v1(text)'::regprocedure)),
+ 'l8_guard',md5(pg_get_functiondef('public.lf_rule_promotion_citation_scope_guard_v2()'::regprocedure))
+)::text;"""
+
 PGENV=os.environ.copy()
 PGENV.update({"PGHOST":os.environ.get("PGHOST","127.0.0.1"),
               "PGPORT":os.environ.get("PGPORT","5432"),
@@ -237,28 +258,15 @@ def initial():
     return fingerprint(),baseline
 
 def main():
-    real_l13={"01_schema.sql":"3c955e96a3995716a9509ce1020ee75f6743527e6165eff8e8f92ec218f96cbf",
-     "02_seed_synthetic.sql":"9378a6ee4d00751a00c2189edb8293bd887b4ebfb7c1ed5deb8d7607f73031ca"}
     hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in L13.glob("*.sql")}
     claim("L13_PINNED_SOURCE_HASHES",
-       all(hashes.get(k)==v for k,v in real_l13.items()) and len(hashes)==4,
+       hashes==L13_SHA256,
        {"sha256":hashes,"source_l13_branch":"lf/issue-3779-lote13-family-lifecycle-v1"})
     root_fingerprint,baseline=initial()
     for i,item in enumerate(STAGES):
         # Each stage is tested from its exact prerequisite state, never skipping.
         code="\n".join(get_migration(k) for k in range(i))
         target=get_migration(i)
-        script=f"""BEGIN;
-{code}
-SELECT 'BEFORE|'||({CATALOG_SQL.removeprefix("SELECT 'CAT|'||").removesuffix("::text;")}::text);
-SAVEPOINT l15_target;
-{target}
-{metrics_sql(i+1)}
-ROLLBACK TO SAVEPOINT l15_target;
-SELECT 'AFTER|'||({CATALOG_SQL.removeprefix("SELECT 'CAT|'||").removesuffix("::text;")}::text);
-ROLLBACK;
-{CATALOG_SQL}
-"""
         # Simpler stable readback across the transaction: emit catalog JSON
         # via replacing the sole CAT prefix in the catalog snapshot query.
         script=f"""BEGIN;
@@ -267,6 +275,8 @@ ROLLBACK;
 SAVEPOINT l15_target;
 {target}
 {metrics_sql(i+1)}
+{GATE_MD5_SQL if i>=5 else ''}
+{L13_STATS_SQL if i==6 else ''}
 ROLLBACK TO SAVEPOINT l15_target;
 {CATALOG_SQL.replace("'CAT|'","'AFTER|'")}
 ROLLBACK;
@@ -274,11 +284,19 @@ ROLLBACK;
 """
         out=psql(script,timeout=270)
         post=out["METRICS"]
+        l13_stats=out.get("L13_STATS")
+        gate_hashes=out.get("GATE_MD5")
+        stage_assert=postcheck(i+1,post)
+        if i>=5:
+            stage_assert=stage_assert and gate_hashes==GATE_EXPECTED_MD5
+        if i==6:
+            stage_assert=stage_assert and l13_stats=={
+              "all":28,"passed":28,"lf_rules":578,"lf_vigente":412,"lf_candidato":166}
         claim("STAGE_"+item["id"]+"_ROLLBACK_CATALOG_IDENTICAL",
           out["BEFORE"]==out["AFTER"]
           and out["ROOT"]==root_fingerprint
-          and postcheck(i+1,post),
-          {"stage":item["label"],"post":post,"cat_before":out["BEFORE"],
+          and stage_assert,
+          {"stage":item["label"],"post":post,"gate_md5":gate_hashes,"l13_stats":l13_stats,"cat_before":out["BEFORE"],
            "cat_after":out["AFTER"],"root":out["ROOT"],
            "rollback":"SAVEPOINT_PRECOMMIT","identical":out["BEFORE"]==out["AFTER"]})
         RESULTS.append({"stage":item["id"],"path":item["path"],
@@ -288,17 +306,23 @@ ROLLBACK;
     o=psql(f"""BEGIN;
 {full}
 {metrics_sql(len(STAGES))}
+{L13_STATS_SQL}
+{GATE_MD5_SQL}
 {CATALOG_SQL.replace("'CAT|'","'FULL_IN_TX|'")}
 ROLLBACK;
 {CATALOG_SQL.replace("'CAT|'","'AFTER_FULL_ROLLBACK|'")}
 {metrics_sql(0)}
 """,timeout=400)
     positive=o["METRICS"] if False else o["FULL_IN_TX"]
-    check=o["AFTER_FULL_ROLLBACK"]==root_fingerprint
+    check=(o["AFTER_FULL_ROLLBACK"]==root_fingerprint
+           and o["L13_STATS"]=={
+              "all":28,"passed":28,"lf_rules":578,"lf_vigente":412,"lf_candidato":166}
+           and o["GATE_MD5"]==GATE_EXPECTED_MD5
+           and o["METRICS"]==baseline)
     claim("FULL_ORDERED_PACKAGE_ROLLBACK_IDENTICAL",check,
       {"catalog_during_full_package":positive,"catalog_after_full":o["AFTER_FULL_ROLLBACK"],
        "original_catalog":root_fingerprint,
-       "stage_count":len(STAGES),"legacy_7":"coexist/overridden in same signatures"})
+       "stage_count":len(STAGES),"legacy_7":"coexist/overridden in same signatures","l13":o["L13_STATS"],"gate_md5":o["GATE_MD5"],"root_metrics":o["METRICS"]})
     claim("POSTCOMMIT_REVERSAL_NOT_CLAIMED",
       True,{"outcome":"BLOCKS_PRODUCTION","reason":"PostgreSQL DROP COLUMN leaves attisdropped catalog marks; not an in-place identical rollback",
             "recovery":"PITR / restore baseline physical backup to isolated clone, verified before production"})
