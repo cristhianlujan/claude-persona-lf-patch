@@ -285,6 +285,7 @@ BEGIN
     OR st.evidence_payload->>'rule_promotion_citation_provenance' IS DISTINCT FROM x.source_provenance
     OR st.created_by_execution_id IS DISTINCT FROM x.capture_run_id
     OR st.evidence_payload->>'rule_promotion_citation_line' IS DISTINCT FROM x.capture_line
+    OR st.evidence_payload->>'rule_promotion_citation_case_id' IS DISTINCT FROM x.case_id
     OR st.evidence_payload->>'rule_promotion_citation_source_sha256' IS DISTINCT FROM s.frozen_case_sha256
     OR st.evidence_payload->>'rule_promotion_citation_ig_receipt_sha256'
       IS DISTINCT FROM p.ig_semantic_external_receipt_sha256
