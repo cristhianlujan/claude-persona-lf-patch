@@ -187,7 +187,7 @@
       "registro_propuesto": {
         "codigo": "REG_NIU_001",
         "categoria": "niubiz",
-        "titulo": "Niubiz como gateway de pago principal",
+        "titulo": "Niubiz como proveedor único de recaudo (tarjeta y Yape)",
         "descripcion": "Niubiz es el proveedor único de recaudo del producto para el mercado peruano, incluyendo cobros con tarjeta y con Yape. Toda transacción de recaudo se procesa por Niubiz; no se implementan otros gateways en el MVP. Esta regla no define si Yape permite cobros recurrentes ni su modalidad para cuotas futuras.",
         "valor_config": {
           "gateway": "Niubiz",
