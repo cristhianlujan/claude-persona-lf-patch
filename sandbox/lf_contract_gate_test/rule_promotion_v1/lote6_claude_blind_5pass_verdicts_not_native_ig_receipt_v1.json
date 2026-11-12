@@ -1100,5 +1100,11 @@
       "exact_excerpt": null
     }
   ],
-  "reviewer_model_attestation": "UNATTESTED"
+  "reviewer_model_attestation": "UNATTESTED",
+  "reviewer_model": "ChatGPT",
+  "reviewer_model_source": "OWNER_DECLARED_NOT_SYSTEM_ATTESTED",
+  "reviewer_model_system_attestation": false,
+  "reviewer_model_same_as_ig_and_owner": true,
+  "review_independence": "CONSISTENCY_NOT_INDEPENDENCE",
+  "reviewer_owner_declaration_note": "User declares ChatGPT processed IG, owner profile, and five blind reviews; owner statement only, not an authenticated model/provider receipt."
 }
