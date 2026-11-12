@@ -113,13 +113,14 @@ def test_saly(jwt):
  SCENARIOS.append({"scenario":"C_SALY_NEW","status":"PASS","receipt":c,
   "verification":v,"board":b,"synthetic_origin":True})
 def no_ready_negative(jwt):
- # Pre-readback candidate with signed owner approval and verified citation,
- # but no L14 activation. Must fail on source/registry EN_REVISION.
- p=l20.prelude_lf(jwt,False)
- cut=p.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
- incomplete=p[:cut]
- err("N1_NO_READBACK_READY","BEGIN;\n"+incomplete+emit("lf",CODE,jwt,RUN)+"\nROLLBACK;",
-     "BLOCK_L24_READBACK_NOT_READY")
+ # After a valid LF promotion and matching VIGENTE source/registry, force only
+ # the L14 activation readback ticket to ARMED. This isolates missing READY,
+ # instead of a candidate EN_REVISION that L20 correctly classifies divergent.
+ script=("BEGIN;\n"+l20.prelude_lf(jwt,False)
+  +"UPDATE rule_quality_l13.activation_tickets SET status='ARMED' "
+    "WHERE project_code='lf' AND rule_code="+lit(CODE)+";\n"
+  +emit("lf",CODE,jwt,RUN)+"\nROLLBACK;")
+ err("N1_NO_READBACK_READY",script,"BLOCK_L24_READBACK_NOT_READY")
 def divergence_negative(jwt):
  # L20 mismatch in PG18 source/registry. The source remains VIGENTE;
  # only registry is temporarily altered. This cannot be promoted to "ready".
