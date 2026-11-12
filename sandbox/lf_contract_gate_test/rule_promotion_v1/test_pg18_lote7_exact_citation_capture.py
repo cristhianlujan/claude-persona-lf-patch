@@ -225,6 +225,9 @@ def main():
     l5.bootstrap()
     sql(M7.read_text(encoding="utf-8"))
     md5=sql("""SELECT 'MD5|'||jsonb_build_object(
+      'existing_ig_citation_before','a9b001fe715fe3a71fcba505fb03ce5d',
+      'existing_ig_citation_after',md5(pg_get_functiondef(
+        'public.lf_rule_promotion_ig_citation_verify_v1(text,jsonb,bigint,text,text,text,text,text)'::regprocedure)),
       'l5_blind_before','5dcdf7d9ebe4fc53cb80c80514f5c44f',
       'l7_blind_after',md5(pg_get_functiondef('public.lf_rule_promotion_blind_verdict_verify_v1(text)'::regprocedure)),
       'apply_before','bc5d3b6b39e755915d61a99a9cb4926d',
