@@ -177,8 +177,8 @@ def positive_lf(label,token,corrected):
   "'lf','RULE-DEPENDENCY-001','SUPERSEDE',"
   """'{"source_ref":"L26-B-INTEGRATED","rationale":"owner explicitly approves predecessor sync"}'::jsonb,"""+
   "clock_timestamp(),"+lit(CODE)+")::text;")
- pre=(owner(token,"SELECT 'READBACK_READY|'||rule_quality_l13.l24_ready_payload_v1("+
-   "'lf',"+lit(CODE)+",'PROM-TEST',"+lit(RUN)+")::text;"))
+ pre=(owner(token,"SELECT 'READBACK_READY|'||rule_quality_l13.l20_target_readback_v1("+
+   "'lf',"+lit(CODE)+")::text;"))
  script=("BEGIN;\n"+p+pre+sync+
   command_promote("lf",CODE,token,"PROM-TEST",RUN)+
   command_close("lf",CODE,token,"PROM-TEST",RUN)+
@@ -188,7 +188,7 @@ def positive_lf(label,token,corrected):
  board=board_measured("lf",out)
  rb=out["READBACK_READY"]
  after=out["AFTER_ROLLBACK"]
- ok=(rb["status"]=="READY"
+ ok=(rb["registry"]==rb["source"]=="VIGENTE" and rb["target_divergence"]==0
   and out["CURATOR"]["verdict"]=="ACEPTAR"
   and out["WRAP"]["status"]=="READY"
   and out["PROMOTION_RECEIPT"]["status"]=="PROMOTION_RECEIPT_RECORDED"
@@ -215,7 +215,7 @@ def positive_saly(token):
  "SELECT 'OWNER_INTENT|'||rule_quality_l13.l18_owner_intent_v1('saly','SALY-L14-NEW','SALY-L26-PROM-A')::text;\n"
  "SELECT 'CURATOR|'||rule_quality_l13.l23_curator_evaluate_v1('saly','SALY-L14-NEW')::text;\n"
  "SELECT 'WRAP|'||rule_quality_l13.quality_apply_envelope_v2('saly','SALY-L14-NEW')::text;\n"
- "SELECT 'READBACK_READY|'||rule_quality_l13.l24_ready_payload_v1('saly','SALY-L14-NEW','SALY-L26-PROM-A',NULL)::text;\n")
+ "SELECT 'READBACK_READY|'||rule_quality_l13.l20_target_readback_v1('saly','SALY-L14-NEW')::text;\n")
  script=("BEGIN;\n"+saly(token,p)+
   command_promote("saly","SALY-L14-NEW",token,"SALY-L26-PROM-A")+
   command_close("saly","SALY-L14-NEW",token,"SALY-L26-PROM-A")+
@@ -224,7 +224,7 @@ def positive_saly(token):
   "\nROLLBACK;\n"+after_sql("saly","SALY-L14-NEW"))
  out=sql(script);board=board_measured("saly",out)
  ok=(out["CURATOR"]["verdict"]=="ACEPTAR" and out["WRAP"]["status"]=="READY"
-  and out["READBACK_READY"]["status"]=="READY"
+  and out["READBACK_READY"]["registry"]==out["READBACK_READY"]["source"]=="VIGENTE" and out["READBACK_READY"]["target_divergence"]==0
   and out["CLOSE"]["status"]=="INTEGRATED_CLOSED_VERIFIED_PG18"
   and out["MEASURED"]["divergences"]==0
   and out["AFTER_ROLLBACK"]=={"quality":0,"curator":0,"promotion":0,"closure":0,"source_count_or_active":0}
