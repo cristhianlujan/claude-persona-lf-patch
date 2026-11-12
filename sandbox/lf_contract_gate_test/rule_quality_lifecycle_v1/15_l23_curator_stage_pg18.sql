@@ -24,7 +24,7 @@ CREATE FUNCTION l23_curator_fingerprint_v1(p_project text,p_rule text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=rule_quality_l13,pg_temp AS $fn$
 DECLARE v_ad project_source_adapters%ROWTYPE;
  v_source jsonb;v_active jsonb;v_q jsonb;v_family jsonb;v_map jsonb;v_correction jsonb;
- v_qactive jsonb;v_project jsonb;v_snapshot jsonb;
+ v_qactive jsonb;v_project jsonb;v_intents jsonb;v_snapshot jsonb;
 BEGIN
  SELECT * INTO v_ad FROM project_source_adapters WHERE project_code=p_project;
  IF NOT FOUND THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L23_ADAPTER_MISSING'; END IF;
@@ -40,11 +40,13 @@ BEGIN
  SELECT to_jsonb(c) INTO v_correction FROM correction_requests c
    WHERE project_code=p_project AND successor_rule_code=p_rule;
  SELECT to_jsonb(p) INTO v_project FROM projects p WHERE project_code=p_project;
+ SELECT coalesce(jsonb_agg(to_jsonb(i) ORDER BY to_jsonb(i)::text),'[]'::jsonb)
+ INTO v_intents FROM l18_owner_intents i WHERE project_code=p_project AND rule_code=p_rule;
  SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text),'[]'::jsonb)
  INTO v_qactive FROM rules r WHERE project_code=p_project AND state='VIGENTE';
  v_snapshot:=jsonb_build_object('project',v_project,'rule',v_q,'source',v_source,
     'family',v_family,'mapping',v_map,'correction',v_correction,
-    'active_source',v_active,'active_quality',v_qactive);
+    'active_source',v_active,'active_quality',v_qactive,'signed_owner_intents',v_intents);
  RETURN jsonb_build_object('sha256',encode(extensions.digest(
     convert_to(v_snapshot::text,'UTF8'),'sha256'),'hex'),
    'snapshot',v_snapshot);
@@ -147,8 +149,21 @@ BEGIN
     v_verdict:='DEVOLVER_CON_MOTIVO';v_reason:='EXACT_DUPLICATE_VIGENTE';
     v_text:='Existe codigo o contenido identico en una regla VIGENTE: '||v_dup;
    ELSIF v_conflict IS NOT NULL THEN
-    v_verdict:='ESCALAR_A_HUMANO';v_reason:='CONFIG_VALUE_CONFLICT';
-    v_text:='valor_config difiere para la misma clave y categoria/familia: '||v_conflict;
+    -- Explicit correction can be ACCEPTED only if old VIGENTE is named in
+    -- a formal correction_request AND signed-owner intent already exists.
+    -- This is sandbox HMAC owner, NOT a real Step70 approval.
+    IF EXISTS(SELECT 1 FROM correction_requests c
+        JOIN l18_owner_intents i ON i.project_code=c.project_code
+          AND i.rule_code=c.successor_rule_code AND i.owner_actor=c.owner_role
+        WHERE c.project_code=p_project AND c.successor_rule_code=p_rule
+          AND c.original_rule_code=v_conflict AND c.owner_role=v_actor
+          AND i.decision='APPROVE_SANDBOX_PROPOSAL') THEN
+      v_verdict:='ACEPTAR';v_reason:='SIGNED_EXPLICIT_CORRECTION_LINEAGE';
+      v_text:='Cambio explicito de valor_config ligado a regla anterior y owner HMAC del ensayo; NO firma de produccion';
+    ELSE
+      v_verdict:='ESCALAR_A_HUMANO';v_reason:='CONFIG_VALUE_CONFLICT';
+      v_text:='valor_config difiere para la misma clave y categoria/familia: '||v_conflict;
+    END IF;
    END IF;
   END IF;
  END IF;
