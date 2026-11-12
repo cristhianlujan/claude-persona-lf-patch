@@ -38,6 +38,11 @@ def verified_current_user(project):
      "SELECT 'IDENTITY|'||rule_quality_l13.l17_assert_request_current_user_v2("
      +lit(project)+")::text;")
 def setup():
+    # PG roles are cluster-scoped; prior L14 standalone script may have created them.
+    # The CI deletes prior disposable DBs before each script; remove orphan test-only roles.
+    l14.l11b.base.sql("""DROP ROLE IF EXISTS
+       l17_authenticator,lf_owner_role,lf_super_role,lf_reader_role,
+       lf_no_grant_role,saly_owner_role,saly_super_role;""", db="postgres")
     l14.DB=DB
     l14.bootstrap()
     sql((HERE/"08_l17_postgrest_roles_fixture.sql").read_text(encoding="utf-8"))
