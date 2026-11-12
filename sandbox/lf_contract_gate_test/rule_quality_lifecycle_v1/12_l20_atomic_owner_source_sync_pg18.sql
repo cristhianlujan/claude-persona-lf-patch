@@ -270,3 +270,61 @@ GRANT EXECUTE ON FUNCTION l20_list_divergences_v1(text),
 REVOKE INSERT,UPDATE,DELETE ON lf_ops.reglas FROM PUBLIC,lf_owner_role,lf_super_role,lf_reader_role;
 REVOKE INSERT,UPDATE,DELETE ON saly_source_synthetic FROM PUBLIC,
  saly_owner_role,saly_super_role;
+
+
+-- The caller sees a limited, read-only decision/source snapshot after signed
+-- owner JWT verification. No direct SELECT grants on either table are required.
+CREATE FUNCTION l20_target_readback_v1(
+ p_project text,p_rule text,p_successor text DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=rule_quality_l13,pg_temp AS $fn$
+DECLARE v_actor text;a project_source_adapters%ROWTYPE;
+        r rules%ROWTYPE; succ rules%ROWTYPE; src jsonb; src_succ jsonb;
+        v_status text;v_source text;v_marker text;v_succ_state text;v_succ_source text;
+        v_count int;v_receipts int;v_div int;
+BEGIN
+ v_actor:=trusted_actor_role_v2(p_project);
+ SELECT * INTO a FROM project_source_adapters WHERE project_code=p_project;
+ IF NOT FOUND THEN
+   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='BLOCK_L20_UNKNOWN_ADAPTER';
+ END IF;
+ SELECT * INTO r FROM rules WHERE project_code=p_project AND rule_code=p_rule;
+ IF NOT FOUND THEN
+   RAISE EXCEPTION USING ERRCODE='23503',MESSAGE='BLOCK_L20_REGISTRY_RULE_NOT_FOUND';
+ END IF;
+ src:=l20_source_snapshot_internal(p_project,p_rule);
+ v_marker:=src->'metadata'->>'l20_lifecycle_state';
+ v_status:=src->>a.state_col;
+ v_source:=CASE WHEN a.engine='LF_FROZEN_APPLY' THEN v_status
+   WHEN v_status='true' THEN 'VIGENTE'
+   ELSE coalesce(v_marker,'INACTIVE_UNSPECIFIED') END;
+ IF p_successor IS NOT NULL THEN
+   SELECT * INTO succ FROM rules
+    WHERE project_code=p_project AND rule_code=p_successor;
+   src_succ:=l20_source_snapshot_internal(p_project,p_successor);
+   v_succ_state:=succ.state;
+   v_succ_source:=CASE WHEN a.engine='LF_FROZEN_APPLY' THEN src_succ->>a.state_col
+    WHEN src_succ->>a.state_col='true' THEN 'VIGENTE'
+    ELSE coalesce(src_succ->'metadata'->>'l20_lifecycle_state','INACTIVE_UNSPECIFIED') END;
+ END IF;
+ SELECT count(*) INTO v_count FROM review_decisions
+ WHERE project_code=p_project AND rule_code=p_rule;
+ SELECT count(*) INTO v_receipts FROM l20_sync_receipts
+ WHERE project_code=p_project AND rule_code=p_rule;
+ SELECT count(*) INTO v_div FROM l20_list_divergences_v1(p_project) d
+ WHERE d.rule_code=p_rule;
+ RETURN jsonb_build_object('project',p_project,'rule_code',p_rule,
+   'registry',r.state,'source',v_source,
+   'source_vigente',CASE WHEN a.engine='SALY_SYNTHETIC_APPLY'
+                         THEN v_status='true' ELSE NULL END,
+   'source_terminal',v_marker,'registry_successor',r.successor_rule_code,
+   'successor_registry',v_succ_state,'successor_source',v_succ_source,
+   'target_divergence',v_div,'decision_count',v_count,
+   'receipt_count',v_receipts,
+   'next_review_at',r.next_review_at,'effective_to',r.effective_to,
+   'owner_actor',v_actor);
+END $fn$;
+
+REVOKE ALL ON FUNCTION l20_target_readback_v1(text,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION l20_target_readback_v1(text,text,text) TO
+ lf_owner_role,lf_super_role,lf_reader_role,saly_owner_role,saly_super_role;
