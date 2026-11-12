@@ -1,6 +1,6 @@
 {
-  "schema_version": "LF_L6_CLAUDE_BLIND_5PASS_VERDICTS_V1",
-  "fixture_label": "CLAUDE_BLIND_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT",
+  "schema_version": "LF_L6_REVIEW_5PASS_VERDICTS_MODEL_UNATTESTED_V1",
+  "fixture_label": "REVIEW_5PASS_VERDICTS_NOT_NATIVE_IG_RECEIPT_MODEL_UNATTESTED",
   "authority": "USER_SUPPLIED_AUDITOR_RESULTS_NOT_PRODUCTION_AUTHORITY",
   "source": "Auditor's three message blocks 2026-11-11",
   "source_basis": "lote4c_fresh_blind_v1.json",
@@ -1099,5 +1099,6 @@
       "citation_status": "UNVERIFIED_NOT_CAPTURED",
       "exact_excerpt": null
     }
-  ]
+  ],
+  "reviewer_model_attestation": "UNATTESTED"
 }
