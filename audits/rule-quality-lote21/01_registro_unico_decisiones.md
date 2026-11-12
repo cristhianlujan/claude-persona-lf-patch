@@ -9,7 +9,7 @@ L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió ex
 - Prioridad **P1** · bloqueo `B01_MFA` · **PENDIENTE**.
 - **Opciones:** A=promover AUTH-018 tras prueba completa; B=quitar referencia solo con sustituto equivalente aprobado; C=dejar AUTH-022→AUTH-018 como dependencia identificada, fail-closed, sin promoción.
 - **SUGERENCIA:** C (instrucción actual del dueño): dejar referencia y gate identificado, sin promover. Para promover AUTH-018: SAML/IdP administradores probado, Brevo OTP correo probado incluyendo entrega y validación servidor, ADR-003 spike M1 decidido, política de factor ID 19 VIGENTE, y prueba de que ningún AUTHENTICATED ni permiso precede a MFA. Se informó 11 reglas MFA CANDIDATO; este lote no certifica conteo exacto..
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Firmante:** DUEÑO LF + Seguridad/Owner (identidad no acreditada aún).
 - **Evidencia:** L16 S03 SHA256 8b70da4a3d3b381620473202de4a569d4b09fcfda6b3973e81661c3d2631b46a; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a; L21 S21_03 SHA256 3cff7e13769ed846a69c274f88e4f89cabea989a13c2c6488a6e7acc0ca371ee; 11 candidatas MFA = declaración verificada por dueño, no retesteada.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
@@ -151,9 +151,9 @@ L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió ex
 
 ### L16-Q07 — ¿Se deben corregir las 23 pertenencias dudosas de las 15 familias?
 - Prioridad **P4** · bloqueo `B04_FAMILY` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=resolver familia primaria caso a caso; B=conservar propuesta provisional; C=remapear en masa.
+- **SUGERENCIA:** A como dictamen documental, sin mutación automática.
+- **Firmante:** DUEÑO LF + Gobernanza/Owner (identidad no acreditada aún).
 - **Evidencia:** L16 S01 SHA256 59420d4b0b875d399a2eb9912be72d075994b072d861eb8fd2ebc77c1c4770d9; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
@@ -183,81 +183,81 @@ L16 original: A=promover, B=mantener y C=quitar referencia. El dueño cambió ex
 
 ### L16-Q06 — ¿Los 20 pares de parámetros nombran el mismo control o controles distintos?
 - Prioridad **P5** · bloqueo `B05_RULES` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=documentar sujeto+evento+alcance; B=igualar valores automáticamente; C=ignorar diferencias.
+- **SUGERENCIA:** A, conservar umbrales separados mientras se valida contexto.
+- **Firmante:** DUEÑO LF + Seguridad/Observabilidad (identidad no acreditada aún).
 - **Evidencia:** L16 S04 SHA256 815d9f903189c7fe98c5b6c8ae7a32ca4b061d3422033010140fe60230f2dd3f; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q11 — ¿Qué proveedor IDV step-up respaldará recuperación Cliente?
 - Prioridad **P5** · bloqueo `B01_MFA` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=seleccionar y probar proveedor; B=mantener step-up condicionado; C=omitir control.
+- **SUGERENCIA:** B hasta A; no C.
+- **Firmante:** DUEÑO LF + Seguridad/Integraciones (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q12 — ¿Cómo calibrar señales de riesgo y umbrales sin datos históricos?
 - Prioridad **P5** · bloqueo `B05_RULES` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=telemetría/baseline; B=definir cifras arbitrarias; C=descartar señal.
+- **SUGERENCIA:** A; mantener control cualitativo mientras se valida.
+- **Firmante:** DUEÑO LF + Riesgos/Seguridad (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q02 — ¿Cuál es el ledger/snapshot canónico para pagos, cuotas y conciliación?
 - Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=reutilizar estructura acreditada; B=diseñar canónico gobernado; C=usar DEMO.
+- **SUGERENCIA:** A si existe; B si se prueba que falta; nunca C.
+- **Firmante:** DUEÑO LF + Arquitectura/Finanzas (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q03 — ¿Qué proveedor de pago y frontera PCI están habilitados en producción?
 - Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=aprobar binding con QA; B=mantener pago bloqueado; C=usar credenciales/branding DEMO.
+- **SUGERENCIA:** B hasta contratos, callbacks y evidencia.
+- **Firmante:** DUEÑO LF + Pagos/Integraciones/Seguridad (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q05 — ¿Qué configuración de pricing/quote y elegibilidad es autoridad?
 - Prioridad **P6** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=config canónica APROBADO/VIGENTE; B=continuar solo DEMO; C=hardcodear valores.
+- **SUGERENCIA:** B hasta tener A; nunca C.
+- **Firmante:** DUEÑO LF + Producto/Arquitectura (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q04 — ¿Quién aprueba gracia, vencimiento, mora y terminación recurrente?
 - Prioridad **P7** · bloqueo `B11_LEGAL` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=Legal+Negocio formalizan política; B=ocultar claims de mora; C=inferir plazos.
+- **SUGERENCIA:** B mientras se obtiene A; no inventar consecuencias.
+- **Firmante:** DUEÑO LF + Legal/Negocio/Operaciones (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q08 — ¿Qué textos legales, consentimientos y Anexo I pueden publicarse?
 - Prioridad **P7** · bloqueo `B11_LEGAL` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=Legal aprueba texto y evidencia; B=mantener pendientes; C=usar placeholders.
+- **SUGERENCIA:** B hasta A.
+- **Firmante:** DUEÑO LF + Legal/Contenido (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q09 — ¿Qué copys, rutas y visuales de Home tienen evidencia publicable?
 - Prioridad **P7** · bloqueo `B11_LEGAL` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=validar visual+registro canónico; B=ocultar claims no verificados; C=inventar rutas.
+- **SUGERENCIA:** B hasta A; no afirmar aliados/prensa sin fuente.
+- **Firmante:** DUEÑO LF + UX/Legal (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
 ### L16-Q10 — ¿Qué workflow y SLA confirman settlement y Carta de No Adeudo?
 - Prioridad **P7** · bloqueo `B10_BUSINESS` · **PENDIENTE**.
-- **Opciones:** .
-- **SUGERENCIA:** .
-- **Firmante:** DUEÑO LF +  (identidad no acreditada aún).
+- **Opciones:** A=acordar API/SLA/registros con aliado; B=dejar estado informativo; C=confirmar sin evidencia.
+- **SUGERENCIA:** B hasta A; nunca C.
+- **Firmante:** DUEÑO LF + Operaciones/Aliados (identidad no acreditada aún).
 - **Evidencia:** L16 S02 SHA256 2c127c5e0e26962ea5f4d23c3e9878b53abc1564b7cb93045c43793b38bb0cce; L16 HEAD 63c96935dd594f13cec4e3291c2a58931094cb7a.
 - **Calificación:** SUGERENCIA / REQUIERE_REVISION_SEMANTICA. Datos objetivos en hashes/commits citados.
 
