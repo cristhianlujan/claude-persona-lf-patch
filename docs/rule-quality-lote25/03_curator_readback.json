@@ -4,7 +4,7 @@
   "mode": "SELECT_ONLY",
   "only_pg18_fixture_family_map": true,
   "family_registry_verified_live": false,
-  "source_rule_proposal_file_blob": "902057b234af3f028d56635b65e28e63ca8cc9c6",
+  "source_rule_proposal_file_blob": "f51ac5fa39b9c066b03a15e3ec684eacd7079430",
   "probes": [
     {
       "id": "G25_01",
@@ -40,8 +40,8 @@
     },
     {
       "id": "G25_02",
-      "n": 12,
-      "sha256": "596bc90a902c5d65d0569b224bf0bd567dc32374b7f3833052ff94abb6c8ea39",
+      "n": 13,
+      "sha256": "d6bd8de4ad5e4ba404e362acac25158db7e5e92030bcbe95a1a040a18defaa8f",
       "rows": [
         {
           "id": "L25-01",
@@ -276,6 +276,22 @@
           "base_codigo": "REG_CHK_011",
           "live_preimage_sha256": "1e6e75c23beda9de4525fb3ce2dd4caf2e4a58760896f6e746ecd9bbcf8de6b3",
           "same_code_live_count": 1,
+          "matches_l13_fixture_mapping": 1,
+          "exact_content_duplicate_codes": [],
+          "possible_conflict_codes_first12": [],
+          "exact_content_duplicate_vigente_count": 0,
+          "possible_structural_config_conflict_count": 0
+        },
+        {
+          "id": "L25-13",
+          "tipo": "NUEVA_PROPUESTA",
+          "codigo": "REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025",
+          "familia": "CHECKOUT_PAGOS",
+          "categoria": "pago",
+          "same_code": [],
+          "base_codigo": null,
+          "live_preimage_sha256": null,
+          "same_code_live_count": 0,
           "matches_l13_fixture_mapping": 1,
           "exact_content_duplicate_codes": [],
           "possible_conflict_codes_first12": [],
@@ -593,5 +609,7 @@
     "titulo",
     "estado_propuesto"
   ],
-  "G25_06_scope": "keyword pattern search only; not exhaustive proof of absent contradictions"
+  "G25_06_scope": "keyword pattern search only; not exhaustive proof of absent contradictions",
+  "addendum": "E_F_INCLUDED_13_PROPOSALS_1_PARAMETER",
+  "parameter_registration_state": "PROPOSED_NOT_PERSISTED"
 }
