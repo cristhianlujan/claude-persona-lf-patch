@@ -1,0 +1,53 @@
+{
+  "lote": 12,
+  "estado_auditoria": "UNVERIFIED",
+  "readback_archivos": "VERIFICADO_SIN_SER_PASS_DE_REGLAS",
+  "evidencia": {
+    "origen_snapshot": "de0021609c543a78b416e6c3e92475797dcae3bd",
+    "head_auditoria_antes_readback": "bac110d95edcb2ed25b6183cc92ffb66ca5a528d",
+    "compare_snapshot_auditoria": {
+      "status": "ahead",
+      "ahead_by": 10,
+      "behind_by": 0,
+      "merge_base": "de0021609c543a78b416e6c3e92475797dcae3bd"
+    },
+    "base_actual_concurrente": "0420ab36d71435e2469adb7fcadac7577972502c",
+    "compare_snapshot_base_actual": {
+      "status": "ahead",
+      "ahead_by": 4,
+      "behind_by": 0,
+      "changes_outside_lote12": true
+    },
+    "pr3797": {
+      "state": "open",
+      "draft": true,
+      "head_sha": "0420ab36d71435e2469adb7fcadac7577972502c"
+    },
+    "archivos_releidos": 10,
+    "pares_sql_resultado_validados": 27,
+    "errores_integridad_archivos": [],
+    "advertencia": "La base avanzo 4 commits durante el Lote 12 por trabajo concurrente. No se modifico ni se rebaso. El ancestro exacto de la rama L12 sigue siendo el HEAD capturado al crearla."
+  },
+  "sha256_archivos": {
+    "01_inventario.sql": "0d6e43f0a3f6e307fe7a016623ef69f3e9a73f26be9ffa51f5bd6914af2f77f2",
+    "01_inventario.json": "3be4732adc85b400b6ae718a6daa9dc3fc86dc42925db1e9d2386c7da29970c6",
+    "02_calidad.sql": "6fa74122720679c0e8ee31b306fb88319ba628876b3744cc0441f955285b3509",
+    "02_calidad.json": "8b05dea151041f400a52ea5df9c94c19af475fb8727d16d48c8fb4cf04196b43",
+    "03_saly.sql": "5244ae69e652b29b6617d0934b23beebc98aa052a850544a1c93ce0932966c3f",
+    "03_saly.json": "207ad011b48d3302b9dd132ff5957c8f4d5492fcb1cc4fc2ff46598f1b0f9da6",
+    "04_familias_lf.csv": "4ecdcde53a907dfd59069be682114ae6c0ad22851e32fd0f15a2e4fd688a88a8",
+    "04_familias_saly.csv": "c1ea587588b478ef5942815eb56b3962054f27c05aa5c92d7c5fb547567553d6",
+    "05_informe.md": "b503c64adaafb5d4a9cae6c929857e0c648a259cb896394176bcf8d15ce98398",
+    "06_manifest.json": "a5433618e3a0a8db12c8705f1acde8ac4a9df7f95d326d9169ba62fa9660c599"
+  },
+  "limites": [
+    "Lectura de 10 archivos y sus hashes no es reproducción independiente del banco",
+    "No se acredita identidad Claude ni juez independiente",
+    "No se acredito ausencia de CI automatico, solamente no se invoco CI manual ni RUN",
+    "Los cambios concurrentes del Lote 11 no fueron tocados"
+  ],
+  "avance": {
+    "documentos_y_sql": 100,
+    "reproduccion_banco_dueno": 0
+  }
+}
