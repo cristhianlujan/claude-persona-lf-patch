@@ -1,0 +1,293 @@
+{
+  "status": "SANDBOX_TESTS_OK",
+  "scope": "CLEAN_EPHEMERAL_GITHUB_ACTIONS_POSTGRES_18",
+  "global_status": "UNVERIFIED_NO_GO",
+  "run_id": 43282945337,
+  "job_id": 131408749485,
+  "commit_under_test": "10592ee9a03833638fa81464d9f39e2794b6b0ef",
+  "run_url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43282945337",
+  "postgres_version": "18.6 (Debian 18.6-1.pgdg13+2)",
+  "source_sha256": [
+    {
+      "sha256": "4e36d7297e9cbe85a0d63d8bf2a7919e23cd91f4b96e9860a596b9a636dd05f6",
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/01_schema.sql"
+    },
+    {
+      "sha256": "9378a6ee4d00751a00c2189edb8293bd887b4ebfb7c1ed5deb8d7607f73031ca",
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/02_seed_synthetic.sql"
+    },
+    {
+      "sha256": "add2dff455df2bf37efae49833735a5d0dec63b5512883ac0f23b70468048370",
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/03_test_cases.sql"
+    }
+  ],
+  "execution": {
+    "cases": [
+      {
+        "id": "T01_LF_578_412_166",
+        "status": "PASS",
+        "expected": "578 total; 412 VIGENTE; 166 CANDIDATO",
+        "observed": {
+          "total": 578,
+          "vigentes": 412,
+          "candidatos": 166
+        }
+      },
+      {
+        "id": "T02_SALY_14",
+        "status": "PASS",
+        "expected": "14 total; 14 VIGENTE",
+        "observed": {
+          "total": 14,
+          "vigentes": 14
+        }
+      },
+      {
+        "id": "T03_MAPPING_COUNTS",
+        "status": "PASS",
+        "expected": "LF 15/76; SALY 3/3",
+        "observed": {
+          "lf_familias": 15,
+          "lf_categorias": 76,
+          "saly_familias": 3,
+          "saly_categorias": 3
+        }
+      },
+      {
+        "id": "T04_SINGLETON_19_VS_18",
+        "status": "PASS",
+        "expected": "19 exactas; 18 casefold; 76/73 categorías",
+        "observed": {
+          "exact_categories": 76,
+          "exact_singletons": 19,
+          "casefold_categories": 73,
+          "casefold_singletons": 18
+        }
+      },
+      {
+        "id": "T05_INVALID_FAMILY_ASSIGNMENT",
+        "status": "PASS",
+        "expected": "23503 category/family FK",
+        "observed": {
+          "error": "insert or update on table \"rules\" violates foreign key constraint \"rules_project_code_category_raw_family_code_fkey\"",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T06_SUPER_ADMIN_CANNOT_OWN_PROJECT",
+        "status": "PASS",
+        "expected": "23514 owner profile check",
+        "observed": {
+          "error": "new row for relation \"projects\" violates check constraint \"projects_owner_profile_code_check\"",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T07_SUPER_ADMIN_CANNOT_OWN_FAMILY",
+        "status": "PASS",
+        "expected": "23514 family owner check",
+        "observed": {
+          "error": "new row for relation \"families\" violates check constraint \"families_owner_profile_code_check\"",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T08_SUPER_ADMIN_APPROVAL_REJECTED",
+        "status": "PASS",
+        "expected": "42501 BLOCK_SUPER_ADMIN_APPROVAL",
+        "observed": {
+          "error": "BLOCK_SUPER_ADMIN_APPROVAL",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T09_FUSION_WITHOUT_EVIDENCE_REJECTED",
+        "status": "PASS",
+        "expected": "23514 BLOCK_MERGE_EVIDENCE_MISSING",
+        "observed": {
+          "error": "BLOCK_MERGE_EVIDENCE_MISSING",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T10_EXPIRED_REVIEW_PROPOSES_NO_CHANGE",
+        "status": "PASS",
+        "expected": "one proposal; unchanged row; state VIGENTE",
+        "observed": {
+          "after": {
+            "state": "VIGENTE",
+            "config": {},
+            "rule_code": "LF-SYN-0003",
+            "created_at": "2026-09-01T00:00:00+00:00",
+            "entity_code": "GENERAL",
+            "family_code": "ANALITICA_EXPERIMENTACION",
+            "reviewed_at": "2026-10-15T00:00:00+00:00",
+            "category_raw": "ab_testing",
+            "effective_to": null,
+            "project_code": "lf",
+            "effective_from": "2026-10-01T00:00:00+00:00",
+            "next_review_at": "2026-10-01T00:00:00+00:00",
+            "definition_text": "Regla sintetica basada en categoria ab_testing / orden 3",
+            "successor_rule_code": null
+          },
+          "label": "PROPONER_REVISION",
+          "before": {
+            "state": "VIGENTE",
+            "config": {},
+            "rule_code": "LF-SYN-0003",
+            "created_at": "2026-09-01T00:00:00+00:00",
+            "entity_code": "GENERAL",
+            "family_code": "ANALITICA_EXPERIMENTACION",
+            "reviewed_at": "2026-10-15T00:00:00+00:00",
+            "category_raw": "ab_testing",
+            "effective_to": null,
+            "project_code": "lf",
+            "effective_from": "2026-10-01T00:00:00+00:00",
+            "next_review_at": "2026-10-01T00:00:00+00:00",
+            "definition_text": "Regla sintetica basada en categoria ab_testing / orden 3",
+            "successor_rule_code": null
+          },
+          "proposals": 1
+        }
+      },
+      {
+        "id": "T11_GENERIC_REFERENCE_DETECTOR",
+        "status": "PASS",
+        "expected": "LF 3 classified; SALY 0",
+        "observed": {
+          "lf_flags": 3,
+          "saly_flags": 0,
+          "lf_classified": 3
+        }
+      },
+      {
+        "id": "T12_GENERIC_PARAMETER_DETECTOR",
+        "status": "PASS",
+        "expected": "LF 1 synthetic pair; SALY 1 synthetic pair, semantic review only",
+        "observed": {
+          "lf_pairs": 1,
+          "saly_pairs": 1,
+          "lf_semantic_review": 1
+        }
+      },
+      {
+        "id": "T13_MERGE_ONLY_PROPOSAL",
+        "status": "PASS",
+        "expected": "merge proposal recorded; 76 source categories unchanged",
+        "observed": {
+          "status": "PROPOSED",
+          "maps_still": 76,
+          "proposal_id": 1
+        }
+      },
+      {
+        "id": "T14_CROSS_PROJECT_OWNER_REJECTED",
+        "status": "PASS",
+        "expected": "42501 BLOCK_ACTOR_UNRESOLVED",
+        "observed": {
+          "error": "BLOCK_ACTOR_UNRESOLVED",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T15_OWNER_REVIEW_ACTUAL_DECISION",
+        "status": "PASS",
+        "expected": "owner decision logged; reviewed_at advanced; 90d next review; 0 overdue",
+        "observed": {
+          "state": "VIGENTE",
+          "due_count": 0,
+          "decision_id": 1,
+          "reviewed_at": "2026-11-12T00:00:00+00:00",
+          "next_review_at": "2027-02-10T00:00:00+00:00"
+        }
+      },
+      {
+        "id": "T16_SUPER_ADMIN_MERGE_REJECTED",
+        "status": "PASS",
+        "expected": "42501 BLOCK_SUPER_ADMIN_APPROVAL",
+        "observed": {
+          "error": "BLOCK_SUPER_ADMIN_APPROVAL",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T17_SUPERSESSION_REQUIRES_SUCCESSOR",
+        "status": "PASS",
+        "expected": "23514 BLOCK_SUCCESSOR_REQUIRED",
+        "observed": {
+          "error": "BLOCK_SUCCESSOR_REQUIRED",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T18_OWNER_APPROVES_SUCCESSOR",
+        "status": "PASS",
+        "expected": "SUCEDIDA with explicit existing VIGENTE successor",
+        "observed": {
+          "state": "SUCEDIDA",
+          "successor": "LF-SYN-0008",
+          "decision_id": 2,
+          "effective_to": "2026-11-12T00:00:00+00:00"
+        }
+      },
+      {
+        "id": "T19_SALY_SAME_FUNCTION_AND_ISOLATION",
+        "status": "PASS",
+        "expected": "SALY 0->1 missing, LF 3 unchanged",
+        "observed": {
+          "lf_after": 3,
+          "saly_after": 1,
+          "saly_before": 0
+        }
+      },
+      {
+        "id": "T20_NO_SUCCESSOR_CHECK_GUARD",
+        "status": "PASS",
+        "expected": "23514 CHECK successor is mandatory for SUCEDIDA",
+        "observed": {
+          "error": "new row for relation \"rules\" violates check constraint \"rules_check1\"",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T21_READ_ONLY_DETECTORS_STABLE",
+        "status": "PASS",
+        "expected": "3 STABLE read-only functions",
+        "observed": {
+          "n": 3,
+          "stable": 3
+        }
+      },
+      {
+        "id": "T22_NON_OWNER_REVIEW_REJECTED",
+        "status": "PASS",
+        "expected": "42501 BLOCK_NOT_OWNER_PROFILE",
+        "observed": {
+          "error": "BLOCK_NOT_OWNER_PROFILE",
+          "rejected": true
+        }
+      },
+      {
+        "id": "T23_OWNER_CONFIG_AND_AUDIT",
+        "status": "PASS",
+        "expected": "LF_GOVERNANCE/ChatGPT; 2 owner decisions in LF, 0 SALY",
+        "observed": {
+          "lf_owner": "LF_GOVERNANCE",
+          "lf_creator": "ChatGPT",
+          "lf_decisions": 2,
+          "saly_decisions": 0
+        }
+      }
+    ],
+    "status": "SANDBOX_TESTS_OK",
+    "test_count": 23
+  },
+  "provenance": "Original JSON emitted by psql as captured in GitHub Actions job log; not simulated",
+  "limits": [
+    "Test evidence is sandbox-only",
+    "No live Supabase DDL/DML",
+    "No production authorization",
+    "Actor identity fixture is not server-attested",
+    "No independent Claude judge attested"
+  ]
+}
