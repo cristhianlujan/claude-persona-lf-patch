@@ -1,0 +1,81 @@
+{
+  "schema_version": "LF_L26_FINAL_SHA_SCOPE_READBACK_V1",
+  "status": "SANDBOX_VERIFIED",
+  "production": "NO_GO_UNVERIFIED",
+  "branch": "lf/issue-3779-lote26-integrated-curator-closure-v1",
+  "base_commit": "48f1e316d81c83ca2f880372a3a050b456c6b3ab",
+  "head_before_manifest": "8f5cf88f005def5ccc798ce68a6f68aad2650845",
+  "integrated_source_commits": {
+    "L23": "686cc39a7b8a9178ccf004423ba3c87131047a29",
+    "L24": "64764c58109345b1f086f9ebc7cc0c1040fdd656"
+  },
+  "sources": {
+    "original_L23_files": 7,
+    "original_L24_files": 6,
+    "original_blobs_identical_in_git_trees": true,
+    "original_sql_gates_not_modified": true,
+    "L24_workflow_blob_sha1": "a98e80c3cc55930a80c841eac7b8086891220b4f",
+    "L24_workflow_unchanged": true
+  },
+  "executables": [
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/16_l26_curator_to_closure_bridge_pg18.sql",
+      "current_blob_sha1": "a793fa483522859cd8f2a25cb113c3065019b6d2",
+      "tested_blob_sha1": "a793fa483522859cd8f2a25cb113c3065019b6d2",
+      "ci_identical": true
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote26_integrated_curator_closure.py",
+      "current_blob_sha1": "135b56a468b371784bd6d08f6558cdbfe735a8e5",
+      "tested_blob_sha1": "135b56a468b371784bd6d08f6558cdbfe735a8e5",
+      "ci_identical": true
+    },
+    {
+      "path": ".github/workflows/l26-integrated-curator-closure-pg18.yml",
+      "current_blob_sha1": "d64015212ce3c5ff823d1c5f222399a6ccddb0dc",
+      "tested_blob_sha1": "d64015212ce3c5ff823d1c5f222399a6ccddb0dc",
+      "ci_identical": true
+    }
+  ],
+  "successful_CI": {
+    "run_id": 43328149868,
+    "job_id": 131565766208,
+    "tested_code_commit": "a16bf36dcb8032f077eb5dd9be7a2a4164956fd2",
+    "url": "https://github.com/cristhianlujan/claude-persona-lf-patch/actions/runs/43328149868",
+    "conclusion": "success",
+    "l26_cases": 36,
+    "pg18_scripts": 21,
+    "sql_permissions_denied": 105
+  },
+  "sha256_of_original_runtime_json": "a03177a4a4711de4fb2e4d62387b5ea0f823fb925cfc87b5d4bf352b83e34135",
+  "gate_md5_before_after": {
+    "apply": "86b0494984edf95cf0f9c0a0df67000b",
+    "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+    "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+    "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+  },
+  "stage_readback": {
+    "real_en_sandbox": 21,
+    "sintetico": 11,
+    "no_probado": 4,
+    "total": 36,
+    "percent_real_in_sandbox": 58.33
+  },
+  "evidence_files": [
+    "docs/rule-quality-lote26/00_fuentes_integradas_y_contrato.md",
+    "docs/rule-quality-lote26/01_resultados_reales_pg18.json",
+    "docs/rule-quality-lote26/02_tablero_12_etapas_medido.md",
+    "docs/rule-quality-lote26/03_informe_pruebas_y_no_go.md"
+  ],
+  "caveats": {
+    "no_production_changes": true,
+    "Supabase_live_only_SELECT": true,
+    "Curator": "deterministic PG18 SQL by same GPT6 model",
+    "JWT": "HMAC synthetic, not Supabase Auth",
+    "Step70": "not native",
+    "RUN": "not native",
+    "official_terminal_receipt": "not invoked",
+    "claude_independent_auditor_attested": false
+  },
+  "source_sha_note": "Executable file identity verified by exact Git blob SHA-1 equal to CI-tested commit; runtime JSON and 21 individual script logs include SHA-256 in evidence."
+}
