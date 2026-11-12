@@ -34,23 +34,31 @@ def fail(id,q,marker):
  r=sql(q,fail=True)
  check(id,marker in r["stderr"] and r["exit_code"]!=0,marker,
    {"exit":r["exit_code"],"last_stderr_lines":r["stderr"].splitlines()[-5:]})
-def bootstrap():
- l20.DB=DB
- l20.bootstrap()
+def bootstrap(db,nonconflicting_a_seed=False):
+ l20.DB=db
+ original=l14.bootstrap
+ if nonconflicting_a_seed:
+  # Prepare a different starting *fixture* before L17 installs the immutable
+  # VIGENTE source trigger. No guard is ever disabled, no gate is edited.
+  # The candidate and frozen L11B request remain BIT-FOR-BIT unchanged.
+  def seed_before_l17_guard():
+   original()
+   l14.exec_sql("UPDATE lf_ops.reglas SET categoria='L26_UNRELATED_ACTIVE_CATEGORY' "
+      "WHERE codigo='RULE-DEPENDENCY-001';")
+  l14.bootstrap=seed_before_l17_guard
+ try:
+  l20.bootstrap()
+ finally:
+  l14.bootstrap=original
  sql((HERE/"15_l23_curator_stage_pg18.sql").read_text(encoding="utf-8"))
  sql((HERE/"15_l24_verifiable_closure_pg18.sql").read_text(encoding="utf-8"))
  sql((HERE/"16_l26_curator_to_closure_bridge_pg18.sql").read_text(encoding="utf-8"))
- check("BOOTSTRAP_ALL_LAYERS",True,
-  "L13/L14/L17/L18/L20 and exact L23/L24 imported SQL + L26 bridge in clean PG18",{"database":DB})
+ check("BOOTSTRAP_ALL_LAYERS_"+("A" if nonconflicting_a_seed else "BC"),True,
+  "L13/L14/L17/L18/L20 and exact L23/L24 SQL + L26 bridge; no active source edits after immutable guard",
+  {"database":db,"a_initial_fixture_nonconflicting":nonconflicting_a_seed})
 def prelude_lf(token,corrected=False,with_curator=True):
  p=l20.prelude_lf(token,corrected)
- if not corrected:
-  # ONLY disposable A_NEW fixture: change the *CANDIDATO* configuration
-  # before frozen request/snapshot creation; never mutate a VIGENTE rule.
-  # The L17 source immutability trigger remains fully enabled.
-  marker="FROM lf_ops.reglas WHERE codigo='RULE-TEST-001';"
-  if marker not in p:raise AssertionError("A_NEW_SQL_SEED_MARKER_MISSING")
-  p=p.replace(marker,marker+"\nUPDATE lf_ops.reglas SET valor_config='{}'::jsonb WHERE codigo="+lit(CODE)+";",1)
+ # Candidate and frozen L11B mechanical gate inputs stay unchanged.
  if with_curator:
   position=p.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
   if position<0 or "SELECT 'WRAP|'" not in p[position:]:
@@ -311,23 +319,31 @@ def permission_matrix():
      "each of INSERT UPDATE DELETE TRUNCATE DISABLE TRIGGER denied for "+role+" / "+table,
      raw)
 def main():
- bootstrap()
+ db_a=DB+"_a"
+ bootstrap(db_a,nonconflicting_a_seed=True)
  before=l14.l11b.md5s()
- check("FROZEN_MD5_BEFORE",before==EXPECTED,EXPECTED,before)
+ check("FROZEN_MD5_BEFORE_A",before==EXPECTED,EXPECTED,before)
+ lf=l17.token("lf","lf-sub-owner-001","lf_owner_role")
+ positive_lf("A_LF_NEW",lf,False)
+ # PG roles are cluster-wide. Drop the disposable A database before the next
+ # fresh L17 role bootstrap; A evidence is already captured in SCENARIOS RAW.
+ l14.l11b.base.sql("DROP DATABASE IF EXISTS "+db_a+" WITH (FORCE);",db="postgres")
+ bootstrap(DB+"_bc",nonconflicting_a_seed=False)
+ before_bc=l14.l11b.md5s()
+ check("FROZEN_MD5_BEFORE_BC",before_bc==before==EXPECTED,EXPECTED,before_bc)
  lf=l17.token("lf","lf-sub-owner-001","lf_owner_role")
  sy=l17.token("saly","saly-sub-owner-001","saly_owner_role")
- positive_lf("A_LF_NEW",lf,False)
  positive_lf("B_LF_CORRECTED",lf,True)
  positive_saly(sy)
  negatives(lf)
  permission_matrix()
  after=l14.l11b.md5s()
- check("FROZEN_MD5_AFTER",before==after==EXPECTED,EXPECTED,after)
+ check("FROZEN_MD5_AFTER",before==before_bc==after==EXPECTED,EXPECTED,after)
  real=sum(r["status"]=="REAL_EN_SANDBOX" for s in SCENARIOS for r in s["board"])
  synthetic=sum(r["status"]=="SINTETICO" for s in SCENARIOS for r in s["board"])
  untested=sum(r["status"]=="NO_PROBADO" for s in SCENARIOS for r in s["board"])
  assert len(SCENARIOS)==3 and real+synthetic+untested==36
- assert len(CASES)==3+3+7+len(ROLES)*len(TABLES), len(CASES)
+ assert len(CASES)==5+3+7+len(ROLES)*len(TABLES), len(CASES)
  report={"schema_version":"LF_LOTE26_MEASURED_INTEGRATION_PG18_V1",
   "status":"SANDBOX_VERIFIED","production":"NO_GO_UNVERIFIED",
   "scenario_count":3,"cases":CASES,"case_count":len(CASES),"scenarios":SCENARIOS,
