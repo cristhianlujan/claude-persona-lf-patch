@@ -88,7 +88,7 @@ jobs:
           print(json.dumps({"path":path,"status":status,"log_sha256":hashlib.sha256(raw).hexdigest(),"log_size":len(raw)}))
           PY
             printf 'L14_TEST_RESULT %s %s\n' "$status" "$script"
-            tail -n 4 "$log" || true
+            tail -n 24 "$log" || true
           done < "$RUNNER_TEMP/l14_test_inventory.txt"
           python3 - "$RUNNER_TEMP/l14_test_results.jsonl" <<'PY'
           import json,sys
