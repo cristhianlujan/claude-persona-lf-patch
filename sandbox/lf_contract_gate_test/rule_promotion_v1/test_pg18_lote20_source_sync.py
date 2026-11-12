@@ -79,29 +79,20 @@ def after_rollback(name,code,old="RULE-DEPENDENCY-001"):
 def b_correction_full_cycle(jwt):
  code=l14.l11b.RULE
  evidence='{"source_ref":"L20-B-OWNER-SANDBOX","rationale":"explicit trusted owner supersession with full source readback"}'
- action=("SELECT 'BEFORE|'||jsonb_build_object("
-   "'target_divergence',(SELECT count(*) FROM rule_quality_l13.l20_list_divergences_v1('lf') WHERE rule_code='RULE-DEPENDENCY-001'),"
-   "'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),"
-   "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001'))::text;\n"
+ action=("SELECT 'BEFORE|'||rule_quality_l13.l20_target_readback_v1("
+        "'lf','RULE-DEPENDENCY-001',"+lit(code)+")::text;\n"
    "SELECT 'SYNC|'||rule_quality_l13.l20_owner_decide_and_sync_v1("
    "'lf','RULE-DEPENDENCY-001','SUPERSEDE',"+lit(evidence)+"::jsonb,clock_timestamp(),"
    +lit(code)+")::text;\n"
-   "SELECT 'DECISION_COUNT_BEFORE_RETRY|'||(SELECT count(*) FROM rule_quality_l13.review_decisions "
-   "WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001');\n"
+   "SELECT 'DECISION_COUNT_BEFORE_RETRY|'||("
+   "rule_quality_l13.l20_target_readback_v1('lf','RULE-DEPENDENCY-001')->>'decision_count');\n"
    "SELECT 'RETRY|'||rule_quality_l13.l20_owner_decide_and_sync_v1("
    "'lf','RULE-DEPENDENCY-001','SUPERSEDE',"+lit(evidence)+"::jsonb,clock_timestamp(),"
    +lit(code)+")::text;\n"
-   "SELECT 'DECISION_COUNT_AFTER_RETRY|'||(SELECT count(*) FROM rule_quality_l13.review_decisions "
-   "WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001');\n"
-   "SELECT 'AFTER|'||jsonb_build_object("
-   "'target_divergence',(SELECT count(*) FROM rule_quality_l13.l20_list_divergences_v1('lf') WHERE rule_code='RULE-DEPENDENCY-001'),"
-   "'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),"
-   "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001'),"
-   "'registry_successor',(SELECT successor_rule_code FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),"
-   "'source_successor',(SELECT estado FROM lf_ops.reglas WHERE codigo="+lit(code)+"),"
-   "'registry_successor_state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"),"
-   "'receipts',(SELECT count(*) FROM rule_quality_l13.l20_sync_receipts "
-     "WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'))::text;")
+   "SELECT 'DECISION_COUNT_AFTER_RETRY|'||("
+   "rule_quality_l13.l20_target_readback_v1('lf','RULE-DEPENDENCY-001')->>'decision_count');\n"
+   "SELECT 'AFTER|'||rule_quality_l13.l20_target_readback_v1("
+   "'lf','RULE-DEPENDENCY-001',"+lit(code)+")::text;")
  script=("BEGIN;\n"+prelude_lf(jwt,True)+"\n"+owner(jwt,action)
    +"\nROLLBACK;\n"+after_rollback("FINAL_ROLLBACK",code))
  out=sql(script)
@@ -111,7 +102,8 @@ def b_correction_full_cycle(jwt):
      and out["WRAP"]["status"]=="READY"
      and out["WRAP"]["gate"]["status"]=="APPLIED"
      and out["WRAP"]["profile_return"]["status"]=="READY"
-     and out["BEFORE"]=={"target_divergence":0,"registry":"VIGENTE","source":"VIGENTE"}
+     and out["BEFORE"]["target_divergence"]==0
+     and out["BEFORE"]["registry"]==out["BEFORE"]["source"]=="VIGENTE"
      and a["status"]=="SYNCED_ATOMIC_PG18"
      and a["target_divergences_before_sync"]==1
      and a["target_divergences_after_sync"]==0
@@ -121,11 +113,11 @@ def b_correction_full_cycle(jwt):
      and out["AFTER"]["target_divergence"]==0
      and out["AFTER"]["registry"]==out["AFTER"]["source"]=="SUCEDIDA"
      and out["AFTER"]["registry_successor"]==code
-     and out["AFTER"]["source_successor"]==out["AFTER"]["registry_successor_state"]=="VIGENTE"
-     and out["AFTER"]["receipts"]==1
+     and out["AFTER"]["successor_source"]==out["AFTER"]["successor_registry"]=="VIGENTE"
+     and out["AFTER"]["receipt_count"]==1
      and ret["status"]=="ALREADY_SYNCED_NOOP" and ret["rows_updated"]==0
      and ret["decisions_added"]==0 and ret["receipts_added"]==0
-     and out["DECISION_COUNT_BEFORE_RETRY"]==out["DECISION_COUNT_AFTER_RETRY"]=="1"
+     and out["DECISION_COUNT_BEFORE_RETRY"]==out["DECISION_COUNT_AFTER_RETRY"]==1
      and out["FINAL_ROLLBACK"]=={
        "candidate":0,"quality_candidate":0,"source_old":"VIGENTE",
        "quality_old":0,"sync_receipts":0,"review_decisions":0})
@@ -135,7 +127,7 @@ def b_correction_full_cycle(jwt):
  check("N6_IDEMPOTENT_SECOND_SYNC_NO_MUTATION",
     ret["status"]=="ALREADY_SYNCED_NOOP"
     and ret["rows_updated"]==0 and ret["decisions_added"]==0
-    and out["DECISION_COUNT_BEFORE_RETRY"]==out["DECISION_COUNT_AFTER_RETRY"]=="1",
+    and out["DECISION_COUNT_BEFORE_RETRY"]==out["DECISION_COUNT_AFTER_RETRY"]==1,
     "same JWT owner retry returns 0 writes, 0 new decisions and same receipt",
     {"retry":ret,"counts":[out["DECISION_COUNT_BEFORE_RETRY"],out["DECISION_COUNT_AFTER_RETRY"]]})
  SCENARIOS.append({"scenario":"B_CORRECTED_SYNC","status":"PASS",
@@ -144,19 +136,13 @@ def b_correction_full_cycle(jwt):
 def lf_expiry_full_cycle(jwt):
  code=l14.l11b.RULE
  evidence='{"source_ref":"L20-A-EXPIRY","rationale":"explicit simulated-date owner expiry"}'
- decision=("SELECT 'BEFORE|'||jsonb_build_object("
-  "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo="+lit(code)+"),"
-  "'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"),"
-  "'due', (rule_quality_l13.l18_due_snapshot_v1('lf',"+lit(code)+")->>'due')::int)::text;\n"
+ decision=("SELECT 'BEFORE|'||("
+  "rule_quality_l13.l20_target_readback_v1('lf',"+lit(code)+") || "
+  "jsonb_build_object('due', (rule_quality_l13.l18_due_snapshot_v1('lf',"+lit(code)+")->>'due')::int))::text;\n"
   "SELECT 'SYNC|'||rule_quality_l13.l20_owner_decide_and_sync_v1("
   "'lf',"+lit(code)+",'EXPIRE',"+lit(evidence)+"::jsonb,"
   "(rule_quality_l13.l18_due_snapshot_v1('lf',"+lit(code)+")->>'as_of_simulated')::timestamptz)::text;\n"
-  "SELECT 'AFTER|'||jsonb_build_object("
-  "'target_divergences',(SELECT count(*) FROM rule_quality_l13.l20_list_divergences_v1('lf') WHERE rule_code="+lit(code)+"),"
-  "'source',(SELECT estado FROM lf_ops.reglas WHERE codigo="+lit(code)+"),"
-  "'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"),"
-  "'next_review',(SELECT next_review_at FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"),"
-  "'effective_to',(SELECT effective_to FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(code)+"))::text;")
+  "SELECT 'AFTER|'||rule_quality_l13.l20_target_readback_v1('lf',"+lit(code)+")::text;")
  script=("BEGIN;\n"+prelude_lf(jwt,False)+owner(jwt,decision)
    +"\nROLLBACK;\n"+after_rollback("FINAL_ROLLBACK",code))
  out=sql(script)
@@ -169,8 +155,8 @@ def lf_expiry_full_cycle(jwt):
      and out["SYNC"]["target_divergences_before_sync"]==1
      and out["SYNC"]["target_divergences_after_sync"]==0
      and out["AFTER"]["source"]==out["AFTER"]["registry"]=="CADUCADA"
-     and out["AFTER"]["target_divergences"]==0
-     and out["AFTER"]["next_review"] is None
+     and out["AFTER"]["target_divergence"]==0
+     and out["AFTER"]["next_review_at"] is None
      and out["AFTER"]["effective_to"] is not None
      and out["FINAL_ROLLBACK"]["candidate"]==0
      and out["FINAL_ROLLBACK"]["sync_receipts"]==0)
@@ -183,17 +169,11 @@ def saly_expiry_cycle(jwt):
  evidence='{"source_ref":"L20-SALY-EXPIRE","rationale":"same signed owner source sync via SALY adapter"}'
  body="""SELECT 'PREP|'||rule_quality_l13.quality_prepare_new_v2('saly','SALY-L14-NEW','MOTOR_DISPONIBLE')::text;
 SELECT 'APPLIED|'||rule_quality_l13.quality_apply_envelope_v2('saly','SALY-L14-NEW')::text;
-SELECT 'BEFORE|'||jsonb_build_object(
- 'source_vigente',(SELECT vigente FROM rule_quality_l13.saly_source_synthetic WHERE codigo='SALY-L14-NEW'),
- 'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='saly' AND rule_code='SALY-L14-NEW'))::text;
+SELECT 'BEFORE|'||rule_quality_l13.l20_target_readback_v1('saly','SALY-L14-NEW')::text;
 SELECT 'SYNC|'||rule_quality_l13.l20_owner_decide_and_sync_v1(
  'saly','SALY-L14-NEW','EXPIRE',"""+lit(evidence)+"""::jsonb,
  (rule_quality_l13.l18_due_snapshot_v1('saly','SALY-L14-NEW')->>'as_of_simulated')::timestamptz)::text;
-SELECT 'AFTER|'||jsonb_build_object(
- 'source_vigente',(SELECT vigente FROM rule_quality_l13.saly_source_synthetic WHERE codigo='SALY-L14-NEW'),
- 'source_terminal',(SELECT metadata->>'l20_lifecycle_state' FROM rule_quality_l13.saly_source_synthetic WHERE codigo='SALY-L14-NEW'),
- 'registry',(SELECT state FROM rule_quality_l13.rules WHERE project_code='saly' AND rule_code='SALY-L14-NEW'),
- 'divergence',(SELECT count(*) FROM rule_quality_l13.l20_list_divergences_v1('saly') WHERE rule_code='SALY-L14-NEW'))::text;"""
+SELECT 'AFTER|'||rule_quality_l13.l20_target_readback_v1('saly','SALY-L14-NEW')::text;"""
  out=sql("BEGIN;\n"+saly(jwt,body)+"\nROLLBACK;\n"+
   """SELECT 'FINAL_ROLLBACK|'||jsonb_build_object(
   'source_vigente',(SELECT vigente FROM rule_quality_l13.saly_source_synthetic WHERE codigo='SALY-L14-NEW'),
@@ -202,12 +182,16 @@ SELECT 'AFTER|'||jsonb_build_object(
  ok=(out["PREP"]["status"]=="QUALITY_PREPARED"
    and out["APPLIED"]["status"]=="READY"
    and out["APPLIED"]["gate"]["fixture_only"] is True
-   and out["BEFORE"]=={"source_vigente":True,"registry":"VIGENTE"}
+   and out["BEFORE"]["source_vigente"] is True
+   and out["BEFORE"]["registry"]=="VIGENTE"
    and out["SYNC"]["status"]=="SYNCED_ATOMIC_PG18"
    and out["SYNC"]["registry_state"]==out["SYNC"]["source_state"]=="CADUCADA"
    and out["SYNC"]["target_divergences_before_sync"]==1
    and out["SYNC"]["target_divergences_after_sync"]==0
-   and out["AFTER"]=={"source_vigente":False,"source_terminal":"CADUCADA","registry":"CADUCADA","divergence":0}
+   and out["AFTER"]["source_vigente"] is False
+   and out["AFTER"]["source_terminal"]=="CADUCADA"
+   and out["AFTER"]["registry"]=="CADUCADA"
+   and out["AFTER"]["target_divergence"]==0
    and out["FINAL_ROLLBACK"]=={"source_vigente":False,"registry_rows":0,"receipts":0})
  check("SALY_EXPIRE_SAME_SYNC_FUNCTION",ok,
     "Saly false + explicit terminal metadata in synthetic adapter, L13 CADUCADA, no native SALY apply",
