@@ -1,0 +1,337 @@
+{
+  "lote": 12,
+  "status": "UNVERIFIED",
+  "mode": "SUPABASE_RO",
+  "digest_spec": "SHA256 UTF8, SQL+semicolon+LF / JSON.stringify(rows)",
+  "results": {
+    "SALY01": {
+      "sql_sha256": "5edfa5f4b9b0fe0d7cf3f4b09a1da3e6db1d05483548f257fa44366a40f08893",
+      "result_sha256": "f3554aaf88061e130d3a0af6f518d170b3deda0b4b00457fa700c7d3c81de113",
+      "n": 1,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "corte_utc": "2026-11-12 18:13:14.861063+00",
+          "total": 14,
+          "vigente_true": 14,
+          "vigente_false": 0,
+          "categorias_exactas": 3,
+          "categorias_casefold": 3,
+          "config_vacia": 2,
+          "razon_vacia": 0,
+          "fuente_vacia": 0,
+          "decision_id_nulo": 0,
+          "metadata_vacia": 0,
+          "sin_editar_30d": 14,
+          "sin_editar_90d": 0
+        }
+      ]
+    },
+    "SALY02": {
+      "sql_sha256": "0bf30f1025a79adebc67953c418a068a642af6b815231b3d8ffc44aba2f47613",
+      "result_sha256": "b313444be6c11702d13376419f8da1da5d08854824d02d5b3aa39cac4089bbd5",
+      "n": 3,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "categoria": "CALENDARIO",
+          "reglas": 1,
+          "vigentes": 1
+        },
+        {
+          "categoria": "GOBERNANZA",
+          "reglas": 3,
+          "vigentes": 3
+        },
+        {
+          "categoria": "MOTOR_DISPONIBLE",
+          "reglas": 10,
+          "vigentes": 10
+        }
+      ]
+    },
+    "SALY03": {
+      "sql_sha256": "a04bc286f2cabd861b774820c26b70fa06b56f91906aa47b0317cba98ccce080",
+      "result_sha256": "dcc4c0df9271326603d37cc0eb05bd387790ad56b56490b7b74f7e7bce2785f5",
+      "n": 1,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "estado": "VALIDADO",
+          "vigente": true,
+          "reglas": 14
+        }
+      ]
+    },
+    "SALY04": {
+      "sql_sha256": "a68d6ac12109b038bc3d85455d06d4a0748bad2194dc4637e2dcb0cc6cc0a986",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": []
+    },
+    "SALY05": {
+      "sql_sha256": "4e4d0a6f23b82b949bbccbe57e7bb5161dfc890f9f99bdb38a139a331bd16c68",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": []
+    },
+    "SALY06": {
+      "sql_sha256": "4f3b40c5887aad44dbca14f0f40ec8cbb9cd660997a09394c39624bae852ad88",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "REQUIERE_REVISION_SEMANTICA",
+      "rows": []
+    },
+    "SALY07": {
+      "sql_sha256": "b9af3e8aec30a25d6a8383c8dd622158e58fcda19d2daf25aa7b40625abff35c",
+      "result_sha256": "bb45bc510e559d98c5e5b5a330f268ca042bccbe34e6b363b615dbf731467808",
+      "n": 1,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "total": 14,
+          "metadata_depends_on_rules": 0,
+          "config_depends_on_rules": 0
+        }
+      ]
+    },
+    "SALY08": {
+      "sql_sha256": "f5bffa65597d0439223c265ab9f8e579611e915e21362dc7c4c2a8e75367285e",
+      "result_sha256": "63e002403dc318692de8e138b01f71b1540af7908490169c8ddad50542097bf9",
+      "n": 2,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "version": "V1.0",
+          "reglas": 1
+        },
+        {
+          "version": "V2.3",
+          "reglas": 13
+        }
+      ]
+    },
+    "SALY09": {
+      "sql_sha256": "80d5da13ac4fec011b5dbb3a4a8368813e3063babc845e50ac44ecd2d856c681",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "OBJETIVO",
+      "rows": []
+    },
+    "SALY10": {
+      "sql_sha256": "f79e20bc0813f94e9357a486721aa2786431cde04304adfad3f8de8326d2eedf",
+      "result_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "n": 0,
+      "classification": "OBJETIVO",
+      "rows": []
+    },
+    "SCHEMA01": {
+      "sql_sha256": "68211062c06ba680b5ba36c8e5dd7e566171de3d16f514a68614644eb3afc580",
+      "result_sha256": "cd5a3d2a806ec98a5e45a890770f55297b7a83330a9b543ef55a9d02c0fd001e",
+      "n": 33,
+      "classification": "OBJETIVO",
+      "rows": [
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "id",
+          "data_type": "integer"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "codigo",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "categoria",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "titulo",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "descripcion",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "razon",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "valor_config",
+          "data_type": "jsonb"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "es_transversal",
+          "data_type": "boolean"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "estado",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "origen",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "pendiente_decision",
+          "data_type": "boolean"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "pendiente_detalle",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "lf_ops",
+          "table_name": "reglas",
+          "column_name": "created_by",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "id",
+          "data_type": "bigint"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "codigo",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "categoria",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "titulo",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "regla",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "razon",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "alcance",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "producto_codigo",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "valor_config",
+          "data_type": "jsonb"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "parametrizable",
+          "data_type": "boolean"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "es_transversal",
+          "data_type": "boolean"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "estado",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "vigente",
+          "data_type": "boolean"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "decision_id",
+          "data_type": "bigint"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "fuente",
+          "data_type": "text"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "metadata",
+          "data_type": "jsonb"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone"
+        },
+        {
+          "table_schema": "saly",
+          "table_name": "reglas",
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone"
+        }
+      ]
+    }
+  }
+}
