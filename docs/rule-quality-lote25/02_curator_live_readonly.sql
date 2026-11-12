@@ -116,3 +116,44 @@ FROM lf_ops.reglas WHERE estado='VIGENTE' AND (descripcion ~* '(gracia|cancelar.
 ORDER BY codigo
 ), packed AS (SELECT coalesce(jsonb_agg(to_jsonb(source_rows) ORDER BY to_jsonb(source_rows)::text),'[]'::jsonb) rows FROM source_rows)
 SELECT 'G25_06'::text probe,jsonb_array_length(rows) n,encode(sha256(convert_to(rows::text,'UTF8')),'hex') sha256_result,rows result_rows FROM packed;
+
+-- ADENDA E/F | parametro y deuda incobrable fuente; no crea estructuras
+
+-- G25_07 | SOLO SELECT + SHA256 UTF8 JSONB toda la población
+WITH source_rows AS MATERIALIZED (
+SELECT
+ (SELECT count(*)::integer FROM lf_ops.reglas WHERE codigo='REG_CLIENT_INSTALLMENT_AUTO_CANCELLATION_025') AS auto_rule_code_exists,
+ (SELECT count(*)::integer FROM lf_ops.reglas WHERE codigo='REG_CLIENT_INSTALLMENT_CANCELLATION_025') AS manual_rule_code_exists,
+ (SELECT count(*)::integer FROM lf_ops.reglas WHERE codigo='ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES') AS parameter_as_rule_code_exists,
+ (SELECT count(*)::integer FROM lf_ops.reglas WHERE coalesce(valor_config::text,'') ILIKE '%ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES%' OR descripcion ILIKE '%ANTIGUEDAD_CANCELACION_AUTOMATICA_MESES%') AS rules_with_parameter_code_reference,
+ (SELECT coalesce(jsonb_agg(x ORDER BY x),'[]'::jsonb) FROM
+ (SELECT table_schema||'.'||table_name AS x FROM information_schema.tables
+ WHERE table_schema IN ('lf_ops','public') AND table_type='BASE TABLE' AND table_name ~* '(parametro|parameter|config)' ) a) AS candidate_config_tables_not_evidence_of_parameter_ownership
+), packed AS (SELECT coalesce(jsonb_agg(to_jsonb(source_rows) ORDER BY to_jsonb(source_rows)::text),'[]'::jsonb) rows FROM source_rows)
+SELECT 'G25_07'::text probe,jsonb_array_length(rows) n,encode(sha256(convert_to(rows::text,'UTF8')),'hex') sha256_result,rows result_rows FROM packed;
+
+-- G25_08 | SOLO SELECT + SHA256 UTF8 JSONB toda la población
+WITH source_rows AS MATERIALIZED (
+SELECT codigo,estado,categoria,titulo,
+ CASE WHEN codigo='REG_CLIENT_DEBT_SETTLEMENT_STATUS_001' THEN valor_config->'states' ELSE NULL END AS canonical_debt_states,
+ CASE WHEN codigo='REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001' THEN valor_config->'ledger_debt' ELSE NULL END AS canonical_ledger_dependency,
+ left(descripcion,0) AS omitted_description,
+ encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') AS full_row_sha256
+ FROM lf_ops.reglas r WHERE codigo IN
+ ('REG_CLIENT_DEBT_SETTLEMENT_STATUS_001',
+ 'REG_CLIENT_INSTALLMENT_PLAN_SNAPSHOT_001',
+ 'REG_CLIENT_INSTALLMENT_PLAN_VIEW_001',
+ 'REG_CLIENT_PAYMENT_OUTCOME_NORMALIZATION_001',
+ 'REG_CHK_CUO_006','REG_CHK_014','REG_CHK_CUO_009','REG_CHK_017')
+ ORDER BY codigo
+), packed AS (SELECT coalesce(jsonb_agg(to_jsonb(source_rows) ORDER BY to_jsonb(source_rows)::text),'[]'::jsonb) rows FROM source_rows)
+SELECT 'G25_08'::text probe,jsonb_array_length(rows) n,encode(sha256(convert_to(rows::text,'UTF8')),'hex') sha256_result,rows result_rows FROM packed;
+
+-- G25_09 | SOLO SELECT + SHA256 UTF8 JSONB toda la población
+WITH source_rows AS MATERIALIZED (
+SELECT codigo,estado,categoria,titulo,
+ encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') AS full_row_sha256
+ FROM lf_ops.reglas r WHERE descripcion ~* 'INCOBRABLE|incobrable|cancelaci[oó]n autom[aá]tica por antig[uü]edad'
+ OR coalesce(valor_config::text,'') ILIKE '%INCOBRABLE%' ORDER BY codigo
+), packed AS (SELECT coalesce(jsonb_agg(to_jsonb(source_rows) ORDER BY to_jsonb(source_rows)::text),'[]'::jsonb) rows FROM source_rows)
+SELECT 'G25_09'::text probe,jsonb_array_length(rows) n,encode(sha256(convert_to(rows::text,'UTF8')),'hex') sha256_result,rows result_rows FROM packed;
