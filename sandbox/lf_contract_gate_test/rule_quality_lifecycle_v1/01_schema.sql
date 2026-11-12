@@ -240,3 +240,37 @@ BEGIN
  RETURNING decision_id INTO v_id;
  RETURN v_id;
 END $$;
+
+CREATE TABLE family_birth_requests (
+ request_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+ project_code text NOT NULL REFERENCES projects(project_code),
+ proposed_family_code text NOT NULL CHECK (proposed_family_code ~ '^[A-Z][A-Z0-9_]*$'),
+ scope text NOT NULL CHECK (length(btrim(scope))>=12),
+ requested_by text NOT NULL,
+ evidence jsonb NOT NULL CHECK (jsonb_typeof(evidence)='object'),
+ status text NOT NULL DEFAULT 'PROPOSED' CHECK (status='PROPOSED'),
+ created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ FOREIGN KEY(project_code,requested_by) REFERENCES actors(project_code,actor_code),
+ UNIQUE(project_code,proposed_family_code)
+);
+CREATE FUNCTION propose_family_birth(p_project text,p_family text,p_scope text,
+                                     p_actor text,p_evidence jsonb)
+RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE v_id bigint;
+BEGIN
+ PERFORM require_owner(p_project,p_actor);
+ IF EXISTS(SELECT 1 FROM families WHERE project_code=p_project AND family_code=p_family) THEN
+   RAISE EXCEPTION 'BLOCK_FAMILY_ALREADY_EXISTS' USING ERRCODE='23505';
+ END IF;
+ IF jsonb_typeof(p_evidence) IS DISTINCT FROM 'object'
+   OR coalesce(btrim(p_evidence->>'scope_difference'),'')=''
+   OR coalesce(btrim(p_evidence->>'owner_impact'),'')=''
+   OR coalesce(btrim(p_evidence->>'decision_ref'),'')=''
+   OR coalesce(btrim(p_evidence->>'source_ref'),'')='' THEN
+   RAISE EXCEPTION 'BLOCK_BIRTH_EVIDENCE_MISSING' USING ERRCODE='23514';
+ END IF;
+ INSERT INTO family_birth_requests(project_code,proposed_family_code,scope,requested_by,evidence)
+ VALUES(p_project,p_family,p_scope,p_actor,p_evidence) RETURNING request_id INTO v_id;
+ RETURN v_id;
+END $$;
+
