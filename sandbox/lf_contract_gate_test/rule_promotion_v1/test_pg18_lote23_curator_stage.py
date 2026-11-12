@@ -125,6 +125,20 @@ def negative_missing(claim):
       "'verdicts',(SELECT count(*) FROM rule_quality_l13.l23_curator_verdicts WHERE project_code='saly'))::text;")["AFTER"]
     check("N1_NO_SIDE_EFFECT",read=={"active":False,"tickets":0,"verdicts":0},"no bypass and no side effects",read)
 
+def negative_missing_lf(claim):
+    # Reuses the exact B_CORRECTED L11B+L18 mechanical gate chain but deliberately
+    # omits Curator. The BEFORE ARMING trigger must reject before frozen apply.
+    negative("N1B_LF_FROZEN_GATE_NEEDS_CURATOR",
+      "BEGIN;\n"+l20.prelude_lf(claim,True)+"\nROLLBACK;",
+      "BLOCK_L23_CURATOR_NOT_ACCEPTED")
+    r=sql("SELECT 'LF_AFTER|'||jsonb_build_object("
+      "'candidate',(SELECT count(*) FROM lf_ops.reglas WHERE codigo="+lit(l14.l11b.RULE)+"),"
+      "'quality',(SELECT count(*) FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code="+lit(l14.l11b.RULE)+"),"
+      "'tickets',(SELECT count(*) FROM rule_quality_l13.activation_tickets WHERE project_code='lf'),"
+      "'verdicts',(SELECT count(*) FROM rule_quality_l13.l23_curator_verdicts WHERE project_code='lf'))::text;")["LF_AFTER"]
+    check("N1B_LF_GATE_NO_SIDE_EFFECT",r=={"candidate":0,"quality":0,"tickets":0,"verdicts":0},
+      "LF frozen gate never called on missing Curator; rollback restored all rows",r)
+
 def negative_duplicate(lf_claim):
     setup_sql="""INSERT INTO lf_ops.reglas(id,codigo,descripcion,estado,categoria,owner_name,valor_config)
       SELECT 991001,'L23-EXACT-DUP',descripcion,'CANDIDATO',categoria,'LF_GOVERNANCE',valor_config
@@ -202,6 +216,7 @@ def main():
     run_lf("B_CORRECTED",lf)
     run_saly(sy)
     negative_missing(sy)
+    negative_missing_lf(lf)
     negative_duplicate(lf)
     negative_conflict(lf)
     negative_family(lf)
@@ -222,6 +237,6 @@ def main():
     target.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2,default=str)+"\n",encoding="utf-8")
     digest=hashlib.sha256(target.read_bytes()).hexdigest()
     print("L23_RAW_JSON_SHA256 "+digest,flush=True)
-    print("L23_SANDBOX_PASS "+str(len(CASES))+" cases, 3 positive scenarios, 8 negative test cases incl no-write, 4 gates unchanged",flush=True)
+    print("L23_SANDBOX_PASS "+str(len(CASES))+" cases, 3 positive scenarios, 9 negative test cases incl no-write, 4 gates unchanged",flush=True)
 
 if __name__=="__main__":main()
