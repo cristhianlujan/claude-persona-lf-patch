@@ -116,7 +116,7 @@ def no_ready_negative(jwt):
  # Pre-readback candidate with signed owner approval and verified citation,
  # but no L14 activation. Must fail on source/registry EN_REVISION.
  p=l20.prelude_lf(jwt,False)
- cut=p.index("SELECT 'WRAP|'")
+ cut=p.rfind("SET SESSION AUTHORIZATION l17_authenticator;")
  incomplete=p[:cut]
  err("N1_NO_READBACK_READY","BEGIN;\n"+incomplete+emit("lf",CODE,jwt,RUN)+"\nROLLBACK;",
      "BLOCK_L24_READBACK_NOT_READY")
@@ -180,7 +180,7 @@ def negatives(jwt,superjwt,salyjwt,stored):
   "SET LOCAL session_replication_role=origin;\n"
   +verify("lf",CODE,"PROM-TEST",jwt)+"\nROLLBACK;")
  err("N8_HASH_TAMPER_DETECTED",tamper,"BLOCK_L24_HASH_OR_RECEIPT_TAMPER")
- good=l17.exec_as("lf_owner_role",jwt,bad_stmt.replace("SELECT rule_quality","SELECT 'R|'||rule_quality").replace("('lf',"+lit(CODE)+",'PROM-TEST');","('lf',"+lit(CODE)+",'PROM-TEST')::text;"))
+ good=l17.exec_as("lf_owner_role",jwt,"SELECT 'R|'||rule_quality_l13.l24_verify_closure_v1('lf',"+lit(CODE)+",'PROM-TEST')::text;")
  check("N8B_TAMPER_ROLLBACK_RESTORES",good["R"]["status"]=="VERIFIED_CLOSURE_HASH",
    "original persisted receipt remains valid after forensic test rolled back",good["R"])
  # Use a previously unused SALY candidate and trigger test-only fault AFTER
