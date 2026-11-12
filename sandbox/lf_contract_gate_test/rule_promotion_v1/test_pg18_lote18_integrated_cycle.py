@@ -110,53 +110,30 @@ FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001';
     closure=(
       "SELECT 'CLOSED|'||rule_quality_l13.l18_close_sandbox_cycle_v1('lf',"
       +lit(code)+",'PROM-TEST',"+lit(l14.l11b.OWNER_RUN)+")::text;")
-    time_cycle="""
-SELECT 'AS_OF_INITIAL|'||jsonb_build_object(
- 'as_of',(SELECT next_review_at+interval '1 second' FROM rule_quality_l13.rules
-           WHERE project_code='lf' AND rule_code='REG_SEG_004'),
- 'due',(SELECT count(*) FROM rule_quality_l13.list_review_due('lf',
-      (SELECT next_review_at+interval '1 second' FROM rule_quality_l13.rules
-        WHERE project_code='lf' AND rule_code='REG_SEG_004'))
-         WHERE rule_code='REG_SEG_004'),
- 'state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'))::text;
-SELECT 'RENEW|'||rule_quality_l13.l18_owner_review_decide_v1(
+    if not is_correction:
+        time_cycle="""SELECT 'AS_OF_INITIAL|'||rule_quality_l13.l18_due_snapshot_v1('lf','REG_SEG_004')::text;
+SELECT 'RENEW|'||rule_quality_l13.l18_owner_due_decide_v1(
  'lf','REG_SEG_004','KEEP_VIGENTE',
- (SELECT next_review_at+interval '1 second' FROM rule_quality_l13.rules
-  WHERE project_code='lf' AND rule_code='REG_SEG_004'),
  '{"source_ref":"L18-ASOF-RENEW-SBX","rationale":"explicit owner date-only test renewal"}'::jsonb)::text;
-SELECT 'RENEW_READBACK|'||jsonb_build_object(
- 'state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'),
- 'next_review_at',(SELECT next_review_at FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'),
- 'decision_rows',(SELECT count(*) FROM rule_quality_l13.review_decisions WHERE project_code='lf' AND rule_code='REG_SEG_004'))::text;
-SELECT 'AS_OF_SECOND|'||jsonb_build_object(
- 'due',(SELECT count(*) FROM rule_quality_l13.list_review_due('lf',
-    (SELECT next_review_at+interval '1 second' FROM rule_quality_l13.rules
-     WHERE project_code='lf' AND rule_code='REG_SEG_004'))
-   WHERE rule_code='REG_SEG_004'),
- 'state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'))::text;
-SELECT 'EXPIRE|'||rule_quality_l13.l18_owner_review_decide_v1(
+SELECT 'RENEW_READBACK|'||rule_quality_l13.l18_readback_rule_state_v1('lf','REG_SEG_004')::text;
+SELECT 'AS_OF_SECOND|'||rule_quality_l13.l18_due_snapshot_v1('lf','REG_SEG_004')::text;
+SELECT 'EXPIRE|'||rule_quality_l13.l18_owner_due_decide_v1(
  'lf','REG_SEG_004','EXPIRE',
- (SELECT next_review_at+interval '1 second' FROM rule_quality_l13.rules
-  WHERE project_code='lf' AND rule_code='REG_SEG_004'),
  '{"source_ref":"L18-ASOF-EXPIRE-SBX","rationale":"explicit owner test caducity after second due date"}'::jsonb)::text;
-SELECT 'EXPIRE_READBACK|'||jsonb_build_object(
- 'state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'),
- 'next_review_at',(SELECT next_review_at FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='REG_SEG_004'),
- 'legacy_source_estado',(SELECT estado FROM lf_ops.reglas WHERE codigo='REG_SEG_004'),
- 'decision_rows',(SELECT count(*) FROM rule_quality_l13.review_decisions WHERE project_code='lf' AND rule_code='REG_SEG_004'))::text;
-""" if not is_correction else """
-SELECT 'SUPERSEDE|'||rule_quality_l13.l18_owner_review_decide_v1(
+SELECT 'EXPIRE_READBACK|'||rule_quality_l13.l18_readback_rule_state_v1('lf','REG_SEG_004')::text;"""
+        predecessor_readback=""
+    else:
+        time_cycle="""SELECT 'SUPERSEDE|'||rule_quality_l13.l18_owner_review_decide_v1(
  'lf','RULE-DEPENDENCY-001','SUPERSEDE',clock_timestamp(),
  '{"source_ref":"L18-SUCCEDE-SBX","rationale":"verified signed owner explicit succession"}'::jsonb,
- 'REG_SEG_004')::text;
-SELECT 'OLD_READBACK|'||jsonb_build_object(
+ 'REG_SEG_004')::text;"""
+        predecessor_readback="""SELECT 'OLD_READBACK|'||jsonb_build_object(
  'model_state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),
  'model_successor',(SELECT successor_rule_code FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code='RULE-DEPENDENCY-001'),
  'legacy_source_state',(SELECT estado FROM lf_ops.reglas WHERE codigo='RULE-DEPENDENCY-001'),
  'correction_link_rows',(SELECT count(*) FROM rule_quality_l13.correction_requests
   WHERE project_code='lf' AND original_rule_code='RULE-DEPENDENCY-001'
-   AND successor_rule_code='REG_SEG_004'))::text;
-"""
+   AND successor_rule_code='REG_SEG_004'))::text;"""
     script=f"""BEGIN;
 {l14.l11b.setup("POSITIVE")}
 {predecessor_sql}
@@ -174,6 +151,7 @@ SELECT 'IG_VERIFY|'||public.lf_rule_promotion_ig_semantic_verify_v1('PROM-TEST')
 SELECT 'OWNER_VERIFY|'||public.lf_rule_promotion_profile_owner_verify_v1('PROM-TEST')::text;
 {owner_session(owner_jwt,
     "SELECT 'WRAPPED|'||rule_quality_l13.quality_apply_envelope_v2('lf',"+lit(code)+",'PROM-TEST',"+lit(l14.l11b.OWNER_RUN)+")::text;\n"+closure+"\n"+time_cycle)}
+{predecessor_readback}
 SELECT 'READBACK|'||jsonb_build_object(
   'source_state',(SELECT estado FROM lf_ops.reglas WHERE codigo={lit(code)}),
   'model_state',(SELECT state FROM rule_quality_l13.rules WHERE project_code='lf' AND rule_code={lit(code)}),
@@ -243,7 +221,7 @@ SELECT 'AFTER_ROLLBACK|'||jsonb_build_object(
          and out["EXPIRE"]["decision"]=="EXPIRE"
          and out["EXPIRE_READBACK"]["state"]=="CADUCADA"
          and out["EXPIRE_READBACK"]["next_review_at"] is None
-         and out["EXPIRE_READBACK"]["legacy_source_estado"]=="VIGENTE"
+         and out["READBACK"]["source_state"]=="VIGENTE"
          and out["EXPIRE_READBACK"]["decision_rows"]==2
          and state_from_final=="CADUCADA")
     compact={k:out.get(k) for k in (
