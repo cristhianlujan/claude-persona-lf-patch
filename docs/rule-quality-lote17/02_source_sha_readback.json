@@ -1,0 +1,82 @@
+{
+  "lote": 17,
+  "branch": "lf/issue-3779-lote17-actor-identity-adapter-v1",
+  "base_commit": "5a43176b6aa54016d61b3c9cdde261e0cb193210",
+  "head_before_manifest": "d5e01276b7adf0fc6b69820830562c1e06d081d9",
+  "scope": "sandbox_pg18_only",
+  "global_status": "NO_GO_UNVERIFIED",
+  "ci_run_id": 43294775544,
+  "ci_test_sha": "3d044c878dc382fbfddb6e51d2be78309e93fa10",
+  "ci_test_suite": {
+    "l13": 28,
+    "l14": 18,
+    "pg18_scripts": 16,
+    "l17": 25
+  },
+  "tree_comparison": {
+    "ahead_by": 7,
+    "behind_by": 0,
+    "only_authorized_paths": true,
+    "changed_paths": [
+      ".github/workflows/l17-actor-identity-adapter-pg18.yml",
+      "docs/rule-quality-lote17/01_pg18_real_results.json",
+      "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote17_actor_identity_adapter.py",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/08_l17_postgrest_roles_fixture.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/09_l17_verified_actor_v2.sql",
+      "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/10_l17_quality_trigger_acl.sql"
+    ]
+  },
+  "files": [
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/08_l17_postgrest_roles_fixture.sql",
+      "sha256_utf8": "3ddf86b0d082ad76ea2f4f0815e26b415274cc642d8d27477d0ffa3819a17707",
+      "git_blob_sha": "3050fd5530a886badd9445a8b5067fa0d2e5d0a8",
+      "bytes_utf8": 4045
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/09_l17_verified_actor_v2.sql",
+      "sha256_utf8": "c2b5b9150106a03ac5703d4957a9d664c47b2512bdb98ab42d6593ab59f1c709",
+      "git_blob_sha": "48da0f75b43c6ef5e3c8a32c7bda1829c52f9311",
+      "bytes_utf8": 7905
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_quality_lifecycle_v1/10_l17_quality_trigger_acl.sql",
+      "sha256_utf8": "63f9b77561587b4f1bda1c2bf1a61711e26479d22c7969918afa34e90fa9158c",
+      "git_blob_sha": "926143de2afd6fa21f27fef737f8f31db3467fa5",
+      "bytes_utf8": 3160
+    },
+    {
+      "path": "sandbox/lf_contract_gate_test/rule_promotion_v1/test_pg18_lote17_actor_identity_adapter.py",
+      "sha256_utf8": "9e3ec18b37d26541b209a3ca587e8ac797342e099e4963808cc4695fe8d93684",
+      "git_blob_sha": "a3608359ff2e390917fd580c31a46f7ffc02a779",
+      "bytes_utf8": 15699
+    },
+    {
+      "path": ".github/workflows/l17-actor-identity-adapter-pg18.yml",
+      "sha256_utf8": "e3b1b094077c8f548c92908314c0b06698e8bdd6740b5f6babc49433421f3ee1",
+      "git_blob_sha": "e3a0771061195857bc037c741bccbcfa9fe11ba4",
+      "bytes_utf8": 7915
+    },
+    {
+      "path": "docs/rule-quality-lote17/01_pg18_real_results.json",
+      "sha256_utf8": "9768a57eff1e691af52c576281e0d14c2c63a083091b644e66b708b18473870d",
+      "git_blob_sha": "5a039fdbef6186d4e54e495325932f513aff75ba",
+      "bytes_utf8": 19879
+    }
+  ],
+  "gate_md5_before_after": {
+    "apply": "86b0494984edf95cf0f9c0a0df67000b",
+    "capture_record": "89cbfac4162dbc9f8ecca59f2c3ab4c3",
+    "citation_verify": "773a62783baa5edbe967200cac66b8c3",
+    "l8_guard": "522d12f0843be1da3c785cef3c0bf3fc"
+  },
+  "gate_sql_paths_modified": [],
+  "evidence_original_runtime_sha256": "7bf2b65394385b89ba8c3cb732915688c22f1098194dc425f0a55adb79244b2d",
+  "source_sha_method": "SHA256 UTF8 source bytes, independently recalculated via script and SHA256 abc selftest",
+  "limitations": [
+    "No Supabase Auth or compact JWT signature authority, only private ephemeral HMAC",
+    "No live profile actor and OIDC/Step70 receipts",
+    "GUC alone not trustworthy; verified signed claims required",
+    "Native production integration blocked pending owner authorization"
+  ]
+}
